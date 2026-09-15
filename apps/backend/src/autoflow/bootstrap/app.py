@@ -31,6 +31,12 @@ from autoflow.application.project_data.status_batches import (
     RecordStatusBatchService,
 )
 from autoflow.application.project_data.tables import DataTableService
+from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+from autoflow.application.project_runs.events import ProjectRunEvents
+from autoflow.application.project_runs.evidence import ProjectRunEvidence
+from autoflow.application.project_runs.queries import ProjectRunQueries
+from autoflow.application.project_runs.resources import ProjectRunResourceResolver
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.service import WorkflowService
@@ -257,6 +263,21 @@ def create_app(
         installations=installations, temp_dir=paths.temp, gate=quiesce_gate,
     )
 
+    automation_resources = ProjectAutomationResourceQuery(
+        SqlAlchemyProjects(session_factory), profile_service,
+        installed_kernel_lookup or catalog_provider, proxy_options, model_service,
+    )
+    project_run_coordinator = ProjectRunCoordinator(
+        session_factory, app.state.workflow_runtime,
+        resolve_resources=ProjectRunResourceResolver(automation_resources, app.state.workflow_resources),
+        available_capabilities=["browser.cloakbrowser"],
+    )
+    project_run_scheduler = ProjectBatchScheduler(session_factory, workflow_dispatcher, quiesce_gate)
+    app.state.project_run_coordinator = project_run_coordinator
+    app.state.project_run_scheduler = project_run_scheduler
+    # Core startup fences/reconciles old workers before any queued project task is considered.
+    app.router.add_event_handler("startup", project_run_scheduler.startup)
+
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
         {
@@ -270,6 +291,7 @@ def create_app(
         lambda: len(catalog_provider.installed()),
         lambda: [
             *workflow_dispatcher.blockers(),
+            *project_run_scheduler.blockers(),
             *(
                 ["project_excel_operation_active"]
                 if project_excel.pending_operations()
@@ -312,11 +334,17 @@ def create_app(
                 if isawaitable(result):
                     await result
 
+            async def close_workflows():
+                try:
+                    await project_run_scheduler.shutdown()
+                finally:
+                    await workflow_dispatcher.shutdown()
+
             # One failed owner must not skip another owner's shutdown. Keep the
             # proxy runtime and database available until every close has settled.
             results = await asyncio.gather(
                 *(close(action) for action in (
-                    workflow_dispatcher.shutdown, excel_exports.shutdown,
+                    close_workflows, excel_exports.shutdown,
                     excel_imports.shutdown, project_excel.shutdown,
                     status_batch_coordinator.shutdown, test_browser_workers.shutdown,
                     kernel_worker_manager.shutdown,
@@ -360,14 +388,18 @@ def create_app(
     workflow_service = WorkflowService(SqlAlchemyWorkflowRepository(session_factory))
     app.include_router(workflow_catalog_router(workflow_service))
     register_project_routes(app, ProjectHttpServices(
+        run_coordinator=project_run_coordinator,
+        run_queries=ProjectRunQueries(session_factory),
+        run_evidence=ProjectRunEvidence(session_factory, paths.workspace),
+        run_events=ProjectRunEvents(session_factory),
+        run_scheduler=project_run_scheduler,
+        gate=quiesce_gate,
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
         automations=ProjectAutomationService(
             SqlAlchemyProjects(session_factory), SqlAlchemyProjectAutomations(session_factory),
             workflow_service=workflow_service,
-            resource_query=ProjectAutomationResourceQuery(
-                SqlAlchemyProjects(session_factory), profile_service,
-                installed_kernel_lookup or catalog_provider, proxy_options, model_service,
-            ),
+            resource_query=automation_resources,
+            capability_query=project_run_coordinator,
         ),
         tables=DataTableService(SqlAlchemyProjectData(session_factory)),
         catalog=DataCatalogService(SqlAlchemyProjectDataCatalog(session_factory)),

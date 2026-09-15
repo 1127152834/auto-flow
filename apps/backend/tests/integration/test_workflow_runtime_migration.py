@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "pm03_project_automations"
+EXPECTED_HEAD = "pm04_project_runs"
 
 
 def _config(path: Path) -> Config:
@@ -267,9 +267,9 @@ def test_empty_database_upgrades_to_one_runtime_head_with_complete_v2_schema(tmp
     database_session.migrate_database(database)
 
     with sqlite3.connect(database) as connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            (EXPECTED_HEAD,)
-        ]
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchall() == [(EXPECTED_HEAD,)]
         assert {
             "id",
             "prepare_operation_id",
@@ -319,7 +319,9 @@ def test_empty_database_upgrades_to_one_runtime_head_with_complete_v2_schema(tmp
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
-@pytest.mark.parametrize("start_revision", ["0005_workflow_documents", "0008_workflow_debug"])
+@pytest.mark.parametrize(
+    "start_revision", ["0005_workflow_documents", "0008_workflow_debug"]
+)
 def test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work(
     tmp_path, start_revision
 ):
@@ -334,9 +336,9 @@ def test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work(
     command.upgrade(config, "head")
 
     with sqlite3.connect(database) as connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == (
-            EXPECTED_HEAD,
-        )
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone() == (EXPECTED_HEAD,)
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if start_revision == "0008_workflow_debug":
             active = connection.execute(
@@ -356,9 +358,7 @@ def test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work(
             ).fetchone()
             assert done[0] == "succeeded"
             assert done[1] == "2026-09-13T10:03:00+00:00"
-            assert json.loads(done[2]) == {
-                "code": "historical-warning"
-            }
+            assert json.loads(done[2]) == {"code": "historical-warning"}
             assert json.loads(done[3])["profileId"] == "profile-retained"
 
 
@@ -383,8 +383,14 @@ def test_0009_upgrade_preserves_shared_facts_and_maps_legacy_provenance(tmp_path
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         for table, rows in preserved.items():
             assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
-        assert connection.execute("SELECT * FROM workflow_run_artifacts").fetchall() == artifact_before
-        assert connection.execute("SELECT * FROM workflow_debug_commands").fetchall() == debug_before
+        assert (
+            connection.execute("SELECT * FROM workflow_run_artifacts").fetchall()
+            == artifact_before
+        )
+        assert (
+            connection.execute("SELECT * FROM workflow_debug_commands").fetchall()
+            == debug_before
+        )
 
         rows = connection.execute(
             "SELECT source_revision, provenance, document, execution_plan, adapter_version "
@@ -432,9 +438,20 @@ def test_missing_source_keeps_run_document_snapshot(tmp_path):
     with sqlite3.connect(database) as connection:
         connection.execute(
             "INSERT INTO workflow_runs VALUES (?,?,?,?,?,?)",
-            ("orphan", "missing", "digest", "2026-09-13", None,
-             json.dumps({"state": "failed", "document": snapshot,
-                         "error": {"code": "ORIGINAL_FAILURE"}})),
+            (
+                "orphan",
+                "missing",
+                "digest",
+                "2026-09-13",
+                None,
+                json.dumps(
+                    {
+                        "state": "failed",
+                        "document": snapshot,
+                        "error": {"code": "ORIGINAL_FAILURE"},
+                    }
+                ),
+            ),
         )
     command.upgrade(config, "head")
     with sqlite3.connect(database) as connection:
@@ -443,9 +460,9 @@ def test_missing_source_keeps_run_document_snapshot(tmp_path):
         ).fetchone()
         assert json.loads(document) == snapshot
         assert json.loads(provenance)["documentSource"] == "runSnapshot"
-        assert json.loads(connection.execute(
-            "SELECT error FROM workflow_runs"
-        ).fetchone()[0]) == {"code": "ORIGINAL_FAILURE"}
+        assert json.loads(
+            connection.execute("SELECT error FROM workflow_runs").fetchone()[0]
+        ) == {"code": "ORIGINAL_FAILURE"}
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
@@ -472,25 +489,56 @@ def test_empty_runtime_can_downgrade_and_upgrade_again(tmp_path):
     command.upgrade(config, "head")
     with sqlite3.connect(database) as connection:
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == (EXPECTED_HEAD,)
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone() == (EXPECTED_HEAD,)
 
 
 def test_0006_embedded_artifact_survives_full_upgrade(tmp_path):
     database = tmp_path / "embedded-artifact.sqlite3"
     config = _config(database)
     command.upgrade(config, "0006_workflow_runs")
-    artifact = {"id": "result", "nodeId": "read", "executionId": "visit",
-                "relativePath": "artifacts/result.json", "value": "原始证据"}
+    artifact = {
+        "id": "result",
+        "nodeId": "read",
+        "executionId": "visit",
+        "relativePath": "artifacts/result.json",
+        "value": "原始证据",
+    }
     with sqlite3.connect(database) as connection:
-        connection.execute("INSERT INTO workflow_documents VALUES (?,?,?,?,?,?,?)",
-                           ("workflow", "旧文档", '{}', '{}', 1, "2026-09-13", "2026-09-13"))
-        connection.execute("INSERT INTO workflow_runs VALUES (?,?,?,?,?,?)",
-                           ("run", "workflow", "digest", "2026-09-13", None,
-                            json.dumps({"state": "succeeded", "artifacts": [artifact]})))
+        connection.execute(
+            "INSERT INTO workflow_documents VALUES (?,?,?,?,?,?,?)",
+            ("workflow", "旧文档", "{}", "{}", 1, "2026-09-13", "2026-09-13"),
+        )
+        connection.execute(
+            "INSERT INTO workflow_runs VALUES (?,?,?,?,?,?)",
+            (
+                "run",
+                "workflow",
+                "digest",
+                "2026-09-13",
+                None,
+                json.dumps({"state": "succeeded", "artifacts": [artifact]}),
+            ),
+        )
     command.upgrade(config, "head")
     with sqlite3.connect(database) as connection:
-        assert json.loads(connection.execute("SELECT payload FROM workflow_run_artifacts").fetchone()[0]) == artifact
-        assert json.loads(connection.execute("SELECT provenance FROM workflow_prepared_contents").fetchone()[0])["legacyPayload"]["artifactCount"] == 1
+        assert (
+            json.loads(
+                connection.execute(
+                    "SELECT payload FROM workflow_run_artifacts"
+                ).fetchone()[0]
+            )
+            == artifact
+        )
+        assert (
+            json.loads(
+                connection.execute(
+                    "SELECT provenance FROM workflow_prepared_contents"
+                ).fetchone()[0]
+            )["legacyPayload"]["artifactCount"]
+            == 1
+        )
 
 
 def test_previous_interrupted_terminal_keeps_error_and_finished_at(tmp_path):
@@ -500,13 +548,20 @@ def test_previous_interrupted_terminal_keeps_error_and_finished_at(tmp_path):
     original_error = {"code": "WORKFLOW_RUN_INTERRUPTED", "message": "已中断"}
     with sqlite3.connect(database) as connection:
         _seed_legacy_runtime(connection)
-        payload = json.loads(connection.execute(
-            "SELECT payload FROM workflow_runs WHERE id='run-active'"
-        ).fetchone()[0])
-        payload.update(state="interrupted", finishedAt="2026-09-13T10:05:00+00:00",
-                       error=original_error)
-        connection.execute("UPDATE workflow_runs SET payload=?, active_slot=NULL WHERE id='run-active'",
-                           (json.dumps(payload),))
+        payload = json.loads(
+            connection.execute(
+                "SELECT payload FROM workflow_runs WHERE id='run-active'"
+            ).fetchone()[0]
+        )
+        payload.update(
+            state="interrupted",
+            finishedAt="2026-09-13T10:05:00+00:00",
+            error=original_error,
+        )
+        connection.execute(
+            "UPDATE workflow_runs SET payload=?, active_slot=NULL WHERE id='run-active'",
+            (json.dumps(payload),),
+        )
     command.upgrade(config, "head")
     with sqlite3.connect(database) as connection:
         status, error, finished_at = connection.execute(
@@ -523,12 +578,16 @@ def test_failed_upgrade_rolls_back_schema_and_original_evidence(tmp_path):
     command.upgrade(config, "0010_workflow_document_commands")
     with sqlite3.connect(database) as connection:
         _seed_legacy_runtime(connection)
-        payload = json.loads(connection.execute(
-            "SELECT payload FROM workflow_runs WHERE id='run-active'"
-        ).fetchone()[0])
+        payload = json.loads(
+            connection.execute(
+                "SELECT payload FROM workflow_runs WHERE id='run-active'"
+            ).fetchone()[0]
+        )
         payload["latestSeq"] = "invalid-persisted-sequence"
-        connection.execute("UPDATE workflow_runs SET payload=? WHERE id='run-active'",
-                           (json.dumps(payload),))
+        connection.execute(
+            "UPDATE workflow_runs SET payload=? WHERE id='run-active'",
+            (json.dumps(payload),),
+        )
     with sqlite3.connect(database) as connection:
         before = list(connection.iterdump())
     with pytest.raises(ValueError, match="invalid literal"):

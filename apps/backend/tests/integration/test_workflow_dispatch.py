@@ -695,8 +695,12 @@ async def test_shutdown_retries_unknown_guard_cleanup_and_retains_failed_owner(r
         if not released:
             raise RuntimeError("guard ownership unknown")
 
-    dispatcher = make_dispatcher(runtime, SyntheticWorker(), HiddenGuardFailure(), recover)
-    await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+    dispatcher = make_dispatcher(
+        runtime, SyntheticWorker(), HiddenGuardFailure(), recover
+    )
+    await dispatcher.dispatch(
+        run.run_id, expected_status_revision=1, execution_generation=0
+    )
     await dispatcher.wait_idle()
     with pytest.raises(RuntimeError, match="guard ownership unknown"):
         await dispatcher.shutdown()
@@ -727,7 +731,9 @@ async def test_shutdown_recovery_resolves_failed_acquire_cancellation(runtime):
         attempts.append(value.run_id)
 
     dispatcher = make_dispatcher(runtime, SyntheticWorker(), resources, recover)
-    await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+    await dispatcher.dispatch(
+        run.run_id, expected_status_revision=1, execution_generation=0
+    )
     await asyncio.sleep(0)
     await dispatcher.shutdown()
     assert attempts == [run.run_id]
@@ -736,3 +742,54 @@ async def test_shutdown_recovery_resolves_failed_acquire_cancellation(runtime):
     assert dispatcher._get_run(run.run_id).status == "reconciling"
     await dispatcher.shutdown()
     assert attempts == [run.run_id]
+
+
+@pytest.mark.asyncio
+async def test_automatic_budget_times_out_only_after_confirmed_cleanup(runtime):
+    from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+
+    run, _ = create_queued_run(runtime)
+    with runtime() as session:
+        row = session.get(WorkflowRunRow, run.run_id)
+        row.resource_request = {
+            **row.resource_request,
+            "automaticExecutionTimeoutSeconds": 0.01,
+        }
+        session.commit()
+    worker, resources = SyntheticWorker(blocked=asyncio.Event()), SyntheticResources()
+    dispatcher = make_dispatcher(runtime, worker, resources)
+    await dispatcher.dispatch(
+        run.run_id, expected_status_revision=1, execution_generation=0
+    )
+    await asyncio.wait_for(dispatcher.wait_idle(), timeout=2)
+    current = dispatcher._get_run(run.run_id)
+    assert current.status == "timed_out"
+    assert current.error["code"] == "AUTOMATIC_EXECUTION_TIMEOUT"
+    assert not worker.busy() and resources.lease.released
+
+
+@pytest.mark.asyncio
+async def test_budget_with_unknown_cleanup_does_not_claim_terminal_timeout(runtime):
+    from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+
+    run, _ = create_queued_run(runtime)
+    with runtime() as session:
+        row = session.get(WorkflowRunRow, run.run_id)
+        row.resource_request = {
+            **row.resource_request,
+            "automaticExecutionTimeoutSeconds": 0.01,
+        }
+        session.commit()
+    worker = SyntheticWorker(blocked=asyncio.Event(), cleanup_fail=True)
+    resources = SyntheticResources()
+    dispatcher = make_dispatcher(runtime, worker, resources)
+    await dispatcher.dispatch(
+        run.run_id, expected_status_revision=1, execution_generation=0
+    )
+    await asyncio.wait_for(dispatcher.wait_idle(), timeout=2)
+    current = dispatcher._get_run(run.run_id)
+    assert current.status == "reconciling" and current.execution_generation == 2
+    assert worker.busy() and not resources.lease.released
+    worker.cleanup_fail = False
+    await dispatcher.reconcile(run.run_id)
+    assert dispatcher._get_run(run.run_id).status == "interrupted"

@@ -257,6 +257,32 @@ class WorkflowWorkerManager:
             else:
                 await self._cleanup(worker)
 
+    def discard_uncommitted_artifact(
+        self,
+        run_id: str,
+        execution_generation: int,
+        artifact_id: str,
+        relative_path: str,
+    ) -> None:
+        """Remove one worker-owned artifact only after the caller proved no DB fact exists."""
+        worker = self._worker
+        if (
+            worker is None
+            or worker.run_id != run_id
+            or worker.generation != execution_generation
+            or relative_path
+            != f"{worker.relative_artifact_directory}/{artifact_id}.png"
+        ):
+            return
+        candidate = worker.artifact_directory / f"{artifact_id}.png"
+        try:
+            info = candidate.lstat()
+            if not candidate.is_file() or candidate.is_symlink() or info.st_nlink != 1:
+                return
+            candidate.unlink()
+        except FileNotFoundError:
+            return
+
     async def _cleanup(self, worker: _Worker) -> None:
         if worker.cleanup is None or (worker.cleanup.done() and worker.cleanup.exception()):
             worker.cleanup = asyncio.create_task(self._cleanup_owned(worker))

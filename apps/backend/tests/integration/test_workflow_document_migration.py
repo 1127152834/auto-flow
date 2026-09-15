@@ -22,9 +22,7 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
 ):
     database = tmp_path / "workflow-commands.sqlite3"
     config = config_for(database)
-    assert ScriptDirectory.from_config(config).get_heads() == [
-        "pm03_project_automations"
-    ]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm04_project_runs"]
     preserved: tuple | None = None
     if existing:
         command.upgrade(config, "0009_merge_project_data")
@@ -50,7 +48,7 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("pm03_project_automations",)]
+        ).fetchall() == [("pm04_project_runs",)]
         columns = {
             row[1]: row[2]
             for row in connection.execute(
@@ -70,11 +68,15 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
         assert [(row[2], row[3], row[4], row[6]) for row in foreign_keys] == [
             ("workflow_documents", "workflow_id", "id", "RESTRICT")
         ]
-        assert connection.execute(
-            "SELECT * FROM workflow_document_operations"
-        ).fetchall() == []
+        assert (
+            connection.execute("SELECT * FROM workflow_document_operations").fetchall()
+            == []
+        )
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if preserved is not None:
-            assert connection.execute(
-                "SELECT * FROM workflow_documents WHERE id='legacy-workflow'"
-            ).fetchone() == preserved
+            assert (
+                connection.execute(
+                    "SELECT * FROM workflow_documents WHERE id='legacy-workflow'"
+                ).fetchone()
+                == preserved
+            )

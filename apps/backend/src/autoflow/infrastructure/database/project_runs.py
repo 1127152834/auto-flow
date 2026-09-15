@@ -74,6 +74,7 @@ class SqlAlchemyProjectRuns:
             run.status_revision,
             aware(row.created_at),
             run.completed_at,
+            row.ordinal,
         ).project(run)
 
     def snapshot(self, project_id: str, task_id: str) -> TaskInputSnapshot:

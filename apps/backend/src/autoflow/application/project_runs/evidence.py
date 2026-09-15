@@ -17,6 +17,8 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 
+from .presentation import prepared_node_names
+
 
 class ProjectRunEvidence:
     """Read persisted core events through a project-scoped task identity."""
@@ -89,6 +91,17 @@ class ProjectRunEvidence:
             raise _artifact_unavailable()
         return bytes(content), artifact.media_type
 
+    def node_names(self, project_id: str, task_id: str) -> dict[str, str]:
+        with self._factory() as session:
+            task = _task(session, project_id, task_id)
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            run = repository.get_run(run_id=task.run_id)
+            if run is None:
+                raise ProjectRunError(
+                    "RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409
+                )
+            return _node_names(repository, run.prepared_content_id)
+
     def logs(
         self,
         project_id: str,
@@ -115,6 +128,7 @@ class ProjectRunEvidence:
                 raise ProjectRunError(
                     "RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409
                 )
+            node_names = _node_names(repository, run.prepared_content_id)
             matches = _matching_events(
                 repository,
                 task.run_id,
@@ -131,7 +145,7 @@ class ProjectRunEvidence:
                     )
                 ),
             )
-            items = [_log(event) for event in matches[:page_size]]
+            items = [_log(event, node_names) for event in matches[:page_size]]
             return {
                 "items": items,
                 "afterSequence": items[-1]["sequence"] if items else run.last_sequence,
@@ -148,9 +162,14 @@ class ProjectRunEvidence:
                 text("BEGIN")
             )  # one read snapshot for cursor, events and core status
             task = _task(session, project_id, task_id)
-            events = _all_events(
-                SqlAlchemyWorkflowRuntimeRepository(session), task.run_id
-            )
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            run = repository.get_run(run_id=task.run_id)
+            if run is None:
+                raise ProjectRunError(
+                    "RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409
+                )
+            node_names = _node_names(repository, run.prepared_content_id)
+            events = _all_events(repository, task.run_id)
             attempts: dict[tuple[str, int], dict[str, Any]] = {}
             for event in events:
                 if event.kind != "nodeAttempt":
@@ -170,6 +189,7 @@ class ProjectRunEvidence:
                     {
                         "nodeVisitId": event.node_visit_id,
                         "nodeId": event.node_id,
+                        "nodeName": node_names.get(event.node_id, "未命名节点"),
                         "attempt": event.attempt,
                         "status": "running",
                         "startedAt": None,
@@ -210,14 +230,19 @@ class ProjectRunEvidence:
                 text("BEGIN")
             )  # one read snapshot for cursor, events and core status
             task = _task(session, project_id, task_id)
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            run = repository.get_run(run_id=task.run_id)
+            if run is None:
+                raise ProjectRunError(
+                    "RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409
+                )
+            node_names = _node_names(repository, run.prepared_content_id)
             events = [
                 event
-                for event in _all_events(
-                    SqlAlchemyWorkflowRuntimeRepository(session), task.run_id
-                )
+                for event in _all_events(repository, task.run_id)
                 if event.kind == "output"
             ]
-            values = [_output(event) for event in events]
+            values = [_output(event, node_names) for event in events]
             start = (page - 1) * page_size
             return values[start : start + page_size], len(values)
 
@@ -257,7 +282,7 @@ def _matching_events(repository, run_id, cursor, limit, predicate):
     result = []
     for event in _checked_events(repository, run_id, cursor):
         if event.kind == "log":
-            _log(event)  # malformed log evidence must not disappear behind a filter
+            _log(event, {})  # malformed log evidence must not disappear behind a filter
         if predicate(event):
             result.append(event)
             if len(result) == limit:
@@ -265,7 +290,7 @@ def _matching_events(repository, run_id, cursor, limit, predicate):
     return result
 
 
-def _log(event: RunEvent) -> dict[str, Any]:
+def _log(event: RunEvent, node_names: dict[str, str]) -> dict[str, Any]:
     payload = thaw_json(event.payload)
     if payload.get("level") not in {
         "debug",
@@ -280,6 +305,9 @@ def _log(event: RunEvent) -> dict[str, Any]:
         "eventId": event.event_id,
         "executionGeneration": event.execution_generation,
         "nodeId": event.node_id,
+        "nodeName": node_names.get(event.node_id, "未命名节点")
+        if event.node_id
+        else None,
         "nodeVisitId": event.node_visit_id,
         "attempt": event.attempt,
         "level": payload["level"],
@@ -288,7 +316,7 @@ def _log(event: RunEvent) -> dict[str, Any]:
     }
 
 
-def _output(event: RunEvent) -> dict[str, Any]:
+def _output(event: RunEvent, node_names: dict[str, str]) -> dict[str, Any]:
     payload = thaw_json(event.payload)
     if not isinstance(payload.get("name"), str) or "value" not in payload:
         raise _history_unavailable()
@@ -300,10 +328,21 @@ def _output(event: RunEvent) -> dict[str, Any]:
         "runId": event.run_id,
         "sequence": event.sequence,
         "nodeId": event.node_id,
+        "nodeName": node_names.get(event.node_id, "未命名节点")
+        if event.node_id
+        else None,
         "nodeVisitId": event.node_visit_id,
         "attempt": event.attempt,
         "createdAt": event.occurred_at,
     }
+
+
+def _node_names(
+    repository: SqlAlchemyWorkflowRuntimeRepository, prepared_content_id: str
+) -> dict[str, str]:
+    return prepared_node_names(
+        repository.get_prepared_content(prepared_content_id=prepared_content_id)
+    )
 
 
 def _cursor(after_sequence: int, page_size: int) -> None:

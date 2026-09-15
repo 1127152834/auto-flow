@@ -43,6 +43,13 @@ class WorkerPort(Protocol):
 
     async def stop(self, run_id: str) -> None: ...
     async def force_stop(self, run_id: str) -> None: ...
+    def discard_uncommitted_artifact(
+        self,
+        run_id: str,
+        execution_generation: int,
+        artifact_id: str,
+        relative_path: str,
+    ) -> None: ...
     async def shutdown(self) -> None: ...
 
 
@@ -183,19 +190,9 @@ class WorkflowRunDispatcher:
     async def _force_stop(
         self, run_id: str, expected_status_revision: int, execution_generation: int
     ) -> CoreRun:
-        run = self._get_run(run_id)
-        if run.status_revision != expected_status_revision:
-            raise WorkflowRuntimeError("RUN_STATUS_CONFLICT", "运行状态已发生变化")
-        if run.execution_generation != execution_generation:
-            raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效")
-        allowed = run.status == "reconciling" or (
-            run.status == "stopping"
-            and self._now() - _aware(run.updated_at) >= self._force_stop_grace
+        run = self.validate_force_stop(
+            run_id, expected_status_revision, execution_generation
         )
-        if not allowed:
-            raise WorkflowRuntimeError(
-                "FORCE_STOP_GRACE_ACTIVE", "普通停止宽限期尚未结束"
-            )
         fenced = (
             self._transition_identity(
                 run_id, "reconciling", expected_status_revision, execution_generation
@@ -241,6 +238,34 @@ class WorkflowRunDispatcher:
         if self._run_id == run_id:
             self._clear_owner()
         return result
+
+    def query_run(self, run_id: str) -> CoreRun:
+        return self._get_run(run_id)
+
+    def validate_force_stop(
+        self, run_id: str, expected_status_revision: int, execution_generation: int
+    ) -> CoreRun:
+        run = self._get_run(run_id)
+        if run.status_revision != expected_status_revision:
+            raise WorkflowRuntimeError("RUN_STATUS_CONFLICT", "运行状态已发生变化")
+        if run.execution_generation != execution_generation:
+            raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效")
+        allowed, _available_at = self.force_stop_state(run_id)
+        if not allowed:
+            raise WorkflowRuntimeError(
+                "FORCE_STOP_GRACE_ACTIVE", "普通停止宽限期尚未结束"
+            )
+        return run
+
+    def force_stop_state(self, run_id: str) -> tuple[bool, datetime | None]:
+        """Return the dispatcher-authoritative force-stop gate for one run."""
+        run = self._get_run(run_id)
+        if run.status == "reconciling":
+            return True, self._now()
+        if run.status != "stopping":
+            return False, None
+        available_at = _aware(run.updated_at) + self._force_stop_grace
+        return self._now() >= available_at, available_at
 
     async def reconcile(self, run_id: str) -> CoreRun:
         async with self._control:
@@ -363,16 +388,37 @@ class WorkflowRunDispatcher:
                             current.run_id, current.execution_generation, "cancelled"
                         )
                     return
-                outcome = await self._worker.run(
-                    run_id=current.run_id,
-                    execution_generation=current.execution_generation,
-                    execution_plan=thaw_json(content.execution_plan),
-                    parameters=thaw_json(current.parameters),
-                    variables=self._variables(content, current),
-                    browser=dict(lease.browser),
-                    executable=lease.executable,
-                    on_event=lambda event: self._commit_event(current, content, event),
+                budget = current.resource_request.get(
+                    "automaticExecutionTimeoutSeconds", 0
                 )
+                timeout = asyncio.timeout(budget or None)
+                try:
+                    async with timeout:
+                        outcome = await self._worker.run(
+                            run_id=current.run_id,
+                            execution_generation=current.execution_generation,
+                            execution_plan=thaw_json(content.execution_plan),
+                            parameters=thaw_json(current.parameters),
+                            variables=self._variables(content, current),
+                            browser=dict(lease.browser),
+                            executable=lease.executable,
+                            on_event=lambda event: self._commit_event(
+                                current, content, event
+                            ),
+                        )
+                except TimeoutError:
+                    if not timeout.expired():
+                        raise
+                    # Worker.run must finish its cancellation cleanup before this returns.
+                    # Unconfirmed ownership follows the existing reconcile/fence path below.
+                    outcome = WorkerOutcome(
+                        "timed_out",
+                        {
+                            "code": "AUTOMATIC_EXECUTION_TIMEOUT",
+                            "message": "自动执行超时",
+                        },
+                        not self._worker.busy(),
+                    )
             if self._worker.busy() or not outcome.cleanup_confirmed:
                 raise RuntimeError("worker cleanup unconfirmed")
             lease.release()
@@ -455,9 +501,39 @@ class WorkflowRunDispatcher:
             raise WorkflowRuntimeError("RUN_EVENT_NODE_UNKNOWN", "事件引用了未知节点")
         value = dict(event)
         value.pop("sequence", None)
-        with self._sessions() as session:
-            SqlAlchemyWorkflowRuntimeRepository(session).append_event(value)
-            session.commit()  # returning is the worker manager's ACK boundary
+        try:
+            with self._sessions() as session:
+                SqlAlchemyWorkflowRuntimeRepository(session).append_event(value)
+                session.commit()  # returning is the worker manager's ACK boundary
+        except Exception:
+            self._discard_uncommitted_artifact(run, event)
+            raise
+
+    def _discard_uncommitted_artifact(
+        self, run: CoreRun, event: dict[str, Any]
+    ) -> None:
+        if event.get("kind") != "artifact" or not isinstance(event.get("payload"), dict):
+            return
+        payload = event["payload"]
+        artifact_id, relative_path = payload.get("artifactId"), payload.get("relativePath")
+        if not isinstance(artifact_id, str) or not isinstance(relative_path, str):
+            return
+        try:
+            with self._sessions() as session:
+                committed = SqlAlchemyWorkflowRuntimeRepository(session).get_artifact(
+                    run.run_id, artifact_id
+                )
+        except Exception:  # noqa: BLE001 - unknown fact checks must preserve evidence.
+            return
+        if committed is None:
+            discard = getattr(self._worker, "discard_uncommitted_artifact", None)
+            if discard is not None:
+                discard(
+                    run.run_id,
+                    run.execution_generation,
+                    artifact_id,
+                    relative_path,
+                )
 
     def _get_run(self, run_id: str) -> CoreRun:
         with self._sessions() as session:

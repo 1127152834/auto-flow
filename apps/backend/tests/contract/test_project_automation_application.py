@@ -71,7 +71,8 @@ def test_real_application_configuration_and_operation_recovery(tmp_path):
         assert operations.json()['items'][0]['result']['parameterSchema'] == body['parameterSchema']
         # Workspace recovery is intentionally reserved for createProject.
         assert client.get(f'/api/v1/workspace/operations/by-idempotency-key/{key}').status_code == 404
-        # No consumer is allowed to infer runnable from a saved draft.
+        # Runnable still requires every real resource even when the installed core is available.
         validation = client.get(f"{path}/{automation['automationId']}/validation").json()
         assert not validation['runnable']
-        assert {issue['code'] for issue in validation['issues']} >= {'PROFILE_REQUIRED', 'CORE_UNAVAILABLE'}
+        assert {issue['code'] for issue in validation['issues']} >= {'PROFILE_REQUIRED'}
+        assert 'CORE_UNAVAILABLE' not in {issue['code'] for issue in validation['issues']}

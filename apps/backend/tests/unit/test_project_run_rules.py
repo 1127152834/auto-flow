@@ -275,7 +275,7 @@ def test_batch_counts_project_tasks_without_inventing_batch_outcome():
         2,
         3,
         7,
-        {"maxTasks": 3, "parameters": {P_BOOL: False}},
+        {"maxTasks": 3, "parameters": {P_BOOL: False}, "automation": {"name": "参数运行"}},
         BatchCounts({}),
         now,
     )

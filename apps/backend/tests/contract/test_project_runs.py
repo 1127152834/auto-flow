@@ -11,7 +11,7 @@ from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.domain.project_runs.models import ProjectRunError
-from autoflow.infrastructure.database.models import ProjectRow
+from autoflow.infrastructure.database.models import ProjectRow, WorkflowDocumentRow
 from autoflow.infrastructure.database.project_run_models import ProjectBatchRow
 from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
@@ -24,6 +24,9 @@ class Scheduler:
 
     def wake(self):
         self.wakes += 1
+
+    def force_stop_availability(self, _project_id, _batch_id):
+        return False, None
 
 
 def client_for(tmp_path, resolver=None):
@@ -66,6 +69,14 @@ def test_batch_and_task_queries_return_real_counts_snapshots_and_core_run(tmp_pa
         json=start_payload(automation, max_tasks=2),
     ).json()["operation"]["result"]["batch"]
     batch_id = started["batchId"]
+    with factory.begin() as session:
+        current_workflow = session.get(WorkflowDocumentRow, automation.workflow_id)
+        assert current_workflow is not None
+        changed = dict(current_workflow.document)
+        content = dict(changed["content"])
+        nodes = [dict(node) for node in content["nodes"]]
+        nodes[0] = {**nodes[0], "data": {**nodes[0]["data"], "label": "当前已改名"}}
+        current_workflow.document = {**changed, "content": {**content, "nodes": nodes}}
 
     batches = client.get(
         f"/api/v1/projects/{project.project_id}/batches",
@@ -80,9 +91,21 @@ def test_batch_and_task_queries_return_real_counts_snapshots_and_core_run(tmp_pa
     assert detail["statusCounts"]["queued"] == 2
     assert detail["taskCount"] == 2
     assert detail["stopOperation"] is None
+    assert detail["forceStopAllowed"] is False
+    assert detail["forceStopAvailableAt"] is None
     assert detail["configurationSnapshot"]["automation"]["name"] == automation.name
-    assert detail["configurationSnapshot"]["parameters"]["00000000-0000-0000-0000-000000000031"] == "每个任务的冻结值"
-    assert detail["configurationSnapshot"]["parameters"]["00000000-0000-0000-0000-000000000032"] is False
+    assert (
+        detail["configurationSnapshot"]["parameters"][
+            "00000000-0000-0000-0000-000000000031"
+        ]
+        == "每个任务的冻结值"
+    )
+    assert (
+        detail["configurationSnapshot"]["parameters"][
+            "00000000-0000-0000-0000-000000000032"
+        ]
+        is False
+    )
     assert detail["configurationSnapshot"]["maxTasks"] == 2
     assert detail["configurationSnapshot"]["concurrency"] == 1
     assert detail["configurationSnapshot"]["workflowRevision"] == 1
@@ -93,10 +116,15 @@ def test_batch_and_task_queries_return_real_counts_snapshots_and_core_run(tmp_pa
     ).json()
     assert tasks["total"] == 2 and len(tasks["items"]) == 1
     assert tasks["items"][0]["taskOrdinal"] in {1, 2}
+    assert tasks["items"][0]["automationName"] == automation.name
+    assert tasks["items"][0]["inputIdentifier"] == "参数任务"
+    assert tasks["items"][0]["batchStartedAt"] == detail["batch"]["createdAt"]
+    assert tasks["items"][0]["endNodeName"] is None
     task_id = tasks["items"][0]["taskId"]
     task = client.get(f"/api/v1/projects/{project.project_id}/tasks/{task_id}").json()
     assert task["task"]["status"] == "queued"
     assert task["task"]["taskOrdinal"] == tasks["items"][0]["taskOrdinal"]
+    assert task["batchStartedAt"] == detail["batch"]["createdAt"]
     assert task["nodeNames"] == {
         "open": "打开网页",
         "input": "输入文本",
@@ -113,7 +141,9 @@ def test_batch_and_task_queries_return_real_counts_snapshots_and_core_run(tmp_pa
     factory.dispose()
 
 
-def test_batch_and_task_directories_search_persisted_identifiers_and_frozen_automation_name(tmp_path):
+def test_batch_and_task_directories_search_persisted_identifiers_and_frozen_automation_name(
+    tmp_path,
+):
     client, factory, project, automation, _ = client_for(tmp_path)
     batch = client.post(
         f"/api/v1/projects/{project.project_id}/automations/{automation.automation_id}/batches",
@@ -140,17 +170,43 @@ def test_batch_and_task_directories_search_persisted_identifiers_and_frozen_auto
         f"/api/v1/projects/{project.project_id}/tasks",
         params={"q": batch["batchId"][4:16]},
     )
+    by_task_number = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"q": f"任务 {task['taskOrdinal']}"},
+    )
+    by_task_automation = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"q": automation.name},
+    )
+    by_task_input = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"q": "每个任务的冻结值"},
+    )
 
     assert by_name.status_code == 200 and by_name.json()["total"] == 1
     assert by_batch_id.status_code == 200 and by_batch_id.json()["total"] == 1
     assert by_task_id.status_code == 200 and by_task_id.json()["total"] == 1
     assert by_task_batch.status_code == 200 and by_task_batch.json()["total"] == 1
-    assert client.get(
-        f"/api/v1/projects/{project.project_id}/batches", params={"q": "不存在的自动化"}
-    ).json()["total"] == 0
-    assert client.get(
-        f"/api/v1/projects/{project.project_id}/batches", params={"q": "x" * 121}
-    ).status_code == 422
+    assert by_task_number.status_code == 200
+    assert by_task_number.json()["items"][0]["taskOrdinal"] == task["taskOrdinal"]
+    assert (
+        by_task_automation.status_code == 200
+        and by_task_automation.json()["total"] == 1
+    )
+    assert by_task_input.status_code == 200 and by_task_input.json()["total"] == 1
+    assert (
+        client.get(
+            f"/api/v1/projects/{project.project_id}/batches",
+            params={"q": "不存在的自动化"},
+        ).json()["total"]
+        == 0
+    )
+    assert (
+        client.get(
+            f"/api/v1/projects/{project.project_id}/batches", params={"q": "x" * 121}
+        ).status_code
+        == 422
+    )
     factory.dispose()
 
 
@@ -185,7 +241,7 @@ def test_batch_and_task_search_treats_like_metacharacters_as_literal_text(tmp_pa
         )
         assert batches.status_code == tasks.status_code == 200
         assert batches.json()["total"] == 1
-        assert tasks.json()["total"] == 0
+        assert tasks.json()["total"] == 1
     factory.dispose()
 
 

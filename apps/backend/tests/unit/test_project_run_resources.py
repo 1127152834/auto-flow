@@ -1,0 +1,183 @@
+from datetime import UTC, datetime
+
+import pytest
+
+from autoflow.application.project_runs.resources import ProjectRunResourceResolver
+from autoflow.domain.project_automations.models import AutomationRecord
+from autoflow.domain.project_runs.models import ProjectRunError
+
+NOW = datetime(2026, 9, 15, tzinfo=UTC)
+
+
+def automation(environment_policy):
+    return AutomationRecord(
+        "automation-1",
+        "project-1",
+        "workflow-1",
+        "自动化",
+        "",
+        1,
+        {"inputs": []},
+        [],
+        environment_policy,
+        {"automaticExecutionTimeoutSeconds": 12.5},
+        NOW,
+        NOW,
+    )
+
+
+class ResourceQuery:
+    def __init__(self, issues=()):
+        self.issues = list(issues)
+        self.seen = []
+
+    def inspect_resources(self, value):
+        self.seen.append(value)
+        return self.issues
+
+
+class BrowserResources:
+    def __init__(self):
+        self.calls = []
+
+    def freeze(self, profile_id, *, proxy=None, model_provider_id=None):
+        self.calls.append((profile_id, proxy, model_provider_id))
+        return {
+            "browser": "newFromProfile",
+            "profileId": profile_id,
+            "proxy": proxy or {"mode": "profile"},
+            "modelProviderId": model_provider_id,
+            "frozenConfiguration": {"safe": True},
+        }
+
+
+DEFAULTS = {
+    "profileId": "project-profile",
+    "proxy": {"mode": "fixed", "proxyId": "project-proxy"},
+    "modelProviderId": "project-model",
+}
+
+
+def test_freezes_project_defaults_and_automatic_timeout():
+    query, browser = ResourceQuery(), BrowserResources()
+    resolver = ProjectRunResourceResolver(query, browser)
+
+    request = resolver(automation({"source": "newFromProfile"}), DEFAULTS)
+
+    assert query.seen[0].automation_id == "automation-1"
+    assert browser.calls == [
+        (
+            "project-profile",
+            {"mode": "fixed", "proxyId": "project-proxy"},
+            "project-model",
+        )
+    ]
+    assert request["automaticExecutionTimeoutSeconds"] == 12.5
+    assert request["frozenConfiguration"] == {"safe": True}
+
+
+@pytest.mark.parametrize(
+    ("override", "expected"),
+    [
+        ({"mode": "none"}, {"mode": "none"}),
+        (
+            {"mode": "fixed", "proxyId": "chosen"},
+            {"mode": "fixed", "proxyId": "chosen"},
+        ),
+        (
+            {"mode": "pool", "proxyPoolId": "pool-1"},
+            {"mode": "pool", "proxyPoolId": "pool-1"},
+        ),
+    ],
+)
+def test_explicit_proxy_override_replaces_project_default(override, expected):
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser)
+
+    resolver(
+        automation({"source": "newFromProfile", "proxyOverride": override}),
+        DEFAULTS,
+    )
+
+    assert browser.calls[0][1] == expected
+
+
+def test_explicit_source_default_skips_project_proxy_and_uses_profile_policy():
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser)
+
+    resolver(
+        automation(
+            {"source": "newFromProfile", "proxyOverride": {"mode": "sourceDefault"}}
+        ),
+        DEFAULTS,
+    )
+
+    assert browser.calls[0][1] is None
+
+
+def test_project_source_default_uses_profile_policy_when_override_is_omitted():
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser)
+    defaults = {**DEFAULTS, "proxy": {"mode": "sourceDefault"}}
+
+    resolver(automation({"source": "newFromProfile"}), defaults)
+
+    assert browser.calls[0][1] is None
+
+
+def test_explicit_profile_and_model_values_preserve_null_semantics():
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser)
+
+    resolver(
+        automation(
+            {
+                "source": "newFromProfile",
+                "profileId": "chosen-profile",
+                "modelProviderId": None,
+            }
+        ),
+        DEFAULTS,
+    )
+
+    assert browser.calls == [
+        ("chosen-profile", {"mode": "fixed", "proxyId": "project-proxy"}, None)
+    ]
+
+
+def test_resource_issues_block_freezing_and_keep_structured_locations():
+    issues = [
+        {
+            "path": ["environmentPolicy", "profileId"],
+            "code": "PROFILE_NOT_FOUND",
+            "message": "浏览器配置不存在",
+            "resource": {"type": "profile", "profileId": "missing"},
+        }
+    ]
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(issues), browser)
+
+    with pytest.raises(ProjectRunError) as caught:
+        resolver(automation({"source": "newFromProfile"}), DEFAULTS)
+
+    assert caught.value.code == "RESOURCE_UNAVAILABLE"
+    assert caught.value.status == 422
+    assert caught.value.details == {"issues": issues, "retryable": False}
+    assert browser.calls == []
+
+
+def test_rejects_missing_effective_profile_without_freezing():
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser)
+
+    with pytest.raises(ProjectRunError) as caught:
+        resolver(
+            automation({"source": "newFromProfile"}),
+            {**DEFAULTS, "profileId": None},
+        )
+
+    assert caught.value.details["fields"] == {
+        "environmentPolicy.profileId": "请选择浏览器配置"
+    }
+    assert browser.calls == []

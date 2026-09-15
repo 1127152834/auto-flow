@@ -91,7 +91,13 @@ async def test_real_cloakbrowser_worker_lifecycle(tmp_path, valid_profile_values
             assert len(events) == 1 and requests == []
         else:
             assert outcome.status == 'failed'
-            assert events[-1]['payload']['error']['code'] == 'WORKFLOW_NODE_TIMEOUT'
+            failed_attempts = [
+                event for event in events
+                if event['kind'] == 'nodeAttempt'
+                and event['payload'].get('status') == 'failed'
+            ]
+            assert len(failed_attempts) == 1
+            assert failed_attempts[0]['payload']['error']['code'] == 'WORKFLOW_NODE_TIMEOUT'
             assert not any(event['nodeId'] == 'click' for event in events)
     finally:
         await manager.shutdown()

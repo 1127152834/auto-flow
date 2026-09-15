@@ -86,6 +86,7 @@ class Task:
     status_revision: int
     created_at: datetime
     completed_at: datetime | None = None
+    ordinal: int = 0
 
     def project(self, run: CoreRun) -> Task:
         if run.run_id != self.run_id or run.run_request_id != self.run_request_id:
@@ -161,6 +162,7 @@ def batch_to_dict(batch: Batch) -> dict[str, Any]:
         "batchId": batch.batch_id,
         "projectId": batch.project_id,
         "automationId": batch.automation_id,
+        "automationName": batch.frozen_request["automation"]["name"],
         "startOperationId": batch.start_operation_id,
         "status": batch.status,
         "statusRevision": batch.status_revision,
@@ -183,6 +185,7 @@ def task_to_dict(task: Task) -> dict[str, Any]:
         "status": task.status,
         "statusRevision": task.status_revision,
         "inputSnapshotId": task.input_snapshot_id,
+        "taskOrdinal": task.ordinal + 1,
         "createdAt": task.created_at,
         **({"completedAt": task.completed_at} if task.completed_at else {}),
     }

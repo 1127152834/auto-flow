@@ -67,6 +67,16 @@ class ProjectRunCoordinator:
         self._resolve_resources = resolve_resources
         self._capabilities = tuple(available_capabilities)
 
+    def inspect_capabilities(self, workflow_id: str) -> list[dict[str, Any]]:
+        # Workflow shape and actual resource availability are checked separately.
+        # This is the same installed worker capability used by atomic preparation.
+        return [{
+            "capability": "browser.cloakbrowser",
+            "required": True,
+            "available": "browser.cloakbrowser" in self._capabilities,
+            "reason": "本地浏览器执行能力" if "browser.cloakbrowser" in self._capabilities else "本地浏览器执行能力不可用",
+        }]
+
     def start(
         self, project_id: str, automation_id: str, key: str, payload: dict[str, Any]
     ) -> tuple[Batch, ProjectOperation, bool]:

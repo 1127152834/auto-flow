@@ -11,7 +11,15 @@ from autoflow.infrastructure.database import session as database_session
 
 @pytest.mark.parametrize(
     "revision",
-    [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    [
+        None,
+        "0001_browser_resources",
+        "0002_proxy_management",
+        "0002_model_management",
+        "0008_workflow_debug",
+        "pm01_projects",
+        "pm02_schema_drafts",
+    ],
 )
 def test_merge_upgrade_preserves_each_branch_database(
     tmp_path: Path, revision: str | None
@@ -19,7 +27,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm03_project_automations"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm04_project_runs"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -39,12 +47,30 @@ def test_merge_upgrade_preserves_each_branch_database(
     database_session.migrate_database(database)
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("pm03_project_automations",)
-        ]
-        tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
-        assert {"workflow_runs", "workflow_run_events", "workflow_run_artifacts", "workflow_debug_commands"} <= tables
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchall() == [("pm04_project_runs",)]
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+        }
+        assert {
+            "profiles",
+            "proxy_projections",
+            "proxy_group_details",
+            "model_providers",
+            "models",
+            "kernel_operations",
+            "workflow_documents",
+        } <= tables
+        assert {
+            "workflow_runs",
+            "workflow_run_events",
+            "workflow_run_artifacts",
+            "workflow_debug_commands",
+        } <= tables
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if revision:
             assert connection.execute(
@@ -55,7 +81,9 @@ def test_merge_upgrade_preserves_each_branch_database(
                 "SELECT proxy_pool_id FROM proxy_group_details"
             ).fetchall() == [("existing",)]
         if revision == "0002_model_management":
-            assert connection.execute("SELECT secret_ref FROM model_credential_cleanup").fetchall() == [("synthetic-ref",)]
+            assert connection.execute(
+                "SELECT secret_ref FROM model_credential_cleanup"
+            ).fetchall() == [("synthetic-ref",)]
 
 
 def test_retired_studio_data_survives_application_startup(tmp_path: Path):
@@ -74,7 +102,15 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
     statements = {
         "workflow_documents": (
             "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
-            ("document", "Archived Studio", '{"schemaVersion":2}', '{"breakpoints":["node"]}', 7, "2026-09-13", "2026-09-13"),
+            (
+                "document",
+                "Archived Studio",
+                '{"schemaVersion":2}',
+                '{"breakpoints":["node"]}',
+                7,
+                "2026-09-13",
+                "2026-09-13",
+            ),
         ),
         "workflow_runs": (
             "INSERT INTO workflow_runs VALUES (?, ?, ?, ?, ?, ?)",
@@ -86,7 +122,16 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
         ),
         "workflow_run_artifacts": (
             "INSERT INTO workflow_run_artifacts (run_id,id,ordinal,node_id,execution_id,payload,purpose,event_seq) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            ("run", "artifact", 1, "node", "execution", '{"relativePath":"artifacts/result.json"}', "result", 1),
+            (
+                "run",
+                "artifact",
+                1,
+                "node",
+                "execution",
+                '{"relativePath":"artifacts/result.json"}',
+                "result",
+                1,
+            ),
         ),
         "workflow_debug_commands": (
             "INSERT INTO workflow_debug_commands VALUES (?, ?, ?, ?)",
@@ -111,14 +156,17 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
 
     app = create_app(
         Settings(data_dir=str(tmp_path), instance_id="retired-studio"),
-        credential_store=FakeCredentialStore(), model_gateway=FakeModelGateway(),
+        credential_store=FakeCredentialStore(),
+        model_gateway=FakeModelGateway(),
     )
     with TestClient(app):
         pass
 
     with sqlite3.connect(paths.database) as connection:
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("pm03_project_automations",)
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone() == ("pm04_project_runs",)
         for table, rows in preserved.items():
             assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
         status, sequence, completed_at = connection.execute(

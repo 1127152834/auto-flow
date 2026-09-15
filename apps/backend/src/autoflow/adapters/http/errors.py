@@ -33,8 +33,10 @@ from autoflow.domain.profiles.errors import (
     ProfileValidationError,
     ProxyUnavailable,
 )
+from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.models import WorkflowError
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 
 _MODEL_ERROR_MESSAGES = {
     "VALIDATION_ERROR": "请求参数无效",
@@ -144,6 +146,8 @@ def install_error_handlers(app: FastAPI) -> None:
             error.status, error.code, error.message, jsonable_encoder(error.details)
         )
 
+    @app.exception_handler(ProjectRunError)
+    @app.exception_handler(WorkflowRuntimeError)
     @app.exception_handler(ProjectError)
     async def project_error(_request: Request, error: ProjectError) -> JSONResponse:
         details = dict(error.details)

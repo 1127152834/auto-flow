@@ -9,6 +9,7 @@ from .schemas import ApiModel
 class NodeAttemptView(ApiModel):
     node_visit_id: str
     node_id: str
+    node_name: str
     attempt: int
     status: Literal["running", "succeeded", "failed"]
     started_at: datetime | None
@@ -30,6 +31,7 @@ class RunLogEntry(ApiModel):
     event_id: str
     execution_generation: int
     node_id: str | None = None
+    node_name: str | None = None
     node_visit_id: str | None = None
     attempt: int | None = None
     level: Literal["debug", "info", "warning", "error"]
@@ -52,6 +54,7 @@ class RunOutputView(ApiModel):
     run_id: str
     sequence: int
     node_id: str | None = None
+    node_name: str | None = None
     node_visit_id: str | None = None
     attempt: int | None = None
     created_at: datetime
@@ -71,6 +74,7 @@ class RunArtifactView(ApiModel):
     purpose: Literal["error"]
     availability: Literal["available", "unavailable"]
     node_id: str
+    node_name: str
     node_visit_id: str | None = None
     event_sequence: int
     execution_generation: int

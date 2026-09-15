@@ -84,9 +84,16 @@ def project_run_evidence_router(evidence: ProjectRunEvidence) -> APIRouter:
         items, total = evidence.artifacts(
             str(projectId), str(taskId), page=page, page_size=page_size
         )
+        node_names = evidence.node_names(str(projectId), str(taskId))
         return {
             "items": [
-                _artifact_view(item, str(projectId), str(taskId)) for item in items
+                _artifact_view(
+                    item,
+                    str(projectId),
+                    str(taskId),
+                    node_names.get(item.node_id, "未命名节点"),
+                )
+                for item in items
             ],
             "page": page,
             "pageSize": page_size,
@@ -97,7 +104,10 @@ def project_run_evidence_router(evidence: ProjectRunEvidence) -> APIRouter:
     @router.get("/artifacts/{artifactId}", response_model=RunArtifactView)
     def artifact(projectId: UUID, taskId: UUID, artifactId: str):
         item = evidence.artifact(str(projectId), str(taskId), artifactId)
-        return _artifact_view(item, str(projectId), str(taskId))
+        node_name = evidence.node_names(str(projectId), str(taskId)).get(
+            item.node_id, "未命名节点"
+        )
+        return _artifact_view(item, str(projectId), str(taskId), node_name)
 
     @router.get("/artifacts/{artifactId}/content", response_class=Response)
     def artifact_content(projectId: UUID, taskId: UUID, artifactId: str):
@@ -116,7 +126,9 @@ def project_run_evidence_router(evidence: ProjectRunEvidence) -> APIRouter:
     return router
 
 
-def _artifact_view(item, project_id: str, task_id: str) -> dict[str, object]:
+def _artifact_view(
+    item, project_id: str, task_id: str, node_name: str
+) -> dict[str, object]:
     content_url = None
     if item.availability == "available":
         content_url = (
@@ -129,6 +141,7 @@ def _artifact_view(item, project_id: str, task_id: str) -> dict[str, object]:
         "purpose": item.purpose,
         "availability": item.availability,
         "nodeId": item.node_id,
+        "nodeName": node_name,
         "nodeVisitId": item.node_visit_id,
         "eventSequence": item.event_sequence,
         "executionGeneration": item.execution_generation,

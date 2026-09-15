@@ -103,12 +103,14 @@ def test_reads_persisted_attempt_logs_and_value_outputs(tmp_path):
 
     attempt = client.get(f"{prefix}/node-attempts").json()["items"][0]
     assert attempt["nodeVisitId"] == "visit-1"
+    assert attempt["nodeName"] == "打开网页"
     assert attempt["status"] == "succeeded"
     assert attempt["startedAt"] and attempt["completedAt"]
 
     logs = client.get(f"{prefix}/logs", params={"level": "info", "pageSize": 1}).json()
     assert [item["message"] for item in logs["items"]] == ["已打开"]
     assert logs["items"][0]["sequence"] == 3
+    assert logs["items"][0]["nodeName"] == "打开网页"
     assert logs["afterSequence"] == 3
     assert logs["lastSequence"] == 5
 
@@ -116,6 +118,7 @@ def test_reads_persisted_attempt_logs_and_value_outputs(tmp_path):
     assert output["kind"] == "value"
     assert output["value"] == {"ok": True}
     assert output["nodeVisitId"] == "visit-1" and output["sequence"] == 4
+    assert output["nodeName"] == "打开网页"
     assert "artifactId" not in output
     factory.dispose()
 
@@ -131,6 +134,36 @@ def test_log_cursor_does_not_skip_a_later_matching_event(tmp_path):
 
     assert first["items"][0]["sequence"] == 2 and first["hasMore"] is True
     assert second["items"][0]["sequence"] == 3 and second["hasMore"] is False
+    factory.dispose()
+
+
+def test_unknown_frozen_nodes_use_a_semantic_name_for_logs_and_outputs(tmp_path):
+    client, _, factory, project, task = prepared(tmp_path)
+    with factory.begin() as session:
+        repository = SqlAlchemyWorkflowRuntimeRepository(session)
+        for kind, payload in (
+            ("log", {"level": "info", "message": "外部节点日志"}),
+            ("output", {"name": "业务结果", "value": "完成"}),
+        ):
+            repository.append_event(
+                {
+                    "eventId": str(uuid4()),
+                    "runId": task.run_id,
+                    "executionGeneration": 0,
+                    "kind": kind,
+                    "nodeId": "removed-node-id",
+                    "nodeVisitId": "visit-removed",
+                    "attempt": 1,
+                    "occurredAt": NOW.isoformat(),
+                    "payload": payload,
+                }
+            )
+    prefix = f"/api/v1/projects/{project.project_id}/tasks/{task.task_id}"
+    logs = client.get(f"{prefix}/logs").json()["items"]
+    outputs = client.get(f"{prefix}/outputs").json()["items"]
+
+    assert logs[-1]["nodeName"] == "未命名节点"
+    assert outputs[-1]["nodeName"] == "未命名节点"
     factory.dispose()
 
 
@@ -212,6 +245,7 @@ def test_lists_and_reads_a_project_scoped_screenshot_without_exposing_a_path(tmp
         "purpose": "error",
         "availability": "available",
         "nodeId": "open",
+        "nodeName": "打开网页",
         "nodeVisitId": "visit-artifact",
         "eventSequence": 6,
         "executionGeneration": 0,

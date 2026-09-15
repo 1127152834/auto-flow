@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+import re
 from datetime import UTC, datetime
 from typing import Any, get_args
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import String, cast, exists, func, or_, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.project_runs.models import (
@@ -18,25 +18,22 @@ from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
+    ProjectTaskInputSnapshotRow,
     ProjectTaskRow,
 )
-from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns
+from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns, aware
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
-from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+from autoflow.infrastructure.database.workflow_runtime_models import (
+    WorkflowRunEventRow,
+    WorkflowRunRow,
+)
+
+from .presentation import prepared_node_names
 
 BATCH_STATUSES = frozenset(get_args(BatchStatus))
 RUN_STATUSES = frozenset(get_args(CoreRunStatus))
-NODE_TYPE_NAMES = {
-    "open_page": "打开页面",
-    "input_text": "输入文本",
-    "click_element": "点击元素",
-    "get_element_info": "读取页面",
-    "wait": "等待",
-    "start": "开始",
-    "end": "结束",
-}
 
 
 class ProjectRunQueries:
@@ -74,7 +71,9 @@ class ProjectRunQueries:
                             query_text.lower(), autoescape=True
                         ),
                         func.lower(
-                            ProjectBatchRow.frozen_request["automation"]["name"].as_string()
+                            ProjectBatchRow.frozen_request["automation"][
+                                "name"
+                            ].as_string()
                         ).contains(query_text.lower(), autoescape=True),
                     )
                 )
@@ -148,11 +147,23 @@ class ProjectRunQueries:
             query = (
                 select(ProjectTaskRow)
                 .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
+                .join(ProjectBatchRow, ProjectBatchRow.id == ProjectTaskRow.batch_id)
+                .join(
+                    ProjectTaskInputSnapshotRow,
+                    ProjectTaskInputSnapshotRow.task_id == ProjectTaskRow.id,
+                )
                 .where(ProjectTaskRow.project_id == project_id)
             )
             if batch_id:
                 query = query.where(ProjectTaskRow.batch_id == batch_id)
             if query_text:
+                display_ordinal = _task_ordinal(query_text)
+                parameter_values = func.json_each(
+                    ProjectTaskInputSnapshotRow.parameters
+                ).table_valued("key", "value")
+                input_values = func.json_tree(
+                    ProjectTaskInputSnapshotRow.inputs
+                ).table_valued("key", "value", "type")
                 query = query.where(
                     or_(
                         func.lower(ProjectTaskRow.id).contains(
@@ -164,12 +175,41 @@ class ProjectRunQueries:
                         func.lower(ProjectTaskRow.run_id).contains(
                             query_text.lower(), autoescape=True
                         ),
+                        func.lower(
+                            ProjectBatchRow.frozen_request["automation"][
+                                "name"
+                            ].as_string()
+                        ).contains(query_text.lower(), autoescape=True),
+                        exists(
+                            select(1)
+                            .select_from(parameter_values)
+                            .where(
+                                func.lower(
+                                    cast(parameter_values.c.value, String)
+                                ).contains(query_text.lower(), autoescape=True)
+                            )
+                        ),
+                        exists(
+                            select(1)
+                            .select_from(input_values)
+                            .where(
+                                input_values.c.type.in_(
+                                    ("text", "integer", "real", "true", "false", "null")
+                                ),
+                                func.lower(cast(input_values.c.value, String)).contains(
+                                    query_text.lower(), autoescape=True
+                                ),
+                            )
+                        ),
+                        *(
+                            [ProjectTaskRow.ordinal == display_ordinal]
+                            if display_ordinal is not None
+                            else []
+                        ),
                     )
                 )
             if automation_id:
-                query = query.join(ProjectBatchRow).where(
-                    ProjectBatchRow.automation_id == automation_id
-                )
+                query = query.where(ProjectBatchRow.automation_id == automation_id)
             if status:
                 query = query.where(WorkflowRunRow.status == status)
             if ended_from:
@@ -180,7 +220,7 @@ class ProjectRunQueries:
             total = (
                 session.scalar(select(func.count()).select_from(query.subquery())) or 0
             )
-            rows = session.scalars(
+            task_rows = session.scalars(
                 query.order_by(
                     column.desc() if descending else column.asc(),
                     ProjectTaskRow.id.desc() if descending else ProjectTaskRow.id.asc(),
@@ -189,9 +229,66 @@ class ProjectRunQueries:
                 .limit(page_size)
             ).all()
             repository = SqlAlchemyProjectRuns(session)
-            return [
-                task_to_dict(repository.task(project_id, row.id)) for row in rows
-            ], total
+            run_ids = [row.run_id for row in task_rows]
+            latest_nodes: dict[str, str] = {}
+            if run_ids:
+                events = session.scalars(
+                    select(WorkflowRunEventRow)
+                    .where(
+                        WorkflowRunEventRow.run_id.in_(run_ids),
+                        WorkflowRunEventRow.kind == "nodeAttempt",
+                    )
+                    .order_by(
+                        WorkflowRunEventRow.run_id,
+                        WorkflowRunEventRow.sequence.desc(),
+                    )
+                ).all()
+                for event in events:
+                    if (
+                        event.run_id not in latest_nodes
+                        and event.node_id
+                        and event.payload.get("status") in {"succeeded", "failed"}
+                    ):
+                        latest_nodes[event.run_id] = event.node_id
+            node_names: dict[str, dict[str, str]] = {}
+            items: list[dict[str, Any]] = []
+            for row in task_rows:
+                task = repository.task(project_id, row.id)
+                snapshot = session.get(
+                    ProjectTaskInputSnapshotRow, task.input_snapshot_id
+                )
+                if snapshot is None:
+                    raise ProjectRunError(
+                        "RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409
+                    )
+                batch = repository.batch_row(project_id, row.batch_id)
+                run = SqlAlchemyWorkflowRuntimeRepository(session).get_run(
+                    run_id=row.run_id
+                )
+                item = task_to_dict(task)
+                item.update(
+                    {
+                        "automationName": batch.frozen_request["automation"]["name"],
+                        "batchStartedAt": aware(batch.created_at),
+                        "inputIdentifier": _input_identifier(snapshot.inputs),
+                        "endNodeName": None,
+                    }
+                )
+                node_id = latest_nodes.get(row.run_id)
+                if node_id and run is not None:
+                    names = node_names.get(run.prepared_content_id)
+                    if names is None:
+                        names = prepared_node_names(
+                            SqlAlchemyWorkflowRuntimeRepository(
+                                session
+                            ).get_prepared_content(
+                                prepared_content_id=run.prepared_content_id
+                            )
+                        )
+                        node_names[run.prepared_content_id] = names
+                    item["endNodeName"] = names.get(node_id, "未命名节点")
+                items.append(item)
+            return items, total
 
     def task_detail(self, project_id: str, task_id: str) -> dict[str, Any]:
         with self._factory() as session:
@@ -211,8 +308,11 @@ class ProjectRunQueries:
                 "task": task_to_dict(task),
                 "inputSnapshot": snapshot_to_dict(snapshot),
                 "automationName": batch.frozen_request["automation"]["name"],
-                "parameterDefinitions": batch.frozen_request["automation"]["parameterSchema"],
-                "nodeNames": _node_names(
+                "batchStartedAt": aware(batch.created_at),
+                "parameterDefinitions": batch.frozen_request["automation"][
+                    "parameterSchema"
+                ],
+                "nodeNames": prepared_node_names(
                     SqlAlchemyWorkflowRuntimeRepository(session).get_prepared_content(
                         prepared_content_id=run.prepared_content_id
                     )
@@ -221,24 +321,15 @@ class ProjectRunQueries:
             }
 
 
-def _node_names(prepared: Any | None) -> dict[str, str]:
-    if prepared is None:
-        return {}
-    result: dict[str, str] = {}
-    for item in prepared.execution_plan.get("nodes", ()):
-        if not isinstance(item, Mapping):
-            continue
-        node_id, data = item.get("nodeId"), item.get("data")
-        if not isinstance(node_id, str) or not isinstance(data, Mapping):
-            continue
-        configured = data.get("name") or data.get("label")
-        label = (
-            configured.strip()
-            if isinstance(configured, str) and configured.strip()
-            else NODE_TYPE_NAMES.get(str(data.get("moduleType")), "步骤")
-        )
-        result[node_id] = label
-    return result
+def _input_identifier(inputs: list[dict[str, Any]]) -> str:
+    if not inputs:
+        return "参数任务"
+    first = inputs[0]
+    for key in ("alias", "name"):
+        value = first.get(key)
+        if isinstance(value, (str, int)) and not isinstance(value, bool):
+            return str(value)
+    return "项目数据输入" if len(inputs) == 1 else f"{len(inputs)} 项项目数据输入"
 
 
 def _project(session: Session, project_id: str) -> None:
@@ -269,6 +360,11 @@ def _query(value: str | None) -> str | None:
             {"fields": {"q": "最多 120 个字符"}, "retryable": False},
         )
     return normalized or None
+
+
+def _task_ordinal(value: str) -> int | None:
+    match = re.fullmatch(r"(?:任务\s*|[Tt]0*)?([1-9][0-9]*)", value)
+    return int(match.group(1)) - 1 if match else None
 
 
 def _page(page: int, page_size: int) -> None:

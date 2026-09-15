@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -49,6 +50,38 @@ def manager(tmp_path: Path, mode: str = "normal"):
         start_timeout=2, termination_timeout=.1,
     )
     return instance, executable
+
+
+def test_discard_uncommitted_artifact_only_removes_the_exact_owned_file(tmp_path):
+    instance, _ = manager(tmp_path)
+    run_id = "a088a638-5afb-4b4b-8d83-45410a3cab42"
+    artifact_id = "b088a638-5afb-4b4b-8d83-45410a3cab42"
+    directory = tmp_path / "workspace" / "runs" / run_id / "generation-1"
+    directory.mkdir(parents=True)
+    artifact = directory / f"{artifact_id}.png"
+    artifact.write_bytes(b"png")
+    instance._worker = SimpleNamespace(  # type: ignore[assignment]
+        run_id=run_id,
+        generation=1,
+        artifact_directory=directory,
+        relative_artifact_directory=f"runs/{run_id}/generation-1",
+    )
+
+    instance.discard_uncommitted_artifact(
+        run_id,
+        1,
+        artifact_id,
+        f"runs/{run_id}/generation-1/not-the-artifact.png",
+    )
+    assert artifact.exists()
+
+    instance.discard_uncommitted_artifact(
+        run_id,
+        1,
+        artifact_id,
+        f"runs/{run_id}/generation-1/{artifact_id}.png",
+    )
+    assert not artifact.exists()
 
 
 def start(instance, executable, on_event):
