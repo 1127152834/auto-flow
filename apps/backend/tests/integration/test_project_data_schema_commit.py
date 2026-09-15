@@ -7,6 +7,7 @@ from sqlalchemy import event, select
 
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.schema import DataSchemaService
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_data_catalog import (
@@ -78,7 +79,7 @@ def _active_schema_context(tmp_path):
     )
 
 
-def _start_active_task(project_id, automation, coordinator):
+def _start_active_task(factory, project_id, automation, coordinator):
     batch = coordinator.start(
         project_id,
         automation.automation_id,
@@ -90,6 +91,10 @@ def _start_active_task(project_id, automation, coordinator):
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     return coordinator.list_tasks(project_id, batch.batch_id)[0]
 
 
@@ -99,7 +104,7 @@ def test_schema_preview_blocks_structural_active_task_dependency_but_allows_labe
     service, factory, project, automation, coordinator, table_id, field, draft = (
         _active_schema_context(tmp_path)
     )
-    task = _start_active_task(project, automation, coordinator)
+    task = _start_active_task(factory, project, automation, coordinator)
     structural = deepcopy(draft)
     structural["fields"][0]["definition"]["required"] = False
 
@@ -132,7 +137,7 @@ def test_schema_commit_preserves_blockers_from_the_confirmed_preview(tmp_path):
     service, factory, project, automation, coordinator, table_id, field, draft = (
         _active_schema_context(tmp_path)
     )
-    task = _start_active_task(project, automation, coordinator)
+    task = _start_active_task(factory, project, automation, coordinator)
     draft["fields"][0]["definition"]["required"] = False
     report = service.preview(project, table_id, draft)
 
@@ -167,7 +172,7 @@ def test_schema_commit_rechecks_task_started_after_preview_and_changes_nothing(
     draft["fields"][0]["definition"]["required"] = False
     report = service.preview(project, table_id, draft)
     assert not report["blockers"]
-    task = _start_active_task(project, automation, coordinator)
+    task = _start_active_task(factory, project, automation, coordinator)
 
     with pytest.raises(ProjectError) as caught:
         service.commit(

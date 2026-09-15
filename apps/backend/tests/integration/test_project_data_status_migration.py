@@ -56,7 +56,7 @@ def test_status_upgrade_preserves_records_and_enforces_active_names(tmp_path, ex
         connection.execute("PRAGMA foreign_keys=ON")
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm05_project_claims",)
+        ).fetchone() == ("pm06_project_capability_reads",)
         assert (
             connection.execute(
                 "SELECT * FROM project_data_records ORDER BY key_value"
@@ -152,4 +152,4 @@ def test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status(
         ).fetchall() == [(1,)]
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm05_project_claims",)
+        ).fetchone() == ("pm06_project_capability_reads",)

@@ -9,6 +9,7 @@ from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.records import DataRecordService
 from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.project_runs.queries import ProjectRunQueries
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.domain.project_data.capabilities import (
     AddProjectFieldCommand,
     CreateProjectRecordCommand,
@@ -93,6 +94,10 @@ def test_fake_capability_changes_email_status_and_creates_account_once(tmp_path)
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     snapshot = coordinator.get_snapshot(project_id, task.task_id)
     email = snapshot.inputs[1]
@@ -263,6 +268,10 @@ def test_old_execution_generation_is_rejected_before_any_write(tmp_path):
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     snapshot = coordinator.get_snapshot(project_id, task.task_id)
     with factory.begin() as session:
@@ -379,6 +388,10 @@ def test_query_then_dynamic_write_advances_task_cursor_and_stale_write_conflicts
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     with factory.begin() as session:
         run = session.get(WorkflowRunRow, task.run_id)

@@ -7,6 +7,7 @@ from autoflow.application.project_data.capabilities import ProjectDataCapability
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.records import DataRecordService
 from autoflow.application.project_data.tables import DataTableService
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.domain.project_data.capabilities import (
     AddProjectFieldCommand,
     ModifyProjectFieldCommand,
@@ -92,6 +93,10 @@ def capability_context(tmp_path):
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     with factory.begin() as session:
         run = session.get(WorkflowRunRow, task.run_id)

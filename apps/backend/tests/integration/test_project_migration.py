@@ -14,7 +14,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
     database = tmp_path / "projects.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm05_project_claims"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm06_project_capability_reads"]
     preserved = {}
     if existing:
         command.upgrade(config, "0005_workflow_documents")
@@ -48,7 +48,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("pm05_project_claims",)]
+        ).fetchall() == [("pm06_project_capability_reads",)]
         assert connection.execute("SELECT * FROM projects").fetchall() == []
         assert connection.execute("SELECT * FROM project_operations").fetchall() == []
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from autoflow.application.project_data.capabilities import ProjectDataCapabilityService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.tables import DataTableService
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.domain.project_data import capabilities as capability_domain
 from autoflow.domain.project_data.capabilities import (
     CreateProjectRecordCommand,
@@ -802,6 +803,10 @@ def test_database_scope_rejects_non_running_run_even_at_current_generation(
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     with factory.begin() as session:
         run = session.get(WorkflowRunRow, task.run_id)
@@ -839,6 +844,10 @@ def test_database_write_rechecks_run_status_after_scope_was_granted(
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     snapshot = coordinator.get_snapshot(project_id, task.task_id)
     with factory.begin() as session:
@@ -922,6 +931,10 @@ def test_capability_create_uses_field_identity_and_preserves_identity_errors(
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     with factory.begin() as session:
         run = session.get(WorkflowRunRow, task.run_id)

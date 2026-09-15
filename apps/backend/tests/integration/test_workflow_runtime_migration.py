@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "pm05_project_claims"
+EXPECTED_HEAD = "pm06_project_capability_reads"
 
 
 def _config(path: Path) -> Config:

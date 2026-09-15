@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 from autoflow.application.project_runs.queries import _data_writes
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.project_data_models import DataChangeRow
 from autoflow.infrastructure.database.project_run_models import (
@@ -23,6 +24,10 @@ def test_task_projection_uses_confirmed_operation_result_for_field_facts(tmp_pat
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     snapshot = coordinator.get_snapshot(project_id, task.task_id)
     record = snapshot.inputs[0]
