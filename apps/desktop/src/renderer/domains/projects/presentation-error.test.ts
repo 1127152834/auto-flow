@@ -24,3 +24,14 @@ it('keeps unknown operation results distinct from confirmed failures', () => {
 it('preserves uncertain project saves as a recovery action without raw diagnostics', () => {
   expect(safeProjectError(new ProjectCommandUncertain(new Error(id)))).toBe('上次保存结果尚未确认，请核对保存结果')
 })
+
+it.each([
+  ['PROFILE_REQUIRED', '请选择浏览器配置'],
+  ['PROXY_UNAVAILABLE', '固定代理暂不可用，请检查代理配置'],
+  ['PROXY_POOL_NOT_FOUND', '代理池暂不可用，请重新选择'],
+  ['MODEL_PROVIDER_NOT_FOUND', '模型提供方暂不可用，请重新选择'],
+  ['MODEL_PROVIDER_DISABLED', '模型提供方未启用，请检查配置'],
+  ['WORKFLOW_UNAVAILABLE', '暂时无法检查工作流，请稍后重试'],
+])('presents the actual automation validation code %s without resource identifiers', (code, message) => {
+  expect(safeProjectError({ code, message: id, resource: { resourceId: id } })).toBe(message)
+})

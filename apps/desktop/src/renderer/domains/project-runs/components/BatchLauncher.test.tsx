@@ -29,9 +29,10 @@ it('preserves saved resource references in the temporary environment override an
 })
 it('shows validation issue reasons and does not label an ordinary rejection as damaged recovery data', async () => {
   const request = vi.fn().mockRejectedValue(new ApiClientError('参数冲突', 422, 'VALIDATION_FAILED')) as StreamingApiClient['request']
-  const p = props(request, { validation: { status: 'blocked', valid: true, runnable: false, issues: [{ code: 'RESOURCE_MISSING', message: '浏览器配置引用不可用', path: ['environmentPolicy', 'profileId'] }], capabilityRequirements: [], checkedAt: '' } })
+  const p = props(request, { validation: { status: 'blocked', valid: true, runnable: false, issues: [{ code: 'PROFILE_NOT_FOUND', message: 'profile 123e4567-e89b-42d3-a456-426614174000 is unavailable', path: ['environmentPolicy', 'profileId'] }], capabilityRequirements: [], checkedAt: '' } })
   const view = render(<BatchLauncher {...p}/>)
-  expect(screen.getByText('浏览器配置引用不可用')).toBeVisible()
+  expect(screen.getByText('浏览器配置暂不可用，请重新选择')).toBeVisible()
+  expect(document.body.textContent).not.toContain('123e4567-e89b-42d3-a456-426614174000')
   view.rerender(<BatchLauncher {...p} validation={{ status: 'ready', valid: true, runnable: true, issues: [], capabilityRequirements: [], checkedAt: '' }}/>)
   fireEvent.click(screen.getByRole('button', { name: '启动 10 个任务' }))
   await waitFor(() => expect(screen.getAllByRole('alert').some(item => item.textContent?.includes('输入内容不符合要求'))).toBe(true))
