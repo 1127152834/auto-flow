@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:28217) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28218) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28219) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28220) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·······································································(node:28735) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+····································(node:28738) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·····(node:28739) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·······················································stderr | src/renderer/domains/workflows/tests/gesture-tool-entry.test.tsx > TOOL.gesture-dialogs.error: service rejection is visible and leaves the draft unchanged
+录制手势失败: Error: 摄像头不可用
+    at handleStartRecording (/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1648:15)
+
+·····································································································································································································································
+
+ Test Files  7 passed (7)
+      Tests  396 passed (396)
+   Start at  13:14:16
+   Duration  10.70s (transform 5.09s, setup 749ms, import 8.19s, tests 14.65s, environment 3.21s)
+

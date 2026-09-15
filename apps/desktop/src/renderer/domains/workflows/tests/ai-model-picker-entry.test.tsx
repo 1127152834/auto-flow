@@ -34,7 +34,11 @@ async function choose(label:RegExp){
  fireEvent.keyDown(picker(),{key:'ArrowDown'})
  fireEvent.click(await screen.findByRole('option',{name:label}))
 }
-it.each(['ai_chat','ai_vision','ai_vision_act','ai_route'] as const)('NODE.%s.model-picker.entry: writes the chosen profile only to this node and preserves it on document reopen',async type=>{
+it.each([
+ 'ai_chat','ai_vision','ai_vision_act',
+ 'ai_extract','ai_classify','ai_summarize','ai_translate',
+ 'ai_sentiment','ai_normalize','ai_dedup_semantic','ai_route',
+] as const)('NODE.%s.model-picker.entry: writes the chosen profile only to this node and preserves it on document reopen',async type=>{
  const id=create(type)
  store.getState().addNode(type,{x:400,y:240})
  const other=store.getState().nodes.find(node=>node.data.moduleType===type&&node.id!==id)!
