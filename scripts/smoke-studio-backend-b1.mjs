@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { basename, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
@@ -30,7 +30,7 @@ await mkdir(join(userData, 'data', 'kernels'), { recursive: true })
 execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basename(sourceKernel))])
 
 try {
-  desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`, '--inspect=0'], cliArgs: [] })
+  desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`, '--inspect=0'] })
   main = desktop.cdp
   native = await connectCdp(desktop.inspectorUrl)
   await native.evaluate("globalThis.qaElectron=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');true")
@@ -59,6 +59,10 @@ try {
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   checkpoint('主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile')
+
+  await click(studio, '新建')
+  await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 0", 'new empty workflow')
+  checkpoint('通过正式新建入口创建空工作流')
 
   await setInput(studio, 'input[placeholder="工作流名称"]', 'B1 五节点正式闭环')
   const modules = [
@@ -137,12 +141,16 @@ try {
   assert.deepEqual(leaked, [])
   checkpoint('运行终态后 CloakBrowser 进程树和临时会话均已清理')
 
+  const packageBoundary = desktop.packaged ? await verifyPackageBoundary() : null
+  if (packageBoundary) checkpoint('目录包未携带冻结源码路径、Mock 服务或 Vite 开发地址')
+
   await capture(studio, join(evidenceDir, 'completed.png'))
   const report = {
     evidenceId: 'BE-B1-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
     buildSha256: await buildHash(), workflowId: saved.id, profileId: profile.id, runId,
     result: 'passed', checks, platform: `${process.platform}-${process.arch}`,
+    entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary,
     boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse, keyboard and window close; no Store access' },
   }
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
@@ -323,4 +331,29 @@ async function buildHash() {
     hash.update(file).update(await readFile(join(root, 'apps/desktop/out', file)))
   }
   return hash.digest('hex')
+}
+
+async function verifyPackageBoundary() {
+  const executableIndex = process.argv.indexOf('--executable')
+  assert.notEqual(executableIndex, -1)
+  const executable = resolve(process.argv[executableIndex + 1])
+  const resources = resolve(dirname(executable), '../Resources')
+  const extractDir = await mkdtemp(join(tmpdir(), 'autoflow-b1-asar-'))
+  const needles = ['reference/WebRPA', '127.0.0.1:5175', 'StudioMockTools', 'api/mock-server']
+  try {
+    execFileSync(join(root, 'node_modules/.bin/asar'), ['extract', join(resources, 'app.asar'), extractDir])
+    const hits = []
+    for (const base of [extractDir, join(resources, 'backend')]) {
+      for (const file of await readdir(base, { recursive: true })) {
+        const path = join(base, file)
+        let data
+        try { data = await readFile(path) } catch { continue }
+        for (const needle of needles) if (data.includes(Buffer.from(needle))) hits.push({ file: path.slice(base.length + 1), needle })
+      }
+    }
+    assert.deepEqual(hits, [])
+    return { resources, forbiddenReferences: hits, scannedNeedles: needles }
+  } finally {
+    await rm(extractDir, { recursive: true, force: true })
+  }
 }
