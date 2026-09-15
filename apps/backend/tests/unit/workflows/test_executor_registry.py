@@ -87,32 +87,112 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "string_trim",
         "string_case",
         "string_substring",
+        "list_sum",
+        "list_average",
+        "list_max",
+        "list_min",
+        "list_sort",
+        "list_unique",
+        "list_slice",
+        "math_round",
+        "math_base_convert",
+        "math_floor",
+        "math_modulo",
+        "math_abs",
+        "math_sqrt",
+        "math_power",
+        "math_log",
+        "math_trig",
+        "math_exp",
+        "math_gcd",
+        "math_lcm",
+        "math_factorial",
+        "math_permutation",
+        "math_percentage",
+        "math_clamp",
+        "math_random_advanced",
+        "stat_median",
+        "stat_mode",
+        "stat_variance",
+        "stat_stdev",
+        "stat_percentile",
+        "stat_normalize",
+        "stat_standardize",
     }
 
 
 def test_runtime_reports_whether_a_document_needs_a_browser() -> None:
     runtime = WorkflowRuntime(build_production_executor_registry())
 
-    assert runtime.requires_browser(
+    assert (
+        runtime.requires_browser(
+            {
+                "nodes": [
+                    {
+                        "id": "open",
+                        "data": {"moduleType": "open_page", "config": {}},
+                    }
+                ]
+            }
+        )
+        is True
+    )
+    assert (
+        runtime.requires_browser(
+            {
+                "nodes": [
+                    {
+                        "id": "concat",
+                        "data": {"moduleType": "string_concat", "config": {}},
+                    }
+                ]
+            }
+        )
+        is False
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("module_type", "config"),
+    [
+        (
+            "math_sqrt",
+            {"numberValue": -8, "root": 3, "resultVariable": "result"},
+        ),
+        ("math_abs", {"numberValue": "NaN", "resultVariable": "result"}),
+    ],
+)
+async def test_runtime_rejects_results_that_cannot_cross_the_json_event_boundary(
+    module_type: str, config: dict[str, Any]
+) -> None:
+    events: list[dict[str, Any]] = []
+
+    class Sink:
+        async def publish(self, event: dict[str, Any]) -> None:
+            events.append(event)
+
+    result = await WorkflowRuntime(build_production_executor_registry()).execute(
         {
             "nodes": [
                 {
-                    "id": "open",
-                    "data": {"moduleType": "open_page", "config": {}},
+                    "id": "unsafe",
+                    "type": "moduleNode",
+                    "data": {"moduleType": module_type, "config": config},
                 }
-            ]
-        }
-    ) is True
-    assert runtime.requires_browser(
-        {
-            "nodes": [
-                {
-                    "id": "concat",
-                    "data": {"moduleType": "string_concat", "config": {}},
-                }
-            ]
-        }
-    ) is False
+            ],
+            "edges": [],
+            "variables": [],
+        },
+        ExecutionContext(events=Sink()),
+    )
+
+    assert result.success is False
+    assert result.failed_node_id == "unsafe"
+    assert result.node_result is not None
+    assert result.node_result.error == "节点结果包含无法序列化的数据"
+    assert events[-1]["success"] is False
+    assert events[-1]["data"] is None
 
 
 def test_lazy_registry_exposes_type_before_import_and_loads_once(
@@ -146,7 +226,11 @@ async def test_preflight_rejects_all_nodes_before_any_executor_is_called() -> No
         "name": "含未迁入节点",
         "nodes": [
             {"id": "open", "type": "moduleNode", "data": {"moduleType": "open_page"}},
-            {"id": "click", "type": "moduleNode", "data": {"moduleType": "click_element"}},
+            {
+                "id": "click",
+                "type": "moduleNode",
+                "data": {"moduleType": "click_element"},
+            },
         ],
         "edges": [{"id": "edge", "source": "open", "target": "click"}],
         "variables": [],
@@ -170,7 +254,9 @@ async def test_preflight_rejects_all_nodes_before_any_executor_is_called() -> No
 
 
 @pytest.mark.asyncio
-async def test_runtime_executes_linear_nodes_in_edge_order_and_stops_on_failure() -> None:
+async def test_runtime_executes_linear_nodes_in_edge_order_and_stops_on_failure() -> (
+    None
+):
     execution_order: list[str] = []
 
     def executor_for(module_type: str, succeeds: bool) -> type[ModuleExecutor]:
@@ -235,7 +321,10 @@ async def test_runtime_emits_one_execution_identity_per_node_dispatch() -> None:
                 {
                     "id": "open",
                     "type": "moduleNode",
-                    "data": {"moduleType": "open_page", "config": {"url": "about:blank"}},
+                    "data": {
+                        "moduleType": "open_page",
+                        "config": {"url": "about:blank"},
+                    },
                 }
             ],
             "edges": [],

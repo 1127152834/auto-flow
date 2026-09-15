@@ -423,3 +423,138 @@ async def test_workflow_worker_exports_list_and_emits_registered_artifact(
     snapshot = artifact_root / events[2]["relativePath"]
     assert target.read_text(encoding="utf-8") == "第一条\n第二条"
     assert snapshot.read_bytes() == target.read_bytes()
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_runs_math_and_statistics_without_browser(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("pure math workflow must not launch CloakBrowser")
+
+    monkeypatch.delenv("CLOAKBROWSER_BINARY_PATH", raising=False)
+    monkeypatch.delenv("CLOAKBROWSER_CACHE_DIR", raising=False)
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    module_configs = [
+        ("sum", "list_sum", {"listVariable": "numbers", "resultVariable": "sum"}),
+        (
+            "sort",
+            "list_sort",
+            {"listVariable": "numbers", "order": "desc", "resultVariable": "sorted"},
+        ),
+        (
+            "round",
+            "math_round",
+            {"numberValue": "{sum}", "decimals": 1, "resultVariable": "rounded"},
+        ),
+        (
+            "log",
+            "math_log",
+            {"value": "{rounded}", "base": "e", "resultVariable": "logarithm"},
+        ),
+        (
+            "median",
+            "stat_median",
+            {"listVariable": "numbers", "resultVariable": "median"},
+        ),
+    ]
+    command = {
+        "runId": "run-math",
+        "workflowId": "workflow-math",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": node_id,
+                    "type": "moduleNode",
+                    "data": {"moduleType": module_type, "config": config},
+                }
+                for node_id, module_type, config in module_configs
+            ],
+            "edges": [
+                {
+                    "id": f"edge-{index}",
+                    "source": module_configs[index][0],
+                    "target": module_configs[index + 1][0],
+                }
+                for index in range(len(module_configs) - 1)
+            ],
+            "variables": [{"name": "numbers", "value": [3, 1, 2]}],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    completions = [
+        event for event in events if event["type"] == "execution:node_complete"
+    ]
+    assert [event["nodeId"] for event in completions] == [
+        "sum",
+        "sort",
+        "round",
+        "log",
+        "median",
+    ]
+    assert completions[0]["data"] == 6
+    assert completions[1]["data"] == [3, 2, 1]
+    assert completions[2]["data"] == 6.0
+    assert completions[4]["data"] == 2.0
+    assert events[-1]["type"] == "execution:completed"
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_reports_non_json_math_result_as_node_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("pure math workflow must not launch CloakBrowser")
+
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    command = {
+        "runId": "run-unsafe-math",
+        "workflowId": "workflow-unsafe-math",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": "unsafe",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "math_sqrt",
+                        "config": {
+                            "numberValue": -8,
+                            "root": 3,
+                            "resultVariable": "result",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 2, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert events[-2]["type"] == "execution:node_complete"
+    assert events[-2]["success"] is False
+    assert events[-2]["data"] is None
+    assert events[-2]["error"] == "节点结果包含无法序列化的数据"
+    assert events[-1]["type"] == "execution:failed"
+    assert events[-1]["failedNodeId"] == "unsafe"

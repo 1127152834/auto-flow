@@ -81,7 +81,9 @@ def test_stop_identity_log_paging_and_static_run_route(
     assert missing.json()["error"]["code"] == "RUN_NOT_FOUND"
 
 
-def test_workflow_write_is_blocked_while_service_is_quiesced(client: TestClient) -> None:
+def test_workflow_write_is_blocked_while_service_is_quiesced(
+    client: TestClient,
+) -> None:
     client.app.state.settings_runtime.gate.pause(list)
     response = client.post(
         "/api/workflows", json={**_workflow(), "id": "quiesced-workflow"}
@@ -139,9 +141,7 @@ def test_real_run_coordinator_is_reached_through_http_and_stop_waits_for_cleanup
     monkeypatch.setattr(
         coordinator,
         "_installed_kernels",
-        lambda: [
-            InstalledKernel("public", profile["browserVersion"], executable, 6)
-        ],
+        lambda: [InstalledKernel("public", profile["browserVersion"], executable, 6)],
     )
     monkeypatch.setattr(coordinator, "_resolve_proxy", _no_proxy)
 
@@ -336,6 +336,37 @@ def test_pure_data_family_runs_through_http_without_browser_requirement(
         "string_trim",
         "string_case",
         "string_substring",
+        "list_sum",
+        "list_average",
+        "list_max",
+        "list_min",
+        "list_sort",
+        "list_unique",
+        "list_slice",
+        "math_round",
+        "math_base_convert",
+        "math_floor",
+        "math_modulo",
+        "math_abs",
+        "math_sqrt",
+        "math_power",
+        "math_log",
+        "math_trig",
+        "math_exp",
+        "math_gcd",
+        "math_lcm",
+        "math_factorial",
+        "math_permutation",
+        "math_percentage",
+        "math_clamp",
+        "math_random_advanced",
+        "stat_median",
+        "stat_mode",
+        "stat_variance",
+        "stat_stdev",
+        "stat_percentile",
+        "stat_normalize",
+        "stat_standardize",
     ]
     workflow_payload = {
         **_workflow(),
@@ -473,9 +504,7 @@ def test_execute_accepts_an_unsaved_document_snapshot_without_creating_a_workflo
     monkeypatch.setattr(
         coordinator,
         "_installed_kernels",
-        lambda: [
-            InstalledKernel("public", profile["browserVersion"], executable, 6)
-        ],
+        lambda: [InstalledKernel("public", profile["browserVersion"], executable, 6)],
     )
     monkeypatch.setattr(coordinator, "_resolve_proxy", _no_proxy)
 

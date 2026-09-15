@@ -25,8 +25,45 @@ from .data_structure import (
     StringSubstringExecutor,
     StringTrimExecutor,
 )
+from .math_advanced import (
+    MathClampExecutor,
+    MathExpExecutor,
+    MathFactorialExecutor,
+    MathGcdExecutor,
+    MathLcmExecutor,
+    MathLogExecutor,
+    MathPercentageExecutor,
+    MathPermutationExecutor,
+    MathRandomAdvancedExecutor,
+    MathTrigExecutor,
+)
+from .math_list_ops import (
+    ListAverageExecutor,
+    ListMaxExecutor,
+    ListMinExecutor,
+    ListSliceExecutor,
+    ListSortExecutor,
+    ListSumExecutor,
+    ListUniqueExecutor,
+    MathAbsExecutor,
+    MathBaseConvertExecutor,
+    MathFloorExecutor,
+    MathModuloExecutor,
+    MathPowerExecutor,
+    MathRoundExecutor,
+    MathSqrtExecutor,
+)
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .registry import ExecutorRegistry
+from .statistics import (
+    MedianExecutor,
+    ModeExecutor,
+    NormalizeExecutor,
+    PercentileExecutor,
+    StandardizeExecutor,
+    StdevExecutor,
+    VarianceExecutor,
+)
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     OpenPageExecutor,
@@ -51,6 +88,37 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     StringTrimExecutor,
     StringCaseExecutor,
     StringSubstringExecutor,
+    ListSumExecutor,
+    ListAverageExecutor,
+    ListMaxExecutor,
+    ListMinExecutor,
+    ListSortExecutor,
+    ListUniqueExecutor,
+    ListSliceExecutor,
+    MathRoundExecutor,
+    MathBaseConvertExecutor,
+    MathFloorExecutor,
+    MathModuloExecutor,
+    MathAbsExecutor,
+    MathSqrtExecutor,
+    MathPowerExecutor,
+    MathLogExecutor,
+    MathTrigExecutor,
+    MathExpExecutor,
+    MathGcdExecutor,
+    MathLcmExecutor,
+    MathFactorialExecutor,
+    MathPermutationExecutor,
+    MathPercentageExecutor,
+    MathClampExecutor,
+    MathRandomAdvancedExecutor,
+    MedianExecutor,
+    ModeExecutor,
+    VarianceExecutor,
+    StdevExecutor,
+    PercentileExecutor,
+    NormalizeExecutor,
+    StandardizeExecutor,
 )
 
 

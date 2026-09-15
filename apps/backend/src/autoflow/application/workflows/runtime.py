@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from collections import deque
 from collections.abc import Coroutine, Mapping
 from dataclasses import dataclass
@@ -116,8 +117,17 @@ class WorkflowRuntime:
                 },
             )
             raw_config = node.data.get("config")
-            config = dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
-            result = await _execute_with_cancellation(executor.execute(config, context), context)
+            config = (
+                dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
+            )
+            result = await _execute_with_cancellation(
+                executor.execute(config, context), context
+            )
+            if not _is_json_value(result.data):
+                result = ModuleResult(
+                    success=False,
+                    error="节点结果包含无法序列化的数据",
+                )
             executed.append(node_id)
             await _publish(
                 context,
@@ -144,6 +154,14 @@ class WorkflowRuntime:
                 else graph.get_next_nodes(node_id)
             )
         return WorkflowRuntimeResult(True, tuple(executed))
+
+
+def _is_json_value(value: Any) -> bool:
+    try:
+        json.dumps(value, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError):
+        return False
+    return True
 
 
 async def _publish(context: ExecutionContext, event: dict[str, Any]) -> None:

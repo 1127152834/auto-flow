@@ -42,7 +42,11 @@ async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
         return await _run_in_session(command, stopped, stdout, None)
     executable = Path(_required_environment("CLOAKBROWSER_BINARY_PATH"))
     cache = Path(_required_environment("CLOAKBROWSER_CACHE_DIR"))
-    if not executable.is_absolute() or not executable.is_file() or not cache.is_absolute():
+    if (
+        not executable.is_absolute()
+        or not executable.is_file()
+        or not cache.is_absolute()
+    ):
         raise ValueError("workflow worker paths are invalid")
     async with launch_workflow_session(command) as browser:
         return await _run_in_session(command, stopped, stdout, browser)
@@ -115,7 +119,7 @@ class _ThreadCancellation:
 
     def raise_if_cancelled(self) -> None:
         if self.cancelled:
-            raise RuntimeError("workflow execution stopped")
+            raise asyncio.CancelledError
 
 
 class _WorkerArtifactRepository:
@@ -231,9 +235,7 @@ def _initial_variables(document: dict[str, Any]) -> dict[str, Any]:
     return {
         item["name"]: item.get("value")
         for item in variables
-        if isinstance(item, dict)
-        and isinstance(item.get("name"), str)
-        and item["name"]
+        if isinstance(item, dict) and isinstance(item.get("name"), str) and item["name"]
     }
 
 
