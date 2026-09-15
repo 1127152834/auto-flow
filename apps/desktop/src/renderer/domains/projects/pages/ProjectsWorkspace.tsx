@@ -5,6 +5,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '../../../shared/components/ui/button'
 import { notify, Toaster } from '../../../shared/components/Toaster'
 import { createProjectsApi, isDefinitiveProjectFailure } from '../api'
+import { safeProjectError } from '../presentation-error'
 import { toProjectCreate, toProjectPatch, type ProjectFormValues } from '../form-schema'
 import { projectKeys, useProject, useProjectDirectory, useProjectOverview } from '../hooks'
 import type { ProjectCreate, ProjectListConditions, ProjectPatch, ProjectRoute, ProjectSummary, ProjectView } from '../types'
@@ -192,7 +193,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     let result
     try { result = await api.open(project.projectId) }
     catch (error) {
-      if (mounted.current && ticket === openTicket.current && `${scope.current.workspaceKey}:${scope.current.instanceId}` === captured) setOpenError({ project, message: error instanceof Error ? error.message : '打开项目失败' })
+      if (mounted.current && ticket === openTicket.current && `${scope.current.workspaceKey}:${scope.current.instanceId}` === captured) setOpenError({ project, message: safeProjectError(error) })
       return
     }
     if (!mounted.current || ticket !== openTicket.current || `${scope.current.workspaceKey}:${scope.current.instanceId}` !== captured) return
@@ -207,7 +208,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   return <>
     <Toaster />
     {route.projectId && route.tab === 'overview' && overview.isPending ? <p role="status" className="mx-auto max-w-7xl px-6 text-sm text-muted">正在加载概览…</p> : null}
-    {route.projectId && route.tab === 'overview' && overview.isError ? <div role="alert" className="mx-auto flex max-w-7xl items-center gap-3 px-6 pt-4 text-sm text-danger"><span>{overview.error.message}</span><Button size="sm" disabled={overview.isFetching} onClick={() => void overview.refetch()}>重试概览</Button></div> : null}
+    {route.projectId && route.tab === 'overview' && overview.isError ? <div role="alert" className="mx-auto flex max-w-7xl items-center gap-3 px-6 pt-4 text-sm text-danger"><span>{safeProjectError(overview.error)}</span><Button size="sm" disabled={overview.isFetching} onClick={() => void overview.refetch()}>重试概览</Button></div> : null}
     {openError ? <div className="fixed bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 shadow-lg" role="alert"><span>{openError.message}</span><Button size="sm" onClick={() => void openProject(openError.project)}>重试</Button></div> : null}
     {route.projectId && project ? <ProjectOverviewPage detailContext={route.automationId || route.automationCreate ? { name: route.automationCreate ? '新建自动化' : automationContext.data?.name ?? '自动化配置', label: '返回自动化目录', onBack: () => onNavigate({ projectId: project.projectId, tab: 'automations' }) } : undefined} tableBackLabel={route.record ? "返回记录列表" : "返回数据表"} onTableBack={() => onNavigate({ projectId: project.projectId, tab: "data", ...(route.record ? { tableId: route.tableId, dataTab: "records" } : {}) })} tableName={tableContext.data?.name} tableDetail={Boolean(route.tableId)} project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
       {route.tab === 'automations' ? route.automationId || route.automationCreate

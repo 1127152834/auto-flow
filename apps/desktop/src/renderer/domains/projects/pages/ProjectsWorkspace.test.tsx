@@ -168,7 +168,7 @@ it('corrects a restored page when the current result set has shrunk', async () =
 it('shows overview failure with retry while retaining real project details', async () => {
   const request = vi.fn((path: string) => path.endsWith('/overview') ? Promise.reject(new Error('概览连接失败')) : Promise.resolve(path.includes('?') ? { items: [a], page: 1, pageSize: 50, total: 1, sort: '-lastOpenedAt' } : a))
   mount(request as StreamingApiClient['request'], { route: { projectId: a.projectId, tab: 'overview' } })
-  expect(await screen.findByRole('alert')).toHaveTextContent('概览连接失败')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByRole('button', { name: '重试概览' })).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: '项目资料' })).toBeInTheDocument()
 })
