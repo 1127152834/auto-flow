@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowWorkerBusy,
     WorkflowWorkerManager,
@@ -23,6 +24,31 @@ print(json.dumps({'type':'ready','runId':command['runId'],'profileId':command['p
 print(json.dumps({'type':'event','seq':1,'name':'worker_ready'}), flush=True)
 sys.stdin.read()
 time.sleep(300)
+""",
+        encoding="utf-8",
+    )
+    return (sys.executable, str(script))
+
+
+def _crashing_worker(tmp_path: Path) -> tuple[str, ...]:
+    script = tmp_path / "crashing-workflow-worker.py"
+    script.write_text(
+        """
+import json, os, subprocess, sys, time
+command = json.loads(sys.stdin.readline())
+child = subprocess.Popen(
+    [
+        sys.executable,
+        '-c',
+        'import time; time.sleep(300)',
+        os.environ['CLOAKBROWSER_CACHE_DIR'],
+    ],
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
+)
+print(json.dumps({'type':'ready','runId':command['runId'],'profileId':command['profileId'],'childPid':child.pid}), flush=True)
+time.sleep(0.05)
+sys.exit(17)
 """,
         encoding="utf-8",
     )
@@ -225,3 +251,47 @@ async def test_worker_exit_callback_runs_after_process_and_temp_cleanup(
     await manager.stop("run-exit")
 
     assert observed == [("run-exit", -15, False, False)]
+
+
+@pytest.mark.asyncio
+async def test_worker_crash_cleans_descendants_before_reporting_nonzero_exit(
+    tmp_path: Path,
+) -> None:
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"test binary identity")
+    exited = asyncio.Event()
+    observed: list[tuple[str, int, bool, bool]] = []
+    manager: WorkflowWorkerManager
+
+    async def on_exit(run_id: str, return_code: int) -> None:
+        observed.append(
+            (
+                run_id,
+                return_code,
+                manager.busy(),
+                any((tmp_path / "workflow-worker").rglob(run_id)),
+            )
+        )
+        exited.set()
+
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        command=_crashing_worker(tmp_path),
+        termination_timeout=0.2,
+        on_exit=on_exit,
+    )
+    session = await manager.start(
+        "run-crash",
+        "profile-1",
+        executable,
+        {"runId": "run-crash", "profileId": "profile-1"},
+    )
+
+    await asyncio.wait_for(exited.wait(), timeout=5)
+
+    assert observed == [("run-crash", 17, False, False)]
+    assert manager.active_processes() == []
+    assert manager.busy() is False
+    if session.child_pid is not None:
+        with pytest.raises(ProcessLookupError):
+            os.kill(session.child_pid, 0)

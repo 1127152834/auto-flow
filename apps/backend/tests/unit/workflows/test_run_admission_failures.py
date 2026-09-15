@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
@@ -320,3 +321,42 @@ async def test_start_failure_releases_resources_and_does_not_leave_a_starting_ru
     assert resources.acquired == resources.released == ["run-admission"]
     assert resources.owner_id is None
     assert workers.started == (1 if failure_stage == "worker" else 0)
+
+
+@pytest.mark.asyncio
+async def test_worker_crash_marks_run_failed_without_replay_and_releases_resources(
+    tmp_path: Path,
+) -> None:
+    selected = profile()
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"kernel")
+    resources = Resources()
+    workers = Workers()
+    service, runs = coordinator(
+        tmp_path,
+        selected_profile=selected,
+        kernels=[InstalledKernel("public", "145.0.1", executable, 6)],
+        resources=resources,
+        workers=workers,
+    )
+
+    started = await service.start("workflow-admission", request())
+    await service.on_worker_exit("run-admission", 17)
+
+    failed = runs.get("run-admission")
+    assert started["status"] == "running"
+    assert failed.status == "failed"
+    assert failed.cleanup_state == "completed"
+    assert failed.error == {
+        "code": "WORKFLOW_EXECUTION_FAILED",
+        "message": "工作流执行失败",
+    }
+    assert workers.started == 1
+    assert workers.stopped == []
+    assert resources.acquired == resources.released == ["run-admission"]
+    assert resources.owner_id is None
+    assert [event.type for event in runs.events("run-admission", limit=20)] == [
+        "execution:running",
+        "execution:log",
+        "execution:failed",
+    ]

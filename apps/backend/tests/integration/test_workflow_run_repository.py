@@ -6,6 +6,8 @@ from itertools import count
 from pathlib import Path
 
 import pytest
+from sqlalchemy.exc import DatabaseError
+
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.workflows.runs import WorkflowRunError, WorkflowRunStart
 from autoflow.infrastructure.database.session import (
@@ -13,7 +15,6 @@ from autoflow.infrastructure.database.session import (
     migrate_database,
 )
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
-from sqlalchemy.exc import DatabaseError
 
 
 def _start(run_id: str = "run-1", *, url: str = "https://example.test") -> WorkflowRunStart:
@@ -88,6 +89,7 @@ def test_recovery_interrupts_active_runs_without_replaying_actions(
 ) -> None:
     service.start(_start())
     service.mark_running("run-1")
+    before_recovery = service.events("run-1", after_sequence=0, limit=20)
 
     recovered = service.recover_interrupted()
 
@@ -97,7 +99,11 @@ def test_recovery_interrupts_active_runs_without_replaying_actions(
     assert run.cleanup_state == "completed"
     assert run.finished_at is not None
     events = service.events("run-1", after_sequence=0, limit=20)
+    assert events[:-1] == before_recovery
     assert events[-1].type == "execution:interrupted"
+    assert not any(event.type.startswith("execution:node") for event in events)
+    assert service.recover_interrupted() == ()
+    assert service.events("run-1", after_sequence=0, limit=20) == events
     assert service.start(_start("run-2")).run_id == "run-2"
 
 
