@@ -1,0 +1,44 @@
+{
+  "evidenceId": "BE-B0-closure-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "result": "B0 temporary-workspace gate passed",
+  "commands": [
+    {
+      "command": "cd apps/backend && uv run pytest -q",
+      "exitCode": 0,
+      "result": "1288 passed, 2 dependency deprecation warnings"
+    },
+    {
+      "command": "cd apps/backend && uv run ruff check src tests scripts",
+      "exitCode": 0,
+      "result": "All checks passed"
+    },
+    {
+      "command": "cd apps/backend && uv run mypy src",
+      "exitCode": 0,
+      "result": "Success: no issues found in 209 source files"
+    },
+    {
+      "command": "cd apps/backend && uv run mypy scripts/inspect_database_compatibility.py",
+      "exitCode": 0,
+      "result": "Success: no issues found"
+    },
+    {
+      "command": "cd apps/backend && uv run alembic -c src/autoflow/infrastructure/database/alembic.ini heads",
+      "exitCode": 0,
+      "result": "0011_merge_android_project_data (head)"
+    }
+  ],
+  "boundaries": {
+    "userDatabaseModified": false,
+    "formalUserDatabaseCopyCases": [
+      "BE-B0-004",
+      "BE-B0-005"
+    ],
+    "formalUserDatabaseCopyStatus": "外部等待",
+    "nodeAcceptanceCasesPassed": 0,
+    "nodeAcceptanceCasesPending": 681,
+    "sourceAuthorizationBlocking": false
+  },
+  "nextGate": "B1 five-node real vertical slice"
+}

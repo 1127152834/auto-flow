@@ -1,0 +1,20 @@
+{
+  "evidenceId": "BE-B0-scope-preflight-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "authority": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md",
+  "approvedNodeTypes": 227,
+  "excludedLegacyNodeTypes": 57,
+  "test": {
+    "command": "cd apps/backend && uv run pytest tests/unit/workflows/test_scope_preflight.py -q",
+    "exitCode": 0,
+    "result": "60 passed",
+    "coverage": [
+      "生产运行时批准集合与 capabilities.json 的 227 类型完全一致",
+      "数据库 48 类型与 DP 9 类型逐项拒绝",
+      "嵌套自定义模块递归检查且原工作流和模块定义不变",
+      "批准但执行器尚未迁入的类型在执行前明确拒绝",
+      "问题返回 nodeId、path、code、message 和 nodeType"
+    ]
+  },
+  "transportStatus": "当前尚无生产工作流运行路由，因此不存在绕过领域护栏的生产执行入口；B1.6 建立 HTTP 入口时必须接入同一护栏并补 HTTP 验收。"
+}
