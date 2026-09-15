@@ -33,6 +33,7 @@ from .project_excel_models import (
     ProjectExcelInspectionRow,
     ProjectFileSelectionRow,
 )
+from .project_run_models import ProjectRecordLeaseRow
 
 
 @dataclass(frozen=True)
@@ -85,6 +86,23 @@ def _batches(session: Session, project: str, table: str) -> bool:
     )
 
 
+def _leases(session: Session, project: str, table: DataTableRow) -> bool:
+    return (
+        session.scalar(
+            select(ProjectRecordLeaseRow.id)
+            .where(
+                ProjectRecordLeaseRow.project_id == project,
+                ProjectRecordLeaseRow.record_ref["tableId"].as_string() == table.id,
+                ProjectRecordLeaseRow.record_ref["datasetGeneration"].as_string()
+                == table.current_generation,
+                ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
+            )
+            .limit(1)
+        )
+        is not None
+    )
+
+
 class SqlAlchemyExcelImports:
     def __init__(
         self, sessions: sessionmaker[Session], workspace_id: str, instance_id: str
@@ -122,6 +140,8 @@ class SqlAlchemyExcelImports:
                 if _batches(session, project, table_id)
                 else []
             )
+            if _leases(session, project, table):
+                blockers.append("仍有运行占用当前数据，请等待释放后重新确认。")
             report = {
                 "target": {"type": "table", "projectId": project, "tableId": table_id},
                 "expectedRevisions": revisions,
@@ -175,6 +195,7 @@ class SqlAlchemyExcelImports:
             or impact.facts_digest != str(_facts(session, project, table.id))
             or impact.report["blockers"]
             or _batches(session, project, table.id)
+            or _leases(session, project, table)
         ):
             raise ProjectError(
                 "REVISION_CONFLICT", "确认之后数据已更新，请重新确认。", 409
