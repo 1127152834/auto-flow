@@ -18,6 +18,7 @@ from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.providers.browser.workflow_session import (
     CloakBrowserWorkflowPage,
     CloakBrowserWorkflowSession,
+    _browser_process_id,
 )
 from autoflow.providers.browser.workflow_worker import _run, run_workflow_worker
 
@@ -72,6 +73,25 @@ class RawPage:
         for listener in list(self.listeners.get(name, [])):
             listener(value)
 
+
+@pytest.mark.asyncio
+async def test_browser_process_id_uses_primary_chromium_process_and_detaches() -> None:
+    cdp = SimpleNamespace(
+        send=AsyncMock(
+            return_value={
+                "processInfo": [
+                    {"type": "renderer", "id": 41},
+                    {"type": "browser", "id": 42},
+                ]
+            }
+        ),
+        detach=AsyncMock(),
+    )
+    browser = SimpleNamespace(new_browser_cdp_session=AsyncMock(return_value=cdp))
+
+    assert await _browser_process_id(SimpleNamespace(browser=browser)) == 42
+    cdp.send.assert_awaited_once_with("SystemInfo.getProcessInfo")
+    cdp.detach.assert_awaited_once_with()
 
 class RawContext:
     def __init__(self) -> None:

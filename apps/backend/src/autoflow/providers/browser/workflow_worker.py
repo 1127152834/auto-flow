@@ -62,7 +62,15 @@ async def _run_in_session(
 ) -> int:
     run_id = _required_string(command, "runId")
     profile_id = _required_string(command, "profileId")
-    _write(stdout, {"type": "ready", "runId": run_id, "profileId": profile_id})
+    ready: dict[str, Any] = {
+        "type": "ready",
+        "runId": run_id,
+        "profileId": profile_id,
+    }
+    child_pid = getattr(browser, "browser_pid", None)
+    if isinstance(child_pid, int):
+        ready["childPid"] = child_pid
+    _write(stdout, ready)
     document = command.get("document")
     if isinstance(document, dict):
         workflow_id = _required_string(command, "workflowId")

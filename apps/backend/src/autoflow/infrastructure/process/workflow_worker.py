@@ -19,7 +19,10 @@ from autoflow.domain.kernels.models import KernelRef
 from autoflow.domain.workflows.browser import WorkflowBrowserBusy, WorkflowWorkerSession
 from autoflow.infrastructure.filesystem.kernel_installations import kernel_target_lock
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
-from autoflow.infrastructure.process.browser_processes import process_birth
+from autoflow.infrastructure.process.browser_processes import (
+    process_birth,
+    process_identity_is_alive,
+)
 from autoflow.infrastructure.process.test_browser_worker import stop_process_tree
 
 _SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
@@ -125,6 +128,7 @@ class WorkflowWorkerManager:
         self._starting: dict[str, _StartingWorker] = {}
         self._running: dict[str, _RunningWorker] = {}
         self._failures: dict[str, str] = {}
+        self._stopping: set[str] = set()
         self._lock = asyncio.Lock()
 
     async def start(
@@ -175,16 +179,14 @@ class WorkflowWorkerManager:
             except asyncio.CancelledError:
                 try:
                     process = await _wait_for_spawn(spawn)
-                    birth = (
-                        process_birth(process.pid) if sys.platform != "win32" else None
-                    )
+                    birth = process_birth(process.pid)
                     async with self._lock:
                         state.process = process
                         state.birth = birth
                 except BaseException:  # noqa: BLE001 -- preserve cancellation.
                     process = None
                 raise
-            birth = process_birth(process.pid) if sys.platform != "win32" else None
+            birth = process_birth(process.pid)
             async with self._lock:
                 state.process = process
                 state.birth = birth
@@ -204,16 +206,25 @@ class WorkflowWorkerManager:
             ):
                 raise RuntimeError("workflow worker 启动确认无效")
             child_pid = ready.get("childPid")
+            child_pid = child_pid if isinstance(child_pid, int) else None
+            child_birth = process_birth(child_pid) if child_pid is not None else None
             session = WorkflowWorkerSession(
                 run_id,
                 profile_id,
                 process.pid,
-                child_pid if isinstance(child_pid, int) else None,
+                child_pid,
             )
             registered = asyncio.Event()
             monitor = asyncio.create_task(
                 self._monitor(
-                    run_id, process, directory, executable, birth, registered
+                    run_id,
+                    process,
+                    directory,
+                    executable,
+                    birth,
+                    child_pid,
+                    child_birth,
+                    registered,
                 )
             )
             worker = _RunningWorker(session, process, directory, executable, birth, monitor)
@@ -246,14 +257,20 @@ class WorkflowWorkerManager:
             worker = self._running.get(run_id)
             starting = self._starting.get(run_id)
         if worker is not None:
-            await stop_process_tree(
-                worker.process,
-                self._termination_timeout,
-                worker.directory,
-                worker.executable,
-                worker.birth,
-            )
-            await worker.monitor
+            async with self._lock:
+                self._stopping.add(run_id)
+            try:
+                await stop_process_tree(
+                    worker.process,
+                    self._termination_timeout,
+                    worker.directory,
+                    worker.executable,
+                    worker.birth,
+                )
+                await worker.monitor
+            finally:
+                async with self._lock:
+                    self._stopping.discard(run_id)
             return
         if starting is not None:
             if starting.process is None:
@@ -294,10 +311,27 @@ class WorkflowWorkerManager:
         directory: Path,
         executable: Path | None,
         birth: int | None,
+        child_pid: int | None,
+        child_birth: int | None,
         registered: asyncio.Event,
     ) -> None:
         await registered.wait()
         assert process.stdout is not None
+        child_guard = (
+            asyncio.create_task(
+                self._guard_browser_child(
+                    run_id,
+                    process,
+                    directory,
+                    executable,
+                    birth,
+                    child_pid,
+                    child_birth,
+                )
+            )
+            if child_pid is not None
+            else None
+        )
         try:
             try:
                 while raw := await process.stdout.readline():
@@ -313,6 +347,9 @@ class WorkflowWorkerManager:
             except Exception:  # noqa: BLE001 -- do not persist provider or secret text.
                 self._failures[run_id] = "WORKER_EVENT_CONSUMER_FAILED"
         finally:
+            if child_guard is not None:
+                child_guard.cancel()
+                await asyncio.gather(child_guard, return_exceptions=True)
             await stop_process_tree(
                 process, self._termination_timeout, directory, executable, birth
             )
@@ -328,6 +365,38 @@ class WorkflowWorkerManager:
                         await callback_result
                 except Exception:  # noqa: BLE001 -- cleanup already completed.
                     self._failures[run_id] = "WORKER_EXIT_CONSUMER_FAILED"
+
+    async def _guard_browser_child(
+        self,
+        run_id: str,
+        process: asyncio.subprocess.Process,
+        directory: Path,
+        executable: Path | None,
+        birth: int | None,
+        child_pid: int,
+        child_birth: int | None,
+    ) -> None:
+        while process.returncode is None and await asyncio.to_thread(
+            process_identity_is_alive, child_pid, child_birth
+        ):
+            await asyncio.sleep(0.05)
+
+        # A normal worker teardown closes the browser immediately before the
+        # worker exits. Give that path a short grace period before declaring a
+        # browser-only crash.
+        await asyncio.sleep(0.25)
+        async with self._lock:
+            stopping = run_id in self._stopping
+        if process.returncode is not None or stopping:
+            return
+        self._failures[run_id] = "BROWSER_PROCESS_EXITED"
+        await stop_process_tree(
+            process,
+            self._termination_timeout,
+            directory,
+            executable,
+            birth,
+        )
 
 
 def workflow_worker_command() -> tuple[str, ...]:

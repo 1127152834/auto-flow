@@ -126,12 +126,12 @@ class TestBrowserWorkerManager:
             except asyncio.CancelledError:
                 try:
                     process = await _wait_for_spawn(spawn)
-                    self._births[process.pid] = process_birth(process.pid) if sys.platform != "win32" else None
+                    self._births[process.pid] = process_birth(process.pid)
                     self._executables[process.pid] = executable
                 except BaseException:  # noqa: BLE001 -- preserve cancellation.
                     process = None
                 raise
-            self._births[process.pid] = process_birth(process.pid) if sys.platform != "win32" else None
+            self._births[process.pid] = process_birth(process.pid)
             self._executables[process.pid] = executable
             async with self._lock:
                 if self._shutting_down:

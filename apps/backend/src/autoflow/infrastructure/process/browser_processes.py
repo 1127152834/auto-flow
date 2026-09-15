@@ -1,4 +1,4 @@
-"""POSIX browser ownership without trusting ps command text or recycled PIDs."""
+"""Browser process ownership without trusting command text or recycled PIDs."""
 from __future__ import annotations
 
 import ctypes
@@ -34,6 +34,8 @@ def _sysctl_library() -> ctypes.CDLL:
 
 def process_birth(pid: int) -> int | None:
     try:
+        if sys.platform == "win32":
+            return _windows_process_birth(pid)
         if sys.platform == "darwin":
             # macOS SDK sys/resource.h: rusage_info_v0 has UUID + ten uint64 fields;
             # ri_proc_start_abstime is field 8 after the UUID (offset 80).
@@ -46,6 +48,55 @@ def process_birth(pid: int) -> int | None:
         return int(raw[raw.rfind(")") + 2:].split()[19])
     except (OSError, ValueError, IndexError):
         return None
+
+
+def _windows_process_birth(pid: int) -> int | None:
+    """Return the kernel creation FILETIME for a Windows process."""
+
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined]
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.GetProcessTimes.argtypes = [
+        wintypes.HANDLE,
+        ctypes.POINTER(wintypes.FILETIME),
+        ctypes.POINTER(wintypes.FILETIME),
+        ctypes.POINTER(wintypes.FILETIME),
+        ctypes.POINTER(wintypes.FILETIME),
+    ]
+    kernel32.GetProcessTimes.restype = wintypes.BOOL
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+
+    handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not handle:
+        return None
+    creation = wintypes.FILETIME()
+    exit_time = wintypes.FILETIME()
+    kernel_time = wintypes.FILETIME()
+    user_time = wintypes.FILETIME()
+    try:
+        if not kernel32.GetProcessTimes(
+            handle,
+            ctypes.byref(creation),
+            ctypes.byref(exit_time),
+            ctypes.byref(kernel_time),
+            ctypes.byref(user_time),
+        ):
+            return None
+        return (int(creation.dwHighDateTime) << 32) | int(creation.dwLowDateTime)
+    finally:
+        kernel32.CloseHandle(handle)
+
+
+def process_identity_is_alive(pid: int, birth: int | None) -> bool:
+    """Check that *pid* still denotes the process observed at launch."""
+
+    current = process_birth(pid)
+    if birth is not None and current is not None:
+        return current == birth
+    return _process_exists(pid)
 
 
 def _native_arguments(pid: int) -> tuple[Path, list[str], dict[str, str]] | None:

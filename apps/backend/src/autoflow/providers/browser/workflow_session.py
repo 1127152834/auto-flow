@@ -535,8 +535,9 @@ def _playwright_timeout(options: dict[str, Any]) -> dict[str, Any]:
 
 
 class CloakBrowserWorkflowSession:
-    def __init__(self, context: Any) -> None:
+    def __init__(self, context: Any, *, browser_pid: int | None = None) -> None:
         self._context = context
+        self.browser_pid = browser_pid
         self._pages: dict[int, CloakBrowserWorkflowPage] = {}
         self._current_id: str | None = None
         self._active_frame: CloakBrowserWorkflowPage | None = None
@@ -546,8 +547,10 @@ class CloakBrowserWorkflowSession:
             self._current_id = existing[0].id
 
     @classmethod
-    def from_context(cls, context: Any) -> CloakBrowserWorkflowSession:
-        return cls(context)
+    def from_context(
+        cls, context: Any, *, browser_pid: int | None = None
+    ) -> CloakBrowserWorkflowSession:
+        return cls(context, browser_pid=browser_pid)
 
     def _synchronize_pages(self) -> list[CloakBrowserWorkflowPage]:
         result: list[CloakBrowserWorkflowPage] = []
@@ -654,6 +657,34 @@ class CloakBrowserWorkflowSession:
         await self._context.close()
 
 
+async def _browser_process_id(context: Any) -> int | None:
+    """Read Chromium's primary OS process id through its supported CDP domain."""
+
+    browser = getattr(context, "browser", None)
+    if browser is None:
+        return None
+    session = None
+    try:
+        session = await browser.new_browser_cdp_session()
+        response = await session.send("SystemInfo.getProcessInfo")
+        processes = response.get("processInfo", []) if isinstance(response, dict) else []
+        for item in processes:
+            if not isinstance(item, dict) or item.get("type") != "browser":
+                continue
+            process_id = item.get("id")
+            if isinstance(process_id, int) and process_id > 0:
+                return process_id
+    except Exception:  # noqa: BLE001 -- worker ownership still has the process group.
+        return None
+    finally:
+        if session is not None:
+            try:
+                await session.detach()
+            except Exception:  # noqa: BLE001,S110 -- best-effort diagnostic session.
+                pass
+    return None
+
+
 @asynccontextmanager
 async def launch_workflow_session(
     command: dict[str, Any],
@@ -673,7 +704,9 @@ async def launch_workflow_session(
         context = await launch_context_async(**options)
         if not context.pages:
             await context.new_page()
-        session = CloakBrowserWorkflowSession.from_context(context)
+        session = CloakBrowserWorkflowSession.from_context(
+            context, browser_pid=await _browser_process_id(context)
+        )
         yield session
     finally:
         try:
