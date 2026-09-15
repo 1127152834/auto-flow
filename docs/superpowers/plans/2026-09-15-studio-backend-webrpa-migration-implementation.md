@@ -185,10 +185,10 @@
 - Create: `apps/backend/tests/integration/test_workflow_worker_protocol.py`
 - Create: `apps/backend/tests/integration/test_workflow_resource_ownership.py`
 
-- [ ] 定义页面/context/locator/下载/截图的窄端口，页面身份和当前页规则以冻结 WebRPA 为基准。
-- [ ] worker 启动消息只接收运行快照、Profile 冻结参数和秘密引用；License/代理密码不得回传事件或日志。
-- [ ] 复用 `FilesystemProfileUsageGuard` 与进程出生/组清理；新增工作区活跃运行和内核目标占用协调。
-- [ ] 验证启动中取消、命令管道断开、浏览器被杀、worker 被杀和超时强杀；清理完成前保持占用。
+- [x] 定义页面/context/locator/下载/截图的窄端口，页面身份和当前页规则以冻结 WebRPA 为基准。
+- [x] worker 启动消息只接收运行快照、Profile 冻结参数和秘密引用；License/代理密码不得回传事件或日志。
+- [x] 复用 `FilesystemProfileUsageGuard` 与进程出生/组清理；新增工作区活跃运行和内核目标占用协调。
+- [x] 验证启动中取消、命令管道断开、浏览器被杀、worker 被杀和超时强杀；清理完成前保持占用。
 - [ ] 运行协议与资源测试，使用真实短生命周期子进程，不用内存状态冒充清理。
 
 ### Task B1.4：迁入首批五个网页执行器

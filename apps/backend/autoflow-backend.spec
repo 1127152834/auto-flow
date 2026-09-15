@@ -17,6 +17,7 @@ datas = [
 hiddenimports = [
     'autoflow.bootstrap.kernel_worker',
     'autoflow.bootstrap.test_browser_worker',
+    'autoflow.bootstrap.workflow_worker',
     'autoflow.providers.kernel.worker',
     'autoflow.providers.browser.worker',
     'sqlalchemy.dialects.sqlite.pysqlite',

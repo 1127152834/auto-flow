@@ -125,6 +125,56 @@
         "全局browser_engine"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/browser_engine.py",
+      "targetPath": "apps/backend/src/autoflow/providers/browser/workflow_session.py",
+      "changeSummary": "保留页面、当前页、定位器、下载与截图会话语义；用CloakBrowser上下文和稳定pageId替换WebRPA全局browser_engine及多浏览器分支。",
+      "retainedDependencies": [
+        "cloakbrowser 0.5.9",
+        "BrowserProxyRelay",
+        "Playwright兼容上下文"
+      ],
+      "removedDependencies": [
+        "Chrome",
+        "Edge",
+        "Firefox",
+        "全局browser_engine",
+        "持久跨运行页面"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/browser_process.py",
+      "targetPath": "apps/backend/src/autoflow/infrastructure/process/workflow_worker.py",
+      "changeSummary": "保留独立浏览器进程与停止清理边界；复用AutoFlow进程出生标识、进程组清理和Profile/内核文件锁，增加工作区单会话所有权。",
+      "retainedDependencies": [
+        "AutoFlow browser_processes.py",
+        "ExclusiveFileLock",
+        "FilesystemProfileUsageGuard"
+      ],
+      "removedDependencies": [
+        "按命令文本猜测浏览器进程",
+        "全局共享浏览器进程"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/browser_manager.py",
+      "targetPath": "apps/backend/src/autoflow/providers/browser/workflow_worker.py",
+      "changeSummary": "迁入一次运行一个浏览器会话的生命周期入口；限定为CloakBrowser和受控stdin/stdout协议，错误不回传秘密或底层异常文本。",
+      "retainedDependencies": [
+        "AutoFlow parent watcher",
+        "CloakBrowserWorkflowSession"
+      ],
+      "removedDependencies": [
+        "多浏览器启动选择",
+        "WebRPA应用全局状态"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

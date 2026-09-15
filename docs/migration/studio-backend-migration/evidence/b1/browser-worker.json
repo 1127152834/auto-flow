@@ -1,0 +1,43 @@
+{
+  "evidenceId": "BE-B1-browser-worker-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "result": "B1.3 passed",
+  "capabilities": [
+    "CloakBrowser-only context adapter",
+    "stable page identity and explicit current-page selection",
+    "closed current page never falls back silently",
+    "locator, navigation, screenshot and download narrow ports",
+    "one managed workflow worker per workspace",
+    "Profile, kernel target and workspace ownership held until cleanup",
+    "startup interruption and invalid handshake cleanup",
+    "parent-monitor-compatible worker entrypoint",
+    "event consumer failure triggers process-tree cleanup",
+    "PyInstaller hidden import for the workflow worker"
+  ],
+  "tests": {
+    "focused": {
+      "command": "cd apps/backend && uv run pytest tests/unit/workflows/test_browser_session_contract.py tests/integration/test_workflow_worker_protocol.py tests/integration/test_workflow_resource_ownership.py -q",
+      "exitCode": 0,
+      "result": "13 passed"
+    },
+    "relatedRegression": {
+      "command": "cd apps/backend && uv run pytest tests/differential/workflows tests/unit/workflows tests/integration/test_workflow_repository.py tests/integration/test_workflow_worker_protocol.py tests/integration/test_workflow_resource_ownership.py tests/unit/test_profile_test_browser.py tests/unit/test_browser_processes.py tests/unit/test_main.py -q",
+      "exitCode": 0,
+      "result": "138 passed, 2 dependency deprecation warnings"
+    },
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "realProcessEvidence": {
+    "worker": "a real Python subprocess in a new process group",
+    "descendant": "a real sleeping child process",
+    "assertion": "stop and event-consumer failure both removed the worker, descendant and run directory"
+  },
+  "notClaimed": [
+    "real CloakBrowser navigation or node actions; B1.4 owns this gate",
+    "HTTP run lifecycle and persisted events; B1.5-B1.6 own these gates",
+    "macOS Intel or Windows real-machine verification"
+  ],
+  "secrets": "License and proxy values remain worker-input-only; ready and error messages contain no values or provider exception text",
+  "userDatabaseModified": false
+}

@@ -28,6 +28,18 @@ def test_main_requires_explicit_data_dir(monkeypatch):
     assert error.value.code == 2
 
 
+def test_main_dispatches_workflow_worker_without_starting_http(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["autoflow", "--workflow-worker"])
+    monkeypatch.setattr(
+        "autoflow.bootstrap.workflow_worker.workflow_worker_main", lambda: 17
+    )
+
+    with pytest.raises(SystemExit) as error:
+        main()
+
+    assert error.value.code == 17
+
+
 def test_main_does_not_print_ready_when_app_creation_fails(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(
         sys,
