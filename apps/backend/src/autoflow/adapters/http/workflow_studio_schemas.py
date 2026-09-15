@@ -15,6 +15,7 @@ class StudioCredentialField(ApiModel):
 
 
 class StudioCredentialItem(ApiModel):
+    revision: int = Field(default=1, ge=1, le=9007199254740991)
     model_config = ConfigDict(strict=True)
     name: str
     description: str
@@ -60,6 +61,36 @@ class StudioCredentialRenameRequest(ApiModel):
     model_config = ConfigDict(strict=True)
     old_name: str = Field(alias="old_name", min_length=1, pattern=r"\S")
     new_name: str = Field(alias="new_name", min_length=1, pattern=r"\S")
+
+
+class StudioCredentialFieldRename(ApiModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    kind: Literal["rename"]
+    key: str = Field(min_length=1)
+    new_key: str = Field(min_length=1, pattern=r"\S")
+
+
+class StudioCredentialFieldRemove(ApiModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    kind: Literal["remove"]
+    key: str = Field(min_length=1)
+
+
+class StudioCredentialFieldsCommand(ApiModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    name: str = Field(min_length=1)
+    expected_revision: int = Field(ge=1, le=9007199254740991)
+    operations: list[Annotated[
+        StudioCredentialFieldRename | StudioCredentialFieldRemove,
+        Field(discriminator="kind"),
+    ]] = Field(min_length=1)
+
+
+class StudioCredentialFieldsConfirmed(StudioCredentialConfirmed):
+    command_id: str = Field(min_length=1)
+    credential: StudioCredentialItem
+    mock: bool | None = None
 
 
 class StudioRetentionConfig(ApiModel):

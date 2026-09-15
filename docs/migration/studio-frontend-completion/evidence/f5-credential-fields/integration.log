@@ -1,0 +1,36 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/common-advanced-config.test.tsx src/renderer/domains/workflows/tests/static-number-preflight.test.tsx src/renderer/domains/workflows/tests/number-input-validation.test.tsx src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx src/renderer/domains/workflows/tests/credential-rename-entry.test.tsx src/renderer/domains/workflows/tests/credential-fields-protocol.test.ts src/renderer/domains/workflows/tests/credential-protocol.test.ts src/renderer/domains/workflows/tests/credential-write-contract.test.ts src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx src/renderer/domains/workflows/tests/credential-save-failure.test.tsx src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:78850) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78851) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78849) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78852) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78866) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78867) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78868) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78869) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78870) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78871) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78872) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78873) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  12 passed (12)
+      Tests  275 passed (275)
+   Start at  12:25:58
+   Duration  7.17s (transform 3.92s, setup 790ms, import 6.54s, tests 11.75s, environment 4.72s)

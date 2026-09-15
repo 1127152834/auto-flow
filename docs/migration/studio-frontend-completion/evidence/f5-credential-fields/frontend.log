@@ -1,0 +1,26 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/credential-fields-protocol.test.ts src/renderer/domains/workflows/tests/credential-rename-entry.test.tsx src/renderer/domains/workflows/tests/credential-protocol.test.ts src/renderer/domains/workflows/tests/credential-write-contract.test.ts src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx src/renderer/domains/workflows/tests/credential-save-failure.test.tsx src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:75194) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75196) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75192) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75189) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76397) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76488) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76624) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  7 passed (7)
+      Tests  143 passed (143)
+   Start at  05:29:22
+   Duration  5.08s (transform 2.07s, setup 785ms, import 2.75s, tests 6.87s, environment 2.90s)

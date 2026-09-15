@@ -1,7 +1,7 @@
 import {useGlobalConfigStore} from './hooks/stores/globalConfigStore'
 import {requestSessionTransition} from './lib/documentLeave'
 import { checkedRetention } from './lib/retentionContract'
-import {checkedCredentialWrite} from './lib/credentialContract'
+import {checkedCredentialFields, checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
 import {checkedPathSelection} from './lib/pathSelectionContract'
 import {sendDebugControl,sendDebugVariables} from './api/debugControl'
@@ -734,7 +734,10 @@ export const customModulesApi = {
 
 // ==================== 凭据库 API ====================
 export type CredentialItem = components['schemas']['StudioCredentialItem']
+export type CredentialFieldsCommand = components['schemas']['StudioCredentialFieldsCommand']
 export const credentialApi = {
+  mutateFields: (command: CredentialFieldsCommand) =>
+    checkedCredentialFields(apiRequest<components['schemas']['StudioCredentialFieldsConfirmed']>('/credentials/fields', { method: 'POST', body: JSON.stringify(command) }), command),
   list: () => apiRequest<components['schemas']['StudioCredentialList']>('/credentials'),
   names: () => apiRequest<components['schemas']['StudioCredentialNames']>('/credentials/names'),
   upsert: (name: string, fields: Record<string, string>, description?: string) =>

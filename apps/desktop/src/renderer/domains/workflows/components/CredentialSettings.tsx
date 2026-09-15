@@ -2,7 +2,7 @@
 import { useSettingsDraftProtection, type RegisterSettingsLeaveGuard } from '../hooks/useSettingsDraftProtection'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getStudioTransportRevision } from '../api/transport'
-import { credentialApi, type CredentialItem } from '../api'
+import { credentialApi, type CredentialFieldsCommand, type CredentialItem } from '../api'
 import { useConfirm } from './controls/confirm-dialog'
 import { Button } from './controls/button'
 import { Input } from './controls/input'
@@ -22,7 +22,11 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
   const reads = useRef(0)
   const editingRevision = useRef(0)
   const initialEdit = useRef('')
-  const [editing, setEditing] = useState<{ name: string; description: string; fields: { key: string; value: string }[] } | null>(null)
+  const [editing, setEditing] = useState<{ name: string; description: string; fields: { key: string; value: string; originalKey?: string }[] } | null>(null)
+  const [source, setSource] = useState<CredentialItem | null>(null)
+  const [renaming, setRenaming] = useState(false)
+  const [managingFields, setManagingFields] = useState(false)
+  const [pendingFields, setPendingFields] = useState<CredentialFieldsCommand | null>(null)
   const { confirm, alert, ConfirmDialog } = useConfirm()
 
   const refresh = useCallback(async () => {
@@ -37,7 +41,7 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
       const value = res.data
       if (!res.success || value?.success !== true || !Array.isArray(value.credentials) ||
           !value.credentials.every(c => c && ['name', 'description', 'created_at', 'updated_at'].every(key => typeof c[key as keyof CredentialItem] === 'string') &&
-            Array.isArray(c.fields) && c.fields.every(f => f && typeof f.key === 'string' && typeof f.masked === 'string'))) {
+            (c.revision === undefined || (Number.isSafeInteger(c.revision) && c.revision > 0)) && Array.isArray(c.fields) && c.fields.every(f => f && typeof f.key === 'string' && typeof f.masked === 'string'))) {
         throw new Error(res.error || '凭据列表响应格式错误')
       }
       setList(value.credentials)
@@ -63,15 +67,23 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
   }, [refresh])
 
   const startNew = () => {
+    setSource(null)
+    setRenaming(false)
+    setManagingFields(false)
+    setPendingFields(null)
     editingRevision.current = getStudioTransportRevision()
     const initial = { name: '', description: '', fields: [{ key: 'value', value: '' }] }
     initialEdit.current = JSON.stringify(initial)
     setEditing(initial)
   }
-  const startEdit = (c: CredentialItem) => {
+  const startEdit = (c: CredentialItem, rename = false, fields = false) => {
+    setSource(c)
+    setRenaming(rename)
+    setManagingFields(fields)
+    setPendingFields(null)
     editingRevision.current = getStudioTransportRevision()
     const initial = { name: c.name, description: c.description,
-      fields: c.fields.length ? c.fields.map(f => ({ key: f.key, value: '' })) : [{ key: 'value', value: '' }] }
+      fields: c.fields.length ? c.fields.map(f => ({ key: f.key, value: '', originalKey: f.key })) : [{ key: 'value', value: '' }] }
     initialEdit.current = JSON.stringify(initial)
     setEditing(initial)
   }
@@ -82,14 +94,40 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
     if (editingRevision.current !== revision) return false
     if (!editing.name.trim()) { await alert('请填写凭据名', { title: '提示' }); return false }
     const entries = editing.fields.map(f => [f.key.trim(), f.value] as const)
-    if (!entries.length) { await alert('至少需要一个字段', { title: '提示' }); return false }
-    if (entries.some(([key]) => !key)) { await alert('字段名不能为空', { title: '提示' }); return false }
-    if (new Set(entries.map(([key]) => key)).size !== entries.length) { await alert('字段名重复，请修改后保存', { title: '提示' }); return false }
+    if (!renaming) {
+      if (!entries.length) { await alert('至少需要一个字段', { title: '提示' }); return false }
+      if (entries.some(([key]) => !key)) { await alert('字段名不能为空', { title: '提示' }); return false }
+      if (new Set(entries.map(([key]) => key)).size !== entries.length) { await alert('字段名重复，请修改后保存', { title: '提示' }); return false }
+    }
     busyRef.current = true
     setBusy(true)
     const current = () => mounted.current && revision === getStudioTransportRevision()
     try {
-      const res = await credentialApi.upsert(editing.name.trim(), Object.fromEntries(entries), editing.description)
+      if (managingFields && source) {
+        const operations: CredentialFieldsCommand['operations'] = source.fields.flatMap<CredentialFieldsCommand['operations'][number]>(field => {
+          const edited = editing.fields.find(item => item.originalKey === field.key)
+          if (!edited) return [{kind:'remove',key:field.key}]
+          return edited.key.trim() === field.key ? [] : [{kind:'rename',key:field.key,newKey:edited.key.trim()}]
+        })
+        if (!pendingFields && !operations.length) { setEditing(null); return true }
+        const command = pendingFields ?? {commandId:crypto.randomUUID(),name:source.name,expectedRevision:source.revision ?? 1,operations}
+        setPendingFields(command)
+        const response = await credentialApi.mutateFields(command)
+        if (!current()) return false
+        if (!response.success) {
+          // A transport failure or invalid receipt may follow a committed write: keep its ID and inputs frozen.
+          if (response.httpStatus && response.httpStatus >= 400 && response.httpStatus < 500) setPendingFields(null)
+          await alert(`字段修改未确认：${response.error || '请重试核对原命令'}`, {title:'失败'})
+          return false
+        }
+        setPendingFields(null)
+        setEditing(null)
+        await refresh()
+        return current()
+      }
+      const res = renaming && source
+        ? await credentialApi.rename(source.name, editing.name.trim())
+        : await credentialApi.upsert(editing.name.trim(), Object.fromEntries(entries), editing.description)
       if (!current()) return false
       if (!res.success || res.data?.success !== true) { await alert(`保存失败：${res.error || '服务未返回有效确认'}`, { title: '失败' }); return false }
       setEditing(null)
@@ -114,7 +152,7 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
     } finally { if (current()) { busyRef.current = false; setBusy(false) } }
   }
 
-  const leave = useSettingsDraftProtection(registerLeaveGuard, '保存凭据编辑？', !!editing && JSON.stringify(editing) !== initialEdit.current, busy, save)
+  const leave = useSettingsDraftProtection(registerLeaveGuard, '保存凭据编辑？', !!editing && JSON.stringify(editing) !== initialEdit.current, busy || !!pendingFields, save)
 
   return (
     <>
@@ -127,33 +165,37 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
         <code className="bg-gray-100 px-1 rounded mx-1">{'{{cred:名称}}'}</code> 或
         <code className="bg-gray-100 px-1 rounded mx-1">{'{{cred:名称.字段}}'}</code> 引用，正式运行时由服务解析。
       </p>
+      <p className="text-xs text-gray-500 mb-4">引用按第一个点分隔凭据名与字段名；省略字段时读取 value。凭据名不要包含点或花括号，字段名不要包含花括号，名称和字段两端不要留空格。旧数据不会自动改名，改名后请手动更新工作流引用。</p>
       {editing ? (
         <fieldset disabled={busy || leave.pending} className="space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label className="text-gray-700 text-xs">凭据名</Label>
-              <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="如：我的邮箱" className="bg-white text-black border-gray-300 h-8 text-sm mt-1" />
+              <Input disabled={managingFields} readOnly={!!source && !renaming} value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="如：我的邮箱" className="bg-white text-black border-gray-300 h-8 text-sm mt-1" />
             </div>
             <div>
               <Label className="text-gray-700 text-xs">说明（可选）</Label>
-              <Input value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} placeholder="用途备注" className="bg-white text-black border-gray-300 h-8 text-sm mt-1" />
+              <Input disabled={renaming || managingFields} value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} placeholder="用途备注" className="bg-white text-black border-gray-300 h-8 text-sm mt-1" />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label className="text-gray-700 text-xs">字段（字段名 → 值；编辑时留空表示保留原值）</Label>
+          {renaming ? <p role="status">仅修改凭据名，保留全部字段和值；已有工作流引用不会自动更新。</p> : <div className="space-y-2">
+            <Label className="text-gray-700 text-xs">{managingFields ? '已有字段（仅显示打码值）' : '字段（字段名 → 值；编辑时留空表示保留原值）'}</Label>
             {editing.fields.map((f, i) => (
               <div key={i} className="flex items-center gap-2">
-                <Input value={f.key} onChange={(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], key: e.target.value }; setEditing({ ...editing, fields: fs }) }} placeholder="字段名 如 value/password/api_key" className="bg-white text-black border-gray-300 h-8 text-sm w-1/3" />
-                <Input type="password" value={f.value} onChange={(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], value: e.target.value }; setEditing({ ...editing, fields: fs }) }} placeholder="值" className="bg-white text-black border-gray-300 h-8 text-sm flex-1" />
-                <button onClick={() => setEditing({ ...editing, fields: editing.fields.filter((_, j) => j !== i) })} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                <Input disabled={!!pendingFields} readOnly={!managingFields && !!f.originalKey} value={f.key} onChange={(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], key: e.target.value }; setEditing({ ...editing, fields: fs }) }} placeholder="字段名 如 value/password/api_key" className="bg-white text-black border-gray-300 h-8 text-sm w-1/3" />
+                {managingFields ? <span className="text-xs text-gray-500 flex-1">{source?.fields.find(field => field.key === f.originalKey)?.masked}</span> : <Input type="password" value={f.value} onChange={(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], value: e.target.value }; setEditing({ ...editing, fields: fs }) }} placeholder="值" className="bg-white text-black border-gray-300 h-8 text-sm flex-1" />}
+                <button aria-label={`删除字段 ${f.key || i + 1}`} disabled={!!pendingFields || (!managingFields && !!f.originalKey)} onClick={() => setEditing({ ...editing, fields: editing.fields.filter((_, j) => j !== i) })} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" onClick={() => setEditing({ ...editing, fields: [...editing.fields, { key: '', value: '' }] })} className="border-gray-300 text-gray-700 hover:bg-gray-100">
+            <Button type="button" variant="outline" size="sm" disabled={managingFields} onClick={() => setEditing({ ...editing, fields: [...editing.fields, { key: '', value: '' }] })} className="border-gray-300 text-gray-700 hover:bg-gray-100">
               <Plus className="w-4 h-4 mr-1" />添加字段
             </Button>
-          </div>
+          </div>}
+          {!renaming && !managingFields && source && <p className="text-xs text-gray-500">内容编辑保留已有字段；字段删除或改名请使用列表中的「管理字段」。留空保留原值。</p>}
+          {managingFields && <p className="text-xs text-gray-500">仅修改字段名或删除字段，保存后一次提交；改名保留原值。已有工作流引用需手动更新，至少保留一个字段。发生冲突请取消并重新打开。</p>}
+          {pendingFields && <p role="status">字段修改结果尚未确认，输入已锁定。请再次保存以原命令重试核对，避免重复修改。</p>}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setEditing(null)} className="border-gray-300 text-gray-700">取消</Button>
+            <Button type="button" variant="outline" size="sm" disabled={!!pendingFields && editingRevision.current === getStudioTransportRevision()} onClick={() => { setPendingFields(null); setEditing(null) }} className="border-gray-300 text-gray-700">取消</Button>
             <Button type="button" size="sm" disabled={busy || !loaded || editingRevision.current !== getStudioTransportRevision()} onClick={save}>保存</Button>
           </div>
         </fieldset>
@@ -176,6 +218,8 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Button type="button" variant="outline" size="sm" disabled={busy || !loaded} onClick={() => startEdit(c)} className="border-gray-300 text-gray-700 h-7 px-2 text-xs">编辑</Button>
+                <Button type="button" variant="outline" size="sm" disabled={busy || !loaded} onClick={() => startEdit(c, true)}>改名</Button>
+                <Button type="button" variant="outline" size="sm" disabled={busy || !loaded} onClick={() => startEdit(c, false, true)}>管理字段</Button>
                 <button disabled={busy || !loaded} aria-label={`删除凭据 ${c.name}`} onClick={() => del(c.name)} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>

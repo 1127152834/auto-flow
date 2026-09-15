@@ -4404,8 +4404,62 @@ export type components = {
             /** Masked */
             masked: string;
         };
+        /** StudioCredentialFieldRemove */
+        StudioCredentialFieldRemove: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "remove";
+            /** Key */
+            key: string;
+        };
+        /** StudioCredentialFieldRename */
+        StudioCredentialFieldRename: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "rename";
+            /** Key */
+            key: string;
+            /** Newkey */
+            newKey: string;
+        };
+        /** StudioCredentialFieldsCommand */
+        StudioCredentialFieldsCommand: {
+            /** Commandid */
+            commandId: string;
+            /** Name */
+            name: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Operations */
+            operations: (components["schemas"]["StudioCredentialFieldRename"] | components["schemas"]["StudioCredentialFieldRemove"])[];
+        };
+        /** StudioCredentialFieldsConfirmed */
+        StudioCredentialFieldsConfirmed: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Commandid */
+            commandId: string;
+            credential: components["schemas"]["StudioCredentialItem"];
+            /**
+             * Mock
+             * @default null
+             */
+            mock: boolean | null;
+        };
         /** StudioCredentialItem */
         StudioCredentialItem: {
+            /**
+             * Revision
+             * @default 1
+             */
+            revision: number;
             /** Name */
             name: string;
             /** Description */

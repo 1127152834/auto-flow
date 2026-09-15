@@ -1,6 +1,6 @@
 # 凭据合同剩余差异
 
-2026-09-14，源码核对confirmed；下列改进尚待实现。此记录不能作为已通过验收。
+2026-09-14 历史核对记录。2026-09-15 凭据改名、字段批量改名/删除、修订和幂等命令的前端/Mock缺口已经完成；以 `credential-protocol-contract.md` 最后一节和 `credential-settings-protection.md` 最新节为准。下表保留发现来源，不得再将已完成的前端字段能力列为当前缺口；真实秘密存储和原子持久化仍是后端交接。
 
 来源：冻结reference/WebRPA/backend/app/api/credentials.py、services/credential_manager.py、executors/base.py；当前AutoFlow api/mock-settings.ts与CredentialSettings.tsx。
 
