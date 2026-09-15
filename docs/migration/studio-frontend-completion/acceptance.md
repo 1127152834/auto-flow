@@ -217,3 +217,17 @@ AI 关闭等待保存/放弃/取消结果，未确认不报成功；补齐确认
 ## F4 拾取会话身份与恢复（2026-09-15）
 
 稳定会话标识、幂等启动、旧会话隔离、丢响应查询、未知启动清理入口及连接代次保护已实现。全量 288 文件/3,443 项后继续补参数与外部关闭反馈，最终相关专项 104+15 项及后端合同 456 项通过。浏览器完成拾取、定位、保存与刷新重开，详见 picker-session-validation.md 及逐项用例台账。Mock 与真实浏览器边界明确；F4 录制/宿主协调和 F0–F6 整体继续推进。
+
+## F6 正式 Electron 主链（2026-09-15）
+
+正式 Electron 使用独立临时数据目录完成真实 UI 验收：主窗口打开独立 Studio、227 节点范围显示、右键快捷添加 `open_page`、填写 URL、`Cmd+S` 保存、`Cmd+C/Cmd+V` 复制粘贴、原生保存面板导出 JSON、关闭重开并从列表恢复 2 个节点，以及关闭主窗口后 Studio 和共享 sidecar 继续可用。导出文件经独立 JSON 解析确认名称和节点数。逐步证据见 `evidence/f6-formal-delivery/native-ui.md`。
+
+当前正式用户数据目录包含本分支不存在的数据库修订 `0010_android_fleet`，直接启动会被 Alembic 拒绝；验收没有删除或降级用户数据。macOS Intel 与 Windows 无实机，不标通过。Studio 顶部明确标识 Mock，本结果证明前端、Electron 宿主与服务消费链路，不证明真实网页执行。正式后端实现边界见 `backend-handoff.md`。
+
+## 前端迁入关闭结论（2026-09-15）
+
+当前批准的 227 节点范围内，F1 服务合同、F2 节点/工具/文档编辑、F3 运行/Debug/日志结果消费、F4 拾取/定位/录制、F5 配套配置/AI/生命周期和 F6 正式窗口/打包交接均已按既有证据核销。前端剩余功能块数量为 0；共享规则集中证据和逐入口接入证据均已回填 `capabilities.json` 与 `verified-cases.json`。
+
+最终工程结果为前端 330 文件/4,979 项、工程脚本 50/50、后端合同 503 项、前端类型/lint/OpenAPI/构建、后端 mypy/冻结、macOS arm64 目录包及开发/打包 Studio smoke 通过。完整命令结果与已知限制见 `evidence/f6-formal-delivery/engineering-checks.md`。
+
+真实自动化后端仍未交付；其工作是按已冻结合同实现 CloakBrowser 执行、调试 worker、拾取/录制采集、持久化与秘密存储。它不再包含待补的 Studio 页面、表单或 Store 业务。macOS Intel、Windows、签名发布和正式用户数据库向后兼容继续作为外部集成/发布事项保留。
