@@ -89,12 +89,13 @@ it('makes fields readonly synchronously for an in-flight submit', async () => {
   pending.resolve()
 })
 
-it('shows non-revision 409 errors without loading a newer project', async () => {
+it('maps non-revision 409 by code without echoing diagnostics or loading a newer project', async () => {
   const loadLatest = vi.fn()
   const user = userEvent.setup()
-  render(<ProjectFormDialog open project={project} draftSession="lifecycle" onOpenChange={vi.fn()} onSubmit={vi.fn().mockRejectedValue(new ApiClientError('项目正在删除', 409, 'LIFECYCLE_CONFLICT'))} onLoadLatest={loadLatest} />)
+  render(<ProjectFormDialog open project={project} draftSession="lifecycle" onOpenChange={vi.fn()} onSubmit={vi.fn().mockRejectedValue(new ApiClientError('项目正在删除 ab806c63-6b08-460b-bd2a-f3f6d2b07116', 409, 'LIFECYCLE_CONFLICT'))} onLoadLatest={loadLatest} />)
   await user.click(screen.getByRole('button', { name: '保存' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('项目正在删除')
+  expect(await screen.findByRole('alert')).toHaveTextContent('项目当前为只读状态')
+  expect(screen.getByRole('alert')).not.toHaveTextContent('ab806c63-6b08-460b-bd2a-f3f6d2b07116')
   expect(loadLatest).not.toHaveBeenCalled()
 })
 
@@ -146,3 +147,26 @@ it('makes fields readonly while recovering an unknown result', () => {
 })
 
 function deferred<T>() { let resolve!: (value: T) => void; let reject!: (reason: unknown) => void; return { promise: new Promise<T>((yes, no) => { resolve = yes; reject = no }), resolve, reject } }
+
+it.each([
+  new ApiClientError('resource ab806c63-6b08-460b-bd2a-f3f6d2b07116', 500, 'INTERNAL_ERROR'),
+  new ApiClientError('resource ab806c63-6b08-460b-bd2a-f3f6d2b07116', 409, 'PROJECT_NAME_CONFLICT', { fields: { name: 'ab806c63-6b08-460b-bd2a-f3f6d2b07116' } }),
+])('presents server failure without internal identity while keeping the project draft', async error => {
+  const id = 'ab806c63-6b08-460b-bd2a-f3f6d2b07116'
+  render(<ProjectFormDialog open project={{ ...project, projectId: id }} draftSession="identity" onOpenChange={vi.fn()} onSubmit={vi.fn().mockRejectedValue(error)}/>)
+  await userEvent.click(screen.getByRole('button', { name: '保存' }))
+  await waitFor(() => expect(screen.getAllByRole('alert').length).toBeGreaterThan(0))
+  const presentation = [document.body.textContent, ...[...document.body.querySelectorAll('*')].flatMap(element => ['title', 'placeholder', 'aria-label', 'aria-description'].map(name => element.getAttribute(name) ?? ''))].join('\n')
+  expect(presentation).not.toContain(id)
+  expect(screen.getByLabelText('项目名称')).toHaveValue('原项目')
+})
+
+it('preserves a UUID chosen as the business project name in a conflict result', async () => {
+  const businessName = '977092e7-5e47-401a-b028-3c86d3a0fa80'
+  const latest = { ...project, name: businessName, managementRevision: 3 }
+  render(<ProjectFormDialog open project={project} draftSession="business-uuid" onOpenChange={vi.fn()} onSubmit={vi.fn().mockRejectedValue(new ApiClientError('internal', 409, 'REVISION_CONFLICT'))} onLoadLatest={vi.fn().mockResolvedValue(latest)}/>)
+  await userEvent.click(screen.getByRole('button', { name: '保存' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(businessName)
+  await userEvent.click(screen.getByRole('button', { name: '基于最新内容重新编辑' }))
+  expect(screen.getByLabelText('项目名称')).toHaveValue(businessName)
+})
