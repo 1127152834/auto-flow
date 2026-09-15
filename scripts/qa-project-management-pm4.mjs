@@ -38,6 +38,7 @@ export const PM4_F_STEPS = Object.freeze([
   'UI 创建第二个账号读取自动化并配置一个必填输入',
   'UI 启动读取任务并查看原始账号输入与读取事实',
   '核对响应丢失恢复未重复新增，第二自动化读取第一自动化产物',
+  'UI 区分无匹配、暂时占用和配置错误三种候选状态',
 ])
 
 export function parsePm4QaArgs(args) {
@@ -82,7 +83,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
     assert.equal(isOwnedPm4Workspace('/tmp/pm4-owner/workspace', '/tmp/pm4-owner', { kind: 'pm4-v1-project-management-qa', version: 1 }), true)
     assert.equal(PM4_V1_STEPS.length, 6)
     assert.equal(PM4_C_STEPS.length, 6)
-    assert.equal(PM4_F_STEPS.length, 9)
+    assert.equal(PM4_F_STEPS.length, 10)
     console.log(`PM4 ${modeName} QA helper self-test passed`)
     return
   }
@@ -220,8 +221,8 @@ export async function main(cliArgs = process.argv.slice(2)) {
   async function pressKey(key) {
     const code = key === 'Enter' ? 'Enter' : key === 'Escape' ? 'Escape' : key
     const virtualKeyCode = key === 'Enter' ? 13 : key === 'Escape' ? 27 : undefined
-    const event = { key, code, ...(virtualKeyCode ? { windowsVirtualKeyCode: virtualKeyCode, nativeVirtualKeyCode: virtualKeyCode } : {}) }
-    await renderer.command('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...event })
+    const event = { key, code, ...(virtualKeyCode ? { windowsVirtualKeyCode: virtualKeyCode, nativeVirtualKeyCode: virtualKeyCode } : {}), ...(key === 'Enter' ? { text: '\r', unmodifiedText: '\r' } : {}) }
+    await renderer.command('Input.dispatchKeyEvent', { type: key === 'Enter' ? 'keyDown' : 'rawKeyDown', ...event })
     await renderer.command('Input.dispatchKeyEvent', { type: 'keyUp', ...event })
     await wait(120)
   }
@@ -243,6 +244,19 @@ export async function main(cliArgs = process.argv.slice(2)) {
     const response = await fetch(`${runtime.sidecar.baseUrl}/api/v1${path}`, { headers: { 'x-autoflow-token': runtime.sidecar.token }, signal: AbortSignal.timeout(10_000) })
     const body = await response.text()
     assert.ok(response.ok, `GET ${path}: ${response.status} ${body}`)
+    return JSON.parse(body)
+  }
+
+  async function setPreviewOverride(runtime, automationId, outcome) {
+    assert.ok(isOwnedPm4Workspace(runtime.workspaceKey, owner, marker))
+    const response = await fetch(`${runtime.sidecar.baseUrl}/api/v1/qa/pm4/input-preview`, {
+      method: 'POST',
+      headers: { 'x-autoflow-token': runtime.sidecar.token, 'content-type': 'application/json' },
+      body: JSON.stringify({ automationId, outcome }),
+      signal: AbortSignal.timeout(10_000),
+    })
+    const body = await response.text()
+    assert.ok(response.ok, `PM4-F preview override: ${response.status} ${body}`)
     return JSON.parse(body)
   }
 
@@ -682,8 +696,15 @@ print(created.workflow_id); factory.dispose()`
         await visible('隔离测试执行器已读取账号记录')
         await capture('13-reader-run-log', '03-runs/005-task-log-510347.png')
         await input('[aria-label="搜索日志内容"]', '不存在的日志')
-        await click('应用日志搜索')
-        await visible('没有匹配的日志。')
+        await pressKey('Enter')
+        let enterAppliedLogSearch = true
+        try {
+          await visible('没有匹配的日志。', 3_000)
+        } catch {
+          enterAppliedLogSearch = false
+          await click('应用日志搜索')
+          await visible('没有匹配的日志。')
+        }
         await capture('14-reader-run-log-search-empty', '03-runs/005-task-log-510347.png')
         await click('清除日志搜索')
         await visible('隔离测试执行器已读取账号记录')
@@ -699,7 +720,27 @@ print(created.workflow_id); factory.dispose()`
         await visible('当前没有匹配数据，启动后重新核验')
         await capture('16-no-match-preview', 'docs/prototype/project-management-pm3/batch-start-dialog.png')
         await pressKey('Escape')
+        await waitFor(renderer, `!document.querySelector('[role="dialog"]')`, '关闭无匹配预览')
+        const writerAutomations = await api(runtime, `/projects/${project.projectId}/automations?pageSize=100`)
+        const writerAutomation = writerAutomations.items.find(item => item.name === '三表资料处理')
+        assert.ok(writerAutomation, '必须找到 UI 创建的三表资料处理自动化')
+        await setPreviewOverride(runtime, writerAutomation.automationId, 'temporarilyBusy')
+        await click('启动运行')
+        await visible('数据暂被占用，批次将等待释放')
+        await visible('记录暂时被占用')
+        await capture('17-temporarily-busy-preview', 'docs/prototype/project-management-pm3/batch-start-dialog.png')
+        await pressKey('Escape')
+        await waitFor(renderer, `!document.querySelector('[role="dialog"]')`, '关闭暂时占用预览')
+        await setPreviewOverride(runtime, writerAutomation.automationId, 'configurationError')
+        await click('启动运行')
+        await visible('当前不能领取完整输入组')
+        await visible('配置错误')
+        await capture('18-configuration-error-preview', 'docs/prototype/project-management-pm3/batch-start-dialog.png')
+        await pressKey('Escape')
+        await waitFor(renderer, `!document.querySelector('[role="dialog"]')`, '关闭配置错误预览')
+        await setPreviewOverride(runtime, writerAutomation.automationId, null)
         checkpoint('第二自动化管理链通过：UI 配置并启动后读取第一自动化新增的账号，任务页显示原始输入和真实读取事实，账号总数保持不变。')
+        checkpoint('候选状态管理页通过：无匹配、暂时占用和配置错误分别显示独立事实与启动约束。')
 
         const facts = {
           projectId: project.projectId,
@@ -715,9 +756,9 @@ print(created.workflow_id); factory.dispose()`
           usedEmailCount: emailsAfter.filter(item => item.statusId === usedStatusId).length,
           accountCount: accountsAfterReader.length,
           idempotencyRecovery: '原操作已找回',
-          keyboard: { escapeClosedStopDialog: true, enterAppliedLogSearch: 'manualPending' },
+          keyboard: { escapeClosedStopDialog: true, enterAppliedLogSearch: enterAppliedLogSearch ? 'uiVerified' : 'manualPending' },
           zoom: { tested: [100, 200], horizontalOverflow: false },
-          candidateStates: { noMatch: 'uiVerified', temporarilyBusy: 'manualPending', configurationError: 'manualPending' },
+          candidateStates: { noMatch: 'uiVerified', temporarilyBusy: 'uiVerified', configurationError: 'uiVerified' },
           finiteEndReason: finiteTerminal.batch.selectionOutcome,
           unlimitedStatus: stopped.batch.status,
           executionBoundary: boundary,

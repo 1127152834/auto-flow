@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 
 from autoflow.application.project_automations.service import ProjectAutomationService
@@ -14,6 +15,7 @@ from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.bootstrap.config import Settings
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.project_automation_models import (
@@ -45,6 +47,7 @@ from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_data_start import _setup, uid
 from tests.qa.pm4_fake_executor import CREATE_ACCOUNT, PauseBarrier
 from tests.qa.pm4_sidecar import (
+    _apply_f_preview_override,
     _b_capability_manifest,
     _create_targets,
     _f_capability_manifest,
@@ -52,6 +55,7 @@ from tests.qa.pm4_sidecar import (
     _f_force_stop_projection,
     _f_status_inputs,
     _status_inputs,
+    create_qa_app,
 )
 from tests.qa.pm4_v1_runner import PM4V1FakeRunner
 
@@ -65,6 +69,97 @@ def test_f_force_stop_projection_keeps_a_real_grace_before_the_fake_gate() -> No
         "stopping", accepted, now=accepted + timedelta(seconds=2)
     ) == (True, accepted + timedelta(seconds=2))
     assert _f_force_stop_projection("completed", accepted, now=accepted)[0] is False
+
+
+@pytest.mark.parametrize(
+    ("outcome", "detail"),
+    [
+        ("temporarilyBusy", "符合条件的记录暂时被其他任务占用"),
+        ("configurationError", "数据输入配置或表结构已失效"),
+    ],
+)
+def test_f_preview_override_preserves_real_input_facts_and_changes_only_last_candidate(
+    outcome: str, detail: str
+) -> None:
+    original = {
+        "runnable": True,
+        "selectionStatus": "ready",
+        "evaluatedCandidateBindings": 2,
+        "inputs": [
+            {
+                "inputId": "person",
+                "alias": "人员输入",
+                "tableDisplay": "人员",
+                "recordDisplay": "uuid · person-1",
+                "values": [{"fieldName": "姓名", "value": "张三"}],
+                "outcome": "ready",
+                "required": True,
+                "detail": None,
+                "scannedCount": None,
+            },
+            {
+                "inputId": "email",
+                "alias": "邮箱输入",
+                "tableDisplay": "邮箱",
+                "recordDisplay": "uuid · email-1",
+                "values": [{"fieldName": "邮箱地址", "value": "a@example.test"}],
+                "outcome": "ready",
+                "required": True,
+                "detail": None,
+                "scannedCount": None,
+            },
+        ],
+    }
+
+    projected = _apply_f_preview_override(original, outcome)
+
+    assert original["runnable"] is True
+    assert original["inputs"][1]["outcome"] == "ready"
+    assert projected["runnable"] is False
+    assert projected["selectionStatus"] == outcome
+    assert projected["inputs"][0] == original["inputs"][0]
+    assert projected["inputs"][1] == {
+        **original["inputs"][1],
+        "recordDisplay": None,
+        "values": [],
+        "outcome": outcome,
+        "detail": detail,
+    }
+
+
+def test_f_preview_override_rejects_unknown_or_empty_candidates() -> None:
+    with pytest.raises(ValueError, match="unsupported PM4-F preview outcome"):
+        _apply_f_preview_override({"inputs": [{}]}, "ready")
+    with pytest.raises(ValueError, match="at least one configured input"):
+        _apply_f_preview_override({"inputs": []}, "temporarilyBusy")
+
+
+def test_f_preview_control_is_authenticated_qa_only_and_not_in_openapi(tmp_path) -> None:
+    app = create_qa_app(
+        Settings(
+            data_dir=str(tmp_path),
+            instance_id="pm4-f-preview-control",
+            instance_token="secret",
+        ),
+        mode="f",
+    )
+    path = "/api/v1/qa/pm4/input-preview"
+    with TestClient(app) as client:
+        assert client.post(path, json={"automationId": "writer"}).status_code == 401
+        response = client.post(
+            path,
+            json={"automationId": "writer", "outcome": "temporarilyBusy"},
+            headers={"x-autoflow-token": "secret"},
+        )
+        assert response.status_code == 200
+        assert response.json() == {
+            "automationId": "writer",
+            "outcome": "temporarilyBusy",
+        }
+        schema = client.get(
+            "/openapi.json", headers={"x-autoflow-token": "secret"}
+        ).json()
+        assert path not in schema["paths"]
 
 
 def _target_data(factory, project_id: str, automation) -> tuple[dict, dict]:

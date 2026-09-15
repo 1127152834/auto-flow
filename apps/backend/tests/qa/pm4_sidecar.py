@@ -13,10 +13,12 @@ import logging
 import os
 import socket
 from collections.abc import Sequence
+from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import Event, Thread
 
+from fastapi import HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -38,6 +40,67 @@ from tests.qa.pm4_v1_runner import PM4V1FakeRunner
 
 _LOG = logging.getLogger(__name__)
 _F_FORCE_STOP_GRACE = timedelta(seconds=2)
+_F_PREVIEW_OUTCOMES = {"temporarilyBusy", "configurationError"}
+
+
+def _apply_f_preview_override(
+    preview: dict[str, object], outcome: str
+) -> dict[str, object]:
+    if outcome not in _F_PREVIEW_OUTCOMES:
+        raise ValueError(f"unsupported PM4-F preview outcome: {outcome}")
+    projected = deepcopy(preview)
+    inputs = projected.get("inputs")
+    if not isinstance(inputs, list) or not inputs:
+        raise ValueError("PM4-F preview override requires at least one configured input")
+    target = inputs[-1]
+    if not isinstance(target, dict):
+        raise TypeError("PM4-F preview override requires object inputs")
+    details = {
+        "temporarilyBusy": "符合条件的记录暂时被其他任务占用",
+        "configurationError": "数据输入配置或表结构已失效",
+    }
+    projected["runnable"] = False
+    projected["selectionStatus"] = outcome
+    target.update(
+        recordDisplay=None,
+        values=[],
+        outcome=outcome,
+        detail=details[outcome],
+    )
+    return projected
+
+
+def _install_f_preview_controls(app, coordinator) -> None:
+    overrides: dict[str, str] = {}
+    real_preview = coordinator.preview_inputs
+
+    def controlled_preview(
+        project_id: str, automation_id: str, expected_revision: int
+    ) -> dict[str, object]:
+        preview = real_preview(project_id, automation_id, expected_revision)
+        outcome = overrides.get(automation_id)
+        return (
+            _apply_f_preview_override(preview, outcome)
+            if outcome is not None
+            else preview
+        )
+
+    coordinator.preview_inputs = controlled_preview
+
+    @app.post("/api/v1/qa/pm4/input-preview", include_in_schema=False)
+    async def set_preview_override(request: Request) -> dict[str, object]:
+        body = await request.json()
+        automation_id = body.get("automationId")
+        outcome = body.get("outcome")
+        if not isinstance(automation_id, str) or not automation_id:
+            raise HTTPException(422, "automationId is required")
+        if outcome is None:
+            overrides.pop(automation_id, None)
+            return {"automationId": automation_id, "outcome": None}
+        if outcome not in _F_PREVIEW_OUTCOMES:
+            raise HTTPException(422, "unsupported PM4-F preview outcome")
+        overrides[automation_id] = outcome
+        return {"automationId": automation_id, "outcome": outcome}
 
 
 def _f_force_stop_projection(
@@ -304,6 +367,7 @@ def create_qa_app(settings: Settings, *, mode: str = "v1"):
         coordinator._resolve_data_capability_manifest = _b_capability_manifest
     elif mode == "f":
         coordinator._resolve_data_capability_manifest = _f_capability_manifest
+        _install_f_preview_controls(app, coordinator)
 
     scheduler = app.state.project_run_scheduler
     if mode == "f":
