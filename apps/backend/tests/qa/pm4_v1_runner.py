@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from typing import Any, ClassVar, Literal, cast
 from uuid import NAMESPACE_URL, uuid5
@@ -86,6 +86,16 @@ class _Claim:
     account_values: Mapping[str, Any]
 
 
+@dataclass(frozen=True)
+class _ReaderClaim:
+    project_id: str
+    batch_id: str
+    task_id: str
+    run_id: str
+    execution_generation: int
+    account: Mapping[str, Any]
+
+
 class PM4V1FakeRunner:
     """Drive the approved three-table QA slice without invoking Studio or a browser."""
 
@@ -105,6 +115,7 @@ class PM4V1FakeRunner:
         simulate_crash_before_finalize: bool = False,
         mode: Literal["v1", "b"] = "v1",
         max_auto_tasks: int | None = None,
+        settle_normal_stops: bool = True,
     ) -> None:
         if max_auto_tasks is not None and max_auto_tasks < 1:
             raise ValueError("max_auto_tasks must be positive")
@@ -119,41 +130,44 @@ class PM4V1FakeRunner:
         self._simulate_crash_before_finalize = simulate_crash_before_finalize
         self._mode = mode
         self._max_auto_tasks = max_auto_tasks
+        self._settle_normal_stops = settle_normal_stops
         self._finalized_tasks = 0
 
     async def tick(self) -> PM4V1RunOutcome | None:
         self._settle_stopping_batches()
-        if (
+        reader_only = (
             self._max_auto_tasks is not None
             and self._finalized_tasks >= self._max_auto_tasks
-        ):
-            return None
-        claim = self._claim_one()
+        )
+        claim = self._claim_one(reader_only=reader_only)
         if claim is None:
-            pending = self._pending_data_batch()
+            pending = self._pending_data_batch(reader_only=reader_only)
             if pending is not None:
                 claim_outcome = ProjectBatchScheduler.claim_data_task(
                     self._factory, pending[0], pending[1]
                 )
                 if claim_outcome != "ready":
                     self._settle_claim_outcome(pending[0], pending[1], claim_outcome)
-                claim = self._claim_one()
+                claim = self._claim_one(reader_only=reader_only)
         if claim is None:
             return None
-        callbacks = _CapabilityCallbacks(self, claim)
-        result = await PM4FakeExecutor(
-            callbacks,
-            pause_barrier=self._pause_barrier,
-            fail_step=self._fail_step,
-            mode=self._mode,
-        ).execute(
-            FakeExecutionRequest(
-                claim.task_id,
-                claim.run_id,
-                claim.execution_generation,
-                claim.inputs,
+        if isinstance(claim, _ReaderClaim):
+            result = self._read_account(claim)
+        else:
+            callbacks = _CapabilityCallbacks(self, claim)
+            result = await PM4FakeExecutor(
+                callbacks,
+                pause_barrier=self._pause_barrier,
+                fail_step=self._fail_step,
+                mode=self._mode,
+            ).execute(
+                FakeExecutionRequest(
+                    claim.task_id,
+                    claim.run_id,
+                    claim.execution_generation,
+                    claim.inputs,
+                )
             )
-        )
         if self._simulate_crash_before_finalize:
             return PM4V1RunOutcome(result, False)
         finalized = self._finalize(claim, result)
@@ -188,17 +202,27 @@ class PM4V1FakeRunner:
                 batch.completed_at = now
             session.commit()
 
-    def _pending_data_batch(self) -> tuple[str, str] | None:
+    def _pending_data_batch(
+        self, *, reader_only: bool = False
+    ) -> tuple[str, str] | None:
         with self._factory() as session:
-            return session.execute(
-                select(ProjectBatchRow.project_id, ProjectBatchRow.id)
+            batches = session.scalars(
+                select(ProjectBatchRow)
                 .where(
                     ProjectBatchRow.claim_gate_state == "open",
                     ProjectBatchRow.status.in_(("accepted", "blocked", "running")),
                 )
                 .order_by(ProjectBatchRow.created_at, ProjectBatchRow.id)
-                .limit(1)
-            ).one_or_none()
+            ).all()
+            batch = next(
+                (
+                    item
+                    for item in batches
+                    if not reader_only or _batch_is_account_reader(item)
+                ),
+                None,
+            )
+            return (batch.project_id, batch.id) if batch is not None else None
 
     def _settle_stopping_batches(self) -> None:
         """Finish QA-owned stop facts after the in-process fake executor is quiescent."""
@@ -225,6 +249,8 @@ class PM4V1FakeRunner:
                 force_requested = any(
                     operation.kind == "forceStopBatch" for operation in operations
                 )
+                if not force_requested and not self._settle_normal_stops:
+                    continue
                 tasks = session.scalars(
                     select(ProjectTaskRow).where(ProjectTaskRow.batch_id == batch.id)
                 ).all()
@@ -293,7 +319,9 @@ class PM4V1FakeRunner:
                     operation.updated_at = operation.completed_at = now
             session.commit()
 
-    def _claim_one(self) -> _Claim | None:
+    def _claim_one(
+        self, *, reader_only: bool = False
+    ) -> _Claim | _ReaderClaim | None:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             rows = session.execute(
@@ -320,6 +348,10 @@ class PM4V1FakeRunner:
                     row
                     for row in rows
                     if row[1].inputs
+                    and (
+                        not reader_only
+                        or _account_reader_input(row[1].inputs) is not None
+                    )
                     and any(
                         binding.get("capability") == "project.data"
                         for binding in row[2].capability_bindings
@@ -363,7 +395,17 @@ class PM4V1FakeRunner:
         task: ProjectTaskRow,
         snapshot: ProjectTaskInputSnapshotRow,
         run: WorkflowRunRow,
-    ) -> _Claim:
+    ) -> _Claim | _ReaderClaim:
+        account_input = _account_reader_input(snapshot.inputs)
+        if account_input is not None:
+            return _ReaderClaim(
+                task.project_id,
+                task.batch_id,
+                task.id,
+                task.run_id,
+                run.execution_generation,
+                account_input,
+            )
         person, email = _required_roles(snapshot.inputs)
         email_ref = _record_ref(email["recordRef"])
         status = session.scalar(
@@ -410,7 +452,40 @@ class PM4V1FakeRunner:
             values,
         )
 
-    def _finalize(self, claim: _Claim, result: FakeExecutionResult) -> bool:
+    def _read_account(self, claim: _ReaderClaim) -> FakeExecutionResult:
+        self._assert_execution_active(claim)
+        account = claim.account
+        field_ids = [
+            item["fieldId"]
+            for item in account.get("values", [])
+            if isinstance(item, Mapping) and item.get("fieldId")
+        ]
+        snapshot = self._capabilities.read_record(
+            self._capabilities.scope(
+                claim.project_id,
+                claim.task_id,
+                claim.run_id,
+            ),
+            ReadProjectRecordRequest(
+                claim.execution_generation,
+                _record_ref(account["recordRef"]),
+                field_ids,
+                "workflow",
+            ),
+        )
+        return FakeExecutionResult(
+            claim.task_id,
+            claim.run_id,
+            claim.execution_generation,
+            "succeeded",
+            (),
+            {"accountRead": snapshot},
+            None,
+        )
+
+    def _finalize(
+        self, claim: _Claim | _ReaderClaim, result: FakeExecutionResult
+    ) -> bool:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             run = session.get(WorkflowRunRow, claim.run_id)
@@ -425,6 +500,23 @@ class PM4V1FakeRunner:
                 session.rollback()
                 return False
             now = datetime.now(UTC)
+            run.last_sequence += 1
+            session.add(
+                _event(
+                    run,
+                    run.last_sequence,
+                    "log",
+                    {
+                        "level": "info",
+                        "message": (
+                            "隔离测试执行器已读取账号记录"
+                            if isinstance(claim, _ReaderClaim)
+                            else "隔离测试执行器已提交三表数据操作"
+                        ),
+                    },
+                    now,
+                )
+            )
             run.last_sequence += 1
             session.add(
                 _event(
@@ -510,7 +602,7 @@ class PM4V1FakeRunner:
         self._acknowledgements_lost.add(key)
         return True
 
-    def _assert_execution_active(self, claim: _Claim) -> None:
+    def _assert_execution_active(self, claim: _Claim | _ReaderClaim) -> None:
         with self._factory() as session:
             run = session.get(WorkflowRunRow, claim.run_id)
             batch = session.get(ProjectBatchRow, claim.batch_id)
@@ -870,6 +962,10 @@ def _business_output(result: FakeExecutionResult) -> dict[str, str]:
         summary["邮箱状态"] = "已使用"
     if "account" in result.outputs:
         summary["账号记录"] = "已新增 1 条"
+    if "accountRead" in result.outputs:
+        summary["账号记录"] = "已读取 1 条"
+    if any(event.kind == "operationRecovered" for event in result.events):
+        summary["幂等恢复"] = "原操作已找回"
     if not summary:
         summary["执行结果"] = "未完成数据写入"
     return summary
@@ -891,6 +987,22 @@ def _required_roles(inputs: list[dict[str, Any]]) -> tuple[dict, dict]:
             409,
         )
     return person, email
+
+
+def _account_reader_input(inputs: list[dict[str, Any]]) -> dict | None:
+    if len(inputs) != 1 or not isinstance(inputs[0], dict):
+        return None
+    labels = " ".join(
+        str(inputs[0].get(key, "")) for key in ("alias", "tableDisplay", "name")
+    ).casefold()
+    return inputs[0] if "账号" in labels or "account" in labels else None
+
+
+def _batch_is_account_reader(batch: ProjectBatchRow) -> bool:
+    automation = batch.frozen_request.get("automation", {})
+    input_plan = automation.get("inputPlan", {}) if isinstance(automation, Mapping) else {}
+    inputs = input_plan.get("inputs", []) if isinstance(input_plan, Mapping) else []
+    return isinstance(inputs, list) and _account_reader_input(inputs) is not None
 
 
 def _matches(value: Mapping[str, Any], chinese: str, english: str) -> bool:
@@ -950,19 +1062,10 @@ def _record_ref(value: Mapping[str, Any]) -> RecordRef:
     )
 
 
-def _with_generation(claim: _Claim, generation: int) -> _Claim:
-    return _Claim(
-        claim.project_id,
-        claim.batch_id,
-        claim.task_id,
-        claim.run_id,
-        generation,
-        claim.inputs,
-        claim.email_status_id,
-        claim.account_table_id,
-        claim.account_generation,
-        claim.account_values,
-    )
+def _with_generation(
+    claim: _Claim | _ReaderClaim, generation: int
+) -> _Claim | _ReaderClaim:
+    return replace(claim, execution_generation=generation)
 
 
 def _event(

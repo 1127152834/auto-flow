@@ -1,20 +1,26 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
 from sqlalchemy import func, select
 
+from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.settings.runtime import QuiesceGate
+from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.project_automation_models import (
     ProjectAutomationRow,
+)
+from autoflow.infrastructure.database.project_automations import (
+    SqlAlchemyProjectAutomations,
 )
 from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
 from autoflow.infrastructure.database.project_data_catalog import (
@@ -29,14 +35,36 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectRecordLeaseRow,
     ProjectTaskRow,
 )
+from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.workflow_runtime_models import (
     WorkflowRunEventRow,
     WorkflowRunRow,
 )
+from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_data_start import _setup, uid
 from tests.qa.pm4_fake_executor import CREATE_ACCOUNT, PauseBarrier
-from tests.qa.pm4_sidecar import _b_capability_manifest, _create_targets, _status_inputs
+from tests.qa.pm4_sidecar import (
+    _b_capability_manifest,
+    _create_targets,
+    _f_capability_manifest,
+    _f_create_targets,
+    _f_force_stop_projection,
+    _f_status_inputs,
+    _status_inputs,
+)
 from tests.qa.pm4_v1_runner import PM4V1FakeRunner
+
+
+def test_f_force_stop_projection_keeps_a_real_grace_before_the_fake_gate() -> None:
+    accepted = datetime(2026, 9, 16, tzinfo=UTC)
+    assert _f_force_stop_projection(
+        "stopping", accepted, now=accepted + timedelta(seconds=1)
+    ) == (False, accepted + timedelta(seconds=2))
+    assert _f_force_stop_projection(
+        "stopping", accepted, now=accepted + timedelta(seconds=2)
+    ) == (True, accepted + timedelta(seconds=2))
+    assert _f_force_stop_projection("completed", accepted, now=accepted)[0] is False
 
 
 def _target_data(factory, project_id: str, automation) -> tuple[dict, dict]:
@@ -123,6 +151,75 @@ def _grant_b_capabilities(coordinator, account: dict) -> None:
     coordinator._resolve_data_capability_manifest = manifest
 
 
+def _create_account_reader(factory, project_id: str, account: dict):
+    with factory() as session:
+        field = session.scalar(
+            select(DataFieldRow)
+            .where(
+                DataFieldRow.project_id == project_id,
+                DataFieldRow.table_id == account["tableId"],
+                DataFieldRow.dataset_generation == account["datasetGeneration"],
+                DataFieldRow.key == "result",
+            )
+        )
+        assert field is not None
+        field_id = field.id
+    document = workflow_payload()
+    document["id"] = uid()
+    workflow = WorkflowService(SqlAlchemyWorkflowRepository(factory)).create(document, uid())
+    return ProjectAutomationService(
+        SqlAlchemyProjects(factory), SqlAlchemyProjectAutomations(factory)
+    ).create(
+        project_id,
+        uid(),
+        {
+            "name": "账号结果复核",
+            "description": "读取上一自动化创建的账号",
+            "workflowId": workflow.workflow_id,
+            "inputPlan": {
+                "inputs": [
+                    {
+                        "inputId": uid(),
+                        "alias": "账号输入",
+                        "tableId": account["tableId"],
+                        "datasetGeneration": account["datasetGeneration"],
+                        "mode": "independent",
+                        "required": True,
+                        "fieldBindings": [
+                            {
+                                "inputFieldId": uid(),
+                                "inputFieldAlias": "网页结果",
+                                "fieldRef": {
+                                    "projectId": project_id,
+                                    "tableId": account["tableId"],
+                                    "datasetGeneration": account[
+                                        "datasetGeneration"
+                                    ],
+                                    "fieldId": field_id,
+                                },
+                            }
+                        ],
+                        "filter": {"type": "all", "items": []},
+                        "orderBy": [
+                            {"systemField": "recordKey", "direction": "asc"}
+                        ],
+                    }
+                ]
+            },
+            "parameterSchema": [],
+            "environmentPolicy": {"source": "newFromProfile"},
+            "runPolicy": {
+                "maxTasks": 1,
+                "concurrency": 1,
+                "maxLiveInstances": 1,
+                "continueAfterFailure": False,
+                "automaticExecutionTimeoutSeconds": 60,
+                "manualDeadlineSeconds": 300,
+            },
+        },
+    )[0]
+
+
 @pytest.mark.asyncio
 async def test_runner_completes_real_writes_terminal_facts_and_lease_release(tmp_path):
     factory, project_id, automation, coordinator = _setup(tmp_path)
@@ -194,6 +291,77 @@ async def test_runner_completes_real_writes_terminal_facts_and_lease_release(tmp
         "账号记录": "已新增 1 条",
     }
     assert await PM4V1FakeRunner(factory).tick() is None
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_final_runner_reads_account_created_by_first_automation_without_writing(
+    tmp_path,
+):
+    factory, project_id, writer, coordinator = _setup(tmp_path)
+    _status, account = _target_data(factory, project_id, writer)
+    coordinator._resolve_create_record_targets = _f_create_targets
+    coordinator._resolve_status_input_ids = _f_status_inputs
+    coordinator._resolve_data_capability_manifest = _f_capability_manifest
+    writer_batch = coordinator.start(
+        project_id,
+        writer.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": writer.management_revision,
+            "parameters": {},
+            "maxTasks": None,
+            "concurrency": 1,
+        },
+    )
+    runner = PM4V1FakeRunner(factory, max_auto_tasks=1)
+    first = await runner.tick()
+    assert first is not None and first.finalized
+
+    reader = _create_account_reader(factory, project_id, account)
+    batch = coordinator.start(
+        project_id,
+        reader.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": reader.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )[0]
+    second = await runner.tick()
+
+    assert second is not None and second.finalized
+    assert second.result.status == "succeeded"
+    assert second.result.outputs["accountRead"]["values"]
+    tasks = coordinator.list_tasks(project_id, batch.batch_id)
+    assert len(tasks) == 1
+    detail = ProjectRunQueries(factory).task_detail(project_id, tasks[0].task_id)
+    assert [item["alias"] for item in detail["inputSnapshot"]["inputs"]] == [
+        "账号输入"
+    ]
+    assert [item["kind"] for item in detail["dataWrites"]] == ["read"]
+    with factory() as session:
+        account_count = session.scalar(
+            select(func.count())
+            .select_from(DataRecordRow)
+            .where(
+                DataRecordRow.project_id == project_id,
+                DataRecordRow.table_id == account["tableId"],
+                DataRecordRow.deleted.is_(False),
+            )
+        )
+        event_kinds = list(
+            session.scalars(
+                select(WorkflowRunEventRow.kind)
+                .where(WorkflowRunEventRow.run_id == tasks[0].run_id)
+                .order_by(WorkflowRunEventRow.sequence)
+            )
+        )
+    assert account_count == 1
+    assert "log" in event_kinds
+    assert len(coordinator.list_tasks(project_id, writer_batch[0].batch_id)) == 1
     factory.dispose()
 
 

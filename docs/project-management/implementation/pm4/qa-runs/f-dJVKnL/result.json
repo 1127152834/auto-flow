@@ -1,0 +1,535 @@
+{
+  "status": "passed",
+  "scenario": "PM4-F final-management-chain",
+  "scope": "管理侧通过，真实执行核心接入待验收",
+  "boundary": {
+    "executor": "fake",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  },
+  "visualReview": {
+    "status": "passedWithManualFollowup",
+    "method": "按画板逐屏人工结构审查；不使用整张多画板像素平均分。",
+    "reviewer": "Codex PM4-F QA",
+    "mandatoryStructurePassed": true,
+    "minimumScreenScore": 85,
+    "navigationException": "应用级导航按已批准方案保留顶部导航；主体布局、信息层级和操作位置对照 gallery。",
+    "styleChecks": {
+      "warmGrayAndClay": "passed",
+      "compactFineGridTables": "passed",
+      "smallRadius": "passed",
+      "horizontalOverflowAtCapture": "passed",
+      "staleToastBeforeCandidateScreenshots": "passed"
+    },
+    "viewportChecks": [
+      {
+        "zoomPercent": 100,
+        "viewport": {
+          "width": 1440,
+          "height": 1024
+        },
+        "status": "passed"
+      },
+      {
+        "zoomPercent": 200,
+        "effectiveViewport": {
+          "width": 720,
+          "height": 512
+        },
+        "dpr": 2,
+        "status": "passedWithVerticalScroll"
+      }
+    ],
+    "candidateStates": {
+      "noMatch": {
+        "ui": "passed",
+        "screenshot": "16-no-match-preview.png"
+      },
+      "temporarilyBusy": {
+        "ui": "manualPending",
+        "automaticIntegration": "passed"
+      },
+      "configurationError": {
+        "ui": "manualPending",
+        "automaticIntegration": "passed"
+      }
+    },
+    "keyboard": {
+      "escapeStopDialog": "passed",
+      "enterLogSearch": "manualPending",
+      "note": "Electron/CDP 合成 Enter 未触发表单提交；真实按钮路径通过，产品组件测试覆盖 Enter，保留真实设备人工验收。"
+    },
+    "manualPending": [
+      "暂时占用（temporarilyBusy）管理页面截图与实际键盘确认",
+      "配置错误（configurationError）管理页面截图与实际键盘确认",
+      "日志搜索 Enter 的真实设备操作",
+      "Windows、其他架构、打包应用和用户手测"
+    ]
+  },
+  "gitHead": "8c698d38ff2f4ddc4973826c8d274c349f0a42c7",
+  "sourceSha256": "b6cddd53fc179bfed4b987140a18caa104b14a403bbb4051a626ee0f47e5952a",
+  "platform": "darwin",
+  "arch": "arm64",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm4-v1-qa-rjPLRl",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm4-v1-qa-rjPLRl/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL",
+  "checkpoints": [
+    "UI 已创建项目；只读 GET 找回同一真实项目。",
+    "UI 已创建三张表、必要字段、人员/邮箱记录及待使用/已使用状态；账号表为空。",
+    "UI 已创建自动化并配置两个 independent + required 数据输入。",
+    "有限三次管理链通过：三个成功任务复用同一人员，领取三个不同待使用邮箱，显式改为已使用并各新增一条账号。",
+    "不限次数管理链通过：执行两次后由 UI 主动停止，领取门关闭、任务数保持两条，五次执行没有重复账号。",
+    "UI 已创建第二个账号读取自动化，并配置账号表为唯一必填输入。",
+    "第二自动化管理链通过：UI 配置并启动后读取第一自动化新增的账号，任务页显示原始输入和真实读取事实，账号总数保持不变。"
+  ],
+  "screenshots": [
+    {
+      "name": "00-isolated-ready",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/00-isolated-ready.png",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "f8f742d81589687e6982bd6b48ed23ebe1d3b3e2cb9af9c792820da9de14938a",
+      "visualReview": {
+        "status": "passed",
+        "score": 88,
+        "mandatoryStructure": true,
+        "finding": "真实 #/projects 全部项目视图；项目卡片、搜索、筛选、排序和顶部导航结构完整。"
+      }
+    },
+    {
+      "name": "01-three-tables",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/01-three-tables.png",
+      "reference": "05-data/001-data-v1-approved-ca940d.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "af733cd0d6755d08b712b8aedc9c6555aa6894bee8e9b54160cede5bc24924ec",
+      "visualReview": {
+        "status": "passed",
+        "score": 89,
+        "mandatoryStructure": true,
+        "finding": "项目数据目录、三张真实表、来源事实和主要操作位置完整。"
+      }
+    },
+    {
+      "name": "02-two-required-inputs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/02-two-required-inputs.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-inputs.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/automations/9544f47c-b2e0-4ddb-a010-006cc8f9431e",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "fd9f1c8f81ddb5dca16ec05bb58f509f2ff0d5391bb02ba91f07844475f00cf2",
+      "visualReview": {
+        "status": "passed",
+        "score": 88,
+        "mandatoryStructure": true,
+        "finding": "两个独立必填输入、表选择和配置保存状态可见。"
+      }
+    },
+    {
+      "name": "03-finite-three-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/03-finite-three-preview.png",
+      "reference": "docs/prototype/project-management-pm3/batch-start-dialog.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/automations/9544f47c-b2e0-4ddb-a010-006cc8f9431e",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "b6d7139bcb76a3af43d75f1f65790ab685b601533f54631bf3c887ca3f7c8109",
+      "visualReview": {
+        "status": "passed",
+        "score": 88,
+        "mandatoryStructure": true,
+        "finding": "有限三次、两个候选输入、资源摘要和启动参数完整可见。"
+      }
+    },
+    {
+      "name": "04-finite-three-completed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/04-finite-three-completed.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/batches/ae28cb44-13be-4235-b992-6a01e46cdbde",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "32c0e632b2602f0d4691f3583d11ebaf4e3335b6d6cf718d9c34c57001e56680",
+      "visualReview": {
+        "status": "passed",
+        "score": 90,
+        "mandatoryStructure": true,
+        "finding": "批次事实、3 个成功任务、结束原因、查询工具和配置快照层级完整。"
+      }
+    },
+    {
+      "name": "05-finite-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/05-finite-task-input-output.png",
+      "reference": "03-runs/006-task-input-output-approved-7af0aa.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/tasks/58731ede-2871-496a-aab8-0a5b8eab13cd/io",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "ab7728028d1c21bd3dba6f12c25a94dc34270f42e461424fde54943a2f1e67bb",
+      "visualReview": {
+        "status": "passed",
+        "score": 90,
+        "mandatoryStructure": true,
+        "finding": "不可变原始输入、状态写入、账号新增、稳定引用与恢复事实同时可见。"
+      }
+    },
+    {
+      "name": "06-unlimited-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/06-unlimited-preview.png",
+      "reference": "docs/prototype/project-management-pm3/batch-start-dialog.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/automations/9544f47c-b2e0-4ddb-a010-006cc8f9431e",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "d46d083be17b2708eb85ac7682dcfe6c897ddbe2c10515ad6ef4bc34c9dbf7de",
+      "visualReview": {
+        "status": "passed",
+        "score": 88,
+        "mandatoryStructure": true,
+        "finding": "不限次数选择、候选数据和资源摘要完整。"
+      }
+    },
+    {
+      "name": "07-unlimited-two-tasks-running",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/07-unlimited-two-tasks-running.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/batches/6bb4225d-889a-44e9-b063-026b618f081c",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "db23d6cd9d24fc79d5630969ee1cee5b4cfd98019b987bf1a2a8bd3a1064de3c",
+      "visualReview": {
+        "status": "passed",
+        "score": 88,
+        "mandatoryStructure": true,
+        "finding": "不限批次运行态、已完成任务和停止入口完整。"
+      }
+    },
+    {
+      "name": "08-unlimited-stop-confirmation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/08-unlimited-stop-confirmation.png",
+      "reference": "03-runs/015-stop-confirm-e79f81.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/batches/6bb4225d-889a-44e9-b063-026b618f081c",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "a9a39569c0c8e4a787cbe6e864c72b807766ca2fc529fb6cbb84829c723c7e89",
+      "visualReview": {
+        "status": "passed",
+        "score": 87,
+        "mandatoryStructure": true,
+        "finding": "普通停止确认、影响说明、原因输入和取消默认路径完整。"
+      }
+    },
+    {
+      "name": "09-unlimited-force-stop-confirmation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/09-unlimited-force-stop-confirmation.png",
+      "reference": "03-runs/016-force-stop-confirm-00d61e.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/batches/6bb4225d-889a-44e9-b063-026b618f081c",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "24650b79038bc312f1573f154340bc1696fd7f8e608b8bbc0ca1d3f1617eea1b",
+      "visualReview": {
+        "status": "passed",
+        "score": 87,
+        "mandatoryStructure": true,
+        "finding": "强停确认、不可恢复影响、确认短语和危险操作层级完整。"
+      }
+    },
+    {
+      "name": "10-unlimited-stopped",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/10-unlimited-stopped.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/batches/6bb4225d-889a-44e9-b063-026b618f081c",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "e65b4fed2de96c399b67ac03e1f2eacf9d04cec793c5c8fd1803245f3ae7e8b3",
+      "visualReview": {
+        "status": "passed",
+        "score": 89,
+        "mandatoryStructure": true,
+        "finding": "停止终态、结束原因和任务事实清晰。"
+      }
+    },
+    {
+      "name": "11-reader-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/11-reader-preview.png",
+      "reference": "docs/prototype/project-management-pm3/batch-start-dialog.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/automations/f0d7df50-56c4-475e-98f7-e57d7a04e207",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "217d44f583d89ab6967d740bb3205a858696f119f720620e11c7858ad510d662",
+      "visualReview": {
+        "status": "passed",
+        "score": 88,
+        "mandatoryStructure": true,
+        "finding": "第二自动化的账号输入候选与有限单任务参数完整。"
+      }
+    },
+    {
+      "name": "12-reader-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/12-reader-task-input-output.png",
+      "reference": "03-runs/006-task-input-output-approved-7af0aa.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/tasks/8cfac20f-a84e-480d-bab8-ebae99dc5a5a/io",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "a4eb4e491f83d9bc313d97b811fad3a2cdc889245ecaa53f62099885ce5f232a",
+      "visualReview": {
+        "status": "passed",
+        "score": 90,
+        "mandatoryStructure": true,
+        "finding": "第二自动化真实读取第一自动化新增账号，原始输入、读取引用和输出边界完整。"
+      }
+    },
+    {
+      "name": "13-reader-run-log",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/13-reader-run-log.png",
+      "reference": "03-runs/005-task-log-510347.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/tasks/8cfac20f-a84e-480d-bab8-ebae99dc5a5a/logs",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "616c78eafe7c828064c08e0aa75481648d8e10b743c21bc222ec2f59a5180c5d",
+      "visualReview": {
+        "status": "passed",
+        "score": 89,
+        "mandatoryStructure": true,
+        "finding": "持久日志事实、搜索、节点与级别筛选完整。"
+      }
+    },
+    {
+      "name": "14-reader-run-log-search-empty",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/14-reader-run-log-search-empty.png",
+      "reference": "03-runs/005-task-log-510347.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/tasks/8cfac20f-a84e-480d-bab8-ebae99dc5a5a/logs",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "c94d4f01e731e78c6c12d91c43b6d0aef493f73476ef9ab26e66d0bb5e3d3f7a",
+      "visualReview": {
+        "status": "passed",
+        "score": 88,
+        "mandatoryStructure": true,
+        "finding": "真实搜索空态保留表头、筛选条件和清除入口。"
+      }
+    },
+    {
+      "name": "15-reader-run-log-200-percent",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/15-reader-run-log-200-percent.png",
+      "reference": "03-runs/005-task-log-510347.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/runs/tasks/8cfac20f-a84e-480d-bab8-ebae99dc5a5a/logs",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "scrollWidth": 708,
+      "sha256": "77799bdce7a30b293aff5832845f9c568d3cf298b6bf1639d5fb46fe384c26e5",
+      "visualReview": {
+        "status": "passed",
+        "score": 85,
+        "mandatoryStructure": true,
+        "finding": "200% 缩放下顶部导航、上下文和任务头无横向溢出；下方内容需纵向滚动。"
+      }
+    },
+    {
+      "name": "16-no-match-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/16-no-match-preview.png",
+      "reference": "docs/prototype/project-management-pm3/batch-start-dialog.png",
+      "route": "#/projects/3b2593ae-50ed-42a1-bf3b-353d34f37f01/automations/9544f47c-b2e0-4ddb-a010-006cc8f9431e",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "7d6d2c99f3ca98ae0c048efac44bbda9d86075fa34d1e4c7a4055f91582a8ce7",
+      "visualReview": {
+        "status": "passed",
+        "score": 87,
+        "mandatoryStructure": true,
+        "finding": "没有匹配数据与配置错误区分，启动前明确提示启动时重新核验。"
+      }
+    }
+  ],
+  "facts": {
+    "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+    "finiteBatchId": "ae28cb44-13be-4235-b992-6a01e46cdbde",
+    "unlimitedBatchId": "6bb4225d-889a-44e9-b063-026b618f081c",
+    "readerBatchId": "68738689-6893-4f11-9283-8e136d02a817",
+    "finiteTaskIds": [
+      "b9ae6f1b-1fec-4b45-ad29-b57263b9f77e",
+      "e38bdd85-d1e2-47d3-bbd8-e2028cae568e",
+      "58731ede-2871-496a-aab8-0a5b8eab13cd"
+    ],
+    "unlimitedTaskIds": [
+      "e2fbedf3-e7b5-4c0e-9cbd-08e30bd95e45",
+      "589354e6-9bf2-463f-9dbe-051508f1dc0b"
+    ],
+    "readerTaskId": "8cfac20f-a84e-480d-bab8-ebae99dc5a5a",
+    "reusablePersonRef": {
+      "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+      "tableId": "a13bcdfe-43b8-4cd8-a39c-fb7130e9b447",
+      "datasetGeneration": "aaae2e87-6ece-4dd3-9098-1bf54d80216e",
+      "recordKey": {
+        "type": "uuid",
+        "value": "39a602b3-3058-4259-931b-85bb8221bd7c"
+      }
+    },
+    "emailRefs": [
+      {
+        "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+        "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+        "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+        "recordKey": {
+          "type": "uuid",
+          "value": "895dd76d-9392-47f8-88a7-e47873dc1032"
+        }
+      },
+      {
+        "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+        "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+        "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+        "recordKey": {
+          "type": "uuid",
+          "value": "55e24fb7-319f-40e9-8a3e-97b639abacb8"
+        }
+      },
+      {
+        "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+        "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+        "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+        "recordKey": {
+          "type": "uuid",
+          "value": "30c4022b-f725-4fa1-b7a1-ee6fc9422b58"
+        }
+      },
+      {
+        "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+        "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+        "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+        "recordKey": {
+          "type": "uuid",
+          "value": "c517a9f2-9320-46b5-a0cd-50da91d7996d"
+        }
+      },
+      {
+        "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+        "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+        "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+        "recordKey": {
+          "type": "uuid",
+          "value": "9738536c-f2c2-4f00-b67b-8c78622d3102"
+        }
+      }
+    ],
+    "readerRecordRef": {
+      "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+      "tableId": "fa136b65-34de-40a0-883a-b344a73cc76a",
+      "datasetGeneration": "9e9a4df1-9bf0-46d7-acbb-322d4c50746e",
+      "recordKey": {
+        "type": "uuid",
+        "value": "0b66174d-cf6d-4c88-88a4-175b000e1405"
+      }
+    },
+    "usedEmailCount": 5,
+    "accountCount": 5,
+    "idempotencyRecovery": "原操作已找回",
+    "keyboard": {
+      "escapeClosedStopDialog": true,
+      "enterAppliedLogSearch": "manualPending"
+    },
+    "zoom": {
+      "tested": [
+        100,
+        200
+      ],
+      "horizontalOverflow": false
+    },
+    "candidateStates": {
+      "noMatch": "uiVerified",
+      "temporarilyBusy": "manualPending",
+      "configurationError": "manualPending"
+    },
+    "finiteEndReason": {
+      "status": "limitReached"
+    },
+    "unlimitedStatus": "stopped",
+    "executionBoundary": {
+      "executor": "fake",
+      "browser": "notExecuted",
+      "studio": "notExecuted"
+    }
+  },
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器执行",
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ],
+  "createdAt": "2026-09-15T19:27:50.630Z",
+  "verificationEvidence": {
+    "finalElectronCommand": "node scripts/qa-project-management-pm4.mjs --final",
+    "finalElectronStatus": "passed",
+    "candidateBackend": "42 integration tests passed",
+    "candidateFrontend": "25 component tests passed"
+  }
+}
