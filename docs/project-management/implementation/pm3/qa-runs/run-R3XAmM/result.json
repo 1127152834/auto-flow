@@ -1,0 +1,37 @@
+{
+  "status": "prepared",
+  "sourceSha256": "801413b21e6b1ff5fd28c9d0dbd6eacd0623be034d78ffb3513f978a04e136e3",
+  "head": "8aabc69d73dc963250032536e17262ca6ea3546d",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-TJ33Tz",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-TJ33Tz/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-R3XAmM",
+  "kernel": {
+    "source": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2",
+    "copiedTo": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-TJ33Tz/workspace/data/kernels/chromium-145.0.7632.109.2",
+    "version": "145.0.7632.109.2"
+  },
+  "fixtureUrl": "http://127.0.0.1:53284/fixture",
+  "workflow": {
+    "workflowId": "58680ef5-a903-488d-8c6a-d130329b1836",
+    "parameterId": "5a56f870-1beb-4d72-b1e1-f9412d42fdc3",
+    "preparation": "工作流文档通过 WorkflowService 预置；Studio 不在本次验收范围。项目与自动化必须通过 UI 创建。"
+  },
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-R3XAmM/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    }
+  ],
+  "next": [
+    "在 UI 中创建项目",
+    "在 UI 中选择预置工作流并创建自动化",
+    "启动批次并核对任务日志、输入与输出证据"
+  ],
+  "commands": {
+    "automatic": "node scripts/qa-project-management-pm3.mjs",
+    "manual": "node scripts/qa-project-management-pm3.mjs --manual",
+    "explicitKernel": "node scripts/qa-project-management-pm3.mjs --manual --kernel-directory /path/to/chromium-x.y.z.w"
+  },
+  "createdAt": "2026-09-14T21:27:29.982Z"
+}

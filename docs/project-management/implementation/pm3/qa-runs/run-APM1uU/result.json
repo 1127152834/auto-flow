@@ -1,0 +1,35 @@
+{
+  "status": "failed",
+  "scenario": "success",
+  "message": "timed out waiting for control 查看任务: null",
+  "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/out/renderer/index.html#/projects/e7e6ffb4-e143-4783-9a3c-dcbb44bf2cee/runs/batches/1d17626f-4824-48d4-90f4-df9fb2f7164e",
+  "bodyText": "AutoFlow\n总览\n项目\n浏览器配置\n代理管理\n模型管理\n设置\n本地服务正常\n项目 / PM3运行验收项目 / 运行记录 / 批次详情\nPM3运行验收项目\n\n真实浏览器批次与证据验收\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n← 返回批次列表\n参数运行验收\n\n1d17626f-4824-48d4-90f4-df9fb2f7164e\n\n已完成\n开始\n2026/9/15 12:39:42\n结束\n2026/9/15 12:39:51\n任务\n2 个\n本批次 2 个任务\n成功 2\n失败或异常 0\n进行中 0\n本批次任务\n参数运行验收\n全部状态\n任务\t所属批次\t任务状态\t时间\t操作\n0abf3761-2607-425a-a44e-b58bcf931a52\n运行 f5d0fd08-a790-4315-89e4-07f18f6187cb\n\t参数运行验收\t\n成功\t2026/9/15 12:39:51\t\n查看任务\n\n7f7eb5e0-25bd-4599-9375-24f90b666d9c\n运行 7f625bc4-9ece-4f5e-bb30-439424f31994\n\t参数运行验收\t\n成功\t2026/9/15 12:39:49\t\n查看任务\n1–2 / 2\n上一页\n第 1 页\n下一页",
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-APM1uU/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-APM1uU/01-automation.png",
+      "sha256": "6c354082f9ee55e6dc3fc660ccf83f539131397fa4917333b957dbc270e3a67d"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-APM1uU/02-start-batch.png",
+      "sha256": "ebfc67f1689be3f14f95294ec438c3ec1f6b8dd2d94478d0ce7e2717d9a6c875"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-APM1uU/04-batch-detail.png",
+      "sha256": "bf4a1848ae6d7761e4cddbcdda13b6f4827e1c0fe93b841b85242c995b3b6ff9"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-APM1uU/99-failure.png",
+      "sha256": "5b7a1119e28731494c7075ca8f812efab77ea169c906428e4a685d6fbcaa6656"
+    }
+  ],
+  "createdAt": "2026-09-15T04:39:58.042Z"
+}

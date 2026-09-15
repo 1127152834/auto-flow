@@ -1,0 +1,50 @@
+{
+  "status": "failed",
+  "scenario": "success",
+  "message": "real browser tasks must request the local fixture",
+  "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/out/renderer/index.html#/projects/e45f8897-624d-4b21-b8ad-03df5285a372/runs/tasks/3a48e7a8-d011-4f3b-81e1-ee8f67bc267c/evidence",
+  "bodyText": "AutoFlow\n总览\n项目\n浏览器配置\n代理管理\n模型管理\n设置\n本地服务正常\n自动化已创建\n关闭\n批次已创建\n关闭\n项目 / PM3运行验收项目 / 运行记录 / 任务详情\nPM3运行验收项目\n\n真实浏览器批次与证据验收\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n← 返回批次\n任务 3a48e7a8-d011-4f3b-81e1-ee8f67bc267c\n\n参数运行验收 · 批次 a14b63c2-c3c7-4670-9ef3-08a97a32bf1c\n\n排队中\n开始时间\n尚未开始\n结束时间\n—\n日志\n输入与输出\n异常与证据\n异常事实\n\n已读取的尝试中没有异常记录。\n\n证据附件\n\n本次运行未生成截图或附件。\n\n历史尝试\n\n暂无节点尝试",
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/00-prepared.png",
+      "sha256": "2e6f964ef2c7532a97c25da74cd26667e1bddd824d52f0e3d19eb2c70292e65c"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/01-automation.png",
+      "sha256": "76ae09575b1b69b7eb5a4c581cd337f2fcef0efd45d6fc6ee5c290a05555b3f4"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/02-start-batch.png",
+      "sha256": "83ccb55e09aad66b44b1871f094f140126dead03b6c9d2d24cdac59093120e42"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/04-batch-detail.png",
+      "sha256": "be4ad29741c1fa1fba5b5f9d398c95bd77d9b6b6d5e81dcfcc728cc298ed4867"
+    },
+    {
+      "name": "05-task-logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/05-task-logs.png",
+      "sha256": "d299d003bdb02909f315a5153761405752fbd2e8d0a20fdb2e1d64f7b1942f22"
+    },
+    {
+      "name": "06-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/06-task-input-output.png",
+      "sha256": "a7e68357730666f9a1497a98ab34379bcb98df2fac0e3faff7be855eb986ad46"
+    },
+    {
+      "name": "07-task-evidence",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/07-task-evidence.png",
+      "sha256": "07174dfd1421e1e81824a18b1ffd1c7186a7b123fbdafe4cd3caeabc1dc95052"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-ERrlEW/99-failure.png",
+      "sha256": "07174dfd1421e1e81824a18b1ffd1c7186a7b123fbdafe4cd3caeabc1dc95052"
+    }
+  ],
+  "createdAt": "2026-09-15T04:40:24.020Z"
+}
