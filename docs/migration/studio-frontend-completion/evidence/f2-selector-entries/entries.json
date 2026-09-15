@@ -2,7 +2,7 @@
   "scope": "当前227保留入口直接renderSelectorInput消费者",
   "totalNodes": 24,
   "totalFields": 26,
-  "verifiedFields": 11,
+  "verifiedFields": 26,
   "entries": [
     {
       "capabilityId": "node:click_element",
@@ -100,10 +100,10 @@
       "component": "UploadFileConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 172,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.upload_file.selector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:get_element_info",
@@ -124,10 +124,10 @@
       "component": "GetChildElementsConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 301,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.get_child_elements.parentSelector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:get_sibling_elements",
@@ -136,10 +136,10 @@
       "component": "GetSiblingElementsConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 341,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.get_sibling_elements.elementSelector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:element_exists",
@@ -148,10 +148,10 @@
       "component": "ElementExistsConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 4076,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.element_exists.selector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:element_visible",
@@ -160,10 +160,10 @@
       "component": "ElementVisibleConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 4110,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.element_visible.selector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:wait_element",
@@ -184,10 +184,10 @@
       "component": "ExtractTableDataConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
       "line": 1510,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.extract_table_data.tableSelector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:screenshot",
@@ -208,10 +208,10 @@
       "component": "SaveImageConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 266,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.save_image.selector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:download_file",
@@ -220,15 +220,15 @@
       "component": "DownloadFileConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 212,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.download_file.triggerSelector",
       "sourceConditions": [
         {
           "line": 211,
           "expression": "downloadMode === 'click'"
         }
       ],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:condition",
@@ -237,8 +237,8 @@
       "component": "ConditionConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ControlModuleConfigs.tsx",
       "line": 151,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.condition.leftValue",
       "sourceConditions": [
         {
           "line": 116,
@@ -249,7 +249,7 @@
           "expression": "renderSelectorInput"
         }
       ],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:assert_checkpoint",
@@ -258,8 +258,8 @@
       "component": "AssertCheckpointConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ControlModuleConfigs.tsx",
       "line": 598,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.assert_checkpoint.selector",
       "sourceConditions": [
         {
           "line": 588,
@@ -270,7 +270,7 @@
           "expression": "renderSelectorInput"
         }
       ],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:wait",
@@ -300,15 +300,15 @@
       "component": "ElementChangeTriggerConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
       "line": 1439,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.element_change_trigger.selector",
       "sourceConditions": [
         {
           "line": 1438,
           "expression": "renderSelectorInput"
         }
       ],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:ai_vision",
@@ -317,10 +317,10 @@
       "component": "AIVisionConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
       "line": 211,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.ai_vision.imageSelector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:ocr_captcha",
@@ -329,10 +329,10 @@
       "component": "OCRCaptchaConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 439,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.ocr_captcha.imageSelector",
       "sourceConditions": [],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:slider_captcha",
@@ -341,8 +341,8 @@
       "component": "SliderCaptchaConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 468,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.slider_captcha.sliderSelector",
       "sourceConditions": [
         {
           "line": 475,
@@ -353,7 +353,7 @@
           "expression": "isNaN(num)"
         }
       ],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     },
     {
       "capabilityId": "node:slider_captcha",
@@ -362,8 +362,8 @@
       "component": "SliderCaptchaConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
       "line": 469,
-      "status": "缺验收",
-      "caseId": null,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.slider_captcha.trackSelector",
       "sourceConditions": [
         {
           "line": 475,
@@ -374,7 +374,7 @@
           "expression": "isNaN(num)"
         }
       ],
-      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+      "remaining": null
     }
   ]
 }

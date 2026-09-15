@@ -5,22 +5,22 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "(data.followNewTab as boolean)",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.hover_element.selector",
@@ -28,22 +28,22 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.input_text.selector",
@@ -51,22 +51,22 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.select_dropdown.selector",
@@ -74,22 +74,22 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.set_checkbox.selector",
@@ -97,22 +97,22 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.drag_element.sourceSelector",
@@ -120,22 +120,22 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "sourceSelector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.drag_element.targetSelector",
@@ -143,22 +143,45 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "targetSelector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.upload_file.selector",
+    "capability": "node:upload_file",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.get_element_info.selector",
@@ -166,22 +189,114 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.get_child_elements.parentSelector",
+    "capability": "node:get_child_elements",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "parentSelector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.get_sibling_elements.elementSelector",
+    "capability": "node:get_sibling_elements",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "elementSelector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.element_exists.selector",
+    "capability": "node:element_exists",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.element_visible.selector",
+    "capability": "node:element_visible",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.wait_element.selector",
@@ -189,22 +304,45 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.extract_table_data.tableSelector",
+    "capability": "node:extract_table_data",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "tableSelector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.screenshot.selector",
@@ -212,22 +350,114 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "字段默认可见",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.save_image.selector",
+    "capability": "node:save_image",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.download_file.triggerSelector",
+    "capability": "node:download_file",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "triggerSelector",
+      "sourceBranch": "downloadMode === 'click'",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.condition.leftValue",
+    "capability": "node:condition",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "leftValue",
+      "sourceBranch": "(data.logicOperator as string) !== 'not'; renderSelectorInput",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.assert_checkpoint.selector",
+    "capability": "node:assert_checkpoint",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "sourceBranch": "operator === 'matches'; renderSelectorInput",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   },
   {
     "id": "F2.SELECTOR.ENTRY.wait.selector",
@@ -235,21 +465,136 @@
     "preconditions": {
       "upstream": "open_page.url=https://example.test/source",
       "field": "selector",
+      "sourceBranch": "(data.waitType as string) === 'time' || !data.waitType; (data.waitType as string) === 'selector'",
       "originalSelector": "原选择器",
       "service": "typed API stub, explicitly Mock"
     },
     "steps": [
-      "挂载实际ConfigPanel",
-      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
       "点击对应字段可视化选择按钮和启动选择器",
       "推进轮询至选中响应",
       "撤销/重做；导出清空再导入"
     ],
-    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
     "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
     "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
     "level": "actual component + typed service mock",
     "status": "已实现且已验收",
-    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.element_change_trigger.selector",
+    "capability": "node:element_change_trigger",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "sourceBranch": "renderSelectorInput",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.ai_vision.imageSelector",
+    "capability": "node:ai_vision",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "imageSelector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.ocr_captcha.imageSelector",
+    "capability": "node:ocr_captcha",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "imageSelector",
+      "sourceBranch": "字段默认可见",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.slider_captcha.sliderSelector",
+    "capability": "node:slider_captcha",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "sliderSelector",
+      "sourceBranch": "v === '' || v.includes('{'); isNaN(num)",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.slider_captcha.trackSelector",
+    "capability": "node:slider_captcha",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "trackSelector",
+      "sourceBranch": "v === '' || v.includes('{'); isNaN(num)",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel并进入字段所需显隐分支",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "仅在字段适用分支显示对应拾取入口；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-entry-wiring.test.tsx"
   }
 ]

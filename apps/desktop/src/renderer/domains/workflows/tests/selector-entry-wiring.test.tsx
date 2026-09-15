@@ -10,12 +10,34 @@ import { useWorkflowStore as store } from '../editor-store'
 import { elementPickerApi, systemApi } from '../api'
 import type { ModuleType } from '../types/workflow'
 Element.prototype.scrollIntoView = vi.fn()
-const entries = [
-  ['click_element', 'selector', '元素选择器'], ['input_text', 'selector', '元素选择器'], ['wait_element', 'selector', '元素选择器'],
-  ['wait', 'selector', '元素选择器'], ['get_element_info', 'selector', '元素选择器'], ['screenshot', 'selector', '元素选择器'],
-  ['select_dropdown', 'selector', '元素选择器'], ['set_checkbox', 'selector', '元素选择器'], ['hover_element', 'selector', '元素选择器'],
-  ['drag_element', 'sourceSelector', '源元素选择器'], ['drag_element', 'targetSelector', '目标元素选择器'],
-] as const
+const entries: Array<{ type: ModuleType; field: string; label: string; extra?: Record<string, unknown> }> = [
+  { type: 'click_element', field: 'selector', label: '元素选择器' },
+  { type: 'input_text', field: 'selector', label: '元素选择器' },
+  { type: 'wait_element', field: 'selector', label: '元素选择器' },
+  { type: 'wait', field: 'selector', label: '元素选择器' },
+  { type: 'get_element_info', field: 'selector', label: '元素选择器' },
+  { type: 'screenshot', field: 'selector', label: '元素选择器' },
+  { type: 'select_dropdown', field: 'selector', label: '元素选择器' },
+  { type: 'set_checkbox', field: 'selector', label: '元素选择器' },
+  { type: 'hover_element', field: 'selector', label: '元素选择器' },
+  { type: 'drag_element', field: 'sourceSelector', label: '源元素选择器' },
+  { type: 'drag_element', field: 'targetSelector', label: '目标元素选择器' },
+  { type: 'upload_file', field: 'selector', label: '上传按钮选择器' },
+  { type: 'get_child_elements', field: 'parentSelector', label: '父元素选择器' },
+  { type: 'get_sibling_elements', field: 'elementSelector', label: '元素选择器' },
+  { type: 'element_exists', field: 'selector', label: '元素选择器' },
+  { type: 'element_visible', field: 'selector', label: '元素选择器' },
+  { type: 'extract_table_data', field: 'tableSelector', label: '表格选择器' },
+  { type: 'save_image', field: 'selector', label: '图片元素选择器' },
+  { type: 'download_file', field: 'triggerSelector', label: '触发元素选择器', extra: { downloadMode: 'click' } },
+  { type: 'condition', field: 'leftValue', label: '元素选择器', extra: { conditionType: 'element_exists' } },
+  { type: 'assert_checkpoint', field: 'selector', label: '元素选择器', extra: { checkType: 'element' } },
+  { type: 'element_change_trigger', field: 'selector', label: '元素选择器' },
+  { type: 'ai_vision', field: 'imageSelector', label: '图片元素选择器', extra: { imageSource: 'element' } },
+  { type: 'ocr_captcha', field: 'imageSelector', label: '验证码图片选择器' },
+  { type: 'slider_captcha', field: 'sliderSelector', label: '滑块选择器' },
+  { type: 'slider_captcha', field: 'trackSelector', label: '滑轨选择器' },
+]
 beforeEach(() => {
   vi.useFakeTimers(); store.getState().clearWorkflow()
   vi.spyOn(elementPickerApi, 'start').mockResolvedValue({ success: true, data: { success: true, sessionId: 'entry-picker', active: true, selected: false } })
@@ -26,9 +48,9 @@ beforeEach(() => {
 })
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks() })
 function select(label: string, option: string) { fireEvent.keyDown(screen.getByRole('combobox', { name: label }), { key: 'ArrowDown' }); fireEvent.click(screen.getByRole('option', { name: option })) }
-it.each(entries)('SELECTOR.ENTRY.%s.%s actual field dispatches picker and applies only its result', async (type, field, label) => {
+it.each(entries)('SELECTOR.ENTRY.$type.$field actual field dispatches picker and applies only its result', async ({ type, field, label, extra }) => {
   store.getState().addNode('open_page', { x: 0, y: 0 }, { url: 'https://example.test/source' })
-  store.getState().addNode(type as ModuleType, { x: 0, y: 100 }, { [field]: '#before', ...(type === 'drag_element' ? { sourceSelector: '#source', targetSelector: '#target' } : {}) })
+  store.getState().addNode(type, { x: 0, y: 100 }, { [field]: '#before', ...extra, ...(type === 'drag_element' ? { sourceSelector: '#source', targetSelector: '#target' } : {}) })
   const id = store.getState().nodes[1].id; const original = { ...store.getState().nodes[1].data }
   render(<ConfigPanel selectedNodeId={id} />)
   if (type === 'wait') { expect(screen.queryByTitle('可视化选择元素')).toBeNull(); select('等待类型', '等待元素') }
