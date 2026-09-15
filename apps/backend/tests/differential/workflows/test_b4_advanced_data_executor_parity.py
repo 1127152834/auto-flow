@@ -1123,6 +1123,16 @@ def test_non_finite_result_is_normalized_only_at_the_test_transport() -> None:
             },
             "映射表达式不合法: 表达式集合结果超过工作流安全限制",
         ),
+        (
+            "list_map",
+            {"items": ["a" * 100_000]},
+            {
+                "listVariable": "items",
+                "expression": "x.replace('a', 'b' * 20)",
+                "resultVariable": "out",
+            },
+            "映射表达式不合法: 表达式文本结果超过工作流安全限制",
+        ),
     ],
 )
 def test_safe_expression_rejects_unbounded_materialization(

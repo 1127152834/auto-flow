@@ -50,6 +50,7 @@ _MAX_POW_EXP = 1000
 _MAX_AST_NODES = 256
 _MAX_TEXT_CHARS = 1_048_576
 _MAX_COLLECTION_ITEMS = 100_000
+_MAX_INTEGER_BITS = 14_000
 
 _CREDENTIAL_REFERENCE = re.compile(
     r"\{\{\s*(?:cred|凭据)\s*[:：]\s*[^{}]+?\s*\}\}"
@@ -139,6 +140,18 @@ def _sequence_limit(value: Any) -> tuple[int, int] | None:
     return None
 
 
+def _bounded(value: Any) -> Any:
+    limit = _sequence_limit(value)
+    if limit is not None and limit[0] > limit[1]:
+        kind = "文本" if isinstance(value, str) else "集合"
+        raise UnsafeExpressionError(f"表达式{kind}结果超过工作流安全限制")
+    if isinstance(value, dict) and len(value) > _MAX_COLLECTION_ITEMS:
+        raise UnsafeExpressionError("表达式集合结果超过工作流安全限制")
+    if isinstance(value, int) and value.bit_length() > _MAX_INTEGER_BITS:
+        raise UnsafeExpressionError("表达式整数结果超过工作流安全限制")
+    return value
+
+
 def _guard_binary_result(node: ast.BinOp, left: Any, right: Any) -> None:
     if isinstance(node.op, ast.Mult):
         sequence, repeat = (left, right) if isinstance(right, int) else (right, left)
@@ -160,15 +173,53 @@ def _guard_binary_result(node: ast.BinOp, left: Any, right: Any) -> None:
                 raise UnsafeExpressionError(
                     f"表达式{kind}结果超过工作流安全限制"
                 )
+    if (
+        isinstance(node.op, ast.Pow)
+        and isinstance(left, int)
+        and isinstance(right, int)
+        and right > 0
+        and left not in {-1, 0, 1}
+    ):
+        estimated_bits = max(left.bit_length() - 1, 1) * right + 1
+        if estimated_bits > _MAX_INTEGER_BITS:
+            raise UnsafeExpressionError("表达式整数结果超过工作流安全限制")
+
+
+def _guard_method_call(method: str, obj: Any, args: list[Any]) -> None:
+    _bounded(obj)
+    for argument in args:
+        _bounded(argument)
+    if method == "replace" and isinstance(obj, str) and len(args) in {2, 3}:
+        old, new = args[0], args[1]
+        if isinstance(old, str) and isinstance(new, str):
+            occurrences = obj.count(old)
+            if len(args) == 3 and isinstance(args[2], int) and args[2] >= 0:
+                occurrences = min(occurrences, args[2])
+            estimated_chars = len(obj) + occurrences * (len(new) - len(old))
+            if estimated_chars > _MAX_TEXT_CHARS:
+                raise UnsafeExpressionError(
+                    "表达式文本结果超过工作流安全限制"
+                )
+    if method == "join" and isinstance(obj, str) and len(args) == 1:
+        values = args[0]
+        if isinstance(values, (list, tuple)) and all(
+            isinstance(value, str) for value in values
+        ):
+            estimated_chars = sum(len(value) for value in values)
+            estimated_chars += len(obj) * max(len(values) - 1, 0)
+            if estimated_chars > _MAX_TEXT_CHARS:
+                raise UnsafeExpressionError(
+                    "表达式文本结果超过工作流安全限制"
+                )
 
 
 def _eval(node: ast.AST, vars: dict[str, Any]) -> Any:
     if isinstance(node, ast.Constant):
-        return node.value
+        return _bounded(node.value)
 
     if isinstance(node, ast.Name):
         if node.id in vars:
-            return vars[node.id]
+            return _bounded(vars[node.id])
         raise UnsafeExpressionError(f"未知变量: {node.id}")
 
     if isinstance(node, ast.BoolOp):
@@ -188,7 +239,9 @@ def _eval(node: ast.AST, vars: dict[str, Any]) -> Any:
         return result
 
     if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPS:
-        return _UNARY_OPS[type(node.op)](_eval(node.operand, vars))  # type: ignore[operator]
+        return _bounded(
+            _UNARY_OPS[type(node.op)](_eval(node.operand, vars))  # type: ignore[operator]
+        )
 
     if isinstance(node, ast.BinOp) and type(node.op) in _BIN_OPS:
         left = _eval(node.left, vars)
@@ -200,7 +253,7 @@ def _eval(node: ast.AST, vars: dict[str, Any]) -> Any:
             except TypeError:
                 pass
         _guard_binary_result(node, left, right)
-        return _BIN_OPS[type(node.op)](left, right)
+        return _bounded(_BIN_OPS[type(node.op)](left, right))
 
     if isinstance(node, ast.Compare):
         left = _eval(node.left, vars)
@@ -217,16 +270,18 @@ def _eval(node: ast.AST, vars: dict[str, Any]) -> Any:
     if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
         items = [_eval(e, vars) for e in node.elts]
         if isinstance(node, ast.Tuple):
-            return tuple(items)
+            return _bounded(tuple(items))
         if isinstance(node, ast.Set):
-            return set(items)
-        return items
+            return _bounded(set(items))
+        return _bounded(items)
 
     if isinstance(node, ast.Dict):
-        return {
-            _eval(k, vars): _eval(v, vars)  # type: ignore[arg-type]
-            for k, v in zip(node.keys, node.values)
-        }
+        return _bounded(
+            {
+                _eval(k, vars): _eval(v, vars)  # type: ignore[arg-type]
+                for k, v in zip(node.keys, node.values)
+            }
+        )
 
     # 受限函数调用：仅允许 白名单内置函数 或 值上的白名单方法（方法名不得含下划线）
     if isinstance(node, ast.Call):
@@ -238,7 +293,9 @@ def _eval(node: ast.AST, vars: dict[str, Any]) -> Any:
             fn = _SAFE_FUNCS.get(func_node.id)
             if fn is None:
                 raise UnsafeExpressionError(f"不允许的函数: {func_node.id}")
-            return fn(*args)
+            for argument in args:
+                _bounded(argument)
+            return _bounded(fn(*args))
         if isinstance(func_node, ast.Attribute):
             attr = func_node.attr
             if attr.startswith("_") or attr not in _SAFE_METHODS:
@@ -247,7 +304,8 @@ def _eval(node: ast.AST, vars: dict[str, Any]) -> Any:
             method = getattr(obj, attr, None)
             if not callable(method):
                 raise UnsafeExpressionError(f"不可调用的方法: {attr}")
-            return method(*args)
+            _guard_method_call(attr, obj, args)
+            return _bounded(method(*args))
         raise UnsafeExpressionError("不允许的调用形式")
 
     # 属性访问：仅在“方法调用”里通过上面的 ast.Call 分支处理；
