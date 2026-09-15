@@ -207,6 +207,91 @@
         "运行日志全局回调"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_runner.py",
+      "targetPath": "apps/backend/src/autoflow/domain/workflows/runs.py",
+      "changeSummary": "保留运行状态与结构化结果边界；增加稳定runId、明确清理状态和中断恢复，终态只在资源清理完成后提交。",
+      "retainedDependencies": [
+        "Python标准库"
+      ],
+      "removedDependencies": [
+        "WebRPA全局运行状态",
+        "多浏览器分支"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_runner.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/runs.py",
+      "changeSummary": "保留启动、停止和结果状态语义；按AutoFlow工作区隔离增加请求幂等、秘密剥离和持久化仓储端口。",
+      "retainedDependencies": [
+        "autoflow.domain.workflows.runs"
+      ],
+      "removedDependencies": [
+        "WebRPA进程内全局状态",
+        "直接读取浏览器配置"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_runner.py",
+      "targetPath": "apps/backend/src/autoflow/infrastructure/database/workflow_runs.py",
+      "changeSummary": "将原运行结果生命周期适配到既有0006-0008 SQLite表，事件和节点状态同事务提交，遗留活跃运行启动时标为interrupted且不重放。",
+      "retainedDependencies": [
+        "SQLAlchemy 2",
+        "既有AutoFlow迁移0006-0008"
+      ],
+      "removedDependencies": [
+        "内存运行历史",
+        "自动重放"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_log_manager.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/events.py",
+      "changeSummary": "保留按运行追加日志的语义；替换为先持久化、再发布的有序事件服务。",
+      "retainedDependencies": [
+        "autoflow.domain.workflows.runs"
+      ],
+      "removedDependencies": [
+        "全局单日志文件",
+        "进程内运行开关"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_log_manager.py",
+      "targetPath": "apps/backend/src/autoflow/infrastructure/events/workflows.py",
+      "changeSummary": "把实时日志通知适配为工作区sidecar内的按runId订阅，不承担持久化。",
+      "retainedDependencies": [
+        "Python asyncio"
+      ],
+      "removedDependencies": [
+        "全局文件指针"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_log_manager.py",
+      "targetPath": "apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py",
+      "changeSummary": "将直接文件写入替换为工作区归属的原子产物写入、哈希和数据库登记；登记失败删除未归属文件。",
+      "retainedDependencies": [
+        "Python标准库",
+        "AutoFlow工作区路径"
+      ],
+      "removedDependencies": [
+        "任意日志目录",
+        "未登记绝对路径下载"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

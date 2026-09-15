@@ -165,14 +165,19 @@
         "apps/backend/src/autoflow/adapters/http/workflow_runs.py"
       ],
       "classification": "已批准增强",
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "milestone": "B1",
       "contractRefs": [
         "docs/migration/studio-frontend-completion/command-recovery-contract.md",
         "docs/migration/studio-frontend-completion/sse-sequence-contract.md",
         "docs/migration/studio-frontend-completion/autoflow-error-envelope.md"
       ],
-      "risk": "Mock已验证合同但没有真实动作；HTTP接受不能冒充动作完成，终态只能在worker和浏览器清理后提交。"
+      "risk": "Mock已验证合同但没有真实动作；HTTP接受不能冒充动作完成，终态只能在worker和浏览器清理后提交。",
+      "implementation": {
+        "completedSlice": "B1.3 worker与资源清理；B1.5 runId幂等、活跃名额、终态清理门槛、启动恢复和事件事务持久化",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/run-events-artifacts.json",
+        "remaining": "B1.6 HTTP/SSE装配与运行协调；B1.7正式Electron闭环；Debug命令在B8"
+      }
     },
     {
       "id": "BE.SUPPORT.logs-artifacts",
@@ -195,13 +200,18 @@
         "apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py"
       ],
       "classification": "AutoFlow必要适配",
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "milestone": "B1",
       "contractRefs": [
         "docs/migration/studio-frontend-completion/log-identity-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "risk": "事件需先持久化再发布；大值和文件必须按登记引用读取，不能把任意绝对路径暴露给renderer。"
+      "risk": "事件需先持久化再发布；大值和文件必须按登记引用读取，不能把任意绝对路径暴露给renderer。",
+      "implementation": {
+        "completedSlice": "B1.5严格递增事件、提交后广播、大值文件原子落盘、哈希/归属登记、数据库失败清理孤儿文件",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/run-events-artifacts.json",
+        "remaining": "B1.6下载和SSE HTTP接口；B3重复执行索引；B8诊断、筛选与导出"
+      }
     },
     {
       "id": "BE.SUPPORT.picker",

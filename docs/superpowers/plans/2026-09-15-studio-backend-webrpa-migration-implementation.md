@@ -226,11 +226,11 @@
 - Create: `apps/backend/tests/integration/test_workflow_events.py`
 - Create: `apps/backend/tests/integration/test_workflow_artifacts.py`
 
-- [ ] 先写 runId 同请求幂等、不同请求冲突、事件事务顺序、SSE 补读、大值引用和文件落盘失败测试。
-- [ ] 定义运行状态，使 accepted 到清理完成一直占用资源；终态不能由完成节点数量推断。
-- [ ] `workflow_run_events` 每个 run 严格递增；节点成功状态和事件同事务提交，提交后再广播。
-- [ ] 产物先写临时文件、fsync/原子替换，再登记归属、相对路径、大小、哈希、MIME 和 purpose；下载只接受 artifact ID。
-- [ ] 启动恢复把遗留活跃运行标为 interrupted，不重启 worker，不重放动作。
+- [x] 先写 runId 同请求幂等、不同请求冲突、事件事务顺序、SSE 补读、大值引用和文件落盘失败测试。
+- [x] 定义运行状态，使 accepted 到清理完成一直占用资源；终态不能由完成节点数量推断。
+- [x] `workflow_run_events` 每个 run 严格递增；节点成功状态和事件同事务提交，提交后再广播。
+- [x] 产物先写临时文件、fsync/原子替换，再登记归属、相对路径、大小、哈希、MIME 和 purpose；下载只接受 artifact ID。
+- [x] 启动恢复把遗留活跃运行标为 interrupted，不重启 worker，不重放动作。
 
 ### Task B1.6：真实 HTTP/SSE 合同与装配
 

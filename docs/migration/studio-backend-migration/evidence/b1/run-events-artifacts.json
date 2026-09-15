@@ -1,0 +1,62 @@
+{
+  "evidenceId": "BE-B1-run-events-artifacts-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "result": "B1.5 passed; HTTP/SSE and formal Electron acceptance remain B1.6-B1.7 gates",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "files": [
+      "backend/app/services/workflow_runner.py",
+      "backend/app/services/workflow_log_manager.py",
+      "backend/app/services/workflow_timeout.py"
+    ],
+    "licenseRecord": "LICENSE.WebRPA",
+    "note": "workflow_timeout.py was inspected for the later runtime timeout policy; B1.5 does not claim to migrate its complete per-node table."
+  },
+  "verifiedBehavior": [
+    "same runId and identical request returns the original run without creating a second active slot",
+    "same runId and different request is rejected with RUN_ID_CONFLICT",
+    "the workspace active slot remains occupied from starting until browser/process cleanup is confirmed",
+    "Profile password, License and credential-bearing keys do not enter the persisted Profile snapshot",
+    "ordered event sequence, run eventCount and logCount update in the same SQLite transaction",
+    "node success, current node state and artifact-to-event association commit atomically",
+    "events are published only after the database commit and remain available if live publication fails",
+    "reconnection reads persisted events strictly after the supplied sequence without duplicates",
+    "a 70 KB PNG is atomically placed, fsynced, hashed and registered with workspace-relative ownership, MIME and purpose",
+    "path escape and explicit overwrite are rejected; disk or registration failures leave no registered or orphaned artifact",
+    "startup recovery marks every retained active run interrupted, releases the slot and never restarts a worker or replays an action"
+  ],
+  "tests": {
+    "focused": {
+      "command": "cd apps/backend && uv run pytest -q tests/integration/test_workflow_run_repository.py tests/integration/test_workflow_events.py tests/integration/test_workflow_artifacts.py",
+      "exitCode": 0,
+      "result": "10 passed"
+    },
+    "relatedRegression": {
+      "command": "cd apps/backend && uv run pytest -q tests/differential/workflows tests/unit/workflows tests/integration/test_workflow_repository.py tests/integration/test_workflow_run_repository.py tests/integration/test_workflow_events.py tests/integration/test_workflow_artifacts.py tests/integration/test_workflow_worker_protocol.py tests/integration/test_workflow_resource_ownership.py tests/integration/test_migration_heads.py tests/integration/test_studio_migration_compatibility.py tests/integration/test_database_compatibility_inspector.py",
+      "exitCode": 0,
+      "result": "170 passed"
+    },
+    "ruff": "passed",
+    "mypy": "passed",
+    "fullBackendRegression": {
+      "command": "cd apps/backend && uv run pytest -q tests",
+      "exitCode": 0,
+      "result": "1384 passed, 1 opt-in real-browser test skipped, 2 dependency deprecation warnings"
+    },
+    "repositoryWideRuffBaseline": {
+      "command": "cd apps/backend && uv run ruff check src tests",
+      "exitCode": 1,
+      "result": "123 pre-existing import-order violations outside the B1.5 changed-file set; changed-file Ruff passed",
+      "blockingB1_5": false
+    }
+  },
+  "notClaimed": [
+    "HTTP run commands, artifact download authorization or SSE wire framing; B1.6 owns these gates",
+    "formal Electron UI execution and lifecycle coordination; B1.7 owns these gates",
+    "complete debug diagnostics, log search/export or repeated-loop result pagination; B3 and B8 own these gates",
+    "macOS Intel or Windows real-machine verification"
+  ],
+  "userDatabaseModified": false,
+  "runningMainApplicationModified": false
+}
