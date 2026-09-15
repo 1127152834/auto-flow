@@ -170,6 +170,7 @@ const capabilities=retained.map(n=>{
     reviewRequired:'仅使用既有证据核销；AST 仅提供源码位置，不能自动证明字段行为。共享规则集中验证，各节点验证接入及独有分支。',
     ...(previous?.fieldVerification?{fieldVerification:previous.fieldVerification}:{}),
     ...(previous?.remainingDetails?{remainingDetails:previous.remainingDetails}:{}),
+    ...(previous?.backendMigration?{backendMigration:previous.backendMigration}:{}),
   }
 })
 const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'缺验收',deliveryBlock:'F2.2',verifiedCases:n.verifiedCases.map(row=>row.id),preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))

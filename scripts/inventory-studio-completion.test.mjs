@@ -38,4 +38,5 @@ test('does not silently discard dynamically selected icon components or reconcil
   assert.ok(rows.every(row => row.remaining.length === 0))
   assert.ok(rows.find(row => row.type === 'open_page').verifiedCases.some(item => item.id.startsWith('NODE.branch.open_page.')))
   assert.ok(rows.every(row => row.verifiedCases.every(item => item.status === '已实现且已验收' && item.evidencePath)))
+  assert.ok(rows.every(row => row.backendMigration), 'frontend reconciliation must preserve backend migration evidence')
 })
