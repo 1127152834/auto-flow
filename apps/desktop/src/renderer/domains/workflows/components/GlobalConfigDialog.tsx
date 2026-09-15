@@ -596,7 +596,10 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       max={2}
                       step={0.1}
                       value={config.ai.temperature}
-                      onChange={(e) => updateAIConfig({ temperature: parseFloat(e.target.value) || 0.7 })}
+                      onChange={(e) => {
+                        const value = Number(e.target.value)
+                        updateAIConfig({ temperature: Number.isFinite(value) ? value : 0.7 })
+                      }}
                       className="bg-white text-black border-gray-300"
                     />
                   </div>
@@ -640,7 +643,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       <Label className="text-sm font-medium text-gray-700">失败自动切换</Label>
                       <p className="text-xs text-gray-500 mt-1">AI 对话模块运行时，某模型请求失败自动换其它已配置模型重试，全部失败才报错。</p>
                     </div>
-                    <Switch checked={config.ai?.autoFallback ?? false} onCheckedChange={(c) => updateAIConfig({ autoFallback: c })} />
+                    <Switch aria-label="失败自动切换" checked={config.ai?.autoFallback ?? false} onCheckedChange={(c) => updateAIConfig({ autoFallback: c })} />
                   </div>
                 </div>
               </div>
@@ -726,6 +729,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       <p className="text-xs text-gray-500 mt-1">开启后可给小助手发图片/自动截图分析。不填则按模型名自动判断（如 gpt-4o、glm-4v 等）。</p>
                     </div>
                     <Switch
+                      aria-label="多模态（视觉）模型"
                       checked={config.aiAssistant?.supportsVision ?? false}
                       onCheckedChange={(c) => updateAIAssistantConfig({ supportsVision: c })}
                     />
@@ -736,6 +740,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       <p className="text-xs text-gray-500 mt-1">如 DeepSeek-Reasoner、o1 等推理模型。开启后请求不再下发 temperature，避免部分推理模型报错。</p>
                     </div>
                     <Switch
+                      aria-label="深度思考（推理）模型"
                       checked={config.aiAssistant?.isThinking ?? false}
                       onCheckedChange={(c) => updateAIAssistantConfig({ isThinking: c })}
                     />
@@ -820,7 +825,10 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       max={2}
                       step={0.1}
                       value={config.aiAssistant?.temperature ?? 0.7}
-                      onChange={(e) => updateAIAssistantConfig({ temperature: parseFloat(e.target.value) || 0.7 })}
+                      onChange={(e) => {
+                        const value = Number(e.target.value)
+                        updateAIAssistantConfig({ temperature: Number.isFinite(value) ? value : 0.7 })
+                      }}
                       className="bg-white text-black border-gray-300"
                     />
                   </div>
@@ -854,6 +862,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       </p>
                     </div>
                     <Switch
+                      aria-label="启用 Skills 工具调用"
                       checked={config.aiAssistant?.enableTools ?? true}
                       onCheckedChange={(c) => updateAIAssistantConfig({ enableTools: c })}
                     />
@@ -866,6 +875,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       </p>
                     </div>
                     <Switch
+                      aria-label="自动批准工具调用"
                       checked={config.aiAssistant?.autoApprove ?? false}
                       onCheckedChange={(c) => updateAIAssistantConfig({ autoApprove: c })}
                     />
@@ -924,14 +934,14 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       <Label className="text-sm font-medium text-gray-700">失败自动切换</Label>
                       <p className="text-xs text-gray-500 mt-1">某模型请求失败时，自动换其它已配置模型重试，全部失败才报错。</p>
                     </div>
-                    <Switch checked={config.aiAssistant?.autoFallback ?? false} onCheckedChange={(c) => updateAIAssistantConfig({ autoFallback: c })} />
+                    <Switch aria-label="失败自动切换" checked={config.aiAssistant?.autoFallback ?? false} onCheckedChange={(c) => updateAIAssistantConfig({ autoFallback: c })} />
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <Label className="text-sm font-medium text-gray-700">场景自动选模型</Label>
                       <p className="text-xs text-gray-500 mt-1">按问答场景自动挑选模型：发图片→多模态组、复杂分析→深度思考组、其余→普通对话组（需给模型勾选场景）。</p>
                     </div>
-                    <Switch checked={config.aiAssistant?.autoSceneRoute ?? false} onCheckedChange={(c) => updateAIAssistantConfig({ autoSceneRoute: c })} />
+                    <Switch aria-label="场景自动选模型" checked={config.aiAssistant?.autoSceneRoute ?? false} onCheckedChange={(c) => updateAIAssistantConfig({ autoSceneRoute: c })} />
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">

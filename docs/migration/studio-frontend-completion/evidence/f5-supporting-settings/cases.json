@@ -1,0 +1,11 @@
+[
+  { "id": "F5.AI.permission.approve", "status": "通过", "level": "component-store", "evidence": "ai-permission-flow.test.tsx" },
+  { "id": "F5.AI.permission.reject", "status": "通过", "level": "component-store", "evidence": "ai-permission-flow.test.tsx" },
+  { "id": "F5.AI.permission.modes", "status": "通过", "level": "component-store", "evidence": "ai-permission-flow.test.tsx" },
+  { "id": "F5.AI.permission.disabled", "status": "通过", "level": "component-api", "evidence": "ai-permission-flow.test.tsx" },
+  { "id": "F5.AI.permission.cancel", "status": "通过", "level": "component-store", "evidence": "ai-permission-flow.test.tsx" },
+  { "id": "F5.AI.permission.concurrent", "status": "通过", "level": "component-store", "evidence": "ai-permission-flow.test.tsx" },
+  { "id": "F5.MODEL.dialog-profiles", "status": "通过", "level": "component-persistence", "evidence": "model-settings-flow.test.tsx" },
+  { "id": "F5.MODEL.assistant-profiles", "status": "通过", "level": "component-persistence", "evidence": "model-settings-flow.test.tsx" },
+  { "id": "F5.MODEL.connection-test", "status": "通过", "level": "component-http", "evidence": "model-settings-flow.test.tsx" }
+]

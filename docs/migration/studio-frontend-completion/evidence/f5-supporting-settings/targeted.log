@@ -1,0 +1,101 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:19736) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19737) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19739) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19738) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/credential-rename-entry.test.tsx (9 tests) 2405ms
+   ✓ renames through the actual settings entry using one command and preserves metadata after reopening  508ms
+   ✓ preserves a stale field draft on revision conflict and can cancel/reopen the current metadata  311ms
+(node:19907) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/ai-code-assistant-entry.test.tsx (8 tests) 2118ms
+   ✓ NODE.inject_javascript.ai-code.entry: generates into a review draft and saves only after explicit editing approval  645ms
+   ✓ NODE.js_script.ai-code.entry: generates into a review draft and saves only after explicit editing approval  450ms
+   ✓ NODE.python_script.ai-code.entry: generates into a review draft and saves only after explicit editing approval  479ms
+(node:20283) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/mcp-leave-protection.test.tsx (24 tests) 4296ms
+   ✓ 关闭 MCP 编辑 + 取消 respects the unsaved MCP draft  395ms
+ ✓ src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx (34 tests) 4605ms
+   ✓ 系统: cancel keeps unsaved credential input  334ms
+(node:20606) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20669) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/ai-model-picker-entry.test.tsx (15 tests) 2174ms
+   ✓ NODE.ai_chat.model-picker.entry: writes the chosen profile only to this node and preserves it on document reopen  408ms
+ ✓ src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx (29 tests) 2039ms
+ ✓ src/renderer/domains/workflows/tests/settings-assistant-close.test.tsx (9 tests) 1106ms
+(node:20697) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/model-settings-flow.test.tsx (3 tests) 1067ms
+   ✓ F5.MODEL.dialog-profiles: creates, selects, edits and removes AI module profiles through the settings UI  417ms
+   ✓ F5.MODEL.assistant-profiles: persists scene routing, permissions and model capabilities  329ms
+   ✓ F5.MODEL.connection-test: validates missing settings and consumes explicit success and failure responses  319ms
+(node:20893) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20897) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21026) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx (13 tests) 674ms
+ ✓ src/renderer/domains/workflows/tests/retention-settings.test.tsx (17 tests) 555ms
+ ✓ src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx (10 tests) 494ms
+(node:21156) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/ai-permission-flow.test.tsx (6 tests) 672ms
+(node:21157) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx (10 tests) 368ms
+(node:21158) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21159) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/webdav-settings-http.test.tsx (2 tests) 297ms
+ ✓ src/renderer/domains/workflows/tests/credential-protocol.test.ts (40 tests) 209ms
+(node:21160) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/credential-save-failure.test.tsx (1 test) 304ms
+   ✓ keeps entered credential fields when an HTTP 200 response rejects saving  303ms
+ ✓ src/renderer/domains/workflows/tests/credential-fields-protocol.test.ts (25 tests) 155ms
+(node:21161) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21162) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/connection-composition.test.ts (9 tests) 89ms
+ ✓ src/renderer/domains/workflows/tests/settings-guard-commit.test.tsx (1 test) 93ms
+(node:21163) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21164) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/retention-protocol.test.ts (25 tests) 92ms
+ ✓ src/renderer/domains/workflows/tests/mcp-service-contract.test.ts (17 tests) 42ms
+(node:21166) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/retention-confirmation.test.ts (32 tests) 10ms
+(node:21167) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/credential-write-contract.test.ts (21 tests) 10ms
+(node:21169) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21168) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/transport-errors.test.ts (4 tests) 8ms
+ ✓ src/renderer/domains/workflows/tests/request-connection-binding.test.ts (4 tests) 8ms
+(node:21170) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/mcp-config-text.test.ts (18 tests) 5ms
+(node:21171) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/assistant-ui-delivery.test.ts (2 tests) 5ms
+
+ Test Files  27 passed (27)
+      Tests  388 passed (388)
+   Start at  14:22:14
+   Duration  13.28s (transform 3.63s, setup 1.33s, import 8.64s, tests 23.90s, environment 14.68s)

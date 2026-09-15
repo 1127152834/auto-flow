@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../controls/button'
 import { useAIAssistantStore, type ChatMessage, type RollbackSnapshot } from '../../hooks/stores/aiAssistantStore'
-import { useAIPermissionStore } from '../../hooks/stores/aiPermissionStore'
+import { cancelPendingApproval, useAIPermissionStore } from '../../hooks/stores/aiPermissionStore'
 import { useGlobalConfigStore } from '../../hooks/stores/globalConfigStore'
 import { useAiActionLogStore } from '../../hooks/stores/aiActionLogStore'
 import { useWorkflowStore } from '../../editor-store'
@@ -105,6 +105,11 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
   }
 
   const [input, setInput] = useState('')
+
+  useEffect(() => {
+    if (!isOpen && !standalone) cancelPendingApproval()
+    return () => cancelPendingApproval()
+  }, [isOpen, standalone])
 
   // 自定义确认弹窗（禁止使用浏览器原生 confirm/alert）
   const { confirm: confirmDialog, ConfirmDialog: AssistantConfirmDialog } = useConfirm()
@@ -902,6 +907,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
   handleSendRef.current = handleSend
 
   async function stopCurrent() {    const sid = inflightSessionIdRef.current || currentSessionId
+    cancelPendingApproval()
     // 1) 通知后端取消（让正在跑的工具/LLM 调用尽快退出）
     if (sid) {
       try {
@@ -1067,7 +1073,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             </>
           )}
           {!standalone && (
-            <Button variant="ghost" size="icon-sm" aria-label="关闭小助手" onClick={() => setOpen(false)}>
+            <Button variant="ghost" size="icon-sm" aria-label="关闭小助手" onClick={() => { cancelPendingApproval(); setOpen(false) }}>
               <X className="w-3.5 h-3.5" />
             </Button>
           )}

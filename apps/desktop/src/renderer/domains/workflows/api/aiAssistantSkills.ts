@@ -294,6 +294,9 @@ export async function executeClientAction(
   payload: Record<string, any> = {}
 ): Promise<ClientActionResult> {
   try {
+    if (!(useGlobalConfigStore.getState().config.aiAssistant?.enableTools ?? true)) {
+      return { success: false, error: '小助手工具调用已关闭，请在全局配置中启用后再试' }
+    }
     if (['upload_excel', 'list_data_assets', 'delete_data_asset', 'rename_data_asset', 'preview_data_asset', 'get_data_asset_sheets'].includes(action) || (action === 'switch_bottom_panel' && payload.tab === 'assets')) {
       return { success: false, error: 'Excel 资源功能已从 AutoFlow Studio 移除' }
     }

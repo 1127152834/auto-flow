@@ -60,7 +60,9 @@ export const useAIPermissionStore = create<AIPermissionState>((set) => ({
 
 /** 判断某个 client_action 在当前权限模式下是否需要用户授权 */
 export function actionNeedsApproval(action: string): boolean {
-  const mode = useGlobalConfigStore.getState().config.aiAssistant?.permissionMode || 'smart'
+  const config = useGlobalConfigStore.getState().config.aiAssistant
+  if (config?.autoApprove) return false
+  const mode = config?.permissionMode || 'smart'
   if (mode === 'full') return false
   if (READONLY_ACTIONS.has(action)) return false
   if (mode === 'approval') return true            // 逐项确认：任何"真操作"都要授权
@@ -69,6 +71,7 @@ export function actionNeedsApproval(action: string): boolean {
 
 /** 弹出授权请求并等待用户决定（允许 true / 拒绝 false） */
 export function requestApproval(action: string, label: string, payload: unknown): Promise<boolean> {
+  if (useAIPermissionStore.getState().pending) return Promise.resolve(false)
   let preview = ''
   try {
     preview = payload ? JSON.stringify(payload).slice(0, 160) : ''
@@ -85,4 +88,9 @@ export function requestApproval(action: string, label: string, payload: unknown)
       },
     })
   })
+}
+
+/** 结束当前等待中的授权；关闭面板、停止回答和卸载都按拒绝处理。 */
+export function cancelPendingApproval(): void {
+  useAIPermissionStore.getState().pending?.resolve(false)
 }
