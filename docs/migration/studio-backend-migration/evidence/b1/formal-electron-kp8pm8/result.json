@@ -1,0 +1,53 @@
+{
+  "evidenceId": "BE-B1-formal-electron",
+  "checkedAt": "2026-09-15T17:38:45.368Z",
+  "gitHead": "417f4f2957c139eb085d1a6c0301de4a3e319aac",
+  "buildGitHead": "417f4f2957c139eb085d1a6c0301de4a3e319aac",
+  "sourceTreeSha256": "3afddf6c4f787b926befe013e2a06b298169c3bd4a71dcd6513bef82a706b712",
+  "buildSha256": "c85e005867e6078e29874a95439936e20bb0b1d2df26cb149d6d4de097dff0d2",
+  "buildArtifacts": {
+    "appAsarSha256": "c85e005867e6078e29874a95439936e20bb0b1d2df26cb149d6d4de097dff0d2",
+    "backendExecutableSha256": "5161a8fc84d202041cea366c4081a155af5b2b4eafe73b87bfaee37e47b4abda"
+  },
+  "workflowId": "lxTLUeRnFyaX5NfqFYTJy",
+  "profileId": "984cf55b-8bba-49a3-bff7-7523f879f60c",
+  "runId": "e0dc4a40-5c57-4f0c-9517-65b0ee31a4f0",
+  "stoppedRunId": "e1435377-8fe9-4e2f-b35c-8822a323f02b",
+  "result": "passed",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "通过 macOS 系统级 Cmd+W 触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变",
+    "再次通过系统级 Cmd+W 并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增",
+    "正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线",
+    "正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化",
+    "运行终态后 CloakBrowser 进程树和临时会话均已清理",
+    "无效选择器导致真实运行失败；失败事件持久化后浏览器、worker 与运行占用均已清理",
+    "活跃运行与未保存草稿并存时取消正常关窗，浏览器运行、窗口、草稿和已保存文档均保持原状态",
+    "放弃草稿并结束活跃运行后，先确认 stopped 与清理完成，再关闭 Studio；保存修订未被草稿覆盖",
+    "从正式 UI 触发内核缺失启动失败：未创建运行、未启动浏览器且未遗留资源占用",
+    "目录包未携带冻结源码路径、Mock 服务或 Vite 开发地址"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "packageBoundary": {
+    "resources": "/tmp/autoflow-b1-latest.2Uppkn/package-dist/mac-arm64/AutoFlow.app/Contents/Resources",
+    "forbiddenReferences": [],
+    "scannedNeedles": [
+      "reference/WebRPA",
+      "127.0.0.1:5175",
+      "StudioMockTools",
+      "api/mock-server"
+    ]
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard plus macOS system-level Command-W close shortcut; no Store access"
+  }
+}

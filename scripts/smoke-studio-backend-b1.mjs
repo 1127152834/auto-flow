@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -24,6 +24,8 @@ await new Promise((resolve, reject) => {
   slowServer.listen(0, '127.0.0.1', resolve)
 })
 const slowUrl = `http://127.0.0.1:${slowServer.address().port}/pending-navigation`
+const isolatedKernel = join(userData, 'data', 'kernels', basename(sourceKernel))
+const unavailableKernel = `${isolatedKernel}.unavailable`
 const checks = []
 const observedEvents = []
 let desktop
@@ -31,6 +33,7 @@ let main
 let studio
 let native
 let eventAbort
+let kernelMoved = false
 
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 await mkdir(join(userData, 'data', 'kernels'), { recursive: true })
@@ -130,8 +133,10 @@ try {
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库')", 'reopened Studio', 30_000)
-  await click(studio, '打开')
-  await click(studio, '打开工作流 B1 五节点正式闭环 · 关窗保存', '[role="button"]')
+  if (!await studio.evaluate("document.querySelectorAll('.react-flow__node').length === 5 && document.querySelector('input[placeholder=\"工作流名称\"]')?.value === 'B1 五节点正式闭环 · 关窗保存'")) {
+    await click(studio, '打开')
+    await click(studio, '打开工作流 B1 五节点正式闭环 · 关窗保存', '[role="button"]')
+  }
   await waitFor(studio, "document.querySelector('input[placeholder=\"工作流名称\"]')?.value === 'B1 五节点正式闭环 · 关窗保存' && document.querySelectorAll('.react-flow__node').length === 5", 'persisted workflow reopen')
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__edge').length"), 4)
   assert.equal(closedSaved.nodes.length, 5)
@@ -166,13 +171,34 @@ try {
   assert.deepEqual(leaked, [])
   checkpoint('运行终态后 CloakBrowser 进程树和临时会话均已清理')
 
+  await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[2])}]`)
+  await setInput(studio, '[placeholder="例如: #button, .submit"]', '[')
+  await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
+  await click(studio, '运行 (F5)', '[role="menuitem"]')
+  const failedRun = await waitForValue(async () => {
+    const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
+    return page.items.find(item => item.runId !== runId) ?? null
+  }, 'invalid-selector run', 20_000)
+  const failedTerminal = await waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(failedRun.runId)}`)
+    return value.status === 'failed' ? value : null
+  }, 'invalid-selector failed terminal', 30_000)
+  assert.equal(failedTerminal.status, 'failed')
+  await waitForValue(async () => observedEvents.find(event => event.name === 'execution:completed' && event.data?.runId === failedRun.runId && event.data?.result?.status === 'failed') ?? null, 'raw SSE failed terminal event', 10_000)
+  await waitForValue(async () => {
+    const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
+    return processes.length === 0 ? true : null
+  }, 'failed run browser cleanup', 10_000)
+  await setInput(studio, '[placeholder="例如: #button, .submit"]', '.workflow-action')
+  checkpoint('无效选择器导致真实运行失败；失败事件持久化后浏览器、worker 与运行占用均已清理')
+
   await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[0])}]`)
   await setInput(studio, '[placeholder="https://example.com"]', slowUrl)
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
   const stoppedRun = await waitForValue(async () => {
     const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
-    const candidate = page.items.find(item => item.runId !== runId)
+    const candidate = page.items.find(item => item.runId !== runId && item.runId !== failedRun.runId)
     if (!candidate) return null
     const detail = await api(runtime, `/workflow-runs/${encodeURIComponent(candidate.runId)}`)
     return detail.status === 'running' ? detail : null
@@ -206,14 +232,34 @@ try {
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库')", 'final reopened Studio', 30_000)
 
+  await click(studio, '打开')
+  await click(studio, '打开工作流 B1 五节点正式闭环 · 关窗保存', '[role="button"]')
+  await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 5", 'workflow before start failure')
+  const beforeStartFailure = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
+  await rename(isolatedKernel, unavailableKernel)
+  kernelMoved = true
+  await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
+  await click(studio, '运行 (F5)', '[role="menuitem"]')
+  await waitFor(studio, "document.querySelector('[aria-label=\"运行 (F5)\"]') && !document.body?.innerText.includes('等待启动确认')", 'missing kernel request rejected', 10_000)
+  const afterStartFailure = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
+  assert.deepEqual(afterStartFailure.items.map(item => item.runId).sort(), beforeStartFailure.items.map(item => item.runId).sort())
+  assert.deepEqual(execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)), [])
+  await rename(unavailableKernel, isolatedKernel)
+  kernelMoved = false
+  checkpoint('从正式 UI 触发内核缺失启动失败：未创建运行、未启动浏览器且未遗留资源占用')
+
   const packageBoundary = desktop.packaged ? await verifyPackageBoundary() : null
   if (packageBoundary) checkpoint('目录包未携带冻结源码路径、Mock 服务或 Vite 开发地址')
 
   await capture(studio, join(evidenceDir, 'completed.png'))
+  const buildArtifacts = desktop.packaged ? await packagedBuildHashes() : null
   const report = {
     evidenceId: 'BE-B1-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-    buildSha256: await buildHash(), workflowId: saved.id, profileId: profile.id, runId, stoppedRunId: stoppedRun.runId,
+    buildGitHead: process.env.AUTOFLOW_B1_BUILD_GIT_HEAD ?? null,
+    sourceTreeSha256: process.env.AUTOFLOW_B1_SOURCE_TREE_SHA256 ?? null,
+    buildSha256: buildArtifacts?.appAsarSha256 ?? await buildHash(), buildArtifacts,
+    workflowId: saved.id, profileId: profile.id, runId, stoppedRunId: stoppedRun.runId,
     result: 'passed', checks, platform: `${process.platform}-${process.arch}`,
     entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary,
     boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse and keyboard plus macOS system-level Command-W close shortcut; no Store access' },
@@ -226,6 +272,7 @@ try {
   throw error
 } finally {
   eventAbort?.abort(); studio?.close(); main?.close(); native?.close(); await stop(desktop?.child)
+  if (kernelMoved) await rename(unavailableKernel, isolatedKernel).catch(() => undefined)
   slowServer.closeAllConnections()
   await new Promise(resolve => slowServer.close(resolve))
   await rm(userData, { recursive: true, force: true })
@@ -417,6 +464,20 @@ async function buildHash() {
     hash.update(file).update(await readFile(join(root, 'apps/desktop/out', file)))
   }
   return hash.digest('hex')
+}
+
+async function packagedBuildHashes() {
+  const executableIndex = process.argv.indexOf('--executable')
+  assert.notEqual(executableIndex, -1)
+  const resources = resolve(dirname(resolve(process.argv[executableIndex + 1])), '../Resources')
+  return {
+    appAsarSha256: await fileHash(join(resources, 'app.asar')),
+    backendExecutableSha256: await fileHash(join(resources, 'backend', 'autoflow-backend')),
+  }
+}
+
+async function fileHash(path) {
+  return createHash('sha256').update(await readFile(path)).digest('hex')
 }
 
 async function verifyPackageBoundary() {
