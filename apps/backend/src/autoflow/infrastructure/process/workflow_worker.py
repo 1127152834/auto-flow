@@ -160,14 +160,30 @@ class WorkflowWorkerManager:
                 env["CLOAKBROWSER_BINARY_PATH"] = str(executable.resolve(strict=True))
                 env["CLOAKBROWSER_CACHE_DIR"] = str(directory)
             env.update({"TMPDIR": str(directory), "TMP": str(directory), "TEMP": str(directory)})
-            process = await asyncio.create_subprocess_exec(
-                *self._command,
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.DEVNULL,
-                env=env,
-                **_process_group_options(),
+            spawn = asyncio.create_task(
+                asyncio.create_subprocess_exec(
+                    *self._command,
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL,
+                    env=env,
+                    **_process_group_options(),
+                )
             )
+            try:
+                process = await asyncio.shield(spawn)
+            except asyncio.CancelledError:
+                try:
+                    process = await _wait_for_spawn(spawn)
+                    birth = (
+                        process_birth(process.pid) if sys.platform != "win32" else None
+                    )
+                    async with self._lock:
+                        state.process = process
+                        state.birth = birth
+                except BaseException:  # noqa: BLE001 -- preserve cancellation.
+                    process = None
+                raise
             birth = process_birth(process.pid) if sys.platform != "win32" else None
             async with self._lock:
                 state.process = process
@@ -318,6 +334,17 @@ def workflow_worker_command() -> tuple[str, ...]:
     if getattr(sys, "frozen", False):
         return (sys.executable, "--workflow-worker")
     return (sys.executable, "-m", "autoflow", "--workflow-worker")
+
+
+async def _wait_for_spawn(
+    task: asyncio.Task[asyncio.subprocess.Process],
+) -> asyncio.subprocess.Process:
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            continue
+    return task.result()
 
 
 def _process_group_options() -> dict[str, Any]:

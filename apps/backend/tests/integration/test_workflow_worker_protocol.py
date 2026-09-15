@@ -186,6 +186,61 @@ async def test_shutdown_also_stops_a_worker_that_is_still_starting(tmp_path: Pat
 
 
 @pytest.mark.asyncio
+async def test_shutdown_reaps_worker_spawned_before_start_receives_process(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_spawn = asyncio.create_subprocess_exec
+    spawned = asyncio.Event()
+    release_spawn = asyncio.Event()
+    processes: list[asyncio.subprocess.Process] = []
+
+    async def delayed_spawn(*args: object, **kwargs: object) -> asyncio.subprocess.Process:
+        process = await real_spawn(*args, **kwargs)
+        processes.append(process)
+        spawned.set()
+        await release_spawn.wait()
+        return process
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", delayed_spawn)
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        command=(sys.executable, "-c", "import time; time.sleep(300)"),
+        termination_timeout=0.2,
+    )
+    opening = asyncio.create_task(
+        manager.start(
+            "run-spawn-race",
+            "profile-1",
+            None,
+            {"runId": "run-spawn-race", "profileId": "profile-1"},
+        )
+    )
+
+    try:
+        await asyncio.wait_for(spawned.wait(), timeout=5)
+        closing = asyncio.create_task(manager.shutdown())
+        for _ in range(100):
+            if opening.cancelling():
+                break
+            await asyncio.sleep(0.01)
+        assert opening.cancelling()
+
+        release_spawn.set()
+        await asyncio.wait_for(closing, timeout=5)
+        await asyncio.gather(opening, return_exceptions=True)
+
+        assert processes[0].returncode is not None
+        assert manager.busy() is False
+        assert manager.active_processes() == []
+    finally:
+        release_spawn.set()
+        for process in processes:
+            if process.returncode is None:
+                process.kill()
+                await process.wait()
+
+
+@pytest.mark.asyncio
 async def test_event_consumer_failure_still_cleans_worker_tree(tmp_path: Path) -> None:
     executable = tmp_path / "CloakBrowser"
     executable.write_bytes(b"test binary identity")

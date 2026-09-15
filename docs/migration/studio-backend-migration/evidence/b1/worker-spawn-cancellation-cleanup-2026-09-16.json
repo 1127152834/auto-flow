@@ -1,0 +1,81 @@
+{
+  "evidenceId": "BE-B1-worker-spawn-cancellation-cleanup-2026-09-16",
+  "recordedAt": "2026-09-16T03:02:11+08:00",
+  "baseHeadAtVerification": "6d8658960e5ff2abb0e4c31c5778edea9b2c6cda",
+  "branch": "codex/architecture-baseline",
+  "result": "BE-B1-008 worker spawn cancellation cleanup passed at the managed process boundary",
+  "classification": "AutoFlow必要适配",
+  "rootCause": "WorkflowWorkerManager awaited create_subprocess_exec directly. If sidecar shutdown cancelled start after the OS process existed but before create_subprocess_exec returned its Process object, start removed its directory and slot without owning a handle that could be reaped.",
+  "verifiedBehavior": [
+    "a controlled real Python worker is created before WorkflowWorkerManager.start receives its Process object",
+    "shutdown cancels the still-starting run while the spawn result is delayed",
+    "the spawn task survives outer cancellation long enough to return the real Process handle",
+    "the existing process-tree cleanup runs before start cancellation and shutdown complete",
+    "the spawned worker has a terminal return code, and the manager reports neither a busy slot nor an active process"
+  ],
+  "tdd": {
+    "red": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_worker_protocol.py::test_shutdown_reaps_worker_spawned_before_start_receives_process",
+      "exitCode": 1,
+      "result": "1 failed in 0.65s",
+      "failure": "shutdown returned with manager.busy() false and no registered active process, while the real spawned worker still had returncode None"
+    },
+    "green": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_worker_protocol.py::test_shutdown_reaps_worker_spawned_before_start_receives_process",
+      "exitCode": 0,
+      "result": "1 passed in 0.54s"
+    }
+  },
+  "tests": {
+    "workerProtocol": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_worker_protocol.py",
+      "exitCode": 0,
+      "result": "8 passed in 3.62s"
+    },
+    "relatedLifecycle": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/integration/test_workflow_resource_ownership.py apps/backend/tests/integration/test_workflow_sidecar_recovery.py apps/backend/tests/unit/workflows/test_run_admission_failures.py apps/backend/tests/integration/test_sidecar_shutdown.py",
+      "exitCode": 0,
+      "result": "23 passed, 2 dependency deprecation warnings in 26.41s"
+    },
+    "ruff": {
+      "command": "cd apps/backend && UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run ruff check src/autoflow/infrastructure/process/workflow_worker.py tests/integration/test_workflow_worker_protocol.py",
+      "exitCode": 0,
+      "result": "All checks passed"
+    },
+    "mypy": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend mypy apps/backend/src/autoflow/infrastructure/process/workflow_worker.py",
+      "exitCode": 0,
+      "result": "Success: no issues found in 1 source file"
+    },
+    "diffCheck": {
+      "command": "git diff --check -- apps/backend/src/autoflow/infrastructure/process/workflow_worker.py apps/backend/tests/integration/test_workflow_worker_protocol.py",
+      "exitCode": 0,
+      "result": "passed"
+    }
+  },
+  "initialBaselineObservation": {
+    "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_worker_protocol.py",
+    "result": "2 existing timeout failures and 5 passes in 88.71s while concurrent acceptance load was active; the unchanged cases passed in the later complete 8-test run"
+  },
+  "testBoundary": "real Python subprocess with only create_subprocess_exec result delivery delayed; no Electron, package build, CloakBrowser kernel, user database, network service, scheduler or shared protocol was used",
+  "fileHashes": {
+    "apps/backend/src/autoflow/infrastructure/process/workflow_worker.py": "d9b7573111f70649f049b89b100f17d66b1ffcc8ef11e43c3ef6b9aad8b26349",
+    "apps/backend/tests/integration/test_workflow_worker_protocol.py": "86b237bf1770f1cf4aa3a0013fbaad59006611dff9648c6ce64ec333f9b31354"
+  },
+  "userDatabaseModified": false,
+  "electronOrCloakBrowserStarted": false,
+  "managedTestProcessesRemaining": false,
+  "notClaimed": [
+    "browser-process crash while the workflow worker remains alive",
+    "formal Electron or packaged sidecar abnormal-exit interaction",
+    "macOS Intel or Windows real-machine verification",
+    "closure of the full BE-B1-008 acceptance row"
+  ],
+  "integrationHeadAtFinalVerification": "f93b3b74",
+  "finalVerification": {
+    "result": "passed",
+    "workerAndLifecycle": "23 passed in 26.41s",
+    "ruff": "passed",
+    "mypy": "passed"
+  }
+}
