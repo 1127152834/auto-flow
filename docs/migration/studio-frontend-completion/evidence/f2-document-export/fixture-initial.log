@@ -1,0 +1,69 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/document-export-entry.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:95593) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/document-export-entry.test.tsx (16 tests | 16 failed) 9ms
+   × exports through the actual JSON 格式 selection and preserves the draft 4ms
+   × exports through the actual Markdown 文档 selection and preserves the draft 0ms
+   × exports through the actual 加密分享包 selection and preserves the draft 0ms
+   × exports through the actual 整包（含依赖） selection and preserves the draft 0ms
+   × exports through the actual Playwright Python selection and preserves the draft 0ms
+   × exports through the actual Selenium Python selection and preserves the draft 0ms
+   × exports through the actual Playwright JavaScript selection and preserves the draft 0ms
+   × does not export stale service content after update failure: Playwright Python 0ms
+   × does not export stale service content after update failure: Selenium Python 0ms
+   × does not export stale service content after update failure: Playwright JavaScript 0ms
+   × does not download after service rejection: Playwright Python 0ms
+   × does not download after service rejection: Selenium Python 0ms
+   × does not download after service rejection: Playwright JavaScript 0ms
+   × does not download after service rejection: 整包.含依赖. 0ms
+   × cancels the format dialog without requests or downloads 0ms
+   × cancels encrypted export without changing the document 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > exports through the actual JSON 格式 selection and preserves the draft
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > exports through the actual Markdown 文档 selection and preserves the draft
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > exports through the actual 加密分享包 selection and preserves the draft
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > exports through the actual 整包（含依赖） selection and preserves the draft
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > exports through the actual Playwright Python selection and preserves the draft
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > exports through the actual Selenium Python selection and preserves the draft
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > exports through the actual Playwright JavaScript selection and preserves the draft
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > does not export stale service content after update failure: Playwright Python
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > does not export stale service content after update failure: Selenium Python
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > does not export stale service content after update failure: Playwright JavaScript
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > does not download after service rejection: Playwright Python
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > does not download after service rejection: Selenium Python
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > does not download after service rejection: Playwright JavaScript
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > does not download after service rejection: 整包.含依赖.
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > cancels the format dialog without requests or downloads
+ FAIL  src/renderer/domains/workflows/tests/document-export-entry.test.tsx > cancels encrypted export without changing the document
+TypeError: useWorkflowStore.getState(...).setName is not a function
+ ❯ src/renderer/domains/workflows/tests/document-export-entry.test.tsx:27:31
+     25|   vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(fu…
+     26|   useWorkflowStore.getState().clearWorkflow()
+     27|   useWorkflowStore.getState().setName('导出入口验收')
+       |                               ^
+     28|   useWorkflowStore.getState().addNode('input_text', { x: 10, y: 20 })
+     29|   const node = useWorkflowStore.getState().nodes[0]
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  16 failed (16)
+   Start at  05:31:01
+   Duration  1.83s (transform 826ms, setup 160ms, import 1.12s, tests 9ms, environment 401ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/document-export-entry.test.tsx

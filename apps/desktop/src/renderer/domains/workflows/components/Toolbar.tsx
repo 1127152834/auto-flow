@@ -912,7 +912,7 @@ export function Toolbar() {
         setWorkflowId(currentWorkflowId)
       } else {
         // 更新现有工作流
-        await workflowApi.update(currentWorkflowId, {
+        const updateResult = await workflowApi.update(currentWorkflowId, {
           name,
           nodes: nodes.map(n => ({
             id: n.id,
@@ -935,6 +935,10 @@ export function Toolbar() {
             scope: v.scope,
           })),
         })
+        if (updateResult.error) {
+          addLog({ level: 'error', message: `更新工作流失败: ${updateResult.error}` })
+          return
+        }
       }
 
       // 调用导出 API
@@ -986,7 +990,11 @@ export function Toolbar() {
         currentWorkflowId = createResult.data.id
         setWorkflowId(currentWorkflowId)
       } else {
-        await workflowApi.update(currentWorkflowId, payload)
+        const updateResult = await workflowApi.update(currentWorkflowId, payload)
+        if (updateResult.error) {
+          addLog({ level: 'error', message: `更新工作流失败: ${updateResult.error}` })
+          return
+        }
       }
       const res = await workflowApi.exportScript(currentWorkflowId!, target)
       const data = res.data

@@ -161,6 +161,20 @@ function hasValidImportGraph(value: unknown): boolean {
   return true
 }
 
+// Keep copied graph references inside the copied set; references to definitions not copied remain unchanged.
+function remapNodeReferences(node: Node<NodeData>, idMap: Map<string, string>): Node<NodeData> {
+  const mapped = (id: string | undefined) => id ? idMap.get(id) || id : id
+  return {
+    ...node,
+    ...(node.parentId ? { parentId: mapped(node.parentId) } : {}),
+    data: {
+      ...node.data,
+      ...(node.data.subflowGroupId ? { subflowGroupId: mapped(node.data.subflowGroupId) } : {}),
+      ...(node.data.errorPolicy?.targetId ? { errorPolicy: { ...node.data.errorPolicy, targetId: mapped(node.data.errorPolicy.targetId) } } : {}),
+    },
+  }
+}
+
 // 底栏 Tab 类型
 export type BottomPanelTab = 'logs' | 'data' | 'variables' | 'assets' | 'images'
 
@@ -2698,25 +2712,24 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const offsetY = position ? position.y - minY : 50
 
     // 创建旧ID到新ID的映射
-    const idMap = new Map<string, string>()
+    const idMap = new Map(clipboard.map(node => [node.id, nanoid()]))
     
     // 创建新节点，保持相对位置
     const newNodes: Node<NodeData>[] = clipboard.map(node => {
-      const newId = nanoid()
-      idMap.set(node.id, newId)
+      const newId = idMap.get(node.id)!
       return {
         ...node,
         id: newId,
         position: {
-          x: node.position.x + offsetX,
-          y: node.position.y + offsetY,
+          x: node.position.x + (node.parentId && idMap.has(node.parentId) ? 0 : offsetX),
+          y: node.position.y + (node.parentId && idMap.has(node.parentId) ? 0 : offsetY),
         },
         selected: true,
         data: {
           ...node.data,
         },
       }
-    })
+    }).map(node => remapNodeReferences(node, idMap))
 
     // 创建新的连线，使用新的节点ID
     const newEdges: Edge[] = clipboardEdges.map(edge => ({
@@ -2753,25 +2766,24 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const offsetY = position ? position.y - minY : 50
 
     // 创建旧ID到新ID的映射
-    const idMap = new Map<string, string>()
+    const idMap = new Map(clipboardNodes.map(node => [node.id, nanoid()]))
     
     // 创建新节点，保持相对位置
     const newNodes: Node<NodeData>[] = clipboardNodes.map(node => {
-      const newId = nanoid()
-      idMap.set(node.id, newId)
+      const newId = idMap.get(node.id)!
       return {
         ...node,
         id: newId,
         position: {
-          x: node.position.x + offsetX,
-          y: node.position.y + offsetY,
+          x: node.position.x + (node.parentId && idMap.has(node.parentId) ? 0 : offsetX),
+          y: node.position.y + (node.parentId && idMap.has(node.parentId) ? 0 : offsetY),
         },
         selected: true,
         data: {
           ...node.data,
         },
       }
-    })
+    }).map(node => remapNodeReferences(node, idMap))
 
     // 创建新的连线，使用新的节点ID
     const newEdges: Edge[] = clipboardEdges.map(edge => ({
@@ -3393,8 +3405,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           id: idMap.get(node.id) || nanoid(),
           type: frontendType,
           position: {
-            x: node.position.x + offsetX,
-            y: node.position.y + offsetY,
+            x: node.position.x + (node.parentId && idMap.has(node.parentId) ? 0 : offsetX),
+            y: node.position.y + (node.parentId && idMap.has(node.parentId) ? 0 : offsetY),
           },
           data: {
             ...node.data,
@@ -3402,7 +3414,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           },
           selected: false,
         }
-      })
+      }).map(node => remapNodeReferences(node, idMap))
       
       // 转换边（更新源和目标ID）
       const newEdges: Edge[] = workflow.edges.map((edge: Edge) => ({

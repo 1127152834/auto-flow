@@ -1,0 +1,14 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/document-export-entry.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:73207) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  12:25:09
+   Duration  3.56s (transform 793ms, setup 172ms, import 1.06s, tests 1.81s, environment 414ms)

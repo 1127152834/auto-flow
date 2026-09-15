@@ -1,0 +1,77 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/structure-copy-references.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:94047) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/structure-copy-references.test.ts (3 tests | 3 failed) 9ms
+   × internal remaps internal container/subflow/retry references with node identities and keeps relative child position 5ms
+   × system remaps internal container/subflow/retry references with node identities and keeps relative child position 1ms
+   × merge remaps internal container/subflow/retry references with node identities and keeps relative child position 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/structure-copy-references.test.ts > internal remaps internal container/subflow/retry references with node identities and keeps relative child position
+AssertionError: expected 'group' to be '0eM0Sm4m0sDAth15CebyD' // Object.is equality
+
+Expected: "0eM0Sm4m0sDAth15CebyD"
+Received: "group"
+
+ ❯ src/renderer/domains/workflows/tests/structure-copy-references.test.ts:21:26
+     19|   const [group, child, call] = pasted
+     20|   expect(group.id).not.toBe('group')
+     21|   expect(child.parentId).toBe(group.id)
+       |                          ^
+     22|   expect(child.position).toEqual({ x: 20, y: 30 })
+     23|   expect(call.data.subflowGroupId).toBe(group.id)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/structure-copy-references.test.ts > system remaps internal container/subflow/retry references with node identities and keeps relative child position
+AssertionError: expected 'group' to be 'uwtb3oTneXZZNRRdhmRq9' // Object.is equality
+
+Expected: "uwtb3oTneXZZNRRdhmRq9"
+Received: "group"
+
+ ❯ src/renderer/domains/workflows/tests/structure-copy-references.test.ts:21:26
+     19|   const [group, child, call] = pasted
+     20|   expect(group.id).not.toBe('group')
+     21|   expect(child.parentId).toBe(group.id)
+       |                          ^
+     22|   expect(child.position).toEqual({ x: 20, y: 30 })
+     23|   expect(call.data.subflowGroupId).toBe(group.id)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/structure-copy-references.test.ts > merge remaps internal container/subflow/retry references with node identities and keeps relative child position
+AssertionError: expected 'group' to be 'nGkaTgxkFKHUW-hDXJU1_' // Object.is equality
+
+Expected: "nGkaTgxkFKHUW-hDXJU1_"
+Received: "group"
+
+ ❯ src/renderer/domains/workflows/tests/structure-copy-references.test.ts:21:26
+     19|   const [group, child, call] = pasted
+     20|   expect(group.id).not.toBe('group')
+     21|   expect(child.parentId).toBe(group.id)
+       |                          ^
+     22|   expect(child.position).toEqual({ x: 20, y: 30 })
+     23|   expect(call.data.subflowGroupId).toBe(group.id)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  05:30:55
+   Duration  860ms (transform 217ms, setup 158ms, import 181ms, tests 9ms, environment 396ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/structure-copy-references.test.ts
