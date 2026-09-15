@@ -55,6 +55,7 @@ it('supports fixed records, record loading and explicit stable field bindings', 
   fireEvent.click(screen.getByRole('button', { name: '读取资料表记录' }))
   expect(load).toHaveBeenCalledWith('t1')
   view.rerender(<InputPlanEditor {...p} onLoadRecords={load}/>)
+  fireEvent.click(screen.getByText('字段映射', { selector: 'summary', exact: false }))
   fireEvent.click(screen.getByRole('button', { name: '添加字段映射 资料' }))
   expect(p.onChange).toHaveBeenLastCalledWith({ inputs: [{ ...input, fieldBindings: [expect.objectContaining({ inputFieldId: expect.any(String), inputFieldAlias: '标题', fieldRef: ref('t1', 'f1') })] }] })
 })
@@ -70,7 +71,7 @@ it('preserves an unavailable old related source without rewriting it', () => {
 it('uses the shared structured filter and order editor and warns that execution is unavailable', () => {
   const bound = { ...input, fieldBindings: [{ inputFieldId: 'b1', inputFieldAlias: '标题', fieldRef: ref('t1', 'f1') }] }
   const p = props({ inputs: [bound] }); render(<InputPlanEditor {...p}/>)
-  expect(screen.getByText('项目数据执行能力暂未开放；当前输入配置仍可保存。')).toBeVisible()
+  fireEvent.click(screen.getByText('筛选与排序', { exact: false }))
   fireEvent.click(screen.getByRole('button', { name: '添加排序' }))
   fireEvent.click(screen.getByRole('button', { name: '应用筛选' }))
   expect(p.onChange).toHaveBeenCalledWith({ inputs: [{ ...bound, orderBy: [{ fieldId: 'f1', direction: 'asc' }] }] })
@@ -80,6 +81,7 @@ it('uses the shared structured filter and order editor and warns that execution 
 it('applies structured status filters and keeps an unapplied draft when the resource directory changes', () => {
   const bound = { ...input, fieldBindings: [{ inputFieldId: 'b1', inputFieldAlias: '标题', fieldRef: ref('t1', 'f1') }] }
   const p = props({ inputs: [bound] }), view = render(<InputPlanEditor {...p}/>)
+  fireEvent.click(screen.getByText('筛选与排序', { exact: false }))
   fireEvent.click(screen.getByRole('button', { name: '添加状态条件' }))
   expect(screen.getByRole('group', { name: '状态条件' })).toBeVisible()
   view.rerender(<InputPlanEditor {...p} tables={tables.map(table => ({ ...table, fields: [...table.fields] }))}/>)
@@ -114,6 +116,7 @@ it('reports an unapplied filter draft as invalid without writing the plan', () =
   const p = props({ inputs: [bound] }), draft = vi.fn()
   render(<InputPlanEditor {...p} resetKey="one" onDraftStateChange={draft}/>)
 
+  fireEvent.click(screen.getByText('筛选与排序', { exact: false }))
   fireEvent.click(screen.getByRole('button', { name: '添加状态条件' }))
 
   expect(p.onChange).not.toHaveBeenCalled()
@@ -127,6 +130,7 @@ it('resetKey discards the inner filter draft and reports a clean state', async (
   const bound = { ...input, fieldBindings: [{ inputFieldId: 'b1', inputFieldAlias: '标题', fieldRef: ref('t1', 'f1') }] }
   const p = props({ inputs: [bound] }), draft = vi.fn()
   const view = render(<InputPlanEditor {...p} resetKey="one" onDraftStateChange={draft}/>)
+  fireEvent.click(screen.getByText('筛选与排序', { exact: false }))
   fireEvent.click(screen.getByRole('button', { name: '添加状态条件' }))
   expect(screen.getByRole('group', { name: '状态条件' })).toBeVisible()
 
@@ -148,6 +152,8 @@ it('exposes unknown input error paths through a focusable item alert', () => {
 
 it('offers filter and sort fields only after they are explicitly bound', () => {
   const view = render(<InputPlanEditor {...props()}/>)
+  expect(screen.getByText('筛选与排序', { exact: false })).toHaveTextContent('未设置条件')
+  fireEvent.click(screen.getByText('筛选与排序', { exact: false }))
   expect(screen.getByText('字段筛选和字段排序需要先添加字段映射；状态条件和系统字段排序仍可使用。')).toBeVisible()
 
   const bound = { ...input, fieldBindings: [{ inputFieldId: 'b1', inputFieldAlias: '页数', fieldRef: ref('t1', 'f2') }] }
@@ -160,6 +166,7 @@ it('keeps status filters and system-field sorting available without bindings', (
   const p = props()
   render(<InputPlanEditor {...p}/>)
 
+  fireEvent.click(screen.getByText('筛选与排序', { exact: false }))
   fireEvent.click(screen.getByRole('button', { name: '添加状态条件' }))
   fireEvent.click(screen.getByRole('button', { name: '添加排序' }))
   expect(screen.getByRole('group', { name: '状态条件' })).toBeVisible()

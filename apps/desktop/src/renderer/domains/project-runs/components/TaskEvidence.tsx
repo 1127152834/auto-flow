@@ -3,12 +3,20 @@ import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import { presentRunFailure } from '../presentation'
+import { DataInputPreview, type DataInputPreviewItem } from './DataInputPreview'
+import { TaskDataWrites, type TaskDataWrite } from './TaskDataWrites'
 
 type Schema = components['schemas']
 type Detail = Schema['TaskDetail']; type Attempts = Schema['NodeAttemptPage']; type Outputs = Schema['RunOutputPage']; type Artifact = Schema['RunArtifactView']; type Artifacts = Schema['RunArtifactPage']
 type JsonRecord = Record<string, unknown>
 const record = (value: unknown): JsonRecord => value && typeof value === 'object' && !Array.isArray(value) ? value as JsonRecord : {}
-const show = (value: unknown): string => value === null ? 'null' : typeof value === 'boolean' ? String(value) : typeof value === 'string' || typeof value === 'number' ? String(value) : Array.isArray(value) ? value.map(show).join('、') || '空列表' : value && typeof value === 'object' ? Object.entries(value).map(([key, item]) => `${key}：${show(item)}`).join('；') || '空对象' : '—'
+const show = (value: unknown): string => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const item = value as JsonRecord
+    if (item.executor === 'fake' && item.browser === 'notExecuted' && item.studio === 'notExecuted') return '隔离测试执行器 · 未调用浏览器 · 未调用 Studio'
+  }
+  return value === null ? 'null' : typeof value === 'boolean' ? String(value) : typeof value === 'string' || typeof value === 'number' ? String(value) : Array.isArray(value) ? value.map(show).join('、') || '空列表' : value && typeof value === 'object' ? Object.entries(value).map(([key, item]) => `${key}：${show(item)}`).join('；') || '空对象' : '—'
+}
 const statuses: Record<string, string> = { running: '运行中', succeeded: '成功', failed: '失败' }
 const time = (value: string | null | undefined) => value ? new Date(value).toLocaleString('zh-CN', { hour12: false }) : '—'
 const artifactReasons: Record<string, string> = { SCREENSHOT_CAPTURE_FAILED: '截图捕获失败', SCREENSHOT_PAGE_UNAVAILABLE: '页面已不可用', LEGACY_ARTIFACT_UNAVAILABLE: '旧版证据不可用' }
@@ -28,6 +36,40 @@ const errorLabels: Record<string, string> = {
 const errorLabel = (value: unknown) => {
   const code = typeof record(value).code === 'string' ? String(record(value).code) : ''
   return errorLabels[code] ?? '运行失败'
+}
+
+function projectInputs(detail: Detail): DataInputPreviewItem[] {
+  return detail.inputSnapshot.inputs.map((input, index) => {
+    const item = record(input)
+    const ref = record(item.recordRef)
+    const key = record(ref.recordKey)
+    const keyType = typeof key.type === 'string' ? key.type : '记录'
+    const keyValue = typeof key.value === 'string' || typeof key.value === 'number' ? String(key.value) : null
+    const values = Array.isArray(item.values) ? item.values.flatMap(value => {
+      const field = record(value)
+      if (typeof field.fieldName !== 'string') return []
+      return [{ label: field.fieldName, value: show(field.value) }]
+    }) : []
+    const businessDisplay = values.slice(0, 2).map(value => value.value).filter(value => value && value !== '—').join(' · ')
+    return {
+      alias: typeof item.alias === 'string' && item.alias.trim() ? item.alias : `数据输入 ${index + 1}`,
+      tableDisplay: typeof item.tableDisplay === 'string' ? item.tableDisplay : '项目数据表',
+      recordDisplay: businessDisplay || (keyValue ? `${keyType} · ${keyValue}` : null),
+      values,
+      outcome: 'ready',
+    }
+  })
+}
+
+function projectWrites(detail: Detail): TaskDataWrite[] {
+  const result: TaskDataWrite[] = []
+  for (const write of detail.dataWrites ?? []) {
+    const outcome: TaskDataWrite['outcome'] = write.outcome === 'conflict' || write.outcome === 'unknown' ? write.outcome : 'succeeded'
+    const base = { tableDisplay: write.tableDisplay, recordDisplay: write.recordDisplay, outcome }
+    if (write.kind === 'statusChange') result.push({ ...base, kind: 'statusChange', previousStatus: write.previousStatus ?? null, nextStatus: write.nextStatus ?? null })
+    else if (write.kind === 'recordCreated') result.push({ ...base, kind: 'recordCreated', referenceDisplay: write.referenceDisplay })
+  }
+  return result
 }
 
 type TaskEvidenceProps = {
@@ -98,10 +140,17 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
         <section className="min-w-0 rounded-card border border-line bg-surface p-5"><h3 className="mt-0">历史尝试</h3>{attempts?.items.length ? <TableScroll label="节点历史尝试" className="rounded-control border border-line"><Table><TableHeader><TableRow><TableHead>节点 / 尝试</TableHead><TableHead>开始 / 结束</TableHead><TableHead>结果</TableHead></TableRow></TableHeader><TableBody>{attempts.items.map(item => <TableRow key={item.nodeVisitId + '-' + item.attempt}><TableCell><strong className="block max-w-40 truncate">{nodeName(detail, item.nodeId, item.nodeName)}</strong><span>尝试 {item.attempt}</span></TableCell><TableCell>{time(item.startedAt)}<br/>{time(item.completedAt)}</TableCell><TableCell>{statuses[item.status] ?? item.status}</TableCell></TableRow>)}</TableBody></Table></TableScroll> : !loading && !error ? <p className="text-muted">{attempts ? '暂无节点尝试' : '尚未读取节点尝试'}</p> : null}{attempts && attempts.items.length < attempts.total ? <Button className="mt-3" disabled={loading} onClick={onLoadMoreAttempts}>加载更多尝试</Button> : null}</section>
       </div>
     </> : <>
+      <DataInputPreview
+        title="原始数据输入"
+        description="任务创建时已经固定，之后的数据修改不会改写这份输入。"
+        tableLabel="原始数据输入表格"
+        inputs={projectInputs(detail)}
+        loading={loading && !detail.inputSnapshot.inputs.length}
+      />
+      <TaskDataWrites writes={projectWrites(detail)} loading={loading}/>
       <section className="min-w-0 rounded-card border border-line bg-surface p-5">
-        <h3 className="mt-0">运行时输入快照</h3><h4>批次固定参数</h4>
+        <h3 className="mt-0">批次固定参数</h3>
         {Object.keys(detail.inputSnapshot.parameters).length ? <TableScroll label="批次固定参数" className="rounded-control border border-line"><Table data-variant="facts" className="table-fixed"><TableBody>{Object.entries(detail.inputSnapshot.parameters).map(([id, value]) => <TableRow key={id}><TableHead scope="row" className="w-1/3"><span className="block truncate">{names.get(id) ?? '未知参数'}</span></TableHead><TableCell className="whitespace-pre-wrap break-words">{show(value)}</TableCell></TableRow>)}</TableBody></Table></TableScroll> : <p className="text-sm text-muted">本批次没有固定参数。</p>}
-        <h4 className="mb-2 mt-5">本任务数据输入</h4>{detail.inputSnapshot.inputs.length ? <TableScroll label="本任务数据输入" className="rounded-control border border-line"><Table data-variant="facts"><TableBody>{detail.inputSnapshot.inputs.map((input, index) => <TableRow key={index}><TableHead scope="row" className="w-1/3">{typeof input.alias === 'string' && input.alias.trim() || typeof input.name === 'string' && input.name.trim() || `数据输入 ${index + 1}`}</TableHead><TableCell className="whitespace-pre-wrap break-words">已在运行开始时固定</TableCell></TableRow>)}</TableBody></Table></TableScroll> : <p className="text-sm text-muted">本任务没有项目数据输入。</p>}
       </section>
       <section className="min-w-0 rounded-card border border-line bg-surface p-5">
         <h3 className="mt-0">输出与产物</h3>

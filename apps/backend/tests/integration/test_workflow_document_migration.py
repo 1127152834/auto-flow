@@ -22,7 +22,7 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
 ):
     database = tmp_path / "workflow-commands.sqlite3"
     config = config_for(database)
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm04_project_runs"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm05_project_claims"]
     preserved: tuple | None = None
     if existing:
         command.upgrade(config, "0009_merge_project_data")
@@ -48,7 +48,7 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("pm04_project_runs",)]
+        ).fetchall() == [("pm05_project_claims",)]
         columns = {
             row[1]: row[2]
             for row in connection.execute(

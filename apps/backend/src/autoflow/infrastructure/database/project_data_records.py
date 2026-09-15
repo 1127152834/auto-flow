@@ -16,6 +16,7 @@ from autoflow.domain.project_data.identity import (
 )
 from autoflow.domain.project_data.rules import validate_value
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.infrastructure.database.project_claims import active_record_lease
 from autoflow.infrastructure.database.project_data import (
     SqlAlchemyProjectData,
     _completed,
@@ -305,6 +306,16 @@ class SqlAlchemyProjectDataRecords:
                 return _operation_result(existing), _operation(existing), True
             table = self._table(session, project_id, table_id, generation, True)
             row = self._required_record(session, project_id, table_id, generation, key)
+            lease = active_record_lease(
+                session, project_id, table_id, generation, key
+            )
+            if lease is not None:
+                raise ProjectError(
+                    "RECORD_IN_USE",
+                    "Record is currently used by a running task",
+                    409,
+                    {"recordKeyType": key.type, "retryable": True},
+                )
             if row.status_revision != expected:
                 raise _conflict(expected, row.status_revision, "Status")
             if has_from and row.status_id != from_status:

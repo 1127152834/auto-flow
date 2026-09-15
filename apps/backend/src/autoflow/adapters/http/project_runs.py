@@ -18,6 +18,8 @@ from .project_run_schemas import (
     BatchPage,
     BatchStartRequest,
     BatchStopRequest,
+    InputPreviewRequest,
+    InputPreviewResponse,
     ProjectRunOperationAccepted,
     TaskDetail,
     TaskPage,
@@ -59,6 +61,20 @@ def project_runs_router(
             )
         scheduler.wake()
         return {"operation": _operation(operation)}
+
+    @router.post(
+        "/automations/{automationId}/input-preview",
+        response_model=InputPreviewResponse,
+        responses=browser_error_responses(401, 404, 409, 422),
+    )
+    def preview_inputs(
+        projectId: UUID, automationId: UUID, body: InputPreviewRequest
+    ):
+        return coordinator.preview_inputs(
+            str(projectId),
+            str(automationId),
+            body.expected_automation_revision,
+        )
 
     @router.post(
         "/batches/{batchId}/stop",

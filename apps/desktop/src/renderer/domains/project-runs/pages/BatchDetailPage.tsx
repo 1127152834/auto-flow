@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '../../../shared/components/ui/button'
 import { notify } from '../../../shared/components/Toaster'
 import { createProjectRunsApi, type TaskQuery } from '../api'
-import { BatchDetail } from '../components/BatchDetail'
+import { BatchConfigurationSnapshot, BatchDetail } from '../components/BatchDetail'
 import { TaskDirectory } from '../components/TaskDirectory'
 import { StopBatchDialog } from '../components/StopBatchDialog'
 import { RunCommandNotice } from '../components/RunCommandNotice'
@@ -32,9 +32,10 @@ function Detail({ workspaceKey, instanceId, projectId, client, disabled, readOnl
   if (!detail.data) return <section className="rounded-card border border-line bg-surface p-5"><p role={detail.error || disabled ? 'alert' : 'status'}>{detail.error ? `批次读取失败：${presentRunFailure(detail.error)}` : disabled ? '本地服务暂不可用，请等待连接恢复。' : '正在读取批次…'}</p><Button onClick={back}>返回批次列表</Button>{detail.error ? <Button disabled={disabled} onClick={() => void detail.refetch()}>重试读取</Button> : null}</section>
   const batch = detail.data.batch, stopping = ['stopping', 'reconciling'].includes(batch.status), forceEligible = detail.data.forceStopAllowed
   return <section className="grid min-w-0 gap-4"><RunCommandNotice command={command} disabled={disabled} readOnly={readOnly}/>{detail.error ? <div role="alert" className="text-sm text-danger">刷新失败，保留上次读取的批次：{presentRunFailure(detail.error)}<Button onClick={() => void detail.refetch()}>重试读取</Button></div> : null}
-    <BatchDetail detail={detail.data} onBack={back} stopping={disabled || command.busy} onStop={!stopping ? () => setConfirmation('stop') : undefined} onForceStop={forceEligible ? () => setConfirmation('forceStop') : undefined}/>
+    <BatchDetail detail={detail.data} showConfiguration={false} onBack={back} stopping={disabled || command.busy} onStop={!stopping ? () => setConfirmation('stop') : undefined} onForceStop={forceEligible ? () => setConfirmation('forceStop') : undefined}/>
     {stopping ? <p className="rounded-control border border-warning/30 bg-surface p-3 text-sm">{forceEligible ? '普通停止宽限期已结束，可以强制停止并核验资源清理。' : '正在停止并核验资源清理。普通停止宽限期结束后才允许强制停止。'}最终结果以持久运行事实为准。</p> : null}
     <section className="rounded-card border border-line bg-surface p-5"><h3 className="mt-0">本批次任务</h3><TaskDirectory context="batch" page={tasks.data} filters={{ q: query.q ?? null, batchId, status: query.status ?? null, period }} batchOptions={[{ id: batchId, name: `${batch.automationName ?? '自动化'} · ${new Date(batch.createdAt).toLocaleString('zh-CN')}` }]} loading={tasks.isLoading} refreshing={disabled} error={tasks.error ? presentRunFailure(tasks.error) : disabled && !tasks.data ? '本地服务暂不可用，请等待连接恢复' : undefined} onFiltersChange={filters => { const nextPeriod = filters.period; setPeriod(nextPeriod); setQuery(value => ({ ...value, q: filters.q ?? undefined, status: filters.status ?? undefined, endedFrom: nextPeriod === period ? value.endedFrom : nextPeriod ? new Date(Date.now() - Number.parseInt(nextPeriod) * 86_400_000).toISOString() : undefined, page: 1 })) }} onPageChange={page => setQuery(value => ({ ...value, page }))} onOpen={task => onNavigate({ projectId, tab: 'runs', taskId: task.taskId, taskTab: 'logs' })} onRetry={() => void tasks.refetch()}/></section>
+    <section className="overflow-hidden rounded-card border border-line bg-surface"><BatchConfigurationSnapshot value={(detail.data.configurationSnapshot ?? {}) as Record<string, unknown>}/></section>
     <StopBatchDialog key={confirmation ?? 'closed'} open={confirmation !== null} force={confirmation === 'forceStop'} busy={command.busy} error={command.error} automationName={batch.automationName ?? '自动化'} startedAt={batch.createdAt} activeTaskCount={batch.activeTaskCount} onOpenChange={open => { if (!open) setConfirmation(null) }} onConfirm={reason => { const body = { expectedStatusRevision: batch.statusRevision, reason }; void (confirmation === 'forceStop' ? command.forceStop(batchId, body) : command.stop(batchId, body)) }}/>
   </section>
 }

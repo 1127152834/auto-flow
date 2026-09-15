@@ -44,6 +44,39 @@ describe('sidecar health validation', () => {
 })
 
 describe('sidecar startup paths', () => {
+  it('uses an explicit development module for an isolated QA sidecar', async () => {
+    vi.mocked(spawn).mockReset()
+    const stdout = new EventEmitter()
+    const child = Object.assign(new EventEmitter(), {
+      stdout,
+      pid: 123,
+      kill: vi.fn(),
+    })
+    vi.mocked(spawn).mockReturnValue(child as never)
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(
+      JSON.stringify({ status: 'ok', apiVersion: 'v1', instanceId: 'x' }),
+      { status: 200 },
+    )))
+
+    const supervisor = new (await import('./supervisor')).SidecarSupervisor({
+      instanceId: 'x',
+      dataDir: '/tmp/autoflow-pm4-qa',
+      backendDirectory: '/backend',
+      developmentModule: 'tests.qa.pm4_sidecar',
+      timeoutMs: 1000,
+    })
+    const start = supervisor.start()
+    stdout.emit('data', 'AUTOFLOW_READY {"apiVersion":"v1","instanceId":"x","port":43127}\n')
+
+    await expect(start).resolves.toMatchObject({ state: 'ready' })
+    expect(spawn).toHaveBeenCalledWith(
+      'uv',
+      ['run', '--directory', '/backend', 'python', '-m', 'tests.qa.pm4_sidecar', '--port', '0', '--instance-id', 'x', '--parent-pid', String(process.pid), '--data-dir', '/tmp/autoflow-pm4-qa'],
+      expect.anything(),
+    )
+    vi.unstubAllGlobals()
+  })
+
   it('passes the injected data directory through args and environment', async () => {
     vi.mocked(spawn).mockReset()
     const stdout = new EventEmitter()

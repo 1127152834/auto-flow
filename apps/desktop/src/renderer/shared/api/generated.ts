@@ -1193,6 +1193,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/automations/{automationId}/input-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Inputs */
+        post: operations["preview_inputs_api_v1_projects__projectId__automations__automationId__input_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/batches/{batchId}/stop": {
         parameters: {
             query?: never;
@@ -3434,6 +3451,35 @@ export type components = {
             /** Inputs */
             inputs: components["schemas"]["InputDefinition"][];
         };
+        /** InputPreviewItem */
+        InputPreviewItem: {
+            /** Inputid */
+            inputId: string;
+            /** Alias */
+            alias: string;
+            /** Tabledisplay */
+            tableDisplay: string;
+            /** Recorddisplay */
+            recordDisplay: string | null;
+            /** Values */
+            values?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Outcome */
+            outcome: string;
+        };
+        /** InputPreviewRequest */
+        InputPreviewRequest: {
+            /** Expectedautomationrevision */
+            expectedAutomationRevision: number;
+        };
+        /** InputPreviewResponse */
+        InputPreviewResponse: {
+            /** Runnable */
+            runnable: boolean;
+            /** Inputs */
+            inputs: components["schemas"]["InputPreviewItem"][];
+        };
         /** InstalledKernelList */
         InstalledKernelList: {
             /** Items */
@@ -5227,6 +5273,23 @@ export type components = {
             /** Lastconfirmedat */
             lastConfirmedAt?: string | null;
         };
+        /** TaskDataWriteView */
+        TaskDataWriteView: {
+            /** Kind */
+            kind: string;
+            /** Tabledisplay */
+            tableDisplay: string;
+            /** Recorddisplay */
+            recordDisplay: string;
+            /** Outcome */
+            outcome: string;
+            /** Previousstatus */
+            previousStatus?: string | null;
+            /** Nextstatus */
+            nextStatus?: string | null;
+            /** Referencedisplay */
+            referenceDisplay?: string | null;
+        };
         /** TaskDetail */
         TaskDetail: {
             /** Automationname */
@@ -5242,6 +5305,8 @@ export type components = {
             task: components["schemas"]["TaskView"];
             inputSnapshot: components["schemas"]["TaskInputSnapshotView"];
             run: components["schemas"]["RunSnapshotView"];
+            /** Datawrites */
+            dataWrites?: components["schemas"]["TaskDataWriteView"][];
         };
         /** TaskInputSnapshotView */
         TaskInputSnapshotView: {
@@ -10562,6 +10627,69 @@ export interface operations {
             };
             /** @description Service Unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_inputs_api_v1_projects__projectId__automations__automationId__input_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InputPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputPreviewResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -8,8 +8,10 @@ from uuid import uuid4
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.project_data.identity import RecordKey
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.models import ProjectOperationRow
+from autoflow.infrastructure.database.project_claims import active_record_lease
 from autoflow.infrastructure.database.project_data import _operation, _operation_row
 from autoflow.infrastructure.database.project_data_catalog import (
     SqlAlchemyProjectDataCatalog,
@@ -393,6 +395,20 @@ class SqlAlchemyRecordStatusBatches:
             ):
                 blockers.append(
                     _blocker("RECORD_NOT_FOUND", resource, "Record was not found")
+                )
+            elif active_record_lease(
+                session,
+                project_id,
+                table_id,
+                ref["datasetGeneration"],
+                RecordKey(key["type"], key["value"]),
+            ) is not None:
+                blockers.append(
+                    _blocker(
+                        "RECORD_IN_USE",
+                        resource,
+                        "Record is currently used by a running task",
+                    )
                 )
             elif row.status_revision != expected:
                 blockers.append(

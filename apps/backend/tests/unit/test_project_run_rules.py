@@ -291,14 +291,15 @@ def test_batch_counts_project_tasks_without_inventing_batch_outcome():
     assert view["createdTaskCount"] == 3 and view["activeTaskCount"] == 1
 
 
-def test_pm3_snapshot_rejects_inputs_and_freezes_parameters():
+def test_snapshot_freezes_parameters_and_pm4_data_inputs():
     now = datetime(2026, 9, 15, tzinfo=UTC)
     source = {P_BOOL: False, P_NUMBER: 0}
     snapshot = TaskInputSnapshot("snapshot-1", "task-1", "batch-1", source, (), now)
     source[P_NUMBER] = 9
     assert dict(snapshot.parameters) == {P_BOOL: False, P_NUMBER: 0}
-    with pytest.raises(ProjectRunError) as error:
-        TaskInputSnapshot(
-            "snapshot-2", "task-2", "batch-1", {}, ({"inputId": "i1"},), now
-        )
-    assert error.value.code == "PROJECT_INPUTS_NOT_SUPPORTED"
+    raw_inputs = ({"inputId": "i1", "values": [{"value": "one"}]},)
+    data_snapshot = TaskInputSnapshot(
+        "snapshot-2", "task-2", "batch-1", {}, raw_inputs, now
+    )
+    raw_inputs[0]["values"][0]["value"] = "changed"
+    assert data_snapshot.inputs[0]["values"][0]["value"] == "one"

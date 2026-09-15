@@ -227,7 +227,9 @@ async def test_stopping_event_is_acked_until_force_revokes_generation(runtime):
     run, _ = create_queued_run(runtime)
     release = asyncio.Event()
     worker = SyntheticWorker(blocked=release)
-    dispatcher = make_dispatcher(runtime, worker, SyntheticResources())
+    dispatcher = make_dispatcher(
+        runtime, worker, SyntheticResources(), now=lambda: NOW
+    )
     running = await dispatcher.dispatch(
         run.run_id, expected_status_revision=1, execution_generation=0
     )

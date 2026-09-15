@@ -8,6 +8,7 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -39,6 +40,10 @@ class ProjectBatchRow(Base):
     frozen_request: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    claim_gate_state: Mapped[str] = mapped_column(
+        String, server_default="closed", default="closed"
+    )
+    selection_outcome: Mapped[dict | None] = mapped_column(JSON)
 
 
 class ProjectTaskRow(Base):
@@ -73,3 +78,62 @@ class ProjectTaskInputSnapshotRow(Base):
     parameters: Mapped[dict] = mapped_column(JSON)
     inputs: Mapped[list] = mapped_column(JSON)
     captured_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ProjectRecordLeaseRow(Base):
+    __tablename__ = "project_record_leases"
+    __table_args__ = (
+        UniqueConstraint(
+            "task_id", "lease_key", name="uq_project_record_leases_task_key"
+        ),
+        Index(
+            "uq_project_record_leases_active_key",
+            "lease_key",
+            unique=True,
+            sqlite_where=text("state IN ('held', 'reconciling')"),
+        ),
+        Index("ix_project_record_leases_task", "project_id", "task_id"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    lease_key: Mapped[str] = mapped_column(String(1024))
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.id", ondelete="RESTRICT")
+    )
+    batch_id: Mapped[str] = mapped_column(
+        ForeignKey("project_batches.id", ondelete="RESTRICT")
+    )
+    task_id: Mapped[str] = mapped_column(
+        ForeignKey("project_tasks.id", ondelete="RESTRICT")
+    )
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("workflow_runs.id", ondelete="RESTRICT")
+    )
+    record_ref: Mapped[dict] = mapped_column(JSON)
+    lease_generation: Mapped[int] = mapped_column(Integer)
+    state: Mapped[str] = mapped_column(String)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    released_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ProjectTaskRecordCursorRow(Base):
+    __tablename__ = "project_task_record_cursors"
+    __table_args__ = (
+        UniqueConstraint(
+            "task_id", "lease_id", name="uq_project_task_record_cursors_lease"
+        ),
+        Index("ix_project_task_record_cursors_task", "task_id"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    task_id: Mapped[str] = mapped_column(
+        ForeignKey("project_tasks.id", ondelete="RESTRICT")
+    )
+    lease_id: Mapped[str] = mapped_column(
+        ForeignKey("project_record_leases.id", ondelete="RESTRICT")
+    )
+    record_ref: Mapped[dict] = mapped_column(JSON)
+    content_revision: Mapped[int] = mapped_column(Integer)
+    status_revision: Mapped[int] = mapped_column(Integer)
+    link_revision: Mapped[int] = mapped_column(Integer)
+    source: Mapped[str] = mapped_column(String)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

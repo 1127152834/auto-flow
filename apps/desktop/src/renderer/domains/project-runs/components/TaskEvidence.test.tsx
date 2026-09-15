@@ -61,6 +61,41 @@ it('keeps final output, node output and evidence attachments as separate fixed r
   expect(screen.getByText('没有证据附件。')).toBeVisible()
 })
 
+it('shows frozen project inputs and explicit task data writes in the io view', () => {
+  const dataDetail: Schema['TaskDetail'] = {
+    ...detail,
+    inputSnapshot: {
+      ...detail.inputSnapshot,
+      inputs: [{ alias: '邮箱', tableDisplay: '邮箱表', recordRef: { recordKey: { type: 'text', value: '001' } }, values: [{ fieldName: '地址', value: 'pm4@example.test' }] }],
+    },
+    dataWrites: [{ kind: 'statusChange', tableDisplay: '邮箱表', recordDisplay: 'text · 001', outcome: 'succeeded', previousStatus: '待使用', nextStatus: '已使用' }],
+  }
+  render(<TaskEvidence {...base} detail={dataDetail} mode="io" outputs={outputPage([])} artifacts={artifactPage([])}/>)
+  expect(screen.getByRole('heading', { name: '原始数据输入' })).toBeVisible()
+  expect(screen.getByText('pm4@example.test', { selector: 'td span' })).toBeVisible()
+  expect(screen.getByText('text · 001')).toBeVisible()
+  expect(screen.getByText('地址：pm4@example.test')).toBeVisible()
+  expect(screen.getByRole('heading', { name: '任务数据写入' })).toBeVisible()
+  expect(screen.getByText('待使用 → 已使用')).toBeVisible()
+})
+
+it('presents the isolated executor boundary as product language', () => {
+  render(<TaskEvidence {...base} mode="io" outputs={outputPage([{
+    outputId: 'boundary',
+    kind: 'value',
+    runId: detail.run.runId,
+    sequence: 1,
+    nodeId: null,
+    nodeName: null,
+    name: '测试执行边界',
+    value: { executor: 'fake', browser: 'notExecuted', studio: 'notExecuted' },
+    createdAt: '2026-09-15T01:02:03Z',
+  }])} artifacts={artifactPage([])}/>)
+
+  expect(screen.getByText('隔离测试执行器 · 未调用浏览器 · 未调用 Studio')).toBeVisible()
+  expect(screen.queryByText(/notExecuted/)).not.toBeInTheDocument()
+})
+
 it('shows an inline failure screenshot and keeps the artifact action for enlargement', async () => {
   const onOpenArtifact = vi.fn()
   render(<TaskEvidence {...base} artifacts={artifactPage([artifact])} inlineScreenshotUrl="blob:failure" inlineScreenshotLabel="点击元素失败时页面" onOpenArtifact={onOpenArtifact}/>)

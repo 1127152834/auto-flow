@@ -36,6 +36,8 @@ from autoflow.infrastructure.database.project_automation_models import (
 from autoflow.infrastructure.database.project_automations import (
     _record as automation_record,
 )
+from autoflow.infrastructure.database.project_claims import SqlAlchemyProjectInputGroups
+from autoflow.infrastructure.database.project_data_models import DataTableRow
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
     ProjectTaskInputSnapshotRow,
@@ -62,10 +64,22 @@ class ProjectRunCoordinator:
         *,
         resolve_resources: Callable[[AutomationRecord, dict[str, Any]], dict[str, Any]],
         available_capabilities: Sequence[str],
+        resolve_create_record_targets: Callable[
+            [Session, AutomationRecord], Sequence[tuple[str, str]]
+        ]
+        | None = None,
+        resolve_status_input_ids: Callable[[AutomationRecord], Sequence[str]]
+        | None = None,
     ) -> None:
         self._factory, self._core = session_factory, core_runtime
         self._resolve_resources = resolve_resources
         self._capabilities = tuple(available_capabilities)
+        self._resolve_create_record_targets = (
+            resolve_create_record_targets or (lambda _session, _automation: ())
+        )
+        self._resolve_status_input_ids = (
+            resolve_status_input_ids or (lambda _automation: ())
+        )
 
     def inspect_capabilities(self, workflow_id: str) -> list[dict[str, Any]]:
         # Workflow shape and actual resource availability are checked separately.
@@ -75,6 +89,15 @@ class ProjectRunCoordinator:
             "required": True,
             "available": "browser.cloakbrowser" in self._capabilities,
             "reason": "本地浏览器执行能力" if "browser.cloakbrowser" in self._capabilities else "本地浏览器执行能力不可用",
+        }, {
+            "capability": "project.data",
+            "required": False,
+            "available": "project.data" in self._capabilities,
+            "reason": (
+                "项目数据执行能力可用"
+                if "project.data" in self._capabilities
+                else "项目数据执行能力未接入"
+            ),
         }]
 
     def start(
@@ -151,7 +174,42 @@ class ProjectRunCoordinator:
             if row is None or row.project_id != project_id:
                 raise ProjectRunError("NOT_FOUND", "自动化不存在", 404)
             automation = automation_record(row)
-            start = validate_batch_start(automation, payload)
+            has_data_inputs = bool(automation.input_plan.get("inputs"))
+            start = validate_batch_start(
+                automation,
+                payload,
+                allow_data_inputs="project.data" in self._capabilities,
+            )
+            if has_data_inputs and start.max_tasks != 1:
+                raise ProjectRunError(
+                    "VALIDATION_ERROR",
+                    "数据输入首批次当前只支持一个任务",
+                    422,
+                    {"fields": {"maxTasks": "当前必须为 1"}, "retryable": False},
+                )
+            selection = (
+                SqlAlchemyProjectInputGroups(session).select_required(
+                    project_id, automation.input_plan
+                )
+                if has_data_inputs
+                else None
+            )
+            if selection is not None and selection.status != "ready":
+                errors = {
+                    "noMatch": ("INPUT_NO_MATCH", "没有符合条件的数据", 409),
+                    "temporarilyBusy": (
+                        "INPUT_TEMPORARILY_BUSY",
+                        "符合条件的数据暂时被其他任务占用",
+                        409,
+                    ),
+                    "configurationError": (
+                        "INPUT_CONFIGURATION_ERROR",
+                        "数据输入配置或表结构已失效",
+                        422,
+                    ),
+                }
+                code, message, status = errors[selection.status]
+                raise ProjectRunError(code, message, status)
             effective = (
                 replace(
                     automation, environment_policy=thaw_json(start.environment_override)
@@ -184,6 +242,16 @@ class ProjectRunCoordinator:
                     "workflowRevision": workflow.revision,
                 }
             )
+            create_record_targets = (
+                [
+                    {"tableId": table_id, "datasetGeneration": generation}
+                    for table_id, generation in self._resolve_create_record_targets(
+                        session, automation
+                    )
+                ]
+                if has_data_inputs
+                else []
+            )
             operation = ProjectOperation(
                 operation_id,
                 project_id,
@@ -215,6 +283,8 @@ class ProjectRunCoordinator:
                 frozen_request=frozen,
                 created_at=now,
                 completed_at=None,
+                claim_gate_state="open" if has_data_inputs else "closed",
+                selection_outcome={"status": "ready"} if has_data_inputs else None,
             )
             session.add(batch_row)
             session.flush()
@@ -235,7 +305,20 @@ class ProjectRunCoordinator:
                         "inputSnapshotId": snapshot_id,
                     },
                     resource_request=resources,
-                    capability_bindings=[],
+                    capability_bindings=(
+                        [{
+                            "capability": "project.data",
+                            "projectId": project_id,
+                            "taskId": task_id,
+                            "executionGeneration": 1,
+                            "createRecordTargets": create_record_targets,
+                            "statusInputIds": list(
+                                self._resolve_status_input_ids(automation)
+                            ),
+                        }]
+                        if has_data_inputs
+                        else []
+                    ),
                     created_at=now,
                     uow=session,
                 )
@@ -251,13 +334,25 @@ class ProjectRunCoordinator:
                     )
                 )
                 session.flush()
+                snapshot_inputs = (
+                    SqlAlchemyProjectInputGroups(session).hold(
+                        selection,
+                        project_id=project_id,
+                        batch_id=batch_id,
+                        task_id=task_id,
+                        run_id=run.run_id,
+                        now=now,
+                    )
+                    if selection is not None
+                    else []
+                )
                 session.add(
                     ProjectTaskInputSnapshotRow(
                         id=snapshot_id,
                         task_id=task_id,
                         batch_id=batch_id,
                         parameters=thaw_json(start.parameters),
-                        inputs=[],
+                        inputs=snapshot_inputs,
                         captured_at=now,
                     )
                 )
@@ -283,10 +378,64 @@ class ProjectRunCoordinator:
             self._project(session, project_id)
             return SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
 
+    def preview_inputs(
+        self, project_id: str, automation_id: str, expected_revision: int
+    ) -> dict[str, Any]:
+        with self._factory() as session:
+            self._project(session, project_id)
+            row = session.get(ProjectAutomationRow, automation_id)
+            if row is None or row.project_id != project_id:
+                raise ProjectRunError("NOT_FOUND", "自动化不存在", 404)
+            automation = automation_record(row)
+            if automation.management_revision != expected_revision:
+                raise ProjectRunError(
+                    "REVISION_CONFLICT",
+                    "自动化配置已更新，请刷新后重试",
+                    409,
+                    {"currentAutomationRevision": automation.management_revision},
+                )
+            if "project.data" not in self._capabilities:
+                raise ProjectRunError(
+                    "CAPABILITY_UNAVAILABLE", "当前执行端未开放项目数据能力", 409
+                )
+            selection = SqlAlchemyProjectInputGroups(session).select_required(
+                project_id, automation.input_plan
+            )
+            selected = {item.input_id: item for item in selection.inputs}
+            items = []
+            for item in automation.input_plan.get("inputs", []):
+                table = session.get(DataTableRow, item["tableId"])
+                chosen = selected.get(item["inputId"])
+                ref = chosen.record_ref if chosen is not None else None
+                items.append(
+                    {
+                        "inputId": item["inputId"],
+                        "alias": item["alias"],
+                        "tableDisplay": table.name if table is not None else "数据表已失效",
+                        "recordDisplay": (
+                            f"{ref.record_key.type} · {ref.record_key.value}"
+                            if ref is not None
+                            else None
+                        ),
+                        "values": (
+                            thaw_json(chosen.value.get("values", []))
+                            if chosen is not None
+                            else []
+                        ),
+                        "outcome": "ready" if chosen is not None else selection.status,
+                    }
+                )
+            return {"runnable": selection.status == "ready", "inputs": items}
+
     def list_tasks(self, project_id: str, batch_id: str):
         with self._factory() as session:
             self._project(session, project_id)
             return SqlAlchemyProjectRuns(session).list_tasks(project_id, batch_id)
+
+    def get_snapshot(self, project_id: str, task_id: str):
+        with self._factory() as session:
+            self._project(session, project_id)
+            return SqlAlchemyProjectRuns(session).snapshot(project_id, task_id)
 
     @staticmethod
     def _project(session: Session, project_id: str) -> ProjectRow:

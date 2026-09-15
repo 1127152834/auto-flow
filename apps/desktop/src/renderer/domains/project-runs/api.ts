@@ -3,7 +3,7 @@ import type { components } from '../../shared/api/generated'
 import { assertFiniteNumbers, DataCommandNotAccepted, DataCommandUncertain, type DataCommandPolicy } from '../project-data/data-command'
 
 type Schema = components['schemas']
-export type Batch = Schema['BatchView']; export type BatchPage = Schema['BatchPage']; export type BatchDetail = Schema['BatchDetail']; export type Task = Schema['TaskView']; export type TaskDetail = Schema['TaskDetail']; export type TaskPage = Schema['TaskPage']; export type BatchStartRequest = Schema['BatchStartRequest']; export type BatchStopRequest = Schema['BatchStopRequest']
+export type Batch = Schema['BatchView']; export type BatchPage = Schema['BatchPage']; export type BatchDetail = Schema['BatchDetail']; export type Task = Schema['TaskView']; export type TaskDetail = Schema['TaskDetail']; export type TaskPage = Schema['TaskPage']; export type BatchStartRequest = Schema['BatchStartRequest']; export type BatchStopRequest = Schema['BatchStopRequest']; export type InputPreview = Schema['InputPreviewResponse']
 export type RunOperation = Schema['ProjectOperationView'] | Schema['ProjectRunOperationSnapshot']
 export type RunCommandOutcome = { state: 'accepted'; operation: RunOperation } | { state: 'succeeded'; batch: Batch }
 class RunOperationFailed extends ApiClientError {}
@@ -45,6 +45,7 @@ export function createProjectRunsApi(client: StreamingApiClient, projectId: stri
     getBatch: (batchId: string, signal?: AbortSignal) => client.request<BatchDetail>(`${root}/batches/${encode(batchId)}`, { signal }),
     listTasks: (filter: TaskQuery, signal?: AbortSignal) => client.request<TaskPage>(`${root}/tasks?${query(filter)}`, { signal }),
     getTask: (taskId: string, signal?: AbortSignal) => client.request<TaskDetail>(`${root}/tasks/${encode(taskId)}`, { signal }),
+    previewInputs: (automationId: string, expectedAutomationRevision: number, signal?: AbortSignal) => client.request<InputPreview>(`${root}/automations/${encode(automationId)}/input-preview`, { method: 'POST', body: { expectedAutomationRevision }, signal }),
     start: (automationId: string, body: BatchStartRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/automations/${encode(automationId)}/batches`, 'startBatch', automationId, body, key, false, policy),
     resumeStart: (automationId: string, body: BatchStartRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/automations/${encode(automationId)}/batches`, 'startBatch', automationId, body, key, true, policy),
     stop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/stop`, 'stopBatch', batchId, body, key, false, policy),

@@ -6,7 +6,12 @@ from datetime import datetime
 from types import MappingProxyType
 from typing import Any, Literal
 
-from autoflow.domain.workflows.runtime import TERMINAL_STATUSES, CoreRun, CoreRunStatus
+from autoflow.domain.workflows.runtime import (
+    TERMINAL_STATUSES,
+    CoreRun,
+    CoreRunStatus,
+    thaw_json,
+)
 
 BatchStatus = Literal[
     "accepted",
@@ -64,14 +69,8 @@ class TaskInputSnapshot:
     captured_at: datetime
 
     def __post_init__(self) -> None:
-        if self.inputs:
-            raise ProjectRunError(
-                "PROJECT_INPUTS_NOT_SUPPORTED",
-                "当前仅支持参数型运行，任务不能包含项目数据输入快照",
-                422,
-            )
         object.__setattr__(self, "parameters", _freeze_mapping(self.parameters))
-        object.__setattr__(self, "inputs", tuple(self.inputs))
+        object.__setattr__(self, "inputs", tuple(_freeze(item) for item in self.inputs))
 
 
 @dataclass(frozen=True)
@@ -196,8 +195,8 @@ def snapshot_to_dict(snapshot: TaskInputSnapshot) -> dict[str, Any]:
         "inputSnapshotId": snapshot.input_snapshot_id,
         "taskId": snapshot.task_id,
         "batchId": snapshot.batch_id,
-        "parameters": dict(snapshot.parameters),
-        "inputs": [dict(item) for item in snapshot.inputs],
+        "parameters": thaw_json(snapshot.parameters),
+        "inputs": [thaw_json(item) for item in snapshot.inputs],
         "capturedAt": snapshot.captured_at,
     }
 

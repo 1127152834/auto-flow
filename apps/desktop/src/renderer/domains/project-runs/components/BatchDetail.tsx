@@ -6,7 +6,7 @@ import { BatchStatus, type BatchStatusValue } from './BatchStatus'
 
 type Detail = components['schemas']['BatchDetail']
 type JsonRecord = Record<string, unknown>
-export type BatchDetailProps = { detail: Detail; automationName?: string; onBack(): void; onStop?: () => void; onForceStop?: () => void; stopping?: boolean }
+export type BatchDetailProps = { detail: Detail; automationName?: string; onBack(): void; onStop?: () => void; onForceStop?: () => void; stopping?: boolean; showConfiguration?: boolean }
 
 const terminal = new Set(['completed', 'failed', 'stopped', 'interrupted'])
 const endReasons: Record<string, string> = { completed: '本批次任务已结束', stopped: '批次已按停止请求结束', failed: '批次运行失败', interrupted: '批次运行被中断' }
@@ -22,7 +22,7 @@ function duration(start: string | null | undefined, end: string | null | undefin
   return rest ? `${minutes} 分 ${rest} 秒` : `${minutes} 分钟`
 }
 
-function ConfigurationSnapshot({ value }: { value: JsonRecord }) {
+export function BatchConfigurationSnapshot({ value }: { value: JsonRecord }) {
   const automation = record(value.automation), parameters = record(value.parameters)
   const definitions = Array.isArray(automation.parameterSchema) ? automation.parameterSchema.map(record) : []
   const names = new Map(definitions.map(item => [String(item.parameterId ?? ''), String(item.name ?? '参数')]))
@@ -49,7 +49,7 @@ function ConfigurationSnapshot({ value }: { value: JsonRecord }) {
   </details>
 }
 
-export function BatchDetail({ detail, automationName, onBack, onStop, onForceStop, stopping = false }: BatchDetailProps) {
+export function BatchDetail({ detail, automationName, onBack, onStop, onForceStop, stopping = false, showConfiguration = true }: BatchDetailProps) {
   const { batch, statusCounts } = detail, ended = terminal.has(batch.status)
   const configuration = record((detail as Detail & { configurationSnapshot?: JsonRecord }).configurationSnapshot)
   const frozenAutomationName = (batch as typeof batch & { automationName?: string | null }).automationName
@@ -70,8 +70,8 @@ export function BatchDetail({ detail, automationName, onBack, onStop, onForceSto
         <div><dt className="text-sm text-muted">耗时</dt><dd className="m-0 mt-1">{duration(batch.createdAt, batch.completedAt)}</dd></div>
         <div><dt className="text-sm text-muted">结束原因</dt><dd className="m-0 mt-1">{endReasons[batch.status] ?? '尚未结束'}</dd></div>
       </dl>
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 p-5"><strong>本批次 {detail.taskCount} 个任务</strong><span className="text-success">成功 {statusCounts.succeeded ?? 0}</span><span className={failures ? 'text-danger' : ''}>失败或异常 {failures}</span><span>进行中 {batch.activeTaskCount}</span>{failures ? <span role="alert" className="ml-auto inline-flex items-center gap-2 rounded-control border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning"><WarningCircle size={20} weight="fill"/> {failures} 个任务失败或异常，可进入任务查看日志；批次结束不代表全部成功。</span> : null}</div>
-      <ConfigurationSnapshot value={configuration}/>
+      <div className="m-5 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-control border border-line px-4 py-3"><Stack className="text-muted" size={24}/><strong>本批次 {detail.taskCount} 个任务</strong><span className="text-success">成功 {statusCounts.succeeded ?? 0}</span><span className={failures ? 'text-danger' : ''}>失败或异常 {failures}</span><span>进行中 {batch.activeTaskCount}</span>{failures ? <span role="alert" className="ml-auto inline-flex items-center gap-2 rounded-control border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning"><WarningCircle size={20} weight="fill"/> {failures} 个任务失败或异常，可进入任务查看日志；批次结束不代表全部成功。</span> : null}</div>
+      {showConfiguration ? <BatchConfigurationSnapshot value={configuration}/> : null}
     </section>
   </section>
 }

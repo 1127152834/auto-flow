@@ -16,6 +16,11 @@ from autoflow.domain.project_runs.models import (
 )
 from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
+from autoflow.infrastructure.database.project_data_models import (
+    DataChangeRow,
+    DataStatusRow,
+    DataTableRow,
+)
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
     ProjectTaskInputSnapshotRow,
@@ -318,6 +323,7 @@ class ProjectRunQueries:
                     )
                 ),
                 "run": _run(run),
+                "dataWrites": _data_writes(session, project_id, task_id),
             }
 
 
@@ -330,6 +336,69 @@ def _input_identifier(inputs: list[dict[str, Any]]) -> str:
         if isinstance(value, (str, int)) and not isinstance(value, bool):
             return str(value)
     return "项目数据输入" if len(inputs) == 1 else f"{len(inputs)} 项项目数据输入"
+
+
+def _data_writes(
+    session: Session, project_id: str, task_id: str
+) -> list[dict[str, Any]]:
+    rows = session.execute(
+        select(DataChangeRow, ProjectOperationRow)
+        .join(
+            ProjectOperationRow,
+            (ProjectOperationRow.project_id == DataChangeRow.project_id)
+            & (ProjectOperationRow.id == DataChangeRow.operation_id),
+        )
+        .where(
+            DataChangeRow.project_id == project_id,
+            DataChangeRow.origin == "workflow",
+            ProjectOperationRow.resource["taskId"].as_string() == task_id,
+        )
+        .order_by(DataChangeRow.created_at, DataChangeRow.id)
+    ).all()
+    result: list[dict[str, Any]] = []
+    for change, operation in rows:
+        after = change.after or {}
+        before = change.before or {}
+        ref = after.get("ref") or change.resource.get("recordRef") or {}
+        table_id = ref.get("tableId")
+        table = session.get(DataTableRow, table_id) if table_id else None
+        common = {
+            "tableDisplay": table.name if table is not None else "数据表",
+            "recordDisplay": _record_display(ref),
+            "outcome": "succeeded",
+        }
+        if operation.kind == "setRecordStatus":
+            result.append(
+                {
+                    **common,
+                    "kind": "statusChange",
+                    "previousStatus": _status_name(session, before.get("statusId")),
+                    "nextStatus": _status_name(session, after.get("statusId")),
+                }
+            )
+        elif operation.kind == "createRecord":
+            result.append(
+                {
+                    **common,
+                    "kind": "recordCreated",
+                    "referenceDisplay": _record_display(ref),
+                }
+            )
+    return result
+
+
+def _status_name(session: Session, status_id: str | None) -> str | None:
+    if status_id is None:
+        return None
+    row = session.get(DataStatusRow, status_id)
+    return row.name if row is not None else "已删除的状态"
+
+
+def _record_display(ref: dict[str, Any]) -> str:
+    key = ref.get("recordKey") if isinstance(ref, dict) else None
+    if not isinstance(key, dict):
+        return "记录"
+    return f"{key.get('type', 'unknown')} · {key.get('value', '')}"
 
 
 def _project(session: Session, project_id: str) -> None:

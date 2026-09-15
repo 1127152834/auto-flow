@@ -1,0 +1,127 @@
+{
+  "projectId": "7d497cde-174e-46d0-86d3-af949b671f2d",
+  "batchId": "5558cdcb-9cd7-4fe3-9287-f138832e3e1d",
+  "taskId": "641dfc70-4c40-4a5a-a26c-e6301f0d8f12",
+  "personBefore": {
+    "ref": {
+      "projectId": "7d497cde-174e-46d0-86d3-af949b671f2d",
+      "tableId": "6c49c699-62e5-4623-879c-e4dab9a0d21e",
+      "datasetGeneration": "4a12a49c-c483-4a2f-a46a-fc9c3045c0c6",
+      "recordKey": {
+        "type": "uuid",
+        "value": "c75dce79-2386-4152-b0ad-e6775b4161dc"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "b5f2dc00-bae8-40f4-95bb-491d0addf53c",
+        "value": "张三",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": null,
+    "contentRevision": 1,
+    "statusRevision": 1,
+    "linkRevision": 1
+  },
+  "personAfter": {
+    "ref": {
+      "projectId": "7d497cde-174e-46d0-86d3-af949b671f2d",
+      "tableId": "6c49c699-62e5-4623-879c-e4dab9a0d21e",
+      "datasetGeneration": "4a12a49c-c483-4a2f-a46a-fc9c3045c0c6",
+      "recordKey": {
+        "type": "uuid",
+        "value": "c75dce79-2386-4152-b0ad-e6775b4161dc"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "b5f2dc00-bae8-40f4-95bb-491d0addf53c",
+        "value": "张三",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": null,
+    "contentRevision": 1,
+    "statusRevision": 1,
+    "linkRevision": 1
+  },
+  "emailBefore": {
+    "ref": {
+      "projectId": "7d497cde-174e-46d0-86d3-af949b671f2d",
+      "tableId": "6cdaa0a6-8b0e-47cf-9acc-66a8d2324719",
+      "datasetGeneration": "a8753bf3-80d4-4393-8422-bfd3eab9658d",
+      "recordKey": {
+        "type": "uuid",
+        "value": "7c124bd7-fe64-4483-adb7-e01e1ed68e38"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "3fc340ef-9814-4598-99f9-1b7666b0516c",
+        "value": "zhangsan@example.test",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": "03b86956-7d7c-4efc-906d-9b619644780d",
+    "contentRevision": 1,
+    "statusRevision": 2,
+    "linkRevision": 1
+  },
+  "emailAfter": {
+    "ref": {
+      "projectId": "7d497cde-174e-46d0-86d3-af949b671f2d",
+      "tableId": "6cdaa0a6-8b0e-47cf-9acc-66a8d2324719",
+      "datasetGeneration": "a8753bf3-80d4-4393-8422-bfd3eab9658d",
+      "recordKey": {
+        "type": "uuid",
+        "value": "7c124bd7-fe64-4483-adb7-e01e1ed68e38"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "3fc340ef-9814-4598-99f9-1b7666b0516c",
+        "value": "zhangsan@example.test",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": "b61790cc-a2b1-4023-bb11-b8367c150726",
+    "contentRevision": 1,
+    "statusRevision": 3,
+    "linkRevision": 1
+  },
+  "accountCount": 1,
+  "taskInputAliases": [
+    "人员输入",
+    "邮箱输入"
+  ],
+  "dataWrites": [
+    {
+      "kind": "statusChange",
+      "tableDisplay": "邮箱",
+      "recordDisplay": "uuid · 7c124bd7-fe64-4483-adb7-e01e1ed68e38",
+      "outcome": "succeeded",
+      "previousStatus": "待使用",
+      "nextStatus": "已使用",
+      "referenceDisplay": null
+    },
+    {
+      "kind": "recordCreated",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · feb0bbf5-2657-48e2-931a-483d4a89ff43",
+      "outcome": "succeeded",
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · feb0bbf5-2657-48e2-931a-483d4a89ff43"
+    }
+  ],
+  "executionBoundary": {
+    "executor": "fake",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  }
+}

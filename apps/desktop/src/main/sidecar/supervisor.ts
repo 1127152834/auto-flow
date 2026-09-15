@@ -26,6 +26,7 @@ export type SupervisorOptions = {
   instanceId: string
   dataDir?: string
   backendDirectory?: string
+  developmentModule?: string
   rendererOrigin?: string
   production?: boolean
   sidecarPath?: string
@@ -79,7 +80,10 @@ export class SidecarSupervisor {
       '--data-dir', this.options.dataDir,
     ]
     if (!this.options.production && !this.options.backendDirectory) throw new Error('backendDirectory is required in development')
-    const args = this.options.production ? sidecarArgs : ['run', '--directory', this.options.backendDirectory!, 'python', '-m', 'autoflow', ...sidecarArgs]
+    const args = this.options.production ? sidecarArgs : [
+      'run', '--directory', this.options.backendDirectory!, 'python', '-m',
+      this.options.developmentModule ?? 'autoflow', ...sidecarArgs,
+    ]
     const command = this.options.production ? this.options.sidecarPath! : 'uv'
     const generation = ++this.startupGeneration
     this.update(applySidecarEvent(this.status, { type: 'spawned' }))

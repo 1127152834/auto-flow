@@ -22,6 +22,24 @@ class BatchStartRequest(ApiModel):
         return self.model_dump(by_alias=True, exclude_unset=True)
 
 
+class InputPreviewRequest(ApiModel):
+    expected_automation_revision: StrictInt = Field(ge=1)
+
+
+class InputPreviewItem(ApiModel):
+    input_id: str
+    alias: str
+    table_display: str
+    record_display: str | None
+    values: list[dict[str, JsonValue]] = Field(default_factory=list)
+    outcome: str
+
+
+class InputPreviewResponse(ApiModel):
+    runnable: bool
+    inputs: list[InputPreviewItem]
+
+
 class BatchView(ApiModel):
     batch_id: str
     project_id: str
@@ -126,6 +144,16 @@ class BatchDetail(ApiModel):
     configuration_snapshot: dict[str, JsonValue]
 
 
+class TaskDataWriteView(ApiModel):
+    kind: str
+    table_display: str
+    record_display: str
+    outcome: str
+    previous_status: str | None = None
+    next_status: str | None = None
+    reference_display: str | None = None
+
+
 class TaskDetail(ApiModel):
     automation_name: str | None = None
     batch_started_at: datetime | None = None
@@ -134,6 +162,7 @@ class TaskDetail(ApiModel):
     task: TaskView
     input_snapshot: TaskInputSnapshotView
     run: RunSnapshotView
+    data_writes: list[TaskDataWriteView] = Field(default_factory=list)
 
 
 class BatchStopRequest(ApiModel):

@@ -1,5 +1,5 @@
 import { safeProjectError } from '../../projects/presentation-error'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { StreamingApiClient } from '../../../shared/api/client'
 import { notify } from '../../../shared/components/Toaster'
 import { Button } from '../../../shared/components/ui/button'
@@ -9,6 +9,8 @@ import { useBatchCommand } from '../hooks'
 import { BatchStartDialog } from './BatchStartDialog'
 import { RunCommandNotice } from './RunCommandNotice'
 import { presentRunFailure } from '../presentation'
+import { createProjectRunsApi } from '../api'
+import { DataInputPreview, type DataInputPreviewOutcome } from './DataInputPreview'
 
 export type BatchLauncherProps = { open: boolean; onOpenChange(open: boolean): void; savedAutomation: Automation; validation?: AutomationValidation; validationLoading?: boolean; validationError?: string; onRefreshValidation(): void; workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient; disabled: boolean; readOnly: boolean; onBatchCreated(batchId: string): void; resourceSummary: { label: string; value: string }[] }
 const temporaryOverride = (automation: Automation): BatchStartRequest['environmentOverride'] => {
@@ -24,8 +26,21 @@ export function BatchLauncher(props: BatchLauncherProps) {
   const navigated = useRef(new Set<string>())
   const created = (batchId: string, key: string) => { if (navigated.current.has(key)) return; navigated.current.add(key); notify({ title: '批次已创建', tone: 'success', operationId: JSON.stringify([props.workspaceKey, key]) }); props.onBatchCreated(batchId) }
   const command = useBatchCommand({ client: props.client, workspaceKey: props.workspaceKey, instanceId: props.instanceId, projectId: props.projectId, scope: { type: 'start', automationId: props.savedAutomation.automationId }, disabled: props.disabled, readOnly: props.readOnly, onAccepted(operation, key) { const resource = operation.resource as { type?: unknown; projectId?: unknown; batchId?: unknown }; if (operation.kind === 'startBatch' && resource.type === 'batch' && resource.projectId === props.projectId && typeof resource.batchId === 'string') { created(resource.batchId, key); return true } }, onCompleted(batch, key) { if (batch.projectId === props.projectId && batch.automationId === props.savedAutomation.automationId) created(batch.batchId, key) } })
-  const runnable = Boolean(props.validation?.runnable) && !props.disabled && !props.readOnly
+  const api = useMemo(() => createProjectRunsApi(props.client, props.projectId), [props.client, props.projectId])
+  const hasInputs = props.savedAutomation.inputPlan.inputs.length > 0
+  const [preview, setPreview] = useState<{ data?: Awaited<ReturnType<typeof api.previewInputs>>; loading: boolean; error?: unknown }>({ loading: false })
+  useEffect(() => {
+    if (!props.open || !hasInputs || props.disabled) { setPreview({ loading: false }); return }
+    const controller = new AbortController()
+    setPreview({ loading: true })
+    void api.previewInputs(props.savedAutomation.automationId, props.savedAutomation.managementRevision, controller.signal)
+      .then(data => { if (!controller.signal.aborted) setPreview({ data, loading: false }) })
+      .catch(error => { if (!controller.signal.aborted) setPreview({ loading: false, error }) })
+    return () => controller.abort()
+  }, [api, hasInputs, props.disabled, props.instanceId, props.open, props.savedAutomation.automationId, props.savedAutomation.managementRevision, props.workspaceKey])
+  const inputsReady = !hasInputs || preview.data?.runnable === true
   const issueText = props.validation?.issues.map(safeProjectError).join('；')
-  const checks = [{ label: '运行条件', value: props.validationLoading ? '正在检查' : props.validationError ? '检查失败' : props.readOnly ? '只读项目' : runnable ? '检查完成' : issueText || '需要配置', accepted: runnable, status: runnable ? '可以启动' : '需要处理' }]
-  return <BatchStartDialog open={props.open} formSessionKey={identity} automationName={props.savedAutomation.name} expectedAutomationRevision={props.savedAutomation.managementRevision} parameters={props.savedAutomation.parameterSchema} value={draft} onChange={setDraft} onOpenChange={props.onOpenChange} onSubmit={request => command.start(props.savedAutomation.automationId, request)} checks={checks} resources={props.resourceSummary} submitting={command.busy} recovering={command.recovering} errorMessage={command.error ?? (props.validationError ? presentRunFailure(props.validationError) : undefined)} onConfigure={() => props.onOpenChange(false)} temporaryEnvironmentOverride={temporaryOverride(props.savedAutomation)} recoveryActions={<><RunCommandNotice command={command} disabled={props.disabled} readOnly={props.readOnly}/>{props.validationError ? <Button size="sm" disabled={props.disabled || command.busy} onClick={props.onRefreshValidation}>重新检查运行条件</Button> : null}</>}/>
+  const checks = [{ label: '运行条件', value: props.validationLoading ? '正在检查' : props.validationError ? '检查失败' : props.readOnly ? '只读项目' : Boolean(props.validation?.runnable) ? '检查完成' : issueText || '需要配置', accepted: Boolean(props.validation?.runnable), status: props.validation?.runnable ? '可以启动' : '需要处理' }, ...(hasInputs ? [{ label: '项目数据', value: preview.loading ? '正在预检两个必要输入' : preview.error ? '预检失败' : inputsReady ? '已找到完整输入组' : '当前不能领取完整输入组', accepted: inputsReady, status: inputsReady ? '可以领取' : '需要处理' }] : [])]
+  const inputPreview = hasInputs ? <DataInputPreview loading={preview.loading} inputs={(preview.data?.inputs ?? []).map(item => ({ alias: item.alias, tableDisplay: item.tableDisplay, recordDisplay: item.recordDisplay, values: (item.values ?? []).map(value => ({ label: typeof value.fieldName === 'string' ? value.fieldName : '字段', value: String(value.value ?? 'null') })), outcome: item.outcome as DataInputPreviewOutcome }))}/> : undefined
+  return <BatchStartDialog open={props.open} formSessionKey={identity} automationName={props.savedAutomation.name} expectedAutomationRevision={props.savedAutomation.managementRevision} parameters={props.savedAutomation.parameterSchema} value={draft} onChange={setDraft} onOpenChange={props.onOpenChange} onSubmit={request => command.start(props.savedAutomation.automationId, request)} checks={checks} resources={props.resourceSummary} submitting={command.busy} recovering={command.recovering} errorMessage={command.error ?? (preview.error ? presentRunFailure(preview.error, '数据输入预检失败') : props.validationError ? presentRunFailure(props.validationError) : undefined)} onConfigure={() => props.onOpenChange(false)} inputPreview={inputPreview} temporaryEnvironmentOverride={temporaryOverride(props.savedAutomation)} recoveryActions={<><RunCommandNotice command={command} disabled={props.disabled} readOnly={props.readOnly}/>{props.validationError ? <Button size="sm" disabled={props.disabled || command.busy} onClick={props.onRefreshValidation}>重新检查运行条件</Button> : null}</>}/>
 }

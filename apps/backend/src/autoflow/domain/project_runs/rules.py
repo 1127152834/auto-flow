@@ -12,7 +12,10 @@ from .models import BatchStart, ProjectRunError
 
 
 def validate_batch_start(
-    automation: AutomationRecord, payload: dict[str, Any]
+    automation: AutomationRecord,
+    payload: dict[str, Any],
+    *,
+    allow_data_inputs: bool = False,
 ) -> BatchStart:
     if not isinstance(payload, dict):
         raise _error("form", "请求必须是对象")
@@ -42,7 +45,7 @@ def validate_batch_start(
                 "retryable": False,
             },
         )
-    if automation.input_plan.get("inputs"):
+    if automation.input_plan.get("inputs") and not allow_data_inputs:
         raise _error("inputPlan.inputs", "当前仅支持参数型运行，请移除项目数据输入")
     parameters = _parameters(automation.parameter_schema, payload["parameters"])
     max_tasks = payload.get("maxTasks", automation.run_policy.get("maxTasks", 1))

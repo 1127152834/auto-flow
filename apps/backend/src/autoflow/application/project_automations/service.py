@@ -151,14 +151,6 @@ class ProjectAutomationService:
                         "Workflow could not be inspected",
                     )
                 )
-        if automation.input_plan["inputs"]:
-            issues.append(
-                ValidationIssue(
-                    ["inputPlan", "inputs"],
-                    "PM4_INPUTS_NOT_SUPPORTED",
-                    "已保存数据输入；数据执行能力暂未开放",
-                )
-            )
         if automation.environment_policy["source"] != "newFromProfile":
             issues.append(
                 ValidationIssue(
@@ -184,6 +176,24 @@ class ProjectAutomationService:
         capabilities = self.capability_query.inspect_capabilities(
             automation.workflow_id
         )
+        data_capability = next(
+            (
+                item
+                for item in capabilities
+                if item.get("capability") == "project.data"
+            ),
+            None,
+        )
+        if automation.input_plan["inputs"] and not (
+            data_capability and data_capability.get("available")
+        ):
+            issues.append(
+                ValidationIssue(
+                    ["inputPlan", "inputs"],
+                    "PM4_INPUTS_NOT_SUPPORTED",
+                    "已保存数据输入；当前执行端未开放项目数据能力",
+                )
+            )
         for item in capabilities:
             if item.get("required") and not item.get("available"):
                 issues.append(
