@@ -13,6 +13,7 @@ const ref = (tableId: string, fieldId: string) => ({ projectId: 'p', tableId, da
 const record = (tableId: string, value: string) => ({ projectId: 'p', tableId, datasetGeneration: `g-${tableId}`, recordKey: { type: 'text' as const, value } })
 const field = (tableId: string, fieldId: string, name: string, type: 'string' | 'number') => ({ ref: ref(tableId, fieldId), key: fieldId, name, type, required: false, validation: {}, writable: true, formula: false, fieldRevision: 1 })
 const status = { statusId: 's1', name: '待处理', color: '#123456', order: 0, statusRevision: 1 }
+const internal = '11111111-2222-4333-8444-555555555555'
 const tables = [
   { id: 't1', name: '资料表', datasetGeneration: 'g-t1', fields: [field('t1', 'f1', '标题', 'string'), field('t1', 'f2', '页数', 'number')], statuses: [status], slotDefinitions: [{ slotId: 'slot-1', name: '归档记录', targetTableId: 't2', required: false }], records: [{ label: '记录一', ref: record('t1', 'r1') }] },
   { id: 't2', name: '归档表', datasetGeneration: 'g-t2', fields: [field('t2', 'f3', '名称', 'string')], statuses: [], slotDefinitions: [] },
@@ -62,7 +63,7 @@ it('preserves an unavailable old related source without rewriting it', () => {
   const related = { ...input, mode: 'related' as const, relation: { type: 'sameRecord' as const, sourceInputId: 'source-old' } }
   const p = props({ inputs: [related] }); render(<InputPlanEditor {...p}/>)
   expect(screen.getByRole('combobox', { name: '输入模式 资料' })).toHaveAttribute('data-choice-value', 'related')
-  expect(screen.getByText('当前选项不可用，请重新选择')).toBeVisible()
+  expect(screen.getByText('数据输入引用暂不可用')).toBeVisible()
   expect(p.onChange).not.toHaveBeenCalled()
 })
 
@@ -165,4 +166,37 @@ it('keeps status filters and system-field sorting available without bindings', (
   expect(screen.getByRole('combobox', { name: '排序字段 1' })).toHaveAttribute('data-choice-value', 'system:status')
   fireEvent.click(screen.getByRole('button', { name: '应用筛选' }))
   expect(p.onChange).toHaveBeenCalledWith({ inputs: [{ ...input, filter: { type: 'all', items: [{ type: 'status', operator: 'eq', statusId: 's1' }] }, orderBy: [{ systemField: 'status', direction: 'asc' }] }] })
+})
+
+it('uses semantic labels for unavailable table, record, input, field and slot references', async () => {
+  const missingRef = { projectId: 'p', tableId: 't1', datasetGeneration: 'g-t1', fieldId: internal }
+  const related = {
+    ...input,
+    inputId: 'i2',
+    alias: '关联资料',
+    mode: 'related' as const,
+    relation: { type: 'fieldEquals' as const, sourceInputId: internal, sourceFieldRef: missingRef, targetFieldRef: missingRef },
+    fieldBindings: [{ inputFieldId: 'binding', inputFieldAlias: '旧字段', fieldRef: missingRef }],
+  }
+  const fixed = { ...input, mode: 'fixedRecord' as const, fixedRecord: { ...record('t1', internal), recordKey: { type: 'uuid' as const, value: internal } } }
+  render(<InputPlanEditor {...props({ inputs: [fixed, related] })} />)
+  expect(screen.getByRole('combobox', { name: '固定记录 资料' })).toHaveTextContent('记录已失效')
+  expect(screen.getByRole('combobox', { name: '来源输入 关联资料' })).toHaveTextContent('数据输入引用暂不可用')
+  expect(screen.getByRole('combobox', { name: '来源字段 关联资料' })).toHaveTextContent('字段已失效')
+  expect(screen.getByRole('combobox', { name: '目标字段 关联资料' })).toHaveTextContent('字段已失效')
+  expect(screen.getByRole('combobox', { name: '映射字段 旧字段' })).toHaveTextContent('字段已失效')
+  expect(document.body.textContent).not.toContain(internal)
+})
+
+it('uses a semantic label when the saved table is unavailable', () => {
+  render(<InputPlanEditor {...props({ inputs: [{ ...input, tableId: internal, datasetGeneration: 'old' }] })} />)
+  expect(screen.getByRole('combobox', { name: '数据表 资料' })).toHaveTextContent('数据表已失效')
+  expect(document.body.textContent).not.toContain(internal)
+})
+
+it('uses a semantic label when a saved record slot is unavailable', () => {
+  const related = { ...input, inputId: 'i2', alias: '归档', tableId: 't2', datasetGeneration: 'g-t2', mode: 'related' as const, relation: { type: 'recordSlot' as const, sourceInputId: 'i1', slotId: internal } }
+  render(<InputPlanEditor {...props({ inputs: [input, related] })} />)
+  expect(screen.getByRole('combobox', { name: '记录槽 归档' })).toHaveTextContent('记录槽已失效')
+  expect(document.body.textContent).not.toContain(internal)
 })

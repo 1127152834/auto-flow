@@ -48,7 +48,7 @@ it('retains conflicts for user correction and never sends when the workspace is 
   const { result, rerender } = renderHook(props => useAutomationCommand(props), { initialProps: { client: clientValue, instanceId: 'i', projectId: 'project', workspaceKey: 'workspace', disabled: false, readOnly: false, onSaved: vi.fn() } })
   await act(async () => result.current.submit({ ...body, expectedManagementRevision: 1 }, 'automation'))
   expect(result.current.conflict).toBe(true)
-  expect(result.current.fields.name).toBe('名称冲突')
+  expect(result.current.fields.name).toBe('该字段填写有误，请检查')
   expect(result.current.locked()).toBe(false)
   rerender({ client: clientValue, instanceId: 'i', projectId: 'project', workspaceKey: 'workspace', disabled: true, readOnly: false, onSaved: vi.fn() })
   await act(async () => result.current.submit(body))
@@ -79,4 +79,14 @@ it('does not submit if the recovery envelope cannot be saved', async () => {
   await act(async () => result.current.submit(body))
   expect(request).not.toHaveBeenCalled()
   expect(result.current.error).toContain('本次未提交')
+})
+
+it('maps server diagnostics and field errors to safe user copy', async () => {
+  const internal = '11111111-2222-4333-8444-555555555555'
+  const request = vi.fn().mockRejectedValue(new ApiClientError(`resource ${internal}`, 422, 'RESOURCE_UNAVAILABLE', { fields: { name: `bad ${internal}` } }))
+  const { result } = renderHook(() => useAutomationCommand({ client: client(request), workspaceKey: 'workspace', instanceId: 'one', projectId: 'project', disabled: false, readOnly: false, onSaved: vi.fn() }))
+  await act(async () => result.current.submit(body))
+  expect(result.current.error).toBe('所需资源暂不可用，请检查配置')
+  expect(result.current.error).not.toContain(internal)
+  expect(result.current.fields).toEqual({ name: '该字段填写有误，请检查' })
 })

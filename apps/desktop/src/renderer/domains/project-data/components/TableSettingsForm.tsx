@@ -6,6 +6,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Textarea } from '../../../shared/components/ui/textarea'
 import { dataTableFormSchema } from '../form-schema'
+import { safeProjectError } from '../../projects/presentation-error'
 
 type TablePatch = components['schemas']['DataTablePatch']
 export type TableSettingsValues = { name: NonNullable<TablePatch['name']>; description: NonNullable<TablePatch['description']> }
@@ -82,7 +83,7 @@ export function TableSettingsForm({ sessionKey, initialValues, submissionEpoch =
         if (ticket === epoch.current) form.setFocus(fieldErrors.name ? 'name' : 'description')
       })()
     } catch (reason) {
-      if (ticket === epoch.current) setLocalError(reason instanceof Error ? reason.message : '保存数据表失败')
+      if (ticket === epoch.current) setLocalError(safeProjectError(reason))
     } finally {
       if (ticket === epoch.current) {
         lock.current = false
@@ -101,7 +102,7 @@ export function TableSettingsForm({ sessionKey, initialValues, submissionEpoch =
     const ticket = epoch.current
     try { await onRecover() }
     catch (reason) {
-      if (ticket === epoch.current) setLocalError(reason instanceof Error ? reason.message : '查询保存结果失败')
+      if (ticket === epoch.current) setLocalError(safeProjectError(reason))
     } finally {
       if (ticket === epoch.current) {
         lock.current = false

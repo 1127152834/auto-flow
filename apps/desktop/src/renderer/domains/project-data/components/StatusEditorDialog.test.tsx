@@ -34,7 +34,7 @@ it('edit submits only changed fields and preserves dirty draft on refresh and fa
   expect(screen.getByLabelText('状态名称')).toHaveValue('完成')
   await user.click(screen.getByRole('button', { name: '保存修改' }))
   expect(submit).toHaveBeenCalledWith({ name: '完成' })
-  expect(await screen.findByRole('alert')).toHaveTextContent('版本冲突')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(dirty).toHaveBeenCalledWith(true)
 })
 
@@ -165,7 +165,7 @@ it('revokes a pending close approval when a newer submit fails', async () => {
   let approve!: (approved: boolean) => void
   const close=vi.fn(), requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve})), submit=vi.fn().mockRejectedValue(new Error('new submission failed'))
   render(<StatusEditorDialog open mode="create" sessionKey="close-submit" onOpenChange={close} onRequestClose={requestClose} onSubmit={submit}/>)
-  fireEvent.change(screen.getByLabelText('状态名称'),{target:{value:'Ready'}}); await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建状态'})); await screen.findByText('new submission failed')
+  fireEvent.change(screen.getByLabelText('状态名称'),{target:{value:'Ready'}}); await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建状态'})); await screen.findByText('操作失败，请重试')
   await act(async()=>approve(true)); expect(close).not.toHaveBeenCalled()
 })
 

@@ -44,7 +44,7 @@ it('shows an output picker failure without losing the draft', async () => {
   render(<ExcelExportWorkflow open sessionKey="s" scopeKey="w:p:t:s" contextKey="i1" table={table as never} fields={fields as never} statuses={statuses as never} api={api as never} files={{ chooseOutput: vi.fn().mockRejectedValue(new Error('保存对话框不可用')) }} filter={null} orderBy={null} onClose={vi.fn()} onCompleted={vi.fn()} />)
   await userEvent.click(screen.getByRole('checkbox', { name: '年龄' }))
   await userEvent.click(screen.getByRole('button', { name: '选择保存位置' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('保存对话框不可用')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByRole('checkbox', { name: '年龄' })).not.toBeChecked()
   expect(api.startExport).not.toHaveBeenCalled()
 })

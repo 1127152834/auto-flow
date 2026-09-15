@@ -2,13 +2,14 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import type { components } from '../../shared/api/generated'
 import { DataCommandNotAccepted, DataCommandUncertain } from './data-command'
 import type { ExcelApi, ExcelExportRequest } from './excel-api'
+import { safeProjectError } from '../projects/presentation-error'
 
 type Operation = components['schemas']['ProjectOperationView']
 type Pending = { export: { key: string; tableId: string; body: ExcelExportRequest }; reconciliation?: { key: string; targetOperationId: string; expectedStatusRevision: number } }
 type Phase = 'ready' | 'unknown' | 'notAccepted' | 'accepted' | 'complete' | 'failed'
 const keyFor = (scope: string) => `autoflow:excel-export:${scope}`
 const terminal = (value: Operation) => value.status === 'succeeded' || value.status === 'failed'
-const message = (error: unknown) => error instanceof Error ? error.message : '无法导出 Excel 文件'
+const message = safeProjectError
 
 export function useExcelExport({ api, tableId, scopeKey, contextKey, active, disabled = false, onCompleted }: {
   api: Pick<ExcelApi, 'startExport' | 'lookupExport' | 'reconcileExport' | 'lookupReconcile'>; tableId: string; scopeKey: string; contextKey: string; active: boolean; disabled?: boolean; onCompleted?(operation: Operation): void
@@ -24,7 +25,7 @@ export function useExcelExport({ api, tableId, scopeKey, contextKey, active, dis
   }, [active, contextKey, scopeKey, tableId])
   const currentFor = (ticket: number) => () => ticket === epoch.current && available.current.active
   const accept = useCallback((value: Operation) => {
-    setOperation(value); setPhase(value.status === 'succeeded' ? 'complete' : value.status === 'failed' ? 'failed' : 'accepted'); setError(value.error && typeof value.error.message === 'string' ? value.error.message : null)
+    setOperation(value); setPhase(value.status === 'succeeded' ? 'complete' : value.status === 'failed' ? 'failed' : 'accepted'); setError(value.error ? safeProjectError(value.error) : null)
     if (value.status === 'succeeded' && completed.current !== value.operationId && onCompleted) { completed.current = value.operationId; localStorage.removeItem(keyFor(scopeKey)); setPending(null); onCompleted(value) }
   }, [onCompleted, scopeKey])
   const verifyOriginal = useCallback(async (saved: Pending, current: () => boolean) => { const value = await api.lookupExport(tableId, saved.export.key, current); if (current()) accept(value) }, [accept, api, tableId])
@@ -37,7 +38,7 @@ export function useExcelExport({ api, tableId, scopeKey, contextKey, active, dis
         if (!current()) return
         setReconciliation(proof)
         if (proof.status === 'succeeded') { const next = { export: pending.export }; localStorage.setItem(keyFor(scopeKey), JSON.stringify(next)); setPending(next); await verifyOriginal(next, current) }
-        else if (proof.status === 'failed') setError(proof.error && typeof proof.error.message === 'string' ? proof.error.message : '无法核验原导出结果')
+        else if (proof.status === 'failed') setError(proof.error ? safeProjectError(proof.error) : '操作失败，请重试')
       } else await verifyOriginal(pending, current)
     } catch (cause) { if (current()) { setPhase(cause instanceof DataCommandNotAccepted ? 'notAccepted' : 'unknown'); setError(message(cause)) } }
     finally { if (current()) { lock.current = false; setBusy(false) } }

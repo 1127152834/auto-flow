@@ -68,6 +68,8 @@ import {
   type EditingContext,
 } from "../use-data-table-editing";
 import { useRecordSelection } from "../use-record-selection";
+import { recordDisplayLabel } from "../presentation";
+import { safeProjectError } from "../../projects/presentation-error";
 
 type Schema = components["schemas"];
 type Table = Schema["DataTableView"];
@@ -96,7 +98,7 @@ const labels: Record<DataTableTab, string> = {
 const errorMessage = (value: unknown) =>
   value instanceof ApiClientError && value.code === "RECORD_NOT_FOUND"
     ? "记录不存在，可能已被删除。请返回记录列表查看当前数据。"
-    : value instanceof Error ? value.message : "读取数据失败";
+    : safeProjectError(value);
 const base64url = (value: unknown) => {
   const bytes = new TextEncoder().encode(JSON.stringify(value));
   let binary = "";
@@ -116,7 +118,7 @@ const sanitizeQuery = (query: RecordQuery, fieldIds: Set<string>, statusIds: Set
 };
 function cellLabel(value: Schema["DataCellView"]): string {
   if (!value.readable) return "不可读取";
-  if (value.error) return `读取失败：${value.error}`;
+  if (value.error) return "读取失败，请重试";
   if (value.value === null) return "空值";
   if (value.value === "") return "空字符串";
   if (typeof value.value === "boolean") return value.value ? "是" : "否";
@@ -625,10 +627,7 @@ function DataTableDetail({
   const foreignRecovery = Boolean(recordLocation && editing.recoveryPending && editing.editor && !(recordEditor || (editing.editor.kind === "recordStatus" || editing.editor.kind === "recordDelete") && matchesRoute(editing.editor.record.ref)));
 
   const backToRecords = () => onRecordNavigate?.();
-  const recordDisplayTitle = (item: Schema["DataRecordView"]) => {
-    const name = fields.map(field => item.values.find(cell => cell.fieldId === field.ref.fieldId && cell.readable && !cell.error && typeof cell.value === "string" && cell.value && cell.value !== String(item.ref.recordKey.value))).find(Boolean)?.value;
-    return `${item.ref.recordKey.value}${typeof name === "string" && name !== String(item.ref.recordKey.value) ? ` · ${name}` : ""}`;
-  };
+  const recordDisplayTitle = (item: Schema["DataRecordView"]) => recordDisplayLabel(table?.identity ?? { mode: "system" }, fields, item);
   const openRecordFromList = (record: Schema["DataRecordView"], mode: "detail" | "edit" = "detail") => {
     originRowKey.current = record.ref.recordKey;
     try { sessionStorage.setItem(viewStateKey, JSON.stringify({ identity: { workspaceKey, projectId, tableId, datasetGeneration: generation }, originRowKey: record.ref.recordKey, query, quickSearch, page: recordPage, visibleFieldIds, scrollY: window.scrollY })) } catch { /* retain the in-memory return context */ }
@@ -636,11 +635,10 @@ function DataTableDetail({
   };
   const recordContent = recordLocation?.mode === "detail" ? <RecordDetailPage
     title={routeRecord ? recordDisplayTitle(routeRecord) : "记录详情"}
-    recordKeyLabel={routeRecord ? String(routeRecord.ref.recordKey.value) : undefined}
     loading={detailQuery.isFetching || catalogQuery.isPending} error={routeError} readonly={!writable} disabled={disabled || editing.busy || editing.recoveryPending}
     fieldsView={routeRecord && catalogQuery.data ? <RecordFieldsView key={JSON.stringify([workspaceKey, instanceId, routeRecord.ref])} fields={fields} record={routeRecord} identityFieldId={table?.identity.mode === "field" ? table.identity.fieldId : undefined} /> : undefined}
     statusForm={routeRecord && editing.editor?.kind === "recordStatus" && matchesRoute(editing.editor.record.ref) ? <RecordStatusDialog key={editing.editor.session} presentation="inline" open sessionKey={editing.editor.session} submissionEpoch={instanceId}
-      record={editing.editor.record} statuses={editing.editor.statuses.items} readonly={!writable} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} error={editing.error} errorActions={errorActions}
+      record={editing.editor.record} recordLabel={recordDisplayTitle(editing.editor.record)} statuses={editing.editor.statuses.items} readonly={!writable} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} error={editing.error} errorActions={errorActions}
       onSubmit={editing.submitRecordStatus} onRecover={editing.recover} onOpenChange={() => undefined} onRequestClose={closeEditor}
       onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : routeRecord ? <p className="text-sm">{routeRecord.statusId ? statuses.find(status => status.statusId === routeRecord.statusId)?.name ?? "状态不可用" : "未设置"}</p> : undefined}
     createdAt={routeRecord?.createdAt} updatedAt={routeRecord?.updatedAt} onBack={backToRecords}
@@ -698,7 +696,7 @@ function DataTableDetail({
       <DataTablePageFrame notice={null} header={<div className="flex min-w-0 gap-5">
         <span className="flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"><FileText size={32} /></span>
         <div className="min-w-0">
-          <h2 className="m-0 break-words text-2xl font-semibold">{recordLocation?.mode === "create" ? "新增记录" : recordLocation?.mode === "edit" ? `编辑记录 · ${recordLocation.recordKey.value}` : table.name}</h2>
+          <h2 className="m-0 break-words text-2xl font-semibold">{recordLocation?.mode === "create" ? "新增记录" : recordLocation?.mode === "edit" ? routeRecord ? `编辑记录 · ${recordDisplayTitle(routeRecord)}` : "编辑记录" : table.name}</h2>
           <p className="mb-0 mt-1 break-words text-base text-muted">{recordLocation?.mode === "create" ? "填写业务字段，保存后先写入本地。" : recordLocation?.mode === "edit" ? "修改业务字段，保存后先写入本地。" : table.description || "暂无说明"}</p>
           <p className="mb-0 mt-2 text-sm text-muted">{table.sourceKind === "excel" ? "Excel 一次导入" : table.sourceKind === "sheets" ? "Google Sheets" : table.sourceKind === "local" ? "本地数据" : "来源未配置"}　|　{readonly ? "只读" : "本地可维护"}</p>
         </div>
@@ -743,6 +741,7 @@ function DataTableDetail({
             page={page}
             fields={fields}
             statuses={statuses}
+            identityMode={table.identity}
             visibleFieldIds={gridColumns.map(field => field.ref.fieldId)}
             queryLocked={grid.dirty || grid.pending}
             draftRows={(grid.rows.length > 0 || writable && !recordLocation) ? <RecordDraftRows rows={grid.rows} fields={gridColumns} identityFieldId={table.identity.mode === "field" ? table.identity.fieldId : undefined} errors={grid.errors} selectionColumn disabled={!grid.editable} focusCell={grid.focusCell} onAdd={grid.addRow} onRemove={grid.removeRow} onCellChange={grid.changeCell} onPaste={(row, column, text) => grid.paste(gridColumns, row, column, text)} onSave={() => void grid.save()} onUndo={grid.undo} /> : undefined}
@@ -833,12 +832,8 @@ function DataTableDetail({
         onOpenChange={(open) => {
           if (!open) setDetailTarget(null);
         }}
-        title="记录详情"
-        description={
-          detailTarget
-            ? `${detailTarget.key.type} · ${detailTarget.key.value}`
-            : ""
-        }
+        title={detailQuery.data ? recordDisplayTitle(detailQuery.data) : "记录详情"}
+        description={detailQuery.data ? `查看${recordDisplayTitle(detailQuery.data)}的业务字段` : "正在载入记录"}
         size="small"
       >
         <div className="grid gap-3">
@@ -857,7 +852,7 @@ function DataTableDetail({
                 <div key={cell.fieldId}>
                   <strong>
                     {fields.find((field) => field.ref.fieldId === cell.fieldId)
-                      ?.name ?? cell.fieldId}
+                      ?.name ?? "字段已失效"}
                   </strong>
                   <p className="whitespace-pre-wrap break-words">
                     {cellLabel(cell)}
@@ -1011,6 +1006,7 @@ function DataTableDetail({
           sessionKey={editing.editor.session}
           submissionEpoch={instanceId}
           record={editing.editor.record}
+          recordLabel={recordDisplayTitle(editing.editor.record)}
           statuses={editing.editor.statuses.items}
           saving={editing.busy && editing.recoveryPending}
           recoveryPending={editing.recoveryPending}

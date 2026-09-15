@@ -11,6 +11,7 @@ import { createSchemaApi } from './schema-api'
 import { statusFormSchema } from './status-form-schema'
 import type { FieldSubmission } from './components/FieldEditorDialog'
 import type { StatusSubmission } from './components/StatusEditorDialog'
+import { safeProjectError } from '../projects/presentation-error'
 
 type Schema = components['schemas']
 type Scope = CatalogScope & { workspaceKey: string }
@@ -65,7 +66,7 @@ const clone = <T,>(value: T): T => structuredClone(value)
 const sameScope = (a: Scope, b: Scope) => a.workspaceKey === b.workspaceKey && a.projectId === b.projectId && a.tableId === b.tableId && a.datasetGeneration === b.datasetGeneration
 const sameTable = (a: Scope, b: Scope) => a.workspaceKey === b.workspaceKey && a.projectId === b.projectId && a.tableId === b.tableId
 const storageKey = (scope: Scope) => `autoflow:data-edit:${encodeURIComponent(scope.workspaceKey)}:${encodeURIComponent(scope.projectId)}:${encodeURIComponent(scope.tableId)}`
-const message = (error: unknown) => error instanceof Error ? error.message : '保存失败'
+const message = safeProjectError
 const object = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 const only = (value: Record<string, unknown>, required: string[], optional: string[] = []) => required.every(key => key in value) && Object.keys(value).every(key => required.includes(key) || optional.includes(key))
 const kinds = new Set<Pending['kind']>(['tableEdit', 'recordCreate', 'recordEdit', 'recordStatus', 'recordDelete', 'fieldCreate', 'fieldEdit', 'statusCreate', 'statusEdit', 'statusDelete', 'schemaSave'])
@@ -172,7 +173,7 @@ export function useDataTableEditing(options: Options) {
           pending.current = clone(saved.pending); activeSession.current = saved.editor.session
           setEditor({ ...clone(saved.editor), ...((saved.pending.kind === 'recordCreate' || saved.pending.kind === 'recordEdit') ? { submittedValues: clone((saved.pending.body as { values: Schema['DataCellWrite'][] }).values) } : {}) }); setRecoveryPending(true); setError('上次保存结果尚未确认，请先核对原请求。')
         }
-      } catch (caught) { setRecoveryBlocked(true); setError(message(caught)) }
+      } catch { setRecoveryBlocked(true); setError('保存恢复记录不完整，已阻止新的写入。') }
     }
   }, [options.client, options.context, options.disabled, options.instanceId, options.onSaved, options.readonly, options.workspaceKey])
   useEffect(() => () => { live.current.mounted = false; epoch.current += 1; lock.current = false }, [])
@@ -205,7 +206,7 @@ export function useDataTableEditing(options: Options) {
     if (lock.current) throw new Error('保存请求正在处理')
     if (mode === 'recover' && live.current.workspaceKey !== command.scope.workspaceKey) {
       const mismatch = new Error('请返回原工作区后核对保存结果')
-      setRecoveryPending(true); setError(mismatch.message)
+      setRecoveryPending(true); setError(safeProjectError(mismatch))
       throw mismatch
     }
     if (mode !== 'recover') writable()
@@ -232,8 +233,8 @@ export function useDataTableEditing(options: Options) {
       return value
     } catch (caught) {
       if (!isCurrent()) return undefined
-      if (caught instanceof DataCommandNotAccepted) { setNotAccepted(true); setRecoveryPending(true); setError(caught.message); throw caught }
-      if (caught instanceof DataCommandUncertain) { setRecoveryPending(true); setError(caught.message); throw caught }
+      if (caught instanceof DataCommandNotAccepted) { setNotAccepted(true); setRecoveryPending(true); setError(safeProjectError(caught)); throw caught }
+      if (caught instanceof DataCommandUncertain) { setRecoveryPending(true); setError(safeProjectError(caught)); throw caught }
       clearStored(command); pending.current = null; setRecoveryPending(false)
       if (caught instanceof ApiClientError && caught.status === 409 && caught.code === 'REVISION_CONFLICT') setConflict(true)
       if (caught instanceof ApiClientError && caught.status === 412) { setImpact(null); fieldImpact.current = null; schemaPreview.current = null }

@@ -7,6 +7,7 @@ import { schemaFieldId } from '../schema-draft'
 import { useSchemaDraft } from '../use-schema-draft'
 import { SchemaFieldDrawer } from './SchemaFieldDrawer'
 import { SchemaImpactDrawer } from './SchemaImpactDrawer'
+import { safeProjectError } from '../../projects/presentation-error'
 
 type Schema = components['schemas']
 type Props = {
@@ -54,14 +55,14 @@ export function SchemaEditor(props: Props) {
   const run = async (action: () => Promise<unknown>) => {
     const id = ++ticket.current
     setLocalError(null)
-    try { await action() } catch (error) { if (mounted.current && ticket.current === id) setLocalError(error instanceof Error ? error.message : '字段保存失败') }
+    try { await action() } catch (error) { if (mounted.current && ticket.current === id) setLocalError(safeProjectError(error)) }
   }
   const preview = async () => {
     if (frozen || !draft.dirty) return
     const id = ++ticket.current
     setChecking(true); setLocalError(null)
     try { const report = await props.onPreview(structuredClone(draft.candidate)); if (mounted.current && id === ticket.current) setImpact(report) }
-    catch (error) { if (mounted.current && id === ticket.current) setLocalError(error instanceof Error ? error.message : '字段检查失败') }
+    catch (error) { if (mounted.current && id === ticket.current) setLocalError(safeProjectError(error)) }
     finally { if (mounted.current && id === ticket.current) setChecking(false) }
   }
   return <section aria-label="字段目录" className="grid min-w-0 grid-cols-1 gap-4">

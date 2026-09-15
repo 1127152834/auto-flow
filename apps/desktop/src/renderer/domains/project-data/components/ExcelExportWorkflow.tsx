@@ -7,6 +7,7 @@ import { Button } from '../../../shared/components/ui/button'
 import type { ExcelApi } from '../excel-api'
 import { useExcelExport } from '../use-excel-export'
 import { DataOperationStatus } from './DataOperationStatus'
+import { safeProjectError } from '../../projects/presentation-error'
 import { ExcelExportDialog, type ExcelExportOptions } from './ExcelExportDialog'
 
 type Table = components['schemas']['DataTableView']; type Field = components['schemas']['DataFieldView']; type Status = components['schemas']['DataStatusView']; type Operation = components['schemas']['ProjectOperationView']
@@ -31,7 +32,7 @@ export function ExcelExportWorkflow({ open, sessionKey, scopeKey, contextKey, ta
     if (lock.current || blocked) return
     lock.current = true; setChoosing(true); setPickerError(null); const ticket = epoch.current
     try { const selection = await files.chooseOutput(`${table.name}.xlsx`); if (!selection || ticket !== epoch.current) return; await exporting.submit({ selectionToken: selection.selectionToken, datasetGeneration: table.datasetGeneration, scope: options.scope, filter: options.scope === 'filter' ? filter : null, orderBy: options.scope === 'filter' ? orderBy : null, fieldIds: [...options.fieldIds], includeStatus: options.includeStatus }) }
-    catch (cause) { if (ticket === epoch.current) setPickerError(cause instanceof Error ? cause.message : '无法选择保存位置') }
+    catch (cause) { if (ticket === epoch.current) setPickerError(safeProjectError(cause)) }
     finally { if (ticket === epoch.current) { lock.current = false; setChoosing(false) } }
   }
   const content = !exporting.pending && !exporting.operation ? <ExcelExportDialog open={open} fields={fields} statuses={statuses} scope={scope} selectedFieldIds={fieldIds} includeStatus={includeStatus} busy={choosing} disabled={blocked} error={pickerError ?? exporting.error} onScopeChange={setScope} onSelectedFieldIdsChange={setFieldIds} onIncludeStatusChange={setIncludeStatus} onClose={requestClose} onChooseOutput={choose} /> : <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} title="导出 Excel" closeDisabled={exporting.busy} footer={<Button onClick={requestClose}>关闭</Button>}>

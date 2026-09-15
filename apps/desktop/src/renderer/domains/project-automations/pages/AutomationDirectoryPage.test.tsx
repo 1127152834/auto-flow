@@ -28,3 +28,12 @@ it('isolates and restores controlled directory queries by workspace and project'
   view.rerender(tree(props))
   expect(await screen.findByLabelText('搜索自动化')).toHaveValue('客户')
 })
+
+it('does not render raw server diagnostics in the directory error state', async () => {
+  const internal = '11111111-2222-4333-8444-555555555555'
+  const request = vi.fn().mockRejectedValue(new Error(`failed ${internal}`)) as StreamingApiClient['request']
+  const client = { request, stream: vi.fn(), health: vi.fn() }
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AutomationDirectoryPage workspaceKey="one" instanceId="i" projectId="p" client={client} disabled={false} readOnly={false} onOpen={vi.fn()} onCreate={vi.fn()}/></QueryClientProvider>)
+  expect(await screen.findByText('自动化暂时无法加载')).toBeVisible()
+  expect(document.body.textContent).not.toContain(internal)
+})

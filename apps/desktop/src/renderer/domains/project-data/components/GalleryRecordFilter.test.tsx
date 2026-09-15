@@ -41,6 +41,18 @@ it('edits a representable compare and status as two simple AND conditions',()=>{
   expect(screen.getByText('两项条件同时满足时显示；业务状态仅属于本项目。')).toBeVisible()
 })
 
+it('labels stale field and status references without exposing their UUIDs in the expanded choices', async()=>{
+  const fieldId='11111111-2222-4333-8444-555555555555',statusId='66666666-7777-4888-8999-aaaaaaaaaaaa',user=userEvent.setup()
+  const filter=recordQueryDraft({filter:{type:'all',items:[{type:'compare',fieldId,operator:'eq',value:'业务值'},{type:'status',operator:'eq',statusId}]},orderBy:[]}).filter
+  renderFilter(filter)
+  expect(screen.getByRole('combobox',{name:'字段'})).toHaveTextContent('字段已失效')
+  expect(screen.getByRole('combobox',{name:'业务状态'})).toHaveTextContent('状态不可用')
+  await user.click(screen.getByRole('combobox',{name:'字段'}));expect(screen.getByRole('option',{name:'字段已失效'})).toBeVisible();await user.keyboard('{Escape}')
+  await user.click(screen.getByRole('combobox',{name:'业务状态'}));expect(screen.getByRole('option',{name:'状态不可用'})).toBeVisible()
+  expect(document.body.textContent).not.toContain(fieldId);expect(document.body.textContent).not.toContain(statusId)
+  for(const id of [fieldId,statusId]) for(const element of document.querySelectorAll('[title],[placeholder],[aria-label],[aria-description]')) for(const name of ['title','placeholder','aria-label','aria-description']) expect(element.getAttribute(name)??'').not.toContain(id)
+})
+
 it('hides compare input for null operators and restores it for value operators',()=>{
   const eq=recordQueryDraft({filter:{type:'compare',fieldId:'name',operator:'eq',value:'温室'},orderBy:[]}).filter as Extract<FilterDraft,{type:'compare'}>
   const view=renderFilter({...eq,operator:'isNull'})

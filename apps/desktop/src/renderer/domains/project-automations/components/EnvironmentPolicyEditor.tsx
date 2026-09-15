@@ -16,16 +16,21 @@ export type EnvironmentPolicyEditorProps = {
   proxies: ResourceOption[]
   pools: ResourceOption[]
   modelProviders?: ResourceOption[]
+  inputs?: { inputId: string; alias: string }[]
   errors?: Record<string, string | undefined>
 }
 
-const options = (resources: ResourceOption[]) => resources.map(resource => ({ value: resource.id, label: resource.name }))
+const options = (resources: ResourceOption[], value?: string | null, unavailable = '已保存的资源引用暂不可用') => [
+  ...(value && !resources.some(resource => resource.id === value) ? [{ value, label: unavailable, disabled: true }] : []),
+  ...resources.map(resource => ({ value: resource.id, label: resource.name })),
+]
 const withoutProxy = (value: Policy): Policy => { const next = { ...value }; delete next.proxyOverride; return next }
 
-export function EnvironmentPolicyEditor({ value, onChange, disabled = false, profiles, proxies, pools, projectDefaults, modelProviders = [], errors = {} }: EnvironmentPolicyEditorProps) {
+export function EnvironmentPolicyEditor({ value, onChange, disabled = false, profiles, proxies, pools, projectDefaults, modelProviders = [], inputs = [], errors = {} }: EnvironmentPolicyEditorProps) {
   const isNew = value.source === 'newFromProfile'
   const profileSpecified = isNew && Object.hasOwn(value, 'profileId')
   const proxyMode: ProxyMode = value.proxyOverride?.mode ?? 'inherit'
+  const inputAlias = value.source === 'inputEnvironment' ? inputs.find(input => input.inputId === value.inputId)?.alias.trim() : undefined
   const changeProxyMode = (mode: ProxyMode) => {
     const base = withoutProxy(value)
     if (mode === 'inherit') onChange(base)
@@ -42,13 +47,13 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
           if (mode === 'inherit' && value.source === 'newFromProfile') { const next = { ...value }; delete next.profileId; onChange(next) }
           if (mode === 'specified' && value.source === 'newFromProfile') onChange({ ...value, profileId: null })
         }}/>
-        {isNew && profileSpecified ? <Select aria-label="浏览器配置" value={value.profileId ?? null} options={options(profiles)} clearable={false} disabled={disabled} errorMessage={errors.profileId} onValueChange={profileId => onChange({ ...value, profileId })}/> : <p className="m-0 self-center text-sm text-muted">最终采用项目默认浏览器配置</p>}
+        {isNew && profileSpecified ? <Select aria-label="浏览器配置" value={value.profileId ?? null} options={options(profiles, value.profileId, '已保存的浏览器配置引用暂不可用')} clearable={false} disabled={disabled} errorMessage={errors.profileId} onValueChange={profileId => onChange({ ...value, profileId })}/> : <p className="m-0 self-center text-sm text-muted">最终采用项目默认浏览器配置</p>}
       </div>
     </div>
 
     <div className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
       <span className="pt-2 text-sm font-medium">模型提供方</span>
-      <Select aria-label="模型提供方" value={Object.hasOwn(value, 'modelProviderId') ? value.modelProviderId ?? 'none' : 'inherit'} options={[{ value: 'inherit', label: '继承项目默认' }, { value: 'none', label: '不指定模型提供方' }, ...options(modelProviders)]} clearable={false} disabled={disabled} errorMessage={errors.modelProviderId} onValueChange={id => {
+      <Select aria-label="模型提供方" value={Object.hasOwn(value, 'modelProviderId') ? value.modelProviderId ?? 'none' : 'inherit'} options={[{ value: 'inherit', label: '继承项目默认' }, { value: 'none', label: '不指定模型提供方' }, ...options(modelProviders, value.modelProviderId, '已保存的模型提供方引用暂不可用')]} clearable={false} disabled={disabled} errorMessage={errors.modelProviderId} onValueChange={id => {
         if (!id) return
         const next = { ...value }
         if (id === 'inherit') delete next.modelProviderId
@@ -63,8 +68,8 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
         {value:'inherit',label:'继承项目默认'}, {value:'sourceDefault',label:'跟随浏览器配置'}, {value:'none',label:'不使用代理'},
         {value:'fixed',label:'固定代理',disabled:!proxies.length}, {value:'pool',label:'代理池',disabled:!pools.length},
       ]} />
-      {proxyMode === 'fixed' && value.proxyOverride?.mode === 'fixed' ? <Select className="max-w-xl" aria-label="固定代理" value={value.proxyOverride.proxyId} options={options(proxies)} clearable={false} disabled={disabled} errorMessage={errors.proxyId} onValueChange={proxyId => proxyId && onChange({ ...value, proxyOverride: { mode: 'fixed', proxyId } } as Policy)}/> : null}
-      {proxyMode === 'pool' && value.proxyOverride?.mode === 'pool' ? <Select className="max-w-xl" aria-label="代理池" value={value.proxyOverride.proxyPoolId} options={options(pools)} clearable={false} disabled={disabled} errorMessage={errors.proxyPoolId} onValueChange={proxyPoolId => proxyPoolId && onChange({ ...value, proxyOverride: { mode: 'pool', proxyPoolId } } as Policy)}/> : null}
+      {proxyMode === 'fixed' && value.proxyOverride?.mode === 'fixed' ? <Select className="max-w-xl" aria-label="固定代理" value={value.proxyOverride.proxyId} options={options(proxies, value.proxyOverride.proxyId, '已保存的代理引用暂不可用')} clearable={false} disabled={disabled} errorMessage={errors.proxyId} onValueChange={proxyId => proxyId && onChange({ ...value, proxyOverride: { mode: 'fixed', proxyId } } as Policy)}/> : null}
+      {proxyMode === 'pool' && value.proxyOverride?.mode === 'pool' ? <Select className="max-w-xl" aria-label="代理池" value={value.proxyOverride.proxyPoolId} options={options(pools, value.proxyOverride.proxyPoolId, '已保存的代理池引用暂不可用')} clearable={false} disabled={disabled} errorMessage={errors.proxyPoolId} onValueChange={proxyPoolId => proxyPoolId && onChange({ ...value, proxyOverride: { mode: 'pool', proxyPoolId } } as Policy)}/> : null}
       </div>
     </div>
 
@@ -75,7 +80,7 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
       <div className="grid gap-2"><RadioGroup label="环境策略" value={value.source} disabled={disabled} onValueChange={() => { if (value.source !== 'newFromProfile') onChange({ source: 'newFromProfile', ...(value.proxyOverride ? { proxyOverride: value.proxyOverride } : {}), ...(Object.hasOwn(value, 'modelProviderId') ? { modelProviderId: value.modelProviderId } : {}) }) }} options={[
         {value:'newFromProfile',label:'每个任务创建临时环境'}, {value:'fixedEnvironment',label:'固定持久环境（暂未开放）',disabled:true}, {value:'inputEnvironment',label:'使用记录关联环境（暂未开放）',disabled:true},
       ]}/>
-      {value.source === 'fixedEnvironment' ? <p className="m-0 text-sm text-warning">已保存的固定环境：{value.environmentId}</p> : value.source === 'inputEnvironment' ? <p className="m-0 text-sm text-warning">已保存的记录输入：{value.inputId}</p> : null}
+      {value.source === 'fixedEnvironment' ? <p className="m-0 text-sm text-warning">已保存的环境引用暂不可用</p> : value.source === 'inputEnvironment' ? <p className="m-0 text-sm text-warning">{inputAlias || '已保存的数据输入引用暂不可用'}</p> : null}
       <p className="m-0 text-sm text-muted">任务结束后关闭并清理临时环境</p>
       </div>
     </div>

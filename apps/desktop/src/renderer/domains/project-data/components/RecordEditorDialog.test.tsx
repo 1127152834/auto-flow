@@ -26,7 +26,7 @@ it('disables protected edit fields and submits only a real content change', asyn
   const fields=[field('id',{name:'身份'}),field('value',{name:'内容'}),field('formula',{name:'公式',formula:true}),field('secret',{name:'秘密'})]
   const initial=record([cell('id','001'),cell('value','old'),cell('formula','x'),cell('secret','hidden',false)]); const submit=vi.fn().mockResolvedValue(undefined); const user=userEvent.setup()
   render(<RecordEditorDialog open mode="edit" sessionKey="a" fields={fields} identityFieldId="id" initialRecord={initial} onOpenChange={vi.fn()} onSubmit={submit}/>)
-  expect(screen.getByText(/text.*001/)).toBeVisible(); expect(screen.getByRole('button',{name:'保存修改'})).toBeDisabled()
+  expect(screen.getByText('001')).toBeVisible(); expect(screen.getByRole('button',{name:'保存修改'})).toBeDisabled()
   for(const name of ['身份值状态','公式值状态','秘密值状态']) expect(screen.getByRole('combobox',{name})).toHaveAttribute('aria-readonly','true')
   const input=screen.getByLabelText('内容'); await user.clear(input); await user.type(input,'new'); await user.click(screen.getByRole('button',{name:'保存修改'}))
   expect(submit).toHaveBeenCalledWith([{fieldId:'value',value:'new'}])
@@ -125,7 +125,7 @@ it('revokes a pending close approval when a newer submit fails', async () => {
   let approve!: (approved: boolean) => void
   const close=vi.fn(), requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve})), submit=vi.fn().mockRejectedValue(new Error('new submission failed'))
   render(<RecordEditorDialog open mode="create" sessionKey="close-submit" fields={[]} onOpenChange={close} onRequestClose={requestClose} onSubmit={submit}/>)
-  await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建记录'})); await screen.findByText('new submission failed')
+  await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建记录'})); await screen.findByText('操作失败，请重试')
   await act(async()=>approve(true)); expect(close).not.toHaveBeenCalled()
 })
 

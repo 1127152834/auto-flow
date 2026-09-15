@@ -3,6 +3,7 @@ import type { components } from '../../shared/api/generated'
 import { createProjectDataApi } from '../project-data/api'
 import { createDataCatalogApi } from '../project-data/catalog-api'
 import { createRecordsApi } from '../project-data/records-api'
+import { recordDisplayLabel } from '../project-data/presentation'
 import type { InputTableOption } from './components/InputPlanEditor'
 
 type Schema = components['schemas']
@@ -22,12 +23,12 @@ export function createAutomationResourcesApi(client: StreamingApiClient, project
       return Promise.all(tables.map(async table => {
         const api = createDataCatalogApi(client, { projectId, tableId: table.tableId, datasetGeneration: table.datasetGeneration })
         const [fields, statuses] = await Promise.all([api.fields(signal), api.statuses(signal)])
-        return { id: table.tableId, name: table.name, datasetGeneration: table.datasetGeneration, fields: fields.items, statuses: statuses.items, slotDefinitions: table.slotDefinitions }
+        return { id: table.tableId, name: table.name, datasetGeneration: table.datasetGeneration, identity: table.identity, fields: fields.items, statuses: statuses.items, slotDefinitions: table.slotDefinitions }
       }))
     },
     async records(table: InputTableOption, page: number, signal?: AbortSignal) {
       const result = await createRecordsApi(client, { projectId, tableId: table.id, datasetGeneration: table.datasetGeneration }).list({ page, pageSize: 200 }, signal)
-      return { total: result.total, items: result.items.map(record => ({ label: `${record.ref.recordKey.type === 'integer' ? '整数' : record.ref.recordKey.type === 'uuid' ? '记录' : '文本'} · ${record.ref.recordKey.value}`, ref: record.ref })) }
+      return { total: result.total, items: result.items.map(record => ({ label: recordDisplayLabel(table.identity ?? { mode: 'system' }, table.fields, record), ref: record.ref })) }
     },
   }
 }

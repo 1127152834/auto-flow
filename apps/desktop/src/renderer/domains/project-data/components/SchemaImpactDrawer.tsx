@@ -12,7 +12,7 @@ export function schemaIssueMessage(issue: Impact['blockers'][number]) {
     case 'EXISTING_RECORD_DEFAULT_REQUIRED': return '新增必填字段需要为现有记录提供合法默认值。'
     case 'SCHEMA_BACKFILL_LIMIT': return '本次默认值回填超过 1,000 条记录或 4 MiB，请缩小变更范围。'
     case 'SCHEMA_BACKFILL_INVALID_JSON': return '现有记录包含无法原样保存的数据，当前不能进行默认值回填。'
-    default: return issue.message
+    default: return '字段变更将影响现有数据，请核对后继续。'
   }
 }
 

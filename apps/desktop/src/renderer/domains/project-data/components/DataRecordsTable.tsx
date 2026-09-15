@@ -9,6 +9,7 @@ import { Pagination } from '../../../shared/components/ui/pagination'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import type { RecordSelection } from '../use-record-selection'
+import { recordDisplayLabel, type TableIdentity } from '../presentation'
 
 type Schema = components['schemas']
 type RecordView = Schema['DataRecordView']
@@ -16,6 +17,7 @@ export type DataRecordsTableProps = {
   page?: Schema['DataRecordPage']
   fields: Schema['DataFieldView'][]
   statuses: Schema['DataStatusView'][]
+  identityMode: TableIdentity
   draftRows?: ReactNode
   queryLocked?: boolean
   toolbar?: boolean
@@ -35,11 +37,10 @@ export type DataRecordsTableProps = {
   selection?: RecordSelection
   onBulkStatus?(): void
 }
-const keyLabels = { text: '文本', integer: '整数', uuid: 'UUID' }
 function valueLabel(cell: Schema['DataCellView'] | undefined): string {
   if (!cell) return '未填写'
   if (!cell.readable) return '不可读取'
-  if (cell.error) return `读取失败：${cell.error}`
+  if (cell.error) return '读取失败，请重试'
   const value = cell.value
   if (value === null) return '空值'
   if (value === '') return '空字符串'
@@ -48,7 +49,7 @@ function valueLabel(cell: Schema['DataCellView'] | undefined): string {
   return String(value)
 }
 
-export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = true, page, fields, statuses, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onEdit, onDelete, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
+export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = true, page, fields, statuses, identityMode, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onEdit, onDelete, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
   const visible = visibleFieldIds ? new Set(visibleFieldIds) : null
   const columns = fields.filter((field) => !visible || visible.has(field.ref.fieldId))
   const statusMap = new Map(statuses.map((status) => [status.statusId, status]))
@@ -131,7 +132,7 @@ export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = tru
                   </TableHead>
                 ) : null}
                 <TableHead className="w-28" data-column-width="112">
-                  记录身份
+                  {identityMode.mode === 'field' ? fields.find(field => field.ref.fieldId === identityMode.fieldId)?.name ?? '字段已失效' : '记录'}
                 </TableHead>
                 {columns.map((field) => (
                   <TableHead key={field.ref.fieldId}>
@@ -149,8 +150,7 @@ export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = tru
             <TableBody>
               {page.items.map((record) => {
                 const cells = new Map(record.values.map((cell) => [cell.fieldId, cell]))
-                const key = record.ref.recordKey,
-                  identity = `${keyLabels[key.type]} · ${key.value}`
+                const identity = recordDisplayLabel(identityMode, fields, record)
                 const status = record.statusId ? statusMap.get(record.statusId) : undefined
                 const statusName = record.statusId ? (status?.name ?? '状态不可用') : '未设置'
                 const statusColor = status && /^#[0-9a-f]{6}$/i.test(status.color) ? status.color : undefined

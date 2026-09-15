@@ -4,6 +4,7 @@ import { assertFiniteNumbers, DataCommandNotAccepted } from '../project-data/dat
 import { createAutomationApi } from './api'
 import type { Automation, AutomationUpdate, AutomationWrite } from './types'
 import { validateAutomationForm } from './form-schema'
+import { safeProjectError, safeProjectFieldErrors } from '../projects/presentation-error'
 
 type Pending = { key: string; body: AutomationWrite | AutomationUpdate; automationId?: string }
 type Options = { client: StreamingApiClient; workspaceKey: string; automationId?: string; instanceId: string; disabled: boolean; readOnly: boolean; projectId: string; onSaved(value: Automation, key: string): void }
@@ -56,13 +57,13 @@ export function useAutomationCommand(options: Options) {
       scope.current.onSaved(saved, command.key)
     } catch (failure) {
       if (!current()) return
-      setError(failure instanceof Error ? failure.message : '配置保存失败')
+      setError(safeProjectError(failure))
       if (failure instanceof DataCommandNotAccepted) {
         setNotAccepted(true); setRecovering(true)
       } else if (failure instanceof ApiClientError && failure.status >= 400 && failure.status < 500 && failure.status !== 408) {
         try { localStorage.removeItem(key) } catch { setRecovering(true); setNotAccepted(false); setError('无法清理操作恢复资料，请先核对原请求。'); return }
         pending.current = null; setRecovering(false); setNotAccepted(false)
-        setFields(failure.fields ?? {}); setConflict(failure.status === 409)
+        setFields(safeProjectFieldErrors(failure.fields)); setConflict(failure.status === 409)
       } else { setRecovering(true); setNotAccepted(false) }
     } finally {
       if (current()) { busyRef.current = false; setBusy(false) }

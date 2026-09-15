@@ -11,7 +11,7 @@ const row = (values: S['DataCellView'][]): S['DataRecordView'] => ({ ref: { proj
 const cell = (fieldId: string, value: S['DataCellView']['value'], readable = true): S['DataCellView'] => ({ fieldId, value, readable, source: 'local' })
 it('distinguishes missing, null, empty, zero, false and unreadable evidence', () => {
   render(<RecordFieldsView fields={['missing', 'null', 'empty', 'zero', 'false', 'private'].map(field)} record={row([cell('null', null), cell('empty', ''), cell('zero', 0), cell('false', false), cell('private', 'secret', false)])} />)
-  for (const text of ['文本 · 001', '未填写', '空值', '空字符串', '0', '否', '不可读取']) expect(screen.getByText(text)).toBeVisible()
+  for (const text of ['未填写', '空值', '空字符串', '0', '否', '不可读取']) expect(screen.getByText(text)).toBeVisible()
   expect(screen.queryByText('secret')).not.toBeInTheDocument()
 })
 it('opens only validated web links through the controlled bridge and shows failures in place', async () => {
@@ -39,7 +39,14 @@ it('groups gallery business fields under the title and keeps label/value row sep
 it('shows a field identity once while preserving unrelated fields with the same value',()=>{
  render(<RecordFieldsView identityFieldId="记录编号" fields={[field('记录编号'),field('另一个字段')]} record={row([cell('记录编号','001'),cell('另一个字段','001')])}/>);
  expect(screen.getAllByText('记录编号')).toHaveLength(1);
- expect(screen.getByText('文本 · 001')).toBeVisible();
  expect(screen.getByText('另一个字段')).toBeVisible();
- expect(screen.getAllByText('001')).toHaveLength(1);
+ expect(screen.getAllByText('001')).toHaveLength(2);
+})
+
+it('omits a system UUID identity row and gives a stale field a semantic label',()=>{
+ const uuid='11111111-2222-4333-8444-555555555555',system={...row([cell('标题','业务标题')]),ref:{...row([]).ref,recordKey:{type:'uuid' as const,value:uuid}}}
+ const view=render(<RecordFieldsView fields={[field('标题')]} record={system}/>)
+ expect(document.body.textContent).not.toContain(uuid);expect(screen.queryByText('记录身份')).not.toBeInTheDocument()
+ view.rerender(<RecordFieldsView identityFieldId="11111111-2222-4333-8444-555555555556" fields={[]} record={system}/>)
+ expect(screen.getAllByText('字段已失效')).toHaveLength(2);expect(document.body.textContent).not.toContain(uuid)
 })

@@ -19,7 +19,7 @@ it('freezes selected records, previews blockers, then submits one durable comman
   }
   render(<RecordStatusBatchDialog open sessionKey="draft" contextKey="w:i:p:t" storageScopeKey="w:p:t" records={[record]} statuses={[status]} api={api as never} onClose={vi.fn()} />)
   await userEvent.click(screen.getByRole('button', { name: '预检批量状态' }))
-  expect(await screen.findByText('记录已变化')).not.toBeNull()
+  expect(await screen.findByText('操作失败，请重试')).not.toBeNull()
   await userEvent.click(screen.getByRole('button', { name: '确认开始' }))
   expect(api.start).toHaveBeenCalledWith(expect.objectContaining({ targets: [{ recordRef: ref, expectedStatusRevision: 3 }] }), expect.any(String), expect.any(Function))
   expect(await screen.findByText('已接受，等待处理')).not.toBeNull()
@@ -82,7 +82,7 @@ it('does not send when durable storage fails and releases busy state', async () 
   await userEvent.click(screen.getByRole('button', { name: '预检批量状态' }))
   vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new Error('storage unavailable') })
   await userEvent.click(screen.getByRole('button', { name: '确认开始' }))
-  expect(start).not.toHaveBeenCalled(); expect(screen.getByRole('alert')).toHaveTextContent('storage unavailable'); expect(screen.getByRole('button', { name: '确认开始' })).not.toBeDisabled()
+  expect(start).not.toHaveBeenCalled(); expect(screen.getByRole('alert')).toHaveTextContent('操作失败，请重试'); expect(screen.getByRole('button', { name: '确认开始' })).not.toBeDisabled()
   view.unmount()
 })
 
@@ -145,7 +145,7 @@ it('keeps the cancel identity when restoring the original key cannot be persiste
   const realSet = localStorage.setItem.bind(localStorage); let writes = 0
   vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => { if (++writes === 2) throw new Error('restore failed'); realSet(key, value) })
   await userEvent.click(screen.getByRole('button', { name: '停止后续处理' })); await userEvent.click(screen.getByRole('button', { name: '确认停止' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('restore failed')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByRole('button', { name: '核对停止结果' })).toBeInTheDocument()
   expect(JSON.parse(localStorage.getItem('autoflow:status-batch:w:p:t')!)).toHaveProperty('cancel.operationId', 'op')
 })

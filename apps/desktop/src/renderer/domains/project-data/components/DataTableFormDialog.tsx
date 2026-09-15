@@ -9,6 +9,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Textarea } from '../../../shared/components/ui/textarea'
 import { dataTableFormSchema, emptyDataTableForm, type DataTableFormValues } from '../form-schema'
+import { safeProjectError } from '../../projects/presentation-error'
 
 export type DataTableFormDialogProps = {
   open: boolean; mode: 'create' | 'edit'; sessionKey: string; initialValues?: DataTableFormValues; submissionEpoch?: string | number
@@ -51,13 +52,13 @@ export function DataTableFormDialog({ open, mode, sessionKey, initialValues, sub
     event.preventDefault();if(submitLock.current||busy||recoveryPending||readonly)return
     submitLock.current=true;savingCallback.current?.(true);setSubmitting(true);setSubmitError(null);const ticket=requestEpoch.current
     void form.handleSubmit(async values=>{const current=guard.current;if(ticket!==requestEpoch.current||!current.open||current.readonly||current.saving||current.recoveryPending)return;await onSubmit(dataTableFormSchema.parse(values))},errors=>{if(ticket===requestEpoch.current)form.setFocus(errors.name?'name':'description')})()
-      .catch(caught=>{if(ticket===requestEpoch.current)setSubmitError(caught instanceof Error?caught.message:'保存数据表失败')})
+      .catch(caught=>{if(ticket===requestEpoch.current)setSubmitError(safeProjectError(caught))})
       .finally(()=>{if(ticket===requestEpoch.current){submitLock.current=false;setSubmitting(false);savingCallback.current?.(guard.current.saving)}})
   }
   const recover=()=>{
     if(!onRecover||recoverLock.current||busy)return
     recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=requestEpoch.current
-    void onRecover().catch(caught=>{if(ticket===requestEpoch.current)setSubmitError(caught instanceof Error?caught.message:'核对保存结果失败')}).finally(()=>{if(ticket===requestEpoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(guard.current.saving)}})
+    void onRecover().catch(caught=>{if(ticket===requestEpoch.current)setSubmitError(safeProjectError(caught))}).finally(()=>{if(ticket===requestEpoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(guard.current.saving)}})
   }
   return <>
     <Modal open={open} onOpenChange={next=>{if(!next)requestClose()}} closeDisabled={busy} size="small" className="max-w-[32.5rem] [&>header]:border-0 [&>header_h2]:text-[28px] [&>header_p]:text-base [&>footer]:border-0 [&>footer_button]:h-12 [&>footer_button]:min-w-28 [&>footer_button]:text-base" title={mode==='create'?'新建数据表':'编辑数据表'} description={mode==='create'?'先给数据一个用途，来源可以稍后配置。':'修改数据表名称和用途说明。'} footer={<><Button type="button" variant="secondary" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" form="data-table-form" variant="primary" disabled={busy||readonly}>{busy?'正在保存…':mode==='create'?'创建数据表':'保存修改'}</Button>}</>}>

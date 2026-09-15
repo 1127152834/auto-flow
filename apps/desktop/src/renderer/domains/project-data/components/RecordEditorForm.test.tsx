@@ -32,9 +32,9 @@ it('locks duplicate submissions before the queued callback starts',async()=>{
   const form=screen.getByRole('form',{name:'新建记录表单'});act(()=>{fireEvent.submit(form);fireEvent.submit(form)});await act(async()=>{});expect(submit).toHaveBeenCalledOnce()
 })
 
-it('renders the page identity in Chinese and keeps the shared footer actions',()=>{
+it('hides a system identity while keeping the shared footer actions',()=>{
   render(<RecordEditorForm id="editor" mode="edit" presentation="page" sessionKey="page" fields={[field('value')]} initialRecord={record([cell('value','short')])} footerClassName="sticky-actions" onCancel={vi.fn()} onSubmit={vi.fn()}/>)
-  expect(screen.getByRole('textbox',{name:'记录身份'})).toHaveValue('文本 · 001');expect(screen.getByRole('textbox',{name:'记录身份'})).toHaveAttribute('readonly');expect(screen.getByText('只读')).toBeVisible();expect(screen.getByLabelText('value')).toHaveProperty('tagName','INPUT')
+  expect(screen.queryByRole('textbox',{name:'记录身份'})).not.toBeInTheDocument();expect(screen.getByLabelText('value')).toHaveProperty('tagName','INPUT')
   expect(screen.getByRole('button',{name:'取消'}).closest('footer')).toBeInTheDocument();expect(screen.getByRole('button',{name:'保存修改'}).closest('footer')).toBeInTheDocument()
 })
 
@@ -67,7 +67,7 @@ it('reports submitted dirty fields and all invalid fields without changing dirty
 
 it('renders page identity and field rows without a separate identity card',()=>{
   render(<RecordEditorForm id="editor" mode="create" presentation="page" sessionKey="page-create" fields={[{...field('title'),required:true}]} onSubmit={vi.fn()}/>)
-  expect(screen.getByText('保存时自动生成')).toBeVisible()
+  expect(screen.queryByText('保存时自动生成')).not.toBeInTheDocument()
   expect(document.querySelector('[data-record-field-label]')).toHaveTextContent('title*')
   expect(screen.queryByText(/^记录身份：/)).not.toBeInTheDocument()
   expect(screen.getByLabelText('title').closest('[data-record-field-layout]')).toHaveClass('lg:grid-cols-[250px_minmax(0,1fr)]')
@@ -80,7 +80,7 @@ it('shows every field error from the shared record validation and focuses the fi
   await user.click(screen.getByRole('button',{name:'创建记录'}))
   const summary=screen.getByText('还有 2 个字段需要修正，其他输入已保留。')
   expect(summary).toBeVisible()
-  expect(summary.compareDocumentPosition(screen.getByText('保存时自动生成'))&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(summary.compareDocumentPosition(screen.getByLabelText('required'))&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(screen.getAllByRole('alert').map(node=>node.textContent)).toEqual(expect.arrayContaining(['请填写必填字段','请输入有效数字']))
   expect(screen.getByLabelText('required')).toHaveFocus()
   expect(screen.getByText('请填写必填字段',{selector:'p[aria-hidden="true"]'})).toHaveClass('text-danger','text-sm')

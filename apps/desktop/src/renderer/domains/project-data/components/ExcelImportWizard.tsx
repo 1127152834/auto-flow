@@ -11,6 +11,7 @@ import { useExcelInspection } from '../use-excel-inspection'
 import { DataOperationStatus } from './DataOperationStatus'
 import { ExcelImportMapping, createExcelImportMappingDraft, type ExcelImportMappingDraft } from './ExcelImportMapping'
 import { ExcelInspectionPanel } from './ExcelInspectionPanel'
+import { safeProjectError } from '../../projects/presentation-error'
 
 type Field = components['schemas']['DataFieldView']; type Table = components['schemas']['DataTableView']; type Operation = components['schemas']['ProjectOperationView']
 type MappingResult = { mapping: components['schemas']['ExcelMapping'][]; identity: components['schemas']['SystemExcelIdentity'] | components['schemas']['ColumnExcelIdentity'] }
@@ -41,7 +42,7 @@ export function ExcelImportWizard({ open, mode, sessionKey, scopeKey, contextKey
     const ticket = ++epoch.current
     setImpact(null); setImpactError(null)
     setMapping({ columns: value.mapping, identity: value.identity }); setReview(true)
-    if (mode === 'replace' && table) { try { const value = await api.replaceImpact(table.tableId); if (ticket === epoch.current) setImpact(value) } catch (cause) { if (ticket === epoch.current) setImpactError(cause instanceof Error ? cause.message : '无法评估替换影响') } }
+    if (mode === 'replace' && table) { try { const value = await api.replaceImpact(table.tableId); if (ticket === epoch.current) setImpact({ ...value, blockers: value.blockers.map(() => '当前数据暂不能替换，请刷新后重试') }) } catch (cause) { if (ticket === epoch.current) setImpactError(safeProjectError(cause)) } }
   }
   const submit = () => {
     if (!inspection.inspection || !selected || !mapping) return

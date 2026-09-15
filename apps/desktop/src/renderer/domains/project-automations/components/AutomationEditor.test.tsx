@@ -2,9 +2,11 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
+import { choiceTestEnvironment } from '../../../shared/testing/choice-user'
 import type { AutomationWrite } from '../types'
 import { AutomationEditor, type AutomationEditorProps } from './AutomationEditor'
 
+choiceTestEnvironment()
 afterEach(cleanup)
 
 const initial: AutomationWrite = {
@@ -133,6 +135,31 @@ it('shows an unknown workflow validation state unless runnable is explicit', () 
   view.rerender(<AutomationEditor {...props({ workflowOptions: [{ id: 'workflow-a', name: '资料整理流程' }] })}/>)
   expect(screen.getByText('未能读取校验状态')).toBeVisible()
   expect(screen.queryByText('可以运行')).not.toBeInTheDocument()
+})
+
+it('uses a semantic option for an unavailable workflow without exposing its identity', async () => {
+  const workflowId = '11111111-2222-4333-8444-555555555555'
+  render(<AutomationEditor {...props({ isNew: true, workflowOptions: [], initialValue: { ...initial, workflowId } })}/>)
+  const select = screen.getByRole('combobox', { name: '关联工作流' })
+  expect(select).toHaveTextContent('关联工作流暂不可用')
+  await userEvent.setup().click(select)
+  expect(screen.getByRole('option', { name: '关联工作流暂不可用' })).toBeVisible()
+  expect(document.body.textContent).not.toContain(workflowId)
+  expect(select).not.toHaveAttribute('title', expect.stringContaining(workflowId))
+})
+
+it('passes current input aliases to the saved input environment presentation', async () => {
+  const inputId = '11111111-2222-4333-8444-555555555555'
+  const alias = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+  const value: AutomationWrite = {
+    ...initial,
+    inputPlan: { inputs: [{ inputId, alias, tableId: 'table-a', datasetGeneration: 'generation-a', mode: 'independent', required: false, fieldBindings: [], filter: { type: 'and', children: [] }, orderBy: [] }] },
+    environmentPolicy: { source: 'inputEnvironment', inputId },
+  }
+  render(<AutomationEditor {...props({ initialValue: value })}/>)
+  await userEvent.setup().click(screen.getByRole('tab', { name: '资源与环境' }))
+  expect(screen.getByText(alias)).toBeVisible()
+  expect(document.body.textContent).not.toContain(inputId)
 })
 
 it('links shared text controls to stable help and error messages', async () => {

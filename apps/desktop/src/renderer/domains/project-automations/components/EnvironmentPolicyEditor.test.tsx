@@ -12,6 +12,7 @@ type Policy = Automation['environmentPolicy']
 const profiles = [{ id: 'profile-a', name: '商品资料采集' }, { id: 'profile-b', name: '备用配置' }]
 const proxies = [{ id: 'proxy-a', name: '上海代理' }, { id: 'proxy-b', name: '北京代理' }]
 const pools = [{ id: 'pool-a', name: '采集代理池' }]
+const internal = '11111111-2222-4333-8444-555555555555'
 const props = (value: Policy = { source: 'newFromProfile' }) => ({ value, onChange: vi.fn(), profiles, proxies, pools })
 
 it('switches between inherited and explicit profiles without retaining an old id', async () => {
@@ -28,7 +29,7 @@ it('selects a profile and preserves an unavailable saved profile until the user 
   const missing = props({ source: 'newFromProfile', profileId: 'profile-missing' }), user = userEvent.setup()
   const view = render(<EnvironmentPolicyEditor {...missing}/>)
   expect(screen.getByRole('combobox', { name: '浏览器配置' })).toHaveAttribute('data-choice-value', 'profile-missing')
-  expect(screen.getByText('当前选项不可用，请重新选择')).toBeVisible()
+  expect(screen.getByText('已保存的浏览器配置引用暂不可用')).toBeVisible()
   expect(missing.onChange).not.toHaveBeenCalled()
   view.rerender(<EnvironmentPolicyEditor {...missing} />)
   await chooseOption(user, screen.getByRole('combobox', { name: '浏览器配置' }), 'profile-b')
@@ -65,11 +66,48 @@ it('keeps fixed and linked environment sources visible but unavailable', () => {
 })
 
 it('preserves a saved unsupported source and never coerces it on render', () => {
-  const value: Policy = { source: 'fixedEnvironment', environmentId: 'environment-old', proxyOverride: { mode: 'none' } }
+  const value: Policy = { source: 'fixedEnvironment', environmentId: internal, proxyOverride: { mode: 'none' } }
   const p = props(value)
   render(<EnvironmentPolicyEditor {...p}/>)
-  expect(screen.getByText('已保存的固定环境：environment-old')).toBeVisible()
+  expect(screen.getByText('已保存的环境引用暂不可用')).toBeVisible()
+  expect(document.body.textContent).not.toContain(internal)
   expect(p.onChange).not.toHaveBeenCalled()
+})
+
+it('shows a resolved input alias while keeping its internal identity hidden', () => {
+  const businessUuidAlias = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+  render(<EnvironmentPolicyEditor
+    {...props({ source: 'inputEnvironment', inputId: internal })}
+    inputs={[{ inputId: internal, alias: businessUuidAlias }]}
+  />)
+  expect(screen.getByText(businessUuidAlias)).toBeVisible()
+  expect(document.body.textContent).not.toContain(internal)
+})
+
+it('uses semantic labels for every unavailable saved resource', async () => {
+  const user = userEvent.setup()
+  const cases: Array<[Policy, string, string]> = [
+    [{ source: 'newFromProfile', profileId: internal }, '浏览器配置', '已保存的浏览器配置引用暂不可用'],
+    [{ source: 'newFromProfile', modelProviderId: internal }, '模型提供方', '已保存的模型提供方引用暂不可用'],
+    [{ source: 'newFromProfile', proxyOverride: { mode: 'fixed', proxyId: internal } }, '固定代理', '已保存的代理引用暂不可用'],
+    [{ source: 'newFromProfile', proxyOverride: { mode: 'pool', proxyPoolId: internal } }, '代理池', '已保存的代理池引用暂不可用'],
+  ]
+  for (const [value, label, unavailable] of cases) {
+    const view = render(<EnvironmentPolicyEditor {...props(value)} />)
+    const select = screen.getByRole('combobox', { name: label })
+    expect(select).toHaveTextContent(unavailable)
+    await user.click(select)
+    expect(screen.getAllByRole('option').some(option => option.textContent?.includes(unavailable))).toBe(true)
+    expect(document.body.textContent).not.toContain(internal)
+    expect(select).not.toHaveAttribute('title', expect.stringContaining(internal))
+    view.unmount()
+  }
+})
+
+it('describes an unavailable saved data input without exposing its identity', () => {
+  render(<EnvironmentPolicyEditor {...props({ source: 'inputEnvironment', inputId: internal })} />)
+  expect(screen.getByText('已保存的数据输入引用暂不可用')).toBeVisible()
+  expect(document.body.textContent).not.toContain(internal)
 })
 
 it('disables every mutation and associates external errors with controls', () => {

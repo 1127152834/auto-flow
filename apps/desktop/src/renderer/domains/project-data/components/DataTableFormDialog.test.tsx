@@ -57,7 +57,7 @@ it('preserves a dirty draft across refreshed initial values and server errors', 
   expect(screen.getByLabelText('数据表名称')).toHaveValue('我的草稿')
   expect(screen.getByRole('alert')).toHaveTextContent('数据表已被修改')
   await user.click(screen.getByRole('button', { name: '保存修改' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('冲突')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByLabelText('数据表名称')).toHaveValue('我的草稿')
 })
 

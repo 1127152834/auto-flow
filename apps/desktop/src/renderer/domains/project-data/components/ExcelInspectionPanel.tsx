@@ -20,7 +20,7 @@ export function ExcelInspectionPanel({ inspection, selectedSheetId, checking = f
     {checking ? <p role="status">正在检查工作簿…</p> : null}
     {inspection?.issues.map((issue, index) => <p role="alert" key={index}>{issue}</p>)}
     {expired ? <p role="alert">检查结果已过期，请重新选择并检查文件。</p> : null}
-    {inspection ? <Select aria-label="工作表" value={selectedSheetId} options={inspection.sheets.map(sheet => ({ value: sheet.sheetId, label: sheet.name, description: `${sheet.rowCount} 条数据` }))} onValueChange={onSelectSheet} disabled={disabled || checking || expired} clearable={false} /> : null}
+    {inspection ? <Select aria-label="工作表" value={selectedSheetId} options={[...(selectedSheetId && !selected ? [{ value: selectedSheetId, label: '工作表暂不可用', disabled: true }] : []), ...inspection.sheets.map(sheet => ({ value: sheet.sheetId, label: sheet.name, description: `${sheet.rowCount} 条数据` }))]} onValueChange={onSelectSheet} disabled={disabled || checking || expired} clearable={false} /> : null}
     {selected ? <div className="grid min-w-0 gap-3">
       <p>{selected.rowCount} 条数据 · 忽略 {selected.ignoredEmptyRowCount} 个空行</p>
       {selected.identityCandidates.length ? <p className="text-sm">{selected.identityCandidates.map(index => `第 ${index + 1} 列可作为候选身份`).join('；')}。候选仅表示文件内初步检查通过，仍需完整验证。</p> : <p className="text-sm text-muted">没有列通过候选身份初检，可使用系统生成身份。</p>}

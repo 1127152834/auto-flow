@@ -47,7 +47,7 @@ it('keeps unknown identity through reset but releases a definitively rejected re
   const rejected = { startImport: vi.fn().mockRejectedValue(new Error('字段验证失败')), replace: vi.fn(), lookupImport: vi.fn() }
   const second = renderHook(() => useExcelImport({ api: rejected as never, scopeKey: 'w:p', contextKey: 'i1', active: true }))
   await act(() => second.result.current.submit({ mode: 'create', request }))
-  expect(second.result.current.pending).toBeNull(); expect(second.result.current.phase).toBe('ready'); expect(second.result.current.error).toBe('字段验证失败')
+  expect(second.result.current.pending).toBeNull(); expect(second.result.current.phase).toBe('ready'); expect(second.result.current.error).toBe('操作失败，请重试')
 })
 
 it('acknowledges delivered success so a later session can import a second file', async () => {

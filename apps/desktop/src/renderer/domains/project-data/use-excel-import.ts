@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import type { components } from '../../shared/api/generated'
 import { DataCommandNotAccepted, DataCommandUncertain } from './data-command'
 import type { ExcelApi, ExcelImportRequest, ExcelReplaceRequest } from './excel-api'
+import { safeProjectError } from '../projects/presentation-error'
 
 type Operation = components['schemas']['ProjectOperationView']
 type Body = { mode: 'create'; request: ExcelImportRequest } | { mode: 'replace'; tableId: string; request: ExcelReplaceRequest }
@@ -9,7 +10,7 @@ type Pending = { key: string; body: Body }
 type Phase = 'ready' | 'unknown' | 'notAccepted' | 'accepted' | 'complete' | 'failed'
 const storageKey = (scope: string) => `autoflow:excel-import:${scope}`
 const terminal = (operation: Operation) => operation.status === 'succeeded' || operation.status === 'failed'
-const message = (error: unknown) => error instanceof Error ? error.message : '无法提交 Excel 导入'
+const message = safeProjectError
 
 export function useExcelImport({ api, scopeKey, contextKey, active, disabled = false, onCompleted }: {
   api: Pick<ExcelApi, 'startImport' | 'replace' | 'lookupImport'>; scopeKey: string; contextKey: string; active: boolean; disabled?: boolean
@@ -33,7 +34,7 @@ export function useExcelImport({ api, scopeKey, contextKey, active, disabled = f
   }, [active, contextKey, scopeKey])
   const accept = useCallback((value: Operation) => {
     setOperation(value); setPhase(value.status === 'succeeded' ? 'complete' : value.status === 'failed' ? 'failed' : 'accepted')
-    setError(value.error && typeof value.error.message === 'string' ? value.error.message : null)
+    setError(value.error ? safeProjectError(value.error) : null)
     if (value.status === 'succeeded' && completed.current !== value.operationId && onCompleted) { completed.current = value.operationId; localStorage.removeItem(storageKey(scopeKey)); setPending(null); onCompleted(value) }
   }, [onCompleted, scopeKey])
   const currentFor = (ticket: number) => () => ticket === epoch.current && available.current.active
