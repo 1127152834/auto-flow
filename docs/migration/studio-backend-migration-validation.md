@@ -1,6 +1,6 @@
 # Studio 后端迁入验收矩阵
 
-状态：B0 实施完成；正式用户数据库副本项外部等待。B1 正式五节点主链及正常关窗保护已通过，异常、应用退出与换区矩阵仍在收尾；依赖已满足的 B2/B4 源码模块族按批准策略并行迁入。日期：2026-09-16。
+状态：B0 实施完成；正式用户数据库副本项外部等待。B1 正式五节点主链及正常关窗保护已通过，异常、应用退出与换区矩阵仍在收尾；B2 的 30 个网页节点已接入生产，B3 控制流底座与 16 个控制/变量节点已接入，B4 的 88 个节点已有生产执行器。正式 CloakBrowser/Electron 的剩余矩阵继续集中验收。日期：2026-09-16。
 
 ## 1. 使用方式
 
@@ -68,14 +68,14 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B3-001 | 起始节点、孤立节点、条件/错误边和汇合 | 与冻结 parser 的选路和副作用一致 | 部分通过：10 组冻结源码差分已证明起点、孤立节点、边分类、汇合前驱、错误回流、循环回边和基础校验与原版一致；生产 runtime 尚未消费完整校验、错误分支和汇合前驱，不能核销真实调度。[解析器差分证据](studio-backend-migration/evidence/b3/graph-parser-differential-2026-09-16.json) |
-| BE-B3-002 | 循环、foreach、foreach_dict、infinite_loop、break/continue | 轮次、局部变量和退出路径一致；可停止 | 尚未验收 |
-| BE-B3-003 | 并行分支 | 验证偏序和结果集合；不为测试稳定改成串行 | 尚未验收 |
-| BE-B3-004 | `${name}`、`{name}`、递归列表/字典、表达式和缺失变量 | 与冻结变量测试一致，错误明确 | 尚未验收 |
+| BE-B3-001 | 起始节点、孤立节点、条件/错误边和汇合 | 与冻结 parser 的选路和副作用一致 | 应用层已通过：10 组解析器差分和 15 项运行时合同覆盖起点、条件真假、死路消除、真实汇合、错误边、环与调度上限；错误分支会继续执行但仍保留原失败终态。正式 Electron 组合仍待验收。[解析器差分证据](studio-backend-migration/evidence/b3/graph-parser-differential-2026-09-16.json)、[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-002 | 循环、foreach、foreach_dict、infinite_loop、break/continue | 轮次、局部变量和退出路径一致；可停止 | 部分通过：四类循环入口、列表/字典初值、count/range/while推进和嵌套最近层 break/continue 已通过冻结差分及生产图测试；总调度上限与每轮主动让出已实现。1,000 轮停止和正式 UI 尚未验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-003 | 并行分支 | 验证偏序和结果集合；不为测试稳定改成串行 | 应用层已通过：双分支必须同时进入后才能完成，汇合只执行一次；产物 writer 与敏感值状态按节点任务隔离，没有为测试串行化。正式 worker/Electron 组合仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-004 | `${name}`、`{name}`、递归列表/字典、表达式和缺失变量 | 与冻结变量测试一致，错误明确 | 部分通过：16 个控制/变量节点的 48 项冻结差分已覆盖模板、表达式、变量写入、JSONPath、时间及错误文本；完整递归变量矩阵与正式 UI 尚未关闭。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 尚未验收 |
 | BE-B3-006 | 自定义模块更新、依赖缺失、运行中修改 | 运行使用冻结解析内容；缺失依赖启动前拒绝 | 尚未验收 |
-| BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 尚未验收 |
-| BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 尚未验收 |
+| BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 部分通过：每次调度产生独立 executionId，同一节点多轮保留重复执行顺序；并行节点产物 writer 按任务绑定。循环事件持久化、分页和正式 UI 仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 部分通过：正在执行节点可被取消且不调度后继，纯变量循环每轮主动让出，总调度上限阻止普通环无限运行；尚缺 1,000 轮正式 worker 停止证据。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 
 ## 7. B4 纯数据与表格
 

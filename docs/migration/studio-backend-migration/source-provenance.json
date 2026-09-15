@@ -112,11 +112,12 @@
       "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
       "sourcePath": "reference/WebRPA/backend/app/services/workflow_executor.py",
       "targetPath": "apps/backend/src/autoflow/application/workflows/runtime.py",
-      "changeSummary": "迁入B1线性节点按边执行、失败即停和分支结果入口；执行前增加227范围与已注册执行器的原子预检。完整控制流、重试和错误策略留在对应批准里程碑继续按源码迁入。",
+      "changeSummary": "迁入真实并行、条件死路消除、汇合、错误边、循环重复调度、嵌套break/continue及原版执行结果语义；接入AutoFlow事件、取消、敏感值和节点任务级产物边界，并增加整次运行调度上限。",
       "retainedDependencies": [
         "执行图",
         "执行器注册",
-        "ExecutionContext"
+        "ExecutionContext",
+        "asyncio并行调度"
       ],
       "removedDependencies": [
         "FastAPI",
@@ -533,6 +534,102 @@
         "mitmproxy全局代理服务",
         "0.0.0.0代理监听",
         "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/control.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/control_variable.py",
+      "changeSummary": "迁入condition、loop、foreach、break_loop和continue_loop的字段、默认值、变量、分支与循环信号。",
+      "retainedDependencies": [
+        "Python 标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体上下文",
+        "直接文件系统写入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/control_extended.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/control_variable.py",
+      "changeSummary": "迁入infinite_loop、foreach_dict和stop_workflow的循环状态与停止信号。",
+      "retainedDependencies": [
+        "Python 标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体上下文",
+        "直接文件系统写入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/basic.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/control_variable.py",
+      "changeSummary": "迁入set_variable、random_number和wait的表达式、默认值与错误行为。",
+      "retainedDependencies": [
+        "Python 标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体上下文",
+        "直接文件系统写入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/basic_variable.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/control_variable.py",
+      "changeSummary": "迁入get_time和increment_decrement的时间格式、变量类型转换与错误行为。",
+      "retainedDependencies": [
+        "Python 标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体上下文",
+        "直接文件系统写入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/advanced.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/control_variable.py",
+      "changeSummary": "迁入json_parse和base64；文件模式改由AutoFlow登记产物端口有界读写。",
+      "retainedDependencies": [
+        "Python 标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体上下文",
+        "直接文件系统写入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/advanced_assert.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/control_variable.py",
+      "changeSummary": "迁入assert_checkpoint的变量、表达式、元素断言及失败继续/停止语义。",
+      "retainedDependencies": [
+        "Python 标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体上下文",
+        "直接文件系统写入"
       ],
       "licenseRecord": "LICENSE.WebRPA"
     }

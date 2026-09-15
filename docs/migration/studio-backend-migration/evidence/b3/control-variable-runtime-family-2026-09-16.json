@@ -1,0 +1,72 @@
+{
+  "evidenceId": "BE-B3-control-variable-runtime-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "implementationCommits": [
+    "b7258a49",
+    "67bd0fcb",
+    "9d849d40"
+  ],
+  "result": "16个控制与变量执行器已按冻结源码迁入并注册；生产runtime已支持真实并行、条件死路消除、汇合、错误边、四类循环、嵌套break/continue、停止和总调度上限。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "backend/app/services/workflow_executor.py",
+      "backend/app/executors/control.py",
+      "backend/app/executors/control_extended.py",
+      "backend/app/executors/basic.py",
+      "backend/app/executors/basic_variable.py",
+      "backend/app/executors/advanced.py",
+      "backend/app/executors/advanced_assert.py"
+    ],
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "migratedTypes": [
+    "condition",
+    "loop",
+    "foreach",
+    "infinite_loop",
+    "foreach_dict",
+    "break_loop",
+    "continue_loop",
+    "set_variable",
+    "increment_decrement",
+    "json_parse",
+    "base64",
+    "random_number",
+    "get_time",
+    "wait",
+    "stop_workflow",
+    "assert_checkpoint"
+  ],
+  "classifications": {
+    "executorAlgorithmsDefaultsVariablesAndErrors": "原版直接迁入",
+    "parallelSchedulerAndGraphPorts": "原版迁入并适配AutoFlow事件与取消边界",
+    "artifactTaskBindingAndBase64FileIO": "AutoFlow必要适配：节点任务级产物绑定、登记文件端口和64MiB有界读取",
+    "dispatchLimit": "已批准增强：整次运行最多调度100000次节点，防止非结构化环无限运行"
+  },
+  "verification": {
+    "executorDifferential": "48 passed；覆盖16类型的正常、错误、变量、循环信号、浏览器条件、文件Base64和时间格式",
+    "runtimeContracts": "15 passed；覆盖条件真假、真实并行、死路汇合、错误边、计数与嵌套循环、break/continue、取消和调度上限",
+    "productionGraph": "3 passed；生产registry完成变量→循环→条件、break及while表达式链路",
+    "httpAdmission": "1 passed；16类型通过真实HTTP协调器并保持requiresBrowser=false",
+    "workflowDependencyContracts": "15 passed, 3 skipped；已固定run_workflow_file、subflow与custom_module冻结语义和待实现依赖",
+    "fullBackendRegression": "2340 passed, 7 skipped, 2 warnings in 266.47s",
+    "mypy": "263 source files passed",
+    "ruff": "本批受影响文件通过；全库仍有7个本批未修改测试文件的既有import排序问题",
+    "diffCheck": "passed"
+  },
+  "remaining": [
+    "B3的subflow、run_workflow_file、input_prompt、group、note尚未全部接入生产运行语义",
+    "自定义模块仓储、revision、依赖图、运行冻结解析和递归执行尚未实现",
+    "循环/子流程上下文尚未写入持久事件字段，产物分页仍需按executionId集中验收",
+    "1000轮纯变量停止与正式Electron复杂控制流链路尚未验收"
+  ],
+  "notClaimed": [
+    "B3里程碑完成",
+    "子流程或自定义模块真实执行",
+    "正式Electron控制流验收",
+    "macOS Intel或Windows实机结果"
+  ],
+  "userDatabaseModified": false
+}
