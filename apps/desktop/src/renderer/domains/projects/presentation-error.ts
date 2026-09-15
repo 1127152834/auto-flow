@@ -12,7 +12,7 @@ const messages: Record<string, string> = {
   OPERATION_PAYLOAD_MISMATCH: '原请求与当前内容不一致，请先核对原操作',
   SIDECAR_UNAUTHORIZED: '本地服务连接已失效，请重新连接', UNAUTHORIZED: '本地服务连接已失效，请重新连接',
   EXCEL_IMPORT_FAILED: '导入失败，请检查文件后重试', EXCEL_EXPORT_FAILED: '导出失败，请重试',
-  EXCEL_EXPORT_TARGET_CONFLICT: '目标文件已存在，请选择新的文件名',
+  EXCEL_EXPORT_TARGET_CONFLICT: '目标文件已存在，请选择新的文件名', OUTPUT_ALREADY_EXISTS: '目标文件已存在，请选择新的文件名',
   EXCEL_INSPECTION_EXPIRED: '文件检查已过期，请重新选择并检查文件',
   EXCEL_IMPORT_INTERRUPTED: '导入已中断，请先核对原操作', EXCEL_EXPORT_INTERRUPTED: '导出已中断，请先核对原操作',
   WORKFLOW_NOT_RUNNABLE: '工作流暂不可运行，请检查节点配置', WORKFLOW_NOT_FOUND: '工作流暂不可用，请重新选择',
