@@ -33,7 +33,7 @@ class WorkflowWorkers(Protocol):
         self,
         run_id: str,
         profile_id: str,
-        executable: Path,
+        executable: Path | None,
         payload: dict[str, Any],
     ) -> object: ...
 
@@ -137,8 +137,9 @@ class WorkflowRunCoordinator:
                         ]
                     },
                 )
+            requires_browser = self._runtime.requires_browser(document)
             profile = self._profiles.get(profile_id)
-            kernel = self._kernel(profile)
+            kernel = self._kernel(profile) if requires_browser else None
             start = WorkflowRunStart(
                 run_id=run_id,
                 workflow_id=workflow_id,
@@ -163,34 +164,42 @@ class WorkflowRunCoordinator:
 
             acquired = False
             try:
-                await self._resources.acquire(
-                    run_id,
-                    profile_id,
-                    KernelRef(
-                        cast(Any, profile.spec.browser_edition),
-                        profile.spec.browser_version,
-                    ),
-                )
-                acquired = True
-                proxy = await self._resolve_proxy(profile, run_id)
-                license_key = (
-                    self._read_license()
-                    if profile.spec.browser_edition == "licensed"
-                    else None
-                )
-                if profile.spec.browser_edition == "licensed" and not license_key:
-                    raise LicenseInvalid
+                proxy = None
+                license_key = None
+                if requires_browser:
+                    assert kernel is not None
+                    await self._resources.acquire(
+                        run_id,
+                        profile_id,
+                        KernelRef(
+                            cast(Any, profile.spec.browser_edition),
+                            profile.spec.browser_version,
+                        ),
+                    )
+                    acquired = True
+                    proxy = await self._resolve_proxy(profile, run_id)
+                    license_key = (
+                        self._read_license()
+                        if profile.spec.browser_edition == "licensed"
+                        else None
+                    )
+                    if profile.spec.browser_edition == "licensed" and not license_key:
+                        raise LicenseInvalid
                 payload = _worker_payload(
                     start,
                     profile,
                     proxy,
                     license_key,
-                    executable=kernel.executable_path,
+                    executable=kernel.executable_path if kernel is not None else None,
                     headless=headless,
                     artifact_root=self._artifact_root,
+                    requires_browser=requires_browser,
                 )
                 await self._workers.start(
-                    run_id, profile_id, kernel.executable_path, payload
+                    run_id,
+                    profile_id,
+                    kernel.executable_path if kernel is not None else None,
+                    payload,
                 )
                 self._runs.mark_running(run_id)
                 running = self._runs.get(run_id)
@@ -464,9 +473,10 @@ def _worker_payload(
     proxy: ProfileBrowserProxy | None,
     license_key: str | None,
     *,
-    executable: Path,
+    executable: Path | None,
     headless: bool,
     artifact_root: Path,
+    requires_browser: bool,
 ) -> dict[str, Any]:
     spec = profile.spec
     return {
@@ -498,8 +508,9 @@ def _worker_payload(
         "licenseKey": license_key,
         "headless": headless,
         "artifactRoot": str(artifact_root),
+        "requiresBrowser": requires_browser,
         "document": copy.deepcopy(start.document_snapshot),
-        "executableIdentity": str(executable.name),
+        "executableIdentity": executable.name if executable is not None else None,
     }
 
 

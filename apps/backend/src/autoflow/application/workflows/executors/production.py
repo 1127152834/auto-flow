@@ -8,6 +8,23 @@ from .basic import (
     OpenPageExecutor,
     ScreenshotExecutor,
 )
+from .data_structure import (
+    DictGetExecutor,
+    DictKeysExecutor,
+    DictOperationExecutor,
+    ListExportExecutor,
+    ListGetExecutor,
+    ListLengthExecutor,
+    ListOperationExecutor,
+    RegexExtractExecutor,
+    StringCaseExecutor,
+    StringConcatExecutor,
+    StringJoinExecutor,
+    StringReplaceExecutor,
+    StringSplitExecutor,
+    StringSubstringExecutor,
+    StringTrimExecutor,
+)
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .registry import ExecutorRegistry
 
@@ -19,6 +36,21 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     ScreenshotExecutor,
     WaitPageLoadExecutor,
     PageLoadCompleteExecutor,
+    ListOperationExecutor,
+    ListGetExecutor,
+    ListLengthExecutor,
+    ListExportExecutor,
+    DictOperationExecutor,
+    DictGetExecutor,
+    DictKeysExecutor,
+    RegexExtractExecutor,
+    StringReplaceExecutor,
+    StringSplitExecutor,
+    StringJoinExecutor,
+    StringConcatExecutor,
+    StringTrimExecutor,
+    StringCaseExecutor,
+    StringSubstringExecutor,
 )
 
 

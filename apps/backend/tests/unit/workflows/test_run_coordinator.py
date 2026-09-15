@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
@@ -178,6 +177,7 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
     payload = workers.payloads[0]
     assert payload["document"]["nodes"][0]["id"] == "open"
     assert payload["headless"] is True
+    assert payload["requiresBrowser"] is True
     assert "startUrl" not in payload
 
     await coordinator.on_worker_event(

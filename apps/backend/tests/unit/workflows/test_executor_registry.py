@@ -61,7 +61,7 @@ def test_registry_strict_mode_rejects_duplicate_from_another_module(
         registry.register(_executor("Second", "webrpa.second", calls))
 
 
-def test_production_registry_contains_every_migrated_browser_executor() -> None:
+def test_production_registry_contains_every_migrated_executor() -> None:
     production = build_production_executor_registry()
 
     assert set(production.get_all_types()) == {
@@ -72,7 +72,47 @@ def test_production_registry_contains_every_migrated_browser_executor() -> None:
         "screenshot",
         "wait_page_load",
         "page_load_complete",
+        "list_operation",
+        "list_get",
+        "list_length",
+        "list_export",
+        "dict_operation",
+        "dict_get",
+        "dict_keys",
+        "regex_extract",
+        "string_replace",
+        "string_split",
+        "string_join",
+        "string_concat",
+        "string_trim",
+        "string_case",
+        "string_substring",
     }
+
+
+def test_runtime_reports_whether_a_document_needs_a_browser() -> None:
+    runtime = WorkflowRuntime(build_production_executor_registry())
+
+    assert runtime.requires_browser(
+        {
+            "nodes": [
+                {
+                    "id": "open",
+                    "data": {"moduleType": "open_page", "config": {}},
+                }
+            ]
+        }
+    ) is True
+    assert runtime.requires_browser(
+        {
+            "nodes": [
+                {
+                    "id": "concat",
+                    "data": {"moduleType": "string_concat", "config": {}},
+                }
+            ]
+        }
+    ) is False
 
 
 def test_lazy_registry_exposes_type_before_import_and_loads_once(

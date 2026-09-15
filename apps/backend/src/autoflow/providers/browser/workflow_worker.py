@@ -33,62 +33,75 @@ def run_workflow_worker(
 
 
 async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
+    requires_browser = command.get("requiresBrowser", True)
+    if not isinstance(requires_browser, bool):
+        raise TypeError("requiresBrowser must be a boolean")
+    _required_string(command, "runId")
+    _required_string(command, "profileId")
+    if not requires_browser:
+        return await _run_in_session(command, stopped, stdout, None)
     executable = Path(_required_environment("CLOAKBROWSER_BINARY_PATH"))
     cache = Path(_required_environment("CLOAKBROWSER_CACHE_DIR"))
     if not executable.is_absolute() or not executable.is_file() or not cache.is_absolute():
         raise ValueError("workflow worker paths are invalid")
+    async with launch_workflow_session(command) as browser:
+        return await _run_in_session(command, stopped, stdout, browser)
+
+
+async def _run_in_session(
+    command: dict[str, Any], stopped: Event, stdout: TextIO, browser: Any
+) -> int:
     run_id = _required_string(command, "runId")
     profile_id = _required_string(command, "profileId")
-    async with launch_workflow_session(command) as browser:
-        _write(stdout, {"type": "ready", "runId": run_id, "profileId": profile_id})
-        document = command.get("document")
-        if isinstance(document, dict):
-            workflow_id = _required_string(command, "workflowId")
-            artifact_root = Path(_required_string(command, "artifactRoot"))
-            if not artifact_root.is_absolute():
-                raise ValueError("artifactRoot must be absolute")
-            artifacts = _WorkerArtifactRepository(stdout)
-            context = ExecutionContext(
-                variables=_initial_variables(document),
-                browser=browser,
-                cancellation=_ThreadCancellation(stopped),
-            )
-            sink = _WorkerEventSink(
-                stdout,
-                run_id=run_id,
-                workflow_id=workflow_id,
-                context=context,
-                artifacts=artifacts,
-                artifact_root=artifact_root,
-            )
-            context.events = sink
-            result = await WorkflowRuntime(
-                build_production_executor_registry()
-            ).execute(document, context)
-            terminal = "execution:completed" if result.success else "execution:failed"
-            _write(
-                stdout,
-                {
-                    "type": terminal,
-                    "runId": run_id,
-                    "workflowId": workflow_id,
-                    "executedNodes": len(result.executed_node_ids),
-                    "failedNodeId": result.failed_node_id,
-                    "issues": [
-                        {
-                            "nodeId": issue.node_id,
-                            "path": issue.path,
-                            "code": issue.code,
-                            "message": issue.message,
-                        }
-                        for issue in result.issues
-                    ],
-                    "error": result.node_result.error if result.node_result else None,
-                },
-            )
-            return 0 if result.success else 2
-        while not stopped.is_set():
-            await asyncio.sleep(0.05)
+    _write(stdout, {"type": "ready", "runId": run_id, "profileId": profile_id})
+    document = command.get("document")
+    if isinstance(document, dict):
+        workflow_id = _required_string(command, "workflowId")
+        artifact_root = Path(_required_string(command, "artifactRoot"))
+        if not artifact_root.is_absolute():
+            raise ValueError("artifactRoot must be absolute")
+        artifacts = _WorkerArtifactRepository(stdout)
+        context = ExecutionContext(
+            variables=_initial_variables(document),
+            browser=browser,
+            cancellation=_ThreadCancellation(stopped),
+        )
+        sink = _WorkerEventSink(
+            stdout,
+            run_id=run_id,
+            workflow_id=workflow_id,
+            context=context,
+            artifacts=artifacts,
+            artifact_root=artifact_root,
+        )
+        context.events = sink
+        result = await WorkflowRuntime(build_production_executor_registry()).execute(
+            document, context
+        )
+        terminal = "execution:completed" if result.success else "execution:failed"
+        _write(
+            stdout,
+            {
+                "type": terminal,
+                "runId": run_id,
+                "workflowId": workflow_id,
+                "executedNodes": len(result.executed_node_ids),
+                "failedNodeId": result.failed_node_id,
+                "issues": [
+                    {
+                        "nodeId": issue.node_id,
+                        "path": issue.path,
+                        "code": issue.code,
+                        "message": issue.message,
+                    }
+                    for issue in result.issues
+                ],
+                "error": result.node_result.error if result.node_result else None,
+            },
+        )
+        return 0 if result.success else 2
+    while not stopped.is_set():
+        await asyncio.sleep(0.05)
     return 0
 
 
@@ -197,6 +210,7 @@ class _WorkerEventSink:
                     node_id=node_id,
                     execution_id=execution_id,
                     purpose="result",
+                    cancellation=self._context.cancellation,
                 )
             elif event.get("type") == "execution:node_complete":
                 event["artifactIds"] = list(self._artifacts.take(execution_id))

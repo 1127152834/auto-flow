@@ -21,6 +21,8 @@ class ModuleResult:
 
 
 class ModuleExecutor(ABC):
+    requires_browser = False
+
     @property
     @abstractmethod
     def module_type(self) -> str: ...

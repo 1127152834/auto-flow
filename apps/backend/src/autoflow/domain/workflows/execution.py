@@ -14,6 +14,17 @@ class ArtifactWriter(Protocol):
         self, *, name: str, content: bytes, mime_type: str
     ) -> str: ...
 
+    async def write_text(
+        self,
+        *,
+        output_path: str,
+        content: str,
+        separator: str,
+        encoding: str,
+        append: bool,
+        mime_type: str,
+    ) -> str: ...
+
 
 class ModelGateway(Protocol):
     async def invoke(self, model_id: str, payload: Mapping[str, Any]) -> Any: ...
@@ -63,7 +74,9 @@ class ExecutionContext:
     def set_variable(self, name: str, value: Any) -> None:
         self.variables[name] = value
 
-    def get_variable(self, name: str, default: Any = None) -> Any:
+    def get_variable(self, name: Any, default: Any = None) -> Any:
+        if not isinstance(name, str):
+            return self.variables.get(name, default)
         normalized = name.strip()
         if normalized.startswith("${") and normalized.endswith("}"):
             normalized = normalized[2:-1].strip()

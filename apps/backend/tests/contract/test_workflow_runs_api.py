@@ -311,6 +311,119 @@ def test_page_load_family_is_admitted_by_the_real_http_coordinator(
     assert [
         node["data"]["moduleType"] for node in workers.payload["document"]["nodes"]
     ] == ["wait_page_load", "page_load_complete"]
+    assert workers.payload["requiresBrowser"] is True
+
+
+def test_pure_data_family_runs_through_http_without_browser_requirement(
+    client: TestClient,
+    profile_payload: dict[str, object],
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    module_types = [
+        "list_operation",
+        "list_get",
+        "list_length",
+        "list_export",
+        "dict_operation",
+        "dict_get",
+        "dict_keys",
+        "regex_extract",
+        "string_replace",
+        "string_split",
+        "string_join",
+        "string_concat",
+        "string_trim",
+        "string_case",
+        "string_substring",
+    ]
+    workflow_payload = {
+        **_workflow(),
+        "id": "workflow-data-contract",
+        "name": "纯数据合同",
+        "clientRequestId": "create-data-contract",
+        "nodes": [
+            {
+                "id": f"data-{index}",
+                "type": "moduleNode",
+                "position": {"x": index * 240, "y": 0},
+                "data": {
+                    "moduleType": module_type,
+                    "config": {},
+                },
+            }
+            for index, module_type in enumerate(module_types)
+        ],
+        "edges": [
+            {
+                "id": f"edge-{index}",
+                "source": f"data-{index}",
+                "target": f"data-{index + 1}",
+            }
+            for index in range(len(module_types) - 1)
+        ],
+    }
+    workflow = client.post("/api/workflows", json=workflow_payload).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    coordinator = client.app.state.workflow_services.commands
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"kernel")
+
+    class Resources:
+        owner_id: str | None = None
+
+        async def acquire(self, owner_id: str, _profile_id: str, _kernel: Any) -> None:
+            self.owner_id = owner_id
+
+        async def release(self, owner_id: str) -> None:
+            assert self.owner_id == owner_id
+            self.owner_id = None
+
+    class Workers:
+        payload: dict[str, Any] | None = None
+
+        async def start(
+            self,
+            run_id: str,
+            profile_id: str,
+            _executable: Path | None,
+            payload: dict[str, Any],
+        ) -> WorkflowWorkerSession:
+            self.payload = payload
+            return WorkflowWorkerSession(run_id, profile_id, 40, None)
+
+        async def stop(self, _run_id: str) -> None:
+            self.payload = None
+
+        def busy(self) -> bool:
+            return self.payload is not None
+
+    resources = Resources()
+    workers = Workers()
+    monkeypatch.setattr(coordinator, "_resources", resources)
+    monkeypatch.setattr(coordinator, "_workers", workers)
+    monkeypatch.setattr(
+        coordinator,
+        "_installed_kernels",
+        lambda: [InstalledKernel("public", profile["browserVersion"], executable, 6)],
+    )
+    monkeypatch.setattr(coordinator, "_resolve_proxy", _no_proxy)
+
+    response = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "run-data-contract",
+            "documentId": "document-data-contract",
+            "profileId": profile["id"],
+        },
+    )
+
+    assert response.status_code == 202, response.text
+    assert workers.payload is not None
+    assert workers.payload["requiresBrowser"] is False
+    assert [
+        node["data"]["moduleType"] for node in workers.payload["document"]["nodes"]
+    ] == module_types
 
 
 def test_execute_accepts_an_unsaved_document_snapshot_without_creating_a_workflow(

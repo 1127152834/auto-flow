@@ -89,7 +89,7 @@ class _RunningWorker:
     session: WorkflowWorkerSession
     process: asyncio.subprocess.Process
     directory: Path
-    executable: Path
+    executable: Path | None
     birth: int | None
     monitor: asyncio.Task[None]
 
@@ -98,7 +98,7 @@ class _RunningWorker:
 class _StartingWorker:
     task: asyncio.Task[Any]
     directory: Path
-    executable: Path
+    executable: Path | None
     process: asyncio.subprocess.Process | None = None
     birth: int | None = None
 
@@ -131,7 +131,7 @@ class WorkflowWorkerManager:
         self,
         run_id: str,
         profile_id: str,
-        executable: Path,
+        executable: Path | None,
         payload: dict[str, Any],
     ) -> WorkflowWorkerSession:
         if not _SAFE_ID.fullmatch(run_id):
@@ -153,8 +153,12 @@ class WorkflowWorkerManager:
             env = os.environ.copy()
             env.update(self._worker_env)
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
-            env["CLOAKBROWSER_BINARY_PATH"] = str(executable.resolve(strict=True))
-            env["CLOAKBROWSER_CACHE_DIR"] = str(directory)
+            if executable is None:
+                env.pop("CLOAKBROWSER_BINARY_PATH", None)
+                env.pop("CLOAKBROWSER_CACHE_DIR", None)
+            else:
+                env["CLOAKBROWSER_BINARY_PATH"] = str(executable.resolve(strict=True))
+                env["CLOAKBROWSER_CACHE_DIR"] = str(directory)
             env.update({"TMPDIR": str(directory), "TMP": str(directory), "TEMP": str(directory)})
             process = await asyncio.create_subprocess_exec(
                 *self._command,
@@ -272,7 +276,7 @@ class WorkflowWorkerManager:
         run_id: str,
         process: asyncio.subprocess.Process,
         directory: Path,
-        executable: Path,
+        executable: Path | None,
         birth: int | None,
         registered: asyncio.Event,
     ) -> None:

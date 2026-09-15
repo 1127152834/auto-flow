@@ -8,7 +8,9 @@ import pytest
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
+from autoflow.application.workflows.executors.base import ModuleExecutor
 from autoflow.application.workflows.executors.basic import OpenPageExecutor
+from autoflow.application.workflows.executors.data_structure import StringConcatExecutor
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
@@ -47,15 +49,19 @@ class Workers:
         self.failure = failure
         self.started = 0
         self.stopped: list[str] = []
+        self.executables: list[Path | None] = []
+        self.payloads: list[dict[str, Any]] = []
 
     async def start(
         self,
         run_id: str,
         profile_id: str,
-        _executable: Path,
-        _payload: dict[str, Any],
+        executable: Path | None,
+        payload: dict[str, Any],
     ) -> WorkflowWorkerSession:
         self.started += 1
+        self.executables.append(executable)
+        self.payloads.append(payload)
         if self.failure is not None:
             raise self.failure
         return WorkflowWorkerSession(run_id, profile_id, 10, 11)
@@ -113,6 +119,9 @@ def coordinator(
     workers: Workers,
     resolve_proxy: Any | None = None,
     read_license: Any | None = None,
+    module_type: str = "open_page",
+    module_config: dict[str, Any] | None = None,
+    executor_class: type[ModuleExecutor] = OpenPageExecutor,
 ) -> tuple[WorkflowRunCoordinator, WorkflowRunService]:
     database = tmp_path / "admission.sqlite3"
     migrate_database(database)
@@ -127,8 +136,8 @@ def coordinator(
                     "id": "open",
                     "type": "moduleNode",
                     "data": {
-                        "moduleType": "open_page",
-                        "config": {"url": "about:blank"},
+                        "moduleType": module_type,
+                        "config": module_config or {"url": "about:blank"},
                     },
                 }
             ],
@@ -140,7 +149,7 @@ def coordinator(
     repository = SqlAlchemyWorkflowRuns(sessions)
     runs = WorkflowRunService(repository)
     registry = ExecutorRegistry()
-    registry.register(OpenPageExecutor)
+    registry.register(executor_class)
 
     async def no_proxy(_profile: Profile, _run_id: str) -> None:
         return None
@@ -236,6 +245,44 @@ async def test_missing_license_releases_resources_and_records_failed_start(
     assert resources.acquired == resources.released == ["run-admission"]
     assert resources.owner_id is None
     assert workers.started == 0
+
+
+@pytest.mark.asyncio
+async def test_pure_data_run_does_not_require_kernel_license_proxy_or_browser_lock(
+    tmp_path: Path,
+) -> None:
+    resources = Resources()
+    workers = Workers()
+
+    async def forbidden_proxy(_profile: Profile, _run_id: str) -> None:
+        raise AssertionError("pure data run must not resolve a browser proxy")
+
+    def forbidden_license() -> str | None:
+        raise AssertionError("pure data run must not read the CloakBrowser License")
+
+    service, _runs = coordinator(
+        tmp_path,
+        selected_profile=profile(edition="licensed"),
+        kernels=[],
+        resources=resources,
+        workers=workers,
+        resolve_proxy=forbidden_proxy,
+        read_license=forbidden_license,
+        module_type="string_concat",
+        module_config={
+            "string1": "Auto",
+            "string2": "Flow",
+            "variableName": "joined",
+        },
+        executor_class=StringConcatExecutor,
+    )
+
+    started = await service.start("workflow-admission", request())
+
+    assert started["status"] == "running"
+    assert resources.acquired == []
+    assert workers.executables == [None]
+    assert workers.payloads[0]["requiresBrowser"] is False
 
 
 @pytest.mark.asyncio

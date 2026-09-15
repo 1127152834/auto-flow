@@ -50,6 +50,25 @@ class WorkflowRuntime:
             runnable_node_types=self._registry.get_all_types(),
         )
 
+    def requires_browser(self, document: Mapping[str, Any]) -> bool:
+        nodes = document.get("nodes", [])
+        if not isinstance(nodes, list):
+            return False
+        for node in nodes:
+            if not isinstance(node, Mapping):
+                continue
+            data = node.get("data")
+            module_type = (
+                data.get("moduleType")
+                if isinstance(data, Mapping)
+                else node.get("type")
+            )
+            if isinstance(module_type, str):
+                executor = self._registry.get(module_type)
+                if executor is not None and executor.requires_browser:
+                    return True
+        return False
+
     async def execute(
         self, document: Mapping[str, Any], context: ExecutionContext
     ) -> WorkflowRuntimeResult:

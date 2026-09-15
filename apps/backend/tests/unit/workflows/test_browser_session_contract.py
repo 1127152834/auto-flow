@@ -306,3 +306,120 @@ async def test_workflow_worker_executes_document_and_emits_identified_events(
     assert events[2]["success"] is True
     assert events[3]["executedNodes"] == 1
     assert raw.pages[0].goto_calls[0][0] == "https://example.test/worker"
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_runs_pure_data_document_without_launching_browser(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("pure data workflow must not launch CloakBrowser")
+
+    monkeypatch.delenv("CLOAKBROWSER_BINARY_PATH", raising=False)
+    monkeypatch.delenv("CLOAKBROWSER_CACHE_DIR", raising=False)
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    command = {
+        "runId": "run-data",
+        "workflowId": "workflow-data",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": "concat",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "string_concat",
+                        "config": {
+                            "string1": "Auto",
+                            "string2": "Flow",
+                            "variableName": "joined",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert [event["type"] for event in events] == [
+        "ready",
+        "execution:node_start",
+        "execution:node_complete",
+        "execution:completed",
+    ]
+    assert events[2]["data"] == "AutoFlow"
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_exports_list_and_emits_registered_artifact(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("list export must not launch CloakBrowser")
+
+    monkeypatch.delenv("CLOAKBROWSER_BINARY_PATH", raising=False)
+    monkeypatch.delenv("CLOAKBROWSER_CACHE_DIR", raising=False)
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    artifact_root = tmp_path / "workspace"
+    command = {
+        "runId": "run-data-export",
+        "workflowId": "workflow-data-export",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(artifact_root),
+        "document": {
+            "nodes": [
+                {
+                    "id": "export",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "list_export",
+                        "config": {
+                            "listVariable": "items",
+                            "outputPath": "reports/result.txt",
+                            "separator": "\\n",
+                            "encoding": "utf-8",
+                            "appendMode": False,
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "items", "value": ["第一条", "第二条"]}],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert [event["type"] for event in events] == [
+        "ready",
+        "execution:node_start",
+        "artifact:registered",
+        "execution:node_complete",
+        "execution:completed",
+    ]
+    assert events[2]["nodeId"] == "export"
+    assert events[2]["executionId"] == events[1]["executionId"]
+    assert events[2]["artifactId"] in events[3]["artifactIds"]
+    assert events[3]["data"] == {"path": "reports/result.txt", "count": 2}
+    target = artifact_root / "runs/run-data-export/outputs/reports/result.txt"
+    snapshot = artifact_root / events[2]["relativePath"]
+    assert target.read_text(encoding="utf-8") == "第一条\n第二条"
+    assert snapshot.read_bytes() == target.read_bytes()

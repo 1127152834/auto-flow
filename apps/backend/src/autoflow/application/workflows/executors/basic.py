@@ -35,6 +35,8 @@ def _page(context: ExecutionContext) -> BrowserPagePort | None:
 
 @register_executor
 class OpenPageExecutor(ModuleExecutor):
+    requires_browser = True
+
     @property
     def module_type(self) -> str:
         return "open_page"
@@ -68,6 +70,8 @@ class OpenPageExecutor(ModuleExecutor):
 
 @register_executor
 class ClickElementExecutor(ModuleExecutor):
+    requires_browser = True
+
     @property
     def module_type(self) -> str:
         return "click_element"
@@ -140,6 +144,8 @@ class ClickElementExecutor(ModuleExecutor):
 
 @register_executor
 class InputTextExecutor(ModuleExecutor):
+    requires_browser = True
+
     @property
     def module_type(self) -> str:
         return "input_text"
@@ -221,6 +227,8 @@ class InputTextExecutor(ModuleExecutor):
 
 @register_executor
 class GetElementInfoExecutor(ModuleExecutor):
+    requires_browser = True
+
     @property
     def module_type(self) -> str:
         return "get_element_info"
@@ -295,6 +303,8 @@ class GetElementInfoExecutor(ModuleExecutor):
 
 @register_executor
 class ScreenshotExecutor(ModuleExecutor):
+    requires_browser = True
+
     @property
     def module_type(self) -> str:
         return "screenshot"

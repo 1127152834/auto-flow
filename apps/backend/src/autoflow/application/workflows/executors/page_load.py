@@ -21,6 +21,8 @@ def _page(context: ExecutionContext) -> BrowserPagePort | None:
 
 @register_executor
 class WaitPageLoadExecutor(ModuleExecutor):
+    requires_browser = True
+
     @property
     def module_type(self) -> str:
         return "wait_page_load"
@@ -42,6 +44,8 @@ class WaitPageLoadExecutor(ModuleExecutor):
 
 @register_executor
 class PageLoadCompleteExecutor(ModuleExecutor):
+    requires_browser = True
+
     @property
     def module_type(self) -> str:
         return "page_load_complete"
