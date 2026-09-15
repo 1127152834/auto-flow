@@ -1,0 +1,41 @@
+{
+  "evidenceId": "BE-B1-stop-browser-crash-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "implementationCommit": "c4bb8e46",
+  "result": "输入填写与截图产物写入期间的停止会取消当前操作并阻止后续节点；CloakBrowser主进程单独退出而worker仍挂起时，父进程监护会清理进程树、释放运行槽并允许后续运行启动。",
+  "implementation": {
+    "browserIdentity": "workflow worker通过Chromium SystemInfo.getProcessInfo读取browser类型的OS进程ID；父进程同时保存PID创建身份以防PID复用。",
+    "windowsIdentity": "Windows使用OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION)与GetProcessTimes的创建FILETIME；代码和类型检查已通过，未做Windows实机验收。",
+    "normalExitProtection": "正常停止先登记stopping状态；浏览器关闭后保留250ms宽限，避免把worker正常清理误判为崩溃。",
+    "crashRecovery": "异常浏览器身份消失后记录BROWSER_PROCESS_EXITED，清理worker进程树和临时目录，再执行on_exit并释放管理槽。"
+  },
+  "tests": {
+    "focused": {
+      "command": "cd apps/backend && uv run pytest -q tests/integration/test_workflow_worker_protocol.py tests/integration/test_b1_stop_and_browser_crash_regressions.py tests/unit/workflows/test_browser_session_contract.py tests/unit/test_browser_processes.py",
+      "result": "41 passed",
+      "assertions": [
+        "阻塞中的input_text取消后未完成填写且后续节点未执行",
+        "截图数据进入阻塞写入后取消，未登记产物且后续节点未执行",
+        "浏览器子进程退出后worker槽释放、on_exit发生在清理后、替代运行成功启动",
+        "正常stop不会被浏览器监护误判为异常",
+        "CDP会话选择browser类型PID并始终detach"
+      ]
+    },
+    "fullBackendRegression": {
+      "command": "cd apps/backend && uv run pytest -q",
+      "result": "2259 passed, 4 skipped, 2 dependency deprecation warnings",
+      "durationSeconds": 258.91
+    },
+    "quality": {
+      "ruff": "passed",
+      "mypy": "passed"
+    }
+  },
+  "notClaimed": [
+    "输入与截图停止的正式Electron/CloakBrowser UI组合",
+    "真实sidecar进程被杀后的正式Electron恢复",
+    "Windows或macOS Intel实机验证",
+    "应用退出、保存失败和工作区切换的全部离开矩阵"
+  ],
+  "userDatabaseModified": false
+}
