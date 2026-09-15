@@ -7,6 +7,9 @@ from autoflow.application.workflows.executors.base import (
     ModuleExecutor,
     ModuleResult,
 )
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ExecutionContext
@@ -56,6 +59,20 @@ def test_registry_strict_mode_rejects_duplicate_from_another_module(
 
     with pytest.raises(RuntimeError, match="重复注册"):
         registry.register(_executor("Second", "webrpa.second", calls))
+
+
+def test_production_registry_contains_every_migrated_browser_executor() -> None:
+    production = build_production_executor_registry()
+
+    assert set(production.get_all_types()) == {
+        "open_page",
+        "click_element",
+        "input_text",
+        "get_element_info",
+        "screenshot",
+        "wait_page_load",
+        "page_load_complete",
+    }
 
 
 def test_lazy_registry_exposes_type_before_import_and_loads_once(

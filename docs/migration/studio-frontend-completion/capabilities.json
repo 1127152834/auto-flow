@@ -1876,7 +1876,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1914,15 +1914,16 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/page_load.py#WaitPageLoadExecutor",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/basic.py",
-          "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
+          "apps/backend/src/autoflow/application/workflows/executors/page_load.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -1931,12 +1932,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
+      "gap": "冻结源码差分、正式注册、HTTP准入和macOS arm64真实CloakBrowser provider已通过；正式Electron UI与重建目录包仍待验收。",
+      "risk": "真实CloakBrowser provider已核对页面加载语义；正式UI、打包sidecar及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.wait_page_load.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#WaitPageLoadExecutor",
@@ -1944,11 +1945,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 wait_page_load 的默认配置、合法分支和错误分支；配置键为 timeout, waitUntil",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：等待页面加载完成模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/page-load-family.json"
         },
         {
           "id": "BE.wait_page_load.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -1956,7 +1957,7 @@
           ],
           "operation": "通过正式传输提交包含 wait_page_load 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/page-load-family.json"
         },
         {
           "id": "BE.wait_page_load.real-execution",
@@ -2066,7 +2067,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -2104,15 +2105,16 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/page_load.py#PageLoadCompleteExecutor",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/basic.py",
-          "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
+          "apps/backend/src/autoflow/application/workflows/executors/page_load.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -2121,12 +2123,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
+      "gap": "冻结源码差分、正式注册、HTTP准入和macOS arm64真实CloakBrowser provider已通过；正式Electron UI与重建目录包仍待验收。",
+      "risk": "真实CloakBrowser provider已核对页面加载语义；正式UI、打包sidecar及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.page_load_complete.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#PageLoadCompleteExecutor",
@@ -2134,11 +2136,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 page_load_complete 的默认配置、合法分支和错误分支；配置键为 checkState, saveToVariable",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：网页是否加载完成模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/page-load-family.json"
         },
         {
           "id": "BE.page_load_complete.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -2146,7 +2148,7 @@
           ],
           "operation": "通过正式传输提交包含 page_load_complete 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/page-load-family.json"
         },
         {
           "id": "BE.page_load_complete.real-execution",

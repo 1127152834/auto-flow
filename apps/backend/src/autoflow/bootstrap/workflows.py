@@ -19,14 +19,9 @@ from autoflow.adapters.http.workflow_runs import (
 from autoflow.adapters.http.workflows import workflows_router
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
-from autoflow.application.workflows.executors.basic import (
-    ClickElementExecutor,
-    GetElementInfoExecutor,
-    InputTextExecutor,
-    OpenPageExecutor,
-    ScreenshotExecutor,
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
 )
-from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.runs import WorkflowRunError
@@ -129,15 +124,7 @@ def build_workflow_services(
         on_exit=on_exit,
     )
     resources = WorkflowResourceCoordinator(profile_guard, kernels_root)
-    registry = ExecutorRegistry()
-    for executor in (
-        OpenPageExecutor,
-        ClickElementExecutor,
-        InputTextExecutor,
-        GetElementInfoExecutor,
-        ScreenshotExecutor,
-    ):
-        registry.register(executor)
+    registry = build_production_executor_registry()
     coordinator = WorkflowRunCoordinator(
         documents=documents,
         runs=runs,

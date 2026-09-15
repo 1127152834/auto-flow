@@ -292,6 +292,23 @@
         "未登记绝对路径下载"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/basic.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/page_load.py",
+      "changeSummary": "批量迁入wait_page_load与page_load_complete的默认值、变量解析、等待/探测分支、输出和错误语义；页面访问通过AutoFlow CloakBrowser窄端口，关闭或缺失当前页统一返回页面未打开。",
+      "retainedDependencies": [
+        "ExecutionContext变量语义",
+        "CloakBrowser页面端口",
+        "type_utils.to_int"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体页面类型",
+        "多浏览器回退"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

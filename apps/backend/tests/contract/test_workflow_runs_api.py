@@ -214,6 +214,105 @@ def test_real_run_coordinator_is_reached_through_http_and_stop_waits_for_cleanup
     assert coordinator._resources.owner_id is None
 
 
+def test_page_load_family_is_admitted_by_the_real_http_coordinator(
+    client: TestClient,
+    profile_payload: dict[str, object],
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    workflow_payload = {
+        **_workflow(),
+        "id": "workflow-page-load-contract",
+        "name": "页面加载合同",
+        "clientRequestId": "create-page-load-contract",
+        "nodes": [
+            {
+                "id": "wait",
+                "type": "moduleNode",
+                "position": {"x": 0, "y": 0},
+                "data": {
+                    "moduleType": "wait_page_load",
+                    "config": {"waitUntil": "load", "timeout": 5},
+                },
+            },
+            {
+                "id": "status",
+                "type": "moduleNode",
+                "position": {"x": 240, "y": 0},
+                "data": {
+                    "moduleType": "page_load_complete",
+                    "config": {
+                        "checkState": "domcontentloaded",
+                        "saveToVariable": "loaded",
+                    },
+                },
+            },
+        ],
+        "edges": [{"id": "edge", "source": "wait", "target": "status"}],
+    }
+    workflow = client.post("/api/workflows", json=workflow_payload).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    coordinator = client.app.state.workflow_services.commands
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"kernel")
+
+    class Resources:
+        owner_id: str | None = None
+
+        async def acquire(self, owner_id: str, _profile_id: str, _kernel: Any) -> None:
+            self.owner_id = owner_id
+
+        async def release(self, owner_id: str) -> None:
+            assert self.owner_id == owner_id
+            self.owner_id = None
+
+    class Workers:
+        payload: dict[str, Any] | None = None
+
+        async def start(
+            self,
+            run_id: str,
+            profile_id: str,
+            _executable: Path,
+            payload: dict[str, Any],
+        ) -> WorkflowWorkerSession:
+            self.payload = payload
+            return WorkflowWorkerSession(run_id, profile_id, 30, 31)
+
+        async def stop(self, _run_id: str) -> None:
+            self.payload = None
+
+        def busy(self) -> bool:
+            return self.payload is not None
+
+    resources = Resources()
+    workers = Workers()
+    monkeypatch.setattr(coordinator, "_resources", resources)
+    monkeypatch.setattr(coordinator, "_workers", workers)
+    monkeypatch.setattr(
+        coordinator,
+        "_installed_kernels",
+        lambda: [InstalledKernel("public", profile["browserVersion"], executable, 6)],
+    )
+    monkeypatch.setattr(coordinator, "_resolve_proxy", _no_proxy)
+
+    response = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "run-page-load-contract",
+            "documentId": "document-page-load-contract",
+            "profileId": profile["id"],
+        },
+    )
+
+    assert response.status_code == 202, response.text
+    assert response.json()["status"] == "running"
+    assert workers.payload is not None
+    assert [
+        node["data"]["moduleType"] for node in workers.payload["document"]["nodes"]
+    ] == ["wait_page_load", "page_load_complete"]
+
+
 def test_execute_accepts_an_unsaved_document_snapshot_without_creating_a_workflow(
     client: TestClient,
     profile_payload: dict[str, object],

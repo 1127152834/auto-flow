@@ -9,14 +9,9 @@ from pathlib import Path
 from threading import Event, Lock, Thread
 from typing import Any, TextIO
 
-from autoflow.application.workflows.executors.basic import (  # noqa: F401
-    ClickElementExecutor,
-    GetElementInfoExecutor,
-    InputTextExecutor,
-    OpenPageExecutor,
-    ScreenshotExecutor,
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
 )
-from autoflow.application.workflows.executors.registry import registry
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.runs import WorkflowArtifact
@@ -67,7 +62,9 @@ async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
                 artifact_root=artifact_root,
             )
             context.events = sink
-            result = await WorkflowRuntime(registry).execute(document, context)
+            result = await WorkflowRuntime(
+                build_production_executor_registry()
+            ).execute(document, context)
             terminal = "execution:completed" if result.success else "execution:failed"
             _write(
                 stdout,
