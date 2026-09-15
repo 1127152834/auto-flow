@@ -192,3 +192,26 @@ it('protects unapplied input query drafts from global save and focuses their pan
   expect(p.onSubmit).not.toHaveBeenCalled()
   await waitFor(() => expect(screen.getByRole('button', { name: '尚未应用的输入筛选' })).toHaveFocus())
 })
+
+it('saves data concurrency and instance limits together and shows their minimum', async () => {
+  const onSubmit = vi.fn()
+  render(<AutomationEditor {...props({ onSubmit, initialValue: { ...initial, inputPlan: { inputs: [{ inputId: 'input', alias: '资料', tableId: 'table', datasetGeneration: 'generation', mode: 'independent', required: true, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }] } } })}/>)
+  await userEvent.click(screen.getByRole('tab', { name: '运行设置' }))
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '4' } })
+  fireEvent.change(screen.getByLabelText('最大活动实例'), { target: { value: '2' } })
+  expect(screen.getByLabelText('配置摘要')).toHaveTextContent('配置并发上限 2')
+  fireEvent.click(screen.getByRole('button', { name: '保存配置' }))
+  await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ runPolicy: expect.objectContaining({ concurrency: 4, maxLiveInstances: 2 }) })))
+})
+
+it('resets both limits to one when the last data input is removed', async () => {
+  const onSubmit = vi.fn()
+  render(<AutomationEditor {...props({ onSubmit, initialValue: { ...initial, runPolicy: { ...initial.runPolicy, concurrency: 4, maxLiveInstances: 2 }, inputPlan: { inputs: [{ inputId: 'input', alias: '资料', tableId: 'table', datasetGeneration: 'generation', mode: 'independent', required: true, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }] } }, renderInputPlan: (_value, onChange) => <button onClick={() => onChange({ inputs: [] })}>移除数据输入</button> })}/>)
+  await userEvent.click(screen.getByRole('tab', { name: '输入与参数' }))
+  fireEvent.click(screen.getByRole('button', { name: '移除数据输入' }))
+  await userEvent.click(screen.getByRole('tab', { name: '运行设置' }))
+  expect(screen.getByLabelText('并发任务数')).toBeDisabled()
+  expect(screen.getByLabelText('最大活动实例')).toBeDisabled()
+  fireEvent.click(screen.getByRole('button', { name: '保存配置' }))
+  await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ inputPlan: { inputs: [] }, runPolicy: expect.objectContaining({ concurrency: 1, maxLiveInstances: 1 }) })))
+})

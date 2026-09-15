@@ -405,9 +405,15 @@ async def test_old_generation_cannot_write_or_finalize_and_keeps_leases_held(tmp
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     barrier = PauseBarrier(before_step="set_status:email")
-    pending = asyncio.create_task(PM4V1FakeRunner(factory, pause_barrier=barrier).tick())
+    pending = asyncio.create_task(
+        PM4V1FakeRunner(factory, pause_barrier=barrier).tick()
+    )
     await barrier.wait_until_reached()
     with factory.begin() as session:
         run = session.get(WorkflowRunRow, task.run_id)
@@ -450,13 +456,21 @@ async def test_stop_wins_before_first_step_and_runner_does_not_write(tmp_path):
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     barrier = PauseBarrier(before_step="set_status:email")
-    pending = asyncio.create_task(PM4V1FakeRunner(factory, pause_barrier=barrier).tick())
+    pending = asyncio.create_task(
+        PM4V1FakeRunner(factory, pause_barrier=barrier).tick()
+    )
     await barrier.wait_until_reached()
     current = coordinator.get_batch(project_id, batch.batch_id)
     scheduler = ProjectBatchScheduler(
-        factory, None, QuiesceGate()  # type: ignore[arg-type]
+        factory,
+        None,
+        QuiesceGate(),  # type: ignore[arg-type]
     )
     stop_operation = await scheduler.stop(
         project_id,
@@ -498,9 +512,7 @@ async def test_stop_wins_before_first_step_and_runner_does_not_write(tmp_path):
         )
         run = session.get(WorkflowRunRow, task.run_id)
         stored_batch = session.get(ProjectBatchRow, batch.batch_id)
-        stored_operation = session.get(
-            ProjectOperationRow, stop_operation.operation_id
-        )
+        stored_operation = session.get(ProjectOperationRow, stop_operation.operation_id)
     assert account_count == 0
     assert email is not None and email.status_id is None
     assert run is not None and run.status == "cancelled"
@@ -537,6 +549,10 @@ async def test_active_force_stop_revokes_generation_and_releases_leases(tmp_path
             "concurrency": 1,
         },
     )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     with factory() as session:
         initial_run = session.get(WorkflowRunRow, task.run_id)
@@ -625,7 +641,9 @@ def test_missing_qa_write_grant_rejects_start_without_durable_run_facts(tmp_path
         assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 0
         assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 0
         assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 0
-        assert session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
+        assert (
+            session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
+        )
         assert (
             session.scalar(select(func.count()).select_from(ProjectOperationRow))
             == operation_count
@@ -708,7 +726,9 @@ def test_missing_qa_status_grant_rejects_start_without_durable_run_facts(tmp_pat
         assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 0
         assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 0
         assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 0
-        assert session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
+        assert (
+            session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
+        )
         assert (
             session.scalar(select(func.count()).select_from(ProjectOperationRow))
             == operation_count
@@ -748,7 +768,9 @@ def test_missing_qa_status_target_rejects_start_without_durable_run_facts(tmp_pa
         assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 0
         assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 0
         assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 0
-        assert session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
+        assert (
+            session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
+        )
         assert (
             session.scalar(select(func.count()).select_from(ProjectOperationRow))
             == operation_count

@@ -8,10 +8,11 @@ from datetime import UTC, datetime
 from typing import Any, ClassVar, Literal, cast
 from uuid import NAMESPACE_URL, uuid5
 
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.application.project_data.capabilities import ProjectDataCapabilityService
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.workflows.dispatcher import UNKNOWN_RESULT_ERROR
 from autoflow.domain.project_data.capabilities import (
     AddProjectFieldCommand,
@@ -103,7 +104,10 @@ class PM4V1FakeRunner:
         fail_step: StepName | None = None,
         simulate_crash_before_finalize: bool = False,
         mode: Literal["v1", "b"] = "v1",
+        max_auto_tasks: int | None = None,
     ) -> None:
+        if max_auto_tasks is not None and max_auto_tasks < 1:
+            raise ValueError("max_auto_tasks must be positive")
         self._factory = factory
         self._capabilities = ProjectDataCapabilityService(
             SqlAlchemyProjectDataCapabilities(factory)
@@ -114,10 +118,26 @@ class PM4V1FakeRunner:
         self._fail_step = fail_step
         self._simulate_crash_before_finalize = simulate_crash_before_finalize
         self._mode = mode
+        self._max_auto_tasks = max_auto_tasks
+        self._finalized_tasks = 0
 
     async def tick(self) -> PM4V1RunOutcome | None:
         self._settle_stopping_batches()
+        if (
+            self._max_auto_tasks is not None
+            and self._finalized_tasks >= self._max_auto_tasks
+        ):
+            return None
         claim = self._claim_one()
+        if claim is None:
+            pending = self._pending_data_batch()
+            if pending is not None:
+                claim_outcome = ProjectBatchScheduler.claim_data_task(
+                    self._factory, pending[0], pending[1]
+                )
+                if claim_outcome != "ready":
+                    self._settle_claim_outcome(pending[0], pending[1], claim_outcome)
+                claim = self._claim_one()
         if claim is None:
             return None
         callbacks = _CapabilityCallbacks(self, claim)
@@ -136,7 +156,49 @@ class PM4V1FakeRunner:
         )
         if self._simulate_crash_before_finalize:
             return PM4V1RunOutcome(result, False)
-        return PM4V1RunOutcome(result, self._finalize(claim, result))
+        finalized = self._finalize(claim, result)
+        if finalized:
+            self._finalized_tasks += 1
+        return PM4V1RunOutcome(result, finalized)
+
+    def _settle_claim_outcome(
+        self, project_id: str, batch_id: str, claim_outcome: str
+    ) -> None:
+        """Project the real scheduler's idle outcome for the QA-owned executor."""
+        status = {
+            "temporarilyBusy": "blocked",
+            "scanBudgetExceeded": "blocked",
+            "configurationError": "failed",
+            "ambiguous": "failed",
+            "noMatch": "completed",
+        }.get(claim_outcome)
+        if status is None:
+            return
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            batch = session.get(ProjectBatchRow, batch_id)
+            if batch is None or batch.project_id != project_id:
+                session.rollback()
+                return
+            now = datetime.now(UTC)
+            if batch.status != status:
+                batch.status = status
+                batch.status_revision += 1
+            if status in {"completed", "failed"}:
+                batch.completed_at = now
+            session.commit()
+
+    def _pending_data_batch(self) -> tuple[str, str] | None:
+        with self._factory() as session:
+            return session.execute(
+                select(ProjectBatchRow.project_id, ProjectBatchRow.id)
+                .where(
+                    ProjectBatchRow.claim_gate_state == "open",
+                    ProjectBatchRow.status.in_(("accepted", "blocked", "running")),
+                )
+                .order_by(ProjectBatchRow.created_at, ProjectBatchRow.id)
+                .limit(1)
+            ).one_or_none()
 
     def _settle_stopping_batches(self) -> None:
         """Finish QA-owned stop facts after the in-process fake executor is quiescent."""
@@ -365,17 +427,29 @@ class PM4V1FakeRunner:
             now = datetime.now(UTC)
             run.last_sequence += 1
             session.add(
-                _event(run, run.last_sequence, "output", {
-                    "name": "测试执行边界",
-                    "value": dict(self.boundary),
-                }, now)
+                _event(
+                    run,
+                    run.last_sequence,
+                    "output",
+                    {
+                        "name": "测试执行边界",
+                        "value": dict(self.boundary),
+                    },
+                    now,
+                )
             )
             run.last_sequence += 1
             session.add(
-                _event(run, run.last_sequence, "output", {
-                    "name": "数据操作结果",
-                    "value": _business_output(result),
-                }, now)
+                _event(
+                    run,
+                    run.last_sequence,
+                    "output",
+                    {
+                        "name": "数据操作结果",
+                        "value": _business_output(result),
+                    },
+                    now,
+                )
             )
             run.status = "succeeded" if result.status == "succeeded" else "failed"
             run.status_revision += 1
@@ -391,9 +465,32 @@ class PM4V1FakeRunner:
                     now,
                 )
             )
-            batch.status = "completed" if result.status == "succeeded" else "failed"
-            batch.status_revision += 1
-            batch.completed_at = now
+            task_count = session.scalar(
+                select(func.count())
+                .select_from(ProjectTaskRow)
+                .where(ProjectTaskRow.batch_id == claim.batch_id)
+            )
+            target = batch.frozen_request.get("maxTasks")
+            continue_after_failure = bool(
+                batch.frozen_request["automation"]["runPolicy"].get(
+                    "continueAfterFailure", False
+                )
+            )
+            if result.status == "failed" and not continue_after_failure:
+                next_batch_status = "failed"
+                batch.claim_gate_state = "closed"
+                batch.completed_at = now
+            elif target is not None and int(task_count or 0) >= int(target):
+                next_batch_status = "completed"
+                batch.claim_gate_state = "closed"
+                batch.selection_outcome = {"status": "limitReached"}
+                batch.completed_at = now
+            else:
+                next_batch_status = "running"
+                batch.completed_at = None
+            if batch.status != next_batch_status:
+                batch.status = next_batch_status
+                batch.status_revision += 1
             for lease in session.scalars(
                 select(ProjectRecordLeaseRow).where(
                     ProjectRecordLeaseRow.task_id == claim.task_id,
@@ -462,15 +559,17 @@ class _CapabilityCallbacks:
     def clear_status(self, **arguments):
         self._runner._assert_execution_active(self._claim)
         email = arguments["email"]
-        self._email_after_clear, _replayed = self._runner._capabilities.set_record_status(
-            self._scope,
-            SetRecordStatusCommand(
-                arguments["operation_id"],
-                arguments["execution_generation"],
-                _record_ref(email["recordRef"]),
-                None,
-                email["statusRevision"],
-            ),
+        self._email_after_clear, _replayed = (
+            self._runner._capabilities.set_record_status(
+                self._scope,
+                SetRecordStatusCommand(
+                    arguments["operation_id"],
+                    arguments["execution_generation"],
+                    _record_ref(email["recordRef"]),
+                    None,
+                    email["statusRevision"],
+                ),
+            )
         )
         return self._email_after_clear
 
@@ -492,9 +591,7 @@ class _CapabilityCallbacks:
                 expected_revision,
             ),
         )
-        if self._runner._lose_acknowledgement(
-            self._claim.task_id, SET_EMAIL_STATUS
-        ):
+        if self._runner._lose_acknowledgement(self._claim.task_id, SET_EMAIL_STATUS):
             raise AcknowledgementLost
         return result
 
@@ -688,7 +785,8 @@ class _CapabilityCallbacks:
                     .where(
                         DataFieldRow.project_id == self._claim.project_id,
                         DataFieldRow.table_id == self._claim.account_table_id,
-                        DataFieldRow.dataset_generation == self._claim.account_generation,
+                        DataFieldRow.dataset_generation
+                        == self._claim.account_generation,
                     )
                     .order_by(DataFieldRow.position, DataFieldRow.id)
                 )
@@ -732,7 +830,9 @@ class _CapabilityCallbacks:
             with self._runner._factory() as session:
                 table = session.get(DataTableRow, self._claim.account_table_id)
                 if table is None:
-                    raise ProjectError("QA_FIXTURE_INCOMPLETE", "Account table missing", 409)
+                    raise ProjectError(
+                        "QA_FIXTURE_INCOMPLETE", "Account table missing", 409
+                    )
                 table_revision = table.table_revision
         values = (
             arguments["operation_id"],
@@ -752,7 +852,11 @@ class _CapabilityCallbacks:
             None,
             table_revision,
         )
-        return EnsureProjectFieldCommand(*values) if ensure else AddProjectFieldCommand(*values)
+        return (
+            EnsureProjectFieldCommand(*values)
+            if ensure
+            else AddProjectFieldCommand(*values)
+        )
 
     def query_operation(self, **arguments):
         return self._runner._capabilities.query_operation(
@@ -815,7 +919,8 @@ def _account_values(
         else:
             value = f"PM4-FAKE-{task_id[:8]}"
         if field.required or any(
-            token in label for token in ("人员", "person", "邮箱", "email", "结果", "result")
+            token in label
+            for token in ("人员", "person", "邮箱", "email", "结果", "result")
         ):
             values[field.id] = value
     return values

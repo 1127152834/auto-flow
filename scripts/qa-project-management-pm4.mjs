@@ -24,6 +24,15 @@ export const PM4_V1_STEPS = Object.freeze([
   '只读 HTTP 核对人员不变、邮箱状态改变、账号只新增一次',
 ])
 
+export const PM4_C_STEPS = Object.freeze([
+  'UI 创建一名人员、五个未设置业务状态的邮箱和账号表',
+  'UI 配置邮箱“状态为空”筛选和两个必填输入',
+  'UI 启动有限三次批次并查看三个任务事实',
+  '核对同一人员连续复用、三个邮箱改状态、三个账号只新增一次',
+  'UI 启动不限次数批次，执行两次后主动停止',
+  '核对停止关闭领取、释放占用且不产生重复账号',
+])
+
 export function parsePm4QaArgs(args) {
   const result = { manual: false, prepareOnly: false, selfTest: false }
   for (const value of args) {
@@ -56,11 +65,13 @@ function canonicalRecord(record) {
 }
 
 export async function main(cliArgs = process.argv.slice(2)) {
-  const options = parsePm4QaArgs(cliArgs)
+  const cMode = cliArgs.includes('--c')
+  const options = parsePm4QaArgs(cliArgs.filter(value => value !== '--c'))
   if (options.selfTest) {
     assert.equal(isOwnedPm4Workspace('/tmp/pm4-owner/workspace', '/tmp/pm4-owner', { kind: 'pm4-v1-project-management-qa', version: 1 }), true)
     assert.equal(PM4_V1_STEPS.length, 6)
-    console.log('PM4 V1 QA helper self-test passed')
+    assert.equal(PM4_C_STEPS.length, 6)
+    console.log(`PM4 ${cMode ? 'C' : 'V1'} QA helper self-test passed`)
     return
   }
 
@@ -74,7 +85,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
 
   const evidenceParent = join(root, 'docs/project-management/implementation/pm4/qa-runs')
   await mkdir(evidenceParent, { recursive: true })
-  const evidence = await mkdtemp(join(evidenceParent, 'v1-'))
+  const evidence = await mkdtemp(join(evidenceParent, cMode ? 'c-' : 'v1-'))
   const screenshots = []
   const checkpoints = []
   const boundary = { executor: 'fake', browser: 'notExecuted', studio: 'notExecuted' }
@@ -93,6 +104,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
     }
     const result = {
       status,
+      scenario: cMode ? 'PM4-C finite-and-unlimited-management' : 'PM4-B management-capabilities',
       scope: status === 'passed' ? '管理侧通过，真实执行核心接入待验收' : 'PM4 V1 管理侧验收未通过',
       boundary,
       visualReview: 'pending',
@@ -117,8 +129,10 @@ export async function main(cliArgs = process.argv.slice(2)) {
   async function launch() {
     const previous = process.env.AUTOFLOW_PM4_QA
     const previousMode = process.env.AUTOFLOW_PM4_QA_MODE
+    const previousMaxAutoTasks = process.env.AUTOFLOW_PM4_QA_MAX_AUTO_TASKS
     process.env.AUTOFLOW_PM4_QA = '1'
-    process.env.AUTOFLOW_PM4_QA_MODE = 'b'
+    process.env.AUTOFLOW_PM4_QA_MODE = cMode ? 'v1' : 'b'
+    if (cMode) process.env.AUTOFLOW_PM4_QA_MAX_AUTO_TASKS = '5'
     try {
       desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${workspace}`, '--inspect=0'], cliArgs: [] })
     } finally {
@@ -126,6 +140,8 @@ export async function main(cliArgs = process.argv.slice(2)) {
       else process.env.AUTOFLOW_PM4_QA = previous
       if (previousMode === undefined) delete process.env.AUTOFLOW_PM4_QA_MODE
       else process.env.AUTOFLOW_PM4_QA_MODE = previousMode
+      if (previousMaxAutoTasks === undefined) delete process.env.AUTOFLOW_PM4_QA_MAX_AUTO_TASKS
+      else process.env.AUTOFLOW_PM4_QA_MAX_AUTO_TASKS = previousMaxAutoTasks
     }
     renderer = desktop.cdp
     native = await connectCdp(desktop.inspectorUrl)
@@ -278,14 +294,34 @@ print(created.workflow_id); factory.dispose()`
     await waitFor(renderer, `!document.querySelector('[aria-label="新增记录保存"]')`, 'inline record saved', 30_000)
     const page = await api(runtime, `/projects/${projectId}/tables/${table.tableId}/records?datasetGeneration=${encodeURIComponent(table.datasetGeneration)}`)
     assert.equal(page.total, before.total + 1, 'UI 保存必须只新增一条记录')
-    let created = page.items.at(-1)
+    const existingRefs = new Set(before.items.map(item => JSON.stringify(item.ref)))
+    let created = page.items.find(item => !existingRefs.has(JSON.stringify(item.ref)))
+    assert.ok(created, 'UI 保存后必须按稳定记录身份找回新增记录')
     if (initialStatus) {
       await click('', '[aria-label^="修改状态 "]')
       await waitFor(renderer, "Boolean(document.querySelector('[aria-label=\"记录业务状态\"]'))", 'record status editor')
       await click('', '[aria-label="记录业务状态"]')
       await click(initialStatus, '[role=option]')
-      await click('保存状态')
-      await waitFor(renderer, "!document.querySelector('[role=dialog]')", 'initial record status saved')
+      await wait(250)
+      const targetStatus = (await api(runtime, `/projects/${projectId}/tables/${table.tableId}/statuses`)).items.find(item => item.name === initialStatus)
+      assert.ok(targetStatus, `状态 ${initialStatus} 必须存在`)
+      let statusPage = await api(runtime, `/projects/${projectId}/tables/${table.tableId}/records?datasetGeneration=${encodeURIComponent(table.datasetGeneration)}`)
+      let persisted = statusPage.items.find(item => JSON.stringify(item.ref) === JSON.stringify(created.ref))
+      if (persisted?.statusId !== targetStatus.statusId) {
+        let submitted = false
+        for (let attempt = 0; attempt < 100; attempt += 1) {
+          statusPage = await api(runtime, `/projects/${projectId}/tables/${table.tableId}/records?datasetGeneration=${encodeURIComponent(table.datasetGeneration)}`)
+          persisted = statusPage.items.find(item => JSON.stringify(item.ref) === JSON.stringify(created.ref))
+          if (persisted?.statusId === targetStatus.statusId) break
+          const canSubmit = await renderer.evaluate(`(()=>{const button=[...document.querySelectorAll('button')].find(item=>item.textContent.trim()==='保存状态');return Boolean(button&&!button.disabled)})()`)
+          if (canSubmit && !submitted) {
+            submitted = true
+            await click('保存状态')
+          }
+          await wait(100)
+        }
+      }
+      assert.equal(persisted?.statusId, targetStatus.statusId, `记录状态必须持久化为 ${initialStatus}`)
       await click('', '[aria-label="返回记录列表"]')
       const refreshed = await api(runtime, `/projects/${projectId}/tables/${table.tableId}/records?datasetGeneration=${encodeURIComponent(table.datasetGeneration)}`)
       created = refreshed.items.find(item => JSON.stringify(item.ref.recordKey) === JSON.stringify(created.ref.recordKey))
@@ -334,12 +370,25 @@ print(created.workflow_id); factory.dispose()`
     throw new Error(`batch ${batchId} did not reach terminal state`)
   }
 
+  async function waitTaskCount(runtime, projectId, batchId, count) {
+    for (let attempt = 0; attempt < 300; attempt += 1) {
+      const tasks = await api(runtime, `/projects/${projectId}/tasks?batchId=${batchId}&pageSize=100`)
+      if (tasks.total === count && tasks.items.every(item => ['succeeded', 'failed', 'cancelled', 'timed_out', 'interrupted'].includes(item.status))) return tasks
+      await wait(200)
+    }
+    throw new Error(`batch ${batchId} did not expose ${count} terminal tasks`)
+  }
+
   try {
     const qaKernelVersion = await installQaKernel()
     const runtime = await launch()
     runtime.qaKernelVersion = qaKernelVersion
     const workflowId = await seedWorkflow(runtime)
     const profileId = await seedProfile(runtime)
+    // Fixture setup happens after the desktop session is ready. Reload once so
+    // resource queries cannot retain the pre-fixture empty catalog.
+    await renderer.command('Page.reload', { ignoreCache: true })
+    await visible('总览', 30_000)
     await capture('00-isolated-ready', '00-projects/100-projects-prototype-5238b4.png')
     if (options.prepareOnly) {
       const result = await report('prepared', undefined, { workflowId, profileId, preparation: '隔离工作区、QA sidecar、工作流和浏览器资源夹具已准备；尚未创建任何项目业务对象。' })
@@ -360,7 +409,10 @@ print(created.workflow_id); factory.dispose()`
     await click('数据', '[aria-label="项目功能"] button')
     await visible('还没有数据表')
     const person = await createTable(runtime, project.projectId, '人员', [{ key: 'name', name: '姓名', required: true }], [{ values: { name: '张三' } }])
-    const email = await createTable(runtime, project.projectId, '邮箱', [{ key: 'email', name: '邮箱地址', required: true }], [{ values: { email: 'zhangsan@example.test' }, status: '待使用' }], ['待使用', '已使用'])
+    const emailRecords = cMode
+      ? Array.from({ length: 5 }, (_, index) => ({ values: { email: `zhangsan+${index + 1}@example.test` } }))
+      : [{ values: { email: 'zhangsan@example.test' }, status: '待使用' }]
+    const email = await createTable(runtime, project.projectId, '邮箱', [{ key: 'email', name: '邮箱地址', required: true }], emailRecords, ['待使用', '已使用'])
     const account = await createTable(runtime, project.projectId, '账号', [
       { key: 'person', name: '人员', required: true },
       { key: 'email', name: '邮箱', required: true },
@@ -383,6 +435,13 @@ print(created.workflow_id); factory.dispose()`
     await click('添加数据输入')
     await configureInput('人员输入', '人员', 0)
     await configureInput('邮箱输入', '邮箱', 1)
+    if (cMode) {
+      await clickNth('article summary', 3)
+      await click('添加状态条件')
+      await click('', '[aria-label="filter.items.0状态运算符"]')
+      await click('为空', '[role=option]')
+      await click('应用筛选')
+    }
     await click('资源与环境', '[role=tab]')
     await click('浏览器配置来源', '[role=combobox]')
     await click('指定浏览器配置', '[role=option]')
@@ -395,6 +454,130 @@ print(created.workflow_id); factory.dispose()`
     await waitFor(renderer, `(()=>{const values=[...document.querySelectorAll('input')].map(input=>input.value);return values.includes('人员输入')&&values.includes('邮箱输入')})()`, '两个必要输入卡片', 30_000)
     await wait(2800)
     await capture('02-two-required-inputs', 'docs/prototype/project-management-pm3/automation-detail-inputs.png')
+
+    if (cMode) {
+      const startVisible = await renderer.evaluate(`[...document.querySelectorAll('button')].some(item=>item.textContent.trim()==='启动运行'&&!item.disabled&&item.getClientRects().length)`)
+      if (!startVisible) {
+        await click('自动化', '[aria-label="项目功能"] button')
+        await visible('三表资料处理')
+        await click('打开自动化 三表资料处理')
+        await visible('启动运行')
+      }
+      await click('启动运行')
+      await visible('启动自动化')
+      await input('[aria-label="本次任务数"]', '3')
+      await visible('人员输入')
+      await visible('邮箱输入')
+      await capture('03-finite-three-preview', 'docs/prototype/project-management-pm3/batch-start-dialog.png')
+      await click('启动 3 个任务')
+      await visible('本批次任务', 30_000)
+      let batches = await api(runtime, `/projects/${project.projectId}/batches?pageSize=10`)
+      assert.equal(batches.total, 1)
+      const finiteBatch = batches.items[0]
+      const finiteTerminal = await waitBatchTerminal(runtime, project.projectId, finiteBatch.batchId)
+      assert.equal(finiteTerminal.batch.status, 'completed')
+      assert.equal(finiteTerminal.batch.selectionOutcome?.status, 'limitReached')
+      const finiteTasks = await api(runtime, `/projects/${project.projectId}/tasks?batchId=${finiteBatch.batchId}&pageSize=100`)
+      assert.equal(finiteTasks.total, 3)
+      assert.ok(finiteTasks.items.every(item => item.status === 'succeeded'))
+      await visible('3 个任务', 30_000)
+      await capture('04-finite-three-completed', '03-runs/004-batch-detail-approved-459f25.png')
+
+      await click('查看任务', 'tbody tr button')
+      await visible('输入与输出')
+      await click('输入与输出', '[role=tab]')
+      await visible('原始数据输入')
+      await visible('项目数据操作')
+      await visible('变更状态')
+      await visible('新增记录')
+      await waitFor(renderer, `(()=>{const table=document.querySelector('table[aria-label="数据输入预览结果"]');return table?.querySelectorAll('tbody tr').length===2&&table.innerText.includes('人员输入')&&table.innerText.includes('邮箱输入')})()`, '有限批次任务显示两条原始输入', 30_000)
+      await capture('05-finite-task-input-output', '03-runs/006-task-input-output-approved-7af0aa.png')
+
+      const finiteDetails = await Promise.all(finiteTasks.items.map(item => api(runtime, `/projects/${project.projectId}/tasks/${item.taskId}`)))
+      const finitePersonRefs = finiteDetails.map(detail => detail.inputSnapshot.inputs.find(item => item.alias === '人员输入')?.recordRef)
+      const finiteEmailRefs = finiteDetails.map(detail => detail.inputSnapshot.inputs.find(item => item.alias === '邮箱输入')?.recordRef)
+      assert.equal(new Set(finitePersonRefs.map(ref => JSON.stringify(ref))).size, 1, '同一人员必须在释放占用后连续用于三个任务')
+      assert.equal(new Set(finiteEmailRefs.map(ref => JSON.stringify(ref))).size, 3, '状态筛选必须为三个任务选择三个不同邮箱')
+      for (const detail of finiteDetails) {
+        assert.equal(detail.inputSnapshot.inputs.length, 2)
+        assert.deepEqual(new Set(detail.dataWrites.map(item => item.kind)), new Set(['statusChange', 'recordCreated']))
+      }
+      let emailsAfterFinite = (await api(runtime, `/projects/${project.projectId}/tables/${email.table.tableId}/records?datasetGeneration=${encodeURIComponent(email.table.datasetGeneration)}&pageSize=100`)).items
+      let accountsAfterFinite = (await api(runtime, `/projects/${project.projectId}/tables/${account.table.tableId}/records?datasetGeneration=${encodeURIComponent(account.table.datasetGeneration)}&pageSize=100`)).items
+      const statuses = (await api(runtime, `/projects/${project.projectId}/tables/${email.table.tableId}/statuses`)).items
+      const usedStatusId = statuses.find(item => item.name === '已使用')?.statusId
+      assert.equal(emailsAfterFinite.filter(item => item.statusId === usedStatusId).length, 3)
+      assert.equal(emailsAfterFinite.filter(item => item.statusId === null).length, 2)
+      assert.equal(accountsAfterFinite.length, 3)
+      checkpoint('有限三次管理链通过：三个成功任务复用同一人员，领取三个不同待使用邮箱，显式改为已使用并各新增一条账号。')
+
+      await click('自动化', '[aria-label="项目功能"] button')
+      await visible('三表资料处理')
+      await click('打开自动化 三表资料处理')
+      await visible('启动运行')
+      await click('启动运行')
+      await visible('启动自动化')
+      await click('', 'input[type="radio"][value="unlimited"]')
+      await capture('06-unlimited-preview', 'docs/prototype/project-management-pm3/batch-start-dialog.png')
+      await click('启动不限次数批次')
+      await visible('本批次任务', 30_000)
+      batches = await api(runtime, `/projects/${project.projectId}/batches?pageSize=10`)
+      assert.equal(batches.total, 2)
+      const unlimitedBatch = batches.items.find(item => item.batchId !== finiteBatch.batchId)
+      assert.ok(unlimitedBatch)
+      const unlimitedTasks = await waitTaskCount(runtime, project.projectId, unlimitedBatch.batchId, 2)
+      assert.ok(unlimitedTasks.items.every(item => item.status === 'succeeded'))
+      await visible('2 个任务', 30_000)
+      await capture('07-unlimited-two-tasks-running', '03-runs/004-batch-detail-approved-459f25.png')
+      await click('停止批次')
+      await visible('停止当前批次？')
+      await input('[aria-label="停止原因"]', 'PM4-C 不限次数主动停止验收')
+      await capture('08-unlimited-stop-confirmation', '03-runs/004-batch-detail-approved-459f25.png')
+      await click('确认停止')
+      const stopped = await waitBatchTerminal(runtime, project.projectId, unlimitedBatch.batchId)
+      assert.equal(stopped.batch.status, 'stopped')
+      await visible('已停止', 30_000)
+      await capture('09-unlimited-stopped', '03-runs/004-batch-detail-approved-459f25.png')
+
+      const allTaskDetails = await Promise.all([...finiteTasks.items, ...unlimitedTasks.items].map(item => api(runtime, `/projects/${project.projectId}/tasks/${item.taskId}`)))
+      const allPersonRefs = allTaskDetails.map(detail => detail.inputSnapshot.inputs.find(item => item.alias === '人员输入')?.recordRef)
+      const allEmailRefs = allTaskDetails.map(detail => detail.inputSnapshot.inputs.find(item => item.alias === '邮箱输入')?.recordRef)
+      assert.equal(new Set(allPersonRefs.map(ref => JSON.stringify(ref))).size, 1)
+      assert.equal(new Set(allEmailRefs.map(ref => JSON.stringify(ref))).size, 5)
+      const personAfter = (await api(runtime, `/projects/${project.projectId}/tables/${person.table.tableId}/records?datasetGeneration=${encodeURIComponent(person.table.datasetGeneration)}`)).items[0]
+      const emailsAfter = (await api(runtime, `/projects/${project.projectId}/tables/${email.table.tableId}/records?datasetGeneration=${encodeURIComponent(email.table.datasetGeneration)}&pageSize=100`)).items
+      const accountsAfter = (await api(runtime, `/projects/${project.projectId}/tables/${account.table.tableId}/records?datasetGeneration=${encodeURIComponent(account.table.datasetGeneration)}&pageSize=100`)).items
+      assert.deepEqual(canonicalRecord(personAfter), personBefore)
+      assert.equal(emailsAfter.filter(item => item.statusId === usedStatusId).length, 5)
+      assert.equal(accountsAfter.length, 5)
+      assert.equal(new Set(accountsAfter.map(item => JSON.stringify(item.ref))).size, 5, '每个任务只新增一个稳定账号记录')
+      const stoppedTasks = await api(runtime, `/projects/${project.projectId}/tasks?batchId=${unlimitedBatch.batchId}&pageSize=100`)
+      assert.equal(stoppedTasks.total, 2, '停止后不得继续领取任务')
+      checkpoint('不限次数管理链通过：执行两次后由 UI 主动停止，领取门关闭、任务数保持两条，五次执行没有重复账号。')
+
+      const facts = {
+        projectId: project.projectId,
+        finiteBatchId: finiteBatch.batchId,
+        unlimitedBatchId: unlimitedBatch.batchId,
+        finiteTaskIds: finiteTasks.items.map(item => item.taskId),
+        unlimitedTaskIds: unlimitedTasks.items.map(item => item.taskId),
+        reusablePersonRef: finitePersonRefs[0],
+        emailRefs: allEmailRefs,
+        usedEmailCount: emailsAfter.filter(item => item.statusId === usedStatusId).length,
+        accountCount: accountsAfter.length,
+        finiteEndReason: finiteTerminal.batch.selectionOutcome,
+        unlimitedStatus: stopped.batch.status,
+        executionBoundary: boundary,
+      }
+      await writeFile(join(evidence, 'c-facts.json'), `${JSON.stringify(facts, null, 2)}\n`)
+      const result = await report('passed', undefined, facts)
+      console.log(JSON.stringify(result, null, 2))
+      if (options.manual) {
+        console.log('应用保持打开。当前结果仅表示 PM4-C 管理侧通过，真实执行核心接入待验收。按 Ctrl+C 退出。')
+        await new Promise(() => {})
+      }
+      return
+    }
 
     await click('启动运行')
     await visible('启动自动化')

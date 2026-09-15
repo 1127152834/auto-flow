@@ -109,6 +109,8 @@ def batch_record(row: ProjectBatchRow) -> Batch:
         BatchCounts({}),
         aware(row.created_at),
         aware(row.completed_at) if row.completed_at else None,
+        row.claim_gate_state,
+        row.selection_outcome,
     )
 
 

@@ -120,3 +120,21 @@ it('rejects a minutes value whose conversion to seconds overflows', () => {
   expect(onChange).not.toHaveBeenCalled()
   expect(onDraftStateChange).toHaveBeenLastCalledWith({ dirty: true, valid: false })
 })
+
+it('edits both data concurrency limits and keeps a bad sibling draft invalid', () => {
+  function Fixture() {
+    const [value, setValue] = useState({ ...policy, concurrency: 4, maxLiveInstances: 2 })
+    const [draft, setDraft] = useState({ dirty: false, valid: true })
+    return <><RunPolicyEditor dataBatch value={value} onChange={setValue} onDraftStateChange={setDraft}/><button disabled={!draft.valid}>保存</button></>
+  }
+  render(<Fixture/>)
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('4')
+  expect(screen.getByLabelText('最大活动实例')).toHaveValue('2')
+  expect(screen.getByText('配置并发上限 2')).toBeVisible()
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '101' } })
+  fireEvent.change(screen.getByLabelText('最大活动实例'), { target: { value: '3' } })
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('101')
+  expect(screen.getByRole('button', { name: '保存' })).toBeDisabled()
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '2' } })
+  expect(screen.getByRole('button', { name: '保存' })).toBeEnabled()
+})

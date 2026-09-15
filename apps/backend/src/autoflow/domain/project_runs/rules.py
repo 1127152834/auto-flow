@@ -48,14 +48,27 @@ def validate_batch_start(
     if automation.input_plan.get("inputs") and not allow_data_inputs:
         raise _error("inputPlan.inputs", "当前仅支持参数型运行，请移除项目数据输入")
     parameters = _parameters(automation.parameter_schema, payload["parameters"])
-    max_tasks = payload.get("maxTasks", automation.run_policy.get("maxTasks", 1))
-    if type(max_tasks) is not int or not 1 <= max_tasks <= 100:
-        raise _error("maxTasks", "必须是 1–100 的整数")
+    max_tasks = (
+        payload["maxTasks"]
+        if "maxTasks" in payload
+        else automation.run_policy.get("maxTasks", 1)
+    )
+    has_required_data = any(
+        isinstance(item, dict) and item.get("required") is True
+        for item in automation.input_plan.get("inputs", [])
+    )
+    if max_tasks is None:
+        if not has_required_data:
+            raise _error("maxTasks", "不限次数至少需要一个必要数据输入")
+    elif type(max_tasks) is not int or not 1 <= max_tasks <= 100:
+        raise _error("maxTasks", "必须是 1–100 的整数，或为不限次数")
     concurrency = payload.get(
         "concurrency", automation.run_policy.get("concurrency", 1)
     )
-    if type(concurrency) is not int or concurrency != 1:
-        raise _error("concurrency", "当前并发数必须为 1")
+    if type(concurrency) is not int or not 1 <= concurrency <= 100:
+        raise _error("concurrency", "必须是 1–100 的整数")
+    if not automation.input_plan.get("inputs") and concurrency != 1:
+        raise _error("concurrency", "参数型运行当前并发数必须为 1")
     environment_override = payload.get("environmentOverride")
     if "environmentOverride" in payload and not isinstance(environment_override, dict):
         raise _error("environmentOverride", "必须是环境策略对象")

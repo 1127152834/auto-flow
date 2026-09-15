@@ -29,13 +29,21 @@ def uid() -> str:
 
 
 def _table_with_record(factory, project_id: str, name: str, value: str):
-    table = DataTableService(SqlAlchemyProjectData(factory)).create(project_id, uid(), {"name": name})[0]
+    table = DataTableService(SqlAlchemyProjectData(factory)).create(
+        project_id, uid(), {"name": name}
+    )[0]
     field = DataCatalogService(SqlAlchemyProjectDataCatalog(factory)).create_field(
         project_id,
         table["tableId"],
         uid(),
         {
-            "definition": {"key": "value", "name": "值", "type": "string", "required": True, "validation": {}},
+            "definition": {
+                "key": "value",
+                "name": "值",
+                "type": "string",
+                "required": True,
+                "validation": {},
+            },
             "expectedTableRevision": 1,
             "sourceColumnPolicy": "localOnly",
         },
@@ -44,7 +52,10 @@ def _table_with_record(factory, project_id: str, name: str, value: str):
         project_id,
         table["tableId"],
         uid(),
-        {"datasetGeneration": table["datasetGeneration"], "values": [{"fieldId": field["ref"]["fieldId"], "value": value}]},
+        {
+            "datasetGeneration": table["datasetGeneration"],
+            "values": [{"fieldId": field["ref"]["fieldId"], "value": value}],
+        },
     )[0]
     return table, field, record
 
@@ -92,16 +103,18 @@ def _input(project_id: str, table: dict, field: dict, alias: str) -> dict:
         "datasetGeneration": table["datasetGeneration"],
         "mode": "independent",
         "required": True,
-        "fieldBindings": [{
-            "inputFieldId": uid(),
-            "inputFieldAlias": "值",
-            "fieldRef": {
-                "projectId": project_id,
-                "tableId": table["tableId"],
-                "datasetGeneration": table["datasetGeneration"],
-                "fieldId": field["ref"]["fieldId"],
-            },
-        }],
+        "fieldBindings": [
+            {
+                "inputFieldId": uid(),
+                "inputFieldAlias": "值",
+                "fieldRef": {
+                    "projectId": project_id,
+                    "tableId": table["tableId"],
+                    "datasetGeneration": table["datasetGeneration"],
+                    "fieldId": field["ref"]["fieldId"],
+                },
+            }
+        ],
         "filter": {"type": "all", "items": []},
         "orderBy": [{"systemField": "recordKey", "direction": "asc"}],
     }
@@ -111,19 +124,41 @@ def test_selects_two_real_records_and_freezes_typed_refs(tmp_path):
     path = tmp_path / "input-groups.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(uid(), {"name": "PM4"})[0].project_id
-    people, people_field, person = _table_with_record(factory, project_id, "人员", "张三")
-    emails, email_field, email = _table_with_record(factory, project_id, "邮箱", "pm4@example.test")
-    plan = {"inputs": [_input(project_id, people, people_field, "人员"), _input(project_id, emails, email_field, "邮箱")]}
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
+    people, people_field, person = _table_with_record(
+        factory, project_id, "人员", "张三"
+    )
+    emails, email_field, email = _table_with_record(
+        factory, project_id, "邮箱", "pm4@example.test"
+    )
+    plan = {
+        "inputs": [
+            _input(project_id, people, people_field, "人员"),
+            _input(project_id, emails, email_field, "邮箱"),
+        ]
+    }
 
     with factory() as session:
         result = SqlAlchemyProjectInputGroups(session).select_required(project_id, plan)
 
     assert result.status == "ready"
     assert [item.value["alias"] for item in result.inputs] == ["人员", "邮箱"]
-    assert [item.record_ref.record_key.type for item in result.inputs] == ["uuid", "uuid"]
-    assert result.inputs[0].record_ref.record_key.value == person["ref"]["recordKey"]["value"]
-    assert result.inputs[1].record_ref.record_key.value == email["ref"]["recordKey"]["value"]
+    assert [item.record_ref.record_key.type for item in result.inputs] == [
+        "uuid",
+        "uuid",
+    ]
+    assert (
+        result.inputs[0].record_ref.record_key.value
+        == person["ref"]["recordKey"]["value"]
+    )
+    assert (
+        result.inputs[1].record_ref.record_key.value
+        == email["ref"]["recordKey"]["value"]
+    )
     assert result.inputs[0].value["contentRevision"] == 1
     factory.dispose()
 
@@ -132,12 +167,18 @@ def test_stale_generation_is_configuration_error_not_no_match(tmp_path):
     path = tmp_path / "stale-input.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(uid(), {"name": "PM4"})[0].project_id
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
     people, field, _record = _table_with_record(factory, project_id, "人员", "张三")
     first = _input(project_id, people, field, "人员")
     second = {**_input(project_id, people, field, "邮箱"), "datasetGeneration": uid()}
     with factory() as session:
-        result = SqlAlchemyProjectInputGroups(session).select_required(project_id, {"inputs": [first, second]})
+        result = SqlAlchemyProjectInputGroups(session).select_required(
+            project_id, {"inputs": [first, second]}
+        )
     assert result.status == "configurationError"
     assert result.inputs == ()
     factory.dispose()
@@ -147,12 +188,12 @@ def test_fixed_record_and_optional_empty_are_resolved_without_inventing_data(tmp
     path = tmp_path / "fixed-optional.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(
-        uid(), {"name": "PM4"}
-    )[0].project_id
-    people, people_field, first = _table_with_record(
-        factory, project_id, "人员", "甲"
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
     )
+    people, people_field, first = _table_with_record(factory, project_id, "人员", "甲")
     second = _add_record(factory, project_id, people, people_field, "乙")
     empty, empty_field = _empty_table(factory, project_id, "可选资料")
     fixed = {
@@ -171,11 +212,15 @@ def test_fixed_record_and_optional_empty_are_resolved_without_inventing_data(tmp
         )
 
     assert result.status == "ready"
-    assert [item.record_ref for item in result.inputs] == [
-        result.inputs[0].record_ref
-    ]
-    assert result.inputs[0].record_ref.record_key.value == second["ref"]["recordKey"]["value"]
-    assert result.inputs[0].record_ref.record_key.value != first["ref"]["recordKey"]["value"]
+    assert [item.record_ref for item in result.inputs] == [result.inputs[0].record_ref]
+    assert (
+        result.inputs[0].record_ref.record_key.value
+        == second["ref"]["recordKey"]["value"]
+    )
+    assert (
+        result.inputs[0].record_ref.record_key.value
+        != first["ref"]["recordKey"]["value"]
+    )
     assert [(item.input_id, item.reason) for item in result.unavailable_inputs] == [
         (optional["inputId"], "no_match")
     ]
@@ -186,9 +231,11 @@ def test_fixed_record_still_has_to_match_the_current_filter(tmp_path):
     path = tmp_path / "fixed-filter.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(
-        uid(), {"name": "PM4"}
-    )[0].project_id
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
     people, field, first = _table_with_record(factory, project_id, "人员", "甲")
     second = _add_record(factory, project_id, people, field, "乙")
     fixed = {
@@ -218,9 +265,11 @@ def test_invalid_optional_input_is_a_configuration_error(tmp_path):
     path = tmp_path / "optional-configuration.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(
-        uid(), {"name": "PM4"}
-    )[0].project_id
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
     people, field, _record = _table_with_record(factory, project_id, "人员", "甲")
     optional = {
         **_input(project_id, people, field, "可选人员"),
@@ -238,13 +287,17 @@ def test_invalid_optional_input_is_a_configuration_error(tmp_path):
     factory.dispose()
 
 
-def test_same_table_independent_roles_backtrack_while_same_record_relation_aliases(tmp_path):
+def test_same_table_independent_roles_backtrack_while_same_record_relation_aliases(
+    tmp_path,
+):
     path = tmp_path / "same-table-roles.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(
-        uid(), {"name": "PM4"}
-    )[0].project_id
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
     records, field, first = _table_with_record(factory, project_id, "角色", "R01")
     second = _add_record(factory, project_id, records, field, "R02")
     x = _input(project_id, records, field, "X")
@@ -282,13 +335,15 @@ def test_same_table_independent_roles_backtrack_while_same_record_relation_alias
     factory.dispose()
 
 
-def test_field_equals_is_exact_and_reports_ambiguous_real_rows(tmp_path):
+def test_field_equals_is_exact_and_reports_ambiguous_real_rows(tmp_path, monkeypatch):
     path = tmp_path / "field-equals.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(
-        uid(), {"name": "PM4"}
-    )[0].project_id
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
     people, people_field, _person = _table_with_record(
         factory, project_id, "人员", "account-1"
     )
@@ -311,9 +366,15 @@ def test_field_equals_is_exact_and_reports_ambiguous_real_rows(tmp_path):
             project_id, {"inputs": [source, target]}
         )
     assert ready.status == "ready"
-    assert ready.inputs[1].record_ref.record_key.value == account["ref"]["recordKey"]["value"]
+    assert (
+        ready.inputs[1].record_ref.record_key.value
+        == account["ref"]["recordKey"]["value"]
+    )
 
     _add_record(factory, project_id, accounts, account_field, "account-1")
+    import autoflow.infrastructure.database.project_claims as claims_module
+
+    monkeypatch.setattr(claims_module, "MAX_CANDIDATE_EVALUATIONS", 1)
     with factory() as session:
         ambiguous = SqlAlchemyProjectInputGroups(session).select_required(
             project_id, {"inputs": [source, target]}
@@ -327,9 +388,11 @@ def test_record_slot_resolves_the_declared_target_record(tmp_path):
     path = tmp_path / "record-slot.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(
-        uid(), {"name": "PM4"}
-    )[0].project_id
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
     people, people_field, person = _table_with_record(factory, project_id, "人员", "甲")
     managers, manager_field, manager = _table_with_record(
         factory, project_id, "经理", "乙"
@@ -371,29 +434,85 @@ def test_record_slot_resolves_the_declared_target_record(tmp_path):
             project_id, {"inputs": [source, target]}
         )
     assert result.status == "ready"
-    assert result.inputs[1].record_ref.record_key.value == manager["ref"]["recordKey"]["value"]
+    assert (
+        result.inputs[1].record_ref.record_key.value
+        == manager["ref"]["recordKey"]["value"]
+    )
     factory.dispose()
 
 
-def test_repository_bounds_each_physical_scan_before_materializing_candidates(
+def test_repository_continues_after_each_bounded_candidate_window(
     tmp_path, monkeypatch
 ):
     path = tmp_path / "scan-budget.sqlite3"
     migrate_database(path)
     factory = create_session_factory(path)
-    project_id = ProjectService(SqlAlchemyProjects(factory)).create(
-        uid(), {"name": "PM4"}
-    )[0].project_id
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4"})[0]
+        .project_id
+    )
     records, field, _first = _table_with_record(factory, project_id, "资料", "R1")
     _add_record(factory, project_id, records, field, "R2")
     _add_record(factory, project_id, records, field, "R3")
     monkeypatch.setattr(project_claims, "MAX_CANDIDATE_EVALUATIONS", 2)
 
+    definition = _input(project_id, records, field, "资料")
+    definition["orderBy"] = [{"fieldId": field["ref"]["fieldId"], "direction": "asc"}]
     with factory() as session:
-        result = SqlAlchemyProjectInputGroups(session).select_required(
-            project_id, {"inputs": [_input(project_id, records, field, "资料")]}
+        first = SqlAlchemyProjectInputGroups(session).select_required(
+            project_id, {"inputs": [definition]}
+        )
+        continued = SqlAlchemyProjectInputGroups(session).select_required(
+            project_id,
+            {"inputs": [definition]},
+            candidate_offsets={definition["inputId"]: 2},
         )
 
-    assert result.status == "scanBudgetExceeded"
-    assert result.issue_input_ids
+    assert first.status == "ready"
+    assert first.inputs[0].value["values"][0]["value"] == "R1"
+    assert first.continuation_input_ids == ()
+    assert continued.status == "ready"
+    assert continued.inputs[0].value["values"][0]["value"] == "R3"
+    factory.dispose()
+
+
+def test_repository_reports_physical_page_continuation_before_true_no_match(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "scan-continuation.sqlite3"
+    migrate_database(path)
+    factory = create_session_factory(path)
+    project_id = (
+        ProjectService(SqlAlchemyProjects(factory))
+        .create(uid(), {"name": "PM4 continuation"})[0]
+        .project_id
+    )
+    records, field, _first = _table_with_record(factory, project_id, "资料", "R1")
+    _add_record(factory, project_id, records, field, "R2")
+    _add_record(factory, project_id, records, field, "R3")
+    monkeypatch.setattr(project_claims, "MAX_CANDIDATE_EVALUATIONS", 2)
+    definition = _input(project_id, records, field, "资料")
+    definition["filter"] = {
+        "type": "compare",
+        "fieldId": field["ref"]["fieldId"],
+        "operator": "eq",
+        "value": "R3",
+    }
+    definition["orderBy"] = [
+        {"fieldId": field["ref"]["fieldId"], "direction": "asc"}
+    ]
+    with factory() as session:
+        first = SqlAlchemyProjectInputGroups(session).select_required(
+            project_id, {"inputs": [definition]}
+        )
+        continued = SqlAlchemyProjectInputGroups(session).select_required(
+            project_id,
+            {"inputs": [definition]},
+            candidate_offsets={definition["inputId"]: 2},
+        )
+    assert first.status == "scanBudgetExceeded"
+    assert first.continuation_input_ids == (definition["inputId"],)
+    assert continued.status == "ready"
+    assert continued.inputs[0].value["values"][0]["value"] == "R3"
     factory.dispose()

@@ -101,6 +101,20 @@ class WorkflowRunDispatcher:
         self._closed = False
         self._lock = asyncio.Lock()
         self._control = asyncio.Lock()
+        self._idle_listeners: set[Callable[[], None]] = set()
+
+    @property
+    def capacity(self) -> int:
+        """Maximum simultaneous runs supported by this concrete core owner."""
+        return 1
+
+    def subscribe_idle(self, listener: Callable[[], None]) -> Callable[[], None]:
+        self._idle_listeners.add(listener)
+
+        def unsubscribe() -> None:
+            self._idle_listeners.discard(listener)
+
+        return unsubscribe
 
     async def startup(self) -> None:
         """Fence and reconcile old active runs; queued runs remain caller-owned."""
@@ -485,6 +499,8 @@ class WorkflowRunDispatcher:
                         and not self._worker.busy()
                     ):
                         self._run_id = None
+            for listener in tuple(self._idle_listeners):
+                listener()
 
     async def _commit_event(
         self, run: CoreRun, content: Any, event: dict[str, Any]
@@ -512,10 +528,15 @@ class WorkflowRunDispatcher:
     def _discard_uncommitted_artifact(
         self, run: CoreRun, event: dict[str, Any]
     ) -> None:
-        if event.get("kind") != "artifact" or not isinstance(event.get("payload"), dict):
+        if event.get("kind") != "artifact" or not isinstance(
+            event.get("payload"), dict
+        ):
             return
         payload = event["payload"]
-        artifact_id, relative_path = payload.get("artifactId"), payload.get("relativePath")
+        artifact_id, relative_path = (
+            payload.get("artifactId"),
+            payload.get("relativePath"),
+        )
         if not isinstance(artifact_id, str) or not isinstance(relative_path, str):
             return
         try:

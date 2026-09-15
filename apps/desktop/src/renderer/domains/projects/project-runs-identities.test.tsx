@@ -69,7 +69,7 @@ describe('project run presentation identities', () => {
   })
 
   it('shows batch detail and tasks by business context and one-based ordinals', async () => {
-    const first = render(<BatchDetail detail={{ batch, statusCounts: { running: 2 }, taskCount: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: { automation: { name: '参数运行验收', parameterSchema: [{ parameterId: ids.parameter, name: '业务参数' }] }, parameters: { [ids.parameter]: businessUuid } } }} onBack={vi.fn()} />)
+    const first = render(<BatchDetail detail={{ batch, statusCounts: { running: 2 }, taskCount: 2, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: { automation: { name: '参数运行验收', parameterSchema: [{ parameterId: ids.parameter, name: '业务参数' }] }, parameters: { [ids.parameter]: businessUuid } } }} onBack={vi.fn()} />)
     expect(screen.getByRole('heading', { name: '参数运行验收' })).toBeVisible()
     expect(screen.getByText('业务参数').closest('tr')).toHaveTextContent(businessUuid)
     expectNoInternalIdentity()

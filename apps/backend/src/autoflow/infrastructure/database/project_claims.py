@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
-from functools import cmp_to_key
+import sqlite3
+from collections.abc import Callable, Mapping
 from typing import Any, cast
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import Integer, case, func, select, text
+from sqlalchemy import cast as sql_cast
 from sqlalchemy.orm import Session
 
 from autoflow.domain.project_data.identity import (
@@ -16,6 +18,8 @@ from autoflow.domain.project_data.identity import (
 from autoflow.domain.project_data.query import (
     MISSING,
     compare_values,
+    compatible,
+    date_value,
     matches,
     validate_filter,
     validate_order,
@@ -47,12 +51,18 @@ from autoflow.infrastructure.database.project_run_models import (
 
 
 class SqlAlchemyProjectInputGroups:
-    """Select and hold one V1 two-input group inside the caller's transaction."""
+    """Prepare input candidates and atomically revalidate selected records."""
 
     def __init__(self, session: Session):
         self.session = session
 
-    def select_required(self, project_id: str, input_plan: dict[str, Any]) -> InputSelection:
+    def select_required(
+        self,
+        project_id: str,
+        input_plan: dict[str, Any],
+        *,
+        candidate_offsets: dict[str, int] | None = None,
+    ) -> InputSelection:
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
         if not isinstance(raw_inputs, list):
             return InputSelection("configurationError")
@@ -67,8 +77,16 @@ class SqlAlchemyProjectInputGroups:
             return InputSelection("configurationError")
         sources: list[InputCandidates] = []
         for item in raw_inputs:
-            sources.append(self._candidates(project_id, item, definitions))
-        return select_required_inputs(sources)
+            sources.append(
+                self._candidates(
+                    project_id,
+                    item,
+                    definitions,
+                    offset=(candidate_offsets or {}).get(item["inputId"], 0),
+                )
+            )
+        selection = select_required_inputs(sources)
+        return self.validate_relation_uniqueness(project_id, input_plan, selection)
 
     def hold(
         self,
@@ -138,7 +156,9 @@ class SqlAlchemyProjectInputGroups:
                     {
                         "inputId": input_id,
                         "alias": item.get("alias", input_id),
-                        "tableDisplay": table.name if table is not None else "数据表已失效",
+                        "tableDisplay": table.name
+                        if table is not None
+                        else "数据表已失效",
                         "recordRef": None,
                         "values": [],
                         "unavailableReason": unavailable[input_id],
@@ -147,11 +167,200 @@ class SqlAlchemyProjectInputGroups:
                 )
         return snapshots
 
+    def revalidate_selected(
+        self,
+        project_id: str,
+        input_plan: dict[str, Any],
+        prepared: InputSelection,
+    ) -> InputSelection:
+        """Recheck the exact prepared records without rescanning tables under a write lock."""
+        raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
+        if not isinstance(raw_inputs, list) or not all(
+            isinstance(item, dict) for item in raw_inputs
+        ):
+            return InputSelection("configurationError")
+        definitions = {
+            item.get("inputId"): item
+            for item in raw_inputs
+            if isinstance(item.get("inputId"), str)
+        }
+        if len(definitions) != len(raw_inputs):
+            return InputSelection("configurationError")
+        selected = {item.input_id: item for item in prepared.inputs}
+        sources = [
+            self._candidates(
+                project_id,
+                item,
+                definitions,
+                exact_record_ref=(
+                    selected[item["inputId"]].record_ref
+                    if item["inputId"] in selected
+                    else None
+                ),
+                omit_candidates=item["inputId"] not in selected,
+            )
+            for item in raw_inputs
+        ]
+        current = select_required_inputs(sources)
+        if current.status != "ready":
+            return current
+        prepared_by_id = {item.input_id: item for item in prepared.inputs}
+        changed = tuple(
+            item.input_id
+            for item in current.inputs
+            if item.input_id not in prepared_by_id
+            or any(
+                item.value.get(name) != prepared_by_id[item.input_id].value.get(name)
+                for name in (
+                    "contentRevision",
+                    "statusRevision",
+                    "linkRevision",
+                )
+            )
+        )
+        if changed:
+            return InputSelection(
+                "temporarilyBusy",
+                issue_input_ids=changed,
+                issue_details=tuple(
+                    (input_id, "record changed while the input group was prepared")
+                    for input_id in changed
+                ),
+            )
+        return current
+
+    def validate_relation_uniqueness(
+        self,
+        project_id: str,
+        input_plan: dict[str, Any],
+        selection: InputSelection,
+    ) -> InputSelection:
+        """Check field-equality uniqueness across every physical candidate page."""
+        if selection.status != "ready":
+            return selection
+        definitions: dict[str, dict[str, Any]] = {}
+        for raw_item in input_plan.get("inputs", []):
+            if isinstance(raw_item, dict) and isinstance(
+                raw_item.get("inputId"), str
+            ):
+                definitions[raw_item["inputId"]] = raw_item
+        selected = {item.input_id: item for item in selection.inputs}
+        for input_id, item in definitions.items():
+            relation = item.get("relation")
+            if not isinstance(relation, dict) or relation.get("type") != "fieldEquals":
+                continue
+            source_input_id = relation.get("sourceInputId")
+            if not isinstance(source_input_id, str):
+                continue
+            source = selected.get(source_input_id)
+            target = selected.get(input_id)
+            source_ref = relation.get("sourceFieldRef")
+            target_ref = relation.get("targetFieldRef")
+            if (
+                source is None
+                or target is None
+                or not isinstance(source_ref, dict)
+                or not isinstance(target_ref, dict)
+            ):
+                continue
+            expected = _selected_field_value(source, source_ref.get("fieldId"))
+            target_field_id = target_ref.get("fieldId")
+            if expected is MISSING or not isinstance(target_field_id, str):
+                continue
+            fields = list(
+                self.session.scalars(
+                    select(DataFieldRow).where(
+                        DataFieldRow.project_id == project_id,
+                        DataFieldRow.table_id == item.get("tableId"),
+                        DataFieldRow.dataset_generation
+                        == item.get("datasetGeneration"),
+                    )
+                )
+            )
+            field_types = {field.id: field.type for field in fields}
+            statuses = set(
+                self.session.scalars(
+                    select(DataStatusRow.id).where(
+                        DataStatusRow.project_id == project_id,
+                        DataStatusRow.table_id == item.get("tableId"),
+                        DataStatusRow.deleted.is_(False),
+                    )
+                )
+            )
+            filter_value = validate_filter(item.get("filter"), field_types, statuses)
+            raw = cast(
+                sqlite3.Connection,
+                self.session.connection().connection.driver_connection,
+            )
+
+            def relation_match(
+                values: str,
+                status: str | None,
+                selected_filter: dict[str, Any] = filter_value,
+                selected_value: Any = expected,
+                selected_field_id: str = target_field_id,
+            ) -> int:
+                decoded = json.loads(values)
+                return int(
+                    matches(selected_filter, decoded, status)
+                    and _scalar_equal(
+                        selected_value,
+                        decoded.get(selected_field_id, MISSING),
+                    )
+                )
+
+            try:
+                raw.create_function(
+                    "autoflow_claim_relation_match", 2, relation_match
+                )
+                matching = list(
+                    self.session.scalars(
+                        select(DataRecordRow)
+                        .where(
+                            DataRecordRow.project_id == project_id,
+                            DataRecordRow.table_id == item.get("tableId"),
+                            DataRecordRow.dataset_generation
+                            == item.get("datasetGeneration"),
+                            DataRecordRow.deleted.is_(False),
+                            func.autoflow_claim_relation_match(
+                                DataRecordRow.values_json,
+                                DataRecordRow.status_id,
+                            )
+                            == 1,
+                        )
+                        .limit(2)
+                    )
+                )
+            finally:
+                raw.create_function("autoflow_claim_relation_match", 2, None)
+            if len(matching) > 1:
+                shown = ", ".join(
+                    f"{row.key_type}:{row.key_value}" for row in matching
+                )
+                return InputSelection(
+                    "ambiguous",
+                    issue_input_ids=(input_id,),
+                    issue_details=(
+                        (
+                            input_id,
+                            f"ambiguous value {expected!r}; records {shown}",
+                        ),
+                    ),
+                    effective_required_input_ids=(
+                        selection.effective_required_input_ids
+                    ),
+                )
+        return selection
+
     def _candidates(
         self,
         project_id: str,
         item: dict[str, Any],
         definitions: dict[str, dict[str, Any]],
+        *,
+        offset: int = 0,
+        exact_record_ref: RecordRef | None = None,
+        omit_candidates: bool = False,
     ) -> InputCandidates:
         input_id = item["inputId"]
         table_id, generation = item.get("tableId"), item.get("datasetGeneration")
@@ -204,15 +413,17 @@ class SqlAlchemyProjectInputGroups:
             return InputCandidates(
                 input_id, (), definition, required=required, mode=mode
             )
-        statuses = set(
+        status_rows = list(
             self.session.scalars(
-                select(DataStatusRow.id).where(
+                select(DataStatusRow).where(
                     DataStatusRow.project_id == project_id,
                     DataStatusRow.table_id == table_id,
                     DataStatusRow.deleted.is_(False),
                 )
             )
         )
+        statuses = {row.id for row in status_rows}
+        status_order = {row.id: (row.position, row.id) for row in status_rows}
         try:
             filter_value = validate_filter(item.get("filter"), field_types, statuses)
             order_value = validate_order(item.get("orderBy"), field_types)
@@ -220,31 +431,69 @@ class SqlAlchemyProjectInputGroups:
             return InputCandidates(
                 input_id, (), str(error), required=required, mode=mode, **definition
             )
-        rows = list(
-            self.session.scalars(
-                select(DataRecordRow).where(
-                    DataRecordRow.project_id == project_id,
-                    DataRecordRow.table_id == table_id,
-                    DataRecordRow.dataset_generation == generation,
-                    DataRecordRow.deleted.is_(False),
-                ).limit(MAX_CANDIDATE_EVALUATIONS + 1)
-            )
-        )
-        if len(rows) > MAX_CANDIDATE_EVALUATIONS:
+        if type(offset) is not int or offset < 0:
             return InputCandidates(
                 input_id,
                 (),
+                "candidate cursor is invalid",
                 required=required,
                 mode=mode,
-                scan_budget_exceeded=True,
                 **definition,
             )
-        rows = [row for row in rows if matches(filter_value, row.values_json, row.status_id)]
-        rows.sort(key=cmp_to_key(lambda left, right: _compare_rows(left, right, order_value, field_types)))
+        query = select(DataRecordRow).where(
+            DataRecordRow.project_id == project_id,
+            DataRecordRow.table_id == table_id,
+            DataRecordRow.dataset_generation == generation,
+            DataRecordRow.deleted.is_(False),
+        )
+        if exact_record_ref is not None:
+            if (
+                exact_record_ref.project_id != project_id
+                or exact_record_ref.table_id != table_id
+                or exact_record_ref.dataset_generation != generation
+            ):
+                rows = []
+            else:
+                rows = list(
+                    self.session.scalars(
+                        query.where(
+                            DataRecordRow.key_type == exact_record_ref.record_key.type,
+                            DataRecordRow.key_value
+                            == exact_record_ref.record_key.value,
+                        )
+                    )
+                )
+        elif omit_candidates:
+            rows = []
+        else:
+            rows = _ordered_candidate_rows(
+                self.session,
+                query,
+                order_value,
+                field_types,
+                status_order,
+                offset,
+            )
+        has_more = (
+            exact_record_ref is None
+            and not omit_candidates
+            and len(rows) > MAX_CANDIDATE_EVALUATIONS
+        )
+        rows = rows[:MAX_CANDIDATE_EVALUATIONS]
+        rows = [
+            row for row in rows if matches(filter_value, row.values_json, row.status_id)
+        ]
         active = set(
             self.session.scalars(
                 select(ProjectRecordLeaseRow.lease_key).where(
-                    ProjectRecordLeaseRow.state.in_(("held", "reconciling"))
+                    ProjectRecordLeaseRow.project_id == project_id,
+                    ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
+                    ProjectRecordLeaseRow.record_ref["tableId"].as_string()
+                    == table_id,
+                    ProjectRecordLeaseRow.record_ref[
+                        "datasetGeneration"
+                    ].as_string()
+                    == generation,
                 )
             )
         )
@@ -266,7 +515,11 @@ class SqlAlchemyProjectInputGroups:
                 "recordRef": _record_ref(ref),
                 "fieldMappings": _mutable(item.get("fieldBindings", [])),
                 "values": [
-                    {"fieldId": field.id, "fieldName": field.name, "value": row.values_json[field.id]}
+                    {
+                        "fieldId": field.id,
+                        "fieldName": field.name,
+                        "value": row.values_json[field.id],
+                    }
                     for field in fields
                     if field.id in row.values_json
                 ],
@@ -312,6 +565,7 @@ class SqlAlchemyProjectInputGroups:
             tuple(candidates),
             required=required,
             mode=mode,
+            scan_budget_exceeded=has_more,
             **definition,
         )
 
@@ -379,8 +633,9 @@ def _selection_definition(
             return "record slot relation is invalid"
         return {"relation": RecordSlotRelation(source_id, slot_id)}
     if kind == "fieldEquals":
-        source_ref, target_ref = relation.get("sourceFieldRef"), relation.get(
-            "targetFieldRef"
+        source_ref, target_ref = (
+            relation.get("sourceFieldRef"),
+            relation.get("targetFieldRef"),
         )
         if (
             not isinstance(source_ref, dict)
@@ -400,25 +655,30 @@ def _selection_definition(
             )
         )
         target_type = target_field_types.get(target_field_id)
-        if source_field is None or target_type is None or source_field.type != target_type:
+        if (
+            source_field is None
+            or target_type is None
+            or source_field.type != target_type
+        ):
             return "field relation types are incompatible"
         return {
-            "relation": FieldEqualsRelation(
-                source_id, source_field_id, target_field_id
-            )
+            "relation": FieldEqualsRelation(source_id, source_field_id, target_field_id)
         }
     return "relation type is invalid"
 
 
-def _field_ref_matches(
-    value: Any, project_id: str, definition: dict[str, Any]
-) -> bool:
-    return isinstance(value, dict) and value == {
-        "projectId": project_id,
-        "tableId": definition.get("tableId"),
-        "datasetGeneration": definition.get("datasetGeneration"),
-        "fieldId": value.get("fieldId"),
-    } and isinstance(value.get("fieldId"), str)
+def _field_ref_matches(value: Any, project_id: str, definition: dict[str, Any]) -> bool:
+    return (
+        isinstance(value, dict)
+        and value
+        == {
+            "projectId": project_id,
+            "tableId": definition.get("tableId"),
+            "datasetGeneration": definition.get("datasetGeneration"),
+            "fieldId": value.get("fieldId"),
+        }
+        and isinstance(value.get("fieldId"), str)
+    )
 
 
 def _parse_record_ref(value: Any) -> RecordRef:
@@ -439,7 +699,10 @@ def _parse_record_ref(value: Any) -> RecordRef:
         raise ValueError("invalid record key")
     record_key = RecordKey(cast(RecordKeyType, key["type"]), key["value"])
     encode_record_key(record_key)
-    if not all(isinstance(value.get(name), str) for name in ("projectId", "tableId", "datasetGeneration")):
+    if not all(
+        isinstance(value.get(name), str)
+        for name in ("projectId", "tableId", "datasetGeneration")
+    ):
         raise ValueError("invalid record scope")
     return RecordRef(
         value["projectId"], value["tableId"], value["datasetGeneration"], record_key
@@ -495,6 +758,32 @@ def _mutable(value: Any) -> Any:
     return value
 
 
+def _selected_field_value(selected: SelectedInput, field_id: Any) -> Any:
+    if not isinstance(field_id, str):
+        return MISSING
+    values = selected.value.get("values")
+    if not isinstance(values, tuple | list):
+        return MISSING
+    for item in values:
+        if (
+            isinstance(item, Mapping)
+            and item.get("fieldId") == field_id
+            and "value" in item
+        ):
+            return item["value"]
+    return MISSING
+
+
+def _scalar_equal(left: Any, right: Any) -> bool:
+    if left is MISSING or right is MISSING or left is None or right is None:
+        return False
+    if isinstance(left, bool) or isinstance(right, bool):
+        return type(left) is type(right) and left == right
+    if isinstance(left, int | float) and isinstance(right, int | float):
+        return left == right
+    return type(left) is type(right) and left == right
+
+
 def _record_ref(value: RecordRef) -> dict[str, Any]:
     return {
         "projectId": value.project_id,
@@ -506,35 +795,192 @@ def _record_ref(value: RecordRef) -> dict[str, Any]:
 
 def _lease_key(value: LeaseKey) -> str:
     return json.dumps(
-        {"source": value.source, **_record_ref(RecordRef(value.project_id, value.table_id, value.dataset_generation, value.record_key))},
+        {
+            "source": value.source,
+            **_record_ref(
+                RecordRef(
+                    value.project_id,
+                    value.table_id,
+                    value.dataset_generation,
+                    value.record_key,
+                )
+            ),
+        },
         sort_keys=True,
         ensure_ascii=False,
         separators=(",", ":"),
     )
 
 
-def _compare_rows(left: DataRecordRow, right: DataRecordRow, order: list[dict[str, str]], field_types: dict[str, str]) -> int:
-    for item in order:
-        if "fieldId" in item:
-            field_id = item["fieldId"]
-            a, b = left.values_json.get(field_id, MISSING), right.values_json.get(field_id, MISSING)
-            if (a is MISSING or a is None) != (b is MISSING or b is None):
-                result = 1 if a is MISSING or a is None else -1
-            elif a is MISSING or a is None:
-                result = 0
-            else:
-                result = compare_values(field_types[field_id], a, b) or 0
+def _ordered_candidate_rows(
+    session: Session,
+    query: Any,
+    order: list[dict[str, str]],
+    field_types: dict[str, str],
+    status_order: dict[str, tuple[int, str]],
+    offset: int,
+) -> list[DataRecordRow]:
+    """Apply the same domain ordering before cutting a bounded candidate page."""
+    statement = query
+    raw = cast(
+        sqlite3.Connection,
+        session.connection().connection.driver_connection,
+    )
+    try:
+        if order:
+            field_targets = [item["fieldId"] for item in order if "fieldId" in item]
+
+            def projection(
+                values: str,
+                status: str | None,
+                created: str,
+                updated: str,
+                key_type: str,
+                key_value: str,
+            ) -> str:
+                decoded = json.loads(values)
+                return json.dumps(
+                    [
+                        {key: decoded.get(key) for key in field_targets},
+                        status,
+                        created,
+                        updated,
+                        key_type,
+                        key_value,
+                    ],
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+
+            raw.create_function("autoflow_claim_sort", 6, projection)
+            raw.create_collation(
+                "AUTOFLOW_CLAIM",
+                _claim_collation(order, field_types, status_order),
+            )
+            statement = statement.order_by(
+                text(
+                    "autoflow_claim_sort(values_json,status_id,created_at,updated_at,"
+                    "key_type,key_value) COLLATE AUTOFLOW_CLAIM"
+                )
+            )
         else:
-            field = item["systemField"]
-            if field == "status":
-                a, b = left.status_id, right.status_id
-            elif field == "createdAt":
-                a, b = left.created_at, right.created_at
-            elif field == "updatedAt":
-                a, b = left.updated_at, right.updated_at
+            rank = case(
+                (DataRecordRow.key_type == "text", 0),
+                (DataRecordRow.key_type == "integer", 1),
+                else_=2,
+            )
+            statement = statement.order_by(
+                rank,
+                case(
+                    (
+                        DataRecordRow.key_type == "integer",
+                        sql_cast(DataRecordRow.key_value, Integer),
+                    ),
+                    else_=None,
+                ),
+                DataRecordRow.key_value,
+            )
+        return list(
+            session.scalars(
+                statement.offset(offset).limit(MAX_CANDIDATE_EVALUATIONS + 1)
+            )
+        )
+    finally:
+        raw.create_function("autoflow_claim_sort", 6, None)
+        raw.create_collation("AUTOFLOW_CLAIM", None)
+
+
+def _claim_collation(
+    order: list[dict[str, str]],
+    field_types: dict[str, str],
+    status_order: dict[str, tuple[int, str]],
+) -> Callable[[str, str], int]:
+    def compare(left_text: str, right_text: str) -> int:
+        left, right = json.loads(left_text), json.loads(right_text)
+        for item in order:
+            if "fieldId" in item:
+                field_id = item["fieldId"]
+                left_value = left[0].get(field_id, MISSING)
+                right_value = right[0].get(field_id, MISSING)
+                if (left_value is MISSING or left_value is None) != (
+                    right_value is MISSING or right_value is None
+                ):
+                    return 1 if left_value is MISSING or left_value is None else -1
+                left_valid = compatible(field_types[field_id], left_value)
+                right_valid = compatible(field_types[field_id], right_value)
+                if left_valid != right_valid:
+                    return -1 if left_valid else 1
+                if field_types[field_id] == "date":
+                    left_date = date_value(left_value)
+                    right_date = date_value(right_value)
+                    if (left_date is None) != (right_date is None):
+                        return 1 if left_date is None else -1
+                    if (
+                        left_date is not None
+                        and right_date is not None
+                        and left_date[0] != right_date[0]
+                    ):
+                        return (left_date[0] > right_date[0]) - (
+                            left_date[0] < right_date[0]
+                        )
+                result = _claim_sort_value(
+                    field_types[field_id], left_value, right_value
+                )
             else:
-                a, b = (left.key_type, left.key_value), (right.key_type, right.key_value)
-            result = (a > b) - (a < b) if a is not None and b is not None else (0 if a == b else (1 if a is None else -1))
-        if result:
-            return result if item["direction"] == "asc" else -result
-    return ((left.key_type, left.key_value) > (right.key_type, right.key_value)) - ((left.key_type, left.key_value) < (right.key_type, right.key_value))
+                target = item["systemField"]
+                if target == "status":
+                    left_status = status_order.get(left[1], MISSING)
+                    right_status = status_order.get(right[1], MISSING)
+                    if (left_status is MISSING) != (right_status is MISSING):
+                        return 1 if left_status is MISSING else -1
+                    result = _nullable_compare(left_status, right_status)
+                elif target in {"createdAt", "updatedAt"}:
+                    result = _nullable_compare(
+                        left[2 if target == "createdAt" else 3],
+                        right[2 if target == "createdAt" else 3],
+                    )
+                else:
+                    result = _record_key_compare(
+                        left[4], left[5], right[4], right[5]
+                    )
+            if result:
+                return result if item["direction"] == "asc" else -result
+        return _record_key_compare(left[4], left[5], right[4], right[5])
+
+    return compare
+
+
+def _claim_sort_value(kind: str, left: Any, right: Any) -> int:
+    if left is MISSING or left is None or right is MISSING or right is None:
+        return _nullable_compare(left, right)
+    if kind == "date":
+        left_date, right_date = date_value(left), date_value(right)
+        if left_date is None or right_date is None:
+            return _nullable_compare(left_date, right_date)
+        return (left_date > right_date) - (left_date < right_date)
+    result = compare_values(kind, left, right)
+    return (
+        _nullable_compare(
+            None if result is None else left,
+            None if result is None else right,
+        )
+        if result is None
+        else result
+    )
+
+
+def _nullable_compare(left: Any, right: Any) -> int:
+    left_null = left is MISSING or left is None
+    right_null = right is MISSING or right is None
+    if left_null or right_null:
+        return (1 if left_null else -1) if left_null != right_null else 0
+    return (left > right) - (left < right)
+
+
+def _record_key_compare(lt: str, lv: str, rt: str, rv: str) -> int:
+    ranks = {"text": 0, "integer": 1, "uuid": 2}
+    if lt != rt:
+        return (ranks[lt] > ranks[rt]) - (ranks[lt] < ranks[rt])
+    if lt == "integer":
+        return (int(lv) > int(rv)) - (int(lv) < int(rv))
+    return (lv > rv) - (lv < rv)

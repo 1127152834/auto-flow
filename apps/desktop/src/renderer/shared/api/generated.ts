@@ -2149,6 +2149,16 @@ export type components = {
             };
             /** Taskcount */
             taskCount: number;
+            /**
+             * Reusedinputgroupcount
+             * @default 0
+             */
+            reusedInputGroupCount: number;
+            /**
+             * Unchangedinputstreak
+             * @default 0
+             */
+            unchangedInputStreak: number;
             stopOperation: components["schemas"]["ProjectRunOperationSnapshot"] | null;
             /** Forcestopallowed */
             forceStopAllowed: boolean;
@@ -2225,11 +2235,17 @@ export type components = {
             /** Managementrevision */
             managementRevision: number;
             /** Requestedcount */
-            requestedCount: number;
+            requestedCount: number | null;
             /** Createdtaskcount */
             createdTaskCount: number;
             /** Activetaskcount */
             activeTaskCount: number;
+            /** Claimgatestate */
+            claimGateState?: string | null;
+            /** Selectionoutcome */
+            selectionOutcome?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /**
              * Createdat
              * Format: date-time

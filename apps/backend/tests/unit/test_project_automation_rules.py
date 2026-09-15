@@ -84,6 +84,22 @@ def test_pm3_run_policy_is_finite_and_single_concurrency():
             validate_write(candidate)
 
 
+def test_data_automation_accepts_bounded_concurrency_policy():
+    candidate = payload()
+    candidate["inputPlan"]["inputs"] = [
+        data_input(
+            "00000000-0000-0000-0000-000000000010",
+            "00000000-0000-0000-0000-000000000011",
+            "00000000-0000-0000-0000-000000000012",
+        )
+    ]
+    candidate["runPolicy"].update({"concurrency": 4, "maxLiveInstances": 3})
+    assert validate_write(candidate)["runPolicy"] == candidate["runPolicy"]
+    candidate["runPolicy"]["concurrency"] = 101
+    with pytest.raises(ProjectError):
+        validate_write(candidate)
+
+
 def test_run_timeouts_accept_finite_positive_fractional_seconds():
     candidate = payload()
     candidate["runPolicy"]["automaticExecutionTimeoutSeconds"] = 0.5

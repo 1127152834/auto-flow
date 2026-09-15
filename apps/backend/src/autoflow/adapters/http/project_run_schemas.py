@@ -15,7 +15,7 @@ class BatchStartRequest(ApiModel):
     expected_automation_revision: StrictInt = Field(ge=1)
     parameters: dict[str, JsonScalar]
     max_tasks: StrictInt | None = Field(None, ge=1, le=100)
-    concurrency: StrictInt | None = Field(None, ge=1)
+    concurrency: StrictInt | None = Field(None, ge=1, le=100)
     environment_override: EnvironmentPolicy | None = None
 
     def payload(self) -> dict[str, Any]:
@@ -54,9 +54,11 @@ class BatchView(ApiModel):
     status: str
     status_revision: int
     management_revision: int
-    requested_count: int
+    requested_count: int | None
     created_task_count: int
     active_task_count: int
+    claim_gate_state: str | None = None
+    selection_outcome: dict[str, JsonValue] | None = None
     created_at: datetime
     completed_at: datetime | None = None
 
@@ -143,6 +145,8 @@ class BatchDetail(ApiModel):
     batch: BatchView
     status_counts: dict[str, int]
     task_count: int
+    reused_input_group_count: int = Field(0, ge=0)
+    unchanged_input_streak: int = Field(0, ge=0)
     stop_operation: ProjectRunOperationSnapshot | None
     force_stop_allowed: bool
     force_stop_available_at: datetime | None

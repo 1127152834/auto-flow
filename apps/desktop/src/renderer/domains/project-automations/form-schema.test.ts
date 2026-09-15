@@ -35,3 +35,15 @@ describe('automation aggregate form', () => {
     expect(validateAutomationForm(value)['runPolicy.manualDeadlineSeconds']).toBeTruthy()
   })
 })
+
+it('allows bounded data concurrency while parameter-only policies remain serial', () => {
+  const value = { ...emptyAutomationForm('workflow'), name: '数据运行' }
+  value.runPolicy.concurrency = 4; value.runPolicy.maxLiveInstances = 2
+  expect(validateAutomationForm(value)['runPolicy.concurrency']).toBeTruthy()
+  value.inputPlan.inputs = [{ inputId: 'input', alias: '资料', tableId: 'table', datasetGeneration: 'generation', mode: 'independent', required: true, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }]
+  expect(validateAutomationForm(value)).toEqual({})
+  for (const invalid of [0, 101, 1.5, Infinity]) {
+    expect(validateAutomationForm({ ...value, runPolicy: { ...value.runPolicy, concurrency: invalid } })['runPolicy.concurrency']).toBeTruthy()
+    expect(validateAutomationForm({ ...value, runPolicy: { ...value.runPolicy, maxLiveInstances: invalid } })['runPolicy.maxLiveInstances']).toBeTruthy()
+  }
+})

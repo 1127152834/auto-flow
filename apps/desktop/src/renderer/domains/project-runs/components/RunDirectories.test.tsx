@@ -67,7 +67,7 @@ describe('run directories', () => {
   })
 
   it('does not claim a completed batch with failures fully succeeded', () => {
-    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 2, failed: 1 }, taskCount: 3, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: { automation: { name: '资料整理', managementRevision: 7, parameterSchema: [{ parameterId: 'parameter-id', name: '关键词' }], environmentPolicy: { source: 'newFromProfile' } }, parameters: { 'parameter-id': '种植资料' }, maxTasks: 3, concurrency: 1, workflowRevision: 5, resourceRequest: { browser: 'none', modelProviderId: null } } }} onBack={vi.fn()}/>)
+    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 2, failed: 1 }, taskCount: 3, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: { automation: { name: '资料整理', managementRevision: 7, parameterSchema: [{ parameterId: 'parameter-id', name: '关键词' }], environmentPolicy: { source: 'newFromProfile' } }, parameters: { 'parameter-id': '种植资料' }, maxTasks: 3, concurrency: 1, workflowRevision: 5, resourceRequest: { browser: 'none', modelProviderId: null } } }} onBack={vi.fn()}/>)
     expect(screen.getByRole('heading', { name: '资料整理' })).toBeVisible()
     expect(screen.getByText(/批次开始于/)).toBeVisible()
     expect(screen.getByText('耗时').parentElement).toHaveTextContent('3 分钟')
@@ -81,18 +81,93 @@ describe('run directories', () => {
   })
 
   it('uses the frozen automation and start time without exposing the internal identifier', () => {
-    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 3 }, taskCount: 3, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
+    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 3 }, taskCount: 3, reusedInputGroupCount: 2, unchangedInputStreak: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
     expect(screen.getByRole('heading', { name: '资料整理' })).toBeVisible()
     expect(screen.getByText(/批次开始于/)).toBeVisible()
     expect(screen.queryByText('batch-1')).not.toBeInTheDocument()
+    expect(screen.getByText(/已重复使用相同输入组 2 次/)).toHaveTextContent('当前输入条件连续 2 次未变化')
+  })
+
+  it('shows the affected input when a configuration failure drains and then fails', () => {
+    const configuration = { automation: { inputPlan: { inputs: [{ inputId: 'mail', alias: '邮箱' }] } } }
+    const failed = { ...batch, status: 'failed', selectionOutcome: { status: 'configurationError', issueInputIds: ['mail'] } }
+    const { rerender } = render(<BatchDetail detail={{ batch: failed, statusCounts: { succeeded: 1 }, taskCount: 1, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: configuration }} onBack={vi.fn()}/>)
+    expect(screen.getByText('结束原因').parentElement).toHaveTextContent('数据输入配置已失效：邮箱')
+    rerender(<BatchDetail detail={{ batch: { ...failed, status: 'draining', completedAt: null }, statusCounts: { running: 1 }, taskCount: 1, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: configuration }} onBack={vi.fn()}/>)
+    expect(screen.getByRole('status')).toHaveTextContent('邮箱')
+    expect(screen.getByRole('status')).toHaveTextContent('等待已领取任务结束')
+  })
+
+  it('explains that candidate paging will continue without claiming exhaustion', () => {
+    const waiting = {
+      ...batch,
+      status: 'blocked',
+      completedAt: null,
+      selectionOutcome: {
+        status: 'scanBudgetExceeded',
+        category: 'candidatePage',
+        hasContinuation: true,
+      },
+    }
+    render(<BatchDetail detail={{ batch: waiting, statusCounts: {}, taskCount: 0, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
+    expect(screen.getByRole('status')).toHaveTextContent('正在继续检查下一页候选数据')
+    expect(screen.getByRole('status')).toHaveTextContent('尚未确认数据耗尽')
+  })
+
+  it('explains binding budget exhaustion without promising an automatic continuation', () => {
+    const waiting = {
+      ...batch,
+      status: 'blocked',
+      completedAt: null,
+      selectionOutcome: {
+        status: 'scanBudgetExceeded',
+        category: 'candidateBindingBudget',
+        hasContinuation: false,
+      },
+    }
+    render(<BatchDetail detail={{ batch: waiting, statusCounts: {}, taskCount: 0, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
+    expect(screen.getByRole('status')).toHaveTextContent('候选组合检查预算已用完')
+    expect(screen.getByRole('status')).toHaveTextContent('请收紧筛选或关联条件')
+    expect(screen.getByRole('status')).not.toHaveTextContent('正在继续')
+  })
+
+  it.each([
+    ['configurationError', '数据输入配置已失效'],
+    ['ambiguous', '数据关联存在歧义'],
+  ])('shows the affected alias and concrete issue for %s without making the internal id primary', (selectionStatus, message) => {
+    const configuration = { automation: { inputPlan: { inputs: [{ inputId: 'input-mail-internal-id', alias: '邮箱' }] } } }
+    const draining = {
+      ...batch,
+      status: 'draining',
+      completedAt: null,
+      selectionOutcome: {
+        status: selectionStatus,
+        issueInputIds: ['input-mail-internal-id'],
+        issueDetails: { 'input-mail-internal-id': 'Selected field no longer exists.' },
+      },
+    }
+    render(<BatchDetail detail={{ batch: draining, statusCounts: { running: 1 }, taskCount: 1, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: configuration }} onBack={vi.fn()}/>)
+    expect(screen.getByRole('status')).toHaveTextContent(message)
+    expect(screen.getByRole('status')).toHaveTextContent('邮箱：所选字段已不存在，请重新检查输入配置。')
+    expect(screen.getByRole('status')).not.toHaveTextContent('Selected field no longer exists.')
+    expect(screen.getByRole('status')).not.toHaveTextContent('input-mail-internal-id')
   })
 
   it('renders stop actions only when admitted by props', () => {
     const running = { ...batch, status: 'running', completedAt: null, activeTaskCount: 2 }
-    const { rerender } = render(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
+    const { rerender } = render(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
     expect(screen.queryByRole('button', { name: '停止批次' })).not.toBeInTheDocument()
-    rerender(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()} onStop={vi.fn()} onForceStop={vi.fn()}/>)
+    rerender(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()} onStop={vi.fn()} onForceStop={vi.fn()}/>)
     expect(screen.getByRole('button', { name: '停止批次' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '强制停止' })).toBeInTheDocument()
   })
+})
+
+it.each([
+  ['blocked', '尚未确认数据耗尽'],
+  ['draining', '等待已领取任务结束'],
+])('explains %s without inventing a completed result', (status, message) => {
+  render(<BatchDetail detail={{ batch: { ...batch, status, completedAt: null }, statusCounts: {}, taskCount: 0, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
+  expect(screen.getByRole('status')).toHaveTextContent(message)
+  expect(screen.getByText('结束原因').parentElement).toHaveTextContent('尚未结束')
 })

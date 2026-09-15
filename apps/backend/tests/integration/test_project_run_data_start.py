@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 from uuid import uuid4
 
 import pytest
@@ -9,6 +10,7 @@ from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.records import DataRecordService
 from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.workflows.runtime import WorkflowRuntimeService
 from autoflow.application.workflows.service import WorkflowService
@@ -168,7 +170,38 @@ def _setup(
     return factory, project_id, automation, coordinator
 
 
-def test_start_atomically_creates_one_task_with_two_inputs_and_typed_leases(tmp_path):
+def _assert_accepted_without_task_facts(factory, batch, operation):
+    with factory() as session:
+        for model in (
+            ProjectTaskRow,
+            ProjectTaskInputSnapshotRow,
+            ProjectRecordLeaseRow,
+            ProjectTaskRecordCursorRow,
+            WorkflowRunRow,
+        ):
+            assert session.scalar(select(func.count()).select_from(model)) == 0
+        assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 1
+        assert (
+            session.scalar(select(func.count()).select_from(WorkflowPreparedContentRow))
+            == 1
+        )
+        accepted = session.get(ProjectBatchRow, batch.batch_id)
+        assert accepted is not None and accepted.status == "accepted"
+        assert accepted.start_operation_id == operation.operation_id
+        stored = session.get(ProjectOperationRow, operation.operation_id)
+        assert stored is not None and stored.status == "succeeded"
+        assert stored.result == operation.result
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(ProjectOperationRow)
+                .where(ProjectOperationRow.kind == "startBatch")
+            )
+            == 1
+        )
+
+
+def test_claim_atomically_creates_one_task_with_two_inputs_and_typed_leases(tmp_path):
     factory, project_id, automation, coordinator = _setup(tmp_path)
     batch, _operation, replayed = coordinator.start(
         project_id,
@@ -181,10 +214,15 @@ def test_start_atomically_creates_one_task_with_two_inputs_and_typed_leases(tmp_
             "concurrency": 1,
         },
     )
+    _assert_accepted_without_task_facts(factory, batch, _operation)
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     with factory() as session:
-        snapshot = SqlAlchemyProjectInputGroups(session)
-        del snapshot
+        for model in (ProjectTaskRow, ProjectTaskInputSnapshotRow, WorkflowRunRow):
+            assert session.scalar(select(func.count()).select_from(model)) == 1
         stored = coordinator.get_snapshot(project_id, task.task_id)
         leases = list(
             session.scalars(
@@ -236,6 +274,11 @@ def test_create_target_freezes_only_the_declared_create_capability(tmp_path):
         },
     )
 
+    _assert_accepted_without_task_facts(factory, batch, _operation)
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     with factory() as session:
         task = session.scalar(
             select(ProjectTaskRow).where(ProjectTaskRow.batch_id == batch.batch_id)
@@ -366,27 +409,68 @@ def test_declared_table_grant_requires_available_project_data_capability(tmp_pat
 
 def test_busy_second_required_group_rolls_back_task_snapshot_run_and_lease(tmp_path):
     factory, project_id, automation, coordinator = _setup(tmp_path)
+    with factory.begin() as session:
+        row = session.get(ProjectAutomationRow, automation.automation_id)
+        row.run_policy = {
+            **row.run_policy,
+            "concurrency": 2,
+            "maxLiveInstances": 2,
+        }
     payload = {
         "expectedAutomationRevision": automation.management_revision,
         "parameters": {},
         "maxTasks": 1,
         "concurrency": 1,
     }
-    coordinator.start(project_id, automation.automation_id, uid(), payload)
-    with pytest.raises(ProjectRunError) as caught:
-        coordinator.start(project_id, automation.automation_id, uid(), payload)
-    assert caught.value.code == "INPUT_TEMPORARILY_BUSY"
+    first = coordinator.start(project_id, automation.automation_id, uid(), payload)[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(
+            factory, project_id, first.batch_id, core_capacity=2
+        )
+        == "ready"
+    )
+    second = coordinator.start(project_id, automation.automation_id, uid(), payload)[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(
+            factory, project_id, second.batch_id, core_capacity=2
+        )
+        == "temporarilyBusy"
+    )
+    assert coordinator.list_tasks(project_id, second.batch_id) == []
     with factory() as session:
+        blocked = session.get(ProjectBatchRow, second.batch_id)
+        assert blocked is not None
+        assert blocked.claim_gate_state == "open"
+        assert blocked.selection_outcome["status"] == "temporarilyBusy"
+        assert blocked.selection_outcome["issueInputIds"]
+        assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 2
         assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 1
+        assert (
+            session.scalar(
+                select(func.count()).select_from(ProjectTaskInputSnapshotRow)
+            )
+            == 1
+        )
         assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 1
         assert (
             session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 2
+        )
+        assert (
+            session.scalar(select(func.count()).select_from(ProjectTaskRecordCursorRow))
+            == 2
         )
     factory.dispose()
 
 
 def test_concurrent_distinct_starts_claim_one_group_once(tmp_path):
     factory, project_id, automation, coordinator = _setup(tmp_path)
+    with factory.begin() as session:
+        row = session.get(ProjectAutomationRow, automation.automation_id)
+        row.run_policy = {
+            **row.run_policy,
+            "concurrency": 2,
+            "maxLiveInstances": 2,
+        }
     payload = {
         "expectedAutomationRevision": automation.management_revision,
         "parameters": {},
@@ -394,32 +478,62 @@ def test_concurrent_distinct_starts_claim_one_group_once(tmp_path):
         "concurrency": 1,
     }
 
+    ready_to_claim = Barrier(2)
+
     def start_once(_index: int):
-        try:
-            return coordinator.start(
-                project_id, automation.automation_id, uid(), payload
-            )[0]
-        except ProjectRunError as error:
-            return error
+        batch = coordinator.start(project_id, automation.automation_id, uid(), payload)[
+            0
+        ]
+        ready_to_claim.wait(timeout=10)
+        return batch, ProjectBatchScheduler.claim_data_task(
+            factory, project_id, batch.batch_id, core_capacity=2
+        )
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         results = list(pool.map(start_once, range(2)))
 
-    assert sum(not isinstance(item, ProjectRunError) for item in results) == 1
-    errors = [item for item in results if isinstance(item, ProjectRunError)]
-    assert [error.code for error in errors] == ["INPUT_TEMPORARILY_BUSY"]
+    assert sorted(outcome for _batch, outcome in results) == [
+        "ready",
+        "temporarilyBusy",
+    ]
+    for batch, outcome in results:
+        assert len(coordinator.list_tasks(project_id, batch.batch_id)) == (
+            1 if outcome == "ready" else 0
+        )
     with factory() as session:
-        assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 1
+        assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 2
         assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 1
+        assert (
+            session.scalar(
+                select(func.count()).select_from(ProjectTaskInputSnapshotRow)
+            )
+            == 1
+        )
         assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 1
         assert (
             session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 2
+        )
+        assert (
+            session.scalar(select(func.count()).select_from(ProjectTaskRecordCursorRow))
+            == 2
         )
     factory.dispose()
 
 
 def test_hold_failure_rolls_back_the_entire_input_group_and_run(tmp_path, monkeypatch):
     factory, project_id, automation, coordinator = _setup(tmp_path)
+    batch, operation, _replayed = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )
+    _assert_accepted_without_task_facts(factory, batch, operation)
     original = SqlAlchemyProjectInputGroups.hold
 
     def fail_after_hold(self, selection, **kwargs):
@@ -428,37 +542,28 @@ def test_hold_failure_rolls_back_the_entire_input_group_and_run(tmp_path, monkey
 
     monkeypatch.setattr(SqlAlchemyProjectInputGroups, "hold", fail_after_hold)
     with pytest.raises(RuntimeError, match="injected hold failure"):
-        coordinator.start(
-            project_id,
-            automation.automation_id,
-            uid(),
-            {
-                "expectedAutomationRevision": automation.management_revision,
-                "parameters": {},
-                "maxTasks": 1,
-                "concurrency": 1,
-            },
-        )
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
 
+    _assert_accepted_without_task_facts(factory, batch, operation)
     with factory() as session:
-        for model in (
-            ProjectBatchRow,
-            ProjectTaskRow,
-            ProjectTaskInputSnapshotRow,
-            ProjectRecordLeaseRow,
-            ProjectTaskRecordCursorRow,
-            WorkflowPreparedContentRow,
-            WorkflowRunRow,
-        ):
-            assert session.scalar(select(func.count()).select_from(model)) == 0
-        assert (
-            session.scalar(
-                select(func.count())
-                .select_from(ProjectOperationRow)
-                .where(ProjectOperationRow.kind == "startBatch")
-            )
-            == 0
-        )
+        stored = session.get(ProjectBatchRow, batch.batch_id)
+        assert stored is not None and stored.claim_gate_state == "open"
+        assert stored.selection_outcome["status"] == "preparing"
+        assert stored.selection_outcome["claimAttempt"]["state"] == "prepared"
+        prepared_attempt = dict(stored.selection_outcome["claimAttempt"])
+    monkeypatch.setattr(SqlAlchemyProjectInputGroups, "hold", original)
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
+    tasks = coordinator.list_tasks(project_id, batch.batch_id)
+    assert len(tasks) == 1
+    assert tasks[0].task_id == prepared_attempt["taskId"]
+    assert tasks[0].run_request_id == prepared_attempt["runRequestId"]
+    assert (
+        coordinator.get_snapshot(project_id, tasks[0].task_id).input_snapshot_id
+        == prepared_attempt["inputSnapshotId"]
+    )
     factory.dispose()
 
 
@@ -515,6 +620,11 @@ def test_optional_no_match_keeps_batch_runnable_and_freezes_unavailable_reason(
             "concurrency": 1,
         },
     )
+    _assert_accepted_without_task_facts(factory, batch, _operation)
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     snapshot = coordinator.get_snapshot(project_id, task.task_id)
     assert snapshot.inputs[2]["recordRef"] is None
@@ -531,7 +641,7 @@ def test_optional_no_match_keeps_batch_runnable_and_freezes_unavailable_reason(
     factory.dispose()
 
 
-def test_invalid_optional_input_blocks_preview_and_start_without_durable_facts(
+def test_invalid_optional_input_blocks_preview_and_claim_without_task_facts(
     tmp_path,
 ):
     factory, project_id, automation, coordinator = _setup(tmp_path)
@@ -559,38 +669,28 @@ def test_invalid_optional_input_blocks_preview_and_start_without_durable_facts(
         "configurationError",
     ]
     assert preview["inputs"][2]["detail"] == "数据表已更新，请重新选择数据表"
-    with pytest.raises(ProjectRunError) as error:
-        coordinator.start(
-            project_id,
-            automation.automation_id,
-            uid(),
-            {
-                "expectedAutomationRevision": automation.management_revision,
-                "parameters": {},
-                "maxTasks": 1,
-                "concurrency": 1,
-            },
-        )
-    assert error.value.code == "INPUT_CONFIGURATION_ERROR"
+    batch, operation, _replayed = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )
+    _assert_accepted_without_task_facts(factory, batch, operation)
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "configurationError"
+    )
+    _assert_accepted_without_task_facts(factory, batch, operation)
     with factory() as session:
-        for model in (
-            ProjectBatchRow,
-            ProjectTaskRow,
-            ProjectTaskInputSnapshotRow,
-            ProjectRecordLeaseRow,
-            ProjectTaskRecordCursorRow,
-            WorkflowPreparedContentRow,
-            WorkflowRunRow,
-        ):
-            assert session.scalar(select(func.count()).select_from(model)) == 0
-        assert (
-            session.scalar(
-                select(func.count())
-                .select_from(ProjectOperationRow)
-                .where(ProjectOperationRow.kind == "startBatch")
-            )
-            == 0
-        )
+        stored = session.get(ProjectBatchRow, batch.batch_id)
+        assert stored is not None and stored.claim_gate_state == "closed"
+        assert stored.selection_outcome["status"] == "configurationError"
+        assert stored.selection_outcome["issueInputIds"]
     factory.dispose()
 
 
@@ -634,12 +734,23 @@ def test_preview_marks_an_optional_source_as_effectively_required(tmp_path):
     factory.dispose()
 
 
-def test_start_reselects_current_rows_instead_of_reusing_preview_facts(tmp_path):
+def test_claim_reselects_current_rows_after_preview_and_batch_acceptance(tmp_path):
     factory, project_id, automation, coordinator = _setup(tmp_path)
     before = coordinator.preview_inputs(
         project_id, automation.automation_id, automation.management_revision
     )
     assert before["inputs"][0]["values"][0]["value"] == "张三"
+    batch, _operation, _replayed = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )
     people_input = automation.input_plan["inputs"][0]
     people_field_id = people_input["fieldBindings"][0]["fieldRef"]["fieldId"]
     with factory() as session:
@@ -653,16 +764,10 @@ def test_start_reselects_current_rows_instead_of_reusing_preview_facts(tmp_path)
         row.content_revision += 1
         session.commit()
 
-    batch, _operation, _replayed = coordinator.start(
-        project_id,
-        automation.automation_id,
-        uid(),
-        {
-            "expectedAutomationRevision": automation.management_revision,
-            "parameters": {},
-            "maxTasks": 1,
-            "concurrency": 1,
-        },
+    _assert_accepted_without_task_facts(factory, batch, _operation)
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
     )
     task = coordinator.list_tasks(project_id, batch.batch_id)[0]
     snapshot = coordinator.get_snapshot(project_id, task.task_id)
@@ -672,7 +777,7 @@ def test_start_reselects_current_rows_instead_of_reusing_preview_facts(tmp_path)
     factory.dispose()
 
 
-def test_ambiguous_relation_blocks_preview_and_start_without_durable_run_facts(
+def test_ambiguous_relation_blocks_preview_and_claim_without_durable_run_facts(
     tmp_path,
 ):
     factory, project_id, automation, coordinator = _setup(tmp_path)
@@ -729,23 +834,26 @@ def test_ambiguous_relation_blocks_preview_and_start_without_durable_run_facts(
     assert preview["inputs"][1]["outcome"] == "ambiguous"
     assert "shared" in preview["inputs"][1]["detail"]
     assert "同时匹配记录" in preview["inputs"][1]["detail"]
-    with pytest.raises(ProjectRunError) as error:
-        coordinator.start(
-            project_id,
-            automation.automation_id,
-            uid(),
-            {
-                "expectedAutomationRevision": automation.management_revision,
-                "parameters": {},
-                "maxTasks": 1,
-                "concurrency": 1,
-            },
-        )
-    assert error.value.code == "INPUT_AMBIGUOUS"
+    batch, operation, _replayed = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )
+    _assert_accepted_without_task_facts(factory, batch, operation)
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ambiguous"
+    )
+    _assert_accepted_without_task_facts(factory, batch, operation)
     with factory() as session:
-        assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 0
-        assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 0
-        assert (
-            session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
-        )
+        stored = session.get(ProjectBatchRow, batch.batch_id)
+        assert stored is not None and stored.claim_gate_state == "closed"
+        assert stored.selection_outcome["status"] == "ambiguous"
+        assert stored.selection_outcome["issueInputIds"]
     factory.dispose()

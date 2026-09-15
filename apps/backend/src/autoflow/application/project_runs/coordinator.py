@@ -201,46 +201,6 @@ class ProjectRunCoordinator:
                 payload,
                 allow_data_inputs="project.data" in self._capabilities,
             )
-            if has_data_inputs and start.max_tasks != 1:
-                raise ProjectRunError(
-                    "VALIDATION_ERROR",
-                    "数据输入首批次当前只支持一个任务",
-                    422,
-                    {"fields": {"maxTasks": "当前必须为 1"}, "retryable": False},
-                )
-            selection = (
-                SqlAlchemyProjectInputGroups(session).select_required(
-                    project_id, automation.input_plan
-                )
-                if has_data_inputs
-                else None
-            )
-            if selection is not None and selection.status != "ready":
-                errors = {
-                    "noMatch": ("INPUT_NO_MATCH", "没有符合条件的数据", 409),
-                    "temporarilyBusy": (
-                        "INPUT_TEMPORARILY_BUSY",
-                        "符合条件的数据暂时被其他任务占用",
-                        409,
-                    ),
-                    "configurationError": (
-                        "INPUT_CONFIGURATION_ERROR",
-                        "数据输入配置或表结构已失效",
-                        422,
-                    ),
-                    "ambiguous": (
-                        "INPUT_AMBIGUOUS",
-                        "关联条件匹配到多条记录，请先修复数据",
-                        422,
-                    ),
-                    "scanBudgetExceeded": (
-                        "INPUT_SCAN_BUDGET_EXCEEDED",
-                        "候选数据量超出单次预检范围，请收紧筛选条件",
-                        409,
-                    ),
-                }
-                code, message, status = errors[selection.status]
-                raise ProjectRunError(code, message, status)
             effective = (
                 replace(
                     automation, environment_policy=thaw_json(start.environment_override)
@@ -317,6 +277,18 @@ class ProjectRunCoordinator:
                     "项目数据执行能力不可用",
                     409,
                 )
+            data_capability_binding = (
+                {
+                    "capability": "project.data",
+                    "projectId": project_id,
+                    "createRecordTargets": create_record_targets,
+                    "tableGrants": table_grants,
+                    "statusInputIds": status_input_ids,
+                }
+                if has_data_capability
+                else None
+            )
+            frozen["dataCapabilityBinding"] = data_capability_binding
             operation = ProjectOperation(
                 operation_id,
                 project_id,
@@ -349,11 +321,11 @@ class ProjectRunCoordinator:
                 created_at=now,
                 completed_at=None,
                 claim_gate_state="open" if has_data_inputs else "closed",
-                selection_outcome={"status": "ready"} if has_data_inputs else None,
+                selection_outcome={"status": "pending"} if has_data_inputs else None,
             )
             session.add(batch_row)
             session.flush()
-            for ordinal in range(start.max_tasks):
+            for ordinal in range(0 if has_data_inputs else (start.max_tasks or 0)):
                 task_id, request_id, snapshot_id = (
                     str(uuid4()),
                     str(uuid4()),
@@ -373,16 +345,12 @@ class ProjectRunCoordinator:
                     capability_bindings=(
                         [
                             {
-                                "capability": "project.data",
-                                "projectId": project_id,
+                                **data_capability_binding,
                                 "taskId": task_id,
                                 "executionGeneration": 1,
-                                "createRecordTargets": create_record_targets,
-                                "tableGrants": table_grants,
-                                "statusInputIds": status_input_ids,
                             }
                         ]
-                        if has_data_capability
+                        if data_capability_binding is not None
                         else []
                     ),
                     created_at=now,
@@ -400,19 +368,7 @@ class ProjectRunCoordinator:
                     )
                 )
                 session.flush()
-                snapshot_inputs = (
-                    SqlAlchemyProjectInputGroups(session).hold(
-                        selection,
-                        input_plan=automation.input_plan,
-                        project_id=project_id,
-                        batch_id=batch_id,
-                        task_id=task_id,
-                        run_id=run.run_id,
-                        now=now,
-                    )
-                    if selection is not None
-                    else []
-                )
+                snapshot_inputs: list[dict[str, Any]] = []
                 session.add(
                     ProjectTaskInputSnapshotRow(
                         id=snapshot_id,

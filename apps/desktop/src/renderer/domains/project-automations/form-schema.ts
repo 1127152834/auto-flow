@@ -37,7 +37,9 @@ export function validateAutomationForm(value: AutomationFormValues): AutomationF
   const policy = value.runPolicy
   if (!Number.isInteger(policy.maxTasks) || policy.maxTasks < 1 || policy.maxTasks > 100) errors['runPolicy.maxTasks'] = '最大任务数必须是 1–100 的整数'
   for (const key of ['automaticExecutionTimeoutSeconds', 'manualDeadlineSeconds'] as const) if (!Number.isFinite(policy[key]) || policy[key] <= 0) errors[`runPolicy.${key}`] = '请输入有限的正数'
-  if (policy.concurrency !== 1 || policy.maxLiveInstances !== 1) errors['runPolicy.concurrency'] = '当前版本按顺序执行'
+  for (const key of ['concurrency', 'maxLiveInstances'] as const) {
+    if (value.inputPlan.inputs.length ? !Number.isInteger(policy[key]) || policy[key] < 1 || policy[key] > 100 : policy[key] !== 1) errors[`runPolicy.${key}`] = value.inputPlan.inputs.length ? '必须是 1–100 的整数' : '参数型自动化固定为 1'
+  }
   const environment = value.environmentPolicy
   if (environment.source === 'newFromProfile' && Object.hasOwn(environment, 'profileId') && !environment.profileId) errors['environmentPolicy.profileId'] = '请选择浏览器配置'
   const proxy = environment.proxyOverride

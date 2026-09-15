@@ -392,3 +392,13 @@ V1 首条三表链已完成实现、真实管理端端到端、异常反例、�
 | F | 未开始 | B、C 独立提交后执行全量检查、跨包 E2E、视觉及手测文档 |
 
 本检查点不改变 PM4 业务范围和退出门槛。测试执行器边界继续固定为：管理界面、HTTP、SQLite、领取、数据操作、运行事实与恢复为真实；执行器为隔离 fake；真实执行核心、Studio 和真实浏览器执行未验收。
+
+PM4-B 已以提交 `64606a2` 交付。权威管理端证据为 `docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/result.json`，完整范围、审查闭合和验证限制见 `docs/project-management/implementation/pm4/b-verification.md`。下一退出目标为 PM4-C。
+
+## 13. 2026-09-16 PM4-C 检查点
+
+PM4-C 已完成有限/不限次数的数据型懒调度、候选续查、并发容量、失败策略、暂时占用等待、真实耗尽、停止门闩、终态占用释放、重启恢复、旧执行代次撤权与双工作区隔离。领取扫描不占用长期写事务；最终提交在短事务内重查批次、容量、表/数据代次、结构和记录版本，并原子写入 Task、不可变输入快照、lease 与 queued CoreRun。
+
+独立规格复核和工程复核均为 PASS。权威管理端证据为 `docs/project-management/implementation/pm4/qa-runs/c-m3SplP/result.json`，源码摘要、数据库事实、10 张同视口截图和未执行边界见 `docs/project-management/implementation/pm4/c-verification.md`。历史失败目录和测试先行红灯均保留，不作为通过证据。
+
+当前结论固定为：管理侧通过，真实执行核心接入待验收。下一退出目标为 F：第二自动化读取账号、跨包异常链、PM2/PM3 管理回归、全量工程检查、最终截图与手测交付。

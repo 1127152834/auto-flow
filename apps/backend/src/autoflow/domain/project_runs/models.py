@@ -44,7 +44,7 @@ class ProjectRunError(Exception):
 class BatchStart:
     expected_automation_revision: int
     parameters: Mapping[str, Any]
-    max_tasks: int
+    max_tasks: int | None
     concurrency: int
     environment_override: Mapping[str, Any] | None
 
@@ -134,13 +134,23 @@ class Batch:
     counts: BatchCounts
     created_at: datetime
     completed_at: datetime | None = None
+    claim_gate_state: str = "closed"
+    selection_outcome: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "frozen_request", _freeze_mapping(self.frozen_request))
+        object.__setattr__(
+            self,
+            "selection_outcome",
+            _freeze_mapping(self.selection_outcome)
+            if self.selection_outcome is not None
+            else None,
+        )
 
     @property
-    def requested_count(self) -> int:
-        return int(self.frozen_request["maxTasks"])
+    def requested_count(self) -> int | None:
+        value = self.frozen_request["maxTasks"]
+        return int(value) if value is not None else None
 
     def project_counts(self, tasks: list[Task] | tuple[Task, ...]) -> Batch:
         if any(
@@ -169,6 +179,12 @@ def batch_to_dict(batch: Batch) -> dict[str, Any]:
         "requestedCount": batch.requested_count,
         "createdTaskCount": batch.counts.created_task_count,
         "activeTaskCount": batch.counts.active_task_count,
+        "claimGateState": batch.claim_gate_state,
+        "selectionOutcome": (
+            thaw_json(batch.selection_outcome)
+            if batch.selection_outcome is not None
+            else None
+        ),
         "createdAt": batch.created_at,
         **({"completedAt": batch.completed_at} if batch.completed_at else {}),
     }

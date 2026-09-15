@@ -115,6 +115,8 @@ class InputSelection:
     issue_input_ids: tuple[str, ...] = ()
     issue_details: tuple[tuple[str, str], ...] = ()
     effective_required_input_ids: tuple[str, ...] = ()
+    continuation_status: SelectionStatus | None = None
+    continuation_input_ids: tuple[str, ...] = ()
 
 
 def select_required_inputs(
@@ -169,9 +171,7 @@ def select_required_inputs(
         input_id for input_id in by_id if input_id in effectively_required
     )
     invalid_sources = tuple(
-        source.input_id
-        for source in sources
-        if source.configuration_error is not None
+        source.input_id for source in sources if source.configuration_error is not None
     )
     if invalid_sources:
         return InputSelection(
@@ -185,7 +185,9 @@ def select_required_inputs(
             effective_required_input_ids=effective_required_ids,
         )
     scan_limited_sources = tuple(
-        source.input_id for source in sources if source.scan_budget_exceeded
+        source.input_id
+        for source in sources
+        if source.scan_budget_exceeded and not source.candidates
     )
     if scan_limited_sources:
         return InputSelection(
@@ -197,6 +199,7 @@ def select_required_inputs(
                 for input_id in scan_limited_sources
             ),
             effective_required_input_ids=effective_required_ids,
+            continuation_input_ids=scan_limited_sources,
         )
 
     # An empty independent/fixed required source makes every possible group
@@ -238,6 +241,22 @@ def select_required_inputs(
         )
 
     if isinstance(outcome, _SearchFailure):
+        continuation_ids = tuple(
+            source.input_id for source in sources if source.scan_budget_exceeded
+        )
+        if continuation_ids and outcome.status in {"noMatch", "temporarilyBusy"}:
+            return InputSelection(
+                "scanBudgetExceeded",
+                evaluated_candidate_bindings=budget.evaluated,
+                issue_input_ids=continuation_ids,
+                issue_details=tuple(
+                    (input_id, "candidate scan has a continuation")
+                    for input_id in continuation_ids
+                ),
+                effective_required_input_ids=effective_required_ids,
+                continuation_status=outcome.status,
+                continuation_input_ids=continuation_ids,
+            )
         return InputSelection(
             outcome.status,
             evaluated_candidate_bindings=budget.evaluated,
@@ -339,9 +358,7 @@ def _search(
 
     matches, ambiguity_detail = _matching_candidates(source, selected, budget)
     if ambiguity_detail is not None:
-        return _SearchFailure(
-            "ambiguous", (input_id,), ((input_id, ambiguity_detail),)
-        )
+        return _SearchFailure("ambiguous", (input_id,), ((input_id, ambiguity_detail),))
 
     failures: list[_SearchFailure] = []
     saw_busy = False
@@ -466,9 +483,7 @@ def _evaluated_matches(
     return tuple(matches)
 
 
-def _valid_shape(
-    source: InputCandidates, relation: InputRelation | None
-) -> bool:
+def _valid_shape(source: InputCandidates, relation: InputRelation | None) -> bool:
     if type(source.required) is not bool:
         return False
     if source.mode == "independent":
@@ -543,7 +558,9 @@ def _strongest_failure(
     failures: Sequence[_SearchFailure], saw_busy: bool, input_id: str
 ) -> _SearchFailure:
     for status in ("ambiguous", "temporarilyBusy"):
-        match = next((failure for failure in failures if failure.status == status), None)
+        match = next(
+            (failure for failure in failures if failure.status == status), None
+        )
         if match is not None:
             return match
     if saw_busy:

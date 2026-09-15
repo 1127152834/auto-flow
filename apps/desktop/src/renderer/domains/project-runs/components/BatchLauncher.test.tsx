@@ -56,3 +56,37 @@ it('does not consume a stop recovery envelope from the same project', () => {
   expect(stored.get(foreignKey)).toContain('stop-key')
   expect(p.onBatchCreated).not.toHaveBeenCalled()
 })
+it.each(['temporarilyBusy', 'noMatch'])('allows accepting a data batch after a valid %s preview', async selectionStatus => {
+  const request = vi.fn().mockResolvedValue({ runnable: false, selectionStatus, inputs: [], capturedAt: '' }) as StreamingApiClient['request']
+  render(<BatchLauncher {...props(request, { savedAutomation: { ...automation, inputPlan: { inputs: [{ inputId: 'input', alias: '资料', tableId: 'table', datasetGeneration: 'generation', mode: 'independent', required: true, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }] } } })}/>)
+  await waitFor(() => expect(request).toHaveBeenCalled())
+  await waitFor(() => expect(screen.getByRole('button', { name: '启动 10 个任务' })).toBeEnabled())
+})
+it('offers unlimited only with required inputs and sends an explicit null with requested concurrency', async () => {
+  const request = vi.fn().mockResolvedValue({ runnable: true, selectionStatus: 'ready', inputs: [], capturedAt: '' }) as StreamingApiClient['request']
+  render(<BatchLauncher {...props(request, { savedAutomation: { ...automation, inputPlan: { inputs: [{ inputId: 'input', alias: '资料', tableId: 'table', datasetGeneration: 'generation', mode: 'independent', required: true, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }] } } })}/>)
+  await waitFor(() => expect(screen.getByRole('button', { name: '启动 10 个任务' })).toBeEnabled())
+  fireEvent.click(screen.getByRole('radio', { name: '不限次数' }))
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '2' } })
+  fireEvent.click(screen.getByRole('button', { name: '启动不限次数批次' }))
+  await waitFor(() => expect(request).toHaveBeenCalledWith(expect.stringContaining('/batches'), expect.objectContaining({ body: expect.objectContaining({ maxTasks: null, concurrency: 2 }) })))
+})
+it('keeps parameter-only batches finite and explains the frozen failure policy', () => {
+  render(<BatchLauncher {...props(vi.fn())}/>)
+  expect(screen.queryByRole('radio', { name: '不限次数' })).not.toBeInTheDocument()
+  expect(screen.getByText(/首次确认失败后停止执行后续排队任务/)).toBeVisible()
+})
+
+it.each(['configurationError', 'scanBudgetExceeded', 'ambiguous'])('keeps %s preview blocked', async selectionStatus => {
+  const request = vi.fn().mockResolvedValue({ runnable: false, selectionStatus, inputs: [], capturedAt: '' }) as StreamingApiClient['request']
+  render(<BatchLauncher {...props(request, { savedAutomation: { ...automation, inputPlan: { inputs: [{ inputId: 'input', alias: '资料', tableId: 'table', datasetGeneration: 'generation', mode: 'independent', required: false, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }] } } })}/>)
+  await waitFor(() => expect(screen.getByText('当前不能领取完整输入组')).toBeVisible())
+  expect(screen.getByRole('button', { name: '启动 10 个任务' })).toBeDisabled()
+  expect(screen.queryByRole('radio', { name: '不限次数' })).not.toBeInTheDocument()
+})
+it('forces legacy parameter-only automations to a disabled concurrency of one', () => {
+  render(<BatchLauncher {...props(vi.fn(), { savedAutomation: { ...automation, runPolicy: { ...automation.runPolicy, concurrency: 3 } } })}/>)
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('1')
+  expect(screen.getByLabelText('请求并发数')).toBeDisabled()
+  expect(screen.getByText('参数型自动化按顺序执行，并发数固定为 1')).toBeVisible()
+})

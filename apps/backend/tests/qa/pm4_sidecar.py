@@ -195,7 +195,15 @@ def create_qa_app(settings: Settings, *, mode: str = "v1"):
             and getattr(handler, "__name__", "") == "startup"
         )
     ]
-    loop = _RunnerLoop(PM4V1FakeRunner(app.state.session_factory, mode=mode))
+    max_auto_tasks_value = os.environ.get("AUTOFLOW_PM4_QA_MAX_AUTO_TASKS")
+    max_auto_tasks = int(max_auto_tasks_value) if max_auto_tasks_value else None
+    loop = _RunnerLoop(
+        PM4V1FakeRunner(
+            app.state.session_factory,
+            mode=mode,
+            max_auto_tasks=max_auto_tasks,
+        )
+    )
     scheduler.wake = loop.wake
     app.state.pm4_qa_runner = loop
     app.router.add_event_handler("startup", loop.startup)

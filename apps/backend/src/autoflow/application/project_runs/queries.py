@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import re
+from collections import Counter
 from datetime import UTC, datetime
 from typing import Any, get_args
 
@@ -124,10 +126,71 @@ class ProjectRunQueries:
                 )
                 .order_by(ProjectOperationRow.created_at.desc())
             )
+            snapshots = list(
+                session.scalars(
+                    select(ProjectTaskInputSnapshotRow)
+                    .join(
+                        ProjectTaskRow,
+                        ProjectTaskRow.id == ProjectTaskInputSnapshotRow.task_id,
+                    )
+                    .where(ProjectTaskRow.batch_id == batch_id)
+                    .order_by(ProjectTaskRow.ordinal)
+                )
+            )
+            identity_signatures: list[str] = []
+            condition_signatures: list[str] = []
+            for snapshot in snapshots:
+                identities = [
+                    {
+                        "alias": item.get("alias"),
+                        "recordRef": item.get("recordRef"),
+                    }
+                    for item in snapshot.inputs
+                    if isinstance(item, dict) and item.get("recordRef") is not None
+                ]
+                conditions = [
+                    {
+                        "alias": item.get("alias"),
+                        "recordRef": item.get("recordRef"),
+                        "contentRevision": item.get("contentRevision"),
+                        "statusRevision": item.get("statusRevision"),
+                        "linkRevision": item.get("linkRevision"),
+                    }
+                    for item in snapshot.inputs
+                    if isinstance(item, dict) and item.get("recordRef") is not None
+                ]
+                if identities:
+                    identity_signatures.append(
+                        json.dumps(
+                            identities,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        )
+                    )
+                    condition_signatures.append(
+                        json.dumps(
+                            conditions,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        )
+                    )
+            counts = Counter(identity_signatures)
+            unchanged_streak = 0
+            if condition_signatures:
+                for signature in reversed(condition_signatures[:-1]):
+                    if signature != condition_signatures[-1]:
+                        break
+                    unchanged_streak += 1
             return {
                 "batch": batch_to_dict(batch),
                 "statusCounts": dict(batch.counts.by_status),
                 "taskCount": batch.counts.created_task_count,
+                "reusedInputGroupCount": sum(
+                    count - 1 for count in counts.values() if count > 1
+                ),
+                "unchangedInputStreak": unchanged_streak,
                 "stopOperation": _operation(operation) if operation else None,
                 "configurationSnapshot": thaw_json(batch.frozen_request),
             }
