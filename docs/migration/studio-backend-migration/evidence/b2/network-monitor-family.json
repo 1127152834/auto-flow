@@ -1,8 +1,7 @@
 {
   "evidenceId": "BE-B2-network-monitor-family-2026-09-16",
   "recordedAt": "2026-09-16",
-  "implementationCommit": "55f1c1d9",
-  "result": "3个批准的网络监听节点已完成冻结源码差分、生产注册、CloakBrowser请求监听适配与真实HTTP协调器准入；真实CloakBrowser及正式Electron集中验收尚未执行。",
+  "result": "3个批准的网络监听节点已完成冻结源码差分、生产注册、CloakBrowser请求监听适配、真实HTTP协调器准入及独立P1复核；真实CloakBrowser及正式Electron集中验收尚未执行。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -29,12 +28,12 @@
   "tests": {
     "sourceDifferential": {
       "test": "apps/backend/tests/differential/workflows/test_b2_network_monitor_executor_parity.py",
-      "result": "6 passed",
+      "result": "6 passed；取消路径同时验证监听器、页面listener和运行状态均清理",
       "coverage": "冻结链路和错误文本、重复ID替换、捕获后停止、取消传播、容量清理"
     },
     "browserProvider": {
       "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py",
-      "result": "请求类型/URL过滤、敏感头脱敏、停止移除监听和容量状态通过"
+      "result": "请求类型/URL过滤、安全请求头白名单、URL userinfo与敏感query脱敏、原始URL私有匹配、停止移除监听和容量状态通过"
     },
     "productionRegistration": {
       "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
@@ -45,8 +44,8 @@
       "result": "真实协调器接收三节点文档并向worker下发完整快照，requiresBrowser=true"
     },
     "affectedRegression": {
-      "command": "uv run pytest -q tests/differential/workflows/test_b2_network_monitor_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py",
-      "result": "41 passed"
+      "command": "uv run pytest -q <network monitor differential + browser session + registry + run API + source mapping + scope preflight>",
+      "result": "105 passed in 6.02s"
     }
   },
   "quality": {
@@ -55,7 +54,7 @@
     "diffCheck": "passed"
   },
   "productionSha256": {
-    "network_monitor.py": "70fe31e25e93268fde42ae9fc65a27257a430725899bcf58b7507d4d03886b6b"
+    "network_monitor.py": "378e2585ba3872a62b307de36fbdb5dcbd839d8224ca4177a1eb87c3c659948c"
   },
   "notClaimed": [
     "真实CloakBrowser请求捕获",
@@ -64,5 +63,19 @@
     "打包sidecar执行",
     "macOS Intel或Windows验证"
   ],
-  "userDatabaseModified": false
+  "userDatabaseModified": false,
+  "implementationCommits": [
+    "55f1c1d9",
+    "a3e9bd1b"
+  ],
+  "review": {
+    "method": "独立P0/P1审查与可复现安全探针",
+    "initialFindings": [
+      "自定义认证头和URL秘密可进入变量/结果",
+      "取消等待未在executor边界解除监听"
+    ],
+    "result": "两项P1均修复；未发现P0。Playwright Page.remove_listener与Request.headers API兼容性已静态核实。",
+    "remainingP0P1": 0,
+    "confidence": "high"
+  }
 }
