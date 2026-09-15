@@ -409,6 +409,39 @@
         "直接文件系统写入"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/network_monitor.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/network_monitor.py",
+      "changeSummary": "批量迁入开始监听、等待请求和停止监听三个批准执行器的默认值、过滤、变量、结果与中文错误语义；用单次运行ExecutionContext中的监听器集合替换WebRPA进程全局字典，并接入取消与容量护栏。",
+      "retainedDependencies": [
+        "Python标准库",
+        "ExecutionContext变量语义",
+        "CloakBrowser请求监听窄端口"
+      ],
+      "removedDependencies": [
+        "WebRPA进程全局_network_monitors",
+        "全局browser_engine",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/network_monitor.py",
+      "targetPath": "apps/backend/src/autoflow/providers/browser/workflow_session.py",
+      "changeSummary": "迁入Playwright request事件过滤和捕获语义，通过CloakBrowser页面适配器提供运行绑定监听；增加敏感请求头脱敏、显式容量状态和幂等监听移除。",
+      "retainedDependencies": [
+        "CloakBrowser Playwright兼容页面事件",
+        "Python标准库"
+      ],
+      "removedDependencies": [
+        "WebRPA全局页面对象",
+        "无限请求内存列表",
+        "原样保存Authorization/Cookie等敏感请求头"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

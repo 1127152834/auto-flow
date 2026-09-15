@@ -7024,7 +7024,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -7063,7 +7063,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_monitor.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -7071,7 +7071,7 @@
         ],
         "targets": [
           "apps/backend/src/autoflow/application/workflows/executors/network_monitor.py",
-          "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
+          "apps/backend/src/autoflow/providers/browser/workflow_session.py"
         ]
       },
       "frontendContracts": [
@@ -7080,12 +7080,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、CloakBrowser请求监听适配和真实HTTP协调器准入已通过；真实CloakBrowser请求捕获、节点事件/SSE恢复及正式Electron执行仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.network_monitor_start.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/network_monitor.py#NetworkMonitorStartExecutor",
@@ -7093,7 +7093,7 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 network_monitor_start 的默认配置、合法分支和错误分支；配置键为 filterType, monitorId, urlPattern",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：开始网络监听模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/network-monitor-family.json"
         },
         {
           "id": "BE.network_monitor_start.contract",
@@ -7120,7 +7120,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、正式注册、请求监听端口与HTTP准入已有自动证据；真实CloakBrowser、SSE节点事件和正式Electron结果尚未核销。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -7277,7 +7277,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -7321,7 +7321,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_monitor.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -7329,7 +7329,7 @@
         ],
         "targets": [
           "apps/backend/src/autoflow/application/workflows/executors/network_monitor.py",
-          "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
+          "apps/backend/src/autoflow/providers/browser/workflow_session.py"
         ]
       },
       "frontendContracts": [
@@ -7338,12 +7338,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、CloakBrowser请求监听适配和真实HTTP协调器准入已通过；真实CloakBrowser请求捕获、节点事件/SSE恢复及正式Electron执行仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.network_monitor_wait.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/network_monitor.py#NetworkMonitorWaitExecutor",
@@ -7351,7 +7351,7 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 network_monitor_wait 的默认配置、合法分支和错误分支；配置键为 captureMode, monitorId, stopAfterCapture, timeout, urlPattern, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：等待API请求模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/network-monitor-family.json"
         },
         {
           "id": "BE.network_monitor_wait.contract",
@@ -7378,7 +7378,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、正式注册、请求监听端口与HTTP准入已有自动证据；真实CloakBrowser、SSE节点事件和正式Electron结果尚未核销。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -7479,7 +7479,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -7516,7 +7516,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_monitor.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -7524,7 +7524,7 @@
         ],
         "targets": [
           "apps/backend/src/autoflow/application/workflows/executors/network_monitor.py",
-          "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
+          "apps/backend/src/autoflow/providers/browser/workflow_session.py"
         ]
       },
       "frontendContracts": [
@@ -7533,12 +7533,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、CloakBrowser请求监听适配和真实HTTP协调器准入已通过；真实CloakBrowser请求捕获、节点事件/SSE恢复及正式Electron执行仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.network_monitor_stop.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/network_monitor.py#NetworkMonitorStopExecutor",
@@ -7546,7 +7546,7 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 network_monitor_stop 的默认配置、合法分支和错误分支；配置键为 monitorId, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：停止网络监听模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/network-monitor-family.json"
         },
         {
           "id": "BE.network_monitor_stop.contract",
@@ -7573,7 +7573,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、正式注册、请求监听端口与HTTP准入已有自动证据；真实CloakBrowser、SSE节点事件和正式Electron结果尚未核销。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },

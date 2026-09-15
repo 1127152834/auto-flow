@@ -1,0 +1,68 @@
+{
+  "evidenceId": "BE-B2-network-monitor-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "implementationCommit": "55f1c1d9",
+  "result": "3个批准的网络监听节点已完成冻结源码差分、生产注册、CloakBrowser请求监听适配与真实HTTP协调器准入；真实CloakBrowser及正式Electron集中验收尚未执行。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "licenseRecord": "LICENSE.WebRPA",
+    "files": [
+      {
+        "path": "backend/app/executors/network_monitor.py",
+        "sha256": "cc8b81311a4054f0c4948d7384ebab862257d64bbca889d32d7d878c71f7a0cb"
+      }
+    ]
+  },
+  "migratedTypes": [
+    "network_monitor_start",
+    "network_monitor_wait",
+    "network_monitor_stop"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入：监听ID、过滤类型、URL子串、first/all、变量写入、停止语义和中文结果保持冻结实现。",
+    "runIsolation": "AutoFlow必要适配：监听器由ExecutionContext按运行隔离，替换冻结进程全局字典。",
+    "browserBoundary": "AutoFlow必要适配：通过CloakBrowser页面request事件窄端口捕获，不读取全局browser_engine。",
+    "securityAndCapacity": "AutoFlow必要适配：敏感请求头替换为[已隐藏]；最多10000项或8MiB，超限明确失败并解除监听，不静默截断。",
+    "pageIdentity": "已批准增强：使用用户明确选择的当前页；不静默切换到最近页面。"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "test": "apps/backend/tests/differential/workflows/test_b2_network_monitor_executor_parity.py",
+      "result": "6 passed",
+      "coverage": "冻结链路和错误文本、重复ID替换、捕获后停止、取消传播、容量清理"
+    },
+    "browserProvider": {
+      "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py",
+      "result": "请求类型/URL过滤、敏感头脱敏、停止移除监听和容量状态通过"
+    },
+    "productionRegistration": {
+      "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
+      "result": "3种节点全部注册且requiresBrowser=true"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_network_monitor_family_is_admitted_by_the_real_http_coordinator",
+      "result": "真实协调器接收三节点文档并向worker下发完整快照，requiresBrowser=true"
+    },
+    "affectedRegression": {
+      "command": "uv run pytest -q tests/differential/workflows/test_b2_network_monitor_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py",
+      "result": "41 passed"
+    }
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "productionSha256": {
+    "network_monitor.py": "70fe31e25e93268fde42ae9fc65a27257a430725899bcf58b7507d4d03886b6b"
+  },
+  "notClaimed": [
+    "真实CloakBrowser请求捕获",
+    "节点事件和SSE断流补读",
+    "正式Electron UI执行",
+    "打包sidecar执行",
+    "macOS Intel或Windows验证"
+  ],
+  "userDatabaseModified": false
+}
