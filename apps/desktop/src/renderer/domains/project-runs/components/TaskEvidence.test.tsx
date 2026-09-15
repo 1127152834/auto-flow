@@ -8,15 +8,15 @@ import { TaskEvidence } from './TaskEvidence'
 afterEach(cleanup)
 type Schema = components['schemas']
 const detail = {
-  automationName: '采集', parameterDefinitions: [],
-  task: { taskId: 'task', projectId: 'project', batchId: 'batch', runId: 'run', runRequestId: 'request', status: 'failed' as const, statusRevision: 2, inputSnapshotId: 'snapshot', createdAt: '', completedAt: '' },
+  automationName: '采集', parameterDefinitions: [], nodeNames: { 'node-02': '打开页面' },
+  task: { taskId: 'task', taskOrdinal: 1, projectId: 'project', batchId: 'batch', runId: 'run', runRequestId: 'request', status: 'failed' as const, statusRevision: 2, inputSnapshotId: 'snapshot', createdAt: '', completedAt: '' },
   inputSnapshot: { inputSnapshotId: 'snapshot', taskId: 'task', batchId: 'batch', parameters: {}, inputs: [], capturedAt: '' },
   run: { runId: 'run', runRequestId: 'request', status: 'failed' as const, statusRevision: 2, executionGeneration: 1, preparedContentId: 'content', capabilityBindings: [], resourceRequest: {}, lastSequence: 2, terminal: true, error: { code: 'FAILED' }, startedAt: '', finishedAt: '' },
 } satisfies Schema['TaskDetail']
 const base = { mode: 'evidence' as const, detail, attempts: { items: [], page: 1, pageSize: 100, total: 0, sort: 'createdAt' }, outputs: undefined, onLoadMoreAttempts: vi.fn(), onLoadMoreOutputs: vi.fn() }
 const artifact = {
   artifactId: 'artifact-1', kind: 'screenshot' as const, purpose: 'error' as const, availability: 'available' as const,
-  nodeId: '打开页面', nodeVisitId: 'visit', eventSequence: 2, executionGeneration: 1, mediaType: 'image/png' as const,
+  nodeId: 'node-02', nodeName: '旧节点名', nodeVisitId: 'visit', eventSequence: 2, executionGeneration: 1, mediaType: 'image/png' as const,
   byteSize: 3072, sha256: 'a'.repeat(64), createdAt: '2026-09-15T01:02:03Z', contentUrl: '/content',
 } satisfies Schema['RunArtifactView']
 
@@ -25,6 +25,8 @@ it('shows controlled failure screenshots and reports the selected artifact', asy
   render(<TaskEvidence {...base} artifacts={{ items: [artifact], page: 1, pageSize: 100, total: 1, sort: 'createdAt' }} onOpenArtifact={onOpenArtifact}/>)
 
   expect(screen.getByText('打开页面')).toBeVisible()
+  expect(screen.queryByText('旧节点名')).not.toBeInTheDocument()
+  expect(screen.queryByText('node-02')).not.toBeInTheDocument()
   expect(screen.getByText(/3 KB/)).toBeVisible()
   await userEvent.click(screen.getByRole('button', { name: '查看失败截图：打开页面' }))
   expect(onOpenArtifact).toHaveBeenCalledWith(artifact)
