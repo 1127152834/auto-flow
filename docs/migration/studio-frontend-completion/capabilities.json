@@ -133,7 +133,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B1",
       "source": {
@@ -201,7 +201,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
+      "gap": "节点源码差分、生产HTTP/SSE合同、真实CloakBrowser动作及正式Electron开发/目录包主链均已通过；B1共享的正常关窗、停止和异常离开矩阵仍单独验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -230,7 +230,7 @@
         },
         {
           "id": "BE.open_page.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -238,10 +238,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 open_page，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：打开网页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json"
         }
       ],
-      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、生产HTTP/SSE合同、macOS arm64正式Electron真实UI与CloakBrowser执行、SQLite日志/结果/PNG及目录包边界均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -2294,7 +2294,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B1",
       "source": {
@@ -2363,7 +2363,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
+      "gap": "节点源码差分、生产HTTP/SSE合同、真实CloakBrowser动作及正式Electron开发/目录包主链均已通过；B1共享的正常关窗、停止和异常离开矩阵仍单独验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -2392,7 +2392,7 @@
         },
         {
           "id": "BE.click_element.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -2400,10 +2400,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 click_element，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：点击元素模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json"
         }
       ],
-      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、生产HTTP/SSE合同、macOS arm64正式Electron真实UI与CloakBrowser执行、SQLite日志/结果/PNG及目录包边界均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -2703,7 +2703,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B1",
       "source": {
@@ -2766,7 +2766,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
+      "gap": "节点源码差分、生产HTTP/SSE合同、真实CloakBrowser动作及正式Electron开发/目录包主链均已通过；B1共享的正常关窗、停止和异常离开矩阵仍单独验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -2795,7 +2795,7 @@
         },
         {
           "id": "BE.input_text.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -2803,10 +2803,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 input_text，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：输入文本模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json"
         }
       ],
-      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、生产HTTP/SSE合同、macOS arm64正式Electron真实UI与CloakBrowser执行、SQLite日志/结果/PNG及目录包边界均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -4479,7 +4479,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B1",
       "source": {
@@ -4545,7 +4545,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
+      "gap": "节点源码差分、生产HTTP/SSE合同、真实CloakBrowser动作及正式Electron开发/目录包主链均已通过；B1共享的正常关窗、停止和异常离开矩阵仍单独验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -4574,7 +4574,7 @@
         },
         {
           "id": "BE.get_element_info.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -4582,10 +4582,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 get_element_info，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：获取元素信息模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json"
         }
       ],
-      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、生产HTTP/SSE合同、macOS arm64正式Electron真实UI与CloakBrowser执行、SQLite日志/结果/PNG及目录包边界均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -6024,7 +6024,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B1",
       "source": {
@@ -6087,7 +6087,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
+      "gap": "节点源码差分、生产HTTP/SSE合同、真实CloakBrowser动作及正式Electron开发/目录包主链均已通过；B1共享的正常关窗、停止和异常离开矩阵仍单独验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -6116,7 +6116,7 @@
         },
         {
           "id": "BE.screenshot.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -6124,10 +6124,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 screenshot，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：网页截图模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json"
         }
       ],
-      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、生产HTTP/SSE合同、macOS arm64正式Electron真实UI与CloakBrowser执行、SQLite日志/结果/PNG及目录包边界均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
