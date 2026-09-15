@@ -206,7 +206,7 @@
 - [x] 先逐项运行 `BE.<type>.source-parity`；只有 WebRPA IO 调用替换为 `ExecutionContext` port，业务分支保持源码行为。
 - [x] 在本地受控页面核对导航 URL、输入值、点击计数、提取字节和 PNG 解码/尺寸。
 - [x] 对导航、输入和截图分别测试取消；确认后续节点没有副作用。
-- [ ] 把五节点三类证据写入各自 `backendMigration.acceptanceCases[].evidencePath`，不得一次性把 B2 节点标完成。
+- [x] 把五节点三类证据写入各自 `backendMigration.acceptanceCases[].evidencePath`；源码差分、HTTP 合同和真实 provider 分别引用证据，正式 Electron 项保持待验收，不提前标记 B2 节点完成。
 
 ### Task B1.5：运行、事件、日志和产物持久化
 
@@ -247,11 +247,11 @@
 - Create: `apps/backend/tests/contract/test_workflow_runs_api.py`
 - Create: `apps/backend/tests/contract/test_workflow_events_api.py`
 
-- [ ] 按前端 `api.ts` 和 `contract-matrix.md` 注册静态路由，确保 `/workflows/data-latest/*`、`/workflow-runs/*` 等不会被动态 `{id}` 路由吞掉。
-- [ ] 复用本机 token、工作区实例/连接代次、统一错误包和 `QuiesceGate`。
-- [ ] 运行相同 runId 的响应丢失、停止竞争、SSE 断流补读、分页边界和停写阻断测试。
-- [ ] 运行 `cd apps/backend && uv run pytest tests/contract/test_studio_*.py tests/contract/test_workflows_api.py tests/contract/test_workflow_runs_api.py tests/contract/test_workflow_events_api.py -q`。
-- [ ] 运行 `cd apps/desktop && npm run openapi:generate && npm run openapi:check`；生成类型变化必须能追溯到冻结合同缺口。
+- [x] 按前端 `api.ts` 和 `contract-matrix.md` 注册静态路由，确保 `/workflows/data-latest/*`、`/workflow-runs/*` 等不会被动态 `{id}` 路由吞掉。
+- [x] 复用本机 token、工作区实例/连接代次、统一错误包和 `QuiesceGate`。
+- [x] 运行相同 runId 的响应丢失、停止竞争、SSE 断流补读、分页边界和停写阻断测试；正式 sidecar 断流与宿主竞争仍由 B1.7 做 Electron 实测。
+- [x] 运行 `cd apps/backend && uv run pytest tests/contract/test_studio_*.py tests/contract/test_workflows_api.py tests/contract/test_workflow_runs_api.py tests/contract/test_workflow_events_api.py -q`，结果为 388 passed。
+- [x] 运行 OpenAPI 生成与一致性检查；生成类型变化均来自运行草稿快照、结果分页与产物读取合同，并通过 TypeScript 检查。
 
 ### Task B1.7：正式 Electron 真实 UI 验收
 

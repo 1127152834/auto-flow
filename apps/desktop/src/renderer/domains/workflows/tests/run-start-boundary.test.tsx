@@ -7,8 +7,10 @@ vi.hoisted(() => {
 import { Toolbar } from '../components/Toolbar'
 import { useWorkflowStore as store } from '../editor-store'
 import { useDebugStore } from '../hooks/stores/debugStore'
-import { workflowApi } from '../api'
+import { browserApi, workflowApi } from '../api'
 import { socketService } from '../events'
+type ResolvedProfile = NonNullable<Awaited<ReturnType<typeof browserApi.resolveProfile>>['data']>
+const profile = (id = 'profile-1') => ({id} as ResolvedProfile)
 const deferred = <T,>() => { let resolve!: (value: T) => void; const promise = new Promise<T>(r => { resolve = r }); return { promise, resolve } }
 beforeEach(() => {
   store.getState().clearWorkflow()
@@ -19,6 +21,24 @@ beforeEach(() => {
   vi.spyOn(workflowApi, 'update').mockResolvedValue({ success: true })
 })
 afterEach(() => { cleanup(); vi.restoreAllMocks() })
+it('runs the current draft snapshot without creating or updating a workflow document', async () => {
+  const source = store.getState()
+  source.setWorkflowName('尚未保存的草稿')
+  render(<Toolbar />)
+  fireEvent.keyDown(window, { key: 'F5' })
+
+  await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
+  expect(workflowApi.create).not.toHaveBeenCalled()
+  expect(workflowApi.update).not.toHaveBeenCalled()
+  expect(workflowApi.execute).toHaveBeenCalledWith(source.id, expect.objectContaining({
+    documentId: source.id,
+    document: expect.objectContaining({
+      id: source.id,
+      name: '尚未保存的草稿',
+      nodes: [expect.objectContaining({data: expect.objectContaining({moduleType: 'open_page'})})],
+    }),
+  }))
+})
 it.each(['completed', 'stopped', 'failed', 'pending'] as const)('does not replace confirmed %s state when the start HTTP response arrives', async status => {
   const response = deferred<Awaited<ReturnType<typeof workflowApi.execute>>>()
   vi.mocked(workflowApi.execute).mockReturnValue(response.promise)
@@ -30,28 +50,31 @@ it.each(['completed', 'stopped', 'failed', 'pending'] as const)('does not replac
   expect(store.getState().executionStatus).toBe(status)
 })
 it('coalesces repeated starts during preparation and freezes debug options before awaiting', async () => {
-  const response = deferred<Awaited<ReturnType<typeof workflowApi.create>>>()
-  vi.mocked(workflowApi.create).mockReturnValue(response.promise)
+  const response = deferred<Awaited<ReturnType<typeof browserApi.resolveProfile>>>()
+  vi.spyOn(browserApi, 'resolveProfile').mockReturnValue(response.promise)
+  const documentId = store.getState().id
   const nodeId = store.getState().nodes[0].id
   useDebugStore.setState({ breakpoints: new Set([nodeId]), stepMode: true })
   render(<Toolbar />)
   fireEvent.keyDown(window, { key: 'F5' })
   fireEvent.keyDown(window, { key: 'F5' })
-  await waitFor(()=>expect(workflowApi.create).toHaveBeenCalledTimes(1))
+  await waitFor(()=>expect(browserApi.resolveProfile).toHaveBeenCalledTimes(1))
   act(() => useDebugStore.setState({ breakpoints: new Set(), stepMode: false }))
-  await act(async () => response.resolve({ success: true, data: { id: 'start-fixture' } }))
+  await act(async () => response.resolve({ success: true, data: profile() }))
   expect(workflowApi.execute).toHaveBeenCalledTimes(1)
-  expect(workflowApi.execute).toHaveBeenCalledWith('start-fixture', expect.objectContaining({ breakpoints: [nodeId], stepMode: true }))
+  expect(workflowApi.execute).toHaveBeenCalledWith(documentId, expect.objectContaining({ breakpoints: [nodeId], stepMode: true }))
 })
 it('releases preparation ownership after failure so an explicit retry can start', async () => {
-  vi.mocked(workflowApi.create).mockResolvedValueOnce({ success: false, error: '准备失败' })
+  vi.spyOn(browserApi, 'resolveProfile')
+    .mockResolvedValueOnce({ success: false, error: '准备失败' })
+    .mockResolvedValue({ success: true, data: profile() })
   render(<Toolbar />)
   fireEvent.keyDown(window, { key: 'F5' })
   await waitFor(() => expect(store.getState().logs.some(log => log.message.includes('准备失败'))).toBe(true))
   expect(workflowApi.execute).not.toHaveBeenCalled()
   fireEvent.keyDown(window, { key: 'F5' })
   await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
-  expect(workflowApi.create).toHaveBeenCalledTimes(2)
+  expect(browserApi.resolveProfile).toHaveBeenCalledTimes(2)
 })
 it('does not start another request through run-from-node while a run is active', async () => {
   store.getState().setExecutionStatus('running')
@@ -62,19 +85,14 @@ it('does not start another request through run-from-node while a run is active',
   expect(store.getState().executionStatus).toBe('running')
 })
 
-it('binds a server workflow to the original editor document before starting', async () => {
+it('binds the run identity to the original editor document before starting', async () => {
   const original = store.getState().id
   const bind = vi.spyOn(socketService, 'bindExecutionDocument')
-  const response = deferred<Awaited<ReturnType<typeof workflowApi.create>>>()
-  vi.mocked(workflowApi.create).mockReturnValue(response.promise)
   render(<Toolbar />); fireEvent.keyDown(window, {key: 'F5'})
-  await waitFor(() => expect(workflowApi.create).toHaveBeenCalledTimes(1))
-  act(() => store.getState().clearWorkflow())
-  await act(async () => response.resolve({success: true, data: {id: 'server-identity'}}))
   await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
-  expect(bind).toHaveBeenCalledWith('server-identity', original, expect.any(String))
+  expect(bind).toHaveBeenCalledWith(original, original, expect.any(String))
   const boundRunId = bind.mock.calls[0][2]
-  expect(workflowApi.execute).toHaveBeenCalledWith('server-identity', expect.objectContaining({ runId: boundRunId, documentId: original }))
+  expect(workflowApi.execute).toHaveBeenCalledWith(original, expect.objectContaining({ runId: boundRunId, documentId: original }))
   expect(bind.mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(workflowApi.execute).mock.invocationCallOrder[0])
 })
 
@@ -106,9 +124,10 @@ it.each(['execution:started','execution:completed','execution:stopped'])('waits 
  const off=vi.spyOn(socketService,'off')
  const view=render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
  await waitFor(()=>expect(view.getByRole('status').textContent).toContain('等待启动确认'))
+ const workflowId=vi.mocked(workflowApi.execute).mock.calls[0][0]
  act(()=>listeners.get(event)?.forEach(callback=>callback({workflowId:'foreign'})))
  expect(view.getByRole('status').textContent).toContain('等待启动确认')
- act(()=>listeners.get(event)?.forEach(callback=>callback({workflowId:'start-fixture'})))
+ act(()=>listeners.get(event)?.forEach(callback=>callback({workflowId})))
  expect(view.queryByText('等待启动确认')).toBeNull()
  view.unmount()
  for(const name of ['execution:started','execution:completed','execution:stopped'])expect(off).toHaveBeenCalledWith(name,listeners.get(name)?.[0])
@@ -120,7 +139,8 @@ it('does not restore an awaiting indicator when a terminal event precedes the HT
  vi.spyOn(socketService,'on').mockImplementation((name,callback)=>{if(name==='execution:completed')completed=callback})
  const view=render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
  await waitFor(()=>expect(workflowApi.execute).toHaveBeenCalledTimes(1))
- act(()=>{store.getState().setExecutionStatus('completed');completed?.({workflowId:'start-fixture'})})
+ const workflowId=vi.mocked(workflowApi.execute).mock.calls[0][0]
+ act(()=>{store.getState().setExecutionStatus('completed');completed?.({workflowId})})
  await act(async()=>response.resolve({success:true}))
  expect(store.getState().executionStatus).toBe('completed');expect(view.queryByText('等待启动确认')).toBeNull()
 })
@@ -129,37 +149,37 @@ it('can stop an accepted startup without sending another execution request',asyn
  const signal=vi.spyOn(socketService,'stopExecution').mockImplementation(()=>{})
  const view=render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
  await waitFor(()=>expect(view.getByRole('status').textContent).toContain('等待启动确认'))
+ const workflowId=vi.mocked(workflowApi.execute).mock.calls[0][0]
  fireEvent.click(view.getByRole('button',{name:'停止启动请求'}))
- await waitFor(()=>expect(stop).toHaveBeenCalledWith('start-fixture',vi.mocked(workflowApi.execute).mock.calls[0][1].runId))
- expect(signal).toHaveBeenCalledWith('start-fixture',vi.mocked(workflowApi.execute).mock.calls[0][1].runId);expect(workflowApi.execute).toHaveBeenCalledTimes(1)
+ await waitFor(()=>expect(stop).toHaveBeenCalledWith(workflowId,vi.mocked(workflowApi.execute).mock.calls[0][1].runId))
+ expect(signal).toHaveBeenCalledWith(workflowId,vi.mocked(workflowApi.execute).mock.calls[0][1].runId);expect(workflowApi.execute).toHaveBeenCalledTimes(1)
  expect(view.getByRole('status').textContent).toContain('等待启动确认')
 })
-it('does not reuse a prepared server identifier for a different editor document',async()=>{
- const preparation=deferred<Awaited<ReturnType<typeof workflowApi.create>>>()
- vi.mocked(workflowApi.create).mockReturnValueOnce(preparation.promise)
- let completed:((data:{workflowId:string})=>void)|undefined
- vi.spyOn(socketService,'on').mockImplementation((name,callback)=>{if(name==='execution:completed')completed=callback})
+it('does not submit a prepared snapshot after the editor document changes',async()=>{
+ const preparation=deferred<Awaited<ReturnType<typeof browserApi.resolveProfile>>>()
+ vi.spyOn(browserApi,'resolveProfile').mockReturnValueOnce(preparation.promise).mockResolvedValue({success:true,data:profile()})
  render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
- await waitFor(()=>expect(workflowApi.create).toHaveBeenCalledTimes(1))
+ await waitFor(()=>expect(browserApi.resolveProfile).toHaveBeenCalledTimes(1))
  act(()=>{store.getState().clearWorkflow();store.getState().addNode('open_page',{x:0,y:0})})
- await act(async()=>preparation.resolve({success:true,data:{id:'old-server-id'}}))
- await waitFor(()=>expect(workflowApi.execute).toHaveBeenCalledTimes(1))
- act(()=>completed?.({workflowId:'old-server-id'}))
+ await act(async()=>preparation.resolve({success:true,data:profile()}))
+ expect(workflowApi.execute).not.toHaveBeenCalled()
  fireEvent.keyDown(window,{key:'F5'});await act(async()=>{})
- expect(workflowApi.create).toHaveBeenCalledTimes(2);expect(workflowApi.update).not.toHaveBeenCalled()
+ await waitFor(()=>expect(workflowApi.execute).toHaveBeenCalledTimes(1))
+ expect(workflowApi.execute).toHaveBeenCalledWith(store.getState().id,expect.anything())
 })
 
-it('freezes the managed profile before asynchronous preparation and sends no legacy browser config',async()=>{
- const response=deferred<Awaited<ReturnType<typeof workflowApi.create>>>()
- vi.mocked(workflowApi.create).mockReturnValue(response.promise)
+it('freezes the managed profile and document before the start response',async()=>{
+ const response=deferred<Awaited<ReturnType<typeof workflowApi.execute>>>()
+ vi.mocked(workflowApi.execute).mockReturnValue(response.promise)
  const profiles=await import('../hooks/stores/globalConfigStore')
  profiles.useGlobalConfigStore.getState().setBrowserProfileId('10000000-0000-4000-8000-000000000001')
  render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
- await waitFor(()=>expect(workflowApi.create).toHaveBeenCalledTimes(1))
- act(()=>profiles.useGlobalConfigStore.getState().setBrowserProfileId('changed-after-start'))
- await act(async()=>response.resolve({success:true,data:{id:'start-fixture'}}))
+ await waitFor(()=>expect(workflowApi.execute).toHaveBeenCalledTimes(1))
+ act(()=>{profiles.useGlobalConfigStore.getState().setBrowserProfileId('changed-after-start');store.getState().addNode('click_element',{x:100,y:0})})
  const request=vi.mocked(workflowApi.execute).mock.calls[0][1]
  expect(request.profileId).toBe('10000000-0000-4000-8000-000000000001')
+ expect(request.document.nodes).toHaveLength(1)
  expect(request).not.toHaveProperty('browserConfig')
+ await act(async()=>response.resolve({success:true}))
  profiles.useGlobalConfigStore.getState().setBrowserProfileId('')
 })

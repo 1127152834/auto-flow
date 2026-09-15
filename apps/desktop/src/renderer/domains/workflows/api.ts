@@ -162,15 +162,89 @@ export const systemApi = {
 }
 
 // ==================== 工作流 API ====================
+const workflowRevisions = new Map<string, number>()
+const pendingWorkflowWrites = new Map<string, string>()
+
+function workflowWriteKey(operation: string, payload: unknown): string {
+  return `${operation}:${JSON.stringify(payload)}`
+}
+
+function workflowRequestId(key: string, supplied?: unknown): string {
+  if (typeof supplied === 'string' && supplied.trim()) return supplied
+  const existing = pendingWorkflowWrites.get(key)
+  if (existing) return existing
+  const requestId = crypto.randomUUID()
+  pendingWorkflowWrites.set(key, requestId)
+  return requestId
+}
+
+function rememberWorkflow(value: unknown, fallbackRevision?: number): void {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+  const item = value as Record<string, unknown>
+  if (typeof item.id !== 'string' || !item.id) return
+  const revision = Number.isSafeInteger(item.revision) && Number(item.revision) > 0
+    ? Number(item.revision)
+    : fallbackRevision
+  if (revision) workflowRevisions.set(item.id, revision)
+}
+
+function settleWorkflowWrite(key: string, result: ApiResponse<unknown>): void {
+  if (result.success || (result.httpStatus !== undefined && result.httpStatus >= 400 && result.httpStatus < 500)) {
+    pendingWorkflowWrites.delete(key)
+  }
+}
+
+function workflowConflictRevision(error: ApiWireError | undefined): number | undefined {
+  if (!error || !('details' in error)) return undefined
+  const revision = error.details?.currentRevision
+  return Number.isSafeInteger(revision) && Number(revision) > 0
+    ? Number(revision)
+    : undefined
+}
+
 export const workflowApi = {
-  list: () => apiRequest('/workflows'),
-  get: (id: string) => apiRequest(`/workflows/${id}`),
-  create: (data: any) =>
-    apiRequest('/workflows', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: any) =>
-    apiRequest(`/workflows/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  delete: (id: string) =>
-    apiRequest(`/workflows/${id}`, { method: 'DELETE' }),
+  list: async () => {
+    const result = await apiRequest<any[]>('/workflows')
+    result.data?.forEach(item => rememberWorkflow(item, 1))
+    return result
+  },
+  get: async (id: string) => {
+    const result = await apiRequest<any>(`/workflows/${id}`)
+    if (result.success) rememberWorkflow(result.data, 1)
+    return result
+  },
+  create: async (data: any) => {
+    const key = workflowWriteKey('create', data)
+    const clientRequestId = workflowRequestId(key, data?.clientRequestId)
+    const result = await apiRequest<any>('/workflows', {
+      method: 'POST', body: JSON.stringify({...data, clientRequestId}),
+    })
+    if (result.success) rememberWorkflow(result.data, 1)
+    settleWorkflowWrite(key, result)
+    return result
+  },
+  update: async (id: string, data: any) => {
+    const expectedRevision = Number.isSafeInteger(data?.expectedRevision)
+      ? data.expectedRevision
+      : workflowRevisions.get(id) ?? (Number.isSafeInteger(data?.revision) ? data.revision : 1)
+    const key = workflowWriteKey(`update:${id}:${expectedRevision}`, data)
+    const clientRequestId = workflowRequestId(key, data?.clientRequestId)
+    const result = await apiRequest<any>(`/workflows/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({...data, expectedRevision, clientRequestId}),
+    })
+    if (result.success) rememberWorkflow(result.data, expectedRevision + 1)
+    const currentRevision = workflowConflictRevision(result.errorDetails)
+    if (currentRevision !== undefined) {
+      workflowRevisions.set(id, currentRevision)
+    }
+    settleWorkflowWrite(key, result)
+    return result
+  },
+  delete: (id: string) => {
+    const expectedRevision = workflowRevisions.get(id) ?? 1
+    return apiRequest(`/workflows/${id}?expectedRevision=${expectedRevision}`, { method: 'DELETE' })
+  },
   execute: (id: string, params?: any) =>
     apiRequest(`/workflows/${id}/execute`, { method: 'POST', body: JSON.stringify(params || {}) }),
   stop: (id: string, runId?:string) =>

@@ -20,6 +20,10 @@ def test_schema_export_does_not_construct_runtime(monkeypatch, tmp_path):
     schema = export_schema()
     assert '/api/v1/profiles' in schema['paths']
     assert '/api/v1/model-providers' in schema['paths']
+    assert '/api/workflows' in schema['paths']
+    assert '/api/workflows/{workflow_id}/execute' in schema['paths']
+    assert '/api/workflow-runs/{run_id}/logs' in schema['paths']
+    assert '/api/events/stream' in schema['paths']
     assert list(tmp_path.iterdir()) == []
 
 

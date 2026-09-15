@@ -267,73 +267,30 @@ export function Toolbar() {
       : `正在准备执行工作流${headless ? '（无头模式）' : ''}...` })
 
     try {
-      // 先创建或更新工作流
-      let currentWorkflowId = workflowId
-
-      if (!currentWorkflowId) {
-        const createResult = await workflowApi.create({
-          name,
-          nodes: nodes.map(n => ({
-            id: n.id,
-            type: n.data.moduleType,
-            position: n.position,
-            data: n.data,
-            style: n.style,
-          })),
-          edges: edges.map(e => ({
-            id: e.id,
-            source: e.source,
-            target: e.target,
-            sourceHandle: e.sourceHandle,
-            targetHandle: e.targetHandle,
-          })),
-          variables: variables.map(v => ({
-            name: v.name,
-            value: v.value,
-            type: v.type,
-            scope: v.scope,
-          })),
-        })
-
-        if (createResult.error || !createResult.data?.id) {
-          addLog({ level: 'error', message: `创建工作流失败: ${createResult.error || '返回数据无效'}` })
-          return
-        }
-
-        currentWorkflowId = createResult.data.id
-        setWorkflowId(currentWorkflowId)
-      } else {
-        // 更新现有工作流
-        const updateResult = await workflowApi.update(currentWorkflowId, {
-          name,
-          nodes: nodes.map(n => ({
-            id: n.id,
-            type: n.data.moduleType,
-            position: n.position,
-            data: n.data,
-            style: n.style,
-          })),
-          edges: edges.map(e => ({
-            id: e.id,
-            source: e.source,
-            target: e.target,
-            sourceHandle: e.sourceHandle,
-            targetHandle: e.targetHandle,
-          })),
-          variables: variables.map(v => ({
-            name: v.name,
-            value: v.value,
-            type: v.type,
-            scope: v.scope,
-          })),
-        })
-        if (updateResult.error) { addLog({level:'error',message: updateResult.error}); return }
-      }
-
-      // 此时 currentWorkflowId 必然是 string（前面分支都已赋值）
-      if (!currentWorkflowId) {
-        addLog({ level: 'error', message: '执行失败: 工作流 ID 缺失' })
-        return
+      const currentWorkflowId = workflowId || sourceDocumentId
+      const document = {
+        id: sourceDocumentId,
+        name,
+        nodes: nodes.map(n => ({
+          id: n.id,
+          type: n.data.moduleType,
+          position: n.position,
+          data: n.data,
+          style: n.style,
+        })),
+        edges: edges.map(e => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          sourceHandle: e.sourceHandle,
+          targetHandle: e.targetHandle,
+        })),
+        variables: variables.map(v => ({
+          name: v.name,
+          value: v.value,
+          type: v.type,
+          scope: v.scope,
+        })),
       }
       const runId = crypto.randomUUID()
       socketService.bindExecutionDocument(currentWorkflowId, sourceDocumentId, runId)
@@ -346,6 +303,7 @@ export function Toolbar() {
         ...debugOptions,
         runId,
         documentId: sourceDocumentId,
+        document,
         startNodeId: startNodeId || undefined,
       })
       

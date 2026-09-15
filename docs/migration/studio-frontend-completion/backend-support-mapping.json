@@ -61,9 +61,9 @@
       ],
       "risk": "原版以本地文件为主要事实源，AutoFlow要求工作区SQLite、revision并发保护和原子保存；不能复用原版路径拼接。",
       "implementation": {
-        "completedSlice": "B1.1 工作流文档、布局、revision与请求幂等持久化",
-        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/document-persistence.json",
-        "remaining": "子流程、自定义模块、资源包及真实HTTP合同"
+        "completedSlice": "B1.1工作流文档、布局、revision和请求幂等持久化；B1.6真实HTTP CRUD、鉴权、停写及OpenAPI合同",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json",
+        "remaining": "子流程、自定义模块和资源包在B3迁入"
       }
     },
     {
@@ -135,9 +135,9 @@
       ],
       "risk": "原版启动Edge/Chrome/Firefox并复用全局browser_engine；AutoFlow只能消费主应用CloakBrowser Profile。页面、context、持久目录、代理、扩展和关闭语义必须实测对照。",
       "implementation": {
-        "completedSlice": "B1.3 CloakBrowser页面会话、worker、资源清理；B1.4五节点执行器、源码差分、可取消调度和真实CloakBrowser受控页动作",
-        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json",
-        "remaining": "B1.5-B1.7持久运行合同与正式Electron闭环；B2 iframe、拾取、弹窗、网络监听及其余网页节点"
+        "completedSlice": "B1.3 CloakBrowser页面会话、worker和资源清理；B1.4五节点真实执行；B1.6主应用Profile到worker的运行装配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json",
+        "remaining": "B1.7正式Electron闭环；B2 iframe、拾取、弹窗、网络监听及其余网页节点"
       }
     },
     {
@@ -174,9 +174,9 @@
       ],
       "risk": "Mock已验证合同但没有真实动作；HTTP接受不能冒充动作完成，终态只能在worker和浏览器清理后提交。",
       "implementation": {
-        "completedSlice": "B1.3 worker与资源清理；B1.5 runId幂等、活跃名额、终态清理门槛、启动恢复和事件事务持久化",
-        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/run-events-artifacts.json",
-        "remaining": "B1.6 HTTP/SSE装配与运行协调；B1.7正式Electron闭环；Debug命令在B8"
+        "completedSlice": "B1.3 worker和资源清理；B1.5持久状态、幂等、活跃名额和启动恢复；B1.6真实HTTP命令、运行协调和SSE补读合同",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json",
+        "remaining": "B1.7正式Electron生命周期矩阵；Debug命令在B8"
       }
     },
     {
@@ -208,9 +208,9 @@
       ],
       "risk": "事件需先持久化再发布；大值和文件必须按登记引用读取，不能把任意绝对路径暴露给renderer。",
       "implementation": {
-        "completedSlice": "B1.5严格递增事件、提交后广播、大值文件原子落盘、哈希/归属登记、数据库失败清理孤儿文件",
-        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/run-events-artifacts.json",
-        "remaining": "B1.6下载和SSE HTTP接口；B3重复执行索引；B8诊断、筛选与导出"
+        "completedSlice": "B1.5递增事件、提交后广播、原子文件和归属登记；B1.6日志/结果/PNG分页读取与SSE HTTP合同",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json",
+        "remaining": "B3重复执行索引；B8诊断、筛选和高容量导出"
       }
     },
     {
@@ -441,13 +441,17 @@
         "apps/backend/tests/integration/test_workflow_migration.py"
       ],
       "classification": "AutoFlow必要适配",
-      "status": "已查证待迁入",
+      "status": "已实现且已验收",
       "milestone": "B0",
       "contractRefs": [
         "docs/migration/studio-frontend-completion/acceptance.md#正式-f6-交付"
       ],
       "risk": "当前分支head为0009_merge_project_data；提交f573a44中的0010_android_fleet经0009_merge_android_m5连接0008_workflow_debug，与项目数据分支形成双head。必须原样恢复四个历史文件并增加0011 merge；不得恢复Android业务或操作正式数据。",
-      "missingEvidence": "拓扑已查实；仍需正式数据库只读副本的schema、数据哈希、upgrade事务回滚和重复启动证据。"
+      "implementation": {
+        "completedSlice": "B0历史迁移链恢复、未知revision拒绝、安全启动护栏及脱敏副本验证",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b0/closure.json",
+        "remaining": "正式用户数据库升级只能在另行说明具体操作后执行"
+      }
     }
   ]
 }

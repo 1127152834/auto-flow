@@ -1,0 +1,74 @@
+{
+  "evidenceId": "BE-B1-http-sse-runtime-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "result": "B1.6 production HTTP/SSE assembly and frontend transport contract passed; formal Electron acceptance remains B1.7",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "files": [
+      "backend/app/api/workflows.py",
+      "backend/app/services/workflow_runner.py",
+      "backend/app/services/workflow_log_manager.py"
+    ],
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "verifiedBehavior": [
+    "authenticated workflow create/read/update/list uses stable client request identity and revision conflict protection",
+    "static workflow routes are registered ahead of the dynamic document route",
+    "run accepts the frozen current draft without creating or updating a workflow document",
+    "same runId and identical request starts one worker and takes one resource lease; different content returns RUN_ID_CONFLICT",
+    "stop confirms the terminal state only after worker exit and resource release",
+    "node result rows, paged artifacts and registered PNG bytes are readable through production HTTP routes",
+    "global Studio SSE frames retain strict sequence, event identity and UTF-8 payloads; reconnect replays strictly after afterSeq without duplicates",
+    "authentication, QuiesceGate and the AutoFlow error envelope cover the new /api workflow routes",
+    "the frontend sends stable write identities, expectedRevision and the current frozen draft snapshot; a lost response is recovered with the same identity",
+    "OpenAPI generated types and the production schema are consistent"
+  ],
+  "tests": {
+    "backendContract": {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/contract/test_studio_*.py apps/backend/tests/contract/test_workflows_api.py apps/backend/tests/contract/test_workflow_runs_api.py apps/backend/tests/contract/test_workflow_events_api.py",
+      "exitCode": 0,
+      "result": "388 passed, 2 dependency deprecation warnings"
+    },
+    "backendFullRegression": {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests",
+      "exitCode": 0,
+      "result": "1400 passed, 1 opt-in real-browser test skipped, 2 dependency deprecation warnings",
+      "note": "run sequentially without concurrent OpenAPI generation"
+    },
+    "frontendAffected": {
+      "command": "npm --workspace @autoflow/desktop test -- --run src/renderer/domains/workflows/tests/run-start-boundary.test.tsx src/renderer/domains/workflows/tests/static-number-preflight.test.tsx src/renderer/domains/workflows/tests/workflow-document-write-identity.test.ts",
+      "exitCode": 0,
+      "result": "3 files, 49 passed"
+    },
+    "frontendFullRegression": {
+      "command": "npm --workspace @autoflow/desktop test",
+      "exitCode": 0,
+      "result": "174 files, 3718 passed"
+    },
+    "ruffChangedFiles": "passed after import formatting",
+    "mypyChangedSource": "15 source files passed",
+    "openapiCheck": "passed",
+    "typescript": "passed",
+    "eslintChangedFiles": "passed",
+    "diffCheck": "passed",
+    "desktopBuild": {
+      "command": "npm run build",
+      "exitCode": 0,
+      "result": "main, preload and renderer production builds passed; Vite reported only existing chunking/annotation warnings"
+    }
+  },
+  "adaptations": [
+    "approved AutoFlow behavior runs the current editor draft as an independent snapshot and does not auto-save before execution",
+    "result and artifact routes project the existing durable event/artifact repositories instead of exposing worker paths",
+    "the service-lifetime SSE journal is connection-generation scoped; durable run logs remain available through run paging after service restart"
+  ],
+  "notClaimed": [
+    "formal Electron UI execution, native lifecycle and package acceptance; B1.7 owns these gates",
+    "Profile/kernel/License/proxy failure matrix; BE-B1-009 remains open",
+    "macOS Intel or Windows real-machine verification",
+    "remaining 222 approved nodes or later Debug/picker/recorder capabilities"
+  ],
+  "userDatabaseModified": false,
+  "runningMainApplicationModified": false
+}

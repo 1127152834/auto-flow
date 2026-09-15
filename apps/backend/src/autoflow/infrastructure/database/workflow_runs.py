@@ -107,7 +107,10 @@ class SqlAlchemyWorkflowRuns:
                 workflow_id=start.workflow_id,
                 request_hash=request_hash,
                 started_at=_iso(now),
-                active_slot=1,
+                # Legacy Studio used slot 1 in the retired payload format. Keep
+                # that data byte-for-byte compatible and reserve slot 2 for the
+                # current managed worker lifecycle.
+                active_slot=2,
                 payload={
                     "documentId": start.document_id,
                     "workflowName": start.workflow_name,
@@ -222,6 +225,25 @@ class SqlAlchemyWorkflowRuns:
             ).all()
             return tuple(_event(row) for row in rows)
 
+    def list_runs(
+        self, *, document_id: str | None, cursor: int, limit: int
+    ) -> tuple[tuple[WorkflowRun, ...], int, int | None]:
+        with self._session_factory() as session:
+            statement = select(WorkflowRunRow)
+            if document_id is not None:
+                statement = statement.where(
+                    WorkflowRunRow.payload["documentId"].as_string() == document_id
+                )
+            rows = session.scalars(
+                statement.order_by(
+                    WorkflowRunRow.started_at.desc(), WorkflowRunRow.id
+                )
+            ).all()
+            total = len(rows)
+            page = rows[cursor : cursor + limit]
+            next_cursor = cursor + len(page) if cursor + len(page) < total else None
+            return tuple(_run(row) for row in page), total, next_cursor
+
     def finish(
         self,
         run_id: str,
@@ -272,11 +294,17 @@ class SqlAlchemyWorkflowRuns:
     def recover_interrupted(self, *, now: datetime) -> tuple[WorkflowRun, ...]:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
-            rows = session.scalars(
+            candidates = session.scalars(
                 select(WorkflowRunRow)
                 .where(WorkflowRunRow.active_slot.is_not(None))
                 .order_by(WorkflowRunRow.started_at, WorkflowRunRow.id)
             ).all()
+            rows = [
+                row
+                for row in candidates
+                if row.payload.get("status") in {"starting", "running", "paused"}
+                and row.payload.get("cleanupState") == "pending"
+            ]
             for run in rows:
                 sequence = self._next_sequence(session, run.id)
                 session.add(
@@ -372,3 +400,11 @@ class SqlAlchemyWorkflowRuns:
                 .limit(limit)
             ).all()
             return tuple(_artifact(row) for row in rows)
+
+    def get_artifact(self, run_id: str, artifact_id: str) -> WorkflowArtifact | None:
+        with self._session_factory() as session:
+            row = session.get(
+                WorkflowRunArtifactRow,
+                {"run_id": run_id, "id": artifact_id},
+            )
+            return _artifact(row) if row is not None else None

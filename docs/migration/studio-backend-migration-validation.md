@@ -39,15 +39,15 @@
 | ID | 前置与操作 | 通过标准 | 层级 | 状态/证据 |
 |---|---|---|---|---|
 | BE-B1-001 | Studio 新建 open_page→input_text→click_element→get_element_info→screenshot，保存、关闭重开 | 文档、布局、revision 和配置真实持久化；未产生运行 | Electron E2E | 尚未验收 |
-| BE-B1-002 | 选择主应用 Profile，运行未保存草稿 | 只创建运行快照，不创建/更新工作流文档；CloakBrowser 完成真实页面动作 | Electron/CloakBrowser | 尚未验收 |
+| BE-B1-002 | 选择主应用 Profile，运行未保存草稿 | 只创建运行快照，不创建/更新工作流文档；CloakBrowser 完成真实页面动作 | Electron/CloakBrowser | 后端未保存快照、前端请求边界和独立真实 CloakBrowser 动作已分别通过；正式 Electron 组合仍待 B1.7，[http-sse-runtime.json](studio-backend-migration/evidence/b1/http-sse-runtime.json)、[five-browser-nodes.json](studio-backend-migration/evidence/b1/five-browser-nodes.json) |
 | BE-B1-003 | 比对输入值、点击计数、提取值和 PNG | 页面值一致、计数恰为 1、提取字节和截图可核对 | CloakBrowser | [通过：macOS arm64 独立临时会话](studio-backend-migration/evidence/b1/five-browser-nodes.json) |
-| BE-B1-004 | 同 runId 同请求重发、丢弃首次 HTTP 响应后查询 | 只启动一个 worker/浏览器，页面动作不重复 | HTTP/worker | repository 幂等已通过；HTTP/worker 组合待 B1.6，[run-events-artifacts.json](studio-backend-migration/evidence/b1/run-events-artifacts.json) |
-| BE-B1-005 | 同 runId 不同快照重发 | 返回 409 和稳定错误包，原运行不变 | HTTP | repository 冲突与原运行保持已通过；错误包待 B1.6，[run-events-artifacts.json](studio-backend-migration/evidence/b1/run-events-artifacts.json) |
-| BE-B1-006 | 执行中断 SSE，再按最后序号重连 | 已持久化事件补齐、无重复，断线不改变运行状态 | HTTP/SSE | 事件补读与提交后广播已通过；SSE 断流待 B1.6，[run-events-artifacts.json](studio-backend-migration/evidence/b1/run-events-artifacts.json) |
+| BE-B1-004 | 同 runId 同请求重发、丢弃首次 HTTP 响应后查询 | 只启动一个 worker/浏览器，页面动作不重复 | HTTP/worker | 已通过：repository、协调器与前端响应丢失恢复使用同一身份；相同请求只启动一个 worker，[http-sse-runtime.json](studio-backend-migration/evidence/b1/http-sse-runtime.json) |
+| BE-B1-005 | 同 runId 不同快照重发 | 返回 409 和稳定错误包，原运行不变 | HTTP | 已通过：生产 HTTP 返回 `RUN_ID_CONFLICT`，原运行保持 running，[http-sse-runtime.json](studio-backend-migration/evidence/b1/http-sse-runtime.json) |
+| BE-B1-006 | 执行中断 SSE，再按最后序号重连 | 已持久化事件补齐、无重复，断线不改变运行状态 | HTTP/SSE | 合同已通过：严格序号、UTF-8 帧、断开后的 `afterSeq` 补读与前端游标恢复；正式 sidecar 网络断流待 B1.7 组合复核，[http-sse-runtime.json](studio-backend-migration/evidence/b1/http-sse-runtime.json) |
 | BE-B1-007 | 导航、输入、截图期间分别停止 | 当前操作及时取消，后续节点无副作用；清理完成后才确认 cancelled | worker/CloakBrowser | 尚未验收 |
 | BE-B1-008 | 杀 worker、杀浏览器、异常退出 sidecar | 运行标记 interrupted/failed，网页动作不重放，进程和锁最终可回收 | 进程集成 | worker/进程树清理与启动恢复 interrupted 已分别通过；sidecar 组合待 B1.6-B1.7，[browser-worker.json](studio-backend-migration/evidence/b1/browser-worker.json)、[run-events-artifacts.json](studio-backend-migration/evidence/b1/run-events-artifacts.json) |
 | BE-B1-009 | Profile/内核/License/代理缺失或正在删除 | 启动前返回定位明确的错误；没有半启动运行或泄露秘密 | application/HTTP | 尚未验收 |
-| BE-B1-010 | 保存中继续编辑、revision 冲突、磁盘失败 | 当前草稿不被旧响应覆盖，失败不误报保存成功 | repository/Electron | 尚未验收 |
+| BE-B1-010 | 保存中继续编辑、revision 冲突、磁盘失败 | 当前草稿不被旧响应覆盖，失败不误报保存成功 | repository/Electron | repository 原子性、revision 错误包、稳定写身份及前端迟到响应保护已通过；正式 Electron 磁盘失败交互待 B1.7，[document-persistence.json](studio-backend-migration/evidence/b1/document-persistence.json)、[http-sse-runtime.json](studio-backend-migration/evidence/b1/http-sse-runtime.json) |
 | BE-B1-011 | 运行中关 Studio、退出、换区，分别选择保存/放弃/取消 | 按草稿→停止清理→离开顺序；取消保留现场；保存失败不先停止 | Electron E2E | 尚未验收 |
 | BE-B1-012 | 冻结 sidecar 和 Electron 目录包运行同一链路 | 包中不读取 reference 或开发服务器；退出无受管残留 | 正式包 | 尚未验收 |
 

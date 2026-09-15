@@ -41,6 +41,10 @@ from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
     configure_proxy_management,
 )
+from autoflow.bootstrap.workflows import (
+    build_workflow_services,
+    register_workflow_routes,
+)
 from autoflow.domain.credentials import CredentialStore
 from autoflow.domain.models.ports import ModelGateway
 from autoflow.domain.profiles.ports import (
@@ -239,6 +243,18 @@ def create_app(
         license_store.read,
         test_browser_workers,
     )
+    workflow_services = build_workflow_services(
+        session_factory,
+        profiles=profile_service,
+        installed_kernels=catalog_provider.installed,
+        resolve_proxy=proxy_runtime.resolve_profile,
+        read_license=license_store.read,
+        profile_guard=usage_guard,
+        kernels_root=paths.kernels,
+        temp_root=paths.temp,
+        artifact_root=paths.workspace,
+    )
+    workflow_services.runs.recover_interrupted()
 
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
@@ -270,6 +286,7 @@ def create_app(
                 else []
             ),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
+            *workflow_services.blockers(),
         ],
         quiesce_gate,
     )
@@ -283,6 +300,7 @@ def create_app(
     app.state.kernel_worker_manager = kernel_worker_manager
     app.state.kernel_service = kernel_service
     app.state.settings_runtime = settings_runtime
+    app.state.workflow_services = workflow_services
 
     async def shutdown() -> None:
         try:
@@ -296,7 +314,9 @@ def create_app(
             await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
 
             await asyncio.gather(
-                test_browser_workers.shutdown(), kernel_worker_manager.shutdown()
+                workflow_services.shutdown(),
+                test_browser_workers.shutdown(),
+                kernel_worker_manager.shutdown(),
             )
         finally:
             try:
@@ -325,6 +345,7 @@ def create_app(
         api_version=settings.api_version,
         instance_id=settings.instance_id,
     )
+    register_workflow_routes(app, workflow_services)
     register_project_routes(app, ProjectHttpServices(
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
         tables=DataTableService(SqlAlchemyProjectData(session_factory)),
@@ -351,7 +372,7 @@ def create_app(
                     status_code=401,
                     headers={"Cache-Control": "no-store"},
                 )
-        if request.url.path.startswith("/api/v1/") and (
+        if request.url.path.startswith("/api/") and (
             settings.instance_token is None
             or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
@@ -362,7 +383,7 @@ def create_app(
             request.url.path in {"/api/v1/kernels/catalog", "/api/v1/kernels/license"}
             or request.url.path.endswith("/models/discover")
         )
-        guarded_request = request.url.path.startswith("/api/v1/") and (
+        guarded_request = request.url.path.startswith("/api/") and (
             request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get
         )
         if not guarded_request:

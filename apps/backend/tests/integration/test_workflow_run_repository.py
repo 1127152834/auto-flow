@@ -101,6 +101,33 @@ def test_recovery_interrupts_active_runs_without_replaying_actions(
     assert service.start(_start("run-2")).run_id == "run-2"
 
 
+def test_recovery_does_not_reinterpret_retired_studio_payload(tmp_path: Path) -> None:
+    database = tmp_path / "retired-run.sqlite3"
+    migrate_database(database)
+    repository = SqlAlchemyWorkflowRuns(create_session_factory(database))
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "INSERT INTO workflow_runs VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                "retired-run",
+                "retired-workflow",
+                "legacy-request",
+                "2026-09-13",
+                1,
+                '{"state":"paused"}',
+            ),
+        )
+
+    assert repository.recover_interrupted(now=datetime(2026, 9, 15, tzinfo=UTC)) == ()
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT active_slot, payload FROM workflow_runs WHERE id='retired-run'"
+        ).fetchone() == (1, '{"state":"paused"}')
+
+    created = WorkflowRunService(repository).start(_start("current-run"))
+    assert created.status == "starting"
+
+
 def test_node_success_and_event_roll_back_in_one_transaction(tmp_path: Path) -> None:
     database = tmp_path / "atomic.sqlite3"
     migrate_database(database)

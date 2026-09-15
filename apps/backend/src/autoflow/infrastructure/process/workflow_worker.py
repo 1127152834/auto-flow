@@ -25,7 +25,7 @@ from autoflow.infrastructure.process.test_browser_worker import stop_process_tre
 _SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
 
 
-class WorkflowWorkerBusy(RuntimeError):
+class WorkflowWorkerBusy(WorkflowBrowserBusy):
     pass
 
 
@@ -113,6 +113,7 @@ class WorkflowWorkerManager:
         start_timeout: float = 90,
         termination_timeout: float = 3,
         on_event: Callable[[dict[str, object]], Any] | None = None,
+        on_exit: Callable[[str, int], Any] | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-worker" / uuid4().hex).resolve()
         self._command = command or workflow_worker_command()
@@ -120,6 +121,7 @@ class WorkflowWorkerManager:
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
         self._on_event = on_event
+        self._on_exit = on_exit
         self._starting: dict[str, _StartingWorker] = {}
         self._running: dict[str, _RunningWorker] = {}
         self._failures: dict[str, str] = {}
@@ -294,9 +296,18 @@ class WorkflowWorkerManager:
             await stop_process_tree(
                 process, self._termination_timeout, directory, executable, birth
             )
+            if process.returncode is None:
+                await process.wait()
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
                 self._running.pop(run_id, None)
+            if self._on_exit is not None:
+                try:
+                    callback_result = self._on_exit(run_id, process.returncode or 0)
+                    if isawaitable(callback_result):
+                        await callback_result
+                except Exception:  # noqa: BLE001 -- cleanup already completed.
+                    self._failures[run_id] = "WORKER_EXIT_CONSUMER_FAILED"
 
 
 def workflow_worker_command() -> tuple[str, ...]:

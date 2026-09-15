@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowWorkerBusy,
     WorkflowWorkerManager,
@@ -192,3 +191,37 @@ async def test_event_consumer_failure_still_cleans_worker_tree(tmp_path: Path) -
     if session.child_pid is not None:
         with pytest.raises(ProcessLookupError):
             os.kill(session.child_pid, 0)
+
+
+@pytest.mark.asyncio
+async def test_worker_exit_callback_runs_after_process_and_temp_cleanup(
+    tmp_path: Path,
+) -> None:
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"test binary identity")
+    observed: list[tuple[str, int, bool, bool]] = []
+    manager: WorkflowWorkerManager
+
+    async def on_exit(run_id: str, return_code: int) -> None:
+        observed.append(
+            (
+                run_id,
+                return_code,
+                manager.busy(),
+                any((tmp_path / "workflow-worker").rglob(run_id)),
+            )
+        )
+
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        command=_fake_worker(tmp_path),
+        termination_timeout=0.2,
+        on_exit=on_exit,
+    )
+    await manager.start(
+        "run-exit", "profile-1", executable, {"runId": "run-exit", "profileId": "profile-1"}
+    )
+
+    await manager.stop("run-exit")
+
+    assert observed == [("run-exit", -15, False, False)]

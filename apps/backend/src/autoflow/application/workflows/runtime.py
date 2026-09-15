@@ -5,6 +5,7 @@ from collections import deque
 from collections.abc import Coroutine, Mapping
 from dataclasses import dataclass
 from typing import Any
+from uuid import uuid4
 
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.graph import parse_workflow
@@ -84,10 +85,33 @@ class WorkflowRuntime:
                         ),
                     ),
                 )
+            execution_id = str(uuid4())
+            context.current_node_id = node.id
+            context.current_execution_id = execution_id
+            await _publish(
+                context,
+                {
+                    "type": "execution:node_start",
+                    "nodeId": node.id,
+                    "executionId": execution_id,
+                },
+            )
             raw_config = node.data.get("config")
             config = dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
             result = await _execute_with_cancellation(executor.execute(config, context), context)
             executed.append(node_id)
+            await _publish(
+                context,
+                {
+                    "type": "execution:node_complete",
+                    "nodeId": node.id,
+                    "executionId": execution_id,
+                    "success": result.success,
+                    "message": result.message,
+                    "error": result.error,
+                    "data": result.data,
+                },
+            )
             if not result.success:
                 return WorkflowRuntimeResult(
                     False,
@@ -101,6 +125,11 @@ class WorkflowRuntime:
                 else graph.get_next_nodes(node_id)
             )
         return WorkflowRuntimeResult(True, tuple(executed))
+
+
+async def _publish(context: ExecutionContext, event: dict[str, Any]) -> None:
+    if context.events is not None:
+        await context.events.publish(event)
 
 
 async def _execute_with_cancellation(

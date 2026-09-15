@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-
 from autoflow.application.workflows.executors.base import (
     ModuleExecutor,
     ModuleResult,
@@ -160,6 +159,42 @@ async def test_runtime_executes_linear_nodes_in_edge_order_and_stops_on_failure(
     assert result.executed_node_ids == ("open", "input")
     assert result.failed_node_id == "input"
     assert execution_order == ["open_page", "input_text"]
+
+
+@pytest.mark.asyncio
+async def test_runtime_emits_one_execution_identity_per_node_dispatch() -> None:
+    calls: list[str] = []
+    registry = ExecutorRegistry()
+    registry.register(_executor("OpenPage", "autoflow.web", calls))
+    events: list[dict[str, Any]] = []
+
+    class Sink:
+        async def publish(self, event: dict[str, Any]) -> None:
+            events.append(event)
+
+    result = await WorkflowRuntime(registry).execute(
+        {
+            "nodes": [
+                {
+                    "id": "open",
+                    "type": "moduleNode",
+                    "data": {"moduleType": "open_page", "config": {"url": "about:blank"}},
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+        ExecutionContext(events=Sink()),
+    )
+
+    assert result.success is True
+    assert [event["type"] for event in events] == [
+        "execution:node_start",
+        "execution:node_complete",
+    ]
+    assert events[0]["nodeId"] == events[1]["nodeId"] == "open"
+    assert events[0]["executionId"] == events[1]["executionId"]
+    assert events[1]["success"] is True
 
 
 def test_visual_nodes_do_not_require_executors() -> None:

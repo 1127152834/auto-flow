@@ -1,0 +1,502 @@
+from __future__ import annotations
+
+import asyncio
+import copy
+from collections.abc import Awaitable, Callable, Mapping, Sequence
+from dataclasses import asdict
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any, Protocol, cast
+
+from autoflow.adapters.events.workflows import StudioEventJournal
+from autoflow.application.profiles.service import ProfileService
+from autoflow.domain.kernels.errors import LicenseInvalid
+from autoflow.domain.kernels.models import InstalledKernel, KernelRef
+from autoflow.domain.profiles.errors import KernelNotInstalled
+from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
+from autoflow.domain.workflows.browser import WorkflowBrowserBusy
+from autoflow.domain.workflows.document import WorkflowDraft
+from autoflow.domain.workflows.runs import (
+    TerminalRunStatus,
+    WorkflowRun,
+    WorkflowRunError,
+    WorkflowRunStart,
+)
+
+from .documents import WorkflowDocumentService
+from .runs import WorkflowRunRepository, WorkflowRunService
+from .runtime import WorkflowRuntime
+
+
+class WorkflowWorkers(Protocol):
+    async def start(
+        self,
+        run_id: str,
+        profile_id: str,
+        executable: Path,
+        payload: dict[str, Any],
+    ) -> object: ...
+
+    async def stop(self, run_id: str) -> None: ...
+
+    def busy(self) -> bool: ...
+
+
+class WorkflowResources(Protocol):
+    @property
+    def owner_id(self) -> str | None: ...
+
+    async def acquire(
+        self, owner_id: str, profile_id: str, kernel: KernelRef
+    ) -> None: ...
+
+    async def release(self, owner_id: str) -> None: ...
+
+
+class ProfileReader(Protocol):
+    def get(self, profile_id: str) -> Profile: ...
+
+
+class WorkflowRunCoordinator:
+    def __init__(
+        self,
+        *,
+        documents: WorkflowDocumentService,
+        runs: WorkflowRunService,
+        run_repository: WorkflowRunRepository,
+        runtime: WorkflowRuntime,
+        profiles: ProfileService | ProfileReader,
+        installed_kernels: Callable[[], Sequence[InstalledKernel]],
+        resolve_proxy: Callable[
+            [Profile, str], Awaitable[ProfileBrowserProxy | None]
+        ],
+        read_license: Callable[[], str | None],
+        workers: WorkflowWorkers,
+        resources: WorkflowResources,
+        events: StudioEventJournal,
+        artifact_root: Path,
+    ) -> None:
+        self._documents = documents
+        self._runs = runs
+        self._repository = run_repository
+        self._runtime = runtime
+        self._profiles = profiles
+        self._installed_kernels = installed_kernels
+        self._resolve_proxy = resolve_proxy
+        self._read_license = read_license
+        self._workers = workers
+        self._resources = resources
+        self._events = events
+        self._artifact_root = artifact_root.resolve()
+        self._terminal_intents: dict[str, dict[str, Any]] = {}
+        self._command_lock = asyncio.Lock()
+
+    async def start(
+        self, workflow_id: str, request: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
+        run_id = _required_string(request, "runId")
+        document_id = _required_string(request, "documentId")
+        profile_id = _required_string(request, "profileId")
+        mode = "debug" if bool(request.get("debug") or request.get("stepMode")) else "run"
+        headless = request.get("headless", False)
+        if not isinstance(headless, bool):
+            raise WorkflowRunError("RUN_REQUEST_INVALID", "headless 必须是布尔值", 422)
+
+        async with self._command_lock:
+            supplied_document = request.get("document")
+            if supplied_document is None:
+                saved = self._documents.get(workflow_id)
+                draft = WorkflowDraft(
+                    saved.id,
+                    saved.name,
+                    copy.deepcopy(saved.document),
+                    copy.deepcopy(saved.layout),
+                )
+            elif isinstance(supplied_document, Mapping):
+                draft = WorkflowDraft.from_payload(supplied_document)
+            else:
+                raise WorkflowRunError(
+                    "RUN_REQUEST_INVALID", "document 必须是工作流对象", 422
+                )
+            document = draft.to_payload()
+            issues = self._runtime.preflight(document)
+            if issues:
+                raise WorkflowRunError(
+                    "WORKFLOW_PREFLIGHT_FAILED",
+                    "工作流包含尚未迁入或无法运行的节点",
+                    422,
+                    {
+                        "issues": [
+                            {
+                                "nodeId": issue.node_id,
+                                "path": issue.path,
+                                "code": issue.code,
+                                "message": issue.message,
+                            }
+                            for issue in issues
+                        ]
+                    },
+                )
+            profile = self._profiles.get(profile_id)
+            kernel = self._kernel(profile)
+            start = WorkflowRunStart(
+                run_id=run_id,
+                workflow_id=workflow_id,
+                document_id=document_id,
+                workflow_name=draft.name,
+                document_snapshot=copy.deepcopy(draft.document),
+                layout_snapshot=copy.deepcopy(draft.layout),
+                profile_id=profile_id,
+                profile_snapshot={
+                    **_profile_snapshot(profile),
+                    "runOptions": {
+                        "headless": headless,
+                        "startNodeId": request.get("startNodeId"),
+                        "mode": mode,
+                    },
+                },
+                mode=cast(Any, mode),
+            )
+            run = self._runs.start(start)
+            if run.status != "starting" or self._resources.owner_id == run_id:
+                return _summary(run)
+
+            acquired = False
+            try:
+                await self._resources.acquire(
+                    run_id,
+                    profile_id,
+                    KernelRef(
+                        cast(Any, profile.spec.browser_edition),
+                        profile.spec.browser_version,
+                    ),
+                )
+                acquired = True
+                proxy = await self._resolve_proxy(profile, run_id)
+                license_key = (
+                    self._read_license()
+                    if profile.spec.browser_edition == "licensed"
+                    else None
+                )
+                if profile.spec.browser_edition == "licensed" and not license_key:
+                    raise LicenseInvalid
+                payload = _worker_payload(
+                    start,
+                    profile,
+                    proxy,
+                    license_key,
+                    executable=kernel.executable_path,
+                    headless=headless,
+                    artifact_root=self._artifact_root,
+                )
+                await self._workers.start(
+                    run_id, profile_id, kernel.executable_path, payload
+                )
+                self._runs.mark_running(run_id)
+                running = self._runs.get(run_id)
+                await self._events.publish(
+                    "execution:started",
+                    {
+                        "workflowId": workflow_id,
+                        "runId": run_id,
+                        "documentId": document_id,
+                    },
+                )
+                return _summary(running)
+            except BaseException as error:
+                if self._workers.busy():
+                    await self._workers.stop(run_id)
+                if acquired and self._resources.owner_id == run_id:
+                    await self._resources.release(run_id)
+                failed = self._runs.finish(
+                    run_id,
+                    status="failed",
+                    cleanup_completed=True,
+                    error={
+                        "code": "RUN_START_FAILED",
+                        "message": "工作流浏览器启动失败",
+                    },
+                )
+                await self._events.publish(
+                    "execution:completed",
+                    {
+                        **_event_identity(failed),
+                        "result": {
+                            "status": "failed",
+                            "executedNodes": 0,
+                            "failedNodes": 0,
+                        },
+                    },
+                )
+                if isinstance(error, WorkflowBrowserBusy):
+                    raise WorkflowRunError(
+                        "WORKFLOW_BROWSER_BUSY",
+                        "当前工作区已有活跃浏览器会话",
+                        409,
+                    ) from error
+                if isinstance(error, (RuntimeError, OSError)):
+                    raise WorkflowRunError(
+                        "RUN_START_FAILED", "工作流浏览器启动失败", 503
+                    ) from error
+                raise
+
+    async def stop(self, workflow_id: str, run_id: str) -> Mapping[str, Any]:
+        async with self._command_lock:
+            run = self._runs.get(run_id)
+            if run.workflow_id != workflow_id:
+                raise WorkflowRunError(
+                    "RUN_OWNERSHIP_MISMATCH", "运行不属于指定工作流", 409
+                )
+            if run.status in {"completed", "failed", "stopped", "interrupted"}:
+                return _summary(run)
+            self._runs.request_stop(run_id)
+            await self._workers.stop(run_id)
+            return _summary(self._runs.get(run_id))
+
+    async def on_worker_event(self, event: dict[str, object]) -> None:
+        run_id = _required_string(event, "runId")
+        run = self._runs.get(run_id)
+        event_type = _required_string(event, "type")
+        if event_type == "artifact:registered":
+            self._repository.register_artifact(
+                run_id=run_id,
+                artifact_id=_required_string(event, "artifactId"),
+                node_id=_required_string(event, "nodeId"),
+                execution_id=_optional_string(event.get("executionId")),
+                relative_path=_required_string(event, "relativePath"),
+                size=_required_int(event, "size"),
+                sha256=_required_string(event, "sha256"),
+                mime_type=_required_string(event, "mimeType"),
+                purpose=_required_string(event, "purpose"),
+            )
+            return
+        if event_type in {"execution:completed", "execution:failed"}:
+            self._terminal_intents[run_id] = copy.deepcopy(event)
+            return
+        node_id = _optional_string(event.get("nodeId"))
+        execution_id = _optional_string(event.get("executionId"))
+        if event_type == "execution:node_complete":
+            if node_id is None or execution_id is None:
+                raise WorkflowRunError("WORKER_EVENT_INVALID", "节点事件身份无效", 422)
+            success = event.get("success") is True
+            artifact_ids = event.get("artifactIds", [])
+            if not isinstance(artifact_ids, list) or not all(
+                isinstance(item, str) for item in artifact_ids
+            ):
+                raise WorkflowRunError("WORKER_EVENT_INVALID", "节点产物身份无效", 422)
+            result = {
+                "success": success,
+                "message": str(event.get("message") or ""),
+                "error": event.get("error"),
+                "data": copy.deepcopy(event.get("data")),
+            }
+            persisted = self._repository.append_event(
+                run_id,
+                "execution:node-succeeded" if success else "execution:node-failed",
+                {"result": result},
+                now=datetime_now(),
+                node_id=node_id,
+                execution_id=execution_id,
+                run_patch={"currentNodeId": node_id},
+                artifact_ids=tuple(artifact_ids),
+            )
+            await self._events.publish(
+                "execution:node_complete",
+                {
+                    **_event_identity(run),
+                    "nodeId": node_id,
+                    "executionId": execution_id,
+                    "success": success,
+                    "sequence": persisted.sequence,
+                },
+            )
+            level = "success" if success else "error"
+            message = str(event.get("message") or event.get("error") or "节点执行完成")
+            log = self._repository.append_event(
+                run_id,
+                "execution:log",
+                {"level": level, "message": message},
+                now=datetime_now(),
+                node_id=node_id,
+                execution_id=execution_id,
+            )
+            await self._events.publish(
+                "execution:log",
+                {
+                    **_event_identity(run),
+                    "log": {
+                        "sequence": log.sequence,
+                        "id": f"{run_id}-{log.sequence}",
+                        "timestamp": log.occurred_at.isoformat(),
+                        "level": level,
+                        "message": message,
+                        "nodeId": node_id,
+                    },
+                },
+            )
+            return
+        persisted = self._repository.append_event(
+            run_id,
+            event_type,
+            {},
+            now=datetime_now(),
+            node_id=node_id,
+            execution_id=execution_id,
+            run_patch={"currentNodeId": node_id} if node_id else None,
+        )
+        await self._events.publish(
+            event_type,
+            {
+                **_event_identity(run),
+                **({"nodeId": node_id} if node_id else {}),
+                **({"executionId": execution_id} if execution_id else {}),
+                "sequence": persisted.sequence,
+            },
+        )
+
+    async def on_worker_exit(self, run_id: str, return_code: int) -> None:
+        # WorkflowWorkerManager invokes this only after the process tree and its
+        # private directory are gone. Resource release is the final cleanup step.
+        run = self._runs.get(run_id)
+        if self._resources.owner_id == run_id:
+            await self._resources.release(run_id)
+        intent = self._terminal_intents.pop(run_id, None)
+        if run.stop_requested:
+            terminal: TerminalRunStatus = "stopped"
+        elif intent and intent.get("type") == "execution:completed" and return_code == 0:
+            terminal = "completed"
+        else:
+            terminal = "failed"
+        error = None
+        if terminal == "failed":
+            error = {
+                "code": "WORKFLOW_EXECUTION_FAILED",
+                "message": str((intent or {}).get("error") or "工作流执行失败"),
+            }
+        finished = self._runs.finish(
+            run_id,
+            status=terminal,
+            cleanup_completed=True,
+            error=error,
+        )
+        if terminal == "stopped":
+            await self._events.publish("execution:stopped", _event_identity(finished))
+        else:
+            await self._events.publish(
+                "execution:completed",
+                {
+                    **_event_identity(finished),
+                    "result": {
+                        "status": terminal,
+                        "executedNodes": int((intent or {}).get("executedNodes") or 0),
+                        "failedNodes": 1 if terminal == "failed" else 0,
+                    },
+                },
+            )
+
+    def _kernel(self, profile: Profile) -> InstalledKernel:
+        for kernel in self._installed_kernels():
+            if (
+                kernel.edition == profile.spec.browser_edition
+                and kernel.version == profile.spec.browser_version
+            ):
+                return kernel
+        raise KernelNotInstalled
+
+
+def datetime_now() -> datetime:
+    return datetime.now(UTC)
+
+
+def _profile_snapshot(profile: Profile) -> dict[str, Any]:
+    spec = asdict(profile.spec)
+    spec.pop("start_url", None)
+    return {
+        "id": profile.id,
+        "fingerprintSeed": profile.fingerprint_seed,
+        **spec,
+    }
+
+
+def _worker_payload(
+    start: WorkflowRunStart,
+    profile: Profile,
+    proxy: ProfileBrowserProxy | None,
+    license_key: str | None,
+    *,
+    executable: Path,
+    headless: bool,
+    artifact_root: Path,
+) -> dict[str, Any]:
+    spec = profile.spec
+    return {
+        "runId": start.run_id,
+        "workflowId": start.workflow_id,
+        "profileId": profile.id,
+        "fingerprintSeed": profile.fingerprint_seed,
+        "locale": spec.locale,
+        "timezone": spec.timezone,
+        "geoip": spec.geoip,
+        "humanize": spec.humanize,
+        "humanPreset": spec.human_preset,
+        "userAgent": spec.user_agent,
+        "viewport": spec.viewport,
+        "colorScheme": spec.color_scheme,
+        "extensionPaths": spec.extension_paths,
+        "expertArgs": spec.expert_args,
+        "browserVersion": spec.browser_version,
+        "releaseChannel": spec.release_channel,
+        "proxy": (
+            {
+                "server": proxy.server,
+                "username": proxy.username,
+                "password": proxy.password,
+            }
+            if proxy
+            else None
+        ),
+        "licenseKey": license_key,
+        "headless": headless,
+        "artifactRoot": str(artifact_root),
+        "document": copy.deepcopy(start.document_snapshot),
+        "executableIdentity": str(executable.name),
+    }
+
+
+def _summary(run: WorkflowRun) -> dict[str, Any]:
+    return {
+        "runId": run.run_id,
+        "workflowId": run.workflow_id,
+        "documentId": run.document_id,
+        "workflowName": run.workflow_name,
+        "status": run.status,
+        "startedAt": run.started_at.isoformat(),
+        "finishedAt": run.finished_at.isoformat() if run.finished_at else None,
+        "logCount": run.log_count,
+    }
+
+
+def _event_identity(run: WorkflowRun) -> dict[str, str]:
+    return {"runId": run.run_id, "workflowId": run.workflow_id}
+
+
+def _required_string(values: Mapping[str, Any], key: str) -> str:
+    value = values.get(key)
+    if not isinstance(value, str) or not value:
+        raise WorkflowRunError("RUN_REQUEST_INVALID", f"{key} 不能为空", 422)
+    return value
+
+
+def _required_int(values: Mapping[str, Any], key: str) -> int:
+    value = values.get(key)
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise WorkflowRunError("WORKER_EVENT_INVALID", f"{key} 无效", 422)
+    return value
+
+
+def _optional_string(value: Any) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise WorkflowRunError("WORKER_EVENT_INVALID", "事件字符串字段无效", 422)
+    return value

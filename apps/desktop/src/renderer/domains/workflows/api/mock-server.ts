@@ -785,7 +785,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
         return response({tracking:records,count:records.length,mock:true})
       }
       if (action === '/export-playwright' || action === '/export-script') return response({ code: '# Mock 导出：本文件用于校验下载交互，并非可运行脚本\n# Workflow: ' + String(db.workflows[id]?.name), filename: 'mock-workflow.txt', target: 'mock' })
-      if (action === '/execute') return startRun(id, db.workflows[id], body)
+      if (action === '/execute') {
+        const snapshot = body.document && typeof body.document === 'object' && !Array.isArray(body.document)
+          ? body.document as ObjectValue
+          : db.workflows[id]
+        return startRun(id, snapshot, body)
+      }
       if (action === '/stop') return stopRun(id,body.runId)
       if (action.startsWith('/debug/')) {
         if (!['/debug/resume', '/debug/step', '/debug/breakpoints', '/debug/variables'].includes(action)) return failure('未知调试操作', 404)

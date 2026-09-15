@@ -62,8 +62,8 @@ it('does not block direct start with an invalid skipped upstream node',async()=>
  const create=vi.spyOn(workflowApi,'create').mockResolvedValue({success:true,data:{id:'direct'}})
  const execute=vi.spyOn(workflowApi,'execute').mockResolvedValue({success:true})
  render(<Toolbar/>);await act(async()=>window.dispatchEvent(new CustomEvent('run-from-node',{detail:{nodeId:start.id}})))
- await waitFor(()=>expect(execute).toHaveBeenCalledWith('direct',expect.objectContaining({startNodeId:start.id})))
- expect(create).toHaveBeenCalledOnce()
+ await waitFor(()=>expect(execute).toHaveBeenCalledWith(store.getState().id,expect.objectContaining({startNodeId:start.id,document:expect.objectContaining({nodes:expect.any(Array)})})))
+ expect(create).not.toHaveBeenCalled()
 })
 it('checks all reachable branches and terminates on a cycle',()=>{
  const start=node('open_page');const invalid=node('wait',{duration:'bad'})

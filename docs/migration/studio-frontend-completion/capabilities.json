@@ -201,7 +201,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "执行器源码差分和真实CloakBrowser受控页动作已通过；HTTP/SSE运行合同与正式Electron E2E仍待B1.5-B1.7。",
+      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -218,7 +218,7 @@
         },
         {
           "id": "BE.open_page.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -226,7 +226,7 @@
           ],
           "operation": "通过正式传输提交包含 open_page 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json"
         },
         {
           "id": "BE.open_page.real-execution",
@@ -241,7 +241,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分和macOS arm64真实CloakBrowser动作已通过；HTTP/SSE与正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -2363,7 +2363,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "执行器源码差分和真实CloakBrowser受控页动作已通过；HTTP/SSE运行合同与正式Electron E2E仍待B1.5-B1.7。",
+      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -2380,7 +2380,7 @@
         },
         {
           "id": "BE.click_element.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -2388,7 +2388,7 @@
           ],
           "operation": "通过正式传输提交包含 click_element 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json"
         },
         {
           "id": "BE.click_element.real-execution",
@@ -2403,7 +2403,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分和macOS arm64真实CloakBrowser动作已通过；HTTP/SSE与正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -2766,7 +2766,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "执行器源码差分和真实CloakBrowser受控页动作已通过；HTTP/SSE运行合同与正式Electron E2E仍待B1.5-B1.7。",
+      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -2783,7 +2783,7 @@
         },
         {
           "id": "BE.input_text.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -2791,7 +2791,7 @@
           ],
           "operation": "通过正式传输提交包含 input_text 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json"
         },
         {
           "id": "BE.input_text.real-execution",
@@ -2806,7 +2806,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分和macOS arm64真实CloakBrowser动作已通过；HTTP/SSE与正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -4545,7 +4545,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "执行器源码差分和真实CloakBrowser受控页动作已通过；HTTP/SSE运行合同与正式Electron E2E仍待B1.5-B1.7。",
+      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -4562,7 +4562,7 @@
         },
         {
           "id": "BE.get_element_info.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -4570,7 +4570,7 @@
           ],
           "operation": "通过正式传输提交包含 get_element_info 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json"
         },
         {
           "id": "BE.get_element_info.real-execution",
@@ -4585,7 +4585,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分和macOS arm64真实CloakBrowser动作已通过；HTTP/SSE与正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }
@@ -6087,7 +6087,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "执行器源码差分和真实CloakBrowser受控页动作已通过；HTTP/SSE运行合同与正式Electron E2E仍待B1.5-B1.7。",
+      "gap": "冻结源码差分、真实CloakBrowser受控页动作和生产HTTP/SSE消费合同已通过；正式Electron E2E仍待B1.7。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -6104,7 +6104,7 @@
         },
         {
           "id": "BE.screenshot.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -6112,7 +6112,7 @@
           ],
           "operation": "通过正式传输提交包含 screenshot 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json"
         },
         {
           "id": "BE.screenshot.real-execution",
@@ -6127,7 +6127,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分和macOS arm64真实CloakBrowser动作已通过；HTTP/SSE与正式Electron仍未验收。",
+      "evidenceConfidence": "高：源码差分、macOS arm64真实CloakBrowser动作、生产HTTP/持久化/SSE合同及前端消费回归已通过；正式Electron仍未验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "providerIntegrationEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json"
     }

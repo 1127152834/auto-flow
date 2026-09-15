@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B1-five-browser-nodes-2026-09-15",
   "recordedAt": "2026-09-15",
-  "result": "B1.4 executor and real-provider slice passed; HTTP and formal Electron acceptance remain pending",
+  "result": "B1.4 executor/provider and B1.6 HTTP contract passed; formal Electron acceptance remains B1.7",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -111,9 +111,8 @@
     "mypy": "passed"
   },
   "notClaimed": [
-    "main-application Profile transport and HTTP/SSE run contract",
-    "persistent run, event and artifact repositories",
-    "formal Electron UI execution",
+    "formal Electron UI execution and lifecycle coordination",
     "macOS Intel or Windows real-machine verification"
-  ]
+  ],
+  "httpContractEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json"
 }

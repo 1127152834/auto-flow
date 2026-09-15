@@ -54,6 +54,8 @@ class ExecutionContext:
     current_row: dict[str, Any] = field(default_factory=dict)
     loop_stack: list[dict[str, Any]] = field(default_factory=list)
     progress: Callable[[str, str], Awaitable[None]] | None = None
+    current_node_id: str | None = None
+    current_execution_id: str | None = None
 
     def resolve_value(self, value: Any) -> Any:
         return resolve_value(value, self.variables, self.credentials)

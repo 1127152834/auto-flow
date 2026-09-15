@@ -258,7 +258,7 @@ class StudioRunResultPage(ApiModel):
     items: list[StudioRunResultRow]
     total: int = Field(ge=0, le=9007199254740991)
     through_sequence: int = Field(ge=0, le=9007199254740991)
-    next_cursor: int | None = Field(default=None, ge=1, le=9007199254740991)
+    next_cursor: int | None = Field(ge=1, le=9007199254740991)
 
     @model_validator(mode="after")
     def validate_page(self) -> Self:

@@ -10,10 +10,9 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-
 from autoflow.domain.workflows.browser import CurrentPageClosed, UnknownPage
 from autoflow.providers.browser.workflow_session import CloakBrowserWorkflowSession
-from autoflow.providers.browser.workflow_worker import run_workflow_worker
+from autoflow.providers.browser.workflow_worker import _run, run_workflow_worker
 
 
 class RawPage:
@@ -33,6 +32,9 @@ class RawPage:
     async def goto(self, url: str, **options: Any) -> None:
         self.url = url
         self.goto_calls.append((url, options))
+
+    async def bring_to_front(self) -> None:
+        return None
 
     async def _save_download(self, path: str) -> None:
         self.saved_download = path
@@ -180,7 +182,7 @@ def test_workflow_worker_launches_only_cloakbrowser_with_frozen_profile_options(
         stopped, io.StringIO(json.dumps(command) + "\n"), output
     )
 
-    assert result == 0
+    assert result == 0, output.getvalue()
     assert json.loads(output.getvalue()) == {
         "type": "ready",
         "runId": "run-real-provider",
@@ -225,3 +227,82 @@ def test_workflow_worker_rejects_uncontrolled_browser_paths(
         "type": "error",
         "error": "Workflow worker failed",
     }
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_executes_document_and_emits_identified_events(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"kernel")
+    cache = tmp_path / "run"
+    cache.mkdir()
+    artifacts = tmp_path / "workspace"
+    monkeypatch.setenv("CLOAKBROWSER_BINARY_PATH", str(executable))
+    monkeypatch.setenv("CLOAKBROWSER_CACHE_DIR", str(cache))
+    raw = RawContext()
+
+    async def launch_context_async(**_options: Any) -> RawContext:
+        return raw
+
+    monkeypatch.setitem(
+        sys.modules,
+        "cloakbrowser",
+        SimpleNamespace(launch_context_async=launch_context_async),
+    )
+    command = {
+        "runId": "run-execute",
+        "workflowId": "workflow-execute",
+        "profileId": "profile-1",
+        "fingerprintSeed": 54321,
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "geoip": False,
+        "humanize": False,
+        "humanPreset": "default",
+        "userAgent": None,
+        "viewport": None,
+        "colorScheme": None,
+        "extensionPaths": [],
+        "expertArgs": [],
+        "browserVersion": "145.0.7632.109",
+        "releaseChannel": "stable",
+        "proxy": None,
+        "licenseKey": None,
+        "headless": True,
+        "artifactRoot": str(artifacts),
+        "document": {
+            "nodes": [
+                {
+                    "id": "open",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "open_page",
+                        "config": {
+                            "url": "https://example.test/worker",
+                            "openMode": "current_tab",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert [event["type"] for event in events] == [
+        "ready",
+        "execution:node_start",
+        "execution:node_complete",
+        "execution:completed",
+    ]
+    assert events[1]["runId"] == events[2]["runId"] == "run-execute"
+    assert events[1]["executionId"] == events[2]["executionId"]
+    assert events[2]["success"] is True
+    assert events[3]["executedNodes"] == 1
+    assert raw.pages[0].goto_calls[0][0] == "https://example.test/worker"

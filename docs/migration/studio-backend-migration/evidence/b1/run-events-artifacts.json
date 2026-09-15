@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B1-run-events-artifacts-2026-09-15",
   "recordedAt": "2026-09-15",
-  "result": "B1.5 passed; HTTP/SSE and formal Electron acceptance remain B1.6-B1.7 gates",
+  "result": "B1.5 durable run/event/artifact behavior and B1.6 HTTP/SSE contract passed; formal Electron acceptance remains B1.7",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -49,14 +49,19 @@
       "exitCode": 1,
       "result": "123 pre-existing import-order violations outside the B1.5 changed-file set; changed-file Ruff passed",
       "blockingB1_5": false
+    },
+    "latestFullBackendRegression": {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests",
+      "exitCode": 0,
+      "result": "1400 passed, 1 opt-in real-browser test skipped, 2 dependency deprecation warnings"
     }
   },
   "notClaimed": [
-    "HTTP run commands, artifact download authorization or SSE wire framing; B1.6 owns these gates",
-    "formal Electron UI execution and lifecycle coordination; B1.7 owns these gates",
-    "complete debug diagnostics, log search/export or repeated-loop result pagination; B3 and B8 own these gates",
+    "formal Electron UI execution and lifecycle coordination; B1.7 owns this gate",
+    "complete debug diagnostics and repeated-loop result pagination; B3 and B8 own these gates",
     "macOS Intel or Windows real-machine verification"
   ],
   "userDatabaseModified": false,
-  "runningMainApplicationModified": false
+  "runningMainApplicationModified": false,
+  "httpContractEvidencePath": "docs/migration/studio-backend-migration/evidence/b1/http-sse-runtime.json"
 }
