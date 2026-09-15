@@ -1,0 +1,91 @@
+{
+  "status": "passed",
+  "scenario": "recovery",
+  "scenarioPlan": [
+    "UI提交启动请求后丢弃响应与首次原键查询",
+    "用原Idempotency-Key核对结果",
+    "确认只创建一个批次"
+  ],
+  "sourceSha256": "a5a52c1b8f7c410a19b28a3bcfcb60236aee3acee2ff36b75dc5ac88db8b56e5",
+  "head": "841a1f7ce4fe7b99101a6235f3395128ca9f61ed",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-mHAbpm",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-mHAbpm/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC",
+  "kernel": {
+    "source": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2",
+    "copiedTo": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-mHAbpm/workspace/data/kernels/chromium-145.0.7632.109.2",
+    "version": "145.0.7632.109.2"
+  },
+  "fixtureUrl": "http://127.0.0.1:58769/fixture",
+  "slowFixtureUrl": "http://127.0.0.1:58769/slow",
+  "workflow": {
+    "workflowId": "1a6dd013-b6b9-44e6-af87-fd0ba2b5fce2",
+    "parameterId": "736b63be-f9a0-49c9-bc6e-73da428b5596",
+    "preparation": "工作流文档通过 WorkflowService 预置；Studio 不在本次验收范围。项目与自动化必须通过 UI 创建。"
+  },
+  "profile": {
+    "profileId": "ec32b21e-ee0b-4bc5-bb75-753c2a00f0d6",
+    "preparation": "浏览器配置通过真实 HTTP ProfileService API 预置为运行资源夹具；项目与自动化仍由 UI 创建。"
+  },
+  "uiResult": {
+    "projectId": "86edf485-419d-4bfd-87ff-44ca6f0b7181",
+    "automationName": "参数运行验收",
+    "batchId": "fde733f2-ec46-49bd-87af-ed81f3348744",
+    "taskIds": [
+      "8a085342-2349-459d-91bc-37de6b321e5a",
+      "44ee15b3-201f-49d4-bbdd-2c58cb7cb16e"
+    ],
+    "profileId": "ec32b21e-ee0b-4bc5-bb75-753c2a00f0d6",
+    "recoveryKey": "7b91abcc-8a5c-4af3-a5c9-8638c0114e7c"
+  },
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/00-prepared.png",
+      "sha256": "d521201cdfb7c4e634632471d793d50a0684abe158cb6014ad14225751423f38"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/01-automation.png",
+      "sha256": "9bd330a94f0009be35c76905ddf2d03e592d2596d3715cda04434313b6570d70"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/02-start-batch.png",
+      "sha256": "5d141e64eadcebf3c951181e70cb6b9d0b27644dce33cf5ade91daea27981ea8"
+    },
+    {
+      "name": "03-unknown-start",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/03-unknown-start.png",
+      "sha256": "16ca527d91274b126564c803f77948619e3f54efef3e0b7990caa6c3a6edadda"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/04-batch-detail.png",
+      "sha256": "6d32534152c41a00cab5c09e4721b73d19b809434e08dcc9abadab73ac223291"
+    },
+    {
+      "name": "05-task-logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/05-task-logs.png",
+      "sha256": "45129086deb823cc066845481ad4f54914ffc4e34ee6f6c5495cf3836a972fa6"
+    },
+    {
+      "name": "06-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/06-task-input-output.png",
+      "sha256": "cbb352506a6aa01d4406049f9a113f5cabe593f019b6d4e1ca6d6ea539965302"
+    },
+    {
+      "name": "07-task-evidence",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/07-task-evidence.png",
+      "sha256": "3320dbca4ef430031b555664cec578cb2e0b686ebde080357d295a2e8d710753"
+    }
+  ],
+  "next": [],
+  "commands": {
+    "success": "node scripts/qa-project-management-pm3.mjs --scenario success",
+    "manual": "node scripts/qa-project-management-pm3.mjs --manual --scenario success",
+    "preparation": "node scripts/qa-project-management-pm3.mjs --prepare-only --scenario success",
+    "explicitKernel": "node scripts/qa-project-management-pm3.mjs --manual --kernel-directory /path/to/chromium-x.y.z.w"
+  },
+  "createdAt": "2026-09-15T07:34:42.825Z"
+}

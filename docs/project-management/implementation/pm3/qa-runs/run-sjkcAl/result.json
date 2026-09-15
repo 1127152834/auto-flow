@@ -1,0 +1,40 @@
+{
+  "status": "failed",
+  "scenario": "force-stop",
+  "message": "force-stop window unavailable: [{\"elapsedMs\":0,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":200,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":400,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":600,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":800,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1000,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1200,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1400,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1600,\"status\":\"stopped\",\"revision\":4}]",
+  "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/out/renderer/index.html#/projects/99a8cacf-6735-4c6c-96f2-2e2f57764f50/runs/batches/a813e18c-8892-4f4f-9d48-fa7f02a798be",
+  "bodyText": "AutoFlow\n总览\n项目\n浏览器配置\n代理管理\n模型管理\n设置\n本地服务正常\n项目 / PM3运行验收项目 / 运行记录 / 批次详情\nPM3运行验收项目\n\n真实浏览器批次与证据验收\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n← 返回批次列表\n参数运行验收\n正在停止\n\n批次开始于 2026/9/15 15:33:18\n\n开始\n2026/9/15 15:33:18\n结束\n—\n耗时\n进行中\n结束原因\n尚未结束\n本批次 2 个任务\n成功 0\n失败或异常 1\n进行中 1\n1 个任务失败或异常，可进入任务查看日志；批次结束不代表全部成功。\n本次运行的配置快照 只读 · 不随自动化配置变化\n\n正在停止并核验资源清理。普通停止宽限期结束后才允许强制停止。最终结果以持久运行事实为准。\n\n本批次任务\n参数运行验收 · 2026/9/15 15:33:18\n全部状态\n全部时间\n任务\t输入标识\t任务状态\t结束节点\t结束时间\t操作\n任务 2\t参数任务\t\n已取消\t尚未结束\t2026/9/15 15:33:18\t\n查看任务\n\n任务 1\t参数任务\t\n正在停止\t尚未结束\t—\t\n查看任务\n1–2 / 2\n上一页\n第 1 页\n下一页",
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-sjkcAl/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-sjkcAl/01-automation.png",
+      "sha256": "d683c79e11edddb232dc22451d6967299614dcdeef5bc04ca8078bf34b86f1e3"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-sjkcAl/02-start-batch.png",
+      "sha256": "c84c7999d68bbb1285a148d45b216b1900733912f97bfd53e50ad96343b0ce12"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-sjkcAl/04-batch-detail.png",
+      "sha256": "d10e5a3e2a1056fc9ae9f57b590d192ec03c5f96ae5c32697a36179ea6ba3181"
+    },
+    {
+      "name": "03-stop-confirmation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-sjkcAl/03-stop-confirmation.png",
+      "sha256": "5990094ca8f30c0de2729fa11340aa98105f0caa01618fd31ff0c14a4aa2989f"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-sjkcAl/99-failure.png",
+      "sha256": "abf819883fde84cf7af0ef9d34ad4927ccba0872b5370e3ff5af799ab30d82f3"
+    }
+  ],
+  "createdAt": "2026-09-15T07:33:24.683Z"
+}

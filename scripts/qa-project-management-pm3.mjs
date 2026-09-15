@@ -43,7 +43,7 @@ export const scenarioPlans = Object.freeze({
   success: ['UI创建项目与自动化', '启动两个真实浏览器任务', '核对批次、任务、日志、输入与输出'],
   failure: ['UI创建缺失点击目标的自动化', '启动真实浏览器任务并等待失败', '打开异常证据中的真实PNG预览'],
   stop: ['UI创建慢响应自动化', '启动两个任务', 'UI普通停止并确认', '核对全部取消且浏览器临时目录清理'],
-  'force-stop': ['启动真实慢导航任务', 'UI普通停止后等待超过30秒合法宽限', '输入批次编号确认强停并核对撤权与清理'],
+  'force-stop': ['启动真实慢导航任务', 'UI普通停止后等待超过30秒合法宽限', '输入固定确认短语后强停并核对撤权与清理'],
   recovery: ['UI提交启动请求后丢弃响应与首次原键查询', '用原Idempotency-Key核对结果', '确认只创建一个批次'],
   restart: ['UI创建并完成批次', '关闭并重启Electron与后端', '通过重启后的真实服务读取持久批次并确认网页动作未重放'],
   isolation: ['在两个marker所有的独立workspace分别启动', '分别通过UI创建项目、自动化与批次', '核对workspace、项目与批次身份互不相同'],
@@ -312,16 +312,26 @@ async function runUiSuccessChain(runtime, workflow, profile, scenario = 'success
         await wait(200)
       }
       await waitFor(renderer, "document.body.innerText.includes('强制停止')", 'force-stop eligibility')
-      await click('强制停止'); await input('[aria-label="确认批次编号"]', batch.batchId); await input('[aria-label="停止原因"]', 'PM3真实强停验收'); await capture('05-force-stop-confirmation'); await click('确认强制停止')
+      await click('强制停止'); await input('[aria-label="确认强制停止"]', '强制停止'); await input('[aria-label="停止原因"]', 'PM3真实强停验收'); await capture('05-force-stop-confirmation'); await click('确认强制停止')
     }
     const stopped = await waitBatchTerminal(runtime, project.projectId, batch.batchId)
     assert.equal(stopped.batch.status, 'stopped')
-    assert.equal(stopped.statusCounts.cancelled, 2)
+    if (scenario === 'force-stop') {
+      assert.equal(stopped.statusCounts.interrupted, 1)
+      assert.equal(stopped.statusCounts.cancelled, 1)
+    } else {
+      assert.equal(stopped.statusCounts.cancelled, 2)
+    }
     await waitFor(renderer, "document.body.innerText.includes('已停止')", 'stopped batch projection', 10_000)
     await capture('04-stopped-batch')
     const tasks = await api(runtime, `/projects/${project.projectId}/tasks?batchId=${batch.batchId}`)
-    assert.equal(tasks.total, 2); assert.ok(tasks.items.every(item => item.status === 'cancelled'))
-    return { projectId: project.projectId, automationName: '参数运行验收', batchId: batch.batchId, taskIds: tasks.items.map(item => item.taskId), profileId: profile.profileId, stop: 'ordinary', status: stopped.batch.status }
+    assert.equal(tasks.total, 2)
+    if (scenario === 'force-stop') {
+      assert.deepEqual(tasks.items.map(item => item.status).sort(), ['cancelled', 'interrupted'])
+    } else {
+      assert.ok(tasks.items.every(item => item.status === 'cancelled'))
+    }
+    return { projectId: project.projectId, automationName: '参数运行验收', batchId: batch.batchId, taskIds: tasks.items.map(item => item.taskId), profileId: profile.profileId, stop: scenario === 'force-stop' ? 'force' : 'ordinary', status: stopped.batch.status }
   }
   const detail = await waitBatchTerminal(runtime, project.projectId, batch.batchId)
   assert.equal(detail.batch.requestedCount, 2)
@@ -333,7 +343,7 @@ async function runUiSuccessChain(runtime, workflow, profile, scenario = 'success
   const tasks = await api(runtime, `/projects/${project.projectId}/tasks?batchId=${batch.batchId}`)
   const selectedTask = scenario === 'failure' ? tasks.items.find(item => item.status === 'failed' || item.status === 'timed_out') : tasks.items[0]
   assert.ok(selectedTask)
-  await clickRowButton(selectedTask.taskId, '查看任务'); await waitFor(renderer, "document.body.innerText.includes('输入与输出')", 'task detail')
+  await clickRowButton(`任务 ${selectedTask.taskOrdinal}`, '查看任务'); await waitFor(renderer, "document.body.innerText.includes('输入与输出')", 'task detail')
   await capture('05-task-logs'); await click('输入与输出', '[role=tab]'); await capture('06-task-input-output')
   await click('异常与证据', '[role=tab]'); await capture('07-task-evidence')
   assert.equal(tasks.total, 2)
@@ -345,11 +355,12 @@ async function runUiSuccessChain(runtime, workflow, profile, scenario = 'success
     const artifacts = await api(runtime, `/projects/${project.projectId}/tasks/${task.task.taskId}/artifacts?page=1&pageSize=100`)
     const screenshot = artifacts.items.find(item => item.kind === 'screenshot' && item.availability === 'available')
     assert.ok(screenshot?.mediaType === 'image/png' && screenshot.byteSize > 0)
-    if (!(await renderer.evaluate(`!!document.querySelector('[aria-label=${JSON.stringify(`查看失败截图：${screenshot.nodeId}`)}]')`))) {
-      await click('← 返回批次'); await clickRowButton(selectedTask.taskId, '查看任务'); await click('异常与证据', '[role=tab]')
+    const previewLabel = `放大失败截图：${screenshot.nodeName}`
+    if (!(await renderer.evaluate(`!!document.querySelector('[aria-label=${JSON.stringify(previewLabel)}]')`))) {
+      await click('← 返回批次'); await clickRowButton(`任务 ${selectedTask.taskOrdinal}`, '查看任务'); await click('异常与证据', '[role=tab]')
     }
-    await click(`查看失败截图：${screenshot.nodeId}`)
-    await waitFor(renderer, `!!document.querySelector('img[alt=${JSON.stringify(`失败截图：${screenshot.nodeId}`)}]')`, 'failure PNG preview')
+    await click(previewLabel)
+    await waitFor(renderer, `!!document.querySelector('img[alt=${JSON.stringify(`失败截图：${screenshot.nodeName}`)}]')`, 'failure PNG preview')
     await capture('08-failure-preview')
   }
   return { projectId: project.projectId, automationName: '参数运行验收', batchId: batch.batchId, taskIds: tasks.items.map(item => item.taskId), profileId: profile.profileId, ...(recoveryKey ? { recoveryKey } : {}) }
