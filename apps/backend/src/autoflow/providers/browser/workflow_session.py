@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from uuid import uuid4
 
 from autoflow.domain.workflows.browser import (
@@ -101,11 +102,69 @@ class CloakBrowserWorkflowDownload(BrowserDownloadPort):
         await self._raw.save_as(str(path))
 
 
-_SENSITIVE_REQUEST_HEADERS = frozenset(
-    {"authorization", "proxy-authorization", "cookie", "set-cookie", "x-api-key"}
+_SAFE_REQUEST_HEADERS = frozenset(
+    {
+        "accept",
+        "accept-encoding",
+        "accept-language",
+        "cache-control",
+        "content-length",
+        "content-type",
+        "origin",
+        "pragma",
+        "range",
+        "sec-fetch-dest",
+        "sec-fetch-mode",
+        "sec-fetch-site",
+        "user-agent",
+        "x-requested-with",
+    }
+)
+_SENSITIVE_QUERY_MARKERS = (
+    "api_key",
+    "apikey",
+    "auth",
+    "code",
+    "credential",
+    "jwt",
+    "key",
+    "license",
+    "password",
+    "pwd",
+    "secret",
+    "session",
+    "sig",
+    "token",
 )
 _MAX_CAPTURED_REQUESTS = 10_000
 _MAX_CAPTURED_REQUEST_BYTES = 8 * 1024 * 1024
+
+
+def _redact_request_url(raw_url: str) -> str:
+    try:
+        parts = urlsplit(raw_url)
+        hostname = parts.hostname
+        if not hostname:
+            return "[已隐藏的URL]"
+        safe_hostname = f"[{hostname}]" if ":" in hostname else hostname
+        netloc = safe_hostname
+        if parts.port is not None:
+            netloc = f"{netloc}:{parts.port}"
+        query = urlencode(
+            [
+                (
+                    key,
+                    "[已隐藏]"
+                    if any(marker in key.lower() for marker in _SENSITIVE_QUERY_MARKERS)
+                    else value,
+                )
+                for key, value in parse_qsl(parts.query, keep_blank_values=True)
+            ],
+            doseq=True,
+        )
+        return urlunsplit((parts.scheme, netloc, parts.path, query, parts.fragment))
+    except (TypeError, ValueError):
+        return "[已隐藏的URL]"
 
 
 class CloakBrowserWorkflowRequestWatch(BrowserRequestWatchPort):
@@ -114,6 +173,7 @@ class CloakBrowserWorkflowRequestWatch(BrowserRequestWatchPort):
         self._filter_type = filter_type
         self._url_pattern = url_pattern.lower()
         self._captured: list[dict[str, Any]] = []
+        self._match_urls: list[str] = []
         self._captured_bytes = 0
         self._active = True
         self._overflowed = False
@@ -151,14 +211,14 @@ class CloakBrowserWorkflowRequestWatch(BrowserRequestWatchPort):
             raw_headers = request.headers if hasattr(request, "headers") else {}
             headers = {
                 str(key): (
-                    "[已隐藏]"
-                    if str(key).lower() in _SENSITIVE_REQUEST_HEADERS
-                    else str(value)
+                    str(value)
+                    if str(key).lower() in _SAFE_REQUEST_HEADERS
+                    else "[已隐藏]"
                 )
                 for key, value in dict(raw_headers).items()
             }
             captured = {
-                "url": url,
+                "url": _redact_request_url(url),
                 "method": str(request.method),
                 "resource_type": resource_type,
                 "timestamp": time.time(),
@@ -176,6 +236,7 @@ class CloakBrowserWorkflowRequestWatch(BrowserRequestWatchPort):
                 self._overflowed = True
                 return
             self._captured.append(captured)
+            self._match_urls.append(url)
             self._captured_bytes += size
         except Exception:  # noqa: BLE001 -- request callbacks cannot fail page work.
             return
@@ -184,6 +245,14 @@ class CloakBrowserWorkflowRequestWatch(BrowserRequestWatchPort):
         return [
             {**request, "headers": dict(request.get("headers", {}))}
             for request in self._captured
+        ]
+
+    def matching_requests(self, url_pattern: str) -> list[dict[str, Any]]:
+        normalized = url_pattern.lower()
+        return [
+            {**request, "headers": dict(request.get("headers", {}))}
+            for raw_url, request in zip(self._match_urls, self._captured, strict=True)
+            if normalized in raw_url.lower()
         ]
 
     def stop(self) -> None:

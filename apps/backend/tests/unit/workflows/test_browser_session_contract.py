@@ -153,10 +153,18 @@ def test_page_request_watch_filters_redacts_and_stops() -> None:
     page.emit(
         "request",
         SimpleNamespace(
-            url="https://local.test/v1/items",
+            url=(
+                "https://user:password@local.test/v1/items"
+                "?api_key=query-secret&view=summary"
+            ),
             method="POST",
             resource_type="fetch",
-            headers={"authorization": "Bearer secret", "accept": "application/json"},
+            headers={
+                "authorization": "Bearer secret",
+                "x-auth-token": "custom-secret",
+                "cf-access-jwt-assertion": "jwt-secret",
+                "accept": "application/json",
+            },
         ),
     )
     page.emit(
@@ -171,9 +179,14 @@ def test_page_request_watch_filters_redacts_and_stops() -> None:
 
     captured = watch.captured_requests()
     assert len(captured) == 1
-    assert captured[0]["url"] == "https://local.test/v1/items"
+    assert captured[0]["url"] == (
+        "https://local.test/v1/items?api_key=%5B%E5%B7%B2%E9%9A%90%E8%97%8F%5D"
+        "&view=summary"
+    )
     assert captured[0]["headers"] == {
         "authorization": "[已隐藏]",
+        "x-auth-token": "[已隐藏]",
+        "cf-access-jwt-assertion": "[已隐藏]",
         "accept": "application/json",
     }
     assert watch.active is True

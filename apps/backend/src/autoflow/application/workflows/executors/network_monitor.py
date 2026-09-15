@@ -31,6 +31,7 @@ class NetworkMonitorStartExecutor(ModuleExecutor):
     async def execute(
         self, config: dict[str, Any], context: ExecutionContext
     ) -> ModuleResult:
+        monitor_id: Any = None
         try:
             monitor_id = context.resolve_value(config.get("monitorId", "default"))
             filter_type = context.resolve_value(config.get("filterType", "api"))
@@ -117,16 +118,9 @@ class NetworkMonitorWaitExecutor(ModuleExecutor):
                     return ModuleResult(
                         success=False, error="网络监听数据超过工作流安全限制"
                     )
-                for request in monitor.captured_requests():
-                    url = request.get("url", "")
-                    if (
-                        str(url_pattern).lower() in str(url).lower()
-                        and request not in matched_requests
-                    ):
-                        matched_requests.append(request)
-                        if capture_mode == "first":
-                            break
+                matched_requests = monitor.matching_requests(str(url_pattern))
                 if capture_mode == "first" and matched_requests:
+                    matched_requests = matched_requests[:1]
                     break
                 await asyncio.sleep(0.1)
 
@@ -169,6 +163,8 @@ class NetworkMonitorWaitExecutor(ModuleExecutor):
                 },
             )
         except asyncio.CancelledError:
+            if monitor_id is not None:
+                _stop_monitor(context, monitor_id)
             raise
         except Exception as error:  # noqa: BLE001 -- preserve frozen node errors.
             return ModuleResult(success=False, error=f"等待API请求失败: {error}")

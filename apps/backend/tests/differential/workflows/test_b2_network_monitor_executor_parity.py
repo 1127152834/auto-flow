@@ -236,13 +236,18 @@ def test_network_monitor_wait_propagates_workflow_cancellation() -> None:
             raise asyncio.CancelledError
 
     async def scenario() -> None:
-        context, _ = _context()
+        context, page = _context()
         context.cancellation = Cancelled()  # type: ignore[assignment]
         await NetworkMonitorStartExecutor().execute({"monitorId": "cancel"}, context)
-        await NetworkMonitorWaitExecutor().execute(
-            {"monitorId": "cancel", "urlPattern": "never", "timeout": 60},
-            context,
-        )
+        try:
+            await NetworkMonitorWaitExecutor().execute(
+                {"monitorId": "cancel", "urlPattern": "never", "timeout": 60},
+                context,
+            )
+        except asyncio.CancelledError:
+            assert context.network_monitors == {}
+            assert page.listeners["request"] == []
+            raise
 
     try:
         asyncio.run(scenario())
