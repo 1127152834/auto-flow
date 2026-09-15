@@ -30,6 +30,6 @@ test('scenario selection is validated before any workspace or Electron launch', 
   assert.match(stdout, /qa helper self-test passed/)
   await assert.rejects(
     exec(process.execPath, [script.pathname, '--scenario', 'invented']),
-    error => error.stderr.includes('--scenario must be success, failure, stop, recovery, restart, or isolation'),
+    error => error.stderr.includes('--scenario must be success, failure, stop, force-stop, recovery, restart, or isolation'),
   )
 })

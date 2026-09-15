@@ -21,6 +21,8 @@ node scripts/qa-project-management-pm3.mjs --manual --scenario success
 
 普通停止在真实运行中及时完成，未稳定进入 `stopping`/`reconciling` 的强制停止准入窗口；因此强制停止没有执行，也没有记录为通过。
 
+`force-stop` 使用真实 CloakBrowser 慢导航工作流再次验证：普通停止后批次从 0–1400ms 保持 `stopping` revision 3，在 1600ms 已成为 `stopped` revision 4，远早于 30 秒宽限。没有使用 SIGSTOP、数据库改写或调度器替身，因此无法合法显示并提交强停确认框；精确时间线与截图见 `run-dTjriF`，该场景未记为通过。
+
 Failure 场景已在重建当前 renderer 后通过：真实任务以 `WORKFLOW_NODE_TIMEOUT` 失败，后端返回 `available image/png`，UI 打开了失败截图预览。`run-hB8hGK` 等较早目录使用旧 renderer，只作为 stale-build 失败证据，不代表当前源码结论；当前通过证据见 `run-aLealp`。
 
 尚未接入真实 UI 动作的场景会明确失败，不会写入伪造的通过结果。

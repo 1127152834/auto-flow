@@ -24,7 +24,7 @@ export function parseQaArgs(args) {
     else if (value === '--self-test') result.selfTest = true
     else if (value === '--scenario') {
       const scenario = args[++index]
-      if (!['success', 'failure', 'stop', 'recovery', 'restart', 'isolation'].includes(scenario)) throw new Error('--scenario must be success, failure, stop, recovery, restart, or isolation')
+      if (!['success', 'failure', 'stop', 'force-stop', 'recovery', 'restart', 'isolation'].includes(scenario)) throw new Error('--scenario must be success, failure, stop, force-stop, recovery, restart, or isolation')
       result.scenario = scenario
     }
     else if (value === '--kernel-directory') {
@@ -43,6 +43,7 @@ export const scenarioPlans = Object.freeze({
   success: ['UI创建项目与自动化', '启动两个真实浏览器任务', '核对批次、任务、日志、输入与输出'],
   failure: ['UI创建缺失点击目标的自动化', '启动真实浏览器任务并等待失败', '打开异常证据中的真实PNG预览'],
   stop: ['UI创建慢响应自动化', '启动两个任务', 'UI普通停止并确认', '核对全部取消且浏览器临时目录清理'],
+  'force-stop': ['启动真实慢导航任务', 'UI普通停止后等待超过30秒合法宽限', '输入批次编号确认强停并核对撤权与清理'],
   recovery: ['UI提交启动请求后丢弃响应与首次原键查询', '用原Idempotency-Key核对结果', '确认只创建一个批次'],
   restart: ['UI创建并完成批次', '关闭并重启Electron与后端', '通过重启后的真实服务读取持久批次并确认网页动作未重放'],
   isolation: ['在两个marker所有的独立workspace分别启动', '分别通过UI创建项目、自动化与批次', '核对workspace、项目与批次身份互不相同'],
@@ -299,9 +300,20 @@ async function runUiSuccessChain(runtime, workflow, profile, scenario = 'success
   const batches = await api(runtime, `/projects/${project.projectId}/batches?pageSize=20`)
   const batch = batches.items[0]
   if (scenario === 'recovery') { assert.equal(batches.total, 1); assert.ok(recoveryKey) }
-  if (scenario === 'stop') {
+  if (scenario === 'stop' || scenario === 'force-stop') {
     await click('停止批次'); await waitFor(renderer, "document.body.innerText.includes('停止当前批次？')", 'stop confirmation')
     await input('[aria-label="停止原因"]', 'PM3真实普通停止验收'); await capture('03-stop-confirmation'); await click('确认停止')
+    if (scenario === 'force-stop') {
+      const timeline = []
+      for (let sample = 0; sample < 175; sample += 1) {
+        const current = await api(runtime, `/projects/${project.projectId}/batches/${batch.batchId}`)
+        timeline.push({ elapsedMs: sample * 200, status: current.batch.status, revision: current.batch.statusRevision })
+        if (['completed', 'failed', 'stopped', 'interrupted'].includes(current.batch.status)) throw new Error(`force-stop window unavailable: ${JSON.stringify(timeline)}`)
+        await wait(200)
+      }
+      await waitFor(renderer, "document.body.innerText.includes('强制停止')", 'force-stop eligibility')
+      await click('强制停止'); await input('[aria-label="确认批次编号"]', batch.batchId); await input('[aria-label="停止原因"]', 'PM3真实强停验收'); await capture('05-force-stop-confirmation'); await click('确认强制停止')
+    }
     const stopped = await waitBatchTerminal(runtime, project.projectId, batch.batchId)
     assert.equal(stopped.batch.status, 'stopped')
     assert.equal(stopped.statusCounts.cancelled, 2)
@@ -360,10 +372,10 @@ try {
   await waitFor(renderer, "document.body.innerText.includes('本地服务正常')", 'local backend ready', 30_000)
   let runtime = await renderer.evaluate('window.autoflow.getRuntimeContext()')
   assert.ok(isOwnedQaWorkspace(runtime.workspaceKey, owner, { kind: 'pm3-project-management-qa' }), 'Only the marker-owned workspace may be changed')
-  const workflow = await seedWorkflow(runtime.workspaceKey, options.scenario === 'stop' ? fixture.slowUrl : fixture.url, options.scenario)
+  const workflow = await seedWorkflow(runtime.workspaceKey, ['stop', 'force-stop'].includes(options.scenario) ? fixture.slowUrl : fixture.url, options.scenario)
   const profile = await seedProfile(runtime, kernel.version)
   await capture('00-prepared')
-  if (!prepareOnly && !['success', 'failure', 'stop', 'recovery', 'restart'].includes(options.scenario)) throw new Error(`scenario ${options.scenario} is planned but not yet wired to UI actions; no run fact was created`)
+  if (!prepareOnly && !['success', 'failure', 'stop', 'force-stop', 'recovery', 'restart'].includes(options.scenario)) throw new Error(`scenario ${options.scenario} is planned but not yet wired to UI actions; no run fact was created`)
   let uiResult
   try {
     uiResult = prepareOnly ? undefined : await runUiSuccessChain(runtime, workflow, profile, options.scenario === 'restart' ? 'success' : options.scenario)

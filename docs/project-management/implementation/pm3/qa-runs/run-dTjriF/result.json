@@ -1,0 +1,40 @@
+{
+  "status": "failed",
+  "scenario": "force-stop",
+  "message": "force-stop window unavailable: [{\"elapsedMs\":0,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":200,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":400,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":600,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":800,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1000,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1200,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1400,\"status\":\"stopping\",\"revision\":3},{\"elapsedMs\":1600,\"status\":\"stopped\",\"revision\":4}]",
+  "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/out/renderer/index.html#/projects/8f24c500-c5ba-4666-b4f4-a77cbde0a9b7/runs/batches/aecffc79-b1e7-4c7c-9bc2-c174d4b69722",
+  "bodyText": "AutoFlow\n总览\n项目\n浏览器配置\n代理管理\n模型管理\n设置\n本地服务正常\n项目 / PM3运行验收项目 / 运行记录 / 批次详情\nPM3运行验收项目\n\n真实浏览器批次与证据验收\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n← 返回批次列表\n参数运行验收\n\naecffc79-b1e7-4c7c-9bc2-c174d4b69722\n\n正在停止\n强制停止\n开始\n2026/9/15 13:24:17\n结束\n—\n任务\n2 个\n本次运行配置\n本批次 2 个任务\n成功 0\n失败或异常 0\n进行中 1\n\n正在停止并核验资源清理。普通停止超过 30 秒后才允许强制停止；最终结果以持久运行事实为准。\n\n本批次任务\n参数运行验收\n全部状态\n全部时间\n任务\t所属批次\t任务状态\t时间\t操作\n4cd0fa41-3dba-408b-9fcf-1fc6f05eb42d\n运行 b3550d9f-eb46-4604-a729-e50d41d29426\n\t参数运行验收\t\n已取消\t2026/9/15 13:24:17\t\n查看任务\n\nd208e311-0149-43d3-b393-f41524d3b818\n运行 a7c77b61-3b87-4c79-bb5c-a29c984813c7\n\t参数运行验收\t\n正在停止\t2026/9/15 13:24:17\t\n查看任务\n1–2 / 2\n上一页\n第 1 页\n下一页",
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-dTjriF/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-dTjriF/01-automation.png",
+      "sha256": "b6e3b6b0894f6e749e702a88707a184a866cf85422aba1887366753f4b08da80"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-dTjriF/02-start-batch.png",
+      "sha256": "b9729048d2f5bf52ba5ab31fce1cfdc3647775cd426dd25ad544d8a49a480ead"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-dTjriF/04-batch-detail.png",
+      "sha256": "8f418246d51c21f6b6df1c2c7e0661d5e80d43c4477ab06fdf02f3d41af7c801"
+    },
+    {
+      "name": "03-stop-confirmation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-dTjriF/03-stop-confirmation.png",
+      "sha256": "4f2d37b290d21472dbe1b5476077fb560d0b34504108d0efd1fbc8950e595579"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-dTjriF/99-failure.png",
+      "sha256": "a5b36104c9ff42999cf8f87b53baaf7b2a04a481a11766ed324d3ddba305fa20"
+    }
+  ],
+  "createdAt": "2026-09-15T05:24:23.663Z"
+}
