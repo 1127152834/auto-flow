@@ -4,9 +4,10 @@
   "implementationCommits": [
     "b7258a49",
     "67bd0fcb",
-    "9d849d40"
+    "9d849d40",
+    "531255bd"
   ],
-  "result": "16个控制与变量执行器已按冻结源码迁入并注册；生产runtime已支持真实并行、条件死路消除、汇合、错误边、四类循环、嵌套break/continue、停止和总调度上限。",
+  "result": "18个控制、变量和视觉节点已按冻结源码迁入并注册；生产runtime已支持真实并行、条件死路消除、汇合、错误边、四类循环、嵌套break/continue、停止和总调度上限。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -37,7 +38,9 @@
     "get_time",
     "wait",
     "stop_workflow",
-    "assert_checkpoint"
+    "assert_checkpoint",
+    "group",
+    "note"
   ],
   "classifications": {
     "executorAlgorithmsDefaultsVariablesAndErrors": "原版直接迁入",
@@ -54,10 +57,11 @@
     "fullBackendRegression": "2340 passed, 7 skipped, 2 warnings in 266.47s",
     "mypy": "263 source files passed",
     "ruff": "本批受影响文件通过；全库仍有7个本批未修改测试文件的既有import排序问题",
-    "diffCheck": "passed"
+    "diffCheck": "passed",
+    "visualNodeDifferential": "2 passed；group和note结果与冻结执行器一致，生产运行图按视觉节点语义过滤且不发布伪执行事件"
   },
   "remaining": [
-    "B3的subflow、run_workflow_file、input_prompt、group、note尚未全部接入生产运行语义",
+    "B3的subflow、run_workflow_file和input_prompt尚未接入生产运行语义",
     "自定义模块仓储、revision、依赖图、运行冻结解析和递归执行尚未实现",
     "循环/子流程上下文尚未写入持久事件字段，产物分页仍需按executionId集中验收",
     "1000轮纯变量停止与正式Electron复杂控制流链路尚未验收"

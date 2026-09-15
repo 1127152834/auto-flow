@@ -632,6 +632,32 @@
         "直接文件系统写入"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/basic.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/visual.py",
+      "changeSummary": "迁入group无操作结果；生产执行图继续按原版视觉节点语义过滤。",
+      "retainedDependencies": [
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局执行器注册副作用"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/note.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/visual.py",
+      "changeSummary": "迁入note无操作结果；生产执行图继续按原版视觉节点语义过滤。",
+      "retainedDependencies": [
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局执行器注册副作用"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

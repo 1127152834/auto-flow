@@ -50077,7 +50077,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -50108,7 +50108,7 @@
         "BE.SUPPORT.document"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/visual.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -50122,12 +50122,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码无操作执行器已注册并通过HTTP准入；运行图按原版视觉节点语义过滤，不产生伪执行事件；正式Electron验收仍待集中完成。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
           "id": "BE.group.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#GroupExecutor",
@@ -50135,11 +50135,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 group 的默认配置、合法分支和错误分支；配置键为 无专属配置键",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：备注分组模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json"
         },
         {
           "id": "BE.group.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -50147,7 +50147,7 @@
           ],
           "operation": "通过正式传输提交包含 group 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json"
         },
         {
           "id": "BE.group.real-execution",
@@ -50272,7 +50272,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -50303,7 +50303,7 @@
         "BE.SUPPORT.document"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/visual.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -50317,12 +50317,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码无操作执行器已注册并通过HTTP准入；运行图按原版视觉节点语义过滤，不产生伪执行事件；正式Electron验收仍待集中完成。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
           "id": "BE.note.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/note.py#NoteExecutor",
@@ -50330,11 +50330,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 note 的默认配置、合法分支和错误分支；配置键为 无专属配置键",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：便签模块执行器 - 仅用于画布上的注释，不执行任何操作",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json"
         },
         {
           "id": "BE.note.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -50342,7 +50342,7 @@
           ],
           "operation": "通过正式传输提交包含 note 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json"
         },
         {
           "id": "BE.note.real-execution",
