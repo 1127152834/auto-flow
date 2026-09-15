@@ -189,7 +189,7 @@
 - [x] worker 启动消息只接收运行快照、Profile 冻结参数和秘密引用；License/代理密码不得回传事件或日志。
 - [x] 复用 `FilesystemProfileUsageGuard` 与进程出生/组清理；新增工作区活跃运行和内核目标占用协调。
 - [x] 验证启动中取消、命令管道断开、浏览器被杀、worker 被杀和超时强杀；清理完成前保持占用。
-- [ ] 运行协议与资源测试，使用真实短生命周期子进程，不用内存状态冒充清理。
+- [x] 运行协议与资源测试，使用真实短生命周期子进程，不用内存状态冒充清理。
 
 ### Task B1.4：迁入首批五个网页执行器
 
@@ -202,10 +202,10 @@
 - Fixture: `apps/backend/tests/fixtures/workflow-page.html`
 - Fixture: `apps/backend/tests/fixtures/workflow-frame.html`
 
-- [ ] 对每节点建立字段映射表，覆盖默认值、变量、CSS/XPath、超时、空值、首个匹配和错误。
-- [ ] 先逐项运行 `BE.<type>.source-parity`；只有 WebRPA IO 调用替换为 `ExecutionContext` port，业务分支保持源码行为。
-- [ ] 在本地受控页面核对导航 URL、输入值、点击计数、提取字节和 PNG 解码/尺寸。
-- [ ] 对导航、输入和截图分别测试取消；确认后续节点没有副作用。
+- [x] 对每节点建立字段映射表，覆盖默认值、变量、CSS/XPath、超时、空值、首个匹配和错误。
+- [x] 先逐项运行 `BE.<type>.source-parity`；只有 WebRPA IO 调用替换为 `ExecutionContext` port，业务分支保持源码行为。
+- [x] 在本地受控页面核对导航 URL、输入值、点击计数、提取字节和 PNG 解码/尺寸。
+- [x] 对导航、输入和截图分别测试取消；确认后续节点没有副作用。
 - [ ] 把五节点三类证据写入各自 `backendMigration.acceptanceCases[].evidencePath`，不得一次性把 B2 节点标完成。
 
 ### Task B1.5：运行、事件、日志和产物持久化

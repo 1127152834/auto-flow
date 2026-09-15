@@ -136,8 +136,13 @@ def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() ->
             f"BE.{node_type}.real-execution",
         ]
         for case in cases:
-            assert case["status"] == "尚未验收"
-            assert case["evidencePath"] is None
+            assert case["status"] in {"尚未验收", "已实现且已验收"}
+            if case["status"] == "尚未验收":
+                assert case["evidencePath"] is None
+            else:
+                evidence = case["evidencePath"]
+                assert isinstance(evidence, str) and evidence
+                assert (REPOSITORY_ROOT / evidence).is_file()
             assert case["id"] not in case_ids
             case_ids.add(case["id"])
 
@@ -172,7 +177,19 @@ def test_source_authorization_record_is_scoped_and_license_copy_is_exact() -> No
         "nonInferences": ["不推断为具体商业授权", "不推断为公开发布授权"],
         "decisionRecord": ".ai/decisions/2026-09-15-studio-webrpa-backend-source-authorization.md",
     }
-    assert provenance["migratedFiles"] == []
+    required = set(provenance["requiredFileFields"])
+    migrated = provenance["migratedFiles"]
+    assert migrated
+    identities: set[tuple[str, str]] = set()
+    for entry in migrated:
+        assert required.issubset(entry)
+        assert entry["sourceCommit"] == FROZEN_COMMIT
+        assert (REPOSITORY_ROOT / entry["sourcePath"]).is_file()
+        assert (REPOSITORY_ROOT / entry["targetPath"]).is_file()
+        assert entry["licenseRecord"] == "LICENSE.WebRPA"
+        identity = (entry["sourcePath"], entry["targetPath"])
+        assert identity not in identities
+        identities.add(identity)
     upstream = REPOSITORY_ROOT / provenance["source"]["licenseSource"]
     retained = REPOSITORY_ROOT / provenance["source"]["retainedLicenseCopy"]
     assert (

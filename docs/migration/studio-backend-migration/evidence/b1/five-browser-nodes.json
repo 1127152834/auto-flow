@@ -1,0 +1,119 @@
+{
+  "evidenceId": "BE-B1-five-browser-nodes-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "result": "B1.4 executor and real-provider slice passed; HTTP and formal Electron acceptance remain pending",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "file": "backend/app/executors/basic.py",
+    "symbols": [
+      "OpenPageExecutor",
+      "ClickElementExecutor",
+      "InputTextExecutor",
+      "GetElementInfoExecutor",
+      "ScreenshotExecutor"
+    ],
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "fieldMapping": {
+    "open_page": {
+      "fields": {
+        "url": "required; resolve_value; empty is an error",
+        "openMode": "new_tab by default; current_tab reuses the explicit current page",
+        "waitUntil": "load by default; load/domcontentloaded/networkidle are passed to CloakBrowser",
+        "timeout": "shared advanced setting; 30 seconds by default, 0 uses the provider default"
+      },
+      "ioAdaptation": "browser creation was removed from the node; the managed CloakBrowser session owns launch and cleanup"
+    },
+    "click_element": {
+      "fields": {
+        "selector": "required; CSS and xpath= use the shared locator; first match is used",
+        "clickType": "single by default; double and right retained",
+        "waitForSelector": "true by default",
+        "followNewTab": "false by default",
+        "timeout": "30 seconds by default; 0 passes no explicit timeout",
+        "selectorHints": "retains frozen fallback order and writes the successful selector into the run-local config"
+      }
+    },
+    "input_text": {
+      "fields": {
+        "selector": "required; CSS and xpath= use the shared locator; first match is used",
+        "text": "resolve_value; empty text is allowed",
+        "clearBefore": "true by default",
+        "typeSequential": "false by default; sequential mode uses 20 ms key delay",
+        "timeout": "30 seconds by default",
+        "selectorHints": "retains the frozen fallback behavior"
+      }
+    },
+    "get_element_info": {
+      "fields": {
+        "selector": "required; CSS and xpath= use the shared locator; first match is used",
+        "attribute": "text by default; innerHTML/value/href/src/custom attribute/attributes retained",
+        "variableName": "optional run-variable output",
+        "columnName": "optional current-row output",
+        "timeout": "30 seconds by default",
+        "selectorHints": "retains the frozen final fallback behavior"
+      }
+    },
+    "screenshot": {
+      "fields": {
+        "screenshotType": "fullpage by default; viewport and element retained",
+        "selector": "used for element mode; missing selector preserves the frozen full-page fallback",
+        "savePath": "resolved by the injected artifact boundary instead of direct arbitrary file writes",
+        "fileNamePattern": "supports the frozen {时间戳} token and .png suffix rule",
+        "variableName": "optional output containing the registered artifact path"
+      }
+    }
+  },
+  "allowedAdaptations": [
+    "Playwright globals were replaced by typed browser and artifact ports",
+    "only CloakBrowser can provide the browser session",
+    "an explicitly closed current page is an error rather than silently selecting another page",
+    "runtime cancellation races each node dispatch and cancels the active browser await before any following node",
+    "screenshot bytes are registered through the workspace artifact boundary; B1.5 supplies its persistent implementation"
+  ],
+  "sourceDifferential": {
+    "test": "apps/backend/tests/differential/workflows/test_b1_executor_parity.py",
+    "sourceHarness": "apps/backend/tests/differential/workflows/frozen_b1_harness.py",
+    "command": "cd apps/backend && uv run pytest tests/differential/workflows/test_b1_executor_parity.py -q",
+    "result": "31 passed",
+    "coverage": [
+      "five frozen executors are imported in an isolated source subprocess",
+      "normalized success, messages, browser calls, variable/data-row writes and screenshot result shape match",
+      "required-field errors are produced by both source and target without browser side effects",
+      "three wait modes, three click modes, zero timeout, input sequencing, seven extraction modes, two page screenshot modes and element screenshot are covered",
+      "the frozen attached-to-visible fallback was reproduced for click and extraction",
+      "navigation, input and screenshot dispatch cancellation prevents the following node"
+    ]
+  },
+  "realCloakBrowser": {
+    "test": "apps/backend/tests/integration/test_b1_cloakbrowser_flow.py",
+    "command": "cd apps/backend && AUTOFLOW_B1_CLOAK_EXECUTABLE=<installed-kernel> uv run pytest tests/integration/test_b1_cloakbrowser_flow.py -q",
+    "result": "1 passed",
+    "platform": "macOS arm64",
+    "wrapperVersion": "0.5.9",
+    "kernelVersion": "145.0.7632.109.2",
+    "workspace": "independent temporary cache and artifact directory",
+    "observed": [
+      "file fixture navigation completed",
+      "Chinese input round-tripped exactly",
+      "a CSS selector with two matches clicked only the first element and produced click count 1",
+      "xpath= extraction returned the exact Chinese text",
+      "the PNG signature decoded and IHDR width/height were both greater than 100"
+    ],
+    "userDatabaseModified": false,
+    "runningMainApplicationModified": false
+  },
+  "relatedRegression": {
+    "command": "cd apps/backend && uv run pytest tests/differential/workflows tests/unit/workflows tests/integration/test_b1_cloakbrowser_flow.py tests/integration/test_workflow_repository.py tests/integration/test_workflow_worker_protocol.py tests/integration/test_workflow_resource_ownership.py tests/unit/test_profile_test_browser.py tests/unit/test_browser_processes.py tests/unit/test_main.py -q",
+    "resultAtRecording": "172 passed, 1 opt-in real-browser test skipped; the same real-browser test passed separately with the installed kernel",
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "notClaimed": [
+    "main-application Profile transport and HTTP/SSE run contract",
+    "persistent run, event and artifact repositories",
+    "formal Electron UI execution",
+    "macOS Intel or Windows real-machine verification"
+  ]
+}

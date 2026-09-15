@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -28,6 +30,18 @@ class CloakBrowserWorkflowLocator(BrowserLocatorPort):
     def __init__(self, raw: Any) -> None:
         self._raw = raw.first
 
+    def locator(self, selector: str) -> CloakBrowserWorkflowLocator:
+        return CloakBrowserWorkflowLocator(self._raw.locator(selector))
+
+    async def count(self) -> int:
+        return int(await self._raw.count())
+
+    async def evaluate(self, expression: str) -> Any:
+        return await self._raw.evaluate(expression)
+
+    async def is_visible(self) -> bool:
+        return bool(await self._raw.is_visible())
+
     async def wait_for(
         self, *, state: str = "visible", timeout_ms: float | None = None
     ) -> None:
@@ -39,11 +53,20 @@ class CloakBrowserWorkflowLocator(BrowserLocatorPort):
     async def click(self, **options: Any) -> None:
         await self._raw.click(**options)
 
+    async def double_click(self, **options: Any) -> None:
+        await self._raw.dblclick(**options)
+
+    async def clear(self) -> None:
+        await self._raw.clear()
+
     async def fill(self, value: str) -> None:
         await self._raw.fill(value)
 
-    async def press_sequentially(self, value: str) -> None:
-        await self._raw.press_sequentially(value)
+    async def press_sequentially(self, value: str, *, delay_ms: float = 0) -> None:
+        await self._raw.press_sequentially(value, delay=delay_ms)
+
+    async def type_text(self, value: str, *, delay_ms: float = 0) -> None:
+        await self._raw.type(value, delay=delay_ms)
 
     async def text_content(self) -> str | None:
         return await self._raw.text_content()
@@ -100,6 +123,15 @@ class CloakBrowserWorkflowPage(BrowserPagePort):
 
     async def wait_for_load_state(self, state: str, *, timeout_ms: float) -> None:
         await self._raw.wait_for_load_state(state, timeout=timeout_ms)
+
+    async def bring_to_front(self) -> None:
+        await self._raw.bring_to_front()
+
+    async def keyboard_press(self, key: str) -> None:
+        await self._raw.keyboard.press(key)
+
+    async def keyboard_type(self, value: str) -> None:
+        await self._raw.keyboard.type(value)
 
     def locator(self, selector: str) -> CloakBrowserWorkflowLocator:
         return CloakBrowserWorkflowLocator(self._raw.locator(format_selector(selector)))
@@ -176,6 +208,44 @@ class CloakBrowserWorkflowSession:
         self._current_id = page.id
         return page
 
+    def begin_new_page_watch(self) -> _NewPageWatch:
+        watch = _NewPageWatch()
+
+        def on_page(raw: Any) -> None:
+            watch.pages.append(raw)
+
+        self._context.on("page", on_page)
+        watch.listener = on_page
+        return watch
+
+    async def settle_new_page_watch(
+        self, watch: object, *, follow: bool, wait_ms: int = 3000
+    ) -> CloakBrowserWorkflowPage | None:
+        if not isinstance(watch, _NewPageWatch):
+            return None
+        try:
+            if follow and not watch.pages:
+                waited = 0
+                while waited < wait_ms and not watch.pages:
+                    await asyncio.sleep(0.1)
+                    waited += 100
+            if not watch.pages or not follow:
+                return None
+            raw = watch.pages[-1]
+            pages = self._synchronize_pages()
+            page = next((item for item in pages if item._raw is raw), None)
+            if page is None:
+                raise UnknownPage("新页面不存在")
+            try:
+                await page.wait_for_load_state("domcontentloaded", timeout_ms=10_000)
+            except Exception:  # noqa: BLE001,S110 -- follow does not require load success.
+                pass
+            self._current_id = page.id
+            return page
+        finally:
+            if watch.listener is not None:
+                self._context.remove_listener("page", watch.listener)
+
     async def close(self) -> None:
         if self._closed:
             return
@@ -213,3 +283,9 @@ async def launch_workflow_session(
         finally:
             if relay is not None:
                 relay.__exit__(None, None, None)
+
+
+@dataclass(slots=True)
+class _NewPageWatch:
+    pages: list[Any] = field(default_factory=list)
+    listener: Any = None

@@ -5,11 +5,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Protocol
 
+from .browser import BrowserSessionPort
 from .variables import CredentialReader, resolve_value
-
-
-class BrowserSession(Protocol):
-    async def close(self) -> None: ...
 
 
 class ArtifactWriter(Protocol):
@@ -45,7 +42,7 @@ class WorkflowClock:
 @dataclass(slots=True)
 class ExecutionContext:
     variables: dict[str, Any] = field(default_factory=dict)
-    browser: BrowserSession | None = None
+    browser: BrowserSessionPort | None = None
     artifacts: ArtifactWriter | None = None
     credentials: CredentialReader | None = None
     models: ModelGateway | None = None

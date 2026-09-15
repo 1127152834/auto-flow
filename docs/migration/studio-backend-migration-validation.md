@@ -40,7 +40,7 @@
 |---|---|---|---|---|
 | BE-B1-001 | Studio 新建 open_page→input_text→click_element→get_element_info→screenshot，保存、关闭重开 | 文档、布局、revision 和配置真实持久化；未产生运行 | Electron E2E | 尚未验收 |
 | BE-B1-002 | 选择主应用 Profile，运行未保存草稿 | 只创建运行快照，不创建/更新工作流文档；CloakBrowser 完成真实页面动作 | Electron/CloakBrowser | 尚未验收 |
-| BE-B1-003 | 比对输入值、点击计数、提取值和 PNG | 页面值一致、计数恰为 1、提取字节和截图可核对 | CloakBrowser | 尚未验收 |
+| BE-B1-003 | 比对输入值、点击计数、提取值和 PNG | 页面值一致、计数恰为 1、提取字节和截图可核对 | CloakBrowser | [通过：macOS arm64 独立临时会话](studio-backend-migration/evidence/b1/five-browser-nodes.json) |
 | BE-B1-004 | 同 runId 同请求重发、丢弃首次 HTTP 响应后查询 | 只启动一个 worker/浏览器，页面动作不重复 | HTTP/worker | 尚未验收 |
 | BE-B1-005 | 同 runId 不同快照重发 | 返回 409 和稳定错误包，原运行不变 | HTTP | 尚未验收 |
 | BE-B1-006 | 执行中断 SSE，再按最后序号重连 | 已持久化事件补齐、无重复，断线不改变运行状态 | HTTP/SSE | 尚未验收 |

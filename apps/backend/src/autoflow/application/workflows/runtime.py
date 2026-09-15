@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 from collections import deque
-from collections.abc import Mapping
+from collections.abc import Coroutine, Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -85,7 +86,7 @@ class WorkflowRuntime:
                 )
             raw_config = node.data.get("config")
             config = dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
-            result = await executor.execute(config, context)
+            result = await _execute_with_cancellation(executor.execute(config, context), context)
             executed.append(node_id)
             if not result.success:
                 return WorkflowRuntimeResult(
@@ -100,3 +101,33 @@ class WorkflowRuntime:
                 else graph.get_next_nodes(node_id)
             )
         return WorkflowRuntimeResult(True, tuple(executed))
+
+
+async def _execute_with_cancellation(
+    operation: Coroutine[Any, Any, ModuleResult], context: ExecutionContext
+) -> ModuleResult:
+    token = context.cancellation
+    if token is None:
+        return await operation
+    operation_task = asyncio.create_task(operation)
+    cancellation_task = asyncio.create_task(_wait_until_cancelled(context))
+    try:
+        done, _ = await asyncio.wait(
+            {operation_task, cancellation_task},
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        if operation_task in done:
+            return operation_task.result()
+        operation_task.cancel()
+        await asyncio.gather(operation_task, return_exceptions=True)
+        token.raise_if_cancelled()
+        raise RuntimeError("workflow cancellation token did not raise")
+    finally:
+        cancellation_task.cancel()
+        await asyncio.gather(cancellation_task, return_exceptions=True)
+
+
+async def _wait_until_cancelled(context: ExecutionContext) -> None:
+    assert context.cancellation is not None
+    while not context.cancellation.cancelled:
+        await asyncio.sleep(0.02)

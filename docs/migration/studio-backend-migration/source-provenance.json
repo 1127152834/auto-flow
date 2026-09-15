@@ -175,6 +175,38 @@
         "WebRPA应用全局状态"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/basic.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/basic.py",
+      "changeSummary": "迁入open_page、click_element、input_text、get_element_info和screenshot的配置默认值、变量解析、操作分支、错误和输出语义；浏览器启动、当前页和文件写入改由AutoFlow注入端口承担。",
+      "retainedDependencies": [
+        "ExecutionContext变量语义",
+        "CloakBrowser页面与定位器端口",
+        "工作区产物端口"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Edge/Chrome/Firefox启动分支",
+        "节点内直接文件写入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/base.py",
+      "targetPath": "apps/backend/src/autoflow/providers/browser/workflow_actions.py",
+      "changeSummary": "迁入选择器提示的候选生成顺序及主选择器失败后的自愈等待；以BrowserPagePort和BrowserLocatorPort隔离具体SDK。",
+      "retainedDependencies": [
+        "Python标准库",
+        "AutoFlow浏览器窄端口"
+      ],
+      "removedDependencies": [
+        "Playwright具体类型",
+        "运行日志全局回调"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

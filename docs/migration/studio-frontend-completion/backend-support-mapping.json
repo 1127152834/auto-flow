@@ -135,9 +135,9 @@
       ],
       "risk": "原版启动Edge/Chrome/Firefox并复用全局browser_engine；AutoFlow只能消费主应用CloakBrowser Profile。页面、context、持久目录、代理、扩展和关闭语义必须实测对照。",
       "implementation": {
-        "completedSlice": "B1.3 CloakBrowser页面会话端口、workflow worker、父进程监护、Profile/内核/工作区占用和进程树清理",
-        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/browser-worker.json",
-        "remaining": "B1.4五节点真实动作；B2 iframe、拾取、弹窗、网络监听及其余网页节点"
+        "completedSlice": "B1.3 CloakBrowser页面会话、worker、资源清理；B1.4五节点执行器、源码差分、可取消调度和真实CloakBrowser受控页动作",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/five-browser-nodes.json",
+        "remaining": "B1.5-B1.7持久运行合同与正式Electron闭环；B2 iframe、拾取、弹窗、网络监听及其余网页节点"
       }
     },
     {

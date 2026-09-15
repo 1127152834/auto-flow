@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>AutoFlow B1 受控页面</title>
+    <style>
+      body { font-family: sans-serif; margin: 32px; }
+      label, button, output { display: block; margin: 12px 0; }
+    </style>
+  </head>
+  <body>
+    <label>输入内容 <input id="workflow-input" /></label>
+    <button
+      class="workflow-action"
+      id="workflow-submit"
+      type="button"
+      onclick="
+        const count = Number(document.querySelector('#click-count').textContent) + 1;
+        document.querySelector('#click-count').textContent = String(count);
+        document.querySelector('#workflow-output').textContent =
+          document.querySelector('#workflow-input').value;
+      "
+    >确认</button>
+    <button
+      class="workflow-action"
+      type="button"
+      onclick="document.querySelector('#click-count').textContent = '100'"
+    >错误的第二匹配项</button>
+    <output id="workflow-output"></output>
+    <span id="click-count">0</span>
+    <iframe id="workflow-frame" title="受控子页面" src="workflow-frame.html"></iframe>
+  </body>
+</html>
