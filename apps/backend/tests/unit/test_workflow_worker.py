@@ -57,6 +57,10 @@ class Page:
         await asyncio.sleep(self.goto_delay)
         self.calls.append(("goto", url, kwargs))
 
+    async def screenshot(self, **kwargs: object) -> bytes:
+        self.calls.append(("screenshot", kwargs))
+        return b"png"
+
     def locator(self, selector: str) -> Locator:
         self.calls.append(("locator", selector))
         return Locator(self)
@@ -199,7 +203,7 @@ async def test_stop_at_safe_point_does_not_start_next_node() -> None:
         nonlocal stopped
         if kind == "nodeAttempt" and payload["status"] == "started":
             started.append(node_id)
-        if node_id == "one" and payload["status"] == "succeeded":
+        if kind == "nodeAttempt" and node_id == "one" and payload["status"] == "succeeded":
             stopped = True
 
     result = await WorkflowExecutor(context, {}, emit, lambda: stopped).run(plan(
@@ -207,6 +211,22 @@ async def test_stop_at_safe_point_does_not_start_next_node() -> None:
     ))
     assert result["status"] == "cancelled"
     assert started == ["one"]
+
+
+@pytest.mark.asyncio
+async def test_stop_while_start_log_waits_for_ack_then_skips_action() -> None:
+    context, stopped = Context(), False
+
+    async def emit(kind: str, _node_id: str, _visit: str, payload: dict[str, object]) -> None:
+        nonlocal stopped
+        if kind == "log" and payload["message"] == "开始执行节点":
+            stopped = True
+
+    result = await WorkflowExecutor(context, {}, emit, lambda: stopped).run(
+        plan(node("open", "open_page", url="https://must-not-open"))
+    )
+    assert result == {"status": "cancelled", "error": None}
+    assert context.pages == []
 
 
 @pytest.mark.asyncio
@@ -323,6 +343,71 @@ async def test_node_failure_emits_failed_evidence_then_cleans_up() -> None:
     assert events[-1][0] == "nodeAttempt"
     assert events[-1][3]["status"] == "failed"
     assert events[-1][3]["error"]["code"] == "WORKFLOW_PAGE_CLOSED"
+
+
+@pytest.mark.asyncio
+async def test_worker_captures_failure_screenshot_before_closing_browser(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    executable, cache, context = tmp_path / "chrome", tmp_path / "cache", Context()
+    artifact_directory = tmp_path / "workspace" / "runs" / "run" / "generation-3"
+    executable.write_bytes(b"x")
+    cache.mkdir()
+    monkeypatch.setenv("CLOAKBROWSER_BINARY_PATH", str(executable))
+    monkeypatch.setenv("CLOAKBROWSER_CACHE_DIR", str(cache))
+    monkeypatch.setenv("AUTOFLOW_WORKFLOW_ARTIFACT_DIR", str(artifact_directory))
+    monkeypatch.setenv(
+        "AUTOFLOW_WORKFLOW_ARTIFACT_RELATIVE_DIR", "runs/run/generation-3"
+    )
+
+    class FailingPage(Page):
+        async def goto(self, url: str, **kwargs: object) -> None:
+            raise RuntimeError("secret browser failure")
+
+        async def screenshot(self, **kwargs: object) -> bytes:
+            assert context.closed is False
+            return b"failure-png"
+
+    async def new_page() -> Page:
+        page = FailingPage()
+        context.pages.append(page)
+        return page
+
+    context.new_page = new_page  # type: ignore[method-assign]
+
+    async def launch(**_: object) -> Context:
+        return context
+
+    monkeypatch.setitem(
+        sys.modules, "cloakbrowser", SimpleNamespace(launch_context_async=launch)
+    )
+    output = io.StringIO()
+
+    class Ack:
+        async def next(self) -> dict[str, object]:
+            event = json.loads(output.getvalue().splitlines()[-1])["event"]
+            return {
+                "type": "event_committed",
+                "eventId": event["eventId"],
+                "executionGeneration": 3,
+            }
+
+    assert await _run(command(), threading.Event(), Ack(), output) == 1
+    events = [
+        message["event"]
+        for message in map(json.loads, output.getvalue().splitlines())
+        if message["type"] == "event"
+    ]
+    artifact = next(event for event in events if event["kind"] == "artifact")
+    assert artifact["payload"]["availability"] == "available"
+    assert artifact["payload"]["relativePath"].startswith(
+        "runs/run/generation-3/"
+    )
+    assert "secret" not in json.dumps(artifact)
+    assert (
+        tmp_path / "workspace" / artifact["payload"]["relativePath"]
+    ).read_bytes() == b"failure-png"
+    assert context.closed is True
 
 
 def test_run_worker_rejects_eof_and_oversized_jsonl_without_traceback() -> None:

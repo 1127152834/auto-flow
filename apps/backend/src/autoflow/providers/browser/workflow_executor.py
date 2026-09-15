@@ -38,11 +38,13 @@ class WorkflowExecutor:
         variables: Mapping[str, object],
         emit: Callable[[str, str, str, dict[str, object]], Awaitable[None]],
         should_stop: Callable[[], bool],
+        capture_failure: Callable[[Any, str, str], Awaitable[dict[str, object]]] | None = None,
     ) -> None:
         self.context = context
         self.variables = dict(variables)
         self.emit = emit
         self.should_stop = should_stop
+        self.capture_failure = capture_failure
         self.page: Any = None
 
     async def run(self, plan: Mapping[str, Any]) -> dict[str, object]:
@@ -53,6 +55,9 @@ class WorkflowExecutor:
             visit = uuid4().hex
             started = monotonic()
             await self.emit("nodeAttempt", node_id, visit, {"status": "started"})
+            if self.should_stop():
+                return {"status": "cancelled", "error": None}
+            await self.emit("log", node_id, visit, {"level": "info", "message": "开始执行节点"})
             if self.should_stop():
                 return {"status": "cancelled", "error": None}
             try:
@@ -68,15 +73,22 @@ class WorkflowExecutor:
                 raise
             except Exception as exc:  # noqa: BLE001 -- browser errors must be redacted.
                 error = self._safe_error(exc)
+                await self.emit("log", node_id, visit, {"level": "error", "message": str(error["message"])})
                 await self.emit(
                     "nodeAttempt", node_id, visit,
                     {"status": "failed", "durationMs": round((monotonic() - started) * 1000), "error": error},
                 )
+                if self.capture_failure is not None:
+                    await self.emit(
+                        "artifact", node_id, visit,
+                        await self.capture_failure(self.page, node_id, visit),
+                    )
                 return {"status": "failed", "error": error}
             if output is not None:
                 name, value = output
                 self.variables[name] = value
                 await self.emit("output", node_id, visit, {"name": name, "value": value})
+            await self.emit("log", node_id, visit, {"level": "info", "message": "节点执行完成"})
             await self.emit(
                 "nodeAttempt", node_id, visit,
                 {"status": "succeeded", "durationMs": round((monotonic() - started) * 1000)},

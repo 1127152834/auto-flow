@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import queue
 import sys
 from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from threading import Event, Thread
 from typing import Any, TextIO
 from uuid import uuid4
@@ -18,6 +19,7 @@ from autoflow.providers.browser.workflow_executor import WorkflowExecutor
 
 PROTOCOL_VERSION = 1
 MAX_JSONL_BYTES = 1024 * 1024
+MAX_SCREENSHOT_BYTES = 20 * 1024 * 1024
 
 
 class ProtocolFailure(Exception):
@@ -147,6 +149,9 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                     variables,
                     emit,
                     lambda: stop_requested or stopped.is_set(),
+                    lambda page, node_id, visit: _capture_failure_screenshot(
+                        command, page, node_id, visit
+                    ),
                 )
                 result = await executor.run(command["executionPlan"])
     except asyncio.CancelledError:
@@ -188,6 +193,81 @@ def _validate_start(command: dict[str, Any]) -> tuple[str, int]:
     if not isinstance(command.get("executionPlan"), dict) or not isinstance(command.get("browser"), dict):
         raise ProtocolFailure
     return run_id, generation
+
+
+async def _capture_failure_screenshot(
+    command: dict[str, Any], page: Any, _node_id: str, _visit: str
+) -> dict[str, object]:
+    artifact_id = str(uuid4())
+    unavailable = {
+        "artifactId": artifact_id,
+        "kind": "screenshot",
+        "purpose": "error",
+        "availability": "unavailable",
+        "relativePath": None,
+        "mediaType": None,
+        "byteSize": None,
+        "sha256": None,
+        "createdAt": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+    }
+    temporary: Path | None = None
+    try:
+        if page is None or page.is_closed() or not hasattr(page, "screenshot"):
+            return {**unavailable, "unavailableReason": "SCREENSHOT_PAGE_UNAVAILABLE"}
+        directory, relative_directory = _artifact_directory(command)
+        content = await page.screenshot(type="png")
+        if not isinstance(content, bytes) or not content or len(content) > MAX_SCREENSHOT_BYTES:
+            raise ValueError
+        directory.mkdir(parents=True, exist_ok=True)
+        directory = directory.resolve(strict=True)
+        filename = f"{artifact_id}.png"
+        temporary = directory / f".{artifact_id}.tmp"
+        destination = directory / filename
+        with temporary.open("xb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, destination)
+        return {
+            **unavailable,
+            "availability": "available",
+            "relativePath": str(relative_directory / filename),
+            "mediaType": "image/png",
+            "byteSize": len(content),
+            "sha256": hashlib.sha256(content).hexdigest(),
+            "unavailableReason": None,
+        }
+    except Exception:  # noqa: BLE001 -- screenshot failures become safe evidence.
+        if temporary is not None:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
+        return {**unavailable, "unavailableReason": "SCREENSHOT_CAPTURE_FAILED"}
+
+
+def _artifact_directory(command: dict[str, Any]) -> tuple[Path, PurePosixPath]:
+    directory_value = os.environ.get("AUTOFLOW_WORKFLOW_ARTIFACT_DIR")
+    relative_value = os.environ.get("AUTOFLOW_WORKFLOW_ARTIFACT_RELATIVE_DIR")
+    if not directory_value or not relative_value:
+        raise ValueError
+    directory = Path(directory_value)
+    relative = PurePosixPath(relative_value)
+    expected = (
+        "runs",
+        str(command["runId"]),
+        f"generation-{command['executionGeneration']}",
+    )
+    if (
+        not directory.is_absolute()
+        or relative.is_absolute()
+        or "." in relative.parts
+        or ".." in relative.parts
+        or relative.parts != expected
+        or "\\" in relative_value
+    ):
+        raise ValueError
+    return directory, relative
 
 
 def _envelope(command: dict[str, Any], kind: str, **values: object) -> dict[str, object]:

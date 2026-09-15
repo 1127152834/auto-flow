@@ -4,7 +4,7 @@ import sqlite3
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
@@ -12,10 +12,12 @@ from autoflow.domain.workflows.runtime import (
     CoreRun,
     CoreRunStatus,
     PreparedContent,
+    RunArtifact,
     RunEvent,
     WorkflowRuntimeError,
     create_core_run,
     create_prepared_content,
+    create_run_artifact,
     create_run_event,
     event_identity_digest,
     restore_core_run,
@@ -25,6 +27,7 @@ from autoflow.domain.workflows.runtime import (
 
 from .workflow_runtime_models import (
     WorkflowPreparedContentRow,
+    WorkflowRunArtifactRow,
     WorkflowRunEventRow,
     WorkflowRunRow,
 )
@@ -313,6 +316,22 @@ class SqlAlchemyWorkflowRuntimeRepository:
                 "运行事件序号由核心分配，提交值与当前事实不一致",
             )
         event = _event_from_value(value, assigned_sequence=assigned_sequence)
+        artifact = (
+            _artifact_from_event(
+                event,
+                ordinal=(
+                    self._session.scalar(
+                        select(func.max(WorkflowRunArtifactRow.ordinal)).where(
+                            WorkflowRunArtifactRow.run_id == run_id
+                        )
+                    )
+                    or 0
+                )
+                + 1,
+            )
+            if event.kind == "artifact"
+            else None
+        )
         # The CAS and insert share a savepoint. A losing writer cannot leave the
         # sequence advanced without its event, nor leak a database exception.
         try:
@@ -332,6 +351,8 @@ class SqlAlchemyWorkflowRuntimeRepository:
                 if getattr(result, "rowcount", 0) != 1:
                     raise _EventAppendRace
                 self._session.add(_event_row(event))
+                if artifact is not None:
+                    self._session.add(_artifact_row(artifact))
                 self._session.flush()
         except OperationalError as error:
             if not _is_sqlite_contention(error):
@@ -391,6 +412,33 @@ class SqlAlchemyWorkflowRuntimeRepository:
             .limit(limit)
         ).all()
         return [_event(row) for row in rows]
+
+    def get_artifact(self, run_id: str, artifact_id: str) -> RunArtifact | None:
+        row = self._session.get(WorkflowRunArtifactRow, (run_id, artifact_id))
+        return _artifact(row) if row is not None and row.purpose == "error" else None
+
+    def list_artifacts(
+        self, run_id: str, *, offset: int, limit: int
+    ) -> tuple[list[RunArtifact], int]:
+        total = self._session.scalar(
+            select(func.count())
+            .select_from(WorkflowRunArtifactRow)
+            .where(
+                WorkflowRunArtifactRow.run_id == run_id,
+                WorkflowRunArtifactRow.purpose == "error",
+            )
+        )
+        rows = self._session.scalars(
+            select(WorkflowRunArtifactRow)
+            .where(
+                WorkflowRunArtifactRow.run_id == run_id,
+                WorkflowRunArtifactRow.purpose == "error",
+            )
+            .order_by(WorkflowRunArtifactRow.ordinal)
+            .offset(offset)
+            .limit(limit)
+        ).all()
+        return [_artifact(row) for row in rows], int(total or 0)
 
 
 def _prepared_content_row(value: PreparedContent) -> WorkflowPreparedContentRow:
@@ -521,6 +569,97 @@ def _event(row: WorkflowRunEventRow) -> RunEvent:
         occurred_at=_aware(row.occurred_at),
         payload=row.payload,
     )
+
+
+def _artifact_from_event(event: RunEvent, *, ordinal: int) -> RunArtifact:
+    payload = thaw_json(event.payload)
+    return create_run_artifact(
+        artifact_id=str(payload.get("artifactId", "")),
+        run_id=event.run_id,
+        ordinal=ordinal,
+        node_id=event.node_id or "",
+        node_visit_id=event.node_visit_id,
+        purpose=str(payload.get("purpose", "")),
+        event_sequence=event.sequence,
+        execution_generation=event.execution_generation,
+        kind=str(payload.get("kind", "")),
+        availability=str(payload.get("availability", "")),
+        relative_path=payload.get("relativePath"),
+        media_type=payload.get("mediaType"),
+        byte_size=payload.get("byteSize"),
+        sha256=payload.get("sha256"),
+        created_at=event.occurred_at,
+        unavailable_reason=payload.get("unavailableReason"),
+    )
+
+
+def _artifact_row(value: RunArtifact) -> WorkflowRunArtifactRow:
+    payload = {
+        "artifactId": value.artifact_id,
+        "kind": value.kind,
+        "purpose": value.purpose,
+        "availability": value.availability,
+        "relativePath": value.relative_path,
+        "mediaType": value.media_type,
+        "byteSize": value.byte_size,
+        "sha256": value.sha256,
+        "executionGeneration": value.execution_generation,
+        "createdAt": value.created_at.isoformat(),
+        "unavailableReason": value.unavailable_reason,
+    }
+    return WorkflowRunArtifactRow(
+        run_id=value.run_id,
+        id=value.artifact_id,
+        ordinal=value.ordinal,
+        node_id=value.node_id,
+        execution_id=value.node_visit_id,
+        payload=payload,
+        purpose=value.purpose,
+        event_seq=value.event_sequence,
+    )
+
+
+def _artifact(row: WorkflowRunArtifactRow) -> RunArtifact:
+    payload = row.payload if isinstance(row.payload, dict) else {}
+    try:
+        created_at = datetime.fromisoformat(str(payload["createdAt"]))
+        return create_run_artifact(
+            artifact_id=row.id,
+            run_id=row.run_id,
+            ordinal=row.ordinal,
+            node_id=row.node_id,
+            node_visit_id=row.execution_id,
+            purpose=row.purpose,
+            event_sequence=row.event_seq,
+            execution_generation=payload["executionGeneration"],
+            kind=payload["kind"],
+            availability=payload["availability"],
+            relative_path=payload.get("relativePath"),
+            media_type=payload.get("mediaType"),
+            byte_size=payload.get("byteSize"),
+            sha256=payload.get("sha256"),
+            created_at=created_at,
+            unavailable_reason=payload.get("unavailableReason"),
+        )
+    except (KeyError, TypeError, ValueError, WorkflowRuntimeError):
+        return create_run_artifact(
+            artifact_id=row.id,
+            run_id=row.run_id,
+            ordinal=max(row.ordinal, 1),
+            node_id=row.node_id or "legacy",
+            node_visit_id=row.execution_id,
+            purpose="error",
+            event_sequence=max(row.event_seq, 1),
+            execution_generation=0,
+            kind="screenshot",
+            availability="unavailable",
+            relative_path=None,
+            media_type=None,
+            byte_size=None,
+            sha256=None,
+            created_at=datetime.fromtimestamp(0, UTC),
+            unavailable_reason="LEGACY_ARTIFACT_UNAVAILABLE",
+        )
 
 
 def _event_dict_digest(value: dict[str, Any], *, assigned_sequence: int) -> str:

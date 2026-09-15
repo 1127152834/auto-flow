@@ -5,8 +5,9 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
+from pathlib import PurePosixPath
 from types import MappingProxyType
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 CoreRunStatus = Literal[
     "queued",
@@ -22,6 +23,8 @@ CoreRunStatus = Literal[
     "timed_out",
     "interrupted",
 ]
+ArtifactAvailability = Literal["available", "unavailable"]
+MAX_ARTIFACT_BYTES = 20 * 1024 * 1024
 
 TERMINAL_STATUSES = frozenset(
     {"succeeded", "failed", "cancelled", "timed_out", "interrupted"}
@@ -164,6 +167,129 @@ class RunEvent:
     def __post_init__(self) -> None:
         object.__setattr__(self, "occurred_at", _utc(self.occurred_at))
         object.__setattr__(self, "payload", _freeze_mapping(self.payload))
+
+
+@dataclass(frozen=True)
+class RunArtifact:
+    artifact_id: str
+    run_id: str
+    ordinal: int
+    node_id: str
+    node_visit_id: str | None
+    purpose: Literal["error"]
+    event_sequence: int
+    execution_generation: int
+    kind: Literal["screenshot"]
+    availability: ArtifactAvailability
+    relative_path: str | None
+    media_type: Literal["image/png"] | None
+    byte_size: int | None
+    sha256: str | None
+    created_at: datetime
+    unavailable_reason: str | None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "created_at", _utc(self.created_at))
+
+
+def create_run_artifact(
+    *,
+    artifact_id: str,
+    run_id: str,
+    ordinal: int,
+    node_id: str,
+    node_visit_id: str | None,
+    purpose: str,
+    event_sequence: int,
+    execution_generation: int,
+    kind: str,
+    availability: str,
+    relative_path: str | None,
+    media_type: str | None,
+    byte_size: int | None,
+    sha256: str | None,
+    created_at: datetime,
+    unavailable_reason: str | None,
+) -> RunArtifact:
+    invalid = (
+        not artifact_id
+        or len(artifact_id) > 120
+        or not run_id
+        or not node_id
+        or len(node_id) > 120
+        or (node_visit_id is not None and len(node_visit_id) > 120)
+        or type(ordinal) is not int
+        or ordinal < 1
+        or purpose != "error"
+        or type(event_sequence) is not int
+        or event_sequence < 1
+        or type(execution_generation) is not int
+        or execution_generation < 0
+        or kind != "screenshot"
+        or availability not in {"available", "unavailable"}
+    )
+    if invalid:
+        raise _artifact_invalid()
+    if availability == "available":
+        if (
+            not _controlled_artifact_path(relative_path, run_id, execution_generation)
+            or media_type != "image/png"
+            or type(byte_size) is not int
+            or byte_size < 1
+            or byte_size > MAX_ARTIFACT_BYTES
+            or not isinstance(sha256, str)
+            or len(sha256) != 64
+            or any(character not in "0123456789abcdef" for character in sha256)
+            or unavailable_reason is not None
+        ):
+            raise _artifact_invalid()
+    elif (
+        relative_path is not None
+        or media_type is not None
+        or byte_size is not None
+        or sha256 is not None
+        or not isinstance(unavailable_reason, str)
+        or not unavailable_reason
+        or len(unavailable_reason) > 80
+    ):
+        raise _artifact_invalid()
+    return RunArtifact(
+        artifact_id,
+        run_id,
+        ordinal,
+        node_id,
+        node_visit_id,
+        "error",
+        event_sequence,
+        execution_generation,
+        "screenshot",
+        cast(ArtifactAvailability, availability),
+        relative_path,
+        cast(Literal["image/png"] | None, media_type),
+        byte_size,
+        sha256,
+        created_at,
+        unavailable_reason,
+    )
+
+
+def _controlled_artifact_path(
+    value: str | None, run_id: str, execution_generation: int
+) -> bool:
+    if not value or "\\" in value:
+        return False
+    path = PurePosixPath(value)
+    return (
+        not path.is_absolute()
+        and "." not in path.parts
+        and ".." not in path.parts
+        and path.parts[:3] == ("runs", run_id, f"generation-{execution_generation}")
+        and path.suffix == ".png"
+    )
+
+
+def _artifact_invalid() -> WorkflowRuntimeError:
+    return WorkflowRuntimeError("RUN_ARTIFACT_INVALID", "运行产物元数据无效")
 
 
 def create_prepared_content(

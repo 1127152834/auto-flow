@@ -41,6 +41,8 @@ class _Worker:
     run_id: str
     generation: int
     directory: Path
+    artifact_directory: Path
+    relative_artifact_directory: str
     executable: Path
     task: asyncio.Task[Any]
     process: asyncio.subprocess.Process | None = None
@@ -66,6 +68,7 @@ class WorkflowWorkerManager:
         termination_timeout: float = 3,
     ) -> None:
         self._root = (temp_dir / "workflow-runs").resolve()
+        self._artifact_root = (temp_dir.parent / "workspace" / "runs").resolve()
         self._command = command or workflow_worker_command()
         self._worker_env = worker_env or {}
         self._start_timeout = start_timeout
@@ -95,18 +98,24 @@ class WorkflowWorkerManager:
             worker = _Worker(
                 run_id, execution_generation,
                 self._root / run_id / f"generation-{execution_generation}",
+                self._artifact_root / run_id / f"generation-{execution_generation}",
+                f"runs/{run_id}/generation-{execution_generation}",
                 executable.resolve(strict=True), current,
             )
             self._worker = worker
         try:
             worker.directory.mkdir(parents=True, exist_ok=False)
             worker.created_directory = True
+            worker.artifact_directory.mkdir(parents=True, exist_ok=True)
+            worker.artifact_directory.resolve(strict=True).relative_to(self._artifact_root)
             env = os.environ.copy()
             env.update(self._worker_env)
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
             env.update({
                 "CLOAKBROWSER_BINARY_PATH": str(worker.executable),
                 "CLOAKBROWSER_CACHE_DIR": str(worker.directory),
+                "AUTOFLOW_WORKFLOW_ARTIFACT_DIR": str(worker.artifact_directory),
+                "AUTOFLOW_WORKFLOW_ARTIFACT_RELATIVE_DIR": worker.relative_artifact_directory,
                 "TMPDIR": str(worker.directory), "TMP": str(worker.directory),
                 "TEMP": str(worker.directory),
             })
