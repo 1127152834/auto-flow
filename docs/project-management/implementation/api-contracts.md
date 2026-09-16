@@ -384,7 +384,7 @@ type SheetsBindingWrite = {connectionId:string;spreadsheetId:string;sheetId:numb
 PM3 实施说明（2026-09-15）：`parameters` 键为稳定 parameterId，未知键拒绝；省略可选值才应用默认值，显式 null、false、0 与空字符串保持原意。输入为空、环境 newFromProfile、最终任务数 1–100 且并发 1；启动接受与执行成功分别查询。Batch 公共管理修订是冻结自动化修订，批次状态修订独立；启动 Operation 的 `{batch}` 结果不可被实时进度覆盖。Task 的 `inputSnapshotId` 引用单独持久快照，状态只投影 CoreRun。此说明不表示下列全部未来路由已实现。
 
 ```ts
-type BatchStartRequest = {expectedAutomationRevision:number;parameters:Record<string,JsonScalar>;maxTasks?:number;concurrency?:number;environmentOverride?:EnvironmentPolicy}
+type BatchStartRequest = {expectedAutomationRevision:number;parameters:Record<string,JsonScalar>;maxTasks?:number|null;concurrency?:number;environmentOverride?:EnvironmentPolicy}
 type BatchDetail = {batch:Batch;statusCounts:Record<TaskStatus,number>;taskCount:number;stopOperation:Operation|null;forceStopAllowed:boolean;forceStopAvailableAt:string|null;configurationSnapshot:JsonObject}
 type RunLogEntry = {runId:string;sequence:number;eventId:string;executionGeneration:number;nodeVisitId?:string;attempt?:number;level:'debug'|'info'|'warning'|'error';message:string;occurredAt:string}
 type RunLogPage = {items:RunLogEntry[];afterSequence:number;lastSequence:number;hasMore:boolean}
@@ -671,3 +671,17 @@ type DataStatusUsageDirectory = {
 代理覆盖省略才继承项目默认；显式 `sourceDefault` 直接跟随浏览器配置，不再经过项目代理。资源检查只读取已保存引用与安装事实，不表示 License 已通过或运行已开始。管理保存、工作流结构校验与运行准入分别表达；当前能力查询未接入时返回 unavailable/runnable=false，仍显示已取得的资源问题。
 
 用户要求取消 Studio demo 联合验收：真实工作流目录只读关联继续使用 core 文档身份，管理页测试资料经真实文档服务创建；不将该准备过程写成 Studio 操作或运行通过。
+
+## PM4 传输实现记录（2026-09-16）
+
+本节只登记当前真实 handler 和内部端口，不发布未来空接口。
+
+- `POST /api/v1/projects/{projectId}/automations/{automationId}/input-preview` 已实现，只读返回各输入的别名、表/记录展示、是否实际必需、结果分类、扫描数量和组合预算事实；它不建立 Operation 或 lease。
+- `POST /api/v1/projects/{projectId}/automations/{automationId}/batches` 对数据型启动接受 `maxTasks: 1..100 | null`；显式 `null` 表示不限次数，省略继续使用自动化默认有限值。数据型 `concurrency` 为 1..100；无数据输入的参数型运行仍固定并发 1 且必须有限。
+- `GET /api/v1/projects/{projectId}/batches/{batchId}` 已返回领取门闩、选择结果、请求/已创建/活动数量、重复输入组数与连续未变化次数。重复组按输入别名与完整 RecordRef 判断，版本变化另由连续未变化事实表达。
+- `GET /api/v1/projects/{projectId}/tasks/{taskId}` 已返回不可变输入快照和显式项目数据写入投影；加载或读取失败不能投影为空写入。
+- XE-C08/C09 仍是进程内 capability 端口。renderer 不能提交自称 Task/Run 的公共数据写请求；端口必须验证持久 Task、Run、executionGeneration 和冻结授权。
+
+上述接口继续使用现有认证、camelCase、错误 envelope、`Idempotency-Key`、Operation 查询及工作区/服务实例隔离。PM4-F 的第二自动化已通过同一真实管理端口读取第一自动化新增的账号，任务页显示冻结输入与持久读取事实；当前源码管理 E2E 与视觉复审见 `pm4/qa-runs/f-QHALLW/{result,visual-review}.json`。`f-4QcXFG` 与 `f-dJVKnL` 仅保留为历史候选。执行步骤仍由隔离 fake executor 驱动，边界固定为“管理侧通过，真实执行核心接入待验收”；该证据不证明真实生产执行核心、CloakBrowser 或 Studio 已接入。
+
+候选后安全修复不新增路由或 DTO：`d3a397cf` 使人工删除记录的影响预览和最终事务都把当前 `held/reconciling` lease 作为阻断；`f07bb83b` 使 Excel 重新导入的预览、接受及最终发布都检查当前数据代次的活动 lease。两项修复已有定向回归，当前源码 PM4-F 管理链也已重跑通过；19 张截图视觉复审和阶段全量工程检查均已通过。

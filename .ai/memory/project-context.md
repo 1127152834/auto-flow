@@ -132,3 +132,12 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - 强停测试只对隔离 Electron 后代树中唯一且命令匹配的真实 workflow worker 做受控 SIGSTOP；UI 仍执行真实普通停止、宽限、强停和清理。当前HEAD直接证据为 `pm3/qa-runs/uuid-runs-1789458500247/result.json`。
 - 项目模块不复制执行器；核心继续拥有 Workflow/PreparedContent/CoreRun/RunEvent/worker。用户排除 Studio demo UI 联调，不把该路径标为通过。
 - PM3 当前授权管理范围通过；原完整 PM3 合同仍 partially_verified。项目数据型执行、持久环境、人工、统计和生命周期属于 PM4–PM8，未提前实现。用户手测、Windows、其他架构及打包未执行。
+
+## PM4 A/B/C/F 管理能力交付（2026-09-16，confirmed）
+
+来源：实施分支提交 `11e44be`、`48e5919`、`64606a2`、`f092551`、`1cc5112`、`c911b6a`、`b4dabf28`，以及 `docs/project-management/implementation/pm4/{a,b,c}-verification.md`、`pm4/verification.json`。
+
+- V1/A/B/C 已交付真实管理侧多表输入、原子领取、本地记录/状态/字段 capability 和有限/不限批次调度；记录复用仅看当前业务状态与工作流条件，不保存批内排除集合。
+- 原始输入快照保持不可变；Task 已确认写入推进独立游标；人工再次修改后旧版本写冲突。结果不明按原 operation 身份查询，旧 executionGeneration 无权继续写或释放占用。
+- 权威 Electron 证据由真实 FastAPI、SQLite、项目数据服务和 UI 构成，但执行步骤由隔离 fake executor 驱动。不得把它写成真实生产执行核心、CloakBrowser 或 Studio 可用。
+- PM4 管理功能交付状态为 delivered、验证状态为 partially_verified：当前源码业务 E2E `f-QHALLW` 绑定 `f07bb83b`，完成第二自动化读取、有限/不限管理链、三类候选态及日志搜索 Enter；`f-4QcXFG` 保留前一提交候选的全量工程与 19 张截图审查，旧 `f-dJVKnL` 为历史候选。`d3a397cf`、`f07bb83b` 补齐人工删除和 Excel 重新导入的活动 lease 保护并通过定向回归；当前源码的 19 张截图同视口视觉复审和阶段全量检查均已通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项已通过；会启动真实 CloakBrowser/生产执行核心的 `qa-project-management-pm3.mjs` 按边界未执行。真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、打包及用户手测未执行。边界固定为“管理侧通过，真实执行核心接入待验收”；不进入 PM5。

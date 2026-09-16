@@ -128,3 +128,16 @@ e58877d/2cded8e/32c3395/f4e1d08交付历史状态墓碑、删除影响/原子命
 用户明确排除 Studio demo UI 联合测试及画布、transport、bridge 修改。管理 QA 通过 WorkflowService 与 ProfileService 准备工作流和浏览器配置，只用于真实执行资料，不冒充 Studio 用户路径。项目数据型领取与写回、持久环境、人工处理、统计和生命周期继续属于 PM4–PM8；PM4 未开始。
 
 完整机器与真实应用证据见 `pm3/verification.json`。用户手动测试、Windows、其他 CPU 架构和打包应用未执行。
+
+## PM4 管理侧基线（2026-09-16，当前源码 `f07bb83b`）
+
+本节取代本文较早“PM4 未开始”的当前解释；历史记录保留。
+
+- `domain/project_runs/input_selection.py` 与 `infrastructure/database/project_claims.py` 已实现独立、固定、sameRecord、fieldEquals、recordSlot 输入关系，typed RecordRef、稳定候选顺序、有界分页、依赖回溯及歧义/配置/预算分类。
+- `application/project_runs/coordinator.py`、`scheduler.py` 与 `dispatcher.py` 已接通数据型 Batch：接受时不预造任务，领取提交在短事务内重查容量和数据守卫，按槽懒创建 Task；有限 1–100 次和显式不限次数语义分开。
+- `project_record_leases` 与 `project_task_record_cursors` 保存物理占用和 Task 最新确认版本；原始 TaskInputSnapshot 不随显式写入变化。终态确认后释放，占用结果不明时保持 reconciling，旧 executionGeneration 不得写入或释放。
+- `application/project_data/capabilities.py` 及数据库端口已实现受控读取/查询、记录新增/编辑/删除、状态设置/清空、字段新增/ensure/安全修改；Operation、DataChange 和新版本游标与业务写入按契约提交。
+- 管理前端已展示输入预检、有限/不限和并发配置、领取状态、重复输入事实、不可变输入及显式写入结果；仍沿用顶部导航、统一细网格表格和小圆角。
+- 当前业务 E2E 权威为 `pm4/qa-runs/f-QHALLW/result.json` 与 `pm4/verification.json`。项目、表、字段、记录和两套自动化通过 Electron UI 建立；第二自动化读取第一自动化新增的账号。执行步骤使用 fake executor。当前运行绑定源码 `f07bb83b` 和 source SHA-256 `71623bf3…`。`f-4QcXFG` 是已完成逐屏视觉审查的前一提交候选；旧 `f-dJVKnL` 仅保留为历史候选。
+- 候选后提交 `d3a397cf` 与 `f07bb83b`：人工删除在预览和最终事务阻止活动记录占用，Excel 重新导入在预览、接受和最终发布阻止当前数据代次的活动占用。相应定向回归、当前源码 PM4-F 管理链、19 张截图同视口视觉复审和阶段全量工程检查均已通过。
+- PM4 管理功能已经交付，整体状态为 delivered + partially_verified。noMatch、temporarilyBusy、configurationError 管理态及日志搜索 Enter 已通过候选版本；PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过；会启动真实 CloakBrowser/生产执行核心的 PM3 QA 脚本未执行。真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、打包和用户手测未执行。

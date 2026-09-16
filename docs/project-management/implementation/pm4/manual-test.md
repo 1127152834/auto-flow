@@ -1,8 +1,8 @@
-# PM4 V1 与 B 显式数据能力手动验收
+# PM4 管理功能最终手动验收
 
-日期：2026-09-15。适用分支：`codex/project-management-pm4`。
+日期：2026-09-16。适用分支：`codex/project-management-pm4`。当前源码 `f07bb83b`；当前源码管理链证据为 `f-QHALLW`。`f-4QcXFG` 是已完成逐屏视觉审查的前一提交候选；当前源码 19 张截图视觉复审和阶段全量检查均已通过。
 
-本手册只验收 PM4 V1 管理闭环：通过真实 Electron 界面维护项目、三张数据表、业务状态、记录和自动化，使用真实 FastAPI、SQLite、数据领取和项目数据操作查看运行事实。执行步骤由隔离的确定性假执行器触发，不执行网页，不调用 Studio，也不能据此认定生产工作流执行核心已经可用。
+本手册验收 PM4 管理闭环：通过真实 Electron 界面维护项目、三张数据表、业务状态、记录和两套自动化，使用真实 FastAPI、SQLite、数据领取和项目数据操作查看运行事实。执行步骤由隔离的确定性假执行器触发，不执行网页，不调用 Studio，也不能据此认定生产工作流执行核心已经可用。
 
 当前用户手动验收状态：**未执行**。
 
@@ -11,7 +11,7 @@
 在终端执行：
 
 ```bash
-cd /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4 && npm run build && node scripts/qa-project-management-pm4.mjs --manual
+cd /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4 && npm run build && node scripts/qa-project-management-pm4.mjs --final --manual
 ```
 
 命令会完成以下准备并保持应用打开：
@@ -20,12 +20,14 @@ cd /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4 && n
 - 写入 `.pm4-v1-qa.json` 和 `.autoflow-workspace.json` 标记；
 - 启动真实 Electron、FastAPI 和独立 SQLite；
 - 准备名为“PM4 V1 隔离执行器资料”的工作流夹具和“PM4 V1 隔离执行器资源”的浏览器配置夹具；
-- 通过真实界面自动跑一遍基准三表链，再保持应用打开，供人工核对和重复操作；
+- 通过真实界面自动跑一遍有限/不限三表链、第二自动化读取链和无匹配状态，再保持应用打开，供人工核对和重复操作；
 - 在终端打印本轮 `owner`、`workspace`、`evidence` 和 `result.json` 路径。
 
 运行前要求本机已安装一个公开版 CloakBrowser 内核。该内核只用于通过现有资源校验；V1 假执行器不会启动该浏览器。
 
-`--prepare-only` 只检查隔离环境和夹具准备，随后退出；它不执行三表链，不能记录为端到端通过。
+`--prepare-only` 只检查隔离环境和夹具准备，随后退出；它不执行三表链，不能记录为端到端通过。省略 `--final` 只运行较早的 V1/B 子链，也不能替代 PM4-F 最终手测。
+
+当前业务 E2E 候选为 `docs/project-management/implementation/pm4/qa-runs/f-QHALLW/result.json`，包含 19 张已完成同视口逐屏复审的截图，运行源码为 `f07bb83b`。已完成视觉审查的前一提交候选为 `f-4QcXFG`；旧 `f-dJVKnL` 仅保留为历史候选。以下“用户结果”在用户实际操作前全部保持“未执行”。
 
 ## 2. 测试资料
 
@@ -115,7 +117,7 @@ uv run --directory apps/backend pytest \
 用例编号｜通过/失败/未执行｜实际操作｜实际业务事实｜证据类型（UI/自动集成/只读查询）｜截图或 result.json 绝对路径｜与预期差异
 ```
 
-禁止把以下内容写成用户手测通过：自动 CDP 操作、后端 pytest、`--prepare-only`、只读 API 核对、尚未完成的视觉复审。
+禁止把以下内容写成用户手测通过：自动 CDP 操作、后端 pytest、`--prepare-only`、只读 API 核对、用户尚未执行的手动验收。
 
 ## 8. 退出与清理
 
@@ -126,7 +128,13 @@ uv run --directory apps/backend pytest \
 
 ## 9. PM4-B 管理页核对
 
-使用第 1 节命令启动时，QA 默认运行 B 模式。完成 U01～U09 后，在任务“输入与输出”页继续核对：
+PM4-B 全操作链和 PM4-F 最终链使用不同模式。B 验收必须另开终端执行下列不含 `--final` 的命令；它创建单个数据任务并执行完整记录、状态和字段 capability 链。第 1 节的 `--final --manual` 验证有限/不限调度、第二自动化读取和候选状态，不会替代 B 的全操作链。
+
+```bash
+cd /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4 && npm run build && node scripts/qa-project-management-pm4.mjs --manual
+```
+
+B 命令同样创建独立带 marker 的临时工作区，并使用第 2 节三表资料；运行完成后保持应用打开。完成 U01～U09 后，在任务“输入与输出”页继续核对：
 
 | 编号 | 操作 | 逐步预期 | 用户结果 |
 |---|---|---|---|
@@ -149,3 +157,35 @@ uv run --directory apps/backend pytest \
 重点核对：Task 自写后版本推进、人工修改后旧写冲突、查询动态 lease 失败零残留、跨表同字段 ID 不越权、引用中的记录不能删除、回填超过 1,000 行或 4 MiB 时整笔拒绝。命令通过属于自动集成证据，不能填写为用户界面手测通过。
 
 Windows、其他 CPU 架构、打包应用、真实浏览器执行、真实工作流核心接入、Studio 联合运行及本表用户手测均保持“未执行”。
+
+## 10. PM4-F 最终链人工核对
+
+第 1 节的 `--final --manual` 会通过受控 QA 预览覆盖制造 `temporarilyBusy` 和 `configurationError`，不要求用户编辑数据库。工具自动步骤完成后，终端会打印本轮证据目录；按下表检查页面和该目录中的图片。
+
+| 编号 | 操作 | 逐步预期 | 用户结果 |
+|---|---|---|---|
+| PM4-F-U01 | 打开有限批次详情和三个任务，再分别查看人员、邮箱、账号表 | 三个任务复用同一人员；三个不同邮箱变为“已使用”；账号新增三条且稳定引用不同 | 未执行 |
+| PM4-F-U02 | 打开不限批次详情 | UI 停止后批次为 stopped，领取门关闭；只存在两个任务；累计邮箱和账号均为五条，账号无重复 | 未执行 |
+| PM4-F-U03 | 打开“账号读取”自动化的批次和唯一任务，切换到“输入与输出” | 原始输入只有一条账号记录；“项目数据操作”显示读取记录；账号表仍为五条 | 未执行 |
+| PM4-F-U04 | 打开本轮证据目录中的 `16-no-match-preview.png`，并在应用重新打开写入自动化启动弹窗 | 无匹配明确显示“当前没有匹配数据”，不显示暂时占用或配置错误 | 未执行 |
+| PM4-F-U05 | 核对本轮 `17-temporarily-busy-preview.png` | 明确显示“数据暂被占用，批次将等待释放”和“记录暂时被占用”；不能显示为数据耗尽 | 未执行 |
+| PM4-F-U06 | 核对本轮 `18-configuration-error-preview.png` | 明确显示“当前不能领取完整输入组”和“配置错误”；不能显示为可选输入为空 | 未执行 |
+| PM4-F-U07 | 在任务日志页把搜索词改为不存在的文本，使用真实键盘按 Enter | 出现“没有匹配的日志”；清除搜索后恢复原日志。若 Enter 无效，记录失败，不用点击按钮代替本用例 | 未执行 |
+| PM4-F-U08 | 在停止确认框按 Escape；再把应用缩放到 200%，检查日志、任务输入和预览弹窗 | Escape 关闭当前对话框并恢复焦点；200% 允许纵向滚动，不产生整页横向溢出 | 未执行 |
+| PM4-F-U09 | 查看本轮 `result.json` 的 `boundary` 和 `scope` | executor 为 fake，browser/studio 为 notExecuted；scope 精确为“管理侧通过，真实执行核心接入待验收” | 未执行 |
+
+自动 QA 已覆盖无匹配、暂时占用、配置错误、停止确认、日志搜索 Enter、1440×1024 和 200% 缩放。U05～U07 仍保持“未执行”，直到用户本人按本手册核对截图并操作真实键盘；自动通过不能替代用户手测。
+
+## 11. 当前机器证据与用户验收的分界
+
+- 自动管理链：当前源码 `docs/project-management/implementation/pm4/qa-runs/f-QHALLW/result.json` 通过；`f-4QcXFG` 是已完成视觉审查的前一提交候选，旧 `f-dJVKnL` 为历史候选。
+- 最终汇总：`docs/project-management/implementation/pm4/verification.json`，`delivered + partiallyVerified`。
+- 视觉：当前源码 `f-QHALLW` 的 19 张截图、强制结构和逐屏最低分 85 已通过；`f-4QcXFG` 保留为前一提交候选。
+- PM3 管理前端定向回归：16 个测试文件、121 项测试通过，覆盖参数启动、预检、停止/恢复提示、批次/任务详情、事件、日志和输入输出。
+- PM3 管理后端定向回归：139 项通过，覆盖数据删除/重新导入占用保护和项目运行管理；2 个既有依赖弃用 warning。
+- PM3 真实执行核心 QA：`qa-project-management-pm3.mjs` 未执行；该脚本会启动真实 CloakBrowser/生产执行核心，与本轮隔离 fake executor 边界冲突。
+- 当前源码 PM4-F 管理链、19 张截图同视口视觉复审与阶段全量工程检查均已通过；证据绑定 `f07bb83b`，未沿用 `c911b6a` 的结果冒充当前源码。
+- 用户手测：本文件全部用例当前未执行。
+- Windows、其他 CPU 架构、打包应用、真实生产执行核心、CloakBrowser 和 Studio：未执行。
+
+最终交付表述只能是：**管理侧通过，真实执行核心接入待验收**。

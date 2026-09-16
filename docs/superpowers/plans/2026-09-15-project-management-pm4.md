@@ -402,3 +402,24 @@ PM4-C 已完成有限/不限次数的数据型懒调度、候选续查、并发�
 独立规格复核和工程复核均为 PASS。权威管理端证据为 `docs/project-management/implementation/pm4/qa-runs/c-m3SplP/result.json`，源码摘要、数据库事实、10 张同视口截图和未执行边界见 `docs/project-management/implementation/pm4/c-verification.md`。历史失败目录和测试先行红灯均保留，不作为通过证据。
 
 当前结论固定为：管理侧通过，真实执行核心接入待验收。下一退出目标为 F：第二自动化读取账号、跨包异常链、PM2/PM3 管理回归、全量工程检查、最终截图与手测交付。
+
+## 14. 2026-09-16 PM4-F 最终检查点
+
+PM4-F 前一提交候选已完成第二自动化读取、跨包管理链、工程检查、PM2 数据回归、逐屏视觉审查和手动测试说明。候选后 `d3a397cf`、`f07bb83b` 补齐两项活动 lease 保护并通过定向回归；当前源码 `f07bb83b` 的 PM4-F 管理链 `f-QHALLW`、19 张截图同视口视觉复审和阶段全量检查均已通过，管理侧 F 退出条件闭合。PM3 管理前端定向回归已通过 16 个测试文件/121 项，管理后端定向回归 139 项通过；会启动真实 CloakBrowser/生产执行核心的 PM3 QA 脚本按本轮边界未执行，因此生产执行门槛不能写成满足。PM4 管理功能交付状态为 `delivered`，验证状态为 `partially_verified`；本执行卡停在 PM4，不进入 PM5。
+
+| 交付 | 实际结果 | 权威证据 |
+|---|---|---|
+| 第一自动化有限/不限调度 | 有限三次复用同一人员并消费三个邮箱；不限链完成两个任务后由 UI 停止；累计五个邮箱显式改为已使用、五个账号且无重复 | `docs/project-management/implementation/pm4/qa-runs/f-QHALLW/result.json` |
+| 第二自动化数据传递 | UI 创建账号读取自动化，读取第一自动化新增账号；任务页显示冻结原始输入与真实读取事实，账号总数不变 | 同上，截图 `11-reader-preview.png`、`12-reader-task-input-output.png`、`13-reader-run-log.png` |
+| 恢复与停止 | 原 operation 身份找回响应丢失结果；不限链 UI 停止后领取门关闭，任务数不再增加 | 同上及 PM4 A/B/C 集成反例 |
+| 当前源码工程检查 | 后端 1,597 passed/8 skipped；Ruff 通过；mypy 260 源文件通过；前端 298 文件/3,273 项通过；OpenAPI、typecheck、lint、build、test:structure 通过；test:scripts 64/64 | `docs/project-management/implementation/pm4/verification.json` |
+| 候选后数据保护 | 人工删除 lease 保护 82+15 项相关回归通过；Excel 替换 lease 保护 7 项新增测试+117 项相关回归通过；当前源码 F 管理链通过 | 提交 `d3a397cf`、`f07bb83b`；`f-QHALLW/result.json`；当前源码视觉/全量检查均已通过 |
+| PM2 回归 | 数据目录 smoke 通过；详情/文件 smoke 通过；10,000 行导入 7,211ms，第二页 169ms | `docs/migration/project-data-directory-qa/run-A6Nzd9/result.json`；`docs/migration/pm2-detail-qa/run-5r0BCW/result.json` |
+| PM3 管理/参数批次回归 | 管理前端定向回归 16 文件/121 项，管理后端定向回归 139 项通过，覆盖参数启动、预检、停止/恢复、批次/任务详情、事件、日志、输入输出及相关占用保护；真实执行核心 QA 未执行 | 定向 Vitest/pytest 命令；`qa-project-management-pm3.mjs` 因真实核心边界未运行 |
+| 当前源码视觉 | 19 张截图；强制结构、顶部导航、细网格表格、小圆角、三类候选态、日志搜索 Enter、1440×1024 和 200% 缩放通过；逐屏最低分 85 | `docs/project-management/implementation/pm4/qa-runs/f-QHALLW/visual-review.json` |
+
+版本边界必须保持精确：当前 Electron 业务 E2E 运行绑定源码 `f07bb83b`，source SHA-256 为 `71623bf3d45b28912bdafdd9e97cbef119f246c05ad307bc4d98eabf6c4758cb`；其视觉复审已通过。`f-4QcXFG` 是已完成视觉审查的前一提交候选，旧 `f-dJVKnL` 仅保留为历史候选。
+
+当前源码核验已通过：19 张截图同视口视觉复审及阶段全量工程检查。仍待生产边界验收：PM3 真实执行核心 QA。仍待人工或外部验收：Windows、其他 CPU 架构、打包应用和用户手测。执行器始终为隔离 fake，真实生产执行核心、CloakBrowser 与 Studio 未执行。
+
+最终范围声明：**管理侧通过，真实执行核心接入待验收**。

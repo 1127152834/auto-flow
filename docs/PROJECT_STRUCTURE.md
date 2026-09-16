@@ -461,3 +461,13 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `domain/project_runs` 定义有界参数启动、冻结快照及 CoreRun 状态投影；`application/project_runs/coordinator.py` 在一个调用者数据库事务中建立批次/任务/快照/queued Run/操作结果。`infrastructure/database/project_run_models.py` 与 `project_runs.py` 保存和读取三表，`pm04_project_runs` 接 `pm03_project_automations`；名称 pm04 是迁移编号，不是进入 PM4 业务阶段。
 
 `application/project_runs/{scheduler,queries,events,evidence,resources}.py` 负责管理端调度、持久查询、事件补读、证据与资源冻结；`adapters/http/project_runs.py`、`project_run_events.py` 和 `project_run_evidence.py` 提供真实 HTTP/SSE。`renderer/domains/project-runs/` 提供启动、批次/任务目录、详情、日志、输入输出、证据、普通停止、强停和原命令恢复页面。SSE 只发失效通知，持久 HTTP 负责断线补读；强停准入来自核心权威状态。最终范围与证据见 `docs/project-management/implementation/pm3/verification.json`。
+
+## PM4 多表领取与项目数据能力（2026-09-16，实施分支）
+
+`domain/project_runs/input_selection.py` 保持纯输入选择、依赖与错误分类；`infrastructure/database/project_claims.py` 负责真实 SQLite 候选读取、typed 身份、物理 lease 和精确重验。`application/project_runs/coordinator.py` 接受批次并冻结请求，`scheduler.py` 在扫描与短写事务之间维持选择守卫、并发容量、领取门闩、停止和恢复，`dispatcher.py` 只派发已提交的 queued CoreRun。项目模块没有建立第二执行器。
+
+`domain/project_data/capabilities.py` 定义 Run 已验证 capability 请求；`application/project_data/capabilities.py` 编排读写；`infrastructure/database/project_capabilities.py` 在数据库边界校验 Task/Run/executionGeneration、动态 lease、版本和幂等结果。查询不自动取得写权，原始输入快照与 Task 写游标分别存储。
+
+`adapters/http/project_runs.py` 暴露输入预检及既有批次/任务管理接口；数据节点能力不暴露为 renderer 可伪造的公共 HTTP。`renderer/domains/project-automations` 维护输入配置，`renderer/domains/project-runs` 展示预检、调度状态、不可变输入和写入事实。
+
+PM4 QA 在 `tests/qa/pm4_*` 与 `scripts/qa-project-management-pm4.mjs` 注入隔离 fake executor；Electron、FastAPI、SQLite、领取和项目数据能力真实运行。生产执行核心、CloakBrowser 与 Studio 不在该证据范围。阶段状态见 `docs/project-management/implementation/pm4/{a,b,c}-verification.md` 和 `pm4/verification.json`。当前源码业务 E2E `f-QHALLW` 已完成第二自动化读取、有限/不限链、候选态和日志搜索 Enter；`f-4QcXFG` 保留为前一提交候选；当前源码 `f-QHALLW` 已完成跨包管理链与 19 张截图审查，旧 `f-dJVKnL` 仅为历史候选。`d3a397cf`、`f07bb83b` 分别补齐人工删除和 Excel 重新导入的活动 lease 阻断，定向回归通过；当前源码的 19 张截图同视口复审与阶段全量检查均已通过。管理功能 delivered，验证 partially_verified。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过；`qa-project-management-pm3.mjs` 因会启动真实 CloakBrowser/生产执行核心而未执行。真实生产执行核心、CloakBrowser、Studio、Windows、打包及用户手测未执行。

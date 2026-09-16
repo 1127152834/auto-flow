@@ -1,6 +1,6 @@
 # 项目管理执行账本
 
-- 日期：2026-09-13；状态：PM0 accepted（用户授权PM1）；PM1 delivered；本轮用户授权仅执行至PM2验收点，PM2 inProgress，PM3–PM9 planned。
+- 日期：2026-09-16；状态：PM0–PM2 历史交付保留；PM3 管理范围已交付；PM4 V1/A/B/C/F 管理功能 delivered、验证 partially_verified；PM5–PM9 planned。
 - 规格：[完整设计](../design/README.md)；[总里程碑](../../superpowers/plans/2026-09-13-project-management-milestones.md)；[PM0执行卡](../../superpowers/plans/2026-09-13-project-management-pm0.md)。
 - 机器映射：[coverage.json](coverage.json)；领域/传输：[contracts.md](contracts.md)、[api-contracts.md](api-contracts.md)；合成样例：[fixtures.json](fixtures.json)。
 
@@ -206,3 +206,23 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 产品与证据提交包括 `d5f27ba`、`bacbccf`、`bdff9dd` 及其前置自动化管理提交。后端全量 1407 passed/8 skipped，前端全量 3224 passed，真实 CloakBrowser 定向 8 passed；Ruff、mypy、OpenAPI、类型、lint、build、脚本、结构、sidecar 和 desktop smoke 通过。Studio smoke 按用户后续范围指令排除。
 
 Windows、其他 CPU 架构、打包应用和用户手动测试未执行。PM4–PM9 没有被提前实现或标绿。
+
+## PM4 A/B/C/F 实际交付记录（2026-09-16）
+
+本节取代本文前段“PM4 planned”的当前状态描述，但保留历史计划与 PM0–PM3 证据。PM4-F 管理功能已经退出；整个 PM4 的交付状态为 delivered，验证状态因生产执行核心与人工/平台边界仍为 partially_verified。
+
+| 包 | 提交 | 当前结果 | 权威证据 | 尚未完成的阶段门槛 |
+|---|---|---|---|---|
+| V1 三表链 | `11e44be` | delivered | `pm4/v1-verification.md`；后续 B 权威重跑为 `pm4/qa-runs/v1-tcCGGq/result.json` | 仅首条管理链，不代替 A/B/C/F |
+| PM4-A | `48e5919` | delivered | `pm4/a-verification.md`；F 联合事实见 `pm4/verification.json` | 真实生产执行核心接入 |
+| PM4-B | `64606a2` | delivered | `pm4/b-verification.md`；F 第二自动化见 `pm4/qa-runs/f-QHALLW/result.json` | 真实生产执行核心接入 |
+| PM4-C | `f092551` | delivered | `pm4/c-verification.md`；F 联合事实见 `pm4/verification.json` | 真实生产执行核心接入与用户手测 |
+| PM4-F | `1cc5112`、`c911b6a`、`b4dabf28`；候选后保护修复 `d3a397cf`、`f07bb83b` | delivered / partially_verified | `pm4/verification.json`；当前业务 E2E 与视觉复审 `pm4/qa-runs/f-QHALLW/{result,visual-review}.json` | PM3 真实执行核心 QA；真实执行核心/CloakBrowser/Studio、Windows/其他架构/packaged 和用户手测 |
+
+已提交包共同交付：完整输入选择和原子领取；本地显式记录/状态/字段能力；有限/不限懒调度、并发容量、失败策略、暂占/耗尽区分、停止门闩、lease 收尾、重启恢复、旧执行代次撤权和工作区隔离。Electron/FastAPI/SQLite 与项目数据服务为真实，执行步骤由隔离 fake executor 驱动。真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、打包应用和用户手动测试均未执行。
+
+PM4-F 当前源码权威管理链为 `pm4/qa-runs/f-QHALLW/result.json`：有限三次复用同一人员并消费三个邮箱，不限链再完成两个任务后由 UI 停止；五个邮箱显式改为已使用，五个账号无重复；第二自动化从账号表读取第一自动化的已提交产物，账号数保持不变。该运行绑定源码 `f07bb83b`，source SHA-256 为 `71623bf3…`。`f-4QcXFG` 是已完成视觉复审的前一提交候选，旧 `f-dJVKnL` 仅保留为历史候选。
+
+前一提交候选检查记录：后端 1,580 passed/8 skipped、Ruff 通过、mypy 260 个源文件通过；前端 298 个测试文件/3,273 项测试通过；OpenAPI、typecheck、lint、build、test:structure 通过；补齐被 Git ignore 的 WebRPA 冻结清单单文件后 test:scripts 64/64 通过。PM2 数据目录回归见 `docs/migration/project-data-directory-qa/run-A6Nzd9/result.json`，PM2 详情/文件回归见 `docs/migration/pm2-detail-qa/run-5r0BCW/result.json`，其中 10,000 行导入 7,211ms、第二页 169ms。该候选视觉为 `passed`：19 张截图、强制结构通过、逐屏最低分 85；noMatch、temporarilyBusy、configurationError 管理态、Escape 及日志搜索 Enter 通过。
+
+候选后 `d3a397cf` 完成人工删除 lease 保护，82 项主测试及 15 项相关回归通过；`f07bb83b` 完成 Excel 替换 lease 保护，7 项新增测试及 117 项相关回归通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过。当前源码的 19 张截图同视口视觉复审和阶段全量检查已重跑通过，管理侧 F 退出条件闭合；真实执行核心 PM3 QA、Windows、其他架构、打包和用户手测保持 pending。

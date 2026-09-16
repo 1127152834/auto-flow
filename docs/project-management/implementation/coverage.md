@@ -1,6 +1,6 @@
 # 项目管理里程碑覆盖表
 
-- 日期：2026-09-15；状态：PM3 当前授权的管理范围已通过机器与真实 macOS 应用验收，原 PM3 合同整体为 partially verified，用户验收 pending。Windows 与 packaged 未执行；PM4–PM9 保持 planned。
+- 日期：2026-09-16；状态：PM3 历史范围保留；PM4 V1/A/B/C/F 管理功能已交付，整体为 delivered + partially verified。macOS arm64 管理链、第二自动化、工程回归和视觉结构已有证据；PM3 管理前端定向回归 16 文件/121 项通过，真实执行核心 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、packaged 及用户手测未执行。
 - 依据：已确认设计 `906deda`；[里程碑正文](../../superpowers/plans/2026-09-13-project-management-milestones.md)。
 - [逐条规则/测试目标映射](coverage.json)包含48项功能、178条验收场景、18项执行契约和7项能力门槛。
 - “首次可用”只代表当阶段已接通的真实子范围；“完整验收”覆盖该条全部约束。PM9对所有功能做平台与真实应用回归。
@@ -180,3 +180,20 @@ coverage.json仅提升PM2首次实施范围。DT-12在PM2完整验收后为verif
 强停使用明确声明的受控 OS 进程暂停：只定位隔离 Electron 后代树中唯一、命令匹配的真实 workflow worker，记录 PID 与开始时间后暂停；UI 走普通停止、30 秒宽限和真实强停，随后确认同一进程身份退出、旧执行代次撤权、资源清理及新批次可运行。当前 HEAD 证据见 pm3/qa-runs/uuid-runs-1789458500247/result.json。
 
 Windows、其他 CPU 架构、打包应用和用户手动测试均未执行。
+
+
+## PM4 V1/A/B/C/F 覆盖更新（2026-09-16）
+
+PM4 当前权威包证据为 [A 输入领取](pm4/a-verification.md)、[B 数据能力](pm4/b-verification.md)、[C 批次调度](pm4/c-verification.md) 和 [F 最终核验](pm4/verification.json)。当前源码管理链使用 `qa-runs/f-QHALLW`；`f-4QcXFG` 是已完成视觉复审的前一提交候选，旧 `f-dJVKnL` 为历史候选。Electron、FastAPI、SQLite、领取及项目数据能力真实运行，执行步骤由隔离 fake executor 驱动。
+
+| 范围 | 当前状态 | 已有事实 | 保留边界 |
+|---|---|---|---|
+| PM4-A / XE-C04 | delivered / partially_verified | 输入关系、必要/可选、候选回溯、typed lease、全组原子提交、暂占/耗尽/配置/歧义/预算分类及候选续查已实现；F 跨包回归通过 | Sheets 物理来源身份在 PM6；真实生产执行核心未验收 |
+| PM4-B / XE-C08 | delivered / partially_verified | 同项目受控读取与查询返回不可变快照，查询不自动获得写权 | fake executor 已调用真实端口；真实生产执行核心尚未调用 |
+| PM4-B / XE-C09 | delivered / partially_verified | 本地记录/状态/字段显式操作、动态 lease、CAS、稳定引用、幂等结果和写游标已实现 | 环境关联在 PM5、Sheets 在 PM6；真实生产执行核心未验收 |
+| PM4-C | delivered | 有限/不限、并发容量、失败策略、暂占等待、真实耗尽、停止门闩、终态释放、重启恢复、撤权和工作区隔离已有自动与管理 E2E 证据 | 生产执行核心调用仍待验收 |
+| PM4-F / PM4 里程碑 | delivered / partially_verified | 当前源码第二自动化读取首个自动化新增账号，有限/不限、候选态和日志 Enter 管理链通过；候选后两项 lease 保护修复、阶段全量工程检查、PM2 数据回归及 19 张截图逐屏审查均通过 | PM3 管理端前后端定向回归通过；真实执行核心 PM3 QA、真实生产执行核心、浏览器、Studio、Windows、其他架构、packaged 和用户手测未执行 |
+
+FX 映射保持原编号：V1/B/C 的三表链对应 FX-02 的多表输入/显式状态与新增记录语义；复用、有限/不限与争用反例覆盖 FX-01/02/03 的相关子规则；版本冲突与节点部分事实覆盖 FX-04 子规则。FX-05 环境保留、FX-06 Sheets、FX-07 人工/End 不属于 PM4，未提升状态。
+
+`coverage.json` 对 PM4 首次实施条目登记管理侧候选证据，但不将跨到 PM5/PM6/PM7/PM8 的完整验收条目标为 verified。PM4 的交付状态为 delivered；当前源码 F 管理链、全量工程检查和视觉复审已通过，验证状态因真实执行核心、平台和用户手测边界保持 partially_verified。

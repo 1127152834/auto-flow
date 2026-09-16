@@ -1,0 +1,61 @@
+{
+  "status": "passed",
+  "method": "按画板逐屏人工结构复审，并查看 19 屏联系表；不使用整张多画板像素平均分。P1 后续源码差异仅涉及后端 lease 保护，仍以当前候选截图逐屏结论为准。",
+  "reviewer": "Codex PM4-F final candidate review",
+  "mandatoryStructurePassed": true,
+  "minimumScreenScore": 85,
+  "navigationException": "应用级导航按已批准方案保留顶部导航；主体布局、信息层级和操作位置对照 gallery。",
+  "qaControlBoundary": "候选态由仅存在于隔离 QA sidecar 的鉴权控制端点投影；端点不进入 OpenAPI、不修改数据库，真实 coordinator 仍先校验项目、自动化和修订。",
+  "styleChecks": {
+    "warmGrayAndClay": "passed",
+    "compactFineGridTables": "passed",
+    "smallRadius": "passed",
+    "horizontalOverflowAtCapture": "passed",
+    "staleToastBeforeCandidateScreenshots": "passed"
+  },
+  "viewportChecks": [
+    {
+      "zoomPercent": 100,
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "status": "passed"
+    },
+    {
+      "zoomPercent": 200,
+      "effectiveViewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "status": "passedWithVerticalScroll"
+    }
+  ],
+  "candidateStates": {
+    "noMatch": {
+      "ui": "passed",
+      "screenshot": "16-no-match-preview.png"
+    },
+    "temporarilyBusy": {
+      "ui": "passed",
+      "screenshot": "17-temporarily-busy-preview.png"
+    },
+    "configurationError": {
+      "ui": "passed",
+      "screenshot": "18-configuration-error-preview.png"
+    }
+  },
+  "keyboard": {
+    "escapeStopDialog": "passed",
+    "enterLogSearch": "passed",
+    "enterSynthesis": "CDP keyDown + CR + keyUp"
+  },
+  "manualPending": [
+    "Windows、其他架构、打包应用和用户手测"
+  ],
+  "candidateRun": "f-QHALLW",
+  "candidateGitHead": "f07bb83b46041fcc5ede7a957809834046872014",
+  "candidateSourceSha256": "71623bf3d45b28912bdafdd9e97cbef119f246c05ad307bc4d98eabf6c4758cb",
+  "predecessorVisualReview": "f-4QcXFG/visual-review.json"
+}

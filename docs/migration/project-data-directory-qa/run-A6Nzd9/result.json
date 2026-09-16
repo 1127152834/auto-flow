@@ -1,0 +1,606 @@
+{
+  "result": "passed",
+  "scope": "R2 dedicated record pages and retained PM2 field/status/record commands, real UI and HTTP; service/workspace bridge invokes are E2, lost acknowledgements E4; Excel/batch/Sheets/execution not covered",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checkedAt": "2026-09-15T19:51:53.545Z",
+  "provenance": {
+    "gitHead": "1cc5112ae7a009966e17a440f59103cbd6e97bf5",
+    "dirtyFiles": [
+      ".ai/memory/project-context.md",
+      "docs/PROJECT_STRUCTURE.md",
+      "docs/migration/studio-frontend-completion/capabilities.json",
+      "docs/migration/studio-frontend-completion/component-tools.json",
+      "docs/migration/studio-frontend-completion/contract-matrix.md",
+      "docs/migration/studio-frontend-completion/service-inventory.json",
+      "docs/project-management/implementation/api-contracts.md",
+      "docs/project-management/implementation/contracts.md",
+      "docs/project-management/implementation/coverage.json",
+      "docs/project-management/implementation/coverage.md",
+      "docs/project-management/implementation/current-baseline.md",
+      "docs/project-management/implementation/execution-ledger.md",
+      "scripts/smoke-project-data.mjs"
+    ],
+    "scriptSha256": "c9f8d918201d44461c2c21eb72a87688b942e0f76c98004c0d1a6ab09e17474f",
+    "buildSha256": "d5eae3581a5382143f1eb6bc852758489eb59f12fefe0c1c3914332af7b13ce6"
+  },
+  "screenshots": [
+    {
+      "name": "empty.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:21.173Z"
+    },
+    {
+      "name": "conflict.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:23.040Z"
+    },
+    {
+      "name": "gallery-create-structure.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:28.785Z"
+    },
+    {
+      "name": "record-create-200-percent.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:29.436Z"
+    },
+    {
+      "name": "record-create-200-footer.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:29.830Z"
+    },
+    {
+      "name": "record-create.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:30.100Z"
+    },
+    {
+      "name": "record-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:30.466Z"
+    },
+    {
+      "name": "record-conflict.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records/f14e9ff1-6a44-406c-ad4c-9c65bb06fd65/uuid/NzIwYzM1MzctYTFhMC00YzM1LTllMzYtN2EyMGVkZGMyZGM0/edit",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:31.365Z"
+    },
+    {
+      "name": "record-conflict-comparison.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records/f14e9ff1-6a44-406c-ad4c-9c65bb06fd65/uuid/NzIwYzM1MzctYTFhMC00YzM1LTllMzYtN2EyMGVkZGMyZGM0/edit",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:31.735Z"
+    },
+    {
+      "name": "records.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records/f14e9ff1-6a44-406c-ad4c-9c65bb06fd65/uuid/NzIwYzM1MzctYTFhMC00YzM1LTllMzYtN2EyMGVkZGMyZGM0",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:33.033Z"
+    },
+    {
+      "name": "status-delete-blocked.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/statuses",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:33.444Z"
+    },
+    {
+      "name": "gallery-create-structure.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:36.583Z"
+    },
+    {
+      "name": "record-create-200-percent.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:37.224Z"
+    },
+    {
+      "name": "record-create-200-footer.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:37.636Z"
+    },
+    {
+      "name": "record-create.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:37.903Z"
+    },
+    {
+      "name": "record-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:38.282Z"
+    },
+    {
+      "name": "durable-edit-recovery.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:40.167Z"
+    },
+    {
+      "name": "leave.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 21.5
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/settings",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:44.120Z"
+    },
+    {
+      "name": "zoom-200-dropdown.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 244
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:45.057Z"
+    },
+    {
+      "name": "restarted.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:48.446Z"
+    },
+    {
+      "name": "workspace-return.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/a206c757-2420-466f-8db4-ca64cd588c68/data/1995c6a1-2d07-45e6-9db8-95bccb46bc7d/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-15T19:51:53.545Z"
+    }
+  ],
+  "checks": [
+    "UI creates a local table through real HTTP and navigates to its records route",
+    "real competing edit preserves the draft and requires explicit reload before resaving",
+    "UI applies create/rename drafts locally, previews and atomically commits each schema; the field identity remains stable",
+    "UI creates and edits a business status without changing any record status",
+    "UI creates and edits a record with real conflict reload, then explicitly changes its status",
+    "UI blocks referenced status deletion, restores the record status to release a temporary reference, then deletes that status through the real impact-confirmed operation",
+    "UI deletes the selected record after impact confirmation and retains the other record",
+    "lost real create acknowledgement survives renderer reload and recovers the original operation without duplicate insertion",
+    "five actual tabs display persisted field, status, source and record facts after UI writes",
+    "inline settings edits the actual description, stays mounted after confirmation and resets to a clean baseline",
+    "same-workspace real sidecar restart preserves the inline draft, cancel/continue leave protection and subsequent confirmed save",
+    "native 200 percent zoom with custom dropdown does not widen the application",
+    "full Electron restart retains table edits, business records and explicit status",
+    "two real workspace switches isolate data tables and restore original records"
+  ],
+  "settingsTrace": [
+    {
+      "event": "tablePatch",
+      "at": 1789501882666,
+      "path": "/api/v1/projects/a206c757-2420-466f-8db4-ca64cd588c68/tables/1995c6a1-2d07-45e6-9db8-95bccb46bc7d",
+      "body": "{\"name\":\"我的本地修改\",\"description\":\"用于验证真实数据目录与查询\",\"expectedTableRevision\":1}",
+      "operationKey": "f0ff60d9-40b2-4e0b-a7a9-65d9ec3e4fec",
+      "status": 409,
+      "response": "{\"error\":{\"code\":\"REVISION_CONFLICT\",\"message\":\"Table was modified\",\"details\":{\"expectedRevision\":1,\"currentRevision\":2,\"current\":{\"projectId\":\"a206c757-2420-466f-8db4-ca64cd588c68\",\"tableId\":\"1995c6a1-2d07-45e6-9db8-95bccb46bc7d\",\"name\":\"另一个编辑者\",\"description\":\"用于验证真实数据目录与查询\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"f14e9ff1-6a44-406c-ad4c-9c65bb06fd65\",\"tableRevision\":2,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":0,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-15T19:51:21.840548+00:00\",\"updatedAt\":\"2026-09-15T19:51:22.653915+00:00\"},\"domainCode\":\"revision_conflict\",\"retryable\":false},\"requestId\":\"564b1d83-e195-4d37-bb1e-1ba206caf7f3\"}}",
+      "responseAt": 1789501882675
+    },
+    {
+      "event": "tablePatch",
+      "at": 1789501883572,
+      "path": "/api/v1/projects/a206c757-2420-466f-8db4-ca64cd588c68/tables/1995c6a1-2d07-45e6-9db8-95bccb46bc7d",
+      "body": "{\"name\":\"客户资料\",\"description\":\"用于验证真实数据目录与查询\",\"expectedTableRevision\":2}",
+      "operationKey": "d52a1d77-1150-4d8b-8407-9e2b0d68e98b",
+      "status": 200,
+      "response": "{\"projectId\":\"a206c757-2420-466f-8db4-ca64cd588c68\",\"tableId\":\"1995c6a1-2d07-45e6-9db8-95bccb46bc7d\",\"name\":\"客户资料\",\"description\":\"用于验证真实数据目录与查询\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"f14e9ff1-6a44-406c-ad4c-9c65bb06fd65\",\"tableRevision\":3,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":0,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-15T19:51:21.840548Z\",\"updatedAt\":\"2026-09-15T19:51:23.575752Z\"}",
+      "responseAt": 1789501883586
+    },
+    {
+      "event": "tablePatch",
+      "at": 1789501901538,
+      "path": "/api/v1/projects/a206c757-2420-466f-8db4-ca64cd588c68/tables/1995c6a1-2d07-45e6-9db8-95bccb46bc7d",
+      "body": "{\"expectedTableRevision\":9,\"description\":\"从设置页修改资料\"}",
+      "operationKey": "bfcf1153-d9e0-48cf-9040-959de75b9eab",
+      "status": 200,
+      "response": "{\"projectId\":\"a206c757-2420-466f-8db4-ca64cd588c68\",\"tableId\":\"1995c6a1-2d07-45e6-9db8-95bccb46bc7d\",\"name\":\"客户资料\",\"description\":\"从设置页修改资料\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"f14e9ff1-6a44-406c-ad4c-9c65bb06fd65\",\"tableRevision\":10,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":2,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-15T19:51:21.840548Z\",\"updatedAt\":\"2026-09-15T19:51:41.541892Z\"}",
+      "responseAt": 1789501901549
+    },
+    {
+      "event": "tablePatch",
+      "at": 1789501904371,
+      "path": "/api/v1/projects/a206c757-2420-466f-8db4-ca64cd588c68/tables/1995c6a1-2d07-45e6-9db8-95bccb46bc7d",
+      "body": "{\"expectedTableRevision\":10,\"description\":\"重连后保留草稿\"}",
+      "operationKey": "fc0d4c47-115f-4e43-840a-dbb2c7796a69",
+      "status": 200,
+      "response": "{\"projectId\":\"a206c757-2420-466f-8db4-ca64cd588c68\",\"tableId\":\"1995c6a1-2d07-45e6-9db8-95bccb46bc7d\",\"name\":\"客户资料\",\"description\":\"重连后保留草稿\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"f14e9ff1-6a44-406c-ad4c-9c65bb06fd65\",\"tableRevision\":11,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":2,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-15T19:51:21.840548Z\",\"updatedAt\":\"2026-09-15T19:51:44.377681Z\"}",
+      "responseAt": 1789501904389
+    }
+  ],
+  "zoom": {
+    "before": {
+      "inner": 720,
+      "width": 708,
+      "root": 708,
+      "trigger": 128
+    },
+    "after": {
+      "inner": 720,
+      "width": 720,
+      "root": 708,
+      "trigger": 128
+    }
+  },
+  "windows": "not-run"
+}
