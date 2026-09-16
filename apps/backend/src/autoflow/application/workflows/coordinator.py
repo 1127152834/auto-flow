@@ -23,6 +23,7 @@ from autoflow.domain.workflows.runs import (
     WorkflowRunError,
     WorkflowRunStart,
 )
+from autoflow.domain.workflows.variables import resolve_value
 
 from .documents import WorkflowDocumentService
 from .runs import WorkflowRunRepository, WorkflowRunService
@@ -146,7 +147,13 @@ class WorkflowRunCoordinator:
                         ]
                     },
                 )
-            requires_browser = self._runtime.requires_browser(document)
+            workflow_dependencies = _workflow_dependency_snapshots(
+                self._documents, document
+            )
+            requires_browser = self._runtime.requires_browser(document) or any(
+                self._runtime.requires_browser(snapshot)
+                for snapshot in workflow_dependencies.values()
+            )
             profile = self._profiles.get(profile_id)
             kernel = self._kernel(profile) if requires_browser else None
             start = WorkflowRunStart(
@@ -203,6 +210,7 @@ class WorkflowRunCoordinator:
                     headless=headless,
                     artifact_root=self._artifact_root,
                     requires_browser=requires_browser,
+                    workflow_dependencies=workflow_dependencies,
                 )
                 await self._workers.start(
                     run_id,
@@ -406,10 +414,15 @@ class WorkflowRunCoordinator:
                 },
             )
             return
+        payload = {
+            key: copy.deepcopy(value)
+            for key, value in event.items()
+            if key not in {"type", "runId", "workflowId", "nodeId", "executionId"}
+        }
         persisted = self._repository.append_event(
             run_id,
             event_type,
-            {},
+            payload,
             now=datetime_now(),
             node_id=node_id,
             execution_id=execution_id,
@@ -421,6 +434,7 @@ class WorkflowRunCoordinator:
                 **_event_identity(run),
                 **({"nodeId": node_id} if node_id else {}),
                 **({"executionId": execution_id} if execution_id else {}),
+                **payload,
                 "sequence": persisted.sequence,
             },
         )
@@ -628,6 +642,7 @@ def _worker_payload(
     headless: bool,
     artifact_root: Path,
     requires_browser: bool,
+    workflow_dependencies: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     spec = profile.spec
     return {
@@ -661,8 +676,94 @@ def _worker_payload(
         "artifactRoot": str(artifact_root),
         "requiresBrowser": requires_browser,
         "document": copy.deepcopy(start.document_snapshot),
+        "workflowDependencies": workflow_dependencies,
         "executableIdentity": executable.name if executable is not None else None,
     }
+
+
+def _workflow_dependency_snapshots(
+    documents: WorkflowDocumentService,
+    root_document: Mapping[str, Any],
+) -> dict[str, dict[str, Any]]:
+    available: dict[str, dict[str, Any]] = {}
+    cursor = 0
+    while True:
+        page = documents.list_summaries(cursor=cursor, limit=200)
+        for summary in page.items:
+            saved = documents.get(summary.id)
+            payload = {
+                "id": saved.id,
+                "name": saved.name,
+                **copy.deepcopy(saved.document),
+            }
+            available[saved.id] = payload
+            available.setdefault(saved.name, payload)
+            available.setdefault(f"{saved.name}.json", payload)
+        if page.next_cursor is None:
+            break
+        cursor = page.next_cursor
+    root = copy.deepcopy(dict(root_document))
+    root_id = root.get("id")
+    root_name = root.get("name")
+    if isinstance(root_id, str):
+        available[root_id] = root
+    if isinstance(root_name, str):
+        available[root_name] = root
+        available[f"{root_name}.json"] = root
+
+    snapshots: dict[str, dict[str, Any]] = {}
+    queue = [root]
+    visited: set[str] = set()
+    while queue:
+        document = queue.pop(0)
+        identity = str(document.get("id") or id(document))
+        if identity in visited:
+            continue
+        visited.add(identity)
+        for reference in _workflow_references(document):
+            candidates = [reference]
+            if reference.lower().endswith(".json"):
+                candidates.append(reference[:-5])
+            else:
+                candidates.append(f"{reference}.json")
+            dependency = next(
+                (available[candidate] for candidate in candidates if candidate in available),
+                None,
+            )
+            if dependency is None:
+                continue
+            for key, value in available.items():
+                if value is dependency:
+                    snapshots[key] = copy.deepcopy(dependency)
+            queue.append(dependency)
+    return snapshots
+
+
+def _workflow_references(document: Mapping[str, Any]) -> tuple[str, ...]:
+    variables = {
+        item["name"]: item.get("value")
+        for item in document.get("variables", [])
+        if isinstance(item, Mapping)
+        and isinstance(item.get("name"), str)
+        and item["name"]
+    } if isinstance(document.get("variables"), list) else {}
+    references: list[str] = []
+    nodes = document.get("nodes", [])
+    if not isinstance(nodes, list):
+        return ()
+    for node in nodes:
+        if not isinstance(node, Mapping):
+            continue
+        data = node.get("data")
+        if not isinstance(data, Mapping) or data.get("moduleType") != "run_workflow_file":
+            continue
+        config = data.get("config")
+        values = config if isinstance(config, Mapping) else data
+        raw = values.get("workflowFile", "") or values.get("workflow", "")
+        resolved = resolve_value(raw, variables)
+        if isinstance(resolved, str) and resolved.strip():
+            references.append(resolved.strip().strip('"'))
+    return tuple(references)
 
 
 def _summary(run: WorkflowRun) -> dict[str, Any]:

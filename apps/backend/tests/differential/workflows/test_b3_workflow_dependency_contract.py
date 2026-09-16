@@ -8,7 +8,14 @@ from typing import Any
 
 import pytest
 
+from autoflow.application.workflows.executors.workflow_chain import (
+    RunWorkflowFileExecutor,
+)
 from autoflow.domain.workflows.document import WorkflowDraft
+from autoflow.domain.workflows.execution import (
+    ExecutionContext,
+    NestedWorkflowResult,
+)
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 FROZEN_BACKEND = REPOSITORY_ROOT / "reference" / "WebRPA" / "backend"
@@ -256,14 +263,44 @@ def test_autoflow_document_storage_roundtrips_b3_frontend_contract() -> None:
     }
 
 
-@pytest.mark.skip(
-    reason=(
-        "待 WorkflowDocumentRepository 按稳定 workflow id 解析子文档，并由 runtime "
-        "提供共享变量、递归栈、取消传播、子运行事件与同步/后台运行句柄"
+@pytest.mark.asyncio
+async def test_autoflow_run_workflow_file_runtime_integration() -> None:
+    class Nested:
+        async def run_workflow(
+            self,
+            reference: str,
+            *,
+            variables: Any,
+            wait_complete: bool,
+        ) -> NestedWorkflowResult:
+            assert (reference, variables, wait_complete) == (
+                "child.json",
+                {"parent": 1, "child_file": "child.json"},
+                True,
+            )
+            return NestedWorkflowResult(
+                "child.json",
+                "子工作流",
+                True,
+                {"parent": 3, "child_file": "child.json", "child": 2},
+                2,
+                0,
+            )
+
+    context = ExecutionContext(
+        variables={"parent": 1, "child_file": "child.json"},
+        nested_workflows=Nested(),
     )
-)
-def test_autoflow_run_workflow_file_runtime_integration() -> None:
-    """共享子运行接口落地后，以冻结 sync/failure/recursion fixture 验收。"""
+    result = await RunWorkflowFileExecutor().execute(
+        {"workflowFile": "{child_file}", "resultVariable": "summary"}, context
+    )
+    source = frozen_result("workflow:success")
+
+    assert result.success == source["success"]
+    assert result.message == source["message"]
+    assert result.error == source["error"]
+    assert result.data == source["data"]
+    assert context.variables == source["variables"]
 
 
 @pytest.mark.skip(

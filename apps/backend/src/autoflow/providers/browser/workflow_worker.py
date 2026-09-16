@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import json
 import os
 import sys
 from collections.abc import Mapping
+from contextvars import ContextVar
 from pathlib import Path
 from threading import Event, Lock, Thread
 from typing import Any, TextIO
@@ -14,7 +16,11 @@ from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
 from autoflow.application.workflows.runtime import WorkflowRuntime
-from autoflow.domain.workflows.execution import ExecutionContext, InputPromptRequest
+from autoflow.domain.workflows.execution import (
+    ExecutionContext,
+    InputPromptRequest,
+    NestedWorkflowResult,
+)
 from autoflow.domain.workflows.runs import WorkflowArtifact
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
@@ -101,9 +107,7 @@ async def _run_in_session(
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
-            input_prompts=command_bus,
         )
-        command_bus.bind_context(context)
         sink = _WorkerEventSink(
             stdout,
             run_id=run_id,
@@ -113,9 +117,18 @@ async def _run_in_session(
             artifact_root=artifact_root,
         )
         context.events = sink
-        result = await WorkflowRuntime(build_production_executor_registry()).execute(
-            document, context
+        context.input_prompts = command_bus.for_context(context)
+        registry = build_production_executor_registry()
+        nested = _WorkerNestedWorkflows(
+            command.get("workflowDependencies"),
+            registry=registry,
+            parent=context,
+            sink=sink,
+            command_bus=command_bus,
         )
+        context.nested_workflows = nested
+        result = await WorkflowRuntime(registry).execute(document, context)
+        await nested.drain()
         terminal = "execution:completed" if result.success else "execution:failed"
         _write(
             stdout,
@@ -232,6 +245,16 @@ class _WorkerEventSink:
         self._artifacts = artifacts
         self._artifact_root = artifact_root
 
+    def for_context(self, context: ExecutionContext) -> _WorkerEventSink:
+        return _WorkerEventSink(
+            self._stdout,
+            run_id=self._run_id,
+            workflow_id=self._workflow_id,
+            context=context,
+            artifacts=self._artifacts,
+            artifact_root=self._artifact_root,
+        )
+
     async def publish(self, event: Mapping[str, Any]) -> None:
         event = dict(event)
         node_id = event.get("nodeId")
@@ -299,6 +322,151 @@ def _initial_variables(document: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+class _WorkerNestedWorkflows:
+    def __init__(
+        self,
+        snapshots: Any,
+        *,
+        registry: Any,
+        parent: ExecutionContext,
+        sink: _WorkerEventSink,
+        command_bus: _WorkerCommandBus,
+    ) -> None:
+        self._snapshots = (
+            {str(key): copy.deepcopy(value) for key, value in snapshots.items()}
+            if isinstance(snapshots, Mapping)
+            else {}
+        )
+        self._registry = registry
+        self._parent = parent
+        self._sink = sink
+        self._command_bus = command_bus
+        self._stack: ContextVar[tuple[str, ...]] = ContextVar(
+            "workflow_chain_stack", default=()
+        )
+        self._background: set[asyncio.Task[NestedWorkflowResult]] = set()
+
+    async def run_workflow(
+        self,
+        reference: str,
+        *,
+        variables: Mapping[str, Any],
+        wait_complete: bool,
+    ) -> NestedWorkflowResult:
+        snapshot, canonical = self._resolve(reference)
+        name = str(snapshot.get("name") or canonical)
+        if not wait_complete:
+            task = asyncio.create_task(
+                self._execute(snapshot, canonical, variables),
+                name=f"nested-workflow:{canonical}",
+            )
+            self._background.add(task)
+            task.add_done_callback(self._background.discard)
+            return NestedWorkflowResult(
+                reference, name, True, {}, 0, 0, waited=False
+            )
+        return await self._execute(snapshot, canonical, variables)
+
+    async def drain(self) -> None:
+        while self._background:
+            await asyncio.gather(*tuple(self._background), return_exceptions=True)
+
+    def _resolve(self, reference: str) -> tuple[dict[str, Any], str]:
+        normalized = reference.strip().strip('"')
+        candidates = [normalized]
+        if normalized.lower().endswith(".json"):
+            candidates.append(normalized[:-5])
+        else:
+            candidates.append(f"{normalized}.json")
+        for candidate in candidates:
+            snapshot = self._snapshots.get(candidate)
+            if isinstance(snapshot, dict):
+                canonical = str(snapshot.get("id") or candidate)
+                return copy.deepcopy(snapshot), canonical
+        raise RuntimeError(
+            f"找不到工作流「{reference}」。请确认它存在于当前工作区。"
+        )
+
+    async def _execute(
+        self,
+        snapshot: dict[str, Any],
+        canonical: str,
+        variables: Mapping[str, Any],
+    ) -> NestedWorkflowResult:
+        stack = self._stack.get()
+        name = str(snapshot.get("name") or canonical)
+        reference = f"{name}.json"
+        if canonical in stack:
+            return NestedWorkflowResult(
+                reference,
+                name,
+                False,
+                {},
+                0,
+                1,
+                f"检测到工作流循环调用：{' -> '.join(stack)} -> {canonical}。请检查工作流之间的相互调用关系。",
+            )
+        if len(stack) >= 16:
+            return NestedWorkflowResult(
+                reference,
+                name,
+                False,
+                {},
+                0,
+                1,
+                "工作流嵌套调用层数过深（>16），已终止以避免无限递归。",
+            )
+        token = self._stack.set((*stack, canonical))
+        child = ExecutionContext(
+            variables={**_initial_variables(snapshot), **copy.deepcopy(dict(variables))},
+            sensitive_variables=set(self._parent.sensitive_variables),
+            browser=self._parent.browser,
+            table_workbooks=self._parent.table_workbooks,
+            credentials=self._parent.credentials,
+            models=self._parent.models,
+            external_integrations=self._parent.external_integrations,
+            cancellation=self._parent.cancellation,
+            clock=self._parent.clock,
+        )
+        child_sink = self._sink.for_context(child)
+        child.events = child_sink
+        child.input_prompts = self._command_bus.for_context(child)
+        child.nested_workflows = self
+        await child_sink.publish(
+            {
+                "type": "subflow:started",
+                "subflowId": str(uuid4()),
+                "name": name,
+                "file": reference,
+                "depth": len(stack),
+            }
+        )
+        try:
+            result = await WorkflowRuntime(self._registry).execute(snapshot, child)
+            nested = NestedWorkflowResult(
+                reference=reference,
+                name=name,
+                success=result.success,
+                variables=copy.deepcopy(child.variables),
+                executed_nodes=len(result.executed_node_ids),
+                failed_nodes=0 if result.success else 1,
+                error=result.node_result.error if result.node_result else None,
+            )
+            await child_sink.publish(
+                {
+                    "type": "subflow:completed",
+                    "name": name,
+                    "success": nested.success,
+                    "executedNodes": nested.executed_nodes,
+                    "failedNodes": nested.failed_nodes,
+                    "error": nested.error,
+                }
+            )
+            return nested
+        finally:
+            self._stack.reset(token)
+
+
 def _read_command(stdin: TextIO) -> dict[str, Any]:
     raw = stdin.readline()
     value = json.loads(raw)
@@ -321,11 +489,10 @@ class _WorkerCommandBus:
         self._run_id = _required_string(command, "runId")
         workflow_id = command.get("workflowId")
         self._workflow_id = workflow_id if isinstance(workflow_id, str) else ""
-        self._context: ExecutionContext | None = None
         self._pending: dict[str, asyncio.Future[str | None]] = {}
 
-    def bind_context(self, context: ExecutionContext) -> None:
-        self._context = context
+    def for_context(self, context: ExecutionContext) -> _BoundInputPrompts:
+        return _BoundInputPrompts(self, context)
 
     def receive(self, command: dict[str, Any]) -> None:
         if not self._loop.is_closed():
@@ -336,11 +503,12 @@ class _WorkerCommandBus:
             self._loop.call_soon_threadsafe(self._cancel_pending)
 
     async def request_input(
-        self, request: InputPromptRequest, *, timeout_seconds: float
+        self,
+        context: ExecutionContext,
+        request: InputPromptRequest,
+        *,
+        timeout_seconds: float,
     ) -> str | None:
-        context = self._context
-        if context is None:
-            raise RuntimeError("输入请求上下文尚未就绪")
         request_id = str(uuid4())
         future: asyncio.Future[str | None] = self._loop.create_future()
         self._pending[request_id] = future
@@ -394,6 +562,19 @@ class _WorkerCommandBus:
         for future in self._pending.values():
             if not future.done():
                 future.cancel()
+
+
+class _BoundInputPrompts:
+    def __init__(self, bus: _WorkerCommandBus, context: ExecutionContext) -> None:
+        self._bus = bus
+        self._context = context
+
+    async def request_input(
+        self, request: InputPromptRequest, *, timeout_seconds: float
+    ) -> str | None:
+        return await self._bus.request_input(
+            self._context, request, timeout_seconds=timeout_seconds
+        )
 
 
 async def _publish_prompt(

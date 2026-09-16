@@ -221,6 +221,87 @@ async def test_real_worker_waits_for_input_then_resumes_node_execution(
 
 
 @pytest.mark.asyncio
+async def test_real_worker_runs_frozen_nested_workflow_snapshot(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    child = {
+        "id": "child-id",
+        "name": "子工作流",
+        "nodes": [
+            {
+                "id": "child-set",
+                "type": "moduleNode",
+                "data": {
+                    "moduleType": "set_variable",
+                    "config": {"variableName": "child", "variableValue": "2"},
+                },
+            }
+        ],
+        "edges": [],
+        "variables": [],
+    }
+    payload = {
+        "runId": "nested-run",
+        "workflowId": "parent-id",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {
+            "child-id": child,
+            "子工作流": child,
+            "子工作流.json": child,
+        },
+        "document": {
+            "nodes": [
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "run_workflow_file",
+                        "config": {
+                            "workflowFile": "子工作流",
+                            "resultVariable": "summary",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "parent", "value": 1}],
+        },
+    }
+    await manager.start("nested-run", "profile-1", None, payload)
+    for _ in range(300):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    completed = [
+        event for event in events if event.get("type") == "execution:node_complete"
+    ]
+    assert [(event["nodeId"], event["success"]) for event in completed] == [
+        ("child-set", True),
+        ("call", True),
+    ]
+    assert completed[-1]["data"] == {
+        "workflow": "子工作流",
+        "file": "子工作流.json",
+        "success": True,
+        "executed_nodes": 1,
+        "failed_nodes": 0,
+        "error": None,
+    }
+    assert any(event.get("type") == "subflow:started" for event in events)
+    assert any(event.get("type") == "subflow:completed" for event in events)
+    assert any(event.get("type") == "execution:completed" for event in events)
+
+
+@pytest.mark.asyncio
 async def test_worker_start_rejects_bad_handshake_and_releases_slot(tmp_path: Path) -> None:
     script = tmp_path / "bad-worker.py"
     script.write_text("print('not-json', flush=True)\n", encoding="utf-8")

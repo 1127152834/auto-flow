@@ -321,7 +321,7 @@
 
 - [ ] Task B3.1：将冻结 parser/variable/subflow 测试参数化为源/目标差分，覆盖几何分组、无入口回退、错误边、循环和并行偏序。
 - [ ] Task B3.2：迁入 21 节点及注册，保留 `${name}`、`{name}`、递归值、scope stack、break/continue、stop 与等待语义。
-  - 2026-09-16 检查点：19/21 节点已生产注册；控制/变量/视觉及 `input_prompt` 的源码差分与真实 worker/HTTP 合同已通过。剩余 `subflow`、`run_workflow_file`，另有不计入227节点但属必要配套的自定义模块运行时。
+  - 2026-09-16 检查点：20/21 节点已生产注册；控制/变量/视觉、`input_prompt` 与 `run_workflow_file` 的源码差分及真实 worker/HTTP 合同已通过。剩余 `subflow`，另有不计入227节点但属必要配套的自定义模块运行时。
 - [ ] Task B3.3：实现自定义模块 CRUD、revision、依赖图、循环引用检测和运行时冻结解析；工作流保存只存引用，运行快照存解析内容与摘要。
 - [ ] Task B3.4：每次调度生成 executionId 和循环/子流程上下文；同一 nodeId 多轮不得覆盖事件或产物。
 - [ ] Task B3.5：测试并行取消、1,000 轮纯变量停止、空/非法控制流、缺变量和嵌套 32 层；失败位置必须指向 nodeId/path。

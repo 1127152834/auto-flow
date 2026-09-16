@@ -674,6 +674,24 @@
         "WebRPA进程内全局UI回调"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/workflow_chain.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/workflow_chain.py",
+      "changeSummary": "迁入run_workflow_file的同步/异步、变量传递、结果摘要、失败继续和递归保护语义；将文件夹解析替换为AutoFlow工作区文档依赖冻结。",
+      "retainedDependencies": [
+        "Python标准库",
+        "autoflow.domain.workflows.execution",
+        "autoflow.application.workflows.runtime"
+      ],
+      "removedDependencies": [
+        "WebRPA workflow_folder全局目录",
+        "直接JSON文件读取",
+        "全局WorkflowExecutor构造",
+        "Socket.IO全局实例"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

@@ -152,6 +152,82 @@ def test_real_http_input_command_resumes_the_actual_worker(
     assert results["items"][0]["values"] == {"value": 42}
 
 
+def test_real_http_run_freezes_and_executes_saved_workflow_dependency(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    child = client.post(
+        "/api/workflows",
+        json={
+            "id": "nested-child",
+            "name": "保存的子流程",
+            "nodes": [
+                {
+                    "id": "child-set",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "child", "variableValue": "2"},
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+            "clientRequestId": "create-nested-child",
+        },
+    ).json()
+    parent = client.post(
+        "/api/workflows",
+        json={
+            "id": "nested-parent",
+            "name": "父流程",
+            "nodes": [
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "run_workflow_file",
+                        "config": {
+                            "workflowFile": child["name"],
+                            "resultVariable": "summary",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+            "clientRequestId": "create-nested-parent",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+
+    started = client.post(
+        f"/api/workflows/{parent['id']}/execute",
+        json={
+            "runId": "nested-http-run",
+            "documentId": parent["id"],
+            "profileId": profile["id"],
+        },
+    )
+    assert started.status_code == 202, started.text
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/nested-http-run").json()
+        if run["status"] in {"completed", "failed"}:
+            break
+        time.sleep(0.01)
+
+    assert run["status"] == "completed"
+    results = client.get("/api/workflow-runs/nested-http-run/results").json()
+    assert [item["nodeId"] for item in results["items"]] == ["child-set", "call"]
+    assert results["items"][-1]["values"] == {
+        "workflow": "保存的子流程",
+        "file": "保存的子流程.json",
+        "success": True,
+        "executed_nodes": 1,
+        "failed_nodes": 0,
+        "error": None,
+    }
+
+
 def test_stop_identity_log_paging_and_static_run_route(
     client: TestClient, monkeypatch
 ) -> None:

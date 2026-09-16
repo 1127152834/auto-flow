@@ -1,0 +1,37 @@
+{
+  "evidenceId": "BE-B3-run-workflow-file-runtime-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "result": "run_workflow_file已按冻结源码迁入生产注册；正式启动冻结当前草稿可达的工作区文档，真实worker执行子工作流并回收变量、结果和事件。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "backend/app/executors/workflow_chain.py#RunWorkflowFileExecutor",
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "classifications": {
+    "executorBooleansVariableTransferSummaryAndFailurePolicy": "原版直接迁入",
+    "documentResolution": "AutoFlow必要适配：以稳定ID/名称解析当前工作区文档，并在启动时冻结可达依赖，不读取reference或外部工作流目录",
+    "nestedRuntime": "AutoFlow必要适配：复用同一生产registry、CloakBrowser会话、取消、事件、输入和产物端口",
+    "backgroundOwnership": "已批准增强：异步子任务由worker持有并在进程终态前收束，避免孤儿任务"
+  },
+  "verification": {
+    "frozenDifferential": "16 passed, 2 skipped；run_workflow_file同步成功结果、变量和摘要与冻结源一致；其余冻结失败/递归合同继续保留",
+    "realWorker": "真实受管worker执行冻结子文档，child-set与父call分别产生executionId和结果，subflow事件及清理通过",
+    "realHttp": "正式FastAPI保存父/子工作流、读取Profile、冻结依赖、启动真实worker、持久化两级结果并完成清理通过",
+    "affectedRegression": "155 passed, 2 skipped, 2 warnings",
+    "mypy": "受影响生产模块通过",
+    "ruff": "受影响生产与测试文件通过",
+    "fullBackendRegression": "2382 passed, 6 skipped, 2 warnings in 248.32s"
+  },
+  "remaining": [
+    "正式Electron真实UI保存、关闭重开、执行、停止和失败场景",
+    "异步子运行失败诊断及嵌套浏览器节点集中真实验收",
+    "同画布subflow和自定义模块为独立剩余依赖"
+  ],
+  "notClaimed": [
+    "B3里程碑完成",
+    "正式Electron验收",
+    "自定义模块运行"
+  ],
+  "userDatabaseModified": false
+}

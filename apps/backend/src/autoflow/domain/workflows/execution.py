@@ -102,6 +102,28 @@ class InputPromptGateway(Protocol):
     ) -> str | None: ...
 
 
+@dataclass(frozen=True, slots=True)
+class NestedWorkflowResult:
+    reference: str
+    name: str
+    success: bool
+    variables: Mapping[str, Any]
+    executed_nodes: int
+    failed_nodes: int
+    error: str | None = None
+    waited: bool = True
+
+
+class NestedWorkflowGateway(Protocol):
+    async def run_workflow(
+        self,
+        reference: str,
+        *,
+        variables: Mapping[str, Any],
+        wait_complete: bool,
+    ) -> NestedWorkflowResult: ...
+
+
 class CancellationToken(Protocol):
     @property
     def cancelled(self) -> bool: ...
@@ -126,6 +148,7 @@ class ExecutionContext:
     external_integrations: ExternalIntegrationGateway | None = None
     events: WorkflowEventSink | None = None
     input_prompts: InputPromptGateway | None = None
+    nested_workflows: NestedWorkflowGateway | None = None
     cancellation: CancellationToken | None = None
     clock: WorkflowClock = field(default_factory=WorkflowClock)
     data_rows: list[dict[str, Any]] = field(default_factory=list)

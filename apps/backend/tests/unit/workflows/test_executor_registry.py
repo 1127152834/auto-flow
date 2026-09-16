@@ -209,6 +209,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "group",
         "note",
         "input_prompt",
+        "run_workflow_file",
     }
 
 
