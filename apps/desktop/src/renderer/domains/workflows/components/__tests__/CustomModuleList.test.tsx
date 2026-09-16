@@ -15,6 +15,7 @@ const originalUpdateModule = useCustomModuleStore.getState().updateModule
 function makeModule(id: string, extra: Record<string, unknown> = {}) {
   return {
     id,
+    revision: 1,
     name: id,
     display_name: id,
     description: '',
@@ -117,7 +118,7 @@ describe('CustomModuleList 渲染与交互', () => {
     act(() => { delBtn.click() })
     const confirm = Array.from(document.body.querySelectorAll('button')).find((button) => button.textContent === '删除')!
     await act(async () => { confirm.click() })
-    expect(remove).toHaveBeenCalledWith('mod_used')
+    expect(remove).toHaveBeenCalledWith('mod_used', 1)
     expect(container.textContent).toContain('被引用模块')
     expect(container.querySelector('[role="alert"]')?.textContent).toContain('模块仍被工作流引用，无法删除')
   })
@@ -134,7 +135,7 @@ describe('CustomModuleList 渲染与交互', () => {
     act(() => { root.render(<CustomModuleList onCreateNew={noop} onManage={noop} onDragStart={noop} />) })
     const favorite = Array.from(container.querySelectorAll('button')).find((button) => button.title === '收藏')!
     await act(async () => { favorite.click() })
-    expect(update).toHaveBeenCalledWith('mod_favorite', { is_favorite: true })
+    expect(update).toHaveBeenCalledWith('mod_favorite', { is_favorite: true }, 1)
     expect(container.querySelector('button[title="收藏"]')).not.toBeNull()
     expect(container.querySelector('[role="alert"]')?.textContent).toContain('收藏更新失败')
   })

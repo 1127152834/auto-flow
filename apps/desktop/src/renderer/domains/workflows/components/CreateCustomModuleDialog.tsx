@@ -193,7 +193,7 @@ export function CreateCustomModuleDialog({ open, onClose, editingModule }: Creat
       console.log(`[CustomModuleDialog] ${isEdit ? '更新' : '创建'}模块:`, baseData)
       
       const result = isEdit
-        ? await updateModule(editingModule!.id, baseData)
+        ? await updateModule(editingModule!.id, baseData, editingModule!.revision)
         : await createModule({ ...baseData, workflow: workflowField })
       
       if (result) {

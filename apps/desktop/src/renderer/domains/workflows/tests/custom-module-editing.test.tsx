@@ -86,6 +86,21 @@ it.each(['changed', 'failure'])('keeps module edits on %s save response', async 
   expect(store.getState().hasUnsavedChanges).toBe(true)
   expect(sessionStorage.getItem('editingCustomModuleId')).toBe(moduleId)
 })
+it('keeps the editing draft when the saved revision conflicts', async () => {
+  await enterCustomModuleEditing(moduleId)
+  store.getState().updateVariable('module_value', 21)
+  let sent: Record<string, unknown> | undefined
+  setStudioTransport(async (_input, init) => {
+    sent = JSON.parse(String(init?.body))
+    return Response.json({ error: { code: 'CUSTOM_MODULE_REVISION_CONFLICT', message: '模块已被其他窗口修改' } }, { status: 409 })
+  })
+
+  expect(await saveCustomModuleEditing()).toBe(false)
+  expect(sent?.expectedRevision).toBe(1)
+  expect(store.getState().variables[0].value).toBe(21)
+  expect(store.getState().hasUnsavedChanges).toBe(true)
+  expect(sessionStorage.getItem('editingCustomModuleId')).toBe(moduleId)
+})
 it.each(['保存后继续', '放弃修改', '取消'])('module exit handles %s through the real toolbar dialog', async choice => {
   const mainId = store.getState().id
   await enterCustomModuleEditing(moduleId)

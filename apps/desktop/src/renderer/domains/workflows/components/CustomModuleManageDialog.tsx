@@ -43,7 +43,7 @@ export function CustomModuleManageDialog({ open, onClose, onEdit }: Props) {
     if (!confirmed) return
 
     try {
-      await deleteModule(module.id)
+      await deleteModule(module.id, module.revision)
       await alert('模块已删除', { title: '删除成功' })
     } catch (error) {
       await alert(error instanceof Error ? error.message : '删除失败', { title: '删除失败' })

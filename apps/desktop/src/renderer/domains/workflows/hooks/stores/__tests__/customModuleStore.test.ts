@@ -22,7 +22,7 @@ import { customModulesApi } from '../../../api'
 const api = customModulesApi as unknown as Record<string, ReturnType<typeof vi.fn>>
 
 function mod(id: string, extra: Record<string, unknown> = {}) {
-  return { id, name: id, display_name: id, workflow: { nodes: [], edges: [] }, ...extra }
+  return { id, name: id, display_name: id, revision: 1, workflow: { nodes: [], edges: [] }, ...extra }
 }
 
 describe('customModuleStore 缓存一致性', () => {
@@ -45,19 +45,41 @@ describe('customModuleStore 缓存一致性', () => {
   })
 
   it('updateModule 用返回值替换缓存中的对应模块（保存后再编辑读到最新配置的关键）', async () => {
-    useCustomModuleStore.setState({ modules: [mod('m1', { display_name: '旧' }) as any] })
-    api.update.mockResolvedValue({ data: mod('m1', { display_name: '新' }) })
+    useCustomModuleStore.setState({ modules: [mod('m1', { display_name: '旧', revision: 4 }) as any] })
+    api.update.mockResolvedValue({ data: mod('m1', { display_name: '新', revision: 5 }) })
     await useCustomModuleStore.getState().updateModule('m1', { display_name: '新' })
     const m = useCustomModuleStore.getState().modules.find((x) => x.id === 'm1')
-    expect(m?.display_name).toBe('新')
+    expect(m).toMatchObject({ display_name: '新', revision: 5 })
+    expect(api.update).toHaveBeenCalledWith('m1', { display_name: '新' }, 4)
+  })
+
+  it('updateModule 冲突时保留缓存中的原模块', async () => {
+    const original = mod('m1', { display_name: '本地草稿基线', revision: 4 }) as any
+    useCustomModuleStore.setState({ modules: [original] })
+    api.update.mockResolvedValue({ success: false, httpStatus: 409, error: '模块已被其他窗口修改' })
+
+    expect(await useCustomModuleStore.getState().updateModule('m1', { display_name: '待保存' })).toBeNull()
+    expect(useCustomModuleStore.getState().modules[0]).toBe(original)
+    expect(api.update).toHaveBeenCalledWith('m1', { display_name: '待保存' }, 4)
   })
 
   it('deleteModule 从缓存移除', async () => {
-    useCustomModuleStore.setState({ modules: [mod('m1') as any, mod('m2') as any] })
+    useCustomModuleStore.setState({ modules: [mod('m1', { revision: 3 }) as any, mod('m2') as any] })
     api.delete.mockResolvedValue({ data: { success: true } })
     const ok = await useCustomModuleStore.getState().deleteModule('m1')
     expect(ok).toBe(true)
     expect(useCustomModuleStore.getState().modules.map((m) => m.id)).toEqual(['m2'])
+    expect(api.delete).toHaveBeenCalledWith('m1', 3)
+  })
+
+  it('deleteModule 失败时保留缓存中的模块', async () => {
+    const original = mod('m1', { revision: 3 }) as any
+    useCustomModuleStore.setState({ modules: [original] })
+    api.delete.mockResolvedValue({ success: false, httpStatus: 409, error: '模块已被其他窗口修改' })
+
+    expect(await useCustomModuleStore.getState().deleteModule('m1')).toBe(false)
+    expect(useCustomModuleStore.getState().modules[0]).toBe(original)
+    expect(api.delete).toHaveBeenCalledWith('m1', 3)
   })
 
   it('getModule 返回后端最新数据（不改动本地缓存）', async () => {

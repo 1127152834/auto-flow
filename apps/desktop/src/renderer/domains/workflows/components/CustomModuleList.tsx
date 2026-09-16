@@ -104,7 +104,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
   // 切换收藏
   const handleToggleFavorite = async (module: CustomModule, e: React.MouseEvent) => {
     e.stopPropagation()
-    await updateModule(module.id, { is_favorite: !module.is_favorite })
+    await updateModule(module.id, { is_favorite: !module.is_favorite }, module.revision)
   }
 
   // 删除模块
@@ -115,7 +115,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
       { type: 'warning', title: '删除自定义模块', confirmText: '删除', cancelText: '取消' }
     )
     if (ok) {
-      await deleteModule(module.id)
+      await deleteModule(module.id, module.revision)
     }
   }
 

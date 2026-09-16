@@ -129,9 +129,9 @@ describe('source-compatible mock HTTP boundary',()=>{
     expect(server.mockSnapshot().recording).toBe(false)
   })
   it('persists custom modules and mutable resource folders through the same request seam',async()=>{
-    const created=await(await request('/custom-modules',{name:'snippet',parameters:[],workflow:{nodes:[],edges:[]}})).json()
+    const created=await(await request('/custom-modules',{name:'snippet',parameters:[],workflow:{nodes:[],edges:[]},clientRequestId:'mock-create'})).json()
     expect((await(await request('/custom-modules')).json()).modules[0].id).toBe(created.id)
-    await request(`/custom-modules/${created.id}`,{...created,name:'renamed'},'PUT')
+    await request(`/custom-modules/${created.id}`,{...created,name:'renamed',expectedRevision:created.revision,clientRequestId:'mock-update'},'PUT')
     expect((await(await request(`/custom-modules/${created.id}`)).json()).name).toBe('renamed')
     await request('/image-assets/folders',{name:'screenshots'})
     expect(await(await request('/image-assets/folders')).json()).toEqual(['screenshots'])

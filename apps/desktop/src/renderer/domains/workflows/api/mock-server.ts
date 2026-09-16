@@ -1022,14 +1022,16 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     }
     if (path === '/custom-modules' || path === '/custom-modules/import') {
       if (method === 'GET') return response({ success:true, modules:Object.values(db.modules), total:Object.keys(db.modules).length })
-      const id = String(body.id || crypto.randomUUID()); const module = {...body,id}; persist({...db,modules:{...db.modules,[id]:module}}); return response(module)
+      const {clientRequestId:_requestId,expectedRevision:_expectedRevision,revision:_revision,...payload}=body
+      void _requestId; void _expectedRevision; void _revision
+      const id = String(body.id || crypto.randomUUID()); const module = {...payload,id,revision:1}; persist({...db,modules:{...db.modules,[id]:module}}); return response(module)
     }
     if (path.startsWith('/custom-modules/')) {
       const id = path.split('/')[2]
-      if (path.endsWith('/duplicate')) { const original=db.modules[id];if(!original)return failure('Module not found',404);const copy={...structuredClone(original),id:crypto.randomUUID(),name:String(body.new_name || original.name)+' copy'};persist({...db,modules:{...db.modules,[String(copy.id)]:copy}});return response(copy) }
+      if (path.endsWith('/duplicate')) { const original=db.modules[id];if(!original)return failure('Module not found',404);const copy={...structuredClone(original),id:crypto.randomUUID(),revision:1,name:String(body.new_name || original.name)+' copy'};persist({...db,modules:{...db.modules,[String(copy.id)]:copy}});return response(copy) }
       if (path.endsWith('/increment-usage')) { const original=db.modules[id];if(!original)return failure('Module not found',404);persist({...db,modules:{...db.modules,[id]:{...original,usage_count:Number(original.usage_count || 0)+1}}});return response({success:true}) }
-      if (method === 'DELETE') { const modules={...db.modules}; delete modules[id]; persist({...db,modules}); return response({success:true}) }
-      if (method === 'PUT') { if (!db.modules[id]) return failure('模块不存在',404); persist({...db,modules:{...db.modules,[id]:{...db.modules[id],...body,id}}}); return response(db.modules[id]) }
+      if (method === 'DELETE') { const original=db.modules[id];if(!original)return failure('模块不存在',404);if(Number(target.searchParams.get('expectedRevision'))!==Number(original.revision))return failure('模块已被其他窗口修改',409);const modules={...db.modules}; delete modules[id]; persist({...db,modules}); return response({success:true}) }
+      if (method === 'PUT') { const original=db.modules[id];if(!original)return failure('模块不存在',404);if(body.expectedRevision!==original.revision)return failure('模块已被其他窗口修改',409);const {clientRequestId:_requestId,expectedRevision:_expectedRevision,revision:_revision,...payload}=body;void _requestId;void _expectedRevision;void _revision;const module={...original,...payload,id,revision:Number(original.revision)+1};persist({...db,modules:{...db.modules,[id]:module}}); return response(module) }
       return db.modules[id] ? response(db.modules[id]) : failure('模块不存在',404)
     }
     if (path === '/workflow-bundle/export') {

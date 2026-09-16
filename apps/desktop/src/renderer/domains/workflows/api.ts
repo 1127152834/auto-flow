@@ -769,26 +769,109 @@ export const recorderApi = {
 }
 
 // ==================== 自定义模块 API ====================
+const customModuleRevisions = new Map<string, number>()
+const pendingCustomModuleWrites = new Map<string, string>()
+
+function customModuleWriteKey(operation: string, payload: unknown): string {
+  return `${operation}:${JSON.stringify(payload)}`
+}
+
+function customModuleRequestId(key: string, supplied?: unknown): string {
+  if (typeof supplied === 'string' && supplied.trim()) return supplied
+  const existing = pendingCustomModuleWrites.get(key)
+  if (existing) return existing
+  const requestId = crypto.randomUUID()
+  pendingCustomModuleWrites.set(key, requestId)
+  return requestId
+}
+
+function rememberCustomModule(value: unknown, fallbackRevision?: number): void {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return
+  const module = value as Record<string, unknown>
+  if (typeof module.id !== 'string' || !module.id) return
+  const revision = Number.isSafeInteger(module.revision) && Number(module.revision) > 0
+    ? Number(module.revision)
+    : fallbackRevision
+  if (revision) customModuleRevisions.set(module.id, revision)
+}
+
+function settleCustomModuleWrite(key: string, result: ApiResponse<unknown>): void {
+  if (result.success || (result.httpStatus !== undefined && result.httpStatus >= 400 && result.httpStatus < 500)) {
+    pendingCustomModuleWrites.delete(key)
+  }
+}
+
 export const customModulesApi = {
-  list: (params?: { category?: string; search?: string }) =>
-    apiRequest(`/custom-modules${params ? `?${new URLSearchParams(params as any).toString()}` : ''}`),
-  get: (id: string) => apiRequest(`/custom-modules/${id}`),
-  create: (data: any) =>
-    apiRequest('/custom-modules', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: any) =>
-    apiRequest(`/custom-modules/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  delete: (id: string) =>
-    apiRequest(`/custom-modules/${id}`, { method: 'DELETE' }),
-  duplicate: (id: string, newName?: string) =>
-    apiRequest(`/custom-modules/${id}/duplicate`, {
+  list: async (params?: { category?: string; search?: string }) => {
+    const result = await apiRequest<any>(`/custom-modules${params ? `?${new URLSearchParams(params as any).toString()}` : ''}`)
+    result.data?.modules?.forEach((module: unknown) => rememberCustomModule(module, 1))
+    return result
+  },
+  get: async (id: string) => {
+    const result = await apiRequest<any>(`/custom-modules/${id}`)
+    if (result.success) rememberCustomModule(result.data, 1)
+    return result
+  },
+  create: async (data: any) => {
+    const key = customModuleWriteKey('create', data)
+    const clientRequestId = customModuleRequestId(key, data?.clientRequestId)
+    const result = await apiRequest<any>('/custom-modules', {
+      method: 'POST', body: JSON.stringify({ ...data, clientRequestId }),
+    })
+    if (result.success) rememberCustomModule(result.data, 1)
+    settleCustomModuleWrite(key, result)
+    return result
+  },
+  update: async (id: string, data: any, suppliedRevision?: number) => {
+    const expectedRevision = Number.isSafeInteger(suppliedRevision) && Number(suppliedRevision) > 0
+      ? Number(suppliedRevision)
+      : Number.isSafeInteger(data?.expectedRevision) && Number(data.expectedRevision) > 0
+        ? Number(data.expectedRevision)
+        : customModuleRevisions.get(id) ?? 1
+    const key = customModuleWriteKey(`update:${id}:${expectedRevision}`, data)
+    const clientRequestId = customModuleRequestId(key, data?.clientRequestId)
+    const result = await apiRequest<any>(`/custom-modules/${id}`, {
+      method: 'PUT', body: JSON.stringify({ ...data, expectedRevision, clientRequestId }),
+    })
+    if (result.success) rememberCustomModule(result.data, expectedRevision + 1)
+    settleCustomModuleWrite(key, result)
+    return result
+  },
+  delete: async (id: string, suppliedRevision?: number) => {
+    const expectedRevision = Number.isSafeInteger(suppliedRevision) && Number(suppliedRevision) > 0
+      ? Number(suppliedRevision)
+      : customModuleRevisions.get(id) ?? 1
+    const key = customModuleWriteKey(`delete:${id}:${expectedRevision}`, {})
+    const clientRequestId = customModuleRequestId(key)
+    const query = new URLSearchParams({ expectedRevision: String(expectedRevision), clientRequestId })
+    const result = await apiRequest(`/custom-modules/${id}?${query}`, { method: 'DELETE' })
+    if (result.success) customModuleRevisions.delete(id)
+    settleCustomModuleWrite(key, result)
+    return result
+  },
+  duplicate: async (id: string, newName?: string) => {
+    const data = newName ? { new_name: newName } : {}
+    const key = customModuleWriteKey(`duplicate:${id}`, data)
+    const clientRequestId = customModuleRequestId(key)
+    const result = await apiRequest<any>(`/custom-modules/${id}/duplicate`, {
       method: 'POST',
-      body: JSON.stringify(newName ? { new_name: newName } : {}),
-    }),
-  importModule: (data: any) =>
-    apiRequest(`/custom-modules/import`, {
+      body: JSON.stringify({ ...data, clientRequestId }),
+    })
+    if (result.success) rememberCustomModule(result.data, 1)
+    settleCustomModuleWrite(key, result)
+    return result
+  },
+  importModule: async (data: any) => {
+    const key = customModuleWriteKey('import', data)
+    const clientRequestId = customModuleRequestId(key, data?.clientRequestId)
+    const result = await apiRequest<any>(`/custom-modules/import`, {
       method: 'POST',
-      body: JSON.stringify(data),
-    }),
+      body: JSON.stringify({ ...data, clientRequestId }),
+    })
+    if (result.success) rememberCustomModule(result.data, 1)
+    settleCustomModuleWrite(key, result)
+    return result
+  },
   incrementUsage: (id: string) =>
     apiRequest(`/custom-modules/${id}/increment-usage`, { method: 'POST' }),
 }

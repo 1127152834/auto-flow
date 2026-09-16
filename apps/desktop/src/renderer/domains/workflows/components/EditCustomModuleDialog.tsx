@@ -120,7 +120,7 @@ export function EditCustomModuleDialog({ open, onClose, module, onEditWorkflow }
         tags: tags.split(',').map(t => t.trim()).filter(Boolean)
       }
       
-      const result = await updateModule(module.id, updateData)
+      const result = await updateModule(module.id, updateData, module.revision)
       
       if (result) {
         onClose()

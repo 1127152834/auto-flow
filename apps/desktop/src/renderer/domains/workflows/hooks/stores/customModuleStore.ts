@@ -16,14 +16,14 @@ interface CustomModuleState {
   loadModules: (params?: { category?: string; search?: string }) => Promise<void>
   getModule: (id: string) => Promise<CustomModule | null>
   createModule: (data: any) => Promise<CustomModule | null>
-  updateModule: (id: string, data: any) => Promise<CustomModule | null>
-  deleteModule: (id: string) => Promise<boolean>
+  updateModule: (id: string, data: any, expectedRevision?: number) => Promise<CustomModule | null>
+  deleteModule: (id: string, expectedRevision?: number) => Promise<boolean>
   duplicateModule: (id: string, newName?: string) => Promise<CustomModule | null>
   importModule: (data: any) => Promise<CustomModule | null>
   setSelectedModule: (module: CustomModule | null) => void
 }
 
-export const useCustomModuleStore = create<CustomModuleState>((set) => ({
+export const useCustomModuleStore = create<CustomModuleState>((set, get) => ({
   modules: [],
   isLoading: false,
   error: null,
@@ -76,10 +76,11 @@ export const useCustomModuleStore = create<CustomModuleState>((set) => ({
     }
   },
   
-  updateModule: async (id, data) => {
+  updateModule: async (id, data, expectedRevision) => {
     set({ isLoading: true, error: null })
     try {
-      const result = await customModulesApi.update(id, data)
+      const revision = expectedRevision ?? get().modules.find(module => module.id === id)?.revision
+      const result = await customModulesApi.update(id, data, revision)
       if (result.data) {
         set(state => ({
           modules: state.modules.map(m => m.id === id ? result.data : m),
@@ -96,10 +97,11 @@ export const useCustomModuleStore = create<CustomModuleState>((set) => ({
     }
   },
   
-  deleteModule: async (id) => {
+  deleteModule: async (id, expectedRevision) => {
     set({ isLoading: true, error: null })
     try {
-      const result = await customModulesApi.delete(id)
+      const revision = expectedRevision ?? get().modules.find(module => module.id === id)?.revision
+      const result = await customModulesApi.delete(id, revision)
       if (result.data?.success) {
         set(state => ({
           modules: state.modules.filter(m => m.id !== id),
