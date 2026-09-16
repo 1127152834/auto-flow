@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.basic import OpenPageExecutor
+from autoflow.application.workflows.executors.input_prompt import InputPromptExecutor
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
@@ -52,15 +55,16 @@ class FakeWorkers:
     def __init__(self) -> None:
         self.payloads: list[dict[str, Any]] = []
         self.stopped: list[str] = []
+        self.commands: list[tuple[str, dict[str, Any]]] = []
 
     async def start(
         self,
         run_id: str,
         profile_id: str,
-        executable: Path,
+        executable: Path | None,
         payload: dict[str, Any],
     ) -> WorkflowWorkerSession:
-        assert executable.is_file()
+        assert executable is None or executable.is_file()
         self.payloads.append(payload)
         return WorkflowWorkerSession(run_id, profile_id, 10, 11)
 
@@ -69,6 +73,9 @@ class FakeWorkers:
 
     def busy(self) -> bool:
         return bool(self.payloads) and not self.stopped
+
+    async def send_command(self, run_id: str, command: dict[str, Any]) -> None:
+        self.commands.append((run_id, command))
 
 
 def _profile() -> Profile:
@@ -232,6 +239,124 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
         "已打开网页",
         "执行完成，共执行 1 个节点，失败 0 个",
     ]
+
+
+@pytest.mark.asyncio
+async def test_input_command_waits_for_worker_ack_and_is_idempotent(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "input.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(sessions))
+    documents.create(
+        {
+            "id": "input-flow",
+            "name": "真实输入",
+            "nodes": [
+                {
+                    "id": "prompt",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "input_prompt",
+                        "config": {"variableName": "answer"},
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "answer", "value": "before"}],
+        },
+        client_request_id="create-input",
+    )
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    runs = WorkflowRunService(repository)
+    registry = ExecutorRegistry()
+    registry.register(InputPromptExecutor)
+    workers = FakeWorkers()
+    coordinator = WorkflowRunCoordinator(
+        documents=documents,
+        runs=runs,
+        run_repository=repository,
+        runtime=WorkflowRuntime(registry),
+        profiles=FakeProfiles(_profile()),
+        installed_kernels=list,
+        resolve_proxy=lambda _profile, _run_id: _none(),
+        read_license=lambda: None,
+        workers=workers,
+        resources=FakeResources(),
+        events=StudioEventJournal(),
+        artifact_root=tmp_path / "workspace",
+    )
+    await coordinator.start(
+        "input-flow",
+        {
+            "runId": "input-run",
+            "documentId": "input-flow",
+            "profileId": "profile-1",
+        },
+    )
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:input_prompt",
+            "runId": "input-run",
+            "workflowId": "input-flow",
+            "nodeId": "prompt",
+            "executionId": "execution-1",
+            "requestId": "request-1",
+            "variableName": "answer",
+            "title": "输入",
+            "message": "请输入",
+            "defaultValue": "",
+            "inputMode": "single",
+            "required": True,
+        }
+    )
+
+    submitting = asyncio.create_task(
+        coordinator.submit_event_command(
+            "command-1",
+            "input_prompt_result",
+            {"requestId": "request-1", "value": "原文"},
+        )
+    )
+    for _ in range(100):
+        if workers.commands:
+            break
+        await asyncio.sleep(0)
+    assert workers.commands == [
+        (
+            "input-run",
+            {
+                "type": "input_prompt_result",
+                "commandId": "command-1",
+                "requestId": "request-1",
+                "value": "原文",
+            },
+        )
+    ]
+    assert submitting.done() is False
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:command_applied",
+            "runId": "input-run",
+            "workflowId": "input-flow",
+            "commandId": "command-1",
+            "requestId": "request-1",
+        }
+    )
+
+    assert await submitting == ({"commandId": "command-1", "success": True}, 200)
+    assert await coordinator.submit_event_command(
+        "command-1",
+        "input_prompt_result",
+        {"requestId": "request-1", "value": "原文"},
+    ) == ({"commandId": "command-1", "success": True}, 200)
+    assert len(workers.commands) == 1
+    assert coordinator.input_prompt_state("request-1")["status"] == "answered"
+    assert coordinator.event_command("command-1") == (
+        {"commandId": "command-1", "success": True, "httpStatus": 200},
+        200,
+    )
 
 
 async def _none() -> None:

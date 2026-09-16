@@ -8,12 +8,13 @@ from collections.abc import Mapping
 from pathlib import Path
 from threading import Event, Lock, Thread
 from typing import Any, TextIO
+from uuid import uuid4
 
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
 from autoflow.application.workflows.runtime import WorkflowRuntime
-from autoflow.domain.workflows.execution import ExecutionContext
+from autoflow.domain.workflows.execution import ExecutionContext, InputPromptRequest
 from autoflow.domain.workflows.runs import WorkflowArtifact
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
@@ -30,21 +31,34 @@ def run_workflow_worker(
 ) -> int:
     try:
         command = _read_command(stdin)
-        Thread(target=_watch_stdin, args=(stdin, stopped), daemon=True).start()
-        return asyncio.run(_run(command, stopped, stdout))
+        return asyncio.run(_run(command, stopped, stdout, stdin))
     except BaseException:  # noqa: BLE001 -- secrets and browser details stay isolated.
         _write(stdout, {"type": "error", "error": "Workflow worker failed"})
         return 1
 
 
-async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
+async def _run(
+    command: dict[str, Any],
+    stopped: Event,
+    stdout: TextIO,
+    stdin: TextIO | None = None,
+) -> int:
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(), stopped, stdout, command
+    )
+    if stdin is not None:
+        Thread(
+            target=_watch_stdin,
+            args=(stdin, stopped, command_bus.receive, command_bus.close),
+            daemon=True,
+        ).start()
     requires_browser = command.get("requiresBrowser", True)
     if not isinstance(requires_browser, bool):
         raise TypeError("requiresBrowser must be a boolean")
     _required_string(command, "runId")
     _required_string(command, "profileId")
     if not requires_browser:
-        return await _run_in_session(command, stopped, stdout, None)
+        return await _run_in_session(command, stopped, stdout, None, command_bus)
     executable = Path(_required_environment("CLOAKBROWSER_BINARY_PATH"))
     cache = Path(_required_environment("CLOAKBROWSER_CACHE_DIR"))
     if (
@@ -54,11 +68,15 @@ async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
     ):
         raise ValueError("workflow worker paths are invalid")
     async with launch_workflow_session(command) as browser:
-        return await _run_in_session(command, stopped, stdout, browser)
+        return await _run_in_session(command, stopped, stdout, browser, command_bus)
 
 
 async def _run_in_session(
-    command: dict[str, Any], stopped: Event, stdout: TextIO, browser: Any
+    command: dict[str, Any],
+    stopped: Event,
+    stdout: TextIO,
+    browser: Any,
+    command_bus: _WorkerCommandBus,
 ) -> int:
     run_id = _required_string(command, "runId")
     profile_id = _required_string(command, "profileId")
@@ -83,7 +101,9 @@ async def _run_in_session(
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
+            input_prompts=command_bus,
         )
+        command_bus.bind_context(context)
         sink = _WorkerEventSink(
             stdout,
             run_id=run_id,
@@ -287,9 +307,139 @@ def _read_command(stdin: TextIO) -> dict[str, Any]:
     return value
 
 
-def _watch_stdin(stdin: TextIO, stopped: Event) -> None:
-    stdin.read()
-    stopped.set()
+class _WorkerCommandBus:
+    def __init__(
+        self,
+        loop: asyncio.AbstractEventLoop,
+        stopped: Event,
+        stdout: TextIO,
+        command: dict[str, Any],
+    ) -> None:
+        self._loop = loop
+        self._stopped = stopped
+        self._stdout = stdout
+        self._run_id = _required_string(command, "runId")
+        workflow_id = command.get("workflowId")
+        self._workflow_id = workflow_id if isinstance(workflow_id, str) else ""
+        self._context: ExecutionContext | None = None
+        self._pending: dict[str, asyncio.Future[str | None]] = {}
+
+    def bind_context(self, context: ExecutionContext) -> None:
+        self._context = context
+
+    def receive(self, command: dict[str, Any]) -> None:
+        if not self._loop.is_closed():
+            self._loop.call_soon_threadsafe(self._apply, command)
+
+    def close(self) -> None:
+        if not self._loop.is_closed():
+            self._loop.call_soon_threadsafe(self._cancel_pending)
+
+    async def request_input(
+        self, request: InputPromptRequest, *, timeout_seconds: float
+    ) -> str | None:
+        context = self._context
+        if context is None:
+            raise RuntimeError("输入请求上下文尚未就绪")
+        request_id = str(uuid4())
+        future: asyncio.Future[str | None] = self._loop.create_future()
+        self._pending[request_id] = future
+        await _publish_prompt(context, request_id, request)
+        status = "expired"
+        try:
+            value = (
+                await asyncio.wait_for(future, timeout_seconds)
+                if timeout_seconds > 0
+                else await future
+            )
+            status = "cancelled" if value is None else "answered"
+            return value
+        finally:
+            self._pending.pop(request_id, None)
+            if context.events is not None:
+                await context.events.publish(
+                    {
+                        "type": "execution:input_prompt_closed",
+                        "requestId": request_id,
+                        "nodeId": context.current_node_id,
+                        "executionId": context.current_execution_id,
+                        "status": status,
+                    }
+                )
+
+    def _apply(self, command: dict[str, Any]) -> None:
+        if command.get("type") != "input_prompt_result":
+            return
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        value = command.get("value")
+        future = self._pending.get(request_id) if isinstance(request_id, str) else None
+        if future is None or future.done() or not isinstance(command_id, str):
+            return
+        if value is not None and not isinstance(value, str):
+            return
+        future.set_result(value)
+        _write(
+            self._stdout,
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
+    def _cancel_pending(self) -> None:
+        for future in self._pending.values():
+            if not future.done():
+                future.cancel()
+
+
+async def _publish_prompt(
+    context: ExecutionContext, request_id: str, request: InputPromptRequest
+) -> None:
+    if context.events is None:
+        raise RuntimeError("输入请求事件服务不可用")
+    await context.events.publish(
+        {
+            "type": "execution:input_prompt",
+            "requestId": request_id,
+            "nodeId": context.current_node_id,
+            "executionId": context.current_execution_id,
+            "variableName": request.variable_name,
+            "title": request.title,
+            "message": request.message,
+            "defaultValue": request.default_value,
+            "inputMode": request.input_mode,
+            "minValue": request.min_value,
+            "maxValue": request.max_value,
+            "maxLength": request.max_length,
+            "required": request.required,
+            "selectOptions": list(request.select_options)
+            if request.select_options is not None
+            else None,
+        }
+    )
+
+
+def _watch_stdin(
+    stdin: TextIO,
+    stopped: Event,
+    receive: Any,
+    close: Any,
+) -> None:
+    try:
+        while raw := stdin.readline():
+            try:
+                command = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(command, dict):
+                receive(command)
+    finally:
+        stopped.set()
+        close()
 
 
 def _required_string(values: dict[str, Any], key: str) -> str:

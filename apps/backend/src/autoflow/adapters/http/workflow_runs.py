@@ -23,6 +23,14 @@ class WorkflowRunCommands(Protocol):
 
     async def stop(self, workflow_id: str, run_id: str) -> Mapping[str, Any]: ...
 
+    async def submit_event_command(
+        self, command_id: str, event: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]: ...
+
+    def event_command(self, command_id: str) -> tuple[dict[str, Any], int]: ...
+
+    def input_prompt_state(self, request_id: str) -> dict[str, str]: ...
+
 
 class WorkflowExecuteRequest(ApiModel):
     model_config = ConfigDict(extra="allow")

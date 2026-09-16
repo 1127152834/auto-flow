@@ -1799,6 +1799,57 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/events/commands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Command */
+        post: operations["submit_command_api_events_commands_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/commands/{command_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Command */
+        get: operations["get_command_api_events_commands__command_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/events/input-prompts/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Input Prompt */
+        get: operations["get_input_prompt_api_events_input_prompts__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type webhooks = Record<string, never>;
 export type components = {
@@ -4379,6 +4430,51 @@ export type components = {
             /** Statusid */
             statusId: string;
         };
+        /** StudioCommandLookup */
+        StudioCommandLookup: {
+            /** Commandid */
+            commandId: string;
+            /** Success */
+            success: boolean;
+            /** Httpstatus */
+            httpStatus: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioCommandReceipt */
+        StudioCommandReceipt: {
+            /** Commandid */
+            commandId: string;
+            /** Success */
+            success: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioEventCommandRequest */
+        StudioEventCommandRequest: {
+            /** Commandid */
+            commandId: string;
+            /** Event */
+            event: string;
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+        };
+        /** StudioInputPromptState */
+        StudioInputPromptState: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "answered" | "cancelled" | "expired";
+        };
         /** StudioRunResultPage */
         StudioRunResultPage: {
             /** Runid */
@@ -4698,26 +4794,6 @@ export type components = {
              * @default null
              */
             claimId: string | null;
-        };
-        /** StudioCommandLookup */
-        StudioCommandLookup: {
-            /** Commandid */
-            commandId: string;
-            /** Success */
-            success: boolean;
-            /** Httpstatus */
-            httpStatus: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioCommandReceipt */
-        StudioCommandReceipt: {
-            /** Commandid */
-            commandId: string;
-            /** Success */
-            success: boolean;
-        } & {
-            [key: string]: unknown;
         };
         /** StudioConditionalRequired */
         StudioConditionalRequired: {
@@ -5181,20 +5257,6 @@ export type components = {
             requestId: string;
             /** Value */
             value: string | null;
-        };
-        /** StudioInputPromptState */
-        StudioInputPromptState: {
-            /** Requestid */
-            requestId: string;
-            /** Workflowid */
-            workflowId: string;
-            /** Nodeid */
-            nodeId: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "pending" | "answered" | "cancelled" | "expired";
         };
         /** StudioJsScriptClaim */
         StudioJsScriptClaim: {
@@ -12999,6 +13061,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_command_api_events_commands_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioEventCommandRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioCommandReceipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_command_api_events_commands__command_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                command_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioCommandLookup"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_input_prompt_api_events_input_prompts__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioInputPromptState"];
                 };
             };
             /** @description Validation Error */

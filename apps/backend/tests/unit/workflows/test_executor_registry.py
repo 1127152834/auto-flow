@@ -208,6 +208,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "assert_checkpoint",
         "group",
         "note",
+        "input_prompt",
     }
 
 

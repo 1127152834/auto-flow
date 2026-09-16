@@ -658,6 +658,22 @@
         "WebRPA全局执行器注册副作用"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/basic.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/input_prompt.py",
+      "changeSummary": "迁入input_prompt的13种输入模式、默认值、变量转换、取消和超时语义；用AutoFlow受管worker命令与SSE事件替换WebRPA进程内同步UI回调。",
+      "retainedDependencies": [
+        "Python标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "app.main.request_input_prompt_sync",
+        "app.services.packaged_ui",
+        "WebRPA进程内全局UI回调"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

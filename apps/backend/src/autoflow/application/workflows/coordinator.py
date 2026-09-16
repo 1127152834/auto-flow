@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import json
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import asdict
 from datetime import UTC, datetime
@@ -38,6 +39,8 @@ class WorkflowWorkers(Protocol):
     ) -> object: ...
 
     async def stop(self, run_id: str) -> None: ...
+
+    async def send_command(self, run_id: str, command: dict[str, Any]) -> None: ...
 
     def busy(self) -> bool: ...
 
@@ -88,6 +91,12 @@ class WorkflowRunCoordinator:
         self._artifact_root = artifact_root.resolve()
         self._terminal_intents: dict[str, dict[str, Any]] = {}
         self._command_lock = asyncio.Lock()
+        self._event_command_lock = asyncio.Lock()
+        self._input_prompts: dict[str, dict[str, str]] = {}
+        self._command_receipts: dict[
+            str, tuple[str, dict[str, Any], int]
+        ] = {}
+        self._command_waiters: dict[str, asyncio.Future[None]] = {}
 
     async def start(
         self, workflow_id: str, request: Mapping[str, Any]
@@ -277,6 +286,48 @@ class WorkflowRunCoordinator:
         run_id = _required_string(event, "runId")
         run = self._runs.get(run_id)
         event_type = _required_string(event, "type")
+        if event_type == "execution:command_applied":
+            command_id = _required_string(event, "commandId")
+            waiter = self._command_waiters.get(command_id)
+            if waiter is not None and not waiter.done():
+                waiter.set_result(None)
+            return
+        if event_type == "execution:input_prompt":
+            request_id = _required_string(event, "requestId")
+            prompt_node_id = _required_string(event, "nodeId")
+            payload = {
+                key: copy.deepcopy(value)
+                for key, value in event.items()
+                if key not in {"type", "runId"}
+            }
+            self._input_prompts[request_id] = {
+                "requestId": request_id,
+                "workflowId": run.workflow_id,
+                "runId": run_id,
+                "nodeId": prompt_node_id,
+                "status": "pending",
+            }
+            persisted = self._repository.append_event(
+                run_id,
+                event_type,
+                payload,
+                now=datetime_now(),
+                node_id=prompt_node_id,
+                execution_id=_optional_string(event.get("executionId")),
+                run_patch={"currentNodeId": prompt_node_id},
+            )
+            await self._events.publish(
+                event_type,
+                {**payload, "runId": run_id, "workflowId": run.workflow_id, "sequence": persisted.sequence},
+            )
+            return
+        if event_type == "execution:input_prompt_closed":
+            request_id = _required_string(event, "requestId")
+            state = self._input_prompts.get(request_id)
+            status = _required_string(event, "status")
+            if state is not None and status in {"answered", "cancelled", "expired"}:
+                state["status"] = status
+            return
         if event_type == "artifact:registered":
             self._repository.register_artifact(
                 run_id=run_id,
@@ -374,10 +425,110 @@ class WorkflowRunCoordinator:
             },
         )
 
+    async def submit_event_command(
+        self, command_id: str, event: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        fingerprint = json.dumps(
+            {"event": event, "data": data},
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        async with self._event_command_lock:
+            previous = self._command_receipts.get(command_id)
+            if previous is not None:
+                old_fingerprint, receipt, status = previous
+                if old_fingerprint != fingerprint:
+                    return {
+                        "commandId": command_id,
+                        "success": False,
+                        "error": "commandId 已用于不同请求",
+                    }, 409
+                return copy.deepcopy(receipt), status
+            if event != "input_prompt_result":
+                receipt = {
+                    "commandId": command_id,
+                    "success": False,
+                    "error": "命令尚未实现",
+                }
+                self._command_receipts[command_id] = (fingerprint, receipt, 501)
+                return copy.deepcopy(receipt), 501
+            request_id = data.get("requestId")
+            value = data.get("value")
+            if (
+                not isinstance(request_id, str)
+                or not request_id
+                or (value is not None and not isinstance(value, str))
+                or set(data) != {"requestId", "value"}
+            ):
+                receipt = {
+                    "commandId": command_id,
+                    "success": False,
+                    "error": "输入结果无效",
+                }
+                self._command_receipts[command_id] = (fingerprint, receipt, 422)
+                return copy.deepcopy(receipt), 422
+            state = self._input_prompts.get(request_id)
+            if state is None or state["status"] != "pending":
+                receipt = {
+                    "commandId": command_id,
+                    "success": False,
+                    "error": "输入请求不存在或已结束",
+                }
+                self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                return copy.deepcopy(receipt), 409
+            waiter = asyncio.get_running_loop().create_future()
+            self._command_waiters[command_id] = waiter
+            try:
+                await self._workers.send_command(
+                    state["runId"],
+                    {
+                        "type": event,
+                        "commandId": command_id,
+                        "requestId": request_id,
+                        "value": value,
+                    },
+                )
+                await asyncio.wait_for(waiter, timeout=10)
+            except (RuntimeError, TimeoutError):
+                receipt = {
+                    "commandId": command_id,
+                    "success": False,
+                    "error": "输入结果未被运行进程确认",
+                }
+                self._command_receipts[command_id] = (fingerprint, receipt, 503)
+                return copy.deepcopy(receipt), 503
+            finally:
+                self._command_waiters.pop(command_id, None)
+            state["status"] = "cancelled" if value is None else "answered"
+            receipt = {"commandId": command_id, "success": True}
+            self._command_receipts[command_id] = (fingerprint, receipt, 200)
+            return copy.deepcopy(receipt), 200
+
+    def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
+        record = self._command_receipts.get(command_id)
+        if record is None:
+            raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)
+        _, receipt, status = record
+        return {**copy.deepcopy(receipt), "httpStatus": status}, 200
+
+    def input_prompt_state(self, request_id: str) -> dict[str, str]:
+        state = self._input_prompts.get(request_id)
+        if state is None:
+            raise WorkflowRunError("INPUT_PROMPT_NOT_FOUND", "输入请求不存在", 404)
+        return {
+            key: state[key]
+            for key in ("requestId", "workflowId", "nodeId", "status")
+        }
+
     async def on_worker_exit(self, run_id: str, return_code: int) -> None:
         # WorkflowWorkerManager invokes this only after the process tree and its
         # private directory are gone. Resource release is the final cleanup step.
         run = self._runs.get(run_id)
+        for state in self._input_prompts.values():
+            if state["runId"] == run_id and state["status"] == "pending":
+                state["status"] = "expired"
         if self._resources.owner_id == run_id:
             await self._resources.release(run_id)
         intent = self._terminal_intents.pop(run_id, None)

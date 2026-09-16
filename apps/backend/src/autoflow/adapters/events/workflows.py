@@ -2,14 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import copy
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Protocol
 
 from fastapi import APIRouter, Query, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
+from autoflow.adapters.http.workflow_studio_schemas import (
+    StudioCommandLookup,
+    StudioCommandReceipt,
+    StudioEventCommandRequest,
+    StudioInputPromptState,
+)
 from autoflow.domain.workflows.runs import WorkflowRunError
 
 
@@ -79,7 +85,19 @@ def _frame(item: StudioEvent) -> bytes:
     return f"id: {item.sequence}\nevent: {item.event}\ndata: {data}\n\n".encode()
 
 
-def workflow_events_router(journal: StudioEventJournal) -> APIRouter:
+class StudioEventCommands(Protocol):
+    async def submit_event_command(
+        self, command_id: str, event: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]: ...
+
+    def event_command(self, command_id: str) -> tuple[dict[str, Any], int]: ...
+
+    def input_prompt_state(self, request_id: str) -> dict[str, str]: ...
+
+
+def workflow_events_router(
+    journal: StudioEventJournal, commands: StudioEventCommands | None = None
+) -> APIRouter:
     router = APIRouter(prefix="/api/events", tags=["studio-events"])
 
     @router.get("/stream")
@@ -104,5 +122,25 @@ def workflow_events_router(journal: StudioEventJournal) -> APIRouter:
             media_type="text/event-stream",
             headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
         )
+
+    if commands is not None:
+
+        @router.post("/commands", response_model=StudioCommandReceipt)
+        async def submit_command(request: StudioEventCommandRequest) -> JSONResponse:
+            payload, http_status = await commands.submit_event_command(
+                request.command_id, request.event, request.data
+            )
+            return JSONResponse(payload, status_code=http_status)
+
+        @router.get("/commands/{command_id}", response_model=StudioCommandLookup)
+        def get_command(command_id: str) -> JSONResponse:
+            payload, http_status = commands.event_command(command_id)
+            return JSONResponse(payload, status_code=http_status)
+
+        @router.get(
+            "/input-prompts/{request_id}", response_model=StudioInputPromptState
+        )
+        def get_input_prompt(request_id: str) -> dict[str, str]:
+            return commands.input_prompt_state(request_id)
 
     return router

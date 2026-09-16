@@ -95,6 +95,7 @@ class _RunningWorker:
     executable: Path | None
     birth: int | None
     monitor: asyncio.Task[None]
+    write_lock: asyncio.Lock
 
 
 @dataclass(slots=True)
@@ -227,7 +228,15 @@ class WorkflowWorkerManager:
                     registered,
                 )
             )
-            worker = _RunningWorker(session, process, directory, executable, birth, monitor)
+            worker = _RunningWorker(
+                session,
+                process,
+                directory,
+                executable,
+                birth,
+                monitor,
+                asyncio.Lock(),
+            )
             async with self._lock:
                 self._starting.pop(run_id, None)
                 self._running[run_id] = worker
@@ -251,6 +260,19 @@ class WorkflowWorkerManager:
             async with self._lock:
                 self._starting.pop(run_id, None)
             raise
+
+    async def send_command(self, run_id: str, command: dict[str, Any]) -> None:
+        async with self._lock:
+            worker = self._running.get(run_id)
+        if worker is None or worker.process.returncode is not None:
+            raise RuntimeError("workflow worker 不可用")
+        stdin = worker.process.stdin
+        if stdin is None or stdin.is_closing():
+            raise RuntimeError("workflow worker 命令通道已关闭")
+        encoded = (json.dumps(command, ensure_ascii=False) + "\n").encode()
+        async with worker.write_lock:
+            stdin.write(encoded)
+            await stdin.drain()
 
     async def stop(self, run_id: str) -> None:
         async with self._lock:

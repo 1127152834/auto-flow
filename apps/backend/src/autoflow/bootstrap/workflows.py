@@ -46,6 +46,26 @@ class PendingWorkflowRunCommands:
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
 
+    async def submit_event_command(
+        self, command_id: str, event: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        del command_id, event, data
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
+        del command_id
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    def input_prompt_state(self, request_id: str) -> dict[str, str]:
+        del request_id
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
 
 @dataclass(slots=True)
 class WorkflowServices:
@@ -148,4 +168,4 @@ def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     app.include_router(workflow_run_command_router(services.commands))
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))
-    app.include_router(workflow_events_router(services.events))
+    app.include_router(workflow_events_router(services.events, services.commands))

@@ -1,0 +1,37 @@
+{
+  "evidenceId": "BE-B3-input-prompt-runtime-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "result": "input_prompt已按冻结源码迁入生产执行器；正式HTTP命令经幂等校验进入受管worker，worker确认应用后节点继续，结果和后续调度真实持久化。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "backend/app/executors/basic.py#InputPromptExecutor",
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "classifications": {
+    "executorModesDefaultsConversionsAndMessages": "原版直接迁入",
+    "workerCommandChannelAndHttpReceipts": "AutoFlow必要适配：替换WebRPA进程内同步UI函数，保持受管worker和sidecar边界",
+    "stableCommandIdAndWorkerAck": "已批准增强：响应丢失可查询，实际worker确认后才回执成功"
+  },
+  "verification": {
+    "frozenDifferential": "22 passed；覆盖12种有返回值模式、取消、选项解析、缺变量名和缺交互端口",
+    "workerProtocol": "真实受管子进程等待输入、接收命令、确认应用、完成节点并退出清理通过",
+    "httpIntegration": "正式FastAPI路由启动真实worker，POST命令、GET回执、GET输入状态、结果持久化通过",
+    "targetedRegression": "56 passed, 2 warnings",
+    "openapi": "生成类型已更新且openapi:check通过",
+    "desktop": "TypeScript typecheck与ESLint通过",
+    "mypy": "受影响8个生产模块通过",
+    "ruff": "本批受影响生产与测试文件通过",
+    "fullBackendRegression": "2376 passed, 7 skipped, 2 warnings in 278.62s"
+  },
+  "remaining": [
+    "正式Electron真实UI输入、取消、响应丢失查询和停止竞态",
+    "B3复杂控制流内多轮输入的集中UI验收"
+  ],
+  "notClaimed": [
+    "B3里程碑完成",
+    "正式Electron输入节点验收",
+    "跨sidecar重启恢复正在等待的输入"
+  ],
+  "userDatabaseModified": false
+}

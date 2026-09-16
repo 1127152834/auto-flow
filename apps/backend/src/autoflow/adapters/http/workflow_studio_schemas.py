@@ -188,6 +188,14 @@ class StudioCommandLookup(StudioCommandReceipt):
     http_status: int = Field(ge=200, le=599)
 
 
+class StudioEventCommandRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    event: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    data: dict[str, Any]
+
+
 class StudioExecutionLogEntry(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
 

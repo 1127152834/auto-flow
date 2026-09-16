@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock
@@ -62,6 +63,93 @@ def test_execute_uses_stable_run_identity_and_query_contract(
     assert first.json() == repeated.json() == accepted
     assert start.await_count == 2
     start.assert_awaited_with(workflow["id"], request)
+
+
+def test_real_http_input_command_resumes_the_actual_worker(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    workflow = client.post(
+        "/api/workflows",
+        json={
+            "id": "input-http-flow",
+            "name": "输入 HTTP 闭环",
+            "nodes": [
+                {
+                    "id": "prompt",
+                    "type": "moduleNode",
+                    "position": {"x": 0, "y": 0},
+                    "data": {
+                        "moduleType": "input_prompt",
+                        "config": {
+                            "variableName": "answer",
+                            "inputMode": "integer",
+                            "promptTitle": "输入",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "answer", "value": 0}],
+            "clientRequestId": "create-input-http",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    execute = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "input-http-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+        },
+    )
+    assert execute.status_code == 202, execute.text
+
+    prompt: dict[str, Any] | None = None
+    for _ in range(200):
+        prompt_event = next(
+            (
+                event
+                for event in client.app.state.workflow_services.events.replay(
+                    after_sequence=0
+                )
+                if event.event == "execution:input_prompt"
+            ),
+            None,
+        )
+        if prompt_event is not None:
+            prompt = prompt_event.data
+            break
+        time.sleep(0.01)
+    assert prompt is not None
+    assert prompt["nodeId"] == "prompt"
+
+    submitted = client.post(
+        "/api/events/commands",
+        json={
+            "commandId": "input-http-command",
+            "event": "input_prompt_result",
+            "data": {"requestId": prompt["requestId"], "value": "42"},
+        },
+    )
+    assert submitted.status_code == 200, submitted.text
+    assert submitted.json() == {"commandId": "input-http-command", "success": True}
+
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/input-http-run").json()
+        if run["status"] == "completed":
+            break
+        time.sleep(0.01)
+    assert run["status"] == "completed"
+    assert client.get("/api/events/commands/input-http-command").json() == {
+        "commandId": "input-http-command",
+        "success": True,
+        "httpStatus": 200,
+    }
+    assert client.get(
+        f"/api/events/input-prompts/{prompt['requestId']}"
+    ).json()["status"] == "answered"
+    results = client.get("/api/workflow-runs/input-http-run/results").json()
+    assert results["items"][0]["values"] == {"value": 42}
 
 
 def test_stop_identity_log_paging_and_static_run_route(

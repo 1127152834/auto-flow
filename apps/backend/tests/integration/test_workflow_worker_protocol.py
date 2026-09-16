@@ -30,6 +30,21 @@ time.sleep(300)
     return (sys.executable, str(script))
 
 
+def _command_worker(tmp_path: Path) -> tuple[str, ...]:
+    script = tmp_path / "command-workflow-worker.py"
+    script.write_text(
+        """
+import json, sys
+command = json.loads(sys.stdin.readline())
+print(json.dumps({'type':'ready','runId':command['runId'],'profileId':command['profileId']}), flush=True)
+reply = json.loads(sys.stdin.readline())
+print(json.dumps({**reply, 'type':'command-observed'}), flush=True)
+""",
+        encoding="utf-8",
+    )
+    return (sys.executable, str(script))
+
+
 def _crashing_worker(tmp_path: Path) -> tuple[str, ...]:
     script = tmp_path / "crashing-workflow-worker.py"
     script.write_text(
@@ -87,6 +102,122 @@ async def test_worker_start_stream_and_stop_clean_the_real_process_tree(
     with pytest.raises(ProcessLookupError):
         os.kill(session.child_pid, 0)
     assert not any((tmp_path / "workflow-worker").rglob("run-1"))
+
+
+@pytest.mark.asyncio
+async def test_worker_manager_delivers_one_structured_runtime_command(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        command=_command_worker(tmp_path),
+        termination_timeout=0.2,
+        on_event=lambda event: events.append(event),
+    )
+    await manager.start(
+        "run-command",
+        "profile-1",
+        None,
+        {"runId": "run-command", "profileId": "profile-1"},
+    )
+
+    await manager.send_command(
+        "run-command",
+        {
+            "type": "input_prompt_result",
+            "commandId": "command-1",
+            "requestId": "request-1",
+            "value": "原文",
+        },
+    )
+    for _ in range(100):
+        if events:
+            break
+        await asyncio.sleep(0.01)
+
+    assert events == [
+        {
+            "type": "command-observed",
+            "commandId": "command-1",
+            "requestId": "request-1",
+            "value": "原文",
+        }
+    ]
+    await manager.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_real_worker_waits_for_input_then_resumes_node_execution(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    payload = {
+        "runId": "input-run",
+        "workflowId": "input-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": "prompt",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "input_prompt",
+                        "config": {
+                            "variableName": "answer",
+                            "inputMode": "integer",
+                            "promptTitle": "输入",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "answer", "value": 0}],
+        },
+    }
+    await manager.start("input-run", "profile-1", None, payload)
+    for _ in range(200):
+        if any(event.get("type") == "execution:input_prompt" for event in events):
+            break
+        await asyncio.sleep(0.01)
+    prompt = next(
+        event for event in events if event.get("type") == "execution:input_prompt"
+    )
+    assert not any(event.get("type") == "execution:node_complete" for event in events)
+
+    await manager.send_command(
+        "input-run",
+        {
+            "type": "input_prompt_result",
+            "commandId": "command-1",
+            "requestId": prompt["requestId"],
+            "value": "42",
+        },
+    )
+    for _ in range(300):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    assert any(
+        event.get("type") == "execution:command_applied"
+        and event.get("commandId") == "command-1"
+        for event in events
+    )
+    completed = next(
+        event for event in events if event.get("type") == "execution:node_complete"
+    )
+    assert completed["success"] is True
+    assert completed["data"] == {"value": 42}
+    assert any(event.get("type") == "execution:completed" for event in events)
+    assert manager.busy() is False
 
 
 @pytest.mark.asyncio

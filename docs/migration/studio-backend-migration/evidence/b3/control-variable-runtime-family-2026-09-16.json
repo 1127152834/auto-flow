@@ -61,7 +61,7 @@
     "visualNodeDifferential": "2 passed；group和note结果与冻结执行器一致，生产运行图按视觉节点语义过滤且不发布伪执行事件"
   },
   "remaining": [
-    "B3的subflow、run_workflow_file和input_prompt尚未接入生产运行语义",
+    "B3的subflow和run_workflow_file尚未接入生产运行语义；input_prompt已由独立证据关闭源码差分与真实HTTP/worker合同",
     "自定义模块仓储、revision、依赖图、运行冻结解析和递归执行尚未实现",
     "循环/子流程上下文尚未写入持久事件字段，产物分页仍需按executionId集中验收",
     "1000轮纯变量停止与正式Electron复杂控制流链路尚未验收"

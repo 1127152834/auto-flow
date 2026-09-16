@@ -82,6 +82,26 @@ class WorkflowEventSink(Protocol):
     async def publish(self, event: Mapping[str, Any]) -> None: ...
 
 
+@dataclass(frozen=True, slots=True)
+class InputPromptRequest:
+    variable_name: str
+    title: str
+    message: str
+    default_value: str | float | bool | None
+    input_mode: str
+    min_value: float | None = None
+    max_value: float | None = None
+    max_length: int | None = None
+    required: bool = True
+    select_options: tuple[str, ...] | None = None
+
+
+class InputPromptGateway(Protocol):
+    async def request_input(
+        self, request: InputPromptRequest, *, timeout_seconds: float
+    ) -> str | None: ...
+
+
 class CancellationToken(Protocol):
     @property
     def cancelled(self) -> bool: ...
@@ -105,6 +125,7 @@ class ExecutionContext:
     models: ModelGateway | None = None
     external_integrations: ExternalIntegrationGateway | None = None
     events: WorkflowEventSink | None = None
+    input_prompts: InputPromptGateway | None = None
     cancellation: CancellationToken | None = None
     clock: WorkflowClock = field(default_factory=WorkflowClock)
     data_rows: list[dict[str, Any]] = field(default_factory=list)

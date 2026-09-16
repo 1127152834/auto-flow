@@ -37,6 +37,7 @@ from .dict_advanced import (
     DictMergeExecutor,
     DictSortExecutor,
 )
+from .input_prompt import InputPromptExecutor
 from .list_advanced import (
     ListCartesianProductExecutor,
     ListChunkExecutor,
@@ -135,6 +136,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     InputTextExecutor,
     GetElementInfoExecutor,
     ScreenshotExecutor,
+    InputPromptExecutor,
     WaitPageLoadExecutor,
     PageLoadCompleteExecutor,
     ListOperationExecutor,

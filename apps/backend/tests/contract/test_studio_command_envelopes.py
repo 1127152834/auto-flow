@@ -33,10 +33,12 @@ def test_command_lookup_requires_an_integer_http_result(status):
         StudioCommandLookup.model_validate({"commandId": "original", "success": True, "httpStatus": status})
 
 
-def test_studio_envelopes_are_available_without_automation_routes():
+def test_studio_command_routes_publish_the_existing_shared_envelopes():
     schema = export_schema()
     receipt = schema["components"]["schemas"]["StudioCommandReceipt"]
     assert receipt["required"] == ["commandId", "success"]
     assert receipt["additionalProperties"] is True
     assert "httpStatus" in schema["components"]["schemas"]["StudioCommandLookup"]["required"]
-    assert not any("/events/commands" in path for path in schema["paths"])
+    assert "/api/events/commands" in schema["paths"]
+    assert "/api/events/commands/{command_id}" in schema["paths"]
+    assert "/api/events/input-prompts/{request_id}" in schema["paths"]
