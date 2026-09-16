@@ -127,7 +127,18 @@ async def _run_in_session(
             command_bus=command_bus,
         )
         context.nested_workflows = nested
-        result = await WorkflowRuntime(registry).execute(document, context)
+        canvas_subflows = _WorkerCanvasSubflows(
+            document,
+            registry=registry,
+            parent=context,
+            sink=sink,
+            command_bus=command_bus,
+            nested_workflows=nested,
+        )
+        context.canvas_subflows = canvas_subflows
+        result = await WorkflowRuntime(registry).execute(
+            canvas_subflows.top_level_document(), context
+        )
         await nested.drain()
         terminal = "execution:completed" if result.success else "execution:failed"
         _write(
@@ -432,6 +443,15 @@ class _WorkerNestedWorkflows:
         child.events = child_sink
         child.input_prompts = self._command_bus.for_context(child)
         child.nested_workflows = self
+        canvas_subflows = _WorkerCanvasSubflows(
+            snapshot,
+            registry=self._registry,
+            parent=child,
+            sink=child_sink,
+            command_bus=self._command_bus,
+            nested_workflows=self,
+        )
+        child.canvas_subflows = canvas_subflows
         await child_sink.publish(
             {
                 "type": "subflow:started",
@@ -442,7 +462,9 @@ class _WorkerNestedWorkflows:
             }
         )
         try:
-            result = await WorkflowRuntime(self._registry).execute(snapshot, child)
+            result = await WorkflowRuntime(self._registry).execute(
+                canvas_subflows.top_level_document(), child
+            )
             nested = NestedWorkflowResult(
                 reference=reference,
                 name=name,
@@ -465,6 +487,228 @@ class _WorkerNestedWorkflows:
             return nested
         finally:
             self._stack.reset(token)
+
+
+class _WorkerCanvasSubflows:
+    def __init__(
+        self,
+        document: dict[str, Any],
+        *,
+        registry: Any,
+        parent: ExecutionContext,
+        sink: _WorkerEventSink,
+        command_bus: _WorkerCommandBus,
+        nested_workflows: _WorkerNestedWorkflows,
+    ) -> None:
+        self._document = copy.deepcopy(document)
+        self._registry = registry
+        self._parent = parent
+        self._sink = sink
+        self._command_bus = command_bus
+        self._nested_workflows = nested_workflows
+        self._stack: ContextVar[tuple[str, ...]] = ContextVar(
+            "canvas_subflow_stack", default=()
+        )
+
+    def top_level_document(self) -> dict[str, Any]:
+        excluded: set[str] = set()
+        for node in self._nodes():
+            if self._is_definition(node):
+                excluded.add(str(node.get("id") or ""))
+                excluded.update(self._members(node))
+        return self._subset(excluded, invert=True)
+
+    async def run_subflow(
+        self, *, group_id: str, name: str
+    ) -> NestedWorkflowResult:
+        definition = self._find_definition(group_id, name)
+        if definition is None:
+            target = name or group_id
+            return NestedWorkflowResult(
+                target, target, False, {}, 0, 1, f"找不到子流程: {target}"
+            )
+        identity = str(definition.get("id") or name or group_id)
+        display_name = str(_node_data(definition).get("subflowName") or "子流程")
+        stack = self._stack.get()
+        if identity in stack:
+            return NestedWorkflowResult(
+                identity,
+                display_name,
+                False,
+                {},
+                0,
+                1,
+                f"检测到子流程循环引用: {' -> '.join(stack)} -> {identity}",
+            )
+        if len(stack) >= 32:
+            return NestedWorkflowResult(
+                identity,
+                display_name,
+                False,
+                {},
+                0,
+                1,
+                f"子流程嵌套层数过深(>32): {' -> '.join(stack)}",
+            )
+        members = self._members(definition)
+        if not members:
+            return NestedWorkflowResult(
+                identity, display_name, True, self._parent.variables, 0, 0
+            )
+        token = self._stack.set((*stack, identity))
+        child = ExecutionContext(
+            variables=self._parent.variables,
+            sensitive_variables=self._parent.sensitive_variables,
+            browser=self._parent.browser,
+            table_workbooks=self._parent.table_workbooks,
+            credentials=self._parent.credentials,
+            models=self._parent.models,
+            external_integrations=self._parent.external_integrations,
+            cancellation=self._parent.cancellation,
+            clock=self._parent.clock,
+        )
+        child_sink = self._sink.for_context(child)
+        child.events = child_sink
+        child.input_prompts = self._command_bus.for_context(child)
+        child.nested_workflows = self._nested_workflows
+        child.canvas_subflows = self
+        try:
+            result = await WorkflowRuntime(self._registry).execute(
+                self._subset(members), child
+            )
+            return NestedWorkflowResult(
+                identity,
+                display_name,
+                result.success,
+                child.variables,
+                len(result.executed_node_ids),
+                0 if result.success else 1,
+                result.node_result.error if result.node_result else None,
+            )
+        finally:
+            self._stack.reset(token)
+
+    def _nodes(self) -> list[dict[str, Any]]:
+        nodes = self._document.get("nodes", [])
+        return [dict(node) for node in nodes if isinstance(node, Mapping)] if isinstance(nodes, list) else []
+
+    def _edges(self) -> list[dict[str, Any]]:
+        edges = self._document.get("edges", [])
+        return [dict(edge) for edge in edges if isinstance(edge, Mapping)] if isinstance(edges, list) else []
+
+    def _is_definition(self, node: Mapping[str, Any]) -> bool:
+        node_type = _node_type(node)
+        data = _node_data(node)
+        return node_type == "subflow_header" or (
+            node_type == "group" and data.get("isSubflow") is True
+        )
+
+    def _find_definition(
+        self, group_id: str, name: str
+    ) -> dict[str, Any] | None:
+        definitions = [node for node in self._nodes() if self._is_definition(node)]
+        if name:
+            match = next(
+                (
+                    node
+                    for node in definitions
+                    if _node_data(node).get("subflowName") == name
+                ),
+                None,
+            )
+            if match is not None:
+                return match
+        return next(
+            (node for node in definitions if node.get("id") == group_id), None
+        )
+
+    def _members(self, definition: Mapping[str, Any]) -> set[str]:
+        if _node_type(definition) == "subflow_header":
+            return self._header_members(str(definition.get("id") or ""))
+        position = definition.get("position")
+        position = position if isinstance(position, Mapping) else {}
+        data = _node_data(definition)
+        style = definition.get("style")
+        style = style if isinstance(style, Mapping) else {}
+        left = _dimension(position.get("x"), 0)
+        top = _dimension(position.get("y"), 0)
+        width = _dimension(
+            data.get("width", definition.get("width", style.get("width"))), 300
+        )
+        height = _dimension(
+            data.get("height", definition.get("height", style.get("height"))), 200
+        )
+        members: set[str] = set()
+        for node in self._nodes():
+            node_id = str(node.get("id") or "")
+            if node_id == definition.get("id") or _node_type(node) in {"group", "note"}:
+                continue
+            node_position = node.get("position")
+            node_position = node_position if isinstance(node_position, Mapping) else {}
+            x = _dimension(node_position.get("x"), 0)
+            y = _dimension(node_position.get("y"), 0)
+            if left <= x <= left + width and top <= y <= top + height:
+                members.add(node_id)
+        return members
+
+    def _header_members(self, header_id: str) -> set[str]:
+        nodes = {str(node.get("id") or ""): node for node in self._nodes()}
+        members: set[str] = set()
+        queue = [header_id]
+        visited: set[str] = set()
+        while queue:
+            current = queue.pop(0)
+            if current in visited:
+                continue
+            visited.add(current)
+            for edge in self._edges():
+                if edge.get("source") != current:
+                    continue
+                target = str(edge.get("target") or "")
+                target_node = nodes.get(target)
+                if target_node is None or target in visited:
+                    continue
+                if _node_type(target_node) not in {"group", "note", "subflow_header"}:
+                    members.add(target)
+                    queue.append(target)
+        return members
+
+    def _subset(self, node_ids: set[str], *, invert: bool = False) -> dict[str, Any]:
+        selected = {
+            str(node.get("id") or "")
+            for node in self._nodes()
+            if (str(node.get("id") or "") not in node_ids) == invert
+        }
+        result = copy.deepcopy(self._document)
+        result["nodes"] = [
+            node for node in self._nodes() if str(node.get("id") or "") in selected
+        ]
+        result["edges"] = [
+            edge
+            for edge in self._edges()
+            if edge.get("source") in selected and edge.get("target") in selected
+        ]
+        return result
+
+
+def _node_data(node: Mapping[str, Any]) -> Mapping[str, Any]:
+    data = node.get("data")
+    return data if isinstance(data, Mapping) else {}
+
+
+def _node_type(node: Mapping[str, Any]) -> str:
+    data = _node_data(node)
+    value = data.get("moduleType") or node.get("type") or ""
+    return str(value)
+
+
+def _dimension(value: Any, default: float) -> float:
+    if isinstance(value, str):
+        value = value.removesuffix("px")
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def _read_command(stdin: TextIO) -> dict[str, Any]:

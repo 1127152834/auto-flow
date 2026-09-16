@@ -692,6 +692,38 @@
         "Socket.IO全局实例"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/subflow.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/subflow.py",
+      "changeSummary": "迁入subflow标记执行器的名称、分组标识、空配置和未选择语义。",
+      "retainedDependencies": [
+        "Python标准库",
+        "autoflow.application.workflows.runtime",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局WorkflowExecutor状态替换",
+        "Socket.IO日志全局实例"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_executor.py",
+      "targetPath": "apps/backend/src/autoflow/providers/browser/workflow_worker.py",
+      "changeSummary": "迁入subflow名称优先/ID回退、分组几何、subflow_header可达图、定义节点主图隔离、共享变量及32层/循环保护。",
+      "retainedDependencies": [
+        "Python标准库",
+        "autoflow.application.workflows.runtime",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "WebRPA全局WorkflowExecutor状态替换",
+        "Socket.IO日志全局实例"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

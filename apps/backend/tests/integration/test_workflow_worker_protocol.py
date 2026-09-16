@@ -302,6 +302,206 @@ async def test_real_worker_runs_frozen_nested_workflow_snapshot(
 
 
 @pytest.mark.asyncio
+async def test_real_worker_runs_canvas_subflow_without_running_definition_at_top_level(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    payload = {
+        "runId": "canvas-subflow-run",
+        "workflowId": "canvas-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {},
+        "document": {
+            "nodes": [
+                {
+                    "id": "definition",
+                    "type": "groupNode",
+                    "position": {"x": 0, "y": 0},
+                    "width": 400,
+                    "height": 300,
+                    "data": {
+                        "moduleType": "group",
+                        "isSubflow": True,
+                        "subflowName": "登录",
+                    },
+                },
+                {
+                    "id": "inner",
+                    "type": "moduleNode",
+                    "position": {"x": 50, "y": 50},
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "inside", "variableValue": "1"},
+                    },
+                },
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "position": {"x": 500, "y": 50},
+                    "data": {
+                        "moduleType": "subflow",
+                        "config": {"subflowName": "登录"},
+                    },
+                },
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    await manager.start("canvas-subflow-run", "profile-1", None, payload)
+    for _ in range(300):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    completed = [
+        event for event in events if event.get("type") == "execution:node_complete"
+    ]
+    assert [(event["nodeId"], event["success"]) for event in completed] == [
+        ("inner", True),
+        ("call", True),
+    ]
+    assert completed[-1]["data"] == {
+        "subflow": "登录",
+        "executed_nodes": 1,
+        "failed_nodes": 0,
+    }
+    assert not any(event.get("nodeId") == "definition" for event in events)
+
+
+@pytest.mark.asyncio
+async def test_real_worker_resolves_subflow_header_reachable_graph_by_id(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    payload = {
+        "runId": "header-subflow-run",
+        "workflowId": "header-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {},
+        "document": {
+            "nodes": [
+                {
+                    "id": "header",
+                    "type": "moduleNode",
+                    "data": {"moduleType": "subflow_header", "subflowName": "头流程"},
+                },
+                {
+                    "id": "inner",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "inside", "variableValue": "1"},
+                    },
+                },
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "subflow",
+                        "config": {"subflowGroupId": "header"},
+                    },
+                },
+            ],
+            "edges": [{"id": "definition-edge", "source": "header", "target": "inner"}],
+            "variables": [],
+        },
+    }
+    await manager.start("header-subflow-run", "profile-1", None, payload)
+    for _ in range(300):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    completed = [
+        event for event in events if event.get("type") == "execution:node_complete"
+    ]
+    assert [event["nodeId"] for event in completed] == ["inner", "call"]
+    assert all(event["success"] is True for event in completed)
+
+
+@pytest.mark.asyncio
+async def test_real_worker_stops_recursive_canvas_subflow_with_clear_error(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    payload = {
+        "runId": "recursive-subflow-run",
+        "workflowId": "recursive-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {},
+        "document": {
+            "nodes": [
+                {
+                    "id": "definition",
+                    "type": "groupNode",
+                    "position": {"x": 0, "y": 0},
+                    "width": 400,
+                    "height": 300,
+                    "data": {"moduleType": "group", "isSubflow": True, "subflowName": "递归"},
+                },
+                {
+                    "id": "recursive-call",
+                    "type": "moduleNode",
+                    "position": {"x": 50, "y": 50},
+                    "data": {
+                        "moduleType": "subflow",
+                        "config": {"subflowName": "递归"},
+                    },
+                },
+                {
+                    "id": "outer-call",
+                    "type": "moduleNode",
+                    "position": {"x": 500, "y": 50},
+                    "data": {
+                        "moduleType": "subflow",
+                        "config": {"subflowName": "递归"},
+                    },
+                },
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    await manager.start("recursive-subflow-run", "profile-1", None, payload)
+    for _ in range(300):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    failures = [
+        event
+        for event in events
+        if event.get("type") == "execution:node_complete"
+        and event.get("success") is False
+    ]
+    assert [event["nodeId"] for event in failures] == ["recursive-call", "outer-call"]
+    assert "检测到子流程循环引用" in str(failures[0]["error"])
+    assert any(event.get("type") == "execution:failed" for event in events)
+
+
+@pytest.mark.asyncio
 async def test_worker_start_rejects_bad_handshake_and_releases_slot(tmp_path: Path) -> None:
     script = tmp_path / "bad-worker.py"
     script.write_text("print('not-json', flush=True)\n", encoding="utf-8")

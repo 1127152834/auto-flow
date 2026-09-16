@@ -1,0 +1,40 @@
+{
+  "evidenceId": "BE-B3-canvas-subflow-runtime-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "result": "subflow已完成冻结标记语义与生产子图执行；定义区节点不会在主图误跑，调用时按名称优先、ID回退执行分组几何或subflow_header可达图。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "backend/app/executors/subflow.py",
+      "backend/app/services/workflow_executor.py"
+    ],
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "classifications": {
+    "markerAndSelectionGeometryHeaderTraversal": "原版直接迁入",
+    "isolatedNestedScheduler": "AutoFlow必要适配：复用生产runtime并共享变量、CloakBrowser、取消、输入、事件和产物端口",
+    "definitionIsolation": "AutoFlow必要适配：运行前从主图剥离分组/头节点定义区，防止定义节点被当成主流程起点"
+  },
+  "verification": {
+    "frozenDifferential": "subflow四种标记配置与冻结源一致；空子流程消息保留原语义；B3依赖合同22 passed, 1 skipped",
+    "realWorkerGeometry": "真实worker分组几何只执行inner后执行call，定义节点不产生伪事件",
+    "realWorkerHeader": "subflow_header按ID回退并执行可达inner图",
+    "recursion": "同画布递归调用明确失败并停止外层调用，无无限调度",
+    "mypy": "受影响生产模块通过",
+    "ruff": "受影响生产与测试文件通过",
+    "fullBackend": "2390 passed, 5 skipped, 2 warnings in 268.44s",
+    "affectedRegression": "源码映射、真实worker、依赖合同及registry合计51 passed, 1 skipped in 13.78s"
+  },
+  "remaining": [
+    "正式Electron真实UI编排、保存重开和执行",
+    "32层深度上限与嵌套网页副作用集中验收",
+    "自定义模块仓储与运行时为B3必要配套"
+  ],
+  "notClaimed": [
+    "B3里程碑完成",
+    "自定义模块完成",
+    "正式Electron验收"
+  ],
+  "userDatabaseModified": false
+}

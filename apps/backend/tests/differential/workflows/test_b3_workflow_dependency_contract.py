@@ -8,9 +8,12 @@ from typing import Any
 
 import pytest
 
+from autoflow.application.workflows.executors.registry import ExecutorRegistry
+from autoflow.application.workflows.executors.subflow import SubflowExecutor
 from autoflow.application.workflows.executors.workflow_chain import (
     RunWorkflowFileExecutor,
 )
+from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.document import WorkflowDraft
 from autoflow.domain.workflows.execution import (
     ExecutionContext,
@@ -82,6 +85,31 @@ def test_frozen_subflow_executor_marker_contract(
     case: str, expected: dict[str, Any]
 ) -> None:
     assert frozen_result(case) == expected
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("case", "config"),
+    [
+        ("missing", {}),
+        ("name", {"subflowName": "登录"}),
+        ("id", {"subflowGroupId": "group-1"}),
+        ("both", {"subflowName": "登录", "subflowGroupId": "group-1"}),
+    ],
+)
+async def test_autoflow_subflow_marker_matches_frozen_source(
+    case: str, config: dict[str, Any]
+) -> None:
+    context = ExecutionContext(variables={"kept": 1})
+    result = await SubflowExecutor().execute(config, context)
+
+    assert {
+        "success": result.success,
+        "message": result.message,
+        "error": result.error,
+        "data": result.data,
+        "variables": context.variables,
+    } == frozen_result(f"subflow:{case}")
 
 
 def test_frozen_custom_module_executor_prepares_runtime_payload() -> None:
@@ -303,14 +331,87 @@ async def test_autoflow_run_workflow_file_runtime_integration() -> None:
     assert context.variables == source["variables"]
 
 
-@pytest.mark.skip(
-    reason=(
-        "待 runtime 提供同画布子图解析/执行入口；名称优先、ID回退，分组几何与"
-        "subflow_header 可达图、32层递归和错误分支必须由完整图运行器实现"
+@pytest.mark.asyncio
+async def test_autoflow_subflow_runtime_integration() -> None:
+    class Canvas:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, str]] = []
+
+        async def run_subflow(
+            self, *, group_id: str, name: str
+        ) -> NestedWorkflowResult:
+            self.calls.append((group_id, name))
+            return NestedWorkflowResult(
+                "definition", "登录", True, {"inside": 1}, 1, 0
+            )
+
+    canvas = Canvas()
+    context = ExecutionContext(canvas_subflows=canvas)
+    registry = ExecutorRegistry()
+    registry.register(SubflowExecutor)
+    result = await WorkflowRuntime(registry).execute(
+        {
+            "nodes": [
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "subflow",
+                        "config": {
+                            "subflowName": "登录",
+                            "subflowGroupId": "definition",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        context,
     )
-)
-def test_autoflow_subflow_runtime_integration() -> None:
-    """不能由独立 executor 或简化顺序执行器代替完整子图运行。"""
+
+    assert result.success is True
+    assert result.executed_node_ids == ("call",)
+    assert canvas.calls == [("definition", "登录")]
+
+
+@pytest.mark.asyncio
+async def test_autoflow_empty_subflow_preserves_frozen_message() -> None:
+    class Canvas:
+        async def run_subflow(
+            self, *, group_id: str, name: str
+        ) -> NestedWorkflowResult:
+            return NestedWorkflowResult("definition", "空流程", True, {}, 0, 0)
+
+    events: list[dict[str, Any]] = []
+
+    class Sink:
+        async def publish(self, event: dict[str, Any]) -> None:
+            events.append(event)
+
+    registry = ExecutorRegistry()
+    registry.register(SubflowExecutor)
+    result = await WorkflowRuntime(registry).execute(
+        {
+            "nodes": [
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "subflow",
+                        "config": {"subflowName": "空流程"},
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        ExecutionContext(canvas_subflows=Canvas(), events=Sink()),
+    )
+
+    assert result.success is True
+    completed = next(
+        event for event in events if event["type"] == "execution:node_complete"
+    )
+    assert completed["message"] == "子流程 [空流程] 为空"
 
 
 @pytest.mark.skip(

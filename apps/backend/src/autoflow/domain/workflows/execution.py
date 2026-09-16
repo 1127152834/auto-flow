@@ -124,6 +124,12 @@ class NestedWorkflowGateway(Protocol):
     ) -> NestedWorkflowResult: ...
 
 
+class CanvasSubflowGateway(Protocol):
+    async def run_subflow(
+        self, *, group_id: str, name: str
+    ) -> NestedWorkflowResult: ...
+
+
 class CancellationToken(Protocol):
     @property
     def cancelled(self) -> bool: ...
@@ -149,6 +155,7 @@ class ExecutionContext:
     events: WorkflowEventSink | None = None
     input_prompts: InputPromptGateway | None = None
     nested_workflows: NestedWorkflowGateway | None = None
+    canvas_subflows: CanvasSubflowGateway | None = None
     cancellation: CancellationToken | None = None
     clock: WorkflowClock = field(default_factory=WorkflowClock)
     data_rows: list[dict[str, Any]] = field(default_factory=list)

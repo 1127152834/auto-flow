@@ -72,7 +72,7 @@
 | BE-B3-002 | 循环、foreach、foreach_dict、infinite_loop、break/continue | 轮次、局部变量和退出路径一致；可停止 | 部分通过：四类循环入口、列表/字典初值、count/range/while推进和嵌套最近层 break/continue 已通过冻结差分及生产图测试；总调度上限与每轮主动让出已实现。1,000 轮停止和正式 UI 尚未验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-003 | 并行分支 | 验证偏序和结果集合；不为测试稳定改成串行 | 应用层已通过：双分支必须同时进入后才能完成，汇合只执行一次；产物 writer 与敏感值状态按节点任务隔离，没有为测试串行化。正式 worker/Electron 组合仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-004 | `${name}`、`{name}`、递归列表/字典、表达式和缺失变量 | 与冻结变量测试一致，错误明确 | 部分通过：16 个控制/变量节点的 48 项冻结差分已覆盖模板、表达式、变量写入、JSONPath、时间及错误文本；完整递归变量矩阵与正式 UI 尚未关闭。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 尚未验收 |
+| BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 部分通过：冻结标记语义、名称优先/ID回退、分组几何、subflow_header可达图、定义区主图隔离及循环引用已在真实worker通过；32层上限和正式Electron保存恢复待验收。[子流程证据](studio-backend-migration/evidence/b3/canvas-subflow-runtime-2026-09-16.json) |
 | BE-B3-006 | 自定义模块更新、依赖缺失、运行中修改 | 运行使用冻结解析内容；缺失依赖启动前拒绝 | 尚未验收 |
 | BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 部分通过：每次调度产生独立 executionId，同一节点多轮保留重复执行顺序；并行节点产物 writer 按任务绑定。循环事件持久化、分页和正式 UI 仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 部分通过：正在执行节点可被取消且不调度后继，纯变量循环每轮主动让出，总调度上限阻止普通环无限运行；尚缺 1,000 轮正式 worker 停止证据。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |

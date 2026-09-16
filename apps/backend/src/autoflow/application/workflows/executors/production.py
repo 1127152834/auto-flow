@@ -105,6 +105,7 @@ from .string_convert import (
     CsvParseExecutor,
     ListToStringAdvancedExecutor,
 )
+from .subflow import SubflowExecutor
 from .switch_tab import SwitchTabExecutor
 from .table import (
     TableAddColumnExecutor,
@@ -139,6 +140,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     ScreenshotExecutor,
     InputPromptExecutor,
     RunWorkflowFileExecutor,
+    SubflowExecutor,
     WaitPageLoadExecutor,
     PageLoadCompleteExecutor,
     ListOperationExecutor,

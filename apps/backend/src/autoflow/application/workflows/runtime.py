@@ -221,6 +221,34 @@ class _WorkflowScheduler:
         result = await _execute_with_cancellation(
             executor.execute(config, self.context), self.context
         )
+        if (
+            node.type == "subflow"
+            and result.success
+            and self.context.canvas_subflows is not None
+            and isinstance(result.data, Mapping)
+        ):
+            nested = await self.context.canvas_subflows.run_subflow(
+                group_id=str(result.data.get("subflow_group_id") or ""),
+                name=str(result.data.get("subflow_name") or ""),
+            )
+            result = ModuleResult(
+                success=nested.success,
+                message=(
+                    (
+                        f"子流程 [{nested.name}] 为空"
+                        if nested.executed_nodes == 0
+                        else f"子流程 [{nested.name}] 执行完成"
+                    )
+                    if nested.success
+                    else ""
+                ),
+                error=nested.error,
+                data={
+                    "subflow": nested.name,
+                    "executed_nodes": nested.executed_nodes,
+                    "failed_nodes": nested.failed_nodes,
+                },
+            )
         if not _is_json_value(result.data):
             result = ModuleResult(success=False, error="节点结果包含无法序列化的数据")
         reported_result = _reported_result(result, self.context)
