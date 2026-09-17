@@ -25,6 +25,7 @@ import type { AndroidApi, AndroidDevice } from '../api'
 import type { Apps, ConsoleSession, DeviceRun, FleetApi, InputCommand, SessionAction } from '../fleet-api'
 import { Action, Badge, Dot, Phone, Toggle } from './PrototypeControls'
 import { AndroidVideo } from './AndroidVideo'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 export type ConsoleProps = {
   device: AndroidDevice
   session: ConsoleSession | null
@@ -621,28 +622,30 @@ export function DeviceConsole(p: ConsoleProps) {
         ) : (
           <section className="ad-secondary">
             <h2>运行记录</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>工作流</th>
-                  <th>状态</th>
-                  <th>开始时间</th>
-                  <th>进度</th>
-                </tr>
-              </thead>
-              <tbody>
+            <TableScroll label="设备运行记录">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>工作流</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>开始时间</TableHead>
+                  <TableHead>进度</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {p.history?.map((r) => (
-                  <tr key={r.runId}>
-                    <td>{r.workflowName}</td>
-                    <td>{r.state}</td>
-                    <td>{new Date(r.startedAt).toLocaleString()}</td>
-                    <td>
+                  <TableRow key={r.runId}>
+                    <TableCell>{r.workflowName}</TableCell>
+                    <TableCell>{r.state}</TableCell>
+                    <TableCell>{new Date(r.startedAt).toLocaleString()}</TableCell>
+                    <TableCell>
                       {r.currentStep}/{r.totalSteps}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
+            </TableScroll>
             {!p.history?.length && <p>此页没有运行记录。</p>}
             {p.onHistoryPage && (
               <div className="ad-history-pages">

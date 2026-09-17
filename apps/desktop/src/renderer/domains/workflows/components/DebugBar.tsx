@@ -6,6 +6,7 @@ import { useDebugStore } from '../hooks/stores/debugStore'
 import { useWorkflowStore } from '../editor-store'
 import { workflowApi, type ApiResponse } from '../api'
 import type {DebugControlRequest} from '../lib/debugControlContract'
+import { Table, TableBody, TableCell, TableRow, TableScroll } from '../../../shared/components/ui/table'
 
 /** 调试控制条：命中断点/单步暂停时浮现，提供 继续 / 单步 / 停止 + 当前变量快照 */
 export function DebugBar() {
@@ -167,22 +168,24 @@ export function DebugBar() {
       {error && <div role="alert" className="px-4 pb-3 text-sm text-[hsl(var(--danger-600))]">{error}</div>}
 
       {showVars && (
-        <div className="max-h-[220px] overflow-y-auto border-t border-[hsl(var(--border))] px-3 py-2 text-xs">
+        <div className="max-h-[220px] border-t border-[hsl(var(--border))] px-3 py-2 text-xs">
           {varEntries.length === 0 ? (
             <div className="text-[hsl(var(--muted-foreground))] py-2 text-center">暂无变量</div>
           ) : (
-            <table className="w-full">
-              <tbody>
+            <TableScroll label="暂停变量" className="max-h-[196px]">
+              <Table>
+              <TableBody>
                 {varEntries.map(([k, v]) => (
-                  <tr key={k} className="border-b border-[hsl(var(--border))] last:border-0">
-                    <td className="py-1 pr-2 font-mono text-[hsl(var(--brand-600))] align-top whitespace-nowrap">{k}{pausedVariableMeta[k]?.readOnly&&<span className="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-500">只读</span>}<div className="font-sans text-[10px] text-[hsl(var(--muted-foreground))]">{pausedVariableMeta[k]?.source||''}</div></td>
-                    <td className="py-1 text-[hsl(var(--muted-foreground))] break-all">
+                  <TableRow key={k} className="border-b border-[hsl(var(--border))] last:border-0">
+                    <TableCell className="py-1 pr-2 font-mono text-[hsl(var(--brand-600))] align-top whitespace-nowrap">{k}{pausedVariableMeta[k]?.readOnly&&<span className="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-500">只读</span>}<div className="font-sans text-[10px] text-[hsl(var(--muted-foreground))]">{pausedVariableMeta[k]?.source||''}</div></TableCell>
+                    <TableCell className="py-1 text-[hsl(var(--muted-foreground))] break-all">
                       {editingVariables ? <textarea aria-label={`变量 ${k} 的 JSON 值`} disabled={pausedVariableMeta[k]?.readOnly} value={variableDrafts[k]??jsonValue(v)} onChange={event=>setVariableDrafts(current=>({...current,[k]:event.target.value}))} className="w-full min-h-12 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 font-mono disabled:opacity-60" /> : fmt(v)}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+              </Table>
+            </TableScroll>
           )}
           {editingVariables && (
             <div className="mt-2 space-y-2 border-t border-[hsl(var(--border))] pt-2">

@@ -27,5 +27,5 @@ const virtual = 'domains/workflows/components/DataTable.tsx'
 const source = await readFile(join(root, virtual), 'utf8')
 assert.ok(source.includes('af-studio-grid-body') && source.includes('tabIndex={0}'), 'Virtual grid needs accessible actual scroll body')
 surfaces.push(virtual)
-assert.equal(surfaces.length, 14, 'Update the evidence inventory when real table surfaces change')
+assert.equal(surfaces.length, 25, 'Update the evidence inventory when real table surfaces change')
 console.log(JSON.stringify({ status: 'passed', kind: 'static-source-coverage-only', surfaces }, null, 2))

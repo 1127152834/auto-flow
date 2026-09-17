@@ -51,6 +51,7 @@ export const DataTable = memo(function DataTable({
   displayLimit = 0,
 }: DataTableProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
   const getScrollElement = useCallback(() => scrollRef.current, [])
   const [editingCell, setEditingCell] = useState<{ row: number; col: string } | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -175,7 +176,8 @@ export const DataTable = memo(function DataTable({
       </div>
       {/* 表头 - 固定不滚动 */}
       <div
-        className="flex bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))] text-xs font-medium overflow-hidden flex-shrink-0"
+        ref={headerRef}
+        className="af-studio-grid-header flex bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))] text-xs font-medium overflow-hidden flex-shrink-0"
         style={{ height: HEADER_HEIGHT, minWidth: tableWidth }}
       >
         <div
@@ -205,6 +207,7 @@ export const DataTable = memo(function DataTable({
               size="icon"
               className="w-5 h-5 opacity-50 hover:opacity-100 flex-shrink-0"
               onClick={() => onDeleteColumn?.(col)}
+              aria-label={`删除列 ${col}`}
             >
               <X className="w-3 h-3" />
             </Button>}
@@ -219,7 +222,18 @@ export const DataTable = memo(function DataTable({
       </div>
 
       {/* 行区 - 虚拟滚动 */}
-      <div ref={scrollRef} className="flex-1 overflow-auto">
+      <div
+        ref={scrollRef}
+        role="region"
+        aria-label="数据预览"
+        tabIndex={0}
+        className="af-studio-grid-body min-h-0 w-full flex-1 overflow-auto"
+        onScroll={(event) => {
+          if (headerRef.current) {
+            headerRef.current.style.transform = `translateX(-${event.currentTarget.scrollLeft}px)`
+          }
+        }}
+      >
         <div style={{ height: totalSize, position: 'relative', minWidth: tableWidth }}>
           {virtualItems.map((v) => {
             const origIndex = viewIndex[v.index]
@@ -287,6 +301,7 @@ export const DataTable = memo(function DataTable({
                     size="icon"
                     className="w-5 h-5"
                     onClick={() => onDeleteRow?.(rowIndex)}
+                    aria-label={`删除第 ${rowIndex + 1} 行`}
                   >
                     <Trash2 className="w-3 h-3 text-[hsl(var(--danger-500))]" />
                   </Button>}

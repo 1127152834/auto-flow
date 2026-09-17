@@ -5,6 +5,7 @@ import type { Allocation, Batch, DeviceRun, Profile } from '../fleet-api'
 import { Action, Badge, Dot } from './PrototypeControls'
 import { DevicePreview } from './DevicePreview'
 import type { AndroidApi } from '../api'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 export type BoardProps = {
   devices: AndroidDevice[]
   profiles: Profile[]
@@ -215,41 +216,41 @@ export function ResourceBoard(p: BoardProps) {
             ))}
           </div>
         ) : (
-          <div className="ad-instance-list">
-            <table>
-              <thead>
-                <tr>
-                  <th>实例名称</th>
-                  <th>环境</th>
-                  <th>状态</th>
-                  <th>数据策略</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
+          <TableScroll label="安卓实例列表" className="ad-instance-list">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>实例名称</TableHead>
+                  <TableHead>环境</TableHead>
+                  <TableHead>状态</TableHead>
+                  <TableHead>数据策略</TableHead>
+                  <TableHead>操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {visible.map((d) => (
-                  <tr key={d.deviceId}>
-                    <td>
+                  <TableRow key={d.deviceId}>
+                    <TableCell>
                       <button className="ad-link" onClick={() => p.onOpen(d)}>
                         {d.name}
                       </button>
-                    </td>
-                    <td>
+                    </TableCell>
+                    <TableCell>
                       {d.profileName} · {d.width} × {d.height}
-                    </td>
-                    <td>{['可分配', '使用中', d.lastError ? '需要核实' : '启动与停止'][group(d)]}</td>
-                    <td>{d.instanceType === 'temporary' ? '临时实例' : '持久实例'}</td>
-                    <td>
+                    </TableCell>
+                    <TableCell>{['可分配', '使用中', d.lastError ? '需要核实' : '启动与停止'][group(d)]}</TableCell>
+                    <TableCell>{d.instanceType === 'temporary' ? '临时实例' : '持久实例'}</TableCell>
+                    <TableCell>
                       <Action onClick={() => p.onOpen(d)}>打开设备</Action>
                       <Action disabled={group(d) !== 0} onClick={() => p.onAllocate(d)}>
                         分配工作流
                       </Action>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </TableScroll>
         )}
       </section>
       <section className="ad-waiting">
@@ -261,28 +262,29 @@ export function ResourceBoard(p: BoardProps) {
             查看全部运行 <ArrowRight size={18} />
           </button>
         </header>
-        <table>
-          <thead>
-            <tr>
-              <th>工作流</th>
-              <th>所需环境</th>
-              <th>分配方式</th>
-              <th>状态</th>
-            </tr>
-          </thead>
-          <tbody>
+        <TableScroll label="等待设备的任务">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>工作流</TableHead>
+              <TableHead>所需环境</TableHead>
+              <TableHead>分配方式</TableHead>
+              <TableHead>状态</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {waiting.map((item) => (
-              <tr key={item.id}>
-                <td>{item.workflowName}</td>
-                <td>{item.profileName}</td>
-                <td>
+              <TableRow key={item.id}>
+                <TableCell>{item.workflowName}</TableCell>
+                <TableCell>{item.profileName}</TableCell>
+                <TableCell>
                   {item.request.mode === 'temporary'
                     ? '新建临时实例'
                     : item.request.mode === 'automatic'
                       ? '自动分配'
                       : `指定${item.deviceName ?? '设备'}`}
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                   <Dot tone="amber" />
                   {item.state === 'waiting_start' || item.state === 'starting'
                     ? '等待启动'
@@ -300,18 +302,19 @@ export function ResourceBoard(p: BoardProps) {
                       取消
                     </button>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {!waiting.length && (
-              <tr>
-                <td colSpan={4} className="ad-empty">
+              <TableRow>
+                <TableCell colSpan={4} className="ad-empty">
                   暂无等待任务 <button onClick={() => p.onAllocate()}>分配工作流</button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
+        </TableScroll>
         <p>
           <Info size={16} />
           工作流运行期间独占设备；释放持久实例时保留数据。
