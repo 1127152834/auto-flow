@@ -16,6 +16,18 @@ it('keeps project editing on the data directory but not the record frame',()=>{
  const options={project,tab:'data' as const,disabled:false,onBack:vi.fn(),onEdit:vi.fn(),onTabChange:vi.fn()};const v=render(<ProjectOverviewPage {...options}>数据目录</ProjectOverviewPage>);expect(screen.getByRole('button',{name:'编辑项目'})).toBeVisible()
  v.rerender(<ProjectOverviewPage {...options} tableDetail>记录页面</ProjectOverviewPage>);expect(screen.queryByRole('button',{name:'编辑项目'})).not.toBeInTheDocument()
 })
+it('uses the same title and return frame for automations and runs as the other tabs',()=>{
+ const options={project,disabled:false,onBack:vi.fn(),onEdit:vi.fn(),onTabChange:vi.fn()}
+ const view=render(<ProjectOverviewPage {...options} tab="data">数据目录</ProjectOverviewPage>)
+ const mainClassName=screen.getByRole('main').className
+ const navigationClassName=screen.getByRole('navigation',{name:'当前位置'}).className
+
+ for(const tab of ['automations','runs'] as const){
+  view.rerender(<ProjectOverviewPage {...options} tab={tab}>{tab}</ProjectOverviewPage>)
+  expect(screen.getByRole('main')).toHaveClass(...mainClassName.split(' '))
+  expect(screen.getByRole('navigation',{name:'当前位置'})).toHaveClass(...navigationClassName.split(' '))
+ }
+})
 it('returns from the breadcrumb to the table directory without adding an in-card back row',async()=>{
  const back=vi.fn(),tableBack=vi.fn();render(<ProjectOverviewPage project={project} tab="data" tableDetail tableName="资料库" disabled={false} onBack={back} onTableBack={tableBack} onEdit={vi.fn()} onTabChange={vi.fn()}/>);
  await userEvent.click(screen.getByRole('button',{name:'返回数据表'}));expect(tableBack).toHaveBeenCalledOnce();expect(back).not.toHaveBeenCalled();await userEvent.click(screen.getByRole('button',{name:'返回项目目录'}));expect(back).toHaveBeenCalledOnce();
