@@ -1,0 +1,154 @@
+{
+  "status": "confirmed",
+  "date": "2026-09-13",
+  "coordinateConvention": "Source raster pixels; left/top inclusive, right/bottom exclusive.",
+  "productionConstraint": "Fixture phone screens must never represent live device output. configuration-phone.png is a configuration illustration only.",
+  "assets": [
+    {
+      "file": "board-device-01.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/01-resource-board.png",
+      "crop": {
+        "left": 69,
+        "top": 351,
+        "right": 152,
+        "bottom": 513
+      },
+      "size": [
+        83,
+        162
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content."
+    },
+    {
+      "file": "board-device-02.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/01-resource-board.png",
+      "crop": {
+        "left": 69,
+        "top": 593,
+        "right": 152,
+        "bottom": 756
+      },
+      "size": [
+        83,
+        163
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content."
+    },
+    {
+      "file": "board-device-03.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/01-resource-board.png",
+      "crop": {
+        "left": 539,
+        "top": 345,
+        "right": 621,
+        "bottom": 504
+      },
+      "size": [
+        82,
+        159
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content."
+    },
+    {
+      "file": "board-device-04.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/01-resource-board.png",
+      "crop": {
+        "left": 539,
+        "top": 586,
+        "right": 621,
+        "bottom": 746
+      },
+      "size": [
+        82,
+        160
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content."
+    },
+    {
+      "file": "board-device-05.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/01-resource-board.png",
+      "crop": {
+        "left": 1019,
+        "top": 351,
+        "right": 1099,
+        "bottom": 517
+      },
+      "size": [
+        80,
+        166
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content."
+    },
+    {
+      "file": "board-device-06.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/01-resource-board.png",
+      "crop": {
+        "left": 1019,
+        "top": 594,
+        "right": 1100,
+        "bottom": 757
+      },
+      "size": [
+        81,
+        163
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content."
+    },
+    {
+      "file": "configuration-phone.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/03-create-instances.png",
+      "crop": {
+        "left": 1027,
+        "top": 357,
+        "right": 1136,
+        "bottom": 566
+      },
+      "size": [
+        109,
+        209
+      ],
+      "purpose": "configuration illustration",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content."
+    },
+    {
+      "file": "manual-screen.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/02-manual-console.png",
+      "crop": {
+        "left": 368,
+        "top": 362,
+        "right": 678,
+        "bottom": 917
+      },
+      "size": [
+        310,
+        555
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content.",
+      "edgePolicy": "Interior rectangle excludes the rounded bezel corners; source content is not rescaled."
+    },
+    {
+      "file": "workflow-screen.png",
+      "source": "docs/references/android-prototype-exact-2026-09-13/04-workflow-takeover.png",
+      "crop": {
+        "left": 385,
+        "top": 405,
+        "right": 652,
+        "bottom": 935
+      },
+      "size": [
+        267,
+        530
+      ],
+      "purpose": "fixture",
+      "processing": "Lossless rectangular crop only; no scaling, recoloring, or generated content.",
+      "edgePolicy": "Interior rectangle excludes the rounded bezel corners; source content is not rescaled."
+    }
+  ]
+}

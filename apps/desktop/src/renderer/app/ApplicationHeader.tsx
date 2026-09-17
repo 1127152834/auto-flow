@@ -1,7 +1,7 @@
 import { GearSix } from '@phosphor-icons/react'
 import type { AppRoute } from './navigation'
 
-const tabs: { key: AppRoute; label: string }[] = [{ key: 'dashboard', label: '总览' }, { key: 'projects', label: '项目' }, { key: 'profiles', label: '浏览器配置' }, { key: 'proxies', label: '代理管理' }, { key: 'models', label: '模型管理' }]
+const tabs: { key: AppRoute; label: string }[] = [{ key: 'dashboard', label: '总览' }, { key: 'projects', label: '项目' }, { key: 'profiles', label: '浏览器配置' }, { key: 'android', label: '安卓设备' }, { key: 'proxies', label: '代理管理' }, { key: 'models', label: '模型管理' }]
 export function ApplicationHeader({ route, onNavigate, status }: { route: AppRoute; onNavigate(route: AppRoute): void; status: 'loading' | 'connected' | 'offline' }) {
   return <header className="flex min-h-[74px] flex-wrap items-center gap-x-8 gap-y-2 border-b border-line bg-surface px-5 py-2 md:px-8">
     <a href="#/dashboard" onClick={event => { event.preventDefault(); onNavigate('dashboard') }} className="flex items-center gap-3 text-xl font-semibold text-ink no-underline"><img src="./brand/autoflow-mark.png" width="34" height="34" alt="" />AutoFlow</a>

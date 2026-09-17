@@ -7,10 +7,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from autoflow.adapters.http.android import android_router
+from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.application.kernels.service import KernelService
+from autoflow.application.android.console import AndroidConsole
+from autoflow.application.android.fleet import AndroidFleet
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
@@ -40,6 +44,7 @@ from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.http_routes import (
     ManagementHttpServices,
@@ -69,6 +74,7 @@ from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicense
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
+from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.kernel_settings import (
     SqlAlchemyDefaultKernelRepository,
 )
@@ -133,6 +139,7 @@ from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserLicenseProvider,
 )
 from autoflow.providers.model.http import HttpModelProvider
+from autoflow.providers.android.stream import AndroidStream
 
 
 def create_app(
@@ -272,6 +279,19 @@ def create_app(
         artifact_root=paths.workspace,
     )
     workflow_services.runs.recover_interrupted()
+    android = android_service(session_factory, paths.workspace)
+    android_resources = AndroidResourceRepository(session_factory)
+    android_runs = CurrentAndroidRunBoundary()
+    android_fleet = AndroidFleet(android, android_resources, None, android_runs)
+    android_console = AndroidConsole(
+        android, android_runs, android_resources, AndroidStream
+    )
+    app.state.android_service = android
+    app.state.android_fleet = android_fleet
+    app.state.android_console = android_console
+    app.router.add_event_handler("startup", android.recover)
+    app.router.add_event_handler("startup", android_fleet.start)
+    app.router.add_event_handler("startup", android_console.start)
 
     project_workflow_dispatcher = configure_project_workflow_runtime(
         app,
@@ -340,6 +360,8 @@ def create_app(
             ),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
             *workflow_services.blockers(),
+            *(["android_management_active"] if android.management.busy() else []),
+            *(["android_console_active"] if android_console.busy() else []),
         ],
         quiesce_gate,
     )
@@ -376,6 +398,9 @@ def create_app(
 
             results = await asyncio.gather(
                 workflow_services.shutdown(),
+                android.management.shutdown(),
+                android_fleet.shutdown(),
+                android_console.shutdown(),
                 close_project_workflows(),
                 test_browser_workers.shutdown(),
                 kernel_worker_manager.shutdown(),
@@ -412,6 +437,8 @@ def create_app(
         instance_id=settings.instance_id,
     )
     register_workflow_routes(app, workflow_services)
+    app.include_router(android_router(android))
+    app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)
     )

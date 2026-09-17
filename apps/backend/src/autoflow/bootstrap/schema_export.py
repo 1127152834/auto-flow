@@ -5,6 +5,8 @@ from typing import Any
 
 from fastapi import FastAPI
 
+from autoflow.adapters.http.android import android_router
+from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.bootstrap.http_routes import (
@@ -48,6 +50,8 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
         events=unavailable,
     )
     register_workflow_routes(app, workflows)
+    app.include_router(android_router(unavailable))
+    app.include_router(android_fleet_router(unavailable, unavailable))
     return app.openapi()
 
 
