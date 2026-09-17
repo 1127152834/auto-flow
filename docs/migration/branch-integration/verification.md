@@ -67,3 +67,9 @@ The integration worktree was clean after the checks. The protected original chec
 - No live ProxyPanel credentials or remote write operations were used.
 - Windows, other CPU architectures, packaged-install testing, and user manual acceptance were not run on this macOS host.
 - Android device management and manual control are integrated. Workflow allocation/takeover still returns the documented typed unavailable errors because the source implementation depended on the retired workflow runtime; it requires a separate adapter to the current Studio executor before it can be enabled.
+
+## Post-integration sidecar recovery
+
+The first launch against the user's existing workspace exposed an omitted historical migration revision: the database was at `0013_workflow_custom_modules`, created by protected uncommitted Studio work, while the integrated graph initially ended its Studio parent at `0012_workflow_document_requests`. Alembic correctly refused to guess and the sidecar exited before readiness.
+
+The exact historical migration was restored and `0013_merge_project_runtime` now merges `0013_workflow_custom_modules` with `pm06_project_capability_reads`. A regression test creates that historical database, inserts custom-module and idempotency-request rows, upgrades twice, and verifies the rows plus foreign keys. The focused migration suite passed `34` tests; the complete backend suite then passed `2936` tests with `13` conditional skips. A SQLite-consistent copy of the user's real database upgraded to the single integrated head and a sidecar launched from it emitted `AUTOFLOW_READY`.

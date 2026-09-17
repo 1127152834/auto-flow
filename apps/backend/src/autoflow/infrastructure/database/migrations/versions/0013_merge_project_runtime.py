@@ -6,7 +6,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "0013_merge_project_runtime"
-down_revision = ("0012_workflow_document_requests", "pm06_project_capability_reads")
+down_revision = ("0013_workflow_custom_modules", "pm06_project_capability_reads")
 branch_labels = None
 depends_on = None
 

@@ -32,3 +32,9 @@
 - `codex/m6-unfinished-checkpoint-20260913@59ae8d44` 是未完成历史检查点；`codex/studio-before-removal-20260913@4eda2074` 是退役前快照。两者必须保持非祖先，避免恢复被替代的 Studio 代码。
 
 能力证据与最终命令结果见 `docs/migration/branch-integration/README.md` 及同目录各矩阵、`verification.md`。
+
+## 启动后兼容修正
+
+2026-09-17 首次用用户现有工作区启动整合版时，数据库已由受保护原工作树中的未提交 Studio 工作迁移到 `0013_workflow_custom_modules`，而整合迁移图没有该 revision，sidecar 因 Alembic `ResolutionError` 退出。该问题不是数据损坏。
+
+整合分支保留原 migration 的精确字节，并将 `0013_merge_project_runtime` 的 Studio 父节点从 `0012_workflow_document_requests` 后移到 `0013_workflow_custom_modules`。这样全新数据库会创建兼容表，已有数据库会从该 revision 继续运行 PM 分支及汇合迁移；未接入的自定义模块运行能力不会被冒充为已交付。真实数据库的一致性副本成功升级，模块表、请求表、外键与最终 head 均通过核对。

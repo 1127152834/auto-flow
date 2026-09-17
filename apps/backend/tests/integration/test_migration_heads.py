@@ -17,7 +17,7 @@ def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
 
     assert scripts.get_heads() == ["0013_merge_project_runtime"]
     assert scripts.get_revision("0013_merge_project_runtime").down_revision == (
-        "0012_workflow_document_requests",
+        "0013_workflow_custom_modules",
         "pm06_project_capability_reads",
     )
     assert scripts.get_revision("0011_merge_android_project_data").down_revision == (
@@ -26,6 +26,9 @@ def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     )
     assert scripts.get_revision("0012_workflow_document_requests").down_revision == (
         "0011_merge_android_project_data"
+    )
+    assert scripts.get_revision("0013_workflow_custom_modules").down_revision == (
+        "0012_workflow_document_requests"
     )
 
 
