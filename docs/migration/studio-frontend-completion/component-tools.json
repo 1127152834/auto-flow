@@ -4333,104 +4333,108 @@
     ],
     "conditions": [
       {
-        "line": 67,
+        "line": 68,
         "expression": "q"
       },
       {
-        "line": 73,
+        "line": 74,
         "expression": "!sortCol"
       },
       {
-        "line": 75,
+        "line": 76,
         "expression": "typeof v === 'number'"
       },
       {
-        "line": 76,
+        "line": 77,
         "expression": "Number.isFinite(n)"
       },
       {
-        "line": 83,
+        "line": 84,
         "expression": "na !== null && nb !== null"
       },
       {
-        "line": 85,
+        "line": 86,
         "expression": "sortDir === 'asc'"
-      },
-      {
-        "line": 91,
-        "expression": "sortCol !== col"
       },
       {
         "line": 92,
+        "expression": "sortCol !== col"
+      },
+      {
+        "line": 93,
         "expression": "sortDir === 'asc'"
       },
       {
-        "line": 107,
+        "line": 108,
         "expression": "displayMode === 'head'"
       },
       {
-        "line": 117,
+        "line": 118,
         "expression": "data.length !== prevLenRef.current"
       },
       {
-        "line": 119,
+        "line": 120,
         "expression": "displayMode === 'tail'"
       },
       {
-        "line": 133,
+        "line": 134,
         "expression": "!editingCell"
       },
       {
-        "line": 172,
+        "line": 173,
         "expression": "filterText"
       },
       {
-        "line": 173,
+        "line": 174,
         "expression": "sortDir === 'asc'"
       },
       {
-        "line": 199,
+        "line": 201,
         "expression": "sortDir === 'asc'"
       },
       {
-        "line": 227,
+        "line": 232,
+        "expression": "headerRef.current"
+      },
+      {
+        "line": 241,
         "expression": "!row"
       },
       {
-        "line": 255,
+        "line": 269,
         "expression": "readOnly"
       },
       {
-        "line": 257,
+        "line": 271,
         "expression": "isEditing"
       },
       {
-        "line": 264,
+        "line": 278,
         "expression": "e.key === 'Enter'"
       },
       {
-        "line": 265,
+        "line": 279,
         "expression": "e.key === 'Escape'"
       }
     ],
     "bindings": [
       {
-        "line": 157,
+        "line": 158,
         "attribute": "value",
         "expression": "{filterText}"
       },
       {
-        "line": 158,
+        "line": 159,
         "attribute": "onChange",
         "expression": "{(e) => setFilterText(e.target.value)}"
       },
       {
-        "line": 259,
+        "line": 273,
         "attribute": "value",
         "expression": "{editValue}"
       },
       {
-        "line": 260,
+        "line": 274,
         "attribute": "onChange",
         "expression": "{(e) => setEditValue(e.target.value)}"
       }
@@ -4440,7 +4444,7 @@
   {
     "component": "DebugBar",
     "file": "apps/desktop/src/renderer/domains/workflows/components/DebugBar.tsx",
-    "line": 11,
+    "line": 12,
     "fields": [],
     "tools": [
       "Bug",
@@ -4452,174 +4456,179 @@
       "Plus",
       "Square",
       "StepForward",
+      "Table",
+      "TableBody",
+      "TableCell",
+      "TableRow",
+      "TableScroll",
       "X"
     ],
     "conditions": [
       {
-        "line": 38,
+        "line": 39,
         "expression": "!isPaused"
       },
       {
-        "line": 41,
+        "line": 42,
         "expression": "!wfId || (kind==='control' && (!pauseContext || !runId || pauseContext.runId !== runId)) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)"
       },
       {
-        "line": 46,
+        "line": 47,
         "expression": "kind==='stop'"
       },
       {
-        "line": 49,
-        "expression": "!isCurrent()"
-      },
-      {
         "line": 50,
-        "expression": "!result.success"
+        "expression": "!isCurrent()"
       },
       {
         "line": 51,
+        "expression": "!result.success"
+      },
+      {
+        "line": 52,
         "expression": "!result.httpStatus && kind === 'control'"
       },
       {
-        "line": 60,
+        "line": 61,
         "expression": "!isCurrent()"
       },
       {
-        "line": 61,
+        "line": 62,
         "expression": "cause instanceof Error"
       },
       {
-        "line": 62,
+        "line": 63,
         "expression": "kind === 'stop'"
       },
       {
-        "line": 70,
+        "line": 71,
         "expression": "encoded===undefined"
       },
       {
-        "line": 79,
+        "line": 80,
         "expression": "!wfId || !runId || !pauseContext || pauseContext.runId!==runId || busyRef.current"
       },
       {
-        "line": 83,
+        "line": 84,
         "expression": "pausedVariableMeta[name]?.readOnly"
       },
       {
-        "line": 85,
+        "line": 86,
         "expression": "JSON.stringify(value)!==JSON.stringify(current)"
       },
       {
-        "line": 88,
+        "line": 89,
         "expression": "name"
       },
       {
-        "line": 89,
+        "line": 90,
         "expression": "!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)"
       },
       {
-        "line": 90,
+        "line": 91,
         "expression": "Object.hasOwn(pausedVariables,name)"
       },
       {
-        "line": 93,
+        "line": 94,
         "expression": "!changes.length"
       },
       {
-        "line": 94,
-        "expression": "cause instanceof Error"
-      },
-      {
-        "line": 100,
+        "line": 95,
         "expression": "cause instanceof Error"
       },
       {
         "line": 101,
-        "expression": "!isCurrent()"
+        "expression": "cause instanceof Error"
       },
       {
         "line": 102,
-        "expression": "!result.success"
+        "expression": "!isCurrent()"
       },
       {
         "line": 103,
-        "expression": "result.httpStatus"
+        "expression": "!result.success"
       },
       {
         "line": 104,
         "expression": "result.httpStatus"
       },
       {
-        "line": 111,
+        "line": 105,
+        "expression": "result.httpStatus"
+      },
+      {
+        "line": 112,
         "expression": "v === null || v === undefined"
       },
       {
-        "line": 112,
+        "line": 113,
         "expression": "typeof v === 'object'"
-      },
-      {
-        "line": 112,
-        "expression": "s.length > 80"
       },
       {
         "line": 113,
         "expression": "s.length > 80"
       },
       {
-        "line": 122,
+        "line": 114,
+        "expression": "s.length > 80"
+      },
+      {
+        "line": 123,
         "expression": "pausedReason === 'step'"
       },
       {
-        "line": 132,
+        "line": 133,
         "expression": "showVars"
       },
       {
-        "line": 163,
+        "line": 164,
         "expression": "busy"
       },
       {
-        "line": 163,
+        "line": 164,
         "expression": "pausedReason === 'step'"
       },
       {
-        "line": 171,
+        "line": 172,
         "expression": "varEntries.length === 0"
       },
       {
-        "line": 180,
+        "line": 182,
         "expression": "editingVariables"
       },
       {
-        "line": 197,
+        "line": 200,
         "expression": "busy==='variables'"
       }
     ],
     "bindings": [
       {
-        "line": 180,
+        "line": 182,
         "attribute": "value",
         "expression": "{variableDrafts[k]??jsonValue(v)}"
       },
       {
-        "line": 180,
+        "line": 182,
         "attribute": "onChange",
         "expression": "{event=>setVariableDrafts(current=>({...current,[k]:event.target.value}))}"
       },
       {
-        "line": 191,
+        "line": 194,
         "attribute": "value",
         "expression": "{newVariableName}"
       },
       {
-        "line": 191,
+        "line": 194,
         "attribute": "onChange",
         "expression": "{event=>setNewVariableName(event.target.value)}"
       },
       {
-        "line": 192,
+        "line": 195,
         "attribute": "value",
         "expression": "{newVariableValue}"
       },
       {
-        "line": 192,
+        "line": 195,
         "attribute": "onChange",
         "expression": "{event=>setNewVariableValue(event.target.value)}"
       }
@@ -6086,7 +6095,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 489,
+    "line": 509,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -6096,7 +6105,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 628,
+    "line": 550,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -6106,7 +6115,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 669,
+    "line": 710,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -6116,17 +6125,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 829,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": [],
-    "lazyImports": []
-  },
-  {
-    "component": "API_BASE",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 945,
+    "line": 826,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -7369,7 +7368,7 @@
   {
     "component": "LogPanel",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-    "line": 47,
+    "line": 48,
     "fields": [
       "label"
     ],
@@ -7399,6 +7398,13 @@
       "Search",
       "Select",
       "Sparkles",
+      "Table",
+      "TableBody",
+      "TableCell",
+      "TableHead",
+      "TableHeader",
+      "TableRow",
+      "TableScroll",
       "Trash2",
       "Upload",
       "Variable",
@@ -7406,658 +7412,658 @@
     ],
     "conditions": [
       {
-        "line": 74,
+        "line": 75,
         "expression": "storedTab === 'assets'"
       },
       {
-        "line": 126,
+        "line": 127,
         "expression": "newFilters.has(level)"
       },
       {
-        "line": 137,
+        "line": 138,
         "expression": "logLevelFilters.size === 5"
       },
       {
-        "line": 149,
+        "line": 150,
         "expression": "!logLevelFilters.has(log.level)"
       },
       {
-        "line": 152,
+        "line": 153,
         "expression": "logNodeFilter && log.nodeId !== logNodeFilter"
       },
       {
-        "line": 154,
+        "line": 155,
         "expression": "logSearchQuery.trim()"
       },
       {
-        "line": 165,
+        "line": 166,
         "expression": "!effectiveRunId"
       },
       {
-        "line": 168,
+        "line": 169,
         "expression": "logLevelFilters.size === 0"
       },
       {
-        "line": 181,
+        "line": 182,
         "expression": "request !== historyRequest.current || transportRevision !== getStudioTransportRevision() || effectiveRunId !== selectedRunRef.current"
       },
       {
-        "line": 183,
+        "line": 184,
         "expression": "!result.success || !result.data || result.data.runId !== effectiveRunId || !Array.isArray(result.data.items)"
       },
       {
-        "line": 186,
+        "line": 187,
         "expression": "cursor === 0"
-      },
-      {
-        "line": 194,
-        "expression": "item.nodeId"
       },
       {
         "line": 195,
-        "expression": "item.duration !== null && item.duration !== undefined"
+        "expression": "item.nodeId"
       },
       {
         "line": 196,
+        "expression": "item.duration !== null && item.duration !== undefined"
+      },
+      {
+        "line": 197,
         "expression": "item.details"
       },
       {
-        "line": 198,
+        "line": 199,
         "expression": "cursor === 0"
       },
       {
-        "line": 210,
+        "line": 211,
         "expression": "request !== runHistoryRequest.current || transportRevision !== getStudioTransportRevision()"
       },
       {
-        "line": 212,
+        "line": 213,
         "expression": "!result.success || !result.data"
       },
       {
-        "line": 217,
+        "line": 218,
         "expression": "cursor"
       },
       {
-        "line": 235,
+        "line": 236,
         "expression": "currentExecutionRunId"
       },
       {
-        "line": 244,
+        "line": 245,
         "expression": "!effectiveRunId"
       },
       {
-        "line": 253,
+        "line": 254,
         "expression": "effectiveRunId"
       },
       {
-        "line": 253,
+        "line": 254,
         "expression": "matchingHistory"
       },
       {
-        "line": 254,
+        "line": 255,
         "expression": "effectiveRunId"
       },
       {
-        "line": 254,
+        "line": 255,
         "expression": "matchingHistory && historyLogs !== null"
       },
       {
-        "line": 259,
+        "line": 260,
         "expression": "logEndRef.current && activeTab === 'logs' && visibleLogs.length > 0"
       },
       {
-        "line": 284,
+        "line": 285,
         "expression": "bad.length > 0"
       },
       {
-        "line": 291,
+        "line": 292,
         "expression": "effectiveRunId"
       },
       {
-        "line": 293,
+        "line": 294,
         "expression": "logLevelFilters.size === 0"
       },
       {
-        "line": 301,
+        "line": 302,
         "expression": "!result.success || !result.data"
       },
       {
-        "line": 327,
+        "line": 328,
         "expression": "nodeId"
       },
       {
-        "line": 332,
+        "line": 333,
         "expression": "onLogClick"
       },
       {
-        "line": 342,
+        "line": 343,
         "expression": "columns.length === 0"
       },
       {
-        "line": 349,
+        "line": 350,
         "expression": "!newColumnName.trim()"
       },
       {
-        "line": 354,
+        "line": 355,
         "expression": "updatedData.length > 0"
       },
       {
-        "line": 374,
+        "line": 375,
         "expression": "cell!==null&&typeof cell==='object'"
       },
       {
-        "line": 375,
+        "line": 376,
         "expression": "value.includes(',') || value.includes('\"') || value.includes('\\n')"
       },
       {
-        "line": 397,
+        "line": 398,
         "expression": "downloading"
       },
       {
-        "line": 401,
+        "line": 402,
         "expression": "runId&&!localDataPreview"
       },
       {
-        "line": 403,
+        "line": 404,
         "expression": "!page.success||!page.data"
       },
       {
-        "line": 405,
+        "line": 406,
         "expression": "connection!==getStudioTransportRevision()||runId!==selectedRunRef.current"
       },
       {
-        "line": 406,
+        "line": 407,
         "expression": "!result.success||!result.data"
       },
       {
-        "line": 411,
+        "line": 412,
         "expression": "!collectedData.length"
       },
       {
-        "line": 412,
+        "line": 413,
         "expression": "!await confirm(`导出本地可编辑预览的 ${collectedData.length} 条数据；不包含未加载的历史运行结果。`,{title:'导出本地数据',type:'confirm',confirmText:'导出'})"
       },
       {
-        "line": 428,
+        "line": 429,
         "expression": "(window as any).__imageUploadTrigger"
-      },
-      {
-        "line": 443,
-        "expression": "value.trim()"
       },
       {
         "line": 444,
+        "expression": "value.trim()"
+      },
+      {
+        "line": 445,
         "expression": "!Number.isFinite(number)"
       },
       {
-        "line": 448,
+        "line": 449,
         "expression": "!['', 'true', 'false', '1', '0'].includes(value.toLowerCase())"
       },
       {
-        "line": 452,
+        "line": 453,
         "expression": "!Array.isArray(result)"
       },
       {
-        "line": 457,
+        "line": 458,
         "expression": "!result || typeof result !== 'object' || Array.isArray(result)"
       },
       {
-        "line": 466,
+        "line": 467,
         "expression": "!newVarName.trim()"
       },
       {
-        "line": 467,
+        "line": 468,
         "expression": "variables.some(variable => variable.name === newVarName.trim())"
       },
       {
-        "line": 476,
+        "line": 477,
         "expression": "error instanceof Error"
-      },
-      {
-        "line": 481,
-        "expression": "value === null || value === undefined"
       },
       {
         "line": 482,
+        "expression": "value === null || value === undefined"
+      },
+      {
+        "line": 483,
         "expression": "type === 'array' || type === 'object' || typeof value === 'object'"
       },
       {
-        "line": 499,
+        "line": 500,
         "expression": "editingVar"
       },
       {
-        "line": 501,
+        "line": 502,
         "expression": "variable"
       },
       {
-        "line": 507,
+        "line": 508,
         "expression": "error instanceof Error"
       },
       {
-        "line": 522,
+        "line": 523,
         "expression": "!editingVarName || !editVarNameValue"
       },
       {
-        "line": 530,
+        "line": 531,
         "expression": "!newName || oldName === newName"
       },
       {
-        "line": 535,
+        "line": 536,
         "expression": "variables.some(v => v.name === newName)"
       },
       {
-        "line": 542,
+        "line": 543,
         "expression": "usages.length > 0"
       },
       {
-        "line": 555,
+        "line": 556,
         "expression": "!renameDialog"
       },
       {
-        "line": 562,
+        "line": 563,
         "expression": "!renameDialog"
-      },
-      {
-        "line": 583,
-        "expression": "isCollapsed"
       },
       {
         "line": 584,
+        "expression": "isCollapsed"
+      },
+      {
+        "line": 585,
         "expression": "draftBottomHeight === null"
       },
       {
-        "line": 613,
+        "line": 614,
         "expression": "activeTab === 'logs'"
       },
       {
-        "line": 624,
+        "line": 625,
         "expression": "activeTab === 'logs'"
       },
       {
-        "line": 633,
+        "line": 634,
         "expression": "activeTab === 'data'"
       },
       {
-        "line": 644,
+        "line": 645,
         "expression": "activeTab === 'data'"
       },
       {
-        "line": 653,
+        "line": 654,
         "expression": "activeTab === 'variables'"
       },
       {
-        "line": 664,
+        "line": 665,
         "expression": "activeTab === 'variables'"
       },
       {
-        "line": 673,
+        "line": 674,
         "expression": "activeTab === 'images'"
       },
       {
-        "line": 684,
+        "line": 685,
         "expression": "activeTab === 'images'"
       },
       {
-        "line": 698,
+        "line": 699,
         "expression": "verboseLog"
       },
       {
-        "line": 703,
+        "line": 704,
         "expression": "verboseLog"
       },
       {
-        "line": 705,
+        "line": 706,
         "expression": "verboseLog"
       },
       {
-        "line": 741,
+        "line": 742,
         "expression": "isAddingColumn"
       },
       {
-        "line": 763,
+        "line": 764,
         "expression": "downloading"
       },
       {
-        "line": 769,
+        "line": 770,
         "expression": "isAddingVar"
       },
       {
-        "line": 785,
+        "line": 786,
         "expression": "newVarType === 'boolean'"
       },
       {
-        "line": 796,
+        "line": 797,
         "expression": "newVarType === 'number'"
       },
       {
-        "line": 796,
+        "line": 797,
         "expression": "newVarType === 'array'"
       },
       {
-        "line": 796,
+        "line": 797,
         "expression": "newVarType === 'object'"
       },
       {
-        "line": 827,
+        "line": 828,
         "expression": "(window as any).__imageUploadTrigger"
-      },
-      {
-        "line": 837,
-        "expression": "isCollapsed"
       },
       {
         "line": 838,
         "expression": "isCollapsed"
       },
       {
-        "line": 883,
+        "line": 839,
+        "expression": "isCollapsed"
+      },
+      {
+        "line": 884,
         "expression": "runsLoading"
       },
       {
-        "line": 889,
+        "line": 890,
         "expression": "showFilterDropdown"
       },
       {
-        "line": 899,
+        "line": 900,
         "expression": "showFilterDropdown"
       },
       {
-        "line": 995,
+        "line": 996,
         "expression": "historyLoading"
       },
       {
-        "line": 1018,
+        "line": 1019,
         "expression": "visibleLogs.length === 0"
       },
       {
-        "line": 1020,
+        "line": 1021,
         "expression": "visibleTotal === 0"
       },
       {
-        "line": 1056,
+        "line": 1057,
         "expression": "effectiveRunId&&!localDataPreview"
       },
       {
-        "line": 1056,
+        "line": 1057,
         "expression": "collectedData.length === 0 && columns.length === 0"
       },
       {
-        "line": 1085,
+        "line": 1086,
         "expression": "variables.length === 0"
       },
       {
-        "line": 1115,
+        "line": 1116,
         "expression": "editingVarName === v.name"
       },
       {
-        "line": 1122,
+        "line": 1123,
         "expression": "e.key === 'Enter'"
       },
       {
-        "line": 1123,
+        "line": 1124,
         "expression": "e.key === 'Escape'"
       },
       {
-        "line": 1135,
+        "line": 1136,
         "expression": "editingVar === v.name"
       },
       {
-        "line": 1137,
+        "line": 1138,
         "expression": "e.key === 'Enter'"
       },
       {
-        "line": 1137,
+        "line": 1138,
         "expression": "e.key === 'Escape'"
       }
     ],
     "bindings": [
       {
-        "line": 743,
+        "line": 744,
         "attribute": "value",
         "expression": "{newColumnName}"
       },
       {
-        "line": 743,
+        "line": 744,
         "attribute": "onChange",
         "expression": "{(e) => setNewColumnName(e.target.value)}"
       },
       {
-        "line": 771,
+        "line": 772,
         "attribute": "value",
         "expression": "{newVarName}"
       },
       {
-        "line": 771,
+        "line": 772,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarName(e.target.value)}"
       },
       {
-        "line": 775,
+        "line": 776,
         "attribute": "value",
         "expression": "{newVarType}"
       },
       {
-        "line": 776,
+        "line": 777,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarType(e.target.value as VariableType)}"
       },
       {
-        "line": 779,
+        "line": 780,
         "attribute": "value",
         "expression": "\"string\""
       },
       {
-        "line": 780,
+        "line": 781,
         "attribute": "value",
         "expression": "\"number\""
       },
       {
-        "line": 781,
+        "line": 782,
         "attribute": "value",
         "expression": "\"boolean\""
       },
       {
-        "line": 782,
+        "line": 783,
         "attribute": "value",
         "expression": "\"array\""
       },
       {
-        "line": 783,
+        "line": 784,
         "attribute": "value",
         "expression": "\"object\""
       },
       {
-        "line": 787,
+        "line": 788,
         "attribute": "value",
         "expression": "{newVarValue || 'false'}"
       },
       {
-        "line": 788,
+        "line": 789,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarValue(e.target.value)}"
-      },
-      {
-        "line": 791,
-        "attribute": "value",
-        "expression": "\"true\""
       },
       {
         "line": 792,
         "attribute": "value",
+        "expression": "\"true\""
+      },
+      {
+        "line": 793,
+        "attribute": "value",
         "expression": "\"false\""
       },
       {
-        "line": 795,
+        "line": 796,
         "attribute": "value",
         "expression": "{newVarValue}"
       },
       {
-        "line": 795,
+        "line": 796,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarValue(e.target.value)}"
       },
       {
-        "line": 855,
+        "line": 856,
         "attribute": "value",
         "expression": "{logSearchQuery}"
       },
       {
-        "line": 856,
+        "line": 857,
         "attribute": "onChange",
         "expression": "{(e) => setLogSearchQuery(e.target.value)}"
       },
       {
-        "line": 871,
+        "line": 872,
         "attribute": "value",
         "expression": "{effectiveRunId}"
       },
       {
-        "line": 872,
+        "line": 873,
         "attribute": "onChange",
         "expression": "{(event) => setSelectedRunId(event.target.value)}"
       },
       {
-        "line": 876,
+        "line": 877,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 878,
+        "line": 879,
         "attribute": "value",
         "expression": "{item.runId}"
       },
       {
-        "line": 911,
+        "line": 912,
         "attribute": "checked",
         "expression": "{logLevelFilters.size === 5}"
       },
       {
-        "line": 912,
+        "line": 913,
         "attribute": "onCheckedChange",
         "expression": "{toggleAllFilters}"
       },
       {
-        "line": 919,
+        "line": 920,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('debug')}"
       },
       {
-        "line": 920,
+        "line": 921,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('debug')}"
       },
       {
-        "line": 927,
+        "line": 928,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('info')}"
       },
       {
-        "line": 928,
+        "line": 929,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('info')}"
       },
       {
-        "line": 935,
+        "line": 936,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('success')}"
       },
       {
-        "line": 936,
+        "line": 937,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('success')}"
       },
       {
-        "line": 943,
+        "line": 944,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('warning')}"
       },
       {
-        "line": 944,
+        "line": 945,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('warning')}"
       },
       {
-        "line": 951,
+        "line": 952,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('error')}"
       },
       {
-        "line": 952,
+        "line": 953,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('error')}"
       },
       {
-        "line": 965,
+        "line": 966,
         "attribute": "value",
         "expression": "{String(maxLogCount)}"
       },
       {
-        "line": 966,
+        "line": 967,
         "attribute": "onChange",
         "expression": "{(e) => setMaxLogCount(Number(e.target.value))}"
       },
       {
-        "line": 969,
+        "line": 970,
         "attribute": "value",
         "expression": "\"100\""
       },
       {
-        "line": 970,
+        "line": 971,
         "attribute": "value",
         "expression": "\"200\""
       },
       {
-        "line": 971,
+        "line": 972,
         "attribute": "value",
         "expression": "\"300\""
       },
       {
-        "line": 972,
+        "line": 973,
         "attribute": "value",
         "expression": "\"400\""
       },
       {
-        "line": 973,
+        "line": 974,
         "attribute": "value",
         "expression": "\"500\""
       },
       {
-        "line": 978,
+        "line": 979,
         "attribute": "value",
         "expression": "{logNodeFilter}"
       },
       {
-        "line": 979,
+        "line": 980,
         "attribute": "onChange",
         "expression": "{(event) => setLogNodeFilter(event.target.value)}"
       },
       {
-        "line": 982,
+        "line": 983,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 984,
+        "line": 985,
         "attribute": "value",
         "expression": "{node.id}"
       },
       {
-        "line": 1117,
+        "line": 1118,
         "attribute": "value",
         "expression": "{editVarNameValue}"
       },
       {
-        "line": 1118,
+        "line": 1119,
         "attribute": "onChange",
         "expression": "{(e) => setEditVarNameValue(e.target.value.replace(/[^a-zA-Z0-9_\\u4e00-\\u9fa5]/g, ''))}"
       },
       {
-        "line": 1136,
+        "line": 1137,
         "attribute": "value",
         "expression": "{editVarValue}"
       },
       {
-        "line": 1136,
+        "line": 1137,
         "attribute": "onChange",
         "expression": "{(e) => setEditVarValue(e.target.value)}"
       }
@@ -10764,9 +10770,11 @@
       "error",
       "fileName",
       "filename",
+      "id",
       "label",
       "moduleType",
       "remark",
+      "revision",
       "runId",
       "success",
       "workflow",
@@ -10804,7 +10812,6 @@
       "GlobalConfigDialog",
       "Globe",
       "Input",
-      "LocalWorkflowDialog",
       "MoreHorizontal",
       "MoreVertical",
       "Package",
@@ -10820,558 +10827,495 @@
       "Suspense",
       "VariableTrackingPanel",
       "Video",
+      "WorkflowOpenDialog",
       "X"
     ],
     "conditions": [
       {
-        "line": 87,
+        "line": 86,
         "expression": "serverWorkflow?.documentId === documentId"
       },
       {
-        "line": 89,
+        "line": 88,
         "expression": "id"
       },
       {
-        "line": 98,
+        "line": 97,
         "expression": "!awaiting || data?.workflowId !== awaiting.workflowId || (data.runId && data.runId !== awaiting.runId)"
       },
       {
-        "line": 161,
+        "line": 159,
         "expression": "nameOnFocusRef.current !== name"
       },
       {
         "line": 174,
-        "expression": "!mounted.current || revision !== getStudioTransportRevision()"
-      },
-      {
-        "line": 175,
-        "expression": "result.success && typeof result.data?.folder === 'string'"
-      },
-      {
-        "line": 188,
         "expression": "moduleId && moduleName"
       },
       {
-        "line": 217,
+        "line": 203,
         "expression": "transitionPending.current || startPending.current || awaitingStart.current || useWorkflowStore.getState().executionStatus === 'running'"
       },
       {
-        "line": 221,
+        "line": 207,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 226,
+        "line": 212,
         "expression": "findExcludedModuleType(nodes, id => useCustomModuleStore.getState().modules.find(module => module.id === id)?.workflow?.nodes)"
       },
       {
-        "line": 232,
+        "line": 218,
         "expression": "numericIssues.length"
       },
       {
-        "line": 247,
+        "line": 233,
         "expression": "!profile.success||!profile.data"
       },
       {
-        "line": 249,
+        "line": 235,
         "expression": "getDocumentLeaveResources().length&&!await requestDocumentLeave({preserveMainDocument:true,sessionsOnly:true})"
       },
       {
-        "line": 250,
+        "line": 236,
         "expression": "sourceDocumentId!==useWorkflowStore.getState().id||sourceConnection!==getStudioTransportRevision()"
       },
       {
-        "line": 255,
+        "line": 241,
         "expression": "startNodeId"
       },
       {
-        "line": 265,
+        "line": 251,
         "expression": "startNodeId"
       },
       {
-        "line": 267,
+        "line": 253,
         "expression": "headless"
       },
       {
-        "line": 273,
-        "expression": "!currentWorkflowId"
-      },
-      {
-        "line": 298,
-        "expression": "createResult.error || !createResult.data?.id"
-      },
-      {
-        "line": 330,
-        "expression": "updateResult.error"
-      },
-      {
-        "line": 334,
-        "expression": "!currentWorkflowId"
-      },
-      {
-        "line": 352,
+        "line": 296,
         "expression": "!executeResult.success"
       },
       {
-        "line": 354,
+        "line": 298,
         "expression": "executeResult.httpStatus && executeResult.httpStatus >= 400 && executeResult.httpStatus < 500"
       },
       {
-        "line": 357,
+        "line": 301,
         "expression": "awaitingStart.current"
       },
       {
-        "line": 364,
+        "line": 308,
         "expression": "startNodeId"
       },
       {
-        "line": 366,
+        "line": 310,
         "expression": "headless"
       },
       {
-        "line": 371,
+        "line": 315,
         "expression": "!awaitingStart.current"
       },
       {
-        "line": 389,
+        "line": 333,
         "expression": "nodeId"
       },
       {
-        "line": 397,
+        "line": 341,
         "expression": "state.currentExecutionWorkflowId&&state.currentExecutionRunId"
       },
       {
-        "line": 398,
+        "line": 342,
         "expression": "!target"
       },
       {
-        "line": 403,
+        "line": 347,
         "expression": "!confirmed||revision!==getStudioTransportRevision()"
       },
       {
-        "line": 405,
+        "line": 349,
         "expression": "current.currentExecutionRunId&&current.currentExecutionRunId!==target.runId"
       },
       {
-        "line": 407,
+        "line": 351,
         "expression": "confirmed.status==='completed'"
       },
       {
-        "line": 407,
+        "line": 351,
         "expression": "confirmed.status==='failed'||confirmed.status==='interrupted'"
       },
       {
-        "line": 414,
+        "line": 358,
         "expression": "startPending.current&&!awaitingStart.current"
       },
       {
-        "line": 415,
+        "line": 359,
         "expression": "state.executionStatus==='running'&&state.currentExecutionWorkflowId&&state.currentExecutionRunId"
       },
       {
-        "line": 416,
+        "line": 360,
         "expression": "!target"
       },
       {
-        "line": 419,
+        "line": 363,
         "expression": "revision!==getStudioTransportRevision()"
       },
       {
-        "line": 421,
+        "line": 365,
         "expression": "current!==target.runId"
       },
       {
-        "line": 427,
+        "line": 371,
         "expression": "savingDocument.current || !mounted.current"
       },
       {
-        "line": 432,
+        "line": 376,
         "expression": "!active()"
       },
       {
-        "line": 434,
+        "line": 378,
         "expression": "sessionStorage.getItem('editingCustomModuleId')"
       },
       {
-        "line": 437,
-        "expression": "defaultFolderRevision.current === revision"
+        "line": 382,
+        "expression": "workflowId"
       },
       {
-        "line": 438,
-        "expression": "!currentFolder"
+        "line": 387,
+        "expression": "result.success && typeof data?.id === 'string' && data.id && Number.isSafeInteger(data.revision) && Number(data.revision) > 0"
       },
       {
-        "line": 441,
-        "expression": "result.error"
-      },
-      {
-        "line": 443,
-        "expression": "currentFolder"
-      },
-      {
-        "line": 445,
-        "expression": "!currentFolder"
-      },
-      {
-        "line": 446,
+        "line": 389,
         "expression": "!skipConfirm"
       },
       {
-        "line": 457,
-        "expression": "!skipConfirm && (autoSaveCopy || showOverwriteConfirm)"
-      },
-      {
-        "line": 465,
-        "expression": "!checkResponse.ok || checkData.error || typeof checkData.exists !== 'boolean'"
-      },
-      {
-        "line": 468,
-        "expression": "checkData.exists && autoSaveCopy"
-      },
-      {
-        "line": 474,
-        "expression": "checkData.exists"
-      },
-      {
-        "line": 480,
-        "expression": "!shouldOverwrite"
-      },
-      {
-        "line": 502,
-        "expression": "response.ok && data.success === true && !data.error && typeof data.filename === 'string' && data.filename.trim()"
-      },
-      {
-        "line": 503,
-        "expression": "!skipConfirm"
-      },
-      {
-        "line": 507,
+        "line": 391,
         "expression": "unchanged"
       },
       {
-        "line": 510,
+        "line": 394,
         "expression": "!skipConfirm"
       },
       {
-        "line": 516,
+        "line": 397,
         "expression": "mounted.current && !skipConfirm"
       },
       {
-        "line": 529,
+        "line": 410,
         "expression": "await confirmLeave()"
       },
       {
-        "line": 534,
+        "line": 415,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 538,
+        "line": 419,
         "expression": "isAutoLayouting"
       },
       {
-        "line": 542,
+        "line": 423,
         "expression": "res.ok"
       },
       {
-        "line": 558,
+        "line": 439,
         "expression": "!config.workflow?.autoSave"
       },
       {
-        "line": 561,
+        "line": 442,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 575,
+        "line": 456,
         "expression": "e.key === 'F5'"
       },
       {
-        "line": 577,
+        "line": 458,
         "expression": "e.shiftKey"
       },
       {
-        "line": 581,
+        "line": 462,
         "expression": "(e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's'"
       },
       {
-        "line": 590,
+        "line": 471,
         "expression": "isInInput"
       },
       {
-        "line": 593,
+        "line": 474,
         "expression": "e.altKey && e.key === 'n'"
       },
       {
-        "line": 606,
+        "line": 487,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 639,
+        "line": 520,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 661,
+        "line": 542,
         "expression": "isScreenshotting"
       },
       {
-        "line": 682,
+        "line": 563,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 690,
+        "line": 571,
         "expression": "data.success && data.asset"
       },
       {
-        "line": 696,
+        "line": 577,
         "expression": "data.cancelled"
       },
       {
-        "line": 699,
+        "line": 580,
         "expression": "data.error === 'timeout'"
       },
       {
-        "line": 735,
+        "line": 616,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 741,
+        "line": 622,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 773,
+        "line": 654,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 774,
+        "line": 655,
         "expression": "p?.headless"
       },
       {
-        "line": 782,
+        "line": 663,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 827,
+        "line": 708,
         "expression": "!screenshotAsset"
       },
       {
-        "line": 838,
+        "line": 719,
         "expression": "response.ok"
       },
       {
-        "line": 861,
+        "line": 742,
         "expression": "screenshotAsset"
       },
       {
-        "line": 872,
+        "line": 753,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 881,
+        "line": 762,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 906,
+        "line": 787,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 938,
+        "line": 819,
         "expression": "updateResult.error"
       },
       {
-        "line": 949,
+        "line": 830,
         "expression": "data.code"
       },
       {
-        "line": 972,
+        "line": 853,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 984,
+        "line": 865,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 986,
+        "line": 867,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 994,
+        "line": 875,
         "expression": "updateResult.error"
       },
       {
-        "line": 1001,
+        "line": 882,
         "expression": "data?.code"
       },
       {
-        "line": 1011,
+        "line": 892,
         "expression": "target === 'selenium'"
       },
       {
-        "line": 1023,
+        "line": 904,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1070,
+        "line": 951,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1080,
+        "line": 961,
         "expression": "!password"
       },
       {
-        "line": 1081,
+        "line": 962,
         "expression": "password.length < 4"
       },
       {
-        "line": 1112,
+        "line": 993,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1123,
+        "line": 1004,
         "expression": "res.error || !res.data?.bundle"
       },
       {
-        "line": 1151,
+        "line": 1032,
         "expression": "!file || importingBundle.current"
       },
       {
-        "line": 1159,
+        "line": 1040,
         "expression": "!active()"
       },
       {
-        "line": 1160,
+        "line": 1041,
         "expression": "snapshotKey(exportWorkflow()) !== original"
       },
       {
-        "line": 1164,
+        "line": 1045,
         "expression": "!(await confirmLeave()) || !active()"
       },
       {
-        "line": 1167,
+        "line": 1048,
         "expression": "!active()"
       },
       {
-        "line": 1168,
+        "line": 1049,
         "expression": "res.error || !res.data?.success || !res.data.workflow"
       },
       {
-        "line": 1172,
+        "line": 1053,
         "expression": "snapshotKey(exportWorkflow()) !== accepted"
       },
       {
-        "line": 1183,
+        "line": 1064,
         "expression": "!imported"
       },
       {
-        "line": 1192,
+        "line": 1073,
         "expression": "mounted.current"
       },
       {
-        "line": 1199,
+        "line": 1080,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1219,
+        "line": 1100,
         "expression": "v === undefined || v === null"
       },
       {
-        "line": 1220,
+        "line": 1101,
         "expression": "typeof v === 'string'"
       },
       {
-        "line": 1221,
+        "line": 1102,
         "expression": "v === ''"
       },
       {
-        "line": 1223,
+        "line": 1104,
         "expression": "v.includes('\\n')"
       },
       {
-        "line": 1226,
+        "line": 1107,
         "expression": "typeof v === 'number' || typeof v === 'boolean'"
       },
       {
-        "line": 1229,
+        "line": 1110,
         "expression": "s.length > 200"
       },
       {
-        "line": 1243,
+        "line": 1124,
         "expression": "variables.length > 0"
       },
       {
-        "line": 1248,
+        "line": 1129,
         "expression": "v.value === undefined || v.value === null || v.value === ''"
       },
       {
-        "line": 1250,
+        "line": 1131,
         "expression": "typeof v.value === 'object'"
       },
       {
-        "line": 1267,
+        "line": 1148,
         "expression": "data.remark"
       },
       {
-        "line": 1273,
+        "line": 1154,
         "expression": "META_FIELDS.has(k)"
       },
       {
-        "line": 1274,
+        "line": 1155,
         "expression": "v === undefined || v === null || v === ''"
       },
       {
-        "line": 1275,
+        "line": 1156,
         "expression": "typeof v === 'function'"
       },
       {
-        "line": 1279,
+        "line": 1160,
         "expression": "configEntries.length > 0"
       },
       {
-        "line": 1289,
+        "line": 1170,
         "expression": "edges.length > 0"
       },
       {
-        "line": 1355,
+        "line": 1236,
         "expression": "await confirmLeave({ preserveMainDocument: true })"
       },
       {
-        "line": 1406,
+        "line": 1287,
         "expression": "isRunning"
       },
       {
-        "line": 1408,
+        "line": 1289,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1412,
+        "line": 1293,
         "expression": "isRunning"
       },
       {
-        "line": 1412,
+        "line": 1293,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1428,
+        "line": 1309,
         "expression": "startPhase"
       },
       {
-        "line": 1429,
+        "line": 1310,
         "expression": "startPhase === 'preparing'"
       },
       {
-        "line": 1431,
+        "line": 1312,
         "expression": "!isRunning"
       },
       {
-        "line": 1570,
+        "line": 1451,
         "expression": "isAutoLayouting"
       }
     ],
     "bindings": [
       {
-        "line": 1415,
+        "line": 1296,
         "attribute": "value",
         "expression": "{name}"
       },
       {
-        "line": 1416,
+        "line": 1297,
         "attribute": "onChange",
         "expression": "{(e) => setWorkflowName(e.target.value)}"
       }
@@ -12682,6 +12626,104 @@
     "lazyImports": []
   },
   {
+    "component": "WorkflowOpenDialog",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowOpenDialog.tsx",
+    "line": 35,
+    "fields": [],
+    "tools": [
+      "Button",
+      "Clock",
+      "ConfirmDialog",
+      "DialogPortal",
+      "FileJson",
+      "FolderOpen",
+      "Input",
+      "RefreshCw",
+      "Search",
+      "Trash2",
+      "X"
+    ],
+    "conditions": [
+      {
+        "line": 52,
+        "expression": "!current()"
+      },
+      {
+        "line": 53,
+        "expression": "!result.success || !Array.isArray(result.data) || !result.data.every(isWorkflowInfo)"
+      },
+      {
+        "line": 63,
+        "expression": "isOpen"
+      },
+      {
+        "line": 82,
+        "expression": "!(await beforeReplace()) || sequence !== openSequence.current || connection !== getStudioTransportRevision()"
+      },
+      {
+        "line": 87,
+        "expression": "sequence !== openSequence.current || connection !== getStudioTransportRevision()"
+      },
+      {
+        "line": 89,
+        "expression": "current.id !== sourceId || snapshotKey(current.exportWorkflow()) !== sourceSnapshot"
+      },
+      {
+        "line": 93,
+        "expression": "!result.success || !result.data || !isWorkflowInfo(result.data)"
+      },
+      {
+        "line": 97,
+        "expression": "!importWorkflow(result.data)"
+      },
+      {
+        "line": 108,
+        "expression": "!(await confirm(`确定要删除工作流 \"${workflow.name}\" 吗？`, { type: 'warning', title: '删除工作流' })) || connection !== getStudioTransportRevision()"
+      },
+      {
+        "line": 110,
+        "expression": "connection !== getStudioTransportRevision()"
+      },
+      {
+        "line": 111,
+        "expression": "!result.success"
+      },
+      {
+        "line": 121,
+        "expression": "query"
+      },
+      {
+        "line": 124,
+        "expression": "!isOpen"
+      },
+      {
+        "line": 139,
+        "expression": "!loading && filtered.length === 0"
+      },
+      {
+        "line": 139,
+        "expression": "search"
+      },
+      {
+        "line": 139,
+        "expression": "event.key === 'Enter'"
+      }
+    ],
+    "bindings": [
+      {
+        "line": 134,
+        "attribute": "value",
+        "expression": "{search}"
+      },
+      {
+        "line": 134,
+        "attribute": "onChange",
+        "expression": "{event => setSearch(event.target.value)}"
+      }
+    ],
+    "lazyImports": []
+  },
+  {
     "component": "AIAssistantPanel",
     "file": "apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx",
     "line": 75,
@@ -13444,7 +13486,7 @@
   {
     "component": "MarkdownContent",
     "file": "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
-    "line": 259,
+    "line": 260,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -13454,7 +13496,7 @@
   {
     "component": "ToolCallCard",
     "file": "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
-    "line": 272,
+    "line": 288,
     "fields": [],
     "tools": [
       "AlertCircle",
@@ -13466,43 +13508,43 @@
     ],
     "conditions": [
       {
-        "line": 296,
-        "expression": "isMcp"
-      },
-      {
-        "line": 299,
-        "expression": "isMcp"
-      },
-      {
-        "line": 300,
-        "expression": "isMcp"
-      },
-      {
-        "line": 302,
-        "expression": "isMcp"
-      },
-      {
-        "line": 306,
-        "expression": "isMcp"
-      },
-      {
-        "line": 309,
-        "expression": "isMcp"
-      },
-      {
-        "line": 311,
-        "expression": "isMcp"
-      },
-      {
         "line": 312,
         "expression": "isMcp"
       },
       {
-        "line": 351,
+        "line": 315,
+        "expression": "isMcp"
+      },
+      {
+        "line": 316,
+        "expression": "isMcp"
+      },
+      {
+        "line": 318,
+        "expression": "isMcp"
+      },
+      {
+        "line": 322,
+        "expression": "isMcp"
+      },
+      {
+        "line": 325,
+        "expression": "isMcp"
+      },
+      {
+        "line": 327,
+        "expression": "isMcp"
+      },
+      {
+        "line": 328,
+        "expression": "isMcp"
+      },
+      {
+        "line": 367,
         "expression": "expanded"
       },
       {
-        "line": 373,
+        "line": 389,
         "expression": "typeof tc.result === 'string'"
       }
     ],
@@ -13512,7 +13554,7 @@
   {
     "component": "ReasoningCard",
     "file": "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
-    "line": 393,
+    "line": 409,
     "fields": [],
     "tools": [
       "Brain",
@@ -13521,35 +13563,35 @@
     ],
     "conditions": [
       {
-        "line": 410,
+        "line": 426,
         "expression": "!isThinking"
       },
       {
-        "line": 417,
+        "line": 433,
         "expression": "userExpanded !== null"
       },
       {
-        "line": 421,
+        "line": 437,
         "expression": "!expanded || !isThinking"
       },
       {
-        "line": 423,
+        "line": 439,
         "expression": "!el"
       },
       {
-        "line": 431,
+        "line": 447,
         "expression": "isThinking"
       },
       {
-        "line": 433,
+        "line": 449,
         "expression": "durationSec != null"
       },
       {
-        "line": 444,
+        "line": 460,
         "expression": "isThinking"
       },
       {
-        "line": 446,
+        "line": 462,
         "expression": "expanded"
       }
     ],
@@ -13559,7 +13601,7 @@
   {
     "component": "MessageBubble",
     "file": "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
-    "line": 460,
+    "line": 476,
     "fields": [],
     "tools": [
       "FileText",
@@ -13574,27 +13616,15 @@
     ],
     "conditions": [
       {
-        "line": 461,
+        "line": 477,
         "expression": "message.role === 'tool'"
       },
       {
-        "line": 468,
+        "line": 484,
         "expression": "isUser"
       },
       {
-        "line": 473,
-        "expression": "isUser"
-      },
-      {
-        "line": 478,
-        "expression": "isUser"
-      },
-      {
-        "line": 481,
-        "expression": "isUser"
-      },
-      {
-        "line": 482,
+        "line": 489,
         "expression": "isUser"
       },
       {
@@ -13602,7 +13632,19 @@
         "expression": "isUser"
       },
       {
-        "line": 499,
+        "line": 497,
+        "expression": "isUser"
+      },
+      {
+        "line": 498,
+        "expression": "isUser"
+      },
+      {
+        "line": 510,
+        "expression": "isUser"
+      },
+      {
+        "line": 515,
         "expression": "isUser"
       }
     ],
@@ -41114,20 +41156,20 @@
   {
     "component": "MarkdownRenderer",
     "file": "apps/desktop/src/renderer/domains/workflows/components/documentation/MarkdownRenderer.tsx",
-    "line": 280,
+    "line": 281,
     "fields": [],
     "tools": [],
     "conditions": [
       {
-        "line": 288,
+        "line": 289,
         "expression": "!containerRef.current"
       },
       {
-        "line": 290,
+        "line": 291,
         "expression": "elements.length === 0"
       },
       {
-        "line": 294,
+        "line": 295,
         "expression": "cancelled"
       }
     ],
