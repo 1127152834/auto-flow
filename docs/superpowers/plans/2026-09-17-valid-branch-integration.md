@@ -78,7 +78,7 @@ uv sync --directory apps/backend --locked
 npm run test:structure
 npm run typecheck
 npm run openapi:check
-uv run --directory apps/backend pytest apps/backend/tests/integration/test_migration_heads.py
+uv run --directory apps/backend pytest tests/integration/test_migration_heads.py
 ```
 
 Expected: all commands exit 0. A baseline failure blocks branch integration and must be reported before proceeding.
@@ -151,11 +151,11 @@ Expected: both commands exit 0 and `generated.ts` contains routes present in the
 
 ```bash
 uv run --directory apps/backend pytest \
-  apps/backend/tests/contract/test_project_automations.py \
-  apps/backend/tests/contract/test_project_runs.py \
-  apps/backend/tests/integration/test_project_run_dispatch.py \
-  apps/backend/tests/integration/test_project_data_scheduler.py \
-  apps/backend/tests/integration/test_migration_heads.py -q
+  tests/contract/test_project_automations.py \
+  tests/contract/test_project_runs.py \
+  tests/integration/test_project_run_dispatch.py \
+  tests/integration/test_project_data_scheduler.py \
+  tests/integration/test_migration_heads.py -q
 ```
 
 Expected: all pass. If a test exposes a current-runtime integration gap, add one focused regression to the nearest existing test file, verify it fails, implement the adapter, then verify it passes.
@@ -334,13 +334,13 @@ Record connection CRUD, credentials, copy IPC, health probe, foreign keys, optim
 
 ```bash
 uv run --directory apps/backend pytest -q \
-  apps/backend/tests/contract/test_proxy_api.py \
-  apps/backend/tests/contract/test_proxy_runtime.py \
-  apps/backend/tests/integration/test_proxy_management.py \
-  apps/backend/tests/integration/test_proxy_concurrency_review.py \
-  apps/backend/tests/unit/test_proxy_domain.py \
-  apps/backend/tests/unit/test_proxy_probe.py \
-  apps/backend/tests/unit/test_proxypanel_transport.py
+  tests/contract/test_proxy_api.py \
+  tests/contract/test_proxy_runtime.py \
+  tests/integration/test_proxy_management.py \
+  tests/integration/test_proxy_concurrency_review.py \
+  tests/unit/test_proxy_domain.py \
+  tests/unit/test_proxy_probe.py \
+  tests/unit/test_proxypanel_transport.py
 npm test -- --run apps/desktop/src/renderer/domains/proxies
 ```
 
@@ -413,11 +413,11 @@ git commit -m "docs: record valid branch integration"
 uv run --directory apps/backend pytest
 uv run --directory apps/backend alembic heads
 uv run --directory apps/backend pytest -q \
-  apps/backend/tests/integration/test_migration_heads.py \
-  apps/backend/tests/integration/test_merged_model_migrations.py \
-  apps/backend/tests/integration/test_project_migration.py \
-  apps/backend/tests/integration/test_project_data_migrations.py \
-  apps/backend/tests/integration/test_studio_migration_compatibility.py
+  tests/integration/test_migration_heads.py \
+  tests/integration/test_merged_model_migrations.py \
+  tests/integration/test_project_migration.py \
+  tests/integration/test_project_data_migrations.py \
+  tests/integration/test_studio_migration_compatibility.py
 ```
 
 Expected: pytest has zero failures; Alembic reports one explained head; the migration tests upgrade task-owned temporary databases through the final head. Do not run a migration command against the user's application database.
