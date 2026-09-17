@@ -141,3 +141,12 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - 原始输入快照保持不可变；Task 已确认写入推进独立游标；人工再次修改后旧版本写冲突。结果不明按原 operation 身份查询，旧 executionGeneration 无权继续写或释放占用。
 - 权威 Electron 证据由真实 FastAPI、SQLite、项目数据服务和 UI 构成，但执行步骤由隔离 fake executor 驱动。不得把它写成真实生产执行核心、CloakBrowser 或 Studio 可用。
 - PM4 管理功能交付状态为 delivered、验证状态为 partially_verified：当前源码业务 E2E `f-QHALLW` 绑定 `f07bb83b`，完成第二自动化读取、有限/不限管理链、三类候选态及日志搜索 Enter；`f-4QcXFG` 保留前一提交候选的全量工程与 19 张截图审查，旧 `f-dJVKnL` 为历史候选。`d3a397cf`、`f07bb83b` 补齐人工删除和 Excel 重新导入的活动 lease 保护并通过定向回归；当前源码的 19 张截图同视口视觉复审和阶段全量检查均已通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项已通过；会启动真实 CloakBrowser/生产执行核心的 `qa-project-management-pm3.mjs` 按边界未执行。真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、打包及用户手测未执行。边界固定为“管理侧通过，真实执行核心接入待验收”；不进入 PM5。
+
+## 有效分支归并（2026-09-17，confirmed）
+
+来源：用户要求整理所有未合并分支，并确认只合入有效能力；源码差异审计、能力矩阵、树不变归并检查和最终验证记录见 `docs/migration/branch-integration/`。
+
+- `codex/project-management-pm3@2bac1b14`、`pm4@fbda6f17`、`pm5@fbda6f17` 的有效项目执行能力经 `a5c5ed98` 接入；项目运行表使用 `project_workflow_*` 命名与当前 Studio 运行时并存，迁移由 `0013_merge_project_runtime.py` 汇合。
+- Android 分支的设备持久化、生命周期、环境、批量创建、控制台及手动控制已接入。旧分支的工作流分配/接管直接依赖已退役运行时，因此当前接口明确返回不可用错误，不伪造兼容性。
+- UI 控件、全局表格与代理管理已完成能力核对；当前更新实现优先，缺失的独立控件被移植，历史分支以树不变归并纳入提交图。
+- `codex/m6-unfinished-checkpoint-20260913@59ae8d44` 与 `codex/studio-before-removal-20260913@4eda2074` 保持排除：前者是未完成检查点，后者是退役前快照，二者均不是当前产品能力来源。
