@@ -9,6 +9,7 @@ from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
 from autoflow.application.project_data.records import DataRecordService
 from autoflow.application.project_data.tables import DataTableService
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.projects.service import ProjectService
 from autoflow.domain.project_data.identity import RecordKey, encode_record_key
 from autoflow.domain.projects.models import ProjectError
@@ -33,11 +34,13 @@ from autoflow.infrastructure.database.project_data_queries import (
 from autoflow.infrastructure.database.project_data_records import (
     SqlAlchemyProjectDataRecords,
 )
+from autoflow.infrastructure.database.project_run_models import ProjectRecordLeaseRow
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from tests.integration.test_project_run_data_start import _setup
 
 
 def uid() -> str:
@@ -95,6 +98,118 @@ def create_record(ctx):
         record["ref"]["recordKey"]["type"], record["ref"]["recordKey"]["value"]
     )
     return record, encode_record_key(key)
+
+
+@pytest.mark.parametrize("lease_state", ["held", "reconciling", "released"])
+@pytest.mark.parametrize("claim_before_preview", [True, False])
+def test_record_delete_respects_lease_at_preview_and_commit(
+    tmp_path, lease_state, claim_before_preview
+):
+    factory, project, automation, coordinator = _setup(tmp_path)
+    try:
+        batch = coordinator.start(
+            project,
+            automation.automation_id,
+            uid(),
+            {
+                "expectedAutomationRevision": automation.management_revision,
+                "parameters": {},
+                "maxTasks": 1,
+                "concurrency": 1,
+            },
+        )[0]
+        source = automation.input_plan["inputs"][0]
+        with factory() as session:
+            row = session.scalar(
+                select(DataRecordRow).where(DataRecordRow.table_id == source["tableId"])
+            )
+            pk = (row.dataset_generation, row.key_type, row.key_value)
+            encoded = encode_record_key(RecordKey(row.key_type, row.key_value))
+        ref = {
+            "projectId": project,
+            "tableId": source["tableId"],
+            "datasetGeneration": source["datasetGeneration"],
+            "recordKey": {"type": pk[1], "value": pk[2]},
+        }
+
+        def claim():
+            assert (
+                ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id)
+                == "ready"
+            )
+            with factory.begin() as session:
+                lease = session.scalar(
+                    select(ProjectRecordLeaseRow).where(
+                        ProjectRecordLeaseRow.record_ref == ref
+                    )
+                )
+                assert lease is not None
+                lease.state = lease_state
+                if lease_state == "released":
+                    lease.released_at = datetime.now(UTC)
+
+        deletion = DataDeletionService(SqlAlchemyProjectDataDeletions(factory))
+        if claim_before_preview:
+            claim()
+        preview = deletion.preview_record(
+            project, source["tableId"], source["datasetGeneration"], encoded, pk[1]
+        )
+        active = lease_state in {"held", "reconciling"}
+        assert [item["code"] for item in preview["blockers"]] == (
+            ["RECORD_IN_USE"] if claim_before_preview and active else []
+        )
+        assert preview["impacts"][0]["blocking"] is (claim_before_preview and active)
+        if not claim_before_preview:
+            claim()
+        payload = {
+            "datasetGeneration": source["datasetGeneration"],
+            "recordKeyType": pk[1],
+            "expectedContentRevision": 1,
+            "expectedStatusRevision": 1,
+            "expectedLinkRevision": 1,
+            "impactRevision": preview["impactRevision"],
+        }
+        with factory() as session:
+            operations_before = session.scalar(
+                select(func.count()).select_from(ProjectOperationRow)
+            )
+            changes_before = session.scalar(
+                select(func.count()).select_from(DataChangeRow)
+            )
+        if active:
+            with pytest.raises(ProjectError) as error:
+                deletion.delete_record(
+                    project, source["tableId"], encoded, uid(), payload
+                )
+            assert error.value.code == "PRECONDITION_FAILED"
+            assert error.value.status == 412
+            assert error.value.details["retryable"] is False
+            blockers = error.value.details["blockers"]
+            assert [item["code"] for item in blockers] == ["RECORD_IN_USE"]
+            assert blockers[0]["resource"] == {"type": "record", "recordRef": ref}
+            if claim_before_preview:
+                assert blockers == preview["blockers"]
+            with factory() as session:
+                assert session.get(DataRecordRow, pk).deleted is False
+                assert (
+                    session.scalar(
+                        select(func.count()).select_from(ProjectOperationRow)
+                    )
+                    == operations_before
+                )
+                assert (
+                    session.scalar(select(func.count()).select_from(DataChangeRow))
+                    == changes_before
+                )
+        else:
+            result, _, replayed = deletion.delete_record(
+                project, source["tableId"], encoded, uid(), payload
+            )
+            assert result["deleted"] is True and not replayed
+            with factory() as session:
+                assert session.get(DataRecordRow, pk).deleted is True
+    finally:
+        factory.dispose()
 
 
 def test_record_delete_requires_fresh_impact_and_preserves_revisions(ctx):

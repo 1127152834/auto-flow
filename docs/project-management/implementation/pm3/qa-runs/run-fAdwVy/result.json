@@ -1,0 +1,50 @@
+{
+  "status": "failed",
+  "scenario": "failure",
+  "message": "timed out waiting for control 查看失败截图：click: null",
+  "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/out/renderer/index.html#/projects/1407481f-e7f7-4f59-8583-e758fe976b63/runs/tasks/147f9b76-d05b-492e-8ab7-56a259271bf2/evidence",
+  "bodyText": "AutoFlow\n总览\n项目\n浏览器配置\n代理管理\n模型管理\n设置\n本地服务正常\n项目 / PM3运行验收项目 / 运行记录 / 任务详情\nPM3运行验收项目\n\n真实浏览器批次与证据验收\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n← 返回批次\n任务 147f9b76-d05b-492e-8ab7-56a259271bf2\n\n参数运行验收 · 批次 f8e9a4e2-b9bf-4726-8c05-da7765ca7865\n\n失败\n开始时间\n2026/9/15 13:17:18\n结束时间\n2026/9/15 13:17:26\n日志\n输入与输出\n异常与证据\n异常事实\n{\"code\":\"WORKFLOW_FAILED\",\"message\":\"工作流未完整成功，请查看已提交的节点记录\"}\nclick\n尝试 1 · 失败\n\n{\"code\":\"WORKFLOW_NODE_TIMEOUT\",\"message\":\"节点执行超时\"}\n\n证据附件\n\n本次运行未生成截图或附件。\n\n历史尝试\n节点 / 尝试\t开始 / 结束\t结果\n\nopen\n尝试 1\t2026/9/15 13:17:24\n2026/9/15 13:17:24\t成功\n\ninput\n尝试 1\t2026/9/15 13:17:24\n2026/9/15 13:17:24\t成功\n\nclick\n尝试 1\t2026/9/15 13:17:24\n2026/9/15 13:17:25\t失败",
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/01-automation.png",
+      "sha256": "a8c94ac55adbffba2abe28bee1daaf1dcf9ca39258e3afb4fe4139c959164183"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/02-start-batch.png",
+      "sha256": "cd5244b999dba82ebbb12ded5be1338b6020d79894cf650ae482526e2b01cb61"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/04-batch-detail.png",
+      "sha256": "5373759a4bf953ca7eb9c995c14b1488f8341e7e135d8a5d6a997e572511af81"
+    },
+    {
+      "name": "05-task-logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/05-task-logs.png",
+      "sha256": "db60f94a5ab72e537daa64ff72f740aefdb262f7eda88e221a2d242a0b08124f"
+    },
+    {
+      "name": "06-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/06-task-input-output.png",
+      "sha256": "81139d514e74fa25ce5cc33dbed300ed93de7b348404d45129b600d770da98e0"
+    },
+    {
+      "name": "07-task-evidence",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/07-task-evidence.png",
+      "sha256": "d9bd1e7dc81c2bd8588c009fe239ecddbb17fa7596ac8051629dbf41b71ae1a8"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-fAdwVy/99-failure.png",
+      "sha256": "d9bd1e7dc81c2bd8588c009fe239ecddbb17fa7596ac8051629dbf41b71ae1a8"
+    }
+  ],
+  "createdAt": "2026-09-15T05:17:42.253Z"
+}

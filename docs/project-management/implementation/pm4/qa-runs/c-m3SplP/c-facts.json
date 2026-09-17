@@ -1,0 +1,81 @@
+{
+  "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+  "finiteBatchId": "07ba9f03-c6e6-47fd-9bc8-562fafed76df",
+  "unlimitedBatchId": "713abd87-932b-4ccf-8e08-fc04eb6e6468",
+  "finiteTaskIds": [
+    "da2db422-7253-4897-be99-8e5ef39402c1",
+    "93086bad-6012-48c2-8e56-4865ac4b5509",
+    "f6fc780b-ef47-4cde-a48b-89a401569be5"
+  ],
+  "unlimitedTaskIds": [
+    "9c1a16ff-e3ca-4e77-bdbf-1da252e04389",
+    "f584c339-51f4-410b-8488-56b5119bb270"
+  ],
+  "reusablePersonRef": {
+    "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+    "tableId": "6d055fa9-8a32-4c54-bf1c-414a43f42891",
+    "datasetGeneration": "99aefa0c-a783-43cc-964b-9caf06efc62f",
+    "recordKey": {
+      "type": "uuid",
+      "value": "d4cac714-bad1-4657-92cb-3d3c9e679954"
+    }
+  },
+  "emailRefs": [
+    {
+      "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+      "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+      "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+      "recordKey": {
+        "type": "uuid",
+        "value": "97d343ee-61be-4546-89cf-9c8f560b371d"
+      }
+    },
+    {
+      "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+      "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+      "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+      "recordKey": {
+        "type": "uuid",
+        "value": "4877f1b3-bd9e-45a9-814f-2bb0d4e3b7eb"
+      }
+    },
+    {
+      "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+      "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+      "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+      "recordKey": {
+        "type": "uuid",
+        "value": "08e35ca6-103c-4cb2-99ca-de091040843f"
+      }
+    },
+    {
+      "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+      "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+      "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+      "recordKey": {
+        "type": "uuid",
+        "value": "d5e54b7a-910e-4472-a64f-a6f0d43bc14c"
+      }
+    },
+    {
+      "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+      "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+      "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+      "recordKey": {
+        "type": "uuid",
+        "value": "c35ae152-38a3-430f-8894-73292d11f41c"
+      }
+    }
+  ],
+  "usedEmailCount": 5,
+  "accountCount": 5,
+  "finiteEndReason": {
+    "status": "limitReached"
+  },
+  "unlimitedStatus": "stopped",
+  "executionBoundary": {
+    "executor": "fake",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  }
+}

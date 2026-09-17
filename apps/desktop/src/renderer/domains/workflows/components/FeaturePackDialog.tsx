@@ -332,7 +332,7 @@ export function FeaturePackDialog({ open, onClose }: FeaturePackDialogProps) {
                         {pack.module_categories.length > 0 && (
                           <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                             {pack.module_categories.map((c) => (
-                              <span key={c} className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-[hsl(var(--brand-50)/0.6)] text-[hsl(var(--brand-700))]">
+                              <span key={c} className="text-[10.5px] px-1.5 py-0.5 rounded-control bg-[hsl(var(--brand-50)/0.6)] text-[hsl(var(--brand-700))]">
                                 {c}
                               </span>
                             ))}

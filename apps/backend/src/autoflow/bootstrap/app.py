@@ -9,10 +9,15 @@ from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
+from autoflow.application.project_automations.resource_query import (
+    ProjectAutomationResourceQuery,
+)
+from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
 from autoflow.application.project_data.excel import ProjectExcelService
@@ -26,8 +31,15 @@ from autoflow.application.project_data.status_batches import (
     RecordStatusBatchService,
 )
 from autoflow.application.project_data.tables import DataTableService
+from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+from autoflow.application.project_runs.events import ProjectRunEvents
+from autoflow.application.project_runs.evidence import ProjectRunEvidence
+from autoflow.application.project_runs.queries import ProjectRunQueries
+from autoflow.application.project_runs.resources import ProjectRunResourceResolver
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
+from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.http_routes import (
     ManagementHttpServices,
@@ -43,6 +55,7 @@ from autoflow.bootstrap.proxies import (
 )
 from autoflow.bootstrap.workflows import (
     build_workflow_services,
+    configure_project_workflow_runtime,
     register_workflow_routes,
 )
 from autoflow.domain.credentials import CredentialStore
@@ -63,6 +76,9 @@ from autoflow.infrastructure.database.model_providers import (
     model_repository_transaction,
 )
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
+from autoflow.infrastructure.database.project_automations import (
+    SqlAlchemyProjectAutomations,
+)
 from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
 from autoflow.infrastructure.database.project_data_catalog import (
     SqlAlchemyProjectDataCatalog,
@@ -94,6 +110,7 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.database.settings_runtime import (
     SqlAlchemySettingsRuntimeRepository,
 )
@@ -256,6 +273,40 @@ def create_app(
     )
     workflow_services.runs.recover_interrupted()
 
+    project_workflow_dispatcher = configure_project_workflow_runtime(
+        app,
+        session_factory=session_factory,
+        profiles=profile_service,
+        installed=catalog_provider.installed,
+        resolve_proxy=proxy_runtime.resolve_profile,
+        read_license=license_store.read,
+        usage_guard=usage_guard,
+        installations=installations,
+        temp_dir=paths.temp,
+        gate=quiesce_gate,
+    )
+    automation_resources = ProjectAutomationResourceQuery(
+        SqlAlchemyProjects(session_factory),
+        profile_service,
+        installed_kernel_lookup or catalog_provider,
+        proxy_options,
+        model_service,
+    )
+    project_run_coordinator = ProjectRunCoordinator(
+        session_factory,
+        app.state.project_workflow_runtime,
+        resolve_resources=ProjectRunResourceResolver(
+            automation_resources, app.state.project_workflow_resources
+        ),
+        available_capabilities=["browser.cloakbrowser", "project.data"],
+    )
+    project_run_scheduler = ProjectBatchScheduler(
+        session_factory, project_workflow_dispatcher, quiesce_gate
+    )
+    app.state.project_run_coordinator = project_run_coordinator
+    app.state.project_run_scheduler = project_run_scheduler
+    app.router.add_event_handler("startup", project_run_scheduler.startup)
+
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
         {
@@ -268,6 +319,8 @@ def create_app(
         settings.api_version,
         lambda: len(catalog_provider.installed()),
         lambda: [
+            *project_workflow_dispatcher.blockers(),
+            *project_run_scheduler.blockers(),
             *(
                 ["project_excel_operation_active"]
                 if project_excel.pending_operations()
@@ -301,6 +354,8 @@ def create_app(
     app.state.kernel_service = kernel_service
     app.state.settings_runtime = settings_runtime
     app.state.workflow_services = workflow_services
+    app.state.project_workflow_dispatcher = project_workflow_dispatcher
+    app.state.workflow_dispatcher = project_workflow_dispatcher
 
     async def shutdown() -> None:
         try:
@@ -313,11 +368,22 @@ def create_app(
             status_batch_coordinator.shutdown()
             await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
 
-            await asyncio.gather(
+            async def close_project_workflows() -> None:
+                try:
+                    await project_run_scheduler.shutdown()
+                finally:
+                    await project_workflow_dispatcher.shutdown()
+
+            results = await asyncio.gather(
                 workflow_services.shutdown(),
+                close_project_workflows(),
                 test_browser_workers.shutdown(),
                 kernel_worker_manager.shutdown(),
+                return_exceptions=True,
             )
+            for result in results:
+                if isinstance(result, BaseException):
+                    raise result
         finally:
             try:
                 from inspect import isawaitable
@@ -346,8 +412,25 @@ def create_app(
         instance_id=settings.instance_id,
     )
     register_workflow_routes(app, workflow_services)
+    project_workflow_service = WorkflowService(
+        SqlAlchemyWorkflowRepository(session_factory)
+    )
+    app.include_router(workflow_catalog_router(project_workflow_service))
     register_project_routes(app, ProjectHttpServices(
+        run_coordinator=project_run_coordinator,
+        run_queries=ProjectRunQueries(session_factory),
+        run_evidence=ProjectRunEvidence(session_factory, paths.workspace),
+        run_events=ProjectRunEvents(session_factory),
+        run_scheduler=project_run_scheduler,
+        gate=quiesce_gate,
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
+        automations=ProjectAutomationService(
+            SqlAlchemyProjects(session_factory),
+            SqlAlchemyProjectAutomations(session_factory),
+            workflow_service=project_workflow_service,
+            resource_query=automation_resources,
+            capability_query=project_run_coordinator,
+        ),
         tables=DataTableService(SqlAlchemyProjectData(session_factory)),
         catalog=DataCatalogService(SqlAlchemyProjectDataCatalog(session_factory)),
         records=DataRecordService(SqlAlchemyProjectDataRecords(session_factory)),

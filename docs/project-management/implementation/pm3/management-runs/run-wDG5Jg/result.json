@@ -1,0 +1,23 @@
+{
+  "status": "failed",
+  "head": "bd5aba58c99c7edba4ce43d67e1c27b84119196a",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-management-YxRGxo",
+  "checks": [],
+  "screenshots": [
+    {
+      "id": "failure",
+      "file": "failure.png",
+      "reference": "unassigned",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    }
+  ],
+  "error": "Error: timed out waiting for local backend ready: false",
+  "visualReview": "pending"
+}

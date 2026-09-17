@@ -15,6 +15,7 @@ import { DataCommandNotAccepted } from '../data-command'
 import { createExcelApi } from '../excel-api'
 import type { DataTableFormValues } from '../form-schema'
 import { createProjectFileClient } from '../project-file-client'
+import { safeProjectError } from '../../projects/presentation-error'
 
 export type DataTableDirectoryPageProps = {
   workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient
@@ -137,14 +138,14 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
     } catch (caught) {
       if (!current()) return
       if (caught instanceof DataCommandNotAccepted) {
-        setNotAccepted(true); setRecoveryPending(true); setError(caught.message)
+        setNotAccepted(true); setRecoveryPending(true); setError(safeProjectError(caught))
         return
       }
       const uncertain = caught instanceof DataCommandUncertain || !(caught instanceof ApiClientError && caught.status >= 400 && caught.status < 500 && caught.status !== 408)
       if (!uncertain) pending.current = null
       setRecoveryPending(uncertain)
       setConflict(caught instanceof ApiClientError && caught.code === 'REVISION_CONFLICT')
-      setError(uncertain ? '上次保存结果尚未确认，请先核对结果。' : caught.message)
+      setError(uncertain ? '上次保存结果尚未确认，请先核对结果。' : safeProjectError(caught))
     } finally { if (ticket === epoch.current) commandBusy.current = false }
   }
   const reload = async () => {
@@ -156,7 +157,7 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
       setEditor({ session: crypto.randomUUID(), table: latest }); dirty.current = false
       setError(null); setConflict(false); setReloadOpen(false)
       cache.setQueryData([...prefix, 'table', latest.tableId], latest)
-    } catch (caught) { if (mounted.current && ticket === epoch.current) { setError(caught instanceof Error ? caught.message : '载入最新资料失败'); setReloadOpen(false) } }
+    } catch (caught) { if (mounted.current && ticket === epoch.current) { setError(safeProjectError(caught)); setReloadOpen(false) } }
     finally { if (ticket === epoch.current) setReloading(false) }
   }
   const dirtyChanged = useCallback((value: boolean) => { dirty.current = value }, [])
@@ -167,7 +168,7 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
       <SearchInput className="w-60 max-w-full" aria-label="搜索数据表" placeholder="搜索数据表名称或用途" value={query.query} onClear={() => setQuery({ ...query, query: '', page: 1 })} onChange={event => setQuery({ ...query, query: event.target.value, page: 1 })} />
       <Select className="w-32" aria-label="数据来源" clearable={false} value={query.sourceKind ?? 'all'} options={sources} onValueChange={value => setQuery({ ...query, sourceKind: value === 'all' || value === null ? undefined : value as DirectoryQuery['sourceKind'], page: 1 })} />
       <Select className="w-32" aria-label="数据表排序" clearable={false} value={query.sort} options={sorts} onValueChange={value => setQuery({ ...query, sort: value as DirectoryQuery['sort'], page: 1 })} />
-    </div>} items={directory.data?.items ?? []} loading={directory.isPending && !directory.isError} error={directory.error?.message} readonly={readonly} disabled={disabled} hasFilters={Boolean(query.query || query.sourceKind)} onRetry={() => void directory.refetch()} onCreate={() => startEditor(null)} onImportExcel={startExcel} onEdit={id => { const table = directory.data?.items.find(item => item.tableId === id); if (table) startEditor(table) }} onOpen={onOpen} />
+    </div>} items={directory.data?.items ?? []} loading={directory.isPending && !directory.isError} error={directory.error ? safeProjectError(directory.error) : undefined} readonly={readonly} disabled={disabled} hasFilters={Boolean(query.query || query.sourceKind)} onRetry={() => void directory.refetch()} onCreate={() => startEditor(null)} onImportExcel={startExcel} onEdit={id => { const table = directory.data?.items.find(item => item.tableId === id); if (table) startEditor(table) }} onOpen={onOpen} />
     {directory.data ? <Pagination offset={(query.page - 1) * query.pageSize} limit={query.pageSize} total={directory.data.total} count={directory.data.items.length} disabled={directory.isFetching || disabled} onOffsetChange={offset => setQuery({ ...query, page: Math.floor(offset / query.pageSize) + 1 })} /> : null}
     <DataTableFormDialog open={Boolean(editor)} mode={editor?.table ? 'edit' : 'create'} sessionKey={editor?.session ?? 'closed'} submissionEpoch={submissionEpoch} initialValues={editor?.table ? tableValues(editor.table) : undefined}
       readonly={readonly || disabled} recoveryPending={recoveryPending} onRecover={disabled ? undefined : () => execute('lookup')} onSubmit={values => execute('submit', values)} onDirtyChange={dirtyChanged} onSavingChange={savingChanged} onRequestClose={guard}

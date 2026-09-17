@@ -5,8 +5,14 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from sqlalchemy import event, select
 
+from autoflow.application.project_data.catalog import DataCatalogService
+from autoflow.application.project_data.schema import DataSchemaService
+from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
+from autoflow.infrastructure.database.project_data_catalog import (
+    SqlAlchemyProjectDataCatalog,
+)
 from autoflow.infrastructure.database.project_data_models import (
     DataChangeRow,
     DataFieldRow,
@@ -14,6 +20,10 @@ from autoflow.infrastructure.database.project_data_models import (
     DataRecordRow,
     DataTableRow,
 )
+from autoflow.infrastructure.database.project_data_schema import (
+    SqlAlchemyProjectDataSchema,
+)
+from tests.integration.test_project_run_data_start import _setup
 
 from .test_project_data_schema_preview import add_field, candidate, preview, uid
 from .test_project_data_schema_preview import (
@@ -28,6 +38,175 @@ def commit(ctx, draft, report, key=None):
         key or uid(),
         {"candidate": draft, "impactRevision": report["impactRevision"]},
     )
+
+
+def _active_schema_context(tmp_path):
+    factory, project_id, automation, coordinator = _setup(tmp_path)
+    configured = automation.input_plan["inputs"][0]
+    table_id = configured["tableId"]
+    fields = DataCatalogService(SqlAlchemyProjectDataCatalog(factory)).fields(
+        project_id, table_id
+    )["items"]
+    with factory() as session:
+        table = session.get(DataTableRow, table_id)
+        assert table is not None
+        table_revision = table.table_revision
+    draft = {
+        "datasetGeneration": configured["datasetGeneration"],
+        "expectedTableRevision": table_revision,
+        "fields": [
+            {
+                "kind": "existing",
+                "fieldId": field["ref"]["fieldId"],
+                "expectedFieldRevision": field["fieldRevision"],
+                "definition": {
+                    key: field[key]
+                    for key in ("key", "name", "type", "required", "validation")
+                },
+            }
+            for field in fields
+        ],
+    }
+    return (
+        DataSchemaService(SqlAlchemyProjectDataSchema(factory)),
+        factory,
+        project_id,
+        automation,
+        coordinator,
+        table_id,
+        fields[0],
+        draft,
+    )
+
+
+def _start_active_task(factory, project_id, automation, coordinator):
+    batch = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
+    return coordinator.list_tasks(project_id, batch.batch_id)[0]
+
+
+def test_schema_preview_blocks_structural_active_task_dependency_but_allows_label(
+    tmp_path,
+):
+    service, factory, project, automation, coordinator, table_id, field, draft = (
+        _active_schema_context(tmp_path)
+    )
+    task = _start_active_task(factory, project, automation, coordinator)
+    structural = deepcopy(draft)
+    structural["fields"][0]["definition"]["required"] = False
+
+    report = service.preview(project, table_id, structural)
+    label = deepcopy(draft)
+    label["fields"][0]["definition"]["name"] = "运行中显示名称"
+    label_report = service.preview(project, table_id, label)
+
+    blocker = next(
+        item
+        for item in report["blockers"]
+        if item["code"] == "ACTIVE_TASK_FIELD_DEPENDENCY"
+    )
+    assert blocker["fieldId"] == field["ref"]["fieldId"]
+    assert {
+        key: blocker[key] for key in ("taskId", "runId", "referenceSources")
+    } == {
+        "taskId": task.task_id,
+        "runId": task.run_id,
+        "referenceSources": ["input.fieldMappings", "input.values"],
+    }
+    assert not any(
+        item["code"] == "ACTIVE_TASK_FIELD_DEPENDENCY"
+        for item in label_report["blockers"]
+    )
+    factory.dispose()
+
+
+def test_schema_commit_preserves_blockers_from_the_confirmed_preview(tmp_path):
+    service, factory, project, automation, coordinator, table_id, field, draft = (
+        _active_schema_context(tmp_path)
+    )
+    task = _start_active_task(factory, project, automation, coordinator)
+    draft["fields"][0]["definition"]["required"] = False
+    report = service.preview(project, table_id, draft)
+
+    assert report["blockers"][0]["taskId"] == task.task_id
+    with pytest.raises(ProjectError) as caught:
+        service.commit(
+            project,
+            table_id,
+            uid(),
+            {"candidate": draft, "impactRevision": report["impactRevision"]},
+        )
+
+    assert caught.value.code == "IMPACT_STALE"
+    assert caught.value.details is not None
+    assert caught.value.details["blockers"] == report["blockers"]
+    with factory() as session:
+        stored = session.get(
+            DataFieldRow,
+            (field["ref"]["fieldId"], draft["datasetGeneration"]),
+        )
+        assert stored is not None
+        assert stored.required is field["required"]
+    factory.dispose()
+
+
+def test_schema_commit_rechecks_task_started_after_preview_and_changes_nothing(
+    tmp_path,
+):
+    service, factory, project, automation, coordinator, table_id, field, draft = (
+        _active_schema_context(tmp_path)
+    )
+    draft["fields"][0]["definition"]["required"] = False
+    report = service.preview(project, table_id, draft)
+    assert not report["blockers"]
+    task = _start_active_task(factory, project, automation, coordinator)
+
+    with pytest.raises(ProjectError) as caught:
+        service.commit(
+            project,
+            table_id,
+            uid(),
+            {"candidate": draft, "impactRevision": report["impactRevision"]},
+        )
+
+    assert caught.value.code == "IMPACT_STALE"
+    assert caught.value.details is not None
+    assert caught.value.details["blockers"] == [
+        {
+            "code": "ACTIVE_TASK_FIELD_DEPENDENCY",
+            "fieldId": field["ref"]["fieldId"],
+            "clientId": None,
+            "message": (
+                "An active task depends on this field via "
+                "input.fieldMappings, input.values"
+            ),
+            "affectedRecords": None,
+            "taskId": task.task_id,
+            "runId": task.run_id,
+            "referenceSources": ["input.fieldMappings", "input.values"],
+        }
+    ]
+    with factory() as session:
+        stored = session.get(
+            DataFieldRow,
+            (field["ref"]["fieldId"], draft["datasetGeneration"]),
+        )
+        assert stored is not None
+        assert stored.required is field["required"]
+    factory.dispose()
 
 
 def test_atomic_backfill_and_frozen_replay(ctx):

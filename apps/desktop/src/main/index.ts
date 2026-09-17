@@ -122,6 +122,9 @@ app.whenReady().then(async () => {
       instanceId: `${process.pid}-${Date.now()}`,
       dataDir,
       backendDirectory: join(__dirname, '../../../backend'),
+      developmentModule: !app.isPackaged && process.env.AUTOFLOW_PM4_QA === '1'
+        ? 'tests.qa.pm4_sidecar'
+        : undefined,
       rendererOrigin: process.env.ELECTRON_RENDERER_URL ? new URL(process.env.ELECTRON_RENDERER_URL).origin : 'null',
       production: app.isPackaged,
       sidecarPath: app.isPackaged ? resolvePackagedSidecarPath(process.resourcesPath, process.platform) : undefined,

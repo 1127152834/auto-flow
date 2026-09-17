@@ -1,0 +1,15 @@
+✔ reports a known full system UUID in visible text and perceptible attributes (1.435917ms)
+✔ reports a known eight-character system prefix without scanning arbitrary UUIDs (0.748417ms)
+✔ keeps a user-owned UUID visible and excludes its shared prefix from prefix checks (0.195625ms)
+✔ does not inspect DOM value, href, hash, data attributes, or hidden implementation state (0.119125ms)
+✔ checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs (1.169583ms)
+✔ checkCdpPage audit expression executes without module bindings in the renderer (0.314375ms)
+✔ a business UUID sharing a prefix does not hide a separate technical short ID (0.108083ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 74.007917

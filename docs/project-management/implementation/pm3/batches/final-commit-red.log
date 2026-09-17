@@ -1,0 +1,45 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_final_commit_failure_discards_connection_transaction_before_next_start __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-994/test_final_commit_failure_disc0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cb40410>
+
+    def test_final_commit_failure_discards_connection_transaction_before_next_start(tmp_path, monkeypatch):
+        import sqlite3
+        from sqlalchemy.exc import OperationalError
+
+        factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+        engine = factory.kw["bind"]
+        original_commit = engine.dialect.do_commit
+
+        def fail_commit(_connection):
+            raise sqlite3.OperationalError("injected final commit failure")
+
+        monkeypatch.setattr(engine.dialect, "do_commit", fail_commit)
+        with pytest.raises(OperationalError, match="final commit failure"):
+            coordinator.start(project.project_id, automation.automation_id, str(uuid4()), start_payload(automation, max_tasks=2))
+        monkeypatch.setattr(engine.dialect, "do_commit", original_commit)
+>       _assert_no_started_rows(factory)
+
+tests/integration/test_project_run_start.py:360:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+factory = sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-994/test_final_commit_failure_disc0/project-runs.sqlite3), autoflush=True, expire_on_commit=False)
+
+    def _assert_no_started_rows(factory):
+        with factory() as session:
+>           assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 0
+E           assert 1 == 0
+E            +  where 1 = scalar(<sqlalchemy.sql.selectable.Select object at 0x10cec2610>)
+E            +    where scalar = <sqlalchemy.orm.session.Session object at 0x10cd43210>.scalar
+E            +    and   <sqlalchemy.sql.selectable.Select object at 0x10cec2610> = select_from(ProjectBatchRow)
+E            +      where select_from = <sqlalchemy.sql.selectable.Select object at 0x10ce53210>.select_from
+E            +        where <sqlalchemy.sql.selectable.Select object at 0x10ce53210> = select(<sqlalchemy.sql.functions.count at 0x10ce2a7d0; count>)
+E            +          where <sqlalchemy.sql.functions.count at 0x10ce2a7d0; count> = <sqlalchemy.sql.functions._FunctionGenerator object at 0x10ce2a750>()
+E            +            where <sqlalchemy.sql.functions._FunctionGenerator object at 0x10ce2a750> = func.count
+
+tests/integration/test_project_run_start.py:322: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_run_start.py::test_final_commit_failure_discards_connection_transaction_before_next_start
+1 failed, 11 deselected in 0.49s

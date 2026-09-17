@@ -1,0 +1,259 @@
+{
+  "status": "passed",
+  "scenario": "PM4-C finite-and-unlimited-management",
+  "scope": "管理侧通过，真实执行核心接入待验收",
+  "boundary": {
+    "executor": "fake",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  },
+  "visualReview": "pending",
+  "gitHead": "64606a23de3a77d36c97f833151fed5b44903f33",
+  "sourceSha256": "b6cddd53fc179bfed4b987140a18caa104b14a403bbb4051a626ee0f47e5952a",
+  "platform": "darwin",
+  "arch": "arm64",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm4-v1-qa-y4htej",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm4-v1-qa-y4htej/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP",
+  "checkpoints": [
+    "UI 已创建项目；只读 GET 找回同一真实项目。",
+    "UI 已创建三张表、必要字段、人员/邮箱记录及待使用/已使用状态；账号表为空。",
+    "UI 已创建自动化并配置两个 independent + required 数据输入。",
+    "有限三次管理链通过：三个成功任务复用同一人员，领取三个不同待使用邮箱，显式改为已使用并各新增一条账号。",
+    "不限次数管理链通过：执行两次后由 UI 主动停止，领取门关闭、任务数保持两条，五次执行没有重复账号。"
+  ],
+  "screenshots": [
+    {
+      "name": "00-isolated-ready",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/00-isolated-ready.png",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "route": "#/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "6a53091c0f2f20ad814754d95e4f69627bdb23fef6918e597c1639c9600520be",
+      "visualReview": "pending"
+    },
+    {
+      "name": "01-three-tables",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/01-three-tables.png",
+      "reference": "05-data/001-data-v1-approved-ca940d.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "7237f6929da5e67c7e85f8a878739ff05f221c4da6dcb362a3a8ddf9f8d2ce23",
+      "visualReview": "pending"
+    },
+    {
+      "name": "02-two-required-inputs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/02-two-required-inputs.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-inputs.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/automations/278c08f3-effe-472b-adef-96d545d3b2e8",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "fd9f1c8f81ddb5dca16ec05bb58f509f2ff0d5391bb02ba91f07844475f00cf2",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-finite-three-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/03-finite-three-preview.png",
+      "reference": "docs/prototype/project-management-pm3/batch-start-dialog.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/automations/278c08f3-effe-472b-adef-96d545d3b2e8",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "131ea87af3fe071f488e689b4024df689e1927b99ea07aa11d3d7859333a9286",
+      "visualReview": "pending"
+    },
+    {
+      "name": "04-finite-three-completed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/04-finite-three-completed.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/runs/batches/07ba9f03-c6e6-47fd-9bc8-562fafed76df",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "b3f7d23e711243947a36959d3dadabc02c8d5d05a1a856f6d07d83c50f18bd2e",
+      "visualReview": "pending"
+    },
+    {
+      "name": "05-finite-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/05-finite-task-input-output.png",
+      "reference": "03-runs/006-task-input-output-approved-7af0aa.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/runs/tasks/f6fc780b-ef47-4cde-a48b-89a401569be5/io",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "fc0340cfb78331ac2f55fe96277fb20d957542d91e6c015090af564d64c6e4b1",
+      "visualReview": "pending"
+    },
+    {
+      "name": "06-unlimited-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/06-unlimited-preview.png",
+      "reference": "docs/prototype/project-management-pm3/batch-start-dialog.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/automations/278c08f3-effe-472b-adef-96d545d3b2e8",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "17754693b43f16690d995ba56066ced49c45ef31e4e645326373abcb19f79273",
+      "visualReview": "pending"
+    },
+    {
+      "name": "07-unlimited-two-tasks-running",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/07-unlimited-two-tasks-running.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/runs/batches/713abd87-932b-4ccf-8e08-fc04eb6e6468",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "7a65d87e9093a524406649c5a8c65b40cc79b9947ea56753f2f11b22f9579f70",
+      "visualReview": "pending"
+    },
+    {
+      "name": "08-unlimited-stop-confirmation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/08-unlimited-stop-confirmation.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/runs/batches/713abd87-932b-4ccf-8e08-fc04eb6e6468",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "491bceba6d7ecae0753492a8320ecaf2ec041dff164f2d25b44e0667a9da3087",
+      "visualReview": "pending"
+    },
+    {
+      "name": "09-unlimited-stopped",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/c-m3SplP/09-unlimited-stopped.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/0c82c739-29d7-42be-94b4-76d46109f1c3/runs/batches/713abd87-932b-4ccf-8e08-fc04eb6e6468",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "84401381161eb88e0a493672dae7447db6f0524668248b01ac8fb6f38f6ba201",
+      "visualReview": "pending"
+    }
+  ],
+  "facts": {
+    "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+    "finiteBatchId": "07ba9f03-c6e6-47fd-9bc8-562fafed76df",
+    "unlimitedBatchId": "713abd87-932b-4ccf-8e08-fc04eb6e6468",
+    "finiteTaskIds": [
+      "da2db422-7253-4897-be99-8e5ef39402c1",
+      "93086bad-6012-48c2-8e56-4865ac4b5509",
+      "f6fc780b-ef47-4cde-a48b-89a401569be5"
+    ],
+    "unlimitedTaskIds": [
+      "9c1a16ff-e3ca-4e77-bdbf-1da252e04389",
+      "f584c339-51f4-410b-8488-56b5119bb270"
+    ],
+    "reusablePersonRef": {
+      "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+      "tableId": "6d055fa9-8a32-4c54-bf1c-414a43f42891",
+      "datasetGeneration": "99aefa0c-a783-43cc-964b-9caf06efc62f",
+      "recordKey": {
+        "type": "uuid",
+        "value": "d4cac714-bad1-4657-92cb-3d3c9e679954"
+      }
+    },
+    "emailRefs": [
+      {
+        "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+        "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+        "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+        "recordKey": {
+          "type": "uuid",
+          "value": "97d343ee-61be-4546-89cf-9c8f560b371d"
+        }
+      },
+      {
+        "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+        "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+        "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+        "recordKey": {
+          "type": "uuid",
+          "value": "4877f1b3-bd9e-45a9-814f-2bb0d4e3b7eb"
+        }
+      },
+      {
+        "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+        "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+        "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+        "recordKey": {
+          "type": "uuid",
+          "value": "08e35ca6-103c-4cb2-99ca-de091040843f"
+        }
+      },
+      {
+        "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+        "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+        "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+        "recordKey": {
+          "type": "uuid",
+          "value": "d5e54b7a-910e-4472-a64f-a6f0d43bc14c"
+        }
+      },
+      {
+        "projectId": "0c82c739-29d7-42be-94b4-76d46109f1c3",
+        "tableId": "1231002d-2e8f-4475-8f6f-892781ec3c7b",
+        "datasetGeneration": "01ff97a6-1c61-40bb-ac27-d103f53388c8",
+        "recordKey": {
+          "type": "uuid",
+          "value": "c35ae152-38a3-430f-8894-73292d11f41c"
+        }
+      }
+    ],
+    "usedEmailCount": 5,
+    "accountCount": 5,
+    "finiteEndReason": {
+      "status": "limitReached"
+    },
+    "unlimitedStatus": "stopped",
+    "executionBoundary": {
+      "executor": "fake",
+      "browser": "notExecuted",
+      "studio": "notExecuted"
+    }
+  },
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器执行",
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ],
+  "createdAt": "2026-09-15T18:08:43.769Z",
+  "buildEntrypointsSha256": "8ef91fec4a6de03a0a58d1cdf157f1c933504ffbf68154353a344e3e3dcf8fb6"
+}

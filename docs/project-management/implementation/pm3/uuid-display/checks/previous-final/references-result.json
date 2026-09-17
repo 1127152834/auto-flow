@@ -1,0 +1,57 @@
+{
+  "status": "scenario-passed",
+  "coverage": "partial",
+  "scenario": "references",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-7Q4lyo",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-7Q4lyo/workspace",
+  "evidence": "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789455431231",
+  "knownIds": [
+    "bbc5417d-08ea-4d85-9a63-384b0fbb6b3f",
+    "9732be5d-ec76-4374-b923-ec5a3b591603",
+    "a69b3b95-7dd2-4f83-ac05-748857416093",
+    "136567d5-5d22-4293-940f-15eb377f74f4",
+    "c135769e-2bc9-41e5-a921-7f33ae5789e3",
+    "744705eb-8a16-4f28-a792-5e8333d45b35",
+    "3f4c0593-6bad-4727-a371-46b35aa28232",
+    "5587fac4-9659-46d4-924c-ff322ea7ce8b",
+    "898a31b9-ea09-4bb1-a0c0-754199a0b079",
+    "5ef2286d-a1a5-44b5-a70d-fbed46d01dd8",
+    "894f12fc-dd8f-4a7f-a965-60b9a8bdafb6",
+    "e6e048f4-c661-44b4-8a6d-8a8374b62cea",
+    "0839dd50-992d-44d3-af36-cde85f2c0dd7",
+    "3767ff4e-15ab-43b6-8fa2-5a373ac8dfda",
+    "fa9f1985-4e5a-42dd-a095-846cc57a4ce1",
+    "f0721b42-716a-4f21-ad96-f2df0e2b8887",
+    "4f3de7e2-8a10-4d68-b8fe-83a9c1eac8fa"
+  ],
+  "businessIds": [],
+  "screenshots": [
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789455431231/31-unavailable-fixed-environment.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789455431231/32-unavailable-model-option.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789455431231/33-unavailable-proxy-option.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789455431231/34-unavailable-browser-profile-option.png"
+  ],
+  "unimplemented": [
+    "强制停止确认"
+  ],
+  "preparation": [
+    "项目由UI创建",
+    "工作流通过生产WorkflowService创建；失效资源引用通过正式自动化HTTP写入契约准备"
+  ],
+  "faultInjections": [],
+  "viewport": {
+    "width": 1440,
+    "height": 1024,
+    "devicePixelRatio": 1
+  },
+  "source": {
+    "head": "636931e",
+    "scriptSha256": "a11d98e07983f974117c2de82ba53323dba449dbce1ca5286a5c48ccd4914167",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "16f00058eaeafb0949552c3fc7bd03c288e4d4f31b73c0fb4d0d87fb4fcc0b8b",
+    "rendererAssetsSha256": "0a2b17c7a7d6c3e13159d0c9bcf18825a82f9d2d25902fac96dc91caecca45c3",
+    "rendererSourceSha256": "ebefec197a5066b1cbb2c2002bd43818c30b8f89ada4023204b372227d810ee6"
+  },
+  "startedAt": "2026-09-15T06:57:11.222Z",
+  "finishedAt": "2026-09-15T06:57:23.427Z"
+}

@@ -62,10 +62,10 @@ async def test_test_browser_shutdown_cannot_cancel_start_cleanup_twice(monkeypat
     entered, release = Event(), Event()
     real_capture = module.capture_processes
 
-    def blocked_capture(*args):
+    def blocked_capture(*args, **kwargs):
         entered.set()
         release.wait(3)
-        return real_capture(*args)
+        return real_capture(*args, **kwargs)
 
     monkeypatch.setattr(module, "capture_processes", blocked_capture)
     stopping = asyncio.create_task(manager.stop("profile-1"))
@@ -187,7 +187,7 @@ async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
 
     exited = asyncio.Event()
     process = SimpleNamespace(pid=700, returncode=None, wait=exited.wait)
-    monkeypatch.setattr(module, 'capture_processes', lambda *_args: {})
+    monkeypatch.setattr(module, 'capture_processes', lambda *_args, **_kwargs: {})
     monkeypatch.setattr(module, 'signal_processes', lambda *_args: None)
     try:
         async with asyncio.timeout(1):

@@ -572,14 +572,14 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
                                 <span className="font-semibold text-gray-800">
                                   {record.variable_name}
                                 </span>
-                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                <span className={`text-xs px-2 py-0.5 rounded-control font-medium ${
                                   record.operation === 'create' 
                                     ? 'bg-green-100 text-green-700' 
                                     : 'bg-blue-100 text-blue-700'
                                 }`}>
                                   {record.operation === 'create' ? '创建' : '更新'}
                                 </span>
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                                <span className="text-xs px-2 py-0.5 rounded-control bg-gray-100 text-gray-600">
                                   {record.value_type}
                                 </span>
                               </div>

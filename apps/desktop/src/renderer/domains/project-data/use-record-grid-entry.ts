@@ -14,7 +14,7 @@ const requestKey = (o: Options) => JSON.stringify([scopeKey(o.scope), o.instance
 function load(o: Options) {
   const empty: GridSession = { schemaVersion: 1, scope: o.scope, tableRevision: o.tableRevision, rows: [], pending: null, receipt: null }
   try { return { session: readGridSession(o.storage, o.scope, true) ?? empty, error: '' } }
-  catch (error) { return { session: empty, error: error instanceof Error ? error.message : '草稿读取失败' } }
+  catch { return { session: empty, error: '草稿读取失败，请重试' } }
 }
 export function useRecordGridEntry(options: Options) {
   const [initial] = useState(() => load(options))
@@ -53,7 +53,7 @@ export function useRecordGridEntry(options: Options) {
   const persist = (next: GridSession) => { writeGridSession(current.current.storage, next); session.current = next }
   const change = (next: DraftHistory) => {
     history.current = next; session.current = { ...session.current, rows: next.rows }; setRows(next.rows); setErrors([])
-    try { persist(session.current); setMessage('') } catch (error) { setMessage(`草稿尚未保存：${String(error)}`) }
+    try { persist(session.current); setMessage('') } catch { setMessage('草稿尚未保存，请重试') }
   }
   const addRow = (focusFieldId?: string) => {
     if (!editable()) return
@@ -62,7 +62,7 @@ export function useRecordGridEntry(options: Options) {
       change(next)
       const field = current.current.fields.find(f => f.ref.fieldId === focusFieldId && f.writable && !f.formula) ?? current.current.fields.find(f => f.writable && !f.formula)
       if (field) focus(next.rows[next.rows.length - 1].clientRowId, field.ref.fieldId)
-    } catch (error) { setMessage(String(error)) }
+    } catch { setMessage('无法新增记录，请重试') }
   }
   const run = async (pending: GridPending, lookupOnly: boolean) => {
     if (working.current) return
@@ -97,9 +97,9 @@ export function useRecordGridEntry(options: Options) {
         const rowErrors: GridError[] = Array.isArray(details) ? details.flatMap(item => {
           if (!item || typeof item !== 'object' || typeof item.clientRowId !== 'string' || typeof item.message !== 'string') return []
           if (!frozen.rows.some(r => r.clientRowId === item.clientRowId)) return []
-          return [{ clientRowId: item.clientRowId, fieldId: typeof item.fieldId === 'string' ? item.fieldId : null, message: item.code === 'RECORD_ALREADY_EXISTS' ? '记录身份已存在，请填写不同的身份值' : item.message }]
+          return [{ clientRowId: item.clientRowId, fieldId: typeof item.fieldId === 'string' ? item.fieldId : null, message: item.code === 'RECORD_ALREADY_EXISTS' ? '记录身份已存在，请填写不同的身份值' : '记录未保存，请检查输入后重试' }]
         }) : []
-        setErrors(rowErrors); setState(error.code === 'REVISION_CONFLICT' ? 'stale' : 'draft'); setMessage(error.code === 'RECORD_ALREADY_EXISTS' ? '本次新增未保存，请检查重复的记录身份' : error.code === 'REVISION_CONFLICT' ? '字段已更新，请确认最新字段后再保存' : error.message)
+        setErrors(rowErrors); setState(error.code === 'REVISION_CONFLICT' ? 'stale' : 'draft'); setMessage(error.code === 'RECORD_ALREADY_EXISTS' ? '本次新增未保存，请检查重复的记录身份' : error.code === 'REVISION_CONFLICT' ? '字段已更新，请确认最新字段后再保存' : '操作失败，请重试')
         if (rowErrors[0]?.fieldId) focus(rowErrors[0].clientRowId, rowErrors[0].fieldId)
       } else { setState('uncertain'); setMessage('保存结果尚未确认，请查询原操作；不会自动重复新增') }
     } finally { if (alive(origin, sequence)) working.current = false }
@@ -113,7 +113,7 @@ export function useRecordGridEntry(options: Options) {
     if (checked.errors.length) { const first = checked.errors[0]; if (first.fieldId) focus(first.clientRowId, first.fieldId); return }
     if (!checked.rows.length) return
     const pending: GridPending = { key: crypto.randomUUID(), payload: { datasetGeneration: session.current.scope.datasetGeneration, expectedTableRevision: session.current.tableRevision, rows: checked.rows } }
-    try { persist({ ...session.current, pending, receipt: null }) } catch (error) { setMessage(`未发送保存请求：${String(error)}`); return }
+    try { persist({ ...session.current, pending, receipt: null }) } catch { setMessage('保存请求尚未发送，请重试'); return }
     await run(pending, false)
   }
   const reconcile = async () => { if (session.current.pending) await run(session.current.pending, true) }
@@ -140,7 +140,7 @@ export function useRecordGridEntry(options: Options) {
     undo: () => { if (editable()) change(undoDraft(history.current)) },
     paste: (columns: GridField[], row: number, column: number, text: string) => {
       if (!editable()) return
-      try { change(pasteGridCells(history.current, current.current.fields, columns, row, column, text)) } catch (error) { setMessage(String(error)) }
+      try { change(pasteGridCells(history.current, current.current.fields, columns, row, column, text)) } catch { setMessage('粘贴内容无法应用，请检查格式后重试') }
     },
   }
 }

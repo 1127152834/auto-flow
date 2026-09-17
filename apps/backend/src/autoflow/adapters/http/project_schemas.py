@@ -3,6 +3,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
+from .project_automation_schemas import AutomationView
 from .project_data_catalog_schemas import (
     FieldMutationResult,
     FieldResourceLocator,
@@ -27,6 +28,7 @@ from .project_excel_schemas import (
     ExcelInspectionView,
     ExcelReconcileResult,
 )
+from .project_run_schemas import BatchView
 from .schemas import ApiModel
 
 
@@ -60,9 +62,9 @@ class ProjectDefaultResources(ApiModel):
 
 
 class ProjectCapabilities(ApiModel):
-    automations: Literal["notImplemented"]
+    automations: Literal["available"]
     data: Literal["available"]
-    runs: Literal["notImplemented"]
+    runs: Literal["available"]
     environments: Literal["notImplemented"]
     statistics: Literal["notImplemented"]
     sync: Literal["notImplemented"]
@@ -105,6 +107,22 @@ class ProjectResourceLocator(ApiModel):
     project_id: str
 
 
+class AutomationResourceLocator(ApiModel):
+    type: Literal["automation"]
+    project_id: str
+    automation_id: str
+
+
+class BatchResourceLocator(ApiModel):
+    type: Literal["batch"]
+    project_id: str
+    batch_id: str
+
+
+class ProjectBatchResult(ApiModel):
+    batch: BatchView
+
+
 class ProjectOperationView(ApiModel):
     operation_id: str
     project_id: str | None
@@ -112,6 +130,11 @@ class ProjectOperationView(ApiModel):
     kind: Literal[
         "createProject",
         "updateProject",
+        "createAutomation",
+        "updateAutomation",
+        "startBatch",
+        "stopBatch",
+        "forceStopBatch",
         "createTable",
         "updateTable",
         "mutateField",
@@ -133,6 +156,8 @@ class ProjectOperationView(ApiModel):
     status_revision: int
     resource: Annotated[
         ProjectResourceLocator
+        | AutomationResourceLocator
+        | BatchResourceLocator
         | TableResourceLocator
         | FieldResourceLocator
         | StatusResourceLocator
@@ -141,6 +166,8 @@ class ProjectOperationView(ApiModel):
     ]
     result: (
         ProjectView
+        | AutomationView
+        | ProjectBatchResult
         | DataTableView
         | FieldMutationResult
         | DataSchemaResult

@@ -1,0 +1,40 @@
+{
+  "status": "failed",
+  "scenario": "recovery",
+  "message": "Expected values to be strictly equal:\n\n1 !== 2\n",
+  "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/out/renderer/index.html#/projects/51a86dbe-cdfd-4e26-bce9-0645e2b21547/runs/batches/4810e7f5-49b3-4cb6-8428-d73cbe56c3e7",
+  "bodyText": "AutoFlow\n总览\n项目\n浏览器配置\n代理管理\n模型管理\n设置\n本地服务正常\n项目 / PM3运行验收项目 / 运行记录 / 批次详情\nPM3运行验收项目\n\n真实浏览器批次与证据验收\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n← 返回批次列表\n参数运行验收\n\n4810e7f5-49b3-4cb6-8428-d73cbe56c3e7\n\n失败\n开始\n2026/9/15 12:43:55\n结束\n2026/9/15 12:44:05\n任务\n2 个\n本批次 2 个任务\n成功 1\n失败或异常 1\n进行中 0\n本批次任务\n参数运行验收\n全部状态\n任务\t所属批次\t任务状态\t时间\t操作\n38e111fc-57a5-45a0-8934-b93ffabcc09d\n运行 19a39e8c-6ee9-4454-a28e-d659981c2c03\n\t参数运行验收\t\n成功\t2026/9/15 12:44:02\t\n查看任务\n\ne855e749-c581-4edc-9e16-c2e2f984e985\n运行 eaea0307-0b02-4359-b7e3-6285685b342d\n\t参数运行验收\t\n失败\t2026/9/15 12:44:04\t\n查看任务\n1–2 / 2\n上一页\n第 1 页\n下一页",
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-7pAxWe/00-prepared.png",
+      "sha256": "af4643bc5ecccee7d2fca67114970105e0a6d5436b6cd4587449542a6c743a51"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-7pAxWe/01-automation.png",
+      "sha256": "8c6f847adb0b5d1e50b025bca30c76d2c723cfc8e91b11bd5839607133f5f06c"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-7pAxWe/02-start-batch.png",
+      "sha256": "3dafaef5eb0f0fff9426609d0a0d3717e89ca14df4b3f1918ad3e2ebe1b90e85"
+    },
+    {
+      "name": "03-unknown-start",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-7pAxWe/03-unknown-start.png",
+      "sha256": "99d7788f3386c2858a3ed2f47b2a610d11e2f3cc7cbd483ca62a075ef5aca723"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-7pAxWe/04-batch-detail.png",
+      "sha256": "47e2770948e903ffa524ba84e0d498206263b4167e08cb23867b5029ef497bdd"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-7pAxWe/99-failure.png",
+      "sha256": "ac3d2abd59cc926d9f6c7bcb696a32fb36855218893e21111c9555455ed38352"
+    }
+  ],
+  "createdAt": "2026-09-15T04:44:05.430Z"
+}

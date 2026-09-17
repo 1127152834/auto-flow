@@ -1,0 +1,20 @@
+{
+  "status": "failed",
+  "scenario": "success",
+  "message": "timed out waiting for control 保存配置: null",
+  "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/out/renderer/index.html#/projects/ea709179-068e-44b5-9e52-8f9f5ae0e6cd/automations/new",
+  "bodyText": "AutoFlow\n总览\n项目\n浏览器配置\n代理管理\n模型管理\n设置\n本地服务正常\n项目 / PM3运行验收项目 / 自动化 / 新建自动化\nPM3运行验收项目\n\n真实浏览器批次与证据验收\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n参数运行验收\n新增草稿\n\n真实输入、点击、输出与日志证据\n\n基本信息\n输入与参数\n资源与环境\n运行设置\n浏览器配置 *\n指定浏览器配置\nPM3真实运行浏览器\n模型提供方\n继承项目默认\n代理设置\n代理设置\n继承项目默认\n跟随浏览器配置\n不使用代理\n固定代理\n代理池\n环境策略\n环境策略\n每个任务创建临时环境\n固定持久环境（暂未开放）\n使用记录关联环境（暂未开放）\n\n任务结束后关闭并清理临时环境\n\n资源检查\n项目\t最终采用\t来源\t状态\n浏览器配置\tPM3真实运行浏览器\t自动化配置\t已选择\nCloakBrowser 内核\t公开版 · 145.0.7632.109.2\t浏览器配置\t已选择\n代理\t不使用代理\t浏览器配置\t已选择\n模型\t未配置\t项目默认\t未配置\n有未保存的修改\n取消修改\n保存配置\n正在保存…",
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-h8NXVW/00-prepared.png",
+      "sha256": "af4643bc5ecccee7d2fca67114970105e0a6d5436b6cd4587449542a6c743a51"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-h8NXVW/99-failure.png",
+      "sha256": "41ddc1e837b7eea58923e50b51d36f490289117e5786915ff782ea56eb464439"
+    }
+  ],
+  "createdAt": "2026-09-15T04:36:04.498Z"
+}

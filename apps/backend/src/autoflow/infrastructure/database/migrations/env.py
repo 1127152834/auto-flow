@@ -2,10 +2,14 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from autoflow.infrastructure.database import (  # noqa: F401
+    project_automation_models,
     project_data_models,
     project_data_status_batch_models,
     project_excel_models,
+    project_run_models,
+    workflow_core_models,
     workflow_models,
+    workflow_runtime_models,
 )
 from autoflow.infrastructure.database.models import Base
 

@@ -219,3 +219,9 @@ class SqlAlchemyWorkflowDocuments:
                 )
             session.delete(row)
             session.commit()
+
+
+from .core_workflows import (  # noqa: E402,F401
+    SqlAlchemyWorkflowRepository,
+    _record,
+)

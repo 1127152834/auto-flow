@@ -423,3 +423,51 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - `0009_merge_project_data` 汇合 `0008_workflow_debug` 与 `pm02_schema_drafts`，不重写历史迁移。
 - `app/ApiProvider` 每个工作区维持一个 QueryClient；服务重连按实例隔离查询键并刷新活动查询，避免既有 observer 与新缓存分离，保留本地草稿；工作区变化由 App 的 workspace key 隔离。
 - 合并核验见 `docs/project-management/design-alignment/acceptance/main-integration/`；源分支保留。
+
+
+## 全局精细网格（2026-09-14，confirmed）
+
+`renderer/shared/components/ui/table{,-toolbar,-status}.tsx` 与 `renderer/styles/tables.css` 为全局表格视觉唯一落点。Table保留原生语义；TableScroll只管滚动边界；领域继续维护查询和草稿。Studio虚拟网格/Markdown通过`domains/workflows/styles/table-system.css`映射主题，不创建另一数据层。
+
+`renderer/development/table-system/` 是仅开发环境的真实组件合成资料验收入口，不加入生产导航。`scripts/qa-table-system.mjs`提供Electron截图、尺寸及键盘滚动核验；`scripts/verify-table-system.mjs`扫描14个实际表面，静态检查不代替业务通过。规格、使用点、截图对照和手测见`docs/ui/table-system/`。实施分支`codex/global-table-system`基于`bdca5ee`，保留主线同表新增与Studio；未修改后端或迁移。
+
+### 全局小圆角（2026-09-14）
+
+`renderer/styles/radii.css`集中2/4/6px尺度，同时进入主应用和Studio构建；`docs/ui/radius-system/`记录用户参考、实际截图和核验。`scripts/qa-radius-system.mjs`通过隔离Electron测量真实项目表单及独立Studio令牌，保留圆形语义元素。
+
+
+## PM3 真实执行核心接入（2026-09-15，进行中）
+
+本节仅描述 `codex/project-management-pm3` 实施分支，不能代表主目录已经合入。
+
+- `domain/workflows/{models,validation,references,catalog,run_validation}.py` 与 `application/workflows/service.py`、`infrastructure/database/workflows.py`：当前 WebRPA 包装文档、验证、能力预检、保存及原命令结果找回，Task 2 提交 `ffa8df2`。未知节点可保存，最小四节点链通过预检才可准备执行。
+- `domain/workflows/runtime.py`：PreparedContent、CoreRun、RunEvent 及状态/代次规则；`application/workflows/runtime.py` 为同服务调用者的 UoW 端口；`infrastructure/database/workflow_runtime{,_models}.py` 为持久化落点。Task 3 持久契约已通过双审及后端回归；Task 4 已装配真实 worker，项目管理端通过 project-runs 应用层消费该唯一执行核心。
+- `0010_workflow_document_commands` 保存文档命令事实；`0011_workflow_runtime_contracts` 从 0010 顺序升级，保留历史运行证据并中断旧活动执行。有准备/运行证据时禁止有损降级，空库允许降级。历史 PM0–PM2 报告不改写。
+- `application/workflows/{browser_resources,dispatcher}.py` 解析受控资源、持久状态与事件、调度容量和清理恢复；`infrastructure/process/{workflow_worker,workflow_recovery}.py` 管理进程及原生归属；`providers/browser/{workflow_executor,workflow_worker}.py` 只执行已确认四节点。`bootstrap/workflows.py` 注册生命周期及资源锁。
+- Task 4 真实后端与 CloakBrowser 链、自动化配置、运行 HTTP、批次/任务页面、停止和恢复均已交付并核验。按用户指令管理端优先，Studio demo 联合验收取消。
+
+- PM3 管理配置：`domain/project_automations` 负责配置规则和身份，`application/project_automations` 协调管理命令，`infrastructure/database/project_automations.py` 在短事务中保存配置及冻结 Operation。`adapters/http/workflow_catalog.py` 仅把既有 WorkflowService 事实提供给管理资源选择；不承担 Studio demo 联调。新增迁移 `pm03_project_automations` 顺接 `0011_workflow_runtime_contracts`。
+
+### PM3 管理配置接入补充（2026-09-15）
+
+`apps/desktop/src/renderer/domains/project-automations/` 包含真实 API、资源目录查询、命令恢复 Hook、纯领域编辑器和目录/详情页面。四页签在同一编辑器内共享草稿；`InputPlanEditor` 显式传递内层查询草稿状态，`AutomationResourceSummary` 只显示配置引用与来源，不承担运行准入。
+
+`apps/backend/src/autoflow/application/project_automations/resource_query.py` 适配现有项目、浏览器配置、安装事实、代理目录与模型目录。它不启动浏览器、不代替 License 校验、不创建另一套执行器。
+
+`apps/desktop/src/renderer/shared/components/ui/radio-group.tsx` 使用语义化原生 radio 的键盘行为及 AutoFlow 自有视觉。`scripts/qa-automation-management-pm3.mjs` 只管理专用隔离 QA 工作区，支持 `--manual` 保持应用打开；不连接 Studio demo。
+
+### PM3 参数批次持久化（2026-09-15）
+
+`domain/project_runs` 定义有界参数启动、冻结快照及 CoreRun 状态投影；`application/project_runs/coordinator.py` 在一个调用者数据库事务中建立批次/任务/快照/queued Run/操作结果。`infrastructure/database/project_run_models.py` 与 `project_runs.py` 保存和读取三表，`pm04_project_runs` 接 `pm03_project_automations`；名称 pm04 是迁移编号，不是进入 PM4 业务阶段。
+
+`application/project_runs/{scheduler,queries,events,evidence,resources}.py` 负责管理端调度、持久查询、事件补读、证据与资源冻结；`adapters/http/project_runs.py`、`project_run_events.py` 和 `project_run_evidence.py` 提供真实 HTTP/SSE。`renderer/domains/project-runs/` 提供启动、批次/任务目录、详情、日志、输入输出、证据、普通停止、强停和原命令恢复页面。SSE 只发失效通知，持久 HTTP 负责断线补读；强停准入来自核心权威状态。最终范围与证据见 `docs/project-management/implementation/pm3/verification.json`。
+
+## PM4 多表领取与项目数据能力（2026-09-16，实施分支）
+
+`domain/project_runs/input_selection.py` 保持纯输入选择、依赖与错误分类；`infrastructure/database/project_claims.py` 负责真实 SQLite 候选读取、typed 身份、物理 lease 和精确重验。`application/project_runs/coordinator.py` 接受批次并冻结请求，`scheduler.py` 在扫描与短写事务之间维持选择守卫、并发容量、领取门闩、停止和恢复，`dispatcher.py` 只派发已提交的 queued CoreRun。项目模块没有建立第二执行器。
+
+`domain/project_data/capabilities.py` 定义 Run 已验证 capability 请求；`application/project_data/capabilities.py` 编排读写；`infrastructure/database/project_capabilities.py` 在数据库边界校验 Task/Run/executionGeneration、动态 lease、版本和幂等结果。查询不自动取得写权，原始输入快照与 Task 写游标分别存储。
+
+`adapters/http/project_runs.py` 暴露输入预检及既有批次/任务管理接口；数据节点能力不暴露为 renderer 可伪造的公共 HTTP。`renderer/domains/project-automations` 维护输入配置，`renderer/domains/project-runs` 展示预检、调度状态、不可变输入和写入事实。
+
+PM4 QA 在 `tests/qa/pm4_*` 与 `scripts/qa-project-management-pm4.mjs` 注入隔离 fake executor；Electron、FastAPI、SQLite、领取和项目数据能力真实运行。生产执行核心、CloakBrowser 与 Studio 不在该证据范围。阶段状态见 `docs/project-management/implementation/pm4/{a,b,c}-verification.md` 和 `pm4/verification.json`。当前源码业务 E2E `f-QHALLW` 已完成第二自动化读取、有限/不限链、候选态和日志搜索 Enter；`f-4QcXFG` 保留为前一提交候选；当前源码 `f-QHALLW` 已完成跨包管理链与 19 张截图审查，旧 `f-dJVKnL` 仅为历史候选。`d3a397cf`、`f07bb83b` 分别补齐人工删除和 Excel 重新导入的活动 lease 阻断，定向回归通过；当前源码的 19 张截图同视口复审与阶段全量检查均已通过。管理功能 delivered，验证 partially_verified。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过；`qa-project-management-pm3.mjs` 因会启动真实 CloakBrowser/生产执行核心而未执行。真实生产执行核心、CloakBrowser、Studio、Windows、打包及用户手测未执行。

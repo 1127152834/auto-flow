@@ -130,7 +130,7 @@ export function ImageAssetsPanel() {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: var(--radius-card);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
             z-index: 10000;
             font-size: 14px;
@@ -603,7 +603,7 @@ export function ImageAssetsPanel() {
               <div key={path} className="flex items-center gap-1">
                 <ChevronRight className="w-3 h-3 text-[hsl(var(--muted-foreground))]" />
                 <button
-                  className={`h-6 px-2 rounded-[5px] text-[11px] font-medium transition-colors duration-150 active:scale-95 ${
+                  className={`h-6 px-2 rounded-control text-[11px] font-medium transition-colors duration-150 active:scale-95 ${
                     isLast
                       ? 'bg-[hsl(var(--warning-100))] text-[hsl(var(--warning-700))]'
                       : 'text-[hsl(var(--slate-700))] hover:bg-[hsl(var(--warning-50))] hover:text-[hsl(var(--warning-700))]'
@@ -725,7 +725,7 @@ export function ImageAssetsPanel() {
       {/* 右键菜单 */}
       {contextMenu && (
         <div
-          className="fixed bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-[10px] shadow-pop-xl py-1.5 z-[9999] min-w-[160px] animate-scale-in"
+          className="fixed bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-card shadow-pop-xl py-1.5 z-[9999] min-w-[160px] animate-scale-in"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >

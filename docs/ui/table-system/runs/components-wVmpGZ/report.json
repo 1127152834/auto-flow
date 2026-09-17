@@ -1,0 +1,10 @@
+{
+  "kind": "real-components-with-synthetic-props",
+  "status": "failed",
+  "sourceHead": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+  "screenshots": [],
+  "checks": [],
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-table-qa-QgXdzT",
+  "sourceSha256": "70681447d42082254f749cbae3aa5b76167be1faf547b95d8970ffd39493f7a2",
+  "error": "Error: CDP Runtime.evaluate timeout"
+}

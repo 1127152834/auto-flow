@@ -96,3 +96,48 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - `0009_merge_project_data` 汇合 `0008_workflow_debug` 与 `pm02_schema_drafts`，不重写历史迁移。
 - `app/ApiProvider` 每个工作区维持一个 QueryClient；服务重连按实例隔离查询键并刷新活动查询，避免既有 observer 与新缓存分离，保留本地草稿；工作区变化由 App 的 workspace key 隔离。
 - 合并核验见 `docs/project-management/design-alignment/acceptance/main-integration/`；源分支保留。
+
+
+## PM3 独立分支持久执行契约（2026-09-15，confirmed）
+
+来源：`docs/project-management/implementation/pm3/task3-verification.json`。用户已批准 PM3 计划并多次授权继续，历史“不进入 PM3”不再是当前授权边界。工作区固定 `autoflow-project-management-pm3`，主目录只读。Task 2 当前 WebRPA 文档已提交 ffa8df2；Task 3 PreparedContent/CoreRun/RunEvent 与 0011 迁移完成双审、1193 后端测试及工程检查。有历史证据时禁止有损降级；旧只读快照可查询但不能派发。当前进入 Task 4 真实 CloakBrowser worker；不能将持久契约验收冒称网页执行/前端或整个 PM3 通过。
+
+## PM3 管理功能优先（2026-09-15，confirmed）
+
+来源：用户明确调整执行组织，随后排除 Studio demo 联合测试。保留 Task 2/3 与 Task 4 有效成果；自动化管理后端与组件并行推进，原执行卡更新顺序和责任。Studio transport/画布/bridge 联调暂停，不作为管理验收前置。真实管理页面 E2E、截图以及管理端运行所需幂等/原子性/停止/撤权/恢复不变。先完成 Studio 保存运行 UI 的旧门槛 superseded，历史证据保留；不进入 PM4。
+
+### 2026-09-15 PM3 管理配置优先（confirmed）
+
+用户明确 Studio 是 demo，不做联合测试。管理自动化配置持久化、五项 HTTP 与操作恢复已装配；只读工作流目录来自 WorkflowService，不能当作 Studio 集成。当时 resource/capability 适配未完成；resource 在后续 d28dca7 接入，此旧 resource 结论 superseded，capability 仍未接入，因此不把保存配置展示为运行可用。详见 PM3 原执行卡及 management-backend-verification.json。主项目仍只读。
+
+### 2026-09-15 PM3 管理配置接入（confirmed）
+
+来源：PM3 独立工作区代码、管理 HTTP contract 与 `docs/project-management/implementation/pm3/management-runs/run-eSwQYK/result.json`。
+
+- 用户明确取消 Studio demo 联合测试。管理目录/四页签通过真实工作流 ID 关联；QA 工作流经真实服务准备，不伪造 Studio 保存或运行结果。
+- 管理界面在 `renderer/domains/project-automations`；查询按工作区/实例/项目隔离，命令恢复身份按工作区/项目/表单持久保存。参数说明保持可省略，模型选择有省略/null/指定三态。
+- 内层筛选/排序草稿必须参与外层 dirty/valid 与 resetKey，不能以应用前的旧查询提交整体配置。业务字段查询仅用已绑定字段；状态与系统排序不依赖绑定。
+- 项目内创建成功替换 URL 使用 `preserveGuard:true`，防止未卸载页面失去离开保护；真实工作区替换保持默认清除旧 guard。
+- 管理配置保存、工作流结构校验、运行准入为不同事实。此次管理 QA 不代表批次/运行管理已交付；PM4 未开始。
+
+## PM3 参数批次原子启动（2026-09-15，confirmed）
+
+来源：`implementation/pm3/batches/task11-review.md`、实际代码及有界独立审查。Batch、独立Task输入快照、queued CoreRun、PreparedContent及启动Operation在同一调用者Session提交；Task只投影CoreRun。物理COMMIT失败会失效连接，响应丢失仍按原键找回接受结果。此为Task11后端基础包，尚无管理端启动入口；Task12–16继续。Studio demo联调不在本次范围；不进入PM4。
+
+## PM3 管理功能交付（2026-09-15，confirmed）
+
+来源：`docs/project-management/implementation/pm3/verification.json`、当前源码修订 `bdff9dd` 和真实 Electron 证据。前段“尚无管理端入口/Task12–16继续”由本节取代。
+
+- 自动化管理、参数批次、批次与任务目录、持久日志/输出/截图、普通停止、30秒后强停、旧执行代次撤权、原键恢复、重启查询及双工作区隔离已连接真实 FastAPI、SQLite 与 CloakBrowser。
+- 强停测试只对隔离 Electron 后代树中唯一且命令匹配的真实 workflow worker 做受控 SIGSTOP；UI 仍执行真实普通停止、宽限、强停和清理。当前HEAD直接证据为 `pm3/qa-runs/uuid-runs-1789458500247/result.json`。
+- 项目模块不复制执行器；核心继续拥有 Workflow/PreparedContent/CoreRun/RunEvent/worker。用户排除 Studio demo UI 联调，不把该路径标为通过。
+- PM3 当前授权管理范围通过；原完整 PM3 合同仍 partially_verified。项目数据型执行、持久环境、人工、统计和生命周期属于 PM4–PM8，未提前实现。用户手测、Windows、其他架构及打包未执行。
+
+## PM4 A/B/C/F 管理能力交付（2026-09-16，confirmed）
+
+来源：实施分支提交 `11e44be`、`48e5919`、`64606a2`、`f092551`、`1cc5112`、`c911b6a`、`b4dabf28`，以及 `docs/project-management/implementation/pm4/{a,b,c}-verification.md`、`pm4/verification.json`。
+
+- V1/A/B/C 已交付真实管理侧多表输入、原子领取、本地记录/状态/字段 capability 和有限/不限批次调度；记录复用仅看当前业务状态与工作流条件，不保存批内排除集合。
+- 原始输入快照保持不可变；Task 已确认写入推进独立游标；人工再次修改后旧版本写冲突。结果不明按原 operation 身份查询，旧 executionGeneration 无权继续写或释放占用。
+- 权威 Electron 证据由真实 FastAPI、SQLite、项目数据服务和 UI 构成，但执行步骤由隔离 fake executor 驱动。不得把它写成真实生产执行核心、CloakBrowser 或 Studio 可用。
+- PM4 管理功能交付状态为 delivered、验证状态为 partially_verified：当前源码业务 E2E `f-QHALLW` 绑定 `f07bb83b`，完成第二自动化读取、有限/不限管理链、三类候选态及日志搜索 Enter；`f-4QcXFG` 保留前一提交候选的全量工程与 19 张截图审查，旧 `f-dJVKnL` 为历史候选。`d3a397cf`、`f07bb83b` 补齐人工删除和 Excel 重新导入的活动 lease 保护并通过定向回归；当前源码的 19 张截图同视口视觉复审和阶段全量检查均已通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项已通过；会启动真实 CloakBrowser/生产执行核心的 `qa-project-management-pm3.mjs` 按边界未执行。真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、打包及用户手测未执行。边界固定为“管理侧通过，真实执行核心接入待验收”；不进入 PM5。

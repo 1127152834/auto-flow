@@ -1,0 +1,2 @@
+src/autoflow/domain/project_automations/rules.py:129: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Success: no issues found in 234 source files

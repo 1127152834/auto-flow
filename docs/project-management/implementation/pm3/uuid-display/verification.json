@@ -1,0 +1,211 @@
+{
+  "status": "passed",
+  "date": "2026-09-15",
+  "scope": "Project-management internal identity presentation only; not complete PM3",
+  "workspace": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3",
+  "openingHead": "2e19925",
+  "managementCommits": [
+    "865868f",
+    "0f251b5",
+    "33396f8",
+    "636931e",
+    "841a1f7"
+  ],
+  "ownership": "Original PM3 runtime and routing work retained; not staged or committed by this task",
+  "source": {
+    "head": "a5e7d48",
+    "includesRecordedOriginalPM3WorkingTree": true,
+    "isolatedBuild": "/tmp/autoflow-uuid-build-Qiz4xl",
+    "perScenarioHashes": "final/{runs,data,references}/result.json",
+    "snapshot": "snapshot.json",
+    "immutableDuringValidation": true,
+    "committedSourceHead": "bacbccf",
+    "committedSourceComparison": "checks/commit-source-comparison.json",
+    "committedSourceMatchesValidatedSnapshot": true
+  },
+  "checks": {
+    "frontend": {
+      "status": "passed",
+      "files": 295,
+      "tests": 3224,
+      "durationSeconds": 334.59,
+      "command": "npm --workspace @autoflow/desktop test -- --maxWorkers=2",
+      "log": "checks/frontend.log",
+      "location": "isolated immutable snapshot"
+    },
+    "backendPytest": {
+      "status": "passed",
+      "passed": 1407,
+      "skipped": 8,
+      "durationSeconds": 194.22,
+      "log": "checks/backend-pytest.log",
+      "command": "uv run --directory apps/backend pytest",
+      "skipScope": "Explicit opt-in real browser tests; executed separately below",
+      "location": "isolated immutable snapshot"
+    },
+    "optInRealBackend": {
+      "status": "passed",
+      "passed": 8,
+      "durationSeconds": 80.12,
+      "log": "checks/real-cloakbrowser.log",
+      "scope": [
+        "test_project_batch_real_cloakbrowser.py",
+        "test_workflow_real_cloakbrowser.py"
+      ],
+      "location": "isolated immutable snapshot",
+      "command": "AUTOFLOW_TEST_CLOAKBROWSER='<installed CloakBrowser executable>' uv run --directory apps/backend pytest tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_workflow_real_cloakbrowser.py -q"
+    },
+    "static": {
+      "status": "passed",
+      "commands": [
+        "npm run typecheck",
+        "npm run lint",
+        "npm run openapi:check",
+        "uv run --directory apps/backend ruff check .",
+        "uv run --directory apps/backend mypy src",
+        "npm run test:scripts",
+        "npm run test:structure"
+      ],
+      "scripts": 60,
+      "structure": 3,
+      "log": "checks/static-including-missing-fixture.log",
+      "followup": {
+        "initialScriptFailure": "Isolated snapshot lacked historical PM2 JSON fixtures; copied existing documents only, no test or production rule changed",
+        "scriptsFinal": "checks/scripts.log",
+        "structureFinal": "checks/structure.log"
+      }
+    },
+    "build": {
+      "status": "passed",
+      "command": "npm run build",
+      "location": "isolated build snapshot",
+      "log": "checks/build.log"
+    },
+    "presentationContracts": {
+      "status": "passed",
+      "tests": 27,
+      "log": "checks/presentation-contracts.log"
+    },
+    "independentIdentityComponents": {
+      "status": "passed",
+      "tests": 14,
+      "log": "checks/identities.log",
+      "additionalLog": "checks/display-closure.log"
+    },
+    "unicodeBoundary": {
+      "status": "passed",
+      "tests": 17,
+      "log": "checks/unicode-boundary.log",
+      "change": "Same 120/1000 emoji limits, user paste uses same native maxLength behavior; exact input and submit assertions retained; timeout not increased"
+    },
+    "knownIdLeakChecker": {
+      "status": "passed",
+      "tests": 7,
+      "log": "checks/leak-checker.log"
+    },
+    "displayClosure": {
+      "status": "passed",
+      "files": 5,
+      "tests": 28,
+      "log": "checks/display-closure.log",
+      "scope": "Automation detail errors, validation issues, launch checks, screenshot label, actual resource-code mappings"
+    }
+  },
+  "electron": {
+    "runs": {
+      "status": "passed",
+      "screenshots": 13,
+      "report": "final/runs/result.json",
+      "preparation": [
+        "工作流与浏览器配置为运行夹具；项目与自动化由UI创建",
+        "保存、启动和确认提交按钮通过可见且启用的唯一按钮聚焦后发送CDP Enter，覆盖键盘用户路径"
+      ],
+      "faultInjections": [
+        {
+          "kind": "synthetic-http-responses",
+          "target": "one batch directory refresh including all query retries",
+          "httpAttempts": 3,
+          "code": "UNKNOWN_UUID_QA",
+          "purpose": "verify retained content and safe unknown-error presentation; not a natural backend failure"
+        },
+        {
+          "kind": "synthetic-os-process-pause",
+          "target": "the unique workflow worker in this isolated Electron process tree",
+          "purpose": "simulate an unresponsive worker while preserving real stop, grace-period, force-stop, and cleanup handling",
+          "processExitConfirmed": true
+        }
+      ],
+      "startedAt": "2026-09-15T07:38:27.217Z",
+      "finishedAt": "2026-09-15T07:39:28.968Z",
+      "scope": "Scenario coverage only; see aggregate task scope"
+    },
+    "data": {
+      "status": "passed",
+      "screenshots": 8,
+      "report": "final/data/result.json",
+      "preparation": [
+        "系统身份表、字段、状态和记录均由UI创建",
+        "字段身份表与记录通过真实Excel检查、字段和身份映射、导入服务创建；仅原生文件选择结果由QA定向到工具生成的XLSX"
+      ],
+      "faultInjections": [],
+      "startedAt": "2026-09-15T07:30:44.474Z",
+      "finishedAt": "2026-09-15T07:31:00.599Z",
+      "scope": "Scenario coverage only; see aggregate task scope"
+    },
+    "references": {
+      "status": "passed",
+      "screenshots": 5,
+      "report": "final/references/result.json",
+      "preparation": [
+        "项目由UI创建",
+        "工作流通过生产WorkflowService创建；失效资源引用通过正式自动化HTTP写入契约准备"
+      ],
+      "faultInjections": [
+        {
+          "kind": "synthetic-http-responses",
+          "target": "automation profile resource read after page reload",
+          "httpAttempts": 3,
+          "code": "UNKNOWN_UUID_QA",
+          "purpose": "verify retained automation content and safe resource-read error presentation; not a natural backend failure"
+        }
+      ],
+      "startedAt": "2026-09-15T07:36:27.383Z",
+      "finishedAt": "2026-09-15T07:36:35.841Z",
+      "scope": "Scenario coverage only; see aggregate task scope"
+    }
+  },
+  "visualReview": {
+    "status": "passed",
+    "platform": "macOS arm64",
+    "viewport": {
+      "width": 1440,
+      "height": 1024,
+      "dpr": 1
+    },
+    "screenshots": 26,
+    "method": "Per-screen human visual inspection by root agent plus known internal identity perceptible-text/attribute assertions; no global UUID scrub and no pixel similarity claim",
+    "preserved": [
+      "top navigation",
+      "fine grid tables",
+      "small radii",
+      "existing prototype layout",
+      "business UUID values"
+    ]
+  },
+  "notExecuted": [
+    "User manual acceptance",
+    "Windows",
+    "Other architectures",
+    "Packaged application",
+    "Studio demo UI integration",
+    "200% zoom in this UUID-specific Electron run"
+  ],
+  "limitations": [
+    "E2E reports mark each scenario partial, not full product coverage",
+    "Refresh fault is explicitly synthetic CDP HTTP response injection; genuine node timeout is separate",
+    "Native picker return points to QA-created workbook via controlled test override",
+    "Conflict, uncertain-command recovery and late-instance isolation use component and existing regression tests; not represented as additional manually executed Electron scenarios",
+    "Original PM3 source was subsequently committed by its owner in d5f27ba/bacbccf. Desktop source, backend source and backend tests are byte-identical to the verified immutable snapshot; unrelated task documentation remains outside this delivery.",
+    "Force-stop setup is an explicitly recorded OS SIGSTOP fault on the unique worker under this test Electron, with PID/start-time checks and actual process-exit verification. No business process or database state was altered."
+  ]
+}

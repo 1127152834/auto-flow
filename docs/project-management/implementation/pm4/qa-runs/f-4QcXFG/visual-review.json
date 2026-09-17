@@ -1,0 +1,57 @@
+{
+  "status": "passed",
+  "method": "按画板逐屏人工结构审查；不使用整张多画板像素平均分。",
+  "reviewer": "Codex PM4-F QA",
+  "mandatoryStructurePassed": true,
+  "minimumScreenScore": 85,
+  "navigationException": "应用级导航按已批准方案保留顶部导航；主体布局、信息层级和操作位置对照 gallery。",
+  "qaControlBoundary": "候选态由仅存在于隔离 QA sidecar 的鉴权控制端点投影；端点不进入 OpenAPI、不修改数据库，真实 coordinator 仍先校验项目、自动化和修订。",
+  "styleChecks": {
+    "warmGrayAndClay": "passed",
+    "compactFineGridTables": "passed",
+    "smallRadius": "passed",
+    "horizontalOverflowAtCapture": "passed",
+    "staleToastBeforeCandidateScreenshots": "passed"
+  },
+  "viewportChecks": [
+    {
+      "zoomPercent": 100,
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "status": "passed"
+    },
+    {
+      "zoomPercent": 200,
+      "effectiveViewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "status": "passedWithVerticalScroll"
+    }
+  ],
+  "candidateStates": {
+    "noMatch": {
+      "ui": "passed",
+      "screenshot": "16-no-match-preview.png"
+    },
+    "temporarilyBusy": {
+      "ui": "passed",
+      "screenshot": "17-temporarily-busy-preview.png"
+    },
+    "configurationError": {
+      "ui": "passed",
+      "screenshot": "18-configuration-error-preview.png"
+    }
+  },
+  "keyboard": {
+    "escapeStopDialog": "passed",
+    "enterLogSearch": "passed",
+    "enterSynthesis": "CDP keyDown + CR + keyUp"
+  },
+  "manualPending": [
+    "Windows、其他架构、打包应用和用户手测"
+  ]
+}

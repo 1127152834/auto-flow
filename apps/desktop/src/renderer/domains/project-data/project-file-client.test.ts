@@ -39,4 +39,9 @@ describe('project file window authority', () => {
     await expect(createProjectFileClient({ request } as unknown as StreamingApiClient, desktop, 'p', () => true).request('/inspect')).rejects.toThrow('重新选择')
     expect(request).not.toHaveBeenCalled()
   })
+  it('preserves bridge error classification and code for safe presentation mapping', async () => {
+    const desktop=bridge();desktop.chooseExcelInput=vi.fn(async()=>({ok:false as const,error:{code:'EXTERNAL_LINK_FAILED',message:'internal detail'}}))
+    const files=createProjectFileClient({request:vi.fn()} as unknown as StreamingApiClient,desktop,'p',()=>true)
+    await expect(files.chooseInput()).rejects.toMatchObject({name:'Error',code:'EXTERNAL_LINK_FAILED',message:'internal detail'})
+  })
 })

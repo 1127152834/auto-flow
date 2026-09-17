@@ -1,0 +1,864 @@
+# PM3 实施计划：自动化配置与首个真实参数批次
+
+> **For Codex:** REQUIRED SUB-SKILL: Use Superpowers `executing-plans` to execute this plan task by task. Use `verification-before-completion` before each milestone completion claim.
+
+**Goal:** 在项目中完成自动化配置、Studio 工作流关联、参数批次、真实 CloakBrowser 执行、运行记录、停止与故障恢复的前后端闭环。
+
+**Architecture:** 选择性恢复归档的工作流执行核心并适配当前后端契约；Studio/core 唯一拥有 WorkflowDocument、PreparedContent、CoreRun 和 RunEvent，项目模块只拥有 Automation、Batch、Task 和 TaskInputSnapshot，并通过 application port 在同一数据库工作单元中原子创建 Task 与 queued CoreRun。Manager 与 Studio 共用工作流文档和 sidecar，不复制工作流、执行器或运行状态。
+
+**Tech Stack:** Python 3.11、FastAPI、Pydantic、SQLAlchemy 2、Alembic、SQLite、CloakBrowser、React 19、TypeScript、TanStack Query、React Hook Form、Zod、shadcn/Radix、Tailwind、Vitest、pytest、Electron/CDP。
+
+**Design:** [PM3 设计规格](../specs/2026-09-14-project-management-pm3-design.md)
+
+## 0. 执行规则与当前基线
+
+### 2026-09-15 执行收紧（confirmed，覆盖下文旧执行顺序）
+
+来源：用户要求提高管理功能交付效率，随后明确“Studio 还是 demo，不需要联合 Studio 测试，只需要把管理功能做好”。核对 HEAD `bd5aba5`，Task 2、3、4 已提交；Task 4 仅后台核心范围，不代表管理页面通过。主项目只读。
+
+- 交付主线改为 Task 7–10 自动化管理 → Task 11–16 管理端批次/运行记录/停止恢复 → Task 17–19 管理页面 E2E 和截图。Task 4 已发现的清理问题定向闭合，不阻塞独立管理组件开发。
+- Task 5 仅按管理端消费者接入必要工作流/Run HTTP 和事件查询；Studio transport、Store、画布和 demo IPC 联调暂停。本轮不修改 `domains/workflows/api.ts`、`events.ts` 或增加 demo runtime facade。
+- Task 6 取消 Studio 保存/运行 UI 路径；保留真实后端 + CloakBrowser 验证，管理端关联并启动持久测试工作流。资料经受控 fixture/真实服务准备，不制造成功事件，明确区分资料准备与用户操作。
+- Task 10 不扩展 Studio demo bridge；真实 workflowId 关联及配置/工作流独立修订要求不变。现有入口保持现状，不标为已完成真实编辑器集成。
+- Task 17–19 移除 Studio demo 联合测试及 `smoke:studio` 门槛。管理页面创建、四页签保存、查询、冲突、重连、隔离及批次/停止/恢复仍须真实 Electron + FastAPI + SQLite E2E 和逐图截图。
+- 停止、重复提交、事务原子性、旧代次撤权、未知结果恢复仍是管理端运行能力必需条件；不扩建未来节点/通用调度，不进入 PM4。
+
+| 当前阻断/交付包 | 唯一负责人及文件所有权 | 完成证据与现状 | 依赖/下一步 |
+|---|---|---|---|
+| Task 4 acquire 失败后 shutdown 不可抹除未知 owner | 主协调：dispatcher、bootstrap、共享进程文件 | 规格、工程通过；shutdown 失败保留与成功恢复均定向闭合 | 完成；管理端运行接口后续复用 |
+| Task 7–8 配置持久化与 HTTP | pm3_automation_configuration：领域/仓储/服务/handler 及定向测试 | b0f1d93 / d28dca7：配置HTTP与冻结 Operation 结果、只读工作流目录、真实资源引用查询已提交；运行 capability 尚未接入 | 主协调统一迁移、装配、生成类型；不依赖 Studio |
+| Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 四页签组件已接通真实保存并完成有界复审；新增参数说明、模型三态与内层查询草稿保护 | 冻结参数/政策合同，复用统一表格和小圆角 |
+| Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 管理配置 E2E 通过，证据 management-runs/run-eSwQYK；资源页视觉问题已定向闭合，完整 PM3.1 未运行项仍保留 | 真实配置接口及组件先行，不使用 demo 结果 |
+| Task 11 参数批次原子创建 | 主协调：核心UoW/协调/迁移；配置智能体：规则及测试 | 已实现，最终COMMIT故障污染连接经反例修复，规格/工程复核通过；证据 batches/task11-review.md | 尚无用户启动入口，不等于可运行批次 |
+| Task 12–16 管理端调度/运行记录/停止恢复 | 主协调：调度、共享装配、路由；配置智能体：事件适配与 QA；组件智能体：命令与启动/详情 | 已交付：真实 HTTP/CloakBrowser、管理页面、事件补读、普通停止、强停、恢复、E2E 与视觉复核均完成 | `d5f27ba`、`bacbccf`、`bdff9dd`；Studio demo 联合测试按用户指令排除 |
+
+保留 `task4-cloakbrowser.log` 的真实浏览器四节点、停止、超时及服务对象重建证据；不是 Studio UI、完整进程重启或管理端 E2E。`task4-pytest.log` 是历史版本检查，后续修改不自动继承“最终通过”。
+
+该演示已通过管理配置真实 QA，详见 management/manual-test.md、management/verification.json。原 2–4 小时估计现为历史记录；新增内层查询离开保护、创建后导航保护和资源页视觉修复已闭合。下一交付为管理端参数批次启动与运行事实查询；不包含 Studio demo。
+
+审查只复核已发现问题及受影响范围；日常定向检查，阶段集成全量。检查点记录可操作能力、真实证据、具体阻断和下次演示估时。未执行平台及用户手测继续记未执行。
+
+
+工作目录固定为 `/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3`，分支固定为 `codex/project-management-pm3`。计划起点为 `73a6c71`；开工前允许主线产生新提交，但不得把主目录未提交文件复制进来。需要同步主线时先记录差异，再选择性 cherry-pick 已提交变更。
+
+当前唯一 Alembic head 已实测为 `0009_merge_project_data`。本计划新增迁移顺序固定为：
+
+```text
+0009_merge_project_data
+  → 0010_workflow_document_commands
+  → 0011_workflow_runtime_contracts
+  → pm03_project_automations
+  → pm04_project_runs
+```
+
+若执行时已出现新的已提交迁移，停止创建上述文件，先由集成人重算顺序并更新本计划；不得改写已有 revision 或制造隐式双 head。
+
+执行边界：
+
+- 只恢复 `codex/studio-before-removal-20260913` 中本计划列出的工作流文件；不整包 checkout。
+- 当前 Studio 前端源码优先，归档前端只作为真实 transport 和运行组件行为参考。
+- PM3 不实现项目数据领取/写入、持久环境、人工处理、Sheets、统计和项目生命周期。
+- 每个任务按 RED → GREEN → 定向回归 → 规格检查 → 工程检查 → 独立提交执行。
+- 任何 E2E 脚本只写入带 PM3 专用标记的临时工作区，不修改用户业务目录。
+
+---
+
+## Milestone PM3-B0：补齐缺失视觉基准
+
+### Task 1：生成自动化详情和启动弹窗图稿
+
+**Files:**
+
+- Create: `docs/prototype/project-management-pm3/automation-detail-overview.png`
+- Create: `docs/prototype/project-management-pm3/automation-detail-inputs.png`
+- Create: `docs/prototype/project-management-pm3/automation-detail-resources.png`
+- Create: `docs/prototype/project-management-pm3/automation-detail-run-policy.png`
+- Create: `docs/prototype/project-management-pm3/batch-start-dialog.png`
+- Create: `docs/prototype/project-management-pm3/interactions.md`
+
+- [x] **Step 1: 固定画板内容。** 只读参考主目录 `docs/references/project-management-prototypes-2026-09-13` 中的自动化列表、运行记录画板和现有顶部导航；在 `interactions.md` 列出四页签字段、启动弹窗、正常/校验/保存中/冲突/资源缺失状态。明确全局导航只使用顶部导航。参考目录当前未提交，不复制或修改其文件。
+- [x] **Step 2: 使用 `imagegen` 生成五张 1440×1024 高保真 PNG。** 四张详情图共用相同内容框架，只切换活动页签；启动弹窗必须叠加在自动化详情上。不得输出 HTML 或加入侧栏。
+- [x] **Step 3: 做原型自审。** 逐张核对暖灰背景、黏土棕、小圆角、细网格、字段完整性、按钮位置和 200% 缩放可实现性。`interactions.md` 记录原型与功能规格的每项对应关系。
+- [x] **Step 4: 提交视觉基准。**
+
+```bash
+git add docs/prototype/project-management-pm3
+git commit -m "docs(pm3): add automation detail and launch prototypes"
+```
+
+**Gate:** 用户确认图稿后才进入自动化详情页面实现；后端核心任务可以先行，但不得用未确认的页面布局代替图稿。
+
+---
+
+## Milestone PM3.0：恢复并改造真实执行核心
+
+### Task 2：恢复工作流文档领域和持久化
+
+> **2026-09-14 执行勘误（confirmed）：** 首轮恢复虽然通过 1114 项后端测试，但独立规格审查证明其恢复了已被当前 Studio 取代的 M1–M5 `schemaVersion/config/layout` IR，因此未提交。Task 2 以当前 `editor-store.ts` 的 WebRPA 导出文档为唯一输入模型；存储使用 `source:{product,commit}` 与 `format:{kind:'webrpa-workflow',version:1}` 包装和字段投影，保留 `data/moduleType`、端口、组关系、位置、显式宽高、样式与变量，排除 `selected/dragging/resizing/measured/dimensions`、运行高亮和 AI 生成瞬态。未知节点允许保存，只有当前 worker 支持的基础网页链可运行。冻结 XE-C01 要求保存操作身份和未知结果恢复，因此新增独立文档命令迁移；不借用项目领域的 `project_operations`。
+
+**Files:**
+
+- Restore and adapt: `apps/backend/src/autoflow/domain/workflows/models.py`
+- Restore and adapt: `apps/backend/src/autoflow/domain/workflows/references.py`
+- Restore and adapt: `apps/backend/src/autoflow/domain/workflows/validation.py`
+- Restore and adapt: `apps/backend/src/autoflow/domain/workflows/catalog.py`
+- Restore and adapt: `apps/backend/src/autoflow/domain/workflows/run_validation.py`
+- Restore and adapt: `apps/backend/src/autoflow/application/workflows/service.py`
+- Restore and adapt: `apps/backend/src/autoflow/infrastructure/database/workflows.py`
+- Modify: `apps/backend/src/autoflow/infrastructure/database/models.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/0010_workflow_document_commands.py`
+- Restore and adapt tests: `apps/backend/tests/fixtures/workflows.py`
+- Restore and adapt tests: `apps/backend/tests/unit/test_workflow_drafts.py`
+- Restore and adapt tests: `apps/backend/tests/unit/test_workflow_run_validation.py`
+- Restore and adapt tests: `apps/backend/tests/integration/test_workflow_repository.py`
+- Create: `apps/backend/tests/integration/test_workflow_document_migration.py`
+- Modify: `apps/backend/tests/integration/test_merged_model_migrations.py`
+- Modify: `apps/backend/tests/integration/test_project_data_migrations.py`
+- Modify: `apps/backend/tests/integration/test_project_data_status_migration.py`
+- Modify: `apps/backend/tests/integration/test_project_migration.py`
+
+- [x] **Step 1: 恢复测试并确认 RED。** 测试夹具直接使用当前 Studio WebRPA 载荷，不恢复旧 IR。增加：规范文档 UUID、严格 JSON、字段投影、CAS（包括同内容的 stale/future revision 冲突）、同内容且当前 revision 不增修订、布尔 `true` 与数字 `1` 不等价、未知节点可保存但不可运行，以及保存操作的同键同请求恢复和异载荷冲突。
+
+```bash
+uv run --directory apps/backend pytest tests/unit/test_workflow_drafts.py tests/unit/test_workflow_run_validation.py tests/integration/test_workflow_repository.py tests/integration/test_workflow_document_migration.py -q
+```
+
+预期：因为当前工作流领域和仓储不存在而失败。
+
+- [x] **Step 2: 实现当前文档投影和运行校验。** 保存校验保证 WebRPA 包装、导出后的 `type` 与 `data.moduleType` 映射、节点/连线身份、严格 JSON、当前 Studio 已知凭据字段不落文档和可恢复字段安全；未知节点不阻断编辑。运行预检只把 `open_page/input_text/click_element/get_element_info` 组成的唯一无分支单链投影为有序执行计划，并拒绝多起点、断链、分支、合流、循环、自环和重复边；同时校验四类节点的必填字段、类型、适用枚举和有限非负 timeout，不能把确定错误推迟到 worker。其他节点返回 `WORKFLOW_NOT_RUNNABLE`。不恢复 M1–M5 的配对控制图、`timeoutSeconds/framePath` 契约或第二份变量解释器。
+- [x] **Step 3: 恢复文档服务、仓储与保存命令。** 复用现有 `workflow_documents` 表，新增 `workflow_document_operations` 保存规范 UUID `saveOperationId`、请求摘要和冻结结果。CAS 必须先于同内容短路；同键同规范请求返回原结果，同键不同请求返回 `OPERATION_PAYLOAD_MISMATCH`，并可按操作身份查询。旧 M1–M5 行保持原始事实但不污染当前格式列表，按 ID 读取返回受控不支持结果。所有 JSON 编码使用 `allow_nan=False`，非对象输入也返回当前领域错误形状。
+- [x] **Step 4: 运行定向测试并修复。**
+
+```bash
+uv run --directory apps/backend pytest tests/unit/test_workflow_drafts.py tests/unit/test_workflow_run_validation.py tests/integration/test_workflow_repository.py tests/integration/test_workflow_document_migration.py -q
+uv run --directory apps/backend ruff check src/autoflow/domain/workflows src/autoflow/application/workflows/service.py src/autoflow/infrastructure/database/workflows.py
+uv run --directory apps/backend mypy src/autoflow/domain/workflows src/autoflow/application/workflows/service.py
+```
+
+- [x] **Step 5: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/domain/workflows apps/backend/src/autoflow/application/workflows/service.py apps/backend/src/autoflow/infrastructure/database/workflows.py apps/backend/src/autoflow/infrastructure/database/models.py apps/backend/src/autoflow/infrastructure/database/migrations/versions/0010_workflow_document_commands.py apps/backend/tests/fixtures/workflows.py apps/backend/tests/unit/test_workflow_drafts.py apps/backend/tests/unit/test_workflow_run_validation.py apps/backend/tests/integration/test_workflow_repository.py apps/backend/tests/integration/test_workflow_document_migration.py apps/backend/tests/integration/test_merged_model_migrations.py apps/backend/tests/integration/test_project_data_migrations.py apps/backend/tests/integration/test_project_data_status_migration.py apps/backend/tests/integration/test_project_migration.py
+git commit -m "feat(workflows): restore document validation and persistence"
+```
+
+### Task 3：建立 PreparedContent 与 CoreRun v2 持久契约
+
+> **2026-09-15 执行记录（已核验）：** Task 2 已提交 `ffa8df2`，当前继续 Task 3。事件字段统一 `executionGeneration`，保留可选 `nodeId`。迁移优先保留旧 Run 的启动文档快照，完整原 payload 写入 provenance；缺失完成时间使用明确标注的迁移时间，不能用开始时间冒充。旧结构不能表达新的准备结果、操作身份和执行代次；存在 PreparedContent 时在任何 DDL 前拒绝 downgrade，空库可降级再升级。回退有业务证据的安装须使用升级前备份，不进行有损反向转换。迁移 39 项定向、运行服务 24 项定向、四项独立规格/工程审查通过；最终全量 1193 项后端测试、Ruff、mypy 通过。证据见 `docs/project-management/implementation/pm3/task3-verification.json`。只通过 Task 3，不代表 PM3.0 真实执行验收。
+
+**Files:**
+
+- Create: `apps/backend/src/autoflow/domain/workflows/runtime.py`
+- Create: `apps/backend/src/autoflow/application/workflows/runtime.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/workflow_runtime.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/workflow_runtime_models.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/0011_workflow_runtime_contracts.py`
+- Modify: `apps/backend/src/autoflow/infrastructure/database/migrations/env.py`
+- Create: `apps/backend/tests/unit/test_workflow_runtime.py`
+- Create: `apps/backend/tests/integration/test_workflow_runtime_repository.py`
+- Create: `apps/backend/tests/integration/test_workflow_runtime_migration.py`
+
+- [x] **Step 1: 写状态机和幂等 RED 测试。** 覆盖 `runRequestId` 唯一及其规范请求摘要、PreparedContent 的 `prepareOperationId/requestDigest/workflowId/sourceRevision/checksum/document/executionPlan/adapterVersion/capabilityRequirements` 不可变、queued 创建、合法转换、终态不可逆、旧 `executionGeneration` 拒绝，以及 RunEvent 的 `eventId/executionGeneration/kind/nodeId/nodeVisitId/attempt/occurredAt/payload`、单调 sequence 和重复事件不重复提交。
+- [x] **Step 2: 写迁移 RED 测试。** 从空库和包含 0005–0008 旧运行样例的数据库升级；验证旧活动状态统一终结为 `interrupted` 且不自动重放，旧文档的 `sourceRevision=null` 并带明确 legacy provenance；项目/浏览器/代理/模型/PM2 表不变，SQLite 外键检查通过。
+- [x] **Step 3: 实现领域对象和 port。** CoreRun 保存 `requestDigest/parameters/inputSnapshotRef/status/statusRevision/executionGeneration/preparedContentId/lastSequence/createdAt/updatedAt/startedAt/completedAt/error`；PreparedContent 冻结 Task 2 生成的确定 `executionPlan` 和 `adapterVersion`，不得在进程重启或代码升级后重新编译。`prepare_run(..., uow)` 只向调用者工作单元登记 queued CoreRun，`dispatch_run/query_run/cancel_run/force_stop` 使用明确 CAS。数据库 writer 接受调用方 Session/UoW 且没有 `commit` 能力。
+- [x] **Step 4: 实现迁移。** 新建 `workflow_prepared_contents`，以 SQLite 安全重建方式升级 `workflow_runs/workflow_run_events`；不得把旧 `active_slot` 当成所有权。旧 payload 按确定映射回填；无法证明的旧活动运行统一迁成 `interrupted`，不恢复为 queued/reconciling/running，也不自动重放。
+- [x] **Step 5: 实现仓储和数据库工作单元适配。** 同一 SQLAlchemy Session 可以由项目协调器传入；独立 Studio 启动则由 core application service 创建短工作单元。
+- [x] **Step 6: 验证。**
+
+```bash
+uv run --directory apps/backend pytest tests/unit/test_workflow_runtime.py tests/integration/test_workflow_runtime_repository.py tests/integration/test_workflow_runtime_migration.py -q
+uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/alembic.ini heads
+```
+
+预期：唯一 head 为 `0011_workflow_runtime_contracts`。
+
+- [x] **Step 7: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/domain/workflows/runtime.py apps/backend/src/autoflow/application/workflows/runtime.py apps/backend/src/autoflow/infrastructure/database/workflow_runtime.py apps/backend/src/autoflow/infrastructure/database/workflow_runtime_models.py apps/backend/src/autoflow/infrastructure/database/migrations apps/backend/tests/unit/test_workflow_runtime.py apps/backend/tests/integration/test_workflow_runtime_repository.py apps/backend/tests/integration/test_workflow_runtime_migration.py
+git commit -m "feat(workflows): add immutable prepared content and core runs"
+```
+
+### Task 4：恢复 CloakBrowser worker 与真实执行
+
+> **2026-09-15 源码核对与接线细化：** 当前 Studio 的节点配置在 `node.data` 平铺，worker 只消费 Task 3 冻结的 `executionPlan.nodes[].data`；不恢复旧 IR 的 `execution.py`/framePath locator。采用已有 CloakBrowser launch options、proxy relay、进程所有权/父进程监护基础。`timeout=0` 表示无期限，但仍受停止控制；`current_tab` 复用当前页，不关闭它。读取属性保留 Task 2 已验证的任意非空属性名（含 UI 六项），不推测残留 `customAttribute` 的另一协议。`clearBefore=false` 按“不要清空”保留已有值并追加，修正 WebRPA 部分路径仍用 fill 覆盖的源缺陷；用回归锁定，不宣称原源码已正确。
+>
+> 参数在 CoreRun/输入快照中保持 JsonScalar 原类型；四节点 url/selector/text 当前均为字符串配置，变量插入遵循当前 UI 的 `{name}` 并转成文本，不自动解析表达式或递归替换结果，不给整个配置树增加隐式类型转换。执行协议采用单 stdin 消费者和持久事件 ACK：当前事件提交后才允许下一步动作；EOF、写库失败或撤权不得继续网页操作。全部动作与进程清理在短数据库事务之外。
+
+> **执行核对补充（2026-09-15）：** 四节点 `data.timeout` 的单位是秒（源 `ConfigPanel.tsx`、`editor-store.ts` 和 `run_validation.py` 默认 60），保留小数秒，不能除以 1000 或截断。派发先在短事务中 CAS 取得 running 代次，再申请资源和启动子进程；运行中包含启动过程，以避免外部启动先于持久占用造成重复执行。状态转换与 status 事件同事务，返回提交后的序号。启动/清理恢复失败保留 reconciling 和容量阻断，不重放网页。Windows 遗留目录目前保留待核验，尚未完成原生重启归属核验；不得用 macOS 测试替代这一限制。
+
+**Files:**
+
+- Restore and adapt: `apps/backend/src/autoflow/application/workflows/browser_resources.py`
+- Create: `apps/backend/src/autoflow/application/workflows/dispatcher.py`
+- Create: `apps/backend/src/autoflow/bootstrap/workflows.py`（运行资源与生命周期装配）
+- Create: `apps/backend/src/autoflow/infrastructure/process/workflow_recovery.py`（已知运行的原生进程清理）
+- Modify: `apps/backend/src/autoflow/__main__.py`（受控 `--workflow-worker` 入口）
+- Modify: `apps/backend/src/autoflow/bootstrap/app.py`（资源、dispatcher、shutdown 和 quiesce 装配）
+- Modify as needed: `apps/backend/src/autoflow/infrastructure/process/browser_processes.py`（复用同一进程所有权机制）
+- Restore and adapt: `apps/backend/src/autoflow/bootstrap/workflow_worker.py`
+- Restore and adapt: `apps/backend/src/autoflow/infrastructure/process/workflow_worker.py`
+- Restore and adapt: `apps/backend/src/autoflow/providers/browser/workflow_executor.py`
+- Restore and adapt: `apps/backend/src/autoflow/providers/browser/workflow_worker.py`
+- Restore and adapt: `apps/backend/tests/fixtures/workflow-page.html`
+- Restore and adapt: `apps/backend/tests/fixtures/workflow_runs.py`
+- Restore and adapt: `apps/backend/tests/unit/test_workflow_worker.py`
+- Create: `apps/backend/tests/integration/test_workflow_dispatch.py`
+- Create: `apps/backend/tests/integration/test_workflow_worker_process.py`
+- Create: `apps/backend/tests/integration/test_workflow_recovery.py`
+- Create: `apps/backend/tests/integration/test_workflow_real_cloakbrowser.py`（显式指定真实已安装内核；未指定时跳过并如实登记）
+- Create: `apps/backend/tests/unit/test_workflow_browser_resources.py`
+- Modify: `apps/backend/tests/integration/test_sidecar_shutdown.py`
+
+- [x] **Step 1: 写 worker 生命周期 RED 测试。** 覆盖页面导航、输入、点击、文本读取、事件顺序、节点失败回收、普通停止后无新网页动作、worker 失联、sidecar 退出不遗留进程。
+- [x] **Step 2: 恢复进程协议和网页执行器。** 只恢复 PM3 fixture 使用的基础网页节点及其公共依赖；浏览器会话必须从 Profile、已安装 CloakBrowser 内核和代理服务解析，不能启动通用 Playwright 浏览器。
+- [x] **Step 3: 实现 dispatcher。** queued Run 通过 CAS 原子进入 running 并取得执行代次，再启动 worker，避免外部动作前重复分配；容量固定 1。进程输出先验证 runId 和 executionGeneration，再持久化事件。
+- [x] **Step 4: 实现停止与清理。** 普通停止发取消并等待清理；强停撤销 executionGeneration、杀 worker、关闭 CloakBrowser，再写明确终态或 `reconciling`。清理失败不得显示成功。
+- [x] **Step 5: 验证。**
+
+```bash
+uv run --directory apps/backend pytest tests/unit/test_workflow_worker.py tests/integration/test_workflow_dispatch.py tests/integration/test_sidecar_shutdown.py -q
+```
+
+- [x] **Step 6: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/application/workflows apps/backend/src/autoflow/bootstrap/workflow_worker.py apps/backend/src/autoflow/infrastructure/process/workflow_worker.py apps/backend/src/autoflow/providers/browser apps/backend/tests/fixtures/workflow-page.html apps/backend/tests/fixtures/workflow_runs.py apps/backend/tests/unit/test_workflow_worker.py apps/backend/tests/integration/test_workflow_dispatch.py apps/backend/tests/integration/test_sidecar_shutdown.py
+git commit -m "feat(workflows): execute core runs through CloakBrowser workers"
+```
+
+### Task 5：接入 core HTTP、SSE、OpenAPI 和 Studio transport
+
+> **集成核对项：** CoreRun 领域内部使用 `completed_at`，PM0 公共投影当前叫 `finishedAt`。HTTP 适配按公共合同显式映射，不通过序列化 dataclass 偶然改名；Task 3 的持久契约通过不等于 HTTP/OpenAPI 已交付。
+
+**Files:**
+
+- Restore and adapt: `apps/backend/src/autoflow/adapters/http/workflow_schemas.py`
+- Restore and adapt: `apps/backend/src/autoflow/adapters/http/workflows.py`
+- Restore and adapt: `apps/backend/src/autoflow/adapters/http/workflow_run_schemas.py`
+- Restore and adapt: `apps/backend/src/autoflow/adapters/http/workflow_runs.py`
+- Restore and adapt: `apps/backend/src/autoflow/adapters/events/workflows.py`
+- Modify: `apps/backend/src/autoflow/bootstrap/http_routes.py`
+- Modify: `apps/backend/src/autoflow/bootstrap/app.py`
+- Modify: `apps/backend/src/autoflow/adapters/http/workflow_studio_openapi.py`
+- Modify: `apps/desktop/src/renderer/domains/workflows/api.ts`
+- Modify: `apps/desktop/src/renderer/domains/workflows/events.ts`
+- Create: `apps/desktop/src/renderer/domains/workflows/runtime-api.ts`
+- Create: `apps/desktop/src/renderer/domains/workflows/runtime-api.test.ts`
+- Restore and adapt: `apps/backend/tests/contract/test_workflows.py`
+- Restore and adapt: `apps/backend/tests/contract/test_workflow_runs.py`
+- Create: `apps/backend/tests/contract/test_workflow_events.py`
+
+- [ ] **Step 1: 写 contract RED 测试。** 验证认证、错误 envelope、camelCase、服务端读取文档、Run 快照、事件补读、SSE 断线续订、停止 202 和不存在资源 404。
+- [ ] **Step 2: 安装真实 router。** `workflow_studio_openapi.py` 不再单独冒充业务接口；schema 由真实 handler 引用。Studio 直接运行只允许传 `workflowId/expectedRevision/profileId/parameters`，不允许以请求体替换服务端文档。
+- [ ] **Step 3: 改造当前 Studio transport。** 保持现有 API facade 和事件 Store，替换 Mock workflow/run 路径；结果不明保留当前画布和运行态，通过原 runId 查询。
+- [ ] **Step 4: 生成客户端类型。**
+
+```bash
+npm run openapi:generate
+npm run openapi:check
+```
+
+- [ ] **Step 5: 验证 core。**
+
+```bash
+uv run --directory apps/backend pytest tests/contract/test_workflows.py tests/contract/test_workflow_runs.py tests/contract/test_workflow_events.py -q
+npm --workspace @autoflow/desktop test -- src/renderer/domains/workflows/runtime-api.test.ts
+npm run typecheck
+```
+
+- [ ] **Step 6: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/adapters/http/workflow_schemas.py apps/backend/src/autoflow/adapters/http/workflows.py apps/backend/src/autoflow/adapters/http/workflow_run_schemas.py apps/backend/src/autoflow/adapters/http/workflow_runs.py apps/backend/src/autoflow/adapters/http/workflow_studio_openapi.py apps/backend/src/autoflow/adapters/events/workflows.py apps/backend/src/autoflow/bootstrap/http_routes.py apps/backend/src/autoflow/bootstrap/app.py apps/desktop/src/renderer/domains/workflows/api.ts apps/desktop/src/renderer/domains/workflows/events.ts apps/desktop/src/renderer/domains/workflows/runtime-api.ts apps/desktop/src/renderer/domains/workflows/runtime-api.test.ts apps/desktop/src/renderer/shared/api/generated.ts apps/backend/tests/contract/test_workflows.py apps/backend/tests/contract/test_workflow_runs.py apps/backend/tests/contract/test_workflow_events.py
+git commit -m "feat(studio): connect workflow documents and real run events"
+```
+
+### Task 6：PM3.0 真实最小链验收
+
+**Files:**
+
+- Create: `apps/desktop/tests/fixtures/project-management/index.html`
+- Create: `scripts/qa-workflow-runtime-pm3.mjs`
+- Create: `scripts/qa-workflow-runtime-pm3.test.mjs`
+- Create: `docs/project-management/implementation/pm3/core-verification.json`
+
+- [ ] **Step 1: 创建 fixture。** 页面提供文本输入、提交按钮、提交计数、延时按钮、结果区和 `localStorage` 登录态，所有状态可从页面 DOM 读取。
+- [ ] **Step 2: 写 QA 脚本 RED。** 启动隔离 sidecar 与 Electron，使用 UI 在 Studio 保存基础链并运行；断言输入值、一次提交、读取结果、Run 终态、日志序号和 CloakBrowser 清理。
+- [ ] **Step 3: 修复真实集成问题，直到脚本通过。** 不允许在 QA 脚本中直接伪造成功事件或调用 worker 私有函数。
+- [ ] **Step 4: 运行 PM3.0 门槛。**
+
+```bash
+node --test scripts/qa-workflow-runtime-pm3.test.mjs
+node scripts/qa-workflow-runtime-pm3.mjs
+uv run --directory apps/backend pytest tests/unit/test_workflow_*.py tests/integration/test_workflow_*.py tests/contract/test_workflow*.py -q
+npm run openapi:check
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+```
+
+- [ ] **Step 5: 写入实际证据并提交。** `core-verification.json` 只记录实际运行的平台、命令、提交、fixture 结果和未执行项。
+
+```bash
+git add apps/desktop/tests/fixtures/project-management scripts/qa-workflow-runtime-pm3.mjs scripts/qa-workflow-runtime-pm3.test.mjs docs/project-management/implementation/pm3/core-verification.json
+git commit -m "test(pm3): verify the real workflow execution core"
+```
+
+**PM3.0 Exit:** 工作流保存和最小网页链真实通过；停止后无后续网页动作；进程重启不自动重放；CoreRun 状态、事件和浏览器清理可查询。
+
+---
+
+## Milestone PM3.1：项目自动化管理
+
+### Task 7：实现 Automation 领域、迁移和仓储
+
+**Files:**
+
+- Create: `apps/backend/src/autoflow/domain/project_automations/models.py`
+- Create: `apps/backend/src/autoflow/domain/project_automations/rules.py`
+- Create: `apps/backend/src/autoflow/domain/project_automations/ports.py`
+- Create: `apps/backend/src/autoflow/application/project_automations/service.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/project_automation_models.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/project_automations.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm03_project_automations.py`
+- Modify: `apps/backend/src/autoflow/infrastructure/database/migrations/env.py`
+- Create: `apps/backend/tests/unit/test_project_automation_rules.py`
+- Create: `apps/backend/tests/integration/test_project_automation_repository.py`
+- Create: `apps/backend/tests/integration/test_project_automation_migration.py`
+
+- [x] **Step 1: 写 RED 测试。** 覆盖 Unicode 名称、稳定 parameter/input ID、一个 workflowId 只能绑定一个 Automation、CAS、同内容不推进修订和归档只读。删除及影响查询留到 PM8。
+- [x] **Step 2: 实现模型和规则。** 严格区分省略/null/空字符串、字符串/数字/布尔参数。保存允许未来 inputPlan；validation projection 把非空 inputPlan 标记为 PM4 blocker。
+- [x] **Step 3: 实现仓储和迁移。** `project_automations` 保存聚合 JSON 和可索引摘要；workflow 外键使用 RESTRICT。创建、更新和 ProjectOperation 在同一短事务提交。
+- [x] **Step 4: 验证唯一 head。**
+
+```bash
+uv run --directory apps/backend pytest tests/unit/test_project_automation_rules.py tests/integration/test_project_automation_repository.py tests/integration/test_project_automation_migration.py -q
+uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/alembic.ini heads
+```
+
+预期：唯一 head 为 `pm03_project_automations`。
+
+- [x] **Step 5: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/domain/project_automations apps/backend/src/autoflow/application/project_automations apps/backend/src/autoflow/infrastructure/database/project_automation_models.py apps/backend/src/autoflow/infrastructure/database/project_automations.py apps/backend/src/autoflow/infrastructure/database/migrations/env.py apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm03_project_automations.py apps/backend/tests/unit/test_project_automation_rules.py apps/backend/tests/integration/test_project_automation_repository.py apps/backend/tests/integration/test_project_automation_migration.py
+git commit -m "feat(projects): persist project automation configurations"
+```
+
+### Task 8：实现 Automation HTTP 与生成类型
+
+**Files:**
+
+- Create: `apps/backend/src/autoflow/adapters/http/project_automation_schemas.py`
+- Create: `apps/backend/src/autoflow/adapters/http/project_automations.py`
+- Modify: `apps/backend/src/autoflow/bootstrap/project_http_routes.py`
+- Modify: `apps/backend/src/autoflow/bootstrap/app.py`
+- Modify: `apps/backend/src/autoflow/application/projects/service.py`
+- Create: `apps/backend/tests/contract/test_project_automations.py`
+- Modify: `apps/backend/tests/contract/test_schema_export.py`
+- Modify: `apps/desktop/src/renderer/shared/api/generated.ts`
+
+- [x] **Step 1: 写 HTTP RED 测试。** 覆盖目录搜索/排序/分页、详情、创建、聚合更新、validation、错误 envelope、项目归属和幂等恢复；验证 PM3 OpenAPI 没有提前发布删除接口。
+- [x] **Step 2: 实现真实 handler。** 路由只包含已实现的目录、详情、创建、更新和 validation；所有父路径重新校验项目。更新使用 `expectedManagementRevision`，持久命令使用 `Idempotency-Key`。
+- [ ] **Step 3: 更新 capability。** `automations` 保持 `notImplemented`，直到真实启动接入；已实现的 validation 返回真实资源问题及尚未接入的 capability。未增加没有当前消费者的内部装配 DTO；最终能力门槛仍留 Task16。
+- [x] **Step 4: 生成类型并验证。**
+
+```bash
+uv run --directory apps/backend pytest tests/contract/test_project_automations.py tests/contract/test_schema_export.py -q
+npm run openapi:generate
+npm run openapi:check
+```
+
+- [x] **Step 5: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/adapters/http/project_automation_schemas.py apps/backend/src/autoflow/adapters/http/project_automations.py apps/backend/src/autoflow/bootstrap apps/backend/src/autoflow/application/projects/service.py apps/backend/tests/contract/test_project_automations.py apps/backend/tests/contract/test_schema_export.py apps/desktop/src/renderer/shared/api/generated.ts
+git commit -m "feat(projects): expose project automation contracts"
+```
+
+### Task 9：先构建自动化领域组件
+
+**Files:**
+
+- Create: `apps/desktop/src/renderer/domains/project-automations/types.ts`
+- Create: `apps/desktop/src/renderer/domains/project-automations/form-schema.ts`
+- Create: `apps/desktop/src/renderer/domains/project-automations/form-schema.test.ts`
+- Create: `apps/desktop/src/renderer/domains/project-automations/api.ts`
+- Create: `apps/desktop/src/renderer/domains/project-automations/api.test.ts`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/AutomationDirectory.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/AutomationDirectory.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/AutomationEditor.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/AutomationEditor.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/AutomationValidation.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/ParameterEditor.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/InputPlanEditor.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/EnvironmentPolicyEditor.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/RunPolicyEditor.tsx`
+
+- [x] **Step 1: 写组件 RED 测试。** 覆盖 gallery 的自动化目录状态、更多菜单、四页签单一草稿、错误页签计数、未保存保护、CAS 冲突、资源缺失和 PM4 输入 blocker；更多菜单不得出现尚未交付的删除动作。
+- [x] **Step 2: 实现 API 恢复逻辑。** 创建/保存结果不明时先按原 Idempotency-Key 查询 Operation；旧工作区或实例响应不能关闭当前编辑器。
+- [x] **Step 3: 实现组件。** 复用 shared controls、细网格和小圆角；组件只接收数据与回调，不自行读取全局 runtime。四页签共享 React Hook Form，参数 ID 和输入 ID 不随重命名变化。
+- [x] **Step 4: 验证。**
+
+```bash
+npm --workspace @autoflow/desktop test -- src/renderer/domains/project-automations
+npm run typecheck
+npm run lint
+```
+
+- [x] **Step 5: 提交。**
+
+```bash
+git add apps/desktop/src/renderer/domains/project-automations
+git commit -m "feat(projects): build automation management components"
+```
+
+### Task 10：组装自动化管理页面（Studio 联调按用户指示暂停）
+
+**Files:**
+
+- Create: `apps/desktop/src/renderer/domains/project-automations/pages/AutomationDirectoryPage.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/pages/AutomationDirectoryPage.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/pages/AutomationDetailPage.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/pages/AutomationDetailPage.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/hooks.ts`
+- Create: `apps/desktop/src/renderer/domains/project-automations/index.ts`
+- Modify: `apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx`
+- Modify: `apps/desktop/src/renderer/domains/projects/components/ProjectCapabilityState.tsx`
+- Modify: `apps/desktop/src/renderer/app/App.projects.test.tsx`
+- Modify: `apps/desktop/src/shared/automation-studio.ts`
+- Modify: `apps/desktop/src/preload/index.ts`
+- Modify: `apps/desktop/src/preload/index.test.ts`
+- Modify: `apps/desktop/src/main/ipc/automation-studio.ts`
+- Modify: `apps/desktop/src/main/ipc/automation-studio.test.ts`
+
+- [x] **Step 1: 写管理页面 RED 测试（原 IPC 部分按用户修订暂停）。** 覆盖 `#/projects/{projectId}/automations` 和详情路由、返回恢复、创建后进入详情、编辑后页头更新、归档只读、工作区切换清理，管理命令恢复与迟到响应隔离；`OpenStudioRequest` 不在本次验收范围。
+- [ ] **Step 2: 扩展 Studio bridge（2026-09-15 用户明确暂停，不作为本轮门槛）。** Manager 传 `workflowId/projectContext`；主进程验证主 frame、当前工作区和已存在 workflowId，并在 Studio URL/query 中只传不敏感身份。Studio 恢复项目返回入口。
+- [x] **Step 3: 组装真实页面。** 严格对照自动化 gallery 和 PM3-B0；顶部导航替代原型侧栏，主体结构不自行重排。页面通过 TanStack Query 使用真实后端。
+- [x] **Step 4: 验证。**
+
+```bash
+npm --workspace @autoflow/desktop test -- src/renderer/domains/project-automations src/renderer/app/App.projects.test.tsx
+npm run typecheck
+npm run lint
+```
+
+- [x] **Step 5: 提交。**
+
+```bash
+git add apps/desktop/src/renderer/domains/project-automations apps/desktop/src/renderer/domains/projects apps/desktop/src/renderer/app/App.projects.test.tsx apps/desktop/src/shared/automation-studio.ts apps/desktop/src/preload apps/desktop/src/main/ipc/automation-studio.ts apps/desktop/src/main/ipc/automation-studio.test.ts
+git commit -m "feat(projects): add automation pages and Studio context"
+```
+
+**PM3.1 Exit（2026-09-15 用户范围修订，以下为完整退出标准，不以此次配置检查点替代全部）:** 自动化目录、四页签配置和真实工作流身份关联可用；Studio demo 联调不作为验收门槛；全部适用页面状态对照原型；自动化 capability 仍不宣称可运行。
+
+---
+
+## Milestone PM3.2：参数批次与原子启动
+
+### Task 11：实现 Batch、Task 和快照持久化
+
+**Files:**
+
+- Create: `apps/backend/src/autoflow/domain/project_runs/models.py`
+- Create: `apps/backend/src/autoflow/domain/project_runs/rules.py`
+- Create: `apps/backend/src/autoflow/domain/project_runs/ports.py`
+- Create: `apps/backend/src/autoflow/application/project_runs/coordinator.py`
+- Create: `apps/backend/src/autoflow/application/project_runs/projections.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/project_run_models.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/project_runs.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm04_project_runs.py`
+- Modify: `apps/backend/src/autoflow/infrastructure/database/migrations/env.py`
+- Create: `apps/backend/tests/unit/test_project_run_rules.py`
+- Create: `apps/backend/tests/integration/test_project_run_start.py`
+- Create: `apps/backend/tests/integration/test_project_run_migration.py`
+
+- [x] **Step 1: 写原子性 RED 测试。** 覆盖参数严格类型、最终 `maxTasks` 1–100、并发固定 1、同键重发、异载荷冲突、Task/Snapshot/queued CoreRun/Operation 同时存在、任一步故障全部回滚。
+- [x] **Step 2: 实现项目运行对象。** PM3 `inputs=[]`；每个 Task 参数独立冻结。Batch 状态使用 PM0 状态集合，Task 只投影 CoreRun。
+- [x] **Step 3: 实现共享 UoW。** `ProjectRunCoordinator` 打开一次 Session，调用 Automation repository 和 `CoreRunPort.prepare_run(..., uow)`；port 不 commit。提交后 dispatcher 才运行。
+- [x] **Step 4: 实现迁移和仓储。** 新表保存 Batch、Task、TaskInputSnapshot；外键连接 Automation 和 CoreRun，删除策略为 RESTRICT。迁移升级不改变 PM1/PM2 事实。
+- [x] **Step 5: 验证。**
+
+```bash
+uv run --directory apps/backend pytest tests/unit/test_project_run_rules.py tests/integration/test_project_run_start.py tests/integration/test_project_run_migration.py -q
+uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/alembic.ini heads
+```
+
+预期：唯一 head 为 `pm04_project_runs`。
+
+- [x] **Step 6: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/domain/project_runs apps/backend/src/autoflow/application/project_runs apps/backend/src/autoflow/infrastructure/database/project_run_models.py apps/backend/src/autoflow/infrastructure/database/project_runs.py apps/backend/src/autoflow/infrastructure/database/migrations/env.py apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm04_project_runs.py apps/backend/tests/unit/test_project_run_rules.py apps/backend/tests/integration/test_project_run_start.py apps/backend/tests/integration/test_project_run_migration.py
+git commit -m "feat(projects): create parameter batches atomically"
+```
+
+实际文件取舍：没有新增无当前消费者的 ports.py / projections.py；直接复用已有核心应用服务，Task 投影在领域对象/查询仓储完成。新增 `test_workflow_content_uow.py` 覆盖同会话和回滚，运行核心 prepare_content 新增可选 UoW。Task 11 没有调度、HTTP 或管理端端到端证据，后续交付不可引用为已可运行。
+
+### Task 12：实现批次 HTTP、调度和 Operation 恢复
+
+**Files:**
+
+- Create: `apps/backend/src/autoflow/adapters/http/project_run_schemas.py`
+- Create: `apps/backend/src/autoflow/adapters/http/project_runs.py`
+- Modify: `apps/backend/src/autoflow/bootstrap/project_http_routes.py`
+- Modify: `apps/backend/src/autoflow/bootstrap/app.py`
+- Modify: `apps/backend/src/autoflow/application/settings/runtime.py`
+- Create: `apps/backend/tests/contract/test_project_runs.py`
+- Create: `apps/backend/tests/integration/test_project_run_dispatch.py`
+- Create: `apps/backend/tests/integration/test_project_crash_recovery.py`
+- Modify: `apps/backend/tests/contract/test_projects.py`
+- Modify: `apps/desktop/src/renderer/shared/api/generated.ts`
+
+- [ ] **Step 1: 写 HTTP 和调度 RED 测试。** 覆盖启动 202、Operation 查询、响应丢失、串行多 Task、派发失败、资源缺失、capacity 429、项目 closing/归档、两个工作区隔离。
+- [ ] **Step 2: 实现路由与调度。** 首次接受返回 Operation；后台协调器按 Batch 顺序派发 queued Task，失败按 `continueAfterFailure` 决定是否继续。当前 PM3 不执行数据领取。
+- [ ] **Step 3: 接入 QuiesceGate。** queued/running/stopping/reconciling Run 参与退出和工作区切换 blocker；服务重启先查询事实，不重放 running 网页动作。
+- [ ] **Step 4: 生成类型并验证。**
+
+```bash
+uv run --directory apps/backend pytest tests/contract/test_project_runs.py tests/integration/test_project_run_dispatch.py tests/integration/test_project_crash_recovery.py tests/contract/test_projects.py -q
+npm run openapi:generate
+npm run openapi:check
+```
+
+- [ ] **Step 5: 提交。**
+
+```bash
+git add apps/backend/src/autoflow/adapters/http/project_run_schemas.py apps/backend/src/autoflow/adapters/http/project_runs.py apps/backend/src/autoflow/bootstrap apps/backend/src/autoflow/application/settings/runtime.py apps/backend/tests/contract/test_project_runs.py apps/backend/tests/integration/test_project_run_dispatch.py apps/backend/tests/integration/test_project_crash_recovery.py apps/backend/tests/contract/test_projects.py apps/desktop/src/renderer/shared/api/generated.ts
+git commit -m "feat(projects): dispatch and recover parameter batches"
+```
+
+### Task 13：构建启动弹窗和批次状态组件
+
+**Files:**
+
+- Create: `apps/desktop/src/renderer/domains/project-runs/types.ts`
+- Create: `apps/desktop/src/renderer/domains/project-runs/api.ts`
+- Create: `apps/desktop/src/renderer/domains/project-runs/api.test.ts`
+- Create: `apps/desktop/src/renderer/domains/project-runs/start-schema.ts`
+- Create: `apps/desktop/src/renderer/domains/project-runs/start-schema.test.ts`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/BatchStartDialog.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/BatchStartDialog.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/BatchStatus.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/hooks.ts`
+
+- [ ] **Step 1: 写组件 RED 测试。** 覆盖参数必填/类型、false/0/空字符串、资源 override、任务数、双击、保存中禁用、422 定位、409 保留输入、504/网络丢失查询原 Operation。
+- [ ] **Step 2: 实现 API 与表单。** 只有点击“开始运行”才创建批次；关闭弹窗保留当前会话草稿，工作区切换清除。旧实例响应不能 Toast 当前项目。
+- [ ] **Step 3: 对照 B0 实现组件。** 使用 shared Dialog/Form/Select/Input，默认焦点在首个参数或开始按钮；提交期间禁止 Escape 和遮罩关闭。
+- [ ] **Step 4: 验证并提交。**
+
+```bash
+npm --workspace @autoflow/desktop test -- src/renderer/domains/project-runs
+npm run typecheck
+npm run lint
+git add apps/desktop/src/renderer/domains/project-runs
+git commit -m "feat(projects): add recoverable batch launch controls"
+```
+
+**PM3.2 Exit:** UI 启动产生真实 Batch/Task/CoreRun；双击和响应丢失不重复；多任务按容量串行；事务失败无孤立对象。
+
+---
+
+## Milestone PM3.3：运行记录、停止和恢复
+
+### Task 14：实现项目运行查询投影和停止命令
+
+**Files:**
+
+- Modify: `apps/backend/src/autoflow/application/project_runs/projections.py`
+- Modify: `apps/backend/src/autoflow/application/project_runs/coordinator.py`
+- Modify: `apps/backend/src/autoflow/infrastructure/database/project_runs.py`
+- Modify: `apps/backend/src/autoflow/adapters/http/project_runs.py`
+- Modify: `apps/backend/src/autoflow/adapters/http/project_run_schemas.py`
+- Create: `apps/backend/tests/integration/test_project_run_queries.py`
+- Create: `apps/backend/tests/integration/test_project_run_stop.py`
+- Modify: `apps/backend/tests/contract/test_project_runs.py`
+
+- [ ] **Step 1: 写查询/停止 RED 测试。** 覆盖 Batch 目录、Task 目录、详情、节点 attempts、日志补读、artifact 元数据、普通停止、强停、终态竞争和项目归属。
+- [ ] **Step 2: 实现查询投影。** 每次读取由 Task identity 联结 CoreRun；不复制或重算 core 终态。日志缺口从持久事件补读，不能用当前快照跳过。
+- [ ] **Step 3: 实现停止。** start/stop/force-stop Operation 各自幂等；停止接受和最终停止分开。关闭未派发 Task 后扇出 CoreRun cancel，聚合 counts 和 Batch 状态。
+- [ ] **Step 4: 验证并提交。**
+
+```bash
+uv run --directory apps/backend pytest tests/integration/test_project_run_queries.py tests/integration/test_project_run_stop.py tests/contract/test_project_runs.py -q
+git add apps/backend/src/autoflow/application/project_runs apps/backend/src/autoflow/infrastructure/database/project_runs.py apps/backend/src/autoflow/adapters/http/project_runs.py apps/backend/src/autoflow/adapters/http/project_run_schemas.py apps/backend/tests/integration/test_project_run_queries.py apps/backend/tests/integration/test_project_run_stop.py apps/backend/tests/contract/test_project_runs.py
+git commit -m "feat(projects): query and stop project runs"
+```
+
+### Task 15：先构建运行领域组件
+
+**Files:**
+
+- Create: `apps/desktop/src/renderer/domains/project-runs/events.ts`
+- Create: `apps/desktop/src/renderer/domains/project-runs/events.test.ts`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/BatchDirectory.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/BatchDirectory.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/BatchDetail.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/TaskDirectory.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/TaskDetail.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/TaskLog.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/TaskEvidence.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/StopBatchDialog.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/ForceStopDialog.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/components/RunComponents.test.tsx`
+
+- [ ] **Step 1: 写 gallery 行为 RED 测试。** 覆盖运行列表、任务列表、批次详情、日志、输入输出、异常证据、筛选、空/加载/刷新失败、停止与强停确认、运行中日志。
+- [ ] **Step 2: 实现事件归并。** 先读取快照再订阅；按 sequence 去重，缺口暂停应用并补读，终态事件不被迟到运行中事件覆盖。卸载和工作区切换关闭订阅。
+- [ ] **Step 3: 实现组件。** 使用全局细网格、小圆角和现有反馈组件；日志长文本内部滚动。错误、停止中、结果不明留在页面状态区。
+- [ ] **Step 4: 验证并提交。**
+
+```bash
+npm --workspace @autoflow/desktop test -- src/renderer/domains/project-runs
+npm run typecheck
+npm run lint
+git add apps/desktop/src/renderer/domains/project-runs
+git commit -m "feat(projects): build run history and stop components"
+```
+
+### Task 16：组装运行页面和完整项目导航
+
+**Files:**
+
+- Create: `apps/desktop/src/renderer/domains/project-runs/pages/RunDirectoryPage.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/pages/RunDirectoryPage.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/pages/BatchDetailPage.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/pages/TaskDetailPage.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/pages/RunPages.test.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-runs/index.ts`
+- Modify: `apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx`
+- Modify: `apps/desktop/src/renderer/domains/projects/components/ProjectCapabilityState.tsx`
+- Modify: `apps/desktop/src/renderer/app/App.projects.test.tsx`
+- Modify: `apps/backend/src/autoflow/application/projects/service.py`
+
+- [ ] **Step 1: 写路由 RED 测试。** 覆盖运行目录、批次、任务、日志 tab、返回目录恢复、非法身份、直接路由、工作区切换和服务重连。
+- [ ] **Step 2: 组装真实页面。** 对照 `latest/03-runs/001–017`，只替换全局导航。启动入口放在自动化详情；运行记录页不放假创建按钮。
+- [ ] **Step 3: 打开 capability。** 只有后端 core、Automation、Batch/Task 和页面全部装配后，项目 overview 的 `automations/runs` 返回 `available`；其余能力保持原状态。
+- [ ] **Step 4: 验证并提交。**
+
+```bash
+npm --workspace @autoflow/desktop test -- src/renderer/domains/project-runs src/renderer/domains/project-automations src/renderer/app/App.projects.test.tsx
+npm run openapi:check
+npm run typecheck
+npm run lint
+git add apps/desktop/src/renderer/domains/project-runs apps/desktop/src/renderer/domains/projects apps/desktop/src/renderer/app/App.projects.test.tsx apps/backend/src/autoflow/application/projects/service.py
+git commit -m "feat(projects): connect automation and run pages"
+```
+
+**PM3.3 Exit:** 用户可以从自动化启动并在项目运行页看到真实 Batch/Task/Run；普通停止、强停、日志补读、错误证据、重连和重启均有明确结果。
+
+---
+
+## Milestone PM3.4：端到端、视觉和交付
+
+### Task 17：建立可重复的 PM3 Electron QA 工具
+
+**Files:**
+
+- Create: `scripts/qa-project-management-pm3.mjs`
+- Create: `scripts/qa-project-management-pm3.test.mjs`
+- Create: `scripts/qa-project-management-pm3-faults.mjs`
+- Create: `docs/project-management/implementation/pm3/manual-test.md`
+
+- [ ] **Step 1: 写脚本单元测试。** 验证工作区 marker、端口分配、fixture 地址、故障注入只作用于测试实例、截图命名和清理保护。
+- [ ] **Step 2: 实现 `--manual` 和自动模式。** 自动模式完成 UI 主链；手动模式保留应用并输出测试项目、工作区、fixture URL、截图目录和故障命令。
+- [ ] **Step 3: 实现隔离故障。** 支持一次性响应丢失、真实竞争更新、worker 中断、sidecar 重启和应用重启。故障脚本不得直接改业务结果，只改变网络/进程时序。
+- [ ] **Step 4: 编写逐步手测。** 至少包含：创建自动化、四页签保存、Studio 关联、一次参数运行、多任务串行、双击、响应丢失、修订冲突、停止、强停、服务重启、应用重启、双工作区、归档只读、键盘和 200% 缩放。
+- [ ] **Step 5: 验证。**
+
+```bash
+node --test scripts/qa-project-management-pm3.test.mjs
+```
+
+- [ ] **Step 6: 提交 QA 工具和手测说明。**
+
+```bash
+git add scripts/qa-project-management-pm3.mjs scripts/qa-project-management-pm3.test.mjs scripts/qa-project-management-pm3-faults.mjs docs/project-management/implementation/pm3/manual-test.md
+git commit -m "test(pm3): add repeatable desktop acceptance tools"
+```
+
+### Task 18：运行真实 E2E 与截图对照
+
+**Files:**
+
+- Create at runtime: `docs/project-management/implementation/pm3/runs/run-${runId}/report.json`
+- Create at runtime: `docs/project-management/implementation/pm3/runs/run-${runId}/*.png`
+- Create: `docs/project-management/implementation/pm3/visual-review.md`
+
+- [ ] **Step 1: 正常链。** UI 创建项目和自动化，在 Studio 保存基础网页链，启动参数批次；核对 fixture 提交计数、参数、结果、Task、Run、日志和 artifact。
+- [ ] **Step 2: 状态与恢复链。** 执行双击、响应丢失、自动化 CAS 冲突、普通停止、强停、worker 中断、sidecar 重启、应用重启和双工作区隔离。
+- [ ] **Step 3: 截图。** 保存自动化目录、四页签、启动弹窗、运行目录、批次详情、任务日志、异常证据、停止确认、冲突、结果不明，以及适用页面 100%/200% 图。
+- [ ] **Step 4: 逐图审查。** 每张实图与对应 gallery/B0 并排记录；逐项检查顶部导航、页面层级、主操作、表格密度、圆角、颜色、状态和滚动。每个适用画面单独达到 85 分且强制结构全部满足。
+- [ ] **Step 5: 保存实际结果。** 未运行的 Windows、其他架构和打包项目标记 `notRun`，不能写 passed。
+
+```bash
+node scripts/qa-project-management-pm3.mjs
+```
+
+- [ ] **Step 6: 提交机器证据。**
+
+```bash
+git add docs/project-management/implementation/pm3/runs docs/project-management/implementation/pm3/visual-review.md
+git commit -m "test(pm3): record desktop and visual evidence"
+```
+
+### Task 19：全量工程验证、文档和最终提交
+
+**Files:**
+
+- Modify: `docs/project-management/implementation/current-baseline.md`
+- Modify: `docs/project-management/implementation/coverage.md`
+- Modify: `docs/project-management/implementation/coverage.json`
+- Modify: `docs/project-management/implementation/execution-ledger.md`
+- Create: `docs/project-management/implementation/pm3/verification.json`
+- Create: `.ai/decisions/2026-09-14-project-automation-core-boundary.md`
+- Modify: `.ai/memory/project-context.md`
+- Modify: `.ai/memory/studio-status.md`
+- Modify: `docs/PROJECT_STRUCTURE.md`
+
+- [ ] **Step 1: 运行后端全量。**
+
+```bash
+uv run --directory apps/backend pytest
+uv run --directory apps/backend ruff check .
+uv run --directory apps/backend mypy src
+```
+
+- [ ] **Step 2: 运行桌面和仓库全量。**
+
+```bash
+npm test
+npm run openapi:check
+npm run typecheck
+npm run lint
+npm run build
+npm run test:scripts
+npm run test:structure
+npm run smoke:sidecar
+npm run smoke:desktop
+npm run smoke:studio
+git diff --check
+```
+
+- [ ] **Step 3: 回归既有模块。** 启动真实应用检查项目 PM1/PM2、浏览器配置、代理、模型、设置和 Studio；细网格、小圆角和下拉宽度不得退化。
+- [ ] **Step 4: 更新证据。** 只把实际通过的 PM3 功能和场景写入 coverage；PM4–PM9 保持未实现。记录归档复用文件、改造差异、命令退出码、截图和未执行平台。
+- [ ] **Step 5: 规格审查。** 逐条核对 PM3 设计：没有第二执行器、没有 HTTP 自调用、Automation 与 Workflow 修订分离、Task 与 queued CoreRun 原子、业务状态不被 Run 改动、重启不自动重放。
+- [ ] **Step 6: 工程审查。** 检查循环依赖、服务/仓储事务所有权、敏感信息、迟到事件、后台任务清理、资源关闭、类型重复和无用抽象。修复后重跑受影响测试和全量门槛。
+- [ ] **Step 7: 提交交付资料。**
+
+```bash
+git add docs/project-management/implementation .ai/decisions/2026-09-14-project-automation-core-boundary.md .ai/memory/project-context.md .ai/memory/studio-status.md docs/PROJECT_STRUCTURE.md docs/superpowers/plans/2026-09-14-project-management-pm3.md
+git commit -m "docs(pm3): record automation and run acceptance"
+```
+
+## 最终退出条件
+
+PM3 只有同时满足以下条件才完成：
+
+- 工作流文档和执行核心是真实后端能力，不依赖 Mock 成功事件。
+- 自动化目录、四页签、Studio 关联、参数启动、运行记录和停止均连接真实接口。
+- Task、参数快照和 queued CoreRun 同一事务提交；响应丢失不会重复创建。
+- 停止后没有新的网页动作；服务或应用重启不会自动重跑不明确动作。
+- 原型逐页截图审查通过，顶部导航是唯一全局导航，主体结构与原型一致。
+- 全量自动检查、本机 Electron E2E 和回归通过；手动测试说明可直接执行。
+- Windows、其他架构和打包验收按实际结果记录。
+- PM4–PM9 未被假实现，主项目和其他工作区未被本阶段修改。
+
+交付后停在 PM3 验收点，不自动进入 PM4。
+
+### 2026-09-15 管理配置后台检查点（范围已核验）
+
+- Task 7 持久层及 Task 8 创建/目录/详情/聚合更新/Operation 查询已真实装配。管理工作流目录只读接口已接入 `/api/v1/workflows`，不连接 Studio demo。
+- 当前配置已保存与运行可用保持分离：resource/capability query 尚未装配，validation 明确 unavailable。不能据此宣称 PM3.1 整阶段完成。
+- 规格/工程审查修正：查询表达式先校验形状与预算；小数秒有限正数；超大 timeout/default 数字返回 422；原始省略值不补 null；冻结 Automation 结果包括空 capabilityRequirements，与首次响应相同；工作流不存在返回 404。
+- 后台当前执行结果见 `docs/project-management/implementation/pm3/management-backend-verification.json`。前端组件/页面测试和 Electron 验收另记，不用后台检查替代。
+- 图稿与冻结 DTO 的两处待对齐：参数说明列尚无持久字段；自动化级模型提供方覆盖尚无字段。临时环境结束后关闭属于当前固定行为，不添加虚构 retentionPolicy。尚未宣称这些原型项完成。
+- 管理页验收脚本首次启动失败是 QA 设置资料遗漏 required previousPath，已修正工具；未修改生产设置校验。失败截图保留，不计功能通过。
+
+### 2026-09-15 管理配置前端检查点（进行中）
+
+当前后台提交 `b0f1d93`，后续管理组件与页面在本工作区推进。保留前文后台检查报告作为历史记录；其中“resource 尚未装配、说明与模型字段缺失”已 superseded：本轮资源检查已接入，参数说明/模型覆盖已补齐，capability 仍未接入，不能宣称完整运行闭环。
+
+| 合并后的问题 | 负责人/文件边界 | 完成证据 | 依赖/状态 |
+|---|---|---|---|
+| 配置持久化与工作流目录 | 后台智能体；root 装配/生成类型 | `b0f1d93`、真实 HTTP/SQLite 读回及原操作查询 | 已提交；新增资源查询复核通过 |
+| 代理覆盖与模型来源 | 后台智能体 resource_query；root schema | 两个相反代理场景、模型三态；错误文案复核闭合 | 已修复，不代表 License 准入 |
+| 四页签统一草稿、查询内层草稿、输入排序与错误定位 | 组件智能体 InputPlanEditor；root 编辑器/页面接线 | 原失效反例已补；真实 UI 建表→映射→排序→统一保存正在重跑 | 当前交付阻断，必须真实链通过 |
+| 真实管理异常恢复 | root QA 脚本 | `run-PMEdRt`：创建/冲突/重启；`run-APZXES`：响应丢失原键恢复、200% 不撑宽 | 历史运行证据，新增输入功能需新版复验 |
+| 图稿对齐与手测 | root 集成；独立审查 | `management/manual-test.md`；截图逐次保留 | 逐图复核中，不能将候选图当用户确认 |
+
+Task 5/6/10/17–19 原条目中 Studio transport/画布保存/运行/IPC 测试均按顶部用户范围修订暂停；这些旧文本保留作为后续集成历史，不计本轮欠缺或完成。Task 11–16 批次、运行管理不因本次配置测试通过而自动完成。
+
+实现落点复用 `EnvironmentPolicyEditor`、`AutomationResourceSummary`、页面内校验提示和 `use-automation-command`，不为原文件清单中的替代名字再建立空组件或重复 hooks。
+
+## 2026-09-15 管理配置可操作检查点
+
+- 后端提交 b0f1d93 / d28dca7；管理组件/页面、真实QA及文档单独提交。新主线工作只读，不夹带 Studio 修改。
+- 真实 Electron + FastAPI + SQLite：界面创建项目/表/字段/自动化，统一保存输入映射与参数、资源、运行设置；真实 CAS 冲突保留草稿；提交后丢失响应按原键查回；创建后未保存离开保护；应用/服务重启后 GET 核对持久事实。证据 `docs/project-management/implementation/pm3/management-runs/run-eSwQYK/result.json`。
+- 工作流资料经真实 WorkflowService 创建，既有工作流可关联。空工作区没有新增“管理端新建工作流”功能，也没有伪装 Studio 用户路径。
+- 五个正常页面已逐图人工审查（89/86/90/88/90）；资源页82分失败修复后定向复核90分。详见 `management/visual-review.md`。候选截图不是用户已确认回归基线。
+- 此检查点仍未覆盖：全部加载/保存中/错误视觉状态、真实双工作区切换、同工作区断服务时脏草稿的完整E2E、目录大规模分页端到端、200%全页滚动。组件/HTTP用例已覆盖的部分不能冒充这些真实验收；后续管理集成继续补齐。
+- Task11–16 尚未交付，参数批次/运行记录/停止恢复不能标记完成，PM3整阶段未退出。用户手测、Windows、其他架构、打包未执行。
+
+
+## 2026-09-15 05:32 暂停检查点（confirmed，Asia/Shanghai）
+
+按用户授权的定时停止指令，在当前安全边界暂停。HEAD `8aabc69`（Task 11 已提交）；以下后续改动保留在本独立工作区，**未提交、未宣称 Task 12–16 或 PM3 完成**。三个本轮子智能体均已停止；未保留本任务运行中的 Electron、后端或测试进程。主项目与旧项目仍只读。
+
+### 已有证据及其范围
+
+- `9dea366` 的自动化配置管理交付保持有效，手测入口仍为 `docs/project-management/implementation/pm3/management/manual-test.md`。
+- 真实 HTTP + 临时 SQLite + CloakBrowser：参数输入、点击、读取、连续 Run 事实、普通停止与超时清理三个情景通过。证据 `batches/checkpoint-2026-09-15/real-batch-evidence.log`；不是管理 UI、完整进程重启或 Studio E2E。后续增加的 validation.runnable 断言尚未重新运行真实测试。
+- 审查两项 P1 已定向闭合：开始日志 ACK 后再次检查停止；恢复 GET 401 不清原幂等键/请求体。日志安全点 RED/GREEN 已归档；原键恢复独立复核通过。
+- 完整后端运行曾失败：28 failed / 1351 passed / 7 skipped。27 个迁移断言仍指向 pm03，以及同 App 重复 TestClient 生命周期跨事件循环。仅更新到真实 pm04 head 和修正测试生命周期，原数据/约束/回滚断言保留；相关 8 文件组合随后 52 passed（智能体执行）。未再次运行全量，不能写最终全绿。
+- 后台 Ruff 和 mypy（252 个源文件）通过；OpenAPI 已生成。运行路由 15 项通过；证据在同一 checkpoint 目录。之后新增文件/改动不自动继承旧检查结果。
+- 事件 HTTP/SSE 连续补读、未来游标、跨项目、SQLite 一致快照/尾部缺口共 6 项定向通过（智能体执行）；新 frontend events.ts 实现后还没有 GREEN，只有最初 RED。
+- 新 QA 工具 prepare-only 曾启动真实 Electron/后端并准备隔离资料，证据 `qa-runs/run-R3XAmM`。自动 UI 成功链已写好但**尚未对最新构建执行**，停止/响应丢失/重启链尚未完成。不得把准备截图当完整 UI 通过。
+
+### 当前阻断、责任与恢复顺序
+
+| 事项 | 负责人/文件 | 当前事实及下一步 |
+|---|---|---|
+| 新增 BatchLauncher 测试失败 | 组件智能体；`project-runs/components/BatchLauncher.test.tsx` | 最后 13 项组合为 12 pass / 1 fail：测试用普通 Error 模拟明确拒绝，实际按未知结果锁定符合协议。恢复后对照测试意图使用真实 ApiClientError(422)，保留未知错误锁定反例；ESLint/typecheck 在该组合中因失败短路未执行。 |
+| 订阅/页装配收尾 | 主协调；`project-runs/events.ts`、`pages/*`、ProjectsWorkspace、AutomationDetailPage | TaskDetailPage 已实现分页但仅留 SSE 注释；接入 useRunEvents 的 onChange 精确刷新和 onError 页面提示。新 events.ts 需缺口/断连/迟到/终态反例及有限审查，不能拿旧 kernel 协议验收。 |
+| 停止接受后的强停路径 | 主协调 + 组件智能体；BatchDetailPage/hooks | hook 新增 `acknowledgeAccepted()` 只允许确认已验证 accepted Operation 后清客户端信封，后端事实仍持久。BatchDetailPage 的 onAccepted 尚未调用它，需接通并验证普通停止→强停；未知结果仍保留原键，不能任意清除。 |
+| 未完成限定审查 | 审查智能体 | events 后端+前端、capability 查询、新目录已读但未形成最终审查结论；只补这些新增范围，不从头复审整个系统。 |
+| 组件细节 | 主协调 | TaskEvidence 未生成截图文案需与已批准文案核对；暂无实际附件生产/读取能力，不能宣称异常附件完整交付。日志全文搜索目前不支持，已显式说明，但仍须对照规格登记差异而非偷偷删除。 |
+| 管理端演示与截图 | QA 智能体；`scripts/qa-project-management-pm3.mjs` | 等新构建和前述定向检查通过，跑真实 UI 创建项目/自动化→启动 2 个任务→批次→日志/输入输出；再补停止、响应丢失、重连和重启。所有新增页面仍待同视口原图比对与用户手测。 |
+| 交付资料/提交 | 主协调 | 同步 contracts/API/types/覆盖与原卡实际证据，再按有界包提交。未来阶段证据保持空，不进入 PM4。 |
+
+恢复入口：先读本段并核对 `git status`，不要覆盖或丢弃保留的未提交文件；最后一个正式包是 Task 11。新页面尚未交付可手测版本，不用旧构建宣称本轮结果。Windows、其他架构、打包和用户手测均未执行。
+
+## 2026-09-15 12:30 恢复检查点（confirmed，Asia/Shanghai）
+
+用户已明确恢复 PM3，并再次排除 Studio demo 联合测试。现场 HEAD 仍为 `8aabc69`；暂停时保留的后端运行查询、调度、事件、证据与前端运行管理改动全部仍在，未发现遗失或被覆盖。原执行卡继续作为唯一执行卡。
+
+| 当前阻断 | 文件负责人 | 完成证据 | 依赖/下一步 |
+|---|---|---|---|
+| 运行事件接入与日志连续补读 | 主协调；`project-runs/events.ts`、`TaskDetailPage.tsx` | 前端断线补读、终态、损坏游标、卸载隔离及日志游标反例通过；后端事件合同已有定向证据 | 有限工程审查结论闭合后进入真实 UI 链 |
+| 普通停止接受后继续强停 | 主协调；`hooks.ts`、`BatchDetailPage.tsx` | 普通停止与强停同页交互反例、原 accepted 身份确认及未知结果保留测试通过 | 真实 CloakBrowser 慢任务链验证时序与资源清理 |
+| 启动明确拒绝与网络未知结果 | 管理组件智能体；`BatchLauncher.tsx` 及测试 | 422 使用真实 `ApiClientError`，网络未知保留原 key；定向组合通过 | 真实响应丢失场景仍待 Electron 注入验证 |
+| 最新管理 UI 成功链 | QA 智能体；`scripts/qa-project-management-pm3.mjs` | 脚本只将 success 标记为已接线；prepare-only 与未接线场景不会冒充通过 | 最新 build 后运行 UI 创建项目/自动化→2 Task→批次/日志/输入输出 |
+| 异常链、逐图审查和全量门槛 | 主协调 + QA | 历史真实后端 CloakBrowser 证据保留 | 正常 UI 链通过后依次执行；最终重跑全量，不能沿用暂停前结果 |
+
+下一可演示交付固定为：通过真实 Electron 界面创建项目和自动化，启动两个参数任务，并在批次详情、任务日志、输入输出页读到持久事实。目标时间 45–75 分钟；估算依据是页面与接口已经存在，主要不确定性为最新构建下的真实浏览器启动和 QA 定位器对齐。
+
+## 2026-09-15 15:50 最终权威检查点（confirmed，Asia/Shanghai）
+
+用户后续明确只完成管理功能，不联合测试 Studio demo。本节取代 05:32 暂停和 12:30 恢复段落作为当前状态；历史失败和过程证据保留，不回写为通过。
+
+| 范围 | 最终状态 | 证据 |
+|---|---|---|
+| Task 11 参数批次原子创建 | completed | 原 Task 11 审查与迁移证据保留；Task、输入快照、queued CoreRun 和 Operation 同一短事务。 |
+| Task 12–16 调度、查询、事件、页面、停止恢复 | completed | 后端 `d5f27ba`，前端 `bacbccf`；有限复审 8 项全部闭合，无新增 P0/P1。 |
+| 自动化管理 | completed in authorized scope | `management-runs/run-eSwQYK/result.json`；Studio 打开/返回仍从原包扣除，不冒充通过。 |
+| 真实管理 E2E | passed | 当前 HEAD 直接强停链 `qa-runs/uuid-runs-1789458500247/result.json`；成功/失败/普通停止/恢复/重启/隔离证据见 `pm3/verification.json`。 |
+| 视觉门槛 | passed, limited | gallery 03-runs/004–007 分别 88/87/87/86；当前 HEAD 另有 13 张同视口截图，未伪造新人工评分。 |
+| 工程门槛 | passed | 后端 1407 passed/8 skipped，前端 3224 passed，真实 CloakBrowser 8 passed；Ruff、mypy、OpenAPI、typecheck、lint、build、scripts、structure、sidecar/desktop smoke 通过。 |
+
+强停不再依赖自然慢页面。自然导航在约 1.6 秒内正常清理，历史 `run-sjkcAl` 因无法进入 30 秒准入而失败。最终专项只暂停当前隔离 Electron 后代树中唯一、命令匹配且记录了 PID/开始时间的真实 workflow worker；随后由管理 UI 完成普通停止、31 秒等待、固定短语确认和真实强停，并验证同一进程身份退出、旧代次撤权、资源清理及后续批次可运行。故障注入已明确标为 synthetic-os-process-pause，不冒充自然故障。
+
+原计划的独立 `qa-project-management-pm3-faults.mjs` 没有新增：响应丢失与重启在主 PM3 QA 脚本内，强停和安全错误注入在专项 UUID QA 脚本内，继续拆分只会复制 Electron 启动与清理代码。Task 19 的 `smoke:studio` 被用户后续范围指令排除；没有修改 Studio 画布、transport 或 bridge。
+
+最终交付报告为 `docs/project-management/implementation/pm3/verification.json`，手测为 `docs/project-management/implementation/pm3/manual-test.md`。PM3 当前授权管理范围通过；原合同因 Studio 往返及后续里程碑边界保持 partially_verified。Windows、其他 CPU 架构、打包应用和用户手动测试未执行。停在 PM3，不进入 PM4。

@@ -34,6 +34,7 @@ from .project_data_catalog import (
     _field,
     _record_resource,
 )
+from .project_data_impacts import active_task_field_dependencies
 from .project_data_models import (
     DataFieldRow,
     DataImpactRow,
@@ -84,12 +85,17 @@ class SqlAlchemyProjectDataSchema:
                 session.rollback()
             spool.seek(0)
             report, prepared = _validate_rows(candidate, before, spool, count)
-        with self._session_factory() as session:
-            session.execute(text("BEGIN IMMEDIATE"))
-            table, fields = _snapshot(session, project_id, table_id, candidate)
-            if _revisions(table, fields) != expected:
-                raise _stale()
-            now = datetime.now(UTC)
+            with self._session_factory() as session:
+                session.execute(text("BEGIN IMMEDIATE"))
+                table, fields = _snapshot(session, project_id, table_id, candidate)
+                if _revisions(table, fields) != expected:
+                    raise _stale()
+                report["blockers"].extend(
+                    _active_task_field_blockers(
+                        session, project_id, table, fields, candidate
+                    )
+                )
+                now = datetime.now(UTC)
             expires = now + timedelta(minutes=10)
             saved = DataImpactRow(
                 project_id=project_id,
@@ -138,10 +144,17 @@ class SqlAlchemyProjectDataSchema:
                 or saved.change_digest != _digest(candidate)
                 or saved.expires_at.replace(tzinfo=UTC) <= datetime.now(UTC)
                 or saved.expected_revisions != _revisions(table, fields)
-                or saved.report["public"]["blockers"]
             ):
                 raise _stale()
+            saved_blockers = saved.report["public"]["blockers"]
+            if saved_blockers:
+                raise _stale(saved_blockers)
             _validate_snapshot(candidate, fields, table)
+            active_task_blockers = _active_task_field_blockers(
+                session, project_id, table, fields, candidate
+            )
+            if active_task_blockers:
+                raise _stale(active_task_blockers)
             prepared = saved.report["prepared"]
             backfill_budget([entry["values"] for entry in prepared["records"]])
             current = {field.id: field for field in fields}
@@ -306,12 +319,18 @@ def _digest(value: object) -> str:
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
 
 
-def _stale() -> ProjectError:
+def _stale(blockers: list[dict] | None = None) -> ProjectError:
+    details: dict[str, object] = {
+        "domainCode": "impact_stale",
+        "retryable": False,
+    }
+    if blockers is not None:
+        details["blockers"] = blockers
     return ProjectError(
         "IMPACT_STALE",
         "Schema preview is no longer valid",
         409,
-        {"domainCode": "impact_stale", "retryable": False},
+        details,
     )
 
 
@@ -323,6 +342,43 @@ def _issue(code: str, item: dict | None, message: str, count: int | None) -> dic
         "message": message,
         "affectedRecords": count,
     }
+
+
+def _active_task_field_blockers(
+    session: Session,
+    project_id: str,
+    table: DataTableRow,
+    fields: list[DataFieldRow],
+    candidate: dict,
+) -> list[dict]:
+    current = {field.id: field for field in fields}
+    blockers = []
+    for item in candidate["fields"]:
+        if item["kind"] != "existing":
+            continue
+        field = current[item["fieldId"]]
+        if not any(
+            item["definition"][key] != getattr(field, key)
+            for key in ("key", "type", "required", "validation")
+        ):
+            continue
+        for dependency in active_task_field_dependencies(
+            session, project_id, table, field.id
+        ):
+            references = ", ".join(dependency["references"])
+            blocker = _issue(
+                "ACTIVE_TASK_FIELD_DEPENDENCY",
+                item,
+                f"An active task depends on this field via {references}",
+                None,
+            )
+            blocker.update(
+                taskId=dependency["taskId"],
+                runId=dependency["runId"],
+                referenceSources=dependency["references"],
+            )
+            blockers.append(blocker)
+    return blockers
 
 
 def _validate_rows(

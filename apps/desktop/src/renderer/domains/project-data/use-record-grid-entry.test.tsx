@@ -47,7 +47,12 @@ it('blocks submission when persistent storage fails',async()=>{
  const request=vi.fn(), opts=options(request), hook=renderHook(()=>useRecordGridEntry(opts))
  await enter(hook); opts.storage.setItem=()=>{throw new Error('quota')}
  await act(async()=>hook.result.current.save())
- expect(request).not.toHaveBeenCalled();expect(hook.result.current.message).toContain('quota')
+ expect(request).not.toHaveBeenCalled();expect(hook.result.current.message).toBe('保存请求尚未发送，请重试')
+})
+it('uses a fixed paste error without echoing internal-looking input',()=>{
+ const uuid='11111111-2222-4333-8444-555555555555',hook=renderHook(()=>useRecordGridEntry(options(vi.fn())))
+ act(()=>hook.result.current.addRow());act(()=>hook.result.current.paste([],0,0,uuid))
+ expect(hook.result.current.message).toBe('粘贴内容无法应用，请检查格式后重试');expect(hook.result.current.message).not.toContain(uuid)
 })
 it('ignores a response from the previous service instance without clearing stored pending',async()=>{
  let release:()=>void=()=>{}

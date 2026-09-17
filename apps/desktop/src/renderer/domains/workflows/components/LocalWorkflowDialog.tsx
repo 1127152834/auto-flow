@@ -201,7 +201,7 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: L
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
+            className="p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
             title="关闭 (Esc)"
           >
             <X className="w-4 h-4" />
@@ -368,7 +368,7 @@ function WorkflowVirtualList({ workflows, onOpen, onDelete, formatSize }: Workfl
                 style={animate ? { animationDelay: `${Math.min(v.index, 20) * 25}ms` } : undefined}
                 onClick={() => onOpen(workflow)}
               >
-                <div className="icon-chip icon-chip-brand !w-9 !h-9 !rounded-[8px]">
+                <div className="icon-chip icon-chip-brand !w-9 !h-9 !rounded-control">
                   <FileJson className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -394,7 +394,7 @@ function WorkflowVirtualList({ workflows, onOpen, onDelete, formatSize }: Workfl
                     e.stopPropagation()
                     onDelete(workflow)
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-[6px] text-[hsl(var(--slate-500))] hover:text-[hsl(var(--danger-600))] hover:bg-[hsl(var(--danger-50))] border border-transparent hover:border-[hsl(var(--danger-500)/0.3)] transition-all active:scale-90"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:text-[hsl(var(--danger-600))] hover:bg-[hsl(var(--danger-50))] border border-transparent hover:border-[hsl(var(--danger-500)/0.3)] transition-all active:scale-90"
                   title="删除工作流"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

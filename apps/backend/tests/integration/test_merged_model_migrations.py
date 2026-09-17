@@ -19,7 +19,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["0012_workflow_document_requests"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0013_merge_project_runtime"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -40,7 +40,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("0012_workflow_document_requests",)
+            ("0013_merge_project_runtime",)
         ]
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
@@ -100,7 +100,10 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
         connection.execute("PRAGMA foreign_keys=ON")
         for statement, values in statements.values():
             connection.execute(statement, values)
-        before = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
+        before = {
+            table: connection.execute(f"SELECT * FROM {table}").fetchall()
+            for table in statements
+        }
 
     app = create_app(
         Settings(data_dir=str(tmp_path), instance_id="retired-studio"),
@@ -110,8 +113,31 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
         pass
 
     with sqlite3.connect(paths.database) as connection:
-        after = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
+        after = {
+            table: connection.execute(f"SELECT * FROM {table}").fetchall()
+            for table in statements
+        }
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0012_workflow_document_requests",)
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone() == ("0013_merge_project_runtime",)
+        status, sequence, completed_at = connection.execute(
+            "SELECT status, last_sequence, completed_at "
+            "FROM project_workflow_runs WHERE id='run'"
+        ).fetchone()
+        assert (status, sequence) == ("interrupted", 1)
+        assert completed_at is not None and completed_at != "2026-09-13"
+        source_revision, provenance = connection.execute(
+            "SELECT source_revision, provenance "
+            "FROM project_workflow_prepared_contents "
+            "WHERE workflow_id='document'"
+        ).fetchone()
+        assert source_revision is None
+        assert '"legacy":true' in provenance
+        assert connection.execute(
+            "SELECT kind, node_id, occurred_at "
+            "FROM project_workflow_run_events "
+            "WHERE run_id='run' AND sequence=1"
+        ).fetchone() == ("checkpoint", None, "2026-09-13")
     assert after == before
     assert artifact.read_bytes() == b'{"saved":"evidence"}'

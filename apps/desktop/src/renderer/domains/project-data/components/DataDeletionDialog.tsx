@@ -3,6 +3,13 @@ import type { components } from '../../../shared/api/generated'
 import { Modal } from '../../../shared/components/Modal'
 import { Button } from '../../../shared/components/ui/button'
 import { Trash, WarningCircle } from '@phosphor-icons/react'
+import { safeProjectError } from '../../projects/presentation-error'
+
+function deletionImpactLabel(item: components['schemas']['DeletionImpactReport']['impacts'][number], kind: 'record' | 'status') {
+  if (kind === 'record' && item.code === 'RECORD_DELETE' && item.resource.type === 'record') return '影响范围：1 条本地记录'
+  if (kind === 'status' && item.code === 'STATUS_DELETE') return '删除后将移除这个状态，请核对受影响的记录。'
+  return '请核对本次变更的影响范围。'
+}
 
 export type DataDeletionDialogProps = {
   open: boolean; kind: 'record' | 'status'; targetName: string
@@ -35,7 +42,7 @@ export function DataDeletionDialog(props: DataDeletionDialogProps) {
       const allowed = await live.current.onRequestClose()
       if (allowed !== false && mounted.current && ticket === epoch.current && live.current.open && !actionLock.current && !live.current.saving && !live.current.recoveryPending) live.current.onOpenChange(false)
     } catch (caught) {
-      if (mounted.current && ticket === epoch.current) setLocalError(caught instanceof Error ? caught.message : '无法关闭，请重试')
+      if (mounted.current && ticket === epoch.current) setLocalError(safeProjectError(caught))
     } finally { if (ticket === epoch.current) closeLock.current = false }
   }
   const run = async (mode: 'preview' | 'confirm' | 'recover') => {
@@ -46,7 +53,7 @@ export function DataDeletionDialog(props: DataDeletionDialogProps) {
     const ticket = ++epoch.current
     closeLock.current = false; actionLock.current = true; setWorking(true); setLocalError(null)
     try { await (mode === 'recover' ? current.onRecover() : mode === 'confirm' ? current.onConfirm() : current.onPreview()) }
-    catch (caught) { if (mounted.current && ticket === epoch.current) setLocalError(caught instanceof Error ? caught.message : '无法完成操作，请重试') }
+    catch (caught) { if (mounted.current && ticket === epoch.current) setLocalError(safeProjectError(caught)) }
     finally { if (mounted.current && ticket === epoch.current) { actionLock.current = false; setWorking(false) } }
   }
   return <Modal open={open} onOpenChange={next => { if (!next) void close() }} closeDisabled={busy || recoveryPending} size="small"
@@ -60,8 +67,8 @@ export function DataDeletionDialog(props: DataDeletionDialogProps) {
       <p className="m-0 break-words">{kind === 'record' && props.tableName ? <span className="mb-1 block text-muted">你将删除「{props.tableName}」中的</span> : null}<strong>{targetName}</strong></p>
       {kind === 'record' ? <><ul className="m-0 grid list-disc gap-2 rounded-control border border-warning/20 bg-warning/5 py-4 pl-10 pr-4"><li>仅删除本地数据表中的这条记录</li>{props.sourceKind === 'excel' ? <li>不会修改原始 Excel 文件</li> : null}</ul><p className="m-0 flex items-start gap-2 text-sm text-warning"><WarningCircle size={24} weight="fill" className="shrink-0" />删除后无法在本页面撤销，请先确认是否需要保留副本。</p></> : null}
       {error || localError ? <div role="alert"><p>{localError ?? error}</p>{errorActions}</div> : null}
-      {impact?.impacts.map((item, index) => <p className="m-0 break-words" key={`${item.code}:${index}`}>{kind === 'record' && item.code === 'RECORD_DELETE' && item.resource.type === 'record' ? '影响范围：1 条本地记录' : item.message}</p>)}
-      {impact?.blockers.map((blocker, index) => <p role="alert" className="m-0 break-words text-danger" key={`${blocker.code}:${index}`}>{blocker.message}（{blocker.code}）</p>)}
+      {impact?.impacts.map((item, index) => <p className="m-0 break-words" key={`${item.code}:${index}`}>{deletionImpactLabel(item, kind)}</p>)}
+      {impact?.blockers.map((blocker, index) => <p role="alert" className="m-0 break-words text-danger" key={`${blocker.code}:${index}`}>{safeProjectError(blocker)}</p>)}
     </div>
   </Modal>
 }

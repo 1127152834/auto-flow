@@ -1,0 +1,75 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 发现内部身份泄露:
+完整 ID b7ee38a2-7848-4343-99ce-7c515a5bcfa4 @ body.innerText: "\n数据\n环境\n← 返回批次列表\n参数运行验收\n\nb7ee38a2-7848-4343-99ce-7c515a5bcfa4\n\n运行中\n停止批次\n开始\n2026/9/15 "
+完整 ID b7ee38a2-7848-4343-99ce-7c515a5bcfa4 @ title <p>: "b7ee38a2-7848-4343-99ce-7c515a5bcfa4"
++ actual - expected
+
++ [
++   {
++     context: '\n' +
++       '数据\n' +
++       '环境\n' +
++       '← 返回批次列表\n' +
++       '参数运行验收\n' +
++       '\n' +
++       'b7ee38a2-7848-4343-99ce-7c515a5bcfa4\n' +
++       '\n' +
++       '运行中\n' +
++       '停止批次\n' +
++       '开始\n' +
++       '2026/9/15 ',
++     match: 'full',
++     source: 'body.innerText',
++     systemId: 'b7ee38a2-7848-4343-99ce-7c515a5bcfa4'
++   },
++   {
++     context: 'b7ee38a2-7848-4343-99ce-7c515a5bcfa4',
++     element: 'p',
++     match: 'full',
++     source: 'title',
++     systemId: 'b7ee38a2-7848-4343-99ce-7c515a5bcfa4'
++   }
++ ]
+- []
+
+    at checkCdpPage (file:///private/tmp/autoflow-uuid-build-Qiz4xl/scripts/qa-project-uuid-leaks.mjs:75:10)
+    at async checkpoint (file:///private/tmp/autoflow-uuid-build-Qiz4xl/scripts/qa-project-uuid-flow.mjs:162:81)
+    at async runFlow (file:///private/tmp/autoflow-uuid-build-Qiz4xl/scripts/qa-project-uuid-flow.mjs:85:3)
+    at async file:///private/tmp/autoflow-uuid-build-Qiz4xl/scripts/qa-project-uuid-flow.mjs:46:28 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    {
+      systemId: 'b7ee38a2-7848-4343-99ce-7c515a5bcfa4',
+      match: 'full',
+      source: 'body.innerText',
+      context: '\n' +
+        '数据\n' +
+        '环境\n' +
+        '← 返回批次列表\n' +
+        '参数运行验收\n' +
+        '\n' +
+        'b7ee38a2-7848-4343-99ce-7c515a5bcfa4\n' +
+        '\n' +
+        '运行中\n' +
+        '停止批次\n' +
+        '开始\n' +
+        '2026/9/15 '
+    },
+    {
+      systemId: 'b7ee38a2-7848-4343-99ce-7c515a5bcfa4',
+      match: 'full',
+      source: 'title',
+      element: 'p',
+      context: 'b7ee38a2-7848-4343-99ce-7c515a5bcfa4'
+    }
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.7.0

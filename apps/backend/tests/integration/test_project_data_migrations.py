@@ -85,7 +85,9 @@ def add_record(
 def test_pm2_upgrade_preserves_projects_and_has_one_head(tmp_path, existing):
     path = tmp_path / "data.sqlite3"
     config = config_for(path)
-    assert ScriptDirectory.from_config(config).get_heads() == ["0012_workflow_document_requests"]
+
+    assert ScriptDirectory.from_config(config).get_heads() == ["0013_merge_project_runtime"]
+
     before = []
     if existing:
         command.upgrade(config, "pm01_projects")
@@ -277,7 +279,9 @@ def test_downgrade_then_upgrade_preserves_pm1_projects(tmp_path):
         assert c.execute("SELECT id FROM projects").fetchall() == [("p",)]
         assert set(c.execute("SELECT version_num FROM alembic_version").fetchall()) == {
             ("pm01_projects",),
+
             ("0010_android_fleet",),
+
         }
     database_session.migrate_database(path)
     with sqlite3.connect(path) as c:
@@ -316,5 +320,7 @@ def test_failed_upgrade_rolls_back_ddl_and_can_restart(tmp_path, starting_revisi
     with sqlite3.connect(path) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("0012_workflow_document_requests",)
+
+        ).fetchone() == ("0013_merge_project_runtime",)
+
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

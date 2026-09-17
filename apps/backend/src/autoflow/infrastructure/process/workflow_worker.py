@@ -442,3 +442,7 @@ def _process_group_options() -> dict[str, Any]:
     if sys.platform == "win32":
         return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     return {"start_new_session": True}
+
+# PM4's dispatcher result is kept in its project-owned worker module. Re-export
+# the value object for source-compatible fakes without replacing this manager.
+from .project_workflow_worker import WorkerOutcome  # noqa: E402,F401

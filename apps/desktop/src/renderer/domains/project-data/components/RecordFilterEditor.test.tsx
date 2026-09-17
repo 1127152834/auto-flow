@@ -34,10 +34,13 @@ it('builds nested groups and warns instead of applying an empty any group', asyn
   expect(await screen.findByRole('alert')).toHaveTextContent('不能为空');expect(apply).not.toHaveBeenCalled()
 })
 
-it('preserves a stale field reference as a repairable invalid draft', async()=>{
-  const apply=vi.fn(),user=userEvent.setup(),stale:RecordQuery={filter:{type:'compare',fieldId:'gone',operator:'eq',value:'kept'},orderBy:[]}
+it('preserves stale UUID field, status and sort references without exposing them', async()=>{
+  const fieldId='11111111-2222-4333-8444-555555555555',statusId='66666666-7777-4888-8999-aaaaaaaaaaaa',sortId='bbbbbbbb-cccc-4ddd-8eee-ffffffffffff'
+  const apply=vi.fn(),user=userEvent.setup(),stale:RecordQuery={filter:{type:'all',items:[{type:'compare',fieldId,operator:'eq',value:'kept'},{type:'status',operator:'eq',statusId}]},orderBy:[{fieldId:sortId,direction:'asc'}]}
   render(<RecordFilterEditor fields={fields} statuses={statuses} appliedQuery={stale} onApply={apply}/>)
-  expect(screen.getByText('当前选项不可用，请重新选择')).toBeVisible()
+  expect(screen.getAllByText('字段已失效')).toHaveLength(2);expect(screen.getByText('状态不可用')).toBeVisible()
+  for(const [select,label] of [[screen.getByRole('combobox',{name:'filter.items.0字段'}),'字段已失效'],[screen.getByRole('combobox',{name:'filter.items.1状态'}),'状态不可用'],[screen.getByRole('combobox',{name:'排序字段 1'}),'字段已失效']] as const) { await user.click(select);expect(screen.getByRole('option',{name:label})).toBeVisible();for(const id of [fieldId,statusId,sortId]) { expect(document.body.textContent).not.toContain(id);for(const element of document.querySelectorAll('[title],[placeholder],[aria-label],[aria-description]')) for(const name of ['title','placeholder','aria-label','aria-description']) expect(element.getAttribute(name)??'').not.toContain(id) }await user.keyboard('{Escape}') }
+  for(const id of [fieldId,statusId,sortId]) { expect(document.body.textContent).not.toContain(id);for(const element of document.querySelectorAll('[title],[placeholder],[aria-label],[aria-description]')) for(const name of ['title','placeholder','aria-label','aria-description']) expect(element.getAttribute(name)??'').not.toContain(id) }
   await user.click(screen.getByRole('button',{name:'应用筛选'}));expect(await screen.findByRole('alert')).toHaveTextContent('字段已失效');expect(apply).not.toHaveBeenCalled()
 })
 

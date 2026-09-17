@@ -1,5 +1,6 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/MarkdownRenderer.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useEffect, useMemo, useRef } from 'react'
+import '../../styles/table-system.css'
 
 interface MarkdownRendererProps {
   content: string
@@ -158,20 +159,20 @@ function buildHTML(content: string, keyword: string): string {
     if (!inTable) return
     inTable = false
     if (tableRows.length === 0) return
-    out.push('<table class="w-full border-collapse my-4"><thead><tr class="bg-gray-100">')
+    out.push('<div class="af-table-scroll af-studio-table-scroll max-w-full overflow-auto my-4" role="region" aria-label="文档表格" tabindex="0"><table class="af-table af-studio-table w-full border-collapse"><thead><tr>')
     const head = tableRows[0]
     for (const cell of head) {
-      out.push(`<th class="border border-gray-300 px-4 py-2 text-left font-semibold">${processInline(cell, escapedKw)}</th>`)
+      out.push(`<th scope="col">${processInline(cell, escapedKw)}</th>`)
     }
     out.push('</tr></thead><tbody>')
     for (let r = 1; r < tableRows.length; r++) {
-      out.push('<tr class="hover:bg-gray-50">')
+      out.push('<tr>')
       for (const cell of tableRows[r]) {
-        out.push(`<td class="border border-gray-300 px-4 py-2">${processInline(cell, escapedKw)}</td>`)
+        out.push(`<td>${processInline(cell, escapedKw)}</td>`)
       }
       out.push('</tr>')
     }
-    out.push('</tbody></table>')
+    out.push('</tbody></table></div>')
     tableRows = []
   }
 

@@ -87,7 +87,7 @@ it('keeps an uncertain draft frozen across reconnect and recovers only on explic
   expect(screen.getByLabelText('数据表名称')).toHaveValue('未知草稿')
   expect(recover).not.toHaveBeenCalled()
   await userEvent.click(screen.getByRole('button', { name: '查询保存结果' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('仍无法确认')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByRole('button', { name: '保存设置' })).toBeDisabled()
   expect(p.onCancel).not.toHaveBeenCalled()
 })

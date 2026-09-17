@@ -37,7 +37,7 @@ function ensureTipEl(): HTMLDivElement {
     'transform:translate(-50%, 4px) scale(0.96)',
     'transition:opacity 140ms ease, transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1)',
     'padding:5px 9px',
-    'border-radius:6px',
+    'border-radius:var(--radius-card)',
     'font-size:11.5px',
     'font-weight:500',
     'line-height:1.5',

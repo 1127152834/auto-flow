@@ -1,0 +1,58 @@
+{
+  "status": "scenario-passed",
+  "coverage": "partial",
+  "scenario": "data",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-fura3X",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-fura3X/workspace",
+  "evidence": "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476",
+  "knownIds": [
+    "324deaf1-e75f-4338-9136-ca0906ca8705",
+    "c5456bd4-460d-4f7b-9b25-3f0327802b54",
+    "9b8a483f-d314-4453-8c99-f4bdf443e1aa",
+    "38a9d059-f285-4a58-be42-b036192c0ef2",
+    "ec339ef8-c603-48f9-a251-c143314d8124",
+    "d127d74b-d0dd-4604-aec9-0358741ffed7",
+    "43cb1c68-2673-4898-b001-ab725a0b5c0a",
+    "4f95da13-a366-4420-be82-65441a2614ac",
+    "b5c5767b-81d1-46d5-824e-b52a0a76412e",
+    "8b015f4d-36d7-41f1-97bc-85d4a2f98227"
+  ],
+  "businessIds": [
+    "1594b2a0-0c7f-4b14-8eb4-04a0011880e1",
+    "aa5dd076-bfd8-4dc4-aa27-e328f05abed4"
+  ],
+  "screenshots": [
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/11-system-record-directory.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/12-system-record-detail.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/13-system-record-edit.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/14-system-record-status.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/15-system-record-delete.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/21-field-identity-directory.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/22-field-identity-detail.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-data-1789457444476/23-field-identity-edit.png"
+  ],
+  "unimplemented": [
+    "强制停止确认",
+    "失效资源引用状态"
+  ],
+  "preparation": [
+    "系统身份表、字段、状态和记录均由UI创建",
+    "字段身份表与记录通过真实Excel检查、字段和身份映射、导入服务创建；仅原生文件选择结果由QA定向到工具生成的XLSX"
+  ],
+  "faultInjections": [],
+  "viewport": {
+    "width": 1440,
+    "height": 1024,
+    "devicePixelRatio": 1
+  },
+  "source": {
+    "head": "a5e7d48",
+    "scriptSha256": "fbd9858600ae044a2fe65ddacf79646769dc5064f9d52e19fbffe3d135b57d3d",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "12f8b6768ef8903024e4329be3e3799aba456114c587bd0406c90e67c4966a2d",
+    "rendererAssetsSha256": "9c997bbda2d6dcdf550d7c056f487f42bc64baccdc304657ad3ceeabe7092d3e",
+    "rendererSourceSha256": "3541f2cdfd82e51b9aad54e454cab5678b72ff46a75a97bbc045e507ea0a4678"
+  },
+  "startedAt": "2026-09-15T07:30:44.474Z",
+  "finishedAt": "2026-09-15T07:31:00.599Z"
+}

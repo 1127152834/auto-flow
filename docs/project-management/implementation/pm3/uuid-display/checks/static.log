@@ -1,0 +1,114 @@
+
+> typecheck
+> npm --workspace @autoflow/desktop run typecheck
+
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+
+> lint
+> npm --workspace @autoflow/desktop run lint
+
+
+> @autoflow/desktop@0.1.0 lint
+> eslint .
+
+
+> openapi:check
+> node scripts/generate-api.mjs --check
+
+All checks passed!
+src/autoflow/domain/project_automations/rules.py:129: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Success: no issues found in 253 source files
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.117959ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.122292ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.121041ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.154666ms)
+✔ history output guard resolves symlinks before any nested directory is created (34.9205ms)
+✔ containment handles Windows separators and sibling prefixes (0.345916ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (22.311542ms)
+✔ R2 wrapper reuses the exported R1 harness (6.824083ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (5.671709ms)
+✔ R3 runner exposes automatic and retained manual modes (1.605417ms)
+✔ R3 evidence matrix names every required real interaction (0.318458ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (5.539417ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (4.810375ms)
+✔ self-test accepts only a marker-owned workspace below its owner (154.9765ms)
+✔ arguments reject missing kernel paths before launching Electron (86.567708ms)
+✔ arguments reject unknown switches before launching Electron (79.501291ms)
+✔ scenario selection is validated before any workspace or Electron launch (190.175ms)
+✔ reports a known full system UUID in visible text and perceptible attributes (3.241375ms)
+✔ reports a known eight-character system prefix without scanning arbitrary UUIDs (1.285083ms)
+✔ keeps a user-owned UUID visible and excludes its shared prefix from prefix checks (0.405625ms)
+✔ does not inspect DOM value, href, hash, data attributes, or hidden implementation state (0.30775ms)
+✔ checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs (1.958959ms)
+✔ checkCdpPage audit expression executes without module bindings in the renderer (0.764417ms)
+✔ a business UUID sharing a prefix does not hide a separate technical short ID (0.411125ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (29.13025ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (16.28975ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.197625ms)
+✔ browser management smoke creates the platform kernel layout (0.166083ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.279ms)
+✔ profile test browser smoke validates a public kernel directory (30.656042ms)
+✔ profile test browser smoke finds a session below the manager root (5.312292ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (78.372208ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (73.175667ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (55.850417ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (59.561583ms)
+✔ packaged smoke cannot silently select external health mode (1.433292ms)
+✔ cleanup rejects after the final deadline if the child never exits (11.96275ms)
+✔ cleanup observes close without requiring exit (0.279792ms)
+✔ cleanup rejects a child process error (0.189167ms)
+✔ required path exists: apps/desktop/package.json (0.555709ms)
+✔ required path exists: apps/backend/pyproject.toml (0.084583ms)
+✔ root scripts expose the foundation checks (0.185875ms)
+(node:97164) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (21.338833ms)
+✔ frozen required-field data regenerates exactly without executing source modules (112.99825ms)
+✔ coverage accounts for every retained node and excludes removed nodes (9.536417ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.658041ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.101208ms)
+✔ the matrix includes every discovered service and event without treating declarations as passed tests (2.28725ms)
+✔ inventory and matrix regenerate deterministically (801.485916ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.184583ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.124084ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.249916ms)
+✔ checks sources without inventing application or visual acceptance (35.503042ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (18.89575ms)
+✔ does not allow a passed page without real evidence or missing required states (9.414667ms)
+✔ rejects duplicate source and page identities and evidence traversal (7.151958ms)
+✔ requires actual evidence files instead of an existing directory or blank path (6.259417ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (5.364375ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (1.64275ms)
+✔ a green machine report cannot substitute for real application evidence (0.346958ms)
+ℹ tests 60
+ℹ suites 0
+ℹ pass 60
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1989.637416
+
+> test:structure
+> node --test scripts/structure.test.mjs
+
+✔ required path exists: apps/desktop/package.json (0.688209ms)
+✔ required path exists: apps/backend/pyproject.toml (0.134167ms)
+✔ root scripts expose the foundation checks (0.184375ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 71.531833

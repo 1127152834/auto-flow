@@ -1,0 +1,109 @@
+{
+  "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+  "finiteBatchId": "ae28cb44-13be-4235-b992-6a01e46cdbde",
+  "unlimitedBatchId": "6bb4225d-889a-44e9-b063-026b618f081c",
+  "readerBatchId": "68738689-6893-4f11-9283-8e136d02a817",
+  "finiteTaskIds": [
+    "b9ae6f1b-1fec-4b45-ad29-b57263b9f77e",
+    "e38bdd85-d1e2-47d3-bbd8-e2028cae568e",
+    "58731ede-2871-496a-aab8-0a5b8eab13cd"
+  ],
+  "unlimitedTaskIds": [
+    "e2fbedf3-e7b5-4c0e-9cbd-08e30bd95e45",
+    "589354e6-9bf2-463f-9dbe-051508f1dc0b"
+  ],
+  "readerTaskId": "8cfac20f-a84e-480d-bab8-ebae99dc5a5a",
+  "reusablePersonRef": {
+    "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+    "tableId": "a13bcdfe-43b8-4cd8-a39c-fb7130e9b447",
+    "datasetGeneration": "aaae2e87-6ece-4dd3-9098-1bf54d80216e",
+    "recordKey": {
+      "type": "uuid",
+      "value": "39a602b3-3058-4259-931b-85bb8221bd7c"
+    }
+  },
+  "emailRefs": [
+    {
+      "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+      "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+      "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+      "recordKey": {
+        "type": "uuid",
+        "value": "895dd76d-9392-47f8-88a7-e47873dc1032"
+      }
+    },
+    {
+      "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+      "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+      "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+      "recordKey": {
+        "type": "uuid",
+        "value": "55e24fb7-319f-40e9-8a3e-97b639abacb8"
+      }
+    },
+    {
+      "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+      "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+      "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+      "recordKey": {
+        "type": "uuid",
+        "value": "30c4022b-f725-4fa1-b7a1-ee6fc9422b58"
+      }
+    },
+    {
+      "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+      "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+      "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+      "recordKey": {
+        "type": "uuid",
+        "value": "c517a9f2-9320-46b5-a0cd-50da91d7996d"
+      }
+    },
+    {
+      "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+      "tableId": "ab875d59-2043-46b4-a192-4f200e146bf0",
+      "datasetGeneration": "acd520e1-c98b-436a-b8fe-3df2e218ecf4",
+      "recordKey": {
+        "type": "uuid",
+        "value": "9738536c-f2c2-4f00-b67b-8c78622d3102"
+      }
+    }
+  ],
+  "readerRecordRef": {
+    "projectId": "3b2593ae-50ed-42a1-bf3b-353d34f37f01",
+    "tableId": "fa136b65-34de-40a0-883a-b344a73cc76a",
+    "datasetGeneration": "9e9a4df1-9bf0-46d7-acbb-322d4c50746e",
+    "recordKey": {
+      "type": "uuid",
+      "value": "0b66174d-cf6d-4c88-88a4-175b000e1405"
+    }
+  },
+  "usedEmailCount": 5,
+  "accountCount": 5,
+  "idempotencyRecovery": "原操作已找回",
+  "keyboard": {
+    "escapeClosedStopDialog": true,
+    "enterAppliedLogSearch": "manualPending"
+  },
+  "zoom": {
+    "tested": [
+      100,
+      200
+    ],
+    "horizontalOverflow": false
+  },
+  "candidateStates": {
+    "noMatch": "uiVerified",
+    "temporarilyBusy": "manualPending",
+    "configurationError": "manualPending"
+  },
+  "finiteEndReason": {
+    "status": "limitReached"
+  },
+  "unlimitedStatus": "stopped",
+  "executionBoundary": {
+    "executor": "fake",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  }
+}

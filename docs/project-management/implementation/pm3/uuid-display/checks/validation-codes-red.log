@@ -1,0 +1,128 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/projects/presentation-error.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop
+
+(node:10851) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/projects/presentation-error.test.ts (11 tests | 6 failed) 8ms
+   × presents the actual automation validation code PROFILE_REQUIRED without resource identifiers 4ms
+   × presents the actual automation validation code PROXY_UNAVAILABLE without resource identifiers 0ms
+   × presents the actual automation validation code PROXY_POOL_NOT_FOUND without resource identifiers 0ms
+   × presents the actual automation validation code MODEL_PROVIDER_NOT_FOUND without resource identifiers 0ms
+   × presents the actual automation validation code MODEL_PROVIDER_DISABLED without resource identifiers 0ms
+   × presents the actual automation validation code WORKFLOW_UNAVAILABLE without resource identifiers 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/projects/presentation-error.test.ts > presents the actual automation validation code PROFILE_REQUIRED without resource identifiers
+AssertionError: expected '操作失败，请重试' to be '请选择浏览器配置' // Object.is equality
+
+Expected: "请选择浏览器配置"
+Received: "操作失败，请重试"
+
+ ❯ src/renderer/domains/projects/presentation-error.test.ts:36:81
+     34|   ['WORKFLOW_UNAVAILABLE', '暂时无法检查工作流，请稍后重试'],
+     35| ])('presents the actual automation validation code %s without resource…
+     36|   expect(safeProjectError({ code, message: id, resource: { resourceId:…
+       |                                                                                 ^
+     37| })
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/projects/presentation-error.test.ts > presents the actual automation validation code PROXY_UNAVAILABLE without resource identifiers
+AssertionError: expected '操作失败，请重试' to be '固定代理暂不可用，请检查代理配置' // Object.is equality
+
+Expected: "固定代理暂不可用，请检查代理配置"
+Received: "操作失败，请重试"
+
+ ❯ src/renderer/domains/projects/presentation-error.test.ts:36:81
+     34|   ['WORKFLOW_UNAVAILABLE', '暂时无法检查工作流，请稍后重试'],
+     35| ])('presents the actual automation validation code %s without resource…
+     36|   expect(safeProjectError({ code, message: id, resource: { resourceId:…
+       |                                                                                 ^
+     37| })
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/projects/presentation-error.test.ts > presents the actual automation validation code PROXY_POOL_NOT_FOUND without resource identifiers
+AssertionError: expected '操作失败，请重试' to be '代理池暂不可用，请重新选择' // Object.is equality
+
+Expected: "代理池暂不可用，请重新选择"
+Received: "操作失败，请重试"
+
+ ❯ src/renderer/domains/projects/presentation-error.test.ts:36:81
+     34|   ['WORKFLOW_UNAVAILABLE', '暂时无法检查工作流，请稍后重试'],
+     35| ])('presents the actual automation validation code %s without resource…
+     36|   expect(safeProjectError({ code, message: id, resource: { resourceId:…
+       |                                                                                 ^
+     37| })
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/renderer/domains/projects/presentation-error.test.ts > presents the actual automation validation code MODEL_PROVIDER_NOT_FOUND without resource identifiers
+AssertionError: expected '操作失败，请重试' to be '模型提供方暂不可用，请重新选择' // Object.is equality
+
+Expected: "模型提供方暂不可用，请重新选择"
+Received: "操作失败，请重试"
+
+ ❯ src/renderer/domains/projects/presentation-error.test.ts:36:81
+     34|   ['WORKFLOW_UNAVAILABLE', '暂时无法检查工作流，请稍后重试'],
+     35| ])('presents the actual automation validation code %s without resource…
+     36|   expect(safeProjectError({ code, message: id, resource: { resourceId:…
+       |                                                                                 ^
+     37| })
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/renderer/domains/projects/presentation-error.test.ts > presents the actual automation validation code MODEL_PROVIDER_DISABLED without resource identifiers
+AssertionError: expected '操作失败，请重试' to be '模型提供方未启用，请检查配置' // Object.is equality
+
+Expected: "模型提供方未启用，请检查配置"
+Received: "操作失败，请重试"
+
+ ❯ src/renderer/domains/projects/presentation-error.test.ts:36:81
+     34|   ['WORKFLOW_UNAVAILABLE', '暂时无法检查工作流，请稍后重试'],
+     35| ])('presents the actual automation validation code %s without resource…
+     36|   expect(safeProjectError({ code, message: id, resource: { resourceId:…
+       |                                                                                 ^
+     37| })
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/renderer/domains/projects/presentation-error.test.ts > presents the actual automation validation code WORKFLOW_UNAVAILABLE without resource identifiers
+AssertionError: expected '操作失败，请重试' to be '暂时无法检查工作流，请稍后重试' // Object.is equality
+
+Expected: "暂时无法检查工作流，请稍后重试"
+Received: "操作失败，请重试"
+
+ ❯ src/renderer/domains/projects/presentation-error.test.ts:36:81
+     34|   ['WORKFLOW_UNAVAILABLE', '暂时无法检查工作流，请稍后重试'],
+     35| ])('presents the actual automation validation code %s without resource…
+     36|   expect(safeProjectError({ code, message: id, resource: { resourceId:…
+       |                                                                                 ^
+     37| })
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 5 passed (11)
+   Start at  15:20:33
+   Duration  658ms (transform 121ms, setup 128ms, import 20ms, tests 8ms, environment 384ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/projects/presentation-error.test.ts

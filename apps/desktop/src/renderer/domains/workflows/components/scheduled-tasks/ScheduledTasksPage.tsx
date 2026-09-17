@@ -183,7 +183,7 @@ export function ScheduledTasksPage({ onClose }: ScheduledTasksPageProps = {}) {
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
+              className="p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
               title="关闭"
             >
               <X className="w-4 h-4" />
@@ -224,7 +224,7 @@ export function ScheduledTasksPage({ onClose }: ScheduledTasksPageProps = {}) {
             {tasks.map((task, idx) => (
               <div
                 key={task.id}
-                className={`relative bg-[hsl(var(--card))] rounded-[12px] border-[1.5px] p-4 transition-all duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] animate-fade-in-up overflow-hidden ${
+                className={`relative bg-[hsl(var(--card))] rounded-card border-[1.5px] p-4 transition-all duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] animate-fade-in-up overflow-hidden ${
                   task.enabled
                     ? 'border-[hsl(var(--border))] hover:border-[hsl(var(--brand-500)/0.4)] hover:shadow-pop hover:-translate-y-0.5'
                     : 'border-[hsl(var(--border))] hover:border-[hsl(var(--slate-300))] opacity-60'
@@ -265,7 +265,7 @@ export function ScheduledTasksPage({ onClose }: ScheduledTasksPageProps = {}) {
                   </div>
                   <button
                     onClick={() => { void handleToggle(task).catch(() => { /* Store exposes the failure above. */ }) }}
-                    className={`shrink-0 p-1.5 rounded-[6px] transition-all duration-200 active:scale-90 ${
+                    className={`shrink-0 p-1.5 rounded-control transition-all duration-200 active:scale-90 ${
                       task.enabled
                         ? 'text-[hsl(var(--success-600))] hover:bg-[hsl(var(--success-50))] hover:shadow-success-glow'
                         : 'text-[hsl(var(--slate-400))] hover:bg-[hsl(var(--slate-100))]'
@@ -277,7 +277,7 @@ export function ScheduledTasksPage({ onClose }: ScheduledTasksPageProps = {}) {
                 </div>
 
                 {/* 工作流信息 */}
-                <div className="mb-3 p-2.5 bg-[hsl(var(--slate-50))] rounded-[8px] border border-[hsl(var(--border))] text-[12px]">
+                <div className="mb-3 p-2.5 bg-[hsl(var(--slate-50))] rounded-control border border-[hsl(var(--border))] text-[12px]">
                   <div className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))]">
                     <span className="text-[10px] uppercase tracking-wider font-semibold">工作流</span>
                     <span className="text-[hsl(var(--brand-700))] font-medium truncate">
@@ -300,7 +300,7 @@ export function ScheduledTasksPage({ onClose }: ScheduledTasksPageProps = {}) {
                   </div>
                   {task.trigger.type === 'webhook' && task.trigger.webhook_path && (
                     <div className="pl-8 mt-1">
-                      <div className="p-2 bg-[hsl(var(--violet-50))] rounded-[6px] border border-[hsl(var(--violet-500)/0.2)] font-mono text-[10.5px] text-[hsl(var(--violet-700))] break-all">
+                      <div className="p-2 bg-[hsl(var(--violet-50))] rounded-control border border-[hsl(var(--violet-500)/0.2)] font-mono text-[10.5px] text-[hsl(var(--violet-700))] break-all">
                         POST: /api/scheduled-tasks/webhook{task.trigger.webhook_path}
                       </div>
                     </div>
@@ -315,15 +315,15 @@ export function ScheduledTasksPage({ onClose }: ScheduledTasksPageProps = {}) {
 
                 {/* 执行统计 */}
                 <div className="mb-3 grid grid-cols-3 gap-1.5 text-center">
-                  <div className="p-2 bg-[hsl(var(--slate-100))] rounded-[8px] border border-[hsl(var(--border))]">
+                  <div className="p-2 bg-[hsl(var(--slate-100))] rounded-control border border-[hsl(var(--border))]">
                     <div className="text-[hsl(var(--muted-foreground))] text-[10px] font-semibold uppercase tracking-wider">总计</div>
                     <div className="text-[14px] font-bold text-[hsl(var(--slate-800))] tabular-nums">{task.total_executions}</div>
                   </div>
-                  <div className="p-2 bg-[hsl(var(--success-50))] rounded-[8px] border border-[hsl(var(--success-500)/0.2)]">
+                  <div className="p-2 bg-[hsl(var(--success-50))] rounded-control border border-[hsl(var(--success-500)/0.2)]">
                     <div className="text-[hsl(var(--success-700))] text-[10px] font-semibold uppercase tracking-wider">成功</div>
                     <div className="text-[14px] font-bold text-[hsl(var(--success-700))] tabular-nums">{task.success_executions}</div>
                   </div>
-                  <div className="p-2 bg-[hsl(var(--danger-50))] rounded-[8px] border border-[hsl(var(--danger-500)/0.2)]">
+                  <div className="p-2 bg-[hsl(var(--danger-50))] rounded-control border border-[hsl(var(--danger-500)/0.2)]">
                     <div className="text-[hsl(var(--danger-700))] text-[10px] font-semibold uppercase tracking-wider">失败</div>
                     <div className="text-[14px] font-bold text-[hsl(var(--danger-700))] tabular-nums">{task.failed_executions}</div>
                   </div>
@@ -350,7 +350,7 @@ export function ScheduledTasksPage({ onClose }: ScheduledTasksPageProps = {}) {
 
                 {/* 最后执行 */}
                 {task.last_execution_time && (
-                  <div className="mb-3 p-2 bg-[hsl(var(--slate-50))] rounded-[6px] text-[10.5px]">
+                  <div className="mb-3 p-2 bg-[hsl(var(--slate-50))] rounded-control text-[10.5px]">
                     <div className="flex items-center justify-between">
                       <span className="text-[hsl(var(--muted-foreground))]">最后执行</span>
                       <span className={`badge ${task.last_execution_status === 'success' ? 'badge-success' : 'badge-danger'}`}>

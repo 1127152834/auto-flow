@@ -1004,6 +1004,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Workflows */
+        get: operations["list_workflows_api_v1_workflows_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{workflowId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workflow */
+        get: operations["get_workflow_api_v1_workflows__workflowId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects": {
         parameters: {
             query?: never;
@@ -1134,6 +1168,331 @@ export type paths = {
         };
         /** Workspace Operation */
         get: operations["workspace_operation_api_v1_workspace_operations_by_idempotency_key__key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Batch */
+        post: operations["start_batch_api_v1_projects__projectId__automations__automationId__batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/input-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Inputs */
+        post: operations["preview_inputs_api_v1_projects__projectId__automations__automationId__input_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/batches/{batchId}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop Batch */
+        post: operations["stop_batch_api_v1_projects__projectId__batches__batchId__stop_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/batches/{batchId}/force-stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Force Stop Batch */
+        post: operations["force_stop_batch_api_v1_projects__projectId__batches__batchId__force_stop_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Batches */
+        get: operations["list_batches_api_v1_projects__projectId__batches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/batches/{batchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Batch */
+        get: operations["get_batch_api_v1_projects__projectId__batches__batchId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tasks */
+        get: operations["list_tasks_api_v1_projects__projectId__tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Task */
+        get: operations["get_task_api_v1_projects__projectId__tasks__taskId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/node-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Node Attempts */
+        get: operations["node_attempts_api_v1_projects__projectId__tasks__taskId__node_attempts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Logs */
+        get: operations["logs_api_v1_projects__projectId__tasks__taskId__logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/outputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Outputs */
+        get: operations["outputs_api_v1_projects__projectId__tasks__taskId__outputs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/artifacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifacts */
+        get: operations["artifacts_api_v1_projects__projectId__tasks__taskId__artifacts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/artifacts/{artifactId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifact */
+        get: operations["artifact_api_v1_projects__projectId__tasks__taskId__artifacts__artifactId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/artifacts/{artifactId}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifact Content */
+        get: operations["artifact_content_api_v1_projects__projectId__tasks__taskId__artifacts__artifactId__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Events */
+        get: operations["read_events_api_v1_projects__projectId__tasks__taskId__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/events/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream Events */
+        get: operations["stream_events_api_v1_projects__projectId__tasks__taskId__events_stream_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Automations */
+        get: operations["list_automations_api_v1_projects__projectId__automations_get"];
+        put?: never;
+        /** Create Automation */
+        post: operations["create_automation_api_v1_projects__projectId__automations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Automation */
+        get: operations["get_automation_api_v1_projects__projectId__automations__automationId__get"];
+        /** Update Automation */
+        put: operations["update_automation_api_v1_projects__projectId__automations__automationId__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/validation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Validate Automation */
+        get: operations["validate_automation_api_v1_projects__projectId__automations__automationId__validation_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1966,6 +2325,244 @@ export type components = {
              */
             api_key: string;
         };
+        /** AutomationPage */
+        AutomationPage: {
+            /** Items */
+            items: components["schemas"]["AutomationView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** AutomationResourceLocator */
+        AutomationResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "automation";
+            /** Projectid */
+            projectId: string;
+            /** Automationid */
+            automationId: string;
+        };
+        /** AutomationUpdate */
+        AutomationUpdate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Workflowid */
+            workflowId: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+            /** Expectedmanagementrevision */
+            expectedManagementRevision: number;
+        };
+        /** AutomationValidationIssue */
+        AutomationValidationIssue: {
+            /** Path */
+            path: string[];
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Resource */
+            resource?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** AutomationValidationView */
+        AutomationValidationView: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "draft" | "blocked" | "unavailable";
+            /** Valid */
+            valid: boolean;
+            /** Runnable */
+            runnable: boolean;
+            /** Issues */
+            issues: components["schemas"]["AutomationValidationIssue"][];
+            /** Capabilityrequirements */
+            capabilityRequirements: components["schemas"]["CapabilityRequirement"][];
+            /**
+             * Checkedat
+             * Format: date-time
+             */
+            checkedAt: string;
+        };
+        /** AutomationView */
+        AutomationView: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Workflowid */
+            workflowId: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+            /** Automationid */
+            automationId: string;
+            /** Projectid */
+            projectId: string;
+            /** Managementrevision */
+            managementRevision: number;
+            /** Capabilityrequirements */
+            capabilityRequirements?: components["schemas"]["CapabilityRequirement"][];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** AutomationWrite */
+        AutomationWrite: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Workflowid */
+            workflowId: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+        };
+        /** BatchDetail */
+        BatchDetail: {
+            batch: components["schemas"]["BatchView"];
+            /** Statuscounts */
+            statusCounts: {
+                [key: string]: number;
+            };
+            /** Taskcount */
+            taskCount: number;
+            /**
+             * Reusedinputgroupcount
+             * @default 0
+             */
+            reusedInputGroupCount: number;
+            /**
+             * Unchangedinputstreak
+             * @default 0
+             */
+            unchangedInputStreak: number;
+            stopOperation: components["schemas"]["ProjectRunOperationSnapshot"] | null;
+            /** Forcestopallowed */
+            forceStopAllowed: boolean;
+            /** Forcestopavailableat */
+            forceStopAvailableAt: string | null;
+            /** Configurationsnapshot */
+            configurationSnapshot: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** BatchPage */
+        BatchPage: {
+            /** Items */
+            items: components["schemas"]["BatchView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** BatchResourceLocator */
+        BatchResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "batch";
+            /** Projectid */
+            projectId: string;
+            /** Batchid */
+            batchId: string;
+        };
+        /** BatchStartRequest */
+        BatchStartRequest: {
+            /** Expectedautomationrevision */
+            expectedAutomationRevision: number;
+            /** Parameters */
+            parameters: {
+                [key: string]: string | number | boolean | null;
+            };
+            /** Maxtasks */
+            maxTasks?: number | null;
+            /** Concurrency */
+            concurrency?: number | null;
+            /** Environmentoverride */
+            environmentOverride?: (components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"]) | null;
+        };
+        /** BatchStopRequest */
+        BatchStopRequest: {
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+            /** Reason */
+            reason: string;
+        };
+        /** BatchView */
+        BatchView: {
+            /** Batchid */
+            batchId: string;
+            /** Projectid */
+            projectId: string;
+            /** Automationid */
+            automationId: string;
+            /** Automationname */
+            automationName?: string | null;
+            /** Startoperationid */
+            startOperationId: string;
+            /** Status */
+            status: string;
+            /** Statusrevision */
+            statusRevision: number;
+            /** Managementrevision */
+            managementRevision: number;
+            /** Requestedcount */
+            requestedCount: number | null;
+            /** Createdtaskcount */
+            createdTaskCount: number;
+            /** Activetaskcount */
+            activeTaskCount: number;
+            /** Claimgatestate */
+            claimGateState?: string | null;
+            /** Selectionoutcome */
+            selectionOutcome?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Completedat */
+            completedAt?: string | null;
+        };
         /** BrowserApiError */
         BrowserApiError: {
             /** Code */
@@ -2010,6 +2607,17 @@ export type components = {
             constraints?: {
                 [key: string]: unknown;
             };
+        };
+        /** CapabilityRequirement */
+        CapabilityRequirement: {
+            /** Capability */
+            capability: string;
+            /** Required */
+            required: boolean;
+            /** Available */
+            available: boolean;
+            /** Reason */
+            reason?: string | null;
         };
         /** ColumnExcelIdentity */
         ColumnExcelIdentity: {
@@ -2452,6 +3060,12 @@ export type components = {
             message: string;
             /** Affectedrecords */
             affectedRecords: number | null;
+            /** Taskid */
+            taskId?: string | null;
+            /** Runid */
+            runId?: string | null;
+            /** Referencesources */
+            referenceSources?: string[];
         };
         /** DataSchemaNew */
         DataSchemaNew: {
@@ -2897,6 +3511,18 @@ export type components = {
             /** Expected Revision */
             expected_revision: number;
         };
+        /** FieldEqualsRelation */
+        FieldEqualsRelation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "fieldEquals";
+            /** Sourceinputid */
+            sourceInputId: string;
+            sourceFieldRef: components["schemas"]["DataFieldRef"];
+            targetFieldRef: components["schemas"]["DataFieldRef"];
+        };
         /** FieldImpactReport */
         FieldImpactReport: {
             /** Impactrevision */
@@ -2957,6 +3583,20 @@ export type components = {
             mode: "field";
             /** Fieldid */
             fieldId: string;
+        };
+        /** FixedEnvironment */
+        FixedEnvironment: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "fixedEnvironment";
+            /** Environmentid */
+            environmentId: string;
+            /** Proxyoverride */
+            proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+            /** Modelproviderid */
+            modelProviderId?: string | null;
         };
         /** FixedProxy */
         FixedProxy: {
@@ -3083,6 +3723,103 @@ export type components = {
              */
             source: "local_probe" | "provider_probe" | "none";
             error?: components["schemas"]["ApiError"] | null;
+        };
+        /** InputDefinition */
+        InputDefinition: {
+            /** Inputid */
+            inputId: string;
+            /** Alias */
+            alias: string;
+            /** Tableid */
+            tableId: string;
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "independent" | "fixedRecord" | "related";
+            /** Required */
+            required: boolean;
+            fixedRecord?: components["schemas"]["DataRecordRef"] | null;
+            /** Relation */
+            relation?: (components["schemas"]["RecordSlotRelation"] | components["schemas"]["FieldEqualsRelation"] | components["schemas"]["SameRecordRelation"]) | null;
+            /** Fieldbindings */
+            fieldBindings: components["schemas"]["InputFieldBinding"][];
+            /** Filter */
+            filter: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Orderby */
+            orderBy: {
+                [key: string]: string;
+            }[];
+        };
+        /** InputEnvironment */
+        InputEnvironment: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "inputEnvironment";
+            /** Inputid */
+            inputId: string;
+            /** Proxyoverride */
+            proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+            /** Modelproviderid */
+            modelProviderId?: string | null;
+        };
+        /** InputFieldBinding */
+        InputFieldBinding: {
+            /** Inputfieldid */
+            inputFieldId: string;
+            /** Inputfieldalias */
+            inputFieldAlias: string;
+            fieldRef: components["schemas"]["DataFieldRef"];
+        };
+        /** InputPlan */
+        InputPlan: {
+            /** Inputs */
+            inputs: components["schemas"]["InputDefinition"][];
+        };
+        /** InputPreviewItem */
+        InputPreviewItem: {
+            /** Inputid */
+            inputId: string;
+            /** Alias */
+            alias: string;
+            /** Tabledisplay */
+            tableDisplay: string;
+            /** Recorddisplay */
+            recordDisplay: string | null;
+            /** Values */
+            values?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Outcome */
+            outcome: string;
+            /** Required */
+            required: boolean;
+            /** Detail */
+            detail?: string | null;
+            /** Scannedcount */
+            scannedCount?: number | null;
+        };
+        /** InputPreviewRequest */
+        InputPreviewRequest: {
+            /** Expectedautomationrevision */
+            expectedAutomationRevision: number;
+        };
+        /** InputPreviewResponse */
+        InputPreviewResponse: {
+            /** Runnable */
+            runnable: boolean;
+            /** Selectionstatus */
+            selectionStatus: string;
+            /** Evaluatedcandidatebindings */
+            evaluatedCandidateBindings: number;
+            /** Inputs */
+            inputs: components["schemas"]["InputPreviewItem"][];
         };
         /** InstalledKernelList */
         InstalledKernelList: {
@@ -3527,6 +4264,20 @@ export type components = {
             /** Message */
             message: string;
         };
+        /** NewFromProfile */
+        NewFromProfile: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "newFromProfile";
+            /** Profileid */
+            profileId?: string | null;
+            /** Proxyoverride */
+            proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+            /** Modelproviderid */
+            modelProviderId?: string | null;
+        };
         /** NewTarget */
         NewTarget: {
             /**
@@ -3543,6 +4294,43 @@ export type components = {
              * @enum {string}
              */
             mode: "none";
+        };
+        /** NodeAttemptPage */
+        NodeAttemptPage: {
+            /** Items */
+            items: components["schemas"]["NodeAttemptView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** NodeAttemptView */
+        NodeAttemptView: {
+            /** Nodevisitid */
+            nodeVisitId: string;
+            /** Nodeid */
+            nodeId: string;
+            /** Nodename */
+            nodeName: string;
+            /** Attempt */
+            attempt: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "succeeded" | "failed";
+            /** Startedat */
+            startedAt: string | null;
+            /** Completedat */
+            completedAt: string | null;
+            /** Error */
+            error: {
+                [key: string]: unknown;
+            } | null;
         };
         /** OperationAccepted */
         OperationAccepted: {
@@ -3574,6 +4362,24 @@ export type components = {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** ParameterDefinition */
+        ParameterDefinition: {
+            /** Parameterid */
+            parameterId: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "string" | "number" | "boolean";
+            /** Required */
+            required: boolean;
+            /** Defaultvalue */
+            defaultValue?: string | number | boolean | null;
         };
         /** PoolOption */
         PoolOption: {
@@ -3822,13 +4628,17 @@ export type components = {
             /** Proxypoolid */
             proxyPoolId?: string | null;
         };
+        /** ProjectBatchResult */
+        ProjectBatchResult: {
+            batch: components["schemas"]["BatchView"];
+        };
         /** ProjectCapabilities */
         ProjectCapabilities: {
             /**
              * Automations
              * @constant
              */
-            automations: "notImplemented";
+            automations: "available";
             /**
              * Data
              * @constant
@@ -3838,7 +4648,7 @@ export type components = {
              * Runs
              * @constant
              */
-            runs: "notImplemented";
+            runs: "available";
             /**
              * Environments
              * @constant
@@ -3909,7 +4719,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
             /**
              * Status
              * @enum {string}
@@ -3918,9 +4728,9 @@ export type components = {
             /** Statusrevision */
             statusRevision: number;
             /** Resource */
-            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["ProjectBatchResult"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -3987,6 +4797,93 @@ export type components = {
             type: "project";
             /** Projectid */
             projectId: string;
+        };
+        /** ProjectRunEventPage */
+        ProjectRunEventPage: {
+            /** Items */
+            items: components["schemas"]["ProjectRunEventView"][];
+            /** Aftersequence */
+            afterSequence: number;
+            /** Lastsequence */
+            lastSequence: number;
+            /** Hasmore */
+            hasMore: boolean;
+            /** Terminal */
+            terminal: boolean;
+        };
+        /** ProjectRunEventView */
+        ProjectRunEventView: {
+            /** Eventid */
+            eventId: string;
+            /** Runid */
+            runId: string;
+            /** Sequence */
+            sequence: number;
+            /** Executiongeneration */
+            executionGeneration: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "runStatus" | "nodeAttempt" | "log" | "output" | "artifact";
+            /** Nodeid */
+            nodeId?: string | null;
+            /** Nodevisitid */
+            nodeVisitId?: string | null;
+            /** Attempt */
+            attempt?: number | null;
+            /**
+             * Occurredat
+             * Format: date-time
+             */
+            occurredAt: string;
+            /** Payload */
+            payload: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** ProjectRunOperationAccepted */
+        ProjectRunOperationAccepted: {
+            operation: components["schemas"]["ProjectRunOperationSnapshot"];
+        };
+        /** ProjectRunOperationSnapshot */
+        ProjectRunOperationSnapshot: {
+            /** Operationid */
+            operationId: string;
+            /** Projectid */
+            projectId: string;
+            /** Idempotencykey */
+            idempotencyKey: string;
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+            /** Statusrevision */
+            statusRevision: number;
+            /** Resource */
+            resource: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Result */
+            result: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Error */
+            error: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+            /** Completedat */
+            completedAt: string | null;
         };
         /** ProjectSummary */
         ProjectSummary: {
@@ -4182,6 +5079,18 @@ export type components = {
             type: "record";
             recordRef: components["schemas"]["DataRecordRef"];
         };
+        /** RecordSlotRelation */
+        RecordSlotRelation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "recordSlot";
+            /** Slotid */
+            slotId: string;
+            /** Sourceinputid */
+            sourceInputId: string;
+        };
         /** RecordStatusBatchBlocker */
         RecordStatusBatchBlocker: {
             /** Code */
@@ -4335,6 +5244,199 @@ export type components = {
              */
             interval_minutes: 5 | 10 | 30 | 60;
         };
+        /** RunArtifactPage */
+        RunArtifactPage: {
+            /** Items */
+            items: components["schemas"]["RunArtifactView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** RunArtifactView */
+        RunArtifactView: {
+            /** Artifactid */
+            artifactId: string;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "screenshot";
+            /**
+             * Purpose
+             * @constant
+             */
+            purpose: "error";
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "available" | "unavailable";
+            /** Nodeid */
+            nodeId: string;
+            /** Nodename */
+            nodeName: string;
+            /** Nodevisitid */
+            nodeVisitId?: string | null;
+            /** Eventsequence */
+            eventSequence: number;
+            /** Executiongeneration */
+            executionGeneration: number;
+            /** Mediatype */
+            mediaType?: "image/png" | null;
+            /** Bytesize */
+            byteSize?: number | null;
+            /** Sha256 */
+            sha256?: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Unavailablereason */
+            unavailableReason?: string | null;
+            /** Contenturl */
+            contentUrl?: string | null;
+        };
+        /** RunLogEntry */
+        RunLogEntry: {
+            /** Runid */
+            runId: string;
+            /** Sequence */
+            sequence: number;
+            /** Eventid */
+            eventId: string;
+            /** Executiongeneration */
+            executionGeneration: number;
+            /** Nodeid */
+            nodeId?: string | null;
+            /** Nodename */
+            nodeName?: string | null;
+            /** Nodevisitid */
+            nodeVisitId?: string | null;
+            /** Attempt */
+            attempt?: number | null;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "debug" | "info" | "warning" | "error";
+            /** Message */
+            message: string;
+            /**
+             * Occurredat
+             * Format: date-time
+             */
+            occurredAt: string;
+        };
+        /** RunLogPage */
+        RunLogPage: {
+            /** Items */
+            items: components["schemas"]["RunLogEntry"][];
+            /** Aftersequence */
+            afterSequence: number;
+            /** Lastsequence */
+            lastSequence: number;
+            /** Hasmore */
+            hasMore: boolean;
+        };
+        /** RunOutputPage */
+        RunOutputPage: {
+            /** Items */
+            items: components["schemas"]["RunOutputView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** RunOutputView */
+        RunOutputView: {
+            /** Outputid */
+            outputId: string;
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "value";
+            /** Name */
+            name: string;
+            value: components["schemas"]["JsonValue"];
+            /** Runid */
+            runId: string;
+            /** Sequence */
+            sequence: number;
+            /** Nodeid */
+            nodeId?: string | null;
+            /** Nodename */
+            nodeName?: string | null;
+            /** Nodevisitid */
+            nodeVisitId?: string | null;
+            /** Attempt */
+            attempt?: number | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+        };
+        /** RunPolicy */
+        RunPolicy: {
+            /** Maxtasks */
+            maxTasks: number;
+            /** Concurrency */
+            concurrency: number;
+            /** Maxliveinstances */
+            maxLiveInstances: number;
+            /** Continueafterfailure */
+            continueAfterFailure: boolean;
+            /** Automaticexecutiontimeoutseconds */
+            automaticExecutionTimeoutSeconds: number;
+            /** Manualdeadlineseconds */
+            manualDeadlineSeconds: number;
+        };
+        /** RunSnapshotView */
+        RunSnapshotView: {
+            /** Runid */
+            runId: string;
+            /** Runrequestid */
+            runRequestId: string;
+            /** Status */
+            status: string;
+            /** Statusrevision */
+            statusRevision: number;
+            /** Executiongeneration */
+            executionGeneration: number;
+            /** Preparedcontentid */
+            preparedContentId: string;
+            /** Capabilitybindings */
+            capabilityBindings: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Resourcerequest */
+            resourceRequest: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Lastsequence */
+            lastSequence: number;
+            /** Terminal */
+            terminal: boolean;
+            /** Error */
+            error?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Startedat */
+            startedAt: string | null;
+            /** Finishedat */
+            finishedAt: string | null;
+        };
         /** RuntimePaths */
         RuntimePaths: {
             /** Workspace */
@@ -4361,6 +5463,16 @@ export type components = {
             paths: components["schemas"]["RuntimePaths"];
             /** Blockers */
             blockers: string[];
+        };
+        /** SameRecordRelation */
+        SameRecordRelation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "sameRecord";
+            /** Sourceinputid */
+            sourceInputId: string;
         };
         /** SourceDefaultProxy */
         SourceDefaultProxy: {
@@ -4589,6 +5701,118 @@ export type components = {
             /** Lastconfirmedat */
             lastConfirmedAt?: string | null;
         };
+        /** TaskDataWriteView */
+        TaskDataWriteView: {
+            /** Kind */
+            kind: string;
+            /** Tabledisplay */
+            tableDisplay: string;
+            /** Recorddisplay */
+            recordDisplay: string;
+            /** Outcome */
+            outcome: string;
+            /** Previousstatus */
+            previousStatus?: string | null;
+            /** Nextstatus */
+            nextStatus?: string | null;
+            /** Referencedisplay */
+            referenceDisplay?: string | null;
+            /** Beforesummary */
+            beforeSummary?: string | null;
+            /** Aftersummary */
+            afterSummary?: string | null;
+            /** Detail */
+            detail?: string | null;
+        };
+        /** TaskDetail */
+        TaskDetail: {
+            /** Automationname */
+            automationName?: string | null;
+            /** Batchstartedat */
+            batchStartedAt?: string | null;
+            /** Parameterdefinitions */
+            parameterDefinitions?: components["schemas"]["ParameterDefinition"][];
+            /** Nodenames */
+            nodeNames?: {
+                [key: string]: string;
+            };
+            task: components["schemas"]["TaskView"];
+            inputSnapshot: components["schemas"]["TaskInputSnapshotView"];
+            run: components["schemas"]["RunSnapshotView"];
+            /** Datawrites */
+            dataWrites?: components["schemas"]["TaskDataWriteView"][];
+        };
+        /** TaskInputSnapshotView */
+        TaskInputSnapshotView: {
+            /** Inputsnapshotid */
+            inputSnapshotId: string;
+            /** Taskid */
+            taskId: string;
+            /** Batchid */
+            batchId: string;
+            /** Parameters */
+            parameters: {
+                [key: string]: string | number | boolean | null;
+            };
+            /** Inputs */
+            inputs: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /**
+             * Capturedat
+             * Format: date-time
+             */
+            capturedAt: string;
+        };
+        /** TaskPage */
+        TaskPage: {
+            /** Items */
+            items: components["schemas"]["TaskView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** TaskView */
+        TaskView: {
+            /** Taskid */
+            taskId: string;
+            /** Projectid */
+            projectId: string;
+            /** Batchid */
+            batchId: string;
+            /** Runid */
+            runId: string;
+            /** Runrequestid */
+            runRequestId: string;
+            /** Status */
+            status: string;
+            /** Statusrevision */
+            statusRevision: number;
+            /** Inputsnapshotid */
+            inputSnapshotId: string;
+            /** Taskordinal */
+            taskOrdinal: number;
+            /** Automationname */
+            automationName?: string | null;
+            /** Batchstartedat */
+            batchStartedAt?: string | null;
+            /** Inputidentifier */
+            inputIdentifier?: string | null;
+            /** Endnodename */
+            endNodeName?: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Completedat */
+            completedAt?: string | null;
+        };
         /** UsagePoint */
         UsagePoint: {
             /**
@@ -4631,6 +5855,78 @@ export type components = {
             width: number;
             /** Height */
             height: number;
+        };
+        /** WorkflowCatalogDetail */
+        WorkflowCatalogDetail: {
+            /** Workflowid */
+            workflowId: string;
+            /** Name */
+            name: string;
+            /** Revision */
+            revision: number;
+            /** Checksum */
+            checksum: string;
+            validation: components["schemas"]["WorkflowCatalogValidation"];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** WorkflowCatalogIssue */
+        WorkflowCatalogIssue: {
+            /** Nodeid */
+            nodeId: string | null;
+            /** Path */
+            path: string[];
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+        };
+        /** WorkflowCatalogItem */
+        WorkflowCatalogItem: {
+            /** Workflowid */
+            workflowId: string;
+            /** Name */
+            name: string;
+            /** Revision */
+            revision: number;
+            /** Checksum */
+            checksum: string;
+            validation: components["schemas"]["WorkflowCatalogValidation"];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** WorkflowCatalogList */
+        WorkflowCatalogList: {
+            /** Items */
+            items: components["schemas"]["WorkflowCatalogItem"][];
+        };
+        /** WorkflowCatalogValidation */
+        WorkflowCatalogValidation: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "blocked";
+            /** Runnable */
+            runnable: boolean;
+            /** Issues */
+            issues: components["schemas"]["WorkflowCatalogIssue"][];
         };
         /** WorkflowExecuteRequest */
         WorkflowExecuteRequest: {
@@ -9711,6 +11007,102 @@ export interface operations {
             };
         };
     };
+    list_workflows_api_v1_workflows_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowCatalogList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_workflow_api_v1_workflows__workflowId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflowId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowCatalogDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_projects_api_v1_projects_get: {
         parameters: {
             query?: {
@@ -10051,9 +11443,9 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation") | null;
+                kind?: ("createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
-                resourceType?: ("project" | "table" | "field" | "status" | "record") | null;
+                resourceType?: ("project" | "table" | "field" | "status" | "record" | "automation" | "batch") | null;
             };
             header?: never;
             path: {
@@ -10241,6 +11633,1032 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    start_batch_api_v1_projects__projectId__automations__automationId__batches_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRunOperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_inputs_api_v1_projects__projectId__automations__automationId__input_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InputPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputPreviewResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    stop_batch_api_v1_projects__projectId__batches__batchId__stop_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchStopRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRunOperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    force_stop_batch_api_v1_projects__projectId__batches__batchId__force_stop_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchStopRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRunOperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_batches_api_v1_projects__projectId__batches_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                automationId?: string | null;
+                status?: string | null;
+                startedFrom?: string | null;
+                startedTo?: string | null;
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_batch_api_v1_projects__projectId__batches__batchId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tasks_api_v1_projects__projectId__tasks_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                batchId?: string | null;
+                automationId?: string | null;
+                status?: string | null;
+                endedFrom?: string | null;
+                endedTo?: string | null;
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_task_api_v1_projects__projectId__tasks__taskId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    node_attempts_api_v1_projects__projectId__tasks__taskId__node_attempts_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NodeAttemptPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logs_api_v1_projects__projectId__tasks__taskId__logs_get: {
+        parameters: {
+            query?: {
+                afterSequence?: number;
+                level?: ("debug" | "info" | "warning" | "error") | null;
+                nodeId?: string | null;
+                query?: string | null;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunLogPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    outputs_api_v1_projects__projectId__tasks__taskId__outputs_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOutputPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    artifacts_api_v1_projects__projectId__tasks__taskId__artifacts_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunArtifactPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    artifact_api_v1_projects__projectId__tasks__taskId__artifacts__artifactId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+                artifactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunArtifactView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    artifact_content_api_v1_projects__projectId__tasks__taskId__artifacts__artifactId__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+                artifactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_events_api_v1_projects__projectId__tasks__taskId__events_get: {
+        parameters: {
+            query?: {
+                afterSequence?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRunEventPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_events_api_v1_projects__projectId__tasks__taskId__events_stream_get: {
+        parameters: {
+            query?: {
+                afterSequence?: number;
+            };
+            header?: {
+                "Last-Event-ID"?: string | null;
+            };
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_automations_api_v1_projects__projectId__automations_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_automation_api_v1_projects__projectId__automations_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationWrite"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_automation_api_v1_projects__projectId__automations__automationId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_automation_api_v1_projects__projectId__automations__automationId__put: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    validate_automation_api_v1_projects__projectId__automations__automationId__validation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationValidationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

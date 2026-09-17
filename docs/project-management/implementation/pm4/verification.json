@@ -1,0 +1,202 @@
+{
+  "date": "2026-09-16",
+  "milestone": "PM4",
+  "branch": "codex/project-management-pm4",
+  "status": "delivered-management-scope-partially-verified",
+  "deliveryStatus": "delivered",
+  "verificationStatus": "partiallyVerified",
+  "scope": "管理侧通过，真实执行核心接入待验收",
+  "head": "f07bb83b46041fcc5ede7a957809834046872014",
+  "sourceRevision": "f07bb83b46041fcc5ede7a957809834046872014",
+  "sourceDigest": "71623bf3d45b28912bdafdd9e97cbef119f246c05ad307bc4d98eabf6c4758cb",
+  "buildRevision": "f07bb83b46041fcc5ede7a957809834046872014",
+  "qaCommit": "b4dabf28b8be3ce5bbee5c321c9f2801dc328ea8",
+  "uiRegressionFixCommit": "c911b6acfc21b622904357ec126baba2bccb4b2f",
+  "documentationBaseHead": "f07bb83b46041fcc5ede7a957809834046872014",
+  "authoritativeManagementRun": {
+    "result": "docs/project-management/implementation/pm4/qa-runs/f-QHALLW/result.json",
+    "status": "passed",
+    "scenario": "PM4-F final-management-chain",
+    "capturedGitHead": "f07bb83b46041fcc5ede7a957809834046872014",
+    "sourceSha256": "71623bf3d45b28912bdafdd9e97cbef119f246c05ad307bc4d98eabf6c4758cb",
+    "createdAt": "2026-09-15T20:26:07.940Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "boundary": {
+      "executor": "fake",
+      "browser": "notExecuted",
+      "studio": "notExecuted"
+    },
+    "facts": {
+      "finiteTasks": 3,
+      "unlimitedTasksBeforeUserStop": 2,
+      "samePersonReusedAcrossTasks": true,
+      "emailsExplicitlyMovedToUsed": 5,
+      "accountsCreatedWithoutDuplicates": 5,
+      "secondAutomationReadFirstAutomationAccount": true,
+      "secondAutomationAccountCountUnchanged": true,
+      "idempotencyRecovery": "原操作已找回",
+      "temporarilyBusyUi": "passed",
+      "configurationErrorUi": "passed",
+      "enterLogSearch": "passed"
+    }
+  },
+  "engineeringChecks": {
+    "fullSuiteVerifiedRevision": "f07bb83b46041fcc5ede7a957809834046872014",
+    "currentSourceFullSuiteStatus": "passed",
+    "backendPytest": {
+      "status": "passed",
+      "passed": 1597,
+      "skipped": 8,
+      "revision": "f07bb83b46041fcc5ede7a957809834046872014"
+    },
+    "ruff": {
+      "status": "passed",
+      "revision": "f07bb83b46041fcc5ede7a957809834046872014"
+    },
+    "mypy": {
+      "status": "passed",
+      "sourceFiles": 260,
+      "revision": "f07bb83b46041fcc5ede7a957809834046872014"
+    },
+    "frontendVitest": {
+      "status": "passed",
+      "testFiles": 298,
+      "tests": 3273
+    },
+    "openapiCheck": {
+      "status": "passed"
+    },
+    "typecheck": {
+      "status": "passed"
+    },
+    "lint": {
+      "status": "passed"
+    },
+    "build": {
+      "status": "passed"
+    },
+    "testScripts": {
+      "status": "passed",
+      "passed": 64,
+      "total": 64,
+      "note": "补齐被 Git ignore 的 WebRPA 冻结清单单文件后执行。"
+    },
+    "testStructure": {
+      "status": "passed"
+    },
+    "pm4QaRunner": {
+      "status": "passed",
+      "tests": 18
+    },
+    "postCandidateSafetyFixes": {
+      "status": "targetedRegressionPassed",
+      "recordDeletionLeaseGuard": {
+        "commit": "d3a397cf2ab1d2b8a22e1acf6aa16adc2f5e2b97",
+        "primaryTestsPassed": 82,
+        "relatedTestsPassed": 15,
+        "scope": "人工删除在影响预览和最终事务中阻止 held/reconciling 记录占用"
+      },
+      "excelReplacementLeaseGuard": {
+        "commit": "f07bb83b46041fcc5ede7a957809834046872014",
+        "newTestsPassed": 7,
+        "relatedTestsPassed": 117,
+        "scope": "Excel 重新导入在预览、接受和最终发布时阻止当前数据代次的活动占用"
+      },
+      "fullSuiteOnCurrentSource": "passed",
+      "finalManagementRunOnCurrentSource": "passed"
+    }
+  },
+  "crossMilestoneRegression": {
+    "projectDataDirectory": {
+      "status": "passed",
+      "evidence": "docs/migration/project-data-directory-qa/run-A6Nzd9/result.json"
+    },
+    "pm2DetailFlows": {
+      "status": "passed",
+      "evidence": "docs/migration/pm2-detail-qa/run-5r0BCW/result.json",
+      "largeImportRows": 10000,
+      "largeImportMilliseconds": 7211,
+      "secondPageMilliseconds": 169
+    },
+    "pm3ManagementAndParameterBatches": {
+      "status": "partiallyVerified",
+      "managementFrontend": {
+        "status": "passed",
+        "testFiles": 16,
+        "tests": 121,
+        "command": "npm --workspace @autoflow/desktop test -- $(rg --files apps/desktop/src/renderer/domains/project-runs | rg '\\.(test|spec)\\.(ts|tsx)$' | sed 's#^apps/desktop/##') --maxWorkers=2",
+        "scope": "参数启动、预检、停止/恢复提示、批次/任务详情、事件、日志和输入输出管理前端"
+      },
+      "managementBackend": {
+        "status": "passed",
+        "tests": 139,
+        "warnings": 2,
+        "warningScope": "既有依赖弃用 warning",
+        "scope": "数据删除/重新导入占用保护、项目 Run 合同/事件/证据、启动/派发、运行仓储、规则、资源、展示及运行时"
+      },
+      "realExecutorQa": {
+        "status": "notExecuted",
+        "command": "node scripts/qa-project-management-pm3.mjs",
+        "reason": "该脚本会启动真实 CloakBrowser/生产执行核心，与本轮隔离 fake executor、真实核心待验收边界冲突。"
+      }
+    }
+  },
+  "visualReview": {
+    "status": "passed",
+    "evidence": "docs/project-management/implementation/pm4/qa-runs/f-QHALLW/visual-review.json",
+    "reviewedSourceRevision": "f07bb83b46041fcc5ede7a957809834046872014",
+    "currentSourceScreenshots": "docs/project-management/implementation/pm4/qa-runs/f-QHALLW/result.json",
+    "currentSourceReviewStatus": "passed",
+    "screenshots": 19,
+    "mandatoryStructurePassed": true,
+    "minimumScreenScore": 85,
+    "topNavigation": "passed",
+    "compactFineGridTables": "passed",
+    "smallRadius": "passed",
+    "viewport1440x1024": "passed",
+    "zoom200Percent": "passedWithVerticalScroll",
+    "candidateStates": {
+      "noMatch": "passed",
+      "temporarilyBusy": "passed",
+      "configurationError": "passed"
+    },
+    "keyboard": {
+      "escapeStopDialog": "passed",
+      "enterLogSearch": "passed",
+      "enterSynthesis": "CDP keyDown + CR + keyUp"
+    },
+    "qaControlBoundary": "候选态由仅存在于隔离 QA sidecar 的鉴权控制端点投影；端点不进入 OpenAPI、不修改数据库，真实 coordinator 仍先校验项目、自动化和修订。"
+  },
+  "pending": [
+    "PM3 真实执行核心 QA（qa-project-management-pm3.mjs）",
+    "真实生产执行核心接入",
+    "真实 CloakBrowser 执行",
+    "Studio 联合运行",
+    "Windows 与其他 CPU 架构",
+    "打包应用",
+    "用户手动验收"
+  ],
+  "claimLimit": "PM4 管理功能已交付并在 macOS arm64 验证；当前源码 f07bb83b 的 PM4-F 管理链、19 张截图逐屏视觉复审和阶段全量工程检查通过。PM3 管理端前后端定向回归通过，真实执行核心 QA 未执行。隔离 fake executor 的成功不能证明生产工作流执行核心、真实浏览器或 Studio 可用。",
+  "build": {
+    "revision": "f07bb83b46041fcc5ede7a957809834046872014",
+    "sourceSha256": "71623bf3d45b28912bdafdd9e97cbef119f246c05ad307bc4d98eabf6c4758cb",
+    "artifactSha256": null,
+    "artifactHashStatus": "notRecordedInAuthoritativeEvidence"
+  },
+  "historicalCandidates": [
+    {
+      "result": "docs/project-management/implementation/pm4/qa-runs/f-4QcXFG/result.json",
+      "capturedGitHead": "c911b6acfc21b622904357ec126baba2bccb4b2f",
+      "status": "previousCandidateVisualReviewPassed",
+      "visualReview": "docs/project-management/implementation/pm4/qa-runs/f-4QcXFG/visual-review.json",
+      "reason": "候选后补入两项数据保护修复；保留其已完成的逐屏视觉审查，不能替代当前源码截图复审。"
+    },
+    {
+      "result": "docs/project-management/implementation/pm4/qa-runs/f-dJVKnL/result.json",
+      "capturedGitHead": "8c698d38ff2f4ddc4973826c8d274c349f0a42c7",
+      "status": "supersededByFinalCandidate",
+      "reason": "候选状态 UI 与日志搜索 Enter 当时仍需人工跟进。"
+    }
+  ]
+}

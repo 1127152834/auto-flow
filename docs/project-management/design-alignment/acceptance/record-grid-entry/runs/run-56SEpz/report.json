@@ -1,0 +1,339 @@
+{
+  "started": "2026-09-14T03:24:10.757Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-U3V7XZ",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-table-system/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-56SEpz",
+  "source": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+  "patchSha256": "8dae92037d6805c877d63a4489f47c80275eda737181dbfff6adf30206c36cd3",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "E01-E03",
+      "status": "passed",
+      "details": "UI created project/table/fields and two inline rows; one visible batch save produced exactly two records",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E04",
+      "status": "passed",
+      "details": "Real clipboard paste preserves leading-zero text and adds exactly two rows",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E06",
+      "status": "passed",
+      "details": "Invalid required cell is focused and no records are written",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E11",
+      "status": "passed",
+      "details": "Cancelled tab leave preserves grid draft",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E05",
+      "status": "passed",
+      "details": "Over-wide, over-100-row and over-1-MiB clipboard pastes leave original draft unchanged",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E09",
+      "status": "passed",
+      "details": "Injected response loss after database commit; full Electron restart and original-key query recovered exactly one addition; restart route restored directly",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E12-service-reconnect",
+      "status": "passed",
+      "details": "Existing controlled restartSidecar IPC restarts test service; same-workspace grid draft survives",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E15",
+      "status": "passed",
+      "details": "Actual Electron 200% zoom preserves window width and draft; screenshot captured",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E16-edit",
+      "status": "passed",
+      "details": "Saved record edit still uses existing detail/edit flow and persists through UI",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E10",
+      "status": "passed",
+      "details": "Request-stage fault injection writes nothing; explicit original-key lookup and resend create one record",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E08",
+      "status": "passed",
+      "details": "Real competing HTTP field creation rejects stale structure, preserves cells, then explicit confirmation permits one save",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E14-list",
+      "status": "passed",
+      "details": "Nonmatching row is saved, applied search and visible count stay unchanged",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E07",
+      "status": "passed",
+      "details": "Real Excel identity table via wizard; duplicate batch and existing identity each reject every draft, unique batch succeeds, source bytes unchanged",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E04-rich-types",
+      "status": "passed",
+      "details": "HTTP fixture fields plus real clipboard paste/undo/save preserve date, zero, false, quoted newline and formula-looking text",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E12-workspace-switch",
+      "status": "passed",
+      "details": "Two real workspaces and two UI-created drafts stay isolated; controlled chooser IPC and direct route restoration explicitly used",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    }
+  ],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "sourceContentSha256": "03b6c891b03f52138b05516e7951c794b3f4b85d9ea9f92532bf0e24f8b99ee6",
+  "buildContentSha256": "5a864db1fceccecc920c091a608c8c60649a88ff31fd7df72cebfa9957b4a593",
+  "screenshots": [
+    {
+      "name": "V01-two-drafts",
+      "viewport": {
+        "width": 1487,
+        "height": 1058,
+        "dpr": 1,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "CDP 1487x1058 baseline",
+      "zoom": 1
+    },
+    {
+      "name": "V03-saved",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V04-paste",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V06-cell-error",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 71,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V09-retained-draft",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V05-paste-rejected",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 118,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V08-uncertain",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 99,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V10-recovered",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V11-zoom-200",
+      "viewport": {
+        "width": 743,
+        "height": 501,
+        "dpr": 4,
+        "scrollY": 735.25,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 2
+    },
+    {
+      "name": "V12-normal",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 139,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V13-existing-edit",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V08-not-accepted",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 111,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V07-schema-conflict",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 151,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V14-filter-retained",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V06-duplicate-identity",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V04-rich-paste",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 22,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V10-workspace-a",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 130,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V10-workspace-b",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "failure",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    }
+  ],
+  "secondaryWorkspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-heEZH0",
+  "status": "failed",
+  "error": "Error: timed out waiting for 浏览器配置: null",
+  "finished": "2026-09-14T03:25:10.702Z"
+}

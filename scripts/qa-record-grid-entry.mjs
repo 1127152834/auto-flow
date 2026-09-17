@@ -129,10 +129,10 @@ try{
  passed('E08','Real competing HTTP field creation rejects stale structure, preserves cells, then explicit confirmation permits one save')
 
  await input('[aria-label="文本搜索"]','温室');await click('搜索记录');await wait(400)
- const filteredBefore=await renderer.evaluate("document.querySelector('[role=toolbar][aria-label=记录工具]').innerText")
+ const filteredBefore=await renderer.evaluate("document.querySelector('[role=group][aria-label=记录工具]').innerText")
  await click('新增行');await click('第 1 行 · 标题','[role=gridcell]',true);await renderer.command('Input.insertText',{text:'不匹配搜索的记录'});await key('Tab');await click('保存 1 行');await waitFor(renderer,"!document.querySelector('[data-record-draft]')",'save under active filter');await wait(400)
  assert.equal(await renderer.evaluate("document.querySelector('[aria-label=文本搜索]').value"),'温室')
- assert.equal(await renderer.evaluate("document.querySelector('[role=toolbar][aria-label=记录工具]').innerText"),filteredBefore)
+ assert.equal(await renderer.evaluate("document.querySelector('[role=group][aria-label=记录工具]').innerText"),filteredBefore)
  assert.equal((await facts(`/projects/${project.projectId}/tables/${table.tableId}/records?datasetGeneration=${table.datasetGeneration}`)).total,8)
  await capture('V14-filter-retained');passed('E14-list','Nonmatching row is saved, applied search and visible count stay unchanged')
  await click('清除文本搜索')
@@ -202,5 +202,5 @@ try{
  report.status='partial';report.remaining=['E13-legacy-and-reimport-E2E','E15-native-IME','visual-review']
  console.log(JSON.stringify({workspace,evidence,manual},null,2))
  if(manual){await writeFile(join(evidence,'report.json'),JSON.stringify(report,null,2));await new Promise(resolve=>{process.once('SIGINT',resolve);desktop.child.once('exit',resolve)})}
-}catch(error){report.status='failed';report.error=String(error);if(renderer){await capture('failure').catch(()=>{});await writeFile(join(evidence,'failure-dom.txt'),await renderer.evaluate('document.body.innerText').catch(()=>''))}throw error}
+}catch(error){report.status='failed';report.error=String(error);if(renderer){await writeFile(join(evidence,'failure-hit-test.json'),JSON.stringify(await renderer.evaluate(`(()=>({bodyPointer:getComputedStyle(document.body).pointerEvents,buttons:[...document.querySelectorAll('button')].filter(e=>e.textContent.trim()==='浏览器配置').map(e=>{const r=e.getBoundingClientRect();return {rect:r.toJSON(),disabled:e.disabled,pointer:getComputedStyle(e).pointerEvents,hit:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.outerHTML.slice(0,800)}}),dialogs:[...document.querySelectorAll('[role=dialog],[role=alertdialog]')].map(e=>({text:e.innerText,rect:e.getBoundingClientRect().toJSON()}))}))()`),null,2)).catch(()=>{});await capture('failure').catch(()=>{});await writeFile(join(evidence,'failure-dom.txt'),await renderer.evaluate('document.body.innerText').catch(()=>''))}throw error}
 finally{report.finished=new Date().toISOString();await writeFile(join(evidence,'report.json'),JSON.stringify(report,null,2));renderer?.close();native?.close();if(desktop)await stop(desktop.child);console.log(`Evidence: ${evidence}`)}

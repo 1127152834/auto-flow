@@ -1,6 +1,6 @@
 # 项目管理里程碑覆盖表
 
-- 日期：2026-09-13；状态：PM2 P0–P5实现与机器/真实macOS应用验收通过，用户验收pending。Windows与packaged未执行；原编号及PM3–PM9未来业务证据保持不变。
+- 日期：2026-09-16；状态：PM3 历史范围保留；PM4 V1/A/B/C/F 管理功能已交付，整体为 delivered + partially verified。macOS arm64 管理链、第二自动化、工程回归和视觉结构已有证据；PM3 管理前端定向回归 16 文件/121 项通过，真实执行核心 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、packaged 及用户手测未执行。
 - 依据：已确认设计 `906deda`；[里程碑正文](../../superpowers/plans/2026-09-13-project-management-milestones.md)。
 - [逐条规则/测试目标映射](coverage.json)包含48项功能、178条验收场景、18项执行契约和7项能力门槛。
 - “首次可用”只代表当阶段已接通的真实子范围；“完整验收”覆盖该条全部约束。PM9对所有功能做平台与真实应用回归。
@@ -166,3 +166,34 @@ DT-01/02/10/12登记部分自动与macOS arm64实际应用证据，详见pm2-dir
 - [构建HTML回归](../../migration/project-management-regression-qa/run-4K8zpg/built-html.json)：全局入口与既有模块回归。
 
 coverage.json仅提升PM2首次实施范围。DT-12在PM2完整验收后为verified；其余需要PM4/PM6/PM7/PM8补足运行占用、Sheets公式/来源、摘要或生命周期的功能保持partially_verified。PM3–PM9场景、Windows、packaged及用户验收没有被上述结果替代。
+
+## PM3 管理范围交付更新（2026-09-15）
+
+本节以 [PM3 最终机器报告](pm3/verification.json) 为权威当前记录，保留前文 PM0–PM2 历史事实。用户排除了 Studio demo 联合测试；该排除不等于原 PM3 合同中的 Studio 打开/返回已经通过。
+
+| 状态 | 条目 | 当前证据与边界 |
+|---|---|---|
+| verified | AU-04、FLOW-A01、XE-A01、XE-A04、XE-G02、PM3-B、PM3-C | 参数配置与参数型真实启动、原子事实、原键恢复、普通停止及强停均通过真实 Electron + FastAPI + SQLite + CloakBrowser 链。 |
+| partially_verified | PM-03；AU-01/02/03/05/07/08；RUN-01–05；ENV-02/08/09；XE-A06；XE-C01/02/03/05/06/07/11/16/17；XE-G01；PM3-A | PM3 子范围可用；等待人工、项目数据型执行、持久环境、完整生命周期或 Studio 往返仍属于后续里程碑或用户排除范围。 |
+| planned | OV-02、AU-06、DT-11、DATA-IN-01–12、XE-A05 以及 PM4–PM9 项目 | 没有用管理配置、参数任务或终态重启证据冒充未实现业务能力。 |
+
+强停使用明确声明的受控 OS 进程暂停：只定位隔离 Electron 后代树中唯一、命令匹配的真实 workflow worker，记录 PID 与开始时间后暂停；UI 走普通停止、30 秒宽限和真实强停，随后确认同一进程身份退出、旧执行代次撤权、资源清理及新批次可运行。当前 HEAD 证据见 pm3/qa-runs/uuid-runs-1789458500247/result.json。
+
+Windows、其他 CPU 架构、打包应用和用户手动测试均未执行。
+
+
+## PM4 V1/A/B/C/F 覆盖更新（2026-09-16）
+
+PM4 当前权威包证据为 [A 输入领取](pm4/a-verification.md)、[B 数据能力](pm4/b-verification.md)、[C 批次调度](pm4/c-verification.md) 和 [F 最终核验](pm4/verification.json)。当前源码管理链使用 `qa-runs/f-QHALLW`；`f-4QcXFG` 是已完成视觉复审的前一提交候选，旧 `f-dJVKnL` 为历史候选。Electron、FastAPI、SQLite、领取及项目数据能力真实运行，执行步骤由隔离 fake executor 驱动。
+
+| 范围 | 当前状态 | 已有事实 | 保留边界 |
+|---|---|---|---|
+| PM4-A / XE-C04 | delivered / partially_verified | 输入关系、必要/可选、候选回溯、typed lease、全组原子提交、暂占/耗尽/配置/歧义/预算分类及候选续查已实现；F 跨包回归通过 | Sheets 物理来源身份在 PM6；真实生产执行核心未验收 |
+| PM4-B / XE-C08 | delivered / partially_verified | 同项目受控读取与查询返回不可变快照，查询不自动获得写权 | fake executor 已调用真实端口；真实生产执行核心尚未调用 |
+| PM4-B / XE-C09 | delivered / partially_verified | 本地记录/状态/字段显式操作、动态 lease、CAS、稳定引用、幂等结果和写游标已实现 | 环境关联在 PM5、Sheets 在 PM6；真实生产执行核心未验收 |
+| PM4-C | delivered | 有限/不限、并发容量、失败策略、暂占等待、真实耗尽、停止门闩、终态释放、重启恢复、撤权和工作区隔离已有自动与管理 E2E 证据 | 生产执行核心调用仍待验收 |
+| PM4-F / PM4 里程碑 | delivered / partially_verified | 当前源码第二自动化读取首个自动化新增账号，有限/不限、候选态和日志 Enter 管理链通过；候选后两项 lease 保护修复、阶段全量工程检查、PM2 数据回归及 19 张截图逐屏审查均通过 | PM3 管理端前后端定向回归通过；真实执行核心 PM3 QA、真实生产执行核心、浏览器、Studio、Windows、其他架构、packaged 和用户手测未执行 |
+
+FX 映射保持原编号：V1/B/C 的三表链对应 FX-02 的多表输入/显式状态与新增记录语义；复用、有限/不限与争用反例覆盖 FX-01/02/03 的相关子规则；版本冲突与节点部分事实覆盖 FX-04 子规则。FX-05 环境保留、FX-06 Sheets、FX-07 人工/End 不属于 PM4，未提升状态。
+
+`coverage.json` 对 PM4 首次实施条目登记管理侧候选证据，但不将跨到 PM5/PM6/PM7/PM8 的完整验收条目标为 verified。PM4 的交付状态为 delivered；当前源码 F 管理链、全量工程检查和视觉复审已通过，验证状态因真实执行核心、平台和用户手测边界保持 partially_verified。

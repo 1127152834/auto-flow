@@ -51,7 +51,7 @@ try {
   checkpoint('real competing edit preserves the draft and requires explicit reload before resaving')
 
   // All data mutations below use the real UI; HTTP only reads facts or creates a competing edit.
-  await click('打开数据表：客户资料'); await visible('还没有记录')
+  await click('打开数据表：客户资料'); await visible('＋ 点击新增一行'); await visible('0 条')
   await click('字段', '[role=tab]'); await click('新增字段')
   await input('#field-name', '客户名称'); await input('#field-key', 'customer')
   await click('应用到草稿'); await closed('#schema-field-drawer-form')
@@ -84,7 +84,7 @@ try {
   assert.equal(record.statusId, null)
   const recordUrl = `${base}/records/${Buffer.from(record.ref.recordKey.value).toString('base64url')}`
   const getRecord = () => api(`${recordUrl}?datasetGeneration=${table.datasetGeneration}&recordKeyType=${record.ref.recordKey.type}`)
-  await click('返回记录列表'); await clickRow('合成客户甲', '查看记录')
+  await clickRow('合成客户甲', '查看记录')
   await waitFor(renderer,`!!document.querySelector('[data-record-page=detail]')`,'record detail page'); await click('编辑记录')
   await input(`#record-${field.ref.fieldId}`, '冲突草稿')
   await api(recordUrl, { method: 'PATCH', body: { datasetGeneration: table.datasetGeneration, recordKeyType: record.ref.recordKey.type, values: [{ fieldId: field.ref.fieldId, value: '远端修改' }], expectedContentRevision: record.contentRevision } })
@@ -133,23 +133,23 @@ try {
   await click('记录', '[role=tab]'); await createRecord('待删除记录')
   records = (await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items
   assert.equal(records.length, 2)
-  await click('返回记录列表'); await clickRow('待删除记录', '查看记录'); await waitFor(renderer,`!!document.querySelector('[data-record-page=detail]')`,'record detail page'); await click('更多记录操作'); await click('删除记录', '[role=menuitem]')
+  await clickRow('待删除记录', '查看记录'); await waitFor(renderer,`!!document.querySelector('[data-record-page=detail]')`,'record detail page'); await click('更多记录操作'); await click('删除记录', '[role=menuitem]')
   await click('检查删除影响'); await click('删除记录', '[role=dialog] button'); await closed('[role=dialog]')
   assert.equal((await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items.length, 1)
   checkpoint('UI deletes the selected record after impact confirmation and retains the other record')
 
   // Simulate a lost acknowledgement only after the real server commits; the reload restores fetch.
   await renderer.evaluate(`(()=>{const original=window.fetch.bind(window);window.fetch=async(input,init)=>{const url=String(input?.url??input);if(url.includes('/operations/by-idempotency-key/'))throw new TypeError('QA offline lookup');const response=await original(input,init);if(url.includes('/records')&&init?.method==='POST')throw new TypeError('QA lost committed response');return response};return true})()`)
-  await click('新增记录'); await visible('新增记录')
-  await waitFor(renderer,"Boolean(document.querySelector('[data-record-page=create] #record'))",'record page ready for direct input')
-  await input(`#record-${field.ref.fieldId}`, '恢复后不重复新增')
-  await click('保存到本地'); await visible('核对保存结果')
+  await click('', '[data-record-action="create"]')
+  await doubleClick(`[data-record-draft] [data-grid-cell="0:${field.ref.fieldId}"]`)
+  await input(`[data-record-draft] textarea[aria-label=${JSON.stringify('第 1 行 · 客户姓名')}]`, '恢复后不重复新增')
+  await click('保存 1 行'); await visible('查询保存结果')
   assert.equal((await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items.length, 2)
   await renderer.command('Page.reload')
-  await visible('本地服务正常', 30000); await visible('核对保存结果')
-  await click('核对保存结果'); await closed('#record')
+  await visible('本地服务正常', 30000); await visible('查询保存结果')
+  await click('查询保存结果'); await closed('[aria-label="新增记录保存"]')
   assert.equal((await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items.length, 2)
-  await visible('恢复后不重复新增'); await capture('durable-edit-recovery'); await click('返回记录列表')
+  await visible('恢复后不重复新增'); await capture('durable-edit-recovery')
   checkpoint('lost real create acknowledgement survives renderer reload and recovers the original operation without duplicate insertion')
 
 
@@ -165,27 +165,28 @@ try {
   checkpoint('inline settings edits the actual description, stays mounted after confirmation and resets to a clean baseline')
 
   async function createRecord(value) {
-    await click('新增记录'); await visible('新增记录')
-    await waitFor(renderer, "!!document.querySelector('#record')", 'original full-width record form'); await capture('gallery-create-structure')
+    await click('', '[data-record-action="create"]')
+    await waitFor(renderer, "!!document.querySelector('[data-record-draft]')", 'inline record draft'); await capture('gallery-create-structure')
+    await doubleClick(`[data-record-draft] [data-grid-cell="0:${field.ref.fieldId}"]`)
+    await input(`[data-record-draft] textarea[aria-label=${JSON.stringify('第 1 行 · 客户姓名')}]`, value)
     await native.evaluate('qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(2)'); await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false})
     await waitFor(renderer, 'innerWidth===720&&innerHeight===512&&devicePixelRatio===2', 'record page at native 200 percent')
-    await waitFor(renderer, `(()=>{const r=document.querySelector('[data-record-page=create]')?.getBoundingClientRect();return !!r&&r.left>=-1&&r.right<=innerWidth+1&&document.documentElement.scrollWidth<=innerWidth+1&&!document.querySelector('[role=dialog]')})()`, 'record page settles inside the 200 percent viewport')
+    await waitFor(renderer, `document.documentElement.scrollWidth<=innerWidth+1&&!document.querySelector('[role=dialog]')`, 'record grid settles inside the 200 percent viewport')
     const bounds=await renderer.evaluate(`({width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth})`)
-    assert.ok(bounds.scrollWidth<=bounds.width+1,`record page widens document: ${JSON.stringify(bounds)}`)
+    assert.ok(bounds.scrollWidth<=bounds.width+1,`record grid widens document: ${JSON.stringify(bounds)}`)
     const frameGeometry=await renderer.evaluate(`(()=>{const header=document.querySelector('[data-table-page-frame-header]');const [left,right]=header.children;const a=left.getBoundingClientRect(),b=right.getBoundingClientRect();return {left:{x:a.x,y:a.y,width:a.width,right:a.right,bottom:a.bottom},right:{x:b.x,y:b.y,width:b.width,right:b.right,bottom:b.bottom},viewport:innerWidth}})()`)
     assert.ok(frameGeometry.left.width>=240,'title keeps a readable width at 200 percent')
     assert.ok(frameGeometry.left.bottom<=frameGeometry.right.y+1||frameGeometry.left.right<=frameGeometry.right.x+1,'header and tabs do not overlap')
     await capture('record-create-200-percent')
-    await renderer.evaluate("document.querySelector('[data-record-page=create]').scrollIntoView({block:'start'});true")
+    await renderer.evaluate("document.querySelector('[aria-label=\"新增记录保存\"]')?.scrollIntoView({block:'end'});true")
     await wait(150)
-    const footerGeometry=await renderer.evaluate(`(()=>{const footer=document.querySelector('[data-record-page=create] footer');const r=footer.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:innerHeight,scrollHeight:document.documentElement.scrollHeight}})()`)
+    const footerGeometry=await renderer.evaluate(`(()=>{const footer=document.querySelector('[aria-label="新增记录保存"]');const r=footer.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:innerHeight,scrollHeight:document.documentElement.scrollHeight}})()`)
     assert.ok(footerGeometry.top>=0&&footerGeometry.bottom<=footerGeometry.height+1,'long form save footer remains in the viewport')
     await capture('record-create-200-footer')
     await renderer.evaluate('window.scrollTo(0,0);true')
     await native.evaluate('qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1)'); await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false})
-    await waitFor(renderer,"Boolean(document.querySelector('[data-record-page=create] #record'))",'record page ready for direct input')
-    await input(`#record-${field.ref.fieldId}`, value)
-    await capture('record-create'); await click('保存到本地'); await closed('#record'); await visible(value); await capture('record-detail')
+    await waitFor(renderer,"Boolean(document.querySelector('[data-record-draft]'))",'record draft remains after zoom reset')
+    await capture('record-create'); await click('保存 1 行'); await closed('[aria-label="新增记录保存"]'); await visible(value); await capture('record-detail')
   }
   await click('设置', '[role=tab]'); await inputLabel('用途说明', '重连后保留草稿')
   const oldInstance = (await renderer.evaluate('window.autoflow.getRuntimeContext()')).sidecar.instanceId
@@ -283,6 +284,13 @@ async function click(text, selector = 'button') {
   await renderer.command('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x, y: point.y });
   await renderer.command('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 })
   await renderer.command('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 }); await wait(120)
+}
+async function doubleClick(selector) {
+  const point = await waitFor(renderer, `(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e||!e.getClientRects().length)return null;e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`, `double click: ${selector}`, 7000)
+  await renderer.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point })
+  await renderer.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 2 })
+  await renderer.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 2 })
+  await wait(120)
 }
 async function input(selector, value) {
   await click('',selector)

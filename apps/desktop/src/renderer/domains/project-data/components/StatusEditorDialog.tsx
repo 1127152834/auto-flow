@@ -8,6 +8,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import type { components } from '../../../shared/api/generated'
 import { emptyStatusForm, statusFormSchema, type StatusFormValues } from '../status-form-schema'
+import { safeProjectError } from '../../projects/presentation-error'
 
 const presets = ['#a86f4c', '#486b52', '#536b8d', '#8a5d83', '#9a783f']
 type GeneratedStatusCreate = components['schemas']['DataStatusCreate']
@@ -78,11 +79,11 @@ export function StatusEditorDialog({ open, mode, sessionKey, initialValues, subm
         await onSubmit(submission)
       } catch (caught) {
         if (ticket !== requestEpoch.current) return
-        setSubmitError(caught instanceof Error ? caught.message : '保存状态失败')
+        setSubmitError(safeProjectError(caught))
       } finally { if (ticket === requestEpoch.current) {submitLock.current=false;setSubmitting(false);savingCallback.current?.(guard.current.saving)} }
     }, errors => { if (ticket !== requestEpoch.current) return; submitLock.current=false;setSubmitting(false);savingCallback.current?.(guard.current.saving);if ((errors.color || errors.order) && advanced.current) advanced.current.open = true; form.setFocus(errors.name ? 'name' : errors.color ? 'color' : 'order') })(event)
   }
-  const recover=()=>{if(!onRecover||recoverLock.current||busy)return;requestEpoch.current+=1;closeLock.current=false;recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=requestEpoch.current;void onRecover().catch(caught=>{if(ticket===requestEpoch.current)setSubmitError(caught instanceof Error?caught.message:'核对保存结果失败')}).finally(()=>{if(ticket===requestEpoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(guard.current.saving)}})}
+  const recover=()=>{if(!onRecover||recoverLock.current||busy)return;requestEpoch.current+=1;closeLock.current=false;recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=requestEpoch.current;void onRecover().catch(caught=>{if(ticket===requestEpoch.current)setSubmitError(safeProjectError(caught))}).finally(()=>{if(ticket===requestEpoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(guard.current.saving)}})}
   return <>
     <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} closeDisabled={busy} variant="form" size="small" title={mode === 'create' ? '新增状态' : '重命名状态'} footer={<><Button type="button" className="h-12 px-6 text-base" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" form="status-editor-form" className="h-12 px-6 text-base" variant="primary" disabled={busy || readonly || (mode === 'edit' && !hasChanges)}>{busy ? '正在保存…' : mode === 'create' ? '创建状态' : '保存修改'}</Button>}</>}>
       <form id="status-editor-form" className="grid gap-5" noValidate onSubmit={submit}>

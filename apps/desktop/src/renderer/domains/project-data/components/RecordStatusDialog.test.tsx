@@ -22,6 +22,13 @@ it('submits only explicit changed status and represents clearing as null', async
   expect(p.onOpenChange).not.toHaveBeenCalled()
 })
 
+it('uses a business record label in the dialog description', () => {
+  const uuid='11111111-2222-4333-8444-555555555555'
+  render(<RecordStatusDialog {...props({ record: { ...record, ref: { ...record.ref, recordKey: { type: 'uuid', value: uuid } } }, recordLabel: '温室巡检' })} />)
+  expect(screen.getByRole('dialog')).toHaveTextContent('温室巡检')
+  expect(document.body.textContent).not.toContain(uuid)
+})
+
 it('allows an explicit null write from a null baseline while unchanged non-null stays disabled', async () => {
   const cleared = props({ record: { ...record, statusId: null } })
   const view = render(<RecordStatusDialog {...cleared} />)

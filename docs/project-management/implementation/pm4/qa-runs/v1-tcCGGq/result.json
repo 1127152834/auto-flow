@@ -1,0 +1,424 @@
+{
+  "status": "passed",
+  "scope": "管理侧通过，真实执行核心接入待验收",
+  "boundary": {
+    "executor": "fake",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  },
+  "visualReview": "pending",
+  "gitHead": "48e5919b1524539269e44f8ac1c698761c140e16",
+  "sourceSha256": "7ec3ac426d6b4b4ba0812a1d00e32bdaeb4926d92b4e4e1d2eb3ec449e416b37",
+  "platform": "darwin",
+  "arch": "arm64",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm4-v1-qa-Qa9BXS",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm4-v1-qa-Qa9BXS/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq",
+  "checkpoints": [
+    "UI 已创建项目；只读 GET 找回同一真实项目。",
+    "UI 已创建三张表、必要字段、人员/邮箱记录及待使用/已使用状态；账号表为空。",
+    "UI 已创建自动化并配置两个 independent + required 数据输入。",
+    "真实管理 API/SQLite 事实已核对：人员不变、邮箱最终为已使用、账号恰好一条且被显式更新，任务展示查询、读取、增改删、状态清空/设置及字段新增/确保/修改证据。"
+  ],
+  "screenshots": [
+    {
+      "name": "00-isolated-ready",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/00-isolated-ready.png",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "route": "#/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "2e6f964ef2c7532a97c25da74cd26667e1bddd824d52f0e3d19eb2c70292e65c",
+      "visualReview": "pending"
+    },
+    {
+      "name": "01-three-tables",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/01-three-tables.png",
+      "reference": "05-data/001-data-v1-approved-ca940d.png",
+      "route": "#/projects/621031b1-4b5e-4e6f-a66f-7eae0620a2ae/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "5478e1ed266762c541f86bc4df25cd60efb807ab65fa437a0219dde39405718d",
+      "visualReview": "pending"
+    },
+    {
+      "name": "02-two-required-inputs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/02-two-required-inputs.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-inputs.png",
+      "route": "#/projects/621031b1-4b5e-4e6f-a66f-7eae0620a2ae/automations/7f24e394-6c1e-4226-af10-d2841da676e8",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "0e05c09c5ad6786177dec2ae28ad4606c5d713d52233435b771f43ea9c1e744d",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-input-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/03-input-preview.png",
+      "reference": "docs/prototype/project-management-pm3/batch-start-dialog.png",
+      "route": "#/projects/621031b1-4b5e-4e6f-a66f-7eae0620a2ae/automations/7f24e394-6c1e-4226-af10-d2841da676e8",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "c8f547714943447d195d9cd288e28860bb4b0b7291146e3bf72a3922422ce13a",
+      "visualReview": "pending"
+    },
+    {
+      "name": "04-batch-completed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/04-batch-completed.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/621031b1-4b5e-4e6f-a66f-7eae0620a2ae/runs/batches/942ac292-32a8-446f-aac5-8397adac7509",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "8b2e9293d274c6fafb8a37ef4c20ecfeae7526c56ab15c3f5981826694806975",
+      "visualReview": "pending"
+    },
+    {
+      "name": "05-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/05-task-input-output.png",
+      "reference": "03-runs/006-task-input-output-approved-7af0aa.png",
+      "route": "#/projects/621031b1-4b5e-4e6f-a66f-7eae0620a2ae/runs/tasks/750f78e0-a789-4d57-a43e-d7d8ac6cf72a/io",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "d69ce189b84eecf975e3beaa6343e9762b178d7e64b3c3df3273779173d122d1",
+      "visualReview": "pending"
+    },
+    {
+      "name": "05a-task-original-inputs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/05a-task-original-inputs.png",
+      "reference": "03-runs/006-task-input-output-approved-7af0aa.png",
+      "route": "#/projects/621031b1-4b5e-4e6f-a66f-7eae0620a2ae/runs/tasks/750f78e0-a789-4d57-a43e-d7d8ac6cf72a/io",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "d3e82961a1269d1b0ec52b3ede6815adf1319b09e0625936cee37a86dfda2df3",
+      "visualReview": "pending"
+    },
+    {
+      "name": "05b-task-data-operation-tail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4/docs/project-management/implementation/pm4/qa-runs/v1-tcCGGq/05b-task-data-operation-tail.png",
+      "reference": "03-runs/006-task-input-output-approved-7af0aa.png",
+      "route": "#/projects/621031b1-4b5e-4e6f-a66f-7eae0620a2ae/runs/tasks/750f78e0-a789-4d57-a43e-d7d8ac6cf72a/io",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "6d667eb98a1295b51ce66ddb08fc9d4f36001be4e161cfa6b78339e7f6443dd7",
+      "visualReview": "pending"
+    }
+  ],
+  "facts": {
+    "projectId": "621031b1-4b5e-4e6f-a66f-7eae0620a2ae",
+    "batchId": "942ac292-32a8-446f-aac5-8397adac7509",
+    "taskId": "750f78e0-a789-4d57-a43e-d7d8ac6cf72a",
+    "personBefore": {
+      "ref": {
+        "projectId": "621031b1-4b5e-4e6f-a66f-7eae0620a2ae",
+        "tableId": "cd78c206-807f-413d-b228-b63c9ddb997a",
+        "datasetGeneration": "b8b09b44-41cc-478c-a5df-e2e2c3e3e01a",
+        "recordKey": {
+          "type": "uuid",
+          "value": "980b209c-073c-4a5e-bcb1-b2a1887cf281"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "2ab5106a-0b35-40c8-aba4-1fceb0011939",
+          "value": "张三",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "statusId": null,
+      "contentRevision": 1,
+      "statusRevision": 1,
+      "linkRevision": 1
+    },
+    "personAfter": {
+      "ref": {
+        "projectId": "621031b1-4b5e-4e6f-a66f-7eae0620a2ae",
+        "tableId": "cd78c206-807f-413d-b228-b63c9ddb997a",
+        "datasetGeneration": "b8b09b44-41cc-478c-a5df-e2e2c3e3e01a",
+        "recordKey": {
+          "type": "uuid",
+          "value": "980b209c-073c-4a5e-bcb1-b2a1887cf281"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "2ab5106a-0b35-40c8-aba4-1fceb0011939",
+          "value": "张三",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "statusId": null,
+      "contentRevision": 1,
+      "statusRevision": 1,
+      "linkRevision": 1
+    },
+    "emailBefore": {
+      "ref": {
+        "projectId": "621031b1-4b5e-4e6f-a66f-7eae0620a2ae",
+        "tableId": "37f10335-b28d-4045-af1b-bbadd0124f54",
+        "datasetGeneration": "198aa40b-f862-4837-9850-115271b999d4",
+        "recordKey": {
+          "type": "uuid",
+          "value": "0e37ce49-cac1-439d-bbbb-696bf47c1b56"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "a69bf900-1643-4f5e-b132-ed5660906a96",
+          "value": "zhangsan@example.test",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "statusId": "d2e76356-f0f2-4f90-800d-e41ba35761c0",
+      "contentRevision": 1,
+      "statusRevision": 2,
+      "linkRevision": 1
+    },
+    "emailAfter": {
+      "ref": {
+        "projectId": "621031b1-4b5e-4e6f-a66f-7eae0620a2ae",
+        "tableId": "37f10335-b28d-4045-af1b-bbadd0124f54",
+        "datasetGeneration": "198aa40b-f862-4837-9850-115271b999d4",
+        "recordKey": {
+          "type": "uuid",
+          "value": "0e37ce49-cac1-439d-bbbb-696bf47c1b56"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "a69bf900-1643-4f5e-b132-ed5660906a96",
+          "value": "zhangsan@example.test",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "statusId": "abb64025-6bbf-4abb-9776-1f18042b1e2e",
+      "contentRevision": 1,
+      "statusRevision": 4,
+      "linkRevision": 1
+    },
+    "accountCount": 1,
+    "taskInputAliases": [
+      "人员输入",
+      "邮箱输入"
+    ],
+    "dataWrites": [
+      {
+        "kind": "read",
+        "tableDisplay": "人员",
+        "recordDisplay": "uuid · 980b209c-073c-4a5e-bcb1-b2a1887cf281",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · 980b209c-073c-4a5e-bcb1-b2a1887cf281",
+        "beforeSummary": null,
+        "afterSummary": null,
+        "detail": "读取用途：workflow"
+      },
+      {
+        "kind": "statusChange",
+        "tableDisplay": "邮箱",
+        "recordDisplay": "uuid · 0e37ce49-cac1-439d-bbbb-696bf47c1b56",
+        "outcome": "succeeded",
+        "previousStatus": "待使用",
+        "nextStatus": null,
+        "referenceDisplay": null,
+        "beforeSummary": null,
+        "afterSummary": null,
+        "detail": null
+      },
+      {
+        "kind": "statusChange",
+        "tableDisplay": "邮箱",
+        "recordDisplay": "uuid · 0e37ce49-cac1-439d-bbbb-696bf47c1b56",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": "已使用",
+        "referenceDisplay": null,
+        "beforeSummary": null,
+        "afterSummary": null,
+        "detail": null
+      },
+      {
+        "kind": "recordCreated",
+        "tableDisplay": "账号",
+        "recordDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "beforeSummary": null,
+        "afterSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-FAKE-750f78e0",
+        "detail": null
+      },
+      {
+        "kind": "query",
+        "tableDisplay": "账号",
+        "recordDisplay": "命中 1 条",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": null,
+        "beforeSummary": null,
+        "afterSummary": null,
+        "detail": "读取用途：workflow"
+      },
+      {
+        "kind": "read",
+        "tableDisplay": "账号",
+        "recordDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "beforeSummary": null,
+        "afterSummary": null,
+        "detail": "读取用途：workflow"
+      },
+      {
+        "kind": "read",
+        "tableDisplay": "账号",
+        "recordDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "beforeSummary": null,
+        "afterSummary": null,
+        "detail": "读取用途：workflow"
+      },
+      {
+        "kind": "recordUpdated",
+        "tableDisplay": "账号",
+        "recordDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · b3337eed-e578-4369-bb1b-601fbaefaa28",
+        "beforeSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-FAKE-750f78e0",
+        "afterSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-B-UPDATED",
+        "detail": null
+      },
+      {
+        "kind": "recordCreated",
+        "tableDisplay": "账号",
+        "recordDisplay": "uuid · fe8a514f-6417-4458-a9f2-ef6ca8453af0",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · fe8a514f-6417-4458-a9f2-ef6ca8453af0",
+        "beforeSummary": null,
+        "afterSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-B-DISPOSABLE",
+        "detail": null
+      },
+      {
+        "kind": "read",
+        "tableDisplay": "账号",
+        "recordDisplay": "uuid · fe8a514f-6417-4458-a9f2-ef6ca8453af0",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · fe8a514f-6417-4458-a9f2-ef6ca8453af0",
+        "beforeSummary": null,
+        "afterSummary": null,
+        "detail": "读取用途：workflow"
+      },
+      {
+        "kind": "recordDeleted",
+        "tableDisplay": "账号",
+        "recordDisplay": "uuid · fe8a514f-6417-4458-a9f2-ef6ca8453af0",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "uuid · fe8a514f-6417-4458-a9f2-ef6ca8453af0",
+        "beforeSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-B-DISPOSABLE",
+        "afterSummary": null,
+        "detail": null
+      },
+      {
+        "kind": "fieldAdded",
+        "tableDisplay": "账号",
+        "recordDisplay": "QA 备注",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "字段 QA 备注",
+        "beforeSummary": null,
+        "afterSummary": "string · 可选",
+        "detail": null
+      },
+      {
+        "kind": "fieldEnsured",
+        "tableDisplay": "账号",
+        "recordDisplay": "QA 备注",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "字段 QA 备注",
+        "beforeSummary": null,
+        "afterSummary": "string · 可选",
+        "detail": "字段已存在，无需变更"
+      },
+      {
+        "kind": "fieldModified",
+        "tableDisplay": "账号",
+        "recordDisplay": "执行备注",
+        "outcome": "succeeded",
+        "previousStatus": null,
+        "nextStatus": null,
+        "referenceDisplay": "字段 执行备注",
+        "beforeSummary": "string · 可选",
+        "afterSummary": "string · 可选",
+        "detail": null
+      }
+    ],
+    "executionBoundary": {
+      "executor": "fake",
+      "browser": "notExecuted",
+      "studio": "notExecuted"
+    }
+  },
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器执行",
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ],
+  "createdAt": "2026-09-15T16:25:01.066Z"
+}

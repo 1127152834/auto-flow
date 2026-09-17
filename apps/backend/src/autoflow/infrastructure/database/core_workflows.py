@@ -1,0 +1,247 @@
+from __future__ import annotations
+
+import builtins
+from copy import deepcopy
+from datetime import UTC, datetime
+from typing import Any
+
+from sqlalchemy import select, text
+from sqlalchemy.orm import Session, sessionmaker
+
+from autoflow.domain.workflows.models import (
+    LegacyWorkflowRecord,
+    WorkflowError,
+    WorkflowRecord,
+    WorkflowSaveOperation,
+)
+from autoflow.domain.workflows.validation import (
+    FORMAT_KIND,
+    FORMAT_VERSION,
+    SOURCE_COMMIT,
+    SOURCE_PRODUCT,
+)
+
+from .workflow_core_models import WorkflowDocumentOperationRow
+from .workflow_models import WorkflowDocumentRow
+
+
+class SqlAlchemyWorkflowRepository:
+    def __init__(self, session_factory: sessionmaker[Session]) -> None:
+        self._session_factory = session_factory
+
+    def list(self) -> list[WorkflowRecord]:
+        with self._session_factory() as session:
+            rows = session.scalars(
+                select(WorkflowDocumentRow).order_by(
+                    WorkflowDocumentRow.updated_at.desc(), WorkflowDocumentRow.id
+                )
+            ).all()
+            return [_record(row) for row in rows if _current_document(row.document)]
+
+    def list_legacy(self) -> builtins.list[LegacyWorkflowRecord]:
+        with self._session_factory() as session:
+            rows = session.scalars(
+                select(WorkflowDocumentRow).order_by(
+                    WorkflowDocumentRow.updated_at.desc(), WorkflowDocumentRow.id
+                )
+            ).all()
+            return [
+                _legacy_record(row)
+                for row in rows
+                if not _current_document(row.document)
+            ]
+
+    def get(self, workflow_id: str) -> WorkflowRecord | None:
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            return _record(row) if row is not None else None
+
+    def get_legacy(self, workflow_id: str) -> LegacyWorkflowRecord | None:
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            if row is None or _current_document(row.document):
+                return None
+            return _legacy_record(row)
+
+    def save(
+        self,
+        document: dict[str, Any],
+        expected_revision: int,
+        save_operation_id: str,
+        request_digest: str,
+        now: datetime,
+    ) -> WorkflowSaveOperation:
+        workflow_id = str(document["id"])
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            existing = session.get(
+                WorkflowDocumentOperationRow, save_operation_id
+            )
+            if existing is not None:
+                operation = _operation(existing)
+                if operation.request_digest != request_digest:
+                    session.rollback()
+                    raise _operation_mismatch()
+                session.rollback()
+                return operation
+
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            if row is None:
+                if expected_revision != 0:
+                    session.rollback()
+                    raise WorkflowError(
+                        "WORKFLOW_NOT_FOUND", "工作流不存在", 404
+                    )
+                row = WorkflowDocumentRow(
+                    id=workflow_id,
+                    name=str(document["content"]["name"]),
+                    document=document,
+                    layout={},
+                    revision=1,
+                    created_at=now,
+                    updated_at=now,
+                )
+                session.add(row)
+                session.flush()
+                record = _record(row)
+            else:
+                current = _record(row)
+                if current.revision != expected_revision:
+                    session.rollback()
+                    raise _revision_conflict(expected_revision, current)
+                if current.matches(document):
+                    record = current
+                else:
+                    row.name = str(document["content"]["name"])
+                    row.document = document
+                    row.layout = {}
+                    row.revision = expected_revision + 1
+                    row.updated_at = now
+                    session.flush()
+                    record = _record(row)
+
+            operation = WorkflowSaveOperation(
+                save_operation_id,
+                workflow_id,
+                request_digest,
+                record,
+            )
+            session.add(_operation_row(operation, now))
+            session.commit()
+            return operation
+
+    def get_save_operation(
+        self, save_operation_id: str
+    ) -> WorkflowSaveOperation | None:
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentOperationRow, save_operation_id)
+            return _operation(row) if row is not None else None
+
+
+def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
+    if not _current_document(row.document):
+        raise WorkflowError(
+            "WORKFLOW_LEGACY_DOCUMENT_UNSUPPORTED",
+            "旧版工作流不能按当前 Studio 格式打开",
+            409,
+            details={
+                "workflowId": row.id,
+                "domainCode": "workflow_legacy_document_unsupported",
+                "retryable": False,
+            },
+        )
+    return WorkflowRecord(
+        row.document,
+        row.revision,
+        _aware(row.created_at),
+        _aware(row.updated_at),
+    )
+
+
+def _current_document(document: object) -> bool:
+    return (
+        isinstance(document, dict)
+        and document.get("source")
+        == {"product": SOURCE_PRODUCT, "commit": SOURCE_COMMIT}
+        and document.get("format")
+        == {"kind": FORMAT_KIND, "version": FORMAT_VERSION}
+        and isinstance(document.get("content"), dict)
+    )
+
+
+def _legacy_record(row: WorkflowDocumentRow) -> LegacyWorkflowRecord:
+    return LegacyWorkflowRecord(
+        row.id,
+        row.name,
+        deepcopy(row.document),
+        deepcopy(row.layout),
+        row.revision,
+        _aware(row.created_at),
+        _aware(row.updated_at),
+    )
+
+
+def _operation_row(
+    operation: WorkflowSaveOperation, now: datetime
+) -> WorkflowDocumentOperationRow:
+    record = operation.record
+    return WorkflowDocumentOperationRow(
+        save_operation_id=operation.save_operation_id,
+        workflow_id=operation.workflow_id,
+        request_digest=operation.request_digest,
+        result={
+            "document": record.document,
+            "revision": record.revision,
+            "createdAt": record.created_at.isoformat(),
+            "updatedAt": record.updated_at.isoformat(),
+        },
+        created_at=now,
+    )
+
+
+def _operation(row: WorkflowDocumentOperationRow) -> WorkflowSaveOperation:
+    result = row.result
+    record = WorkflowRecord(
+        result["document"],
+        int(result["revision"]),
+        datetime.fromisoformat(result["createdAt"]),
+        datetime.fromisoformat(result["updatedAt"]),
+    )
+    return WorkflowSaveOperation(
+        row.save_operation_id,
+        row.workflow_id,
+        row.request_digest,
+        record,
+    )
+
+
+def _aware(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value
+
+
+def _revision_conflict(
+    expected_revision: int, current: WorkflowRecord
+) -> WorkflowError:
+    return WorkflowError(
+        "WORKFLOW_REVISION_CONFLICT",
+        "工作流已被修改；请保留当前草稿并重新加载后重试",
+        409,
+        details={
+            "expectedRevision": expected_revision,
+            "currentRevision": current.revision,
+            "domainCode": "workflow_revision_conflict",
+            "retryable": False,
+        },
+    )
+
+
+def _operation_mismatch() -> WorkflowError:
+    return WorkflowError(
+        "OPERATION_PAYLOAD_MISMATCH",
+        "幂等键已用于另一请求",
+        409,
+        details={
+            "domainCode": "operation_payload_mismatch",
+            "retryable": False,
+        },
+    )

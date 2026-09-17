@@ -1,0 +1,111 @@
+{
+  "date": "2026-09-15",
+  "status": "management_configuration_checkpoint",
+  "wholePm3Complete": false,
+  "worktree": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3",
+  "branch": "codex/project-management-pm3",
+  "backendCommits": [
+    "b0f1d93",
+    "d28dca7"
+  ],
+  "runtimeEvidence": "../management-runs/run-eSwQYK/result.json",
+  "sourceHash": "cf184953d34931e6731f3258ad87415fbf3b7d8a8fe5e989c151ac30927ab852",
+  "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+  "scope": "真实管理目录及四页签、聚合保存、冲突与操作恢复；不联合Studio demo测试",
+  "checks": [
+    {
+      "check": "full frontend",
+      "result": "passed",
+      "evidence": "logs/frontend-full-bounded.log",
+      "facts": "276 files / 3093 tests; maxWorkers=2, unchanged assertions/timeouts. Initial overloaded run and isolated recheck retained. This full run preceded the bounded explicit-search correction."
+    },
+    {
+      "check": "search correction and affected frontend",
+      "result": "passed",
+      "evidence": "logs/frontend-search-green.log",
+      "facts": "107 tests, including automation management and App navigation; RED evidence retained."
+    },
+    {
+      "check": "full backend",
+      "result": "completed_with_obsolete_contract_failure",
+      "evidence": "logs/backend-full.log",
+      "facts": "1291 passed, 4 skipped, 1 obsolete no-workflow-endpoints assertion failed. No production behavior relaxed."
+    },
+    {
+      "check": "exact readonly catalog contract correction",
+      "result": "passed",
+      "evidence": "logs/backend-contract-correction.log",
+      "facts": "4 tests pass after precise two-GET whitelist; auth and host isolation preserved, independent review passed. Full backend was not rerun for this test-only correction."
+    },
+    {
+      "check": "Ruff",
+      "result": "passed",
+      "evidence": "logs/ruff.log"
+    },
+    {
+      "check": "mypy",
+      "result": "passed",
+      "evidence": "logs/mypy.log"
+    },
+    {
+      "check": "TypeScript",
+      "result": "passed",
+      "evidence": "logs/typecheck.log"
+    },
+    {
+      "check": "ESLint",
+      "result": "passed",
+      "evidence": "logs/lint.log"
+    },
+    {
+      "check": "search ESLint",
+      "result": "passed",
+      "evidence": "logs/search-lint.log"
+    },
+    {
+      "check": "build",
+      "result": "passed",
+      "evidence": "logs/build.log"
+    },
+    {
+      "check": "OpenAPI",
+      "result": "passed",
+      "evidence": "logs/openapi-check.log"
+    },
+    {
+      "check": "scripts",
+      "result": "passed",
+      "evidence": "logs/scripts.log"
+    },
+    {
+      "check": "structure",
+      "result": "passed",
+      "evidence": "logs/structure.log"
+    },
+    {
+      "check": "real Electron management chain",
+      "result": "passed",
+      "evidence": "../management-runs/run-eSwQYK/result.json",
+      "facts": "UI-created project/table/field/automation; real conflict; injected response loss; original-key recovery; restart then GET persistence check; Enter/button search"
+    }
+  ],
+  "visualReview": "visual-review.md",
+  "manualAcceptance": "manual-test.md",
+  "notExecuted": [
+    "Studio joint tests (excluded by user)",
+    "Windows",
+    "other architectures",
+    "packaged app",
+    "user manual acceptance",
+    "all loading/saving/error visual variants",
+    "real two-workspace switch and reconnect with dirty form",
+    "large directory pagination E2E",
+    "full 200% scrolling"
+  ],
+  "nextIncomplete": [
+    "Tasks11–16 batches/runs/start/stop/recovery management",
+    "remaining management E2E/visual states"
+  ],
+  "evidenceLimit": "Snapshots record a dirty working tree source digest and actual build hash; future Task11/13 independent unconnected source files may be present in that digest. They are not application features or coverage of this checkpoint.",
+  "logFormatting": "Copied stdout/stderr logs have trailing whitespace and extra trailing blank lines removed; failure results are retained."
+}

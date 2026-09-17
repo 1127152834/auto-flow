@@ -1,0 +1,310 @@
+{
+  "status": "failed",
+  "head": "d28dca7ab88900de947e94fd606a8c9b19ff3439",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-management-84AfDh",
+  "checks": [
+    {
+      "id": "PM3-M00",
+      "result": "工作流资料通过真实文档服务预置；未操作 Studio，未制造运行结果",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M06",
+      "result": "UI 创建真实数据表与字段，作为自动化输入选择的资料；不执行数据任务",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M07",
+      "result": "输入筛选草稿先应用再整体保存；真实字段绑定与排序被 HTTP 接受并持久保存",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M01",
+      "result": "UI 创建项目与自动化，跨页签参数/运行配置一次保存，后端保留未提供默认值与秒数",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M05",
+      "result": "真实导航离开保护：Escape 取消离开，URL 与未保存输入保持一致",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M02",
+      "result": "真实竞争编辑产生 CAS 冲突，管理页保留用户输入",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M04",
+      "result": "测试注入：真实 PUT 提交后丢失响应与首次查询；UI 原键核验恢复，不重复写入",
+      "type": "real-electron-http-sqlite"
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "01-empty",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "01-empty.png",
+      "reference": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/02-automation/006-automation-empty-695f71.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "02-inputs",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "02-inputs.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-inputs.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "03-run-settings",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "03-run-settings.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-run-policy.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "04-overview",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "04-overview.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "05-resources",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "05-resources.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-resources.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "10-leave-draft",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "10-leave-draft.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png#leave",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "06-conflict",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "06-conflict.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png#conflict",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "08-unknown-result",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "08-unknown-result.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png#unknown",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "09-overview-200-percent",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 2
+      },
+      "file": "09-overview-200-percent.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png#200-percent",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 708,
+      "visualReview": "pending"
+    },
+    {
+      "id": "07-directory",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "07-directory.png",
+      "reference": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/02-automation/001-automation-v1-approved-a45201.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "failure",
+      "buildHash": "03e3f83f4b137081079a33f9d47471f45dedc89cf2740e684c78f48a86d5bb24",
+      "sourceHash": "3ab42dbf8efed32b8e9951a167df721f068aa974ed897e1a46ab9db295308743",
+      "nativeWindow": {
+        "contentBounds": {
+          "x": 180,
+          "y": 71,
+          "width": 1440,
+          "height": 997
+        },
+        "zoomFactor": 1
+      },
+      "file": "failure.png",
+      "reference": "unassigned",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    }
+  ],
+  "error": "Error: timed out waiting for submitted search reaches real backend: false",
+  "visualReview": "pending"
+}

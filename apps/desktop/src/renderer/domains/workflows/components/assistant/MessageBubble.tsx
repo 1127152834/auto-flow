@@ -19,6 +19,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { marked } from 'marked'
 import { renderSafeMarkdown } from '../../lib/safeMarkdown'
 import type { ChatMessage, ToolCall } from '../../hooks/stores/aiAssistantStore'
+import '../../styles/table-system.css'
 
 // marked 配置 - 启用 GFM (GitHub 风格 Markdown：表格/任务列表/删除线/换行)
 marked.setOptions({
@@ -257,7 +258,22 @@ const STATUS_LABELS: Record<string, string> = {
 
 // 把 marked 输出的 HTML 包成可交互的 React 内容
 function MarkdownContent({ content }: { content: string }) {
-  const html = useMemo(() => renderSafeMarkdown(content), [content])
+  const html = useMemo(() => {
+    const template = document.createElement('template')
+    template.innerHTML = renderSafeMarkdown(content)
+    template.content.querySelectorAll('table').forEach((table) => {
+      table.classList.add('af-table', 'af-studio-table')
+      table.querySelectorAll('thead th').forEach((head) => head.setAttribute('scope', 'col'))
+      const scroll = document.createElement('div')
+      scroll.className = 'af-table-scroll af-studio-table-scroll max-w-full overflow-auto'
+      scroll.setAttribute('role', 'region')
+      scroll.setAttribute('aria-label', '助手回复表格')
+      scroll.tabIndex = 0
+      table.replaceWith(scroll)
+      scroll.append(table)
+    })
+    return template.innerHTML
+  }, [content])
 
   return (
     <div className="ai-md">
@@ -319,7 +335,7 @@ function ToolCallCard({ tc }: { tc: ToolCall }) {
 
   return (
     <div
-      className={`rounded-[10px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] ${styling.border} overflow-hidden shadow-xs transition-shadow hover:shadow-soft`}
+      className={`rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] ${styling.border} overflow-hidden shadow-xs transition-shadow hover:shadow-soft`}
     >
       <button
         type="button"
@@ -359,7 +375,7 @@ function ToolCallCard({ tc }: { tc: ToolCall }) {
               <div className="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wider font-semibold mb-1.5">
                 参数
               </div>
-              <pre className="text-[11px] p-2.5 rounded-[6px] bg-[hsl(var(--slate-900))] text-[hsl(var(--slate-100))] overflow-x-auto whitespace-pre-wrap break-words shadow-soft">
+              <pre className="text-[11px] p-2.5 rounded-control bg-[hsl(var(--slate-900))] text-[hsl(var(--slate-100))] overflow-x-auto whitespace-pre-wrap break-words shadow-soft">
 {JSON.stringify(tc.arguments, null, 2)}
               </pre>
             </div>
@@ -369,7 +385,7 @@ function ToolCallCard({ tc }: { tc: ToolCall }) {
               <div className="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wider font-semibold mb-1.5">
                 结果
               </div>
-              <pre className="text-[11px] p-2.5 rounded-[6px] bg-[hsl(var(--slate-900))] text-[hsl(var(--slate-100))] overflow-x-auto whitespace-pre-wrap break-words max-h-56 shadow-soft">
+              <pre className="text-[11px] p-2.5 rounded-control bg-[hsl(var(--slate-900))] text-[hsl(var(--slate-100))] overflow-x-auto whitespace-pre-wrap break-words max-h-56 shadow-soft">
 {typeof tc.result === 'string' ? tc.result : JSON.stringify(tc.result, null, 2)}
               </pre>
             </div>
@@ -435,7 +451,7 @@ function ReasoningCard({
       : '已完成思考'
 
   return (
-    <div className="rounded-[12px] border border-[hsl(var(--brand-500)/0.18)] bg-[hsl(var(--brand-50)/0.5)] overflow-hidden">
+    <div className="rounded-card border border-[hsl(var(--brand-500)/0.18)] bg-[hsl(var(--brand-50)/0.5)] overflow-hidden">
       <button
         type="button"
         onClick={() => setUserExpanded(!expanded)}
@@ -492,8 +508,8 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
             <div
               className={
                 isUser
-                  ? 'inline-block max-w-full px-3.5 py-2.5 text-[13px] leading-relaxed bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] text-white rounded-[14px] rounded-tr-[4px] shadow-brand-glow whitespace-pre-wrap break-words'
-                  : 'block max-w-full px-4 py-3 text-[13.5px] bg-[hsl(var(--card))] text-[hsl(var(--slate-800))] rounded-[14px] rounded-tl-[4px] border border-[hsl(var(--border))] shadow-soft'
+                  ? 'inline-block max-w-full px-3.5 py-2.5 text-[13px] leading-relaxed bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] text-white rounded-modal rounded-tr-control shadow-brand-glow whitespace-pre-wrap break-words'
+                  : 'block max-w-full px-4 py-3 text-[13.5px] bg-[hsl(var(--card))] text-[hsl(var(--slate-800))] rounded-modal rounded-tl-control border border-[hsl(var(--border))] shadow-soft'
               }
             >
               {isUser ? (
@@ -509,7 +525,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
               {message.attachmentNames.map((nm, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded-[8px] bg-[hsl(var(--slate-100))] border border-[hsl(var(--border))] text-[11px] text-[hsl(var(--slate-700))] max-w-[200px]"
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-control bg-[hsl(var(--slate-100))] border border-[hsl(var(--border))] text-[11px] text-[hsl(var(--slate-700))] max-w-[200px]"
                   title={nm}
                 >
                   <FileText className="w-3 h-3 flex-shrink-0" />
@@ -526,7 +542,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
                   key={i}
                   src={src}
                   alt={`附图${i + 1}`}
-                  className="max-w-[160px] max-h-[160px] rounded-[10px] border border-[hsl(var(--border))] object-cover cursor-zoom-in"
+                  className="max-w-[160px] max-h-[160px] rounded-card border border-[hsl(var(--border))] object-cover cursor-zoom-in"
                   onClick={() => window.open(src, '_blank')}
                 />
               ))}
@@ -547,7 +563,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
                   type="button"
                   onClick={() => onRollback()}
                   title="回滚：把画布恢复到这条消息发送之前的状态，并把消息填回输入框"
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10.5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-control text-[10.5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
                 >
                   <Undo2 className="w-3 h-3" /> 回滚
                 </button>
@@ -557,7 +573,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
                   type="button"
                   onClick={() => onEdit(message.content || '')}
                   title="编辑这条消息（放回输入框）"
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10.5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-control text-[10.5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
                 >
                   <Pencil className="w-3 h-3" /> 编辑
                 </button>
@@ -567,7 +583,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
                   type="button"
                   onClick={() => onResend(message.content || '')}
                   title="重新发送这条消息"
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10.5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-control text-[10.5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
                 >
                   <RotateCcw className="w-3 h-3" /> 重发
                 </button>

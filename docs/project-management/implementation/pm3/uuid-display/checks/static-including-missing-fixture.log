@@ -1,0 +1,121 @@
+
+> typecheck
+> npm --workspace @autoflow/desktop run typecheck
+
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+
+> lint
+> npm --workspace @autoflow/desktop run lint
+
+
+> @autoflow/desktop@0.1.0 lint
+> eslint .
+
+
+> openapi:check
+> node scripts/generate-api.mjs --check
+
+All checks passed!
+src/autoflow/domain/project_automations/rules.py:129: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Success: no issues found in 253 source files
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.065792ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.118583ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.139417ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.160917ms)
+✔ history output guard resolves symlinks before any nested directory is created (17.723916ms)
+✔ containment handles Windows separators and sibling prefixes (0.317791ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (24.981291ms)
+✔ R2 wrapper reuses the exported R1 harness (9.182416ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (12.966625ms)
+✔ R3 runner exposes automatic and retained manual modes (0.897792ms)
+✔ R3 evidence matrix names every required real interaction (0.113ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (8.724917ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (2.01525ms)
+✔ self-test accepts only a marker-owned workspace below its owner (110.308959ms)
+✔ arguments reject missing kernel paths before launching Electron (71.199584ms)
+✔ arguments reject unknown switches before launching Electron (71.963208ms)
+✔ scenario selection is validated before any workspace or Electron launch (136.039625ms)
+✔ reports a known full system UUID in visible text and perceptible attributes (2.788625ms)
+✔ reports a known eight-character system prefix without scanning arbitrary UUIDs (1.197084ms)
+✔ keeps a user-owned UUID visible and excludes its shared prefix from prefix checks (0.441375ms)
+✔ does not inspect DOM value, href, hash, data attributes, or hidden implementation state (0.15275ms)
+✔ checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs (1.183375ms)
+✔ checkCdpPage audit expression executes without module bindings in the renderer (0.325875ms)
+✔ a business UUID sharing a prefix does not hide a separate technical short ID (0.112166ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (26.962417ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (4.164209ms)
+✔ browser management smoke accepts an explicit packaged sidecar (4.452917ms)
+✔ browser management smoke creates the platform kernel layout (0.173333ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.211167ms)
+✔ profile test browser smoke validates a public kernel directory (17.038292ms)
+✔ profile test browser smoke finds a session below the manager root (10.820125ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (83.716792ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (60.777709ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (54.605084ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (54.642916ms)
+✔ packaged smoke cannot silently select external health mode (1.063959ms)
+✔ cleanup rejects after the final deadline if the child never exits (11.018916ms)
+✔ cleanup observes close without requiring exit (0.467667ms)
+✔ cleanup rejects a child process error (0.307084ms)
+✔ required path exists: apps/desktop/package.json (0.948583ms)
+✔ required path exists: apps/backend/pyproject.toml (0.117833ms)
+✔ root scripts expose the foundation checks (0.66875ms)
+(node:41591) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///private/tmp/autoflow-uuid-build-Qiz4xl/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /private/tmp/autoflow-uuid-build-Qiz4xl/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (15.331875ms)
+✔ frozen required-field data regenerates exactly without executing source modules (138.618584ms)
+✔ coverage accounts for every retained node and excludes removed nodes (3.530833ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (1.197917ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.268875ms)
+✔ the matrix includes every discovered service and event without treating declarations as passed tests (3.063875ms)
+✔ inventory and matrix regenerate deterministically (706.792625ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.185125ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.111083ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.232875ms)
+✔ checks sources without inventing application or visual acceptance (10.634542ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (9.063292ms)
+✔ does not allow a passed page without real evidence or missing required states (5.812625ms)
+✔ rejects duplicate source and page identities and evidence traversal (9.240042ms)
+✔ requires actual evidence files instead of an existing directory or blank path (6.360375ms)
+node:fs:539
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/coverage.json'
+    at readFileSync (node:fs:539:20)
+    at read (file:///private/tmp/autoflow-uuid-build-Qiz4xl/scripts/verify-pm2-delivery.test.mjs:5:33)
+    at file:///private/tmp/autoflow-uuid-build-Qiz4xl/scripts/verify-pm2-delivery.test.mjs:6:18
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/coverage.json'
+}
+
+Node.js v26.7.0
+✖ scripts/verify-pm2-delivery.test.mjs (65.899375ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 57
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1709.330917
+
+✖ failing tests:
+
+test at scripts/verify-pm2-delivery.test.mjs:1:1
+✖ scripts/verify-pm2-delivery.test.mjs (65.899375ms)
+  'test failed'

@@ -3,12 +3,13 @@ import type { ProjectFileSelection } from '../../../shared/project-files'
 import type { components } from '../../shared/api/generated'
 import { DataCommandNotAccepted, DataCommandUncertain } from './data-command'
 import type { ExcelApi, ExcelInspection } from './excel-api'
+import { safeProjectError } from '../projects/presentation-error'
 
 type Operation = components['schemas']['ProjectOperationView']
 type Pending = { key: string; selection: ProjectFileSelection }
 type Phase = 'ready' | 'unknown' | 'notAccepted' | 'accepted' | 'complete' | 'failed'
 const storageKey = (scope: string) => `autoflow:excel-inspection:${scope}`
-const message = (error: unknown) => error instanceof Error ? error.message : '无法检查文件'
+const message = safeProjectError
 const terminal = (operation: Operation) => operation.status === 'succeeded' || operation.status === 'failed'
 
 export function useExcelInspection({ api, chooseInput, scopeKey, contextKey, active, disabled = false }: {
@@ -44,7 +45,7 @@ export function useExcelInspection({ api, chooseInput, scopeKey, contextKey, act
   const accept = useCallback((value: Operation) => {
     setOperation(value)
     setPhase(value.status === 'succeeded' ? 'complete' : value.status === 'failed' ? 'failed' : 'accepted')
-    setError(value.error && typeof value.error.message === 'string' ? value.error.message : null)
+    setError(value.error ? safeProjectError(value.error) : null)
   }, [])
   const refresh = useCallback(async () => {
     if (!pending || lock.current || !available.current.active) return

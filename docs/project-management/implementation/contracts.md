@@ -74,6 +74,16 @@
 - **错误 / 事务边界**：`workflow_dependency_missing`, `workflow_dependency_cycle`, `capability_missing`, `workflow_not_runnable`。core 在自身短事务发布确定内容；不创建 Batch/Task/Run。
 - **查询与恢复**：按操作身份或 `preparedContentId` 查询；未知时不重新解析成可能不同的内容。
 
+### PM3 参数批次实施限定（2026-09-15，confirmed）
+
+来源：已批准 PM3 规格与 Task 11 实现。本段限定 PM3 的参数型消费者；后续多表领取仍遵循 C04，不削减数据保护。
+
+- 参数请求按稳定 `parameterId` 索引；冻结的自动化 schema 保存名称、类型、默认值，任务不随重命名改变。每个 Task 独立保存参数和 `inputs=[]`。
+- 有界参数批次在**一次调用者 Session 的短事务**发布 PreparedContent、Batch、全部 Task、TaskInputSnapshot、queued CoreRun 和启动 Operation。C02 的既有独立调用仍自有事务；新增调用者 UoW 路径不自提交。同服务不绕 HTTP 拼事务。
+- 启动 Operation `succeeded` 表示批次创建命令已提交；初始 Batch 为 `accepted`，Task 为 `queued`，不表示工作流执行成功。提交后才派发。
+- 内部 Batch 保存 `frozenRequest/counts`；HTTP `managementRevision` 是启动时冻结的 Automation 修订投影，`statusRevision` 是批次自身状态修订。内容里另存 workflowRevision，不混为一个版本。查询的 Task 状态与终态时间来自唯一 CoreRun。
+- 原键恢复返回原始接受快照；实时进度走 Batch/Task 查询。最终物理 COMMIT 失败时失效连接，防止未提交事务回池污染查询；若实际已提交而确认丢失，则原键仍可找回事实。
+
 ### XE-C03 · startBatch / queryStart
 
 - **调用方 → 提供方**：项目 UI/调度入口 → 项目运行协调。
@@ -251,3 +261,15 @@
 本文件是**规范目标，不是已有代码说明**。初读f3fe376的Studio M1工作已在交付前由另一任务提交为 `b2e95b3`：`/api/v1/workflows` 已出现 CRUD 与 node catalog，`workflow_schemas.py` 的 `document.id` 为 UUID，并使用 `revision/expectedRevision`；已提交迁移 `0005_workflow_documents.py` 从 `0004` 派生，成为主线唯一head；节点仍 `runnable=false`，没有 Run 执行。它只支持把这里的 `workflowId` 对齐到核心文档身份，不能据此声称 XE-C01–C18 已实现。独立 UI 分支 `1fb58e1` 也仅作只读集成来源。
 
 PM0 不计算任何项目管理业务测试通过。后续实现必须把本契约映射到唯一 OpenAPI、领域端口、事务测试、崩溃/丢响应测试和真实平台证据后，才可逐项更新交付状态。
+
+## PM4 本地数据能力实现状态（2026-09-16）
+
+本节记录实现证据，不改变 XE-C01–C18 的规范含义。
+
+| 契约 | 当前已实现事实 | 当前验证边界 |
+|---|---|---|
+| XE-C04 | 数据型 Batch 按稳定候选游标准备输入组；提交前重查领取门闩、有效并发、表/数据代次、结构守卫和记录三修订，并在同一短事务写入 Task、不可变输入快照、合并后的 typed lease 与 queued CoreRun。必要输入失败不产生半 Task；可选空、暂占、无匹配、歧义、配置错误和扫描预算耗尽保持不同事实。有限/不限调度不保存批内排除集合。 | 本地数据、FastAPI、SQLite 与 fake executor 已验证；Sheets 物理来源排他身份在 PM6，真实生产执行核心 capability 绑定尚未验收，因此该契约保持部分验证。 |
+| XE-C08 | `readProjectRecord` 与 `queryProjectRecords` 通过已冻结的记录/表读取授权限制项目、表、数据代次、字段与用途；返回独立快照及版本，读取不创建 lease，也不授予写权。 | fake executor 通过真实 capability 服务调用；未验证真实生产执行核心调用链。 |
+| XE-C09 | 已交付本地记录查询、新增、编辑、删除、状态设置/清空，以及字段新增、确保存在和安全修改。动态写在短事务内取得 lease、校验 Task/Run/执行代次与 CAS、提交业务变化、Operation 结果和 Task 写游标；失败不遗留新增 lease。新增对象返回稳定 RecordRef/FieldRef，同操作同载荷恢复原结果。人工删除在预览和最终事务都阻止 `held/reconciling` lease；Excel 重新导入在预览、接受和最终发布都阻止当前数据代次的活动 lease。 | 本地表能力已验证；两项 lease 保护修复分别在 `d3a397cf`、`f07bb83b` 完成定向回归，当前源码 PM4-F 管理链也已重跑通过；19 张截图同视口视觉复审和阶段全量检查均已通过。环境关联属于 PM5，Sheets 同步意图与远端结构属于 PM6，真实生产执行核心调用尚未验收，因此完整 XE-C09 仍为部分验证。 |
+
+权威阶段证据为 `pm4/a-verification.md`、`pm4/b-verification.md`、`pm4/c-verification.md` 与 `pm4/verification.json`。PM4-F 已用第二自动化确认第一自动化新增账号可被后续管理链读取。当前源码管理链 `f-QHALLW` 已通过；`f-4QcXFG` 保留前一提交候选的跨包工程回归和视觉审查，当前源码的视觉复审与阶段全量检查均已通过。PM4 管理功能已交付，验证状态仍为 `partially_verified`。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过；会启动真实 CloakBrowser/生产执行核心的 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、打包及用户手测未执行。边界固定为“管理侧通过，真实执行核心接入待验收”。

@@ -1,0 +1,83 @@
+{
+  "status": "passed",
+  "scenario": "stop",
+  "scenarioPlan": [
+    "UI创建慢响应自动化",
+    "启动两个任务",
+    "UI普通停止并确认",
+    "核对全部取消且浏览器临时目录清理"
+  ],
+  "sourceSha256": "0f3a8fd2a379f84cee6cb57627819b90bcf886aa29e4d5874e6cc19465153a0a",
+  "head": "636931ec7508375d54b8d78ff779644cfef74bf4",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-4E3Bfi",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-4E3Bfi/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-35V8u7",
+  "kernel": {
+    "source": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2",
+    "copiedTo": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-4E3Bfi/workspace/data/kernels/chromium-145.0.7632.109.2",
+    "version": "145.0.7632.109.2"
+  },
+  "fixtureUrl": "http://127.0.0.1:55385/fixture",
+  "slowFixtureUrl": "http://127.0.0.1:55385/slow",
+  "workflow": {
+    "workflowId": "3697da57-ea11-4968-901b-f748c77c9ae7",
+    "parameterId": "ae2e9305-de18-43c1-bd95-841532ca4bc3",
+    "preparation": "工作流文档通过 WorkflowService 预置；Studio 不在本次验收范围。项目与自动化必须通过 UI 创建。"
+  },
+  "profile": {
+    "profileId": "0b6728b0-8b23-47cb-995e-5336b2b5e24f",
+    "preparation": "浏览器配置通过真实 HTTP ProfileService API 预置为运行资源夹具；项目与自动化仍由 UI 创建。"
+  },
+  "uiResult": {
+    "projectId": "720537c4-6af1-4749-b03e-fdaef4c598db",
+    "automationName": "参数运行验收",
+    "batchId": "de6d010e-50f8-4ee7-b178-a7925bf1c4f7",
+    "taskIds": [
+      "daf906e4-1722-46d8-b141-0213045d65be",
+      "cd40030c-67ec-4863-981f-d65fea906c55"
+    ],
+    "profileId": "0b6728b0-8b23-47cb-995e-5336b2b5e24f",
+    "stop": "ordinary",
+    "status": "stopped"
+  },
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-35V8u7/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-35V8u7/01-automation.png",
+      "sha256": "4a355b6ef532788d7788f2124c1e995e5cdc62c47f75d7115324fcb906bcdd68"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-35V8u7/02-start-batch.png",
+      "sha256": "1a4d849f3fc4c9a8a4d341ffebab3f288d0416e919ae239530ed12e08dcd552c"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-35V8u7/04-batch-detail.png",
+      "sha256": "3867cfb5be181df6e8ac42c83b09b2dedf0cae11e40250ee2d9e7518134c28be"
+    },
+    {
+      "name": "03-stop-confirmation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-35V8u7/03-stop-confirmation.png",
+      "sha256": "cfb36ab6bfcba776ce302892373bdaeb559de32c8385361504cb4148fec5a0dc"
+    },
+    {
+      "name": "04-stopped-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-35V8u7/04-stopped-batch.png",
+      "sha256": "ce8a5b2c854800bdddeb356131e94e94871fd1bb51edcbdd1ab685702c883a3f"
+    }
+  ],
+  "next": [],
+  "commands": {
+    "success": "node scripts/qa-project-management-pm3.mjs --scenario success",
+    "manual": "node scripts/qa-project-management-pm3.mjs --manual --scenario success",
+    "preparation": "node scripts/qa-project-management-pm3.mjs --prepare-only --scenario success",
+    "explicitKernel": "node scripts/qa-project-management-pm3.mjs --manual --kernel-directory /path/to/chromium-x.y.z.w"
+  },
+  "createdAt": "2026-09-15T07:10:58.690Z"
+}

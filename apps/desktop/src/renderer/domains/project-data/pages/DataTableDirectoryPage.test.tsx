@@ -93,7 +93,7 @@ it('keeps the original table revision and draft on refresh, then explicitly relo
   await act(async () => { await view.cache.invalidateQueries() })
   expect(screen.getByLabelText('数据表名称')).toHaveValue('我的草稿')
   await userEvent.click(screen.getByRole('button', { name: '保存修改' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('数据表已被修改')
+  expect(await screen.findByRole('alert')).toHaveTextContent('数据已更新，请读取最新内容后重试')
   expect(request.mock.calls.find(([, init]) => init?.method === 'PATCH')?.[1]?.body).toMatchObject({ expectedTableRevision: 3, name: '我的草稿' })
   await userEvent.click(screen.getByRole('button', { name: '载入最新资料' }))
   expect(screen.getByRole('alertdialog')).toHaveTextContent('替换当前草稿')
@@ -168,7 +168,7 @@ it('cancels old reads and resets editor when changing workspace or project', asy
 it('shows explicit initial-load failure, and readonly data remains openable', async () => {
   const request = vi.fn().mockRejectedValue(new Error('无法连接'))
   const view = mount(request, { readonly: true })
-  expect(await screen.findByRole('alert')).toHaveTextContent('无法连接')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.queryByText(/上次成功/)).not.toBeInTheDocument()
   request.mockResolvedValue(page())
   fireEvent.click(screen.getByRole('button', { name: '重试' }))

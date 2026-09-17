@@ -55,16 +55,16 @@ export function RecordDraftRows({ rows, fields, errors, identityFieldId, selecti
   return <>
     {rows.map((row, index) => <TableRow role="row" key={row.clientRowId} data-record-draft={row.clientRowId} className="bg-clay-soft/40">
       {selectionColumn ? <TableCell aria-hidden /> : null}
-      <TableCell className="text-xs text-muted">{identityFieldId ? row.cells[identityFieldId]?.text || '待填写身份字段' : '保存后生成'}</TableCell>
-      {fields.map((field, column) => <TableCell role="presentation" className="align-top px-1 py-1" key={field.ref.fieldId}>
+      <TableCell className="text-sm text-muted">{identityFieldId ? row.cells[identityFieldId]?.text || '待填写身份字段' : '保存后生成'}</TableCell>
+      {fields.map((field, column) => <TableCell role="presentation" className="af-table-draft-cell" key={field.ref.fieldId}>
         <RecordGridCellEditor field={field} rowNumber={index + 1} cell={row.cells[field.ref.fieldId] ?? scalarDraft(undefined)} disabled={disabled}
           active={position.row === index && position.column === column} error={errors.find(e => e.clientRowId === row.clientRowId && e.fieldId === field.ref.fieldId)?.message}
           onActivate={() => setPosition({ row: index, column })} onChange={value => onCellChange(row.clientRowId, field.ref.fieldId, value)}
           onMove={direction => move(index, column, direction)} onPasteGrid={text => onPaste(index, column, text)} onSave={onSave} onUndo={onUndo} />
       </TableCell>)}
       {!fields.length ? <TableCell /> : null}
-      <TableCell className="text-xs text-muted">未设置</TableCell>
-      <TableCell className="text-xs text-muted">未保存</TableCell>
+      <TableCell className="text-sm text-muted">未设置</TableCell>
+      <TableCell className="text-sm text-muted">未保存</TableCell>
       <TableCell><Button size="sm" variant="ghost" disabled={disabled} aria-label={`移除第 ${index + 1} 行草稿`} onClick={() => onRemove(row.clientRowId)}>移除</Button></TableCell>
     </TableRow>)}
     <TableRow ref={tail}><TableCell colSpan={Math.max(fields.length, 1) + 4 + Number(selectionColumn)}>

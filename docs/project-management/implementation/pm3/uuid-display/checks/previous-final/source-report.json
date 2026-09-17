@@ -1,0 +1,27 @@
+{
+  "status": "superseded-by-a5e7d48-snapshot",
+  "runs": {
+    "head": "636931e",
+    "scriptSha256": "5ab3427be69c6fae5dd4a20483f4052ca053b73cafd95038093b14abf22a412f",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "16f00058eaeafb0949552c3fc7bd03c288e4d4f31b73c0fb4d0d87fb4fcc0b8b",
+    "rendererAssetsSha256": "0a2b17c7a7d6c3e13159d0c9bcf18825a82f9d2d25902fac96dc91caecca45c3",
+    "rendererSourceSha256": "ebefec197a5066b1cbb2c2002bd43818c30b8f89ada4023204b372227d810ee6"
+  },
+  "data": {
+    "head": "636931e",
+    "scriptSha256": "a11d98e07983f974117c2de82ba53323dba449dbce1ca5286a5c48ccd4914167",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "16f00058eaeafb0949552c3fc7bd03c288e4d4f31b73c0fb4d0d87fb4fcc0b8b",
+    "rendererAssetsSha256": "0a2b17c7a7d6c3e13159d0c9bcf18825a82f9d2d25902fac96dc91caecca45c3",
+    "rendererSourceSha256": "ebefec197a5066b1cbb2c2002bd43818c30b8f89ada4023204b372227d810ee6"
+  },
+  "references": {
+    "head": "636931e",
+    "scriptSha256": "a11d98e07983f974117c2de82ba53323dba449dbce1ca5286a5c48ccd4914167",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "16f00058eaeafb0949552c3fc7bd03c288e4d4f31b73c0fb4d0d87fb4fcc0b8b",
+    "rendererAssetsSha256": "0a2b17c7a7d6c3e13159d0c9bcf18825a82f9d2d25902fac96dc91caecca45c3",
+    "rendererSourceSha256": "ebefec197a5066b1cbb2c2002bd43818c30b8f89ada4023204b372227d810ee6"
+  }
+}

@@ -17,7 +17,7 @@ DEFAULT_RESOURCES = {
     "modelProviderId": None,
 }
 AVAILABILITY = {
-    key: "available" if key == "data" else "notImplemented"
+    key: "available" if key in {"automations", "data", "runs"} else "notImplemented"
     for key in ("automations", "data", "runs", "environments", "statistics", "sync")
 }
 

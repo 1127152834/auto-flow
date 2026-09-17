@@ -7,6 +7,7 @@ import { Select } from '../../../shared/components/ui/select'
 import { DataCommandNotAccepted, DataCommandUncertain } from '../data-command'
 import type { ProjectOperation, StatusBatchApi, StatusBatchPreview, StatusBatchRequest } from '../status-batch-api'
 import { DataOperationStatus } from './DataOperationStatus'
+import { safeProjectError } from '../../projects/presentation-error'
 
 type Schema = components['schemas']
 type StartPending = { key: string; request?: StatusBatchRequest; retry: boolean }
@@ -20,7 +21,7 @@ export type RecordStatusBatchDialogProps = {
   onSettled?(operation: ProjectOperation): void; onDirtyChange?(dirty: boolean): void; onBusyChange?(busy: boolean): void
 }
 const storageKey = (scope: string) => `autoflow:status-batch:${scope}`
-const message = (error: unknown) => error instanceof Error ? error.message : '批量状态操作失败'
+const message = safeProjectError
 const terminal = (operation: ProjectOperation) => operation.status === 'succeeded' || operation.status === 'failed'
 const batchMessage = (value: { code?: unknown; message?: unknown } | null | undefined): string | null => {
   if (!value) return null
@@ -28,7 +29,7 @@ const batchMessage = (value: { code?: unknown; message?: unknown } | null | unde
   if (value.code === 'BATCH_STATUS_CONFLICT') return '部分记录发生冲突，已提交的修改已保留；请查看分块结果。'
   if (value.code === 'BATCH_STATUS_CANCELLED') return '已停止后续处理，已提交的修改已保留。'
   if (value.code === 'BATCH_STATUS_EXECUTION_FAILED') return '批量处理未完成，请刷新结果核对已提交的修改。'
-  return typeof value.message === 'string' ? value.message : null
+  return safeProjectError(value)
 }
 
 export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageScopeKey, records = [], targets, statuses, api, disabled, readonly, onClose, onCompleted, onSettled, onDirtyChange, onBusyChange }: RecordStatusBatchDialogProps) {

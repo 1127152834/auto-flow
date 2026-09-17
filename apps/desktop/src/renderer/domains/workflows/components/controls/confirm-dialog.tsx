@@ -119,7 +119,7 @@ export function ConfirmDialog({
       }}
     >
       <div
-        className="relative bg-[hsl(var(--card))] rounded-[14px] border border-[hsl(var(--border))] shadow-pop-2xl w-full max-w-sm overflow-hidden animate-scale-in-bounce"
+        className="relative bg-[hsl(var(--card))] rounded-modal border border-[hsl(var(--border))] shadow-pop-2xl w-full max-w-sm overflow-hidden animate-scale-in-bounce"
         onClick={(e) => e.stopPropagation()}
         role={isAlertOnly ? 'alertdialog' : 'dialog'}
         aria-modal="true"

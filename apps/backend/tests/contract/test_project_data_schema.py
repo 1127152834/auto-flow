@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import pytest
 
+from autoflow.adapters.http.project_data_schema_schemas import DataSchemaIssue
 from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.project_data_models import DataImpactRow
 from tests.contract.test_project_data_catalog import catalog as catalog  # noqa: PLC0414
@@ -30,6 +31,21 @@ def candidate(table):
             }
         ],
     }
+
+
+def test_active_task_schema_issue_keeps_structured_dependency_identity():
+    issue = {
+        "code": "ACTIVE_TASK_FIELD_DEPENDENCY",
+        "fieldId": str(uuid4()),
+        "clientId": None,
+        "message": "Active task field dependency",
+        "affectedRecords": None,
+        "taskId": str(uuid4()),
+        "runId": str(uuid4()),
+        "referenceSources": ["input.fieldMappings", "capability.tableGrants"],
+    }
+
+    assert DataSchemaIssue.model_validate(issue).model_dump(by_alias=True) == issue
 
 
 def test_schema_http_atomic_save_and_operation_replay(catalog):

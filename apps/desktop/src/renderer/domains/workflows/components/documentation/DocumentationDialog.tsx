@@ -250,7 +250,7 @@ export function DocumentationDialog({ isOpen, onClose }: DocumentationDialogProp
             </Button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
+              className="p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
               title="关闭"
             >
               <X className="w-4 h-4" />
@@ -270,7 +270,7 @@ export function DocumentationDialog({ isOpen, onClose }: DocumentationDialogProp
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder="搜索文档内容..."
-                  className="w-full pl-8 pr-7 h-8 text-[12px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--card))] rounded-[8px] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] focus:outline-none focus:border-[hsl(var(--brand-500))] focus:ring-2 focus:ring-[hsl(var(--brand-500)/0.18)] transition-all duration-150"
+                  className="w-full pl-8 pr-7 h-8 text-[12px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--card))] rounded-control shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] focus:outline-none focus:border-[hsl(var(--brand-500))] focus:ring-2 focus:ring-[hsl(var(--brand-500)/0.18)] transition-all duration-150"
                 />
                 {searchQuery && (
                   <button
@@ -301,7 +301,7 @@ export function DocumentationDialog({ isOpen, onClose }: DocumentationDialogProp
                     {searchResults.map((result, idx) => (
                       <button
                         key={`${result.docId}-${idx}`}
-                        className="w-full text-left p-2 rounded-[8px] hover:bg-[hsl(var(--brand-50))] border border-transparent hover:border-[hsl(var(--brand-500)/0.3)] transition-all duration-150 hover:translate-x-0.5"
+                        className="w-full text-left p-2 rounded-control hover:bg-[hsl(var(--brand-50))] border border-transparent hover:border-[hsl(var(--brand-500)/0.3)] transition-all duration-150 hover:translate-x-0.5"
                         onClick={() => selectSearchResult(result.docId)}
                       >
                         <div className="text-[10px] text-[hsl(var(--muted-foreground))] mb-0.5 truncate">{result.title}</div>
@@ -343,7 +343,7 @@ export function DocumentationDialog({ isOpen, onClose }: DocumentationDialogProp
                         <button
                           key={doc.id}
                           className={cn(
-                            'w-full flex items-center gap-2 px-2 py-2 rounded-[8px] text-left transition-[background-color,color,border-color,box-shadow] duration-150 ease-out border',
+                            'w-full flex items-center gap-2 px-2 py-2 rounded-control text-left transition-[background-color,color,border-color,box-shadow] duration-150 ease-out border',
                             isActive
                               ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
                               : '!bg-transparent !text-[hsl(var(--slate-700))] !border-transparent hover:!bg-[hsl(var(--card))] hover:!border-[hsl(var(--border))] hover:shadow-xs'

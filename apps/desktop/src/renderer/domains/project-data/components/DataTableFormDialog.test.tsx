@@ -23,7 +23,11 @@ it('renders the gallery create-table structure without changing the data limits'
 it('accepts the schema limits as Unicode code points without native UTF-16 truncation',async()=>{
   const user=userEvent.setup(),submit=vi.fn().mockResolvedValue(undefined),name='😀'.repeat(120),description='😀'.repeat(1000)
   render(<DataTableFormDialog open mode="create" sessionKey="unicode-limits" onOpenChange={vi.fn()} onSubmit={submit}/>)
-  await user.type(screen.getByLabelText('数据表名称'),name);await user.type(screen.getByLabelText('用途说明（可选）'),description)
+  // Paste exercises the same native maxLength boundary without scheduling 1,120 keystrokes.
+  await user.click(screen.getByLabelText('数据表名称'));await user.paste(name)
+  await user.click(screen.getByLabelText('用途说明（可选）'));await user.paste(description)
+  expect(screen.getByLabelText('数据表名称')).toHaveValue(name)
+  expect(screen.getByLabelText('用途说明（可选）')).toHaveValue(description)
   await user.click(screen.getByRole('button',{name:'创建数据表'}))
   await waitFor(()=>expect(submit).toHaveBeenCalledWith({name,description}))
 })
@@ -57,7 +61,7 @@ it('preserves a dirty draft across refreshed initial values and server errors', 
   expect(screen.getByLabelText('数据表名称')).toHaveValue('我的草稿')
   expect(screen.getByRole('alert')).toHaveTextContent('数据表已被修改')
   await user.click(screen.getByRole('button', { name: '保存修改' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('冲突')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByLabelText('数据表名称')).toHaveValue('我的草稿')
 })
 

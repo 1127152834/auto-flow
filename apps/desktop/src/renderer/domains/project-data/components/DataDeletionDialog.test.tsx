@@ -22,6 +22,13 @@ it('identifies the record and table without inventing an impact before preview',
   expect(p.onConfirm).not.toHaveBeenCalled()
 })
 
+it('uses only the supplied business title for a system record target', () => {
+  const uuid='11111111-2222-4333-8444-555555555555'
+  render(<DataDeletionDialog {...props({ kind: 'record', targetName: '温室巡检', tableName: '采集资料' })} />)
+  expect(screen.getByRole('dialog')).toHaveTextContent('温室巡检')
+  expect(document.body.textContent).not.toContain(uuid)
+})
+
 it('requires a real impact report and defaults danger-dialog focus to cancel', async () => {
   const p = props(); const view = render(<DataDeletionDialog {...p} />)
   expect(screen.getByRole('button', { name: '取消' })).toHaveFocus()
@@ -36,7 +43,7 @@ it('requires a real impact report and defaults danger-dialog focus to cancel', a
 
 it('shows blockers and never offers an enabled confirmation for them', () => {
   render(<DataDeletionDialog {...props({ impact: { ...impact, blockers: [{ code: 'STATUS_IN_USE', message: '还有记录使用此状态', resource: impact.target, state: 'active' }] } })} />)
-  expect(screen.getByRole('alert')).toHaveTextContent('还有记录使用此状态')
+  expect(screen.getByRole('alert')).toHaveTextContent('仍有记录使用此状态，请先修改这些记录的业务状态')
   expect(screen.getByRole('button', { name: '确认删除' })).toBeDisabled()
 })
 
@@ -74,7 +81,7 @@ it('keeps preview rejection visible and prevents duplicate in-flight actions', a
   await userEvent.dblClick(screen.getByRole('button', { name: '检查删除影响' }))
   expect(p.onPreview).toHaveBeenCalledOnce()
   await act(async () => reject(new Error('无法读取引用')))
-  expect(screen.getByRole('alert')).toHaveTextContent('无法读取引用')
+  expect(screen.getByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByRole('button', { name: '检查删除影响' })).toBeEnabled()
 })
 
@@ -96,7 +103,7 @@ it('invalidates an older close approval even after a subsequent delete has faile
   render(<DataDeletionDialog {...p} />)
   await userEvent.click(screen.getByRole('button', { name: '取消' }))
   await userEvent.click(screen.getByRole('button', { name: '确认删除' }))
-  expect(await screen.findByRole('alert')).toHaveTextContent('删除失败')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   await act(async () => allow(true))
   expect(p.onOpenChange).not.toHaveBeenCalled()
 })

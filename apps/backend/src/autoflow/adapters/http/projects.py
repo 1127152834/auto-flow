@@ -124,6 +124,7 @@ def projects_router(service: ProjectService) -> APIRouter:
     @router.get(
         "/projects/{projectId}/operations",
         response_model=ProjectOperationPage,
+        response_model_exclude_unset=True,
         responses=browser_error_responses(401, 404, 422),
     )
     def operations(
@@ -133,6 +134,11 @@ def projects_router(service: ProjectService) -> APIRouter:
         kind: Literal[
             "createProject",
             "updateProject",
+            "createAutomation",
+            "updateAutomation",
+            "startBatch",
+            "stopBatch",
+            "forceStopBatch",
             "createTable",
             "updateTable",
             "mutateField",
@@ -153,7 +159,9 @@ def projects_router(service: ProjectService) -> APIRouter:
         | None = None,
         status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
         | None = None,
-        resource_type: Literal["project", "table", "field", "status", "record"]
+        resource_type: Literal[
+            "project", "table", "field", "status", "record", "automation", "batch"
+        ]
         | None = Query(None, alias="resourceType"),
     ):
         items, total = service.operations(
@@ -175,6 +183,7 @@ def projects_router(service: ProjectService) -> APIRouter:
     @router.get(
         "/projects/{projectId}/operations/{operationId}",
         response_model=ProjectOperationView,
+        response_model_exclude_unset=True,
         responses=browser_error_responses(401, 404, 422),
     )
     def operation(projectId: UUID, operationId: UUID):
@@ -185,6 +194,7 @@ def projects_router(service: ProjectService) -> APIRouter:
     @router.get(
         "/projects/{projectId}/operations/by-idempotency-key/{key}",
         response_model=ProjectOperationView,
+        response_model_exclude_unset=True,
         responses=browser_error_responses(401, 404, 422),
     )
     def operation_by_key(projectId: UUID, key: UUID):
@@ -193,6 +203,7 @@ def projects_router(service: ProjectService) -> APIRouter:
     @router.get(
         "/workspace/operations/by-idempotency-key/{key}",
         response_model=ProjectOperationView,
+        response_model_exclude_unset=True,
         responses=browser_error_responses(401, 404, 422),
     )
     def workspace_operation(key: UUID):

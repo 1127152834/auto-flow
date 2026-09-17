@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-09-14T19:39:35.378690+00:00",
+  "scope": "PM3 Task7 configuration persistence + Task8 real configuration HTTP + management workflow read catalog; not full PM3 acceptance",
+  "status": "passed-scoped",
+  "checks": [
+    {
+      "command": "uv run --directory apps/backend pytest tests/unit/test_project_automation_rules.py tests/integration/test_project_automation_repository.py tests/integration/test_project_automation_migration.py tests/contract/test_project_automations.py tests/contract/test_project_automation_application.py tests/contract/test_workflow_catalog.py tests/contract/test_schema_export.py -q",
+      "result": "passed",
+      "log": "management-backend.log"
+    },
+    {
+      "command": "scoped Ruff management backend, root integration, migration and tests",
+      "result": "passed"
+    },
+    {
+      "command": "scoped mypy management/backend integration (12 source files)",
+      "result": "passed"
+    },
+    {
+      "command": "npm run openapi:check",
+      "result": "passed"
+    }
+  ],
+  "reviews": {
+    "spec": "resolved malformed filter/workflow classification/timeout overflow findings",
+    "engineering": "PASS after numeric parameter overflow and exact operation snapshot response fixes"
+  },
+  "notDelivered": [
+    "resource/capability readiness adapters",
+    "full management GUI acceptance",
+    "parameter description persistence",
+    "automation model-provider override",
+    "project batches/runs"
+  ],
+  "notExecuted": [
+    "Studio joint tests (user excluded)",
+    "Windows",
+    "packaged app",
+    "user manual acceptance"
+  ]
+}

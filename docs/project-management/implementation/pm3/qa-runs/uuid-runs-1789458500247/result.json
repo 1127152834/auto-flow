@@ -1,0 +1,110 @@
+{
+  "status": "scenario-passed",
+  "coverage": "partial",
+  "scenario": "runs",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-12Hzf2",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-12Hzf2/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247",
+  "knownIds": [
+    "a16f3033-485f-4e55-9d29-6c51bde34b77",
+    "f0dce5a2-c2f1-4d57-a39d-1e18d06b432c",
+    "639bd71f-03d3-4e04-938f-24d84da2eed4",
+    "7d143fe4-cbcd-42bb-857b-377ac59e7140",
+    "080c4e5f-c9e2-4179-baca-315fc893e5dd",
+    "da3f6f40-a5ce-4c2a-aa76-861ca9ed95fb",
+    "1eec11cf-238d-4743-a839-58fd758c773d",
+    "d23c4354-0905-4355-a681-079ec3bc6fd0",
+    "f9c6e83b-c94f-43bc-847e-2a24987d5e3f",
+    "94637f85-5cb2-431c-ad43-709d7e1264d0",
+    "bc8f6d89-d5df-47b4-94b3-6217c87a707d",
+    "ac988aa5-2e41-4048-ad0b-ebeb6a9c8273",
+    "75be7e79-8275-4097-801c-743dfb894db0",
+    "0ef4244a-65f5-48a3-9f36-24ca53527dde",
+    "96f43488-c6e7-4a03-999b-0e0970db1cd5",
+    "d8c0d4bc-7e77-4f62-9b85-6d6dd257b7e8",
+    "9da80abd-f14d-4a17-a581-31f46ad2ce1d",
+    "3cf4545d-8b7a-4c91-ae17-23e0c3dcbdc6",
+    "db04eaf5-3e7d-41a7-8b60-3e86385df5dd",
+    "680f8e04-ef58-4308-90b0-08eb40524d70",
+    "c2f18e35-757f-4754-99f0-12c9fa758002",
+    "52a24d0d-5b04-404c-901b-d55b484f97f2",
+    "fa4ec0a2-d33d-4669-8ded-ad0e58882d7c",
+    "b0e545cc-6f1c-4bd4-915d-9dfe293f647b",
+    "c8fb1d8e-347c-478b-94bf-e6e80525d96b",
+    "27d0b3ca-23a7-4dcb-861a-0b9bc0f8d147",
+    "eeddc48d-1b44-4c80-916e-bdf0a415d3c4",
+    "7cf2e3f4-a04e-4dcd-bfb1-91723672baef",
+    "aa1ce421-7197-406c-9fce-1d90c6a54368",
+    "819bb75f-4fc0-4732-911d-348cb5326059",
+    "c8dfa346-4fe6-45d7-bf64-283c36131313",
+    "3f67870c-2df8-43e3-841c-5c50e6be333f",
+    "8efbd323-692d-413b-8532-6b1fca24debb",
+    "f6597585-da48-422e-ae49-43ecab446c37",
+    "e2c3b6f3-cb1a-47fa-95af-db838943621f",
+    "725312f4-0004-4fc1-842d-8f00aa3ed6fe",
+    "0ccffaa2-b163-42dd-826b-bc33e2313865",
+    "2ddf87c0-379c-4774-90cf-fa132ff60f3a",
+    "1610fafc-3a13-4e4c-9dd7-1bd4380026a5",
+    "261ca896-9a25-4b90-a713-d739665d3d4e",
+    "beeb5450-c2bf-4a89-8ffb-f1d1453d9f05",
+    "3528513b-96c3-4916-964e-351d549b1599",
+    "4e84c337-81a9-49c0-9903-0a8961e3131d",
+    "2af61cca-e378-4af2-a768-fa6e9fb19c0e",
+    "fdd318fb-0900-4dc4-88d9-1c3ca9b08db8",
+    "9d709d40-aa31-41b1-9331-9d88d880e935",
+    "df7b54a6-35ca-4a39-a4d7-508b50da2a74"
+  ],
+  "businessIds": [],
+  "screenshots": [
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/01-batch-detail.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/02-batch-directory.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/02a-synthetic-refresh-error.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/03-task-directory.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/04-task-logs.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/05-task-io.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/06-task-evidence.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/07-slow-batch-detail.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/08-stop-dialog.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/09-force-stop-dialog.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/10-failed-task-logs.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/11-failed-task-evidence.png",
+    "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/12-failed-screenshot-preview.png"
+  ],
+  "unimplemented": [
+    "失效资源引用状态"
+  ],
+  "preparation": [
+    "工作流与浏览器配置为运行夹具；项目与自动化由UI创建",
+    "保存、启动和确认提交按钮通过可见且启用的唯一按钮聚焦后发送CDP Enter，覆盖键盘用户路径"
+  ],
+  "faultInjections": [
+    {
+      "kind": "synthetic-http-responses",
+      "target": "one batch directory refresh including all query retries",
+      "httpAttempts": 3,
+      "code": "UNKNOWN_UUID_QA",
+      "purpose": "verify retained content and safe unknown-error presentation; not a natural backend failure"
+    },
+    {
+      "kind": "synthetic-os-process-pause",
+      "target": "the unique workflow worker in this isolated Electron process tree",
+      "purpose": "simulate an unresponsive worker while preserving real stop, grace-period, force-stop, and cleanup handling",
+      "processExitConfirmed": true
+    }
+  ],
+  "viewport": {
+    "width": 1440,
+    "height": 1024,
+    "devicePixelRatio": 1
+  },
+  "source": {
+    "head": "bdff9dd4b28d1a51812385a05f2aaf7f4b776630",
+    "scriptSha256": "6f9ce328b62a00c989f8db347ef3bfae7995eeeab50e7e553fca35c863538427",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "12f8b6768ef8903024e4329be3e3799aba456114c587bd0406c90e67c4966a2d",
+    "rendererAssetsSha256": "9c997bbda2d6dcdf550d7c056f487f42bc64baccdc304657ad3ceeabe7092d3e",
+    "rendererSourceSha256": "3541f2cdfd82e51b9aad54e454cab5678b72ff46a75a97bbc045e507ea0a4678"
+  },
+  "startedAt": "2026-09-15T07:48:20.246Z",
+  "finishedAt": "2026-09-15T07:49:21.194Z"
+}

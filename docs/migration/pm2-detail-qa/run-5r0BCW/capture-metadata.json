@@ -1,0 +1,199 @@
+{
+  "provenance": {
+    "gitHead": "1cc5112ae7a009966e17a440f59103cbd6e97bf5",
+    "desktopBuildSha256": "317c5954cb574a9fdefcdaeea37c15812a69d2dda4f892e2a9e40f62403e9d21",
+    "scriptSha256": "9bb35ff17a07dc7101b2fe1edddbf97d8c20281c532fde51e9847cb0005b2ae1"
+  },
+  "pickerMode": "injected-dialog-results-E4",
+  "captures": [
+    {
+      "file": "terminal-0.png",
+      "capturedAt": "2026-09-15T19:56:28.446Z",
+      "route": "#/projects/44aa8dba-03b6-44e9-b6db-8254e1ff5276/data/a2434c78-6001-449a-93ad-1a37fe3e1648/records",
+      "viewport": {
+        "width": 1440,
+        "height": 992
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 76,
+        "width": 1440,
+        "height": 992
+      },
+      "image": {
+        "width": 2880,
+        "height": 1984,
+        "sha256": "e3a1a351c977ea9b1d909d68a253193310bbd6c9447a89bccbdc9bcfda700d55"
+      }
+    },
+    {
+      "file": "terminal-1.png",
+      "capturedAt": "2026-09-15T19:56:29.833Z",
+      "route": "#/projects/44aa8dba-03b6-44e9-b6db-8254e1ff5276/data/a2434c78-6001-449a-93ad-1a37fe3e1648/records",
+      "viewport": {
+        "width": 1440,
+        "height": 992
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 76,
+        "width": 1440,
+        "height": 992
+      },
+      "image": {
+        "width": 2880,
+        "height": 1984,
+        "sha256": "0c0da0f991f46407310955ebfc992572fd38b709cda0b718999adf9214cbb86c"
+      }
+    },
+    {
+      "file": "export-200-percent.png",
+      "capturedAt": "2026-09-15T19:56:32.730Z",
+      "route": "#/projects/44aa8dba-03b6-44e9-b6db-8254e1ff5276/data/a2434c78-6001-449a-93ad-1a37fe3e1648/records",
+      "viewport": {
+        "width": 720,
+        "height": 496
+      },
+      "dpr": 4,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 76,
+        "width": 1440,
+        "height": 992
+      },
+      "image": {
+        "width": 2880,
+        "height": 1984,
+        "sha256": "7da6c518be9c09448f583bfe4c96eb2df4eff2fddb005d5be39d68496ed0a694"
+      }
+    },
+    {
+      "file": "terminal-4.png",
+      "capturedAt": "2026-09-15T19:56:36.329Z",
+      "route": "#/projects/44aa8dba-03b6-44e9-b6db-8254e1ff5276/data/a2434c78-6001-449a-93ad-1a37fe3e1648/records",
+      "viewport": {
+        "width": 1440,
+        "height": 992
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 76,
+        "width": 1440,
+        "height": 992
+      },
+      "image": {
+        "width": 2880,
+        "height": 1984,
+        "sha256": "67793a47e1746769c4a79b66e85dc97f4efba56f7ff16107e0b1af2722df90fc"
+      }
+    },
+    {
+      "file": "replace-200-percent.png",
+      "capturedAt": "2026-09-15T19:56:37.083Z",
+      "route": "#/projects/44aa8dba-03b6-44e9-b6db-8254e1ff5276/data/a2434c78-6001-449a-93ad-1a37fe3e1648/records",
+      "viewport": {
+        "width": 720,
+        "height": 496
+      },
+      "dpr": 4,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 76,
+        "width": 1440,
+        "height": 992
+      },
+      "image": {
+        "width": 2880,
+        "height": 1984,
+        "sha256": "007c2c64b6c0b57e21efea37ad78ab0a27f11482ccfd61a666da4c0535f9cd47"
+      }
+    },
+    {
+      "file": "detail-after-reconnect.png",
+      "capturedAt": "2026-09-15T19:56:44.074Z",
+      "route": "#/projects/44aa8dba-03b6-44e9-b6db-8254e1ff5276/data/a2434c78-6001-449a-93ad-1a37fe3e1648/records",
+      "viewport": {
+        "width": 1440,
+        "height": 992
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 76,
+        "width": 1440,
+        "height": 992
+      },
+      "image": {
+        "width": 2880,
+        "height": 1984,
+        "sha256": "14c50dadc7f0a60026406333c1571ad1a68e00f85044afc041f50e63e8cdea68"
+      }
+    },
+    {
+      "file": "large-10000-second-page.png",
+      "capturedAt": "2026-09-15T19:56:52.608Z",
+      "route": "#/projects/44aa8dba-03b6-44e9-b6db-8254e1ff5276/data/139b64c5-398f-4793-9a24-2549a74ea621/records",
+      "viewport": {
+        "width": 1440,
+        "height": 992
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 76,
+        "width": 1440,
+        "height": 992
+      },
+      "image": {
+        "width": 2880,
+        "height": 1984,
+        "sha256": "92289559ea3c1b24cb162a3842f10be6e23675ffa8bb384e708777547c975ecb"
+      }
+    }
+  ]
+}

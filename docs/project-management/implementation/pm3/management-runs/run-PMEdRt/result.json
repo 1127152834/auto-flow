@@ -1,0 +1,129 @@
+{
+  "status": "passed",
+  "head": "b0f1d936714bc9660295206f6b4709b42bc6013a",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-management-D3v3HE",
+  "checkedAt": "2026-09-14T19:46:55.534Z",
+  "checks": [
+    {
+      "id": "PM3-M00",
+      "result": "工作流资料通过真实文档服务预置；未操作 Studio，未制造运行结果",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M01",
+      "result": "UI 创建项目与自动化，跨页签参数/运行配置一次保存，后端保留未提供默认值与秒数",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M02",
+      "result": "真实竞争编辑产生 CAS 冲突，管理页保留用户输入",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M03",
+      "result": "真实 Electron/服务重启后管理配置事实仍持久存在（重启后的事实核对使用 GET）",
+      "type": "real-electron-http-sqlite"
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "01-empty",
+      "file": "01-empty.png",
+      "reference": "gallery/latest/02-automation/006-empty",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "02-inputs",
+      "file": "02-inputs.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-inputs.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "03-run-settings",
+      "file": "03-run-settings.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-run-policy.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "04-overview",
+      "file": "04-overview.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "05-resources",
+      "file": "05-resources.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-resources.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "06-conflict",
+      "file": "06-conflict.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png#conflict",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "07-directory",
+      "file": "07-directory.png",
+      "reference": "gallery/latest/02-automation/001-automation-v1-approved-a45201.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    }
+  ],
+  "scriptSha256": "b45c0887663efc09a0daf2f7e5b9bd8229310aac8299eda75f01f09b5e77097f",
+  "notExecuted": [
+    "Studio",
+    "Windows",
+    "packaged app",
+    "user manual acceptance"
+  ],
+  "visualReview": "pending"
+}

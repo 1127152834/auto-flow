@@ -1,0 +1,125 @@
+from __future__ import annotations
+
+from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextlib import AbstractContextManager, ExitStack
+from copy import deepcopy
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, cast
+
+from autoflow.application.profiles.service import ProfileService
+from autoflow.domain.kernels.errors import LicenseInvalid
+from autoflow.domain.kernels.models import InstalledKernel, KernelEdition, KernelRef
+from autoflow.domain.profiles.errors import KernelNotInstalled
+from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy, ProfileSpec
+from autoflow.domain.profiles.ports import ProfileUsageGuard
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError, thaw_json
+from autoflow.infrastructure.process.project_test_browser_worker import browser_worker_payload
+
+
+@dataclass
+class BrowserLease:
+    executable: Path
+    browser: dict[str, Any] = field(repr=False)
+    _guards: ExitStack = field(repr=False)
+
+    def release(self) -> None:
+        self._guards.close()
+
+
+class WorkflowBrowserResources:
+    """Freeze profile settings; resolve credentials only for the owned worker."""
+
+    def __init__(
+        self, profiles: ProfileService,
+        installed_kernels: Callable[[], Sequence[InstalledKernel]],
+        resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
+        read_license: Callable[[], str | None], usage_guard: ProfileUsageGuard,
+        kernel_guard: Callable[[KernelRef], AbstractContextManager[None]],
+    ) -> None:
+        self._profiles = profiles
+        self._installed = installed_kernels
+        self._resolve_proxy = resolve_proxy
+        self._read_license = read_license
+        self._usage_guard = usage_guard
+        self._kernel_guard = kernel_guard
+
+    def freeze(
+        self, profile_id: str, *, proxy: dict[str, Any] | None = None,
+        model_provider_id: str | None = None,
+    ) -> dict[str, Any]:
+        profile = self._profiles.get(profile_id)
+        policy = dict({"mode": "profile"} if proxy is None else proxy)
+        spec_values = asdict(profile.spec)
+        mode = policy.get("mode")
+        allowed = {
+            "profile": {"mode"}, "none": {"mode"},
+            "fixed": {"mode", "proxyId"}, "pool": {"mode", "proxyPoolId"},
+        }
+        if not isinstance(mode, str) or mode not in allowed or set(policy) != allowed[mode]:
+            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "代理策略字段无效", 422)
+        if mode == "none":
+            spec_values.update(proxy_mode="none", proxy_id=None, proxy_pool_id=None)
+        elif mode == "fixed" and isinstance(policy.get("proxyId"), str) and policy['proxyId']:
+            spec_values.update(proxy_mode="proxy", proxy_id=policy['proxyId'], proxy_pool_id=None)
+        elif mode == "pool" and isinstance(policy.get("proxyPoolId"), str) and policy['proxyPoolId']:
+            spec_values.update(proxy_mode="pool", proxy_id=None, proxy_pool_id=policy['proxyPoolId'])
+        elif mode != "profile":
+            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "代理策略无效", 422)
+        spec = ProfileSpec.from_values(spec_values)
+        self._kernel(spec)
+        return {
+            "browser": "newFromProfile", "profileId": profile.id,
+            "kernelId": f"{spec.browser_edition}:{spec.browser_version}",
+            "proxy": policy, "modelProviderId": model_provider_id,
+            "frozenConfiguration": {
+                "profileSpec": asdict(spec), "fingerprintSeed": profile.fingerprint_seed,
+                "createdAt": profile.created_at.isoformat(),
+                "updatedAt": profile.updated_at.isoformat(),
+            },
+        }
+
+    async def acquire(self, request: Mapping[str, Any], run_request_id: str) -> BrowserLease:
+        if request.get("browser") != "newFromProfile":
+            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_UNSUPPORTED", "当前运行需要浏览器配置", 422)
+        snapshot = deepcopy(thaw_json(request.get("frozenConfiguration")))
+        if not isinstance(snapshot, dict) or not isinstance(request.get("profileId"), str):
+            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器资源快照无效", 422)
+        profile_id = str(request['profileId'])
+        try:
+            if not isinstance(snapshot['profileSpec'], dict) or type(snapshot['fingerprintSeed']) is not int:
+                raise ValueError('Invalid frozen profile shape')
+            profile = Profile(
+                profile_id, ProfileSpec.from_values(snapshot['profileSpec']),
+                snapshot['fingerprintSeed'], datetime.fromisoformat(snapshot['createdAt']),
+                datetime.fromisoformat(snapshot['updatedAt']),
+            )
+        except (KeyError, TypeError, ValueError):
+            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器资源快照无效", 422) from None
+        if request.get('kernelId') != f"{profile.spec.browser_edition}:{profile.spec.browser_version}":
+            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器内核快照不一致", 422)
+        guards = ExitStack()
+        try:
+            guards.enter_context(self._usage_guard.guard(profile_id))
+            self._profiles.get(profile_id)  # The frozen source must still exist.
+            guards.enter_context(self._kernel_guard(KernelRef(
+                cast(KernelEdition, profile.spec.browser_edition), profile.spec.browser_version,
+            )))
+            executable = self._kernel(profile.spec).executable_path
+            proxy = await self._resolve_proxy(profile, run_request_id)
+            license_key = self._read_license() if profile.spec.browser_edition == 'licensed' else None
+            if profile.spec.browser_edition == 'licensed' and not license_key:
+                raise LicenseInvalid
+            browser = browser_worker_payload(run_request_id, profile, proxy, license_key)
+            browser['headless'] = profile.spec.headless
+            return BrowserLease(executable, browser, guards)
+        except BaseException:
+            guards.close()
+            raise
+
+    def _kernel(self, spec: ProfileSpec) -> InstalledKernel:
+        for kernel in self._installed():
+            if kernel.edition == spec.browser_edition and kernel.version == spec.browser_version:
+                return kernel
+        raise KernelNotInstalled

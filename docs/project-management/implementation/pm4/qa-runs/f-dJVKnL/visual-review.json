@@ -1,0 +1,59 @@
+{
+  "status": "passedWithManualFollowup",
+  "method": "按画板逐屏人工结构审查；不使用整张多画板像素平均分。",
+  "reviewer": "Codex PM4-F QA",
+  "mandatoryStructurePassed": true,
+  "minimumScreenScore": 85,
+  "navigationException": "应用级导航按已批准方案保留顶部导航；主体布局、信息层级和操作位置对照 gallery。",
+  "styleChecks": {
+    "warmGrayAndClay": "passed",
+    "compactFineGridTables": "passed",
+    "smallRadius": "passed",
+    "horizontalOverflowAtCapture": "passed",
+    "staleToastBeforeCandidateScreenshots": "passed"
+  },
+  "viewportChecks": [
+    {
+      "zoomPercent": 100,
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "status": "passed"
+    },
+    {
+      "zoomPercent": 200,
+      "effectiveViewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "status": "passedWithVerticalScroll"
+    }
+  ],
+  "candidateStates": {
+    "noMatch": {
+      "ui": "passed",
+      "screenshot": "16-no-match-preview.png"
+    },
+    "temporarilyBusy": {
+      "ui": "manualPending",
+      "automaticIntegration": "passed"
+    },
+    "configurationError": {
+      "ui": "manualPending",
+      "automaticIntegration": "passed"
+    }
+  },
+  "keyboard": {
+    "escapeStopDialog": "passed",
+    "enterLogSearch": "manualPending",
+    "note": "Electron/CDP 合成 Enter 未触发表单提交；真实按钮路径通过，产品组件测试覆盖 Enter，保留真实设备人工验收。"
+  },
+  "manualPending": [
+    "暂时占用（temporarilyBusy）管理页面截图与实际键盘确认",
+    "配置错误（configurationError）管理页面截图与实际键盘确认",
+    "日志搜索 Enter 的真实设备操作",
+    "Windows、其他架构、打包应用和用户手测"
+  ]
+}

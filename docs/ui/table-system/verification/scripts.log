@@ -1,0 +1,98 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.071916ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.12275ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.116166ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.141083ms)
+✔ history output guard resolves symlinks before any nested directory is created (23.375667ms)
+✔ containment handles Windows separators and sibling prefixes (0.476833ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (30.80925ms)
+✔ R2 wrapper reuses the exported R1 harness (8.157083ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (2.761916ms)
+✔ R3 runner exposes automatic and retained manual modes (0.951208ms)
+✔ R3 evidence matrix names every required real interaction (0.127042ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (7.257083ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (3.107208ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (31.268417ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (9.067166ms)
+✔ browser management smoke accepts an explicit packaged sidecar (2.118833ms)
+✔ browser management smoke creates the platform kernel layout (0.170708ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.51975ms)
+✔ profile test browser smoke validates a public kernel directory (19.702959ms)
+✔ profile test browser smoke finds a session below the manager root (4.643708ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (84.268167ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (58.446417ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (51.137083ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (53.992167ms)
+✔ packaged smoke cannot silently select external health mode (0.779458ms)
+✔ cleanup rejects after the final deadline if the child never exits (13.40575ms)
+✔ cleanup observes close without requiring exit (0.281625ms)
+✔ cleanup rejects a child process error (0.17825ms)
+✔ required path exists: apps/desktop/package.json (0.57575ms)
+✔ required path exists: apps/backend/pyproject.toml (0.090459ms)
+✔ root scripts expose the foundation checks (0.195042ms)
+(node:40125) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow-table-system/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (21.763084ms)
+✖ frozen required-field data regenerates exactly without executing source modules (92.30175ms)
+✔ coverage accounts for every retained node and excludes removed nodes (5.3265ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.632541ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.094916ms)
+✔ the matrix includes every discovered service and event without treating declarations as passed tests (2.158334ms)
+✔ inventory and matrix regenerate deterministically (658.654333ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.269375ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.133167ms)
+✔ checks sources without inventing application or visual acceptance (10.87525ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (8.875209ms)
+✔ does not allow a passed page without real evidence or missing required states (5.164ms)
+✔ rejects duplicate source and page identities and evidence traversal (4.876459ms)
+✔ requires actual evidence files instead of an existing directory or blank path (12.657833ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (3.928833ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.881375ms)
+✔ a green machine report cannot substitute for real application evidence (0.268958ms)
+ℹ tests 48
+ℹ suites 0
+ℹ pass 47
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1635.048459
+
+✖ failing tests:
+
+test at scripts/studio-required-fields.test.mjs:6:1
+✖ frozen required-field data regenerates exactly without executing source modules (92.30175ms)
+  AssertionError [ERR_ASSERTION]: Traceback (most recent call last):
+    File "/Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/export-studio-required-fields.py", line 49, in <module>
+      for target, content in zip([TARGET, MANIFEST], extract()):
+                                                     ~~~~~~~^^
+    File "/Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/export-studio-required-fields.py", line 15, in extract
+      raw = SOURCE.read_bytes()
+    File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 777, in read_bytes
+      with self.open(mode='rb', buffering=0) as f:
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+      return io.open(self, mode, buffering, encoding, errors, newline)
+             ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  FileNotFoundError: [Errno 2] No such file or directory: '/Users/zhangtiancheng/Documents/projects/autoflow-table-system/reference/WebRPA/backend/app/services/ai_assistant_module_schemas.py'
+
+
+  1 !== 0
+
+      at TestContext.<anonymous> (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/studio-required-fields.test.mjs:8:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

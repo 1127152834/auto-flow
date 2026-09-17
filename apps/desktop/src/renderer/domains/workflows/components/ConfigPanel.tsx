@@ -1451,7 +1451,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
             onClick={() => setIsCollapsed(false)}
             title="展开配置面板"
           >
-            <span className="flex items-center justify-center w-8 h-8 rounded-[8px] bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-700))] text-white shadow-brand-glow">
+            <span className="flex items-center justify-center w-8 h-8 rounded-control bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-700))] text-white shadow-brand-glow">
               <ChevronLeft className="w-4 h-4" />
             </span>
             <span className="icon-chip icon-chip-brand !w-7 !h-7">
@@ -1471,7 +1471,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
               style={{ background: 'linear-gradient(180deg, hsl(var(--brand-50) / 0.5), hsl(var(--card)))' }}
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="icon-block icon-block-brand !w-9 !h-9 !rounded-[10px] flex-shrink-0">
+                <div className="icon-block icon-block-brand !w-9 !h-9 !rounded-card flex-shrink-0">
                   {(() => {
                     const MIcon = moduleIcons[nodeData.moduleType as keyof typeof moduleIcons] || Settings
                     return <MIcon className="w-4 h-4" strokeWidth={2.4} />
@@ -1537,7 +1537,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                   const missing = getMissingRequiredLabels(String(nodeData.moduleType), nodeData as Record<string, unknown>, requiredFields.data.requiredFields, requiredFields.data)
                   if (missing.length === 0) return null
                   return (
-                    <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[hsl(var(--warning-50))] border border-[hsl(var(--warning-500)/0.3)] text-[hsl(var(--warning-700))]">
+                    <div className="flex items-start gap-2 px-3 py-2 rounded-control bg-[hsl(var(--warning-50))] border border-[hsl(var(--warning-500)/0.3)] text-[hsl(var(--warning-700))]">
                       <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-[hsl(var(--warning-500))] text-white flex items-center justify-center text-[10px] font-bold">!</span>
                       <div className="text-[12px] leading-relaxed">
                         <span className="font-semibold">有 {missing.length} 个必填项未填写：</span>

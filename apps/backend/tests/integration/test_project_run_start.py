@@ -1,0 +1,378 @@
+from concurrent.futures import ThreadPoolExecutor
+from uuid import uuid4
+
+import pytest
+from sqlalchemy import func, select
+
+from autoflow.application.project_automations.service import ProjectAutomationService
+from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+from autoflow.application.projects.service import ProjectService
+from autoflow.application.workflows.runtime import WorkflowRuntimeService
+from autoflow.application.workflows.service import WorkflowService
+from autoflow.domain.project_runs.models import ProjectRunError
+from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
+from autoflow.infrastructure.database.project_automations import (
+    SqlAlchemyProjectAutomations,
+)
+from autoflow.infrastructure.database.project_run_models import (
+    ProjectBatchRow,
+    ProjectTaskInputSnapshotRow,
+    ProjectTaskRow,
+)
+from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
+from autoflow.infrastructure.database.workflow_runtime_models import (
+    WorkflowPreparedContentRow,
+    WorkflowRunRow,
+)
+from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+from tests.fixtures.workflows import workflow_payload
+
+PARAMETER_TEXT = "00000000-0000-0000-0000-000000000031"
+PARAMETER_BOOL = "00000000-0000-0000-0000-000000000032"
+
+
+def setup(tmp_path, resolver=None):
+    database = tmp_path / "project-runs.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    projects = ProjectService(SqlAlchemyProjects(factory))
+    project, _, _ = projects.create(
+        str(uuid4()), {"name": "运行项目", "description": ""}
+    )
+    workflow_repository = SqlAlchemyWorkflowRepository(factory)
+    workflow = WorkflowService(workflow_repository).create(
+        workflow_payload(), str(uuid4())
+    )
+    automations = ProjectAutomationService(
+        SqlAlchemyProjects(factory), SqlAlchemyProjectAutomations(factory)
+    )
+    automation, _, _ = automations.create(
+        project.project_id,
+        str(uuid4()),
+        {
+            "name": "参数自动化",
+            "description": "",
+            "workflowId": workflow.workflow_id,
+            "inputPlan": {"inputs": []},
+            "parameterSchema": [
+                {
+                    "parameterId": PARAMETER_TEXT,
+                    "name": "文本",
+                    "type": "string",
+                    "required": True,
+                },
+                {
+                    "parameterId": PARAMETER_BOOL,
+                    "name": "启用",
+                    "type": "boolean",
+                    "required": False,
+                    "defaultValue": False,
+                },
+            ],
+            "environmentPolicy": {"source": "newFromProfile"},
+            "runPolicy": {
+                "maxTasks": 1,
+                "concurrency": 1,
+                "maxLiveInstances": 1,
+                "continueAfterFailure": False,
+                "automaticExecutionTimeoutSeconds": 60,
+                "manualDeadlineSeconds": 300,
+            },
+        },
+    )
+    runtime = WorkflowRuntimeService(factory, workflow_repository)
+
+    def resolve_resources(_automation, _defaults):
+        # Synthetic integration seam: this test proves database atomicity, not a browser launch.
+        return {"browser": "none", "modelProviderId": None}
+
+    coordinator = ProjectRunCoordinator(
+        factory,
+        runtime,
+        resolve_resources=resolver or resolve_resources,
+        available_capabilities=["browser.cloakbrowser"],
+    )
+    return factory, projects, automations, coordinator, runtime, project, automation
+
+
+def start_payload(automation, *, max_tasks=1):
+    return {
+        "expectedAutomationRevision": automation.management_revision,
+        "parameters": {PARAMETER_TEXT: "每个任务的冻结值"},
+        "maxTasks": max_tasks,
+        "concurrency": 1,
+    }
+
+
+@pytest.mark.parametrize("count", [1, 2, 100])
+def test_start_commits_every_task_snapshot_run_content_and_operation_atomically(
+    tmp_path, count
+):
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+
+    batch, operation, replayed = coordinator.start(
+        project.project_id,
+        automation.automation_id,
+        str(uuid4()),
+        start_payload(automation, max_tasks=count),
+    )
+
+    assert not replayed and operation.status == "succeeded"
+    assert batch.requested_count == count
+    tasks = coordinator.list_tasks(project.project_id, batch.batch_id)
+    assert len(tasks) == count
+    assert len({task.task_id for task in tasks}) == count
+    assert len({task.run_id for task in tasks}) == count
+    assert len({task.run_request_id for task in tasks}) == count
+    assert {task.status for task in tasks} == {"queued"}
+    with factory() as session:
+        snapshots = session.scalars(
+            select(ProjectTaskInputSnapshotRow).where(
+                ProjectTaskInputSnapshotRow.batch_id == batch.batch_id
+            )
+        ).all()
+        runs = session.scalars(
+            select(WorkflowRunRow).where(
+                WorkflowRunRow.id.in_([task.run_id for task in tasks])
+            )
+        ).all()
+        stored_batch = session.get(ProjectBatchRow, batch.batch_id)
+        assert stored_batch is not None
+        prepared = session.scalars(
+            select(WorkflowPreparedContentRow).where(
+                WorkflowPreparedContentRow.id == stored_batch.prepared_content_id
+            )
+        ).all()
+        stored_operation = session.get(ProjectOperationRow, operation.operation_id)
+    assert len(snapshots) == len(runs) == count and len(prepared) == 1
+    assert {snapshot.task_id for snapshot in snapshots} == {
+        task.task_id for task in tasks
+    }
+    assert all(snapshot.inputs == [] for snapshot in snapshots)
+    assert all(
+        snapshot.parameters
+        == {PARAMETER_TEXT: "每个任务的冻结值", PARAMETER_BOOL: False}
+        for snapshot in snapshots
+    )
+    assert (
+        stored_operation is not None
+        and stored_operation.result["batch"]["batchId"] == batch.batch_id
+    )
+    factory.dispose()
+
+
+def test_replay_returns_the_original_batch_even_after_automation_changes_and_mismatch_conflicts(
+    tmp_path,
+):
+    factory, _, automations, coordinator, _, project, automation = setup(tmp_path)
+    key = str(uuid4())
+    payload = start_payload(automation, max_tasks=2)
+    original, original_operation, _ = coordinator.start(
+        project.project_id, automation.automation_id, key, payload
+    )
+    automations.update(
+        project.project_id,
+        automation.automation_id,
+        str(uuid4()),
+        {
+            "name": "已修改",
+            "description": "",
+            "workflowId": automation.workflow_id,
+            "inputPlan": automation.input_plan,
+            "parameterSchema": automation.parameter_schema,
+            "environmentPolicy": automation.environment_policy,
+            "runPolicy": automation.run_policy,
+            "expectedManagementRevision": automation.management_revision,
+        },
+    )
+
+    replay, replay_operation, replayed = coordinator.start(
+        project.project_id, automation.automation_id, key, payload
+    )
+    assert replayed and replay == original and replay_operation == original_operation
+    with pytest.raises(ProjectRunError) as mismatch:
+        coordinator.start(
+            project.project_id,
+            automation.automation_id,
+            key,
+            {**payload, "maxTasks": 1},
+        )
+    assert mismatch.value.code == "OPERATION_PAYLOAD_MISMATCH"
+    factory.dispose()
+
+
+def test_stale_revision_rejects_without_any_run_rows(tmp_path):
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    with pytest.raises(ProjectRunError) as error:
+        coordinator.start(
+            project.project_id,
+            automation.automation_id,
+            str(uuid4()),
+            {
+                **start_payload(automation),
+                "expectedAutomationRevision": automation.management_revision + 1,
+            },
+        )
+    assert error.value.code == "REVISION_CONFLICT"
+    _assert_no_started_rows(factory)
+    factory.dispose()
+
+
+def test_second_core_prepare_run_failure_rolls_back_the_whole_start(
+    tmp_path, monkeypatch
+):
+    factory, _, _, coordinator, runtime, project, automation = setup(tmp_path)
+    original = runtime.prepare_run
+    calls = 0
+
+    def fail_second(**kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("injected second prepare_run failure")
+        return original(**kwargs)
+
+    monkeypatch.setattr(runtime, "prepare_run", fail_second)
+    with pytest.raises(RuntimeError, match="second prepare_run"):
+        coordinator.start(
+            project.project_id,
+            automation.automation_id,
+            str(uuid4()),
+            start_payload(automation, max_tasks=2),
+        )
+    _assert_no_started_rows(factory)
+    factory.dispose()
+
+
+def test_resource_resolution_failure_rolls_back_content_and_operation(tmp_path):
+    def unavailable(_automation, _defaults):
+        raise ProjectRunError("RESOURCE_UNAVAILABLE", "资源不可用", 422)
+
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path, unavailable)
+    with pytest.raises(ProjectRunError, match="资源不可用"):
+        coordinator.start(
+            project.project_id,
+            automation.automation_id,
+            str(uuid4()),
+            start_payload(automation),
+        )
+    _assert_no_started_rows(factory)
+    factory.dispose()
+
+
+@pytest.mark.parametrize("state", ["closing", "archived"])
+def test_project_lifecycle_blocks_new_batches(tmp_path, state):
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    with factory() as session:
+        session.get(ProjectRow, project.project_id).lifecycle_state = state
+        session.commit()
+    with pytest.raises(ProjectRunError):
+        coordinator.start(
+            project.project_id,
+            automation.automation_id,
+            str(uuid4()),
+            start_payload(automation),
+        )
+    _assert_no_started_rows(factory)
+    factory.dispose()
+
+
+def test_batch_and_tasks_enforce_project_ownership(tmp_path):
+    factory, projects, _, coordinator, _, project, automation = setup(tmp_path)
+    other, _, _ = projects.create(str(uuid4()), {"name": "其他项目", "description": ""})
+    batch, _, _ = coordinator.start(
+        project.project_id,
+        automation.automation_id,
+        str(uuid4()),
+        start_payload(automation),
+    )
+    with pytest.raises(ProjectRunError):
+        coordinator.get_batch(other.project_id, batch.batch_id)
+    with pytest.raises(ProjectRunError):
+        coordinator.list_tasks(other.project_id, batch.batch_id)
+    factory.dispose()
+
+
+def test_concurrent_same_key_creates_one_batch(tmp_path):
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    key, payload = str(uuid4()), start_payload(automation, max_tasks=2)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(
+            pool.map(
+                lambda _: coordinator.start(
+                    project.project_id, automation.automation_id, key, payload
+                ),
+                range(2),
+            )
+        )
+    assert len({result[0].batch_id for result in results}) == 1
+    assert sorted(result[2] for result in results) == [False, True]
+    with factory() as session:
+        assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 1
+        assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 2
+    factory.dispose()
+
+
+def _assert_no_started_rows(factory):
+    with factory() as session:
+        assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 0
+        assert session.scalar(select(func.count()).select_from(ProjectTaskRow)) == 0
+        assert (
+            session.scalar(
+                select(func.count()).select_from(ProjectTaskInputSnapshotRow)
+            )
+            == 0
+        )
+        assert (
+            session.scalar(select(func.count()).select_from(WorkflowPreparedContentRow))
+            == 0
+        )
+        assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 0
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(ProjectOperationRow)
+                .where(ProjectOperationRow.kind == "startBatch")
+            )
+            == 0
+        )
+
+
+@pytest.mark.parametrize("first_action", ["read", "start"])
+def test_final_commit_failure_discards_connection_transaction_before_next_start(
+    tmp_path, monkeypatch, first_action
+):
+    import sqlite3
+
+    from sqlalchemy.exc import OperationalError
+
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    engine = factory.kw["bind"]
+    original_commit = engine.dialect.do_commit
+
+    def fail_commit(_connection):
+        raise sqlite3.OperationalError("injected final commit failure")
+
+    monkeypatch.setattr(engine.dialect, "do_commit", fail_commit)
+    with pytest.raises(OperationalError, match="final commit failure"):
+        coordinator.start(
+            project.project_id,
+            automation.automation_id,
+            str(uuid4()),
+            start_payload(automation, max_tasks=2),
+        )
+    monkeypatch.setattr(engine.dialect, "do_commit", original_commit)
+    if first_action == "read":
+        _assert_no_started_rows(factory)
+    accepted, _, _ = coordinator.start(
+        project.project_id,
+        automation.automation_id,
+        str(uuid4()),
+        start_payload(automation),
+    )
+    assert accepted.counts.created_task_count == 1
+    factory.dispose()

@@ -169,3 +169,87 @@ def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))
     app.include_router(workflow_events_router(services.events, services.commands))
+
+
+def configure_project_workflow_runtime(
+    app: FastAPI,
+    *,
+    session_factory: Any,
+    profiles: Any,
+    installed: Any,
+    resolve_proxy: Any,
+    read_license: Any,
+    usage_guard: Any,
+    installations: Any,
+    temp_dir: Path,
+    gate: Any,
+) -> Any:
+    """Compose the PM4 durable runtime beside the current Studio runtime."""
+    from contextlib import contextmanager
+
+    from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
+    from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
+    from autoflow.application.workflows.runtime import WorkflowRuntimeService
+    from autoflow.domain.kernels.errors import KernelBusy, KernelNotFound
+    from autoflow.domain.kernels.models import KernelRef
+    from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+    from autoflow.infrastructure.filesystem.kernel_installations import kernel_target_lock
+    from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
+    from autoflow.infrastructure.process.project_workflow_worker import (
+        ProjectWorkflowWorkerManager,
+    )
+    from autoflow.infrastructure.process.workflow_recovery import (
+        recover_worker_directories,
+    )
+
+    @contextmanager
+    def guard(kernel: KernelRef):
+        workspace_lock = ExclusiveFileLock(
+            installations.root / ".studio-browser-session.lock"
+        )
+        if not workspace_lock.acquire():
+            raise KernelBusy()
+        lock = kernel_target_lock(installations.root, kernel.edition, kernel.version)
+        try:
+            if not lock.acquire():
+                raise KernelBusy()
+            if kernel.edition == "licensed":
+                with installations.license_guard():
+                    yield
+            else:
+                yield
+        finally:
+            lock.release()
+            workspace_lock.release()
+
+    resources = WorkflowBrowserResources(
+        profiles, installed, resolve_proxy, read_license, usage_guard, guard
+    )
+    worker = ProjectWorkflowWorkerManager(temp_dir)
+
+    async def recover(run: Any) -> None:
+        for kernel in installed():
+            if f"{kernel.edition}:{kernel.version}" == run.resource_request.get(
+                "kernelId"
+            ):
+                with usage_guard.guard(str(run.resource_request["profileId"])), guard(
+                    KernelRef(kernel.edition, kernel.version)
+                ):
+                    await recover_worker_directories(
+                        temp_dir, run.run_id, kernel.executable_path
+                    )
+                return
+        raise KernelNotFound()
+
+    dispatcher = WorkflowRunDispatcher(
+        session_factory, worker, resources, gate, recover
+    )
+    runtime = WorkflowRuntimeService(
+        session_factory, SqlAlchemyWorkflowRepository(session_factory)
+    )
+    app.state.project_workflow_runtime = runtime
+    app.state.project_workflow_resources = resources
+    app.state.project_workflow_worker_manager = worker
+    app.state.project_workflow_dispatcher = dispatcher
+    app.router.add_event_handler("startup", dispatcher.startup)
+    return dispatcher

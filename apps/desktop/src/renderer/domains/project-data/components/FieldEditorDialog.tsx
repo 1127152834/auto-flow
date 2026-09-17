@@ -8,11 +8,15 @@ import { Button } from '../../../shared/components/ui/button'
 import { fieldDefinition, fieldFormSchema, emptyFieldForm, type FieldFormValues } from '../field-form-schema'
 import { parseScalarDraft, scalarDraft, type ScalarDraft } from '../scalar-draft'
 import { FieldEditorFields } from './FieldEditorFields'
+import { safeProjectError } from '../../projects/presentation-error'
 
 type Schema = components['schemas']
 type Definition = Schema['DataFieldWrite']
 type Impact = Schema['FieldImpactReport']
 type Scalar = Schema['DataCellWrite']['value']
+const impactLabel = (item: { code: string }) => item.code === 'FIELD_RECORD_VALIDATION'
+  ? '将检查现有记录是否符合新的字段规则'
+  : '字段变更将影响现有数据，请核对后继续'
 export type FieldSubmission = { definition: Definition; existingRecordDefault?: Scalar } | { definition: Definition; impactRevision: number }
 export type FieldEditorDialogProps = {
   open: boolean; mode: 'create' | 'edit'; sessionKey: string; initialField?: Schema['DataFieldView']; isIdentityField?: boolean
@@ -87,7 +91,7 @@ export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIden
           const parsed = parseScalarDraft(definition.type, draft)
           await onSubmit(parsed === undefined ? { definition } : { definition, existingRecordDefault: parsed })
         }
-      } catch (caught) { if (ticket === epoch.current) setSubmitError(caught instanceof Error ? caught.message : '保存字段失败') }
+      } catch (caught) { if (ticket === epoch.current) setSubmitError(safeProjectError(caught)) }
       finally { if (running.current === ticket) running.current = null; if (ticket === epoch.current) {setBusyLocal(false);savingCallback.current?.(submitGuard.current.saving)} }
     }, errors => {
       if (ticket !== epoch.current || running.current !== ticket) return
@@ -95,13 +99,13 @@ export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIden
       form.setFocus(errors.name ? 'name' : errors.key ? 'key' : errors.type ? 'type' : errors.minLength ? 'minLength' : errors.maxLength ? 'maxLength' : errors.pattern ? 'pattern' : errors.minimum ? 'minimum' : 'maximum')
     })(event)
   }
-  const recover=()=>{if(!onRecover||recoverLock.current||busy)return;epoch.current+=1;closeLock.current=false;recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=epoch.current;void onRecover().catch(caught=>{if(ticket===epoch.current)setSubmitError(caught instanceof Error?caught.message:'核对保存结果失败')}).finally(()=>{if(ticket===epoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(submitGuard.current.saving)}})}
+  const recover=()=>{if(!onRecover||recoverLock.current||busy)return;epoch.current+=1;closeLock.current=false;recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=epoch.current;void onRecover().catch(caught=>{if(ticket===epoch.current)setSubmitError(safeProjectError(caught))}).finally(()=>{if(ticket===epoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(submitGuard.current.saving)}})}
   return <>
     <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} closeDisabled={busy} variant="form" size="small" title={mode === 'create' ? '新建字段' : '编辑字段'} description={protectedField ? '公式或只读字段不能编辑。' : isIdentityField ? '身份字段的类型不可修改。' : '设置字段定义和验证规则。'} footer={<><Button type="button" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" form="field-editor-form" variant="primary" disabled={busy || readonly || protectedField || blocked || (mode === 'edit' && !actionChanged)}>{busy ? '处理中…' : mode === 'edit' && !impact ? '预检影响' : mode === 'edit' ? '确认修改' : '创建字段'}</Button>}</>}>
       <form id="field-editor-form" className="grid gap-4" noValidate onSubmit={run}>
         {error || submitError ? <div role="alert"><p>{submitError ?? error}</p>{errorActions?<div>{errorActions}</div>:null}</div> : null}
         <FieldEditorFields form={form} defaultDraft={draft} onDefaultDraftChange={setDraft} showDefault={mode === 'create'} disabled={frozen} readOnly={readonly} protectedField={protectedField} typeLocked={isIdentityField} />
-        {impact ? <section aria-label="字段影响预检"><p>{impact.impacts.map(item => item.message).join('；') || '没有记录受到影响'}</p>{impact.blockers.map(item => <p role="alert" key={item.code}>{item.message}</p>)}</section> : null}
+        {impact ? <section aria-label="字段影响预检"><p>{impact.impacts.map(impactLabel).join('；') || '没有记录受到影响'}</p>{impact.blockers.map(item => <p role="alert" key={item.code}>{safeProjectError(item)}</p>)}</section> : null}
       </form>
     </Modal>
     <AlertDialog open={open && confirmClose} onOpenChange={next => { if (!frozen || next) setConfirmClose(next) }}><AlertDialogContent><AlertDialogTitle>放弃未保存的修改？</AlertDialogTitle><AlertDialogDescription>关闭后，本次字段修改将不会保存。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus disabled={frozen}>继续编辑</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="danger" disabled={frozen} onClick={() => { if(frozen)return;setConfirmClose(false); onOpenChange(false) }}>放弃修改</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>

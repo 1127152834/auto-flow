@@ -1,0 +1,26 @@
+E01-E03: UI created project/table/fields and two inline rows; one visible batch save produced exactly two records
+E04: Real clipboard paste preserves leading-zero text and adds exactly two rows
+E06: Invalid required cell is focused and no records are written
+E11: Cancelled tab leave preserves grid draft
+E05: Over-wide, over-100-row and over-1-MiB clipboard pastes leave original draft unchanged
+E09: Injected response loss after database commit; full Electron restart and original-key query recovered exactly one addition; restart route restored directly
+E12-service-reconnect: Existing controlled restartSidecar IPC restarts test service; same-workspace grid draft survives
+E15: Actual Electron 200% zoom preserves window width and draft; screenshot captured
+E16-edit: Saved record edit still uses existing detail/edit flow and persists through UI
+E10: Request-stage fault injection writes nothing; explicit original-key lookup and resend create one record
+E08: Real competing HTTP field creation rejects stale structure, preserves cells, then explicit confirmation permits one save
+E14-list: Nonmatching row is saved, applied search and visible count stay unchanged
+E07: Real Excel identity table via wizard; duplicate batch and existing identity each reject every draft, unique batch succeeds, source bytes unchanged
+E04-rich-types: HTTP fixture fields plus real clipboard paste/undo/save preserve date, zero, false, quoted newline and formula-looking text
+E12-workspace-switch: Two real workspaces and two UI-created drafts stay isolated; controlled chooser IPC and direct route restoration explicitly used
+Evidence: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-56SEpz
+file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:82
+  throw new Error(`timed out waiting for ${description}: ${JSON.stringify(value)}`)
+        ^
+
+Error: timed out waiting for 浏览器配置: null
+    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:82:9)
+    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-record-grid-entry.mjs:29:70)
+    at async file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-record-grid-entry.mjs:191:2
+
+Node.js v26.7.0

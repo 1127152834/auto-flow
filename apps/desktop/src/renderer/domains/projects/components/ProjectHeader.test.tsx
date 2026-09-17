@@ -12,7 +12,7 @@ afterEach(cleanup)
 it('keeps the approved project identity visible in compact density', () => {
   render(<ProjectHeader project={project} density="compact" disabled={false} onBack={vi.fn()} onEdit={vi.fn()} />)
   expect(screen.getByRole('heading', { level: 1, name: '内容采集项目' })).toBeVisible()
-  expect(screen.getByRole('heading', { level: 1, name: '内容采集项目' })).toHaveClass('text-[28px]')
+  expect(screen.getByRole('heading', { level: 1, name: '内容采集项目' })).toHaveClass('text-[22px]')
   expect(screen.getByText('自动采集电商平台商品信息')).toBeVisible()
   expect(screen.getByTestId('project-header-icon')).toBeVisible()
   expect(screen.getByRole('banner')).toHaveAttribute('data-project-header-density', 'compact')

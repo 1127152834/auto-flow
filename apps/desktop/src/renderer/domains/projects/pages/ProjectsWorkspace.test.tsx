@@ -141,7 +141,7 @@ it('uses a new command after a definitive name conflict rather than replaying th
   await user.click(await screen.findByRole('button', { name: '新建项目' }))
   await user.type(screen.getByLabelText('项目名称'), '冲突名称')
   await user.click(screen.getByRole('button', { name: '创建项目' }))
-  await screen.findByText('名称已使用')
+  await screen.findByText('项目名称已存在，请使用其他名称')
   await user.clear(screen.getByLabelText('项目名称')); await user.type(screen.getByLabelText('项目名称'), '更正名称')
   await user.click(screen.getByRole('button', { name: '创建项目' }))
   await waitFor(() => expect(mounted.onNavigate).toHaveBeenCalled())
@@ -168,7 +168,7 @@ it('corrects a restored page when the current result set has shrunk', async () =
 it('shows overview failure with retry while retaining real project details', async () => {
   const request = vi.fn((path: string) => path.endsWith('/overview') ? Promise.reject(new Error('概览连接失败')) : Promise.resolve(path.includes('?') ? { items: [a], page: 1, pageSize: 50, total: 1, sort: '-lastOpenedAt' } : a))
   mount(request as StreamingApiClient['request'], { route: { projectId: a.projectId, tab: 'overview' } })
-  expect(await screen.findByRole('alert')).toHaveTextContent('概览连接失败')
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作失败，请重试')
   expect(screen.getByRole('button', { name: '重试概览' })).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: '项目资料' })).toBeInTheDocument()
 })

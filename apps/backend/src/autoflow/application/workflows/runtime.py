@@ -532,3 +532,6 @@ async def _wait_until_cancelled(context: ExecutionContext) -> None:
     assert context.cancellation is not None
     while not context.cancellation.cancelled:
         await asyncio.sleep(0.02)
+
+
+from .core_runtime import WorkflowRuntimeService  # noqa: E402,F401

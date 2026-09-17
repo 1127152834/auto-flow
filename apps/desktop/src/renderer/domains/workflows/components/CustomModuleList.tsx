@@ -239,7 +239,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${
+                className={`px-3 py-1 rounded-control text-xs whitespace-nowrap transition-colors ${
                   selectedCategory === cat
                     ? 'bg-purple-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

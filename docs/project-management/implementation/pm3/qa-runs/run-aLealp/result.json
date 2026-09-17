@@ -1,0 +1,90 @@
+{
+  "status": "passed",
+  "scenario": "failure",
+  "scenarioPlan": [
+    "UI创建缺失点击目标的自动化",
+    "启动真实浏览器任务并等待失败",
+    "打开异常证据中的真实PNG预览"
+  ],
+  "sourceSha256": "9a9a840c6a7caf230b46106cb1a03367866c92934f81c22c1da036f180091b90",
+  "head": "c3b24a258d4738c3da13d1c10a724f25755c67ec",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-zCG9sI",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-zCG9sI/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp",
+  "kernel": {
+    "source": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2",
+    "copiedTo": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-zCG9sI/workspace/data/kernels/chromium-145.0.7632.109.2",
+    "version": "145.0.7632.109.2"
+  },
+  "fixtureUrl": "http://127.0.0.1:55406/fixture",
+  "slowFixtureUrl": "http://127.0.0.1:55406/slow",
+  "workflow": {
+    "workflowId": "20b3ae81-de46-4cdc-bf08-f931e184ff34",
+    "parameterId": "68d7a545-f404-4a55-a784-a007a9f9bc48",
+    "preparation": "工作流文档通过 WorkflowService 预置；Studio 不在本次验收范围。项目与自动化必须通过 UI 创建。"
+  },
+  "profile": {
+    "profileId": "18b939e6-87f6-44a3-a8f1-4619fc73fc99",
+    "preparation": "浏览器配置通过真实 HTTP ProfileService API 预置为运行资源夹具；项目与自动化仍由 UI 创建。"
+  },
+  "uiResult": {
+    "projectId": "01e3111c-f888-4ef5-a560-405877107ca5",
+    "automationName": "参数运行验收",
+    "batchId": "ea9e0204-6093-4c92-a3cc-1a2701df6c2f",
+    "taskIds": [
+      "b955fb87-7a53-433f-a802-07c19bcbf43e",
+      "16f465bf-d1b0-4036-8152-39e99d5ed7f1"
+    ],
+    "profileId": "18b939e6-87f6-44a3-a8f1-4619fc73fc99"
+  },
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/01-automation.png",
+      "sha256": "ab1265c9fe720a8c5b068e127226d1e6fb48c3389090901c13a06972b67997e9"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/02-start-batch.png",
+      "sha256": "863529e45f63c46a1e78c10cc74963f1e302413c64fd8709982a0fab57d70959"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/04-batch-detail.png",
+      "sha256": "130ea77cc7d354abfa3e9acefb868347ea889e3b3cf33d1a28981b5be95b0d7f"
+    },
+    {
+      "name": "05-task-logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/05-task-logs.png",
+      "sha256": "862dd645b245f9f89090d7cf9e840c34479befa09e63f6247f4bda7b717997cb"
+    },
+    {
+      "name": "06-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/06-task-input-output.png",
+      "sha256": "d8d00fda25a25e855edb5a7bd218da895d7e595a71c9aff6be2e0cbf67ce5495"
+    },
+    {
+      "name": "07-task-evidence",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/07-task-evidence.png",
+      "sha256": "ee8ead07c44fb04beed73a1ff5097a85c9b45a985a1b9f8878a54ae3f7e92efe"
+    },
+    {
+      "name": "08-failure-preview",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-aLealp/08-failure-preview.png",
+      "sha256": "734b82a0e80e1d09af90a62b3c1aa3d3fbc57816e9359c6842e03f81f152c03d"
+    }
+  ],
+  "next": [],
+  "commands": {
+    "success": "node scripts/qa-project-management-pm3.mjs --scenario success",
+    "manual": "node scripts/qa-project-management-pm3.mjs --manual --scenario success",
+    "preparation": "node scripts/qa-project-management-pm3.mjs --prepare-only --scenario success",
+    "explicitKernel": "node scripts/qa-project-management-pm3.mjs --manual --kernel-directory /path/to/chromium-x.y.z.w"
+  },
+  "createdAt": "2026-09-15T05:20:44.879Z"
+}

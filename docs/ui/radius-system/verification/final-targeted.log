@@ -1,0 +1,14 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run SettingsPage ProxyFleet ModuleNode LogPanel ModuleSidebar BlockFlowView --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-table-system/apps/desktop
+
+(node:53195) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  12:19:44
+   Duration  5.77s (transform 186ms, setup 118ms, import 1.69s, tests 3.14s, environment 690ms)

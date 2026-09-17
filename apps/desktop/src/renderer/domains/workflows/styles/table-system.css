@@ -1,0 +1,66 @@
+@import '../../../styles/tables.css';
+
+/* Studio table users: DataTable, LogPanel, DebugBar, docs MarkdownRenderer, assistant MessageBubble. */
+.af-studio-table-scroll,
+.af-studio-data-grid {
+  --color-surface: hsl(var(--card));
+  --color-surface-subtle: hsl(var(--muted));
+  --color-surface-hover: hsl(var(--brand-50));
+  --color-line: hsl(var(--border));
+  --color-ink: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted-foreground));
+  --color-clay: hsl(var(--brand-500));
+  --color-clay-soft: hsl(var(--brand-50));
+  --color-focus: hsl(var(--brand-500));
+  --focus-width: 2px;
+  --focus-offset: 1px;
+}
+
+.af-studio-table { min-width: max-content; }
+.af-studio-table-scroll { border-radius: var(--radius-card); }
+
+/* Override the older assistant prose-table rules at their own specificity. */
+.ai-md .ai-md-body .af-studio-table-scroll { margin: 0.7em 0; }
+.ai-md .ai-md-body table.af-table {
+  width: 100%;
+  min-width: max-content;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  color: var(--color-ink);
+  font-size: var(--table-font-size);
+  line-height: var(--table-line-height);
+}
+.ai-md .ai-md-body table.af-table > thead { background: transparent; }
+.ai-md .ai-md-body table.af-table > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+  height: var(--table-row-height);
+  padding: var(--table-cell-block) var(--table-cell-inline);
+  border-right: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+.ai-md .ai-md-body table.af-table > thead > tr > th {
+  background: var(--color-surface-subtle);
+  color: var(--color-muted);
+  font-weight: 500;
+}
+.ai-md .ai-md-body table.af-table > :is(thead, tbody, tfoot) > tr > :last-child { border-right: 0; }
+.ai-md .ai-md-body table.af-table > tbody:last-child > tr:last-child > :is(th, td) { border-bottom: 0; }
+.ai-md .ai-md-body table.af-table > tbody > tr:hover { background: var(--color-surface-hover); }
+
+.af-studio-grid-scroll { border-radius: 0; }
+.af-studio-grid-body:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--focus-width));
+}
+.af-studio-grid-header,
+.af-studio-grid-row { color: var(--color-ink); line-height: 20px; }
+.af-studio-grid-header { background: var(--color-surface-subtle); color: var(--color-muted); }
+.af-studio-grid-header > div,
+.af-studio-grid-row > div { border-right: 1px solid var(--color-line); }
+.af-studio-grid-header > div:last-child,
+.af-studio-grid-row > div:last-child { border-right: 0; }
+.af-studio-grid-header,
+.af-studio-grid-row { border-bottom: 1px solid var(--color-line); }
+.af-studio-grid-row:hover { background: var(--color-surface-hover); }
+.af-studio-grid-header button:hover { color: var(--color-clay); }

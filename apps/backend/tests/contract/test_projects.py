@@ -74,9 +74,9 @@ def test_create_list_patch_open_overview_and_operations(tmp_path):
     assert client.get("/api/v1/projects?q=alp").json()["total"] == 1
     listed = client.get("/api/v1/projects?q=alp").json()["items"][0]
     assert listed["availability"] == {
-        "automations": "notImplemented",
+        "automations": "available",
         "data": "available",
-        "runs": "notImplemented",
+        "runs": "available",
         "environments": "notImplemented",
         "statistics": "notImplemented",
         "sync": "notImplemented",

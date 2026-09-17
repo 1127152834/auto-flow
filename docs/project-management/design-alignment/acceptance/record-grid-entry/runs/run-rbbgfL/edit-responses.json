@@ -1,0 +1,114 @@
+[
+  {
+    "url": "http://127.0.0.1:54912/api/v1/projects/ea30a051-d2a9-49d8-8b85-750eeb4f0923/tables/eee48925-9b53-425a-ac1c-2bbfb525a9da/records/MDE4NTg5ODAtZWVhYy00YjUzLTllNTUtNmZlZTYyM2E5YjQ2?datasetGeneration=2f53dfb6-8f7f-4d3d-8cae-a16ba3c2fd81&recordKeyType=uuid",
+    "result": {
+      "ref": {
+        "projectId": "ea30a051-d2a9-49d8-8b85-750eeb4f0923",
+        "tableId": "eee48925-9b53-425a-ac1c-2bbfb525a9da",
+        "datasetGeneration": "2f53dfb6-8f7f-4d3d-8cae-a16ba3c2fd81",
+        "recordKey": {
+          "type": "uuid",
+          "value": "01858980-eeac-4b53-9e55-6fee623a9b46"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "aeea2295-1c4d-4223-a3d7-17a60ec45ca2",
+          "value": "响应丢失验收",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "0e77f4a5-2c46-4a27-8dab-1d70bc04ff7b",
+          "value": "必填尚未填写",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 1,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T03:13:55.583305Z",
+      "updatedAt": "2026-09-14T03:13:55.583305Z"
+    }
+  },
+  {
+    "url": "http://127.0.0.1:54912/api/v1/projects/ea30a051-d2a9-49d8-8b85-750eeb4f0923/tables/eee48925-9b53-425a-ac1c-2bbfb525a9da/records/MDE4NTg5ODAtZWVhYy00YjUzLTllNTUtNmZlZTYyM2E5YjQ2",
+    "method": "PATCH",
+    "result": {
+      "ref": {
+        "projectId": "ea30a051-d2a9-49d8-8b85-750eeb4f0923",
+        "tableId": "eee48925-9b53-425a-ac1c-2bbfb525a9da",
+        "datasetGeneration": "2f53dfb6-8f7f-4d3d-8cae-a16ba3c2fd81",
+        "recordKey": {
+          "type": "uuid",
+          "value": "01858980-eeac-4b53-9e55-6fee623a9b46"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "aeea2295-1c4d-4223-a3d7-17a60ec45ca2",
+          "value": "已有记录仍可编辑",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "0e77f4a5-2c46-4a27-8dab-1d70bc04ff7b",
+          "value": "必填尚未填写",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 2,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T03:13:55.583305Z",
+      "updatedAt": "2026-09-14T03:14:05.206452Z"
+    }
+  },
+  {
+    "url": "http://127.0.0.1:54912/api/v1/projects/ea30a051-d2a9-49d8-8b85-750eeb4f0923/tables/eee48925-9b53-425a-ac1c-2bbfb525a9da/records/MDE4NTg5ODAtZWVhYy00YjUzLTllNTUtNmZlZTYyM2E5YjQ2?datasetGeneration=2f53dfb6-8f7f-4d3d-8cae-a16ba3c2fd81&recordKeyType=uuid",
+    "result": {
+      "ref": {
+        "projectId": "ea30a051-d2a9-49d8-8b85-750eeb4f0923",
+        "tableId": "eee48925-9b53-425a-ac1c-2bbfb525a9da",
+        "datasetGeneration": "2f53dfb6-8f7f-4d3d-8cae-a16ba3c2fd81",
+        "recordKey": {
+          "type": "uuid",
+          "value": "01858980-eeac-4b53-9e55-6fee623a9b46"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "aeea2295-1c4d-4223-a3d7-17a60ec45ca2",
+          "value": "已有记录仍可编辑",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "0e77f4a5-2c46-4a27-8dab-1d70bc04ff7b",
+          "value": "必填尚未填写",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 2,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T03:13:55.583305Z",
+      "updatedAt": "2026-09-14T03:14:05.206452Z"
+    }
+  }
+]

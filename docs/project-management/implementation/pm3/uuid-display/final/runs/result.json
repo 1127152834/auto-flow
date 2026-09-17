@@ -1,0 +1,110 @@
+{
+  "status": "scenario-passed",
+  "coverage": "partial",
+  "scenario": "runs",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-6uNj7A",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-6uNj7A/workspace",
+  "evidence": "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219",
+  "knownIds": [
+    "e697e8b5-946f-4584-a6f7-d31aa1501910",
+    "6f763826-7abf-4f07-8d36-3ce13ff41244",
+    "c0fbad16-928a-40c1-a7ee-bca58b943484",
+    "87e818e5-8454-4572-836e-d7c20f675a3e",
+    "c4bc6dd7-39bf-445d-afa6-96f2c16c845e",
+    "17f22c15-af3f-4f28-a464-f8b3b5d34be2",
+    "31b0b8b8-23b4-4cd6-8460-ec87dec1cc42",
+    "c5b4407a-3c08-4265-9186-1199ee4271b8",
+    "72ec709e-70e9-4c44-a950-34896af1b3af",
+    "f09205c8-066b-49bd-bf01-5cbd9074bd55",
+    "fadd42a3-0611-44f0-9363-7a9287e1d0f6",
+    "40bf48fa-6f8d-4927-b251-feb5b02a26c8",
+    "0eebf380-b143-4093-ba07-6b9e5b5fdeca",
+    "64177db5-29ab-49ea-ae30-fa755369c8af",
+    "74263683-b510-4fb1-80de-cfbb1a048bce",
+    "0ecb897f-70e4-4a91-a1be-21be720567b1",
+    "6b1a57e9-1e88-42c9-a82d-3e684247152a",
+    "a84076c9-13c2-4fc8-b0f7-85423dca0c53",
+    "836018a6-9584-41c1-91c6-7f1e76b3cce1",
+    "0e998897-55d2-4808-9409-a2bb56ed63dc",
+    "6eebed6a-ac41-48c7-88aa-35bd2383ec2b",
+    "2a288c6b-e39f-4974-91ec-968d2ab73e3b",
+    "b317cede-5fe5-42a6-a64f-71c361ee13a9",
+    "c968b6fb-ffa7-4e8f-80c0-574f4c8e7b1d",
+    "2a361483-669a-4c41-a973-c4fd7631c07f",
+    "494b3427-3642-4927-b74e-a78026d0dccb",
+    "9e21b808-480c-4cad-a715-9633e287fe2f",
+    "d591d238-fc61-4d02-86ff-330d8cbab775",
+    "fc8d8a63-bd19-46cc-acc0-ed0fa71830a9",
+    "a4ee49e8-094d-4a28-9bf5-0dc40e81a6e9",
+    "219e69af-7870-4fde-9be8-ba67415d8e41",
+    "a2431c74-050c-438d-86bf-bce5277aa83a",
+    "981484a1-7ef3-4241-9765-61d8793389c0",
+    "e6957b1a-b7c0-4fa3-8425-a1a84bfaf2a7",
+    "e887ce69-3657-4fc8-9098-d3ece8e885ad",
+    "b970f2ca-3bdd-4ac8-8454-1fc930a90515",
+    "5708fc57-cdab-4de0-a4ac-70ad02e8e0dd",
+    "c4073282-8273-484d-87bc-019dbeab9a11",
+    "805bc8cf-a023-4d89-8d38-f62baa525e70",
+    "0efb5cc8-766d-45d7-8922-cfce94f5bb0e",
+    "4f0c7cdb-ffcf-4225-bc9d-582f6f5fbbe2",
+    "1fa82575-e68a-4107-9715-66ab6fb80204",
+    "dea88998-b33d-4013-8861-3047ff307cbf",
+    "1ec392eb-41c5-40d3-b6d7-374e08f2789b",
+    "d8ed225e-bf7b-4873-b0f0-bec762942dfb",
+    "4f2c1e0f-55d5-4006-8cb5-998d1652c12c",
+    "99454a6e-62ba-4e9b-b95f-92b5e624747e"
+  ],
+  "businessIds": [],
+  "screenshots": [
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/01-batch-detail.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/02-batch-directory.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/02a-synthetic-refresh-error.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/03-task-directory.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/04-task-logs.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/05-task-io.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/06-task-evidence.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/07-slow-batch-detail.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/08-stop-dialog.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/09-force-stop-dialog.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/10-failed-task-logs.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/11-failed-task-evidence.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789457907219/12-failed-screenshot-preview.png"
+  ],
+  "unimplemented": [
+    "失效资源引用状态"
+  ],
+  "preparation": [
+    "工作流与浏览器配置为运行夹具；项目与自动化由UI创建",
+    "保存、启动和确认提交按钮通过可见且启用的唯一按钮聚焦后发送CDP Enter，覆盖键盘用户路径"
+  ],
+  "faultInjections": [
+    {
+      "kind": "synthetic-http-responses",
+      "target": "one batch directory refresh including all query retries",
+      "httpAttempts": 3,
+      "code": "UNKNOWN_UUID_QA",
+      "purpose": "verify retained content and safe unknown-error presentation; not a natural backend failure"
+    },
+    {
+      "kind": "synthetic-os-process-pause",
+      "target": "the unique workflow worker in this isolated Electron process tree",
+      "purpose": "simulate an unresponsive worker while preserving real stop, grace-period, force-stop, and cleanup handling",
+      "processExitConfirmed": true
+    }
+  ],
+  "viewport": {
+    "width": 1440,
+    "height": 1024,
+    "devicePixelRatio": 1
+  },
+  "source": {
+    "head": "a5e7d48",
+    "scriptSha256": "6f9ce328b62a00c989f8db347ef3bfae7995eeeab50e7e553fca35c863538427",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "12f8b6768ef8903024e4329be3e3799aba456114c587bd0406c90e67c4966a2d",
+    "rendererAssetsSha256": "9c997bbda2d6dcdf550d7c056f487f42bc64baccdc304657ad3ceeabe7092d3e",
+    "rendererSourceSha256": "3541f2cdfd82e51b9aad54e454cab5678b72ff46a75a97bbc045e507ea0a4678"
+  },
+  "startedAt": "2026-09-15T07:38:27.217Z",
+  "finishedAt": "2026-09-15T07:39:28.968Z"
+}

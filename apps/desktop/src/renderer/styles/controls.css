@@ -83,7 +83,7 @@ textarea[data-af-control] { resize: vertical; }
 }
 [data-af-choice-mark] {
   display: grid; place-items: center; width: 18px; height: 18px;
-  border: 1px solid var(--color-control-border); border-radius: 4px;
+  border: 1px solid var(--color-control-border); border-radius: var(--radius-xs);
   background: var(--color-surface); color: var(--color-on-accent);
   transition: background-color var(--motion-toggle), border-color var(--motion-toggle);
 }

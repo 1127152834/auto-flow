@@ -8,6 +8,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { emptyFieldForm, fieldDefinition, fieldFormSchema, type FieldFormValues } from '../field-form-schema'
 import { parseScalarDraft, scalarDraft, ScalarDraftError, type ScalarDraft, type ScalarDraftControl } from '../scalar-draft'
 import { FieldEditorFields } from './FieldEditorFields'
+import { safeProjectError } from '../../projects/presentation-error'
 
 type Schema = components['schemas']
 type Definition = Schema['DataFieldWrite']
@@ -104,7 +105,7 @@ export function SchemaFieldDrawer({ open, sessionKey, submissionEpoch = 0, initi
     } catch (reason) {
       if (!current()) return
       if (reason instanceof ScalarDraftError) setDefaultError({ message: reason.message, control: reason.control })
-      else setApplyError(reason instanceof Error ? reason.message : '无法应用字段草稿')
+      else setApplyError(safeProjectError(reason))
     } finally { if (ticket === requestEpoch.current) applying.current = false }
   }
   const title = initialField ? '编辑字段' : '新增字段'

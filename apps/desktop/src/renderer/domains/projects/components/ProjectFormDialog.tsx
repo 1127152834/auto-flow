@@ -1,3 +1,4 @@
+import { safeProjectError } from '../presentation-error'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useForm } from 'react-hook-form'
@@ -72,7 +73,7 @@ export function ProjectFormDialog({ open, project, draftSession, submissionEpoch
       } catch (caught) {
         if (ticket !== sessionNonce.current) return
         if (caught instanceof ApiClientError && caught.status === 409 && (caught.code === 'PROJECT_NAME_CONFLICT' || caught.fields?.name)) {
-          form.setError('name', { message: caught.fields?.name ?? caught.message })
+          form.setError('name', { message: caught.code === 'PROJECT_NAME_CONFLICT' ? safeProjectError(caught) : '项目名称填写有误，请检查' })
           form.setFocus('name')
         } else if (caught instanceof ApiClientError && caught.status === 409 && caught.code === 'REVISION_CONFLICT') {
           const current = await onLoadLatest?.().catch(() => undefined)
@@ -80,7 +81,7 @@ export function ProjectFormDialog({ open, project, draftSession, submissionEpoch
           setLatest(current ?? null)
           setError(current ? `项目已被其他操作更新。最新名称：${current.name}` : '项目已被其他操作更新，请刷新后重新编辑。')
         } else {
-          setError(caught instanceof Error ? caught.message : '保存项目失败')
+          setError(safeProjectError(caught))
         }
       } finally {
         if (ticket === sessionNonce.current) {

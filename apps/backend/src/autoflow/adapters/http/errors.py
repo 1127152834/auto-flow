@@ -33,8 +33,11 @@ from autoflow.domain.profiles.errors import (
     ProfileValidationError,
     ProxyUnavailable,
 )
+from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.errors import WorkflowDocumentError
+from autoflow.domain.workflows.models import WorkflowError
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.domain.workflows.runs import WorkflowRunError
 
 _MODEL_ERROR_MESSAGES = {
@@ -139,6 +142,12 @@ def _safe_model_details(details: dict[str, Any]) -> dict[str, Any]:
 
 
 def install_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(WorkflowError)
+    async def workflow_error(_request: Request, error: WorkflowError) -> JSONResponse:
+        return error_response(
+            error.status, error.code, error.message, jsonable_encoder(error.details)
+        )
+
     @app.exception_handler(WorkflowDocumentError)
     async def workflow_document_error(
         _request: Request, error: WorkflowDocumentError
@@ -155,8 +164,13 @@ def install_error_handlers(app: FastAPI) -> None:
             error.status, error.code, error.message, jsonable_encoder(error.details)
         )
 
+    @app.exception_handler(ProjectRunError)
+    @app.exception_handler(WorkflowRuntimeError)
     @app.exception_handler(ProjectError)
-    async def project_error(_request: Request, error: ProjectError) -> JSONResponse:
+    async def project_error(
+        _request: Request,
+        error: ProjectError | ProjectRunError | WorkflowRuntimeError,
+    ) -> JSONResponse:
         details = dict(error.details)
         details.setdefault("domainCode", error.code.lower())
         details.setdefault("retryable", False)
