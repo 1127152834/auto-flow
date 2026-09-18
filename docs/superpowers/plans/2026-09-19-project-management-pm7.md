@@ -321,3 +321,20 @@ git diff --check
 7. 问题闭合记录。
 
 **PM7 完成后停在 PM7 验收点，不进入 PM8。**
+
+---
+
+## 9. 执行记录（2026-09-19 收口）
+
+| 包 | 状态 | 提交 | 证据 |
+|---|---|---|---|
+| P0 / B1 / B2 / C1 / C2 / A1 / FE-OV / FE-ST / FE-EV | delivered | `837f9576`、`0ae21ba8` 等前置包 | 见 §4 各包测试文件与 `pm7/verification.json` |
+| F 缺陷修复 | delivered | `6e26c6bd`、`5ad992de`、`19823f1e`、`5144079c`、`38a9f983`、`3a52182b` | 三个真实缺陷先补失败用例再修复；三个缺陷写入 `.ai/knowledge/2026-09-19-pm7-management-defects.md` |
+| F 下钻/D15 修复 | delivered | `56112678` | 统计下钻改独立页面（评分 62 → 88）；冻结标识长度与过期文案修复；失败运行 `20260918202945`、`20260918203241` 保留 |
+| F 端点与文档收口 | delivered（管理侧） | `10fc7b4d` + 本节文档提交 | `pm7/qa-runs/20260918203625/report.json`（passed，16 检查点 / 16 截图，visualReview passed）；`pm7/verification.json`、`pm7/visual-review.md`、`pm7/manual-test.md` |
+
+**自动化检查**：后端 3085 passed / 16 skipped；Ruff 通过；mypy 383 源文件通过；前端 399 文件 / 5417 项通过；openapi:check、typecheck、lint、build 通过；test:scripts 78/0；test:structure 4/0；PM7 self-test 与脚本测试通过；`git diff --check` 干净。
+
+**回归**：PM3 `pm3/qa-runs/run-mjhCtH/result.json`、PM4 `pm4/qa-runs/v1-f52SNQ/result.json`，均以当前 HEAD 真实重跑。
+
+**退出**：固定声明「管理侧通过，真实执行核心接入待验收」；停在 PM7 验收点，不进入 PM8。
