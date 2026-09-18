@@ -57,7 +57,10 @@ test('runner drives the product through the renderer and labels the executor bou
   assert.match(source, /管理侧通过，真实执行核心接入待验收/)
   assert.match(source, /01-overview\/001/)
   assert.match(source, /04-statistics\/001/)
-  assert.match(source, /03-runs\/002/)
+  // 证据引用必须指向真实对应的画板：任务详情是 005 任务日志，下钻是 007 冻结下钻。
+  assert.match(source, /03-runs\/005-task-log-510347\.png/)
+  assert.match(source, /04-statistics\/007-frozen-drilldown-00b0db\.png/)
+  assert.ok(source.includes('runs\\/frozen'), '下钻证据必须断言冻结结果集的运行记录地址')
 })
 
 test('fault injection only exists in the QA sidecar and never in production modules', async () => {

@@ -701,10 +701,7 @@ print(created.workflow_id); factory.dispose()`
     assert.ok(noteText.includes('尚未采集'), '统计页必须标注尚未采集')
     assert.ok(/成功率 = 成功/.test(noteText), '统计页必须有口径脚注')
     await capture('04-statistics-001', '04-statistics/001')
-    if (statistics.failuresByAutomation.length > 0) {
-      assert.equal(statistics.failuresByAutomation.reduce((sum, item) => sum + item.count, 0), statistics.sample.failed, '失败去向计数必须与失败任务数一致')
-      await capture('04-statistics-006-failure-destinations', undefined)
-    }
+    if (statistics.failuresByAutomation.length > 0) assert.equal(statistics.failuresByAutomation.reduce((sum, item) => sum + item.count, 0), statistics.sample.failed, '失败去向计数必须与失败任务数一致')
 
     const drilled = await renderer.evaluate(`(()=>{const button=[...document.querySelectorAll('[aria-label="统计指标"] button')].find(item=>item.textContent.trim()==='${statistics.sample.failed}');if(!button)return false;button.scrollIntoView({block:'center'});button.click();return true})()`)
     assert.ok(drilled, '统计的失败任务数必须是可点击的下钻入口')
@@ -713,6 +710,18 @@ print(created.workflow_id); factory.dispose()`
     assert.equal(drillTasks.total, statistics.sample.failed, '下钻集合必须与统计样本内的失败数一致')
     const drillText = await renderer.evaluate(`document.querySelector('[aria-label="失败任务记录"]')?.innerText ?? ''`)
     assert.ok(drillText.includes(String(drillTasks.total)), '下钻面板必须显示冻结集合条数')
+    // 原型 007 的下钻是运行记录下的独立页面：地址、面包屑、子页签与页头必须一起换。
+    const drillHash = await renderer.evaluate('window.location.hash')
+    assert.ok(/\/runs\/frozen\//.test(drillHash), `下钻必须是独立的运行记录地址，实际 ${drillHash}`)
+    assert.ok(drillText.includes('任务记录'), '下钻页必须有唯一主标题「任务记录」')
+    assert.ok(drillText.includes('统计快照'), '下钻页必须有统计快照提示条')
+    assert.ok(drillText.includes('批次') && drillText.includes('等待人工'), '下钻页必须保留批次/任务/等待人工子页签')
+    const drillBreadcrumb = await renderer.evaluate(`document.querySelector('[aria-label="当前位置"]')?.innerText ?? ''`)
+    assert.ok(drillBreadcrumb.includes('运行记录') && drillBreadcrumb.includes('任务'), `下钻面包屑必须显示 运行记录 / 任务，实际 ${drillBreadcrumb}`)
+    const drillTab = await renderer.evaluate(`document.querySelector('[aria-label="项目功能"] [aria-current="page"]')?.textContent ?? ''`)
+    assert.equal(drillTab, '运行记录', '下钻页必须高亮运行记录页签')
+    const drillSubtabs = await renderer.evaluate(`[...document.querySelectorAll('[role="tab"]')].map(item=>item.textContent).join('|')`)
+    assert.equal(drillSubtabs, '批次|任务|等待人工', `下钻页子页签必须是批次/任务/等待人工，实际 ${drillSubtabs}`)
     await capture('04-statistics-002-drill-down', '04-statistics/007-frozen-drilldown-00b0db.png')
     await click('返回统计')
     await waitForSelector(renderer, '[aria-label="统计指标"]', '统计指标')
@@ -722,7 +731,7 @@ print(created.workflow_id); factory.dispose()`
 
     // ── E2E-4 任务证据 + E2E-3 失败后续 ───────────────────────────────────
     await openFailedTaskDetail()
-    await capture('03-runs-002-task-detail', '03-runs/002')
+    await capture('03-runs-002-task-detail', '03-runs/005-task-log-510347.png')
     await click('输入与输出', '[role=tab]')
     await visible('原始数据输入')
     await visible('项目数据操作')
@@ -746,7 +755,7 @@ print(created.workflow_id); factory.dispose()`
     await waitFor(renderer, `document.body.innerText.includes('从原输入组重新运行？')&&!document.body.innerText.includes('结果尚未确认')`, '冲突提示', 30_000)
     const conflictText = await renderer.evaluate(`document.querySelector('[role="dialog"]')?.innerText ?? document.body.innerText`)
     assert.ok(/刷新|重试|已更新/.test(conflictText), `修订冲突必须提示刷新重试，实际 ${JSON.stringify(conflictText.slice(0, 200))}`)
-    await capture('03-runs-005-followup-conflict', '03-runs/004')
+    await capture('03-runs-005-followup-conflict', undefined)
     checkpoint('E2E-5 修订冲突：源任务状态修订在提交前被推进，后续批次被真实拒绝且表单保留。')
     await pressKey('Escape')
     await wait(300)
@@ -763,7 +772,7 @@ print(created.workflow_id); factory.dispose()`
     await visible('从原输入组重新运行？')
     await click('确认重新运行')
     await visible('结果尚未确认', 30_000)
-    await capture('03-runs-004-followup-uncertain', '03-runs/004')
+    await capture('03-runs-004-followup-uncertain', undefined)
     await click('核对原操作')
     await visible('后续批次已创建', 30_000)
     const followupAfter = await api(runtime, `/projects/${project.projectId}/batches?pageSize=50`)

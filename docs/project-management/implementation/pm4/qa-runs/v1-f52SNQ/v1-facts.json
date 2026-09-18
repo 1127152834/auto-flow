@@ -1,0 +1,305 @@
+{
+  "projectId": "7551b406-d09a-422d-aa35-9678abacd35e",
+  "batchId": "06ba1ae2-6f96-4e6c-8eac-ddb948b8835d",
+  "taskId": "dee4d604-66bb-4cd5-bfb7-9eb60c47000e",
+  "personBefore": {
+    "ref": {
+      "projectId": "7551b406-d09a-422d-aa35-9678abacd35e",
+      "tableId": "92eeb677-bd52-499e-bf73-c748b6081ebd",
+      "datasetGeneration": "38e23be2-a9b7-4d63-a348-cefad69648ab",
+      "recordKey": {
+        "type": "uuid",
+        "value": "2d91ade5-4bca-4cff-88be-be5866686943"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "081ae5ea-021e-499b-959d-5d8f4e6a33d1",
+        "value": "张三",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": null,
+    "contentRevision": 1,
+    "statusRevision": 1,
+    "linkRevision": 1
+  },
+  "personAfter": {
+    "ref": {
+      "projectId": "7551b406-d09a-422d-aa35-9678abacd35e",
+      "tableId": "92eeb677-bd52-499e-bf73-c748b6081ebd",
+      "datasetGeneration": "38e23be2-a9b7-4d63-a348-cefad69648ab",
+      "recordKey": {
+        "type": "uuid",
+        "value": "2d91ade5-4bca-4cff-88be-be5866686943"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "081ae5ea-021e-499b-959d-5d8f4e6a33d1",
+        "value": "张三",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": null,
+    "contentRevision": 1,
+    "statusRevision": 1,
+    "linkRevision": 1
+  },
+  "emailBefore": {
+    "ref": {
+      "projectId": "7551b406-d09a-422d-aa35-9678abacd35e",
+      "tableId": "774b410a-b02c-48ce-940f-e91fb9ab8818",
+      "datasetGeneration": "d910eb6a-ff73-43b9-94b1-7c65100741c3",
+      "recordKey": {
+        "type": "uuid",
+        "value": "5ad93899-a70c-447a-8b07-f76d9ae31aea"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "9aee37a0-27ae-4af4-b874-86849645c20e",
+        "value": "zhangsan@example.test",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": "46be2975-1bd2-484a-b1ae-26340fc16239",
+    "contentRevision": 1,
+    "statusRevision": 2,
+    "linkRevision": 1
+  },
+  "emailAfter": {
+    "ref": {
+      "projectId": "7551b406-d09a-422d-aa35-9678abacd35e",
+      "tableId": "774b410a-b02c-48ce-940f-e91fb9ab8818",
+      "datasetGeneration": "d910eb6a-ff73-43b9-94b1-7c65100741c3",
+      "recordKey": {
+        "type": "uuid",
+        "value": "5ad93899-a70c-447a-8b07-f76d9ae31aea"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "9aee37a0-27ae-4af4-b874-86849645c20e",
+        "value": "zhangsan@example.test",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "statusId": "2fb47e51-f866-4928-a360-6e17d7c65031",
+    "contentRevision": 1,
+    "statusRevision": 4,
+    "linkRevision": 1
+  },
+  "accountCount": 1,
+  "taskInputAliases": [
+    "人员输入",
+    "邮箱输入"
+  ],
+  "dataWrites": [
+    {
+      "kind": "read",
+      "tableDisplay": "人员",
+      "recordDisplay": "uuid · 2d91ade5-4bca-4cff-88be-be5866686943",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · 2d91ade5-4bca-4cff-88be-be5866686943",
+      "beforeSummary": null,
+      "afterSummary": null,
+      "detail": "读取用途：workflow"
+    },
+    {
+      "kind": "statusChange",
+      "tableDisplay": "邮箱",
+      "recordDisplay": "uuid · 5ad93899-a70c-447a-8b07-f76d9ae31aea",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": "待使用",
+      "nextStatus": null,
+      "referenceDisplay": null,
+      "beforeSummary": null,
+      "afterSummary": null,
+      "detail": null
+    },
+    {
+      "kind": "statusChange",
+      "tableDisplay": "邮箱",
+      "recordDisplay": "uuid · 5ad93899-a70c-447a-8b07-f76d9ae31aea",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": "已使用",
+      "referenceDisplay": null,
+      "beforeSummary": null,
+      "afterSummary": null,
+      "detail": null
+    },
+    {
+      "kind": "recordCreated",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "beforeSummary": null,
+      "afterSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-FAKE-dee4d604",
+      "detail": null
+    },
+    {
+      "kind": "query",
+      "tableDisplay": "账号",
+      "recordDisplay": "命中 1 条",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": null,
+      "beforeSummary": null,
+      "afterSummary": null,
+      "detail": "读取用途：workflow"
+    },
+    {
+      "kind": "read",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "beforeSummary": null,
+      "afterSummary": null,
+      "detail": "读取用途：workflow"
+    },
+    {
+      "kind": "read",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "beforeSummary": null,
+      "afterSummary": null,
+      "detail": "读取用途：workflow"
+    },
+    {
+      "kind": "recordUpdated",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · d20f3029-65e4-48a2-8a49-041c62ad4175",
+      "beforeSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-FAKE-dee4d604",
+      "afterSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-B-UPDATED",
+      "detail": null
+    },
+    {
+      "kind": "recordCreated",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · b7640e47-383a-4a9d-8f04-4aa5767bc100",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · b7640e47-383a-4a9d-8f04-4aa5767bc100",
+      "beforeSummary": null,
+      "afterSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-B-DISPOSABLE",
+      "detail": null
+    },
+    {
+      "kind": "read",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · b7640e47-383a-4a9d-8f04-4aa5767bc100",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · b7640e47-383a-4a9d-8f04-4aa5767bc100",
+      "beforeSummary": null,
+      "afterSummary": null,
+      "detail": "读取用途：workflow"
+    },
+    {
+      "kind": "recordDeleted",
+      "tableDisplay": "账号",
+      "recordDisplay": "uuid · b7640e47-383a-4a9d-8f04-4aa5767bc100",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "uuid · b7640e47-383a-4a9d-8f04-4aa5767bc100",
+      "beforeSummary": "人员：张三；邮箱：zhangsan@example.test；网页结果：PM4-B-DISPOSABLE",
+      "afterSummary": null,
+      "detail": null
+    },
+    {
+      "kind": "fieldAdded",
+      "tableDisplay": "账号",
+      "recordDisplay": "QA 备注",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "字段 QA 备注",
+      "beforeSummary": null,
+      "afterSummary": "string · 可选",
+      "detail": null
+    },
+    {
+      "kind": "fieldEnsured",
+      "tableDisplay": "账号",
+      "recordDisplay": "QA 备注",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "字段 QA 备注",
+      "beforeSummary": null,
+      "afterSummary": "string · 可选",
+      "detail": "字段已存在，无需变更"
+    },
+    {
+      "kind": "fieldModified",
+      "tableDisplay": "账号",
+      "recordDisplay": "执行备注",
+      "outcome": "succeeded",
+      "nodeId": null,
+      "nodeName": null,
+      "previousStatus": null,
+      "nextStatus": null,
+      "referenceDisplay": "字段 执行备注",
+      "beforeSummary": "string · 可选",
+      "afterSummary": "string · 可选",
+      "detail": null
+    }
+  ],
+  "executionBoundary": {
+    "executor": "fake",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  }
+}
