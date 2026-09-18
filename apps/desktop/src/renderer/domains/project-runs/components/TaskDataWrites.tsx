@@ -13,6 +13,7 @@ type TaskDataWriteBase = {
   beforeSummary?: string | null
   afterSummary?: string | null
   detail?: string | null
+  nodeName?: string | null
 }
 
 export type TaskDataWrite = TaskDataWriteBase & {
@@ -72,7 +73,7 @@ export function TaskDataWrites({ writes, loading = false, error }: TaskDataWrite
     {error ? <p role="alert" className="m-0 break-words text-sm text-danger">项目数据操作读取失败：{error}</p> : null}
     <TableScroll label="项目数据操作表格" className="rounded-control border border-line">
       <Table aria-label="项目数据操作结果" aria-busy={loading} className="min-w-[36rem] table-fixed text-sm">
-        <TableHeader><TableRow><TableHead className="w-24">操作</TableHead><TableHead className="w-[24%]">数据表与对象</TableHead><TableHead>操作事实</TableHead><TableHead className="w-[22%]">稳定引用</TableHead><TableHead className="w-24">结果</TableHead></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead className="w-24">操作</TableHead><TableHead className="w-[24%]">数据表与对象</TableHead><TableHead>操作事实</TableHead><TableHead className="w-[20%]">来源节点</TableHead><TableHead className="w-[18%]">稳定引用</TableHead><TableHead className="w-24">结果</TableHead></TableRow></TableHeader>
         <TableBody>
           {writes?.map((write, index) => {
             const result = outcomes[write.outcome]
@@ -84,6 +85,7 @@ export function TaskDataWrites({ writes, loading = false, error }: TaskDataWrite
                 <span className="block whitespace-pre-wrap break-words">{compactRecordReference(fact)}</span>
                 {write.detail && write.detail !== fact ? <span className="mt-1 block whitespace-pre-wrap break-words text-muted">{compactRecordReference(write.detail)}</span> : null}
               </TableCell>
+              <TableCell><span className="block whitespace-pre-wrap break-words">{write.nodeName || '未归属节点'}</span>{write.nodeName ? null : <span className="mt-1 block text-xs text-muted">运行事件未记录所属节点</span>}</TableCell>
               <TableCell><span className="block whitespace-pre-wrap break-words">{write.referenceDisplay ? compactRecordReference(write.referenceDisplay) : '—'}</span></TableCell>
               <TableCell><TableStatus tone={result.tone}>{result.label}</TableStatus></TableCell>
             </TableRow>

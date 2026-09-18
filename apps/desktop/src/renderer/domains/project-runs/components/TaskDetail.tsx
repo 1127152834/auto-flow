@@ -4,13 +4,13 @@ import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/tabs'
 import { TableStatus } from '../../../shared/components/ui/table-status'
-import { TaskEvidence } from './TaskEvidence'
+import { TaskEvidence, type OpenRecordTarget } from './TaskEvidence'
 import { TaskLog } from './TaskLog'
 
 type Schema = components['schemas']
 type Detail = Schema['TaskDetail']; type Attempts = Schema['NodeAttemptPage']; type Logs = Schema['RunLogPage']; type Outputs = Schema['RunOutputPage']; type Artifacts = Schema['RunArtifactPage']; type Artifact = Schema['RunArtifactView']
 export type TaskDetailTab = 'logs' | 'io' | 'evidence'
-export type TaskDetailProps = { detail: Detail; attempts?: Attempts; logs?: Logs; outputs?: Outputs; artifacts?: Artifacts; inlineScreenshotUrl?: string; inlineScreenshotLabel?: string; followUp?: ReactNode; selectedTab: TaskDetailTab; selectedNode: string | null; level: string | null; query: string; loading?: boolean; error?: string; onTabChange(tab: TaskDetailTab): void; onNodeChange(value: string | null): void; onLevelChange(value: string | null): void; onQueryChange(value: string): void; onOpenArtifact?(artifact: Artifact): void; onLocateLog?(nodeId: string | null): void; onLoadMoreArtifacts?(): void; onLoadMoreLogs(): void; onLoadMoreAttempts(): void; onLoadMoreOutputs(): void; onRetry(): void; onBack(): void }
+export type TaskDetailProps = { detail: Detail; attempts?: Attempts; logs?: Logs; outputs?: Outputs; artifacts?: Artifacts; inlineScreenshotUrl?: string; inlineScreenshotLabel?: string; followUp?: ReactNode; selectedTab: TaskDetailTab; selectedNode: string | null; level: string | null; query: string; loading?: boolean; error?: string; onTabChange(tab: TaskDetailTab): void; onNodeChange(value: string | null): void; onLevelChange(value: string | null): void; onQueryChange(value: string): void; onOpenArtifact?(artifact: Artifact): void; onOpenRecord?(target: OpenRecordTarget): void; onLocateLog?(nodeId: string | null): void; onLoadMoreArtifacts?(): void; onLoadMoreLogs(): void; onLoadMoreAttempts(): void; onLoadMoreOutputs(): void; onRetry(): void; onBack(): void }
 
 const statuses: Record<string, string> = { queued: '排队中', running: '运行中', waiting_manual: '等待人工', resume_queued: '等待恢复', finishing: '正在结束', stopping: '正在停止', reconciling: '正在核对', succeeded: '成功', failed: '失败', cancelled: '已取消', timed_out: '已超时', interrupted: '已中断' }
 const time = (value: string | null | undefined) => value ? new Date(value).toLocaleString('zh-CN', { hour12: false }) : '—'
@@ -32,7 +32,7 @@ function inputIdentifier(inputs: Record<string, unknown>[]) {
   return inputs.length === 1 ? '项目数据输入' : `${inputs.length} 项项目数据输入`
 }
 
-export function TaskDetail({ detail, attempts, logs, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel, followUp, selectedTab, selectedNode, level, query, loading, error, onTabChange, onNodeChange, onLevelChange, onQueryChange, onOpenArtifact, onLocateLog, onLoadMoreArtifacts, onLoadMoreLogs, onLoadMoreAttempts, onLoadMoreOutputs, onRetry, onBack }: TaskDetailProps) {
+export function TaskDetail({ detail, attempts, logs, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel, followUp, selectedTab, selectedNode, level, query, loading, error, onTabChange, onNodeChange, onLevelChange, onQueryChange, onOpenArtifact, onOpenRecord, onLocateLog, onLoadMoreArtifacts, onLoadMoreLogs, onLoadMoreAttempts, onLoadMoreOutputs, onRetry, onBack }: TaskDetailProps) {
   const task = detail.task, startedAt = detail.run.startedAt, endedAt = detail.run.finishedAt ?? task.completedAt
   const tone = ['failed', 'timed_out', 'interrupted'].includes(task.status) ? 'danger' : task.status === 'succeeded' ? 'success' : ['waiting_manual', 'stopping'].includes(task.status) ? 'warning' : 'neutral'
   return <Tabs className="min-w-0" value={selectedTab} onValueChange={value => onTabChange(value as TaskDetailTab)}>
@@ -47,7 +47,7 @@ export function TaskDetail({ detail, attempts, logs, outputs, artifacts, inlineS
         <TabsList className="w-full px-4"><TabsTrigger value="logs">日志</TabsTrigger><TabsTrigger value="io">输入与输出</TabsTrigger><TabsTrigger value="evidence">异常与证据</TabsTrigger></TabsList>
       </header>
       <TabsContent value="logs"><TaskLog attempts={attempts} logs={logs} nodeNames={detail.nodeNames} selectedNode={selectedNode} level={level} query={query} loading={loading} error={error} onNodeChange={onNodeChange} onLevelChange={onLevelChange} onQueryChange={onQueryChange} onLoadMore={onLoadMoreLogs} onLoadMoreAttempts={onLoadMoreAttempts} onRetry={onRetry}/></TabsContent>
-      <TabsContent value="io"><TaskEvidence mode="io" detail={detail} outputs={outputs} artifacts={artifacts} loading={loading} error={error} onOpenArtifact={onOpenArtifact} onLoadMoreArtifacts={onLoadMoreArtifacts} onLoadMoreAttempts={onLoadMoreAttempts} onLoadMoreOutputs={onLoadMoreOutputs}/></TabsContent>
+      <TabsContent value="io"><TaskEvidence mode="io" detail={detail} outputs={outputs} artifacts={artifacts} loading={loading} error={error} onOpenArtifact={onOpenArtifact} onOpenRecord={onOpenRecord} onLoadMoreArtifacts={onLoadMoreArtifacts} onLoadMoreAttempts={onLoadMoreAttempts} onLoadMoreOutputs={onLoadMoreOutputs}/></TabsContent>
       <TabsContent value="evidence"><TaskEvidence mode="evidence" detail={detail} attempts={attempts} artifacts={artifacts} inlineScreenshotUrl={inlineScreenshotUrl} inlineScreenshotLabel={inlineScreenshotLabel} loading={loading} error={error} onOpenArtifact={onOpenArtifact} onLocateLog={onLocateLog} onLoadMoreArtifacts={onLoadMoreArtifacts} onLoadMoreAttempts={onLoadMoreAttempts} onLoadMoreOutputs={onLoadMoreOutputs}/></TabsContent>
     </section>
   </Tabs>

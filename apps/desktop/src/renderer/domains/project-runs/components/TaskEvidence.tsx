@@ -2,6 +2,7 @@ import { WarningCircle } from '@phosphor-icons/react'
 import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
+import { TableStatus } from '../../../shared/components/ui/table-status'
 import { presentRunFailure } from '../presentation'
 import { DataInputPreview, type DataInputPreviewItem } from './DataInputPreview'
 import { TaskDataWrites, type TaskDataWrite } from './TaskDataWrites'
@@ -36,6 +37,28 @@ const errorLabels: Record<string, string> = {
 const errorLabel = (value: unknown) => {
   const code = typeof record(value).code === 'string' ? String(record(value).code) : ''
   return errorLabels[code] ?? '运行失败'
+}
+
+/** Record identity of a frozen snapshot entry, used to pair it with its current value. */
+const refParts = (value: unknown) => {
+  const ref = record(value), key = record(ref.recordKey)
+  const keyType = typeof key.type === 'string' ? key.type : ''
+  const keyValue = typeof key.value === 'string' || typeof key.value === 'number' ? String(key.value) : ''
+  return {
+    identity: keyType && keyValue ? `${keyType}\u0000${keyValue}` : '',
+    tableId: typeof ref.tableId === 'string' ? ref.tableId : '',
+    datasetGeneration: typeof ref.datasetGeneration === 'string' ? ref.datasetGeneration : '',
+    keyType,
+    keyValue,
+  }
+}
+
+const frozenValueText = (values: unknown) => {
+  const parts = (Array.isArray(values) ? values : []).flatMap(value => {
+    const field = record(value)
+    return typeof field.fieldName === 'string' ? [`${field.fieldName}：${show(field.value)}`] : []
+  })
+  return parts.length ? parts.join('；') : '—'
 }
 
 function projectInputs(detail: Detail): DataInputPreviewItem[] {
@@ -81,6 +104,7 @@ function projectWrites(detail: Detail): TaskDataWrite[] {
       beforeSummary: write.beforeSummary,
       afterSummary: write.afterSummary,
       detail: write.detail,
+      nodeName: write.nodeName,
     }
     if (write.kind === 'statusChange') result.push({ ...base, kind: 'statusChange', previousStatus: write.previousStatus ?? null, nextStatus: write.nextStatus ?? null })
     else result.push({ ...base, kind: write.kind })
@@ -99,10 +123,25 @@ type TaskEvidenceProps = {
   loading?: boolean
   error?: string
   onOpenArtifact?(artifact: Artifact): void
+  onOpenRecord?(target: OpenRecordTarget): void
   onLocateLog?(nodeId: string | null): void
   onLoadMoreArtifacts?(): void
   onLoadMoreAttempts(): void
   onLoadMoreOutputs(): void
+}
+
+export type OpenRecordTarget = { tableId: string; datasetGeneration: string; keyType: string; keyValue: string }
+
+/** Consecutive attempts of one node become a single visit with an independent attempt count. */
+function visits(items: Attempts['items']) {
+  const groups: { key: string; items: Attempts['items'] }[] = []
+  for (const item of items) {
+    const key = item.nodeId ?? item.nodeName ?? ''
+    const last = groups.at(-1)
+    if (last && last.key === key) last.items.push(item)
+    else groups.push({ key, items: [item] })
+  }
+  return groups
 }
 
 function OutputTable({ items, label }: { items: Outputs['items']; label: string }) {
@@ -114,7 +153,7 @@ function OutputTable({ items, label }: { items: Outputs['items']; label: string 
   </TableScroll>
 }
 
-export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel = '失败时页面截图', loading, error, onOpenArtifact, onLocateLog, onLoadMoreArtifacts, onLoadMoreAttempts, onLoadMoreOutputs }: TaskEvidenceProps) {
+export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel = '失败时页面截图', loading, error, onOpenArtifact, onOpenRecord, onLocateLog, onLoadMoreArtifacts, onLoadMoreAttempts, onLoadMoreOutputs }: TaskEvidenceProps) {
   const names = new Map((detail.parameterDefinitions ?? []).map(item => [item.parameterId, item.name]))
   const failed = attempts?.items.filter(item => item.status === 'failed') ?? [], primary = failed.at(-1)
   const summaryError = primary?.error ?? detail.run.error
@@ -153,7 +192,7 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
       </section>
       <div className="grid min-w-0 gap-4">
         <section className="min-w-0 rounded-card border border-line bg-surface p-5"><h3 className="mt-0">错误记录</h3>{failed.length ? <TableScroll label="错误记录表" className="rounded-control border border-line"><Table data-variant="facts"><TableBody>{failed.map(item => <TableRow key={item.nodeVisitId + '-' + item.attempt}><TableHead scope="row" className="w-28">{nodeName(detail, item.nodeId, item.nodeName)}</TableHead><TableCell><span className="block">任务 {taskNumber(detail.task.taskOrdinal)} · 尝试 {item.attempt}</span><span className="text-danger">{errorLabel(item.error)}</span></TableCell></TableRow>)}</TableBody></Table></TableScroll> : <p className="text-muted">{attempts ? '没有节点错误记录。' : '错误记录尚未读取。'}</p>}</section>
-        <section className="min-w-0 rounded-card border border-line bg-surface p-5"><h3 className="mt-0">历史尝试</h3>{attempts?.items.length ? <TableScroll label="节点历史尝试" className="rounded-control border border-line"><Table><TableHeader><TableRow><TableHead>节点 / 尝试</TableHead><TableHead>开始 / 结束</TableHead><TableHead>结果</TableHead></TableRow></TableHeader><TableBody>{attempts.items.map(item => <TableRow key={item.nodeVisitId + '-' + item.attempt}><TableCell><strong className="block max-w-40 truncate">{nodeName(detail, item.nodeId, item.nodeName)}</strong><span>尝试 {item.attempt}</span></TableCell><TableCell>{time(item.startedAt)}<br/>{time(item.completedAt)}</TableCell><TableCell>{statuses[item.status] ?? item.status}</TableCell></TableRow>)}</TableBody></Table></TableScroll> : !loading && !error ? <p className="text-muted">{attempts ? '暂无节点尝试' : '尚未读取节点尝试'}</p> : null}{attempts && attempts.items.length < attempts.total ? <Button className="mt-3" disabled={loading} onClick={onLoadMoreAttempts}>加载更多尝试</Button> : null}</section>
+        <section className="min-w-0 rounded-card border border-line bg-surface p-5"><h3 className="mt-0">历史尝试</h3>{attempts?.items.length ? <TableScroll label="节点历史尝试" className="rounded-control border border-line"><Table><TableHeader><TableRow><TableHead>节点 / 尝试</TableHead><TableHead>开始 / 结束</TableHead><TableHead>结果</TableHead></TableRow></TableHeader><TableBody>{visits(attempts.items).map(visit => <TableRow key={visit.key + '-' + visit.items[0].nodeVisitId}><TableCell><strong className="block max-w-40 truncate">{nodeName(detail, visit.items[0].nodeId, visit.items[0].nodeName)}</strong><span>访问一次 · 尝试 {visit.items.length} 次</span></TableCell><TableCell><span className="grid gap-1">{visit.items.map(item => <span key={item.nodeVisitId + '-' + item.attempt}>尝试 {item.attempt}：{time(item.startedAt)} – {time(item.completedAt)}</span>)}</span></TableCell><TableCell><span className="grid gap-1">{visit.items.map(item => <span key={item.nodeVisitId + '-' + item.attempt}>{statuses[item.status] ?? item.status}</span>)}</span></TableCell></TableRow>)}</TableBody></Table></TableScroll> : !loading && !error ? <p className="text-muted">{attempts ? '暂无节点尝试' : '尚未读取节点尝试'}</p> : null}{attempts && attempts.items.length < attempts.total ? <Button className="mt-3" disabled={loading} onClick={onLoadMoreAttempts}>加载更多尝试</Button> : null}</section>
       </div>
     </> : <>
       <DataInputPreview
@@ -163,6 +202,37 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
         inputs={projectInputs(detail)}
         loading={loading && !detail.inputSnapshot.inputs.length}
       />
+      {detail.currentInputs?.length ? <section aria-label="当前值对照" className="min-w-0 rounded-card border border-line bg-surface p-5">
+        <h3 className="mt-0">当前值对照</h3>
+        <p className="mb-3 mt-1 text-sm text-muted">当前业务记录可能已变更；快照保持不变，下表是同一批记录现在的值。</p>
+        <TableScroll label="当前值对照表格" className="rounded-control border border-line">
+          <Table data-variant="facts" className="min-w-[36rem] table-fixed text-sm">
+            <TableHeader><TableRow><TableHead className="w-[18%]">输入</TableHead><TableHead>快照值</TableHead><TableHead>当前值</TableHead><TableHead className="w-[22%]">状态</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {detail.currentInputs.map((current, index) => {
+                const live = refParts(current.recordRef)
+                const frozen = (detail.inputSnapshot.inputs as unknown[]).find(input => {
+                  const item = record(input)
+                  return current.inputId && typeof item.inputId === 'string' ? item.inputId === current.inputId : refParts(item.recordRef).identity === live.identity
+                })
+                const frozenItem = record(frozen)
+                const alias = typeof frozenItem.alias === 'string' && frozenItem.alias.trim() ? frozenItem.alias : `数据输入 ${index + 1}`
+                const changed = current.changedFieldIds?.length ?? 0
+                const openable = Boolean(onOpenRecord && live.tableId && live.datasetGeneration && live.keyType && live.keyValue)
+                return <TableRow key={current.inputId ?? live.identity ?? index}>
+                  <TableCell><span className="block break-words">{alias}</span></TableCell>
+                  <TableCell><span className="block whitespace-pre-wrap break-words">{frozenValueText(frozenItem.values)}</span></TableCell>
+                  <TableCell><span className="block whitespace-pre-wrap break-words">{current.exists ? frozenValueText(current.values) : '记录已不存在'}</span></TableCell>
+                  <TableCell>{current.exists ? <>
+                    <TableStatus tone={changed ? 'warning' : 'success'}>{changed ? `已变更 ${changed} 个字段` : '与快照一致'}</TableStatus>
+                    {openable ? <Button variant="ghost" size="sm" className="mt-1 px-0" aria-label={`查看当前记录：${alias}`} onClick={() => onOpenRecord!({ tableId: live.tableId, datasetGeneration: live.datasetGeneration, keyType: live.keyType, keyValue: live.keyValue })}>查看当前记录 →</Button> : null}
+                  </> : <TableStatus tone="warning">记录已不存在</TableStatus>}</TableCell>
+                </TableRow>
+              })}
+            </TableBody>
+          </Table>
+        </TableScroll>
+      </section> : null}
       <TaskDataWrites writes={projectWrites(detail)} loading={loading}/>
       <section className="min-w-0 rounded-card border border-line bg-surface p-5">
         <h3 className="mt-0">批次固定参数</h3>

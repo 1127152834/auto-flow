@@ -7,12 +7,14 @@ afterEach(cleanup)
 
 it('shows an explicit email status change and a newly created account stable reference', () => {
   render(<TaskDataWrites writes={[
-    { kind: 'statusChange', tableDisplay: '邮箱池', recordDisplay: 'zhangsan@example.com', previousStatus: '待使用', nextStatus: '已使用', outcome: 'succeeded' },
+    { kind: 'statusChange', tableDisplay: '邮箱池', recordDisplay: 'zhangsan@example.com', previousStatus: '待使用', nextStatus: '已使用', outcome: 'succeeded', nodeName: '更新邮箱状态' },
     { kind: 'recordCreated', tableDisplay: '账号表', recordDisplay: '张三的账号', referenceDisplay: '账号记录 #1008', outcome: 'succeeded' },
   ]} />)
 
   const table = screen.getByRole('table', { name: '项目数据操作结果' })
-  expect(within(table).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['操作', '数据表与对象', '操作事实', '稳定引用', '结果'])
+  expect(within(table).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['操作', '数据表与对象', '操作事实', '来源节点', '稳定引用', '结果'])
+  expect(within(table).getByText('更新邮箱状态')).toBeVisible()
+  expect(within(table).getByText('未归属节点')).toBeVisible()
   expect(within(table).getByText('待使用 → 已使用')).toBeVisible()
   expect(within(table).getByText('账号记录 #1008')).toBeVisible()
   expect(within(table).getAllByText('已确认')).toHaveLength(2)

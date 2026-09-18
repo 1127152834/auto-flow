@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { components } from '../../../shared/api/generated'
@@ -127,6 +127,55 @@ it('shows an inline failure screenshot and keeps the artifact action for enlarge
   expect(screen.getByRole('img', { name: '点击元素失败时页面' })).toHaveAttribute('src', 'blob:failure')
   await userEvent.click(screen.getByRole('button', { name: '放大失败截图：点击元素失败时页面' }))
   expect(onOpenArtifact).toHaveBeenCalledWith(artifact)
+})
+
+it('shows each frozen input next to its current record value and drops the link once the record is gone', async () => {
+  const onOpenRecord = vi.fn()
+  const mailRef = { tableId: 'table-mail', datasetGeneration: 'gen-1', recordKey: { type: 'text', value: '001' } }
+  const accountRef = { tableId: 'table-account', datasetGeneration: 'gen-1', recordKey: { type: 'integer', value: '7' } }
+  const dataDetail: Schema['TaskDetail'] = {
+    ...detail,
+    inputSnapshot: { ...detail.inputSnapshot, inputs: [
+      { inputId: 'input-1', alias: '邮箱', tableDisplay: '邮箱表', recordRef: mailRef, values: [{ fieldId: 'f-addr', fieldName: '地址', value: 'old@example.test' }] },
+      { inputId: 'input-2', alias: '账号', tableDisplay: '账号表', recordRef: accountRef, values: [{ fieldId: 'f-name', fieldName: '名称', value: '已删除账号' }] },
+    ] },
+    currentInputs: [
+      { inputId: 'input-1', recordRef: mailRef, exists: true, values: [{ fieldId: 'f-addr', fieldName: '地址', value: 'new@example.test' }], changedFieldIds: ['f-addr'] },
+      { inputId: 'input-2', recordRef: accountRef, exists: false, values: [], changedFieldIds: [] },
+    ],
+  }
+  render(<TaskEvidence {...base} detail={dataDetail} mode="io" outputs={outputPage([])} artifacts={artifactPage([])} onOpenRecord={onOpenRecord}/>)
+
+  const compare = screen.getByRole('region', { name: '当前值对照' })
+  expect(within(compare).getByRole('heading', { name: '当前值对照' })).toBeVisible()
+  expect(within(compare).getByText('地址：old@example.test')).toBeVisible()
+  expect(within(compare).getByText('地址：new@example.test')).toBeVisible()
+  expect(within(compare).getByText('已变更 1 个字段')).toBeVisible()
+  expect(within(compare).getAllByText('记录已不存在')).toHaveLength(2)
+  expect(within(compare).getAllByRole('button', { name: /查看当前记录/ })).toHaveLength(1)
+  await userEvent.click(within(compare).getByRole('button', { name: '查看当前记录：邮箱' }))
+  expect(onOpenRecord).toHaveBeenCalledWith({ tableId: 'table-mail', datasetGeneration: 'gen-1', keyType: 'text', keyValue: '001' })
+})
+
+it('hides the current-value section when the task has no record inputs', () => {
+  render(<TaskEvidence {...base} mode="io" outputs={outputPage([])} artifacts={artifactPage([])} onOpenRecord={vi.fn()}/>)
+
+  expect(screen.queryByRole('heading', { name: '当前值对照' })).not.toBeInTheDocument()
+})
+
+it('groups repeated attempts of one node into a single visit with an independent count', () => {
+  const attempt = (index: number) => ({
+    nodeVisitId: `visit-${index}`, nodeId: 'node-03', nodeName: '旧节点名', attempt: index,
+    status: 'failed' as const, startedAt: '2026-09-15T01:02:0' + index + 'Z', completedAt: '2026-09-15T01:02:1' + index + 'Z', error: { code: 'E_PAGE_TIMEOUT' },
+  }) satisfies Schema['NodeAttemptView']
+  const other = { ...attempt(4), nodeVisitId: 'visit-4', nodeId: 'node-02', nodeName: '旧节点名', attempt: 1 }
+  render(<TaskEvidence {...base} attempts={{ items: [attempt(1), attempt(2), attempt(3), other], page: 1, pageSize: 100, total: 4, sort: 'createdAt' }}/>)
+
+  const history = screen.getByLabelText('节点历史尝试')
+  expect(within(history).getByText('访问一次 · 尝试 3 次')).toBeVisible()
+  expect(within(history).getAllByText(/^尝试 \d：/)).toHaveLength(4)
+  expect(within(history).getAllByText('旧节点名')).toHaveLength(1)
+  expect(within(history).getAllByText('打开页面')).toHaveLength(1)
 })
 
 it('presents a safe specific failure summary and locates its log', async () => {
