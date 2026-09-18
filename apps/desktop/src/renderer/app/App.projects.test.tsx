@@ -16,7 +16,7 @@ const project: ProjectView = {
   managementRevision: 1, lifecycleState: 'active', createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z', lastOpenedAt: null,
   defaultResources: { profileId: null, proxy: { mode: 'sourceDefault' }, modelProviderId: null },
 }
-const availability = { automations: 'available', data: 'available', runs: 'available', environments: 'available', statistics: 'notImplemented', sync: 'available' } as const
+const availability = { automations: 'available', data: 'available', runs: 'available', environments: 'available', statistics: 'available', sync: 'available' } as const
 const requests = vi.fn(async (path: string) => {
   if (path.includes('/tables?')) return { items: [], page: 1, pageSize: 50, total: 0, sort: '-updatedAt' }
   if (path.includes('/overview')) return { project, availability, counts: {}, activity: [], recent: [] }
@@ -40,7 +40,8 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 it('opens a real project context and the six approved tabs without fake controls', async () => {
   const user = userEvent.setup(); render(<App />)
   await user.click(await screen.findByText(project.name))
-  await screen.findByRole('heading', { name: '项目资料' })
+  await screen.findByRole('region', { name: '项目概览' })
+  expect(screen.getByLabelText('项目计数')).toBeVisible()
   expect(window.location.hash).toBe(`#/projects/${project.projectId}/overview`)
   for (const label of ['概览', '自动化', '运行记录', '统计', '数据', '环境']) expect(screen.getByRole('button', { name: label })).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: '数据' }))
@@ -94,7 +95,7 @@ it('shows an invalid project address with a working directory return', async () 
 
 it('keeps the data route and draft when cancelling Back or global navigation', async () => {
   const user = userEvent.setup(); render(<App />)
-  await user.click(await screen.findByText(project.name)); await screen.findByRole('heading', { name: '项目资料' })
+  await user.click(await screen.findByText(project.name)); await screen.findByRole('region', { name: '项目概览' })
   await user.click(screen.getByRole('button', { name: '数据' }))
   await user.click(await screen.findByRole('button', { name: '新建数据表' }))
   await user.type(screen.getByLabelText('数据表名称'), '数据草稿')
@@ -117,7 +118,7 @@ it('restores all-directory conditions and scroll after opening and returning thr
     return project
   })
   const user=userEvent.setup();const view=render(<App />)
-  await user.click(await screen.findByRole('button',{name:project.name}));await screen.findByRole('heading',{name:'项目资料'})
+  await user.click(await screen.findByRole('button',{name:project.name}));await screen.findByRole('region',{name:'项目概览'})
   await user.click(screen.getByRole('button',{name:'返回项目目录'}))
   expect(await screen.findByRole('heading',{name:/全部项目/})).toBeVisible()
   expect(screen.getByLabelText('搜索项目')).toHaveValue('项目')

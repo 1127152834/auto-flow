@@ -1,10 +1,15 @@
 import { ArrowLeft } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { Button } from '../../../shared/components/ui/button'
+import { ActivityFeed } from '../components/ActivityFeed'
+import { AttentionList } from '../components/AttentionList'
+import { ContinueWork } from '../components/ContinueWork'
+import { OverviewCounts } from '../components/OverviewCounts'
+import { resourceKey, type ResourceLocator } from '../components/overview-resource'
 import { ProjectCapabilityState } from '../components/ProjectCapabilityState'
 import { ProjectHeader } from '../components/ProjectHeader'
 import { ProjectTabs } from '../components/ProjectTabs'
-import type { ProjectTab, ProjectView } from '../types'
+import type { ProjectOverview, ProjectRoute, ProjectTab, ProjectView } from '../types'
 
 const tabLabels: Record<ProjectTab, string> = {
   overview: '概览',
@@ -28,11 +33,17 @@ export function ProjectOverviewPage({
   tableDetail = false,
   tableName,
   detailContext,
+  overview,
+  overviewError,
+  onOpenResource,
 }: {
   detailContext?: { name: string; onBack(): void; label: string }
   children?: ReactNode
   tableDetail?: boolean
   tableName?: string
+  overview?: ProjectOverview | null
+  overviewError?: string | null
+  onOpenResource?(route: ProjectRoute): void
   project: ProjectView
   tab: ProjectTab
   disabled: boolean
@@ -96,6 +107,17 @@ export function ProjectOverviewPage({
 
       {tab === 'overview' ? (
         <section aria-label="项目概览" className="grid gap-4">
+          {overview && overviewError ? <p role="status" className="m-0 rounded-control border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-sm text-ink">概览刷新失败：{overviewError}。以下是上次加载的结果。</p> : null}
+          {overview ? <OverviewCounts counts={overview.counts} dataChanges={overview.dataChanges} /> : null}
+          {overview ? (
+            <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              <ActivityFeed items={overview.recent} onOpen={route => onOpenResource?.(route)} />
+              <div className="grid min-w-0 content-start gap-4">
+                <AttentionList items={overview.activity} onOpen={route => onOpenResource?.(route)} />
+                <ContinueWork items={resumable(overview)} onOpen={route => onOpenResource?.(route)} />
+              </div>
+            </div>
+          ) : (
           <div className="rounded-card border border-line bg-surface p-6">
             <h2 className="m-0 text-lg font-semibold">项目资料</h2>
             <dl className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -119,6 +141,7 @@ export function ProjectOverviewPage({
               />
             </dl>
           </div>
+          )}
         </section>
       ) : (
         children ?? <ProjectCapabilityState tab={tab} />
@@ -134,6 +157,12 @@ function Info({ label, value }: { label: string; value: string }) {
       <dd className="m-0 mt-1 text-sm text-ink">{value}</dd>
     </div>
   )
+}
+
+/** Anything already listed under 需要关注 stays there, so the two panels never repeat one object. */
+function resumable(overview: ProjectOverview) {
+  const flagged = new Set(overview.activity.map(item => resourceKey(item.resource as ResourceLocator)))
+  return overview.recent.filter(item => !flagged.has(resourceKey(item.resource as ResourceLocator)))
 }
 
 function formatDate(value: string) {

@@ -1176,6 +1176,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Statistics */
+        get: operations["project_statistics_api_v1_projects__projectId__statistics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/statistics/{resultSetId}/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Statistics Tasks */
+        get: operations["statistics_tasks_api_v1_projects__projectId__statistics__resultSetId__tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/automations/{automationId}/batches": {
         parameters: {
             query?: never;
@@ -1187,6 +1221,23 @@ export type paths = {
         put?: never;
         /** Start Batch */
         post: operations["start_batch_api_v1_projects__projectId__automations__automationId__batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tasks/{taskId}/follow-up-batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Follow Up Batch */
+        post: operations["follow_up_batch_api_v1_projects__projectId__tasks__taskId__follow_up_batches_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3136,6 +3187,22 @@ export type components = {
             resource?: components["schemas"]["SyncSnapshot"] | null;
             error?: components["schemas"]["ApiError"] | null;
         };
+        /** ActivityItem */
+        ActivityItem: {
+            /** Activityid */
+            activityId: string;
+            /** Kind */
+            kind: string;
+            /** Resource */
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TaskResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"] | components["schemas"]["SyncResourceLocator"];
+            /** Summary */
+            summary: string;
+            /**
+             * Occurredat
+             * Format: date-time
+             */
+            occurredAt: string;
+        };
         /** AllocationCreate */
         AllocationCreate: {
             /**
@@ -3434,6 +3501,28 @@ export type components = {
             generation: number;
             /** Packagename */
             packageName: string;
+        };
+        /** AttentionItem */
+        AttentionItem: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "batch" | "task" | "manual" | "resource" | "sync" | "cleanup";
+            /** Resource */
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TaskResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"] | components["schemas"]["SyncResourceLocator"];
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "error";
+            /** Message */
+            message: string;
+            /**
+             * Occurredat
+             * Format: date-time
+             */
+            occurredAt: string;
         };
         /** AutomationPage */
         AutomationPage: {
@@ -3974,6 +4063,20 @@ export type components = {
             fieldId: string;
             /** Value */
             value: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+        };
+        /** DataChanges */
+        DataChanges: {
+            /** Timezone */
+            timezone: string;
+            /**
+             * Daystart
+             * Format: date-time
+             */
+            dayStart: string;
+            /** Newrecords */
+            newRecords: number;
+            /** Updatedrecords */
+            updatedRecords: number;
         };
         /** DataDateScalar */
         DataDateScalar: {
@@ -5085,6 +5188,17 @@ export type components = {
             /** Expected Revision */
             expected_revision: number;
         };
+        /** FailureDestination */
+        FailureDestination: {
+            /** Automationid */
+            automationId: string;
+            /** Name */
+            name: string;
+            /** Count */
+            count: number;
+            /** Reasonsummary */
+            reasonSummary?: string | null;
+        };
         /** FieldEqualsRelation */
         FieldEqualsRelation: {
             /**
@@ -5181,6 +5295,20 @@ export type components = {
             mode: "fixed";
             /** Proxyid */
             proxyId: string;
+        };
+        /** FollowUpBatchRequest */
+        FollowUpBatchRequest: {
+            /**
+             * Mode
+             * @constant
+             */
+            mode: "originalInputGroup";
+            /** Expectedtaskstatusrevision */
+            expectedTaskStatusRevision: number;
+            /** Parameteroverrides */
+            parameterOverrides?: {
+                [key: string]: string | number | boolean | null;
+            };
         };
         /** GroupCreate */
         GroupCreate: {
@@ -6317,7 +6445,7 @@ export type components = {
              * Statistics
              * @constant
              */
-            statistics: "notImplemented";
+            statistics: "available";
             /**
              * Sync
              * @constant
@@ -6416,13 +6544,10 @@ export type components = {
             };
             availability: components["schemas"]["ProjectCapabilities"];
             /** Activity */
-            activity: {
-                [key: string]: unknown;
-            }[];
+            activity: components["schemas"]["AttentionItem"][];
             /** Recent */
-            recent: {
-                [key: string]: unknown;
-            }[];
+            recent: components["schemas"]["ActivityItem"][];
+            dataChanges?: components["schemas"]["DataChanges"] | null;
         };
         /** ProjectPage */
         ProjectPage: {
@@ -6543,6 +6668,36 @@ export type components = {
             updatedAt: string;
             /** Completedat */
             completedAt: string | null;
+        };
+        /** ProjectStatistics */
+        ProjectStatistics: {
+            /** From */
+            from: string;
+            /** To */
+            to: string;
+            /** Timezone */
+            timezone: string;
+            sample: components["schemas"]["StatisticsSample"];
+            /** Successrate */
+            successRate?: number | null;
+            /** Averagedurationms */
+            averageDurationMs?: number | null;
+            /** Trend */
+            trend: components["schemas"]["StatisticsBucket"][];
+            /** Failuresbyautomation */
+            failuresByAutomation: components["schemas"]["FailureDestination"][];
+            /** Resultsetid */
+            resultSetId: string;
+            /**
+             * Calculatedat
+             * Format: date-time
+             */
+            calculatedAt: string;
+            /**
+             * Expiresat
+             * Format: date-time
+             */
+            expiresAt: string;
         };
         /** ProjectSummary */
         ProjectSummary: {
@@ -7534,6 +7689,39 @@ export type components = {
              */
             mode: "sourceDefault";
         };
+        /** StatisticsBucket */
+        StatisticsBucket: {
+            /** Succeeded */
+            succeeded: number;
+            /** Failed */
+            failed: number;
+            /** Cancelled */
+            cancelled: number;
+            /** Timed Out */
+            timed_out: number;
+            /** Interrupted */
+            interrupted: number;
+            /**
+             * Bucketstart
+             * Format: date-time
+             */
+            bucketStart: string;
+            /** Averagedurationms */
+            averageDurationMs?: number | null;
+        };
+        /** StatisticsSample */
+        StatisticsSample: {
+            /** Succeeded */
+            succeeded: number;
+            /** Failed */
+            failed: number;
+            /** Cancelled */
+            cancelled: number;
+            /** Timed Out */
+            timed_out: number;
+            /** Interrupted */
+            interrupted: number;
+        };
         /** StatusDelete */
         StatusDelete: {
             /** Expectedstatusrevision */
@@ -7779,6 +7967,20 @@ export type components = {
             /** Expectedbindingepoch */
             expectedBindingEpoch: number;
         };
+        /** SyncResourceLocator */
+        SyncResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "sync";
+            /** Projectid */
+            projectId: string;
+            /** Tableid */
+            tableId: string;
+            /** Syncoperationid */
+            syncOperationId: string;
+        };
         /**
          * SyncRunResult
          * @description The frozen result of one pull or push command.
@@ -7888,6 +8090,29 @@ export type components = {
             /** Lastconfirmedat */
             lastConfirmedAt?: string | null;
         };
+        /** TaskCurrentInputView */
+        TaskCurrentInputView: {
+            /** Inputid */
+            inputId?: string | null;
+            /** Recordref */
+            recordRef: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Exists */
+            exists: boolean;
+            /** Values */
+            values?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Recordstatus */
+            recordStatus?: string | null;
+            /** Contentrevision */
+            contentRevision?: number | null;
+            /** Updatedat */
+            updatedAt?: string | null;
+            /** Changedfieldids */
+            changedFieldIds?: string[];
+        };
         /** TaskDataWriteView */
         TaskDataWriteView: {
             /** Kind */
@@ -7898,6 +8123,10 @@ export type components = {
             recordDisplay: string;
             /** Outcome */
             outcome: string;
+            /** Nodeid */
+            nodeId?: string | null;
+            /** Nodename */
+            nodeName?: string | null;
             /** Previousstatus */
             previousStatus?: string | null;
             /** Nextstatus */
@@ -7925,6 +8154,8 @@ export type components = {
             };
             task: components["schemas"]["TaskView"];
             inputSnapshot: components["schemas"]["TaskInputSnapshotView"];
+            /** Currentinputs */
+            currentInputs?: components["schemas"]["TaskCurrentInputView"][];
             run: components["schemas"]["RunSnapshotView"];
             /** Datawrites */
             dataWrites?: components["schemas"]["TaskDataWriteView"][];
@@ -7963,6 +8194,18 @@ export type components = {
             total: number;
             /** Sort */
             sort: string;
+        };
+        /** TaskResourceLocator */
+        TaskResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "task";
+            /** Projectid */
+            projectId: string;
+            /** Taskid */
+            taskId: string;
         };
         /** TaskView */
         TaskView: {
@@ -13582,7 +13825,9 @@ export interface operations {
     };
     overview_api_v1_projects__projectId__overview_get: {
         parameters: {
-            query?: never;
+            query?: {
+                timezone?: string | null;
+            };
             header?: never;
             path: {
                 projectId: string;
@@ -13833,6 +14078,136 @@ export interface operations {
             };
         };
     };
+    project_statistics_api_v1_projects__projectId__statistics_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                timezone?: string | null;
+                automationId?: string | null;
+                tableId?: string | null;
+                interval?: "day" | "week" | "month";
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectStatistics"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    statistics_tasks_api_v1_projects__projectId__statistics__resultSetId__tasks_get: {
+        parameters: {
+            query: {
+                result: "succeeded" | "failed" | "cancelled" | "timed_out" | "interrupted";
+                intervalStart?: string | null;
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                resultSetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
     start_batch_api_v1_projects__projectId__automations__automationId__batches_post: {
         parameters: {
             query?: never;
@@ -13907,6 +14282,89 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    follow_up_batch_api_v1_projects__projectId__tasks__taskId__follow_up_batches_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRunOperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
                 headers: {
                     [name: string]: unknown;
                 };
