@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from autoflow.domain.project_runs.models import (
     BatchStatus,
     ProjectRunError,
+    TaskInputSnapshot,
     batch_to_dict,
     snapshot_to_dict,
     task_to_dict,
@@ -22,6 +23,7 @@ from autoflow.infrastructure.database.models import ProjectOperationRow, Project
 from autoflow.infrastructure.database.project_data_models import (
     DataChangeRow,
     DataFieldRow,
+    DataRecordRow,
     DataStatusRow,
     DataTableRow,
 )
@@ -202,6 +204,7 @@ class ProjectRunQueries:
         *,
         batch_id: str | None = None,
         automation_id: str | None = None,
+        table_id: str | None = None,
         query_text: str | None = None,
         status: str | None = None,
         ended_from: datetime | None = None,
@@ -282,6 +285,22 @@ class ProjectRunQueries:
                 )
             if automation_id:
                 query = query.where(ProjectBatchRow.automation_id == automation_id)
+            if table_id:
+                # 同一冻结集合的两种视角（列表下钻、统计）共用这一处过滤，避免
+                # 只在一侧收紧后出现“屏幕结果与下钻结果不一致”。
+                input_refs = func.json_tree(
+                    ProjectTaskInputSnapshotRow.inputs
+                ).table_valued("key", "value", "type")
+                query = query.where(
+                    exists(
+                        select(1)
+                        .select_from(input_refs)
+                        .where(
+                            input_refs.c.key == "tableId",
+                            input_refs.c.value == table_id,
+                        )
+                    )
+                )
             if status:
                 query = query.where(WorkflowRunRow.status == status)
             if ended_from:
@@ -402,6 +421,11 @@ class ProjectRunQueries:
                 raise ProjectRunError(
                     "RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409
                 )
+            node_names = prepared_node_names(
+                SqlAlchemyWorkflowRuntimeRepository(session).get_prepared_content(
+                    prepared_content_id=run.prepared_content_id
+                )
+            )
             return {
                 "task": task_to_dict(task),
                 "inputSnapshot": snapshot_to_dict(snapshot),
@@ -410,14 +434,167 @@ class ProjectRunQueries:
                 "parameterDefinitions": batch.frozen_request["automation"][
                     "parameterSchema"
                 ],
-                "nodeNames": prepared_node_names(
-                    SqlAlchemyWorkflowRuntimeRepository(session).get_prepared_content(
-                        prepared_content_id=run.prepared_content_id
-                    )
-                ),
+                "nodeNames": node_names,
                 "run": _run(run),
-                "dataWrites": _data_writes(session, project_id, task_id),
+                "currentInputs": _current_inputs(session, project_id, snapshot),
+                "dataWrites": _data_writes(
+                    session,
+                    project_id,
+                    task_id,
+                    visits=_visit_windows(session, task.run_id, node_names),
+                ),
             }
+
+
+def _current_inputs(
+    session: Session, project_id: str, snapshot: TaskInputSnapshot
+) -> list[dict[str, Any]]:
+    """Read the live value of every record frozen into the input snapshot.
+
+    The snapshot itself never changes; this is a separate current-state channel
+    so a human can see what the frozen input looked like next to what the record
+    holds now.  A missing row (deleted record, superseded data generation) is
+    reported as ``exists: False`` instead of an empty record.
+    """
+    items: list[dict[str, Any]] = []
+    for raw in thaw_json(snapshot.inputs):
+        item = raw if isinstance(raw, dict) else {}
+        ref = item.get("recordRef")
+        if not isinstance(ref, dict):
+            continue
+        key = ref.get("recordKey")
+        table_id = ref.get("tableId")
+        generation = ref.get("datasetGeneration")
+        if (
+            not isinstance(key, dict)
+            or key.get("type") not in {"text", "integer", "uuid"}
+            or not isinstance(key.get("value"), str)
+            or not isinstance(table_id, str)
+            or not isinstance(generation, str)
+        ):
+            continue
+        frozen = {
+            value.get("fieldId"): value.get("value")
+            for value in item.get("values", [])
+            if isinstance(value, dict)
+        }
+        row = session.scalar(
+            select(DataRecordRow).where(
+                DataRecordRow.project_id == project_id,
+                DataRecordRow.table_id == table_id,
+                DataRecordRow.dataset_generation == generation,
+                DataRecordRow.key_type == key["type"],
+                DataRecordRow.key_value == key["value"],
+                DataRecordRow.deleted.is_(False),
+            )
+        )
+        if row is None:
+            items.append(
+                {
+                    "inputId": item.get("inputId"),
+                    "recordRef": ref,
+                    "exists": False,
+                    "values": [],
+                    "recordStatus": None,
+                    "contentRevision": None,
+                    "updatedAt": None,
+                    "changedFieldIds": [],
+                }
+            )
+            continue
+        fields = {
+            field.id: field.name
+            for field in session.scalars(
+                select(DataFieldRow).where(
+                    DataFieldRow.project_id == project_id,
+                    DataFieldRow.table_id == table_id,
+                    DataFieldRow.dataset_generation == generation,
+                )
+            )
+        }
+        status = session.get(DataStatusRow, row.status_id) if row.status_id else None
+        values = [
+            {
+                "fieldId": field_id,
+                "fieldName": fields.get(field_id, "字段"),
+                "value": value,
+            }
+            for field_id, value in row.values_json.items()
+        ]
+        items.append(
+            {
+                "inputId": item.get("inputId"),
+                "recordRef": ref,
+                "exists": True,
+                "values": values,
+                "recordStatus": status.name if status is not None else None,
+                "contentRevision": row.content_revision,
+                "updatedAt": aware(row.updated_at),
+                "changedFieldIds": [
+                    value["fieldId"]
+                    for value in values
+                    if value["fieldId"] in frozen
+                    and frozen[value["fieldId"]] != value["value"]
+                ],
+            }
+        )
+    return items
+
+
+def _visit_windows(
+    session: Session, run_id: str, node_names: dict[str, str]
+) -> list[tuple[datetime, datetime, str | None, str | None]]:
+    """Node visit time windows, used to attribute a write to the node that ran it.
+
+    Data operations persist no node id, so attribution reads the window already
+    recorded in the run event stream.  ``ponytail:`` time-window attribution, not
+    a stored node reference; add a node column to the operation resource if
+    concurrent branches ever need exact attribution.
+    """
+    events = session.scalars(
+        select(WorkflowRunEventRow)
+        .where(
+            WorkflowRunEventRow.run_id == run_id,
+            WorkflowRunEventRow.kind == "nodeAttempt",
+        )
+        .order_by(WorkflowRunEventRow.sequence)
+    ).all()
+    visits: dict[tuple[str | None, int | None], dict[str, Any]] = {}
+    for event in events:
+        payload = event.payload if isinstance(event.payload, dict) else {}
+        entry = visits.setdefault(
+            (event.node_visit_id, event.attempt),
+            {"start": None, "end": None, "nodeId": event.node_id},
+        )
+        if payload.get("status") == "started":
+            entry["start"] = aware(event.occurred_at)
+        elif payload.get("status") in {"succeeded", "failed"}:
+            entry["end"] = aware(event.occurred_at)
+    windows = []
+    for entry in visits.values():
+        if entry["start"] is None or entry["end"] is None:
+            continue
+        node_id = entry["nodeId"]
+        windows.append(
+            (
+                entry["start"],
+                entry["end"],
+                node_id,
+                node_names.get(node_id, "未命名节点") if node_id else None,
+            )
+        )
+    return windows
+
+
+def _attribute_visit(
+    occurred_at: datetime,
+    visits: list[tuple[datetime, datetime, str | None, str | None]],
+) -> tuple[str | None, str | None]:
+    when = aware(occurred_at)
+    matched = [visit for visit in visits if visit[0] <= when <= visit[1]]
+    if len(matched) != 1:
+        return None, None
+    return matched[0][2], matched[0][3]
 
 
 def _input_identifier(inputs: list[dict[str, Any]]) -> str:
@@ -432,7 +609,11 @@ def _input_identifier(inputs: list[dict[str, Any]]) -> str:
 
 
 def _data_writes(
-    session: Session, project_id: str, task_id: str
+    session: Session,
+    project_id: str,
+    task_id: str,
+    *,
+    visits: list[tuple[datetime, datetime, str | None, str | None]],
 ) -> list[dict[str, Any]]:
     operations = session.scalars(
         select(ProjectOperationRow)
@@ -604,7 +785,11 @@ def _data_writes(
                 },
             )
         )
-    return [item for _, item in sorted(result, key=lambda item: item[0])]
+    items: list[dict[str, Any]] = []
+    for occurred_at, item in sorted(result, key=lambda entry: entry[0]):
+        node_id, node_name = _attribute_visit(occurred_at, visits)
+        items.append({**item, "nodeId": node_id, "nodeName": node_name})
+    return items
 
 
 def _value_summary(
