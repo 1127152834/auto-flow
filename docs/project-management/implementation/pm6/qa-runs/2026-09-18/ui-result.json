@@ -14,34 +14,42 @@
     "Windows、其他架构与打包应用",
     "用户手动执行结果"
   ],
-  "gitHead": "7730fa5eadfc0bac83aad88886ce467cdadaf0d0",
+  "gitHead": "94c8d903074e64dc9cefb7f358fc6e519c93c95d",
   "dirtyFiles": [
-    "M apps/backend/tests/fixtures/sheets.py",
-    " M apps/desktop/src/main/index.ts",
-    " M apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.test.tsx",
+    "M apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.test.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.tsx",
     " M apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/SheetsBindingWizard.tsx",
     " M apps/desktop/src/renderer/domains/project-data/components/SheetsConnectionPanel.tsx",
-    " M apps/desktop/src/renderer/domains/project-data/operation-command.ts",
-    " M apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/SyncOperationPanel.tsx",
     " M apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
-    " M apps/desktop/src/renderer/domains/project-data/sheets-api.test.ts",
-    " M apps/desktop/src/renderer/domains/project-data/sheets-api.ts",
-    " M apps/desktop/src/renderer/domains/projects/presentation-error.test.ts",
-    " M apps/desktop/src/renderer/domains/projects/presentation-error.ts",
-    "?? apps/backend/tests/qa/pm6_sidecar.py",
-    "?? apps/backend/tests/unit/test_sheets_transport_fixture.py",
-    "?? docs/project-management/implementation/pm6/",
+    " M apps/desktop/src/renderer/domains/project-data/presentation.ts",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/01-source-tab-unbound.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/02-google-connection.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/03-binding-wizard-inspection.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/04-binding-bound.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/05-pulled-record.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/06-push-confirmed.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/07-formula-refreshed.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/07b-paused-and-resumed.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/08-lost-response-reconciled.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/09-unbind-confirm.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/10-unbound.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/11-records-entry-after-unbind.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/99-failure.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/ui-result.json",
+    " M scripts/qa-project-management-pm6.mjs",
+    " M scripts/structure.test.mjs",
+    "?? docs/project-management/implementation/pm6/qa-runs/2026-09-18/08a-push-result-unknown.png",
     "?? reference/RedroidManager",
     "?? reference/redroid-script",
     "?? reference/vphone-aio",
-    "?? reference/vphone-cli",
-    "?? scripts/qa-project-management-pm6.mjs",
-    "?? scripts/qa-project-management-pm6.test.mjs"
+    "?? reference/vphone-cli"
   ],
   "platform": "darwin",
   "arch": "arm64",
-  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-5FuClS",
-  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-5FuClS/workspace",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V/workspace",
   "checkpoints": [
     "真实界面创建项目。",
     "真实界面在字段抽屉里建立三个字段并整体保存。",
@@ -61,7 +69,7 @@
     {
       "name": "01-source-tab-unbound",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/01-source-tab-unbound.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -72,7 +80,7 @@
     {
       "name": "02-google-connection",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/02-google-connection.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -83,7 +91,7 @@
     {
       "name": "03-binding-wizard-inspection",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/03-binding-wizard-inspection.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -94,7 +102,7 @@
     {
       "name": "04-binding-bound",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/04-binding-bound.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -105,7 +113,7 @@
     {
       "name": "05-pulled-record",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/05-pulled-record.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/records",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/records",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -116,7 +124,7 @@
     {
       "name": "06-push-confirmed",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/06-push-confirmed.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -127,7 +135,7 @@
     {
       "name": "07-formula-refreshed",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/07-formula-refreshed.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/records",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/records",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -138,7 +146,18 @@
     {
       "name": "07b-paused-and-resumed",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/07b-paused-and-resumed.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "08a-push-result-unknown",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/08a-push-result-unknown.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -149,7 +168,7 @@
     {
       "name": "08-lost-response-reconciled",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/08-lost-response-reconciled.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -160,7 +179,7 @@
     {
       "name": "09-unbind-confirm",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/09-unbind-confirm.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -171,7 +190,7 @@
     {
       "name": "10-unbound",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/10-unbound.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/source",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -182,7 +201,7 @@
     {
       "name": "11-records-entry-after-unbind",
       "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/11-records-entry-after-unbind.png",
-      "route": "#/projects/ed4934c3-72ad-4321-9fc1-bbccb12012ff/data/b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd/records",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/records",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -194,18 +213,18 @@
   "facts": {
     "standIns": {},
     "sidecarModule": "tests.qa.pm6_sidecar",
-    "desktopLog": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-5FuClS/desktop.log",
-    "workspaceKey": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-5FuClS/workspace",
-    "debugPort": "56992",
-    "projectId": "ed4934c3-72ad-4321-9fc1-bbccb12012ff",
-    "tableId": "b3aa3ff9-52a8-47dc-9d69-36d3823ef4bd",
+    "desktopLog": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V/desktop.log",
+    "workspaceKey": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V/workspace",
+    "debugPort": "64929",
+    "projectId": "0e0c09ef-1023-4769-9971-7988aee09cd6",
+    "tableId": "5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5",
     "tableSourceBeforeBinding": "local",
     "localRecordBeforeBinding": [
       "001",
       "local@example.com"
     ],
     "connection": {
-      "connectionId": "cc283f24-0b00-414e-9760-98e99e49a25a",
+      "connectionId": "fccfa967-93de-4f93-accf-cb1eab60b641",
       "credentialState": "available",
       "writable": true
     },
@@ -236,7 +255,7 @@
         }
       ]
     },
-    "generationAfterBinding": "2ba1eb49-12ce-4649-b6d1-625913d3e1a8",
+    "generationAfterBinding": "4240d5c2-5074-40e7-b0b6-1b90f4213f52",
     "sourceFacts": [
       "来源表格\tPM6 来源表",
       "工作表\t记录",
@@ -254,7 +273,7 @@
     },
     "remoteWritesBeforePush": 0,
     "pushOperation": {
-      "syncOperationId": "298848a4-aa0b-45d0-a90f-1c1e244f0185",
+      "syncOperationId": "a76c1afa-18ae-4a10-a090-345cb065ef57",
       "status": "confirmed",
       "outcome": "matched",
       "fields": [
@@ -290,5 +309,5 @@
     ]
   },
   "error": null,
-  "createdAt": "2026-09-18T13:04:19.627Z"
+  "createdAt": "2026-09-18T14:35:45.653Z"
 }

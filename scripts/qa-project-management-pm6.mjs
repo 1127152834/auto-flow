@@ -885,6 +885,9 @@ export async function main(cliArgs = process.argv.slice(2)) {
       '响应丢失前写入必须已经发生',
     )
     await dismissToasts()
+    // The prototype's `100-sheets-directions` unknown card is a distinct state; capture it
+    // before the confirm step resolves it.
+    await capture('08a-push-result-unknown')
     await click('核对结果')
     await waitFor(
       renderer,

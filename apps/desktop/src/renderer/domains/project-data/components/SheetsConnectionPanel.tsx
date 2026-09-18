@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableRow, TableScroll } from '../../../shared/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import { safeProjectError } from '../../projects/presentation-error'
 import type { SheetsApi, SheetsConnection, SheetsImpact } from '../sheets-api'
 
@@ -88,7 +88,7 @@ export function SheetsConnectionPanel({ api, scopeKey, readonly = false, disable
       (connections.data?.items.length ?? 0) === 0 ? <p className="m-0 flex items-center gap-2 text-sm text-muted"><WarningCircle size={18} aria-hidden="true" />还没有连接 Google 账号。</p> :
         <TableScroll label="Google 账号" className="rounded-control border border-line">
           <Table data-variant="compact" aria-label="Google 账号">
-            <TableHead><TableRow><TableCell>账号</TableCell><TableCell>凭据</TableCell><TableCell>权限</TableCell><TableCell>更新时间</TableCell><TableCell>选择</TableCell><TableCell /></TableRow></TableHead>
+            <TableHeader><TableRow><TableHead>账号</TableHead><TableHead>凭据</TableHead><TableHead>权限</TableHead><TableHead>更新时间</TableHead><TableHead>选择</TableHead><TableHead>操作</TableHead></TableRow></TableHeader>
             <TableBody>
               {connections.data!.items.map(connection => <TableRow key={connection.connectionId} data-selected={connection.connectionId === selectedId ? 'true' : undefined}>
                 <TableCell className="font-medium">{connection.accountLabel}</TableCell>

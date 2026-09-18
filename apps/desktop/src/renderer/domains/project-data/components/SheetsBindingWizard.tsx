@@ -3,7 +3,7 @@ import type { components } from '../../../shared/api/generated'
 import { Modal } from '../../../shared/components/Modal'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableRow, TableScroll } from '../../../shared/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import { safeProjectError } from '../../projects/presentation-error'
 import type { SheetsApi, SheetsBinding, SheetsImpact, SheetsInspection } from '../sheets-api'
 import { SheetsConnectionPanel } from './SheetsConnectionPanel'
@@ -158,7 +158,7 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
           </label>
           <TableScroll label="字段映射" className="rounded-control border border-line">
             <Table data-variant="compact" aria-label="字段映射">
-              <TableHead><TableRow><TableCell>本地字段</TableCell><TableCell>来源列</TableCell><TableCell>方向</TableCell><TableCell>公式</TableCell></TableRow></TableHead>
+              <TableHeader><TableRow><TableHead>本地字段</TableHead><TableHead>来源列</TableHead><TableHead>方向</TableHead><TableHead>公式</TableHead></TableRow></TableHeader>
               <TableBody>
                 {draft().map(entry => {
                   const field = fields.find(item => item.ref.fieldId === entry.fieldId)

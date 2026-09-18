@@ -9,7 +9,7 @@ import { Pagination } from '../../../shared/components/ui/pagination'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import type { RecordSelection } from '../use-record-selection'
-import { recordDisplayLabel, type TableIdentity } from '../presentation'
+import { recordDisplayLabel, showsDedicatedIdentityColumn, type TableIdentity } from '../presentation'
 
 type Schema = components['schemas']
 type RecordView = Schema['DataRecordView']
@@ -52,6 +52,7 @@ function valueLabel(cell: Schema['DataCellView'] | undefined): string {
 export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = true, page, fields, statuses, identityMode, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onEdit, onDelete, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
   const visible = visibleFieldIds ? new Set(visibleFieldIds) : null
   const columns = fields.filter((field) => !visible || visible.has(field.ref.fieldId))
+  const identityColumn = showsDedicatedIdentityColumn(identityMode, columns.map((field) => field.ref.fieldId))
   const statusMap = new Map(statuses.map((status) => [status.statusId, status]))
   return (
     <section aria-label="数据记录" aria-busy={loading} className="grid min-w-0 gap-2">
@@ -110,12 +111,12 @@ export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = tru
           <Table
             aria-label="数据记录列表" className="table-fixed"
             style={{
-              minWidth: `${112 + 128 + 136 + 160 + (selection ? 40 : 0) + columns.length * 160}px`,
+              minWidth: `${(identityColumn ? 112 : 0) + 128 + 136 + 160 + (selection ? 40 : 0) + columns.length * 160}px`,
             }}
           >
             <colgroup>
               {selection ? <col style={{ width: 40 }} /> : null}
-              <col data-record-column="identity" style={{ width: 112 }} />
+              {identityColumn ? <col data-record-column="identity" style={{ width: 112 }} /> : null}
               {columns.map((field) => (
                 <col key={field.ref.fieldId} />
               ))}
@@ -131,9 +132,11 @@ export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = tru
                     <Checkbox aria-label="选择本页记录" checked={page.items.length > 0 && page.items.every(selection.isSelected) ? true : page.items.some(selection.isSelected) ? 'indeterminate' : false} disabled={readonly || disabled || loading} onCheckedChange={(checked) => selection.togglePage(page.items, checked === true)} />
                   </TableHead>
                 ) : null}
-                <TableHead className="w-28" data-column-width="112">
-                  {identityMode.mode === 'field' ? fields.find(field => field.ref.fieldId === identityMode.fieldId)?.name ?? '字段已失效' : '记录'}
-                </TableHead>
+                {identityColumn ? (
+                  <TableHead className="w-28" data-column-width="112">
+                    {identityMode.mode === 'field' ? fields.find(field => field.ref.fieldId === identityMode.fieldId)?.name ?? '字段已失效' : '记录'}
+                  </TableHead>
+                ) : null}
                 {columns.map((field) => (
                   <TableHead key={field.ref.fieldId}>
                     <span className="block truncate" title={field.name}>
@@ -162,11 +165,13 @@ export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = tru
                         <Checkbox aria-label={`选择记录 ${identity}`} checked={selection.isSelected(record)} disabled={readonly || disabled || loading} onCheckedChange={(checked) => selection.toggle(record, checked === true)} />
                       </TableCell>
                     ) : null}
-                    <TableCell>
-                      <span className="block truncate" title={identity} aria-label={identity}>
-                        {identity}
-                      </span>
-                    </TableCell>
+                    {identityColumn ? (
+                      <TableCell>
+                        <span className="block truncate" title={identity} aria-label={identity}>
+                          {identity}
+                        </span>
+                      </TableCell>
+                    ) : null}
                     {columns.map((field) => {
                       const label = valueLabel(cells.get(field.ref.fieldId))
                       return (

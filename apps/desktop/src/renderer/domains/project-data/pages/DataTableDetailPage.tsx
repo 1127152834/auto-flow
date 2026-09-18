@@ -35,6 +35,7 @@ import {
 import { createProjectDataApi } from "../api";
 import { createDataCatalogApi } from "../catalog-api";
 import { DataRecordsTable } from "../components/DataRecordsTable";
+import { showsDedicatedIdentityColumn } from "../presentation";
 import { DataDeletionDialog } from "../components/DataDeletionDialog";
 import { DataTableSourcePanel } from "../components/DataTableSourcePanel";
 import { DataTableFormDialog } from "../components/DataTableFormDialog";
@@ -746,7 +747,7 @@ function DataTableDetail({
             identityMode={table.identity}
             visibleFieldIds={gridColumns.map(field => field.ref.fieldId)}
             queryLocked={grid.dirty || grid.pending}
-            draftRows={(grid.rows.length > 0 || writable && !recordLocation) ? <RecordDraftRows rows={grid.rows} fields={gridColumns} identityFieldId={table.identity.mode === "field" ? table.identity.fieldId : undefined} errors={grid.errors} selectionColumn disabled={!grid.editable} focusCell={grid.focusCell} onAdd={grid.addRow} onRemove={grid.removeRow} onCellChange={grid.changeCell} onPaste={(row, column, text) => grid.paste(gridColumns, row, column, text)} onSave={() => void grid.save()} onUndo={grid.undo} /> : undefined}
+            draftRows={(grid.rows.length > 0 || writable && !recordLocation) ? <RecordDraftRows rows={grid.rows} fields={gridColumns} identityFieldId={showsDedicatedIdentityColumn(table.identity, gridColumns.map(field => field.ref.fieldId)) && table.identity.mode === "field" ? table.identity.fieldId : undefined} errors={grid.errors} selectionColumn disabled={!grid.editable} focusCell={grid.focusCell} onAdd={grid.addRow} onRemove={grid.removeRow} onCellChange={grid.changeCell} onPaste={(row, column, text) => grid.paste(gridColumns, row, column, text)} onSave={() => void grid.save()} onUndo={grid.undo} /> : undefined}
             loading={recordsQuery.isFetching || catalogQuery.isFetching}
             error={
               recordsQuery.error
