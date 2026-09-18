@@ -10,7 +10,8 @@ This integration preserves the current Studio as the authoritative runtime while
 
 ## Capability evidence
 
-- Project management PM3/PM4/PM5: real merge `a5c5ed98`; project workflow tables are isolated under `project_workflow_*` and joined by migration `0013_merge_project_runtime.py`.
+- Project management PM3/PM4: real merge `a5c5ed98`; project workflow tables are isolated under `project_workflow_*` and joined by migration `0013_merge_project_runtime.py`.
+- Project management PM5: real merge `851097fd` (persistent login environments and manual intervention), followed by the import-order fix `6d9d0f19` and the QA rerun `dd52e56b`. `pm07_environments` now hangs off `0013_merge_project_runtime`, so the graph keeps a single head: `pm07_environments`.
 - [Android capability matrix](android-capability-matrix.md): device lifecycle, persistence, environments, batch creation, console, and manual control are integrated. Workflow allocation/takeover remains explicitly unavailable until adapted to the current runtime.
 - [UI and table matrix](ui-table-capability-matrix.md): missing isolated controls were ported; current Studio/project tables and option-based component APIs were retained.
 - [Proxy matrix](proxy-capability-matrix.md): the current implementation covers the original management branch and the later remote-control line.

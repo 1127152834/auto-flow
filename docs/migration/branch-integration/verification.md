@@ -103,3 +103,35 @@ This rerun covers the two commits added after the 2026-09-17 report: `1bfa57f7` 
 The full backend run produced exactly one failure, in `tests/integration/test_b1_stop_and_browser_crash_regressions.py::test_browser_child_crash_releases_worker_slot_for_next_run`. The test waits at most `1.0 s` for a child-process exit callback to clear `manager.busy()`; under the load of the parallel suite the callback landed after that window. The same test passes 5 of 5 in isolation and the surrounding file passes on its own, so this is a load-sensitive timing flake in the test harness, not a regression in the crash-recovery path. Hardening the wait budget is a separate test change and was not made here.
 
 The 2026-09-17 boundary notes still apply unchanged: no real Android runtime, no live ProxyPanel credentials, and no Windows or packaged-install testing were performed.
+
+## PM5 integration (2026-09-18)
+
+Date: 2026-09-18 15:05 CST
+
+Status: passed
+
+Merged: `codex/project-management-pm5` (`34c43f7c`, `ed6b0fd4`, `5b8327e2`) into `codex/integrate-valid-branches-20260917` as `851097fd`, then `6d9d0f19` (pre-existing ruff import order on the target branch) and `dd52e56b` (PM5 QA rerun on the integrated head).
+
+Conflict resolution kept the target branch's dual runtime composition and re-applied PM5's environment wiring on top of it:
+
+- `bootstrap/app.py` / `bootstrap/workflows.py`: `EnvironmentStore`, `EnvironmentBrowserLauncher` and `EnvironmentService` are injected into `configure_project_workflow_runtime`, `ProjectAutomationResourceQuery`, `ProjectRunResourceResolver`, `ProjectRunCoordinator`, `ProjectBatchScheduler` and `ProjectHttpServices`; the execution-generation lookup reads `app.state.project_workflow_runtime`.
+- `providers/browser/workflow_worker.py` stays on the target branch (that path is now the Studio worker); PM5's persistent-context branch moved to `providers/browser/project_workflow_worker.py`, which is the worker project runs actually use.
+- `ProjectOverviewPage.tsx` stays on the target branch's R1 layout (density comes from `ProjectHeader`); PM5's per-tab width special case was dropped.
+- `generated.ts` and `docs/migration/studio-frontend-completion/*` were regenerated from the merged sources.
+- The migration graph keeps one head: `pm07_environments` now declares `down_revision = "0013_merge_project_runtime"`, and the head assertions in the migration tests were updated.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Full backend suite | passed | `2987 passed, 16 skipped` |
+| Migration and compatibility subset | passed | `71 passed` |
+| Ruff | passed | `All checks passed!` after `6d9d0f19`; the 26 flagged files were already flagged at `2685361f` |
+| mypy | passed | 363 source files |
+| Full desktop suite | passed | `389` files and `5325` tests |
+| TypeScript typecheck / ESLint | passed | exit 0 |
+| Electron/Vite production build | passed | main, preload, and renderer bundles built |
+| Generated OpenAPI check | passed | no generated client drift |
+| Repository structure and script checks | passed | `test:structure` 3/3, `test:scripts` 66/66 |
+| Real Electron + FastAPI + SQLite + CloakBrowser QA | passed | `docs/project-management/implementation/pm5/qa-runs/2026-09-18/ui-result.json`, 16 checkpoints / 27 screenshots at `6d9d0f19` |
+| Fast-forward eligibility | passed | `codex/architecture-baseline` is an ancestor of this commit |
+
+Unchanged boundaries: the real production execution core is still not wired (the report reads "management side and real browser storage verified / real execution core pending"); Windows, other architectures, packaged installs and user manual acceptance were not run.
