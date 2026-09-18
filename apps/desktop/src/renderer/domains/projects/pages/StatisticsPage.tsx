@@ -25,6 +25,24 @@ const zone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
 const dayLabel = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', hour12: false })
 const momentLabel = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
 
+/**
+ * 每次挂载都会生成新的时间窗口与查询键，React Query 无法自行保留上一次结果；
+ * 契约要求刷新失败时保留上次范围与数值并标明过期，所以按工作区+项目记下最后一次成功快照。
+ */
+function readSnapshot(key: string): { data: ProjectStatistics; window: { from: string; to: string } } | null {
+  try {
+    const raw = sessionStorage.getItem(`${key}:snapshot`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { data?: ProjectStatistics; window?: { from?: unknown; to?: unknown } }
+    const from = parsed.window?.from
+    const to = parsed.window?.to
+    if (!parsed.data || typeof from !== 'string' || typeof to !== 'string') return null
+    return { data: parsed.data, window: { from, to } }
+  } catch {
+    return null
+  }
+}
+
 const formatPercent = (value: number | null | undefined) => typeof value === 'number' && Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : null
 function formatDuration(value: number | null | undefined) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null
@@ -96,6 +114,7 @@ export function StatisticsPage({
     enabled: !disabled,
     placeholderData: previous => previous,
   })
+  const [snapshot, setSnapshot] = useState(() => readSnapshot(key))
   const tasks = useQuery({
     queryKey: [workspaceKey, instanceId, 'project-statistics-tasks', projectId, drill],
     queryFn: ({ signal }) => api.tasks(drill!.resultSetId, { result: drill!.result, ...(drill!.intervalStart ? { intervalStart: drill!.intervalStart } : {}), page: drill!.page, pageSize: 50 }, signal),
@@ -117,7 +136,14 @@ export function StatisticsPage({
   useEffect(() => {
     try { sessionStorage.setItem(key, JSON.stringify(browse)) } catch { /* Viewing stays available without storage. */ }
   }, [key, browse])
-  const data = stats.data
+  useEffect(() => {
+    if (!stats.data) return
+    const next = { data: stats.data, window: { from: window_.from, to: window_.to } }
+    setSnapshot(next)
+    try { sessionStorage.setItem(`${key}:snapshot`, JSON.stringify(next)) } catch { /* Viewing stays available without storage. */ }
+  }, [key, stats.data, window_])
+  const data = stats.data ?? snapshot?.data
+  const shownWindow = stats.data ? window_ : snapshot?.window ?? window_
   const loaded = Boolean(data)
   useEffect(() => {
     if (loaded && browse.scroll > 0) window.scrollTo(0, browse.scroll)
@@ -131,7 +157,7 @@ export function StatisticsPage({
     setDrillFailure(null)
     try {
       const scoped = automationId && automationId !== browse.automationId
-        ? await api.get({ ...window_, timezone, automationId, interval })
+        ? await api.get({ ...shownWindow, timezone, automationId, interval })
         : data
       remember()
       setDrill({ resultSetId: scoped.resultSetId, result: 'failed', ...(intervalStart ? { intervalStart } : {}), automationName: automationId ? (options.data ?? []).find(item => item.id === automationId)?.name ?? null : null, page: 1 })
@@ -142,7 +168,7 @@ export function StatisticsPage({
 
   const error = stats.isError ? presentStatisticsError(stats.error) : null
   const automationOptions = [{ value: '', label: '全部自动化' }, ...(options.data ?? []).map(item => ({ value: item.id, label: item.name }))]
-  const windowLabel = `${dayLabel.format(new Date(window_.from))} — ${dayLabel.format(new Date(window_.to))}（截至 ${momentLabel.format(new Date(window_.to))}）`
+  const windowLabel = `${dayLabel.format(new Date(shownWindow.from))} — ${dayLabel.format(new Date(shownWindow.to))}（截至 ${momentLabel.format(new Date(shownWindow.to))}）`
 
   return <section aria-label="统计" className="grid min-w-0 gap-5">
     {stats.isLoading && !data ? <><Skeleton className="h-24 w-full" /><Skeleton className="h-64 w-full" /></> : null}

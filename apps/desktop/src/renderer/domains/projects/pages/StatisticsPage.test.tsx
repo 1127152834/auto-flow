@@ -157,6 +157,23 @@ it('keeps the last recorded numbers and their time when a refresh fails', async 
   expect(screen.getByText('36 秒')).toBeVisible()
 })
 
+it('keeps the last confirmed numbers and window after the page is remounted', async () => {
+  const first = renderPage(routes(payload))
+  await screen.findByText('66.7%')
+  const windowText = screen.getByLabelText('统计窗口').textContent
+  first.unmount()
+
+  const failing = vi.fn(async (path: string) => {
+    if (path.includes('/automations')) return { items: [], total: 0 }
+    throw new ApiClientError('boom', 500, 'INTERNAL')
+  })
+  renderPage(failing)
+  expect(await screen.findByText(/统计刷新失败/)).toBeVisible()
+  expect(screen.getByText('66.7%')).toBeVisible()
+  expect(screen.getByLabelText('统计窗口').textContent).toBe(windowText)
+  expect(screen.queryByText('统计读取失败，请稍后重试')).not.toBeInTheDocument()
+})
+
 it('re-reads the whole group with the new window when the range changes', async () => {
   const request = routes(payload)
   renderPage(request)
