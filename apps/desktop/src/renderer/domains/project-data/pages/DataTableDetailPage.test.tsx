@@ -16,7 +16,9 @@ const status={statusId:'s',name:'进行中',color:'#123456',order:0,statusRevisi
 const record: import('../../../shared/api/generated').components['schemas']['DataRecordView']={ref:{projectId:'p',tableId:'t',datasetGeneration:'g',recordKey:{type:'text' as const,value:'001'}},values:[{fieldId:'f',value:'Alice',source:'local' as const,readable:true}],recordSlots:[],statusId:'s',currentEnvironmentId:null,contentRevision:1,statusRevision:1,linkRevision:1,deleted:false,createdAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-01T00:00:00Z'}
 const page={items:[record],total:1,page:1,pageSize:50,sort:'[]'}
 function api() {
-  const request=vi.fn(async (path:string,_init?:{method?:string;body?:unknown})=>{
+  // The double answers with whatever shape a route returns, so the tests can add
+  // the sheets routes a given scenario needs without re-declaring every route.
+  const request=vi.fn(async (path:string,_init?:{method?:string;body?:unknown;headers?:unknown}):Promise<unknown>=>{
     if(path.endsWith('/tables/t'))return table
     if(path.includes('/fields'))return {items:[field],tableRevision:3}
     if(path.endsWith('/statuses/usage'))return {datasetGeneration:'g',calculatedAt:'2026-09-14T00:00:00Z',items:[{statusId:'s',currentRecords:1,activeBatchOperations:0}],configurationReferences:{availability:'notImplemented'}}
@@ -25,7 +27,7 @@ function api() {
     if(path.includes('/records?'))return page
     throw new Error(path)
   })
-  return {client:{request:request as StreamingApiClient['request'],health:vi.fn(),stream:vi.fn()} as StreamingApiClient,request}
+  return {client:{request:request as unknown as StreamingApiClient['request'],health:vi.fn(),stream:vi.fn()} as StreamingApiClient,request}
 }
 const props=(client:StreamingApiClient,overrides:Partial<Parameters<typeof DataTableDetailPage>[0]>={})=>({workspaceKey:'w',instanceId:'i',projectId:'p',tableId:'t',tab:'records' as const,client,readonly:false,disabled:false,onBack:vi.fn(),onTabChange:vi.fn(),registerLeaveGuard:vi.fn(),...overrides})
 const renderPage=(page:ReactElement)=>{const queryClient=new QueryClient({defaultOptions:{queries:{retry:false}}});const view=render(<QueryClientProvider client={queryClient}>{page}</QueryClientProvider>);return {...view,queryClient,rerender:(next:ReactElement)=>view.rerender(<QueryClientProvider client={queryClient}>{next}</QueryClientProvider>)} }
@@ -35,6 +37,27 @@ it('loads the real table, generation catalog and server record page',async()=>{
   expect(await screen.findByRole('heading',{name:'客户表'})).toBeVisible();expect((await screen.findAllByText('Alice'))[0]).toBeVisible()
   expect(request.mock.calls.some(([path])=>String(path).includes('datasetGeneration=g'))).toBe(true)
   expect(screen.queryByRole('button',{name:/新增|编辑|删除/})).not.toBeInTheDocument()
+})
+
+it('reloads the server record page after a sheets command reports a change',async()=>{
+  const {client,request}=api(),original=request.getMockImplementation()!
+  const binding={connectionId:'c1',spreadsheetId:'sheet-1',sheetId:0,bindingEpoch:1,identityStrategy:{kind:'column' as const,columnId:'A'},mapping:[{fieldId:'f',columnId:'A',direction:'both' as const,formula:false}],syncPaused:false}
+  request.mockImplementation(async(path:string,init?:{method?:string;body?:unknown;headers?:unknown})=>{
+    if(path.endsWith('/sheets/binding'))return binding
+    if(path.endsWith('/sync'))return {summary:{status:'idle',pendingCount:1,unknownCount:0},binding}
+    if(path.includes('/sync-operations'))return {items:[],total:0,page:1,pageSize:50}
+    if(path.endsWith('/sync/push'))return {operation:{operationId:'op',projectId:'p',idempotencyKey:new Headers(init?.headers as HeadersInit).get('Idempotency-Key'),kind:'syncPush',status:'succeeded',statusRevision:1,resource:{type:'table',projectId:'p',tableId:'t'},result:{summary:{status:'idle',pendingCount:0,unknownCount:0}},error:null}}
+    if(path.endsWith('/tables/t'))return {...table,sourceKind:'sheets' as const,source:{kind:'sheets' as const,filename:'资料库',sheetName:'资料库',importedAt:'2026-01-02T00:00:00Z'}}
+    return original(path,init)
+  })
+  renderPage(<DataTableDetailPage {...props(client,{tab:'source'})}/>)
+  const reads=()=>request.mock.calls.filter(([path])=>String(path).includes('/records?')).length
+  await waitFor(()=>expect(reads()).toBeGreaterThan(0))
+  const before=reads()
+  await userEvent.click(await screen.findByRole('button',{name:'推送本地改动'}))
+  // A pull or push changes what the server would answer, so the list a reader is
+  // looking at has to be re-read instead of keeping the page the command predates.
+  await waitFor(()=>expect(reads()).toBeGreaterThan(before))
 })
 
 it('does not submit an empty placeholder when the table has no writable fields',async()=>{

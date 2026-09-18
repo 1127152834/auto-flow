@@ -33,6 +33,11 @@ const messages: Record<string, string> = {
   WORKFLOW_UNAVAILABLE: '暂时无法检查工作流，请稍后重试',
   EXTERNAL_LINK_FAILED: '无法打开链接，请重试或复制链接',
   STATUS_IN_USE: '仍有记录使用此状态，请先修改这些记录的业务状态',
+  SYNC_PAUSED: '同步已暂停，请先恢复调度再推送',
+  SYNC_BINDING_CHANGED: '绑定已变化，请重新读取来源后重试',
+  SYNC_NOT_IMPLEMENTED: '该来源能力尚未交付，请先在来源页核对当前边界',
+  SYNC_NOT_RECONCILABLE: '当前操作没有可核验的目标，请先核对原请求',
+  SYNC_NOT_ABANDONABLE: '这条改动仍在处理中，不能放弃',
   FIELD_VALUES_INCOMPATIBLE: '现有记录不满足新的字段规则，请检查后重试',
 }
 export function safeProjectError(error: unknown): string {

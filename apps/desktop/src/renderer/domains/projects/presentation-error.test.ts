@@ -38,3 +38,13 @@ it.each([
 ])('presents the actual automation validation code %s without resource identifiers', (code, message) => {
   expect(safeProjectError({ code, message: id, resource: { resourceId: id } })).toBe(message)
 })
+
+it.each([
+  ['SYNC_PAUSED', '同步已暂停，请先恢复调度再推送'],
+  ['SYNC_BINDING_CHANGED', '绑定已变化，请重新读取来源后重试'],
+  ['SYNC_NOT_IMPLEMENTED', '该来源能力尚未交付，请先在来源页核对当前边界'],
+  ['SYNC_NOT_RECONCILABLE', '当前操作没有可核验的目标，请先核对原请求'],
+  ['SYNC_NOT_ABANDONABLE', '这条改动仍在处理中，不能放弃'],
+])('presents the sheets sync code %s with decided copy', (code, message) => {
+  expect(safeProjectError({ code, message: id, spreadsheetId: id })).toBe(message)
+})

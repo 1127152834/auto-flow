@@ -62,11 +62,28 @@ PM6 交付 Google Sheets 连接与多绑定、字段与身份映射、本地意�
 ## 6. 进度
 
 - [x] PM6-0 现场核对、工作区、契约与迁移
-- [ ] PM6-A 连接/身份/多绑定
-- [ ] PM6-B 出站队列与核验
-- [ ] PM6-C 公式/增列/来源调整/恢复
-- [ ] PM6-UI 四个组件接真实页面
-- [ ] 自动验收、实网或替身端到端、同视口截图、手测方案
+- [x] PM6-A 连接/身份/多绑定
+- [x] PM6-B 出站队列与核验
+- [~] PM6-C 公式/增列/来源调整/恢复 —— 公式只读刷新、暂停/恢复、断开连接、解除绑定影响预检、未知结果核验与恢复已交付；**远端受控增列未交付**：冻结契约 §3.4 与 OperationKind 都没有对应路由或 kind，属计划与契约不一致，需契约决定后才做。系统身份列按已批准规则需要独立初始化动作，契约中没有，当前明确返回 501 `SYNC_NOT_IMPLEMENTED`。
+- [x] PM6-UI 四个组件接真实页面
+- [~] 自动验收与替身端到端已完成；**实网 Google 端到端未执行**，需要用户提供 OAuth 桌面客户端 JSON（或服务账号 JSON）与明确授权的测试 Spreadsheet。同视口截图 12 张与手测方案已交付。
+
+### 6.1 交付记录（2026-09-18）
+
+| 项 | 结果 |
+|---|---|
+| 后端全量 | `3044 passed, 16 skipped, 0 failed`（8 分 33 秒） |
+| PM6 定向 | 契约/身份/同步/恢复/规则 42 passed |
+| 静态检查 | Ruff `All checks passed`；mypy 379 文件无问题 |
+| 前端全量 | `392 files / 5370 tests passed` |
+| 工具链 | openapi:check、typecheck、lint、build、test:scripts(72)、test:structure、`git diff --check` 全绿 |
+| 真实界面 | `docs/project-management/implementation/pm6/qa-runs/2026-09-18/`：13 检查点 / 12 截图，status=passed |
+| 机器报告 | `docs/project-management/implementation/pm6/verification.json` |
+| 手测方案 | `docs/project-management/implementation/pm6/manual-test.md` |
+
+端到端抓出并修复的真实缺陷：绑定命令用 POST 打只接受 PUT 的路由（真实界面绑定必然 405）、拉取/推送后记录页不重取、来源页把读取失败显示为空事实、连接面板列错位。
+
+基线对照：交接文档记录的「704 项基线失败」是 PM6 工作区缺少被 gitignore 的 `reference/` 参考检出的环境假象。在 `5f07e2ad` 上补齐只读符号链接后，`tests/differential + tests/migration` 956 passed、侧车与崩溃回归 39 passed，基线在受影响范围内全绿。
 
 ## 7. 验证命令
 

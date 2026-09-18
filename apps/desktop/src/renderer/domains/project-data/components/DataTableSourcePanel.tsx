@@ -56,8 +56,9 @@ export function DataTableSourcePanel({ table, readonly = false, disabled = false
       {hasFacts || sheetsBound ? <TableScroll label="来源事实" className="max-w-[58rem] rounded-control border border-line">
         <Table data-variant="facts" aria-label="来源事实">
           <TableBody className="[&_th]:w-1/3 sm:[&_th]:w-[12.5rem] [&_td]:break-words">
-            {excel || sheetsBound || filename ? <TableRow><TableHead scope="row" className="font-normal">{sheetsBound ? '来源表格' : '来源文件'}</TableHead><TableCell className="break-all">{filename || '未记录'}</TableCell></TableRow> : null}
-            {excel || sheetsBound || source?.sheetName ? <TableRow><TableHead scope="row" className="font-normal">工作表</TableHead><TableCell className="break-all">{source?.sheetName || '未记录'}</TableCell></TableRow> : null}
+            {excel || filename ? <TableRow><TableHead scope="row" className="font-normal">来源文件</TableHead><TableCell className="break-all">{filename || '未记录'}</TableCell></TableRow> : null}
+            {excel || source?.sheetName ? <TableRow><TableHead scope="row" className="font-normal">工作表</TableHead><TableCell className="break-all">{source?.sheetName || '未记录'}</TableCell></TableRow> : null}
+            {sheets && sheetsBound ? <SheetsFactRows context={sheets} /> : null}
             {excel || importedAt ? <TableRow><TableHead scope="row" className="font-normal">最近导入</TableHead><TableCell>{validImportDate ? <time dateTime={source!.importedAt!}>{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(importedAt)}</time> : importedAt ? '导入时间无法读取' : '未记录'}</TableCell></TableRow> : null}
             {table.recordCount !== undefined ? <TableRow><TableHead scope="row" className="font-normal">本地记录</TableHead><TableCell>{table.recordCount.toLocaleString()} 条</TableCell></TableRow> : null}
             {excel || local || sheetsBound ? <TableRow><TableHead scope="row" className="font-normal">写入方式</TableHead><TableCell>{sheetsBound ? '与来源工作表保持一致' : excel ? '只维护本地数据' : '项目内维护'}</TableCell></TableRow> : null}
@@ -85,6 +86,18 @@ export function DataTableSourcePanel({ table, readonly = false, disabled = false
     </section>
     {sheets ? <SheetsSourceSection table={table} context={sheets} readonly={readonly} disabled={disabled} /> : null}
   </div>
+}
+
+/** A bound worksheet keeps its real names in the binding, never in the file source. */
+function SheetsFactRows({ context }: { context: SheetsSourceContext }) {
+  const query = useQuery({ queryKey: ['sheets-binding', context.scopeKey, context.tableId], queryFn: ({ signal }) => context.api.readBinding(context.tableId, signal), retry: false })
+  const binding = query.data ?? null
+  // An unread binding is not an empty one, so loading and failures say what they are.
+  const unread = query.isPending ? '读取中…' : query.isError ? '暂时无法读取' : '未记录'
+  return <>
+    <TableRow><TableHead scope="row" className="font-normal">来源表格</TableHead><TableCell className="break-all">{binding ? binding.spreadsheetTitle || binding.spreadsheetId : unread}</TableCell></TableRow>
+    <TableRow><TableHead scope="row" className="font-normal">工作表</TableHead><TableCell className="break-all">{binding ? binding.sheetName || `工作表 ${binding.sheetId}` : unread}</TableCell></TableRow>
+  </>
 }
 
 function SheetsSourceSection({ table, context, readonly, disabled }: { table: TableSource; context: SheetsSourceContext; readonly: boolean; disabled: boolean }) {
@@ -149,8 +162,8 @@ function SheetsSourceSection({ table, context, readonly, disabled }: { table: Ta
       <Table data-variant="facts" aria-label="绑定">
         <TableBody className="[&_th]:w-1/3 sm:[&_th]:w-[12.5rem] [&_td]:break-words">
           <TableRow><TableHead scope="row" className="font-normal">Google 账号</TableHead><TableCell>{account ?? '账号名称暂时无法读取'}</TableCell></TableRow>
-          <TableRow><TableHead scope="row" className="font-normal">Spreadsheet</TableHead><TableCell className="break-all">{binding.spreadsheetId}</TableCell></TableRow>
-          <TableRow><TableHead scope="row" className="font-normal">工作表</TableHead><TableCell>{table.source?.sheetName ?? `gid ${binding.sheetId}`}</TableCell></TableRow>
+          <TableRow><TableHead scope="row" className="font-normal">Spreadsheet</TableHead><TableCell className="break-all">{binding.spreadsheetTitle || binding.spreadsheetId}</TableCell></TableRow>
+          <TableRow><TableHead scope="row" className="font-normal">工作表</TableHead><TableCell className="break-all">{binding.sheetName || `工作表 ${binding.sheetId}`}</TableCell></TableRow>
           <TableRow><TableHead scope="row" className="font-normal">映射字段</TableHead><TableCell>{binding.mapping.length} 个{binding.identityStrategy.kind === 'column' ? `，身份列 ${binding.identityStrategy.columnId}` : '，系统身份'}</TableCell></TableRow>
           <TableRow><TableHead scope="row" className="font-normal">调度</TableHead><TableCell>{binding.syncPaused ? '已暂停' : '正常'}</TableCell></TableRow>
         </TableBody>

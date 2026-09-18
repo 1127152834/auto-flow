@@ -30,6 +30,13 @@ describe('Sheets command transport', () => {
     await expect(api.putBinding('t', {} as never, 'key', () => true)).rejects.toThrow('操作结果与当前请求不一致')
   })
 
+  it('publishes a binding with PUT, the verb the binding resource froze', async () => {
+    const { api, request } = setup()
+    request.mockResolvedValue({ operation: operation('changeSheetsBinding') })
+    await api.putBinding('t', { impactRevision: 1 } as never, 'key', () => true)
+    expect(request).toHaveBeenCalledWith('/api/v1/projects/p/tables/t/sheets/binding', expect.objectContaining({ method: 'PUT', headers: { 'Idempotency-Key': 'key' } }))
+  })
+
   it('recovers a lost push response by the original key instead of sending a second command', async () => {
     const { api, request } = setup()
     request.mockRejectedValueOnce(new TypeError('lost response'))

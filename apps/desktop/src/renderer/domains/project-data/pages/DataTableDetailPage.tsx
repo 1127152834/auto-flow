@@ -820,7 +820,10 @@ function DataTableDetail({
           <DataTableSourcePanel table={table} readonly={!writable} disabled={disabled || Boolean(workflow)} onReimport={() => openWorkflow("replace")}
             sheets={{ api: sheetsApi, projectId, scopeKey: stableWorkflowScope, contextKey: workflowContext, tableId, tableName: table.name,
               tableRevision: table.tableRevision, datasetGeneration: table.datasetGeneration, fields,
-              onChanged: () => { void tableQuery.refetch(); void catalogQuery.refetch() } }} />
+              // A pull or push changes what the server would answer, so the
+              // record page has to be re-read; the table view alone would keep
+              // showing the page the command predates.
+              onChanged: () => { void tableQuery.refetch(); void catalogQuery.refetch(); void recordsQuery.refetch() } }} />
         </TabsContent>
         <TabsContent value="settings">
           <TableSettingsForm key={editing.editor?.kind === "tableEdit" ? editing.editor.session : `${stableWorkflowScope}:settings-readonly`}

@@ -85,7 +85,9 @@ export function createSheetsApi(client: StreamingApiClient, desktop: Partial<Goo
     lookupInspection: async (tableId: string, key: string, current: () => boolean, signal?: AbortSignal) =>
       command.lookup(key, 'inspectSheets', current, signal),
     putBinding: async (tableId: string, body: SheetsBindingWrite, key: string, current: () => boolean) =>
-      (await command.submit(`${table(tableId)}/sheets/binding`, body, key, 'changeSheetsBinding', current)),
+      // The binding resource is replaced, not posted to: the frozen contract and
+      // the route both answer PUT, and a POST is a 405, not a retryable failure.
+      (await command.submit(`${table(tableId)}/sheets/binding`, body, key, 'changeSheetsBinding', current, 'PUT')),
     lookupBinding: async (key: string, current: () => boolean) =>
       (await command.lookup(key, 'changeSheetsBinding', current)),
     /** Removing a binding keeps the local copy; the confirmation says as much. */

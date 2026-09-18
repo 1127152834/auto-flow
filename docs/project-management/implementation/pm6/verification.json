@@ -1,0 +1,131 @@
+{
+  "date": "2026-09-18",
+  "milestone": "PM6",
+  "branch": "codex/project-management-pm6",
+  "status": "delivered-management-scope-partially-verified",
+  "deliveryStatus": "delivered-management-scope",
+  "verificationStatus": "partiallyVerified",
+  "scope": "管理侧与本地契约已验证；实网 Google 端到端未执行",
+  "head": "7730fa5eadfc0bac83aad88886ce467cdadaf0d0",
+  "workingTree": "uncommitted",
+  "sourceDigest": "6dbdf40c67444399e8c5007d483049ac05db4d97c44673ce142530218f300412",
+  "sourceDigestMethod": "find apps/backend/src apps/desktop/src -type f \\( -name '*.py' -o -name '*.ts' -o -name '*.tsx' -o -name '*.css' \\) | sort | xargs shasum -a 256 | shasum -a 256",
+  "sourceDigestNote": "QA 运行发生在提交 7730fa5e 之上、修复绑定方法（POST→PUT）之前的工作区；本值对应修复后的源码，与 ui-result.json 的 capturedAt 不同源。",
+  "authoritativeManagementRun": {
+    "result": "docs/project-management/implementation/pm6/qa-runs/2026-09-18/ui-result.json",
+    "status": "passed",
+    "scenario": "PM6 Google Sheets 来源与同步闭环（管理侧）",
+    "evidenceType": "真实 Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 受控 Sheets REST 替身",
+    "capturedGitHead": "7730fa5eadfc0bac83aad88886ce467cdadaf0d0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "checkpoints": 13,
+    "screenshots": 12,
+    "viewport": "1440x1024",
+    "dpr": 1,
+    "boundary": {
+      "sheetsRest": "tests/fixtures/sheets.FakeSheetsTransport（spreadsheetId=pm6-source-1）",
+      "credentialStore": "QA 侧车内的文件凭据库，替代系统钥匙串",
+      "googleConfigPicker": "AUTOFLOW_QA_GOOGLE_CONFIG，仅 !app.isPackaged 时生效，替代原生文件选择框",
+      "studio": "notExecuted"
+    },
+    "facts": {
+      "sidecarModule": "tests.qa.pm6_sidecar",
+      "tableSourceBeforeBinding": "local",
+      "localRecordBeforeBinding": ["001", "local@example.com"],
+      "connectionCredentialState": "available",
+      "binding": {
+        "spreadsheetId": "pm6-source-1",
+        "sheetId": 1000,
+        "bindingEpoch": 1,
+        "identityStrategy": { "kind": "column", "columnId": "A" },
+        "formulaColumn": "C"
+      },
+      "pulledRecordKey": { "type": "text", "value": "001" },
+      "reconcile": "提交后响应丢失进入结果未知；核对结果依据远端证据判定已确认，写入次数不变",
+      "unbind": "影响确认先给出；取消不改动已保存绑定；确认后表进入待配置且本地数据保留"
+    },
+    "defectsFoundByThisRun": [
+      "渲染层对 /sheets/binding 使用 POST，路由只接受 PUT，真实界面绑定必然 405；单测替身不校验方法因而漏过。已改为 PUT 并保留幂等键。",
+      "拉取或推送后记录页沿用命令前的分页结果，用户看不到远端行；onChanged 现将记录查询一并失效。已补回归用例。",
+      "来源页签把「绑定读取失败/读取中」显示成空事实，违反「失败不得显示为已确认空数据」。已区分读取中、暂时无法读取、未记录。",
+      "SheetsConnectionPanel 表头 5 个单元格、数据行 6 个，列错位。"
+    ]
+  },
+  "automatedChecks": {
+    "backend": {
+      "command": "uv run --directory apps/backend pytest -q -p no:randomly",
+      "result": "3044 passed, 16 skipped",
+      "failed": 0,
+      "durationSeconds": 514
+    },
+    "backendStyle": {
+      "ruff": "uv run --directory apps/backend ruff check . → All checks passed",
+      "mypy": "uv run --directory apps/backend mypy src → Success: no issues found in 379 source files"
+    },
+    "pm6Targeted": {
+      "command": "pytest tests/contract/test_pm6_sheets.py tests/contract/test_project_sheets.py tests/integration/test_project_sheets_identity.py tests/integration/test_project_sheets_sync.py tests/integration/test_project_sheets_recovery.py",
+      "result": "42 passed"
+    },
+    "frontend": {
+      "command": "npm test",
+      "result": "392 files passed, 5370 tests passed"
+    },
+    "frontendToolchain": {
+      "openapi:check": "no diff",
+      "typecheck": "passed",
+      "lint": "passed",
+      "build": "passed",
+      "test:scripts": "72 pass / 0 fail",
+      "test:structure": "0 fail",
+      "git diff --check": "clean"
+    }
+  },
+  "baselineComparison": {
+    "baseline": "5f07e2ad",
+    "method": "git worktree add --detach /tmp/pm6-base-5f07e2ad 5f07e2ad，独立 venv 全量运行",
+    "withoutReferenceCheckouts": "705 failed, 2282 passed, 16 skipped",
+    "withReferenceCheckouts": "tests/differential + tests/migration → 956 passed, 1 skipped；侧车与崩溃回归 → 39 passed",
+    "conclusion": "交接文档记录的「704 项基线失败」是 PM6 工作区缺少被 gitignore 的 reference/ 参考检出的环境假象，不是真实基线。补齐只读符号链接后基线在受影响范围内全绿；PM6 未引入新的全量失败。",
+    "note": "reference/WebRPA 等符号链接为本机测试环境修复，未纳入任何提交。"
+  },
+  "deliveredScope": {
+    "PM6-A": "连接与多绑定、结构检查、身份与映射全量核验、重叠映射报告",
+    "PM6-B": "出站意图队列、发送与核验状态机、pull/push、操作查询、超时进入 unknown 而不盲重发",
+    "PM6-C": "公式列只读刷新、暂停/恢复、断开连接、解除绑定与影响预检、核验与放弃恢复",
+    "PM6-UI": "来源页签接真实连接面板、绑定向导、同步面板与绑定事实表"
+  },
+  "knownGaps": [
+    {
+      "item": "真实 Google 端到端",
+      "status": "notExecuted",
+      "reason": "需要用户提供 OAuth 桌面客户端 JSON（或服务账号 JSON）与明确授权的测试 Spreadsheet；本机无法代办。"
+    },
+    {
+      "item": "远端受控增列（新增字段先行作为本地意图、再创建远端列并核验后发布映射）",
+      "status": "notDelivered",
+      "reason": "冻结的 HTTP 契约 §3.4 与 OperationKind 列表都没有对应路由或 kind，计划与契约在此处不一致；SheetsClient.batch_update 传输层已具备，缺的是契约决定。"
+    },
+    {
+      "item": "系统身份列（identityStrategy.kind == 'system'）",
+      "status": "notDelivered",
+      "reason": "按已批准规则需要独立的初始化动作，契约中不存在该动作；当前明确返回 501 SYNC_NOT_IMPLEMENTED，不猜测键。"
+    },
+    {
+      "item": "同一远端键在来源工作表内重复",
+      "status": "notDelivered",
+      "reason": "当前 setdefault 取首行；重复键的显式报错尚未实现。已登记在代码注释与本节。"
+    },
+    {
+      "item": "暂停期间的本地写入不补登记出站意图",
+      "status": "knownLimitation",
+      "reason": "绑定暂停时 enqueue_intent 直接跳过；恢复策略需按 PM6-C 明确后再补。"
+    }
+  ],
+  "notExecuted": [
+    "真实 Google OAuth 与真实 Spreadsheet 读写",
+    "Studio demo 联合测试（按用户指示不执行）",
+    "Windows、其他架构、打包应用验收",
+    "用户手动执行结果"
+  ]
+}

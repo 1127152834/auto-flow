@@ -17,6 +17,12 @@ import type { UiPreferences } from '../shared/settings'
 
 let mainWindow: BrowserWindow | undefined
 let settings: SettingsController | undefined
+/**
+ * Development-only: the exact config file an automated run hands to the Google
+ * authorization handler instead of a native picker. A packaged build always
+ * reads `undefined` and keeps the real dialog.
+ */
+const qaGoogleConfigPath = !app.isPackaged ? process.env.AUTOFLOW_QA_GOOGLE_CONFIG : undefined
 const studio = new StudioWindowController({
   mainSenderId: () => mainWindow?.webContents.id,
   workspacePartition:()=>{
@@ -74,16 +80,21 @@ async function createWindow(): Promise<void> {
   ipcMain.handle('autoflow:google-sheets:connect', createConnectGoogleSheetsHandler({
     allowedSenderId: mainWindow.webContents.id,
     getSidecarStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
-    chooseConfigFile: async () => {
-      const picked = await dialog.showOpenDialog(mainWindow!, {
-        title: '选择 Google 连接配置',
-        properties: ['openFile'],
-        filters: [{ name: 'Google JSON 配置', extensions: ['json'] }],
-      })
-      if (picked.canceled || !picked.filePaths.length) return null
-      if (picked.filePaths.length !== 1 || !picked.filePaths[0]?.toLowerCase().endsWith('.json')) throw new Error('请选择一个 JSON 配置文件。')
-      return picked.filePaths[0]
-    },
+    // Same development-only switch class as AUTOFLOW_QA_SIDECAR_MODULE: an
+    // automated run cannot drive the native picker, so it hands the harness's
+    // own fixture path in instead. A packaged build always uses the dialog.
+    chooseConfigFile: qaGoogleConfigPath
+      ? async () => qaGoogleConfigPath
+      : async () => {
+          const picked = await dialog.showOpenDialog(mainWindow!, {
+            title: '选择 Google 连接配置',
+            properties: ['openFile'],
+            filters: [{ name: 'Google JSON 配置', extensions: ['json'] }],
+          })
+          if (picked.canceled || !picked.filePaths.length) return null
+          if (picked.filePaths.length !== 1 || !picked.filePaths[0]?.toLowerCase().endsWith('.json')) throw new Error('请选择一个 JSON 配置文件。')
+          return picked.filePaths[0]
+        },
     openExternal: url => shell.openExternal(url),
     request: fetch,
   }))

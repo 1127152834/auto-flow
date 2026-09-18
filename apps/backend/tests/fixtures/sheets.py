@@ -158,17 +158,24 @@ class FakeSheetsTransport:
 
     def _write(self, text: str, payload: dict[str, Any]) -> dict[str, Any]:
         sheet, start_row, start_col, _, _ = parse_range(text)
-        grid = self.grids[self.ids[sheet]]
-        for offset, row in enumerate(payload.get("values", [])):
-            index = (start_row or 0) + offset
-            while len(grid) <= index:
-                grid.append([])
-            for position, value in enumerate(row):
-                column = (start_col or 0) + position
-                target = grid[index]
-                while len(target) <= column:
-                    target.append("")
-                target[column] = value
+        sheet_id = self.ids[sheet]
+        # ``RAW`` input replaces whatever the cell held, so the formula view and
+        # the value view of the same sheet have to move together. Keeping a stale
+        # formula view makes every literal write look like a remote mismatch.
+        views = [self.grids[sheet_id]]
+        if sheet_id in self.formulas:
+            views.append(self.formulas[sheet_id])
+        for view in views:
+            for offset, row in enumerate(payload.get("values", [])):
+                index = (start_row or 0) + offset
+                while len(view) <= index:
+                    view.append([])
+                for position, value in enumerate(row):
+                    column = (start_col or 0) + position
+                    target = view[index]
+                    while len(target) <= column:
+                        target.append("")
+                    target[column] = value
         return {"updatedCells": 1}
 
 

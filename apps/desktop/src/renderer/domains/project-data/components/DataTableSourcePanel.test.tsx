@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, expect, it, vi } from 'vitest'
 import { DataTableSourcePanel } from './DataTableSourcePanel'
@@ -106,4 +106,37 @@ it('omits an empty facts table when an unconfigured source has no facts', () => 
   render(<DataTableSourcePanel table={{ sourceKind: 'unconfigured', source: null }} />)
   expect(screen.getByText('尚未配置')).toBeVisible()
   expect(screen.queryByRole('table')).toBeNull()
+})
+
+const namedBindingView = { ...bindingView, spreadsheetId: 'spreadsheet-abc', spreadsheetTitle: '内容资料', sheetId: 1000, sheetName: '资料库' }
+const boundSheetTable = { sourceKind: 'sheets' as const, source: null, recordCount: 1248 }
+const sheetsApi = (readBinding: () => Promise<unknown>) => ({
+  readBinding: vi.fn(readBinding),
+  connections: vi.fn().mockResolvedValue({ items: [{ connectionId: 'c1', accountLabel: '测试账号' }] }),
+  state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: namedBindingView }),
+  operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+})
+
+it('reads a bound worksheet’s real names from the binding instead of calling them unrecorded', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundSheetTable as never} sheets={{ api: sheetsApi(async () => namedBindingView) as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '邮箱表', tableRevision: 9, datasetGeneration: 'g', fields: [] }} />
+  </QueryClientProvider>)
+  const facts = within(await screen.findByRole('table', { name: '来源事实' }))
+  expect(await facts.findByText('内容资料')).toBeVisible()
+  expect(facts.getByText('资料库')).toBeVisible()
+  expect(facts.queryByText('未记录')).toBeNull()
+  const bindingFacts = within(screen.getByRole('table', { name: '绑定' }))
+  expect(bindingFacts.getByText('内容资料')).toBeVisible()
+  expect(bindingFacts.getByText('资料库')).toBeVisible()
+  expect(bindingFacts.queryByText(/gid/)).toBeNull()
+})
+
+it('never reports a bound worksheet as unrecorded while the binding is still loading', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundSheetTable as never} sheets={{ api: sheetsApi(() => new Promise(() => undefined)) as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '邮箱表', tableRevision: 9, datasetGeneration: 'g', fields: [] }} />
+  </QueryClientProvider>)
+  const facts = within(await screen.findByRole('table', { name: '来源事实' }))
+  // Both source rows say they are still loading instead of claiming "未记录".
+  await waitFor(() => expect(facts.getAllByText('读取中…')).toHaveLength(2))
+  expect(facts.queryByText('未记录')).toBeNull()
 })
