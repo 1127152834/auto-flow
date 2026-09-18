@@ -23,6 +23,7 @@ from autoflow.adapters.http.project_run_events import project_run_events_router
 from autoflow.adapters.http.project_run_evidence import project_run_evidence_router
 from autoflow.adapters.http.project_runs import project_runs_router
 from autoflow.adapters.http.project_sheets import (
+    internal_google_authorizations_router,
     project_sheets_binding_router,
     project_sheets_connections_router,
     project_sync_router,
@@ -95,6 +96,7 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(internal_project_files_router(services.excel))
     app.include_router(project_excel_inspection_router(services.excel))
     app.include_router(project_environments_router(services.environments))
+    app.include_router(internal_google_authorizations_router(services.sheets_connections))
     app.include_router(project_sheets_connections_router(services.sheets_connections))
     app.include_router(project_sheets_binding_router(services.sheets_bindings))
     app.include_router(project_sync_router(services.sync))

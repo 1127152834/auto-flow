@@ -29,6 +29,7 @@ from .project_excel_schemas import (
     ExcelReconcileResult,
 )
 from .project_run_schemas import BatchView
+from .project_sheets_schemas import SyncRunResult
 from .schemas import ApiModel
 
 
@@ -151,6 +152,14 @@ class ProjectOperationView(ApiModel):
         "importExcel",
         "exportXlsx",
         "reconcileOperation",
+        "createSheetsConnection",
+        "deleteSheetsConnection",
+        "inspectSheets",
+        "bindSheets",
+        "unbindSheets",
+        "pullSheets",
+        "pushSheets",
+        "reconcileSheets",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int
@@ -182,6 +191,7 @@ class ProjectOperationView(ApiModel):
         | ExcelExportResult
         | ExcelReconcileResult
         | CancelRecordStatusesResult
+        | SyncRunResult
         | None
     )
     error: dict[str, Any] | None

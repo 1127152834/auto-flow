@@ -1,18 +1,22 @@
 """Google Sheets transport. Ownership, transactions and network calls stay in services."""
 
+import hmac
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query, Response
+from fastapi import APIRouter, Header, Query, Request, Response
 from pydantic import BeforeValidator
 
 from autoflow.application.project_sync.bindings import SheetsBindingService
 from autoflow.application.project_sync.connections import SheetsConnectionService
 from autoflow.application.project_sync.outbound import SheetsSyncService
+from autoflow.domain.projects.models import ProjectError
 
 from .errors import browser_error_responses
 from .project_schemas import OperationAccepted
 from .project_sheets_schemas import (
+    GoogleAuthorization,
+    GoogleAuthorizationCreate,
     SheetsBinding,
     SheetsBindingDelete,
     SheetsBindingWrite,
@@ -40,6 +44,27 @@ def _canonical_uuid(value: object) -> object:
 
 CanonicalId = Annotated[UUID, BeforeValidator(_canonical_uuid)]
 Key = Annotated[CanonicalId, Header(alias="Idempotency-Key")]
+
+
+def internal_google_authorizations_router(
+    service: SheetsConnectionService,
+) -> APIRouter:
+    """Host only handover of Google credentials; never reachable from a page."""
+
+    router = APIRouter(prefix="/internal/google-authorizations", include_in_schema=False)
+
+    @router.post("", status_code=201, response_model=GoogleAuthorization)
+    def register_authorization(
+        body: GoogleAuthorizationCreate,
+        request: Request,
+        x_autoflow_host_token: str = Header(alias="x-autoflow-host-token"),
+    ):
+        expected = getattr(request.app.state.config, "host_token", None)
+        if not expected or not hmac.compare_digest(x_autoflow_host_token, expected):
+            raise ProjectError("UNAUTHORIZED", "Host authentication failed", 401)
+        return service.register_authorization(body.model_dump(by_alias=True))
+
+    return router
 
 
 def project_sheets_connections_router(service: SheetsConnectionService) -> APIRouter:

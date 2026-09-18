@@ -34,6 +34,7 @@ from autoflow.infrastructure.database.project_data_models import (
     DataStatusRow,
     DataTableRow,
 )
+from autoflow.infrastructure.database.project_sync import enqueue_intent
 
 
 class SqlAlchemyProjectDataRecords:
@@ -47,7 +48,18 @@ class SqlAlchemyProjectDataRecords:
         generation: str,
         values: dict[str, object],
         operation: ProjectOperation,
+        key: RecordKey | None = None,
+        origin: str = "local",
     ) -> tuple[dict[str, Any], ProjectOperation, bool]:
+        """``key`` overrides the derived identity for sources that know it.
+
+        A Sheets row keeps the type the spreadsheets API reported for the cell
+        ("1" text versus 1 number), which the local identity column alone loses.
+
+        ``origin`` separates a local business write from a write the source
+        itself produced. A pull materialises remote rows, so it must not queue
+        them for an outbound push (design §11): only local changes are intents.
+        """
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             existing = SqlAlchemyProjectDataCatalog._existing(session, operation)
@@ -58,7 +70,9 @@ class SqlAlchemyProjectDataRecords:
             fields = self._fields(session, table)
             canonical = self._validate(fields, values, True)
             identity = table.identity
-            if identity.get("mode") == "system":
+            if key is not None:
+                pass
+            elif identity.get("mode") == "system":
                 key = system_record_key()
             else:
                 identity_field_id = identity.get("fieldId")
@@ -93,6 +107,8 @@ class SqlAlchemyProjectDataRecords:
                 session.add(_operation_row(done))
                 session.flush()
                 session.add(_change(done, None, snapshot))
+                if origin == "local":
+                    enqueue_intent(session, table, key, row.content_revision)
                 session.commit()
                 return snapshot, done, False
             except IntegrityError as error:
@@ -248,6 +264,7 @@ class SqlAlchemyProjectDataRecords:
         values: dict[str, object],
         expected: int,
         operation: ProjectOperation,
+        origin: str = "local",
     ) -> tuple[dict[str, Any], ProjectOperation, bool]:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -281,6 +298,8 @@ class SqlAlchemyProjectDataRecords:
             done = _completed(operation, snapshot)
             session.add(_operation_row(done))
             session.flush()
+            if changed and origin == "local":
+                enqueue_intent(session, table, key, row.content_revision)
             if changed:
                 session.add(_change(done, before, snapshot))
             session.commit()
@@ -381,7 +400,7 @@ class SqlAlchemyProjectDataRecords:
                 "Dataset generation is no longer current",
                 410,
             )
-        if table.source_kind not in {"local", "excel"}:
+        if table.source_kind not in {"local", "excel", "sheets"}:
             raise ProjectError(
                 "SOURCE_WRITE_UNAVAILABLE", "Source does not support record writes", 412
             )

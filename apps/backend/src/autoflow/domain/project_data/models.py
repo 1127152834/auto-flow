@@ -35,7 +35,9 @@ class DataTable:
         )
 
 
-def table_to_dict(value: DataTable) -> dict[str, Any]:
+def table_to_dict(
+    value: DataTable, sync_summary: dict[str, Any] | None = None
+) -> dict[str, Any]:
     return {
         "projectId": value.project_id,
         "tableId": value.table_id,
@@ -48,11 +50,8 @@ def table_to_dict(value: DataTable) -> dict[str, Any]:
         "identity": value.identity,
         "slotDefinitions": value.slot_definitions,
         "recordCount": value.record_count,
-        "syncSummary": {
-            "status": "notApplicable",
-            "pendingCount": 0,
-            "unknownCount": 0,
-        },
+        "syncSummary": sync_summary
+        or {"status": "notApplicable", "pendingCount": 0, "unknownCount": 0},
         "createdAt": value.created_at.isoformat(),
         "updatedAt": value.updated_at.isoformat(),
     }
