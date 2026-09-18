@@ -18,8 +18,6 @@ DEFAULT_RESOURCES = {
 }
 AVAILABILITY = {
     key: "available"
-    if key in {"automations", "data", "runs", "environments", "sync"}
-    else "notImplemented"
     for key in ("automations", "data", "runs", "environments", "statistics", "sync")
 }
 

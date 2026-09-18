@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Response
 
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import AVAILABILITY, ProjectService
 from autoflow.domain.projects.models import project_to_dict
 
@@ -22,7 +23,9 @@ from .project_schemas import (
 Key = Annotated[UUID, Header(alias="Idempotency-Key")]
 
 
-def projects_router(service: ProjectService) -> APIRouter:
+def projects_router(
+    service: ProjectService, overview_service: ProjectOverviewService
+) -> APIRouter:
     router = APIRouter(prefix="/api/v1")
 
     @router.get(
@@ -112,13 +115,10 @@ def projects_router(service: ProjectService) -> APIRouter:
         response_model=ProjectOverview,
         responses=browser_error_responses(401, 404, 422),
     )
-    def overview(projectId: UUID):
+    def overview(projectId: UUID, timezone: str | None = None):
         return {
-            "project": project_to_dict(service.get(str(projectId))),
-            "counts": {},
+            **overview_service.get(str(projectId), timezone=timezone),
             "availability": AVAILABILITY,
-            "activity": [],
-            "recent": [],
         }
 
     @router.get(

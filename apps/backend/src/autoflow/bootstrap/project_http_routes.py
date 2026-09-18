@@ -28,6 +28,7 @@ from autoflow.adapters.http.project_sheets import (
     project_sheets_connections_router,
     project_sync_router,
 )
+from autoflow.adapters.http.project_statistics import project_statistics_router
 from autoflow.adapters.http.projects import projects_router
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.project_automations.service import ProjectAutomationService
@@ -50,7 +51,9 @@ from autoflow.application.project_sync.bindings import SheetsBindingService
 from autoflow.application.project_sync.connections import SheetsConnectionService
 from autoflow.application.project_sync.impacts import SheetsImpactService
 from autoflow.application.project_sync.outbound import SheetsSyncService
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
+from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.runtime import QuiesceGate
 
 
@@ -63,6 +66,8 @@ class ProjectHttpServices:
     run_scheduler: ProjectBatchScheduler
     gate: QuiesceGate
     projects: ProjectService
+    overview: ProjectOverviewService
+    statistics: ProjectStatisticsService
     automations: ProjectAutomationService
     tables: DataTableService
     catalog: DataCatalogService
@@ -82,7 +87,8 @@ class ProjectHttpServices:
 
 
 def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None:
-    app.include_router(projects_router(services.projects))
+    app.include_router(projects_router(services.projects, services.overview))
+    app.include_router(project_statistics_router(services.statistics))
     app.include_router(project_runs_router(services.run_coordinator, services.run_queries, services.run_scheduler, services.gate))
     app.include_router(project_run_evidence_router(services.run_evidence))
     app.include_router(project_run_events_router(services.run_events))

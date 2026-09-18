@@ -51,7 +51,9 @@ from autoflow.application.project_sync.connections import (
 from autoflow.application.project_sync.impacts import SheetsImpactService
 from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.application.project_sync.runs import SheetsRun
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
+from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
@@ -543,6 +545,8 @@ def create_app(
         run_scheduler=project_run_scheduler,
         gate=quiesce_gate,
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
+        overview=ProjectOverviewService(session_factory),
+        statistics=ProjectStatisticsService(session_factory),
         automations=ProjectAutomationService(
             SqlAlchemyProjects(session_factory),
             SqlAlchemyProjectAutomations(session_factory),

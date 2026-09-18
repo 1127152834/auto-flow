@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from autoflow.adapters.http.project_runs import project_runs_router
 from autoflow.adapters.http.projects import projects_router
 from autoflow.application.project_runs.queries import ProjectRunQueries
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.domain.project_runs.models import ProjectRunError
@@ -38,7 +39,11 @@ def client_for(tmp_path, resolver=None):
     factory, _, _, coordinator, _, project, automation = setup(tmp_path, resolver)
     scheduler = Scheduler()
     app = FastAPI()
-    app.include_router(projects_router(ProjectService(SqlAlchemyProjects(factory))))
+    app.include_router(
+        projects_router(
+            ProjectService(SqlAlchemyProjects(factory)), ProjectOverviewService(factory)
+        )
+    )
     app.include_router(
         project_runs_router(
             coordinator, ProjectRunQueries(factory), scheduler, QuiesceGate()
