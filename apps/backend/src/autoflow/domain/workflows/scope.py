@@ -331,7 +331,8 @@ def _node_type(node: Mapping[str, Any]) -> tuple[str, str]:
 
 def _custom_module_id(node: Mapping[str, Any]) -> str | None:
     data = node.get("data")
-    for container in (data, node):
+    config = data.get("config") if isinstance(data, Mapping) else None
+    for container in (config, data, node):
         if isinstance(container, Mapping):
             value = container.get("customModuleId")
             if isinstance(value, str) and value:

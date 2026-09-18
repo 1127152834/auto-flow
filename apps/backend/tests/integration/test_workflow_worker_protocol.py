@@ -502,6 +502,183 @@ async def test_real_worker_stops_recursive_canvas_subflow_with_clear_error(
 
 
 @pytest.mark.asyncio
+async def test_real_worker_runs_frozen_custom_module_with_isolated_outputs(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    payload = {
+        "runId": "custom-module-run",
+        "workflowId": "custom-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {},
+        "customModuleDependencies": {
+            "formatter": {
+                "id": "formatter",
+                "name": "formatter",
+                "display_name": "格式化器",
+                "revision": 3,
+                "parameters": [
+                    {"name": "incoming", "default_value": "fallback"}
+                ],
+                "outputs": [{"name": "answer"}],
+                "workflow": {
+                    "nodes": [
+                        {
+                            "id": "answer",
+                            "type": "moduleNode",
+                            "data": {
+                                "moduleType": "set_variable",
+                                "config": {
+                                    "variableName": "answer",
+                                    "variableValue": "{incoming}",
+                                },
+                            },
+                        },
+                        {
+                            "id": "internal",
+                            "type": "moduleNode",
+                            "data": {
+                                "moduleType": "set_variable",
+                                "config": {
+                                    "variableName": "internal_only",
+                                    "variableValue": "secret",
+                                },
+                            },
+                        },
+                    ],
+                    "edges": [],
+                    "variables": [],
+                },
+            }
+        },
+        "document": {
+            "nodes": [
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "custom_module",
+                        "customModuleId": "formatter",
+                        "parameterValues": {"incoming": "{source}"},
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "source", "value": "parent"}],
+        },
+    }
+    await manager.start("custom-module-run", "profile-1", None, payload)
+    for _ in range(300):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    completed = [
+        event for event in events if event.get("type") == "execution:node_complete"
+    ]
+    custom = next(event for event in completed if event.get("nodeId") == "call")
+    assert custom["success"] is True
+    assert custom["data"] == {
+        "outputs": {"answer": "parent"},
+        "executed_nodes": 2,
+        "failed_nodes": 0,
+    }
+    assert "internal_only" not in custom["data"]["outputs"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("depth", "expected_success"), [(16, True), (17, False)])
+async def test_real_worker_enforces_custom_module_depth_limit(
+    tmp_path: Path, depth: int, expected_success: bool
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    definitions: dict[str, object] = {}
+    for index in range(depth):
+        module_id = f"module-{index}"
+        if index + 1 < depth:
+            inner = {
+                "id": f"call-{index + 1}",
+                "type": "moduleNode",
+                "data": {
+                    "moduleType": "custom_module",
+                    "customModuleId": f"module-{index + 1}",
+                },
+            }
+        else:
+            inner = {
+                "id": "last",
+                "type": "moduleNode",
+                "data": {
+                    "moduleType": "set_variable",
+                    "config": {"variableName": "done", "variableValue": "1"},
+                },
+            }
+        definitions[module_id] = {
+            "id": module_id,
+            "name": module_id,
+            "display_name": module_id,
+            "parameters": [],
+            "outputs": [],
+            "workflow": {"nodes": [inner], "edges": [], "variables": []},
+        }
+    payload = {
+        "runId": f"custom-depth-{depth}",
+        "workflowId": "custom-depth-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {},
+        "customModuleDependencies": definitions,
+        "document": {
+            "nodes": [
+                {
+                    "id": "root-call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "custom_module",
+                        "customModuleId": "module-0",
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    await manager.start(f"custom-depth-{depth}", "profile-1", None, payload)
+    for _ in range(500):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    terminal = next(
+        event
+        for event in reversed(events)
+        if event.get("type") in {"execution:completed", "execution:failed"}
+    )
+    assert (terminal["type"] == "execution:completed") is expected_success
+    if not expected_success:
+        failures = [
+            event
+            for event in events
+            if event.get("type") == "execution:node_complete"
+            and event.get("success") is False
+        ]
+        assert any("嵌套层数过深(>16)" in str(event.get("error")) for event in failures)
+
+
+@pytest.mark.asyncio
 async def test_worker_start_rejects_bad_handshake_and_releases_slot(tmp_path: Path) -> None:
     script = tmp_path / "bad-worker.py"
     script.write_text("print('not-json', flush=True)\n", encoding="utf-8")

@@ -12,7 +12,11 @@ from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.basic import OpenPageExecutor
 from autoflow.application.workflows.executors.input_prompt import InputPromptExecutor
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
+from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.kernels.models import InstalledKernel
@@ -22,6 +26,7 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
 
@@ -239,6 +244,99 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
         "已打开网页",
         "执行完成，共执行 1 个节点，失败 0 个",
     ]
+
+
+@pytest.mark.asyncio
+async def test_browser_requirement_propagates_from_frozen_custom_module(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "custom-module-browser.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    modules = CustomModuleService(SqlAlchemyWorkflowModules(sessions))
+    module = modules.create(
+        {
+            "name": "browser_module",
+            "display_name": "浏览器模块",
+            "parameters": [],
+            "outputs": [],
+            "workflow": {
+                "nodes": [
+                    {
+                        "id": "open",
+                        "type": "moduleNode",
+                        "data": {
+                            "moduleType": "open_page",
+                            "config": {"url": "https://example.test"},
+                        },
+                    }
+                ],
+                "edges": [],
+                "variables": [],
+            },
+        },
+        client_request_id="create-browser-module",
+    )
+    documents = WorkflowDocumentService(
+        SqlAlchemyWorkflowDocuments(sessions), custom_module_exists=modules.exists
+    )
+    documents.create(
+        {
+            "id": "module-browser-flow",
+            "name": "模块浏览器传播",
+            "nodes": [
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "custom_module",
+                        "customModuleId": module.id,
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+        client_request_id="create-module-browser-flow",
+    )
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    workers = FakeWorkers()
+    resources = FakeResources()
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"kernel")
+    coordinator = WorkflowRunCoordinator(
+        documents=documents,
+        runs=WorkflowRunService(repository),
+        run_repository=repository,
+        runtime=WorkflowRuntime(build_production_executor_registry()),
+        profiles=FakeProfiles(_profile()),
+        installed_kernels=lambda: [
+            InstalledKernel("public", "145.0.1", executable, executable.stat().st_size)
+        ],
+        resolve_proxy=lambda _profile, _run_id: _none(),
+        read_license=lambda: None,
+        workers=workers,
+        resources=resources,
+        events=StudioEventJournal(),
+        artifact_root=tmp_path / "workspace",
+        modules=modules,
+    )
+
+    accepted = await coordinator.start(
+        "module-browser-flow",
+        {
+            "runId": "module-browser-run",
+            "documentId": "module-browser-flow",
+            "profileId": "profile-1",
+        },
+    )
+
+    assert accepted["status"] == "running"
+    assert resources.acquired == [
+        ("module-browser-run", "profile-1", "public", "145.0.1")
+    ]
+    assert workers.payloads[0]["requiresBrowser"] is True
+    assert workers.payloads[0]["customModuleDependencies"][module.id]["revision"] == 1
 
 
 @pytest.mark.asyncio

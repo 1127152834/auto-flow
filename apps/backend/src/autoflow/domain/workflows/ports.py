@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Protocol
 
 from .document import SavedWorkflow, WorkflowDraft, WorkflowSummaryPage
+from .modules import CustomModuleDraft, SavedCustomModule
 
 
 class WorkflowDocumentRepository(Protocol):
@@ -32,3 +33,42 @@ class WorkflowDocumentRepository(Protocol):
     ) -> SavedWorkflow: ...
 
     def delete(self, workflow_id: str, *, expected_revision: int) -> None: ...
+
+
+class CustomModuleRepository(Protocol):
+    def create(
+        self,
+        module_id: str,
+        draft: CustomModuleDraft,
+        *,
+        client_request_id: str,
+        request_digest: str,
+        now: datetime,
+    ) -> SavedCustomModule: ...
+
+    def get(self, module_id: str) -> SavedCustomModule | None: ...
+
+    def list_all(self) -> tuple[SavedCustomModule, ...]: ...
+
+    def update(
+        self,
+        module_id: str,
+        draft: CustomModuleDraft,
+        *,
+        expected_revision: int,
+        client_request_id: str,
+        request_digest: str,
+        now: datetime,
+    ) -> SavedCustomModule: ...
+
+    def delete(
+        self,
+        module_id: str,
+        *,
+        expected_revision: int,
+        client_request_id: str,
+        request_digest: str,
+        now: datetime,
+    ) -> None: ...
+
+    def increment_usage(self, module_id: str) -> SavedCustomModule: ...

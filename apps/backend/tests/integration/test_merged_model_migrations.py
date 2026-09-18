@@ -19,7 +19,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["0012_workflow_document_requests"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0013_workflow_custom_modules"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -40,11 +40,12 @@ def test_merge_upgrade_preserves_each_branch_database(
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("0012_workflow_document_requests",)
+            ("0013_workflow_custom_modules",)
         ]
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
         assert {"workflow_runs", "workflow_run_events", "workflow_run_artifacts", "workflow_debug_commands"} <= tables
+        assert {"workflow_custom_modules", "workflow_custom_module_requests"} <= tables
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if revision:
             assert connection.execute(
@@ -112,6 +113,6 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
     with sqlite3.connect(paths.database) as connection:
         after = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0012_workflow_document_requests",)
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0013_workflow_custom_modules",)
     assert after == before
     assert artifact.read_bytes() == b'{"saved":"evidence"}'

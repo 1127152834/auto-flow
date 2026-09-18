@@ -17,6 +17,7 @@ from autoflow.application.workflows.executors.production import (
 )
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import (
+    CustomModuleResult,
     ExecutionContext,
     InputPromptRequest,
     NestedWorkflowResult,
@@ -127,6 +128,16 @@ async def _run_in_session(
             command_bus=command_bus,
         )
         context.nested_workflows = nested
+        custom_modules = _WorkerCustomModules(
+            command.get("customModuleDependencies"),
+            registry=registry,
+            parent=context,
+            sink=sink,
+            command_bus=command_bus,
+            nested_workflows=nested,
+        )
+        context.custom_modules = custom_modules
+        nested.custom_modules = custom_modules
         canvas_subflows = _WorkerCanvasSubflows(
             document,
             registry=registry,
@@ -356,6 +367,7 @@ class _WorkerNestedWorkflows:
             "workflow_chain_stack", default=()
         )
         self._background: set[asyncio.Task[NestedWorkflowResult]] = set()
+        self.custom_modules: _WorkerCustomModules | None = None
 
     async def run_workflow(
         self,
@@ -443,6 +455,8 @@ class _WorkerNestedWorkflows:
         child.events = child_sink
         child.input_prompts = self._command_bus.for_context(child)
         child.nested_workflows = self
+        if self.custom_modules is not None:
+            child.custom_modules = self.custom_modules.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
             snapshot,
             registry=self._registry,
@@ -485,6 +499,154 @@ class _WorkerNestedWorkflows:
                 }
             )
             return nested
+        finally:
+            self._stack.reset(token)
+
+
+class _WorkerCustomModules:
+    def __init__(
+        self,
+        snapshots: Any,
+        *,
+        registry: Any,
+        parent: ExecutionContext,
+        sink: _WorkerEventSink,
+        command_bus: _WorkerCommandBus,
+        nested_workflows: _WorkerNestedWorkflows,
+        stack: ContextVar[tuple[str, ...]] | None = None,
+    ) -> None:
+        self._snapshots = (
+            {str(key): copy.deepcopy(value) for key, value in snapshots.items()}
+            if isinstance(snapshots, Mapping)
+            else {}
+        )
+        self._registry = registry
+        self._parent = parent
+        self._sink = sink
+        self._command_bus = command_bus
+        self._nested_workflows = nested_workflows
+        self._stack = stack or ContextVar("custom_module_stack", default=())
+
+    def for_context(
+        self, context: ExecutionContext, sink: _WorkerEventSink
+    ) -> _WorkerCustomModules:
+        return _WorkerCustomModules(
+            self._snapshots,
+            registry=self._registry,
+            parent=context,
+            sink=sink,
+            command_bus=self._command_bus,
+            nested_workflows=self._nested_workflows,
+            stack=self._stack,
+        )
+
+    def definition(self, module_id: str) -> Mapping[str, Any] | None:
+        value = self._snapshots.get(module_id)
+        return copy.deepcopy(value) if isinstance(value, Mapping) else None
+
+    async def run_custom_module(
+        self,
+        *,
+        module_id: str,
+        parameter_values: Mapping[str, Any],
+    ) -> CustomModuleResult:
+        definition = self._snapshots.get(module_id)
+        if not isinstance(definition, Mapping):
+            return CustomModuleResult(
+                module_id,
+                module_id,
+                False,
+                {},
+                0,
+                1,
+                f"自定义模块不存在: {module_id}",
+            )
+        name = str(definition.get("display_name") or definition.get("name") or module_id)
+        stack = self._stack.get()
+        if module_id in stack:
+            return CustomModuleResult(
+                module_id,
+                name,
+                False,
+                {},
+                0,
+                1,
+                f"检测到自定义模块循环引用: {' -> '.join(stack)} -> {module_id}",
+            )
+        if len(stack) >= 16:
+            return CustomModuleResult(
+                module_id,
+                name,
+                False,
+                {},
+                0,
+                1,
+                f"自定义模块嵌套层数过深(>16): {' -> '.join(stack)}",
+            )
+        workflow = definition.get("workflow")
+        if not isinstance(workflow, Mapping):
+            return CustomModuleResult(
+                module_id,
+                name,
+                False,
+                {},
+                0,
+                1,
+                f"自定义模块 '{name}' 缺少工作流定义",
+            )
+        document = copy.deepcopy(dict(workflow))
+        token = self._stack.set((*stack, module_id))
+        variables = _initial_variables(document)
+        for key, value in parameter_values.items():
+            variables[str(key)] = copy.deepcopy(self._parent.resolve_value(value))
+        child = ExecutionContext(
+            variables=variables,
+            browser=self._parent.browser,
+            table_workbooks=self._parent.table_workbooks,
+            credentials=self._parent.credentials,
+            models=self._parent.models,
+            external_integrations=self._parent.external_integrations,
+            cancellation=self._parent.cancellation,
+            clock=self._parent.clock,
+        )
+        child_sink = self._sink.for_context(child)
+        child.events = child_sink
+        child.input_prompts = self._command_bus.for_context(child)
+        child.nested_workflows = self._nested_workflows
+        child.custom_modules = self.for_context(child, child_sink)
+        canvas_subflows = _WorkerCanvasSubflows(
+            document,
+            registry=self._registry,
+            parent=child,
+            sink=child_sink,
+            command_bus=self._command_bus,
+            nested_workflows=self._nested_workflows,
+        )
+        child.canvas_subflows = canvas_subflows
+        try:
+            result = await WorkflowRuntime(self._registry).execute(
+                canvas_subflows.top_level_document(), child
+            )
+            output_values: dict[str, Any] = {}
+            outputs = definition.get("outputs", [])
+            if isinstance(outputs, list):
+                for output in outputs:
+                    if not isinstance(output, Mapping):
+                        continue
+                    output_name = output.get("name")
+                    if isinstance(output_name, str) and output_name:
+                        output_values[output_name] = copy.deepcopy(
+                            child.variables.get(output_name)
+                        )
+            return CustomModuleResult(
+                module_id,
+                name,
+                result.success,
+                output_values if result.success else {},
+                len(result.executed_node_ids),
+                0 if result.success else 1,
+                result.node_result.error if result.node_result else None,
+            )
         finally:
             self._stack.reset(token)
 
@@ -571,6 +733,10 @@ class _WorkerCanvasSubflows:
         child.events = child_sink
         child.input_prompts = self._command_bus.for_context(child)
         child.nested_workflows = self._nested_workflows
+        if isinstance(self._parent.custom_modules, _WorkerCustomModules):
+            child.custom_modules = self._parent.custom_modules.for_context(
+                child, child_sink
+            )
         child.canvas_subflows = self
         try:
             result = await WorkflowRuntime(self._registry).execute(

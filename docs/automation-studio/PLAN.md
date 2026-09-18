@@ -1,6 +1,8 @@
 # AutoFlow Automation Studio 规划与迁移计划
 
-- 状态：规划已确认，等待基础架构主线完成后执行
+> 从 WebRPA 的功能模块和源码依赖倒推的从零开发顺序，以 [REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md](./REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md) 为当前实施顺序和验收依据；本文继续保存产品形态、架构边界与长期约束。
+
+- 状态：实体盘点完成；等待 AutoFlow 主框架完成后，先复刻 Studio 前端，自动化后端暂缓
 - 日期：2026-09-11
 - 目标平台：Windows x64、macOS Intel、macOS Apple Silicon
 - 产品形态：AutoFlow 中可独立运行的工作流创作桌面应用
@@ -32,7 +34,7 @@ Automation Studio 是 AutoFlow 的自动化创作与执行工作台。它可以�
 - Windows 桌面自动化、macOS 桌面自动化和 Android 自动化；
 - AI 自愈和自动生成工作流；
 - WebRPA 运行时集成、协议兼容、文件格式兼容和外部进程调用；
-- 复制 WebRPA 全部 571 个节点。
+- 复制 WebRPA 全部 573 个唯一 `module_type`。
 
 ## 2. 核心设计原则
 
@@ -203,8 +205,8 @@ RunEvent
 ### 5.3 执行器
 
 ```python
-class NodeExecutor(Protocol):
-    node_type: str
+class ModuleExecutor(Protocol):
+    module_type: str
 
     def validate(self, config: object) -> list[ValidationIssue]: ...
 
@@ -214,8 +216,10 @@ class NodeExecutor(Protocol):
         self,
         config: object,
         context: ExecutionContext,
-    ) -> NodeResult: ...
+    ) -> ModuleResult: ...
 ```
+
+AutoFlow 可以在内部使用 `NodeExecutor` 作为别名，但迁移层保留 WebRPA 的 `ModuleExecutor`、`module_type`、配置字段和结果字段，避免没有证据的契约改名。
 
 第一批执行器：
 
@@ -442,3 +446,49 @@ navigate
 6. 项目管理接入完成后，再评估是否需要其他 WebRPA 能力。
 
 本计划的成功标准不是复制 WebRPA 的目录或模块数量，而是用 AutoFlow 自己的架构稳定提供一组可测试、可停止、可跨平台运行的 CloakBrowser Web 自动化能力。
+
+## 12. 当前实施计划（实体盘点后的执行顺序）
+
+### 阶段 A：契约冻结
+
+交付：`WEBRPA_ENTITY_INVENTORY.md`、节点迁移表、P0 配置快照、错误和日志事件约定。
+
+规则：保留 WebRPA 的 `module_type`、配置字段、输入输出和默认值；只允许改变包边界、浏览器适配层和已确认排除能力。任何字段变更必须有源代码位置、行为差异和测试证据。
+
+退出条件：P0 节点名单和首期排除名单冻结；不存在“先改名、以后兼容”的未记录决定。
+
+### 阶段 B：Kernel 可运行闭环
+
+交付：Workflow、Node、Edge、Variable、ModuleResult、ExecutionContext、ExecutorRegistry、AutomationKernel，以及 `open_page → click_element → input_text → wait → get_element_info` 黄金流程。
+
+退出条件：不导入 `reference/WebRPA`；执行器只通过 `CloakBrowserRuntime`；节点失败、超时和变量传递有测试；注册表重复类型直接失败。
+
+### 阶段 C：运行事件与 API
+
+交付：Run、RunEvent、取消、超时、节点状态、日志和截图附件；FastAPI 工作流保存、加载、校验、运行和事件接口。
+
+退出条件：一次运行内事件序号稳定；运行结束后资源清理；HTTP 层不包含执行器逻辑；内核测试不依赖 FastAPI fixture。
+
+### 阶段 D：CloakBrowser 适配与 P0 浏览器节点
+
+顺序：页面生命周期 → 元素定位/等待 → 输入与点击 → 下拉框/复选框/滚动 → 标签页 → iframe → 对话框 → 上传/下载 → 截图。
+
+退出条件：固定本地测试页面覆盖导航、表单、异步元素、新标签页和 iframe；Windows 与 macOS 均完成启动、取消、关闭和异常退出证据。
+
+### 阶段 E：Studio 编辑器
+
+交付：React Flow 画布、P0 节点目录、配置面板、变量面板、运行控制、节点状态和日志面板。前端类型由同一份节点元数据生成或校验，不能再出现多处手工维护的节点列表。
+
+退出条件：可以创建、保存、加载并运行一个 P0 黄金流程；编辑器不直接持有浏览器状态；运行状态来自后端契约。
+
+### 阶段 F：录制、拾取与选择器测试
+
+交付：元素拾取、选择器预览/测试、click/input/select/navigate 录制、selector hints 和可观测的自愈日志。
+
+退出条件：录制结果能直接生成现有 P0 节点配置；自愈不会静默改变工作流；用户可以看到原选择器、候选选择器和采用原因。
+
+### 阶段 G：P1 能力与 Manager 接入
+
+只有阶段 A-F 全部通过后，才按清单逐项迁移数据处理、HTTP、文件、表格、数据库、触发器和调度能力。Manager 通过 application API 调用 Studio，不把项目、资源和分析逻辑放进执行器。
+
+每个 P1 能力单独提交、单独记录来源和行为差异，并重新运行黄金流程；不进行“整目录搬迁”。

@@ -130,6 +130,28 @@ class CanvasSubflowGateway(Protocol):
     ) -> NestedWorkflowResult: ...
 
 
+@dataclass(frozen=True, slots=True)
+class CustomModuleResult:
+    module_id: str
+    name: str
+    success: bool
+    outputs: Mapping[str, Any]
+    executed_nodes: int
+    failed_nodes: int
+    error: str | None = None
+
+
+class CustomModuleGateway(Protocol):
+    def definition(self, module_id: str) -> Mapping[str, Any] | None: ...
+
+    async def run_custom_module(
+        self,
+        *,
+        module_id: str,
+        parameter_values: Mapping[str, Any],
+    ) -> CustomModuleResult: ...
+
+
 class CancellationToken(Protocol):
     @property
     def cancelled(self) -> bool: ...
@@ -156,6 +178,7 @@ class ExecutionContext:
     input_prompts: InputPromptGateway | None = None
     nested_workflows: NestedWorkflowGateway | None = None
     canvas_subflows: CanvasSubflowGateway | None = None
+    custom_modules: CustomModuleGateway | None = None
     cancellation: CancellationToken | None = None
     clock: WorkflowClock = field(default_factory=WorkflowClock)
     data_rows: list[dict[str, Any]] = field(default_factory=list)

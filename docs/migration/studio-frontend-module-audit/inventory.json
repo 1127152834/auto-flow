@@ -1,0 +1,2677 @@
+{
+  "scope": "frontend/src files; literal socket subscriptions and direct mock event producers; no semantic parity claim",
+  "sourceFiles": 322,
+  "manifestMapped": 275,
+  "unmapped": 47,
+  "missingTargets": [],
+  "changedSourceHashes": [],
+  "originalLiteralSocketSubscriptions": [
+    "connect",
+    "disconnect",
+    "execution:completed",
+    "execution:data_row",
+    "execution:data_row_batch",
+    "execution:input_prompt",
+    "execution:js_script",
+    "execution:log",
+    "execution:log_batch",
+    "execution:node_complete",
+    "execution:node_start",
+    "execution:paused",
+    "execution:play_music",
+    "execution:play_video",
+    "execution:resumed",
+    "execution:started",
+    "execution:stopped",
+    "execution:tts_request",
+    "execution:view_image",
+    "hotkey:custom_action",
+    "hotkey:macro_start",
+    "hotkey:macro_stop",
+    "hotkey:no_workflow",
+    "hotkey:run_workflow",
+    "hotkey:screenshot",
+    "hotkey:stop_workflow"
+  ],
+  "currentLiteralSocketSubscriptions": [
+    "command_error",
+    "connect",
+    "disconnect",
+    "execution:completed",
+    "execution:data_row",
+    "execution:data_row_batch",
+    "execution:input_prompt",
+    "execution:js_script",
+    "execution:log",
+    "execution:log_batch",
+    "execution:node_complete",
+    "execution:node_start",
+    "execution:paused",
+    "execution:play_music",
+    "execution:play_video",
+    "execution:resumed",
+    "execution:started",
+    "execution:stopped",
+    "execution:tts_request",
+    "execution:view_image",
+    "hotkey:custom_action",
+    "hotkey:macro_start",
+    "hotkey:macro_stop",
+    "hotkey:no_workflow",
+    "hotkey:run_workflow",
+    "hotkey:screenshot",
+    "hotkey:stop_workflow"
+  ],
+  "removedLiteralSocketSubscriptions": [],
+  "directMockEventProducers": [
+    "execution:completed",
+    "execution:data_row",
+    "execution:log",
+    "execution:node_complete",
+    "execution:node_start",
+    "execution:paused",
+    "execution:resumed",
+    "execution:started"
+  ],
+  "subscriptionsWithoutDirectMockProducer": [
+    "command_error",
+    "connect",
+    "disconnect",
+    "execution:data_row_batch",
+    "execution:input_prompt",
+    "execution:js_script",
+    "execution:log_batch",
+    "execution:play_music",
+    "execution:play_video",
+    "execution:stopped",
+    "execution:tts_request",
+    "execution:view_image",
+    "hotkey:custom_action",
+    "hotkey:macro_start",
+    "hotkey:macro_stop",
+    "hotkey:no_workflow",
+    "hotkey:run_workflow",
+    "hotkey:screenshot",
+    "hotkey:stop_workflow"
+  ],
+  "files": [
+    {
+      "source": "frontend/src/App.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/AssistantWindow.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/assets/icons/gesture-icon.svg",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/assets/icons/variable-tracking.svg",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/assets/react.svg",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/__tests__/button.test.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/button.test.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/__tests__/confirm-dialog.test.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/confirm-dialog.test.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/__tests__/date-time-picker.test.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/date-time-picker.test.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ai-assistant/AIAssistantButton.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ai-assistant/AIAssistantPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ai-assistant/MessageBubble.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ai-assistant/__tests__/MessageBubble.test.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/assistant/__tests__/MessageBubble.test.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/scheduled-tasks/NotificationConfigEditor.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/scheduled-tasks/ScheduledTasksDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/scheduled-tasks/ScheduledTasksPage.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/scheduled-tasks/StatisticsPanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/scheduled-tasks/TaskCreateDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/scheduled-tasks/TaskEditDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/scheduled-tasks/TaskLogsDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/button.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/button.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/card.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/checkbox.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/checkbox.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/color-field.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/color-picker.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/color-picker.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/confirm-dialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/coordinate-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/coordinate-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/custom-dialogs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/custom-dialogs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/date-time-picker.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/date-time-picker.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/dialog-portal.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dialog-portal.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/dialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/dropdown-menu.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dropdown-menu.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/dual-coordinate-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dual-coordinate-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/hierarchical-excel-selector.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/hierarchical-excel-selector.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/hierarchical-image-selector.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/image-path-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/label.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/label.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/number-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/number-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/password-prompt.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/password-prompt.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/path-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/phone-coordinate-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/phone-coordinate-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/popover.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/popover.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/progress.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/qq-contact-select.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/qq-contact-select.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/radio-group.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/radio-group.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/scroll-area.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/scroll-area.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/select-native.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/select-native.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/select.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/slider.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/slider.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/switch.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/switch.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/table.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/tabs.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/textarea.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/url-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/url-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/variable-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/variable-name-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/variable-ref-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/variable-ref-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/ui/window-title-input.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/controls/window-title-input.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/AICodeAssistant.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/AICodeAssistant.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/AutoBrowserDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/AutoBrowserDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/BlockFlowView.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/BlockFlowView.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ConfigPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/CreateCustomModuleDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/CreateCustomModuleDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/CustomModuleList.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/CustomModuleList.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/CustomModuleManageDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/CustomModuleManageDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/DataPreviewPanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/DataTable.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/DataTable.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/DebugBar.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/DebugBar.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/DebugPanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/DesktopRecorderPanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/EditCustomModuleDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/EditCustomModuleDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/EnterpriseDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ExcelAssetsPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ExcelAssetsPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ExeUiDesigner.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ExecutionDetailsPanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ExportDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ExportDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/FeaturePackDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/FeaturePackDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/GroupNode.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/GroupNode.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ImageViewerContainer.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerContainer.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ImageViewerDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/InjectJsEditorDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/InjectJsEditorDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/InputPromptDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/JsEditorDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/JsEditorDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/LogList.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/LogList.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/LogPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/MissingPacksDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/MissingPacksDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ModuleNode.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ModuleNode.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ModuleSidebar.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/MouseCoordinateOverlay.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/MusicPlayerContainer.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerContainer.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/MusicPlayerDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/NoteNode.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/NoteNode.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/PackageDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/PanelResizer.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/PanelResizer.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/PhoneMirrorDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/PhoneScreenshotCropper.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/PluginMarketPanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/PythonEditorDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/PythonEditorDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/QuickModulePicker.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/QuickModulePicker.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/RecorderPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/RemoteCursor.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/RemoteCursor.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ScreensaverDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ScreenshotNameDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/ScreenshotNameDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/ScreenshotSelector.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/SponsorDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/SubflowHeaderNode.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/SubflowHeaderNode.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/SubflowMonitorDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/SubflowMonitorDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/Toolbar.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/UpdateDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/VariablePanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/VariableTrackingPanel.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/VersionHistoryPanel.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/VideoPlayerContainer.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerContainer.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/VideoPlayerDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/WorkflowErrorBoundary.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/WorkflowHubDialog.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/__tests__/CustomModuleList.test.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/CustomModuleList.test.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/__tests__/MissingPacksDialog.test.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/MissingPacksDialog.test.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/__tests__/blockFlowModel.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/blockFlowModel.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/blockFlowModel.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/blockFlowModel.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/AIMediaConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIMediaConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/AIModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/AdvancedModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/BasicModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/BlindWatermarkConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BlindWatermarkConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/ControlModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ControlModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/CustomModuleConfig.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/CustomModuleConfig.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/DataModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DataModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/DatabaseAdvancedConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DatabaseAdvancedConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/DatabaseModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DatabaseModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/DesktopModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DesktopModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/DictAdvancedConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DictAdvancedConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/DocumentConvertConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DocumentConvertConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/DrissionPageConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DrissionPageConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/ExcelModuleConfig.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelModuleConfig.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/ExcelPreviewDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelPreviewDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/FeishuModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FeishuModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/FileModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FileModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/FormatFactoryConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FormatFactoryConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/IframeModuleConfigs.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/ListAdvancedConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ListAdvancedConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/MathAdvancedConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/MathAdvancedConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/MathListConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/MathListConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/MediaModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/MediaModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/NotifyModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/NotifyModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/PDFModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PDFModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/PillowImageConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PillowImageConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/ReadExcelConfig.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ReadExcelConfig.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/RunWorkflowFileConfig.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/RunWorkflowFileConfig.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/SAPModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SAPModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/SSHModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SSHModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/SimilarSelectorDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SimilarSelectorDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/StatisticsConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/StatisticsConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/TestAllureConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TestAllureConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/TriggerModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/UrlInputDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/UrlInputDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/UtilityToolsConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/UtilityToolsConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/WPSModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WPSModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/WeChatModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WeChatModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/WebhookModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WebhookModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/WordModuleConfig.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WordModuleConfig.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/YtDlpModuleConfigs.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/YtDlpModuleConfigs.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/config-panels/index.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/index.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/DocumentationDialog.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/DocumentationDialog.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/MarkdownRenderer.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/MarkdownRenderer.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-advanced.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-advanced.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-advanced.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-advanced.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-ai-assistant.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-assistant.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-ai-assistant.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-assistant.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-ai-vision.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-vision.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-ai-vision.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-vision.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-basic.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-basic.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-basic.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-basic.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-bots.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-bots.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-bots.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-bots.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-browser.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-browser.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-browser.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-browser.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-cases.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-cases.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-cases.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-cases.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-custom-modules.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-custom-modules.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-custom-modules.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-custom-modules.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-data.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-data.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-data.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-data.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-database.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-database.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-database.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-database.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-debug.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-debug.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-debug.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-debug.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-desktop.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-desktop.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-desktop.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-desktop.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-excel.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-excel.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-excel.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-excel.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-feishu.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-feishu.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-feishu.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-feishu.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-files.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-files.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-files.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-files.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-getting-started.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-getting-started.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-getting-started.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-getting-started.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-image.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-image.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-image.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-image.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-input.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-input.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-input.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-input.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-math-flow.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-math-flow.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-math-flow.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-math-flow.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-media.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-media.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-media.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-media.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-module-reference.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-module-reference.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-module-reference.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-module-reference.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-network.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-network.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-network.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-network.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-notifications.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notifications.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-notifications.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notifications.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-notify.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notify.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-notify.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notify.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-patterns.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-patterns.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-patterns.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-patterns.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-pdf.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-pdf.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-pdf.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-pdf.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-phone.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-phone.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-phone.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-phone.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-platform.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-platform.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-platform.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-platform.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-plugin-dev.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-plugin-dev.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-plugin-dev.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-plugin-dev.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-sap.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-sap.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-sap.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-sap.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-scheduled-tasks.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-scheduled-tasks.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-scheduled-tasks.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-scheduled-tasks.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-selector.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-selector.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-selector.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-selector.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-share.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-share.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-share.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-share.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-ssh.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ssh.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-ssh.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ssh.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-test-report.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-test-report.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-test-report.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-test-report.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-tips.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-tips.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-tips.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-tips.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-triggers.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-triggers.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-triggers.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-triggers.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-utils.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-utils.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-utils.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-utils.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-variables.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-variables.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-variables.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-variables.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-word.en.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-word.en.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/content-word.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-word.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/contents.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/contents.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/documents.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/documents.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/index.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/index.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/documentation/types.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/types.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/icons/TestReportIcon.tsx",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/icons/TestReportIcon.tsx",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/mcpTemplates.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/mcpTemplates.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/components/workflow/moduleColors.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/components/moduleColors.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/hooks/use-toast.ts",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/hooks/useClipboardImageMonitor.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/useClipboardImageMonitor.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/hooks/useVirtualizer.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/useVirtualizer.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/index.css",
+      "target": "apps/desktop/src/renderer/domains/workflows/styles/webrpa.css",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/fieldLabels.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/fieldLabels.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/helpers/addNodeDefaults.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/helpers/addNodeDefaults.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/helpers/addNodeParserBaseline.json",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": [
+        "apps/desktop/src/renderer/domains/workflows/lib/__tests__/helpers/addNodeParserBaseline.json"
+      ]
+    },
+    {
+      "source": "frontend/src/lib/__tests__/i18n.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/i18n.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/moduleColors.audit.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/moduleDefaultVars.audit.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleDefaultVars.audit.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/moduleSearchEntries.audit.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleSearchEntries.audit.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/pathPicker.audit.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/pathPicker.audit.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/pinyin.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/pinyin.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/pinyinCoverage.audit.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/pinyinCoverage.audit.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/regression.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/regression.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/requiredFields.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/requiredFields.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/__tests__/safeMarkdown.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/safeMarkdown.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/agentWindow.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/agentWindow.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/customShortcuts.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/elkLayout.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/elkLayout.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/fieldLabels.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/fieldLabels.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/globalTooltip.ts",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/moduleDefaultVars.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/moduleDefaultVars.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/moduleSearchAudit.ts",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/motion.ts",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/pinyin.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/pinyin.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/recorderLayout.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/recorderLayout.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/requiredFields.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/safeMarkdown.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/safeMarkdown.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/uiI18n.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/uiI18n.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/uiI18nDict.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/uiI18nDict.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/utils.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/utils.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/lib/workflowCrypto.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/lib/workflowCrypto.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/main.tsx",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/services/aiAssistantApi.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantApi.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/services/aiAssistantSkills.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/services/api.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/api.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/services/config.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/api/config.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/services/remote.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/api/remote.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/services/socket.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/events.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/services/version.ts",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/__tests__/aiAssistantStore.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/aiAssistantStore.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/__tests__/customModuleStore.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/customModuleStore.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/__tests__/globalConfigStore.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/globalConfigStore.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/__tests__/workflowStore.test.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/workflowStore.test.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/aiActionLogStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/aiActionLogStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/aiAssistantStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/aiAssistantStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/aiPermissionStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/aiPermissionStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/customModuleStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/customModuleStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/debugStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/debugStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/dialogRegistry.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/dialogRegistry.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/globalConfigStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/globalConfigStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/layoutStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/layoutStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/moduleStatsStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/moduleStatsStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/nodeRunStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/nodeRunStore.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/scheduledTaskStore.ts",
+      "target": null,
+      "manifestMapped": false,
+      "targetExists": null,
+      "sourceHashMatches": null,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/store/workflowStore.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/types/customModule.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/types/customModule.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/types/index.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/types/index.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/types/modules.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/types/modules.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    },
+    {
+      "source": "frontend/src/types/workflow.ts",
+      "target": "apps/desktop/src/renderer/domains/workflows/types/workflow.ts",
+      "manifestMapped": true,
+      "targetExists": true,
+      "sourceHashMatches": true,
+      "sameNameTargets": []
+    }
+  ]
+}

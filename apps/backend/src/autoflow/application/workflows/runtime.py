@@ -222,31 +222,62 @@ class _WorkflowScheduler:
             executor.execute(config, self.context), self.context
         )
         if (
+            node.type == "custom_module"
+            and result.success
+            and self.context.custom_modules is not None
+            and isinstance(result.data, Mapping)
+        ):
+            module_id = str(result.data.get("module_id") or "")
+            raw_parameters = result.data.get("parameter_mappings", {})
+            parameters = (
+                raw_parameters if isinstance(raw_parameters, Mapping) else {}
+            )
+            custom_result = await self.context.custom_modules.run_custom_module(
+                module_id=module_id,
+                parameter_values=parameters,
+            )
+            if custom_result.success:
+                self.context.variables.update(dict(custom_result.outputs))
+            result = ModuleResult(
+                success=custom_result.success,
+                message=(
+                    f"自定义模块 '{custom_result.name}' 执行完成"
+                    if custom_result.success
+                    else ""
+                ),
+                error=custom_result.error,
+                data={
+                    "outputs": dict(custom_result.outputs),
+                    "executed_nodes": custom_result.executed_nodes,
+                    "failed_nodes": custom_result.failed_nodes,
+                },
+            )
+        if (
             node.type == "subflow"
             and result.success
             and self.context.canvas_subflows is not None
             and isinstance(result.data, Mapping)
         ):
-            nested = await self.context.canvas_subflows.run_subflow(
+            nested_subflow = await self.context.canvas_subflows.run_subflow(
                 group_id=str(result.data.get("subflow_group_id") or ""),
                 name=str(result.data.get("subflow_name") or ""),
             )
             result = ModuleResult(
-                success=nested.success,
+                success=nested_subflow.success,
                 message=(
                     (
-                        f"子流程 [{nested.name}] 为空"
-                        if nested.executed_nodes == 0
-                        else f"子流程 [{nested.name}] 执行完成"
+                        f"子流程 [{nested_subflow.name}] 为空"
+                        if nested_subflow.executed_nodes == 0
+                        else f"子流程 [{nested_subflow.name}] 执行完成"
                     )
-                    if nested.success
+                    if nested_subflow.success
                     else ""
                 ),
-                error=nested.error,
+                error=nested_subflow.error,
                 data={
-                    "subflow": nested.name,
-                    "executed_nodes": nested.executed_nodes,
-                    "failed_nodes": nested.failed_nodes,
+                    "subflow": nested_subflow.name,
+                    "executed_nodes": nested_subflow.executed_nodes,
+                    "failed_nodes": nested_subflow.failed_nodes,
                 },
             )
         if not _is_json_value(result.data):

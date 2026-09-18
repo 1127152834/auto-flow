@@ -1,6 +1,6 @@
 # Studio 后端迁入验收矩阵
 
-状态：B0 实施完成；正式用户数据库副本项外部等待。B1 正式五节点主链及正常关窗保护已通过，异常、应用退出与换区矩阵仍在收尾；B2 的 30 个网页节点已接入生产，B3 控制流底座与 16 个控制/变量节点已接入，B4 的 88 个节点已有生产执行器。正式 CloakBrowser/Electron 的剩余矩阵继续集中验收。日期：2026-09-16。
+状态：B0 实施完成；正式用户数据库副本项外部等待。B1 正式五节点主链及正常关窗保护已通过，异常、应用退出与换区矩阵仍在收尾；B2 的 30 个网页节点已接入生产，B3 的图/变量/21 个批准节点及自定义模块必要配套已接入，B4 的 88 个节点已有生产执行器。正式 CloakBrowser/Electron 的剩余矩阵继续集中验收。日期：2026-09-16。
 
 ## 1. 使用方式
 
@@ -73,7 +73,7 @@
 | BE-B3-003 | 并行分支 | 验证偏序和结果集合；不为测试稳定改成串行 | 应用层已通过：双分支必须同时进入后才能完成，汇合只执行一次；产物 writer 与敏感值状态按节点任务隔离，没有为测试串行化。正式 worker/Electron 组合仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-004 | `${name}`、`{name}`、递归列表/字典、表达式和缺失变量 | 与冻结变量测试一致，错误明确 | 部分通过：16 个控制/变量节点的 48 项冻结差分已覆盖模板、表达式、变量写入、JSONPath、时间及错误文本；完整递归变量矩阵与正式 UI 尚未关闭。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 部分通过：冻结标记语义、名称优先/ID回退、分组几何、subflow_header可达图、定义区主图隔离及循环引用已在真实worker通过；32层上限和正式Electron保存恢复待验收。[子流程证据](studio-backend-migration/evidence/b3/canvas-subflow-runtime-2026-09-16.json) |
-| BE-B3-006 | 自定义模块更新、依赖缺失、运行中修改 | 运行使用冻结解析内容；缺失依赖启动前拒绝 | 尚未验收 |
+| BE-B3-006 | 自定义模块更新、依赖缺失、运行中修改 | 运行使用冻结解析内容；缺失依赖启动前拒绝 | 后端与前端合同已通过：八个入口、revision/幂等、名称冲突、依赖缺失/循环、引用删除保护、运行中修改不影响冻结 revision/digest、真实 worker 隔离参数与声明输出、递归深度及浏览器需求传播均有证据。正式 Electron 真实 UI 组合仍待 B3.6 集中验收。[自定义模块证据](studio-backend-migration/evidence/b3/custom-module-runtime-2026-09-16.json) |
 | BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 部分通过：每次调度产生独立 executionId，同一节点多轮保留重复执行顺序；并行节点产物 writer 按任务绑定。循环事件持久化、分页和正式 UI 仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 部分通过：正在执行节点可被取消且不调度后继，纯变量循环每轮主动让出，总调度上限阻止普通环无限运行；尚缺 1,000 轮正式 worker 停止证据。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 

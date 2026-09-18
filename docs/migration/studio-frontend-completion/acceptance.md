@@ -2,6 +2,8 @@
 
 首次记录：2026-09-13；最近核销：2026-09-15。
 
+> 后端迁入准备已经单独完成，入口见 [Studio 正式后端交接合同](backend-handoff.md#后端迁入准备入口2026-09-15)。本文继续只记录前端与 Mock 消费协议证据；不得据此核销真实后端节点执行、采集、秘密存储或正式数据升级。
+
 **唯一剩余清单见原实施计划第3节**：`docs/superpowers/plans/2026-09-13-studio-frontend-completion-implementation.md`。下面是历史证据，不再机械累加旧报告中的缺口。节点已验收维度回填 capabilities.json，细项沿用 verified-cases.json。
 
 2026-09-15 首次核销：现有2,278条用例中2,277通过、1已替代，证据路径全部存在。新增回填既有 F3.RUN-ID/F3.LOG/F3.DEBUG-ID/F3.DEBUG-VAR 专项，以及拾取/录制来源和本次离开保护，不重跑已通过专项来制造进度。284注册与Store往返已确认，所有字段和正式Electron没有据此标通过。

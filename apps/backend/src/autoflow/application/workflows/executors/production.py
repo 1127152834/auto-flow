@@ -10,6 +10,7 @@ from .basic import (
     ScreenshotExecutor,
 )
 from .control_variable import CONTROL_VARIABLE_EXECUTORS
+from .custom_module import CustomModuleExecutor
 from .data_structure import (
     DictGetExecutor,
     DictKeysExecutor,
@@ -133,6 +134,7 @@ from .web_basic import WEB_BASIC_EXECUTORS
 from .workflow_chain import RunWorkflowFileExecutor
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
+    CustomModuleExecutor,
     OpenPageExecutor,
     ClickElementExecutor,
     InputTextExecutor,

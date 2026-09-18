@@ -59,6 +59,16 @@ def run_summary(run: WorkflowRun) -> dict[str, Any]:
     }
 
 
+def run_detail(run: WorkflowRun) -> dict[str, Any]:
+    return {
+        **run_summary(run),
+        "documentSnapshot": run.document_snapshot,
+        "layoutSnapshot": run.layout_snapshot,
+        "profileSnapshot": run.profile_snapshot,
+        "customModuleSnapshots": run.custom_module_snapshots,
+    }
+
+
 def workflow_run_command_router(commands: WorkflowRunCommands) -> APIRouter:
     router = APIRouter(prefix="/api/workflows", tags=["studio-workflow-runs"])
 
@@ -230,7 +240,7 @@ def workflow_runs_router(
 
     @router.get("/{run_id}")
     def get_run(run_id: str) -> dict[str, Any]:
-        return run_summary(service.get(run_id))
+        return run_detail(service.get(run_id))
 
     @router.get("/{run_id}/logs")
     def get_logs(

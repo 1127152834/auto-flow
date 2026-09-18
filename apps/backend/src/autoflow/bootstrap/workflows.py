@@ -11,6 +11,7 @@ from autoflow.adapters.events.workflows import (
     StudioEventJournal,
     workflow_events_router,
 )
+from autoflow.adapters.http.custom_modules import custom_modules_router
 from autoflow.adapters.http.workflow_runs import (
     WorkflowRunCommands,
     workflow_run_command_router,
@@ -22,9 +23,11 @@ from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
+from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.runs import WorkflowRunError
+from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
 from autoflow.infrastructure.process.workflow_worker import (
@@ -70,6 +73,7 @@ class PendingWorkflowRunCommands:
 @dataclass(slots=True)
 class WorkflowServices:
     documents: WorkflowDocumentService
+    modules: CustomModuleService
     runs: WorkflowRunService
     commands: WorkflowRunCommands
     events: StudioEventJournal
@@ -98,7 +102,12 @@ def build_workflow_services(
     temp_root: Path | None = None,
     artifact_root: Path | None = None,
 ) -> WorkflowServices:
-    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(session_factory))
+    modules = CustomModuleService(SqlAlchemyWorkflowModules(session_factory))
+    documents = WorkflowDocumentService(
+        SqlAlchemyWorkflowDocuments(session_factory),
+        custom_module_exists=modules.exists,
+    )
+    modules.bind_workflow_dependents(documents.referencing_custom_module_ids)
     run_repository = SqlAlchemyWorkflowRuns(session_factory)
     runs = WorkflowRunService(run_repository)
     events = StudioEventJournal()
@@ -117,6 +126,7 @@ def build_workflow_services(
     ):
         return WorkflowServices(
             documents=documents,
+            modules=modules,
             runs=runs,
             commands=PendingWorkflowRunCommands(),
             events=events,
@@ -158,14 +168,18 @@ def build_workflow_services(
         resources=resources,
         events=events,
         artifact_root=artifact_root,
+        modules=modules,
     )
     holder["coordinator"] = coordinator
-    return WorkflowServices(documents, runs, coordinator, events, workers, artifact_root)
+    return WorkflowServices(
+        documents, modules, runs, coordinator, events, workers, artifact_root
+    )
 
 
 def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     # Static workflow commands must be registered before the dynamic document ID.
     app.include_router(workflow_run_command_router(services.commands))
+    app.include_router(custom_modules_router(services.modules))
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))
     app.include_router(workflow_events_router(services.events, services.commands))

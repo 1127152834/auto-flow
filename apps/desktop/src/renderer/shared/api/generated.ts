@@ -1575,6 +1575,94 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/custom-modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Modules */
+        get: operations["list_modules_api_custom_modules_get"];
+        put?: never;
+        /** Create Module */
+        post: operations["create_module_api_custom_modules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-modules/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Module */
+        post: operations["import_module_api_custom_modules_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-modules/{module_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Module */
+        get: operations["get_module_api_custom_modules__module_id__get"];
+        /** Update Module */
+        put: operations["update_module_api_custom_modules__module_id__put"];
+        post?: never;
+        /** Delete Module */
+        delete: operations["delete_module_api_custom_modules__module_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-modules/{module_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Duplicate Module */
+        post: operations["duplicate_module_api_custom_modules__module_id__duplicate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/custom-modules/{module_id}/increment-usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Increment Usage */
+        post: operations["increment_usage_api_custom_modules__module_id__increment_usage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflows": {
         parameters: {
             query?: never;
@@ -2082,6 +2170,171 @@ export type components = {
             can_copy: boolean;
             /** Can Rotate */
             can_rotate: boolean;
+        };
+        /** CustomModuleCreate */
+        CustomModuleCreate: {
+            /** Clientrequestid */
+            clientRequestId: string;
+            /** Name */
+            name: string;
+            /** Display Name */
+            display_name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Icon
+             * @default 📦
+             */
+            icon: string;
+            /**
+             * Color
+             * @default #8B5CF6
+             */
+            color: string;
+            /**
+             * Category
+             * @default custom
+             */
+            category: string;
+            /** Parameters */
+            parameters?: {
+                [key: string]: unknown;
+            }[];
+            /** Outputs */
+            outputs?: {
+                [key: string]: unknown;
+            }[];
+            /** Workflow */
+            workflow: {
+                [key: string]: unknown;
+            };
+            /** Tags */
+            tags?: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** CustomModuleDeleteResponse */
+        CustomModuleDeleteResponse: {
+            /** Success */
+            success: boolean;
+        };
+        /** CustomModuleDuplicate */
+        CustomModuleDuplicate: {
+            /** Clientrequestid */
+            clientRequestId: string;
+            /** New Name */
+            new_name?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CustomModuleListResponse */
+        CustomModuleListResponse: {
+            /** Modules */
+            modules: components["schemas"]["CustomModuleResponse"][];
+            /** Total */
+            total: number;
+        };
+        /** CustomModuleResponse */
+        CustomModuleResponse: {
+            /** Id */
+            id: string;
+            /** Revision */
+            revision: number;
+            /** Name */
+            name: string;
+            /** Display Name */
+            display_name: string;
+            /** Description */
+            description: string;
+            /** Icon */
+            icon: string;
+            /** Color */
+            color: string;
+            /** Category */
+            category: string;
+            /** Parameters */
+            parameters: {
+                [key: string]: unknown;
+            }[];
+            /** Outputs */
+            outputs: {
+                [key: string]: unknown;
+            }[];
+            /** Workflow */
+            workflow: {
+                [key: string]: unknown;
+            };
+            /** Author */
+            author: string;
+            /** Version */
+            version: string;
+            /** Tags */
+            tags: string[];
+            /** Usage Count */
+            usage_count: number;
+            /** Download Count */
+            download_count: number;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Is Published */
+            is_published: boolean;
+            /** Is Builtin */
+            is_builtin: boolean;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /** Sort Order */
+            sort_order: number;
+        };
+        /** CustomModuleUpdate */
+        CustomModuleUpdate: {
+            /** Clientrequestid */
+            clientRequestId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Name */
+            name?: string | null;
+            /** Display Name */
+            display_name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Icon */
+            icon?: string | null;
+            /** Color */
+            color?: string | null;
+            /** Category */
+            category?: string | null;
+            /** Parameters */
+            parameters?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Outputs */
+            outputs?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Workflow */
+            workflow?: {
+                [key: string]: unknown;
+            } | null;
+            /** Tags */
+            tags?: string[] | null;
+            /** Is Favorite */
+            is_favorite?: boolean | null;
+            /** Sort Order */
+            sort_order?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CustomModuleUsageResponse */
+        CustomModuleUsageResponse: {
+            /** Success */
+            success: boolean;
+            /** Usage Count */
+            usage_count: number;
         };
         /** DashboardRead */
         DashboardRead: {
@@ -12559,6 +12812,270 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_modules_api_custom_modules_get: {
+        parameters: {
+            query?: {
+                category?: string | null;
+                search?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_module_api_custom_modules_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomModuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_module_api_custom_modules_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomModuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_module_api_custom_modules__module_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                module_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_module_api_custom_modules__module_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                module_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomModuleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_module_api_custom_modules__module_id__delete: {
+        parameters: {
+            query: {
+                expectedRevision: number;
+                clientRequestId: string;
+            };
+            header?: never;
+            path: {
+                module_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleDeleteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    duplicate_module_api_custom_modules__module_id__duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                module_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomModuleDuplicate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    increment_usage_api_custom_modules__module_id__increment_usage_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                module_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomModuleUsageResponse"];
                 };
             };
             /** @description Validation Error */

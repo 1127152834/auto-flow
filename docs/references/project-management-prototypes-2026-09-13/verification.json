@@ -1,0 +1,19 @@
+{
+  "sourceAndCopiesSha256": "passed",
+  "sourcePathsAccountedFor": 198,
+  "uniqueHashes": 112,
+  "exactDuplicateCopiesOmitted": 86,
+  "pngSignatureAndDimensions": "passed",
+  "replacementTargetsExistAndAreCurrent": "passed",
+  "noSourceFilesChanged": "passed",
+  "scope": "仅本次新建资料目录；未编辑原有文件或 Git 状态",
+  "visualReview": "人工检查版本选择关键图，非 112 张完整视觉验收",
+  "pixelOrPerceptualDedup": "未执行，不以相似布局合并不同状态",
+  "approvalRecovery": "未找到修订候选的批准记录",
+  "gallery": "静态 HTML 结构、112 张图片链接及所有本地文档链接已检查；未执行浏览器交互测试",
+  "htmlAndMarkdownLocalReferences": "passed",
+  "htmlImageLinks": 112,
+  "htmlImageElements": 112,
+  "nestedPageRevisionLabels": "passed",
+  "jsonParse": "passed"
+}
