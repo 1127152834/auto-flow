@@ -250,12 +250,12 @@ instance_id, manual_id = str(uuid.uuid4()), str(uuid.uuid4())
 connection = sqlite3.connect(db)
 # 运行状态必须与人工事项一致，否则截图里的「排队中 + 查看事项」会自相矛盾。
 # 这里只改一次性 QA 工作区，并把原状态一并返回给清理步骤。
-run_row = connection.execute('select status from workflow_runs where id = ?', (run_id,)).fetchone()
+run_row = connection.execute('select status from project_workflow_runs where id = ?', (run_id,)).fetchone()
 run_status = run_row[0] if run_row else None
 # 超时终态必须让运行状态与人工事项一致，否则截图会出现「等待人工 + 已超时」自相矛盾。
 injected_run_status = 'timed_out' if mode == 'expired' else 'waiting_manual'
 if run_status is not None:
-    connection.execute("update workflow_runs set status = ?, status_revision = status_revision + 1 where id = ?", (injected_run_status, run_id,))
+    connection.execute("update project_workflow_runs set status = ?, status_revision = status_revision + 1 where id = ?", (injected_run_status, run_id,))
 connection.execute(
     'insert into project_environment_instances (id, project_id, environment_id, state, source, source_content_generation, instance_use_generation, active_task_id, active_run_id, maintenance_operation_id, profile_id, identity_package, created_at, updated_at)'
     ' values (?, ?, null, ?, ?, null, 1, ?, ?, null, ?, ?, ?, ?)',
@@ -287,7 +287,7 @@ for row in json.loads(sys.argv[2]):
     connection.execute('delete from project_manual_items where id = ?', (row['manualItemId'],))
     connection.execute('delete from project_environment_instances where id = ?', (row['instanceId'],))
     if row.get('runStatus'):
-        connection.execute('update workflow_runs set status = ? where id = ?', (row['runStatus'], row['runId']))
+        connection.execute('update project_workflow_runs set status = ? where id = ?', (row['runStatus'], row['runId']))
 connection.commit()
 connection.close()`
     await exec('uv', ['run', '--directory', 'apps/backend', 'python', '-c', code, join(runtime.workspaceKey, 'data', 'autoflow.sqlite3'), JSON.stringify(fixtureIds)], { cwd: root, timeout: 180_000 })

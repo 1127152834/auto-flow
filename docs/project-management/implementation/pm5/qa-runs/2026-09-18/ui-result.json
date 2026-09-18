@@ -8,11 +8,11 @@
     "真实工作流执行核心（本链用隔离执行器把任务保持在排队态）",
     "Studio demo"
   ],
-  "gitHead": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+  "gitHead": "6d9d0f19dcc087a7cbb694b703aeb2453b21f212",
   "platform": "darwin",
   "arch": "arm64",
-  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU",
-  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-ww5G4V",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-ww5G4V/workspace",
   "checkpoints": [
     "真实界面新建项目成功。",
     "环境页四个分区在真实界面可见。",
@@ -34,8 +34,8 @@
   "screenshots": [
     {
       "name": "01-environment-workspace",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/01-environment-workspace.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/01-environment-workspace.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -45,7 +45,7 @@
     },
     {
       "name": "02-profile-kernel-selected",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/02-profile-kernel-selected.png",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/02-profile-kernel-selected.png",
       "route": "#/profiles",
       "viewport": {
         "width": 1440,
@@ -56,7 +56,7 @@
     },
     {
       "name": "02-profile-created",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/02-profile-created.png",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/02-profile-created.png",
       "route": "#/profiles",
       "viewport": {
         "width": 1440,
@@ -67,8 +67,8 @@
     },
     {
       "name": "03-environment-after-profile",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/03-environment-after-profile.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/03-environment-after-profile.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -78,8 +78,8 @@
     },
     {
       "name": "04-automation-environment-policy",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/04-automation-environment-policy.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/automations/new",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/04-automation-environment-policy.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/automations/new",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -89,8 +89,8 @@
     },
     {
       "name": "05-start-dialog",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/05-start-dialog.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/automations/7c6bd1b6-d24c-40b9-9c32-22cf027e5208",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/05-start-dialog.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/automations/8bf5d384-d786-46b9-9283-ad0383d2ba9a",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -100,8 +100,8 @@
     },
     {
       "name": "06-running-environment",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/06-running-environment.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/06-running-environment.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -111,8 +111,8 @@
     },
     {
       "name": "07-enter-current-browser",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/07-enter-current-browser.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/07-enter-current-browser.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -122,8 +122,8 @@
     },
     {
       "name": "08-task-end-panel",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/08-task-end-panel.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/tasks/b2c911e0-117f-434d-97c6-cc3f3cc29856/logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/08-task-end-panel.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/tasks/36693f72-4da9-4281-8610-97dd48650c6b/logs",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -133,8 +133,8 @@
     },
     {
       "name": "09-environment-saved",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/09-environment-saved.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/tasks/b2c911e0-117f-434d-97c6-cc3f3cc29856/logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/09-environment-saved.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/tasks/36693f72-4da9-4281-8610-97dd48650c6b/logs",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -144,8 +144,8 @@
     },
     {
       "name": "10-saved-environment-list",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/10-saved-environment-list.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/10-saved-environment-list.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -155,8 +155,8 @@
     },
     {
       "name": "11-saved-environment-detail",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/11-saved-environment-detail.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments/e89166f1-924c-579e-af0d-7d856fbe1c59",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/11-saved-environment-detail.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments/64aed82d-dbce-5c40-9270-71f0ae612d47",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -166,8 +166,8 @@
     },
     {
       "name": "16-rename-drawer",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/16-rename-drawer.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments/e89166f1-924c-579e-af0d-7d856fbe1c59",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/16-rename-drawer.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments/64aed82d-dbce-5c40-9270-71f0ae612d47",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -177,8 +177,8 @@
     },
     {
       "name": "17-rename-validation-blocked",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/17-rename-validation-blocked.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments/e89166f1-924c-579e-af0d-7d856fbe1c59",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/17-rename-validation-blocked.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments/64aed82d-dbce-5c40-9270-71f0ae612d47",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -188,8 +188,8 @@
     },
     {
       "name": "12-project-defaults",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/12-project-defaults.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/12-project-defaults.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -199,8 +199,8 @@
     },
     {
       "name": "13-manual-items",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/13-manual-items.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/13-manual-items.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -210,8 +210,8 @@
     },
     {
       "name": "18-manual-waiting-live",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/18-manual-waiting-live.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/18-manual-waiting-live.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -221,8 +221,8 @@
     },
     {
       "name": "19-manual-directory",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/19-manual-directory.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/19-manual-directory.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -232,8 +232,8 @@
     },
     {
       "name": "20-manual-list-tab",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/20-manual-list-tab.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/20-manual-list-tab.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/manual",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -243,8 +243,8 @@
     },
     {
       "name": "21-manual-detail",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/21-manual-detail.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/f4555c2c-a1f4-4109-a69f-202e8bb3d530",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/21-manual-detail.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/manual/5d96bf62-cf3f-4bbc-9eea-b8e758d3a191",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -254,8 +254,8 @@
     },
     {
       "name": "22-manual-complete-confirm",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/22-manual-complete-confirm.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/f4555c2c-a1f4-4109-a69f-202e8bb3d530",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/22-manual-complete-confirm.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/manual/5d96bf62-cf3f-4bbc-9eea-b8e758d3a191",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -265,19 +265,19 @@
     },
     {
       "name": "23-manual-failure-required",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/23-manual-failure-required.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/f4555c2c-a1f4-4109-a69f-202e8bb3d530",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/23-manual-failure-required.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/manual/5d96bf62-cf3f-4bbc-9eea-b8e758d3a191",
       "viewport": {
         "width": 1440,
         "height": 1024
       },
       "dpr": 1,
-      "scrollWidth": 1440
+      "scrollWidth": 1428
     },
     {
       "name": "24-task-list-manual-entry",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/24-task-list-manual-entry.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/tasks",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/24-task-list-manual-entry.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/tasks",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -287,8 +287,8 @@
     },
     {
       "name": "25-manual-expired-list",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/25-manual-expired-list.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/25-manual-expired-list.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/manual",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -298,8 +298,8 @@
     },
     {
       "name": "26-manual-expired-result",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/26-manual-expired-result.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/54cbabf5-8361-470c-92b6-b7ff51e29cd7",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/26-manual-expired-result.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/runs/manual/73b677a7-5ddb-4406-9b68-865ac57ea8c1",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -309,8 +309,8 @@
     },
     {
       "name": "14-directory-read-failed",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/14-directory-read-failed.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/14-directory-read-failed.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -320,8 +320,8 @@
     },
     {
       "name": "15-directory-read-recovered",
-      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/15-directory-read-recovered.png",
-      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-branch-integration-20260917/docs/project-management/implementation/pm5/qa-runs/2026-09-18/15-directory-read-recovered.png",
+      "route": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
       "viewport": {
         "width": 1440,
         "height": 1024
@@ -333,31 +333,31 @@
   "facts": {
     "kernelVersion": "145.0.7632.109.2",
     "sidecarModule": "tests.qa.pm5_sidecar",
-    "desktopLog": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/desktop.log",
-    "debugPort": "63311",
+    "desktopLog": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-ww5G4V/desktop.log",
+    "debugPort": "56759",
     "environmentSections": [
       "运行环境",
       "等待人工",
       "持久环境",
       "项目默认资源"
     ],
-    "environmentRoute": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+    "environmentRoute": "#/projects/18603adb-0eba-404d-b578-03d880b329cb/environments",
     "kernelOption": "公开版 · 145.0.7632.109.2",
     "kernelSelected": "公开版 · 145.0.7632.109.2",
-    "projectId": "48606cff-e5e6-432b-9701-7c5762708728",
-    "workflowId": "ebf80282-5534-41e4-aeba-7fe6a8acb039",
+    "projectId": "18603adb-0eba-404d-b578-03d880b329cb",
+    "workflowId": "07d574b4-1e62-4104-a9e5-87c3e6a667f4",
     "environmentPolicy": [
       "继承项目默认",
       "每个任务创建临时环境",
       "关闭并清理临时环境"
     ],
-    "workspaceKey": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace",
-    "taskId": "b2c911e0-117f-434d-97c6-cc3f3cc29856",
+    "workspaceKey": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-ww5G4V/workspace",
+    "taskId": "36693f72-4da9-4281-8610-97dd48650c6b",
     "taskStatus": "queued",
-    "instanceId": "12aa1701-6576-4211-8ab0-56254286f26f",
+    "instanceId": "ba643871-414a-46f9-9603-0729a1d587aa",
     "instanceState": "active",
-    "browserHoldingInstance": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium --disable-field-trial-config --",
-    "browserKernel": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+    "browserHoldingInstance": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-ww5G4V/workspace/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium --disable-field-trial-config --",
+    "browserKernel": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-ww5G4V/workspace/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
     "instanceStateAfterOpen": "active",
     "runStatusBeforeEnd": "queued",
     "runGenerationBeforeEnd": 0,
@@ -367,13 +367,13 @@
     "closedAfterEnd": true,
     "renameValidation": "空名称被界面阻止，未发出请求",
     "injectedFixtures": [
-      "等待人工现场（a5ec0a74-45bf-4c93-95f4-ed185f82a7ee / f4555c2c-a1f4-4109-a69f-202e8bb3d530）为隔离 QA 工作区测试注入资料，截图后已删除",
+      "等待人工现场（11f1df40-2ed4-468e-9348-9eac4c88cf0f / 5d96bf62-cf3f-4bbc-9eea-b8e758d3a191）为隔离 QA 工作区测试注入资料，截图后已删除",
       "注入资料已在同一脚本内删除，清理后等待人工分区回到空态",
       "超时终态注入资料已在同一脚本内删除，运行状态还原"
     ],
     "manualDetail": "运行记录「等待人工」页签、人工详情、完成确认与失败必填均由生产页面渲染；提交会写回原任务",
     "manualEntry": "等待人工的任务行从「查看事项」进入同一份人工详情，其它任务仍进入任务详情",
-    "expiredFixture": "超时终态（54cbabf5-8361-470c-92b6-b7ff51e29cd7）为隔离 QA 工作区测试注入资料，运行状态随之置为 timed_out，截图后已删除"
+    "expiredFixture": "超时终态（73b677a7-5ddb-4406-9b68-865ac57ea8c1）为隔离 QA 工作区测试注入资料，运行状态随之置为 timed_out，截图后已删除"
   },
   "error": null,
   "excluded": [
@@ -382,5 +382,5 @@
     "打包应用",
     "用户手动执行结果"
   ],
-  "createdAt": "2026-09-18T06:05:22.719Z"
+  "createdAt": "2026-09-18T07:00:33.621Z"
 }
