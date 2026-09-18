@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { ApiClientError, type StreamingApiClient } from '../../../shared/api/client'
@@ -54,10 +54,10 @@ const taskPage = {
 const apiFor = (request: unknown) => ({ request: request as StreamingApiClient['request'], stream: vi.fn(), health: vi.fn() })
 const newClient = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
 const props = { workspaceKey: 'ws', instanceId: 'i', projectId: 'p', disabled: false, onOpenRuns: vi.fn() }
-const renderPage = (request: unknown, client = newClient()) =>
+const renderPage = (request: unknown, client = newClient(), overrides: { onOpenFailures?: (frozen: unknown) => void } = {}) =>
   render(
     <QueryClientProvider client={client}>
-      <StatisticsPage {...props} client={apiFor(request)} />
+      <StatisticsPage {...{ ...props, onOpenFailures: overrides.onOpenFailures ?? vi.fn() }} client={apiFor(request)} />
     </QueryClientProvider>,
   )
 
@@ -113,18 +113,29 @@ it('shows no sample instead of zero or full success when the denominator is empt
   expect(screen.getByText('本区间没有失败任务。')).toBeVisible()
 })
 
-it('drills into the frozen result set instead of re-running the current filter', async () => {
+it('hands the frozen result set identity to the drill page instead of re-running the current filter', async () => {
+  const onOpenFailures = vi.fn()
   const request = routes(payload)
-  renderPage(request)
-  await userEvent.click((await screen.findAllByRole('button', { name: /查看记录/ }))[0])
-  expect(await screen.findByText('任务 3 · 链接采集')).toBeVisible()
-  expect(request).toHaveBeenCalledWith(
-    expect.stringContaining('/statistics/rs1/tasks?result=failed'),
+  renderPage(request, newClient(), { onOpenFailures })
+  await screen.findByText('66.7%')
+  await userEvent.click(within(screen.getByLabelText('统计指标')).getByRole('button', { name: '1' }))
+  expect(onOpenFailures).toHaveBeenCalledWith({ resultSetId: 'rs1', result: 'failed' })
+  expect(request).not.toHaveBeenCalledWith(
+    expect.stringContaining('/statistics/rs1/tasks'),
     expect.anything(),
   )
-  await userEvent.click(screen.getByRole('button', { name: '返回统计' }))
-  expect(screen.queryByText('任务 3 · 链接采集')).not.toBeInTheDocument()
-  expect(screen.getByText('66.7%')).toBeVisible()
+})
+
+it('scopes the drill to the automation before handing over the frozen identity', async () => {
+  const onOpenFailures = vi.fn()
+  const request = routes(payload)
+  renderPage(request, newClient(), { onOpenFailures })
+  await userEvent.click((await screen.findAllByRole('button', { name: /查看记录/ }))[0])
+  await waitFor(() => expect(onOpenFailures).toHaveBeenCalledWith({ resultSetId: 'rs1', result: 'failed', automationId: 'a' }))
+  expect(request).toHaveBeenCalledWith(
+    expect.stringContaining('/statistics?'),
+    expect.anything(),
+  )
 })
 
 it('tells the user the result set expired instead of showing stale numbers as fresh', async () => {
@@ -172,6 +183,33 @@ it('keeps the last confirmed numbers and window after the page is remounted', as
   expect(screen.getByText('66.7%')).toBeVisible()
   expect(screen.getByLabelText('统计窗口').textContent).toBe(windowText)
   expect(screen.queryByText('统计读取失败，请稍后重试')).not.toBeInTheDocument()
+})
+
+it('offers a reload action on a plain refresh failure, matching the approved error board', async () => {
+  let fail = false
+  let calls = 0
+  const request = vi.fn(async (path: string) => {
+    if (path.includes('/statistics?')) {
+      calls += 1
+      if (fail) throw new ApiClientError('boom', 500, 'INTERNAL')
+      return payload
+    }
+    if (path.includes('/automations')) return { items: [], total: 0 }
+    throw new Error(`unexpected request: ${path}`)
+  })
+  const client = newClient()
+  renderPage(request, client)
+  await screen.findByText('66.7%')
+  fail = true
+  await client.refetchQueries({ queryKey: ['ws', 'i', 'project-statistics'] }).catch(() => undefined)
+  expect(await screen.findByText(/统计刷新失败/)).toBeVisible()
+
+  const before = calls
+  fail = false
+  await userEvent.click(screen.getByRole('button', { name: '重新加载' }))
+  await waitFor(() => expect(calls).toBeGreaterThan(before))
+  await waitFor(() => expect(screen.queryByText(/统计刷新失败/)).not.toBeInTheDocument())
+  expect(screen.getByText('66.7%')).toBeVisible()
 })
 
 it('re-reads the whole group with the new window when the range changes', async () => {

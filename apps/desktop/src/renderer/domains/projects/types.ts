@@ -1,5 +1,6 @@
 import type { DataTableTab } from '../project-data/types'
 import type { RecordKey } from '../project-data/records-api'
+import type { StatisticsResult } from './statistics-api'
 import type { components } from '../../shared/api/generated'
 
 export type ProjectView = components['schemas']['ProjectView']
@@ -14,7 +15,9 @@ export type ProjectPatch = components['schemas']['ProjectPatch']
 
 export type ProjectTab = 'overview' | 'automations' | 'runs' | 'statistics' | 'data' | 'environments'
 export type RecordLocation = { mode: 'create' } | { mode: 'detail' | 'edit'; datasetGeneration: string; recordKey: RecordKey }
-export type ProjectRoute = { projectId?: string; tab: ProjectTab; tableId?: string; dataTab?: DataTableTab; record?: RecordLocation; automationId?: string; automationCreate?: boolean; runView?: 'batches' | 'tasks' | 'manual'; batchId?: string; taskId?: string; manualItemId?: string; taskTab?: 'logs' | 'io' | 'evidence'; environmentId?: string }
+export type ProjectRoute = { projectId?: string; tab: ProjectTab; tableId?: string; dataTab?: DataTableTab; record?: RecordLocation; automationId?: string; automationCreate?: boolean; runView?: 'batches' | 'tasks' | 'manual'; batchId?: string; taskId?: string; manualItemId?: string; taskTab?: 'logs' | 'io' | 'evidence'; environmentId?: string; runFrozen?: RunFrozen }
+/** 统计下钻：冻结结果集身份 + 该页签要展示的结果与可选范围。 */
+export type RunFrozen = { resultSetId: string; result: StatisticsResult; intervalStart?: string; automationId?: string }
 export type ProjectLifecycleFilter = 'active' | 'archived' | 'all'
 export type ProjectSort = 'name' | '-name' | 'updatedAt' | '-updatedAt' | 'lastOpenedAt' | '-lastOpenedAt'
 

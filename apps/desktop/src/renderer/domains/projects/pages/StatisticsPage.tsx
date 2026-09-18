@@ -7,11 +7,11 @@ import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { createAutomationApi } from '../../project-automations/api'
 import { FailureDestinations } from '../components/FailureDestinations'
 import { StatisticsTrend } from '../components/StatisticsTrend'
-import { createProjectStatisticsApi, type ProjectStatistics, type StatisticsInterval, type StatisticsResult } from '../statistics-api'
+import { createProjectStatisticsApi, type ProjectStatistics, type StatisticsInterval } from '../statistics-api'
+import type { RunFrozen } from '../types'
 
 type Range = '7d' | '30d' | '90d'
 type Browse = { range: Range; automationId: string | null; interval: StatisticsInterval; scroll: number }
-type Drill = { resultSetId: string; result: StatisticsResult; intervalStart?: string; automationName: string | null; page: number }
 
 const rangeOptions: { value: Range; label: string }[] = [
   { value: '7d', label: '近7天' },
@@ -61,8 +61,6 @@ export function presentStatisticsError(error: unknown): string {
   return '统计读取失败，请稍后重试'
 }
 
-const expired = (error: unknown) => error instanceof ApiClientError && error.code === 'STATISTICS_RESULT_EXPIRED'
-
 function restore(key: string): Browse {
   try {
     const raw = sessionStorage.getItem(key)
@@ -87,6 +85,7 @@ export function StatisticsPage({
   client,
   disabled,
   onOpenRuns,
+  onOpenFailures,
 }: {
   workspaceKey: string
   instanceId: string
@@ -94,10 +93,10 @@ export function StatisticsPage({
   client: StreamingApiClient
   disabled: boolean
   onOpenRuns(): void
+  onOpenFailures(frozen: RunFrozen): void
 }) {
   const key = `autoflow:statistics:${JSON.stringify([workspaceKey, projectId])}`
   const [browse, setBrowse] = useState(() => restore(key))
-  const [drill, setDrill] = useState<Drill | null>(null)
   const [drillFailure, setDrillFailure] = useState<string | null>(null)
   const api = useMemo(() => createProjectStatisticsApi(client, projectId), [client, projectId])
   const automations = useMemo(() => createAutomationApi(client, projectId), [client, projectId])
@@ -115,11 +114,6 @@ export function StatisticsPage({
     placeholderData: previous => previous,
   })
   const [snapshot, setSnapshot] = useState(() => readSnapshot(key))
-  const tasks = useQuery({
-    queryKey: [workspaceKey, instanceId, 'project-statistics-tasks', projectId, drill],
-    queryFn: ({ signal }) => api.tasks(drill!.resultSetId, { result: drill!.result, ...(drill!.intervalStart ? { intervalStart: drill!.intervalStart } : {}), page: drill!.page, pageSize: 50 }, signal),
-    enabled: Boolean(drill) && !disabled,
-  })
   const options = useQuery({
     queryKey: [workspaceKey, instanceId, 'project-statistics-automations', projectId],
     enabled: !disabled,
@@ -160,7 +154,7 @@ export function StatisticsPage({
         ? await api.get({ ...shownWindow, timezone, automationId, interval })
         : data
       remember()
-      setDrill({ resultSetId: scoped.resultSetId, result: 'failed', ...(intervalStart ? { intervalStart } : {}), automationName: automationId ? (options.data ?? []).find(item => item.id === automationId)?.name ?? null : null, page: 1 })
+      onOpenFailures({ resultSetId: scoped.resultSetId, result: 'failed', ...(intervalStart ? { intervalStart } : {}), ...(automationId ? { automationId } : {}) })
     } catch (error) {
       setDrillFailure(presentStatisticsError(error))
     }
@@ -192,7 +186,7 @@ export function StatisticsPage({
       </header>
       {error ? <p role="status" className="m-0 rounded-control border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-sm text-ink">
         统计刷新失败：{error}。以下是 {momentLabel.format(new Date(data.calculatedAt))} 的结果。
-        {expired(stats.error) ? <Button size="sm" className="ml-2" disabled={stats.isFetching} onClick={() => void stats.refetch()}>刷新统计</Button> : null}
+        <Button size="sm" className="ml-2" disabled={stats.isFetching} onClick={() => void stats.refetch()}>重新加载</Button>
       </p> : null}
       {drillFailure ? <p role="alert" className="m-0 rounded-control border border-danger/30 bg-surface px-3 py-2 text-sm text-danger">{drillFailure}</p> : null}
       <Metrics data={data} onDrillDown={() => void openFailures()}/>
@@ -200,42 +194,8 @@ export function StatisticsPage({
         <StatisticsTrend buckets={data.trend} timezone={data.timezone} emptyRangeLabel={`${dayLabel.format(new Date(window_.from))} — ${dayLabel.format(new Date(window_.to))}`} from={window_.from} to={window_.to} interval={interval} onDrillDown={(_result, intervalStart) => void openFailures(undefined, intervalStart)}/>
         <FailureDestinations items={data.failuresByAutomation} onOpen={automationId => void openFailures(automationId)}/>
       </div>
-      {drill ? <DrillPanel drill={drill} page={tasks.data} loading={tasks.isLoading} error={tasks.isError ? presentStatisticsError(tasks.error) : null} onPage={page => setDrill(current => current ? { ...current, page } : current)} onClose={() => setDrill(null)}/> : null}
       <p className="m-0 flex items-center gap-3 border-t border-line pt-4 text-sm text-muted"><span>资源使用</span><span aria-hidden>—</span><span>尚未采集</span></p>
       <p className="m-0 text-xs text-muted">成功率 = 成功 /（成功 + 失败）；不计运行中与等待人工；任务数不等于数据新增量。</p>
-    </> : null}
-  </section>
-}
-
-function DrillPanel({ drill, page, loading, error, onPage, onClose }: { drill: Drill; page?: { items: { taskId: string; taskOrdinal?: number | null; automationName?: string | null; status: string; completedAt?: string | null }[]; page: number; pageSize: number; total: number }; loading: boolean; error: string | null; onPage(page: number): void; onClose(): void }) {
-  const last = page ? Math.max(1, Math.ceil(page.total / page.pageSize)) : 1
-  return <section aria-label="失败任务记录" className="grid min-w-0 gap-3 rounded-card border border-line bg-surface p-5">
-    <header className="flex flex-wrap items-center justify-between gap-3">
-      <div className="grid gap-1">
-        <h3 className="m-0 text-lg">来自统计 · 失败任务{drill.automationName ? ` · ${drill.automationName}` : ''}</h3>
-        <p className="m-0 text-xs text-muted">统计快照 · 不自动刷新；与统计中的失败任务数一致。</p>
-      </div>
-      <Button size="sm" variant="ghost" onClick={onClose}>返回统计</Button>
-    </header>
-    {error ? <p role="alert" className="m-0 text-sm text-danger">{error}</p> : null}
-    {loading && !page ? <Skeleton className="h-24 w-full" /> : null}
-    {page ? <>
-      {page.items.length === 0 ? <p className="m-0 text-sm text-muted">该结果集内没有符合条件的任务。</p> : <ul className="m-0 grid list-none gap-2 p-0">
-        {page.items.map(item => <li key={item.taskId} className="flex min-w-0 items-center gap-3 border-b border-line pb-2 text-sm last:border-b-0 last:pb-0">
-          <span className="min-w-0 flex-1 break-words">任务 {item.taskOrdinal ?? '—'} · {item.automationName ?? '已删除的自动化'}</span>
-          <span className="shrink-0 text-muted">{item.status === 'failed' ? '失败' : item.status}</span>
-          <span className="shrink-0 tabular-nums text-muted">{item.completedAt ? momentLabel.format(new Date(item.completedAt)) : '—'}</span>
-        </li>)}
-      </ul>}
-      <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
-        <span>共 {page.total} 条符合条件的任务</span>
-        <span className="text-xs">任务记录只读。</span>
-        <span className="ml-auto flex items-center gap-2">
-          <Button size="sm" disabled={page.page <= 1 || loading} onClick={() => onPage(page.page - 1)}>上一页</Button>
-          <span className="tabular-nums">第 {page.page} 页</span>
-          <Button size="sm" disabled={page.page >= last || loading} onClick={() => onPage(page.page + 1)}>下一页</Button>
-        </span>
-      </div>
     </> : null}
   </section>
 }

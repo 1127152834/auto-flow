@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DataTableTab } from '../domains/project-data/types'
 import type { ProjectRoute, ProjectTab } from '../domains/projects/types'
+import type { StatisticsResult } from '../domains/projects/statistics-api'
 import { decodeRecordKey, encodeRecordKey } from '../domains/project-data/record-route'
 
 export type AppRoute = 'dashboard' | 'projects' | 'profiles' | 'android' | 'proxies' | 'models' | 'settings'
@@ -8,6 +9,7 @@ const globalRoutes: AppRoute[] = ['dashboard', 'projects', 'profiles', 'android'
 const projectTabs: ProjectTab[] = ['overview', 'automations', 'runs', 'statistics', 'data', 'environments']
 const projectIdPattern = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i
 const recordKeyTypes = ['text', 'integer', 'uuid'] as const
+const statisticsResults: StatisticsResult[] = ['succeeded', 'failed', 'cancelled', 'timed_out', 'interrupted']
 
 export function parseAppLocation(hash: string): { section: AppRoute; project?: ProjectRoute; error?: string } {
   const parts = hash.replace(/^#\/?/, '').split('?')[0].split('/')
@@ -19,6 +21,17 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
     if (parts.length === 5 && parts[3] === 'manual' && projectIdPattern.test(parts[4])) return { section: 'projects', project: { ...base, runView: 'manual', manualItemId: parts[4] } }
     if (parts.length === 5 && parts[3] === 'batches' && projectIdPattern.test(parts[4])) return { section: 'projects', project: { ...base, runView: 'batches', batchId: parts[4] } }
     if (parts.length === 6 && parts[3] === 'tasks' && projectIdPattern.test(parts[4]) && ['logs', 'io', 'evidence'].includes(parts[5])) return { section: 'projects', project: { ...base, taskId: parts[4], taskTab: parts[5] as 'logs' | 'io' | 'evidence' } }
+    // 统计下钻是独立页面：冻结集合身份与范围在地址里，返回统计页后快照仍在 sessionStorage。
+    if (parts.length >= 6 && parts.length <= 8 && parts[3] === 'frozen' && statisticsResults.includes(parts[5] as StatisticsResult)) {
+      try {
+        const resultSetId = decodeURIComponent(parts[4] ?? '')
+        // 冻结结果集是服务端签名的不透明令牌（base64url 载荷 + 签名），长度远超普通标识，不做长度猜测。
+        if (!resultSetId || resultSetId.length > 4096) throw new Error('结果集标识无效')
+        const intervalStart = parts[6] ? decodeURIComponent(parts[6]) : undefined
+        const automationId = parts[7] ? decodeURIComponent(parts[7]) : undefined
+        return { section: 'projects', project: { ...base, runFrozen: { resultSetId, result: parts[5] as StatisticsResult, ...(intervalStart ? { intervalStart } : {}), ...(automationId ? { automationId } : {}) } } }
+      } catch { return { section: 'projects', error: '项目地址无效，请从项目目录重新打开。' } }
+    }
   }
   if (parts.length === 4 && projectIdPattern.test(parts[1]) && parts[2] === 'automations' && (parts[3] === 'new' || projectIdPattern.test(parts[3]))) {
     return { section: 'projects', project: { projectId: parts[1], tab: 'automations', ...(parts[3] === 'new' ? { automationCreate: true } : { automationId: parts[3] }) } }
@@ -47,6 +60,12 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
 export function projectHash(route: ProjectRoute) {
   if (!route.projectId) return '#/projects'
   const base = `#/projects/${encodeURIComponent(route.projectId)}/${route.tab}`
+  if (route.runFrozen) {
+    if (route.tab !== 'runs' || route.taskId || route.batchId || route.manualItemId || route.runView || route.taskTab) throw new Error('统计下钻地址无效')
+    const frozen = route.runFrozen
+    const tail = `${frozen.intervalStart ? `/${encodeURIComponent(frozen.intervalStart)}` : ''}${frozen.automationId ? `/${encodeURIComponent(frozen.automationId)}` : ''}`
+    return `${base}/frozen/${encodeURIComponent(frozen.resultSetId)}/${frozen.result}${tail}`
+  }
   if (route.taskId || route.batchId || route.manualItemId || route.runView || route.taskTab) {
     if (route.tab !== 'runs' || (route.taskId && route.batchId) || (route.manualItemId && (route.taskId || route.batchId || route.taskTab))) throw new Error('运行记录地址无效')
     if (route.taskId) {
