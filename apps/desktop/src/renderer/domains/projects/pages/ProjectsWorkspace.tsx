@@ -116,7 +116,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const directory = useProjectDirectory(api, workspaceKey, instanceId, conditions, mode === 'all')
   const recent = useProjectDirectory(api, workspaceKey, instanceId, recentConditions, mode === 'recent')
   const detail = useProject(api, workspaceKey, instanceId, route.projectId)
-  const overview = useProjectOverview(api, workspaceKey, instanceId, route.projectId)
+  const overview = useProjectOverview(api, workspaceKey, instanceId, route.projectId, route.tab === 'overview')
   useLayoutEffect(() => { if (detail.data) setRetainedProject({ workspaceKey, project: detail.data }) }, [detail.data, workspaceKey])
 
   useEffect(() => { setConditionsState(readConditions(workspaceKey)); setModeState(readMode(workspaceKey)); setScrollTop(readScrollTop(workspaceKey, readMode(workspaceKey))); setEditor(null); dirtyRef.current = false; pending.current = null }, [workspaceKey])
