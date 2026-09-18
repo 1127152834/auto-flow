@@ -534,4 +534,4 @@ async def _wait_until_cancelled(context: ExecutionContext) -> None:
         await asyncio.sleep(0.02)
 
 
-from .core_runtime import WorkflowRuntimeService  # noqa: E402,F401
+from .core_runtime import WorkflowRuntimeService  # noqa: F401

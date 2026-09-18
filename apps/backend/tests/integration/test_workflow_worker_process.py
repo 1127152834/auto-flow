@@ -8,8 +8,8 @@ from types import SimpleNamespace
 import pytest
 
 from autoflow.infrastructure.process.project_workflow_worker import (
-    WorkflowWorkerError,
     ProjectWorkflowWorkerManager,
+    WorkflowWorkerError,
 )
 
 CHILD = r'''

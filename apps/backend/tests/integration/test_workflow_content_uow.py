@@ -6,11 +6,11 @@ import pytest
 from autoflow.application.workflows.runtime import WorkflowRuntimeService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
-from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from tests.fixtures.workflows import workflow_payload
 

@@ -11,7 +11,6 @@ from autoflow.infrastructure.database.models import (
     ProjectOperationRow,
     ProjectRow,
 )
-from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.project_automation_models import (
     ProjectAutomationRow,
 )
@@ -20,6 +19,7 @@ from autoflow.infrastructure.database.project_automations import (
 )
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.session import create_session_factory
+from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from tests.fixtures.workflows import workflow_payload
 
 

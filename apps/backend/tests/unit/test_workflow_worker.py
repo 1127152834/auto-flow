@@ -10,8 +10,8 @@ from typing import Self
 
 import pytest
 
-from autoflow.providers.browser.workflow_executor import WorkflowExecutor
 from autoflow.providers.browser.project_workflow_worker import _run, run_worker
+from autoflow.providers.browser.workflow_executor import WorkflowExecutor
 
 
 class Locator:

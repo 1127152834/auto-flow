@@ -358,7 +358,6 @@ class AndroidFleet:
             error="此任务来自已退休的安卓工作流运行时，请重新配置",
         )
         self.resources.save("allocation", item)
-        return
 
     async def _legacy_allocation_step(self, item: dict[str, Any]) -> None:
         try:

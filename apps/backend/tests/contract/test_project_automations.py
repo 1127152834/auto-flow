@@ -14,12 +14,12 @@ from autoflow.infrastructure.database.models import (
     ProjectOperationRow,
     ProjectRow,
 )
-from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.project_automations import (
     SqlAlchemyProjectAutomations,
 )
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.session import create_session_factory
+from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 
 
 def test_overflowing_json_parameter_is_a_field_error_without_writes(tmp_path):

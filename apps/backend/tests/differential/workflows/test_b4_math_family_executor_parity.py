@@ -14,6 +14,7 @@ from threading import Event
 from typing import Any
 
 import pytest
+
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.providers.browser.workflow_worker import _ThreadCancellation
 

@@ -17,12 +17,12 @@ from autoflow.domain.workflows.runtime import (
     PreparedContent,
     WorkflowRuntimeError,
 )
+from autoflow.infrastructure.database.core_workflows import _record as workflow_record
 from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
     _is_sqlite_contention,
 )
-from autoflow.infrastructure.database.core_workflows import _record as workflow_record
 
 
 class CoreRunPort(Protocol):

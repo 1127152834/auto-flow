@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+
 from autoflow.application.workflows.executors.page_load import (
     PageLoadCompleteExecutor,
     WaitPageLoadExecutor,

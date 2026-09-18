@@ -15,7 +15,9 @@ from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy, ProfileSpec
 from autoflow.domain.profiles.ports import ProfileUsageGuard
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError, thaw_json
-from autoflow.infrastructure.process.project_test_browser_worker import browser_worker_payload
+from autoflow.infrastructure.process.project_test_browser_worker import (
+    browser_worker_payload,
+)
 
 
 @dataclass

@@ -12,10 +12,10 @@ from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
-from autoflow.application.environments.service import EnvironmentService
-from autoflow.application.kernels.service import KernelService
 from autoflow.application.android.console import AndroidConsole
 from autoflow.application.android.fleet import AndroidFleet
+from autoflow.application.environments.service import EnvironmentService
+from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
@@ -72,11 +72,11 @@ from autoflow.domain.profiles.ports import (
     ProfileUsageGuard,
 )
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
+from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
-from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.kernel_settings import (
     SqlAlchemyDefaultKernelRepository,
 )
@@ -118,10 +118,10 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
-from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.database.settings_runtime import (
     SqlAlchemySettingsRuntimeRepository,
 )
+from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
 from autoflow.infrastructure.filesystem.kernel_installations import (
@@ -137,13 +137,13 @@ from autoflow.infrastructure.filesystem.profile_environment import (
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
+from autoflow.providers.android.stream import AndroidStream
 from autoflow.providers.browser.environment_browser import EnvironmentBrowserLauncher
 from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
 )
 from autoflow.providers.model.http import HttpModelProvider
-from autoflow.providers.android.stream import AndroidStream
 
 
 def create_app(

@@ -221,7 +221,7 @@ class SqlAlchemyWorkflowDocuments:
             session.commit()
 
 
-from .core_workflows import (  # noqa: E402,F401
+from .core_workflows import (  # noqa: F401
     SqlAlchemyWorkflowRepository,
     _record,
 )

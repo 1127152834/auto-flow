@@ -30,7 +30,6 @@ from autoflow.infrastructure.database.models import (
     ProjectOperationRow,
     ProjectRow,
 )
-from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.project_automation_models import (
     ProjectAutomationRow,
 )
@@ -56,6 +55,7 @@ from autoflow.infrastructure.database.projects import (
     _operation,
     _operation_row,
 )
+from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 
 
 class ProjectRunCoordinator:

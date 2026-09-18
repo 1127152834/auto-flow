@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.data_structure import (
     DictGetExecutor,
     DictKeysExecutor,

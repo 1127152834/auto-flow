@@ -18,11 +18,11 @@ from autoflow.application.workflows.runtime import WorkflowRuntimeService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError, thaw_json
 from autoflow.infrastructure.database import session as database_session
-from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )

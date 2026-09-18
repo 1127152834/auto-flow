@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEvent, StudioEventJournal, _frame
 from autoflow.domain.workflows.runs import WorkflowRunError
 

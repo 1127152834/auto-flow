@@ -12,9 +12,9 @@ from autoflow.domain.project_automations.models import (
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 
 from .models import ProjectOperationRow, ProjectRow
-from .workflow_models import WorkflowDocumentRow
 from .project_automation_models import ProjectAutomationRow
 from .projects import _json_dates, _operation, _operation_row
+from .workflow_models import WorkflowDocumentRow
 
 
 class SqlAlchemyProjectAutomations:

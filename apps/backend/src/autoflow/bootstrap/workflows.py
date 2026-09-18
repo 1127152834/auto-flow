@@ -188,13 +188,17 @@ def configure_project_workflow_runtime(
     """Compose the PM4 durable runtime beside the current Studio runtime."""
     from contextlib import contextmanager
 
-    from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
+    from autoflow.application.workflows.browser_resources import (
+        WorkflowBrowserResources,
+    )
     from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
     from autoflow.application.workflows.runtime import WorkflowRuntimeService
     from autoflow.domain.kernels.errors import KernelBusy, KernelNotFound
     from autoflow.domain.kernels.models import KernelRef
     from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
-    from autoflow.infrastructure.filesystem.kernel_installations import kernel_target_lock
+    from autoflow.infrastructure.filesystem.kernel_installations import (
+        kernel_target_lock,
+    )
     from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
     from autoflow.infrastructure.process.project_workflow_worker import (
         ProjectWorkflowWorkerManager,

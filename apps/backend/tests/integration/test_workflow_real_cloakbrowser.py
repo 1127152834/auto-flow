@@ -11,8 +11,12 @@ from uuid import uuid4
 import pytest
 
 from autoflow.domain.profiles.models import Profile, ProfileSpec
-from autoflow.infrastructure.process.project_test_browser_worker import browser_worker_payload
-from autoflow.infrastructure.process.project_workflow_worker import ProjectWorkflowWorkerManager
+from autoflow.infrastructure.process.project_test_browser_worker import (
+    browser_worker_payload,
+)
+from autoflow.infrastructure.process.project_workflow_worker import (
+    ProjectWorkflowWorkerManager,
+)
 
 
 @pytest.fixture
