@@ -107,11 +107,11 @@ export function ProjectOverviewPage({
 
       {tab === 'overview' ? (
         <section aria-label="项目概览" className="grid gap-4">
-          {overview && overviewError ? <p role="status" className="m-0 rounded-control border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-sm text-ink">概览刷新失败：{overviewError}。以下是上次加载的结果。</p> : null}
+          {overviewError ? <p role="status" className="m-0 rounded-control border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-sm text-ink">概览刷新失败：{overviewError}。{overview ? '以下是上次加载的结果。' : '暂无可显示的上次结果，其他页签仍可使用。'}</p> : null}
           {overview ? <OverviewCounts counts={overview.counts} dataChanges={overview.dataChanges} /> : null}
           {overview ? (
             <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-              <ActivityFeed items={overview.recent} onOpen={route => onOpenResource?.(route)} />
+              <ActivityFeed current={overview.current} items={overview.recent} onOpen={route => onOpenResource?.(route)} />
               <div className="grid min-w-0 content-start gap-4">
                 <AttentionList items={overview.activity} onOpen={route => onOpenResource?.(route)} />
                 <ContinueWork items={resumable(overview)} onOpen={route => onOpenResource?.(route)} />

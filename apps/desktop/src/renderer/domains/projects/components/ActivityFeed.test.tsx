@@ -28,3 +28,18 @@ it('says there is no activity yet and wraps a long summary instead of widening t
   rerender(<ActivityFeed items={[{ ...item, summary: long }]} onOpen={vi.fn()} />)
   expect(screen.getByText(long)).toHaveClass('break-words')
 })
+
+it('separates the recorded in-flight work from the finished activity', () => {
+  render(<ActivityFeed current={[{ ...item, activityId: 'live', summary: '批次处理中（running）' }]} items={[item]} onOpen={vi.fn()} />)
+  const current = screen.getByRole('region', { name: '当前工作' })
+  const recent = screen.getByRole('region', { name: '最近活动' })
+  expect(current).toHaveTextContent('批次处理中（running）')
+  expect(current).not.toHaveTextContent('批次完成')
+  expect(recent).toHaveTextContent('批次完成')
+  expect(recent).not.toHaveTextContent('批次处理中')
+})
+
+it('states that nothing is running instead of leaving the current group empty', () => {
+  render(<ActivityFeed items={[]} onOpen={vi.fn()} />)
+  expect(screen.getByRole('region', { name: '当前工作' })).toHaveTextContent('当前没有进行中的工作。')
+})

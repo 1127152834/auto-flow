@@ -237,7 +237,7 @@ function Metrics({ data, onDrillDown }: { data: ProjectStatistics; onDrillDown()
     </div>
     <div className="min-w-0 bg-surface px-4 py-3">
       <dt className="text-xs font-medium text-muted">平均任务耗时</dt>
-      <dd className="m-0 mt-1 text-2xl font-semibold tabular-nums text-ink">{duration ?? '无样本'}</dd>
+      <dd className="m-0 mt-1 text-2xl font-semibold tabular-nums text-ink">{duration ?? '无有效样本'}</dd>
       <p className="m-0 mt-1 text-xs text-muted">{duration ? '成功与失败任务的已结束耗时' : '暂无起止时间完整的任务'}</p>
     </div>
   </dl>

@@ -37,7 +37,7 @@ it('uses the record-list breadcrumb return for a record page while retaining the
  const back=vi.fn(),tableBack=vi.fn();render(<ProjectOverviewPage project={project} tab="data" tableDetail tableName="资料库" tableBackLabel="返回记录列表" disabled={false} onBack={back} onTableBack={tableBack} onEdit={vi.fn()} onTabChange={vi.fn()}/>);
  await userEvent.click(screen.getByRole('button',{name:'返回记录列表'}));expect(tableBack).toHaveBeenCalledOnce();expect(back).not.toHaveBeenCalled();expect(screen.queryByRole('button',{name:'返回数据表'})).not.toBeInTheDocument();
 })
-const overview={project,counts:{automations:2,tables:3,batches:1,environments:0},availability:{} as never,activity:[{kind:'task' as const,resource:{type:'task',projectId:'p',taskId:'t1'},severity:'error' as const,message:'运行失败',occurredAt:'2026-09-19T10:00:00Z'}],recent:[{activityId:'a1',kind:'batch',resource:{type:'batch',projectId:'p',batchId:'b1'},summary:'批次完成',occurredAt:'2026-09-19T10:00:00Z'}],dataChanges:{timezone:'Asia/Shanghai',dayStart:'2026-09-19T00:00:00+08:00',newRecords:1,updatedRecords:0}} as ProjectOverview
+const overview={project,counts:{automations:2,tables:3,batches:1,environments:0},availability:{} as never,activity:[{kind:'task' as const,resource:{type:'task',projectId:'p',taskId:'t1'},severity:'error' as const,message:'运行失败',occurredAt:'2026-09-19T10:00:00Z'}],current:[],recent:[{activityId:'a1',kind:'batch',resource:{type:'batch',projectId:'p',batchId:'b1'},summary:'批次完成',occurredAt:'2026-09-19T10:00:00Z'}],dataChanges:{timezone:'Asia/Shanghai',dayStart:'2026-09-19T00:00:00+08:00',newRecords:1,updatedRecords:0}} as ProjectOverview
 it('renders the recorded overview and routes a resource action into the workspace',async()=>{
  const open=vi.fn();render(<ProjectOverviewPage project={project} tab="overview" disabled={false} overview={overview} onOpenResource={open} onBack={vi.fn()} onEdit={vi.fn()} onTabChange={vi.fn()}/>)
  expect(screen.getByLabelText('项目计数')).toHaveTextContent('自动化');expect(screen.getByText('运行失败')).toBeVisible();expect(within(screen.getByRole('region',{name:'最近活动'})).getByText('批次完成')).toBeVisible();expect(screen.queryByRole('heading',{name:'项目资料'})).not.toBeInTheDocument()
@@ -50,4 +50,29 @@ it('keeps the last overview on screen when a refresh fails',()=>{
 it('keeps the project facts card while the overview has not loaded yet',()=>{
  render(<ProjectOverviewPage project={project} tab="overview" disabled={false} onBack={vi.fn()} onEdit={vi.fn()} onTabChange={vi.fn()}/>)
  expect(screen.getByRole('heading',{name:'项目资料'})).toBeVisible()
+})
+it('says a failed overview read has no previous result instead of showing zeros',()=>{
+ render(<ProjectOverviewPage project={project} tab="overview" disabled={false} overviewError="网络错误" onBack={vi.fn()} onEdit={vi.fn()} onTabChange={vi.fn()}/>)
+ expect(screen.getByRole('status')).toHaveTextContent('概览刷新失败：网络错误')
+ expect(screen.getByRole('status')).toHaveTextContent('暂无可显示的上次结果')
+ expect(screen.queryByLabelText('项目计数')).not.toBeInTheDocument()
+ expect(screen.getByRole('heading',{name:'项目资料'})).toBeVisible()
+})
+it('never repeats one object across 继续工作 and 需要关注 while 最近活动 keeps the full record',()=>{
+ const shared={...overview,current:[],activity:[{kind:'batch' as const,resource:{type:'batch' as const,projectId:'p',batchId:'b1'},severity:'warning' as const,message:'批次停滞',occurredAt:'2026-09-19T10:00:00Z'}],recent:[{activityId:'a1',kind:'batch' as const,resource:{type:'batch' as const,projectId:'p',batchId:'b1'},summary:'批次停滞',occurredAt:'2026-09-19T10:00:00Z'},{activityId:'a2',kind:'task' as const,resource:{type:'task' as const,projectId:'p',taskId:'t1'},summary:'任务未完成',occurredAt:'2026-09-19T11:00:00Z'}]} as ProjectOverview
+ render(<ProjectOverviewPage project={project} tab="overview" disabled={false} overview={shared} onOpenResource={vi.fn()} onBack={vi.fn()} onEdit={vi.fn()} onTabChange={vi.fn()}/>)
+ expect(within(screen.getByRole('region',{name:'最近活动'})).getAllByRole('listitem')).toHaveLength(2)
+ expect(within(screen.getByRole('region',{name:'需要关注'})).getByText('批次停滞')).toBeVisible()
+ expect(within(screen.getByRole('region',{name:'继续工作'})).getByText('任务未完成')).toBeVisible()
+ expect(within(screen.getByRole('region',{name:'继续工作'})).queryByText('批次停滞')).not.toBeInTheDocument()
+})
+it('renders in-flight work under 当前工作 and keeps it out of 最近活动',()=>{
+ const live={...overview,current:[{activityId:'live',kind:'batch' as const,resource:{type:'batch' as const,projectId:'p',batchId:'b2'},summary:'批次处理中（running）',occurredAt:'2026-09-19T10:30:00Z'}]} as ProjectOverview
+ render(<ProjectOverviewPage project={project} tab="overview" disabled={false} overview={live} onOpenResource={vi.fn()} onBack={vi.fn()} onEdit={vi.fn()} onTabChange={vi.fn()}/>)
+ const current=screen.getByRole('region',{name:'当前工作'})
+ const recent=screen.getByRole('region',{name:'最近活动'})
+ expect(current).toHaveTextContent('批次处理中（running）')
+ expect(current).not.toHaveTextContent('批次完成')
+ expect(recent).toHaveTextContent('批次完成')
+ expect(recent).not.toHaveTextContent('批次处理中')
 })
