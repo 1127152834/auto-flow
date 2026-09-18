@@ -6,7 +6,7 @@ from collections.abc import Callable, Mapping
 from typing import Any, cast
 from uuid import uuid4
 
-from sqlalchemy import Integer, case, func, select, text
+from sqlalchemy import Integer, and_, case, func, or_, select, text
 from sqlalchemy import cast as sql_cast
 from sqlalchemy.orm import Session
 
@@ -62,6 +62,7 @@ class SqlAlchemyProjectInputGroups:
         input_plan: dict[str, Any],
         *,
         candidate_offsets: dict[str, int] | None = None,
+        candidate_restriction: dict[str, list[RecordRef]] | None = None,
     ) -> InputSelection:
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
         if not isinstance(raw_inputs, list):
@@ -75,6 +76,7 @@ class SqlAlchemyProjectInputGroups:
         }
         if len(definitions) != len(raw_inputs):
             return InputSelection("configurationError")
+        restriction = candidate_restriction or {}
         sources: list[InputCandidates] = []
         for item in raw_inputs:
             sources.append(
@@ -83,6 +85,7 @@ class SqlAlchemyProjectInputGroups:
                     item,
                     definitions,
                     offset=(candidate_offsets or {}).get(item["inputId"], 0),
+                    restriction=restriction.get(item["inputId"]),
                 )
             )
         selection = select_required_inputs(sources)
@@ -361,6 +364,7 @@ class SqlAlchemyProjectInputGroups:
         offset: int = 0,
         exact_record_ref: RecordRef | None = None,
         omit_candidates: bool = False,
+        restriction: list[RecordRef] | None = None,
     ) -> InputCandidates:
         input_id = item["inputId"]
         table_id, generation = item.get("tableId"), item.get("datasetGeneration")
@@ -465,6 +469,10 @@ class SqlAlchemyProjectInputGroups:
                 )
         elif omit_candidates:
             rows = []
+        elif restriction is not None:
+            rows = _restricted_candidate_rows(
+                self.session, project_id, table_id, generation, query, restriction
+            )
         else:
             rows = _ordered_candidate_rows(
                 self.session,
@@ -477,6 +485,7 @@ class SqlAlchemyProjectInputGroups:
         has_more = (
             exact_record_ref is None
             and not omit_candidates
+            and restriction is None
             and len(rows) > MAX_CANDIDATE_EVALUATIONS
         )
         rows = rows[:MAX_CANDIDATE_EVALUATIONS]
@@ -809,6 +818,43 @@ def _lease_key(value: LeaseKey) -> str:
         sort_keys=True,
         ensure_ascii=False,
         separators=(",", ":"),
+    )
+
+
+def _restricted_candidate_rows(
+    session: Session,
+    project_id: str,
+    table_id: str,
+    generation: str,
+    query: Any,
+    restriction: list[RecordRef],
+) -> list[DataRecordRow]:
+    """Pinned candidate set of a follow-up Batch; never widens beyond it."""
+    pairs = sorted(
+        {
+            (ref.record_key.type, ref.record_key.value)
+            for ref in restriction
+            if ref.project_id == project_id
+            and ref.table_id == table_id
+            and ref.dataset_generation == generation
+        }
+    )
+    if not pairs:
+        return []
+    return list(
+        session.scalars(
+            query.where(
+                or_(
+                    *(
+                        and_(
+                            DataRecordRow.key_type == key_type,
+                            DataRecordRow.key_value == key_value,
+                        )
+                        for key_type, key_value in pairs
+                    )
+                )
+            ).order_by(DataRecordRow.created_at, DataRecordRow.key_value)
+        )
     )
 
 
