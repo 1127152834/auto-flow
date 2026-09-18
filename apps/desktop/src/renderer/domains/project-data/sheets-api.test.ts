@@ -19,8 +19,8 @@ function setup() {
 describe('Sheets command transport', () => {
   it('submits a connection under the renderer key and refuses a foreign operation kind', async () => {
     const { api, request } = setup()
-    request.mockResolvedValue({ operation: operation('createSheetsConnection') })
-    expect((await api.connect('运营', 'token', 'key', () => true)).kind).toBe('createSheetsConnection')
+    request.mockResolvedValue({ operation: operation('connectSheets') })
+    expect((await api.connect('运营', 'token', 'key', () => true)).kind).toBe('connectSheets')
     expect(request).toHaveBeenCalledWith('/api/v1/projects/p/sheets/connections', expect.objectContaining({ method: 'POST', headers: { 'Idempotency-Key': 'key' }, body: { accountLabel: '运营', authorizationToken: 'token' } }))
   })
 
@@ -33,7 +33,7 @@ describe('Sheets command transport', () => {
   it('recovers a lost push response by the original key instead of sending a second command', async () => {
     const { api, request } = setup()
     request.mockRejectedValueOnce(new TypeError('lost response'))
-    request.mockResolvedValueOnce(operation('pushSheets', { status: 'unknown' }))
+    request.mockResolvedValueOnce(operation('syncPush', { status: 'unknown' }))
     const result = await api.push('t', 'due', 3, 'key', () => true)
     expect(result.status).toBe('unknown')
     expect(request).toHaveBeenLastCalledWith('/api/v1/projects/p/operations/by-idempotency-key/key', undefined)

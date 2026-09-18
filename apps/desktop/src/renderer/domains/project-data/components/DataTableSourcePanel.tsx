@@ -1,10 +1,11 @@
 import { ArrowClockwise, Database, Folder, Table as TableIcon, WarningCircle } from '@phosphor-icons/react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableRow, TableScroll } from '../../../shared/components/ui/table'
-import type { SheetsApi } from '../sheets-api'
+import { safeProjectError } from '../../projects/presentation-error'
+import type { SheetsApi, SheetsImpact } from '../sheets-api'
 import { SheetsBindingWizard } from './SheetsBindingWizard'
 import { SyncOperationPanel } from './SyncOperationPanel'
 
@@ -87,12 +88,41 @@ export function DataTableSourcePanel({ table, readonly = false, disabled = false
 }
 
 function SheetsSourceSection({ table, context, readonly, disabled }: { table: TableSource; context: SheetsSourceContext; readonly: boolean; disabled: boolean }) {
+  const queries = useQueryClient()
   const [wizard, setWizard] = useState(false)
+  const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null)
+  const [unbind, setUnbind] = useState<{ revision: number; impacts: SheetsImpact[] } | null>(null)
   const bindingQuery = useQuery({ queryKey: ['sheets-binding', context.scopeKey, context.tableId], queryFn: ({ signal }) => context.api.readBinding(context.tableId, signal), retry: false })
   const connections = useQuery({ queryKey: ['sheets-connections', context.scopeKey], queryFn: () => context.api.connections(), retry: false })
   const binding = table.sourceKind === 'sheets' || bindingQuery.data ? bindingQuery.data ?? null : null
   const account = binding ? connections.data?.items.find(item => item.connectionId === binding.connectionId)?.accountLabel : null
   const bound = Boolean(binding)
+
+  /** Unbinding keeps every local record; the confirmation says so before it runs. */
+  const previewUnbind = async () => {
+    if (busy) return
+    setBusy(true); setError(null); setUnbind(null)
+    try {
+      const report = await context.api.previewUnbind(context.tableId)
+      if (report.blockers.length > 0) { setError(report.blockers.map(blocker => blocker.message).join(' ')); return }
+      setUnbind({ revision: report.impactRevision, impacts: report.impacts })
+    } catch (cause) { setError(safeProjectError(cause)) } finally { setBusy(false) }
+  }
+
+  const confirmUnbind = async () => {
+    if (busy || !unbind) return
+    setBusy(true); setError(null)
+    try {
+      const operation = await context.api.removeBinding(context.tableId, { impactRevision: unbind.revision, expectedTableRevision: context.tableRevision }, crypto.randomUUID(), () => true)
+      if (operation.status === 'failed') { setError(safeProjectError(operation.error ?? new Error('解除绑定未完成'))); return }
+      setUnbind(null); setWizard(false)
+      await Promise.all([
+        bindingQuery.refetch(),
+        queries.invalidateQueries({ queryKey: ['data-table', context.scopeKey, context.tableId] }),
+      ])
+      context.onChanged?.()
+    } catch (cause) { setError(safeProjectError(cause)) } finally { setBusy(false) }
+  }
 
   return <section className="grid gap-4 rounded-control border border-line bg-surface p-5" aria-label="Google Sheets">
     <header className="flex flex-wrap items-center justify-between gap-3">
@@ -100,8 +130,20 @@ function SheetsSourceSection({ table, context, readonly, disabled }: { table: Ta
         <TableIcon size={28} aria-hidden="true" />
         <div><h3 className="text-xl font-semibold">Google Sheets</h3><p className="mt-1 text-base text-muted">{bound ? '本地表与来源工作表已建立映射。' : '把这张表绑定到一张工作表，之后按需拉取与推送。'}</p></div>
       </div>
-      <Button variant={bound ? 'ghost' : 'primary'} className="h-12 px-7 text-base" disabled={readonly || disabled} onClick={() => setWizard(true)}>{bound ? '调整绑定…' : '绑定 Google Sheets…'}</Button>
+      <div className="flex flex-wrap items-center gap-3">
+        {bound ? <Button variant="ghost" className="h-12 px-7 text-base" disabled={readonly || disabled || busy} onClick={() => void previewUnbind()}>解除绑定…</Button> : null}
+        <Button variant={bound ? 'ghost' : 'primary'} className="h-12 px-7 text-base" disabled={readonly || disabled} onClick={() => setWizard(true)}>{bound ? '调整绑定…' : '绑定 Google Sheets…'}</Button>
+      </div>
     </header>
+    {error ? <p role="alert" className="m-0 text-sm text-danger">{error}</p> : null}
+    {unbind ? <section className="grid gap-3 rounded-control border border-clay bg-surface p-4" aria-label="解除绑定的确认">
+      <h5 className="m-0 text-sm font-semibold">确认解除绑定</h5>
+      <ul className="m-0 grid gap-1 pl-5 text-sm text-muted">{unbind.impacts.map((impact, index) => <li key={`${impact.code}-${index}`}>{impact.message}</li>)}</ul>
+      <div className="flex flex-wrap gap-3">
+        <Button size="sm" variant="primary" disabled={busy} onClick={() => void confirmUnbind()}>解除绑定</Button>
+        <Button size="sm" disabled={busy} onClick={() => setUnbind(null)}>取消</Button>
+      </div>
+    </section> : null}
     {bindingQuery.error ? <p role="alert" className="m-0 text-sm text-danger">绑定信息暂时无法读取。<Button size="sm" variant="ghost" onClick={() => void bindingQuery.refetch()}>重新载入</Button></p> : null}
     {bound && binding ? <TableScroll label="绑定" className="max-w-[58rem] rounded-control border border-line">
       <Table data-variant="facts" aria-label="绑定">

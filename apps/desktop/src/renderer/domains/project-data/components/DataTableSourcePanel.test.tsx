@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, expect, it, vi } from 'vitest'
 import { DataTableSourcePanel } from './DataTableSourcePanel'
 
@@ -56,6 +57,49 @@ it('disables existing reimport actions during external locks without fabricating
   expect(screen.getByText('Google Sheets')).toBeVisible()
   expect(screen.queryByRole('button')).toBeNull()
   expect(screen.queryByText(/同步成功|0 条/)).toBeNull()
+})
+
+const boundTable = { sourceKind: 'sheets' as const, source: { kind: 'sheets' as const, filename: '线索表', sheetName: '线索', importedAt: null } }
+const bindingView = { connectionId: 'c1', spreadsheetId: 'abc', sheetId: 0, bindingEpoch: 3, identityStrategy: { kind: 'column' as const, columnId: 'A' }, mapping: [], syncPaused: false }
+const impactReport = (extra: Record<string, unknown> = {}) => ({ impactRevision: 7, target: { type: 'table', projectId: 'p', tableId: 't' }, changeDigest: 'd', expectedRevisions: {}, impacts: [], blockers: [], calculatedAt: '2026-09-18T02:00:00Z', ...extra })
+
+it('previews an unbind, shows what stops, and only removes the binding after confirmation', async () => {
+  const removeBinding = vi.fn().mockResolvedValue({ kind: 'removeSheetsBinding', status: 'succeeded', result: { table: { tableId: 't' }, unbound: true } })
+  const api = {
+    readBinding: vi.fn().mockResolvedValue(bindingView),
+    connections: vi.fn().mockResolvedValue({ items: [] }),
+    state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: bindingView }),
+    operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+    previewUnbind: vi.fn().mockResolvedValue(impactReport({ impacts: [{ code: 'SHEETS_LOCAL_COPY_KEPT', resource: { type: 'table', projectId: 'p', tableId: 't' }, message: '本地记录、状态和同步历史都会保留，表回到待配置状态。', blocking: false }] })),
+    removeBinding,
+  }
+  const onChanged = vi.fn()
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundTable as never} sheets={{ api: api as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '线索表', tableRevision: 9, datasetGeneration: 'g', fields: [], onChanged }} />
+  </QueryClientProvider>)
+  fireEvent.click(await screen.findByRole('button', { name: '解除绑定…' }))
+  expect(await screen.findByText('本地记录、状态和同步历史都会保留，表回到待配置状态。')).toBeVisible()
+  expect(removeBinding).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: '解除绑定' }))
+  await waitFor(() => expect(removeBinding).toHaveBeenCalledWith('t', { impactRevision: 7, expectedTableRevision: 9 }, expect.any(String), expect.any(Function)))
+})
+
+it('keeps the binding when the unbind preview reports a blocker', async () => {
+  const removeBinding = vi.fn()
+  const api = {
+    readBinding: vi.fn().mockResolvedValue(bindingView),
+    connections: vi.fn().mockResolvedValue({ items: [] }),
+    state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: bindingView }),
+    operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+    previewUnbind: vi.fn().mockResolvedValue(impactReport({ blockers: [{ code: 'SHEETS_SYNC_IN_FLIGHT', resource: { type: 'table', projectId: 'p', tableId: 't' }, state: 'blocked', message: '还有发送中的修改，请先停止或等待结果。' }] })),
+    removeBinding,
+  }
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundTable as never} sheets={{ api: api as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '线索表', tableRevision: 9, datasetGeneration: 'g', fields: [] }} />
+  </QueryClientProvider>)
+  fireEvent.click(await screen.findByRole('button', { name: '解除绑定…' }))
+  expect(await screen.findByText('还有发送中的修改，请先停止或等待结果。')).toBeVisible()
+  expect(removeBinding).not.toHaveBeenCalled()
 })
 
 it('omits an empty facts table when an unconfigured source has no facts', () => {

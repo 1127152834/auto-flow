@@ -5,7 +5,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import { safeProjectError } from '../../projects/presentation-error'
-import type { SheetsApi, SheetsBinding, SheetsInspection } from '../sheets-api'
+import type { SheetsApi, SheetsBinding, SheetsImpact, SheetsInspection } from '../sheets-api'
 import { SheetsConnectionPanel } from './SheetsConnectionPanel'
 
 type Field = components['schemas']['DataFieldView']
@@ -57,11 +57,12 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
   const [mapping, setMapping] = useState<MappingEntry[] | null>(null)
   const [identityColumn, setIdentityColumn] = useState<string | null>(null)
   const [inspection, setInspection] = useState<SheetsInspection | null>(null)
+  const [impacts, setImpacts] = useState<SheetsImpact[]>([])
   const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null)
 
   useLayoutEffect(() => {
     if (!open) return
-    setConnection(connectionId ?? null); setLink(''); setSheetValue(''); setMapping(null); setIdentityColumn(null); setInspection(null); setError(null)
+    setConnection(connectionId ?? null); setLink(''); setSheetValue(''); setMapping(null); setIdentityColumn(null); setInspection(null); setImpacts([]); setError(null)
   }, [open, contextKey, scopeKey, table.tableId, table.datasetGeneration, connectionId])
 
   const parsed = parseSpreadsheetLink(link)
@@ -87,22 +88,41 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
     } catch (cause) { setError(safeProjectError(cause)) } finally { setBusy(false) }
   }
 
-  const bind = async () => {
+  const bind = async (confirmed: boolean) => {
     if (!ready || busy || !inspection) return
     const entries = draft()
     if (!identityColumn) { setError('请指定用于识别记录身份的来源列。'); return }
+    const change = {
+      ...target,
+      identityStrategy: { kind: 'column' as const, columnId: identityColumn },
+      mapping: entries,
+    }
     setBusy(true); setError(null)
     try {
+      // The writer re-derives these facts inside its own transaction, so the
+      // confirmation has to be issued right before the command is sent; a
+      // stale one is refused instead of silently overwriting newer data.
+      const report = await api.previewBinding(table.tableId, change)
+      if (report.blockers.length > 0) {
+        setImpacts([])
+        setError(report.blockers.map(blocker => blocker.message).join(' '))
+        return
+      }
+      if (report.impacts.length > 0 && !confirmed) {
+        // 校验与影响：先让用户看到这次绑定会做什么，再提交。
+        setImpacts(report.impacts)
+        return
+      }
       const operation = await api.putBinding(table.tableId, {
-        ...target, identityStrategy: { kind: 'column', columnId: identityColumn }, mapping: entries,
-        // The service re-checks tableRevision and bindingEpoch; impactRevision is the confirmed inspection.
-        impactRevision: table.tableRevision, expectedTableRevision: table.tableRevision,
+        ...change, impactRevision: report.impactRevision, expectedTableRevision: table.tableRevision,
       }, crypto.randomUUID(), () => true)
       if (operation.status === 'failed') { setError(safeProjectError(operation.error ?? new Error('绑定未建立'))); return }
       const result = operation.result
-      if (!result || !('binding' in result) || !result.binding) { setError('绑定结果暂时无法读取，请重新载入来源设置。'); return }
+      // The frozen `changeSheetsBinding` result is the binding itself.
+      if (!result || !('spreadsheetId' in result)) { setError('绑定结果暂时无法读取，请重新载入来源设置。'); return }
+      setImpacts([])
       onDirtyChange?.(false)
-      onBound(result.binding as SheetsBinding)
+      onBound(result)
     } catch (cause) { setError(safeProjectError(cause)) } finally { setBusy(false) }
   }
 
@@ -165,8 +185,15 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
           </TableScroll>
           <p className="m-0 text-sm text-muted">身份列会保留 “001” 与 “1” 的区别，必须是文本字段。绑定后本地数据整体换代次，业务状态与记录关联不会继承。</p>
           {blocking.length > 0 ? <p role="alert" className="m-0 text-sm text-danger">还有 {blocking.length} 项检查未通过，修正映射后重新检查再绑定。</p> : null}
+          {impacts.length > 0 ? <section className="grid gap-1 rounded-control border border-clay bg-surface p-3" aria-label="绑定影响">
+            <h5 className="m-0 text-sm font-semibold">确认这次绑定会做什么</h5>
+            <ul className="m-0 grid gap-1 pl-5 text-sm text-muted">{impacts.map((impact, index) => <li key={`${impact.code}-${index}`}>{impact.message}</li>)}</ul>
+          </section> : null}
           <div className="flex flex-wrap gap-3">
-            <Button variant="primary" disabled={blocked || busy || blocking.length > 0 || !identityColumn} onClick={() => void bind()}>确认绑定</Button>
+            {impacts.length > 0
+              ? <><Button variant="primary" disabled={blocked || busy} onClick={() => void bind(true)}>确认并绑定</Button>
+                <Button disabled={busy} onClick={() => setImpacts([])}>返回修改</Button></>
+              : <Button variant="primary" disabled={blocked || busy || blocking.length > 0 || !identityColumn} onClick={() => void bind(false)}>确认绑定</Button>}
             <Button disabled={busy} onClick={onClose}>取消</Button>
           </div>
         </section>

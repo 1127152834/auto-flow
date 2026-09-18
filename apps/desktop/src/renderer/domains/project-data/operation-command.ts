@@ -27,12 +27,12 @@ export function createOperationCommand(client: Pick<StreamingApiClient, 'request
       throw error
     }
   }
-  const submit = async (path: string, body: object, key: string, kind: Operation['kind'], current: () => boolean) => {
+  const submit = async (path: string, body: object, key: string, kind: Operation['kind'], current: () => boolean, method: 'POST' | 'DELETE' = 'POST') => {
     if (!current()) throw new DataCommandUncertain(new Error('当前上下文已失效'))
     assertFiniteNumbers(body)
     let operation: Operation
     try {
-      const response = await client.request<{ operation: Operation }>(path, { method: 'POST', headers: { 'Idempotency-Key': key }, body: structuredClone(body) })
+      const response = await client.request<{ operation: Operation }>(path, { method, headers: { 'Idempotency-Key': key }, body: structuredClone(body) })
       operation = response.operation
     } catch (error) {
       if (!current()) throw new DataCommandUncertain(new Error('当前上下文已失效'))

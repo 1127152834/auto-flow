@@ -4087,7 +4087,7 @@ export type components = {
             /** Code */
             code: string;
             /** Resource */
-            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"];
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"];
             /** State */
             state: string;
             /** Message */
@@ -4098,7 +4098,7 @@ export type components = {
             /** Code */
             code: string;
             /** Resource */
-            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"];
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"];
             /** Message */
             message: string;
             /** Blocking */
@@ -6322,7 +6322,7 @@ export type components = {
              * Sync
              * @constant
              */
-            sync: "notImplemented";
+            sync: "available";
         };
         /** ProjectCreate */
         ProjectCreate: {
@@ -6378,7 +6378,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "createSheetsConnection" | "deleteSheetsConnection" | "inspectSheets" | "bindSheets" | "unbindSheets" | "pullSheets" | "pushSheets" | "reconcileSheets";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync";
             /**
              * Status
              * @enum {string}
@@ -6387,9 +6387,9 @@ export type components = {
             /** Statusrevision */
             statusRevision: number;
             /** Resource */
-            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["ProjectBatchResult"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | components["schemas"]["SyncRunResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["ProjectBatchResult"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | components["schemas"]["SheetsConnection"] | components["schemas"]["SheetsDisconnectResult"] | components["schemas"]["SheetsInspection"] | components["schemas"]["SheetsBinding"] | components["schemas"]["SheetsUnbindResult"] | components["schemas"]["SyncRunResult"] | components["schemas"]["SyncOperation"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -6755,7 +6755,7 @@ export type components = {
             /** Code */
             code: string;
             /** Resource */
-            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"];
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"];
             /** State */
             state: string;
             /** Message */
@@ -7229,12 +7229,40 @@ export type components = {
             /** Syncpaused */
             syncPaused: boolean;
         };
+        /**
+         * SheetsBindingChange
+         * @description The exact binding a caller intends to publish, minus its CAS revisions.
+         */
+        SheetsBindingChange: {
+            /** Connectionid */
+            connectionId: string;
+            /** Spreadsheetid */
+            spreadsheetId: string;
+            /** Sheetid */
+            sheetId: number;
+            identityStrategy: components["schemas"]["SheetsIdentityStrategy"];
+            /** Mapping */
+            mapping: components["schemas"]["SheetsMappingEntry"][];
+        };
         /** SheetsBindingDelete */
         SheetsBindingDelete: {
             /** Impactrevision */
             impactRevision: number;
             /** Expectedtablerevision */
             expectedTableRevision: number;
+        };
+        /**
+         * SheetsBindingImpactRequest
+         * @description First binding and rebinding share one confirmation: the published change.
+         */
+        SheetsBindingImpactRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "changeSheetsBinding";
+            target: components["schemas"]["TableResourceLocator"];
+            change: components["schemas"]["SheetsBindingChange"];
         };
         /** SheetsBindingWrite */
         SheetsBindingWrite: {
@@ -7306,6 +7334,57 @@ export type components = {
             /** Items */
             items: components["schemas"]["SheetsConnection"][];
         };
+        /**
+         * SheetsConnectionResourceLocator
+         * @description The connection a Sheets command names, as the shared impact report sees it.
+         */
+        SheetsConnectionResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "sheetsConnection";
+            /** Projectid */
+            projectId: string;
+            /** Connectionid */
+            connectionId: string;
+        };
+        /** SheetsDisconnectChange */
+        SheetsDisconnectChange: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "disconnect" | "forgetCredential";
+        };
+        /**
+         * SheetsDisconnectImpactRequest
+         * @description The frozen `disconnectSheets` action of the shared impact contract.
+         */
+        SheetsDisconnectImpactRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "disconnectSheets";
+            target: components["schemas"]["SheetsConnectionResourceLocator"];
+            change: components["schemas"]["SheetsDisconnectChange"];
+        };
+        /**
+         * SheetsDisconnectResult
+         * @description The frozen `disconnectSheets` result: what was revoked and in which mode.
+         */
+        SheetsDisconnectResult: {
+            /** Connectionid */
+            connectionId: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "disconnect" | "forgetCredential";
+            /** Disconnected */
+            disconnected: boolean;
+        };
         /** SheetsIdentityStrategy */
         SheetsIdentityStrategy: {
             /**
@@ -7324,6 +7403,31 @@ export type components = {
             missing: number;
             /** Duplicates */
             duplicates: number;
+        };
+        /**
+         * SheetsImpactReport
+         * @description The confirmation a Sheets connection or binding command quotes back.
+         */
+        SheetsImpactReport: {
+            /** Impactrevision */
+            impactRevision: number;
+            /** Target */
+            target: components["schemas"]["TableResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"];
+            /** Changedigest */
+            changeDigest: string;
+            /** Expectedrevisions */
+            expectedRevisions: {
+                [key: string]: number;
+            };
+            /** Impacts */
+            impacts: components["schemas"]["DataMutationImpact"][];
+            /** Blockers */
+            blockers: components["schemas"]["DataMutationBlocker"][];
+            /**
+             * Calculatedat
+             * Format: date-time
+             */
+            calculatedAt: string;
         };
         /** SheetsInspection */
         SheetsInspection: {
@@ -7394,6 +7498,33 @@ export type components = {
             tableId: string;
             /** Columnids */
             columnIds: string[];
+        };
+        /** SheetsUnbindChange */
+        SheetsUnbindChange: {
+            /**
+             * Mode
+             * @constant
+             */
+            mode: "remove";
+        };
+        /** SheetsUnbindImpactRequest */
+        SheetsUnbindImpactRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "removeSheetsBinding";
+            target: components["schemas"]["TableResourceLocator"];
+            change: components["schemas"]["SheetsUnbindChange"];
+        };
+        /**
+         * SheetsUnbindResult
+         * @description The frozen `removeSheetsBinding` result: the table is back to unconfigured.
+         */
+        SheetsUnbindResult: {
+            table: components["schemas"]["DataTableView"];
+            /** Unbound */
+            unbound: boolean;
         };
         /** SourceDefaultProxy */
         SourceDefaultProxy: {
@@ -7557,24 +7688,6 @@ export type components = {
             /** Reason */
             reason: string;
         };
-        /**
-         * SyncError
-         * @description The failure a sync command reports back with its counts.
-         *
-         *     ``upstreamStatus`` is -1 when the request never left (configuration or
-         *     transport refused it) and 0 when Google accepted the request but the
-         *     result is unknown, so a caller can tell "not sent" from "may have sent".
-         */
-        SyncError: {
-            /** Code */
-            code: string;
-            /** Message */
-            message: string;
-            /** Upstreamstatus */
-            upstreamStatus?: number | null;
-            /** Retryable */
-            retryable?: boolean | null;
-        };
         /** SyncEvidence */
         SyncEvidence: {
             /**
@@ -7668,34 +7781,16 @@ export type components = {
         };
         /**
          * SyncRunResult
-         * @description The result of one sync command, in one shape for every command type.
+         * @description The frozen result of one pull or push command.
+         *
+         *     Per-record outcomes live on their own sync operations; the command result
+         *     only says which table it ran on and what the queue looks like afterwards,
+         *     so an accepted command is never mistaken for a finished sync.
          */
         SyncRunResult: {
-            /** Syncoperationid */
-            syncOperationId?: string | null;
-            /** Outcome */
-            outcome?: string | null;
-            summary?: components["schemas"]["SyncSummary"] | null;
-            connection?: components["schemas"]["SheetsConnection"] | null;
-            binding?: components["schemas"]["SheetsBinding"] | null;
-            inspection?: components["schemas"]["SheetsInspection"] | null;
-            /** Rows */
-            rows?: number | null;
-            /** Created */
-            created?: number | null;
-            /** Refreshed */
-            refreshed?: number | null;
-            /** Conflicts */
-            conflicts?: number | null;
-            /** Confirmed */
-            confirmed?: number | null;
-            /** Failed */
-            failed?: number | null;
-            /** Unknown */
-            unknown?: number | null;
-            /** Targets */
-            targets?: number[] | null;
-            error?: components["schemas"]["SyncError"] | null;
+            /** Tableid */
+            tableId: string;
+            summary: components["schemas"]["SyncSummary"];
         };
         /** SyncSnapshot */
         SyncSnapshot: {
@@ -16240,7 +16335,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["FieldImpactRequest"] | components["schemas"]["StatusDeleteImpactRequest"] | components["schemas"]["RecordDeleteImpactRequest"];
+                "application/json": components["schemas"]["FieldImpactRequest"] | components["schemas"]["StatusDeleteImpactRequest"] | components["schemas"]["RecordDeleteImpactRequest"] | components["schemas"]["SheetsDisconnectImpactRequest"] | components["schemas"]["SheetsBindingImpactRequest"] | components["schemas"]["SheetsUnbindImpactRequest"];
             };
         };
         responses: {
@@ -16250,7 +16345,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FieldImpactReport"] | components["schemas"]["DeletionImpactReport"];
+                    "application/json": components["schemas"]["FieldImpactReport"] | components["schemas"]["DeletionImpactReport"] | components["schemas"]["SheetsImpactReport"];
                 };
             };
             /** @description Unauthorized */

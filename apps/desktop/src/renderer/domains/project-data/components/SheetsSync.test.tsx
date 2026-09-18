@@ -16,8 +16,11 @@ const connection = { connectionId: 'c1', accountLabel: '运营账号', credentia
 const field = { ref: { fieldId: 'f1', datasetGeneration: 'g', position: 0 }, name: '邮箱', type: 'string', required: false, writable: true, formula: false, validation: {} }
 const inspection = { valid: true, issues: [], columns: [{ columnId: 'A', name: 'Email', formula: false }], identitySummary: { unique: true, missing: 0, duplicates: 0 }, overlaps: [] }
 
+const report = (extra: Record<string, unknown> = {}) => ({ impactRevision: 1, target: { type: 'table', projectId: 'p', tableId: 't' }, changeDigest: 'd', expectedRevisions: {}, impacts: [], blockers: [], calculatedAt: '2026-09-18T02:00:00Z', ...extra })
 const apiWith = (overrides: Partial<Record<keyof SheetsApi, unknown>> = {}) => ({
   connections: vi.fn().mockResolvedValue({ items: [connection] }), authorize: vi.fn(), connect: vi.fn(),
+  previewBinding: vi.fn().mockResolvedValue(report()), previewUnbind: vi.fn().mockResolvedValue(report()), previewDisconnect: vi.fn().mockResolvedValue(report()),
+  disconnect: vi.fn(), removeBinding: vi.fn(),
   readBinding: vi.fn().mockResolvedValue(null), inspect: vi.fn(), putBinding: vi.fn(), state: vi.fn(),
   operations: vi.fn(), pause: vi.fn(), resume: vi.fn(), push: vi.fn(), pull: vi.fn(), reconcile: vi.fn(), abandon: vi.fn(),
   ...overrides,
@@ -37,7 +40,7 @@ it('lists a real connection and never posts when the desktop handshake is cancel
 it('asks the desktop host for the handshake and never handles a Google credential itself', async () => {
   const api = apiWith({
     authorize: vi.fn().mockResolvedValue({ authorizationToken: 'one-shot', accountLabel: '运营账号', writable: true }),
-    connect: vi.fn().mockResolvedValue({ kind: 'createSheetsConnection', status: 'succeeded' }),
+    connect: vi.fn().mockResolvedValue({ kind: 'connectSheets', status: 'succeeded' }),
   })
   wrap(<SheetsConnectionPanel api={api} scopeKey="ws:p" />)
   await userEvent.type(screen.getByLabelText('Google 账号名称'), '运营账号')
@@ -72,7 +75,8 @@ it('binds with the confirmed table revision and reports the created binding', as
   const binding = { connectionId: 'c1', spreadsheetId: 'abc', sheetId: 0, bindingEpoch: 1, identityStrategy: { kind: 'column', columnId: 'A' }, mapping: [{ fieldId: 'f1', columnId: 'A', direction: 'both', formula: false }], syncPaused: false }
   const api = apiWith({
     inspect: vi.fn().mockResolvedValue({ operation: { kind: 'inspectSheets', status: 'succeeded', result: {} }, inspection }),
-    putBinding: vi.fn().mockResolvedValue({ kind: 'bindSheets', status: 'succeeded', result: { binding } }),
+    previewBinding: vi.fn().mockResolvedValue(report({ impactRevision: 41 })),
+    putBinding: vi.fn().mockResolvedValue({ kind: 'changeSheetsBinding', status: 'succeeded', result: binding }),
   })
   wrap(<SheetsBindingWizard open api={api} scopeKey="ws:p" contextKey="ctx" table={{ tableId: 't', name: '邮箱表', tableRevision: 7, datasetGeneration: 'g' }} fields={[field] as never} connectionId="c1"
     onClose={vi.fn()} onBound={onBound} />)
@@ -80,7 +84,67 @@ it('binds with the confirmed table revision and reports the created binding', as
   await userEvent.click(screen.getByRole('button', { name: '读取工作表并检查' }))
   await userEvent.click(await screen.findByRole('button', { name: '确认绑定' }))
   await waitFor(() => expect(onBound).toHaveBeenCalledWith(binding))
-  expect(api.putBinding).toHaveBeenCalledWith('t', expect.objectContaining({ expectedTableRevision: 7, spreadsheetId: 'abc', sheetId: 0, identityStrategy: { kind: 'column', columnId: 'A' } }), expect.any(String), expect.any(Function))
+  expect(api.previewBinding).toHaveBeenCalledWith('t', expect.objectContaining({ spreadsheetId: 'abc', sheetId: 0, identityStrategy: { kind: 'column', columnId: 'A' } }))
+  expect(api.putBinding).toHaveBeenCalledWith('t', expect.objectContaining({ impactRevision: 41, expectedTableRevision: 7, spreadsheetId: 'abc', sheetId: 0, identityStrategy: { kind: 'column', columnId: 'A' } }), expect.any(String), expect.any(Function))
+})
+
+it('shows what a binding will do and only submits after the confirmation is accepted', async () => {
+  const binding = { connectionId: 'c1', spreadsheetId: 'abc', sheetId: 0, bindingEpoch: 1, identityStrategy: { kind: 'column', columnId: 'A' }, mapping: [], syncPaused: false }
+  const api = apiWith({
+    inspect: vi.fn().mockResolvedValue({ operation: { kind: 'inspectSheets', status: 'succeeded', result: {} }, inspection }),
+    previewBinding: vi.fn().mockResolvedValue(report({ impactRevision: 52, impacts: [{ code: 'SHEETS_DATASET_REPLACED', resource: { type: 'table', projectId: 'p', tableId: 't' }, message: '绑定会把本地数据换成来源代次，旧记录保留为历史。', blocking: false }] })),
+    putBinding: vi.fn().mockResolvedValue({ kind: 'changeSheetsBinding', status: 'succeeded', result: binding }),
+  })
+  wrap(<SheetsBindingWizard open api={api} scopeKey="ws:p" contextKey="ctx" table={{ tableId: 't', name: '邮箱表', tableRevision: 7, datasetGeneration: 'g' }} fields={[field] as never} connectionId="c1"
+    onClose={vi.fn()} onBound={vi.fn()} />)
+  await userEvent.type(screen.getByLabelText('Spreadsheet 链接'), 'https://docs.google.com/spreadsheets/d/abc/edit#gid=0')
+  await userEvent.click(screen.getByRole('button', { name: '读取工作表并检查' }))
+  await userEvent.click(await screen.findByRole('button', { name: '确认绑定' }))
+  expect(await screen.findByText('绑定会把本地数据换成来源代次，旧记录保留为历史。')).toBeVisible()
+  expect(api.putBinding).not.toHaveBeenCalled()
+  await userEvent.click(screen.getByRole('button', { name: '确认并绑定' }))
+  await waitFor(() => expect(api.putBinding).toHaveBeenCalledWith('t', expect.objectContaining({ impactRevision: 52 }), expect.any(String), expect.any(Function)))
+})
+
+it('keeps the previous binding when the impact preview reports a blocker', async () => {
+  const api = apiWith({
+    inspect: vi.fn().mockResolvedValue({ operation: { kind: 'inspectSheets', status: 'succeeded', result: {} }, inspection }),
+    previewBinding: vi.fn().mockResolvedValue(report({ blockers: [{ code: 'SHEETS_BINDING_CONFLICT', resource: { type: 'table', projectId: 'p', tableId: 't' }, state: 'blocked', message: '该工作表已被另一张表绑定。' }] })),
+  })
+  wrap(<SheetsBindingWizard open api={api} scopeKey="ws:p" contextKey="ctx" table={{ tableId: 't', name: '邮箱表', tableRevision: 7, datasetGeneration: 'g' }} fields={[field] as never} connectionId="c1"
+    onClose={vi.fn()} onBound={vi.fn()} />)
+  await userEvent.type(screen.getByLabelText('Spreadsheet 链接'), 'https://docs.google.com/spreadsheets/d/abc/edit#gid=0')
+  await userEvent.click(screen.getByRole('button', { name: '读取工作表并检查' }))
+  await userEvent.click(await screen.findByRole('button', { name: '确认绑定' }))
+  expect(await screen.findByText('该工作表已被另一张表绑定。')).toBeVisible()
+  expect(api.putBinding).not.toHaveBeenCalled()
+})
+
+it('previews a disconnect and only submits the revision the report issued', async () => {
+  const api = apiWith({
+    previewDisconnect: vi.fn().mockResolvedValue(report({ impactRevision: 12, impacts: [{ code: 'SHEETS_CREDENTIAL_REMOVED', resource: { type: 'sheetsConnection', projectId: 'p', connectionId: 'c1' }, message: '本机保存的 Google 凭据会被删除，需要重新授权才能再次连接。', blocking: false }] })),
+    disconnect: vi.fn().mockResolvedValue({ kind: 'disconnectSheets', status: 'succeeded', result: { connectionId: 'c1', mode: 'forgetCredential', disconnected: true } }),
+  })
+  wrap(<SheetsConnectionPanel api={api} scopeKey="ws:p" />)
+  await screen.findByText('运营账号')
+  expect(api.disconnect).not.toHaveBeenCalled()
+  await userEvent.click(screen.getByRole('button', { name: '删除凭据…' }))
+  expect(await screen.findByText('本机保存的 Google 凭据会被删除，需要重新授权才能再次连接。')).toBeVisible()
+  expect(api.previewDisconnect).toHaveBeenCalledWith('c1', 'forgetCredential')
+  await userEvent.click(screen.getByRole('button', { name: '断开并删除本机凭据' }))
+  await waitFor(() => expect(api.disconnect).toHaveBeenCalledWith('c1', { impactRevision: 12, mode: 'forgetCredential' }, expect.any(String), expect.any(Function)))
+})
+
+it('keeps an in-use connection instead of disconnecting it', async () => {
+  const api = apiWith({
+    previewDisconnect: vi.fn().mockResolvedValue(report({ blockers: [{ code: 'SHEETS_CONNECTION_IN_USE', resource: { type: 'table', projectId: 'p', tableId: 't' }, state: 'blocked', message: '仍有数据表绑定使用该连接，请先解除绑定。' }] })),
+  })
+  wrap(<SheetsConnectionPanel api={api} scopeKey="ws:p" />)
+  await screen.findByText('运营账号')
+  await userEvent.click(screen.getByRole('button', { name: '断开…' }))
+  expect(await screen.findByText('仍有数据表绑定使用该连接，请先解除绑定。')).toBeVisible()
+  expect(api.disconnect).not.toHaveBeenCalled()
+  expect(screen.queryByRole('button', { name: '断开连接' })).toBeNull()
 })
 
 it('says the table has no binding instead of pretending sync is idle', async () => {
@@ -93,7 +157,7 @@ it('offers reconciliation for an unknown send and never pushes again on its own'
   const api = apiWith({
     state: vi.fn().mockResolvedValue({ summary: { status: 'unknown', pendingCount: 0, unknownCount: 1, lastConfirmedAt: null }, binding: { connectionId: 'c1', spreadsheetId: 'abc', sheetId: 0, bindingEpoch: 2, identityStrategy: { kind: 'column', columnId: 'A' }, mapping: [], syncPaused: false } }),
     operations: vi.fn().mockResolvedValue({ items: [{ syncOperationId: 's1', projectId: 'p', tableId: 't', kind: 'push', bindingEpoch: 2, status: 'unknown', statusRevision: 4, createdAt: '2026-09-18T02:00:00Z', updatedAt: '2026-09-18T02:00:00Z' }], page: 1, pageSize: 50, total: 1 }),
-    reconcile: vi.fn().mockResolvedValue({ kind: 'reconcileSheets', status: 'succeeded', result: {} }),
+    reconcile: vi.fn().mockResolvedValue({ kind: 'reconcileSync', status: 'succeeded', result: {} }),
   })
   wrap(<SyncOperationPanel api={api} tableId="t" scopeKey="ws:p" tableRevision={3} binding={null} />)
   // Both the summary line and the operation row report the unknown send.
