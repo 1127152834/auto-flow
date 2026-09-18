@@ -37,6 +37,7 @@ test('every PM7 end-to-end step and fault injection is named', () => {
     'late-event',
     'overview-read-failure',
     'response-loss',
+    'statistics-read-failure',
     'statistics-ttl',
   ])
 })

@@ -92,7 +92,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
     assert.equal(isOwnedPm7Workspace('/tmp/pm7-other/workspace', '/tmp/pm7-owner', { kind: 'pm7-project-management-qa', version: 1, runId: 'r' }), false)
     assert.equal(isOwnedPm7Workspace('/tmp/pm7-owner/workspace', '/tmp/pm7-owner', { kind: 'pm4-v1-project-management-qa', version: 1 }), false)
     assert.equal(PM7_STEPS.length, 6)
-    assert.equal(PM7_FAULT_KINDS.length, 8)
+    assert.equal(PM7_FAULT_KINDS.length, 9)
     assert.deepEqual(parsePm7QaArgs(['--manual', '--inject=statistics-ttl']), { manual: true, prepareOnly: false, selfTest: false, cleanupOnly: false, workspace: undefined, inject: ['statistics-ttl'] })
     assert.throws(() => parsePm7QaArgs(['--inject=nope']))
     console.log('PM7 QA helper self-test passed')
@@ -291,6 +291,25 @@ export async function main(cliArgs = process.argv.slice(2)) {
     const result = JSON.parse(text)
     injections.push({ ...result, at: new Date().toISOString() })
     return result
+  }
+
+  /** 手动模式的重启入口：真实停掉并拉起 sidecar，等新实例 ready。 */
+  async function restartService() {
+    const previous = await renderer.evaluate('(async()=> (await window.autoflow.getRuntimeContext()).sidecar.instanceId)()')
+    await renderer.evaluate('window.autoflow.restartSidecar()')
+    await waitFor(renderer, `(async()=>{const r=await window.autoflow.getRuntimeContext();return r.sidecar.state==='ready'&&r.sidecar.instanceId!==${JSON.stringify(previous)}})()`, 'service restarts', 30_000)
+    await visible('本地服务正常', 30_000)
+    checkpoint('测试服务完整重启并等待新实例 ready。')
+  }
+
+  /** 手动模式：等到流程跑完再注入，确保失败任务等事实已存在。 */
+  async function applyManualInjections() {
+    for (const kind of options.inject) {
+      if (kind === 'service-restart') { await restartService(); continue }
+      const needsTask = kind === 'followup-conflict' || kind === 'late-event'
+      await fault(runtime, kind, needsTask ? { taskId: failedTaskId } : {})
+      console.log(`已注入 ${kind}（测试注入，记录在 report.json 的 injected 字段）。`)
+    }
   }
 
   async function faultState(runtime) {
@@ -844,6 +863,7 @@ print(created.workflow_id); factory.dispose()`
     const result = await report('passed', undefined, facts)
     console.log(JSON.stringify({ status: result.status, scope: result.scope, runId, workspace, evidence, screenshots: screenshots.length, checkpoints: checkpoints.length }, null, 2))
     if (options.manual) {
+      await applyManualInjections()
       console.log('应用保持打开。当前结果仅表示管理侧通过，真实执行核心接入待验收。按 Ctrl+C 退出。')
       await new Promise(() => {})
     }

@@ -177,7 +177,7 @@ it('refetches the overview every time the user comes back to the overview tab', 
   const overviewCalls: string[] = []
   const project = { ...a } as ProjectView
   const request = vi.fn((path: string) => {
-    if (path.endsWith('/overview')) { overviewCalls.push(path); return Promise.resolve({ project, availability: project.availability, counts: { tables: overviewCalls.length }, activity: [], current: [], recent: [] }) }
+    if (path.endsWith('/overview')) { overviewCalls.push(path); return Promise.resolve({ project, counts: { tables: overviewCalls.length }, activity: [], current: [], recent: [] }) }
     return Promise.resolve(path.includes('?') ? { items: [], page: 1, pageSize: 50, total: 0, sort: '-lastOpenedAt' } : project)
   })
   const onNavigate = vi.fn(); const client = { request: request as unknown as StreamingApiClient['request'], health: vi.fn(), stream: vi.fn() } as StreamingApiClient
