@@ -73,3 +73,33 @@ The integration worktree was clean after the checks. The protected original chec
 The first launch against the user's existing workspace exposed an omitted historical migration revision: the database was at `0013_workflow_custom_modules`, created by protected uncommitted Studio work, while the integrated graph initially ended its Studio parent at `0012_workflow_document_requests`. Alembic correctly refused to guess and the sidecar exited before readiness.
 
 The exact historical migration was restored and `0013_merge_project_runtime` now merges `0013_workflow_custom_modules` with `pm06_project_capability_reads`. A regression test creates that historical database, inserts custom-module and idempotency-request rows, upgrades twice, and verifies the rows plus foreign keys. The focused migration suite passed `34` tests; the complete backend suite then passed `2936` tests with `13` conditional skips. A SQLite-consistent copy of the user's real database upgraded to the single integrated head and a sidecar launched from it emitted `AUTOFLOW_READY`.
+
+## Re-verification of the publish head (2026-09-18)
+
+Date: 2026-09-18 11:20 CST
+
+Status: passed
+
+Environment: macOS Darwin 25.4.0 arm64, Node.js 26.7.0, uv 0.10.6, backend Python 3.11.13.
+
+Verified commit: `c5214ecb2a7f1bb73aa1039f75cfa8e2f0371a59` (`codex/integrate-valid-branches-20260917`).
+
+This rerun covers the two commits added after the 2026-09-17 report: `1bfa57f7` (custom-module migration history) and `c5214ecb` (project overview header unification).
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Full backend suite | passed except one flaky test | `2935 passed, 13 skipped, 1 failed`; the failure is the timing-bound crash test below |
+| Flaky crash test rerun in isolation | passed 5 of 5 | `test_browser_child_crash_releases_worker_slot_for_next_run`, each run under 1.5 s |
+| Full desktop suite | passed | `380` files and `5294` tests |
+| Projects domain tests | passed | `12` files, `92` tests |
+| TypeScript typecheck | passed | exit 0 |
+| ESLint | passed | exit 0 |
+| Electron/Vite production build | passed | main, preload, and renderer bundles built |
+| Repository structure tests | passed | `3 passed` |
+| Generated OpenAPI check | passed | exit 0, no generated client drift |
+| Alembic graph | passed | one head: `0013_merge_project_runtime` |
+| Fast-forward eligibility | passed | `codex/architecture-baseline` is an ancestor of this commit |
+
+The full backend run produced exactly one failure, in `tests/integration/test_b1_stop_and_browser_crash_regressions.py::test_browser_child_crash_releases_worker_slot_for_next_run`. The test waits at most `1.0 s` for a child-process exit callback to clear `manager.busy()`; under the load of the parallel suite the callback landed after that window. The same test passes 5 of 5 in isolation and the surrounding file passes on its own, so this is a load-sensitive timing flake in the test harness, not a regression in the crash-recovery path. Hardening the wait budget is a separate test change and was not made here.
+
+The 2026-09-17 boundary notes still apply unchanged: no real Android runtime, no live ProxyPanel credentials, and no Windows or packaged-install testing were performed.
