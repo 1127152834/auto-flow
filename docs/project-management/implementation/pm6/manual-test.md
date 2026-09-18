@@ -174,7 +174,42 @@ rm -rf "$HOME/.autoflow-qa/pm6-<你启动时的时间戳>"
 
 ## 6. 本阶段明确未交付
 
-- 解除 Google 连接 / 解除表绑定（需要共享影响预览支持 `disconnectSheets`，接口目前显式返回 501）
+- 真实 Google **OAuth 桌面应用**授权流程（服务账号路径已跑通，见 §7）
 - 系统身份来源初始化（`identityStrategy.kind === 'system'` 显式返回 501）
-- Sheets 同步：真实网络上的持续调度（当前为显式推送/拉取）
+- 远端受控增列（冻结契约 §3.4 与 OperationKind 都没有对应路由或 kind）
+- 同一远端键在来源工作表内重复的显式报错（当前取首行）
 - 暂停期间漏登记的写入补登策略
+
+解除连接 / 解除表绑定**已交付**：2026-09-19 实网验证中，界面「删除凭据…」曾因漏传 HTTP 动词返回 405，已修复并在真实凭据上重跑通过。
+
+---
+
+## 7. 实网回归工具（我已执行，你可重复）
+
+`scripts/qa-pm6-google-live.mjs` 用真实服务账号凭据、真实 Spreadsheet 和真实系统凭据库跑全链，不设置副车替身模块。
+
+```bash
+cd /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6
+npm run build                       # QA 走构建产物，改了源码必须先构建
+
+# 凭据放仓库外的临时文件，权限 600；不要提交
+cat > /tmp/pm6-google-sa.json <<'JSON'
+{ ... 你的服务账号 JSON ... }
+JSON
+chmod 600 /tmp/pm6-google-sa.json
+
+node scripts/qa-pm6-google-live.mjs \
+  --config /tmp/pm6-google-sa.json \
+  --spreadsheet 1yhY5fz8RR3x_xKVrj_rgJxcqNn5gyS9pKtavcriu6jE \
+  --sheet 工作表2 --gid 316873284 --expect-rows 87 --label "itin-483010"
+```
+
+| 参数 | 说明 |
+|---|---|
+| `--manual` | 跑完后保持应用打开，便于自己点一遍 |
+| `--keep` | 保留隔离工作区，便于事后翻数据库 |
+| `--expect-rows` | 断言拉取到的记录条数，防止静默少拉 |
+
+脚本只写 `工作表2!B2` 并在结束时 `clear` 还原；结束时解除绑定并删除本机凭据。**退出码非 0 时先看 `live-result.json` 的 `error` 与 `facts`，不要直接重跑** —— 结果未知时应当先核验原操作。
+
+单张工作表内的身份列请确保无重复键；重复键当前不报错，会取首行（见 §6）。

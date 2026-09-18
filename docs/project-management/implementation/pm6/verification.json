@@ -2,10 +2,10 @@
   "date": "2026-09-18",
   "milestone": "PM6",
   "branch": "codex/project-management-pm6",
-  "status": "delivered-management-scope-partially-verified",
+  "status": "delivered-management-scope-verified-live-service-account",
   "deliveryStatus": "delivered-management-scope",
-  "verificationStatus": "partiallyVerified",
-  "scope": "管理侧与本地契约已验证；实网 Google 端到端未执行",
+  "verificationStatus": "verifiedForServiceAccountPath",
+  "scope": "管理侧契约与替身链路已验证；服务账号路径已用真实 Google Spreadsheet 完成实网端到端；OAuth 桌面应用流程仍未执行",
   "head": "c79f05f42cc45554614fb40d789f6531b27c0a08",
   "workingTree": "clean",
   "sourceDigest": "727e7ebcc54cffbe8b3e076cd7ecd6220b8ede04f22958ff93745f38b05523d6",
@@ -87,8 +87,9 @@
       "result": "392 files passed, 5371 tests passed"
     },
     "frontendTargeted": {
-      "command": "npm --workspace @autoflow/desktop test -- --run domains/project-data",
-      "result": "65 files passed, 682 tests passed"
+      "command": "npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-data",
+      "result": "65 files passed, 684 tests passed",
+      "note": "本轮新增 disconnect/removeBinding 动词回归两例后重跑。"
     },
     "frontendToolchain": {
       "openapi:check": "no diff",
@@ -120,9 +121,9 @@
   },
   "knownGaps": [
     {
-      "item": "真实 Google 端到端",
-      "status": "notExecuted",
-      "reason": "需要用户提供 OAuth 桌面客户端 JSON（或服务账号 JSON）与明确授权的测试 Spreadsheet；本机无法代办。"
+      "item": "真实 Google 端到端（OAuth 桌面应用路径）",
+      "status": "partiallyExecuted",
+      "reason": "服务账号路径已于 2026-09-19 用用户提供的真实凭据与真实 Spreadsheet 跑通（见 realGoogleRun）。OAuth 桌面应用授权流程仍未执行，需要用户的 OAuth 桌面客户端 JSON。"
     },
     {
       "item": "远端受控增列（新增字段先行作为本地意图、再创建远端列并核验后发布映射）",
@@ -146,10 +147,63 @@
     }
   ],
   "notExecuted": [
-    "真实 Google OAuth 与真实 Spreadsheet 读写",
+    "真实 Google OAuth 桌面应用授权流程（服务账号路径已执行）",
     "Studio demo 联合测试（按用户指示不执行）",
     "Windows、其他架构、打包应用验收",
     "用户手动执行结果"
   ],
-  "visualVerification": "docs/project-management/implementation/pm6/ui-verification.md"
+  "visualVerification": "docs/project-management/implementation/pm6/ui-verification.md",
+  "realGoogleRun": {
+    "date": "2026-09-19",
+    "runner": "scripts/qa-pm6-google-live.mjs",
+    "status": "passed",
+    "evidence": "docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/live-result.json",
+    "beforeFixEvidence": "docs/project-management/implementation/pm6/google-live/2026-09-18T15-58-11-615Z/live-result.json",
+    "checkpoints": 10,
+    "screenshots": 11,
+    "credentials": "用户提供的服务账号 JSON，运行时由 --config 指向 /tmp 下的 600 权限文件；不进入仓库、日志、截图或提交",
+    "target": {
+      "spreadsheetTitle": "ck自动化表格",
+      "spreadsheetId": "1yhY5fz8RR3x_xKVrj_rgJxcqNn5gyS9pKtavcriu6jE",
+      "sheet": "工作表2",
+      "sheetId": 316873284,
+      "header": [
+        "邮箱",
+        "是否使用"
+      ],
+      "dataRows": 87,
+      "identityColumn": "A"
+    },
+    "boundary": {
+      "sidecar": "真实 FastAPI sidecar（不设置 AUTOFLOW_QA_SIDECAR_MODULE）",
+      "sheetsTransport": "真实 HttpxSheetsTransport → sheets.googleapis.com v4",
+      "credentialStore": "真实系统凭据库",
+      "googleConfigPicker": "AUTOFLOW_QA_GOOGLE_CONFIG 替代原生文件选择框，仅 !app.isPackaged 时生效",
+      "studio": "notExecuted"
+    },
+    "facts": {
+      "pull": "真实界面从 Google Sheet 拉取 87 条记录，文本身份保持原样",
+      "push": {
+        "syncOperationId": "416e82ae-b9e3-4056-a78a-b8099fe07c5d",
+        "status": "confirmed",
+        "outcome": "matched",
+        "fields": [
+          "A",
+          "B"
+        ],
+        "target": "工作表2!2"
+      },
+      "writeBackCell": "工作表2!B2",
+      "restored": "远端 '工作表2'!B2 已还原为空；独立复核整表后无任何 PM6 测试标记残留",
+      "unbindAndDelete": "真实界面解除绑定并删除本机凭据，连接列表清空"
+    },
+    "defectsFoundByThisRun": [
+      "renderer 的 disconnect() 未传 HTTP 动词，command.submit 默认 POST，而 /sheets/connections/{connectionId} 只注册 DELETE → 405；界面只显示「操作失败，请重试」，用户无法诊断也无法删除凭据。已改为 DELETE 并补两条动词回归用例（无修复时失败）。"
+    ],
+    "notExecutedInThisRun": [
+      "真实 Google OAuth 桌面应用授权流程（本轮只走服务账号路径）",
+      "Windows、其他架构、打包应用验收",
+      "用户手动执行结果"
+    ]
+  }
 }

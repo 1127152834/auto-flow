@@ -114,7 +114,37 @@
 
 ## 6. 未覆盖 / 未执行
 
-- **实网 Google**：本轮截图全部使用受控 Sheets REST 替身（`tests/fixtures/sheets.py`，`spreadsheetId=pm6-source-1`）。真实 OAuth 与真实 Spreadsheet 未执行，见 `verification.json` 的 `knownGaps`。
+- **实网 Google（替身轮）**：`qa-runs/2026-09-18/` 的截图全部使用受控 Sheets REST 替身（`tests/fixtures/sheets.py`，`spreadsheetId=pm6-source-1`）。真实 OAuth 未执行，见 `verification.json` 的 `knownGaps`。
+- **实网 Google（真实轮）**：服务账号路径已于 2026-09-19 用真实凭据与真实 Spreadsheet 跑通，截图见 §7。OAuth 桌面应用路径仍未执行。
 - **Windows、其他架构、打包应用**：未执行。
 - **用户手测**：未执行；方案见 `manual-test.md`。
 - **200% 缩放 / 长文本**：本轮截图固定在 100% 与 1440×1024。缩放与长文本断言由 `npm run test:structure`、组件测试与既有全局检查覆盖，未单独出图。
+
+---
+
+## 7. 实网 Google 同视口截图核对（2026-09-19）
+
+证据目录：`google-live/2026-09-18T16-05-05-012Z/`（11 张），缺陷现场：`google-live/2026-09-18T15-58-11-615Z/`。
+
+| 截图 | 画面 | 核对结论 |
+|---|---|---|
+| `01-data-directory-empty` | 数据目录空态 | 与替身轮一致，入口层级未变 |
+| `02-source-tab-unbound` | 来源页未绑定 | 双栏骨架保持 |
+| `03-google-connection` | 绑定向导 · Google 账号 | 真实账号 `itin-483010`、权限「可读可写」、更新时间来自真实系统凭据库 |
+| `04-binding-wizard-inspection` | 工作表检查结果 | 表头 2 列、身份列 A，来自真实 grid 元数据 |
+| `06-binding-bound` | 绑定完成 | 来源类型变更为 Google Sheets |
+| `07-pulled-records` | 记录页 | 87 条真实记录，文本身份原样，统一细网格表格与小圆角保持 |
+| `08-push-confirmed` | 推送已确认 | 远端一致证据来自真实回读 |
+| `09-unbind-confirm` | 解除绑定确认 | 确认贴住触发按钮 |
+| `10-credential-delete-confirm` | 删除凭据确认 | 影响先给出后提交 |
+| `11-credential-deleted` | 凭据已删除 | 连接列表清空，显示「还没有连接 Google 账号」 |
+
+**结构与样式约束在真实数据下同样成立**：`capture()` 每次截图断言 `documentElement.scrollWidth <= innerWidth`，10 张截图全部通过 —— 87 条真实记录与长邮箱串没有撑宽应用，横向滚动留在表格内部。
+
+### 7.1 本轮实网抓出并修复的缺陷
+
+| # | 缺陷 | 影响 | 修复 |
+|---|---|---|---|
+| 1 | `sheets-api.ts` 的 `disconnect()` 未传 HTTP 动词 | `command.submit` 默认 POST，而 `/sheets/connections/{connectionId}` 只注册 DELETE → 405；界面只显示「操作失败，请重试」，用户无法删除凭据也无法诊断 | 改传 `'DELETE'`；`sheets-api.test.ts` 补两条动词断言，无修复时 `disconnect` 一例失败 |
+
+同文件 `putBinding`/`removeBinding` 本来就传了动词，因此缺陷只落在 `disconnect` 一条路径上；两条新用例同时锁住三个动词，防止再漏。
