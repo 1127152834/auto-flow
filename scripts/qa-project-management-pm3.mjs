@@ -9,7 +9,7 @@ import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { createInterface } from 'node:readline/promises'
 import { promisify } from 'node:util'
 
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { kernelExecutablePath } from './smoke-browser-management.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
@@ -259,7 +259,7 @@ async function waitBatchTerminal(runtime, projectId, batchId) {
 async function runUiSuccessChain(runtime, workflow, profile, scenario = 'success') {
   await click('项目'); await click('新建项目')
   await input('#project-name', 'PM3运行验收项目'); await input('#project-description', '真实浏览器批次与证据验收'); await click('创建项目')
-  await waitFor(renderer, "document.body.innerText.includes('项目资料')", 'created project')
+  await waitForProjectPage(renderer)
   const project = (await api(runtime, '/projects?q=PM3运行验收项目')).items[0]
   await click('自动化', '[aria-label="项目功能"] button')
   await waitFor(renderer, "document.querySelector('[aria-label=\"项目功能\"] [aria-current=page]')?.textContent.trim()==='自动化'", 'automation project tab')

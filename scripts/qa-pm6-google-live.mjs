@@ -21,7 +21,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets'
@@ -289,7 +289,7 @@ export async function main(argv = process.argv.slice(2)) {
     await input('#project-name', 'PM6 实网 Google 验收')
     await input('#project-description', '真实 Google Sheets 读取与回写')
     await click('创建项目')
-    await visible('项目资料', 20_000)
+    await waitForProjectPage(renderer, 20_000)
     const projectId = (await api('/projects')).items.find(item => item.name === 'PM6 实网 Google 验收').projectId
     facts.projectId = projectId
     checkpoint('真实界面创建项目。')

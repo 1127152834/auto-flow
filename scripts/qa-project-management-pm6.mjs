@@ -23,7 +23,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve, sep, isAbsolute, relative } from 'node:path'
 import { promisify } from 'node:util'
 
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const exec = promisify(execFile)
@@ -422,7 +422,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
     await input('#project-name', 'PM6 来源同步验证')
     await input('#project-description', '隔离的 Google Sheets 绑定与同步验收')
     await click('创建项目')
-    await visible('项目资料', 20_000)
+    await waitForProjectPage(renderer, 20_000)
     const projectId = (await api('/projects')).items.find(
       (item) => item.name === 'PM6 来源同步验证',
     ).projectId

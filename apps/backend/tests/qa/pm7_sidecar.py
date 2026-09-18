@@ -99,12 +99,16 @@ def _bump_task_revision(
         task = session.get(ProjectTaskRow, task_id)
         if task is None or (project_id is not None and task.project_id != project_id):
             raise HTTPException(status_code=404, detail="task not found")
-        task.status_revision += 1
+        # The follow-up guard compares the run's status revision, not a task column.
+        run = session.get(WorkflowRunRow, task.run_id)
+        if run is None:
+            raise HTTPException(status_code=409, detail="run facts incomplete")
+        run.status_revision += 1
         session.commit()
         return {
-            "taskId": task.task_id,
-            "statusRevision": task.status_revision,
-            "runId": task.run_id,
+            "taskId": task.id,
+            "statusRevision": run.status_revision,
+            "runId": run.id,
         }
 
 
@@ -134,7 +138,7 @@ def _append_late_event(factory: Any, task_id: str) -> dict[str, Any]:
         run.last_sequence = sequence
         session.commit()
         return {
-            "taskId": task.task_id,
+            "taskId": task.id,
             "runId": run.id,
             "sequence": sequence,
             "runStatus": run.status,
@@ -157,7 +161,7 @@ def _latest_terminal_task(factory: Any, project_id: str) -> str:
                 "timed_out",
                 "interrupted",
             }:
-                return row.task_id
+                return row.id
     raise HTTPException(status_code=409, detail="项目内还没有终态任务")
 
 
@@ -180,9 +184,16 @@ def _install_pm7_controls(app: Any) -> None:
         project_id = body.get("projectId")
         result: dict[str, Any] = {"injected": True, "kind": kind}
         if kind == "overview-read-failure":
-            drop.arm("GET", "/overview", kind)
+            # The renderer retries reads twice, so a single dropped body would be
+            # masked by the retry. Arm the whole attempt budget instead.
+            for _ in range(3):
+                drop.arm("GET", "/overview", kind)
         elif kind == "response-loss":
+            # "Committed but the caller never learned the outcome": the POST body is
+            # dropped and so is the by-key lookup the renderer runs right after, so
+            # the user really sees the unknown-result state and must reconcile.
             drop.arm("POST", "/follow-up-batches", kind)
+            drop.arm("GET", "/operations/by-idempotency-key/", kind)
         elif kind == "statistics-ttl":
             statistics_module.RESULT_TTL = _EXPIRED_TTL
             faults["statisticsTtl"] = "expired"

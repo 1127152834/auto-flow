@@ -378,6 +378,10 @@ def create_qa_app(settings: Settings, *, mode: str = "v1"):
                 batch_id,
             )
         )
+        # The projected gate above is deliberately short, so the real dispatcher gate
+        # it feeds must use the same grace or the UI enables a force stop the core
+        # still rejects. Only the constant shrinks; the gate logic stays production.
+        app.state.workflow_dispatcher._force_stop_grace = _F_FORCE_STOP_GRACE
     app.router.on_startup[:] = [
         handler
         for handler in app.router.on_startup
@@ -397,7 +401,15 @@ def create_qa_app(settings: Settings, *, mode: str = "v1"):
             settle_normal_stops=mode != "f",
         )
     )
-    scheduler.wake = loop.wake
+
+    def _wake() -> None:
+        # The in-process executor suspends itself inside tick(), so the runner loop is
+        # blocked exactly when a stop is accepted. Fence on wake instead, or the real
+        # force-stop gate keeps seeing a running CoreRun and refuses the operation.
+        loop.runner.fence_stopping_runs()
+        loop.wake()
+
+    scheduler.wake = _wake
     app.state.pm4_qa_runner = loop
     app.router.add_event_handler("startup", loop.startup)
     app.router.add_event_handler("shutdown", loop.shutdown)

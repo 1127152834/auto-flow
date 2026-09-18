@@ -8,7 +8,7 @@ import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { kernelExecutablePath } from './smoke-browser-management.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
@@ -459,7 +459,7 @@ print(created.workflow_id); factory.dispose()`
     await input('#project-name', 'PM4 三表链验收')
     await input('#project-description', '两个必要输入、显式状态写入和账号新增')
     await click('创建项目')
-    await visible('项目资料')
+    await waitForProjectPage(renderer)
     const project = (await api(runtime, '/projects?q=PM4%20三表链验收')).items[0]
     assert.ok(project)
     checkpoint('UI 已创建项目；只读 GET 找回同一真实项目。')
@@ -468,7 +468,7 @@ print(created.workflow_id); factory.dispose()`
     await visible('PM4 三表链验收')
     await capture('00-isolated-ready', '00-projects/100-projects-prototype-5238b4.png')
     await click('PM4 三表链验收')
-    await visible('项目资料')
+    await waitForProjectPage(renderer)
 
     await click('数据', '[aria-label="项目功能"] button')
     await visible('还没有数据表')

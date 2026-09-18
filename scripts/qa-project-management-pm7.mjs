@@ -19,7 +19,7 @@ import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage, waitForSelector } from './electron-cdp.mjs'
 import { kernelExecutablePath } from './smoke-browser-management.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
@@ -158,6 +158,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
       evidence,
       checkpoints,
       screenshots,
+      network: await recordedNetwork(),
       facts,
       error,
       excluded: ['真实执行核心', 'Studio demo', '真实浏览器执行', 'Windows', '其他架构', '打包应用', '用户手动执行结果', '双工作区切换（见手测 M-12）'],
@@ -168,6 +169,10 @@ export async function main(cliArgs = process.argv.slice(2)) {
   }
 
   const injections = []
+  // Every mutation the renderer really sends is recorded, so a failure carries the
+  // actual HTTP outcome instead of a re-derived guess. Evidence only; it changes no request.
+  const installNetworkRecorder = () => renderer.evaluate(`(()=>{if(globalThis.__pm7Network)return true;globalThis.__pm7Network=[];const original=globalThis.fetch.bind(globalThis);globalThis.fetch=async(input,init)=>{const response=await original(input,init);try{const url=typeof input==='string'?input:(input?.url??'');const method=(init?.method??'GET').toUpperCase();if(String(url).includes('/api/v1/')&&(method!=='GET'||!response.ok)){let body='';try{body=(await response.clone().text()).slice(0,2000)}catch{}globalThis.__pm7Network.push({method,url:String(url),status:response.status,body})}}catch{}return response};return true})()`)
+  const recordedNetwork = async () => (renderer ? await renderer.evaluate('globalThis.__pm7Network ?? []').catch(() => []) : [])
   const assertOwned = runtime => assert.ok(isOwnedPm7Workspace(runtime.workspaceKey, owner, marker), 'QA 只能修改带所有权标记的隔离工作区')
 
   async function launch() {
@@ -175,14 +180,16 @@ export async function main(cliArgs = process.argv.slice(2)) {
       module: process.env.AUTOFLOW_QA_SIDECAR_MODULE,
       pm4: process.env.AUTOFLOW_PM4_QA,
       mode: process.env.AUTOFLOW_PM4_QA_MODE,
+      maxAutoTasks: process.env.AUTOFLOW_PM4_QA_MAX_AUTO_TASKS,
     }
     process.env.AUTOFLOW_QA_SIDECAR_MODULE = 'tests.qa.pm7_sidecar'
     delete process.env.AUTOFLOW_PM4_QA
     process.env.AUTOFLOW_PM4_QA_MODE = 'f'
+    process.env.AUTOFLOW_PM4_QA_MAX_AUTO_TASKS = '5'
     try {
       desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${workspace}`, '--inspect=0'], cliArgs: [] })
     } finally {
-      for (const [key, value] of Object.entries({ AUTOFLOW_QA_SIDECAR_MODULE: previous.module, AUTOFLOW_PM4_QA: previous.pm4, AUTOFLOW_PM4_QA_MODE: previous.mode })) {
+      for (const [key, value] of Object.entries({ AUTOFLOW_QA_SIDECAR_MODULE: previous.module, AUTOFLOW_PM4_QA: previous.pm4, AUTOFLOW_PM4_QA_MODE: previous.mode, AUTOFLOW_PM4_QA_MAX_AUTO_TASKS: previous.maxAutoTasks })) {
         if (value === undefined) delete process.env[key]
         else process.env[key] = value
       }
@@ -193,6 +200,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
     await renderer.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
     await visible('本地服务正常', 30_000)
     const runtime = await renderer.evaluate('window.autoflow.getRuntimeContext()')
+    await installNetworkRecorder()
     assertOwned(runtime)
     return runtime
   }
@@ -209,6 +217,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
   }
 
   async function click(text, selector = 'button') {
+    if (selector === '[role=tab]') text = ({ 记录: '数据记录', 字段: '字段与校验', 状态: '数据状态', 来源: '来源设置', 设置: '数据表设置' })[text] ?? text
     const point = await waitFor(renderer, `(()=>{const visible=e=>{const s=getComputedStyle(e);return e.getClientRects().length&&!e.disabled&&s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'};const label=e=>{if(e.getAttribute('aria-label'))return e.getAttribute('aria-label');const copy=e.cloneNode(true);copy.querySelectorAll?.('[aria-hidden=true]').forEach(node=>node.remove());return copy.textContent.trim()};const items=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>visible(e)&&(${JSON.stringify(text)}===''||label(e)===${JSON.stringify(text)}));if(!items.length)return null;const hit=e=>{const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return x>=0&&x<=innerWidth&&y>=0&&y<=innerHeight&&e.contains(document.elementFromPoint(x,y))};const e=items.find(hit)??items[0];e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `${selector} ${text}`)
     await renderer.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point })
     for (const type of ['mousePressed', 'mouseReleased']) await renderer.command('Input.dispatchMouseEvent', { type, ...point, button: 'left', clickCount: 1 })
@@ -488,7 +497,19 @@ print(created.workflow_id); factory.dispose()`
 
   async function openProjectTab(label) {
     await click(label, '[aria-label="项目功能"] button')
-    await visible(label === '概览' ? '项目资料' : label, 30_000)
+    if (label === '概览') await waitForSelector(renderer, '[aria-label="项目概览"]', '项目概览', 30_000)
+    else await visible(label, 30_000)
+  }
+
+  // 从「运行记录 → 任务记录」打开一个真实终态为失败的任务详情。
+  async function openFailedTaskDetail() {
+    await openProjectTab('运行记录')
+    await click('任务记录', '[role=tab]')
+    await waitFor(renderer, `document.body.innerText.includes('任务记录')`, '任务记录页签')
+    const row = await renderer.evaluate(`(()=>{const row=[...document.querySelectorAll('tbody tr')].find(item=>item.innerText.includes('失败'));if(!row)return null;const button=row.querySelector('button');if(!button)return null;button.scrollIntoView({block:'center'});button.click();return row.innerText})()`)
+    assert.ok(row, '任务记录必须能按真实状态找到失败任务')
+    await visible('输入与输出', 30_000)
+    return row
   }
 
   try {
@@ -515,7 +536,7 @@ print(created.workflow_id); factory.dispose()`
     await input('#project-name', 'PM7 三视图验收')
     await input('#project-description', '概览、统计、证据与失败后续的真实事实')
     await click('创建项目')
-    await visible('项目资料')
+    await waitForProjectPage(renderer)
     const project = (await api(runtime, '/projects?q=PM7%20三视图验收')).items[0]
     assert.ok(project)
     checkpoint('UI 创建项目；只读 GET 找回同一真实项目。')
@@ -524,7 +545,7 @@ print(created.workflow_id); factory.dispose()`
     await visible('PM7 三视图验收')
     await capture('00-projects-all', '00-projects/100-projects-prototype-5238b4.png')
     await click('PM7 三视图验收')
-    await visible('项目资料')
+    await waitForProjectPage(renderer)
 
     await click('数据', '[aria-label="项目功能"] button')
     await visible('还没有数据表')
@@ -602,9 +623,11 @@ print(created.workflow_id); factory.dispose()`
     await input('[aria-label="确认强制停止"]', '强制停止')
     await input('[aria-label="停止原因"]', 'PM7 E2E-1 强制停止')
     await click('确认强制停止')
+    // Force stop revokes the suspended worker; release it before waiting for terminal,
+    // the same order production has (revoke, then the worker's late result is refused).
+    await fault(runtime, 'executor-resume')
     terminal = await waitBatchTerminal(runtime, project.projectId, pauseBatchId)
     assert.equal(terminal.batch.status, 'stopped')
-    await fault(runtime, 'executor-resume')
     let stoppedTasks = await api(runtime, `/projects/${project.projectId}/tasks?batchId=${pauseBatchId}&pageSize=100`)
     for (let attempt = 0; attempt < 100 && stoppedTasks.items.some(item => !['succeeded', 'failed', 'cancelled', 'timed_out', 'interrupted'].includes(item.status)); attempt += 1) {
       await wait(200)
@@ -620,11 +643,11 @@ print(created.workflow_id); factory.dispose()`
     assert.equal(overview.counts.tables, 3)
     assert.equal(overview.counts.automations, 1)
     await openProjectTab('概览')
-    await visible('项目计数', 30_000)
+    const readCounts = `Object.fromEntries([...document.querySelectorAll('[aria-label="项目计数"] > div')].map(item=>[item.querySelector('dt')?.textContent?.trim()??'', item.querySelector('dd')?.textContent?.trim()??'']))`
+    await waitFor(renderer, `(()=>{const counts=${readCounts};return counts['数据表']===${JSON.stringify(String(overview.counts.tables))}&&counts['自动化']===${JSON.stringify(String(overview.counts.automations))}})()`, `项目计数显示真实聚合（数据表 ${overview.counts.tables}、自动化 ${overview.counts.automations}）`, 30_000)
     const countsText = await renderer.evaluate(`document.querySelector('[aria-label="项目计数"]')?.innerText ?? ''`)
-    assert.ok(countsText.includes(String(overview.counts.tables)), `项目计数必须显示真实数据表数 ${overview.counts.tables}`)
     assert.ok(countsText.includes('今日数据变化'), '概览必须有今日数据变化')
-    await waitFor(renderer, `Boolean(document.querySelector('[aria-label="最近活动"]'))`, '最近活动分区')
+    await waitFor(renderer, `Boolean(document.querySelector('[aria-label="项目活动"]'))`, '项目活动分区')
     const sections = await renderer.evaluate(`[...document.querySelectorAll('[aria-label]')].map(e=>e.getAttribute('aria-label')).filter(Boolean)`)
     assert.ok(sections.includes('需要关注'), '概览必须有需要关注分区')
     assert.ok(sections.includes('继续工作'), '概览必须有继续工作分区')
@@ -634,7 +657,7 @@ print(created.workflow_id); factory.dispose()`
 
     // ── E2E-2：统计四指标与冻结集合下钻 ──────────────────────────────────
     await openProjectTab('统计')
-    await visible('统计指标', 30_000)
+    await waitForSelector(renderer, '[aria-label="统计指标"]', '统计指标', 30_000)
     const timezone = 'Asia/Shanghai'
     const to = new Date()
     const from = new Date(to.getTime() - 7 * 86_400_000)
@@ -672,30 +695,28 @@ print(created.workflow_id); factory.dispose()`
     assert.ok(drillText.includes(String(drillTasks.total)), '下钻面板必须显示冻结集合条数')
     await capture('04-statistics-002-drill-down', '04-statistics/002')
     await click('返回统计')
-    await visible('统计指标')
+    await waitForSelector(renderer, '[aria-label="统计指标"]', '统计指标')
     checkpoint(`E2E-2 统计：已结束 ${sampleTotal}（成功 ${statistics.sample.succeeded} / 失败 ${statistics.sample.failed} / 取消 ${statistics.sample.cancelled}），成功率 ${statistics.successRate ?? '无样本'}，下钻冻结集合 ${drillTasks.total} 条。`)
 
     const frozenDrill = await api(runtime, `/projects/${project.projectId}/statistics/${encodeURIComponent(statistics.resultSetId)}/tasks?result=failed&page=1&pageSize=50`)
 
     // ── E2E-4 任务证据 + E2E-3 失败后续 ───────────────────────────────────
-    await openProjectTab('运行记录')
-    await click('任务记录', '[role=tab]')
-    await waitFor(renderer, `document.body.innerText.includes('任务记录')`, '任务记录页签')
-    const openedRow = await renderer.evaluate(`(()=>{const row=[...document.querySelectorAll('tbody tr')].find(item=>item.innerText.includes('失败'));if(!row)return null;const button=row.querySelector('button');if(!button)return null;button.scrollIntoView({block:'center'});button.click();return row.innerText})()`)
-    assert.ok(openedRow, '任务记录必须能按真实状态找到失败任务')
-    await visible('输入与输出', 30_000)
+    await openFailedTaskDetail()
     await capture('03-runs-002-task-detail', '03-runs/002')
     await click('输入与输出', '[role=tab]')
     await visible('原始数据输入')
     await visible('项目数据操作')
     const ioText = await renderer.evaluate('document.body.innerText')
     assert.ok(ioText.includes('人员输入') && ioText.includes('邮箱输入'), '任务详情必须显示两条不可变原始输入')
-    await capture('03-runs-003-task-input-output', '03-runs/003')
+    const currentPanel = await renderer.evaluate(`document.querySelector('[aria-label="当前值对照"]')?.innerText ?? ''`)
+    assert.ok(currentPanel.includes('快照值') && currentPanel.includes('当前值'), '输入与输出必须显示当前值对照')
+    await capture('03-runs-003-task-input-output', '03-runs/006-task-input-output-approved-7af0aa.png')
     await click('异常与证据', '[role=tab]')
     await visible('失败时页面截图', 30_000)
-    const evidenceSections = await renderer.evaluate(`[...document.querySelectorAll('[aria-label]')].map(e=>e.getAttribute('aria-label')).filter(Boolean)`)
-    assert.ok(evidenceSections.includes('当前值对照'), '证据页必须显示当前值对照')
-    await capture('03-runs-003b-task-evidence', '03-runs/003')
+    const evidenceText = await renderer.evaluate('document.body.innerText')
+    assert.ok(evidenceText.includes('运行失败'), '证据页必须显示失败摘要')
+    assert.ok(evidenceText.includes('历史尝试'), '证据页必须显示历史尝试')
+    await capture('03-runs-003b-task-evidence', '03-runs/007-task-exception-evidence-approved-559ddf.png')
     checkpoint('E2E-4 任务证据：原始输入、项目数据操作、当前值对照与失败证据均在真实页面渲染。')
 
     await fault(runtime, 'followup-conflict', { projectId: project.projectId, taskId: failedTaskId })
@@ -729,21 +750,12 @@ print(created.workflow_id); factory.dispose()`
     assert.equal(followupAfter.total, followupBefore + 1, '响应丢失后按原操作身份核验必须恰好产生一个批次')
     const recoveredDrill = await api(runtime, `/projects/${project.projectId}/statistics/${encodeURIComponent(statistics.resultSetId)}/tasks?result=failed&page=1&pageSize=50`)
     assert.equal(recoveredDrill.total, frozenDrill.total, '新批次产生后旧结果集的下钻集合必须保持不变')
-    checkpoint(`E2E-3/E2E-5 失败后续：响应丢失后按原操作身份找回，批次总数 ${followupAfter.total}；旧结果集下钻仍为 ${recoveredDrill.total} 条。`)
+    checkpoint(`E2E-3/E2E-5 失败后续：提交后响应丢失且核验查询也失败，用户按原操作身份核对找回，批次总数 ${followupAfter.total}；旧结果集下钻仍为 ${recoveredDrill.total} 条。`)
 
-    // ── E2E-5：概览读取失败与迟到事件 ─────────────────────────────────────
-    await openProjectTab('概览')
-    await visible('项目计数')
-    await fault(runtime, 'overview-read-failure')
-    await renderer.evaluate(`(()=>{const button=[...document.querySelectorAll('button')].find(item=>item.getAttribute('aria-label')==='刷新项目'||item.textContent.trim()==='刷新');if(button)button.click();return true})()`)
-    await visible('概览刷新失败', 30_000)
-    await capture('01-overview-008-refresh-failure', '01-overview/008')
-    const staleText = await renderer.evaluate('document.body.innerText')
-    assert.ok(staleText.includes('项目计数'), '概览读取失败必须保留上次数值')
-    checkpoint('E2E-5 概览读取失败：页面保留上次数值并提示“概览刷新失败”。')
-
+    // ── E2E-5：迟到事件 ──────────────────────────────────────────────────
+    // 核对原操作后应用停在后续批次详情，先回到失败任务详情再注入迟到事件。
+    await openFailedTaskDetail()
     const late = await fault(runtime, 'late-event', { taskId: failedTaskId })
-    await visible('输入与输出')
     await wait(1200)
     const lateTask = await api(runtime, `/projects/${project.projectId}/tasks/${failedTaskId}`)
     assert.equal(lateTask.task.status, 'failed', '迟到事件不得改变任务终态')
@@ -751,16 +763,36 @@ print(created.workflow_id); factory.dispose()`
     assert.ok(lateEvents.items.some(item => item.sequence === late.sequence), '迟到事件必须能被真实补读')
     checkpoint(`E2E-5 迟到事件：注入 sequence ${late.sequence} 后任务仍为 failed，事件可按游标补读。`)
 
+    // ── E2E-5：概览读取失败与迟到事件 ─────────────────────────────────────
+    // The retained-values contract only applies once this page session has a
+    // successful overview load; arm the fault after that and refetch on return.
+    await openProjectTab('概览')
+    await waitForSelector(renderer, '[aria-label="项目计数"]', '项目计数', 30_000)
+    await openProjectTab('统计')
+    await waitForSelector(renderer, '[aria-label="统计指标"]', '统计指标', 30_000)
+    await fault(runtime, 'overview-read-failure')
+    await openProjectTab('概览')
+    await visible('概览刷新失败', 30_000)
+    await capture('01-overview-008-refresh-failure', '01-overview/008')
+    const retainedCounts = await renderer.evaluate(`document.querySelector('[aria-label="项目计数"]')?.innerText ?? ''`)
+    assert.ok(retainedCounts.trim().length > 0, '概览读取失败必须保留上次数值卡片')
+    assert.ok(retainedCounts.includes(String(overview.counts.tables)), `概览读取失败必须保留上次数值，实际 ${JSON.stringify(retainedCounts)}`)
+    const failureBanner = await renderer.evaluate(`[...document.querySelectorAll('[role="status"]')].map(item=>item.innerText).join(' | ')`)
+    assert.ok(/以下是上次加载的结果/.test(failureBanner), `有上次结果时失败提示必须说明沿用上次结果，实际 ${JSON.stringify(failureBanner)}`)
+    checkpoint('E2E-5 概览读取失败：先成功取数再注入失败，页面保留上次数值并提示“概览刷新失败”。')
+
     // ── E2E-6：200% 缩放 ─────────────────────────────────────────────────
     await renderer.command('Emulation.setDeviceMetricsOverride', { width: 720, height: 512, deviceScaleFactor: 2, mobile: false })
     await capture('99-zoom-200', undefined)
     await openProjectTab('统计')
-    await visible('统计指标', 30_000)
+    await waitForSelector(renderer, '[aria-label="统计指标"]', '统计指标', 30_000)
     await capture('04-statistics-001-zoom200', '04-statistics/001')
     await renderer.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
     checkpoint('E2E-6 边界：200% 缩放与长文本下没有横向撑宽。')
 
-    const personAfter = (await api(runtime, `/projects/${project.projectId}/tables/${person.table.tableId}/records?datasetGeneration=${encodeURIComponent(person.table.datasetGeneration)}&pageSize=100`)).items[0]
+    const personKey = JSON.stringify(personBefore.ref)
+    const personAfter = (await api(runtime, `/projects/${project.projectId}/tables/${person.table.tableId}/records?datasetGeneration=${encodeURIComponent(person.table.datasetGeneration)}&pageSize=100`)).items.find(item => JSON.stringify(item.ref) === personKey)
+    assert.ok(personAfter, '人员记录必须仍然存在')
     assert.deepEqual(canonicalRecord(personAfter), personBefore, '人员记录必须完整保持不变')
     const statuses = (await api(runtime, `/projects/${project.projectId}/tables/${email.table.tableId}/statuses`)).items
     const usedStatusId = statuses.find(item => item.name === '已使用')?.statusId
@@ -797,6 +829,7 @@ print(created.workflow_id); factory.dispose()`
       try { await capture('99-failure', undefined) } catch { /* preserve the original error */ }
     }
     const message = error instanceof Error ? error.stack ?? error.message : String(error)
+    for (const entry of (await recordedNetwork()).slice(-6)) console.error(`  · HTTP ${entry.method} ${entry.status} ${entry.url} ${entry.body}`)
     const result = await report('failed', message)
     console.error(`PM7_QA_FAILURE ${join(evidence, 'report.json')}`)
     console.error(JSON.stringify({ status: result.status, error: message }, null, 2))

@@ -82,4 +82,17 @@ export async function waitFor(cdp, expression, description, timeoutMs = 15_000) 
   throw new Error(`timed out waiting for ${description}: ${JSON.stringify(value)}`)
 }
 
+// The project page is identified structurally (its tab bar), never by copy that
+// may change with the page content. Text anchors such as 项目资料 only render as
+// a transient loading fallback and are not usable as a navigation signal.
+export const PROJECT_PAGE_SELECTOR = '[aria-label="项目功能"]'
+
+export async function waitForSelector(cdp, selector, description, timeoutMs = 15_000) {
+  return waitFor(cdp, `Boolean(document.querySelector(${JSON.stringify(selector)}))`, description ?? `selector ${selector}`, timeoutMs)
+}
+
+export async function waitForProjectPage(cdp, timeoutMs = 30_000) {
+  return waitForSelector(cdp, PROJECT_PAGE_SELECTOR, 'project page', timeoutMs)
+}
+
 export function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
