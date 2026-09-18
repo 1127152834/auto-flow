@@ -28,6 +28,7 @@ const root = resolve(import.meta.dirname, '..')
 
 export const PM7_FAULT_KINDS = Object.freeze([
   'overview-read-failure',
+  'statistics-read-failure',
   'statistics-ttl',
   'followup-conflict',
   'response-loss',
@@ -683,7 +684,7 @@ print(created.workflow_id); factory.dispose()`
     await capture('04-statistics-001', '04-statistics/001')
     if (statistics.failuresByAutomation.length > 0) {
       assert.equal(statistics.failuresByAutomation.reduce((sum, item) => sum + item.count, 0), statistics.sample.failed, '失败去向计数必须与失败任务数一致')
-      await capture('04-statistics-006-failure-destinations', '04-statistics/006')
+      await capture('04-statistics-006-failure-destinations', undefined)
     }
 
     const drilled = await renderer.evaluate(`(()=>{const button=[...document.querySelectorAll('[aria-label="统计指标"] button')].find(item=>item.textContent.trim()==='${statistics.sample.failed}');if(!button)return false;button.scrollIntoView({block:'center'});button.click();return true})()`)
@@ -693,7 +694,7 @@ print(created.workflow_id); factory.dispose()`
     assert.equal(drillTasks.total, statistics.sample.failed, '下钻集合必须与统计样本内的失败数一致')
     const drillText = await renderer.evaluate(`document.querySelector('[aria-label="失败任务记录"]')?.innerText ?? ''`)
     assert.ok(drillText.includes(String(drillTasks.total)), '下钻面板必须显示冻结集合条数')
-    await capture('04-statistics-002-drill-down', '04-statistics/002')
+    await capture('04-statistics-002-drill-down', '04-statistics/007-frozen-drilldown-00b0db.png')
     await click('返回统计')
     await waitForSelector(renderer, '[aria-label="统计指标"]', '统计指标')
     checkpoint(`E2E-2 统计：已结束 ${sampleTotal}（成功 ${statistics.sample.succeeded} / 失败 ${statistics.sample.failed} / 取消 ${statistics.sample.cancelled}），成功率 ${statistics.successRate ?? '无样本'}，下钻冻结集合 ${drillTasks.total} 条。`)
@@ -751,6 +752,28 @@ print(created.workflow_id); factory.dispose()`
     const recoveredDrill = await api(runtime, `/projects/${project.projectId}/statistics/${encodeURIComponent(statistics.resultSetId)}/tasks?result=failed&page=1&pageSize=50`)
     assert.equal(recoveredDrill.total, frozenDrill.total, '新批次产生后旧结果集的下钻集合必须保持不变')
     checkpoint(`E2E-3/E2E-5 失败后续：提交后响应丢失且核验查询也失败，用户按原操作身份核对找回，批次总数 ${followupAfter.total}；旧结果集下钻仍为 ${recoveredDrill.total} 条。`)
+
+    // ── E2E-5：统计结果集过期与统计刷新失败 ───────────────────────────────
+    // 结果集 TTL 到期：下钻必须被拒绝并给出刷新动作，不能悄悄换一组实时数据。
+    await fault(runtime, 'statistics-ttl')
+    await openProjectTab('统计')
+    await waitForSelector(renderer, '[aria-label="统计指标"]', '统计指标', 30_000)
+    const expiredDrill = await renderer.evaluate(`(()=>{const button=[...document.querySelectorAll('[aria-label="统计指标"] button')].find(item=>item.textContent.trim()==='${statistics.sample.failed}');if(!button)return false;button.scrollIntoView({block:'center'});button.click();return true})()`)
+    assert.ok(expiredDrill, '统计的失败任务数必须可下钻，才能验证过期结果集')
+    await visible('统计结果已过期', 30_000)
+    checkpoint('E2E-5 统计结果集过期：TTL 到期后下钻被拒绝，页面提示“统计结果已过期，请刷新后重试”。')
+
+    // 刷新失败：保留上次范围与数值，并明确标出这是上次结果。
+    await fault(runtime, 'statistics-read-failure')
+    await openProjectTab('运行记录')
+    await openProjectTab('统计')
+    await visible('统计刷新失败', 30_000)
+    const retainedMetrics = await renderer.evaluate(`document.querySelector('[aria-label="统计指标"]')?.innerText ?? ''`)
+    assert.ok(retainedMetrics.includes('本期已结束任务'), `统计刷新失败必须保留上次数据，实际 ${JSON.stringify(retainedMetrics.slice(0, 160))}`)
+    const statisticsBanner = await renderer.evaluate(`[...document.querySelectorAll('[role="status"]')].map(item=>item.innerText).join(' | ')`)
+    assert.ok(/以下是.*的结果/.test(statisticsBanner), `统计刷新失败必须标明沿用上次结果，实际 ${JSON.stringify(statisticsBanner)}`)
+    await capture('04-statistics-006-refresh-failure', '04-statistics/006-statistics-error-2a8897.png')
+    checkpoint('E2E-5 统计刷新失败：保留上次范围与数值并提示“统计刷新失败”。')
 
     // ── E2E-5：迟到事件 ──────────────────────────────────────────────────
     // 核对原操作后应用停在后续批次详情，先回到失败任务详情再注入迟到事件。

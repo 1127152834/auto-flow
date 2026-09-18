@@ -36,6 +36,7 @@ from tests.qa.pm4_sidecar import create_qa_app as _create_pm4_qa_app
 
 FAULT_KINDS = (
     "overview-read-failure",
+    "statistics-read-failure",
     "statistics-ttl",
     "followup-conflict",
     "response-loss",
@@ -194,6 +195,11 @@ def _install_pm7_controls(app: Any) -> None:
             # the user really sees the unknown-result state and must reconcile.
             drop.arm("POST", "/follow-up-batches", kind)
             drop.arm("GET", "/operations/by-idempotency-key/", kind)
+        elif kind == "statistics-read-failure":
+            # 与 overview-read-failure 同理：渲染层读重试两次，必须覆盖整段尝试预算。
+            for _ in range(3):
+                drop.arm("GET", "/statistics", kind)
+            faults["statisticsRead"] = "failed"
         elif kind == "statistics-ttl":
             statistics_module.RESULT_TTL = _EXPIRED_TTL
             faults["statisticsTtl"] = "expired"
