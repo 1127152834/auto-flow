@@ -28,6 +28,14 @@ describe('run directories', () => {
     expect(screen.getByText('资料整理')).toBeInTheDocument()
   })
 
+  it('never claims a finished task is still running when no end node was recorded', () => {
+    const done = { ...task, endNodeName: undefined }
+    const open = { ...task, taskId: 'task-2', taskOrdinal: 2, endNodeName: undefined, status: 'running', completedAt: undefined }
+    render(<TaskDirectory context="batch" page={{ items: [done, open], page: 1, pageSize: 50, total: 2, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={vi.fn()} onRetry={vi.fn()}/>)
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('尚未结束')).toHaveLength(1)
+  })
+
   it('shows task status from the server value and opens it', async () => {
     const onOpen = vi.fn()
     render(<TaskDirectory page={{ items: [task], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={onOpen} onRetry={vi.fn()}/>)
