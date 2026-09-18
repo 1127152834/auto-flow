@@ -6,21 +6,21 @@
   "deliveryStatus": "delivered-management-scope",
   "verificationStatus": "partiallyVerified",
   "scope": "管理侧与本地契约已验证；实网 Google 端到端未执行",
-  "head": "7730fa5eadfc0bac83aad88886ce467cdadaf0d0",
-  "workingTree": "uncommitted",
-  "sourceDigest": "6dbdf40c67444399e8c5007d483049ac05db4d97c44673ce142530218f300412",
+  "head": "c79f05f42cc45554614fb40d789f6531b27c0a08",
+  "workingTree": "clean",
+  "sourceDigest": "727e7ebcc54cffbe8b3e076cd7ecd6220b8ede04f22958ff93745f38b05523d6",
   "sourceDigestMethod": "find apps/backend/src apps/desktop/src -type f \\( -name '*.py' -o -name '*.ts' -o -name '*.tsx' -o -name '*.css' \\) | sort | xargs shasum -a 256 | shasum -a 256",
-  "sourceDigestNote": "QA 运行发生在提交 7730fa5e 之上、修复绑定方法（POST→PUT）之前的工作区；本值对应修复后的源码，与 ui-result.json 的 capturedAt 不同源。",
+  "sourceDigestNote": "对 c79f05f4 提交的工作树计算：apps/backend/src 与 apps/desktop/src 下 .py/.ts/.tsx/.css 逐文件 sha256 再整体 sha256。本轮交付的界面整改与 QA 截图均由该值对应的源码产出。",
   "authoritativeManagementRun": {
     "result": "docs/project-management/implementation/pm6/qa-runs/2026-09-18/ui-result.json",
     "status": "passed",
     "scenario": "PM6 Google Sheets 来源与同步闭环（管理侧）",
     "evidenceType": "真实 Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 受控 Sheets REST 替身",
-    "capturedGitHead": "7730fa5eadfc0bac83aad88886ce467cdadaf0d0",
+    "capturedGitHead": "c79f05f42cc45554614fb40d789f6531b27c0a08",
     "platform": "darwin",
     "arch": "arm64",
     "checkpoints": 13,
-    "screenshots": 12,
+    "screenshots": 13,
     "viewport": "1440x1024",
     "dpr": 1,
     "boundary": {
@@ -32,24 +32,39 @@
     "facts": {
       "sidecarModule": "tests.qa.pm6_sidecar",
       "tableSourceBeforeBinding": "local",
-      "localRecordBeforeBinding": ["001", "local@example.com"],
+      "localRecordBeforeBinding": [
+        "001",
+        "local@example.com"
+      ],
       "connectionCredentialState": "available",
       "binding": {
         "spreadsheetId": "pm6-source-1",
         "sheetId": 1000,
         "bindingEpoch": 1,
-        "identityStrategy": { "kind": "column", "columnId": "A" },
+        "identityStrategy": {
+          "kind": "column",
+          "columnId": "A"
+        },
         "formulaColumn": "C"
       },
-      "pulledRecordKey": { "type": "text", "value": "001" },
+      "pulledRecordKey": {
+        "type": "text",
+        "value": "001"
+      },
       "reconcile": "提交后响应丢失进入结果未知；核对结果依据远端证据判定已确认，写入次数不变",
-      "unbind": "影响确认先给出；取消不改动已保存绑定；确认后表进入待配置且本地数据保留"
+      "unbind": "影响确认先给出；取消不改动已保存绑定；确认后表进入待配置且本地数据保留",
+      "visualStates": "08a-push-result-unknown 捕获原型 100 的「请求已发出，尚未确认云端结果」状态；08-lost-response-reconciled 捕获核验后的已确认状态"
     },
     "defectsFoundByThisRun": [
       "渲染层对 /sheets/binding 使用 POST，路由只接受 PUT，真实界面绑定必然 405；单测替身不校验方法因而漏过。已改为 PUT 并保留幂等键。",
       "拉取或推送后记录页沿用命令前的分页结果，用户看不到远端行；onChanged 现将记录查询一并失效。已补回归用例。",
       "来源页签把「绑定读取失败/读取中」显示成空事实，违反「失败不得显示为已确认空数据」。已区分读取中、暂时无法读取、未记录。",
-      "SheetsConnectionPanel 表头 5 个单元格、数据行 6 个，列错位。"
+      "SheetsConnectionPanel 表头 5 个单元格、数据行 6 个，列错位。",
+      "账号表与字段映射表的表头把 <td> 嵌在 <thead>，浏览器将其提升出表头，五个列名挤成一行无分隔文本；改用 th。",
+      "账号表「选择」之后的无名列既当表头又放按钮，同步记录表尾列无名；补上「操作」列名，无动作时显示 —。",
+      "记录表把身份渲染两遍（业务编号列与记录身份列都显示 001）；身份字段可见时不再渲染独立身份列。",
+      "来源页签原为单栏纵向堆叠，与已批准原型 100-sheets-directions 的两栏骨架不符；改为 2fr/1fr 双栏。",
+      "解绑确认渲染在页面末尾、脱离触发按钮；移到按钮下方。"
     ]
   },
   "automatedChecks": {
@@ -57,7 +72,7 @@
       "command": "uv run --directory apps/backend pytest -q -p no:randomly",
       "result": "3044 passed, 16 skipped",
       "failed": 0,
-      "durationSeconds": 514
+      "durationSeconds": 573
     },
     "backendStyle": {
       "ruff": "uv run --directory apps/backend ruff check . → All checks passed",
@@ -69,16 +84,24 @@
     },
     "frontend": {
       "command": "npm test",
-      "result": "392 files passed, 5370 tests passed"
+      "result": "392 files passed, 5371 tests passed"
+    },
+    "frontendTargeted": {
+      "command": "npm --workspace @autoflow/desktop test -- --run domains/project-data",
+      "result": "65 files passed, 682 tests passed"
     },
     "frontendToolchain": {
       "openapi:check": "no diff",
       "typecheck": "passed",
       "lint": "passed",
       "build": "passed",
-      "test:scripts": "72 pass / 0 fail",
-      "test:structure": "0 fail",
+      "test:scripts": "pass",
+      "test:structure": "4 passed",
       "git diff --check": "clean"
+    },
+    "realInterface": {
+      "command": "node scripts/qa-project-management-pm6.mjs",
+      "result": "status=passed, 13 checkpoints, 13 screenshots"
     }
   },
   "baselineComparison": {
@@ -127,5 +150,6 @@
     "Studio demo 联合测试（按用户指示不执行）",
     "Windows、其他架构、打包应用验收",
     "用户手动执行结果"
-  ]
+  ],
+  "visualVerification": "docs/project-management/implementation/pm6/ui-verification.md"
 }

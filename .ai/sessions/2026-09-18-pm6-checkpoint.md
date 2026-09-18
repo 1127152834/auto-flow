@@ -14,7 +14,8 @@
 ## 证据
 
 - 机器报告：`docs/project-management/implementation/pm6/verification.json`
-- 真实界面：`docs/project-management/implementation/pm6/qa-runs/2026-09-18/`（13 检查点 / 12 张 1440×1024 截图，status=passed）
+- 真实界面：`docs/project-management/implementation/pm6/qa-runs/2026-09-18/`（13 检查点 / 13 张 1440×1024 截图，status=passed）
+- 视觉对照：`docs/project-management/implementation/pm6/ui-verification.md`（原型 011 = 86 分、100 = 88 分）
 - 手测方案：`docs/project-management/implementation/pm6/manual-test.md`
 - 执行卡：`docs/superpowers/plans/2026-09-16-project-management-pm6.md`
 
@@ -45,3 +46,21 @@
 本机为跑通依赖参考检出的测试，在 `reference/` 下创建了指向主项目参考检出的只读符号链接
 （`WebRPA`、`RedroidManager`、`redroid-script`、`vphone-aio`、`vphone-cli`）。这些链接被 `.gitignore`
 覆盖，未纳入任何提交，也不属于业务改动。
+
+## 第三轮补充（2026-09-18 22:3x）
+
+按「页面必须对着 gallery 原型」的要求复核来源页签，改的是结构而不是重做：
+
+1. 来源页签原为单栏纵向堆叠，改为原型的两栏骨架（左栏来源事实 → 拉取新增 → 推送变化 → 同步记录；
+   右栏同步边界 → 来源核对；未绑定时右栏显示功能说明）。
+2. 截图抓出同一类真实缺陷 4 处：`<td>` 嵌在 `<thead>`，浏览器把它提升出表头，列名挤成一行无分隔文本
+   （账号表、字段映射表），以及两个无名尾列（账号表选择列之后、同步记录表尾）。
+   已在 `scripts/structure.test.mjs` 加仓库级断言，避免再犯。
+3. 记录表把身份渲染两遍（业务编号列与记录身份列都显示 `001`）；身份字段可见时不再渲染独立身份列。
+4. 新增 `08a-push-result-unknown` 截图，补上原型 `100-sheets-directions` 里「请求已发出，尚未确认云端结果」
+   这一关键状态的实图证据；与通过结果矛盾的 `99-failure.png` 已删除。
+
+覆盖表更新：PM6 里能直接对到定向测试的场景从 `planned` 改为 `partially_verified`
+（`DT-08/09`、`DATA-SH-05/06/07`、`DATA-SYNC-01/03/05/06/10`、`DATA-LIFE-03/04/05/06`、`DATA-STATE-12`、`FLOW-A12`），
+每条都带 `limitations` 写清未执行项。跨项目共享物理行、行插删、tombstone、远端增列与系统身份等
+未实现或未验证的场景保持 `planned`，没有跟着抬高。

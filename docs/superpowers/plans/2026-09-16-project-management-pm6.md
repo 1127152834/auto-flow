@@ -65,7 +65,7 @@ PM6 交付 Google Sheets 连接与多绑定、字段与身份映射、本地意�
 - [x] PM6-A 连接/身份/多绑定
 - [x] PM6-B 出站队列与核验
 - [~] PM6-C 公式/增列/来源调整/恢复 —— 公式只读刷新、暂停/恢复、断开连接、解除绑定影响预检、未知结果核验与恢复已交付；**远端受控增列未交付**：冻结契约 §3.4 与 OperationKind 都没有对应路由或 kind，属计划与契约不一致，需契约决定后才做。系统身份列按已批准规则需要独立初始化动作，契约中没有，当前明确返回 501 `SYNC_NOT_IMPLEMENTED`。
-- [x] PM6-UI 四个组件接真实页面
+- [x] PM6-UI 四个组件接真实页面；来源页签按原型 `100-sheets-directions` 的两栏骨架定稿（左栏来源事实/拉取/推送/同步记录，右栏同步边界/来源核对）
 - [~] 自动验收与替身端到端已完成；**实网 Google 端到端未执行**，需要用户提供 OAuth 桌面客户端 JSON（或服务账号 JSON）与明确授权的测试 Spreadsheet。同视口截图 12 张与手测方案已交付。
 
 ### 6.1 交付记录（2026-09-18）
@@ -77,9 +77,13 @@ PM6 交付 Google Sheets 连接与多绑定、字段与身份映射、本地意�
 | 静态检查 | Ruff `All checks passed`；mypy 379 文件无问题 |
 | 前端全量 | `392 files / 5370 tests passed` |
 | 工具链 | openapi:check、typecheck、lint、build、test:scripts(72)、test:structure、`git diff --check` 全绿 |
-| 真实界面 | `docs/project-management/implementation/pm6/qa-runs/2026-09-18/`：13 检查点 / 12 截图，status=passed |
+| 真实界面 | `docs/project-management/implementation/pm6/qa-runs/2026-09-18/`：13 检查点 / 13 截图，status=passed |
 | 机器报告 | `docs/project-management/implementation/pm6/verification.json` |
 | 手测方案 | `docs/project-management/implementation/pm6/manual-test.md` |
+
+视觉对照：`docs/project-management/implementation/pm6/ui-verification.md`——原型 `011-source-sheets` 86 分、`100-sheets-directions` 88 分，均过门槛；唯一未对齐项是「来源核对」卡（冻结契约没有漂移汇总 DTO）。
+
+第三轮（2026-09-18 22:3x）补交付：来源页签改为原型两栏骨架；修复四处 `<td>` 嵌在 `<thead>` 的表头、记录身份重复渲染、解绑确认脱离触发按钮；新增「推送结果未知」状态截图；`scripts/structure.test.mjs` 增加仓库级断言禁止 thead 内嵌 td。全量复核：后端 3044 passed / 16 skipped、Ruff、mypy、前端 392 files / 5371 tests、typecheck / lint / build 全绿，真实界面 QA 13 检查点 / 13 截图 passed。
 
 端到端抓出并修复的真实缺陷：绑定命令用 POST 打只接受 PUT 的路由（真实界面绑定必然 405）、拉取/推送后记录页不重取、来源页把读取失败显示为空事实、连接面板列错位。
 
