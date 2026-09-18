@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import select
 
 from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.tables import DataTableService
@@ -18,6 +19,7 @@ from autoflow.infrastructure.database.project_automations import (
 )
 from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
 from autoflow.infrastructure.database.project_data_models import DataChangeRow
+from autoflow.infrastructure.database.project_run_models import ProjectBatchRow
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.session import (
     create_session_factory,
@@ -96,6 +98,7 @@ def test_an_empty_project_reports_real_zeroes_and_no_invented_numbers(tmp_path):
         "environments": 0,
     }
     assert overview["activity"] == []
+    assert overview["current"] == []
     assert overview["recent"] == []
     assert overview["dataChanges"]["newRecords"] == 0
     assert overview["dataChanges"]["updatedRecords"] == 0
@@ -275,4 +278,80 @@ def test_a_missing_timezone_is_rejected_and_statistics_is_declared_available(tmp
         ProjectOverviewService(factory).get(project_id, timezone="Nope/Nowhere")
     assert failure.value.status == 422
     assert AVAILABILITY["statistics"] == "available"
+    factory.dispose()
+
+
+def test_current_lists_in_flight_batches_and_drops_them_once_terminal(tmp_path):
+    from tests.integration.test_project_failure_followup import _claim, _fail_run
+    from tests.integration.test_project_run_data_start import _setup as data_setup
+
+    factory, project_id, automation, coordinator = data_setup(tmp_path)
+    batch, _operation, _replayed = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )
+    overview = ProjectOverviewService(factory).get(project_id)
+    assert [item["kind"] for item in overview["current"]] == ["batch"]
+    assert overview["current"][0]["resource"]["batchId"] == batch.batch_id
+    assert "batch" not in {item["kind"] for item in overview["recent"]}
+
+    assert _claim(project_id, factory, batch.batch_id) == "ready"
+    task = coordinator.list_tasks(project_id, batch.batch_id)[0]
+    _fail_run(factory, task.run_id)
+    # The failed task is terminal, so it belongs to attention, never to current.
+    assert [item["kind"] for item in ProjectOverviewService(factory).get(project_id)["current"]] == [
+        "batch"
+    ]
+
+    with factory() as session:
+        row = session.get(ProjectBatchRow, batch.batch_id)
+        assert row is not None
+        row.status = "completed"
+        row.completed_at = datetime.now(UTC)
+        session.commit()
+    after = ProjectOverviewService(factory).get(project_id)
+    assert after["current"] == []
+    assert "batch" in {item["kind"] for item in after["recent"]}
+    factory.dispose()
+
+
+def test_current_lists_a_waiting_manual_item_and_drops_it_once_resolved(tmp_path):
+    factory, project_id = _setup(tmp_path)
+    now = datetime.now(UTC)
+    with factory() as session:
+        session.add(
+            ProjectManualItemRow(
+                id=uid(),
+                project_id=project_id,
+                task_id=uid(),
+                run_id=uid(),
+                instance_id=None,
+                checkpoint_revision=1,
+                status="waiting",
+                status_revision=1,
+                expires_at=now + timedelta(hours=1),
+                allowed_targets=[],
+                resume_started=False,
+                reason="等待人工确认验证码",
+                created_at=now,
+                updated_at=now,
+            )
+        )
+        session.commit()
+    current = ProjectOverviewService(factory).get(project_id)["current"]
+    assert [(item["kind"], item["summary"]) for item in current] == [
+        ("manual", "等待人工确认验证码")
+    ]
+    with factory() as session:
+        item = session.scalars(select(ProjectManualItemRow)).one()
+        item.status = "resolved"
+        session.commit()
+    assert ProjectOverviewService(factory).get(project_id)["current"] == []
     factory.dispose()

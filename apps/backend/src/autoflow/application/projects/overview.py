@@ -54,6 +54,12 @@ SYNC_TERMINAL_STATUSES = ("confirmed", "failed", "unknown")
 STALE_AFTER = timedelta(minutes=30)
 MAX_RECENT_ACTIVITY = 20
 MAX_ATTENTION_ITEMS = 40
+IN_FLIGHT_TASK_LABELS = {
+    "queued": "排队中",
+    "running": "运行中",
+    "stopping": "停止中",
+    "reconciling": "核验中",
+}
 
 
 def resolve_timezone(name: str | None) -> ZoneInfo:
@@ -105,6 +111,7 @@ class ProjectOverviewService:
                 "project": project_to_dict(project),
                 "counts": _counts(session, project_id),
                 "activity": _attention(session, project_id, current),
+                "current": _current(session, project_id),
                 "recent": _recent(session, project_id, current),
                 "dataChanges": {
                     "timezone": str(zone),
@@ -308,6 +315,107 @@ def _missing_resource_items(
             }
         )
     return items
+
+
+def _current(session: Session, project_id: str) -> list[dict[str, Any]]:
+    """D5: in-flight work only. Terminal objects belong to `recent`."""
+    entries: list[tuple[datetime, dict[str, Any]]] = []
+
+    batches = list(
+        session.scalars(
+            select(ProjectBatchRow)
+            .where(
+                ProjectBatchRow.project_id == project_id,
+                ProjectBatchRow.status.in_(ACTIVE_BATCH_STATUSES),
+            )
+            .order_by(ProjectBatchRow.created_at.desc())
+            .limit(MAX_RECENT_ACTIVITY)
+        )
+    )
+    for batch in batches:
+        occurred = _aware(batch.created_at)
+        entries.append(
+            (
+                occurred,
+                {
+                    "activityId": batch.id,
+                    "kind": "batch",
+                    "resource": {
+                        "type": "batch",
+                        "projectId": project_id,
+                        "batchId": batch.id,
+                    },
+                    "summary": f"批次处理中（{batch.status}）",
+                    "occurredAt": occurred.isoformat(),
+                },
+            )
+        )
+
+    manual_items = list(
+        session.scalars(
+            select(ProjectManualItemRow)
+            .where(
+                ProjectManualItemRow.project_id == project_id,
+                ProjectManualItemRow.status == "waiting",
+            )
+            .order_by(ProjectManualItemRow.updated_at.desc())
+            .limit(MAX_RECENT_ACTIVITY)
+        )
+    )
+    for item in manual_items:
+        occurred = _aware(item.updated_at)
+        entries.append(
+            (
+                occurred,
+                {
+                    "activityId": item.id,
+                    "kind": "manual",
+                    "resource": {
+                        "type": "task",
+                        "projectId": project_id,
+                        "taskId": item.task_id,
+                    },
+                    "summary": item.reason or "人工事项等待处理",
+                    "occurredAt": occurred.isoformat(),
+                },
+            )
+        )
+
+    tasks = session.execute(
+        select(
+            ProjectTaskRow.id,
+            WorkflowRunRow.started_at,
+            WorkflowRunRow.status,
+        )
+        .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
+        .where(
+            ProjectTaskRow.project_id == project_id,
+            WorkflowRunRow.status.not_in(TERMINAL_RUN_STATUSES),
+        )
+        .order_by(WorkflowRunRow.started_at.desc())
+        .limit(MAX_RECENT_ACTIVITY)
+    ).all()
+    for task_id, started_at, status in tasks:
+        occurred = _aware(started_at)
+        entries.append(
+            (
+                occurred,
+                {
+                    "activityId": task_id,
+                    "kind": "task",
+                    "resource": {
+                        "type": "task",
+                        "projectId": project_id,
+                        "taskId": task_id,
+                    },
+                    "summary": f"任务{IN_FLIGHT_TASK_LABELS.get(status, status)}",
+                    "occurredAt": occurred.isoformat(),
+                },
+            )
+        )
+
+    entries.sort(key=lambda entry: entry[0], reverse=True)
+    return [entry for _, entry in entries[:MAX_RECENT_ACTIVITY]]
 
 
 def _recent(

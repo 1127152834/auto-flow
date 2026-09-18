@@ -177,6 +177,7 @@ class ProjectOverview(ApiModel):
     counts: dict[str, int]
     availability: ProjectCapabilities
     activity: list[AttentionItem]
+    current: list[ActivityItem]
     recent: list[ActivityItem]
     data_changes: DataChanges | None = None
 

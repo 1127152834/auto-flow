@@ -6545,6 +6545,8 @@ export type components = {
             availability: components["schemas"]["ProjectCapabilities"];
             /** Activity */
             activity: components["schemas"]["AttentionItem"][];
+            /** Current */
+            current: components["schemas"]["ActivityItem"][];
             /** Recent */
             recent: components["schemas"]["ActivityItem"][];
             dataChanges?: components["schemas"]["DataChanges"] | null;
