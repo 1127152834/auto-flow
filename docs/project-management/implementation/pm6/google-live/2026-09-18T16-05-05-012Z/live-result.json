@@ -1,0 +1,295 @@
+{
+  "status": "passed",
+  "checkpoints": [
+    {
+      "at": "2026-09-18T16:05:07.023Z",
+      "text": "隔离 Electron + 真实 FastAPI sidecar 启动，本地服务正常。"
+    },
+    {
+      "at": "2026-09-18T16:05:07.767Z",
+      "text": "真实界面创建项目。"
+    },
+    {
+      "at": "2026-09-18T16:05:08.684Z",
+      "text": "真实界面创建数据表。"
+    },
+    {
+      "at": "2026-09-18T16:05:10.364Z",
+      "text": "真实界面在字段抽屉里建立“邮箱 / 是否使用”两个字段并整体保存。"
+    },
+    {
+      "at": "2026-09-18T16:05:13.062Z",
+      "text": "真实服务账号凭据经主进程交接写入系统凭据库，状态“可用 / 可读可写”。"
+    },
+    {
+      "at": "2026-09-18T16:05:39.896Z",
+      "text": "真实界面完成来源检查与绑定：表头 2 列，身份列 A，来源类型变更为 Google Sheets。"
+    },
+    {
+      "at": "2026-09-18T16:05:58.533Z",
+      "text": "真实界面从 Google Sheet 拉取 87 条记录，身份文本保持原样。"
+    },
+    {
+      "at": "2026-09-18T16:06:07.894Z",
+      "text": "真实界面把本地改动推回 Google Sheets，远端单元格 '工作表2'!B2 实际写入“PM6-回写-16-05-05”。"
+    },
+    {
+      "at": "2026-09-18T16:06:08.687Z",
+      "text": "远端 '工作表2'!B2 已还原为空，来源表格不留测试痕迹。"
+    },
+    {
+      "at": "2026-09-18T16:06:10.140Z",
+      "text": "真实界面解除绑定并删除本机凭据，连接列表清空。"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "01-data-directory-empty",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/01-data-directory-empty.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "02-source-tab-unbound",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/02-source-tab-unbound.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "03-google-connection",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/03-google-connection.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "04-binding-wizard-inspection",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/04-binding-wizard-inspection.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "06-binding-bound",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/06-binding-bound.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "07-pulled-records",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/07-pulled-records.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "08-push-confirmed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/08-push-confirmed.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "09-unbind-confirm",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/09-unbind-confirm.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "10-credential-delete-confirm",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/10-credential-delete-confirm.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "11-credential-deleted",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/11-credential-deleted.png",
+      "route": "#/projects/39e7eea2-84c6-49ee-997a-747cf01483d3/data/830a1ca6-c8c2-4554-b868-fa8d22e8a320/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    }
+  ],
+  "facts": {
+    "kind": "pm6-google-live",
+    "credential": {
+      "type": "service_account",
+      "clientEmail": "itin-160@itin-483010.iam.gserviceaccount.com",
+      "projectId": "itin-483010"
+    },
+    "spreadsheetId": "1yhY5fz8RR3x_xKVrj_rgJxcqNn5gyS9pKtavcriu6jE",
+    "sheet": "工作表2",
+    "sheetGid": 316873284,
+    "header": [
+      "邮箱",
+      "是否使用"
+    ],
+    "dataRows": 87,
+    "identityValue": "cbmc2422471@outlook.com",
+    "writeBackCell": "'工作表2'!B2",
+    "writeBackValueBefore": null,
+    "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z",
+    "createdAt": "2026-09-18T16:05:05.016Z",
+    "desktopLog": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pm6-google-live-2026-09-18T16-05-05-012Z/desktop.log",
+    "workspaceKey": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pm6-google-live-2026-09-18T16-05-05-012Z/workspace",
+    "sidecarBaseUrl": "http://127.0.0.1:57236",
+    "projectId": "39e7eea2-84c6-49ee-997a-747cf01483d3",
+    "tableId": "830a1ca6-c8c2-4554-b868-fa8d22e8a320",
+    "tableSourceBeforeBinding": "local",
+    "fields": [
+      {
+        "name": "邮箱",
+        "fieldId": "64071b63-3011-457b-a44c-df91f6b9c7d3",
+        "type": "string"
+      },
+      {
+        "name": "是否使用",
+        "fieldId": "6da891c5-86e2-40c4-86ad-1dacaf8ad722",
+        "type": "string"
+      }
+    ],
+    "connection": {
+      "connectionId": "6899c217-164e-47b5-9409-f1adcf631f7f",
+      "credentialState": "available",
+      "writable": true,
+      "readable": true
+    },
+    "inspection": "来源检查\n\n表头 2 列；身份列 唯一（缺失 0，重复 0）。\n\n没有发现问题。",
+    "binding": {
+      "spreadsheetId": "1yhY5fz8RR3x_xKVrj_rgJxcqNn5gyS9pKtavcriu6jE",
+      "sheetId": 316873284,
+      "bindingEpoch": 1,
+      "identityStrategy": {
+        "kind": "column",
+        "columnId": "A"
+      },
+      "mapping": [
+        {
+          "columnId": "A",
+          "direction": "both",
+          "formula": false
+        },
+        {
+          "columnId": "B",
+          "direction": "both",
+          "formula": false
+        }
+      ]
+    },
+    "generationAfterBinding": "9fcac078-b317-4a1e-8867-562d3e1005e5",
+    "pulledTotal": 87,
+    "pulledSample": {
+      "recordKey": "cbmc2422471@outlook.com",
+      "mail": "cbmc2422471@outlook.com"
+    },
+    "pulledLastRow": "ojxhtxs9414@outlook.com",
+    "syncOperations": [
+      {
+        "status": "confirmed",
+        "record": "cbmc2422471@outlook.com",
+        "outcome": "matched"
+      }
+    ],
+    "pushOperation": {
+      "syncOperationId": "416e82ae-b9e3-4056-a78a-b8099fe07c5d",
+      "status": "confirmed",
+      "outcome": "matched",
+      "fields": [
+        "A",
+        "B"
+      ],
+      "target": "工作表2!2"
+    },
+    "writeBackValueAfterPush": "PM6-回写-16-05-05",
+    "writeBackMarker": "PM6-回写-16-05-05",
+    "writeBackValueRestored": null,
+    "credentialDeleteViaUi": true,
+    "credentialsRemoved": true,
+    "checkpoints": [
+      {
+        "at": "2026-09-18T16:05:07.023Z",
+        "text": "隔离 Electron + 真实 FastAPI sidecar 启动，本地服务正常。"
+      },
+      {
+        "at": "2026-09-18T16:05:07.767Z",
+        "text": "真实界面创建项目。"
+      },
+      {
+        "at": "2026-09-18T16:05:08.684Z",
+        "text": "真实界面创建数据表。"
+      },
+      {
+        "at": "2026-09-18T16:05:10.364Z",
+        "text": "真实界面在字段抽屉里建立“邮箱 / 是否使用”两个字段并整体保存。"
+      },
+      {
+        "at": "2026-09-18T16:05:13.062Z",
+        "text": "真实服务账号凭据经主进程交接写入系统凭据库，状态“可用 / 可读可写”。"
+      },
+      {
+        "at": "2026-09-18T16:05:39.896Z",
+        "text": "真实界面完成来源检查与绑定：表头 2 列，身份列 A，来源类型变更为 Google Sheets。"
+      },
+      {
+        "at": "2026-09-18T16:05:58.533Z",
+        "text": "真实界面从 Google Sheet 拉取 87 条记录，身份文本保持原样。"
+      },
+      {
+        "at": "2026-09-18T16:06:07.894Z",
+        "text": "真实界面把本地改动推回 Google Sheets，远端单元格 '工作表2'!B2 实际写入“PM6-回写-16-05-05”。"
+      },
+      {
+        "at": "2026-09-18T16:06:08.687Z",
+        "text": "远端 '工作表2'!B2 已还原为空，来源表格不留测试痕迹。"
+      },
+      {
+        "at": "2026-09-18T16:06:10.140Z",
+        "text": "真实界面解除绑定并删除本机凭据，连接列表清空。"
+      }
+    ]
+  }
+}
