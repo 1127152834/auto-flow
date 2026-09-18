@@ -4,6 +4,7 @@ import { assertFiniteNumbers, DataCommandNotAccepted, DataCommandUncertain, type
 
 type Schema = components['schemas']
 export type Batch = Schema['BatchView']; export type BatchPage = Schema['BatchPage']; export type BatchDetail = Schema['BatchDetail']; export type Task = Schema['TaskView']; export type TaskDetail = Schema['TaskDetail']; export type TaskPage = Schema['TaskPage']; export type BatchStartRequest = Schema['BatchStartRequest']; export type BatchStopRequest = Schema['BatchStopRequest']; export type InputPreview = Schema['InputPreviewResponse']
+export type FollowUpBatchRequest = Schema['FollowUpBatchRequest']
 export type RunOperation = Schema['ProjectOperationView'] | Schema['ProjectRunOperationSnapshot']
 export type RunCommandOutcome = { state: 'accepted'; operation: RunOperation } | { state: 'succeeded'; batch: Batch }
 class RunOperationFailed extends ApiClientError {}
@@ -14,16 +15,17 @@ const query = (value: Record<string, string | number | undefined>) => new URLSea
 
 export function createProjectRunsApi(client: StreamingApiClient, projectId: string) {
   const root = `/api/v1/projects/${encode(projectId)}`
-  const command = async (path: string, kind: 'startBatch' | 'stopBatch' | 'forceStopBatch', expectedId: string, body: BatchStartRequest | BatchStopRequest, key: string, resume: boolean, policy: DataCommandPolicy = {}): Promise<RunCommandOutcome> => {
+  const command = async (path: string, kind: 'startBatch' | 'followUpBatch' | 'stopBatch' | 'forceStopBatch', expectedId: string, body: BatchStartRequest | BatchStopRequest | FollowUpBatchRequest, key: string, resume: boolean, policy: DataCommandPolicy = {}): Promise<RunCommandOutcome> => {
     const originalBody = structuredClone(body); assertFiniteNumbers(originalBody)
     const project = (operation: RunOperation): RunCommandOutcome => {
       if (operation.projectId !== projectId || operation.idempotencyKey !== key || operation.kind !== kind) throw new Error('操作结果与当前批次不一致')
       const resource = operation.resource as { type?: unknown; projectId?: unknown; batchId?: unknown }
-      if (resource.type !== 'batch' || resource.projectId !== projectId || (kind !== 'startBatch' && resource.batchId !== expectedId)) throw new Error('操作资源与当前批次不一致')
+      const newBatch = kind === 'startBatch' || kind === 'followUpBatch'
+      if (resource.type !== 'batch' || resource.projectId !== projectId || (!newBatch && resource.batchId !== expectedId)) throw new Error('操作资源与当前批次不一致')
       if (operation.status === 'failed') { const detail = operation.error as { message?: unknown } | null; throw new RunOperationFailed(typeof detail?.message === 'string' ? detail.message : '批次操作失败', 422, 'OPERATION_FAILED') }
       if (operation.status !== 'succeeded') return { state: 'accepted', operation }
       const result = operation.result as { batch?: Batch } | null
-      if (!result?.batch || result.batch.projectId !== projectId || result.batch.batchId !== resource.batchId || (kind === 'startBatch' ? result.batch.automationId !== expectedId : result.batch.batchId !== expectedId)) throw new Error('操作结果与当前批次不一致')
+      if (!result?.batch || result.batch.projectId !== projectId || result.batch.batchId !== resource.batchId || (newBatch ? (kind === 'startBatch' ? result.batch.automationId !== expectedId : result.batch.batchId !== resource.batchId) : result.batch.batchId !== expectedId)) throw new Error('操作结果与当前批次不一致')
       return { state: 'succeeded', batch: result.batch }
     }
     const submit = async () => {
@@ -48,6 +50,7 @@ export function createProjectRunsApi(client: StreamingApiClient, projectId: stri
     previewInputs: (automationId: string, expectedAutomationRevision: number, signal?: AbortSignal) => client.request<InputPreview>(`${root}/automations/${encode(automationId)}/input-preview`, { method: 'POST', body: { expectedAutomationRevision }, signal }),
     start: (automationId: string, body: BatchStartRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/automations/${encode(automationId)}/batches`, 'startBatch', automationId, body, key, false, policy),
     resumeStart: (automationId: string, body: BatchStartRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/automations/${encode(automationId)}/batches`, 'startBatch', automationId, body, key, true, policy),
+    followUp: (taskId: string, body: FollowUpBatchRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/tasks/${encode(taskId)}/follow-up-batches`, 'followUpBatch', taskId, body, key, false, policy),
     stop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/stop`, 'stopBatch', batchId, body, key, false, policy),
     resumeStop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/stop`, 'stopBatch', batchId, body, key, true, policy),
     forceStop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/force-stop`, 'forceStopBatch', batchId, body, key, false, policy),
