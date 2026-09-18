@@ -31,6 +31,7 @@ def configure_workflow_runtime(
     read_license: Callable[[], str | None], usage_guard: ProfileUsageGuard,
     installations: FilesystemKernelInstallationStore, temp_dir: Path,
     gate: QuiesceGate,
+    environment_directory: Callable[[str], Path | None] | None = None,
 ) -> WorkflowRunDispatcher:
     @contextmanager
     def guard(kernel: KernelRef) -> Iterator[None]:
@@ -48,6 +49,7 @@ def configure_workflow_runtime(
 
     resources = WorkflowBrowserResources(
         profiles, installed, resolve_proxy, read_license, usage_guard, guard,
+        environment_directory=environment_directory,
     )
     worker = WorkflowWorkerManager(temp_dir)
 

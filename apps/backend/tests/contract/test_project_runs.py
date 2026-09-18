@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -11,10 +11,14 @@ from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.domain.project_runs.models import ProjectRunError
+from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
 from autoflow.infrastructure.database.models import ProjectRow, WorkflowDocumentRow
 from autoflow.infrastructure.database.project_run_models import ProjectBatchRow
 from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+from autoflow.infrastructure.database.workflow_runtime import (
+    SqlAlchemyWorkflowRuntimeRepository,
+)
 from tests.integration.test_project_run_start import setup, start_payload
 
 
@@ -120,6 +124,9 @@ def test_batch_and_task_queries_return_real_counts_snapshots_and_core_run(tmp_pa
     assert tasks["items"][0]["inputIdentifier"] == "参数任务"
     assert tasks["items"][0]["batchStartedAt"] == detail["batch"]["createdAt"]
     assert tasks["items"][0]["endNodeName"] is None
+    # 排队中的任务没有节点尝试与运行开始，最近状态时间就是任务创建时间，
+    # 不能拿客户端时钟或剩余时间伪造一个更「新」的时间。
+    assert tasks["items"][0]["lastStatusAt"] == tasks["items"][0]["createdAt"]
     task_id = tasks["items"][0]["taskId"]
     task = client.get(f"/api/v1/projects/{project.project_id}/tasks/{task_id}").json()
     assert task["task"]["status"] == "queued"
@@ -449,4 +456,110 @@ def test_run_operations_are_filterable_through_the_owning_project_contract(tmp_p
     )
     assert other_project.status_code == 200
     assert other_project.json()["total"] == 0
+    factory.dispose()
+
+
+def test_task_directory_exposes_the_open_manual_item_and_never_invents_one(tmp_path):
+    """PM5 的 002 画板要求等待人工的任务行能进入那份唯一的人工详情。"""
+    client, factory, project, automation, _ = client_for(tmp_path)
+    batch = client.post(
+        f"/api/v1/projects/{project.project_id}/automations/{automation.automation_id}/batches",
+        headers={"Idempotency-Key": str(uuid4())},
+        json=start_payload(automation, max_tasks=2),
+    ).json()["operation"]["result"]["batch"]
+    listed = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"batchId": batch["batchId"]},
+    ).json()["items"]
+    assert [item["manualItemId"] for item in listed] == [None, None]
+
+    waiting = listed[0]
+    now = datetime.now(UTC)
+    manual_id = str(uuid4())
+    with factory() as session:
+        session.add(
+            ProjectManualItemRow(
+                id=manual_id,
+                project_id=project.project_id,
+                task_id=waiting["taskId"],
+                run_id=waiting["runId"],
+                instance_id=None,
+                checkpoint_revision=1,
+                status="waiting",
+                status_revision=1,
+                expires_at=None,
+                allowed_targets=[],
+                resume_started=False,
+                reason="需要人工核对",
+                created_at=now,
+                updated_at=now,
+            )
+        )
+        session.commit()
+
+    refreshed = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"batchId": batch["batchId"]},
+    ).json()["items"]
+    by_task = {item["taskId"]: item["manualItemId"] for item in refreshed}
+    assert by_task[waiting["taskId"]] == manual_id
+    # 同批次其它任务不能被带上别人的人工事项
+    assert [value for key, value in by_task.items() if key != waiting["taskId"]] == [None]
+
+    # 已经结束的人工事项不再是入口，列表必须回到普通的任务跳转
+    with factory() as session:
+        row = session.get(ProjectManualItemRow, manual_id)
+        assert row is not None
+        row.status = "resolved"
+        session.commit()
+    resolved = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"batchId": batch["batchId"]},
+    ).json()["items"]
+    assert [item["manualItemId"] for item in resolved] == [None, None]
+    factory.dispose()
+
+def test_task_directory_reports_the_current_or_final_node_and_latest_status_time(tmp_path):
+    """PM5 的 002 画板要求任务行给出「当前或结束节点」与「最近状态时间」。"""
+    client, factory, project, automation, _ = client_for(tmp_path)
+    batch = client.post(
+        f"/api/v1/projects/{project.project_id}/automations/{automation.automation_id}/batches",
+        headers={"Idempotency-Key": str(uuid4())},
+        json=start_payload(automation),
+    ).json()["operation"]["result"]["batch"]
+    queued = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"batchId": batch["batchId"]},
+    ).json()["items"][0]
+    # 排队中的任务没有节点尝试，最近状态时间只能是任务创建时间，
+    # 不能拿客户端时钟或排序字段伪造一个更新的时间。
+    assert queued["endNodeName"] is None
+    assert queued["lastStatusAt"] == queued["createdAt"]
+
+    succeeded_at = datetime.now(UTC).replace(microsecond=0) + timedelta(seconds=3)
+    with factory.begin() as session:
+        repository = SqlAlchemyWorkflowRuntimeRepository(session)
+        for index, status in enumerate(("started", "succeeded")):
+            repository.append_event(
+                {
+                    "eventId": str(uuid4()),
+                    "runId": queued["runId"],
+                    "executionGeneration": 0,
+                    "kind": "nodeAttempt",
+                    "nodeId": "open",
+                    "nodeVisitId": "visit-1",
+                    "attempt": 1,
+                    "occurredAt": (
+                        succeeded_at - timedelta(seconds=1 - index)
+                    ).isoformat(),
+                    "payload": {"status": status},
+                }
+            )
+
+    listed = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"batchId": batch["batchId"]},
+    ).json()["items"][0]
+    assert listed["endNodeName"] == "打开网页"
+    assert datetime.fromisoformat(listed["lastStatusAt"]) == succeeded_at
     factory.dispose()

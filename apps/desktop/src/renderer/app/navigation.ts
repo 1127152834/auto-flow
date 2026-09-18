@@ -15,7 +15,8 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
   if (parts.length === 1) return { section: 'projects', project: { tab: 'overview' } }
   if (projectIdPattern.test(parts[1] ?? '') && parts[2] === 'runs') {
     const base = { projectId: parts[1], tab: 'runs' as const }
-    if (parts.length === 4 && ['batches', 'tasks'].includes(parts[3])) return { section: 'projects', project: { ...base, runView: parts[3] as 'batches' | 'tasks' } }
+    if (parts.length === 4 && ['batches', 'tasks', 'manual'].includes(parts[3])) return { section: 'projects', project: { ...base, runView: parts[3] as 'batches' | 'tasks' | 'manual' } }
+    if (parts.length === 5 && parts[3] === 'manual' && projectIdPattern.test(parts[4])) return { section: 'projects', project: { ...base, runView: 'manual', manualItemId: parts[4] } }
     if (parts.length === 5 && parts[3] === 'batches' && projectIdPattern.test(parts[4])) return { section: 'projects', project: { ...base, runView: 'batches', batchId: parts[4] } }
     if (parts.length === 6 && parts[3] === 'tasks' && projectIdPattern.test(parts[4]) && ['logs', 'io', 'evidence'].includes(parts[5])) return { section: 'projects', project: { ...base, taskId: parts[4], taskTab: parts[5] as 'logs' | 'io' | 'evidence' } }
   }
@@ -34,6 +35,9 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
   if (parts.length === 5 && projectIdPattern.test(parts[1]) && parts[2] === 'data' && projectIdPattern.test(parts[3]) && ['records', 'fields', 'statuses', 'source', 'settings'].includes(parts[4])) {
     return { section: 'projects', project: { projectId: parts[1], tab: 'data', tableId: parts[3], dataTab: parts[4] as DataTableTab } }
   }
+  if (parts.length === 4 && projectIdPattern.test(parts[1]) && parts[2] === 'environments' && projectIdPattern.test(parts[3])) {
+    return { section: 'projects', project: { projectId: parts[1], tab: 'environments', environmentId: parts[3] } }
+  }
   if (parts.length !== 3 || !projectIdPattern.test(parts[1]) || !projectTabs.includes(parts[2] as ProjectTab)) {
     return { section: 'projects', error: '项目地址无效，请从项目目录重新打开。' }
   }
@@ -43,8 +47,8 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
 export function projectHash(route: ProjectRoute) {
   if (!route.projectId) return '#/projects'
   const base = `#/projects/${encodeURIComponent(route.projectId)}/${route.tab}`
-  if (route.taskId || route.batchId || route.runView || route.taskTab) {
-    if (route.tab !== 'runs' || (route.taskId && route.batchId)) throw new Error('运行记录地址无效')
+  if (route.taskId || route.batchId || route.manualItemId || route.runView || route.taskTab) {
+    if (route.tab !== 'runs' || (route.taskId && route.batchId) || (route.manualItemId && (route.taskId || route.batchId || route.taskTab))) throw new Error('运行记录地址无效')
     if (route.taskId) {
       if (!projectIdPattern.test(route.taskId) || (route.taskTab && !['logs', 'io', 'evidence'].includes(route.taskTab))) throw new Error('任务地址无效')
       return `${base}/tasks/${route.taskId}/${route.taskTab ?? 'logs'}`
@@ -53,6 +57,10 @@ export function projectHash(route: ProjectRoute) {
     if (route.batchId) {
       if (!projectIdPattern.test(route.batchId)) throw new Error('批次地址无效')
       return `${base}/batches/${route.batchId}`
+    }
+    if (route.manualItemId) {
+      if (!projectIdPattern.test(route.manualItemId)) throw new Error('人工事项地址无效')
+      return `${base}/manual/${route.manualItemId}`
     }
     return `${base}/${route.runView}`
   }
@@ -67,6 +75,10 @@ export function projectHash(route: ProjectRoute) {
     if (!projectIdPattern.test(route.record.datasetGeneration)) throw new Error('数据代次无效')
     const identity = `${records}/${route.record.datasetGeneration}/${route.record.recordKey.type}/${encodeRecordKey(route.record.recordKey)}`
     return route.record.mode === 'edit' ? `${identity}/edit` : identity
+  }
+  if (route.environmentId) {
+    if (route.tab !== 'environments' || !projectIdPattern.test(route.environmentId)) throw new Error('环境地址无效')
+    return `${base}/${route.environmentId}`
   }
   return route.tab === 'data' && route.tableId ? `${base}/${encodeURIComponent(route.tableId)}/${route.dataTab ?? 'records'}` : base
 }

@@ -77,7 +77,7 @@ def test_create_list_patch_open_overview_and_operations(tmp_path):
         "automations": "available",
         "data": "available",
         "runs": "available",
-        "environments": "notImplemented",
+        "environments": "available",
         "statistics": "notImplemented",
         "sync": "notImplemented",
     }

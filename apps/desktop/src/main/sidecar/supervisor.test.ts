@@ -2,9 +2,16 @@
 import { describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from 'node:events'
 import { spawn } from 'node:child_process'
+import { mkdirSync } from 'node:fs'
 import { applySidecarEvent, initialSidecarStatus, validateSidecarHealth } from './supervisor'
 
 vi.mock('node:child_process', () => ({ spawn: vi.fn() }))
+// The supervisor keeps the sidecar's own output under the data directory; the
+// unit test must not create that directory on the machine running the tests.
+vi.mock('node:fs', async importOriginal => {
+  const actual = await importOriginal<typeof import('node:fs')>()
+  return { ...actual, mkdirSync: vi.fn(), createWriteStream: vi.fn() }
+})
 
 describe('sidecar status transitions', () => {
   it('only exposes a ready status after a valid ready event', () => {
@@ -74,6 +81,8 @@ describe('sidecar startup paths', () => {
       ['run', '--directory', '/backend', 'python', '-m', 'tests.qa.pm4_sidecar', '--port', '0', '--instance-id', 'x', '--parent-pid', String(process.pid), '--data-dir', '/tmp/autoflow-pm4-qa'],
       expect.anything(),
     )
+    // The local service's own output has to be readable after a failed start.
+    expect(vi.mocked(mkdirSync)).toHaveBeenCalledWith('/tmp/autoflow-pm4-qa/logs', { recursive: true })
     vi.unstubAllGlobals()
   })
 

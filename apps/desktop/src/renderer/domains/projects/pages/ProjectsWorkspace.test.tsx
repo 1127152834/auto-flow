@@ -7,7 +7,7 @@ import { ApiClientError, type StreamingApiClient } from '../../../shared/api/cli
 import type { ProjectSummary, ProjectView } from '../types'
 import { ProjectsWorkspace, resetProjectUiState } from './ProjectsWorkspace'
 
-const base = { description: '', managementRevision: 1, lifecycleState: 'active', defaultResources: { profileId: null, proxy: { mode: 'none' }, modelProviderId: null }, createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z', lastOpenedAt: null, availability: { automations: 'notImplemented', data: 'available', runs: 'notImplemented', environments: 'notImplemented', statistics: 'notImplemented', sync: 'notImplemented' } }
+const base = { description: '', managementRevision: 1, lifecycleState: 'active', defaultResources: { profileId: null, proxy: { mode: 'none' }, modelProviderId: null }, createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z', lastOpenedAt: null, availability: { automations: 'notImplemented', data: 'available', runs: 'notImplemented', environments: 'available', statistics: 'notImplemented', sync: 'notImplemented' } }
 const a = { ...base, projectId: '00000000-0000-4000-8000-000000000001', name: '项目A' } as ProjectSummary
 const b = { ...base, projectId: '00000000-0000-4000-8000-000000000002', name: '项目B' } as ProjectSummary
 class ResizeObserverStub { observe() {}; unobserve() {}; disconnect() {} }
@@ -222,4 +222,18 @@ it('requests recent projects independently of restored all-directory search and 
   await userEvent.click(screen.getByRole('button', { name: '查看全部项目' }))
   expect(await screen.findByText('项目B')).toBeInTheDocument()
   expect(screen.getByLabelText('搜索项目')).toHaveValue('另一页')
+})
+
+it('renders the single manual detail for a manual-item route instead of the run directory', async () => {
+  const manualItemId = '00000000-0000-4000-8000-00000000000d'
+  const request = vi.fn(async (path: string) => {
+    if (path.includes('/manual-items/')) return { manualItemId, projectId: a.projectId, taskId: '00000000-0000-4000-8000-00000000000e', runId: '00000000-0000-4000-8000-00000000000c', instanceId: null, checkpointRevision: 1, status: 'waiting', statusRevision: 1, expiresAt: null, allowedTargets: [], resumeStarted: false, reason: '等待人工现场', createdAt: '2026-09-18T00:00:00Z', updatedAt: '2026-09-18T00:00:00Z' }
+    if (path.includes('/tasks/')) return { automationName: '资料整理', batchStartedAt: null, parameterDefinitions: [], task: { taskId: '00000000-0000-4000-8000-00000000000e', projectId: a.projectId, batchId: '00000000-0000-4000-8000-00000000000c', runId: '00000000-0000-4000-8000-00000000000c', runRequestId: '00000000-0000-4000-8000-00000000000c', status: 'waiting_manual', statusRevision: 1, inputSnapshotId: null, taskOrdinal: 1, automationName: '资料整理', batchStartedAt: null, inputIdentifier: 'R001', endNodeName: null, createdAt: '2026-09-18T00:00:00Z', completedAt: null }, inputSnapshot: { inputSnapshotId: 'snapshot', taskId: '00000000-0000-4000-8000-00000000000e', batchId: '00000000-0000-4000-8000-00000000000c', parameters: {}, inputs: [], capturedAt: '2026-09-18T00:00:00Z' }, run: null }
+    if (path.includes(`/projects/${a.projectId}`)) return { ...a } as ProjectView
+    return { items: [], page: 1, pageSize: 50, total: 0, sort: '-lastOpenedAt' }
+  })
+  mount(request as unknown as StreamingApiClient['request'], { route: { projectId: a.projectId, tab: 'runs', runView: 'manual', manualItemId } })
+  expect(await screen.findByRole('heading', { level: 1, name: /等待人工现场/ })).toBeVisible()
+  expect(screen.getByRole('region', { name: '处理方式' })).toBeVisible()
+  expect(screen.queryByRole('heading', { name: '运行记录' })).not.toBeInTheDocument()
 })

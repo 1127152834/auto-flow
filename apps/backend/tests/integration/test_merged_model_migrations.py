@@ -27,7 +27,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm06_project_capability_reads"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm07_environments"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -49,7 +49,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("pm06_project_capability_reads",)]
+        ).fetchall() == [("pm07_environments",)]
         tables = {
             row[0]
             for row in connection.execute(
@@ -166,7 +166,7 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm06_project_capability_reads",)
+        ).fetchone() == ("pm07_environments",)
         for table, rows in preserved.items():
             assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
         status, sequence, completed_at = connection.execute(

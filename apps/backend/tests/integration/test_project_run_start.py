@@ -108,6 +108,149 @@ def start_payload(automation, *, max_tasks=1):
     }
 
 
+def test_environment_reservation_failure_rolls_back_task_run_and_acceptance(tmp_path):
+    from autoflow.application.environments.service import EnvironmentService
+    from autoflow.domain.projects.models import ProjectError
+    from autoflow.infrastructure.database.environment_models import (
+        ProjectEnvironmentInstanceRow,
+    )
+    from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+    from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
+
+    factory, projects, _, coordinator, _, project, automation = setup(tmp_path)
+    with factory() as session:
+        row = session.get(ProjectRow, project.project_id)
+        row.default_resources = {**row.default_resources, "profileId": str(uuid4())}
+        session.commit()
+    coordinator._environments = EnvironmentService(
+        projects, SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / "environments"),
+        max_live_instances=1,
+    )
+    key = str(uuid4())
+    with pytest.raises(ProjectError) as failure:
+        coordinator.start(project.project_id, automation.automation_id, key,
+                          start_payload(automation, max_tasks=2))
+    assert failure.value.code == "CAPACITY_EXHAUSTED"
+    with factory() as session:
+        for model in (ProjectTaskRow, ProjectTaskInputSnapshotRow, WorkflowRunRow,
+                      ProjectBatchRow, WorkflowPreparedContentRow, ProjectEnvironmentInstanceRow):
+            assert session.scalar(select(func.count()).select_from(model)) == 0
+        assert session.scalar(select(ProjectOperationRow).where(
+            ProjectOperationRow.idempotency_key == key)) is None
+    factory.dispose()
+
+
+def test_environment_reservation_commits_with_task_and_replay_reuses_instance(tmp_path):
+    from autoflow.application.environments.service import EnvironmentService
+    from autoflow.infrastructure.database.environment_models import (
+        ProjectEnvironmentInstanceRow,
+    )
+    from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+    from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
+
+    factory, projects, _, coordinator, _, project, automation = setup(tmp_path)
+    with factory() as session:
+        row = session.get(ProjectRow, project.project_id)
+        row.default_resources = {**row.default_resources, "profileId": str(uuid4())}
+        session.commit()
+    environment_service = EnvironmentService(
+        projects, SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / "environments"),
+        max_live_instances=1,
+    )
+    coordinator._environments = environment_service
+    key = str(uuid4())
+    batch, operation, replayed = coordinator.start(
+        project.project_id, automation.automation_id, key, start_payload(automation)
+    )
+    assert not replayed
+    repeated, repeated_operation, replayed = coordinator.start(
+        project.project_id, automation.automation_id, key, start_payload(automation)
+    )
+    assert replayed and repeated == batch and repeated_operation == operation
+    with factory() as session:
+        instances = session.scalars(select(ProjectEnvironmentInstanceRow)).all()
+        assert len(instances) == 1
+        instance = instances[0]
+        task = session.get(ProjectTaskRow, instance.active_task_id)
+        assert task is not None and task.run_id == instance.active_run_id
+        assert instance.state == "active"
+        assert environment_service.instance_path(instance.id).is_dir()
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_project_run_acquires_its_reserved_persistent_directory(tmp_path, valid_profile_values):
+    from autoflow.application.environments.service import EnvironmentService
+    from autoflow.domain.projects.models import ProjectError
+    from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+    from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
+    from tests.unit.test_workflow_browser_resources import resources
+
+    browser, _, profile = resources(tmp_path, valid_profile_values)
+    factory, projects, _, coordinator, runtime, project, automation = setup(
+        tmp_path, resolver=lambda *_: browser.freeze(profile.id)
+    )
+    with factory() as session:
+        row = session.get(ProjectRow, project.project_id)
+        row.default_resources = {**row.default_resources, "profileId": profile.id}
+        session.commit()
+    environment_service = EnvironmentService(
+        projects, SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / "environments")
+    )
+    coordinator._environments = environment_service
+    batch, _, _ = coordinator.start(
+        project.project_id, automation.automation_id, str(uuid4()), start_payload(automation)
+    )
+    task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+    queued = runtime.query_run(run_id=task.run_id)
+    running = runtime.dispatch_run(
+        queued.run_id, expected_status_revision=queued.status_revision,
+        execution_generation=queued.execution_generation,
+    )
+    instance = environment_service.environments.find_instance_by_task(project.project_id, task.task_id)
+    browser._environment_directory = lambda request_id: environment_service.run_work_directory(request_id)
+    lease = await browser.acquire(running.resource_request, running.run_request_id)
+    try:
+        assert lease.browser["userDataDir"] == str(environment_service.instance_path(instance.instance_id))
+    finally:
+        lease.release()
+    runtime.cancel_run(
+        running.run_id, expected_status_revision=running.status_revision,
+        execution_generation=running.execution_generation,
+    )
+    with pytest.raises(ProjectError) as revoked:
+        await browser.acquire(running.resource_request, running.run_request_id)
+    assert revoked.value.code == "END_ACCESS_REVOKED"
+    # A still-open instance must not be savable: quiescence precedes generation checks.
+    with pytest.raises(ProjectError) as not_quiescent:
+        environment_service.save(
+            project.project_id,
+            str(uuid4()),
+            {
+                "instanceId": instance.instance_id, "mode": "saveAs",
+                "expectedUseGeneration": 1, "executionGeneration": running.execution_generation,
+                "name": "未静止环境",
+            },
+        )
+    assert not_quiescent.value.code == "INSTANCE_NOT_QUIESCENT"
+    environment_service.environments.set_instance_state(instance.instance_id, "closed")
+    # Once quiescent, a revoked execution generation cannot publish the environment.
+    with pytest.raises(ProjectError) as stale_save:
+        environment_service.save(
+            project.project_id,
+            str(uuid4()),
+            {
+                "instanceId": instance.instance_id, "mode": "saveAs",
+                "expectedUseGeneration": 1, "executionGeneration": running.execution_generation,
+                "currentExecutionGeneration": running.execution_generation + 1,
+                "name": "旧执行代次",
+            },
+        )
+    assert stale_save.value.code == "EXECUTION_GENERATION_REVOKED"
+    factory.dispose()
+    factory.dispose()
+
+
 @pytest.mark.parametrize("count", [1, 2, 100])
 def test_start_commits_every_task_snapshot_run_content_and_operation_atomically(
     tmp_path, count

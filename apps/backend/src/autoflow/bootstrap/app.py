@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
+from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
@@ -62,6 +63,7 @@ from autoflow.domain.profiles.ports import (
     ProfileUsageGuard,
 )
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
+from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
@@ -111,6 +113,7 @@ from autoflow.infrastructure.database.settings_runtime import (
 )
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
+from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
 from autoflow.infrastructure.filesystem.kernel_installations import (
     FilesystemKernelInstallationStore,
 )
@@ -124,6 +127,7 @@ from autoflow.infrastructure.filesystem.profile_environment import (
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
+from autoflow.providers.browser.environment_browser import EnvironmentBrowserLauncher
 from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
@@ -150,6 +154,7 @@ def create_app(
         paths.temp,
         paths.profiles,
         paths.kernels,
+        paths.workspace / "environments",
     ):
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
@@ -256,23 +261,65 @@ def create_app(
         license_store.read,
         test_browser_workers,
     )
+    environment_store = EnvironmentStore(paths.workspace / "environments")
+
+    def _run_execution_generation(run_id: str):
+        """The stored run generation outranks whatever a request claims for itself."""
+
+        runtime = getattr(app.state, "workflow_runtime", None)
+        if runtime is None:
+            return None
+        query_run = getattr(runtime, "query_run", None)
+        if query_run is not None:
+            return query_run(run_id=run_id)
+        get_run = getattr(runtime, "get_run", None)
+        return get_run(run_id=run_id) if get_run is not None else None
+
+    # Headed work copies for saved/running instances: opener + closer share one owner,
+    # so End and save can confirm the browser is really gone before copying files.
+    # The injected lookup decides what is installed everywhere else, so the
+    # launcher must read the same inventory; a bare lookup without an
+    # ``installed()`` list still falls back to the real catalog.
+    kernel_inventory = getattr(
+        installed_kernel_lookup or catalog_provider, "installed", None
+    ) or catalog_provider.installed
+    environment_browser = EnvironmentBrowserLauncher(
+        profile_service, kernel_inventory, environment_store
+    )
+    environment_service = EnvironmentService(
+        ProjectService(SqlAlchemyProjects(session_factory)),
+        SqlAlchemyEnvironments(session_factory),
+        environment_store,
+        opener=environment_browser.opener,
+        closer=environment_browser.closer,
+        execution_generation_lookup=_run_execution_generation,
+    )
+    app.state.environment_browser = environment_browser
+    app.state.environment_service = environment_service
     workflow_dispatcher = configure_workflow_runtime(
         app, session_factory=session_factory, profiles=profile_service,
         installed=catalog_provider.installed, resolve_proxy=proxy_runtime.resolve_profile,
         read_license=license_store.read, usage_guard=usage_guard,
         installations=installations, temp_dir=paths.temp, gate=quiesce_gate,
+        environment_directory=environment_service.run_work_directory,
     )
 
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory), profile_service,
         installed_kernel_lookup or catalog_provider, proxy_options, model_service,
+        environment_service,
     )
     project_run_coordinator = ProjectRunCoordinator(
         session_factory, app.state.workflow_runtime,
-        resolve_resources=ProjectRunResourceResolver(automation_resources, app.state.workflow_resources),
+        resolve_resources=ProjectRunResourceResolver(
+            automation_resources, app.state.workflow_resources, environment_service
+        ),
         available_capabilities=["browser.cloakbrowser"],
+        environments=environment_service,
     )
-    project_run_scheduler = ProjectBatchScheduler(session_factory, workflow_dispatcher, quiesce_gate)
+    project_run_scheduler = ProjectBatchScheduler(
+        session_factory, workflow_dispatcher, quiesce_gate, environment_service
+    )
     app.state.project_run_coordinator = project_run_coordinator
     app.state.project_run_scheduler = project_run_scheduler
     # Core startup fences/reconciles old workers before any queued project task is considered.
@@ -350,6 +397,7 @@ def create_app(
                     kernel_worker_manager.shutdown,
                 )), return_exceptions=True,
             )
+            environment_browser.shutdown()
             results.extend(await asyncio.gather(
                 asyncio.to_thread(excel_export_executor.shutdown, wait=True),
                 asyncio.to_thread(status_batch_executor.shutdown, wait=True),
@@ -409,6 +457,7 @@ def create_app(
         schema=DataSchemaService(SqlAlchemyProjectDataSchema(session_factory)),
         status_batches=status_batch_service,
         excel=project_excel, imports=excel_imports, exports=excel_exports,
+        environments=environment_service,
     ))
 
     @app.middleware("http")

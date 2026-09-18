@@ -9,6 +9,7 @@ from autoflow.domain.profiles.errors import ProfileNotFound
 from autoflow.domain.profiles.models import Profile
 from autoflow.domain.profiles.ports import InstalledKernelLookup, ProxyOptionsLookup
 from autoflow.domain.project_automations.models import AutomationRecord
+from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.projects.ports import Projects
 
 
@@ -22,12 +23,14 @@ class ProjectAutomationResourceQuery:
         installed_kernels: InstalledKernelLookup,
         proxy_options: ProxyOptionsLookup,
         model_service: ModelService,
+        environments: Any | None = None,
     ) -> None:
         self._projects = projects
         self._profiles = profiles
         self._installed_kernels = installed_kernels
         self._proxy_options = proxy_options
         self._model_service = model_service
+        self._environments = environments
 
     def inspect_resources(self, automation: AutomationRecord) -> list[dict[str, Any]]:
         project = self._projects.get(automation.project_id)
@@ -44,48 +47,62 @@ class ProjectAutomationResourceQuery:
         defaults = project.default_resources
         issues: list[dict[str, Any]] = []
         profile: Profile | None = None
-        if automation.environment_policy.get("source") == "newFromProfile":
-            profile_id = automation.environment_policy.get("profileId") or defaults.get(
-                "profileId"
+        policy = automation.environment_policy
+        source = policy.get("source")
+        profile_id = policy.get("profileId") or defaults.get("profileId")
+        if source == "fixedEnvironment" and self._environments is not None:
+            try:
+                profile_id = self._environments.resolve(
+                    automation.project_id, policy
+                ).profile_id
+            except ProjectError as error:
+                issues.append(
+                    _issue(
+                        ["environmentPolicy", "environmentId"],
+                        error.code,
+                        error.message,
+                        "environment",
+                        policy.get("environmentId"),
+                    )
+                )
+        if source == "newFromProfile" and not profile_id:
+            issues.append(
+                _issue(
+                    ["environmentPolicy", "profileId"],
+                    "PROFILE_REQUIRED",
+                    "请选择浏览器配置",
+                    "profile",
+                    None,
+                )
             )
-            if not profile_id:
+        elif profile_id:
+            try:
+                profile = self._profiles.get(profile_id)
+            except ProfileNotFound:
                 issues.append(
                     _issue(
                         ["environmentPolicy", "profileId"],
-                        "PROFILE_REQUIRED",
-                        "请选择浏览器配置",
+                        "PROFILE_NOT_FOUND",
+                        "浏览器配置不存在",
                         "profile",
-                        None,
+                        profile_id,
                     )
                 )
-            else:
-                try:
-                    profile = self._profiles.get(profile_id)
-                except ProfileNotFound:
-                    issues.append(
-                        _issue(
-                            ["environmentPolicy", "profileId"],
-                            "PROFILE_NOT_FOUND",
-                            "浏览器配置不存在",
-                            "profile",
-                            profile_id,
-                        )
+            if profile is not None and not self._installed_kernels.is_installed(
+                profile.spec.browser_edition, profile.spec.browser_version
+            ):
+                kernel_id = (
+                    f"{profile.spec.browser_edition}:{profile.spec.browser_version}"
+                )
+                issues.append(
+                    _issue(
+                        ["environmentPolicy", "profileId"],
+                        "KERNEL_NOT_INSTALLED",
+                        "浏览器配置所需内核尚未安装",
+                        "kernel",
+                        kernel_id,
                     )
-                if profile is not None and not self._installed_kernels.is_installed(
-                    profile.spec.browser_edition, profile.spec.browser_version
-                ):
-                    kernel_id = (
-                        f"{profile.spec.browser_edition}:{profile.spec.browser_version}"
-                    )
-                    issues.append(
-                        _issue(
-                            ["environmentPolicy", "profileId"],
-                            "KERNEL_NOT_INSTALLED",
-                            "浏览器配置所需内核尚未安装",
-                            "kernel",
-                            kernel_id,
-                        )
-                    )
+                )
         proxy, proxy_path = _effective_proxy(
             automation.environment_policy.get("proxyOverride"),
             defaults.get("proxy"),

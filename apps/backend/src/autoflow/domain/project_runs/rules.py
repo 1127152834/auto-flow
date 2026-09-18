@@ -84,13 +84,21 @@ def validate_batch_start(
                 field.replace("environmentPolicy", "environmentOverride", 1), message
             ) from error
     effective_environment = environment_override or automation.environment_policy
-    if effective_environment.get("source") != "newFromProfile":
+    source = effective_environment.get("source")
+    if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
         field = (
             "environmentOverride.source"
             if environment_override is not None
             else "environmentPolicy.source"
         )
-        raise _error(field, "当前运行仅支持按浏览器配置新建临时环境")
+        raise _error(field, "无效的环境来源")
+    if source == "inputEnvironment" and not automation.input_plan.get("inputs"):
+        field = (
+            "environmentOverride.inputId"
+            if environment_override is not None
+            else "environmentPolicy.inputId"
+        )
+        raise _error(field, "记录关联环境需要数据输入")
     return BatchStart(
         expected_automation_revision=revision,
         parameters=parameters,

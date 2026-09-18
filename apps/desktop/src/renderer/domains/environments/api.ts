@@ -1,0 +1,90 @@
+import type { StreamingApiClient } from '../../shared/api/client'
+import type { components } from '../../shared/api/generated'
+
+type Schema = components['schemas']
+export type Environment = Schema['EnvironmentView']
+export type EnvironmentDetail = Schema['EnvironmentDetailView']
+export type EnvironmentPage = Schema['EnvironmentPage']
+export type EnvironmentInstance = Schema['EnvironmentInstanceView']
+export type EnvironmentInstancePage = Schema['EnvironmentInstancePage']
+export type EnvironmentOperation = Schema['EnvironmentOperationView']
+export type EnvironmentPatch = Schema['EnvironmentPatch']
+export type EnvironmentEndRequest = Schema['EnvironmentEndRequest']
+export type EnvironmentImpact = Schema['EnvironmentImpactView']
+export type ManualItem = Schema['ManualItemView']
+export type ManualSort = 'expiresAt' | '-updatedAt'
+export type EnvironmentQuery = { query: string; page: number; pageSize: number; sort: 'name' | '-name' | 'updatedAt' | '-updatedAt'; state?: string }
+
+const encode = encodeURIComponent
+
+export function createEnvironmentApi(client: StreamingApiClient, projectId: string) {
+  const base = `/api/v1/projects/${encode(projectId)}`
+  return {
+    list: (query: EnvironmentQuery, signal?: AbortSignal) => {
+      const state = query.state ? `&state=${encode(query.state)}` : ''
+      return client.request<EnvironmentPage>(`${base}/environments?q=${encode(query.query)}&page=${query.page}&pageSize=${query.pageSize}&sort=${encode(query.sort)}${state}`, { signal })
+    },
+    get: (environmentId: string, signal?: AbortSignal) => client.request<EnvironmentDetail>(`${base}/environments/${encode(environmentId)}`, { signal }),
+    getInstance: (instanceId: string, signal?: AbortSignal) => client.request<EnvironmentInstance>(`${base}/environment-instances/${encode(instanceId)}`, { signal }),
+    listInstances: (query: { page: number; pageSize: number; state?: string; taskId?: string }, signal?: AbortSignal) => {
+      const state = query.state ? `&state=${encode(query.state)}` : ''
+      const taskId = query.taskId ? `&taskId=${encode(query.taskId)}` : ''
+      return client.request<EnvironmentInstancePage>(`${base}/environment-instances?page=${query.page}&pageSize=${query.pageSize}${state}${taskId}`, { signal })
+    },
+    patch: (environmentId: string, body: EnvironmentPatch, key: string) => client.request<Environment>(`${base}/environments/${encode(environmentId)}`, {
+      method: 'PATCH',
+      headers: { 'Idempotency-Key': key },
+      body,
+    }),
+    save: (body: Schema['EnvironmentSaveRequest'], key: string) => client.request<EnvironmentOperation>(`${base}/environment-saves`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body,
+    }),
+    startMaintenance: (environmentId: string, expectedContentGeneration: number, key: string) => client.request<EnvironmentOperation>(`${base}/environments/${encode(environmentId)}/maintenance`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body: { expectedContentGeneration },
+    }),
+    discardMaintenance: (environmentId: string, body: Schema['MaintenanceDiscardRequest'], key: string) => client.request<EnvironmentOperation>(`${base}/environments/${encode(environmentId)}/maintenance/discard`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body,
+    }),
+    operation: (operationId: string, signal?: AbortSignal) => client.request<EnvironmentOperation>(`${base}/environment-operations/${encode(operationId)}`, { signal }),
+    repair: (operationId: string, body: Schema['EnvironmentRepairRequest'], key: string) => client.request<EnvironmentOperation>(`${base}/environment-operations/${encode(operationId)}/repair`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body,
+    }),
+    end: (taskId: string, body: EnvironmentEndRequest, key: string) => client.request<EnvironmentOperation>(`${base}/tasks/${encode(taskId)}/end`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body,
+    }),
+    openInstance: (instanceId: string, expectedUseGeneration: number, key: string) => client.request<EnvironmentOperation>(`${base}/environment-instances/${encode(instanceId)}/open`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body: { expectedUseGeneration },
+    }),
+    impact: (environmentId: string, signal?: AbortSignal) => client.request<EnvironmentImpact>(`${base}/environments/${encode(environmentId)}/impact?action=delete`, { signal }),
+    listManual: (query: { page: number; pageSize: number; status?: string; q?: string; sort?: ManualSort }, signal?: AbortSignal) => {
+      const params = new URLSearchParams({ page: String(query.page), pageSize: String(query.pageSize) })
+      if (query.status) params.set('status', query.status)
+      if (query.q) params.set('q', query.q)
+      if (query.sort) params.set('sort', query.sort)
+      return client.request<{ items: ManualItem[]; page: number; pageSize: number; total: number }>(`${base}/manual-items?${params.toString()}`, { signal })
+    },
+    getManual: (manualItemId: string, signal?: AbortSignal) => client.request<ManualItem>(`${base}/manual-items/${encode(manualItemId)}`, { signal }),
+    resumeManual: (manualItemId: string, body: { checkpointRevision: number; expectedStatusRevision: number; targetNodeId?: string; inputs?: Record<string, unknown> }, key: string) => client.request<EnvironmentOperation>(`${base}/manual-items/${encode(manualItemId)}/resume`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body,
+    }),
+    finishManual: (manualItemId: string, body: Schema['ManualFinishRequest'], key: string) => client.request<EnvironmentOperation>(`${base}/manual-items/${encode(manualItemId)}/finish`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': key },
+      body,
+    }),
+  }
+}

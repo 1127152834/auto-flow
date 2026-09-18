@@ -1,5 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { spawn, type ChildProcess } from 'node:child_process'
+import { createWriteStream, mkdirSync, type WriteStream } from 'node:fs'
+import { join } from 'node:path'
 import { platform } from 'node:process'
 import { resolveBackendEnvironment } from '../platform/paths'
 import { parseReadyLine, type SidecarReady } from './ready-protocol'
@@ -55,6 +57,7 @@ export class SidecarSupervisor {
   private stopping = false
   private startupGeneration = 0
   private hostToken: string | undefined
+  private logStream: WriteStream | undefined
   private pendingStart: { generation: number; timer: ReturnType<typeof setTimeout>; reject: (reason?: unknown) => void } | undefined
 
   constructor(private readonly options: SupervisorOptions) {}
@@ -93,6 +96,7 @@ export class SidecarSupervisor {
       windowsHide: true,
     })
     this.child = child
+    this.attachLog(child)
     child.stderr?.resume()
     let buffer = ''
     const ready = new Promise<SidecarStatus>((resolve, reject) => {
@@ -190,7 +194,29 @@ export class SidecarSupervisor {
       } else child.kill('SIGTERM')
     })
     this.child = undefined; this.stopping = false
+    this.logStream?.end(); this.logStream = undefined
     this.update(applySidecarEvent(this.status, { type: 'stopped' }))
+  }
+
+  /** Keep the local service's own output in the log directory the app reports.
+
+   * A sidecar that fails or restarts without a trace cannot be explained from
+   * the app, which leaves "本地服务异常" undebuggable for the user. Logging must
+   * never be able to block the service, so every failure here is ignored.
+   */
+  private attachLog(child: ChildProcess): void {
+    try {
+      const directory = join(this.options.dataDir!, 'logs')
+      mkdirSync(directory, { recursive: true })
+      const stream = createWriteStream(join(directory, 'sidecar.log'), { flags: 'a' })
+      stream.on('error', () => undefined)
+      stream.write(`\n=== local service start ${new Date().toISOString()} pid=${String(child.pid ?? 'unknown')} ===\n`)
+      child.stdout?.pipe(stream, { end: false })
+      child.stderr?.pipe(stream, { end: false })
+      this.logStream = stream
+    } catch {
+      this.logStream = undefined
+    }
   }
 
   private update(status: SidecarStatus): void { this.status = status; this.options.onStatus?.(status) }

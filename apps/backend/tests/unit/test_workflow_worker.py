@@ -181,7 +181,7 @@ async def test_worker_disables_playwright_default_timeouts_for_zero_budget(
         return context
 
     monkeypatch.setitem(
-        sys.modules, "cloakbrowser", SimpleNamespace(launch_context_async=launch)
+        sys.modules, "cloakbrowser", _fake_cloakbrowser(launch)
     )
     output = io.StringIO()
 
@@ -255,6 +255,17 @@ class Incoming:
             raise value
         return value
 
+def _fake_cloakbrowser(launch, persistent=None):
+    """The worker imports both launchers; a missing one breaks the whole run."""
+
+    async def unexpected_persistent(**_: object) -> Context:
+        raise AssertionError("persistent launch was not expected")
+
+    return SimpleNamespace(
+        launch_context_async=launch,
+        launch_persistent_context_async=persistent or unexpected_persistent,
+    )
+
 
 def command() -> dict[str, object]:
     browser = {
@@ -275,7 +286,7 @@ async def test_worker_envelopes_ack_gate_and_cleanup(monkeypatch: pytest.MonkeyP
     async def launch(**_: object) -> Context:
         return context
 
-    monkeypatch.setitem(sys.modules, "cloakbrowser", SimpleNamespace(launch_context_async=launch))
+    monkeypatch.setitem(sys.modules, "cloakbrowser", _fake_cloakbrowser(launch))
 
     class Ack:
         async def next(self) -> dict[str, object]:
@@ -308,7 +319,7 @@ async def test_invalid_ack_stops_before_web_action_and_cleans_up(
         return context
 
     monkeypatch.setitem(
-        sys.modules, "cloakbrowser", SimpleNamespace(launch_context_async=launch)
+        sys.modules, "cloakbrowser", _fake_cloakbrowser(launch)
     )
     incoming = Incoming(
         [{"type": "event_committed", "eventId": "wrong", "executionGeneration": 3}]
@@ -379,7 +390,7 @@ async def test_worker_captures_failure_screenshot_before_closing_browser(
         return context
 
     monkeypatch.setitem(
-        sys.modules, "cloakbrowser", SimpleNamespace(launch_context_async=launch)
+        sys.modules, "cloakbrowser", _fake_cloakbrowser(launch)
     )
     output = io.StringIO()
 
@@ -435,7 +446,7 @@ async def test_cleanup_failure_has_identity_and_never_claims_finished(
         return BadContext()
 
     monkeypatch.setitem(
-        sys.modules, "cloakbrowser", SimpleNamespace(launch_context_async=launch)
+        sys.modules, "cloakbrowser", _fake_cloakbrowser(launch)
     )
 
     class Ack:
@@ -488,7 +499,7 @@ async def test_proxy_relay_exit_failure_never_claims_cleanup(
             raise OSError("secret relay failure")
 
     monkeypatch.setitem(
-        sys.modules, "cloakbrowser", SimpleNamespace(launch_context_async=launch)
+        sys.modules, "cloakbrowser", _fake_cloakbrowser(launch)
     )
     monkeypatch.setattr(
         "autoflow.providers.browser.workflow_worker.BrowserProxyRelay",
@@ -510,3 +521,40 @@ async def test_proxy_relay_exit_failure_never_claims_cleanup(
     decoded = [json.loads(line) for line in output.getvalue().splitlines()]
     assert decoded[-1]["code"] == "WORKFLOW_CLEANUP_FAILED"
     assert not any(message["type"] == "finished" for message in decoded)
+
+
+@pytest.mark.asyncio
+async def test_worker_opens_saved_environment_directory_as_persistent_context(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    executable, cache, context = tmp_path / "chrome", tmp_path / "cache", Context()
+    executable.write_bytes(b"x")
+    cache.mkdir()
+    work_directory = tmp_path / "instance"
+    work_directory.mkdir()
+    monkeypatch.setenv("CLOAKBROWSER_BINARY_PATH", str(executable))
+    monkeypatch.setenv("CLOAKBROWSER_CACHE_DIR", str(cache))
+    seen: list[dict[str, object]] = []
+
+    async def persistent(**kwargs: object) -> Context:
+        seen.append(kwargs)
+        return context
+
+    async def ephemeral(**_: object) -> Context:
+        raise AssertionError("a saved environment must not start an ephemeral context")
+
+    monkeypatch.setitem(
+        sys.modules, "cloakbrowser", _fake_cloakbrowser(ephemeral, persistent)
+    )
+    output = io.StringIO()
+
+    class Ack:
+        async def next(self) -> dict[str, object]:
+            event = json.loads(output.getvalue().splitlines()[-1])["event"]
+            return {"type": "event_committed", "eventId": event["eventId"], "executionGeneration": 3}
+
+    payload = command()
+    payload["browser"]["userDataDir"] = str(work_directory)  # type: ignore[index]
+    assert await _run(payload, threading.Event(), Ack(), output) == 0
+    assert seen and seen[0]["user_data_dir"] == str(work_directory)
+    assert context.closed
