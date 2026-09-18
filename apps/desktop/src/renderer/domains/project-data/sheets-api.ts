@@ -72,7 +72,8 @@ export function createSheetsApi(client: StreamingApiClient, desktop: Partial<Goo
         body: { action: 'disconnectSheets', target: connectionLocator(projectId, connectionId), change: { mode } },
       }),
     disconnect: async (connectionId: string, body: Schema['SheetsConnectionDelete'], key: string, current: () => boolean) =>
-      (await command.submit(`${base}/sheets/connections/${encodeURIComponent(connectionId)}`, body, key, 'disconnectSheets', current)),
+      // The connection route answers DELETE only; a POST is a 405, not a retryable failure.
+      (await command.submit(`${base}/sheets/connections/${encodeURIComponent(connectionId)}`, body, key, 'disconnectSheets', current, 'DELETE')),
     lookupDisconnect: async (key: string, current: () => boolean) => (await command.lookup(key, 'disconnectSheets', current)),
     readBinding: (tableId: string, signal?: AbortSignal) =>
       client.request<SheetsBinding | null>(`${table(tableId)}/sheets/binding`, signal ? { signal } : undefined),

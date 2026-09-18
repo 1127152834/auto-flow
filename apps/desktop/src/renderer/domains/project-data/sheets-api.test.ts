@@ -37,6 +37,30 @@ describe('Sheets command transport', () => {
     expect(request).toHaveBeenCalledWith('/api/v1/projects/p/tables/t/sheets/binding', expect.objectContaining({ method: 'PUT', headers: { 'Idempotency-Key': 'key' } }))
   })
 
+  // Every sheets command that is not a POST has to name its verb here. A missing
+  // verb silently downgrades the call to POST, and the router answers 405 — which
+  // the renderer then reports as an unactionable "操作失败，请重试".
+  it('revokes a connection with DELETE, the verb the connection route froze', async () => {
+    const { api, request } = setup()
+    request.mockResolvedValue({ operation: operation('disconnectSheets') })
+    await api.disconnect('c1', { impactRevision: 4, mode: 'forgetCredential' }, 'key', () => true)
+    expect(request).toHaveBeenCalledWith('/api/v1/projects/p/sheets/connections/c1', expect.objectContaining({
+      method: 'DELETE',
+      headers: { 'Idempotency-Key': 'key' },
+      body: { impactRevision: 4, mode: 'forgetCredential' },
+    }))
+  })
+
+  it('removes a binding with DELETE, the verb the binding resource froze', async () => {
+    const { api, request } = setup()
+    request.mockResolvedValue({ operation: operation('removeSheetsBinding') })
+    await api.removeBinding('t', { impactRevision: 4, mode: 'remove' } as never, 'key', () => true)
+    expect(request).toHaveBeenCalledWith('/api/v1/projects/p/tables/t/sheets/binding', expect.objectContaining({
+      method: 'DELETE',
+      headers: { 'Idempotency-Key': 'key' },
+    }))
+  })
+
   it('recovers a lost push response by the original key instead of sending a second command', async () => {
     const { api, request } = setup()
     request.mockRejectedValueOnce(new TypeError('lost response'))
