@@ -178,24 +178,22 @@ def _attention(
         )
     )
     for batch in batches:
-        stale = now - _aware(batch.created_at) > STALE_AFTER
-        items.append(
-            {
-                "kind": "batch",
-                "resource": {
-                    "type": "batch",
-                    "projectId": project_id,
-                    "batchId": batch.id,
-                },
-                "severity": "warning" if stale else "info",
-                "message": (
-                    f"批次已停滞超过 {int(STALE_AFTER.total_seconds() // 60)} 分钟"
-                    if stale
-                    else f"批次正在处理（{batch.status}）"
-                ),
-                "occurredAt": _aware(batch.created_at).isoformat(),
-            }
-        )
+        # D6: 非终态且停滞才是关注项。进行中的批次属于 `current`（项目活动·当前），
+        # 在这里再报一次会变成同一条事实出现在两个面板。
+        if now - _aware(batch.created_at) > STALE_AFTER:
+            items.append(
+                {
+                    "kind": "batch",
+                    "resource": {
+                        "type": "batch",
+                        "projectId": project_id,
+                        "batchId": batch.id,
+                    },
+                    "severity": "warning",
+                    "message": f"批次已停滞超过 {int(STALE_AFTER.total_seconds() // 60)} 分钟",
+                    "occurredAt": _aware(batch.created_at).isoformat(),
+                }
+            )
         items.extend(_missing_resource_items(session, project_id, batch, now))
 
     failures = session.execute(

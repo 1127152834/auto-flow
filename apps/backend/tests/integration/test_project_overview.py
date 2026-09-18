@@ -260,7 +260,8 @@ def test_a_failed_task_is_attention_with_an_error_severity(tmp_path):
     _fail_run(factory, task.run_id)
     activity = ProjectOverviewService(factory).get(project_id)["activity"]
     kinds = {item["kind"] for item in activity}
-    assert kinds == {"batch", "task"}
+    # 进行中的批次只属于 current，未停滞时不得同时出现在需要关注。
+    assert kinds == {"task"}
     failed = next(item for item in activity if item["kind"] == "task")
     assert failed["severity"] == "error"
     assert failed["resource"] == {
