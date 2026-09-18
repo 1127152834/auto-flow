@@ -139,6 +139,7 @@ def projects_router(
             "startBatch",
             "stopBatch",
             "forceStopBatch",
+            "followUpBatch",
             "createTable",
             "updateTable",
             "mutateField",

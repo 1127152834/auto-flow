@@ -198,6 +198,7 @@ class ProjectOperationView(ApiModel):
         "startBatch",
         "stopBatch",
         "forceStopBatch",
+        "followUpBatch",
         "createTable",
         "updateTable",
         "mutateField",
