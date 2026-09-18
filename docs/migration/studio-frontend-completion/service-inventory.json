@@ -4070,7 +4070,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 282,
+          "line": 283,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.getFullData(currentExecutionWorkflowId)"
         }
@@ -4119,7 +4119,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 295,
+          "line": 296,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.getLatestFullData()"
         }
@@ -4299,7 +4299,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 174,
+          "line": 175,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "emitAssistantUiEvent"
         }
@@ -4514,7 +4514,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 330,
+          "line": 331,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4824,7 +4824,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 327,
+          "line": 328,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5918,7 +5918,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 333,
+          "line": 334,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
