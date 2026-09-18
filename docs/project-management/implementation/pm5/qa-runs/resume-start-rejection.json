@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-16T20:06:01.331Z",
+  "type": "direct-http-negative-test-not-ui-e2e",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-qst8mgd6/workspace",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/projects/0b4af061-0693-42c8-8097-f74850b3e965/automations/f76dd007-0d20-4b5f-bf6a-05291a6345db/batches"
+  },
+  "result": {
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "RESOURCE_UNAVAILABLE",
+        "message": "运行所需资源不可用",
+        "details": {
+          "issues": [
+            {
+              "path": [
+                "environmentPolicy",
+                "profileId"
+              ],
+              "code": "PROFILE_NOT_FOUND",
+              "message": "浏览器配置不存在",
+              "resource": {
+                "type": "profile",
+                "profileId": "33333333-3333-3333-3333-333333333333"
+              }
+            }
+          ],
+          "retryable": false,
+          "domainCode": "resource_unavailable"
+        },
+        "requestId": "c3b215de-d9d4-4166-99ab-49a3f63f49c7"
+      }
+    }
+  },
+  "batchesBefore": 0,
+  "batchesAfter": 0
+}

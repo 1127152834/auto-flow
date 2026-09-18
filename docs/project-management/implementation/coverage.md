@@ -1,6 +1,6 @@
 # 项目管理里程碑覆盖表
 
-- 日期：2026-09-16；状态：PM3 历史范围保留；PM4 V1/A/B/C/F 管理功能已交付，整体为 delivered + partially verified。macOS arm64 管理链、第二自动化、工程回归和视觉结构已有证据；PM3 管理前端定向回归 16 文件/121 项通过，真实执行核心 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、packaged 及用户手测未执行。
+- 日期：2026-09-18；状态：PM3 历史范围保留；PM4 V1/A/B/C/F 管理功能已交付，整体为 delivered + partially verified。PM5 管理侧与真实浏览器环境存取（含真实 CloakBrowser 登录保存/恢复、End 保留并真实关闭原浏览器）已交付，整体为 delivered-management-scope + partially verified。视觉对照按 `runs-environments.json` 的 pmPhases 分范围：`06-environments` 内 PM5 画板 6/6 通过（001/003/004/005/010/100-rename-drawer），`03-runs` 内 5 个画面通过（002 任务列表、003 等待人工列表、008 人工详情、019 完成确认、020 超时终态），`100-rename-validation-conflict` 的项目内名称唯一规则与已批准设计冲突、待产品确认；`03-runs/018`（检查失败→重新检查，依赖真实执行核心的上下文校验）与 `021`（证据缺失，属 PM8）无实图，范围外的 002（PM3/PM4）、006 与 007–009（PM3-A）、100-delete-impact-preview 与 100-cleanup-*（PM8/PM3-C）同样登记为缺口。真实执行核心接入仍未验收。macOS arm64 管理链、第二自动化、工程回归和视觉结构已有证据；PM3 管理前端定向回归 16 文件/121 项通过，真实执行核心 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、packaged 及用户手测未执行。
 - 依据：已确认设计 `906deda`；[里程碑正文](../../superpowers/plans/2026-09-13-project-management-milestones.md)。
 - [逐条规则/测试目标映射](coverage.json)包含48项功能、178条验收场景、18项执行契约和7项能力门槛。
 - “首次可用”只代表当阶段已接通的真实子范围；“完整验收”覆盖该条全部约束。PM9对所有功能做平台与真实应用回归。
