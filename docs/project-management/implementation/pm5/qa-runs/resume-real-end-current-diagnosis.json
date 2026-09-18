@@ -1,0 +1,18 @@
+{
+  "scenario": "real browser login then current management HTTP End",
+  "evidenceType": "HTTP with real browser, synthetic task identity; not Electron E2E",
+  "login": true,
+  "httpStatus": 409,
+  "response": {
+    "error": {
+      "code": "INSTANCE_OWNERSHIP_UNKNOWN",
+      "message": "无法确认浏览器已关闭，请核验运行现场",
+      "details": {
+        "domainCode": "instance_ownership_unknown",
+        "retryable": false
+      },
+      "requestId": "35a6f747-87e7-443d-93ab-8544344cf8dd"
+    }
+  },
+  "browserClosedByEnd": false
+}

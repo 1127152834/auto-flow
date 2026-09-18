@@ -77,6 +77,10 @@ class TaskView(ApiModel):
     batch_started_at: datetime | None = None
     input_identifier: str | None = None
     end_node_name: str | None = None
+    # 任务最近一次状态时间：创建、最近节点尝试、运行开始/结束中的最新真实时间。
+    last_status_at: datetime | None = None
+    # 等待人工的任务随行返回那份唯一的人工事项；其它任务为 null。
+    manual_item_id: str | None = None
     created_at: datetime
     completed_at: datetime | None = None
 

@@ -140,8 +140,13 @@ it('round trips run directories, batches and task evidence without losing scoped
   const routes = [
     { projectId, tab: 'runs' as const, runView: 'tasks' as const },
     { projectId, tab: 'runs' as const, runView: 'batches' as const, batchId: id },
+    { projectId, tab: 'runs' as const, runView: 'manual' as const },
+    { projectId, tab: 'runs' as const, runView: 'manual' as const, manualItemId: id },
     ...(['logs', 'io', 'evidence'] as const).map(taskTab => ({ projectId, tab: 'runs' as const, taskId: id, taskTab })),
   ]
   for (const route of routes) expect(parseAppLocation(projectHash(route)).project).toEqual(route)
-  for (const suffix of ['batches/invalid', `tasks/${id}/other`, `tasks/${id}/logs/extra`]) expect(parseAppLocation(`#/projects/${projectId}/runs/${suffix}`).error).toBeTruthy()
+  for (const suffix of ['batches/invalid', `tasks/${id}/other`, `tasks/${id}/logs/extra`, `manual/${id}/extra`, 'manual/invalid']) expect(parseAppLocation(`#/projects/${projectId}/runs/${suffix}`).error).toBeTruthy()
+  expect(projectHash({ projectId, tab: 'runs', manualItemId: id })).toBe(`#/projects/${projectId}/runs/manual/${id}`)
+  expect(() => projectHash({ projectId, tab: 'runs', taskId: id, manualItemId: id })).toThrow()
+  expect(() => projectHash({ projectId, tab: 'runs', runView: 'manual', manualItemId: 'not-an-id' })).toThrow()
 })

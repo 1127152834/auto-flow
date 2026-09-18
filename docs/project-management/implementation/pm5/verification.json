@@ -1,0 +1,185 @@
+{
+ "date": "2026-09-18",
+ "milestone": "PM5",
+ "branch": "codex/project-management-pm5",
+ "status": "delivered-management-scope-partially-verified",
+ "deliveryStatus": "delivered-management-scope",
+ "verificationStatus": "partiallyVerified",
+ "scope": "管理侧及实际浏览器环境存取已验证；真实执行核心接入待验收",
+ "head": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+ "workingTree": "uncommitted",
+ "sourceDigest": "66a4dbfd6c57b2dff5841860d3726027e21ed4a0c9ea2d1b9b71a672c04842a9",
+ "sourceDigestMethod": "find apps/backend/src apps/desktop/src -type f \\( -name '*.py' -o -name '*.ts' -o -name '*.tsx' -o -name '*.css' \\) | sort | xargs shasum -a 256 | shasum -a 256",
+ "sourceDigestNote": ".ai/sessions/2026-09-17-pm5-handoff.md 记录的 d79decc4… 使用另一套文件清单累加方式，不能与本值直接比较，保留为历史值。",
+ "authoritativeManagementRun": {
+  "result": "docs/project-management/implementation/pm5/qa-runs/2026-09-18/ui-result.json",
+  "status": "passed",
+  "scenario": "PM5 环境页真实界面验收",
+  "evidenceType": "真实 Electron 渲染层点击 + 应用自启 FastAPI + SQLite + CloakBrowser",
+  "capturedGitHead": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checkpoints": 16,
+  "screenshots": 27,
+  "viewport": "1440x1024",
+  "dpr": 1,
+  "scrollWidthAssertion": "每张截图断言 scrollWidth <= viewport + 1",
+  "boundary": {
+   "executor": "isolated-test-executor (tests.qa.pm5_sidecar，仅摘除批次派发 startup hook)",
+   "browser": "real CloakBrowser 145.0.7632.109.2（工作区内副本）",
+   "studio": "notExecuted"
+  },
+  "facts": {
+   "sidecarModule": "tests.qa.pm5_sidecar",
+   "taskStatus": "queued",
+   "runGenerationBeforeEnd": 0,
+   "runGenerationAfterEnd": 0,
+   "savedEnvironments": 1,
+   "closedAfterEnd": true,
+   "renameValidation": "空名称被界面阻止，未发出请求",
+   "injectedFixtures": "等待人工现场为隔离 QA 工作区测试注入资料，截图后同脚本删除；查询与页面渲染走生产代码",
+   "manualItemId": "任务列表的人工入口：等待人工行进入同一份详情，其它任务仍进入任务详情",
+   "expiredFixture": "超时终态为隔离 QA 工作区测试注入资料（运行状态随之置为 timed_out），截图后已删除并还原",
+   "manualDetail": "运行记录「等待人工」页签、人工详情、完成确认、失败必填与超时终态均由生产页面渲染"
+  }
+ },
+ "browserChainRun": {
+  "result": "docs/project-management/implementation/pm5/qa-runs/2026-09-18/browser-chain.json",
+  "scope": "真实内核启动 → 登录 → End 保留与关联 → 真实关闭 → 新工作副本恢复登录态 → 内容代次推进",
+  "status": "passed"
+ },
+ "engineeringChecks": {
+  "backendPytest": {
+   "status": "passed",
+   "passed": 1659,
+   "warnings": 2,
+   "seconds": 290.13,
+   "command": "AUTOFLOW_TEST_CLOAKBROWSER=<installed kernel> uv run --directory apps/backend pytest -q -p no:randomly",
+   "scope": "本轮新增 lastStatusAt、002 列补齐与人工链修复后的后端全量回归"
+  },
+  "ruff": {
+   "status": "passed",
+   "command": "uv run --directory apps/backend ruff check .",
+   "note": "All checks passed!"
+  },
+  "mypy": {
+   "status": "passed",
+   "sourceFiles": 274,
+   "command": "uv run --directory apps/backend mypy src"
+  },
+  "frontendVitest": {
+   "status": "passed",
+   "testFiles": 307,
+   "tests": 3305,
+   "command": "npm test"
+  },
+  "openapiCheck": {
+   "status": "passed"
+  },
+  "typecheck": {
+   "status": "passed"
+  },
+  "lint": {
+   "status": "passed"
+  },
+  "build": {
+   "status": "passed",
+   "note": "electron-vite build 通过（33.0s），保留既有 chunk 体积与依赖注释 warning"
+  },
+  "testScripts": {
+   "status": "passed",
+   "passed": 64,
+   "total": 64
+  },
+  "testStructure": {
+   "status": "passed",
+   "passed": 3,
+   "total": 3
+  },
+  "gitDiffCheck": {
+   "status": "passed"
+  }
+ },
+ "thisRoundChanges": [
+  "后端：持久环境列表新增真实 createdFromSource/createdFromTaskId/linkedRecordCount（含 GROUP BY 批量引用数查询），定向 26 项与全量 1656 项通过",
+  "前端结构：环境页改为「当前现场」+ 右栏两卡 + 带真实计数的分区 chips；持久环境目录六列；环境详情双栏与资源快照",
+  "前端新增：右侧重命名抽屉（必填/长度校验、脏草稿离开确认、错误留在抽屉内）替换页内内联表单",
+  "前端新增：等待人工目录按原型四列呈现，主操作为「进入人工处理」，保留「继续原任务」「明确结束」",
+  "缺陷修复：等待人工的现场不再同时出现在「自动运行」小节（原型语义：等待人工归入需要人工处理）",
+  "QA：新增注入式等待人工现场截图、重命名抽屉与校验态截图、截图前关闭通知；脚本 13 检查点 20 截图通过",
+  "03-runs 人工链：运行记录新增「等待人工」页签（原型 003 四列）、唯一一份人工详情（008/018/019/020）、任务列表等待人工行的「查看事项」入口（002）",
+  "缺陷修复：ProjectsWorkspace 的人工详情分支被 taskId 短路，人工事项永远路由失败",
+  "缺陷修复：「标记完成」的提交按钮被弹窗内的知情勾选永久锁死，改为页面级只校验选择、弹窗内校验知情",
+  "缺陷修复：等待人工目录把默认状态筛选当成用户筛选，空库时误报「没有匹配」",
+  "缺陷修复：终态（已超时/已处理）仍渲染不可用的提交表单；改为「处理结果」+「历史现场」，不显示打开环境与提交表单",
+  "002 列结构补齐：任务列表新增「所属批次」「当前或结束节点」「时间（最近状态时间）」，并新增服务端 lastStatusAt（取创建、最近节点尝试、运行开始/结束中的最新真实事实）",
+  "产品语言：人工详情终态的任务状态改用中文标签，不再把 timed_out 等内部值当主要内容；事实表的批次/任务改用短标识",
+  "QA：新增超时终态检查点与 25/26 截图，人工与终态注入资料均在脚本内删除并还原运行状态"
+ ],
+ "visualReview": {
+  "status": "passed-for-pm5-scope",
+  "evidence": "docs/project-management/implementation/pm5/ui-verification.md",
+  "scopeMapping": "按 docs/project-management/design-alignment/runs-environments.json 的 pmPhases 划分 PM5 门槛范围（06-environments 与 03-runs 两组）",
+  "scores": {
+   "001": 88,
+   "003": 88,
+   "004": 88,
+   "005": 87,
+   "100-rename-drawer": 90,
+   "010-runtime-states": 90,
+   "03-runs/002-task-list": 88,
+   "03-runs/003-manual-list": 87,
+   "03-runs/008-manual-detail": 86,
+   "03-runs/019-manual-complete-confirm": 90,
+   "03-runs/020-manual-expired": 86
+  },
+  "minimumScreenScore": 85,
+  "mandatoryStructurePassed": true,
+  "topNavigation": "passed（唯一批准的差异）",
+  "openItem": "100-rename-validation-conflict 要求的项目内环境名唯一与已批准设计 execution-and-environment.md:277「名称不是身份，同名不被用作更新目标」冲突，需产品一句话确认；本轮按已批准设计实现，未擅自加唯一性约束；03-runs/008 的「当前节点」副行未实现（后端 TaskView.endNodeName 已可用）",
+  "outOfScopeGaps": [
+   "002 运行环境详情页缺失（账本归属 PM3/PM4）",
+   "006 项目默认资源只读、不能编辑与核对影响（账本归属 PM3-A，覆盖表已登记归属待确认）",
+   "007–009（PM3-A）、100-delete-impact-preview 与 100-cleanup-*（PM8/PM3-C）无实图"
+  ],
+  "unscored": [
+   "03-runs/018-manual-check-failed：无对应实图；「检查失败 → 重新检查」依赖真实执行核心的上下文校验能力，本阶段不伪造",
+   "03-runs/021-evidence-missing：未实现，按账本归属 PM3/PM5/PM8 登记"
+  ]
+ },
+ "remainingBlockers": [
+  {
+   "item": "真实执行核心接入",
+   "owner": "核心侧",
+   "status": "notExecuted",
+   "detail": "生产工作流执行器跑完整节点链、任务内真实浏览器执行、检查点恢复与 End 编排；生产 WorkflowBrowserResources.acquire 的 userDataDir 注入与 openInstance 的进程启动仍属该边界；03-runs/018「检查失败 → 重新检查」也依赖这一层的上下文校验"
+  },
+  {
+   "item": "100-rename-validation-conflict 唯一性规则",
+   "owner": "产品确认",
+   "status": "pendingDecision",
+   "detail": "原型与已批准设计冲突，需要一句话确认后才可实施"
+  },
+  {
+   "item": "002 / 006 范围外结构缺口",
+   "owner": "PM3/PM4 与 PM3-A",
+   "status": "registered",
+   "detail": "均为用户可见缺口，已在 ui-verification.md 第 5 节登记，未在本阶段扩大范围实施"
+  },
+  {
+   "item": "03-runs/021 证据缺失画面与 008 当前节点副行",
+   "owner": "PM5 收尾 / PM8",
+   "status": "registered",
+   "detail": "021 属 PM8 完整验收范围；008 的当前节点副行可由已有 TaskView.endNodeName 与 nodeNames 补齐，本轮未做"
+  }
+ ],
+ "pending": [
+  "真实生产执行核心接入",
+  "Studio 联合运行",
+  "Windows 与其他 CPU 架构",
+  "打包应用",
+  "用户手动验收（manual-test.md 未执行）",
+  "等待人工与超时现场截图依赖测试注入资料，真实核心接入后应以真实检查点重拍"
+ ],
+ "claimLimit": "PM5 管理侧及实际浏览器环境存取已在 macOS arm64 验证：界面点击、FastAPI、SQLite、环境目录副本、CloakBrowser 145 启动/关闭与登录态保存恢复均真实。隔离测试执行器把任务保持在排队态，因此成功不能证明生产工作流执行核心、任务内真实浏览器执行或 Studio 可用。视觉对照按对齐账本的 pmPhases 划分范围：06-environments 内 6 个画板与 03-runs 的 002/003/008/019/020 共 11 个画面通过门槛；03-runs/018 与 021 无对应实图，仍按缺口登记，范围外的 006/007–009/100-cleanup-* 同样未实现或未截图。"
+}

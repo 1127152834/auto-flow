@@ -17,6 +17,7 @@ export type EnvironmentPolicyEditorProps = {
   pools: ResourceOption[]
   modelProviders?: ResourceOption[]
   inputs?: { inputId: string; alias: string }[]
+  environments?: ResourceOption[]
   errors?: Record<string, string | undefined>
 }
 
@@ -26,7 +27,7 @@ const options = (resources: ResourceOption[], value?: string | null, unavailable
 ]
 const withoutProxy = (value: Policy): Policy => { const next = { ...value }; delete next.proxyOverride; return next }
 
-export function EnvironmentPolicyEditor({ value, onChange, disabled = false, profiles, proxies, pools, projectDefaults, modelProviders = [], inputs = [], errors = {} }: EnvironmentPolicyEditorProps) {
+export function EnvironmentPolicyEditor({ value, onChange, disabled = false, profiles, proxies, pools, projectDefaults, modelProviders = [], inputs = [], environments = [], errors = {} }: EnvironmentPolicyEditorProps) {
   const isNew = value.source === 'newFromProfile'
   const profileSpecified = isNew && Object.hasOwn(value, 'profileId')
   const proxyMode: ProxyMode = value.proxyOverride?.mode ?? 'inherit'
@@ -77,11 +78,17 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
 
     <div className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
       <span className="pt-2 text-sm font-medium">环境策略</span>
-      <div className="grid gap-2"><RadioGroup label="环境策略" value={value.source} disabled={disabled} onValueChange={() => { if (value.source !== 'newFromProfile') onChange({ source: 'newFromProfile', ...(value.proxyOverride ? { proxyOverride: value.proxyOverride } : {}), ...(Object.hasOwn(value, 'modelProviderId') ? { modelProviderId: value.modelProviderId } : {}) }) }} options={[
-        {value:'newFromProfile',label:'每个任务创建临时环境'}, {value:'fixedEnvironment',label:'固定持久环境（暂未开放）',disabled:true}, {value:'inputEnvironment',label:'使用记录关联环境（暂未开放）',disabled:true},
+      <div className="grid gap-2"><RadioGroup label="环境策略" value={value.source} disabled={disabled} onValueChange={source => {
+        const shared = { ...(value.proxyOverride ? { proxyOverride: value.proxyOverride } : {}), ...(Object.hasOwn(value, 'modelProviderId') ? { modelProviderId: value.modelProviderId } : {}) }
+        if (source === 'newFromProfile') onChange({ source, ...shared })
+        if (source === 'fixedEnvironment') onChange({ source, environmentId: value.source === 'fixedEnvironment' ? value.environmentId : environments[0]?.id ?? '', ...shared })
+        if (source === 'inputEnvironment') onChange({ source, inputId: value.source === 'inputEnvironment' ? value.inputId : inputs[0]?.inputId ?? '', ...shared })
+      }} options={[
+        {value:'newFromProfile',label:'每个任务创建临时环境'}, {value:'fixedEnvironment',label:'固定保存环境',disabled:disabled && value.source !== 'fixedEnvironment'}, {value:'inputEnvironment',label:'使用记录关联环境',disabled:disabled && value.source !== 'inputEnvironment'},
       ]}/>
-      {value.source === 'fixedEnvironment' ? <p className="m-0 text-sm text-warning">已保存的环境引用暂不可用</p> : value.source === 'inputEnvironment' ? <p className="m-0 text-sm text-warning">{inputAlias || '已保存的数据输入引用暂不可用'}</p> : null}
-      <p className="m-0 text-sm text-muted">任务结束后关闭并清理临时环境</p>
+      {value.source === 'fixedEnvironment' ? <Select aria-label="保存环境" value={value.environmentId || null} options={options(environments, value.environmentId, '已保存的环境引用暂不可用')} clearable={false} disabled={disabled} errorMessage={errors.environmentId} onValueChange={environmentId => environmentId && onChange({ ...value, source: 'fixedEnvironment', environmentId })}/> : null}
+      {value.source === 'inputEnvironment' ? (inputs.length ? <Select aria-label="关联数据输入" value={value.inputId || null} options={inputs.map(input => ({ value: input.inputId, label: input.alias.trim() || '未命名输入' }))} clearable={false} disabled={disabled} errorMessage={errors.inputId} onValueChange={inputId => inputId && onChange({ ...value, source: 'inputEnvironment', inputId })}/> : <p className="m-0 text-sm text-warning">{inputAlias || '已保存的数据输入引用暂不可用'}</p>) : null}
+      <p className="m-0 text-sm text-muted">{value.source === 'newFromProfile' ? '任务结束后关闭并清理临时环境，除非明确保留。' : '任务固定当前保存环境的内容代次，执行中不会切换。'}</p>
       </div>
     </div>
     {projectDefaults ? <AutomationResourceSummary policy={value} projectDefaults={projectDefaults} profiles={profiles.flatMap(profile => profile.browserVersion && profile.browserEdition && profile.proxyMode ? [{ ...profile, browserVersion: profile.browserVersion, browserEdition: profile.browserEdition, proxyMode: profile.proxyMode }] : [])} proxies={proxies} pools={pools} models={modelProviders}/> : null}

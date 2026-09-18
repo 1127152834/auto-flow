@@ -78,9 +78,11 @@ class ProjectRunCoordinator:
             [Session, AutomationRecord], dict[str, Any]
         ]
         | None = None,
+        environments: Any | None = None,
     ) -> None:
         self._factory, self._core = session_factory, core_runtime
         self._resolve_resources = resolve_resources
+        self._environments = environments
         self._capabilities = tuple(available_capabilities)
         self._resolve_create_record_targets = resolve_create_record_targets or (
             lambda _session, _automation: ()
@@ -325,6 +327,8 @@ class ProjectRunCoordinator:
             )
             session.add(batch_row)
             session.flush()
+            created_tasks: list[tuple[str, str]] = []
+            policy = start.environment_override or automation.environment_policy
             for ordinal in range(0 if has_data_inputs else (start.max_tasks or 0)):
                 task_id, request_id, snapshot_id = (
                     str(uuid4()),
@@ -380,6 +384,11 @@ class ProjectRunCoordinator:
                     )
                 )
                 session.flush()
+                if self._environments is not None:
+                    self._environments.reserve_task_instance(
+                        session, project_id, task_id, run.run_id, policy
+                    )
+                created_tasks.append((task_id, run.run_id))
             batch = SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
             operation_row.status = "succeeded"
             operation_row.status_revision = 2
@@ -394,6 +403,11 @@ class ProjectRunCoordinator:
                 # SQLAlchemy marks it inactive. Never return that connection to the pool.
                 session.invalidate()
                 raise
+            if self._environments is not None:
+                for task_id, run_id in created_tasks:
+                    self._environments.attach_task_instance(
+                        project_id, task_id, run_id, policy
+                    )
             return batch, result_operation, False
 
     @staticmethod

@@ -14,7 +14,11 @@ const attempt = (id: string, nodeId: string, nodeName: string) => ({ nodeVisitId
 const log = (sequence: number, message: string) => ({ runId: 'run-1', sequence, eventId: `event-${sequence}`, executionGeneration: 1, level: 'info', message, occurredAt: '2026-09-15T01:00:00Z' })
 
 function renderPage(request: StreamingApiClient['request'], overrides: Partial<React.ComponentProps<typeof TaskDetailPage>> = {}, stream = vi.fn()) {
-  const client = { request, stream } as unknown as StreamingApiClient
+  const wrapped: StreamingApiClient['request'] = async (path, init) => {
+    if (String(path).includes('/environment-instances')) return { items: [], page: 1, pageSize: 5, total: 0, sort: '-updatedAt' } as never
+    return request(path, init)
+  }
+  const client = { request: wrapped, stream } as unknown as StreamingApiClient
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const props = { workspaceKey: 'workspace-1', instanceId: 'instance-1', projectId: 'project-1', taskId: 'task-1', tab: 'logs' as const, client, disabled: false, readOnly: false, onNavigate: vi.fn(), ...overrides }
   return { ...render(<QueryClientProvider client={queryClient}><TaskDetailPage {...props}/></QueryClientProvider>), props, queryClient, client }

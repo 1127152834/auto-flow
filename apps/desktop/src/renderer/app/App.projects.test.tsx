@@ -16,7 +16,7 @@ const project: ProjectView = {
   managementRevision: 1, lifecycleState: 'active', createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z', lastOpenedAt: null,
   defaultResources: { profileId: null, proxy: { mode: 'sourceDefault' }, modelProviderId: null },
 }
-const availability = { automations: 'available', data: 'available', runs: 'available', environments: 'notImplemented', statistics: 'notImplemented', sync: 'notImplemented' } as const
+const availability = { automations: 'available', data: 'available', runs: 'available', environments: 'available', statistics: 'notImplemented', sync: 'notImplemented' } as const
 const requests = vi.fn(async (path: string) => {
   if (path.includes('/tables?')) return { items: [], page: 1, pageSize: 50, total: 0, sort: '-updatedAt' }
   if (path.includes('/overview')) return { project, availability, counts: {}, activity: [], recent: [] }

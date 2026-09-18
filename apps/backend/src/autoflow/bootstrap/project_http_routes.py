@@ -12,6 +12,7 @@ from autoflow.adapters.http.project_data_schema import project_data_schema_route
 from autoflow.adapters.http.project_data_status_batches import (
     record_status_batches_router,
 )
+from autoflow.adapters.http.project_environments import project_environments_router
 from autoflow.adapters.http.project_excel import (
     internal_project_files_router,
     project_excel_inspection_router,
@@ -22,6 +23,7 @@ from autoflow.adapters.http.project_run_events import project_run_events_router
 from autoflow.adapters.http.project_run_evidence import project_run_evidence_router
 from autoflow.adapters.http.project_runs import project_runs_router
 from autoflow.adapters.http.projects import projects_router
+from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
@@ -62,6 +64,7 @@ class ProjectHttpServices:
     excel: ProjectExcelService
     imports: ExcelImportService
     exports: ProjectExcelExportService
+    environments: EnvironmentService
 
 
 def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None:
@@ -80,3 +83,4 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(project_excel_import_router(services.imports))
     app.include_router(internal_project_files_router(services.excel))
     app.include_router(project_excel_inspection_router(services.excel))
+    app.include_router(project_environments_router(services.environments))

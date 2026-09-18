@@ -37,6 +37,7 @@ class WorkflowBrowserResources:
         resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
         read_license: Callable[[], str | None], usage_guard: ProfileUsageGuard,
         kernel_guard: Callable[[KernelRef], AbstractContextManager[None]],
+        environment_directory: Callable[[str], Path | None] | None = None,
     ) -> None:
         self._profiles = profiles
         self._installed = installed_kernels
@@ -44,6 +45,7 @@ class WorkflowBrowserResources:
         self._read_license = read_license
         self._usage_guard = usage_guard
         self._kernel_guard = kernel_guard
+        self._environment_directory = environment_directory
 
     def freeze(
         self, profile_id: str, *, proxy: dict[str, Any] | None = None,
@@ -81,7 +83,7 @@ class WorkflowBrowserResources:
         }
 
     async def acquire(self, request: Mapping[str, Any], run_request_id: str) -> BrowserLease:
-        if request.get("browser") != "newFromProfile":
+        if request.get("browser") not in {"newFromProfile", "persistent"}:
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_UNSUPPORTED", "当前运行需要浏览器配置", 422)
         snapshot = deepcopy(thaw_json(request.get("frozenConfiguration")))
         if not isinstance(snapshot, dict) or not isinstance(request.get("profileId"), str):
@@ -113,6 +115,17 @@ class WorkflowBrowserResources:
                 raise LicenseInvalid
             browser = browser_worker_payload(run_request_id, profile, proxy, license_key)
             browser['headless'] = profile.spec.headless
+            user_data_dir = request.get("userDataDir")
+            if self._environment_directory is not None:
+                directory = self._environment_directory(run_request_id)
+                if directory is not None:
+                    user_data_dir = str(directory)
+            if request.get("browser") == "persistent" or user_data_dir is not None:
+                if not isinstance(user_data_dir, str) or not user_data_dir:
+                    raise WorkflowRuntimeError(
+                        "WORKFLOW_RESOURCE_INVALID", "持久环境缺少工作副本目录", 422
+                    )
+                browser["userDataDir"] = user_data_dir
             return BrowserLease(executable, browser, guards)
         except BaseException:
             guards.close()

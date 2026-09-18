@@ -17,6 +17,7 @@ from autoflow.domain.project_runs.models import (
     task_to_dict,
 )
 from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
+from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_data_models import (
     DataChangeRow,
@@ -301,7 +302,26 @@ class ProjectRunQueries:
             ).all()
             repository = SqlAlchemyProjectRuns(session)
             run_ids = [row.run_id for row in task_rows]
+            # 任务列表里的「等待人工」行必须能进入那份唯一的人工详情，所以随行返回
+            # 当前仍未结束的人工事项标识；没有事项的任务保持为空，不伪造入口。
+            manual_item_ids: dict[str, str] = {}
+            if task_rows:
+                manual_rows = session.scalars(
+                    select(ProjectManualItemRow)
+                    .where(
+                        ProjectManualItemRow.task_id.in_(
+                            [row.id for row in task_rows]
+                        ),
+                        ProjectManualItemRow.status.in_(
+                            ("waiting", "resume_requested")
+                        ),
+                    )
+                    .order_by(ProjectManualItemRow.updated_at.desc())
+                ).all()
+                for manual in manual_rows:
+                    manual_item_ids.setdefault(str(manual.task_id), str(manual.id))
             latest_nodes: dict[str, str] = {}
+            latest_node_attempts: dict[str, datetime] = {}
             if run_ids:
                 events = session.scalars(
                     select(WorkflowRunEventRow)
@@ -321,6 +341,7 @@ class ProjectRunQueries:
                         and event.payload.get("status") in {"succeeded", "failed"}
                     ):
                         latest_nodes[event.run_id] = event.node_id
+                        latest_node_attempts[event.run_id] = aware(event.occurred_at)
             node_names: dict[str, dict[str, str]] = {}
             items: list[dict[str, Any]] = []
             for row in task_rows:
@@ -343,6 +364,12 @@ class ProjectRunQueries:
                         "batchStartedAt": aware(batch.created_at),
                         "inputIdentifier": _input_identifier(snapshot.inputs),
                         "endNodeName": None,
+                        "lastStatusAt": _last_status_at(
+                            row.created_at,
+                            run,
+                            latest_node_attempts.get(row.run_id),
+                        ),
+                        "manualItemId": manual_item_ids.get(str(row.id)),
                     }
                 )
                 node_id = latest_nodes.get(row.run_id)
@@ -718,6 +745,27 @@ def _sort_error(value: str) -> ProjectRunError:
     return ProjectRunError(
         "VALIDATION_ERROR", "排序字段无效", 422, {"fields": {"sort": value}}
     )
+
+
+def _last_status_at(
+    created_at: datetime,
+    run: Any,
+    last_node_attempt_at: datetime | None,
+) -> datetime:
+    """任务最近一次状态时间。
+
+    取任务创建、最近一次节点尝试、运行开始与运行结束四个真实事实中最新者；
+    不按剩余时间或客户端时钟推断，缺事实时退回到已经发生的那个时间点。
+    """
+    candidates = [aware(created_at)]
+    if last_node_attempt_at is not None:
+        candidates.append(aware(last_node_attempt_at))
+    if run is not None:
+        if run.started_at is not None:
+            candidates.append(aware(run.started_at))
+        if run.completed_at is not None:
+            candidates.append(aware(run.completed_at))
+    return max(candidates)
 
 
 def _operation(row: ProjectOperationRow) -> dict[str, Any]:

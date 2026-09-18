@@ -1,0 +1,386 @@
+{
+  "status": "passed",
+  "scenario": "PM5 环境页真实界面验收",
+  "scope": "管理侧及实际浏览器环境存取已验证；真实执行核心接入待验收",
+  "evidenceType": "真实 Electron 渲染层点击 + 应用自启 FastAPI + SQLite + CloakBrowser",
+  "notEvidence": [
+    "任务内真实浏览器执行（见 qa-pm5-browser-chain.py）",
+    "真实工作流执行核心（本链用隔离执行器把任务保持在排队态）",
+    "Studio demo"
+  ],
+  "gitHead": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+  "platform": "darwin",
+  "arch": "arm64",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace",
+  "checkpoints": [
+    "真实界面新建项目成功。",
+    "环境页四个分区在真实界面可见。",
+    "真实界面新建浏览器配置成功。",
+    "环境页在配置创建后仍正常渲染。",
+    "真实界面创建自动化，环境来源为指定浏览器配置。",
+    "真实界面启动运行并产生任务。",
+    "环境页运行环境列出真实任务实例。",
+    "「进入当前浏览器」真实拉起内核进程并占用实例工作副本。",
+    "任务页「结束并保留」保存登录环境并真实关闭原浏览器。",
+    "重命名抽屉保留环境事实，非法名称在提交前被阻止。",
+    "环境页四个分区完成同视口截图。",
+    "人工详情、完成二次确认与失败必填按原型呈现。",
+    "任务列表的人工入口指向同一份详情。",
+    "等待人工现场按原型呈现，测试注入资料已清理。",
+    "超时终态显示处理结果与历史现场，不显示不可用的提交表单。",
+    "读取失败与确实无数据分开呈现，重试后恢复真实数据。"
+  ],
+  "screenshots": [
+    {
+      "name": "01-environment-workspace",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/01-environment-workspace.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "02-profile-kernel-selected",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/02-profile-kernel-selected.png",
+      "route": "#/profiles",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "02-profile-created",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/02-profile-created.png",
+      "route": "#/profiles",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "03-environment-after-profile",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/03-environment-after-profile.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "04-automation-environment-policy",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/04-automation-environment-policy.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/automations/new",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "05-start-dialog",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/05-start-dialog.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/automations/7c6bd1b6-d24c-40b9-9c32-22cf027e5208",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "06-running-environment",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/06-running-environment.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "07-enter-current-browser",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/07-enter-current-browser.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "08-task-end-panel",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/08-task-end-panel.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/tasks/b2c911e0-117f-434d-97c6-cc3f3cc29856/logs",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "09-environment-saved",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/09-environment-saved.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/tasks/b2c911e0-117f-434d-97c6-cc3f3cc29856/logs",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "10-saved-environment-list",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/10-saved-environment-list.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "11-saved-environment-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/11-saved-environment-detail.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments/e89166f1-924c-579e-af0d-7d856fbe1c59",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "16-rename-drawer",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/16-rename-drawer.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments/e89166f1-924c-579e-af0d-7d856fbe1c59",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "17-rename-validation-blocked",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/17-rename-validation-blocked.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments/e89166f1-924c-579e-af0d-7d856fbe1c59",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "12-project-defaults",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/12-project-defaults.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "13-manual-items",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/13-manual-items.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "18-manual-waiting-live",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/18-manual-waiting-live.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "19-manual-directory",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/19-manual-directory.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "20-manual-list-tab",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/20-manual-list-tab.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "21-manual-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/21-manual-detail.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/f4555c2c-a1f4-4109-a69f-202e8bb3d530",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "22-manual-complete-confirm",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/22-manual-complete-confirm.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/f4555c2c-a1f4-4109-a69f-202e8bb3d530",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "23-manual-failure-required",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/23-manual-failure-required.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/f4555c2c-a1f4-4109-a69f-202e8bb3d530",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "24-task-list-manual-entry",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/24-task-list-manual-entry.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/tasks",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "25-manual-expired-list",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/25-manual-expired-list.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "26-manual-expired-result",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/26-manual-expired-result.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/runs/manual/54cbabf5-8361-470c-92b6-b7ff51e29cd7",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "14-directory-read-failed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/14-directory-read-failed.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "15-directory-read-recovered",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm5/docs/project-management/implementation/pm5/qa-runs/2026-09-18/15-directory-read-recovered.png",
+      "route": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    }
+  ],
+  "facts": {
+    "kernelVersion": "145.0.7632.109.2",
+    "sidecarModule": "tests.qa.pm5_sidecar",
+    "desktopLog": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/desktop.log",
+    "debugPort": "63311",
+    "environmentSections": [
+      "运行环境",
+      "等待人工",
+      "持久环境",
+      "项目默认资源"
+    ],
+    "environmentRoute": "#/projects/48606cff-e5e6-432b-9701-7c5762708728/environments",
+    "kernelOption": "公开版 · 145.0.7632.109.2",
+    "kernelSelected": "公开版 · 145.0.7632.109.2",
+    "projectId": "48606cff-e5e6-432b-9701-7c5762708728",
+    "workflowId": "ebf80282-5534-41e4-aeba-7fe6a8acb039",
+    "environmentPolicy": [
+      "继承项目默认",
+      "每个任务创建临时环境",
+      "关闭并清理临时环境"
+    ],
+    "workspaceKey": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace",
+    "taskId": "b2c911e0-117f-434d-97c6-cc3f3cc29856",
+    "taskStatus": "queued",
+    "instanceId": "12aa1701-6576-4211-8ab0-56254286f26f",
+    "instanceState": "active",
+    "browserHoldingInstance": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium --disable-field-trial-config --",
+    "browserKernel": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-lCdknU/workspace/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+    "instanceStateAfterOpen": "active",
+    "runStatusBeforeEnd": "queued",
+    "runGenerationBeforeEnd": 0,
+    "savedEnvironments": 1,
+    "runStatusAfterEnd": "queued",
+    "runGenerationAfterEnd": 0,
+    "closedAfterEnd": true,
+    "renameValidation": "空名称被界面阻止，未发出请求",
+    "injectedFixtures": [
+      "等待人工现场（a5ec0a74-45bf-4c93-95f4-ed185f82a7ee / f4555c2c-a1f4-4109-a69f-202e8bb3d530）为隔离 QA 工作区测试注入资料，截图后已删除",
+      "注入资料已在同一脚本内删除，清理后等待人工分区回到空态",
+      "超时终态注入资料已在同一脚本内删除，运行状态还原"
+    ],
+    "manualDetail": "运行记录「等待人工」页签、人工详情、完成确认与失败必填均由生产页面渲染；提交会写回原任务",
+    "manualEntry": "等待人工的任务行从「查看事项」进入同一份人工详情，其它任务仍进入任务详情",
+    "expiredFixture": "超时终态（54cbabf5-8361-470c-92b6-b7ff51e29cd7）为隔离 QA 工作区测试注入资料，运行状态随之置为 timed_out，截图后已删除"
+  },
+  "error": null,
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ],
+  "createdAt": "2026-09-18T06:05:22.719Z"
+}

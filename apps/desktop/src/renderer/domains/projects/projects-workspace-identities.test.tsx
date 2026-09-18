@@ -12,7 +12,7 @@ const project = {
   projectId: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee', name: '资料项目', description: '', managementRevision: 1,
   lifecycleState: 'active', defaultResources: { profileId: null, proxy: { mode: 'none' }, modelProviderId: null },
   createdAt: '2026-09-15T00:00:00Z', updatedAt: '2026-09-15T00:00:00Z', lastOpenedAt: null,
-  availability: { automations: 'available', data: 'available', runs: 'available', environments: 'notImplemented', statistics: 'notImplemented', sync: 'notImplemented' },
+  availability: { automations: 'available', data: 'available', runs: 'available', environments: 'available', statistics: 'notImplemented', sync: 'notImplemented' },
 } satisfies ProjectSummary
 
 class ResizeObserverStub { observe() {} unobserve() {} disconnect() {} }

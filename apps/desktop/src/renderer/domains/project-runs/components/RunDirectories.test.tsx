@@ -10,7 +10,7 @@ afterEach(cleanup)
 
 const batch = { batchId: 'batch-1', projectId: 'project-1', automationId: 'automation-1', automationName: '资料整理', startOperationId: 'operation-1', status: 'completed', statusRevision: 2, managementRevision: 1, requestedCount: 3, createdTaskCount: 3, activeTaskCount: 0, createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:03:00Z' }
 const batchPage = { items: [batch], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }
-const task = { taskId: 'task-1', taskOrdinal: 1, projectId: 'project-1', batchId: 'batch-1', runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, inputSnapshotId: 'snapshot-1', automationName: '资料整理', batchStartedAt: '2026-09-15T01:00:00Z', inputIdentifier: 'R001', endNodeName: '读取页面', createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:01:00Z' }
+const task = { taskId: 'task-1', taskOrdinal: 1, projectId: 'project-1', batchId: 'batch-1', runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, inputSnapshotId: 'snapshot-1', automationName: '资料整理', batchStartedAt: '2026-09-15T01:00:00Z', inputIdentifier: 'R001', endNodeName: '读取页面', lastStatusAt: '2026-09-15T01:00:30Z', createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:01:00Z' }
 
 describe('run directories', () => {
   it('renders persisted batches and opens the selected batch', async () => {
@@ -36,6 +36,28 @@ describe('run directories', () => {
     expect(screen.queryByText(/T0001/)).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: '查看任务' }))
     expect(onOpen).toHaveBeenCalledWith(task)
+  })
+
+  it('uses the approved task directory columns with the owning batch, node and latest status time', () => {
+    render(<TaskDirectory page={{ items: [task], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} batchOptions={[{ id: 'batch-1', name: '资料整理 · 2026/9/15 09:00:00' }]} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={vi.fn()} onRetry={vi.fn()}/>)
+    expect(screen.getByRole('columnheader', { name: '所属批次' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: /当前或结束节点/ })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: /时间最近状态时间/ })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: /任务 \/ 自动化/ })).toBeVisible()
+    const row = screen.getByText('读取页面').closest('tr')
+    expect(row).toHaveTextContent('资料整理')
+    // 时间列使用服务端返回的最近状态时间，不按客户端时钟推断。
+    expect(row?.querySelector('time')?.getAttribute('dateTime')).toBe('2026-09-15T01:00:30Z')
+  })
+
+  it('never invents a latest status time when the server has not reported one', () => {
+    const queued = { ...task, status: 'queued', completedAt: null, lastStatusAt: null }
+    render(<TaskDirectory page={{ items: [queued], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={vi.fn()} onRetry={vi.fn()}/>)
+    const row = screen.getByText('任务 1').closest('tr')
+    const cells = row?.querySelectorAll('td') ?? []
+    expect(row?.querySelector('time')).toBeNull()
+    // 时间列留空，不用批次时间或客户端时钟顶替最近状态时间。
+    expect(cells[cells.length - 2]).toHaveTextContent('—')
   })
 
   it('uses the approved batch task columns without repeating the owning batch', () => {

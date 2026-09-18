@@ -70,8 +70,10 @@ class ProjectBatchScheduler:
         factory: sessionmaker[Session],
         core: WorkflowRunDispatcher,
         gate: QuiesceGate,
+        environments: Any | None = None,
     ):
         self._factory, self._core, self._gate = factory, core, gate
+        self._environments = environments
         # One sidecar owns this database; serialize dispatch selection and stop admission.
         self._lock = asyncio.Lock()
         self._wake = asyncio.Event()
@@ -490,14 +492,6 @@ class ProjectBatchScheduler:
                     execution_generation=current.execution_generation,
                 )
 
-    def _claim_data_task(self, project_id: str, batch_id: str) -> str:
-        return self.claim_data_task(
-            self._factory,
-            project_id,
-            batch_id,
-            core_capacity=max(1, int(getattr(self._core, "capacity", 1))),
-        )
-
     @staticmethod
     def claim_data_task(
         factory: sessionmaker[Session],
@@ -505,6 +499,7 @@ class ProjectBatchScheduler:
         batch_id: str,
         *,
         core_capacity: int = 1,
+        environments: Any | None = None,
     ) -> str:
         """Prepare outside the write lock, then atomically commit one data Task."""
         prepared = ProjectBatchScheduler._prepare_data_claim(
@@ -519,13 +514,57 @@ class ProjectBatchScheduler:
                 prepared["inputPlan"],
                 candidate_offsets=prepared["candidateOffsets"],
             )
-        return ProjectBatchScheduler._commit_data_claim(
+        result = ProjectBatchScheduler._commit_data_claim(
             factory,
             project_id,
             batch_id,
             prepared,
             selection,
             core_capacity=core_capacity,
+            environments=environments,
+        )
+        return result
+
+    def _claim_data_task(self, project_id: str, batch_id: str) -> str:
+        result = self.claim_data_task(
+            self._factory,
+            project_id,
+            batch_id,
+            core_capacity=max(1, int(getattr(self._core, "capacity", 1))),
+            environments=self._environments,
+        )
+        if result == "ready" and self._environments is not None:
+            self._attach_claimed_environment(project_id, batch_id)
+        return result
+
+    def _attach_claimed_environment(self, project_id: str, batch_id: str) -> None:
+        if self._environments is None:
+            return
+        with self._factory() as session:
+            repository = SqlAlchemyProjectRuns(session)
+            batch = repository.batch_row(project_id, batch_id)
+            tasks = repository.list_tasks(project_id, batch_id)
+            if not tasks:
+                return
+            task = max(tasks, key=lambda item: item.created_at)
+            snapshots = session.scalars(
+                select(ProjectTaskInputSnapshotRow).where(
+                    ProjectTaskInputSnapshotRow.task_id == task.task_id
+                )
+            ).all()
+            inputs = {}
+            for row in snapshots:
+                for item in row.inputs or []:
+                    if isinstance(item, dict) and item.get("inputId"):
+                        inputs[item["inputId"]] = item
+            frozen = batch.frozen_request or {}
+            policy = frozen.get("environmentOverride") or frozen.get("automation", {}).get(
+                "environmentPolicy"
+            )
+        if not policy:
+            return
+        self._environments.attach_task_instance(
+            project_id, task.task_id, task.run_id, policy, inputs
         )
 
     @staticmethod
@@ -616,6 +655,7 @@ class ProjectBatchScheduler:
         selection: Any,
         *,
         core_capacity: int = 1,
+        environments: Any | None = None,
     ) -> str:
         with factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -801,6 +841,12 @@ class ProjectBatchScheduler:
                 )
             )
             session.flush()
+            if environments is not None:
+                policy = row.frozen_request["automation"]["environmentPolicy"]
+                environments.reserve_task_instance(
+                    session, project_id, task_id, run.run_id, policy,
+                    {item["inputId"]: item for item in inputs if item.get("inputId")},
+                )
             row.selection_outcome = {
                 "status": "ready",
                 "lastClaim": {

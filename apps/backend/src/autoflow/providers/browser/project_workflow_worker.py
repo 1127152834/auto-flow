@@ -137,8 +137,15 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
             with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):  # noqa: ASYNC230
                 from cloakbrowser import (  # type: ignore[import-untyped]
                     launch_context_async,
+                    launch_persistent_context_async,
                 )
-                context = await launch_context_async(**launch)
+                user_data_dir = browser.get("userDataDir")
+                if isinstance(user_data_dir, str) and user_data_dir:
+                    context = await launch_persistent_context_async(
+                        user_data_dir=user_data_dir, **launch
+                    )
+                else:
+                    context = await launch_context_async(**launch)
                 context.set_default_timeout(0)
                 context.set_default_navigation_timeout(0)
                 _write(stdout, _envelope(command, "ready"))

@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-17",
+  "status": "partially_verified",
+  "gitHead": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+  "workingTree": "uncommitted",
+  "platform": "macOS",
+  "scope": "Handoff inspection and targeted repairs; not PM5 delivery",
+  "verifiedBehaviors": [
+    "Real CloakBrowser login, explicit context close, save, new directory restore and authenticated /me response",
+    "Parameter start environment-capacity failure rolls back tasks, snapshots, runs, acceptance and reservations",
+    "Successful parameter start and identical retry reuse the same environment instance",
+    "Data claim environment-reservation failure rolls back task, run, snapshot and record leases",
+    "Real SQLite running Run resolves its owned instance path into BrowserLease; stopped Run is rejected",
+    "Concurrent link revision rejects stale write and rolls back preceding record changes in the group"
+  ],
+  "targetedTestCommand": "AUTOFLOW_TEST_CLOAKBROWSER=<installed-test-kernel> uv run --directory apps/backend pytest tests/integration/test_project_run_start.py tests/integration/test_project_data_scheduler.py tests/contract/test_project_environments.py tests/unit/test_workflow_browser_resources.py tests/unit/test_project_run_resources.py tests/integration/test_environment_persist_restore.py tests/unit/test_environment_store.py tests/unit/test_persistent_context.py -q --tb=short",
+  "targetedResult": {"passed": 77, "failed": 0, "warnings": 2, "seconds": 24.74},
+  "checks": {
+    "limitedRuff": "passed",
+    "gitDiffCheck": "passed",
+    "desktopBuild": "passed_with_warnings",
+    "fullMypy": "failed; latest run 17 errors in 5 files before final targeted changes",
+    "fullEngineeringExit": "not_executed"
+  },
+  "uiEvidence": {
+    "screenshot": "qa-runs/resume-profile-blocked.png",
+    "httpNegativeTest": "qa-runs/resume-start-rejection.json",
+    "profileCreatedThroughUi": "2c1fa094-63d8-4bb4-a895-82d48682d6b9",
+    "completeUiChain": "not_passed",
+    "note": "Old saved environment retains placeholder profile reference. Direct HTTP rejection is not user-path E2E. QA Electron backend predates final source changes and must restart before further validation."
+  },
+  "review": {
+    "status": "blockers_open",
+    "resolvedInTargetedTests": ["Run directory handoff", "stale association CAS"],
+    "remaining": [
+      "Save must validate authoritative Run execution generation and task/instance ownership",
+      "End must confirm actual browser close before file copy and cleanup",
+      "Instance opener/closer requires real runtime wiring",
+      "End/save stage recovery and stable child operation identity",
+      "Full association lease, evidence and operation atomicity"
+    ]
+  },
+  "notVerified": ["Production workflow execution core", "Complete management End/login reuse E2E", "Prototype visual acceptance", "Windows", "Other architectures", "Packaged application", "User manual acceptance"]
+}

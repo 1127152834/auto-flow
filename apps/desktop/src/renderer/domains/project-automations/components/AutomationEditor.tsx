@@ -28,7 +28,7 @@ export type AutomationEditorProps = {
   error?: string
   serverErrors?: Record<string, string | undefined>
   validationNotice?: ReactNode
-  environmentOptions: Pick<EnvironmentPolicyEditorProps, 'profiles' | 'proxies' | 'pools' | 'modelProviders' | 'projectDefaults'>
+  environmentOptions: Pick<EnvironmentPolicyEditorProps, 'profiles' | 'proxies' | 'pools' | 'modelProviders' | 'projectDefaults' | 'environments'>
   renderInputPlan(value: AutomationWrite['inputPlan'], onChange: (value: AutomationWrite['inputPlan']) => void, disabled: boolean, draft: { resetKey: string; errors: Record<string, string | undefined>; onDraftStateChange(state: DraftState): void }): ReactNode
   onSubmit(value: AutomationWrite): void | Promise<void>
   onCancel(): void

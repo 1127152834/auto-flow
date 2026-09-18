@@ -101,6 +101,29 @@ def start(services, max_tasks=1):
     )[0]
 
 
+def test_environment_reservation_failure_rolls_back_data_task_and_run(data_services):
+    from autoflow.domain.environments.rules import environment_error
+    from autoflow.domain.projects.models import ProjectError
+
+    class UnavailableEnvironment:
+        def reserve_task_instance(self, *args, **kwargs):
+            raise environment_error("CAPACITY_EXHAUSTED", "No environment capacity", 429)
+
+        def attach_task_instance(self, *args, **kwargs):
+            raise environment_error("CAPACITY_EXHAUSTED", "No environment capacity", 429)
+
+    factory, project, _, _, _, _, scheduler = data_services
+    batch = start(data_services)
+    scheduler._environments = UnavailableEnvironment()
+    with pytest.raises(ProjectError) as failure:
+        scheduler._claim_data_task(project, batch.batch_id)
+    assert failure.value.code == "CAPACITY_EXHAUSTED"
+    with factory() as session:
+        for model in (ProjectTaskRow, WorkflowRunRow, ProjectTaskInputSnapshotRow,
+                      ProjectRecordLeaseRow):
+            assert session.scalar(select(func.count()).select_from(model)) == 0
+
+
 def test_candidate_page_cursor_walks_page_pairs_without_diagonal_skips(monkeypatch):
     import autoflow.application.project_runs.scheduler as scheduler_module
 

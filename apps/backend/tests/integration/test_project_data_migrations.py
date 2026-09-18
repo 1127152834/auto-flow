@@ -86,7 +86,7 @@ def test_pm2_upgrade_preserves_projects_and_has_one_head(tmp_path, existing):
     path = tmp_path / "data.sqlite3"
     config = config_for(path)
 
-    assert ScriptDirectory.from_config(config).get_heads() == ["0013_merge_project_runtime"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm07_environments"]
 
     before = []
     if existing:
@@ -321,6 +321,6 @@ def test_failed_upgrade_rolls_back_ddl_and_can_restart(tmp_path, starting_revisi
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchone() == ("0013_merge_project_runtime",)
+        ).fetchone() == ("pm07_environments",)
 
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

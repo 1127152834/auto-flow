@@ -55,12 +55,12 @@ it('switches all proxy branches and removes ids from the previous branch', async
   }
 })
 
-it('keeps fixed and linked environment sources visible but unavailable', () => {
+it('keeps all three environment sources available', () => {
   const p = props()
-  render(<EnvironmentPolicyEditor {...p}/>)
-  expect(screen.getByRole('radio', { name: /固定持久环境/ })).toBeDisabled()
-  expect(screen.getByRole('radio', { name: /使用记录关联环境/ })).toBeDisabled()
-  expect(screen.getByText('任务结束后关闭并清理临时环境')).toBeVisible()
+  render(<EnvironmentPolicyEditor {...p} environments={[{ id: internal, name: '登录环境' }]} />)
+  expect(screen.getByRole('radio', { name: '固定保存环境' })).toBeEnabled()
+  expect(screen.getByRole('radio', { name: '使用记录关联环境' })).toBeEnabled()
+  expect(screen.getByText('任务结束后关闭并清理临时环境，除非明确保留。')).toBeVisible()
   expect(screen.getByRole('combobox', { name: '模型提供方' })).toHaveAttribute('data-choice-value', 'inherit')
   expect(p.onChange).not.toHaveBeenCalled()
 })
@@ -69,7 +69,7 @@ it('preserves a saved unsupported source and never coerces it on render', () => 
   const value: Policy = { source: 'fixedEnvironment', environmentId: internal, proxyOverride: { mode: 'none' } }
   const p = props(value)
   render(<EnvironmentPolicyEditor {...p}/>)
-  expect(screen.getByText('已保存的环境引用暂不可用')).toBeVisible()
+  expect(screen.getByRole('combobox', { name: '保存环境' })).toHaveAttribute('data-choice-value', internal)
   expect(document.body.textContent).not.toContain(internal)
   expect(p.onChange).not.toHaveBeenCalled()
 })

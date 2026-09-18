@@ -1,0 +1,58 @@
+{
+  "status": "partial",
+  "scenario": "PM5 management UI end-to-end",
+  "scope": "管理侧真实 Electron + FastAPI + SQLite 已打开并走完项目/数据/环境/自动化界面；真实 CloakBrowser 登录存取与生产执行核心未验收",
+  "gitHead": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+  "platform": "darwin",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm5-ui-qa-qst8mgd6/workspace",
+  "projectId": "0b4af061-0693-42c8-8097-f74850b3e965",
+  "environmentId": "f8c567f1-3631-4e15-b7e8-231e889ff175",
+  "automationId": "f76dd007-0d20-4b5f-bf6a-05291a6345db",
+  "debugPort": 9333,
+  "appKeptOpen": true,
+  "passed": [
+    "真实界面新建项目 PM5 UI 端到端验证，重启后从全部项目找回",
+    "环境页四分区：保存环境空态、运行环境空态、待人工处理空态、默认资源未指定",
+    "真实界面新建账号表、必填字段账号名称、保存 1 条记录主账号；重启后仍在",
+    "保存环境目录展示名称/备注/就绪/内容代次，详情可重命名为 主账号环境（元数据修订 2）",
+    "维护打开出现占用中与删除阻止；放弃维护后恢复未占用",
+    "搜索 主账号 能找回保存环境",
+    "自动化三种来源可点选；记录关联环境显示 账号输入；固定保存环境自动选中 主账号环境",
+    "自动化 登录环境演示 已保存，策略为 fixedEnvironment"
+  ],
+  "failed": [
+    "启动对话框仍用 ENVIRONMENT_SOURCE_NOT_SUPPORTED 拦截非 newFromProfile；资源摘要写成 需修改环境来源",
+    "无匹配搜索结果文案误显示 还没有保存环境",
+    "保存成功后实例曾停在 saving，运行环境目录露出历史实例",
+    "启动被资源/内核缺失拦住，未走到任务详情结束保留面板",
+    "未跑真实 CloakBrowser 登录保存/关闭/恢复"
+  ],
+  "fixesAppliedAfterUi": [
+    "save_environment 成功后把实例收回 closed",
+    "运行环境目录只显示活动态实例",
+    "空搜索与无匹配文案分开",
+    "去掉启动校验对三种来源的 PM4 硬拦截，并改正启动摘要环境标签"
+  ],
+  "screenshots": [
+    "03-manual-empty.png",
+    "04-defaults.png",
+    "05-policy-input-environment.png",
+    "06-saved-list.png",
+    "07-environment-detail.png",
+    "08-maintenance-occupied.png",
+    "09-running-instances.png",
+    "10-policy-fixed-environment.png",
+    "11-start-blocked-source.png",
+    "12-runs-empty.png"
+  ],
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器登录存取",
+    "11 项正式验收关闭",
+    "Windows",
+    "打包应用",
+    "用户手动执行结果"
+  ],
+  "createdAt": "2026-09-17T01:28:00+08:00"
+}

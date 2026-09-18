@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0013_merge_project_runtime"
+EXPECTED_HEAD = "pm07_environments"
 
 
 def _config(path: Path) -> Config:

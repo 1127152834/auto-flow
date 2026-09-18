@@ -170,38 +170,29 @@ def test_revision_conflict_is_distinct_and_environment_override_is_frozen():
         )
 
 
-@pytest.mark.parametrize(
-    ("configured", "override", "field"),
-    [
-        (
-            {
-                "source": "fixedEnvironment",
-                "environmentId": "00000000-0000-0000-0000-000000000010",
-            },
-            None,
-            "environmentPolicy.source",
-        ),
-        (
-            {"source": "newFromProfile"},
-            {
-                "source": "inputEnvironment",
-                "inputId": "00000000-0000-0000-0000-000000000011",
-            },
-            "environmentOverride.source",
-        ),
-    ],
-)
-def test_start_rejects_an_effective_environment_that_is_not_new_from_profile(
-    configured, override, field
-):
+def test_start_accepts_fixed_environment_and_rejects_input_source_without_data():
     selected = automation()
-    object.__setattr__(selected, "environment_policy", configured)
-    payload = request(
-        **({"environmentOverride": override} if override is not None else {})
+    object.__setattr__(
+        selected,
+        "environment_policy",
+        {
+            "source": "fixedEnvironment",
+            "environmentId": "00000000-0000-0000-0000-000000000010",
+        },
     )
+    started = validate_batch_start(selected, request())
+    assert started.environment_override is None
     with pytest.raises(ProjectRunError) as error:
-        validate_batch_start(selected, payload)
-    assert field in error.value.details["fields"]
+        validate_batch_start(
+            automation(),
+            request(
+                environmentOverride={
+                    "source": "inputEnvironment",
+                    "inputId": "00000000-0000-0000-0000-000000000011",
+                }
+            ),
+        )
+    assert "environmentOverride.inputId" in error.value.details["fields"]
 
 
 def test_environment_override_cannot_bypass_the_project_input_gate():

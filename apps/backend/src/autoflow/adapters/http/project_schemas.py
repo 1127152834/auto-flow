@@ -65,7 +65,7 @@ class ProjectCapabilities(ApiModel):
     automations: Literal["available"]
     data: Literal["available"]
     runs: Literal["available"]
-    environments: Literal["notImplemented"]
+    environments: Literal["available"]
     statistics: Literal["notImplemented"]
     sync: Literal["notImplemented"]
 

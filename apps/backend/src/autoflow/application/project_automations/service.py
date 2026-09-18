@@ -151,14 +151,6 @@ class ProjectAutomationService:
                         "Workflow could not be inspected",
                     )
                 )
-        if automation.environment_policy["source"] != "newFromProfile":
-            issues.append(
-                ValidationIssue(
-                    ["environmentPolicy", "source"],
-                    "ENVIRONMENT_SOURCE_NOT_SUPPORTED",
-                    "当前仅支持从浏览器配置创建临时环境",
-                )
-            )
         for item in self.resource_query.inspect_resources(automation):
             issues.append(
                 ValidationIssue(
@@ -206,7 +198,6 @@ class ProjectAutomationService:
                 )
         blocker_codes = {
             "PM4_INPUTS_NOT_SUPPORTED",
-            "ENVIRONMENT_SOURCE_NOT_SUPPORTED",
             "WORKFLOW_NOT_FOUND",
             "WORKFLOW_UNAVAILABLE",
             "CAPABILITY_UNAVAILABLE",

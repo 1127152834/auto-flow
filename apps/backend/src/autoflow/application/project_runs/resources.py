@@ -19,12 +19,17 @@ class ProjectRunResourceResolver:
         self,
         resource_query: ProjectAutomationResourceQuery,
         browser_resources: WorkflowBrowserResources,
+        environments: Any | None = None,
     ) -> None:
         self._query = resource_query
         self._browser = browser_resources
+        self._environments = environments
 
     def __call__(
-        self, automation: AutomationRecord, project_defaults: dict[str, Any]
+        self,
+        automation: AutomationRecord,
+        project_defaults: dict[str, Any],
+        inputs: dict[str, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         issues = self._query.inspect_resources(automation)
         if issues:
@@ -36,20 +41,33 @@ class ProjectRunResourceResolver:
             )
 
         policy = automation.environment_policy
-        if policy.get("source") != "newFromProfile":
-            raise _field_error(
-                "environmentPolicy.source", "当前运行仅支持按浏览器配置新建临时环境"
-            )
-        profile_id = policy.get("profileId") or project_defaults.get("profileId")
-        if not isinstance(profile_id, str) or not profile_id:
-            raise _field_error("environmentPolicy.profileId", "请选择浏览器配置")
-
+        source = policy.get("source")
+        if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
+            raise _field_error("environmentPolicy.source", "无效的环境来源")
         proxy = _effective_proxy(policy, project_defaults)
         model_provider_id = (
             policy["modelProviderId"]
             if "modelProviderId" in policy
             else project_defaults.get("modelProviderId")
         )
+        profile_id = policy.get("profileId") or project_defaults.get("profileId")
+        pinned = None
+        if source == "fixedEnvironment":
+            if self._environments is None:
+                raise _field_error("environmentPolicy.source", "保存环境尚未接入")
+            pinned = self._environments.resolve(automation.project_id, policy)
+            profile_id = pinned.profile_id
+        elif source == "inputEnvironment":
+            if self._environments is None:
+                raise _field_error("environmentPolicy.source", "保存环境尚未接入")
+            if inputs:
+                pinned = self._environments.resolve(
+                    automation.project_id, policy, inputs=inputs
+                )
+                profile_id = pinned.profile_id
+        if not isinstance(profile_id, str) or not profile_id:
+            raise _field_error("environmentPolicy.profileId", "请选择浏览器配置")
+
         try:
             request = self._browser.freeze(
                 profile_id,
@@ -63,6 +81,15 @@ class ProjectRunResourceResolver:
                 422,
                 {"retryable": False},
             ) from error
+        if pinned is not None:
+            request = {
+                **request,
+                "browser": "persistent",
+                "environmentRef": pinned.environment_ref.to_dict() if pinned.environment_ref else None,
+                "identityPackage": pinned.identity_package,
+            }
+        elif source == "inputEnvironment":
+            request = {**request, "environmentResolution": "atTaskStart"}
         return {
             **request,
             "automaticExecutionTimeoutSeconds": automation.run_policy[

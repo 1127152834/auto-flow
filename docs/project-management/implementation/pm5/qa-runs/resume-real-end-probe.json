@@ -1,0 +1,9 @@
+{
+  "scenario": "real browser login then management HTTP End",
+  "evidenceType": "HTTP with real browser; not Electron UI E2E",
+  "login": true,
+  "browserClosedByEnd": false,
+  "restore": "not_executed",
+  "exceptionType": "Error",
+  "passed": false
+}

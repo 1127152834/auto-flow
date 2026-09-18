@@ -167,6 +167,37 @@ def test_resource_issues_block_freezing_and_keep_structured_locations():
     assert browser.calls == []
 
 
+def test_fixed_environment_freezes_persistent_source():
+    class Environments:
+        def resolve(self, project_id, policy, inputs=None):
+            from autoflow.domain.environments.models import (
+                EnvironmentRef,
+                ResolvedEnvironmentSource,
+            )
+
+            return ResolvedEnvironmentSource(
+                "fixedEnvironment",
+                EnvironmentRef(project_id, policy["environmentId"], 4, 1),
+                "env-profile",
+                {"source": "fixedEnvironment", "environmentId": policy["environmentId"]},
+            )
+
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser, Environments())
+    request = resolver(
+        automation(
+            {
+                "source": "fixedEnvironment",
+                "environmentId": "00000000-0000-0000-0000-000000000010",
+            }
+        ),
+        DEFAULTS,
+    )
+    assert request["browser"] == "persistent"
+    assert request["environmentRef"]["contentGeneration"] == 4
+    assert browser.calls[0][0] == "env-profile"
+
+
 def test_rejects_missing_effective_profile_without_freezing():
     browser = BrowserResources()
     resolver = ProjectRunResourceResolver(ResourceQuery(), browser)
