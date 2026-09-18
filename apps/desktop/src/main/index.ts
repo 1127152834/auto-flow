@@ -6,6 +6,7 @@ import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
 import { createOpenExternalLinkHandler } from './ipc/external-links'
+import { createConnectGoogleSheetsHandler } from './google-desktop'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
 import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
@@ -69,6 +70,23 @@ async function createWindow(): Promise<void> {
   }))
   ipcMain.removeHandler('autoflow:open-external-link')
   ipcMain.handle('autoflow:open-external-link', createOpenExternalLinkHandler({ allowedSenderId: mainWindow.webContents.id, openExternal: url => shell.openExternal(url) }))
+  ipcMain.removeHandler('autoflow:google-sheets:connect')
+  ipcMain.handle('autoflow:google-sheets:connect', createConnectGoogleSheetsHandler({
+    allowedSenderId: mainWindow.webContents.id,
+    getSidecarStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
+    chooseConfigFile: async () => {
+      const picked = await dialog.showOpenDialog(mainWindow!, {
+        title: '选择 Google 连接配置',
+        properties: ['openFile'],
+        filters: [{ name: 'Google JSON 配置', extensions: ['json'] }],
+      })
+      if (picked.canceled || !picked.filePaths.length) return null
+      if (picked.filePaths.length !== 1 || !picked.filePaths[0]?.toLowerCase().endsWith('.json')) throw new Error('请选择一个 JSON 配置文件。')
+      return picked.filePaths[0]
+    },
+    openExternal: url => shell.openExternal(url),
+    request: fetch,
+  }))
   ipcMain.removeHandler('autoflow:reveal-kernel')
   ipcMain.handle('autoflow:reveal-kernel', createRevealKernelHandler({
     allowedSenderId: mainWindow.webContents.id,
