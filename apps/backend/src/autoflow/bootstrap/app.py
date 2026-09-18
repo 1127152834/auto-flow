@@ -42,6 +42,9 @@ from autoflow.application.project_runs.evidence import ProjectRunEvidence
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
+from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.connections import SheetsConnectionService
+from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.service import WorkflowService
@@ -333,6 +336,12 @@ def create_app(
     )
     app.state.environment_browser = environment_browser
     app.state.environment_service = environment_service
+    sheets_connections = SheetsConnectionService(session_factory, credentials)
+    sheets_bindings = SheetsBindingService(session_factory, sheets_connections)
+    sheets_sync = SheetsSyncService(session_factory, sheets_bindings)
+    app.state.sheets_connections = sheets_connections
+    app.state.sheets_bindings = sheets_bindings
+    app.state.sheets_sync = sheets_sync
 
     project_workflow_dispatcher = configure_project_workflow_runtime(
         app,
@@ -514,6 +523,9 @@ def create_app(
         status_batches=status_batch_service,
         excel=project_excel, imports=excel_imports, exports=excel_exports,
         environments=environment_service,
+        sheets_connections=sheets_connections,
+        sheets_bindings=sheets_bindings,
+        sync=sheets_sync,
     ))
 
     @app.middleware("http")

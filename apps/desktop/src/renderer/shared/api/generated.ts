@@ -2173,6 +2173,230 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/sheets/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Connections */
+        get: operations["list_connections_api_v1_projects__projectId__sheets_connections_get"];
+        put?: never;
+        /** Create Connection */
+        post: operations["create_connection_api_v1_projects__projectId__sheets_connections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/sheets/connections/{connectionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Connection */
+        delete: operations["delete_connection_api_v1_projects__projectId__sheets_connections__connectionId__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inspect */
+        post: operations["inspect_api_v1_projects__projectId__tables__tableId__sheets_inspect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/binding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Binding */
+        get: operations["read_binding_api_v1_projects__projectId__tables__tableId__sheets_binding_get"];
+        /** Put Binding */
+        put: operations["put_binding_api_v1_projects__projectId__tables__tableId__sheets_binding_put"];
+        post?: never;
+        /** Delete Binding */
+        delete: operations["delete_binding_api_v1_projects__projectId__tables__tableId__sheets_binding_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sync State */
+        get: operations["sync_state_api_v1_projects__projectId__tables__tableId__sync_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync/pull": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pull */
+        post: operations["pull_api_v1_projects__projectId__tables__tableId__sync_pull_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Push */
+        post: operations["push_api_v1_projects__projectId__tables__tableId__sync_push_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pause */
+        post: operations["pause_api_v1_projects__projectId__tables__tableId__sync_pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume */
+        post: operations["resume_api_v1_projects__projectId__tables__tableId__sync_resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync-operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Operations */
+        get: operations["list_operations_api_v1_projects__projectId__tables__tableId__sync_operations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync-operations/{syncOperationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Operation */
+        get: operations["read_operation_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync-operations/{syncOperationId}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile */
+        post: operations["reconcile_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sync-operations/{syncOperationId}/abandon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Abandon */
+        post: operations["abandon_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__abandon_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflows/{workflow_id}/execute": {
         parameters: {
             query?: never;
@@ -6985,6 +7209,182 @@ export type components = {
             /** Latestoperation */
             latestOperation?: string | null;
         };
+        /** SheetsBinding */
+        SheetsBinding: {
+            /** Connectionid */
+            connectionId: string;
+            /** Spreadsheetid */
+            spreadsheetId: string;
+            /** Sheetid */
+            sheetId: number;
+            /** Bindingepoch */
+            bindingEpoch: number;
+            identityStrategy: components["schemas"]["SheetsIdentityStrategy"];
+            /** Mapping */
+            mapping: components["schemas"]["SheetsMappingEntry"][];
+            /** Syncpaused */
+            syncPaused: boolean;
+        };
+        /** SheetsBindingDelete */
+        SheetsBindingDelete: {
+            /** Impactrevision */
+            impactRevision: number;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+        };
+        /** SheetsBindingWrite */
+        SheetsBindingWrite: {
+            /** Connectionid */
+            connectionId: string;
+            /** Spreadsheetid */
+            spreadsheetId: string;
+            /** Sheetid */
+            sheetId: number;
+            identityStrategy: components["schemas"]["SheetsIdentityStrategy"];
+            /** Mapping */
+            mapping: components["schemas"]["SheetsMappingEntry"][];
+            /** Impactrevision */
+            impactRevision: number;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+            /** Expectedbindingepoch */
+            expectedBindingEpoch?: number | null;
+        };
+        /** SheetsColumn */
+        SheetsColumn: {
+            /** Columnid */
+            columnId: string;
+            /** Name */
+            name: string;
+            /** Formula */
+            formula: boolean;
+        };
+        /** SheetsConnection */
+        SheetsConnection: {
+            /** Connectionid */
+            connectionId: string;
+            /** Accountlabel */
+            accountLabel: string;
+            /**
+             * Credentialstate
+             * @enum {string}
+             */
+            credentialState: "available" | "missing" | "invalid";
+            /** Readable */
+            readable: boolean;
+            /** Writable */
+            writable: boolean;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** SheetsConnectionCreate */
+        SheetsConnectionCreate: {
+            /** Accountlabel */
+            accountLabel: string;
+            /** Authorizationtoken */
+            authorizationToken: string;
+        };
+        /** SheetsConnectionDelete */
+        SheetsConnectionDelete: {
+            /** Impactrevision */
+            impactRevision: number;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "disconnect" | "forgetCredential";
+        };
+        /** SheetsConnectionDirectory */
+        SheetsConnectionDirectory: {
+            /** Items */
+            items: components["schemas"]["SheetsConnection"][];
+        };
+        /** SheetsIdentityStrategy */
+        SheetsIdentityStrategy: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "column" | "system";
+            /** Columnid */
+            columnId?: string | null;
+        };
+        /** SheetsIdentitySummary */
+        SheetsIdentitySummary: {
+            /** Unique */
+            unique: boolean;
+            /** Missing */
+            missing: number;
+            /** Duplicates */
+            duplicates: number;
+        };
+        /** SheetsInspection */
+        SheetsInspection: {
+            /** Valid */
+            valid: boolean;
+            /** Issues */
+            issues: components["schemas"]["SheetsIssue"][];
+            /** Columns */
+            columns: components["schemas"]["SheetsColumn"][];
+            identitySummary: components["schemas"]["SheetsIdentitySummary"];
+            /** Overlaps */
+            overlaps: components["schemas"]["SheetsOverlap"][];
+        };
+        /** SheetsInspectionCreate */
+        SheetsInspectionCreate: {
+            /** Connectionid */
+            connectionId: string;
+            /** Spreadsheetid */
+            spreadsheetId: string;
+            /** Sheetid */
+            sheetId: number;
+            identityStrategy: components["schemas"]["SheetsIdentityStrategy"];
+            /** Mapping */
+            mapping: components["schemas"]["SheetsMappingEntry"][];
+        };
+        /** SheetsInspectionResult */
+        SheetsInspectionResult: {
+            /** Operation */
+            operation: {
+                [key: string]: unknown;
+            };
+            inspection: components["schemas"]["SheetsInspection"];
+        };
+        /** SheetsIssue */
+        SheetsIssue: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Columnid */
+            columnId?: string | null;
+        };
+        /** SheetsMappingEntry */
+        SheetsMappingEntry: {
+            /** Fieldid */
+            fieldId: string;
+            /** Columnid */
+            columnId: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "read" | "write" | "both";
+            /** Formula */
+            formula: boolean;
+        };
+        /** SheetsOverlap */
+        SheetsOverlap: {
+            /** Projectid */
+            projectId: string;
+            /** Tableid */
+            tableId: string;
+            /** Columnids */
+            columnIds: string[];
+        };
         /** SourceDefaultProxy */
         SourceDefaultProxy: {
             /**
@@ -7140,6 +7540,104 @@ export type components = {
             key: string;
             value: components["schemas"]["JsonValue"];
         };
+        /** SyncAbandonRequest */
+        SyncAbandonRequest: {
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+            /** Reason */
+            reason: string;
+        };
+        /** SyncEvidence */
+        SyncEvidence: {
+            /**
+             * Checkedat
+             * Format: date-time
+             */
+            checkedAt: string;
+            /** Target */
+            target: string;
+            /** Fields */
+            fields: string[];
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "matched" | "notMatched" | "ambiguous";
+        };
+        /** SyncOperation */
+        SyncOperation: {
+            /** Syncoperationid */
+            syncOperationId: string;
+            /** Projectid */
+            projectId: string;
+            /** Tableid */
+            tableId: string;
+            record?: components["schemas"]["DataRecordRef"] | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "pull" | "push" | "reconcile" | "binding" | "column" | "systemIdentity";
+            /** Bindingepoch */
+            bindingEpoch: number;
+            /** Targetcontentrevision */
+            targetContentRevision?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "notApplicable" | "idle" | "pending" | "sending" | "verifying" | "confirmed" | "failed" | "unknown" | "paused";
+            /** Statusrevision */
+            statusRevision: number;
+            /** Operationid */
+            operationId?: string | null;
+            evidence?: components["schemas"]["SyncEvidence"] | null;
+            /** Error */
+            error?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** SyncOperationPage */
+        SyncOperationPage: {
+            /** Items */
+            items: components["schemas"]["SyncOperation"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+        };
+        /** SyncPauseRequest */
+        SyncPauseRequest: {
+            /** Expectedbindingepoch */
+            expectedBindingEpoch: number;
+        };
+        /** SyncPullRequest */
+        SyncPullRequest: {
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+        };
+        /** SyncPushRequest */
+        SyncPushRequest: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "due" | "allPending";
+            /** Expectedbindingepoch */
+            expectedBindingEpoch: number;
+        };
         /** SyncSnapshot */
         SyncSnapshot: {
             /** Last Synced At */
@@ -7158,6 +7656,30 @@ export type components = {
             /** Remote Missing Count */
             remote_missing_count: number;
             last_error?: components["schemas"]["ApiError"] | null;
+        };
+        /** SyncStateView */
+        SyncStateView: {
+            summary: components["schemas"]["SyncSummary"];
+            binding?: components["schemas"]["SheetsBinding"] | null;
+        };
+        /** SyncStatusRevisionRequest */
+        SyncStatusRevisionRequest: {
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+        };
+        /** SyncSummary */
+        SyncSummary: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "notApplicable" | "idle" | "pending" | "sending" | "verifying" | "confirmed" | "failed" | "unknown" | "paused";
+            /** Pendingcount */
+            pendingCount: number;
+            /** Unknowncount */
+            unknownCount: number;
+            /** Lastconfirmedat */
+            lastConfirmedAt?: string | null;
         };
         /** SystemExcelIdentity */
         SystemExcelIdentity: {
@@ -17486,6 +18008,1039 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_connections_api_v1_projects__projectId__sheets_connections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SheetsConnectionDirectory"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_connection_api_v1_projects__projectId__sheets_connections_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsConnectionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    delete_connection_api_v1_projects__projectId__sheets_connections__connectionId__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                connectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsConnectionDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    inspect_api_v1_projects__projectId__tables__tableId__sheets_inspect_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsInspectionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SheetsInspectionResult"] | components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_binding_api_v1_projects__projectId__tables__tableId__sheets_binding_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SheetsBinding"] | null;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    put_binding_api_v1_projects__projectId__tables__tableId__sheets_binding_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsBindingWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    delete_binding_api_v1_projects__projectId__tables__tableId__sheets_binding_delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsBindingDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    sync_state_api_v1_projects__projectId__tables__tableId__sync_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncStateView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pull_api_v1_projects__projectId__tables__tableId__sync_pull_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncPullRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    push_api_v1_projects__projectId__tables__tableId__sync_push_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncPushRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pause_api_v1_projects__projectId__tables__tableId__sync_pause_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncPauseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncStateView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    resume_api_v1_projects__projectId__tables__tableId__sync_resume_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncPauseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncStateView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_operations_api_v1_projects__projectId__tables__tableId__sync_operations_get: {
+        parameters: {
+            query?: {
+                status?: ("pending" | "sending" | "verifying" | "confirmed" | "failed" | "unknown" | "paused") | null;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOperationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    read_operation_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                syncOperationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOperation"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    reconcile_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__reconcile_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                syncOperationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncStatusRevisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    abandon_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__abandon_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                syncOperationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncAbandonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOperation"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
