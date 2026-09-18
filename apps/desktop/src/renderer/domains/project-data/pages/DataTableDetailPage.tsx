@@ -61,6 +61,7 @@ import { emptyRecordQuery, parseRecordQuery, recordQueryDraft, type FilterExpres
 import { createRecordsApi, type RecordKey } from "../records-api";
 import { createExcelApi } from "../excel-api";
 import { createProjectFileClient } from "../project-file-client";
+import { createSheetsApi } from "../sheets-api";
 import { createStatusBatchApi } from "../status-batch-api";
 import type { DataTableTab } from "../types";
 import {
@@ -482,6 +483,7 @@ function DataTableDetail({
     return current.workspaceKey === workspaceKey && current.projectId === projectId && current.tableId === tableId && current.instanceId === instanceId && current.client === client && !current.disabled;
   }), [client, instanceId, projectId, tableId, workspaceKey]);
   const excelApi = useMemo(() => createExcelApi(client, files, projectId), [client, files, projectId]);
+  const sheetsApi = useMemo(() => createSheetsApi(client, window.autoflow, projectId), [client, projectId]);
   const statusBatchApi = useMemo(() => createStatusBatchApi(client, projectId, tableId), [client, projectId, tableId]);
   useLayoutEffect(() => {
     editorDirtyRef.current = editorDirty;
@@ -815,7 +817,10 @@ function DataTableDetail({
             onRetryUsage={() => void statusUsageQuery.refetch()} />}
         </TabsContent>
         <TabsContent value="source">
-          <DataTableSourcePanel table={table} readonly={!writable} disabled={disabled || Boolean(workflow)} onReimport={() => openWorkflow("replace")} />
+          <DataTableSourcePanel table={table} readonly={!writable} disabled={disabled || Boolean(workflow)} onReimport={() => openWorkflow("replace")}
+            sheets={{ api: sheetsApi, projectId, scopeKey: stableWorkflowScope, contextKey: workflowContext, tableId, tableName: table.name,
+              tableRevision: table.tableRevision, datasetGeneration: table.datasetGeneration, fields,
+              onChanged: () => { void tableQuery.refetch(); void catalogQuery.refetch() } }} />
         </TabsContent>
         <TabsContent value="settings">
           <TableSettingsForm key={editing.editor?.kind === "tableEdit" ? editing.editor.session : `${stableWorkflowScope}:settings-readonly`}

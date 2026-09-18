@@ -6378,7 +6378,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "createSheetsConnection" | "deleteSheetsConnection" | "inspectSheets" | "bindSheets" | "unbindSheets" | "pullSheets" | "pushSheets" | "reconcileSheets";
             /**
              * Status
              * @enum {string}
@@ -6389,7 +6389,7 @@ export type components = {
             /** Resource */
             resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["ProjectBatchResult"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["ProjectBatchResult"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | components["schemas"]["SyncRunResult"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -7217,6 +7217,10 @@ export type components = {
             spreadsheetId: string;
             /** Sheetid */
             sheetId: number;
+            /** Spreadsheettitle */
+            spreadsheetTitle?: string | null;
+            /** Sheetname */
+            sheetName?: string | null;
             /** Bindingepoch */
             bindingEpoch: number;
             identityStrategy: components["schemas"]["SheetsIdentityStrategy"];
@@ -7332,6 +7336,12 @@ export type components = {
             identitySummary: components["schemas"]["SheetsIdentitySummary"];
             /** Overlaps */
             overlaps: components["schemas"]["SheetsOverlap"][];
+            /** Spreadsheettitle */
+            spreadsheetTitle?: string | null;
+            /** Sheetname */
+            sheetName?: string | null;
+            /** Bindingepoch */
+            bindingEpoch?: number | null;
         };
         /** SheetsInspectionCreate */
         SheetsInspectionCreate: {
@@ -7547,6 +7557,24 @@ export type components = {
             /** Reason */
             reason: string;
         };
+        /**
+         * SyncError
+         * @description The failure a sync command reports back with its counts.
+         *
+         *     ``upstreamStatus`` is -1 when the request never left (configuration or
+         *     transport refused it) and 0 when Google accepted the request but the
+         *     result is unknown, so a caller can tell "not sent" from "may have sent".
+         */
+        SyncError: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Upstreamstatus */
+            upstreamStatus?: number | null;
+            /** Retryable */
+            retryable?: boolean | null;
+        };
         /** SyncEvidence */
         SyncEvidence: {
             /**
@@ -7637,6 +7665,37 @@ export type components = {
             mode: "due" | "allPending";
             /** Expectedbindingepoch */
             expectedBindingEpoch: number;
+        };
+        /**
+         * SyncRunResult
+         * @description The result of one sync command, in one shape for every command type.
+         */
+        SyncRunResult: {
+            /** Syncoperationid */
+            syncOperationId?: string | null;
+            /** Outcome */
+            outcome?: string | null;
+            summary?: components["schemas"]["SyncSummary"] | null;
+            connection?: components["schemas"]["SheetsConnection"] | null;
+            binding?: components["schemas"]["SheetsBinding"] | null;
+            inspection?: components["schemas"]["SheetsInspection"] | null;
+            /** Rows */
+            rows?: number | null;
+            /** Created */
+            created?: number | null;
+            /** Refreshed */
+            refreshed?: number | null;
+            /** Conflicts */
+            conflicts?: number | null;
+            /** Confirmed */
+            confirmed?: number | null;
+            /** Failed */
+            failed?: number | null;
+            /** Unknown */
+            unknown?: number | null;
+            /** Targets */
+            targets?: number[] | null;
+            error?: components["schemas"]["SyncError"] | null;
         };
         /** SyncSnapshot */
         SyncSnapshot: {
