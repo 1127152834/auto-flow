@@ -25,6 +25,7 @@ from .project_data_models import (
     DataTableRow,
 )
 from .project_excel_common import instant, operation_view
+from .project_sync_impacts import SqlAlchemySheetsImpacts
 from .project_sync_models import (
     SheetsBindingRow,
     SheetsConnectionRow,
@@ -38,10 +39,11 @@ _OPEN_STATUSES = ("pending", "sending", "verifying", "unknown", "paused")
 # only needs the frozen `kind` vocabulary of the sync contract.
 _SYNC_KINDS = {
     "inspectSheets": "binding",
-    "bindSheets": "binding",
-    "pullSheets": "pull",
-    "pushSheets": "push",
-    "reconcileSheets": "reconcile",
+    "changeSheetsBinding": "binding",
+    "removeSheetsBinding": "binding",
+    "syncPull": "pull",
+    "syncPush": "push",
+    "reconcileSync": "reconcile",
 }
 
 # Inspection and binding are configuration commands: their audit trail lives in
@@ -143,9 +145,20 @@ def sync_view(row: SyncOperationRow, record_ref: dict[str, Any] | None) -> dict[
     return view
 
 
+def _request_digest(project: str, table: str, kind: str, request: dict[str, Any]) -> str:
+    return digest(
+        {"projectId": project, "tableId": table, "kind": kind, "request": request}
+    )
+
+
 class SqlAlchemyProjectSync:
-    def __init__(self, sessions: sessionmaker[Session]) -> None:
+    def __init__(
+        self,
+        sessions: sessionmaker[Session],
+        impacts: SqlAlchemySheetsImpacts | None = None,
+    ) -> None:
         self.sessions = sessions
+        self.impacts = impacts or SqlAlchemySheetsImpacts(sessions)
 
     # ----------------------------------------------------------------- connections
 
@@ -233,9 +246,19 @@ class SqlAlchemyProjectSync:
             row.updated_at = datetime.now(UTC)
             session.commit()
 
-    def revoke_connection(self, project: str, connection_id: str) -> SheetsConnectionRow:
+    def revoke_connection(
+        self,
+        project: str,
+        connection_id: str,
+        mode: str,
+        impact_revision: int,
+    ) -> SheetsConnectionRow:
         with self.sessions() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            _guard_project_write(session, project)
+            self.impacts.require_disconnect(
+                session, project, connection_id, mode, impact_revision
+            )
             row = session.get(SheetsConnectionRow, connection_id)
             if row is None or row.project_id != project or row.revoked_at is not None:
                 raise ProjectError(
@@ -286,15 +309,26 @@ class SqlAlchemyProjectSync:
         expected_table_revision: int,
         expected_binding_epoch: int | None,
         source: dict[str, Any],
+        impact_revision: int,
         identity_field_id: str | None = None,
         formula_columns: list[str] | None = None,
     ) -> dict[str, Any]:
+        change = {
+            "connectionId": connection_id,
+            "spreadsheetId": spreadsheet_id,
+            "sheetId": sheet_id,
+            "identityStrategy": identity_strategy,
+            "mapping": mapping,
+        }
         with self.sessions() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             # The new generation row and its copied fields are flushed together;
             # defer the composite check to commit so insert order cannot matter.
             session.execute(text("PRAGMA defer_foreign_keys=ON"))
             _guard_project_write(session, project)
+            self.impacts.require_binding(
+                session, project, table_id, change, impact_revision
+            )
             table = _required_table(session, project, table_id)
             if table.table_revision != expected_table_revision:
                 raise precondition(
@@ -433,11 +467,16 @@ class SqlAlchemyProjectSync:
             row.updated_at = now
 
     def delete_binding(
-        self, project: str, table_id: str, expected_table_revision: int
+        self,
+        project: str,
+        table_id: str,
+        expected_table_revision: int,
+        impact_revision: int,
     ) -> None:
         with self.sessions() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             _guard_project_write(session, project)
+            self.impacts.require_unbind(session, project, table_id, impact_revision)
             table = _required_table(session, project, table_id)
             if table.table_revision != expected_table_revision:
                 raise precondition(
@@ -456,6 +495,36 @@ class SqlAlchemyProjectSync:
 
     # ------------------------------------------------------------------ operations
 
+    def replay(
+        self, project: str, table: str, kind: str, key: str, request: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """The stored operation for an idempotency key, or ``None``.
+
+        A retry of the same command has to answer with the original operation,
+        so this lookup cannot sit behind a precondition the command itself
+        moves: a reconcile advances the very status revision it quotes, and a
+        client that lost the first response would otherwise see 412 instead of
+        the decision it already made.
+        """
+        request_digest = _request_digest(project, table, kind, request)
+        with self.sessions() as session:
+            old = session.scalar(
+                select(ProjectOperationRow).where(
+                    ProjectOperationRow.idempotency_key == key
+                )
+            )
+            if old is None:
+                return None
+            if (
+                old.project_id != project
+                or old.kind != kind
+                or old.request_digest != request_digest
+            ):
+                raise ProjectError(
+                    "OPERATION_PAYLOAD_MISMATCH", "原操作键已用于其他请求。", 409
+                )
+            return operation_view(old)
+
     def accept(
         self,
         *,
@@ -471,14 +540,7 @@ class SqlAlchemyProjectSync:
         target_content_revision: int | None = None,
     ) -> tuple[dict[str, Any], bool]:
         """Create the paired project and sync operation rows, or replay the key."""
-        request_digest = digest(
-            {
-                "projectId": project,
-                "tableId": table,
-                "kind": kind,
-                "request": request,
-            }
-        )
+        request_digest = _request_digest(project, table, kind, request)
         now = datetime.now(UTC)
         operation_id = str(uuid4())
         with self.sessions() as session:

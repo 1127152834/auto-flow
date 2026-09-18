@@ -29,7 +29,16 @@ from .project_excel_schemas import (
     ExcelReconcileResult,
 )
 from .project_run_schemas import BatchView
-from .project_sheets_schemas import SyncRunResult
+from .project_sheets_schemas import (
+    SheetsBinding,
+    SheetsConnection,
+    SheetsConnectionResourceLocator,
+    SheetsDisconnectResult,
+    SheetsInspection,
+    SheetsUnbindResult,
+    SyncOperation,
+    SyncRunResult,
+)
 from .schemas import ApiModel
 
 
@@ -68,7 +77,7 @@ class ProjectCapabilities(ApiModel):
     runs: Literal["available"]
     environments: Literal["available"]
     statistics: Literal["notImplemented"]
-    sync: Literal["notImplemented"]
+    sync: Literal["available"]
 
 
 class ProjectView(ApiModel):
@@ -152,14 +161,14 @@ class ProjectOperationView(ApiModel):
         "importExcel",
         "exportXlsx",
         "reconcileOperation",
-        "createSheetsConnection",
-        "deleteSheetsConnection",
+        "connectSheets",
+        "disconnectSheets",
         "inspectSheets",
-        "bindSheets",
-        "unbindSheets",
-        "pullSheets",
-        "pushSheets",
-        "reconcileSheets",
+        "changeSheetsBinding",
+        "removeSheetsBinding",
+        "syncPull",
+        "syncPush",
+        "reconcileSync",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int
@@ -170,7 +179,8 @@ class ProjectOperationView(ApiModel):
         | TableResourceLocator
         | FieldResourceLocator
         | StatusResourceLocator
-        | RecordResourceLocator,
+        | RecordResourceLocator
+        | SheetsConnectionResourceLocator,
         Field(discriminator="type"),
     ]
     result: (
@@ -191,7 +201,13 @@ class ProjectOperationView(ApiModel):
         | ExcelExportResult
         | ExcelReconcileResult
         | CancelRecordStatusesResult
+        | SheetsConnection
+        | SheetsDisconnectResult
+        | SheetsInspection
+        | SheetsBinding
+        | SheetsUnbindResult
         | SyncRunResult
+        | SyncOperation
         | None
     )
     error: dict[str, Any] | None

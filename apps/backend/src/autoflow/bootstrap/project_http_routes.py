@@ -48,6 +48,7 @@ from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.project_sync.bindings import SheetsBindingService
 from autoflow.application.project_sync.connections import SheetsConnectionService
+from autoflow.application.project_sync.impacts import SheetsImpactService
 from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate
@@ -76,6 +77,7 @@ class ProjectHttpServices:
     environments: EnvironmentService
     sheets_connections: SheetsConnectionService
     sheets_bindings: SheetsBindingService
+    sheets_impacts: SheetsImpactService
     sync: SheetsSyncService
 
 
@@ -87,7 +89,11 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(project_automations_router(services.automations))
     app.include_router(project_records_router(services.records, services.queries))
     app.include_router(project_data_router(services.tables, services.catalog))
-    app.include_router(project_data_impact_router(services.catalog, services.deletions))
+    app.include_router(
+        project_data_impact_router(
+            services.catalog, services.deletions, services.sheets_impacts
+        )
+    )
     app.include_router(project_data_schema_router(services.schema))
     app.include_router(project_data_deletion_router(services.deletions))
     app.include_router(record_status_batches_router(services.status_batches))

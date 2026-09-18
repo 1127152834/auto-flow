@@ -166,7 +166,7 @@ class SheetsConnectionService:
         _uuid(key, "Idempotency-Key")
         view, existing = self._sync.accept_project_operation(
             project=project_id,
-            kind="createSheetsConnection",
+            kind="connectSheets",
             key=key,
             request={"accountLabel": label, "authorizationToken": digest(token)},
             resource={"type": "project", "projectId": project_id},
@@ -197,7 +197,7 @@ class SheetsConnectionService:
                 readable=True,
                 writable=credential.writable,
             )
-            result = {"connection": connection_view(row, "available")}
+            result = connection_view(row, "available")
         except ProjectError as error:
             self._sync.fail_operation(operation_id, {"code": error.code, "message": error.message, "details": error.details})
             raise
@@ -207,16 +207,62 @@ class SheetsConnectionService:
     def delete_connection(
         self, project_id: str, connection_id: str, key: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        # ponytail: disconnect needs the shared impact preview, which the frozen
-        # contract only defines for fields, statuses and records. Until that
-        # preview covers `disconnectSheets` the command stays explicitly
-        # unimplemented instead of accepting an unverifiable impact revision.
-        raise ProjectError(
-            "SYNC_NOT_IMPLEMENTED",
-            "解除 Google 连接尚未交付，本阶段请保留连接。",
-            501,
-            {"capability": "connections.disconnect"},
+        if set(payload) != {"impactRevision", "mode"}:
+            raise _invalid("payload", "意外的字段")
+        mode = payload["mode"]
+        if mode not in {"disconnect", "forgetCredential"}:
+            raise _invalid("mode", "mode 必须是 disconnect 或 forgetCredential")
+        impact = payload["impactRevision"]
+        if type(impact) is not int or impact < 1:
+            raise _invalid("impactRevision", "impactRevision 必须是正整数")
+        _uuid(project_id, "projectId")
+        _uuid(connection_id, "connectionId")
+        _uuid(key, "Idempotency-Key")
+        view, existing = self._sync.accept_project_operation(
+            project=project_id,
+            kind="disconnectSheets",
+            key=key,
+            request={
+                "connectionId": connection_id,
+                "mode": mode,
+                "impactRevision": impact,
+            },
+            resource={
+                "type": "sheetsConnection",
+                "projectId": project_id,
+                "connectionId": connection_id,
+            },
         )
+        if existing:
+            return {"operation": view}
+        operation_id = view["operationId"]
+        try:
+            # The confirmation is re-derived inside the revoke transaction, so a
+            # binding created after the preview is reported instead of lost.
+            row = self._sync.revoke_connection(project_id, connection_id, mode, impact)
+            credential_key = row.credential_key
+            if mode == "forgetCredential":
+                try:
+                    self._credentials.delete(credential_key)
+                except CredentialStoreUnavailableError as error:
+                    raise ProjectError(
+                        "CREDENTIAL_STORE_UNAVAILABLE",
+                        "连接已解除，但本机凭据删除失败。",
+                        503,
+                    ) from error
+            result = {
+                "connectionId": connection_id,
+                "mode": mode,
+                "disconnected": True,
+            }
+        except ProjectError as error:
+            self._sync.fail_operation(
+                operation_id,
+                {"code": error.code, "message": error.message, "details": error.details},
+            )
+            raise
+        self._sync.finish_operation(operation_id, result)
+        return {"operation": self._sync.operation_view(operation_id)}
 
 
 def _uuid(value: str, field: str) -> str:

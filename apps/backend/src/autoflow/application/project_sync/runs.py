@@ -6,6 +6,7 @@ place instead of being copied into each service.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from autoflow.domain.projects.models import ProjectError
@@ -23,6 +24,16 @@ class SheetsRun:
 
     def bind(self, project: str, table: str, **values: Any) -> dict[str, Any]:
         return self._sync.put_binding(project, table, **values)
+
+    def unbind(
+        self, project: str, table: str, expected_table_revision: int, impact: int
+    ) -> None:
+        self._sync.delete_binding(project, table, expected_table_revision, impact)
+
+    def revoke(
+        self, project: str, connection_id: str, mode: str, impact: int
+    ) -> Any:
+        return self._sync.revoke_connection(project, connection_id, mode, impact)
 
     def summary(self, project: str, table: str) -> dict[str, Any]:
         return self._sync.summary_for_table(project, table)
@@ -93,3 +104,15 @@ class SheetsRun:
         # queue entry for a command that already finished.
         self._sync.transition(operation_id, status="confirmed")
         self._sync.finish_operation(operation_id, result)
+
+    def complete_queue(
+        self, operation_id: str, queue: Callable[[], dict[str, Any]]
+    ) -> None:
+        """Finish a pull or push and report the queue it leaves behind.
+
+        A pull command owns a sync row in the same queue its frozen result
+        summarises, so the summary has to be taken *after* that row left
+        ``pending``; otherwise the command counts itself as unfinished work.
+        """
+        self._sync.transition(operation_id, status="confirmed")
+        self._sync.finish_operation(operation_id, queue())

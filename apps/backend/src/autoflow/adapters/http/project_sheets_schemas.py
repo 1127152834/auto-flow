@@ -6,6 +6,7 @@ from typing import Any, Literal
 from pydantic import Field
 
 from .project_data_record_schemas import DataRecordRef
+from .project_data_schemas import DataTableView
 from .schemas import ApiModel
 
 CredentialState = Literal["available", "missing", "invalid"]
@@ -59,9 +60,20 @@ class SheetsConnectionDelete(ApiModel):
     mode: Literal["disconnect", "forgetCredential"]
 
 
-class SheetsConnectionDeleteResult(ApiModel):
+class SheetsDisconnectResult(ApiModel):
+    """The frozen `disconnectSheets` result: what was revoked and in which mode."""
+
     connection_id: str
+    mode: Literal["disconnect", "forgetCredential"]
     disconnected: bool
+
+
+class SheetsConnectionResourceLocator(ApiModel):
+    """The connection a Sheets command names, as the shared impact report sees it."""
+
+    type: Literal["sheetsConnection"]
+    project_id: str
+    connection_id: str
 
 
 class SheetsIdentityStrategy(ApiModel):
@@ -110,6 +122,13 @@ class SheetsBindingWrite(ApiModel):
 class SheetsBindingDelete(ApiModel):
     impact_revision: int
     expected_table_revision: int
+
+
+class SheetsUnbindResult(ApiModel):
+    """The frozen `removeSheetsBinding` result: the table is back to unconfigured."""
+
+    table: DataTableView
+    unbound: bool
 
 
 class SheetsColumn(ApiModel):
@@ -249,37 +268,15 @@ class SyncPushRequest(ApiModel):
 
 
 class SyncRunResult(ApiModel):
-    """The result of one sync command, in one shape for every command type."""
+    """The frozen result of one pull or push command.
 
-    sync_operation_id: str | None = Field(
-        default=None, exclude_if=lambda value: value is None
-    )
-    outcome: str | None = Field(default=None, exclude_if=lambda value: value is None)
-    summary: SyncSummary | None = Field(
-        default=None, exclude_if=lambda value: value is None
-    )
-    connection: SheetsConnection | None = Field(
-        default=None, exclude_if=lambda value: value is None
-    )
-    binding: SheetsBinding | None = Field(
-        default=None, exclude_if=lambda value: value is None
-    )
-    inspection: SheetsInspection | None = Field(
-        default=None, exclude_if=lambda value: value is None
-    )
-    rows: int | None = Field(default=None, exclude_if=lambda value: value is None)
-    created: int | None = Field(default=None, exclude_if=lambda value: value is None)
-    refreshed: int | None = Field(default=None, exclude_if=lambda value: value is None)
-    conflicts: int | None = Field(default=None, exclude_if=lambda value: value is None)
-    confirmed: int | None = Field(default=None, exclude_if=lambda value: value is None)
-    failed: int | None = Field(default=None, exclude_if=lambda value: value is None)
-    unknown: int | None = Field(default=None, exclude_if=lambda value: value is None)
-    targets: list[int] | None = Field(
-        default=None, exclude_if=lambda value: value is None
-    )
-    error: SyncError | None = Field(
-        default=None, exclude_if=lambda value: value is None
-    )
+    Per-record outcomes live on their own sync operations; the command result
+    only says which table it ran on and what the queue looks like afterwards,
+    so an accepted command is never mistaken for a finished sync.
+    """
+
+    table_id: str
+    summary: SyncSummary
 
 
 class SyncPauseRequest(ApiModel):

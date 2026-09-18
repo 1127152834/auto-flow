@@ -79,7 +79,7 @@ def test_create_list_patch_open_overview_and_operations(tmp_path):
         "runs": "available",
         "environments": "available",
         "statistics": "notImplemented",
-        "sync": "notImplemented",
+        "sync": "available",
     }
     overview = client.get(f"/api/v1/projects/{project_id}/overview").json()
     assert overview["counts"] == {}

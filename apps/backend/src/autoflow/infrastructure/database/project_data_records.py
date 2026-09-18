@@ -68,7 +68,7 @@ class SqlAlchemyProjectDataRecords:
                 return _operation_result(existing), _operation(existing), True
             table = self._table(session, project_id, table_id, generation, True)
             fields = self._fields(session, table)
-            canonical = self._validate(fields, values, True)
+            canonical = self._validate(fields, values, True, origin)
             identity = table.identity
             if key is not None:
                 pass
@@ -286,7 +286,7 @@ class SqlAlchemyProjectDataRecords:
                 raise ProjectError(
                     "IDENTITY_FIELD_IMMUTABLE", "Identity field cannot be changed", 422
                 )
-            canonical = self._validate(fields, values, False)
+            canonical = self._validate(fields, values, False, origin)
             before = self._snapshot(row, fields)
             merged = {**row.values_json, **canonical}
             changed = merged != row.values_json
@@ -445,8 +445,17 @@ class SqlAlchemyProjectDataRecords:
 
     @staticmethod
     def _validate(
-        fields: list[DataFieldRow], values: dict[str, object], creating: bool
+        fields: list[DataFieldRow],
+        values: dict[str, object],
+        creating: bool,
+        origin: str = "local",
     ) -> dict[str, object]:
+        """Check values against the field definitions.
+
+        ``origin`` marks a write the source itself produced. A Sheets pull
+        materialises the formula a row actually holds, which the local
+        read-only rule exists to protect rather than to reject (DATA-SH-11).
+        """
         by_id = {field.id: field for field in fields}
         unknown = set(values) - set(by_id)
         if unknown:
@@ -454,7 +463,7 @@ class SqlAlchemyProjectDataRecords:
         result: dict[str, object] = {}
         for field_id, value in values.items():
             field = by_id[field_id]
-            if not field.writable or field.formula:
+            if origin != "source" and (not field.writable or field.formula):
                 raise ProjectError("FIELD_NOT_WRITABLE", "Field is not writable", 422)
             result[field_id] = validate_value(
                 {

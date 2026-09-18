@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.application.project_data.tables import DataTableService
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
@@ -34,8 +35,10 @@ class SheetsBindingService:
         sessions: sessionmaker[Session],
         runs: SheetsRun,
         access: GoogleAccess,
+        tables: DataTableService,
     ) -> None:
         self._sessions, self._runs, self._access = sessions, runs, access
+        self._tables = tables
 
     # ------------------------------------------------------------------- inspection
 
@@ -86,7 +89,7 @@ class SheetsBindingService:
         view, existing = self._runs.accept(
             project=project_id,
             table=table_id,
-            kind="bindSheets",
+            kind="changeSheetsBinding",
             key=key,
             request=request,
             binding_epoch=epoch,
@@ -116,26 +119,59 @@ class SheetsBindingService:
                 expected_table_revision=request["expectedTableRevision"],
                 expected_binding_epoch=request["expectedBindingEpoch"],
                 source=source,
+                impact_revision=request["impactRevision"],
                 identity_field_id=identity_field_id,
                 formula_columns=sorted(formula_columns),
             )
         except ProjectError as error:
             self._runs.fail(operation_id, error)
             raise
-        self._runs.complete(operation_id, {"binding": binding})
+        self._runs.complete(operation_id, binding)
         return {"operation": self._runs.operation_view(operation_id)}
 
     def delete_binding(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        # ponytail: unbinding needs the shared impact preview, which the frozen
-        # contract only defines for fields, statuses and records.
-        raise ProjectError(
-            "SYNC_NOT_IMPLEMENTED",
-            "解除表绑定尚未交付，本阶段请保留绑定。",
-            501,
-            {"capability": "bindings.delete"},
+        if set(payload) != {"impactRevision", "expectedTableRevision"}:
+            raise _invalid("payload", "意外的字段")
+        _uuid(project_id, "projectId")
+        _uuid(table_id, "tableId")
+        _uuid(key, "Idempotency-Key")
+        impact = _revision(payload["impactRevision"], "impactRevision")
+        expected = _revision(
+            payload["expectedTableRevision"], "expectedTableRevision"
         )
+        with self._sessions() as session:
+            _table(session, project_id, table_id)
+        view, existing = self._runs.accept(
+            project=project_id,
+            table=table_id,
+            kind="removeSheetsBinding",
+            key=key,
+            request={
+                "tableId": table_id,
+                "impactRevision": impact,
+                "expectedTableRevision": expected,
+            },
+            binding_epoch=_epoch_for(self._sessions, project_id, table_id),
+            dedupe=f"unbind:{key}",
+        )
+        if existing:
+            return {"operation": view}
+        operation_id = view["operationId"]
+        try:
+            # The confirmation is re-derived inside the delete transaction, so a
+            # binding change in between is reported instead of silently removed.
+            self._runs.unbind(project_id, table_id, expected, impact)
+            result = {
+                "table": self._tables.get(project_id, table_id),
+                "unbound": True,
+            }
+        except ProjectError as error:
+            self._runs.fail(operation_id, error)
+            raise
+        self._runs.complete(operation_id, result)
+        return {"operation": self._runs.operation_view(operation_id)}
 
     def read_binding(self, project_id: str, table_id: str) -> dict[str, Any] | None:
         with self._sessions() as session:
@@ -144,6 +180,13 @@ class SheetsBindingService:
         if binding is None:
             return None
         return binding
+
+
+def _epoch_for(
+    sessions: sessionmaker[Session], project_id: str, table_id: str
+) -> int:
+    with sessions() as session:
+        return _epoch(session, table_id)
 
 
 def _table(session: Session, project_id: str, table_id: str) -> DataTableRow:
@@ -246,6 +289,7 @@ def _binding_request(payload: dict[str, Any]) -> dict[str, Any]:
     request["expectedTableRevision"] = _revision(
         payload["expectedTableRevision"], "expectedTableRevision"
     )
+    request["impactRevision"] = _revision(payload["impactRevision"], "impactRevision")
     request["expectedBindingEpoch"] = (
         None
         if payload.get("expectedBindingEpoch") is None
@@ -311,13 +355,17 @@ def _mapping(value: Any) -> list[dict[str, Any]]:
             raise _invalid("mapping", "direction 不受支持")
         if type(raw["formula"]) is not bool:
             raise _invalid("mapping", "formula 必须是布尔值")
+        # Normalise before the duplicate check: `b` and `B` address the same
+        # source column, so accepting both would leave the identity lookup in
+        # `_validate_mapping` reading whichever entry came first.
+        column_id = column_id.upper()
         if column_id in seen:
             raise _invalid("mapping", "同一来源列不能被映射两次")
         seen.add(column_id)
         entries.append(
             {
                 "fieldId": field_id,
-                "columnId": column_id.upper(),
+                "columnId": column_id,
                 "direction": raw["direction"],
                 "formula": raw["formula"],
             }

@@ -140,7 +140,7 @@ class SheetsSyncService:
         view, existing = self._runs.accept(
             project=project_id,
             table=table_id,
-            kind="pullSheets",
+            kind="syncPull",
             key=key,
             request=payload,
             binding_epoch=epoch,
@@ -151,13 +151,15 @@ class SheetsSyncService:
         operation_id = view["operationId"]
         client = self._access.client(project_id, str(binding["connectionId"]))
         try:
-            result = self._pull(
-                client, project_id, table_id, generation, fields, binding
-            )
+            self._pull(client, project_id, table_id, generation, fields, binding)
         except ProjectError as error:
             self._runs.fail(operation_id, error)
             raise
-        self._runs.complete(operation_id, result)
+        # The frozen `syncPull` result is which table ran and what the queue looks
+        # like afterwards; per-record outcomes are their own sync operations.
+        self._runs.complete_queue(
+            operation_id, lambda: self._run_result(project_id, table_id)
+        )
         return {"operation": self._runs.operation_view(operation_id)}
 
     def _pull(
@@ -251,6 +253,9 @@ class SheetsSyncService:
                 _record_operation(
                     project_id, table_id, generation, key, "updateRecord", refresh
                 ),
+                # The source owns the formula these cells hold, so the refresh
+                # writes past the local read-only rule the same way a create does.
+                origin="source",
             )
         except ProjectError as error:
             if error.code in {"CONTENT_REVISION_CONFLICT", "RECORD_NOT_FOUND"}:
@@ -323,7 +328,7 @@ class SheetsSyncService:
         view, existing = self._runs.accept(
             project=project_id,
             table=table_id,
-            kind="pushSheets",
+            kind="syncPush",
             key=key,
             request=payload,
             binding_epoch=epoch,
@@ -334,12 +339,21 @@ class SheetsSyncService:
         operation_id = view["operationId"]
         client = self._access.client(project_id, str(binding["connectionId"]))
         try:
-            result = self._push(client, project_id, table_id, binding, mode)
+            self._push(client, project_id, table_id, binding, mode)
         except ProjectError as error:
             self._runs.fail(operation_id, error)
             raise
-        self._runs.complete(operation_id, result)
+        self._runs.complete_queue(
+            operation_id, lambda: self._run_result(project_id, table_id)
+        )
         return {"operation": self._runs.operation_view(operation_id)}
+
+    def _run_result(self, project_id: str, table_id: str) -> dict[str, Any]:
+        """The one frozen result shape for a pull or a push."""
+        return {
+            "tableId": table_id,
+            "summary": self._runs.summary(project_id, table_id),
+        }
 
     def _push(
         self,
@@ -370,6 +384,20 @@ class SheetsSyncService:
             generation = table.current_generation
             fields = {field.id: field for field in _fields(session, table)}
             for intent in intents:
+                if intent.request.get("datasetGeneration") != generation:
+                    # The row this intent was raised for left the current data
+                    # (a re-import replaced the dataset while the binding stayed),
+                    # so the same key in the new generation is a different fact
+                    # and must never be written to the source on the old intent.
+                    self._sync.transition(
+                        intent.id,
+                        status="failed",
+                        error={
+                            "code": "SYNC_GENERATION_CHANGED",
+                            "message": "数据代次已更换，这条本地修改需要在新数据上重新发起。",
+                        },
+                    )
+                    continue
                 key = RecordKey(_key_type(intent.record_key_type), str(intent.record_key))
                 row_index = remote.get(_marker(key))
                 if row_index is None:
@@ -502,6 +530,13 @@ class SheetsSyncService:
             raise _invalid("payload", "意外的字段")
         expected = _revision(payload["expectedStatusRevision"], "expectedStatusRevision")
         sync_operation_id = _uuid(sync_operation_id, "syncOperationId")
+        # A retry of this command has to answer with the decision it already
+        # made, so the replay is looked up before the revision it quotes.
+        replay = self._sync.replay(
+            project_id, table_id, "reconcileSync", key, payload
+        )
+        if replay is not None:
+            return {"operation": replay}
         original = self._sync.sync_operation(table_id, sync_operation_id)
         if original["statusRevision"] != expected:
             raise ProjectError(
@@ -542,7 +577,7 @@ class SheetsSyncService:
         view, existing = self._runs.accept(
             project=project_id,
             table=table_id,
-            kind="reconcileSheets",
+            kind="reconcileSync",
             key=key,
             request=payload,
             binding_epoch=int(binding["bindingEpoch"]),
@@ -584,8 +619,9 @@ class SheetsSyncService:
                 "message": "来源中的内容与本次写入不一致，请重新确认。",
             },
         )
+        # The frozen `reconcileSync` result is the sync operation it confirmed.
         self._runs.complete(
-            operation_id, {"syncOperationId": sync_operation_id, "outcome": outcome}
+            operation_id, self._sync.sync_operation(table_id, sync_operation_id)
         )
         return {"operation": self._runs.operation_view(operation_id)}
 
@@ -736,13 +772,23 @@ def _cell_value(computed: list[list[Any]], index: int, position: int) -> Any:
 
 
 def _same(left: Any, right: Any) -> bool:
-    if isinstance(right, bool) or isinstance(left, bool):
-        return bool(left) == bool(right)
-    if isinstance(right, (int, float)) and isinstance(left, (int, float)):
-        return float(left) == float(right)
-    if isinstance(left, (int, float)) and isinstance(right, str):
-        return _identity_token(left) == _identity_token(right)
-    return str(left) == str(right)
+    """Whether a remote cell still holds the fact that was written.
+
+    Identity in this project is typed -- the text `"2"` and the number `2` are
+    different records -- so a confirmation compares the same shape on both
+    sides. The check is symmetric because the caller's argument order follows
+    the read, and `RAW` writes preserve the shape while `2.0` and `2` are one
+    number.
+    """
+    if isinstance(left, bool) or isinstance(right, bool):
+        return isinstance(left, bool) and isinstance(right, bool) and left is right
+    if isinstance(left, (int, float)) or isinstance(right, (int, float)):
+        return (
+            isinstance(left, (int, float))
+            and isinstance(right, (int, float))
+            and float(left) == float(right)
+        )
+    return type(left) is type(right) and left == right
 
 
 def _identity_column(strategy: dict[str, Any], header: list[str]) -> int:

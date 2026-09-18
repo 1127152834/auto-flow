@@ -48,6 +48,7 @@ from autoflow.application.project_sync.connections import (
     AuthorizationRegistry,
     SheetsConnectionService,
 )
+from autoflow.application.project_sync.impacts import SheetsImpactService
 from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.application.project_sync.runs import SheetsRun
 from autoflow.application.projects.service import ProjectService
@@ -121,6 +122,9 @@ from autoflow.infrastructure.database.project_excel_imports import (
     SqlAlchemyExcelImports,
 )
 from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
+from autoflow.infrastructure.database.project_sync_impacts import (
+    SqlAlchemySheetsImpacts,
+)
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
@@ -347,7 +351,8 @@ def create_app(
     )
     app.state.environment_browser = environment_browser
     app.state.environment_service = environment_service
-    sheets_repository = SqlAlchemyProjectSync(session_factory)
+    sheets_impacts = SqlAlchemySheetsImpacts(session_factory)
+    sheets_repository = SqlAlchemyProjectSync(session_factory, sheets_impacts)
     sheets_tokens = google_tokens or HttpxTokenTransport()
     google_credentials = credential_store or credentials
     sheets_access = GoogleAccess(
@@ -360,7 +365,13 @@ def create_app(
     sheets_connections = SheetsConnectionService(
         sheets_repository, google_credentials, sheets_tokens, AuthorizationRegistry()
     )
-    sheets_bindings = SheetsBindingService(session_factory, sheets_runs, sheets_access)
+    sheets_bindings = SheetsBindingService(
+        session_factory,
+        sheets_runs,
+        sheets_access,
+        DataTableService(SqlAlchemyProjectData(session_factory)),
+    )
+    sheets_impacts_service = SheetsImpactService(sheets_impacts)
     sheets_sync = SheetsSyncService(
         session_factory, sheets_runs, sheets_repository, sheets_access
     )
@@ -550,6 +561,7 @@ def create_app(
         environments=environment_service,
         sheets_connections=sheets_connections,
         sheets_bindings=sheets_bindings,
+        sheets_impacts=sheets_impacts_service,
         sync=sheets_sync,
     ))
 
