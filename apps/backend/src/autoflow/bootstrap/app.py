@@ -130,6 +130,9 @@ from autoflow.infrastructure.database.project_excel_imports import (
 from autoflow.infrastructure.database.project_lifecycle import (
     SqlAlchemyProjectLifecycle,
 )
+from autoflow.infrastructure.database.project_pending import (
+    SqlAlchemyProjectPendingWork,
+)
 from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
 from autoflow.infrastructure.database.project_sync_impacts import (
     SqlAlchemySheetsImpacts,
@@ -423,6 +426,7 @@ def create_app(
     project_run_scheduler = ProjectBatchScheduler(
         session_factory, project_workflow_dispatcher, quiesce_gate, environment_service
     )
+    project_pending_work = SqlAlchemyProjectPendingWork(session_factory)
     app.state.project_run_coordinator = project_run_coordinator
     app.state.project_run_scheduler = project_run_scheduler
     app.router.add_event_handler("startup", project_run_scheduler.startup)
@@ -439,6 +443,7 @@ def create_app(
         settings.api_version,
         lambda: len(catalog_provider.installed()),
         lambda: [
+            *project_pending_work.blockers(),
             *project_workflow_dispatcher.blockers(),
             *project_run_scheduler.blockers(),
             *project_lifecycle_coordinator.blockers(),
