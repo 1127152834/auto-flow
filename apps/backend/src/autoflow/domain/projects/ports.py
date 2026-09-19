@@ -7,6 +7,13 @@ from typing import Any, Protocol
 from .models import ProjectOperation, ProjectRecord
 
 
+class ProjectResourceReferences(Protocol):
+    """Refuse a global-resource delete that saved project facts still need."""
+
+    def ensure_unreferenced(self, resource_type: str, resource_id: str) -> None: ...
+    def ensure_unreferenced_proxy_connection(self, connection_id: str) -> None: ...
+
+
 class Projects(Protocol):
     def create(
         self, record: ProjectRecord, operation: ProjectOperation

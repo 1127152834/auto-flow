@@ -18,6 +18,7 @@ from autoflow.domain.models.models import (
 )
 from autoflow.domain.models.ports import ModelGateway, ModelRepository
 from autoflow.domain.models.validation import validate_connection
+from autoflow.domain.projects.ports import ProjectResourceReferences
 
 Transaction = Callable[[], AbstractContextManager[ModelRepository]]
 
@@ -44,12 +45,14 @@ class ModelService:
         transaction: Transaction,
         credentials: CredentialStore,
         gateway: ModelGateway,
+        references: ProjectResourceReferences | None = None,
     ):
         self._transaction, self._credentials, self._gateway = (
             transaction,
             credentials,
             gateway,
         )
+        self._references = references
 
     def list_providers(self) -> list[ModelProvider]:
         with self._transaction() as repo:
@@ -237,6 +240,8 @@ class ModelService:
                 raise ModelError(
                     "MODEL_PROVIDER_CHANGED", "模型供应商已被修改，请刷新后重试", 409
                 )
+            if self._references is not None:
+                self._references.ensure_unreferenced("modelProvider", provider_id)
             if old.secret_ref:
                 repo.add_cleanup(old.secret_ref)
             if not repo.remove_provider(provider_id, old.updated_at):

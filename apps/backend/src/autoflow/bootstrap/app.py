@@ -133,6 +133,9 @@ from autoflow.infrastructure.database.project_lifecycle import (
 from autoflow.infrastructure.database.project_pending import (
     SqlAlchemyProjectPendingWork,
 )
+from autoflow.infrastructure.database.project_resource_references import (
+    SqlAlchemyProjectResourceReferences,
+)
 from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
 from autoflow.infrastructure.database.project_sync_impacts import (
     SqlAlchemySheetsImpacts,
@@ -200,6 +203,7 @@ def create_app(
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
     session_factory = create_session_factory(paths.database)
+    resource_references = SqlAlchemyProjectResourceReferences(session_factory)
     kernel_events = KernelEventBroker()
     kernel_worker_manager = KernelWorkerManager(
         kernels_dir=paths.kernels,
@@ -224,6 +228,7 @@ def create_app(
         SqlAlchemyDefaultKernelRepository(session_factory),
         installations,
         kernel_worker_manager,
+        resource_references,
     )
     transaction = partial(profile_repository_transaction, session_factory)
     proxy_options = SqlAlchemyProxyOptions(session_factory)
@@ -238,6 +243,7 @@ def create_app(
         proxy_options,
         usage_guard,
         data_store,
+        resource_references,
     )
     test_browser_workers = TestBrowserWorkerManager(paths.temp)
 
@@ -245,6 +251,7 @@ def create_app(
         partial(model_repository_transaction, session_factory),
         credential_store if credential_store is not None else credentials,
         model_gateway or HttpModelProvider(),
+        resource_references,
     )
     model_service.recover_credentials()
 
@@ -294,7 +301,7 @@ def create_app(
     app.state.status_batch_service = status_batch_service
     app.state.status_batch_coordinator = status_batch_coordinator
     app.router.add_event_handler("startup", status_batch_coordinator.resume)
-    proxy_runtime = configure_proxy_management(app, paths.database)
+    proxy_runtime = configure_proxy_management(app, paths.database, resource_references)
     profile_test_browser = ProfileTestBrowserService(
         profile_service,
         catalog_provider.installed,

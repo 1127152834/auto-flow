@@ -25,6 +25,7 @@ from autoflow.domain.kernels.ports import (
     KernelInstallationStore,
     LicenseStore,
 )
+from autoflow.domain.projects.ports import ProjectResourceReferences
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class KernelService:
         defaults: DefaultKernelRepository,
         installations: KernelInstallationStore,
         operations: OperationManager,
+        references: ProjectResourceReferences | None = None,
     ) -> None:
         self.catalog_provider = catalog_provider
         self.license_provider = license_provider
@@ -57,6 +59,7 @@ class KernelService:
         self.defaults = defaults
         self.installations = installations
         self.operations = operations
+        self.references = references
 
     async def catalog(self) -> KernelCatalog:
         return await self.catalog_provider.catalog()
@@ -132,6 +135,10 @@ class KernelService:
         with self.installations.guard(kernel):
             if not self.catalog_provider.is_installed(kernel.edition, kernel.version):
                 raise KernelNotFound()
+            if self.references is not None:
+                self.references.ensure_unreferenced(
+                    "kernel", f"{kernel.edition}:{kernel.version}"
+                )
             token = self.installations.stage(kernel)
             try:
                 default = self.defaults.clear_if_matches(kernel)

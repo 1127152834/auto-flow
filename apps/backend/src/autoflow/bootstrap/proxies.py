@@ -20,6 +20,7 @@ from autoflow.domain.profiles.errors import (
     ProxyUnavailable,
 )
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
+from autoflow.domain.projects.ports import ProjectResourceReferences
 from autoflow.domain.proxies.errors import ProxyError
 from autoflow.infrastructure.credentials.system import SystemCredentialStore
 from autoflow.infrastructure.database.proxies import (
@@ -54,7 +55,11 @@ class ProxyManagementRuntime:
     close: Callable[[], Awaitable[None]]
 
 
-def configure_proxy_management(app: FastAPI, database: Path) -> ProxyManagementRuntime:
+def configure_proxy_management(
+    app: FastAPI,
+    database: Path,
+    references: ProjectResourceReferences | None = None,
+) -> ProxyManagementRuntime:
     session_factory = create_session_factory(database)
     credentials = LazySystemCredentialStore()
     provider = ProxyPanelReadProvider()
@@ -67,6 +72,7 @@ def configure_proxy_management(app: FastAPI, database: Path) -> ProxyManagementR
         credentials=credentials,
         provider=provider,
         probe=probe,
+        references=references,
     )
     operations = SqlAlchemyProxyOperations(session_factory)
     operations.recover()
