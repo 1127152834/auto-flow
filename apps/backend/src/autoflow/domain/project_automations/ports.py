@@ -21,6 +21,19 @@ class ProjectAutomations(Protocol):
         operation: ProjectOperation,
     ) -> tuple[AutomationRecord, ProjectOperation]: ...
     def get(self, project_id: str, automation_id: str) -> AutomationRecord | None: ...
+    def impact(
+        self, project_id: str, automation_id: str, action: str
+    ) -> dict[str, Any]: ...
+    def delete(
+        self,
+        project_id: str,
+        automation_id: str,
+        operation: ProjectOperation,
+        *,
+        impact_revision: int,
+        expected_revision: int,
+        disposition: str,
+    ) -> ProjectOperation: ...
     def list(
         self, project_id: str, q: str | None, page: int, page_size: int, sort: str
     ) -> tuple[builtins.list[AutomationRecord], int]: ...

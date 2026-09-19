@@ -514,7 +514,13 @@ def test_save_links_record_and_repair_does_not_rerun(tmp_path):
         f"/api/v1/projects/{project_id}/environments/{outcome['saved']['environmentId']}/impact?action=delete"
     )
     assert impact.status_code == 200
-    assert impact.json()["impacts"][0]["kind"] == "record_link"
+    linked_impact = impact.json()["impacts"][0]
+    assert linked_impact["code"] == "ENVIRONMENT_RECORDS"
+    assert linked_impact["resource"] == {
+        "type": "environment",
+        "projectId": project_id,
+        "environmentId": outcome["saved"]["environmentId"],
+    }
 
 
 def test_binding_rechecks_revision_before_overwriting_concurrent_link(tmp_path):

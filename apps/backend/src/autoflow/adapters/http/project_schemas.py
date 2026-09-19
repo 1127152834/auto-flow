@@ -172,6 +172,12 @@ class Impact(ApiModel):
     blocking: bool
 
 
+class AutomationImpactView(ApiModel):
+    impact_revision: int
+    impacts: list[Impact]
+    blockers: list[Blocker]
+
+
 class ProjectLifecycleImpact(ApiModel):
     impact_revision: int
     blockers: list[Blocker]
@@ -243,6 +249,8 @@ class ProjectBatchResult(ApiModel):
 class DeletedResourceResult(ApiModel):
     target: OverviewResourceLocator
     deleted: Literal[True]
+    workflow_id: str | None = None
+    workflow_disposition: Literal["unlink", "deleteOwned"] | None = None
 
 
 class ProjectOperationView(ApiModel):
@@ -286,6 +294,7 @@ class ProjectOperationView(ApiModel):
         "restoreProject",
         "deleteProject",
         "deleteAutomation",
+        "deleteEnvironment",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int

@@ -113,6 +113,59 @@ class ProjectAutomationService:
             project_id, automation_id, data, expected, operation
         )
 
+    def impact(self, project_id: str, automation_id: str, action: str):
+        self._project(project_id)
+        return self.automations.impact(project_id, automation_id, action)
+
+    def delete(
+        self, project_id: str, automation_id: str, key: str, payload: dict[str, Any]
+    ):
+        self._writable_project(project_id)
+        impact_revision = payload.get("impactRevision")
+        expected = payload.get("expectedManagementRevision")
+        disposition = payload.get("workflowDisposition")
+        if set(payload) != {
+            "impactRevision",
+            "expectedManagementRevision",
+            "workflowDisposition",
+        }:
+            raise validation_error("workflowDisposition", "Unexpected field")
+        if type(impact_revision) is not int or impact_revision < 1:
+            raise validation_error("impactRevision", "Must be a positive integer")
+        if type(expected) is not int or expected < 1:
+            raise validation_error(
+                "expectedManagementRevision", "Must be a positive integer"
+            )
+        if disposition not in {"unlink", "deleteOwned"}:
+            raise validation_error(
+                "workflowDisposition", "Must be unlink or deleteOwned"
+            )
+        operation = _operation(
+            key,
+            "deleteAutomation",
+            project_id,
+            automation_id,
+            {
+                "scope": "automation",
+                "projectId": project_id,
+                "automationId": automation_id,
+                "request": {
+                    "impactRevision": impact_revision,
+                    "expectedManagementRevision": expected,
+                    "workflowDisposition": disposition,
+                },
+            },
+            datetime.now(UTC),
+        )
+        return self.automations.delete(
+            project_id,
+            automation_id,
+            operation,
+            impact_revision=impact_revision,
+            expected_revision=expected,
+            disposition=disposition,
+        )
+
     def validation(self, project_id: str, automation_id: str) -> AutomationValidation:
         automation = self.get(project_id, automation_id)
         now = datetime.now(UTC)

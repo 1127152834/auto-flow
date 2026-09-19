@@ -190,3 +190,12 @@ class AutomationValidationView(ApiModel):
     issues: list[AutomationValidationIssue]
     capability_requirements: list[CapabilityRequirement]
     checked_at: datetime
+
+
+class AutomationDeleteRequest(ApiModel):
+    impact_revision: StrictInt = Field(ge=1)
+    expected_management_revision: StrictInt = Field(ge=1)
+    workflow_disposition: Literal["unlink", "deleteOwned"]
+
+    def payload(self):
+        return self.model_dump(by_alias=True)

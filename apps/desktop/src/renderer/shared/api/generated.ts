@@ -1581,6 +1581,24 @@ export type paths = {
         /** Update Automation */
         put: operations["update_automation_api_v1_projects__projectId__automations__automationId__put"];
         post?: never;
+        /** Delete Automation */
+        delete: operations["delete_automation_api_v1_projects__projectId__automations__automationId__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Automation Impact */
+        get: operations["automation_impact_api_v1_projects__projectId__automations__automationId__impact_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2031,7 +2049,8 @@ export type paths = {
         get: operations["get_environment_api_v1_projects__projectId__environments__environmentId__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Environment */
+        delete: operations["delete_environment_api_v1_projects__projectId__environments__environmentId__delete"];
         options?: never;
         head?: never;
         /** Patch Environment */
@@ -3583,6 +3602,27 @@ export type components = {
              */
             occurredAt: string;
         };
+        /** AutomationDeleteRequest */
+        AutomationDeleteRequest: {
+            /** Impactrevision */
+            impactRevision: number;
+            /** Expectedmanagementrevision */
+            expectedManagementRevision: number;
+            /**
+             * Workflowdisposition
+             * @enum {string}
+             */
+            workflowDisposition: "unlink" | "deleteOwned";
+        };
+        /** AutomationImpactView */
+        AutomationImpactView: {
+            /** Impactrevision */
+            impactRevision: number;
+            /** Impacts */
+            impacts: components["schemas"]["Impact"][];
+            /** Blockers */
+            blockers: components["schemas"]["Blocker"][];
+        };
         /** AutomationPage */
         AutomationPage: {
             /** Items */
@@ -4725,6 +4765,10 @@ export type components = {
              * @constant
              */
             deleted: true;
+            /** Workflowid */
+            workflowId?: string | null;
+            /** Workflowdisposition */
+            workflowDisposition?: ("unlink" | "deleteOwned") | null;
         };
         /** DeletionImpactReport */
         DeletionImpactReport: {
@@ -4787,6 +4831,15 @@ export type components = {
             host: string;
             /** Port */
             port: number;
+        };
+        /** EnvironmentDeleteRequest */
+        EnvironmentDeleteRequest: {
+            /** Impactrevision */
+            impactRevision: number;
+            /** Expectedmetadatarevision */
+            expectedMetadataRevision: number;
+            /** Expectedcontentgeneration */
+            expectedContentGeneration: number;
         };
         /** EnvironmentDetailView */
         EnvironmentDetailView: {
@@ -6631,7 +6684,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment";
             /**
              * Status
              * @enum {string}
@@ -15714,6 +15767,150 @@ export interface operations {
             };
         };
     };
+    delete_automation_api_v1_projects__projectId__automations__automationId__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationDeleteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    automation_impact_api_v1_projects__projectId__automations__automationId__impact_get: {
+        parameters: {
+            query?: {
+                action?: "delete" | "unlinkWorkflow";
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationImpactView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
     validate_automation_api_v1_projects__projectId__automations__automationId__validation_get: {
         parameters: {
             query?: never;
@@ -18117,6 +18314,89 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    delete_environment_api_v1_projects__projectId__environments__environmentId__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                environmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnvironmentDeleteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentOperationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
                 headers: {
                     [name: string]: unknown;
                 };
