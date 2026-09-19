@@ -18,7 +18,10 @@ from autoflow.domain.project_runs.models import (
     task_to_dict,
 )
 from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
-from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
+from autoflow.infrastructure.database.environment_models import (
+    ProjectEnvironmentInstanceRow,
+    ProjectManualItemRow,
+)
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_data_models import (
     DataChangeRow,
@@ -436,6 +439,7 @@ class ProjectRunQueries:
                 ],
                 "nodeNames": node_names,
                 "run": _run(run),
+                "cleanup": _cleanup(session, project_id, task_id, run),
                 "currentInputs": _current_inputs(session, project_id, snapshot),
                 "dataWrites": _data_writes(
                     session,
@@ -444,6 +448,79 @@ class ProjectRunQueries:
                     visits=_visit_windows(session, task.run_id, node_names),
                 ),
             }
+
+
+# Residue of one task's browser work copy, keyed by the instance's own durable
+# state (spec §3.6).  ``pending`` means cleanup has not been reached yet, not
+# that anything was cleaned.
+_CLEANUP_INSTANCE_STATUS: dict[str, str] = {
+    "reserved": "pending",
+    "starting": "pending",
+    "active": "pending",
+    "waiting_manual": "pending",
+    "saving": "pending",
+    "closing": "running",
+    "cleaning": "running",
+    "closed": "running",
+    "cleaned": "succeeded",
+    "cleanup_failed": "failed",
+    "unknown": "unknown",
+}
+
+_CLEANUP_MESSAGES: dict[str, str] = {
+    "pending": "环境现场仍在使用，任务结束后再关闭并清理。",
+    "running": "已确认浏览器退出，临时工作副本正在清理。",
+    "succeeded": "已确认浏览器退出，临时环境已释放。",
+    "failed": "清理失败，临时工作副本仍残留，需要核验后重试。",
+    "unknown": "上次清理结果未确认，请先核验运行现场，避免重复清理。",
+}
+
+
+def _cleanup(
+    session: Session, project_id: str, task_id: str, run: Any
+) -> dict[str, Any]:
+    """Project the task's environment cleanup from durable facts only.
+
+    Three confirmations are never derived from each other: the run outcome
+    (``run.status``), the environment residue (this summary) and the record
+    occupancy (``project_record_leases``).  A run only reaches a terminal
+    status after the worker confirmed ``cleanupConfirmed``, so a terminal run
+    with no work copy is a real cleanup fact, while ``reconciling`` means the
+    core could not confirm ownership and must stay unknown.
+    """
+    instance = session.scalar(
+        select(ProjectEnvironmentInstanceRow)
+        .where(
+            ProjectEnvironmentInstanceRow.project_id == project_id,
+            ProjectEnvironmentInstanceRow.active_task_id == task_id,
+        )
+        .order_by(
+            ProjectEnvironmentInstanceRow.created_at,
+            ProjectEnvironmentInstanceRow.id,
+        )
+    )
+    if instance is not None:
+        return _cleanup_view(_CLEANUP_INSTANCE_STATUS.get(instance.state, "unknown"))
+    if thaw_json(run.resource_request).get("browser") == "none":
+        return {"status": "notRequired", "operationId": None, "message": None}
+    if run.status == "reconciling":
+        return _cleanup_view("unknown")
+    if run.terminal:
+        return _cleanup_view("succeeded")
+    return {
+        "status": "pending",
+        "operationId": None,
+        "message": "任务结束后关闭并清理临时环境。",
+    }
+
+
+def _cleanup_view(status: str) -> dict[str, Any]:
+    """``operationId`` stays empty: no component creates a cleanup operation.
+
+    The contract allows the field and reserves the kind for the internal
+    cleanup coordinator; inventing an id here would be a fake recovery path.
+    """
+    return {"status": status, "operationId": None, "message": _CLEANUP_MESSAGES[status]}
 
 
 def _current_inputs(

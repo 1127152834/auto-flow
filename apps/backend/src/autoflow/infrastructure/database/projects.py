@@ -137,7 +137,15 @@ class SqlAlchemyProjects:
                     )
                 )
             if lifecycle_state:
-                query = query.where(ProjectRow.lifecycle_state == lifecycle_state)
+                # The archive directory also holds projects stuck in `deleting`:
+                # their cleanup residue must stay visible and retryable there
+                # (PM8 spec 2.3 / 3 残留可见).
+                states = (
+                    ("archived", "deleting")
+                    if lifecycle_state == "archived"
+                    else (lifecycle_state,)
+                )
+                query = query.where(ProjectRow.lifecycle_state.in_(states))
             total = (
                 session.scalar(select(func.count()).select_from(query.subquery())) or 0
             )

@@ -3,7 +3,8 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApiClientError } from '../../../shared/api/client'
-import type { ProjectLifecycleImpact, ProjectOperationView, ProjectView } from '../types'
+import type { ProjectLifecycleImpact, ProjectOperationPage, ProjectOperationView, ProjectView } from '../types'
+import { reportedCleanupResidue } from '../cleanup-residue'
 import { ProjectLifecycleDialog } from './ProjectLifecycleDialog'
 
 const project = { projectId: 'p1', name: '内容采集项目', description: '', managementRevision: 4 } as ProjectView
@@ -69,4 +70,24 @@ it('archives with the confirmed impact and revision', async () => {
   await user.click(await screen.findByRole('button', { name: '归档项目' }))
   await waitFor(() => expect(submit).toHaveBeenCalledWith({ impactRevision: 9, expectedManagementRevision: 4, confirmationName: '' }))
   expect(await screen.findByText('归档命令已接受，正在收尾。')).toBeVisible()
+})
+
+it('retries the cleanup of a project that is still deleting', async () => {
+  const user = userEvent.setup()
+  const stuck = { ...project, lifecycleState: 'deleting' } as unknown as ProjectView
+  const residuePage = { items: [{ ...operation, status: 'failed', kind: 'deleteProject', error: { code: 'DELETE_CLEANUP_FAILED', details: { cleanup: { residue: ['/tmp/environments/instances/e1'] } } } }] } as unknown as ProjectOperationPage
+  const submit = vi.fn().mockResolvedValue({ ...operation, status: 'running' })
+  render(<ProjectLifecycleDialog open action="delete" project={stuck} onOpenChange={vi.fn()} onLoadImpact={vi.fn().mockResolvedValue({ ...impact, blockers: [] })} onLoadResidue={() => Promise.resolve(reportedCleanupResidue(residuePage))} onSubmit={submit} />)
+
+  expect(await screen.findByText('/tmp/environments/instances/e1')).toBeVisible()
+  expect(screen.getAllByText(/上次本地文件清理未完成/).length).toBeGreaterThan(0)
+  expect(screen.getByText('这是服务已经确认的残留清单，重试只处理这些文件。')).toBeVisible()
+  const confirm = screen.getByRole('button', { name: '重试清理' })
+  expect(confirm).toBeDisabled()
+
+  await user.type(screen.getByLabelText('确认项目名称'), project.name)
+  expect(confirm).toBeEnabled()
+  await user.click(confirm)
+  await waitFor(() => expect(submit).toHaveBeenCalledWith({ impactRevision: 9, expectedManagementRevision: 4, confirmationName: project.name }))
+  expect(await screen.findByText('命令已接受，正在处理。')).toBeVisible()
 })

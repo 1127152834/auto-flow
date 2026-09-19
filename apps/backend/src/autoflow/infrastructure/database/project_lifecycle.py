@@ -238,7 +238,7 @@ class SqlAlchemyProjectLifecycle:
         project: ProjectRow,
     ) -> dict[str, Any]:
         return {
-            "blockers": _blockers(session, project_id, project),
+            "blockers": _blockers(session, project_id, project, action=action),
             "impacts": _impacts(session, project_id, action),
             "unsyncedCount": _unsynced_count(session, project_id),
         }
@@ -278,7 +278,7 @@ class SqlAlchemyProjectLifecycle:
             operation = _open_lifecycle_operation(session, project_id)
             excluded = operation.id if operation is not None else None
             if _blockers(
-                session, project_id, project, exclude_operation_id=excluded
+                session, project_id, project, exclude_operation_id=excluded, action="archiveProject"
             ):
                 session.rollback()
                 return
@@ -406,8 +406,15 @@ def _blockers(
     project_id: str,
     project: ProjectRow,
     *,
+    action: str | None = None,
     exclude_operation_id: str | None = None,
 ) -> list[dict[str, Any]]:
+    """Process blockers, or the refusal list for a delete impact.
+
+    `action` is the mapped impact action (`archiveProject`/`deleteProject`): a
+    project in `deleting` is converging towards `deleted`, so that state is the
+    delete's own target and must never refuse the retry.
+    """
     blockers: list[dict[str, Any]] = []
     for batch_id, status in session.execute(
         select(ProjectBatchRow.id, ProjectBatchRow.status).where(
@@ -500,7 +507,7 @@ def _blockers(
                 operation_id=other.id,
             )
         )
-    if project.lifecycle_state == "deleting":
+    if project.lifecycle_state == "deleting" and action != "deleteProject":
         blockers.append(
             _blocker(
                 "PROJECT_DELETING",

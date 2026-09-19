@@ -5,6 +5,7 @@ import { Modal } from '../../../shared/components/Modal'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import type { ProjectLifecycleAction } from '../api'
+import { cleanupResidue } from '../cleanup-residue'
 import { safeProjectError } from '../presentation-error'
 import type { ProjectLifecycleImpact, ProjectOperationView, ProjectView } from '../types'
 
@@ -17,6 +18,8 @@ export type ProjectLifecycleDialogProps = {
   disabled?: boolean
   onOpenChange(open: boolean): void
   onLoadImpact(): Promise<ProjectLifecycleImpact>
+  /** Residue the service already reported for this project, if any. */
+  onLoadResidue?(): Promise<string[]>
   onSubmit(values: LifecycleSubmit): Promise<ProjectOperationView>
   onFinished?(operation: ProjectOperationView): void
 }
@@ -24,15 +27,10 @@ export type ProjectLifecycleDialogProps = {
 const copy = {
   archive: { title: '归档项目', confirm: '归档项目', lead: '归档后项目变为只读，可随时恢复。' },
   delete: { title: '永久删除项目', confirm: '永久删除', lead: '此操作无法撤销，请核对影响范围。' },
+  deleteRetry: { title: '重试清理', confirm: '重试清理', lead: '项目停留在“正在删除”，上次本地文件清理未完成。重试只处理残留文件，不重跑历史任务。' },
 }
 
-function cleanupResidue(operation: ProjectOperationView): string[] {
-  const details = operation.error?.details as { cleanup?: { residue?: unknown } } | null | undefined
-  const residue = details?.cleanup?.residue
-  return Array.isArray(residue) ? residue.filter((item): item is string => typeof item === 'string') : []
-}
-
-export function ProjectLifecycleDialog({ open, action, project, disabled = false, onOpenChange, onLoadImpact, onSubmit, onFinished }: ProjectLifecycleDialogProps) {
+export function ProjectLifecycleDialog({ open, action, project, disabled = false, onOpenChange, onLoadImpact, onLoadResidue, onSubmit, onFinished }: ProjectLifecycleDialogProps) {
   const [impact, setImpact] = useState<ProjectLifecycleImpact | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,16 +38,23 @@ export function ProjectLifecycleDialog({ open, action, project, disabled = false
   const [name_, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [operation, setOperation] = useState<ProjectOperationView | null>(null)
+  const [reportedResidue, setReportedResidue] = useState<string[]>([])
   const submitLock = useRef(false)
   const session = useRef('')
-  const text = copy[action]
+  const retrying = action === 'delete' && project?.lifecycleState === 'deleting'
+  const text = retrying ? copy.deleteRetry : copy[action]
 
   const load = async () => {
     setLoading(true)
     setError(null)
     setStale(false)
     try {
-      setImpact(await onLoadImpact())
+      const [nextImpact, nextResidue] = await Promise.all([
+        onLoadImpact(),
+        onLoadResidue ? onLoadResidue() : Promise.resolve<string[]>([]),
+      ])
+      setImpact(nextImpact)
+      setReportedResidue(nextResidue)
     } catch (cause) {
       setError(safeProjectError(cause))
     } finally {
@@ -64,6 +69,7 @@ export function ProjectLifecycleDialog({ open, action, project, disabled = false
     submitLock.current = false
     setImpact(null)
     setOperation(null)
+    setReportedResidue([])
     setStale(false)
     setName('')
     setError(null)
@@ -71,10 +77,13 @@ export function ProjectLifecycleDialog({ open, action, project, disabled = false
   }, [action, open, project?.projectId])
 
   const blocked = action === 'delete' && Boolean(impact?.blockers.length)
-  const residue = operation ? cleanupResidue(operation) : []
+  const residue = operation ? cleanupResidue(operation) : reportedResidue
   const needsName = action === 'delete' && Boolean(project)
   const nameMatches = !needsName || name_.trim() === project?.name
-  const canSubmit = Boolean(impact) && !busy && !loading && !disabled && !blocked && !stale && nameMatches && !residue.length
+  // Already-reported residue is the reason to retry, so it must not block the
+  // command. Only a residue this session just produced forces a re-check.
+  const settled = Boolean(operation) && residue.length > 0
+  const canSubmit = Boolean(impact) && !busy && !loading && !disabled && !blocked && !stale && nameMatches && !settled
 
   const submit = async () => {
     if (!impact || !project || submitLock.current) return
@@ -120,7 +129,7 @@ export function ProjectLifecycleDialog({ open, action, project, disabled = false
         </section>
         {impact.unsyncedCount > 0 ? <p className="m-0 text-sm text-muted">未推送变化 {impact.unsyncedCount} 条：{action === 'delete' ? '删除后不会补发。' : '归档后保留，不会自动推送。'}</p> : null}
         {needsName ? <label className="grid gap-1 text-sm"><span className="font-medium text-ink">输入项目名称以确认</span><Input aria-label="确认项目名称" disabled={busy || disabled} placeholder={`请输入“${project?.name ?? ''}”以确认删除该项目。`} value={name_} onChange={event => setName(event.target.value)} /></label> : null}
-        {residue.length ? <section aria-label="清理残留" className="grid gap-1 rounded-control border border-clay/30 bg-clay/10 px-3 py-2 text-sm"><h3 className="m-0 font-semibold text-ink">本地文件未能完全清理</h3><p className="m-0">项目停留在“正在删除”，可重新发起删除重试。</p><ul className="m-0 grid list-none gap-1 p-0">{residue.map(item => <li key={item} className="break-all">{item}</li>)}</ul></section> : null}
+        {residue.length ? <section aria-label="清理残留" className="grid gap-1 rounded-control border border-clay/30 bg-clay/10 px-3 py-2 text-sm"><h3 className="m-0 font-semibold text-ink">本地文件未能完全清理</h3><p className="m-0">{operation ? '项目停留在“正在删除”，可重新发起删除重试。' : '这是服务已经确认的残留清单，重试只处理这些文件。'}</p><ul className="m-0 grid list-none gap-1 p-0">{residue.map(item => <li key={item} className="break-all">{item}</li>)}</ul></section> : null}
         {operation && !residue.length ? <p role="status" className="m-0 text-sm text-muted">{operation.status === 'succeeded' ? (action === 'delete' ? '项目已删除。' : '归档命令已接受，正在收尾。') : '命令已接受，正在处理。'}</p> : null}
         <div className="flex justify-end gap-2">
           <Button variant="ghost" disabled={busy} onClick={() => onOpenChange(false)}>取消</Button>

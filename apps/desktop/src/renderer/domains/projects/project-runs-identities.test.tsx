@@ -29,6 +29,7 @@ const detail = {
   task: task(ids.task1, 1),
   inputSnapshot: { inputSnapshotId: ids.snapshot, taskId: ids.task1, batchId: ids.batch, parameters: { [ids.parameter]: businessUuid }, inputs: [], capturedAt: batch.createdAt },
   run: { runId: ids.run, runRequestId: ids.request, status: 'failed', statusRevision: 2, executionGeneration: 1, preparedContentId: ids.content, capabilityBindings: [], resourceRequest: {}, lastSequence: 1, terminal: true, error: { code: 'UNKNOWN_FAILURE', message: `failure ${ids.run}`, requestId: ids.request }, startedAt: '2026-09-15T04:42:00Z', finishedAt: '2026-09-15T04:42:00Z' },
+  cleanup: { status: 'notRequired' as const, operationId: null, message: null },
 } satisfies Schema['TaskDetail']
 const attempt = { nodeVisitId: ids.visit, nodeId: ids.node, nodeName: '冻结的读取页面', attempt: 1, status: 'failed', startedAt: batch.createdAt, completedAt: '2026-09-15T04:42:00Z', error: { code: 'UNKNOWN_FAILURE', message: ids.node } } satisfies Schema['NodeAttemptView']
 const output = { outputId: ids.output, kind: 'value', name: '业务输出', value: businessUuid, runId: ids.run, sequence: 1, nodeId: ids.node, nodeName: '冻结的读取页面', nodeVisitId: ids.visit, attempt: 1, createdAt: batch.createdAt } satisfies Schema['RunOutputView']

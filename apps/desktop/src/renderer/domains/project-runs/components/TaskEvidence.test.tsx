@@ -12,6 +12,7 @@ const detail = {
   task: { taskId: 'task', taskOrdinal: 1, projectId: 'project', batchId: 'batch', runId: 'run', runRequestId: 'request', status: 'failed' as const, statusRevision: 2, inputSnapshotId: 'snapshot', createdAt: '', completedAt: '' },
   inputSnapshot: { inputSnapshotId: 'snapshot', taskId: 'task', batchId: 'batch', parameters: {}, inputs: [], capturedAt: '' },
   run: { runId: 'run', runRequestId: 'request', status: 'failed' as const, statusRevision: 2, executionGeneration: 1, preparedContentId: 'content', capabilityBindings: [], resourceRequest: {}, lastSequence: 2, terminal: true, error: { code: 'FAILED' }, startedAt: '', finishedAt: '' },
+  cleanup: { status: 'notRequired' as const, operationId: null, message: null },
 } satisfies Schema['TaskDetail']
 const base = { mode: 'evidence' as const, detail, attempts: { items: [], page: 1, pageSize: 100, total: 0, sort: 'createdAt' }, outputs: undefined, onLoadMoreAttempts: vi.fn(), onLoadMoreOutputs: vi.fn() }
 const artifact = {

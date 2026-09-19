@@ -480,6 +480,11 @@ def test_delete_cleanup_failure_keeps_the_project_deleting_with_residue(tmp_path
     assert saved.error["code"] == "DELETE_CLEANUP_FAILED"
     assert str(work_dir) in saved.error["details"]["cleanup"]["residue"]
 
+    # `deleting` is the state the retry converges to, never a reason to refuse it.
+    retry_impact = context.service.impact(context.project_id, "delete")
+    assert [item["code"] for item in retry_impact["blockers"]] == []
+    assert retry_impact["impacts"], "the retry still reports what will be removed"
+
     retry = context.delete()
     with pytest.raises(ProjectError) as blocked:
         context.delete()
@@ -490,6 +495,46 @@ def test_delete_cleanup_failure_keeps_the_project_deleting_with_residue(tmp_path
     assert retry.status == "running"
     assert not work_dir.exists()
     shutil.rmtree(container, ignore_errors=True)
+
+
+def test_archive_directory_lists_a_project_stuck_in_deleting(tmp_path):
+    environment_root = tmp_path / "environments"
+    context = Context(tmp_path, environment_root=environment_root)
+    instance_id = _busy_environment(context.factory, context.project_id, state="closed")
+    work_dir = environment_root / "instances" / instance_id
+    work_dir.mkdir(parents=True, exist_ok=True)
+    (work_dir / "payload").write_text("x", encoding="utf-8")
+
+    def listed(lifecycle_state):
+        items, total = context.projects.projects.list(
+            lifecycle_state=lifecycle_state, page=1, page_size=50
+        )
+        return [item.project_id for item in items], total
+
+    context.archive_to_settled()
+    assert listed("archived") == ([context.project_id], 1)
+    assert listed("active") == ([], 0)
+
+    context.delete()
+    container = environment_root / "instances"
+    try:
+        container.chmod(0o500)
+        try:
+            context.repository.advance(context.project_id)
+        finally:
+            container.chmod(0o755)
+
+        # The stuck project stays inside the archive directory, not only "all".
+        assert listed("archived") == ([context.project_id], 1)
+        assert listed(None) == ([context.project_id], 1)
+        assert listed("active") == ([], 0)
+
+        context.delete()
+        context.repository.advance(context.project_id)
+        assert listed("archived") == ([], 0)
+    finally:
+        container.chmod(0o755)
+        shutil.rmtree(container, ignore_errors=True)
 
 
 def test_lifecycle_commands_replay_on_the_same_key(tmp_path):

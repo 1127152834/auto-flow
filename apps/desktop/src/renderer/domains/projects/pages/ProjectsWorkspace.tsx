@@ -7,10 +7,11 @@ import { notify, Toaster } from '../../../shared/components/Toaster'
 import { createProjectsApi, isDefinitiveProjectFailure } from '../api'
 import { safeProjectError } from '../presentation-error'
 import { toProjectCreate, toProjectPatch, type ProjectFormValues } from '../form-schema'
-import { projectKeys, useProject, useProjectDirectory, useProjectOverview } from '../hooks'
+import { projectKeys, useProject, useProjectCleanupResidues, useProjectDirectory, useProjectOverview } from '../hooks'
 import type { ProjectCreate, ProjectListConditions, ProjectPatch, ProjectRoute, ProjectSummary, ProjectView } from '../types'
 import { ProjectFormDialog } from '../components/ProjectFormDialog'
 import { ProjectLifecycleDialog, type LifecycleSubmit } from '../components/ProjectLifecycleDialog'
+import { reportedCleanupResidue } from '../cleanup-residue'
 import type { ProjectLifecycleChoice } from '../components/ProjectCard'
 import { ProjectDirectoryPage } from './ProjectDirectoryPage'
 import { ProjectOverviewPage } from './ProjectOverviewPage'
@@ -119,6 +120,9 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
 
   const directory = useProjectDirectory(api, workspaceKey, instanceId, conditions, mode === 'all')
   const recent = useProjectDirectory(api, workspaceKey, instanceId, recentConditions, mode === 'recent')
+  // Only projects that are still deleting can carry cleanup residue; they live
+  // in the archive directory until the residue is gone.
+  const lifecycleResidue = useProjectCleanupResidues(api, workspaceKey, instanceId, useMemo(() => [...(directory.data?.items ?? []), ...(recent.data?.items ?? [])].filter(item => item.lifecycleState === 'deleting').map(item => item.projectId), [directory.data, recent.data]))
   const detail = useProject(api, workspaceKey, instanceId, route.projectId)
   const overview = useProjectOverview(api, workspaceKey, instanceId, route.projectId, route.tab === 'overview')
   useLayoutEffect(() => { if (detail.data) setRetainedProject({ workspaceKey, project: detail.data }) }, [detail.data, workspaceKey])
@@ -282,7 +286,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
       </ProjectOverviewPage>
       : route.projectId && detail.isLoading ? <main className="p-6" role="status">正在加载项目…</main>
       : route.projectId && detail.isError ? <main className="grid gap-3 p-6" role="alert"><p>无法加载项目。</p><div className="flex gap-2"><Button onClick={() => void detail.refetch()}>重试</Button><Button variant="ghost" onClick={() => onNavigate({ tab: 'overview' })}>返回项目目录</Button></div></main>
-      : <ProjectDirectoryPage key={mode} mode={mode} onModeChange={setMode} recentItems={recent.data?.items} recentLoading={recent.isLoading} recentError={recent.isError ? '刷新最近项目失败' : null} page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={mode === 'recent' ? recent.isFetching : directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, mode, value) }} onConditionsChange={setConditions} onRefresh={() => void (mode === 'recent' ? recent.refetch() : directory.refetch())} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} onLifecycle={selectLifecycle} />}
+      : <ProjectDirectoryPage key={mode} mode={mode} onModeChange={setMode} recentItems={recent.data?.items} recentLoading={recent.isLoading} recentError={recent.isError ? '刷新最近项目失败' : null} page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={mode === 'recent' ? recent.isFetching : directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, mode, value) }} onConditionsChange={setConditions} onRefresh={() => void (mode === 'recent' ? recent.refetch() : directory.refetch())} cleanupResidue={lifecycleResidue} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} onLifecycle={selectLifecycle} />}
     <ProjectFormDialog open={Boolean(editor)} project={editor?.project ?? null} draftSession={editor?.draftSession ?? 'closed'} submissionEpoch={`${instanceId}:${editor?.draftSession ?? 'closed'}`} recoveryPending={recoveryPending} disabled={disabled} onOpenChange={open => { if (!open) setEditor(null) }} onSubmit={submit} onLoadLatest={editorProjectId ? () => api.get(editorProjectId) : undefined} onDirtyChange={value => { dirtyRef.current = value }} onSavingChange={value => { savingRef.current = value; setSaving(value) }} onRequestClose={guard} />
     {lifecycle && lifecycle.action !== 'restore' ? <ProjectLifecycleDialog
       open
@@ -291,6 +295,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
       disabled={disabled}
       onOpenChange={open => { if (!open) setLifecycle(null) }}
       onLoadImpact={lifecycleImpact}
+      onLoadResidue={() => api.operations(lifecycle.project.projectId).then(reportedCleanupResidue)}
       onSubmit={lifecycleSubmit}
       onFinished={operation => { if (operation.status === 'succeeded' || operation.status === 'failed') setLifecycle(null) }}
     /> : null}

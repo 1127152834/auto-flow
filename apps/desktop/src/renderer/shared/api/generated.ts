@@ -4014,6 +4014,18 @@ export type components = {
             /** Reason */
             reason?: string | null;
         };
+        /** CleanupSummaryView */
+        CleanupSummaryView: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "notRequired" | "pending" | "running" | "succeeded" | "failed" | "unknown";
+            /** Operationid */
+            operationId?: string | null;
+            /** Message */
+            message?: string | null;
+        };
         /** ColumnExcelIdentity */
         ColumnExcelIdentity: {
             /**
@@ -8344,6 +8356,7 @@ export type components = {
             run: components["schemas"]["RunSnapshotView"];
             /** Datawrites */
             dataWrites?: components["schemas"]["TaskDataWriteView"][];
+            cleanup: components["schemas"]["CleanupSummaryView"];
         };
         /** TaskInputSnapshotView */
         TaskInputSnapshotView: {
