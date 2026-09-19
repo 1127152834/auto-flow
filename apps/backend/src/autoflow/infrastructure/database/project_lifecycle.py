@@ -302,6 +302,11 @@ class SqlAlchemyProjectLifecycle:
                 return
             targets = _local_targets(session, project_id, self._environment_root)
             operation = _open_lifecycle_operation(session, project_id)
+            if operation is None:
+                # Residue can clear without a new user command. Reuse the failed
+                # delete this project already reported instead of purging the
+                # only queryable outcome together with the project.
+                operation = _latest_delete_operation(session, project_id)
             operation_id = operation.id if operation is not None else None
             session.rollback()
         residue = _remove(targets)
@@ -698,6 +703,19 @@ def _existing(session: Session, operation: ProjectOperation) -> ProjectOperation
             {"domainCode": "operation_payload_mismatch", "retryable": False},
         )
     return _operation(row)
+
+
+def _latest_delete_operation(
+    session: Session, project_id: str
+) -> ProjectOperationRow | None:
+    return session.scalar(
+        select(ProjectOperationRow)
+        .where(
+            ProjectOperationRow.project_id == project_id,
+            ProjectOperationRow.kind == "deleteProject",
+        )
+        .order_by(ProjectOperationRow.created_at.desc(), ProjectOperationRow.id)
+    )
 
 
 def _open_lifecycle_operation(
