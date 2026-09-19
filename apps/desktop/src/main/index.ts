@@ -23,6 +23,14 @@ let settings: SettingsController | undefined
  * reads `undefined` and keeps the real dialog.
  */
 const qaGoogleConfigPath = !app.isPackaged ? process.env.AUTOFLOW_QA_GOOGLE_CONFIG : undefined
+/**
+ * Development-only: the fixture files an automated run hands to the project
+ * file controller instead of the native pickers. A packaged build always reads
+ * `undefined`, and the real controller still validates window, main frame,
+ * workspace, project, purpose and the file itself.
+ */
+const qaExcelInput = !app.isPackaged ? process.env.AUTOFLOW_QA_EXCEL_INPUT : undefined
+const qaXlsxOutputDir = !app.isPackaged ? process.env.AUTOFLOW_QA_XLSX_OUTPUT : undefined
 const studio = new StudioWindowController({
   mainSenderId: () => mainWindow?.webContents.id,
   workspacePartition:()=>{
@@ -58,8 +66,12 @@ async function createWindow(): Promise<void> {
   const projectFiles = new ProjectFilesController({
     allowedSenderId: mainWindow.webContents.id,
     getHostStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
-    showOpenDialog: options => dialog.showOpenDialog(mainWindow!, options as Electron.OpenDialogOptions),
-    showSaveDialog: options => dialog.showSaveDialog(mainWindow!, options as Electron.SaveDialogOptions),
+    showOpenDialog: qaExcelInput
+      ? async () => ({ canceled: false, filePaths: [String(qaExcelInput)] })
+      : options => dialog.showOpenDialog(mainWindow!, options as Electron.OpenDialogOptions),
+    showSaveDialog: qaXlsxOutputDir
+      ? async options => ({ canceled: false, filePath: join(qaXlsxOutputDir, String((options as { defaultPath?: string }).defaultPath ?? '导出.xlsx')) })
+      : options => dialog.showSaveDialog(mainWindow!, options as Electron.SaveDialogOptions),
   })
   ipcMain.removeHandler('autoflow:project-files:context')
   ipcMain.handle('autoflow:project-files:context', event => projectFiles.getProjectFileContext(event))
