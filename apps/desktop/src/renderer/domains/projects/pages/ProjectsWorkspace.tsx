@@ -99,7 +99,9 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const [mode, setModeState] = useState<DirectoryMode>(() => readMode(workspaceKey))
   const [scrollTop, setScrollTop] = useState(() => readScrollTop(workspaceKey, readMode(workspaceKey)))
   const [editor, setEditor] = useState<Editor | null>(null)
-  const [lifecycle, setLifecycle] = useState<{ project: ProjectView; action: ProjectLifecycleChoice } | null>(null)
+  // One confirmation session owns one command identity: a lost response is
+  // replayed under the same key instead of archiving or deleting twice.
+  const [lifecycle, setLifecycle] = useState<{ project: ProjectView; action: ProjectLifecycleChoice; key: string } | null>(null)
   const [saving, setSaving] = useState(false)
   const [recoveryPending, setRecoveryPending] = useState(false)
   const dataGuard = useRef<(() => Promise<boolean>) | null>(null)
@@ -201,7 +203,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     if (command.kind === 'create') onNavigate({ projectId: saved.projectId, tab: 'overview' })
   }
 
-  const startLifecycle = (project: ProjectSummary, action: ProjectLifecycleChoice) => setLifecycle({ project: project as ProjectView, action })
+  const startLifecycle = (project: ProjectSummary, action: ProjectLifecycleChoice) => setLifecycle({ project: project as ProjectView, action, key: crypto.randomUUID() })
 
   const lifecycleImpact = async () => {
     if (!lifecycle || lifecycle.action === 'restore') throw new Error('缺少生命周期动作')
@@ -212,8 +214,8 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     if (!lifecycle) throw new Error('缺少生命周期动作')
     const { projectId } = lifecycle.project
     const operation = lifecycle.action === 'archive'
-      ? await api.archive(projectId, { impactRevision: values.impactRevision, expectedManagementRevision: values.expectedManagementRevision })
-      : await api.remove(projectId, values)
+      ? await api.archive(projectId, { impactRevision: values.impactRevision, expectedManagementRevision: values.expectedManagementRevision }, lifecycle.key)
+      : await api.remove(projectId, values, lifecycle.key)
     void cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'projects'] })
     void cache.invalidateQueries({ queryKey: projectKeys.detail(workspaceKey, instanceId, projectId) })
     notify({
