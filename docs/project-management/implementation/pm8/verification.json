@@ -6,27 +6,27 @@
   "deliveryStatus": "delivered-management-scope",
   "verificationStatus": "verifiedForManagementScope",
   "scope": "管理侧通过，真实执行核心接入待验收",
-  "head": "5e19f19040f8df783ec9bb88f5a452d124630f71",
-  "headNote": "head 是 `git rev-parse HEAD` 复核后的实际提交号（5e19f190，含全部 PM8 源码修复与 QA 资产）。本文件、覆盖表、账本与 .ai 记录在随后的文档提交中落库，不改变 apps/*/src 的源码摘要（仍为 d92004ce…）。",
-  "sourceDigest": "d92004ceb0e0fad7bd2a7ca0fe33bf16cefedc69c013d24cc93a1da2386c85a7",
+  "head": "2021c74a7107a5369bec2f0feff175ffc8f8e7df",
+  "headNote": "head 是 `git rev-parse HEAD` 复核后的实际提交号（2021c74a 的 PM8-C2 补齐提交）。本文件、覆盖表、账本与 .ai 记录在随后的文档提交中落库，不改变 apps/*/src 的源码摘要。",
+  "sourceDigest": "3502e24d7321efc5e5b92bbc83b181a236a0e07f10bdaa9cc29b8b16d8196462",
   "sourceDigestMethod": "对 apps/backend/src 与 apps/desktop/src 递归取 .py/.ts/.tsx/.css，按路径排序后依次 update('路径' + 文件字节) 再整体 sha256（与 QA 脚本 scripts/qa-project-management-pm8.mjs 的算法一致）",
-  "sourceDigestNote": "该摘要与权威端到端运行 report.json 里的 sourceSha256 完全一致，说明 11 张截图对应的工作树源码就是本次提交的源码，不是事后补拍。",
+  "sourceDigestNote": "该摘要与权威端到端运行 qa-runs/20260919202620/report.json 里的 sourceSha256 完全一致，说明 11 张截图对应的工作树源码就是本次交付的源码（含 2021c74a 的替换器修复前的全部 PM8 源码）。",
   "authoritativeManagementRun": {
-    "result": "docs/project-management/implementation/pm8/qa-runs/20260919200955/report.json",
+    "result": "docs/project-management/implementation/pm8/qa-runs/20260919202620/report.json",
     "status": "passed",
     "scenario": "PM8-A management-side lifecycle, restart reconciliation and resource protection",
     "scope": "管理侧通过，真实执行核心接入待验收",
     "evidenceType": "真实 Electron 渲染层点击（CDP 指针输入）+ 应用自启 FastAPI + 隔离 SQLite + 隔离 QA 测试执行器",
-    "capturedGitHead": "28ab6f5162b78c5b3b5397019c5f5bc6a3b021c8",
-    "capturedGitHeadNote": "运行时 HEAD 是 28ab6f51，工作树已包含随后以 5e19f190 提交的源码修复；两者源码摘要相同（d92004ce…），属同一份源码。",
-    "capturedSourceSha256": "d92004ceb0e0fad7bd2a7ca0fe33bf16cefedc69c013d24cc93a1da2386c85a7",
+    "capturedGitHead": "fbdb7f98b9aa3bee2dddfd3a2013e423e4a24329",
+    "capturedGitHeadNote": "运行时 HEAD 是 fbdb7f98，工作树已包含随后以 2021c74a 提交的代理引用清单修复；源码摘要 3502e24d… 是含该修复的工作树，属同一份源码。",
+    "capturedSourceSha256": "3502e24d7321efc5e5b92bbc83b181a236a0e07f10bdaa9cc29b8b16d8196462",
     "platform": "darwin",
     "arch": "arm64",
     "viewport": "1440x1024",
     "dpr": 1,
     "checkpoints": 16,
     "screenshots": 11,
-    "visualReview": "passed（docs/project-management/implementation/pm8/visual-review.md，逐画面自审，最低 85 分）",
+    "visualReview": "passed（docs/project-management/implementation/pm8/visual-review.md，逐画面自审，最低 85 分；截图等价性见 supersededRuns）",
     "boundary": {
       "executor": "isolatedQaExecutor（apps/backend/tests/qa/pm8_sidecar.py + tests/qa 隔离执行器）",
       "browser": "notExecuted",
@@ -39,7 +39,7 @@
       "activeTask": "E2E-1 界面启动 1 个真实任务并保持运行：批次 8c68e4fc-cc9c-4a9d-b1d6-d59caed15816、任务已进入 running。",
       "blockers": "E2E-2 设置页与归档影响预检都列出真实阻断 BATCH_ACTIVE、TASK_ACTIVE；预检未改变任何状态；任务结束后阻断随真实事实消失（批次 completed、任务 succeeded）。",
       "archive": "E2E-3 归档命令被接受并在无 HTTP 请求维持下收敛为 archived；归档后写命令返回 409 LIFECYCLE_CONFLICT，只读查询仍返回 3 张表。",
-      "archivedExport": "E2E-3 归档项目只读导出成功：人员.xlsx（4859 字节，PK 魔数确认真实 xlsx 容器）。",
+      "archivedExport": "E2E-3 归档项目只读导出成功：人员.xlsx（4860 字节，PK 魔数确认真实 xlsx 容器）。",
       "restore": "E2E-4 恢复后历史任务的 taskId/status/statusRevision/updatedAt/startedAt/completedAt 逐字段不变；归档与恢复各只有一条 Operation 事实；导出未被重放。",
       "resourceProtection": "E2E-6 被项目引用的浏览器配置删除被拒：接口 409 RESOURCE_REFERENCED，真实界面删除对话框同时列出「PM8 生命周期验收 · 自动化「PM8 生命周期自动化」（environmentPolicy.profileId）」，且不提供强制删除。",
       "deleteGuards": "E2E-5 影响确认过期后删除被拒 412；确认名不符时界面禁用提交且直连接口 422。",
@@ -60,6 +60,12 @@
       "打包应用",
       "用户手动执行结果",
       "双工作区切换（见手测 M-08）"
+    ],
+    "supersededRuns": [
+      {
+        "result": "docs/project-management/implementation/pm8/qa-runs/20260919200955/report.json",
+        "note": "上一轮权威运行（源码摘要 d92004ce…）。与本次运行逐画面像素比对：5 张完全一致，6 张差异 ≤0.20% 且仅限运行期动态值（临时工作区路径、开始时间、计数），版式与结构无差异；visual-review.md 的逐画面评分基于该轮，等价性由这次比对建立。"
+      }
     ]
   },
   "defectsFoundByThisRun": [
@@ -110,23 +116,47 @@
   "packages": {
     "PM8-A1": {
       "status": "delivered",
-      "commits": ["a3e4cb62", "8fbd6e45", "5e19f190"],
-      "evidence": ["apps/backend/tests/integration/test_project_lifecycle.py", "apps/backend/tests/contract/test_projects.py", "qa-runs/20260919200955/report.json"]
+      "commits": [
+        "a3e4cb62",
+        "8fbd6e45",
+        "5e19f190"
+      ],
+      "evidence": [
+        "apps/backend/tests/integration/test_project_lifecycle.py",
+        "apps/backend/tests/contract/test_projects.py",
+        "qa-runs/20260919200955/report.json"
+      ]
     },
     "PM8-A2": {
       "status": "delivered",
-      "commits": ["2d148ce5", "159dd0a9"],
-      "evidence": ["apps/backend/tests/integration/test_project_lifecycle.py"]
+      "commits": [
+        "2d148ce5",
+        "159dd0a9"
+      ],
+      "evidence": [
+        "apps/backend/tests/integration/test_project_lifecycle.py"
+      ]
     },
     "PM8-A3": {
       "status": "delivered",
-      "commits": ["8255e9cf", "5e19f190"],
-      "evidence": ["apps/desktop/src/renderer/domains/projects/components/ProjectLifecycleDialog.test.tsx", "qa-runs/20260919200955/04-archive-confirm.png"]
+      "commits": [
+        "8255e9cf",
+        "5e19f190"
+      ],
+      "evidence": [
+        "apps/desktop/src/renderer/domains/projects/components/ProjectLifecycleDialog.test.tsx",
+        "qa-runs/20260919200955/04-archive-confirm.png"
+      ]
     },
     "PM8-B1": {
       "status": "delivered",
-      "commits": ["9404982b"],
-      "evidence": ["apps/backend/tests/integration/test_project_crash_recovery.py", "qa-runs/20260919200955/11-archive-response-loss.png"]
+      "commits": [
+        "9404982b"
+      ],
+      "evidence": [
+        "apps/backend/tests/integration/test_project_crash_recovery.py",
+        "qa-runs/20260919200955/11-archive-response-loss.png"
+      ]
     },
     "PM8-B2": {
       "status": "delivered-with-open-item",
@@ -134,18 +164,35 @@
     },
     "PM8-C1": {
       "status": "delivered",
-      "commits": ["3ef676ab", "5e19f190"],
-      "evidence": ["apps/desktop/src/main/settings/settings.test.ts", "qa-runs/20260919200955/02-settings-blockers.png"]
+      "commits": [
+        "3ef676ab",
+        "5e19f190"
+      ],
+      "evidence": [
+        "apps/desktop/src/main/settings/settings.test.ts",
+        "qa-runs/20260919200955/02-settings-blockers.png"
+      ]
     },
     "PM8-C2": {
-      "status": "delivered-with-open-item",
-      "commits": ["91bcdc2a", "d390931b"],
-      "evidence": ["apps/backend/tests/integration/test_project_resource_references.py", "qa-runs/20260919200955/07-resource-referenced.png"],
-      "openItem": "代理连接/代理组删除走的是 PROFILE_DIRECTORY_BUSY 语义，未接入 RESOURCE_REFERENCED 引用清单，本轮未改错误码、未在界面展示引用对象。属已登记未闭合项。"
+      "status": "delivered",
+      "commits": [
+        "91bcdc2a",
+        "d390931b",
+        "2021c74a"
+      ],
+      "evidence": [
+        "apps/backend/tests/contract/test_project_resource_references.py（Profile/内核/代理连接/代理组/模型的静态引用与活动占用分别产生 409）",
+        "apps/desktop/src/renderer/domains/proxies/tests/ProxyManagementPage.test.tsx（wire→UI：代理连接断开与代理组删除命中 RESOURCE_REFERENCED 时列出引用对象，阻断态不提供重新加载）",
+        "qa-runs/20260919202620/07-resource-referenced.png（真实界面引用清单：浏览器配置路径）"
+      ],
+      "note": "代理连接/代理组删除的后端在 91bcdc2a/d390931b 已返回 RESOURCE_REFERENCED + details.references；2021c74a 补齐界面展示。代理路径没有真实截图：隔离环境无法建立真实 ProxyPanel 连接，不做假夹具冒充端到端，证据边界如实记为 组件测试 + 后端契约测试。"
     },
     "PM8-F": {
       "status": "delivered",
-      "evidence": ["scripts/qa-project-management-pm8.mjs", "docs/project-management/implementation/pm8/**"]
+      "evidence": [
+        "scripts/qa-project-management-pm8.mjs",
+        "docs/project-management/implementation/pm8/**"
+      ]
     }
   },
   "independentReview": {
@@ -158,9 +205,24 @@
     "Windows、其他 CPU 架构、打包应用未执行。",
     "用户手动验收未执行；手测入口 docs/project-management/implementation/pm8/manual-test.md（proposed）。",
     "双工作区切换未在本轮端到端中执行（手测 M-08 覆盖）。",
-    "PM8-B2 的清理残留重试分支、PM8-C2 的代理类删除引用清单为已登记未闭合项。",
+    "PM8-B2 的清理残留重试分支只有组件测试证据，端到端没有制造出真实清理残留。",
+    "代理连接/代理组删除的引用清单没有真实截图：隔离环境无法建立真实 ProxyPanel 连接；证据为组件测试与后端契约测试。",
     "reference/* 只读符号链接本应存在；PM8 工作区最初缺失，已从主项目补齐并写入 .git/info/exclude（不入库）。报告与手测方案把它记为环境前置条件。",
     "`project_batches_active` 只在隔离执行器暂停注入下出现；它是测试注入制造的状态，不是产品缺陷。"
   ],
-  "outcome": "PM8 完成后停在 PM8 验收点，不进入 PM9。"
+  "outcome": "PM8 完成后停在 PM8 验收点，不进入 PM9。",
+  "postDeliveryFixes": [
+    {
+      "commit": "2021c74a",
+      "summary": "PM8-C2 前端展示补齐：代理连接断开与代理组删除命中 RESOURCE_REFERENCED 时列出引用对象，阻断态隐藏「重新加载」。此前执行账本把该问题误记为「走 PROFILE_DIRECTORY_BUSY 语义」，实际后端早已返回引用清单，缺的是界面渲染；错误码判断已按源码语义更正。",
+      "checks": [
+        "npm --workspace @autoflow/desktop test -- ProxyManagementPage（14 项，含 2 项新反例，先红后绿）",
+        "npm test（404 文件 / 5445 项）",
+        "npm run typecheck",
+        "npm run lint",
+        "npm run build"
+      ],
+      "e2e": "qa-runs/20260919202620：status passed，16 检查点，11 截图，源码摘要 3502e24d…"
+    }
+  ]
 }

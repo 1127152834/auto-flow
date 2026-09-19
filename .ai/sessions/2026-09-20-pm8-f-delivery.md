@@ -20,10 +20,18 @@
 
 ## 未闭合 / 未执行
 
-- 代理连接、代理组删除未接入 `RESOURCE_REFERENCED` 引用清单（仍走 `PROFILE_DIRECTORY_BUSY`）。
 - 归档对话框的清理残留重试分支只有组件测试证据，端到端未制造真实残留。
 - 独立规格/工程审查因智能体投递故障未执行，改为主协调自审并如实登记。
 - 真实执行核心、真实 CloakBrowser、Studio demo、Windows、其他架构、打包应用、用户手测、双工作区切换未执行。
+
+## 交付后补齐（提交 2021c74a）
+
+合并到 `codex/architecture-baseline` 后自查完成度时发现上面的第一条登记有误：后端删除代理连接/代理组时**早已**返回 `RESOURCE_REFERENCED` + `details.references`（`tests/contract/test_project_resource_references.py` 8 项通过），失败的是界面渲染——断开 ProxyPanel 只显示裸服务端消息，删除代理组连错误条都不出现。
+
+- 补齐：错误条渲染共享的 `ResourceReferenceList`，被引用阻断时隐藏「重新加载」；代理组删除命中 `RESOURCE_REFERENCED` 时给出明确文案。
+- 证据：`ProxyManagementPage.test.tsx` 两项新反例（真实 `ApiClient` + fetch 桩，先红后绿），全量前端 404 文件 / 5445 项、typecheck、lint、build 通过。
+- 真实端到端按同一脚本复跑：`qa-runs/20260919202620`（`passed`、16 检查点、11 截图、源码摘要 `3502e24d…`）；与上一轮截图逐像素比对为 4 张完全一致、7 张差异 ≤0.20% 且仅动态值，评分依据见 `visual-review.md` 第 5 节。
+- 仍未闭合：代理路径没有真实截图（隔离环境建立不了真实 ProxyPanel 连接），证据边界记为组件测试 + 后端契约测试。
 
 ## 环境前置条件
 

@@ -269,7 +269,7 @@ PM7 完成后停在 PM7 验收点，不进入 PM8。
 | PM8-B1 跨重启核验与残留 | `9404982b` | delivered | `tests/integration/test_project_crash_recovery.py`；`11-archive-response-loss.png` | — |
 | PM8-B2 残留可见入口 | 随 A3/B1 | delivered-with-open-item | 任务详情 `cleanup: CleanupSummary`；归档对话框 `onLoadResidue` +「重试清理」 | 清理失败分支只有组件测试证据，端到端未制造真实残留 |
 | PM8-C1 退出与工作区阻断 | `3ef676ab`、`5e19f190` | delivered | `settings.test.ts`；`02-settings-blockers.png` | — |
-| PM8-C2 全局资源引用保护 | `91bcdc2a`、`d390931b` | delivered-with-open-item | `tests/contract/test_project_resource_references.py`；`07-resource-referenced.png` | 代理连接/代理组删除仍走 `PROFILE_DIRECTORY_BUSY`，未接入引用清单 |
+| PM8-C2 全局资源引用保护 | `91bcdc2a`、`d390931b`、`2021c74a` | delivered | `tests/contract/test_project_resource_references.py`；`07-resource-referenced.png`；`ProxyManagementPage.test.tsx` 的代理连接/代理组引用清单反例 | — |
 | PM8-F 集成与阶段验收 | `5e19f190` 及本节文档提交 | delivered / 管理侧通过 | `pm8/verification.json`、`pm8/visual-review.md`、`pm8/qa-runs/20260919200955/report.json` | 真实执行核心、用户手测、未运行平台 |
 
 **权威端到端运行**：`status: passed`、16 个检查点、11 张截图、viewport 1440×1024、dpr 1、darwin/arm64。核心项目、三张表、字段、记录与自动化由界面创建；浏览器配置与工作流文档是明确标注的测试夹具；执行核心是隔离 QA 测试执行器。固定交付声明：**管理侧通过，真实执行核心接入待验收**。
@@ -284,5 +284,7 @@ PM7 完成后停在 PM7 验收点，不进入 PM8。
 **独立审查**：计划中的独立规格/工程审查智能体四次投递都只收到模式提示、收不到任务正文，判为工具投递故障；本轮改为主协调自审并如实登记为未执行（`pm8/verification.json` 的 `independentReview`）。
 
 **未执行**：真实生产执行核心、真实 CloakBrowser、Studio demo、Windows、其他 CPU 架构、打包应用、用户手动验收、双工作区切换（见手测 M-08）。这些不因本轮管理侧通过而被标为通过。
+
+**交付后补齐（2026-09-20，提交 `2021c74a`）**：PM8-C2 的前端展示原先登记有误——后端删除代理连接/代理组时**早已**返回 `RESOURCE_REFERENCED` + `details.references`（`tests/contract/test_project_resource_references.py` 8 项通过），缺的是界面渲染：断开 ProxyPanel 只显示裸服务端消息，删除代理组连错误条都不出现。本轮补齐：错误条渲染共享的 `ResourceReferenceList`，阻断态隐藏「重新加载」（重载不解除引用），并补两项走真实 `ApiClient` + fetch 桩的反例（先红后绿）。同步重跑全量：前端 404 文件 / 5445 项、typecheck、lint、build 通过；真实端到端复跑 `qa-runs/20260919202620`（`passed`、16 检查点、11 截图、源码摘要 `3502e24d…`）。代理路径没有真实截图：隔离环境建立不了真实 ProxyPanel 连接，证据边界如实记为组件测试 + 后端契约测试。
 
 PM8 完成后停在 PM8 验收点，不进入 PM9。
