@@ -1,0 +1,209 @@
+{
+  "date": "2026-09-18",
+  "milestone": "PM6",
+  "branch": "codex/project-management-pm6",
+  "status": "delivered-management-scope-verified-live-service-account",
+  "deliveryStatus": "delivered-management-scope",
+  "verificationStatus": "verifiedForServiceAccountPath",
+  "scope": "管理侧契约与替身链路已验证；服务账号路径已用真实 Google Spreadsheet 完成实网端到端；OAuth 桌面应用流程仍未执行",
+  "head": "c79f05f42cc45554614fb40d789f6531b27c0a08",
+  "workingTree": "clean",
+  "sourceDigest": "727e7ebcc54cffbe8b3e076cd7ecd6220b8ede04f22958ff93745f38b05523d6",
+  "sourceDigestMethod": "find apps/backend/src apps/desktop/src -type f \\( -name '*.py' -o -name '*.ts' -o -name '*.tsx' -o -name '*.css' \\) | sort | xargs shasum -a 256 | shasum -a 256",
+  "sourceDigestNote": "对 c79f05f4 提交的工作树计算：apps/backend/src 与 apps/desktop/src 下 .py/.ts/.tsx/.css 逐文件 sha256 再整体 sha256。本轮交付的界面整改与 QA 截图均由该值对应的源码产出。",
+  "authoritativeManagementRun": {
+    "result": "docs/project-management/implementation/pm6/qa-runs/2026-09-18/ui-result.json",
+    "status": "passed",
+    "scenario": "PM6 Google Sheets 来源与同步闭环（管理侧）",
+    "evidenceType": "真实 Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 受控 Sheets REST 替身",
+    "capturedGitHead": "c79f05f42cc45554614fb40d789f6531b27c0a08",
+    "platform": "darwin",
+    "arch": "arm64",
+    "checkpoints": 13,
+    "screenshots": 13,
+    "viewport": "1440x1024",
+    "dpr": 1,
+    "boundary": {
+      "sheetsRest": "tests/fixtures/sheets.FakeSheetsTransport（spreadsheetId=pm6-source-1）",
+      "credentialStore": "QA 侧车内的文件凭据库，替代系统钥匙串",
+      "googleConfigPicker": "AUTOFLOW_QA_GOOGLE_CONFIG，仅 !app.isPackaged 时生效，替代原生文件选择框",
+      "studio": "notExecuted"
+    },
+    "facts": {
+      "sidecarModule": "tests.qa.pm6_sidecar",
+      "tableSourceBeforeBinding": "local",
+      "localRecordBeforeBinding": [
+        "001",
+        "local@example.com"
+      ],
+      "connectionCredentialState": "available",
+      "binding": {
+        "spreadsheetId": "pm6-source-1",
+        "sheetId": 1000,
+        "bindingEpoch": 1,
+        "identityStrategy": {
+          "kind": "column",
+          "columnId": "A"
+        },
+        "formulaColumn": "C"
+      },
+      "pulledRecordKey": {
+        "type": "text",
+        "value": "001"
+      },
+      "reconcile": "提交后响应丢失进入结果未知；核对结果依据远端证据判定已确认，写入次数不变",
+      "unbind": "影响确认先给出；取消不改动已保存绑定；确认后表进入待配置且本地数据保留",
+      "visualStates": "08a-push-result-unknown 捕获原型 100 的「请求已发出，尚未确认云端结果」状态；08-lost-response-reconciled 捕获核验后的已确认状态"
+    },
+    "defectsFoundByThisRun": [
+      "渲染层对 /sheets/binding 使用 POST，路由只接受 PUT，真实界面绑定必然 405；单测替身不校验方法因而漏过。已改为 PUT 并保留幂等键。",
+      "拉取或推送后记录页沿用命令前的分页结果，用户看不到远端行；onChanged 现将记录查询一并失效。已补回归用例。",
+      "来源页签把「绑定读取失败/读取中」显示成空事实，违反「失败不得显示为已确认空数据」。已区分读取中、暂时无法读取、未记录。",
+      "SheetsConnectionPanel 表头 5 个单元格、数据行 6 个，列错位。",
+      "账号表与字段映射表的表头把 <td> 嵌在 <thead>，浏览器将其提升出表头，五个列名挤成一行无分隔文本；改用 th。",
+      "账号表「选择」之后的无名列既当表头又放按钮，同步记录表尾列无名；补上「操作」列名，无动作时显示 —。",
+      "记录表把身份渲染两遍（业务编号列与记录身份列都显示 001）；身份字段可见时不再渲染独立身份列。",
+      "来源页签原为单栏纵向堆叠，与已批准原型 100-sheets-directions 的两栏骨架不符；改为 2fr/1fr 双栏。",
+      "解绑确认渲染在页面末尾、脱离触发按钮；移到按钮下方。"
+    ]
+  },
+  "automatedChecks": {
+    "backend": {
+      "command": "uv run --directory apps/backend pytest -q -p no:randomly",
+      "result": "3044 passed, 16 skipped",
+      "failed": 0,
+      "durationSeconds": 573
+    },
+    "backendStyle": {
+      "ruff": "uv run --directory apps/backend ruff check . → All checks passed",
+      "mypy": "uv run --directory apps/backend mypy src → Success: no issues found in 379 source files"
+    },
+    "pm6Targeted": {
+      "command": "pytest tests/contract/test_pm6_sheets.py tests/contract/test_project_sheets.py tests/integration/test_project_sheets_identity.py tests/integration/test_project_sheets_sync.py tests/integration/test_project_sheets_recovery.py",
+      "result": "42 passed"
+    },
+    "frontend": {
+      "command": "npm test",
+      "result": "392 files passed, 5371 tests passed"
+    },
+    "frontendTargeted": {
+      "command": "npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-data",
+      "result": "65 files passed, 684 tests passed",
+      "note": "本轮新增 disconnect/removeBinding 动词回归两例后重跑。"
+    },
+    "frontendToolchain": {
+      "openapi:check": "no diff",
+      "typecheck": "passed",
+      "lint": "passed",
+      "build": "passed",
+      "test:scripts": "pass",
+      "test:structure": "4 passed",
+      "git diff --check": "clean"
+    },
+    "realInterface": {
+      "command": "node scripts/qa-project-management-pm6.mjs",
+      "result": "status=passed, 13 checkpoints, 13 screenshots"
+    }
+  },
+  "baselineComparison": {
+    "baseline": "5f07e2ad",
+    "method": "git worktree add --detach /tmp/pm6-base-5f07e2ad 5f07e2ad，独立 venv 全量运行",
+    "withoutReferenceCheckouts": "705 failed, 2282 passed, 16 skipped",
+    "withReferenceCheckouts": "tests/differential + tests/migration → 956 passed, 1 skipped；侧车与崩溃回归 → 39 passed",
+    "conclusion": "交接文档记录的「704 项基线失败」是 PM6 工作区缺少被 gitignore 的 reference/ 参考检出的环境假象，不是真实基线。补齐只读符号链接后基线在受影响范围内全绿；PM6 未引入新的全量失败。",
+    "note": "reference/WebRPA 等符号链接为本机测试环境修复，未纳入任何提交。"
+  },
+  "deliveredScope": {
+    "PM6-A": "连接与多绑定、结构检查、身份与映射全量核验、重叠映射报告",
+    "PM6-B": "出站意图队列、发送与核验状态机、pull/push、操作查询、超时进入 unknown 而不盲重发",
+    "PM6-C": "公式列只读刷新、暂停/恢复、断开连接、解除绑定与影响预检、核验与放弃恢复",
+    "PM6-UI": "来源页签接真实连接面板、绑定向导、同步面板与绑定事实表"
+  },
+  "knownGaps": [
+    {
+      "item": "真实 Google 端到端（OAuth 桌面应用路径）",
+      "status": "partiallyExecuted",
+      "reason": "服务账号路径已于 2026-09-19 用用户提供的真实凭据与真实 Spreadsheet 跑通（见 realGoogleRun）。OAuth 桌面应用授权流程仍未执行，需要用户的 OAuth 桌面客户端 JSON。"
+    },
+    {
+      "item": "远端受控增列（新增字段先行作为本地意图、再创建远端列并核验后发布映射）",
+      "status": "notDelivered",
+      "reason": "冻结的 HTTP 契约 §3.4 与 OperationKind 列表都没有对应路由或 kind，计划与契约在此处不一致；SheetsClient.batch_update 传输层已具备，缺的是契约决定。"
+    },
+    {
+      "item": "系统身份列（identityStrategy.kind == 'system'）",
+      "status": "notDelivered",
+      "reason": "按已批准规则需要独立的初始化动作，契约中不存在该动作；当前明确返回 501 SYNC_NOT_IMPLEMENTED，不猜测键。"
+    },
+    {
+      "item": "同一远端键在来源工作表内重复",
+      "status": "notDelivered",
+      "reason": "当前 setdefault 取首行；重复键的显式报错尚未实现。已登记在代码注释与本节。"
+    },
+    {
+      "item": "暂停期间的本地写入不补登记出站意图",
+      "status": "knownLimitation",
+      "reason": "绑定暂停时 enqueue_intent 直接跳过；恢复策略需按 PM6-C 明确后再补。"
+    }
+  ],
+  "notExecuted": [
+    "真实 Google OAuth 桌面应用授权流程（服务账号路径已执行）",
+    "Studio demo 联合测试（按用户指示不执行）",
+    "Windows、其他架构、打包应用验收",
+    "用户手动执行结果"
+  ],
+  "visualVerification": "docs/project-management/implementation/pm6/ui-verification.md",
+  "realGoogleRun": {
+    "date": "2026-09-19",
+    "runner": "scripts/qa-pm6-google-live.mjs",
+    "status": "passed",
+    "evidence": "docs/project-management/implementation/pm6/google-live/2026-09-18T16-05-05-012Z/live-result.json",
+    "beforeFixEvidence": "docs/project-management/implementation/pm6/google-live/2026-09-18T15-58-11-615Z/live-result.json",
+    "checkpoints": 10,
+    "screenshots": 11,
+    "credentials": "用户提供的服务账号 JSON，运行时由 --config 指向 /tmp 下的 600 权限文件；不进入仓库、日志、截图或提交",
+    "target": {
+      "spreadsheetTitle": "ck自动化表格",
+      "spreadsheetId": "1yhY5fz8RR3x_xKVrj_rgJxcqNn5gyS9pKtavcriu6jE",
+      "sheet": "工作表2",
+      "sheetId": 316873284,
+      "header": [
+        "邮箱",
+        "是否使用"
+      ],
+      "dataRows": 87,
+      "identityColumn": "A"
+    },
+    "boundary": {
+      "sidecar": "真实 FastAPI sidecar（不设置 AUTOFLOW_QA_SIDECAR_MODULE）",
+      "sheetsTransport": "真实 HttpxSheetsTransport → sheets.googleapis.com v4",
+      "credentialStore": "真实系统凭据库",
+      "googleConfigPicker": "AUTOFLOW_QA_GOOGLE_CONFIG 替代原生文件选择框，仅 !app.isPackaged 时生效",
+      "studio": "notExecuted"
+    },
+    "facts": {
+      "pull": "真实界面从 Google Sheet 拉取 87 条记录，文本身份保持原样",
+      "push": {
+        "syncOperationId": "416e82ae-b9e3-4056-a78a-b8099fe07c5d",
+        "status": "confirmed",
+        "outcome": "matched",
+        "fields": [
+          "A",
+          "B"
+        ],
+        "target": "工作表2!2"
+      },
+      "writeBackCell": "工作表2!B2",
+      "restored": "远端 '工作表2'!B2 已还原为空；独立复核整表后无任何 PM6 测试标记残留",
+      "unbindAndDelete": "真实界面解除绑定并删除本机凭据，连接列表清空"
+    },
+    "defectsFoundByThisRun": [
+      "renderer 的 disconnect() 未传 HTTP 动词，command.submit 默认 POST，而 /sheets/connections/{connectionId} 只注册 DELETE → 405；界面只显示「操作失败，请重试」，用户无法诊断也无法删除凭据。已改为 DELETE 并补两条动词回归用例（无修复时失败）。"
+    ],
+    "notExecutedInThisRun": [
+      "真实 Google OAuth 桌面应用授权流程（本轮只走服务账号路径）",
+      "Windows、其他架构、打包应用验收",
+      "用户手动执行结果"
+    ]
+  }
+}

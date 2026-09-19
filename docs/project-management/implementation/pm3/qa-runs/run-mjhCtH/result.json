@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "scenario": "success",
+  "scenarioPlan": [
+    "UI创建项目与自动化",
+    "启动两个真实浏览器任务",
+    "核对批次、任务、日志、输入与输出"
+  ],
+  "sourceSha256": "32befff0b707cb403c2eba326fae45aa0a29857a45c371f126ac1a5e0fa7d198",
+  "head": "3a52182b91773e4a495f14a6bfc643f9cc1d0580",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-pbuOP2",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-pbuOP2/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH",
+  "kernel": {
+    "source": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2",
+    "copiedTo": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-pbuOP2/workspace/data/kernels/chromium-145.0.7632.109.2",
+    "version": "145.0.7632.109.2"
+  },
+  "fixtureUrl": "http://127.0.0.1:49221/fixture",
+  "slowFixtureUrl": "http://127.0.0.1:49221/slow",
+  "workflow": {
+    "workflowId": "b875fbd6-1d55-4e37-aa76-291fd1e87f1b",
+    "parameterId": "42bc4053-27c5-4362-bc14-b1f7463048a3",
+    "preparation": "工作流文档通过 WorkflowService 预置；Studio 不在本次验收范围。项目与自动化必须通过 UI 创建。"
+  },
+  "profile": {
+    "profileId": "0c526a8b-2c72-4b14-b25b-1aa90ea7a1e3",
+    "preparation": "浏览器配置通过真实 HTTP ProfileService API 预置为运行资源夹具；项目与自动化仍由 UI 创建。"
+  },
+  "uiResult": {
+    "projectId": "a5e07b13-8fbc-42f1-9e67-9cdf856132d6",
+    "automationName": "参数运行验收",
+    "batchId": "a6592177-c789-4abc-b7c0-856805bfc7a9",
+    "taskIds": [
+      "fbbc8749-fe49-40f3-bc1a-b796847f6385",
+      "3e606572-ee11-40e4-af6b-c8cce46dcce9"
+    ],
+    "profileId": "0c526a8b-2c72-4b14-b25b-1aa90ea7a1e3"
+  },
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/00-prepared.png",
+      "sha256": "ec463996ca5c89a18f309676f8fc85ff4274a20fbc3c05f8ef849fc7f8bac6af"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/01-automation.png",
+      "sha256": "e8990909597ba0b557ae70aae65c08eb94ff7e701fd18dd361c72774d7bacf31"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/02-start-batch.png",
+      "sha256": "80336fd5ca4cff4fb343e978996f6d172703586c7e4d14d0345b143f3bd03a5b"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/04-batch-detail.png",
+      "sha256": "9769a496a7b3120ed2278f5ff7ac73949b183c66e77f74d265964cbbc38e7d10"
+    },
+    {
+      "name": "05-task-logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/05-task-logs.png",
+      "sha256": "56afa070cbdb3cea0b20e667263ebb5917bb909c34182f54e5277d5d1e72043c"
+    },
+    {
+      "name": "06-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/06-task-input-output.png",
+      "sha256": "7f7dcfcd2257be9d7c515c0faa05e388b05597d9529ae35f9e8ddfbfee0845f5"
+    },
+    {
+      "name": "07-task-evidence",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/07-task-evidence.png",
+      "sha256": "c92dd9e81f32184aca733adb4818ae434cd34271da9bbfc7f6f518a85ea774da"
+    }
+  ],
+  "next": [],
+  "commands": {
+    "success": "node scripts/qa-project-management-pm3.mjs --scenario success",
+    "manual": "node scripts/qa-project-management-pm3.mjs --manual --scenario success",
+    "preparation": "node scripts/qa-project-management-pm3.mjs --prepare-only --scenario success",
+    "explicitKernel": "node scripts/qa-project-management-pm3.mjs --manual --kernel-directory /path/to/chromium-x.y.z.w"
+  },
+  "createdAt": "2026-09-18T20:09:18.165Z"
+}

@@ -1,0 +1,124 @@
+{
+  "status": "failed",
+  "scenario": "PM7-A management-side overview/statistics/evidence/follow-up",
+  "scope": "PM7 A 管理侧验收未通过",
+  "boundary": {
+    "executor": "isolatedQaExecutor",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  },
+  "steps": [
+    "E2E-1 概览事实：界面创建项目/三表/自动化并跑出成功、失败与停止结果",
+    "E2E-2 统计与下钻：四指标、口径、失败去向、冻结集合下钻与刷新",
+    "E2E-3 失败后续：从原输入组发起后续批次并保留来源任务",
+    "E2E-4 任务证据：原始输入、当前值对照、数据写入与节点日志",
+    "E2E-5 异常：概览读取失败、统计结果集过期、修订冲突、响应丢失、迟到事件",
+    "E2E-6 边界：200% 缩放与长文本不撑宽（双工作区切换见手测 M-12）"
+  ],
+  "visualReview": "pending",
+  "injected": [
+    {
+      "injected": true,
+      "kind": "executor-fail",
+      "failStep": "create_record:account",
+      "at": "2026-09-18T18:55:21.109Z"
+    },
+    {
+      "injected": true,
+      "kind": "executor-fail",
+      "failStep": null,
+      "at": "2026-09-18T18:55:21.853Z"
+    },
+    {
+      "injected": true,
+      "kind": "executor-pause",
+      "beforeStep": "create_record:account",
+      "at": "2026-09-18T18:55:21.855Z"
+    }
+  ],
+  "gitHead": "19daa994ac13a93625f5d076d5b9d2ea6c5937a9",
+  "sourceSha256": "382c4145283cb478976841c575b3185e45f14fc31c417866e7f921dc5c15b80b",
+  "platform": "darwin",
+  "arch": "arm64",
+  "runId": "20260918185446",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm7-qa-20260918185446-1rP6Zf",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm7-qa-20260918185446-1rP6Zf/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918185446",
+  "checkpoints": [
+    "UI 创建项目；只读 GET 找回同一真实项目。",
+    "UI 创建三张表、必要字段、人员/邮箱记录与待使用/已使用状态；账号表为空。",
+    "UI 创建自动化并配置两个独立必填输入。",
+    "E2E-1 成功批次：UI 启动 3 个任务，全部 succeeded（批次 1837c164-11ca-4bdb-b28b-875fd9d3f429）。",
+    "E2E-1 失败批次：隔离执行器在 CREATE_ACCOUNT 注入失败，任务 ad1d53ad-e1c3-44a3-a140-e514c32ecd85 落为 failed。"
+  ],
+  "screenshots": [
+    {
+      "name": "00-projects-all",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918185446/00-projects-all.png",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "23973acbf16c27e737522b60707101acf73e801db1dbe1362a015e32564a77f5",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-runs-004-success-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918185446/03-runs-004-success-batch.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/9bcc498e-a47f-4e99-aa33-d4dd74352cdb/runs/batches/1837c164-11ca-4bdb-b28b-875fd9d3f429",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "6b1547985abc69f6e715064b08f2bba5d2c8e7112abb5f275fb839da510622d3",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-runs-015-stop-confirm",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918185446/03-runs-015-stop-confirm.png",
+      "reference": "03-runs/015-stop-confirm-e79f81.png",
+      "route": "#/projects/9bcc498e-a47f-4e99-aa33-d4dd74352cdb/runs/batches/2b5c2cfc-30af-4a78-b4a4-019855c9f43d",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "3fe138edbb6d1c99a0f9770a57cc5718e81e3927a30d6f39b79a2f374be81dfd",
+      "visualReview": "pending"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918185446/99-failure.png",
+      "route": "#/projects/9bcc498e-a47f-4e99-aa33-d4dd74352cdb/runs/batches/2b5c2cfc-30af-4a78-b4a4-019855c9f43d",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "3d06f42da6f672dca368ce679e0650178a7697f6351aac48abeb44359938bb7a",
+      "visualReview": "pending"
+    }
+  ],
+  "network": [],
+  "error": "Error: batch 2b5c2cfc-30af-4a78-b4a4-019855c9f43d did not reach terminal state\n    at waitBatchTerminal (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/qa-project-management-pm7.mjs:463:11)\n    at async main (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/qa-project-management-pm7.mjs:613:16)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/qa-project-management-pm7.mjs:818:68",
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器执行",
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果",
+    "双工作区切换（见手测 M-12）"
+  ],
+  "createdAt": "2026-09-18T18:57:51.988Z"
+}

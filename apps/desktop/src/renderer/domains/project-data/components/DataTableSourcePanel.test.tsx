@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, expect, it, vi } from 'vitest'
 import { DataTableSourcePanel } from './DataTableSourcePanel'
 
@@ -58,8 +59,84 @@ it('disables existing reimport actions during external locks without fabricating
   expect(screen.queryByText(/同步成功|0 条/)).toBeNull()
 })
 
+const boundTable = { sourceKind: 'sheets' as const, source: { kind: 'sheets' as const, filename: '线索表', sheetName: '线索', importedAt: null } }
+const bindingView = { connectionId: 'c1', spreadsheetId: 'abc', sheetId: 0, bindingEpoch: 3, identityStrategy: { kind: 'column' as const, columnId: 'A' }, mapping: [], syncPaused: false }
+const impactReport = (extra: Record<string, unknown> = {}) => ({ impactRevision: 7, target: { type: 'table', projectId: 'p', tableId: 't' }, changeDigest: 'd', expectedRevisions: {}, impacts: [], blockers: [], calculatedAt: '2026-09-18T02:00:00Z', ...extra })
+
+it('previews an unbind, shows what stops, and only removes the binding after confirmation', async () => {
+  const removeBinding = vi.fn().mockResolvedValue({ kind: 'removeSheetsBinding', status: 'succeeded', result: { table: { tableId: 't' }, unbound: true } })
+  const api = {
+    readBinding: vi.fn().mockResolvedValue(bindingView),
+    connections: vi.fn().mockResolvedValue({ items: [] }),
+    state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: bindingView }),
+    operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+    previewUnbind: vi.fn().mockResolvedValue(impactReport({ impacts: [{ code: 'SHEETS_LOCAL_COPY_KEPT', resource: { type: 'table', projectId: 'p', tableId: 't' }, message: '本地记录、状态和同步历史都会保留，表回到待配置状态。', blocking: false }] })),
+    removeBinding,
+  }
+  const onChanged = vi.fn()
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundTable as never} sheets={{ api: api as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '线索表', tableRevision: 9, datasetGeneration: 'g', fields: [], onChanged }} />
+  </QueryClientProvider>)
+  fireEvent.click(await screen.findByRole('button', { name: '解除绑定…' }))
+  expect(await screen.findByText('本地记录、状态和同步历史都会保留，表回到待配置状态。')).toBeVisible()
+  expect(removeBinding).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: '解除绑定' }))
+  await waitFor(() => expect(removeBinding).toHaveBeenCalledWith('t', { impactRevision: 7, expectedTableRevision: 9 }, expect.any(String), expect.any(Function)))
+})
+
+it('keeps the binding when the unbind preview reports a blocker', async () => {
+  const removeBinding = vi.fn()
+  const api = {
+    readBinding: vi.fn().mockResolvedValue(bindingView),
+    connections: vi.fn().mockResolvedValue({ items: [] }),
+    state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: bindingView }),
+    operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+    previewUnbind: vi.fn().mockResolvedValue(impactReport({ blockers: [{ code: 'SHEETS_SYNC_IN_FLIGHT', resource: { type: 'table', projectId: 'p', tableId: 't' }, state: 'blocked', message: '还有发送中的修改，请先停止或等待结果。' }] })),
+    removeBinding,
+  }
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundTable as never} sheets={{ api: api as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '线索表', tableRevision: 9, datasetGeneration: 'g', fields: [] }} />
+  </QueryClientProvider>)
+  fireEvent.click(await screen.findByRole('button', { name: '解除绑定…' }))
+  expect(await screen.findByText('还有发送中的修改，请先停止或等待结果。')).toBeVisible()
+  expect(removeBinding).not.toHaveBeenCalled()
+})
+
 it('omits an empty facts table when an unconfigured source has no facts', () => {
   render(<DataTableSourcePanel table={{ sourceKind: 'unconfigured', source: null }} />)
   expect(screen.getByText('尚未配置')).toBeVisible()
   expect(screen.queryByRole('table')).toBeNull()
+})
+
+const namedBindingView = { ...bindingView, spreadsheetId: 'spreadsheet-abc', spreadsheetTitle: '内容资料', sheetId: 1000, sheetName: '资料库' }
+const boundSheetTable = { sourceKind: 'sheets' as const, source: null, recordCount: 1248 }
+const sheetsApi = (readBinding: () => Promise<unknown>) => ({
+  readBinding: vi.fn(readBinding),
+  connections: vi.fn().mockResolvedValue({ items: [{ connectionId: 'c1', accountLabel: '测试账号' }] }),
+  state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: namedBindingView }),
+  operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+})
+
+it('reads a bound worksheet’s real names from the binding instead of calling them unrecorded', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundSheetTable as never} sheets={{ api: sheetsApi(async () => namedBindingView) as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '邮箱表', tableRevision: 9, datasetGeneration: 'g', fields: [] }} />
+  </QueryClientProvider>)
+  const facts = within(await screen.findByRole('table', { name: '来源事实' }))
+  expect(await facts.findByText('内容资料')).toBeVisible()
+  expect(facts.getByText('资料库')).toBeVisible()
+  expect(facts.queryByText('未记录')).toBeNull()
+  const bindingFacts = within(screen.getByRole('table', { name: '绑定' }))
+  expect(bindingFacts.getByText('内容资料')).toBeVisible()
+  expect(bindingFacts.getByText('资料库')).toBeVisible()
+  expect(bindingFacts.queryByText(/gid/)).toBeNull()
+})
+
+it('never reports a bound worksheet as unrecorded while the binding is still loading', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <DataTableSourcePanel table={boundSheetTable as never} sheets={{ api: sheetsApi(() => new Promise(() => undefined)) as never, projectId: 'p', scopeKey: 'ws:p', contextKey: 'ctx', tableId: 't', tableName: '邮箱表', tableRevision: 9, datasetGeneration: 'g', fields: [] }} />
+  </QueryClientProvider>)
+  const facts = within(await screen.findByRole('table', { name: '来源事实' }))
+  // Both source rows say they are still loading instead of claiming "未记录".
+  await waitFor(() => expect(facts.getAllByText('读取中…')).toHaveLength(2))
+  expect(facts.queryByText('未记录')).toBeNull()
 })

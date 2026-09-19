@@ -1,0 +1,160 @@
+{
+  "status": "failed",
+  "scenario": "PM7-A management-side overview/statistics/evidence/follow-up",
+  "scope": "PM7 A 管理侧验收未通过",
+  "boundary": {
+    "executor": "isolatedQaExecutor",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  },
+  "steps": [
+    "E2E-1 概览事实：界面创建项目/三表/自动化并跑出成功、失败与停止结果",
+    "E2E-2 统计与下钻：四指标、口径、失败去向、冻结集合下钻与刷新",
+    "E2E-3 失败后续：从原输入组发起后续批次并保留来源任务",
+    "E2E-4 任务证据：原始输入、当前值对照、数据写入与节点日志",
+    "E2E-5 异常：概览读取失败、统计结果集过期、修订冲突、响应丢失、迟到事件",
+    "E2E-6 边界：200% 缩放与长文本不撑宽（双工作区切换见手测 M-12）"
+  ],
+  "visualReview": "pending",
+  "injected": [
+    {
+      "injected": true,
+      "kind": "executor-fail",
+      "failStep": "create_record:account",
+      "at": "2026-09-18T19:18:31.361Z"
+    },
+    {
+      "injected": true,
+      "kind": "executor-fail",
+      "failStep": null,
+      "at": "2026-09-18T19:18:32.119Z"
+    },
+    {
+      "injected": true,
+      "kind": "executor-pause",
+      "beforeStep": "create_record:account",
+      "at": "2026-09-18T19:18:32.120Z"
+    },
+    {
+      "injected": true,
+      "kind": "executor-resume",
+      "released": true,
+      "at": "2026-09-18T19:18:40.100Z"
+    }
+  ],
+  "gitHead": "19daa994ac13a93625f5d076d5b9d2ea6c5937a9",
+  "sourceSha256": "3beae301f754a924a9317a4b972e54956a73c2c0b8651b655482c16f8544e0bb",
+  "platform": "darwin",
+  "arch": "arm64",
+  "runId": "20260918191757",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm7-qa-20260918191757-CzO1Po",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm7-qa-20260918191757-CzO1Po/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918191757",
+  "checkpoints": [
+    "UI 创建项目；只读 GET 找回同一真实项目。",
+    "UI 创建三张表、必要字段、人员/邮箱记录与待使用/已使用状态；账号表为空。",
+    "UI 创建自动化并配置两个独立必填输入。",
+    "E2E-1 成功批次：UI 启动 3 个任务，全部 succeeded（批次 8844cd56-5ce1-41d5-88fa-cd60d9defbc8）。",
+    "E2E-1 失败批次：隔离执行器在 CREATE_ACCOUNT 注入失败，任务 27a57f61-3d93-46d3-a805-075c7b635868 落为 failed。",
+    "E2E-1 停止批次：UI 普通停止后强制停止，批次 stopped；其中 cancelled 任务 0 条。",
+    "E2E-1 概览事实：表 3、自动化 1、今日新增 21 / 更新 5，活动 1 条、最近 20 条。"
+  ],
+  "screenshots": [
+    {
+      "name": "00-projects-all",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918191757/00-projects-all.png",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "23973acbf16c27e737522b60707101acf73e801db1dbe1362a015e32564a77f5",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-runs-004-success-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918191757/03-runs-004-success-batch.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/66dec344-6f51-4f42-a7bd-6347ccfa39d7/runs/batches/8844cd56-5ce1-41d5-88fa-cd60d9defbc8",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "4d4df32bdaa9c39f7fdceec5d09531e7b6b3f7b32839c09a0b6179de03a32a28",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-runs-015-stop-confirm",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918191757/03-runs-015-stop-confirm.png",
+      "reference": "03-runs/015-stop-confirm-e79f81.png",
+      "route": "#/projects/66dec344-6f51-4f42-a7bd-6347ccfa39d7/runs/batches/86f9eba9-23e2-4384-8050-fde35ffbfe65",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "d2a5e59fae6a030feca4fef49b8de3303c909789c5838adfc8b1b5c72cc3fac5",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-runs-010-batch-stopped",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918191757/03-runs-010-batch-stopped.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/66dec344-6f51-4f42-a7bd-6347ccfa39d7/runs/batches/86f9eba9-23e2-4384-8050-fde35ffbfe65",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "74848b4f50f6605dbdabf026247fc813ebc558274559a112c4424e9634c64a73",
+      "visualReview": "pending"
+    },
+    {
+      "name": "01-overview-001",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918191757/01-overview-001.png",
+      "reference": "01-overview/001",
+      "route": "#/projects/66dec344-6f51-4f42-a7bd-6347ccfa39d7/overview",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "e7c396c74d588877a471d8dee14282492184cf7d65245467824964c8a0a56d55",
+      "visualReview": "pending"
+    },
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918191757/99-failure.png",
+      "route": "#/projects/66dec344-6f51-4f42-a7bd-6347ccfa39d7/statistics",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "84c7a762ea67aaae79d15104c638d30d556015eb3f4840a8603351a0cf602ab0",
+      "visualReview": "pending"
+    }
+  ],
+  "network": [],
+  "error": "Error: timed out waiting for 统计指标: false\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/electron-cdp.mjs:82:9)\n    at async main (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/qa-project-management-pm7.mjs:649:5)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/qa-project-management-pm7.mjs:821:68",
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器执行",
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果",
+    "双工作区切换（见手测 M-12）"
+  ],
+  "createdAt": "2026-09-18T19:19:19.664Z"
+}

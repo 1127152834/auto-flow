@@ -16,6 +16,6 @@ export function useProject(api: ProjectsApi, workspaceKey: string, instanceId: s
   return useQuery({ queryKey: projectKeys.detail(workspaceKey, instanceId, projectId ?? ''), queryFn: ({ signal }) => api.get(projectId!, signal), enabled: Boolean(projectId) })
 }
 
-export function useProjectOverview(api: ProjectsApi, workspaceKey: string, instanceId: string, projectId?: string) {
-  return useQuery({ queryKey: projectKeys.overview(workspaceKey, instanceId, projectId ?? ''), queryFn: ({ signal }) => api.overview(projectId!, signal), enabled: Boolean(projectId) })
+export function useProjectOverview(api: ProjectsApi, workspaceKey: string, instanceId: string, projectId?: string, visible = true) {
+  return useQuery({ queryKey: projectKeys.overview(workspaceKey, instanceId, projectId ?? ''), queryFn: ({ signal }) => api.overview(projectId!, signal), enabled: Boolean(projectId) && visible })
 }

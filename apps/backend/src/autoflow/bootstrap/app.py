@@ -42,7 +42,18 @@ from autoflow.application.project_runs.evidence import ProjectRunEvidence
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
+from autoflow.application.project_sync.access import GoogleAccess, TransportFactory
+from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.connections import (
+    AuthorizationRegistry,
+    SheetsConnectionService,
+)
+from autoflow.application.project_sync.impacts import SheetsImpactService
+from autoflow.application.project_sync.outbound import SheetsSyncService
+from autoflow.application.project_sync.runs import SheetsRun
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
+from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
@@ -112,6 +123,10 @@ from autoflow.infrastructure.database.project_excel_exports import (
 from autoflow.infrastructure.database.project_excel_imports import (
     SqlAlchemyExcelImports,
 )
+from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
+from autoflow.infrastructure.database.project_sync_impacts import (
+    SqlAlchemySheetsImpacts,
+)
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
@@ -139,6 +154,9 @@ from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
 from autoflow.providers.android.stream import AndroidStream
 from autoflow.providers.browser.environment_browser import EnvironmentBrowserLauncher
+from autoflow.providers.data import google_auth
+from autoflow.providers.data.google_auth import HttpxTokenTransport
+from autoflow.providers.data.google_sheets import HttpxSheetsTransport
 from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
@@ -155,6 +173,8 @@ def create_app(
     kernel_service: KernelService | None = None,
     credential_store: CredentialStore | None = None,
     model_gateway: ModelGateway | None = None,
+    google_tokens: google_auth.TokenTransport | None = None,
+    google_transports: TransportFactory | None = None,
 ) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
     for directory in (
@@ -333,6 +353,33 @@ def create_app(
     )
     app.state.environment_browser = environment_browser
     app.state.environment_service = environment_service
+    sheets_impacts = SqlAlchemySheetsImpacts(session_factory)
+    sheets_repository = SqlAlchemyProjectSync(session_factory, sheets_impacts)
+    sheets_tokens = google_tokens or HttpxTokenTransport()
+    google_credentials = credential_store or credentials
+    sheets_access = GoogleAccess(
+        sheets_repository,
+        google_credentials,
+        sheets_tokens,
+        transports=google_transports or HttpxSheetsTransport,
+    )
+    sheets_runs = SheetsRun(sheets_repository)
+    sheets_connections = SheetsConnectionService(
+        sheets_repository, google_credentials, sheets_tokens, AuthorizationRegistry()
+    )
+    sheets_bindings = SheetsBindingService(
+        session_factory,
+        sheets_runs,
+        sheets_access,
+        DataTableService(SqlAlchemyProjectData(session_factory)),
+    )
+    sheets_impacts_service = SheetsImpactService(sheets_impacts)
+    sheets_sync = SheetsSyncService(
+        session_factory, sheets_runs, sheets_repository, sheets_access
+    )
+    app.state.sheets_connections = sheets_connections
+    app.state.sheets_bindings = sheets_bindings
+    app.state.sheets_sync = sheets_sync
 
     project_workflow_dispatcher = configure_project_workflow_runtime(
         app,
@@ -498,6 +545,8 @@ def create_app(
         run_scheduler=project_run_scheduler,
         gate=quiesce_gate,
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
+        overview=ProjectOverviewService(session_factory),
+        statistics=ProjectStatisticsService(session_factory),
         automations=ProjectAutomationService(
             SqlAlchemyProjects(session_factory),
             SqlAlchemyProjectAutomations(session_factory),
@@ -514,6 +563,10 @@ def create_app(
         status_batches=status_batch_service,
         excel=project_excel, imports=excel_imports, exports=excel_exports,
         environments=environment_service,
+        sheets_connections=sheets_connections,
+        sheets_bindings=sheets_bindings,
+        sheets_impacts=sheets_impacts_service,
+        sync=sheets_sync,
     ))
 
     @app.middleware("http")

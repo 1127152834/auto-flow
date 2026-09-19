@@ -35,6 +35,7 @@ import {
 import { createProjectDataApi } from "../api";
 import { createDataCatalogApi } from "../catalog-api";
 import { DataRecordsTable } from "../components/DataRecordsTable";
+import { showsDedicatedIdentityColumn } from "../presentation";
 import { DataDeletionDialog } from "../components/DataDeletionDialog";
 import { DataTableSourcePanel } from "../components/DataTableSourcePanel";
 import { DataTableFormDialog } from "../components/DataTableFormDialog";
@@ -61,6 +62,7 @@ import { emptyRecordQuery, parseRecordQuery, recordQueryDraft, type FilterExpres
 import { createRecordsApi, type RecordKey } from "../records-api";
 import { createExcelApi } from "../excel-api";
 import { createProjectFileClient } from "../project-file-client";
+import { createSheetsApi } from "../sheets-api";
 import { createStatusBatchApi } from "../status-batch-api";
 import type { DataTableTab } from "../types";
 import {
@@ -482,6 +484,7 @@ function DataTableDetail({
     return current.workspaceKey === workspaceKey && current.projectId === projectId && current.tableId === tableId && current.instanceId === instanceId && current.client === client && !current.disabled;
   }), [client, instanceId, projectId, tableId, workspaceKey]);
   const excelApi = useMemo(() => createExcelApi(client, files, projectId), [client, files, projectId]);
+  const sheetsApi = useMemo(() => createSheetsApi(client, window.autoflow, projectId), [client, projectId]);
   const statusBatchApi = useMemo(() => createStatusBatchApi(client, projectId, tableId), [client, projectId, tableId]);
   useLayoutEffect(() => {
     editorDirtyRef.current = editorDirty;
@@ -744,7 +747,7 @@ function DataTableDetail({
             identityMode={table.identity}
             visibleFieldIds={gridColumns.map(field => field.ref.fieldId)}
             queryLocked={grid.dirty || grid.pending}
-            draftRows={(grid.rows.length > 0 || writable && !recordLocation) ? <RecordDraftRows rows={grid.rows} fields={gridColumns} identityFieldId={table.identity.mode === "field" ? table.identity.fieldId : undefined} errors={grid.errors} selectionColumn disabled={!grid.editable} focusCell={grid.focusCell} onAdd={grid.addRow} onRemove={grid.removeRow} onCellChange={grid.changeCell} onPaste={(row, column, text) => grid.paste(gridColumns, row, column, text)} onSave={() => void grid.save()} onUndo={grid.undo} /> : undefined}
+            draftRows={(grid.rows.length > 0 || writable && !recordLocation) ? <RecordDraftRows rows={grid.rows} fields={gridColumns} identityFieldId={showsDedicatedIdentityColumn(table.identity, gridColumns.map(field => field.ref.fieldId)) && table.identity.mode === "field" ? table.identity.fieldId : undefined} errors={grid.errors} selectionColumn disabled={!grid.editable} focusCell={grid.focusCell} onAdd={grid.addRow} onRemove={grid.removeRow} onCellChange={grid.changeCell} onPaste={(row, column, text) => grid.paste(gridColumns, row, column, text)} onSave={() => void grid.save()} onUndo={grid.undo} /> : undefined}
             loading={recordsQuery.isFetching || catalogQuery.isFetching}
             error={
               recordsQuery.error
@@ -815,7 +818,13 @@ function DataTableDetail({
             onRetryUsage={() => void statusUsageQuery.refetch()} />}
         </TabsContent>
         <TabsContent value="source">
-          <DataTableSourcePanel table={table} readonly={!writable} disabled={disabled || Boolean(workflow)} onReimport={() => openWorkflow("replace")} />
+          <DataTableSourcePanel table={table} readonly={!writable} disabled={disabled || Boolean(workflow)} onReimport={() => openWorkflow("replace")}
+            sheets={{ api: sheetsApi, projectId, scopeKey: stableWorkflowScope, contextKey: workflowContext, tableId, tableName: table.name,
+              tableRevision: table.tableRevision, datasetGeneration: table.datasetGeneration, fields,
+              // A pull or push changes what the server would answer, so the
+              // record page has to be re-read; the table view alone would keep
+              // showing the page the command predates.
+              onChanged: () => { void tableQuery.refetch(); void catalogQuery.refetch(); void recordsQuery.refetch() } }} />
         </TabsContent>
         <TabsContent value="settings">
           <TableSettingsForm key={editing.editor?.kind === "tableEdit" ? editing.editor.session : `${stableWorkflowScope}:settings-readonly`}

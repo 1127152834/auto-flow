@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { mkdtemp, mkdir, realpath, rm, writeFile, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { launchElectron, connectCdp, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 // Each run gets disposable data and a new evidence directory. It never opens user data.
@@ -22,7 +22,7 @@ const provenance = { gitHead: execFileSync('git', ['rev-parse', 'HEAD'], {cwd:ro
 const buildHash=createHash('sha256');for(const file of (await readdir(join(root,'apps/desktop/out'),{recursive:true})).filter(file=>/\.(js|css|html)$/.test(file)).sort())buildHash.update(file).update(await readFile(join(root,'apps/desktop/out',file)));provenance.buildSha256=buildHash.digest('hex')
 try {
   await launch()
-  await click('项目'); await click('新建项目'); await input('#project-name', '数据页面验收'); await input('#project-description', '隔离的合成业务数据'); await click('创建项目'); await visible('项目资料');
+  await click('项目'); await click('新建项目'); await input('#project-name', '数据页面验收'); await input('#project-description', '隔离的合成业务数据'); await click('创建项目'); await waitForProjectPage(renderer);
   const project = (await api('/projects')).items.find(item=>item.name==='数据页面验收'); assert.ok(project); await click('数据')
   await visible('还没有数据表')
   await capture('empty')

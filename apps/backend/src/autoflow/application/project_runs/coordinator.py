@@ -56,6 +56,7 @@ from autoflow.infrastructure.database.projects import (
     _operation_row,
 )
 from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
+from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 
 
 class ProjectRunCoordinator:
@@ -192,223 +193,16 @@ class ProjectRunCoordinator:
             if row is None or row.project_id != project_id:
                 raise ProjectRunError("NOT_FOUND", "自动化不存在", 404)
             automation = automation_record(row)
-            has_data_inputs = bool(automation.input_plan.get("inputs"))
-            declared_table_grants = self._validate_capability_manifest(
+            return self._accept_batch(
                 session,
+                project,
                 automation,
-                self._resolve_data_capability_manifest(session, automation),
+                key=key,
+                kind="startBatch",
+                digest=digest,
+                payload=payload,
+                now=datetime.now(UTC),
             )
-            start = validate_batch_start(
-                automation,
-                payload,
-                allow_data_inputs="project.data" in self._capabilities,
-            )
-            effective = (
-                replace(
-                    automation, environment_policy=thaw_json(start.environment_override)
-                )
-                if start.environment_override is not None
-                else automation
-            )
-            resources = self._resolve_resources(
-                effective, dict(project.default_resources)
-            )
-            workflow = session.get(WorkflowDocumentRow, automation.workflow_id)
-            if workflow is None:
-                raise ProjectRunError("NOT_FOUND", "关联工作流不存在", 404)
-            now, batch_id, operation_id = datetime.now(UTC), str(uuid4()), str(uuid4())
-            prepared = self._core.prepare_content(
-                prepare_operation_id=operation_id,
-                workflow_id=workflow.id,
-                source_revision=workflow.revision,
-                available_capabilities=list(self._capabilities),
-                created_at=now,
-                uow=session,
-            )
-            frozen = _json_dates(
-                {
-                    "automation": _json_dates(automation_to_dict(automation)),
-                    "parameters": thaw_json(start.parameters),
-                    "maxTasks": start.max_tasks,
-                    "concurrency": start.concurrency,
-                    "resourceRequest": resources,
-                    "workflowRevision": workflow.revision,
-                }
-            )
-            create_record_targets = [
-                {"tableId": table_id, "datasetGeneration": generation}
-                for table_id, generation in self._resolve_create_record_targets(
-                    session, automation
-                )
-            ]
-            table_grants: list[dict[str, Any]] = []
-            for target in create_record_targets:
-                field_ids = list(
-                    session.scalars(
-                        select(DataFieldRow.id).where(
-                            DataFieldRow.project_id == project_id,
-                            DataFieldRow.table_id == target["tableId"],
-                            DataFieldRow.dataset_generation
-                            == target["datasetGeneration"],
-                        )
-                    )
-                )
-                table_grants.append(
-                    {
-                        **target,
-                        "operations": ["createRecord"],
-                        "fieldIds": field_ids,
-                        "readPurposes": [],
-                    }
-                )
-            table_grants.extend(declared_table_grants)
-            status_input_ids = (
-                list(self._resolve_status_input_ids(automation))
-                if has_data_inputs
-                else []
-            )
-            has_data_capability = bool(
-                has_data_inputs
-                or create_record_targets
-                or table_grants
-                or status_input_ids
-            )
-            if has_data_capability and "project.data" not in self._capabilities:
-                raise ProjectRunError(
-                    "CAPABILITY_UNAVAILABLE",
-                    "项目数据执行能力不可用",
-                    409,
-                )
-            data_capability_binding = (
-                {
-                    "capability": "project.data",
-                    "projectId": project_id,
-                    "createRecordTargets": create_record_targets,
-                    "tableGrants": table_grants,
-                    "statusInputIds": status_input_ids,
-                }
-                if has_data_capability
-                else None
-            )
-            frozen["dataCapabilityBinding"] = data_capability_binding
-            operation = ProjectOperation(
-                operation_id,
-                project_id,
-                key,
-                "startBatch",
-                digest,
-                "running",
-                1,
-                {"type": "batch", "projectId": project_id, "batchId": batch_id},
-                None,
-                None,
-                now,
-                now,
-                None,
-            )
-            operation_row = _operation_row(operation)
-            session.add(operation_row)
-            session.flush()
-            batch_row = ProjectBatchRow(
-                id=batch_id,
-                project_id=project_id,
-                automation_id=automation_id,
-                start_operation_id=operation_id,
-                prepared_content_id=prepared.prepared_content_id,
-                automation_revision=automation.management_revision,
-                workflow_revision=workflow.revision,
-                status="accepted",
-                status_revision=1,
-                frozen_request=frozen,
-                created_at=now,
-                completed_at=None,
-                claim_gate_state="open" if has_data_inputs else "closed",
-                selection_outcome={"status": "pending"} if has_data_inputs else None,
-            )
-            session.add(batch_row)
-            session.flush()
-            created_tasks: list[tuple[str, str]] = []
-            policy = start.environment_override or automation.environment_policy
-            for ordinal in range(0 if has_data_inputs else (start.max_tasks or 0)):
-                task_id, request_id, snapshot_id = (
-                    str(uuid4()),
-                    str(uuid4()),
-                    str(uuid4()),
-                )
-                run = self._core.prepare_run(
-                    run_request_id=request_id,
-                    prepared_content_id=prepared.prepared_content_id,
-                    parameters=thaw_json(start.parameters),
-                    input_snapshot_ref={
-                        "projectId": project_id,
-                        "batchId": batch_id,
-                        "taskId": task_id,
-                        "inputSnapshotId": snapshot_id,
-                    },
-                    resource_request=resources,
-                    capability_bindings=(
-                        [
-                            {
-                                **data_capability_binding,
-                                "taskId": task_id,
-                                "executionGeneration": 1,
-                            }
-                        ]
-                        if data_capability_binding is not None
-                        else []
-                    ),
-                    created_at=now,
-                    uow=session,
-                )
-                session.add(
-                    ProjectTaskRow(
-                        id=task_id,
-                        project_id=project_id,
-                        batch_id=batch_id,
-                        run_id=run.run_id,
-                        run_request_id=run.run_request_id,
-                        ordinal=ordinal,
-                        created_at=now,
-                    )
-                )
-                session.flush()
-                snapshot_inputs: list[dict[str, Any]] = []
-                session.add(
-                    ProjectTaskInputSnapshotRow(
-                        id=snapshot_id,
-                        task_id=task_id,
-                        batch_id=batch_id,
-                        parameters=thaw_json(start.parameters),
-                        inputs=snapshot_inputs,
-                        captured_at=now,
-                    )
-                )
-                session.flush()
-                if self._environments is not None:
-                    self._environments.reserve_task_instance(
-                        session, project_id, task_id, run.run_id, policy
-                    )
-                created_tasks.append((task_id, run.run_id))
-            batch = SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
-            operation_row.status = "succeeded"
-            operation_row.status_revision = 2
-            operation_row.result = {"batch": _json_dates(batch_to_dict(batch))}
-            operation_row.completed_at = operation_row.updated_at = now
-            session.flush()
-            result_operation = _operation(operation_row)
-            try:
-                session.commit()
-            except Exception:
-                # A failed DBAPI COMMIT can leave SQLite's transaction open after
-                # SQLAlchemy marks it inactive. Never return that connection to the pool.
-                session.invalidate()
-                raise
-            if self._environments is not None:
-                for task_id, run_id in created_tasks:
-                    self._environments.attach_task_instance(
-                        project_id, task_id, run_id, policy
-                    )
-            return batch, result_operation, False
 
     @staticmethod
     def _validate_capability_manifest(
@@ -477,6 +271,422 @@ class ProjectRunCoordinator:
                 "工作流数据能力声明无效",
                 409,
             ) from exc
+
+    def follow_up(
+        self, project_id: str, task_id: str, key: str, payload: dict[str, Any]
+    ) -> tuple[Batch, ProjectOperation, bool]:
+        """Re-create one failed Task's fixed original input group as a new Batch.
+
+        The new Batch pins the source Task's own RecordRefs as an immutable
+        candidate restriction, re-checks today's conditions through the normal
+        claim path, and never replays a browser action. An optional input that
+        was empty in the source Task stays empty.
+        """
+        try:
+            if str(UUID(key)) != key or str(UUID(task_id)) != task_id:
+                raise ValueError
+            digest = hashlib.sha256(
+                json.dumps(
+                    {
+                        "kind": "followUpBatch",
+                        "projectId": project_id,
+                        "taskId": task_id,
+                        "request": payload,
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                    allow_nan=False,
+                ).encode()
+            ).hexdigest()
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ProjectRunError(
+                "VALIDATION_ERROR", "操作身份或请求格式无效", 422
+            ) from exc
+        if not isinstance(payload, dict) or set(payload) - {
+            "mode",
+            "expectedTaskStatusRevision",
+            "parameterOverrides",
+        }:
+            raise ProjectRunError("VALIDATION_ERROR", "未知字段", 422)
+        if payload.get("mode") != "originalInputGroup":
+            raise ProjectRunError(
+                "VALIDATION_ERROR", "只支持 originalInputGroup 模式", 422
+            )
+        revision = payload.get("expectedTaskStatusRevision")
+        if type(revision) is not int or revision < 1:
+            raise ProjectRunError(
+                "VALIDATION_ERROR",
+                "expectedTaskStatusRevision 必须是正整数",
+                422,
+            )
+        overrides = payload.get("parameterOverrides", {})
+        if not isinstance(overrides, dict):
+            raise ProjectRunError(
+                "VALIDATION_ERROR", "parameterOverrides 必须是对象", 422
+            )
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            project = self._project(session, project_id)
+            existing = session.scalar(
+                select(ProjectOperationRow).where(
+                    ProjectOperationRow.idempotency_key == key
+                )
+            )
+            if existing is not None:
+                if (
+                    existing.project_id != project_id
+                    or existing.kind != "followUpBatch"
+                    or existing.request_digest != digest
+                ):
+                    raise ProjectRunError(
+                        "OPERATION_PAYLOAD_MISMATCH",
+                        "同一操作身份已用于其他请求",
+                        409,
+                    )
+                result = existing.result
+                if not result or "batch" not in result:
+                    raise ProjectRunError(
+                        "OPERATION_RESULT_UNKNOWN", "后续批次结果需要核验", 409
+                    )
+                saved = result["batch"]
+                saved_row = SqlAlchemyProjectRuns(session).batch_row(
+                    project_id, saved["batchId"]
+                )
+                batch = replace(
+                    batch_record(saved_row),
+                    status="accepted",
+                    status_revision=saved["statusRevision"],
+                    counts=BatchCounts(
+                        {
+                            **dict.fromkeys(TERMINAL_STATUSES, 0),
+                            "queued": saved["createdTaskCount"],
+                        }
+                    ),
+                    completed_at=None,
+                )
+                return batch, _operation(existing), True
+            if project.lifecycle_state == "closing":
+                raise ProjectRunError("PROJECT_CLOSING", "项目正在关闭", 423)
+            if project.lifecycle_state != "active":
+                raise ProjectRunError(
+                    "LIFECYCLE_CONFLICT", "当前项目只读，不能创建后续批次", 409
+                )
+            task = session.get(ProjectTaskRow, task_id)
+            if task is None or task.project_id != project_id:
+                raise ProjectRunError("NOT_FOUND", "任务不存在", 404)
+            run = session.get(WorkflowRunRow, task.run_id)
+            if run is None:
+                raise ProjectRunError("NOT_FOUND", "任务运行事实不存在", 404)
+            if run.status != "failed":
+                raise ProjectRunError(
+                    "FOLLOW_UP_NOT_ALLOWED",
+                    "只有失败的任务可以创建后续批次",
+                    409,
+                    {"currentStatus": run.status},
+                )
+            if run.status_revision != revision:
+                raise ProjectRunError(
+                    "TASK_REVISION_CONFLICT",
+                    "任务状态已更新，请刷新后重试",
+                    409,
+                    {"currentTaskStatusRevision": run.status_revision},
+                )
+            source_batch = session.get(ProjectBatchRow, task.batch_id)
+            if source_batch is None:
+                raise ProjectRunError("NOT_FOUND", "来源批次不存在", 404)
+            automation_row = session.get(
+                ProjectAutomationRow, source_batch.automation_id
+            )
+            if automation_row is None or automation_row.project_id != project_id:
+                raise ProjectRunError("NOT_FOUND", "关联自动化不存在", 404)
+            automation = automation_record(automation_row)
+            snapshot = session.scalar(
+                select(ProjectTaskInputSnapshotRow).where(
+                    ProjectTaskInputSnapshotRow.task_id == task_id
+                )
+            )
+            if snapshot is None:
+                raise ProjectRunError(
+                    "FOLLOW_UP_NOT_ALLOWED",
+                    "缺少任务输入快照，无法确定固定候选范围",
+                    409,
+                )
+            restriction = _follow_up_restriction(snapshot.inputs)
+            if not restriction:
+                raise ProjectRunError(
+                    "FOLLOW_UP_NOT_ALLOWED",
+                    "任务没有可重新取数的数据输入",
+                    409,
+                )
+            source_frozen = source_batch.frozen_request or {}
+            pinned = source_frozen.get("parameters")
+            parameters = dict(pinned) if isinstance(pinned, dict) else {}
+            parameters.update(overrides)
+            follow_up = {
+                "mode": "originalInputGroup",
+                "sourceTaskId": task_id,
+                "sourceBatchId": task.batch_id,
+                "sourceTaskRevision": revision,
+                "candidateRestriction": restriction,
+            }
+            return self._accept_batch(
+                session,
+                project,
+                automation,
+                key=key,
+                kind="followUpBatch",
+                digest=digest,
+                payload={
+                    "expectedAutomationRevision": automation.management_revision,
+                    "parameters": parameters,
+                    # One fixed input group per follow-up Batch; zero Tasks is valid.
+                    "maxTasks": 1,
+                    "concurrency": 1,
+                },
+                now=datetime.now(UTC),
+                follow_up=follow_up,
+            )
+
+    def _accept_batch(
+        self,
+        session: Session,
+        project: ProjectRow,
+        automation: AutomationRecord,
+        *,
+        key: str,
+        kind: str,
+        digest: str,
+        payload: dict[str, Any],
+        now: datetime,
+        follow_up: dict[str, Any] | None = None,
+    ) -> tuple[Batch, ProjectOperation, bool]:
+        """Atomically accept a Batch, its operation row and any fixed tasks."""
+        project_id = project.id
+        has_data_inputs = bool(automation.input_plan.get("inputs"))
+        declared_table_grants = self._validate_capability_manifest(
+            session,
+            automation,
+            self._resolve_data_capability_manifest(session, automation),
+        )
+        start = validate_batch_start(
+            automation,
+            payload,
+            allow_data_inputs="project.data" in self._capabilities,
+        )
+        effective = (
+            replace(
+                automation, environment_policy=thaw_json(start.environment_override)
+            )
+            if start.environment_override is not None
+            else automation
+        )
+        resources = self._resolve_resources(
+            effective, dict(project.default_resources)
+        )
+        workflow = session.get(WorkflowDocumentRow, automation.workflow_id)
+        if workflow is None:
+            raise ProjectRunError("NOT_FOUND", "关联工作流不存在", 404)
+        now, batch_id, operation_id = datetime.now(UTC), str(uuid4()), str(uuid4())
+        prepared = self._core.prepare_content(
+            prepare_operation_id=operation_id,
+            workflow_id=workflow.id,
+            source_revision=workflow.revision,
+            available_capabilities=list(self._capabilities),
+            created_at=now,
+            uow=session,
+        )
+        frozen = _json_dates(
+            {
+                "automation": _json_dates(automation_to_dict(automation)),
+                "parameters": thaw_json(start.parameters),
+                "maxTasks": start.max_tasks,
+                "concurrency": start.concurrency,
+                "resourceRequest": resources,
+                "workflowRevision": workflow.revision,
+            }
+        )
+        create_record_targets = [
+            {"tableId": table_id, "datasetGeneration": generation}
+            for table_id, generation in self._resolve_create_record_targets(
+                session, automation
+            )
+        ]
+        table_grants: list[dict[str, Any]] = []
+        for target in create_record_targets:
+            field_ids = list(
+                session.scalars(
+                    select(DataFieldRow.id).where(
+                        DataFieldRow.project_id == project_id,
+                        DataFieldRow.table_id == target["tableId"],
+                        DataFieldRow.dataset_generation
+                        == target["datasetGeneration"],
+                    )
+                )
+            )
+            table_grants.append(
+                {
+                    **target,
+                    "operations": ["createRecord"],
+                    "fieldIds": field_ids,
+                    "readPurposes": [],
+                }
+            )
+        table_grants.extend(declared_table_grants)
+        status_input_ids = (
+            list(self._resolve_status_input_ids(automation))
+            if has_data_inputs
+            else []
+        )
+        has_data_capability = bool(
+            has_data_inputs
+            or create_record_targets
+            or table_grants
+            or status_input_ids
+        )
+        if has_data_capability and "project.data" not in self._capabilities:
+            raise ProjectRunError(
+                "CAPABILITY_UNAVAILABLE",
+                "项目数据执行能力不可用",
+                409,
+            )
+        data_capability_binding = (
+            {
+                "capability": "project.data",
+                "projectId": project_id,
+                "createRecordTargets": create_record_targets,
+                "tableGrants": table_grants,
+                "statusInputIds": status_input_ids,
+            }
+            if has_data_capability
+            else None
+        )
+        frozen["dataCapabilityBinding"] = data_capability_binding
+        if follow_up is not None:
+            frozen["followUp"] = follow_up
+        selection_outcome: dict[str, Any] | None = (
+            {"status": "pending"} if has_data_inputs else None
+        )
+        if selection_outcome is not None and follow_up is not None:
+            selection_outcome["followUp"] = follow_up
+        operation = ProjectOperation(
+            operation_id,
+            project_id,
+            key,
+            kind,
+            digest,
+            "running",
+            1,
+            {"type": "batch", "projectId": project_id, "batchId": batch_id},
+            None,
+            None,
+            now,
+            now,
+            None,
+        )
+        operation_row = _operation_row(operation)
+        session.add(operation_row)
+        session.flush()
+        batch_row = ProjectBatchRow(
+            id=batch_id,
+            project_id=project_id,
+            automation_id=automation.automation_id,
+            start_operation_id=operation_id,
+            prepared_content_id=prepared.prepared_content_id,
+            automation_revision=automation.management_revision,
+            workflow_revision=workflow.revision,
+            status="accepted",
+            status_revision=1,
+            frozen_request=frozen,
+            created_at=now,
+            completed_at=None,
+            claim_gate_state="open" if has_data_inputs else "closed",
+            selection_outcome=selection_outcome,
+        )
+        session.add(batch_row)
+        session.flush()
+        created_tasks: list[tuple[str, str]] = []
+        policy = start.environment_override or automation.environment_policy
+        for ordinal in range(0 if has_data_inputs else (start.max_tasks or 0)):
+            task_id, request_id, snapshot_id = (
+                str(uuid4()),
+                str(uuid4()),
+                str(uuid4()),
+            )
+            run = self._core.prepare_run(
+                run_request_id=request_id,
+                prepared_content_id=prepared.prepared_content_id,
+                parameters=thaw_json(start.parameters),
+                input_snapshot_ref={
+                    "projectId": project_id,
+                    "batchId": batch_id,
+                    "taskId": task_id,
+                    "inputSnapshotId": snapshot_id,
+                },
+                resource_request=resources,
+                capability_bindings=(
+                    [
+                        {
+                            **data_capability_binding,
+                            "taskId": task_id,
+                            "executionGeneration": 1,
+                        }
+                    ]
+                    if data_capability_binding is not None
+                    else []
+                ),
+                created_at=now,
+                uow=session,
+            )
+            session.add(
+                ProjectTaskRow(
+                    id=task_id,
+                    project_id=project_id,
+                    batch_id=batch_id,
+                    run_id=run.run_id,
+                    run_request_id=run.run_request_id,
+                    ordinal=ordinal,
+                    created_at=now,
+                )
+            )
+            session.flush()
+            snapshot_inputs: list[dict[str, Any]] = []
+            session.add(
+                ProjectTaskInputSnapshotRow(
+                    id=snapshot_id,
+                    task_id=task_id,
+                    batch_id=batch_id,
+                    parameters=thaw_json(start.parameters),
+                    inputs=snapshot_inputs,
+                    captured_at=now,
+                )
+            )
+            session.flush()
+            if self._environments is not None:
+                self._environments.reserve_task_instance(
+                    session, project_id, task_id, run.run_id, policy
+                )
+            created_tasks.append((task_id, run.run_id))
+        batch = SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
+        operation_row.status = "succeeded"
+        operation_row.status_revision = 2
+        operation_row.result = {"batch": _json_dates(batch_to_dict(batch))}
+        operation_row.completed_at = operation_row.updated_at = now
+        session.flush()
+        result_operation = _operation(operation_row)
+        try:
+            session.commit()
+        except Exception:
+            # A failed DBAPI COMMIT can leave SQLite's transaction open after
+            # SQLAlchemy marks it inactive. Never return that connection to the pool.
+            session.invalidate()
+            raise
+        if self._environments is not None:
+            for task_id, run_id in created_tasks:
+                self._environments.attach_task_instance(
+                    project_id, task_id, run_id, policy
+                )
+        return batch, result_operation, False
 
     def get_batch(self, project_id: str, batch_id: str) -> Batch:
         with self._factory() as session:
@@ -606,6 +816,24 @@ class ProjectRunCoordinator:
         if row is None or row.lifecycle_state == "deleted":
             raise ProjectRunError("NOT_FOUND", "项目不存在", 404)
         return row
+
+
+def _follow_up_restriction(inputs: Any) -> dict[str, list[dict[str, Any]]]:
+    """Pin every original input to its own RecordRef.
+
+    An input that had no record in the source Task (optional and unavailable)
+    is pinned to an empty list so a follow-up Batch cannot silently pick a
+    different row for it.
+    """
+    restriction: dict[str, list[dict[str, Any]]] = {}
+    if not isinstance(inputs, list):
+        return restriction
+    for item in inputs:
+        if not isinstance(item, dict) or not isinstance(item.get("inputId"), str):
+            continue
+        ref = item.get("recordRef")
+        restriction[item["inputId"]] = [ref] if isinstance(ref, dict) else []
+    return restriction
 
 
 def _present_input_issue(message: str) -> str:

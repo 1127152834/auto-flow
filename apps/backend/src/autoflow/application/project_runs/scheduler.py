@@ -20,7 +20,10 @@ from autoflow.domain.project_runs.models import ProjectRunError, batch_to_dict
 from autoflow.domain.projects.models import ProjectOperation
 from autoflow.domain.workflows.runtime import TERMINAL_STATUSES, WorkflowRuntimeError
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
-from autoflow.infrastructure.database.project_claims import SqlAlchemyProjectInputGroups
+from autoflow.infrastructure.database.project_claims import (
+    SqlAlchemyProjectInputGroups,
+    _parse_record_ref,
+)
 from autoflow.infrastructure.database.project_data_models import DataTableRow
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
@@ -38,6 +41,21 @@ from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRun
 
 BATCH_TERMINAL = frozenset({"completed", "stopped", "failed", "interrupted"})
 _LOG = logging.getLogger(__name__)
+
+
+def _follow_up_candidate_restriction(follow_up: Any) -> dict[str, Any]:
+    """Pinned candidate map of a follow-up Batch, or {} for a normal Batch."""
+    if not isinstance(follow_up, dict):
+        return {}
+    raw = follow_up.get("candidateRestriction")
+    if not isinstance(raw, dict):
+        return {}
+    restriction = {
+        input_id: refs
+        for input_id, refs in raw.items()
+        if isinstance(input_id, str) and isinstance(refs, list)
+    }
+    return {"candidateRestriction": restriction} if restriction else {}
 
 
 def _next_candidate_offsets(
@@ -509,10 +527,22 @@ class ProjectBatchScheduler:
             return prepared
         with factory() as session:
             groups = SqlAlchemyProjectInputGroups(session)
+            pinned: dict[str, list[Any]] = {}
+            for input_id, refs in (prepared.get("candidateRestriction") or {}).items():
+                if not isinstance(refs, list):
+                    continue
+                parsed: list[Any] = []
+                for raw in refs:
+                    try:
+                        parsed.append(_parse_record_ref(raw))
+                    except (KeyError, TypeError, ValueError):
+                        continue
+                pinned[input_id] = parsed
             selection = groups.select_required(
                 project_id,
                 prepared["inputPlan"],
                 candidate_offsets=prepared["candidateOffsets"],
+                **({"candidate_restriction": pinned} if pinned else {}),
             )
         result = ProjectBatchScheduler._commit_data_claim(
             factory,
@@ -614,6 +644,8 @@ class ProjectBatchScheduler:
                 if isinstance(key, str) and type(value) is int and value >= 0
             }
             now = datetime.now(UTC)
+            follow_up = row.frozen_request.get("followUp")
+            restriction = _follow_up_candidate_restriction(follow_up)
             attempt = previous_outcome.get("claimAttempt")
             if not isinstance(attempt, dict) or attempt.get("state") != "prepared":
                 attempt = {
@@ -644,6 +676,7 @@ class ProjectBatchScheduler:
                 "dataCapabilityBinding": row.frozen_request.get(
                     "dataCapabilityBinding"
                 ),
+                **restriction,
             }
 
     @staticmethod

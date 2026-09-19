@@ -173,6 +173,25 @@ it('shows overview failure with retry while retaining real project details', asy
   expect(screen.getByRole('heading', { name: '项目资料' })).toBeInTheDocument()
 })
 
+it('refetches the overview every time the user comes back to the overview tab', async () => {
+  const overviewCalls: string[] = []
+  const project = { ...a } as ProjectView
+  const request = vi.fn((path: string) => {
+    if (path.endsWith('/overview')) { overviewCalls.push(path); return Promise.resolve({ project, counts: { tables: overviewCalls.length }, activity: [], current: [], recent: [] }) }
+    return Promise.resolve(path.includes('?') ? { items: [], page: 1, pageSize: 50, total: 0, sort: '-lastOpenedAt' } : project)
+  })
+  const onNavigate = vi.fn(); const client = { request: request as unknown as StreamingApiClient['request'], health: vi.fn(), stream: vi.fn() } as StreamingApiClient
+  const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const tree = (route: Parameters<typeof ProjectsWorkspace>[0]['route']) => <QueryClientProvider client={cache}><ProjectsWorkspace route={route} workspaceKey="w1" instanceId="i1" client={client} disabled={false} onNavigate={onNavigate} registerLeaveGuard={vi.fn()} /></QueryClientProvider>
+  const view = render(tree({ projectId: a.projectId, tab: 'overview' }))
+  await waitFor(() => expect(overviewCalls).toHaveLength(1))
+  view.rerender(tree({ projectId: a.projectId, tab: 'runs' }))
+  await waitFor(() => expect(document.querySelector('[aria-label="项目计数"]')).toBeNull())
+  view.rerender(tree({ projectId: a.projectId, tab: 'overview' }))
+  await waitFor(() => expect(overviewCalls).toHaveLength(2))
+  expect(await screen.findByText('2')).toBeInTheDocument()
+})
+
 it.each(['closing', 'archived', 'deleting'] as const)('keeps a %s project detail read-only', async lifecycleState => {
   const project = { ...a, lifecycleState }
   const request = vi.fn((path: string) => Promise.resolve(path.includes('/overview') ? { project, availability: project.availability, counts: {}, activity: [], recent: [] } : path.includes('?') ? { items: [], page: 1, pageSize: 50, total: 0 } : project))

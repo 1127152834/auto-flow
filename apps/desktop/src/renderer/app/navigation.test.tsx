@@ -150,3 +150,19 @@ it('round trips run directories, batches and task evidence without losing scoped
   expect(() => projectHash({ projectId, tab: 'runs', taskId: id, manualItemId: id })).toThrow()
   expect(() => projectHash({ projectId, tab: 'runs', runView: 'manual', manualItemId: 'not-an-id' })).toThrow()
 })
+
+it('keeps the frozen statistics drill-down as its own runs page', () => {
+  const projectId = '00000000-0000-4000-8000-000000000001'
+  const routes = [
+    { projectId, tab: 'runs' as const, runFrozen: { resultSetId: 'rs-1', result: 'failed' as const } },
+    { projectId, tab: 'runs' as const, runFrozen: { resultSetId: 'rs-1', result: 'failed' as const, intervalStart: '2026-09-18T16:00:00.000Z' } },
+    { projectId, tab: 'runs' as const, runFrozen: { resultSetId: 'rs-1', result: 'timed_out' as const, intervalStart: '2026-09-18T16:00:00.000Z', automationId: '00000000-0000-4000-8000-000000000003' } },
+  ]
+  for (const route of routes) expect(parseAppLocation(projectHash(route))).toEqual({ section: 'projects', project: route })
+  expect(() => projectHash({ projectId, tab: 'runs', runFrozen: { resultSetId: 'rs-1', result: 'failed' }, taskId: projectId })).toThrow()
+  expect(() => projectHash({ projectId, tab: 'statistics', runFrozen: { resultSetId: 'rs-1', result: 'failed' } })).toThrow()
+  // 真实冻结结果集是服务端签名令牌（约 500 字符），不能按短标识校验。
+  const signed = "eyJhdXRvbWF0aW9uSWQiOm51bGwsImNhbGN1bGF0ZWRBdCI6IjIwMjYtMDktMTlUMDM6MzA6MDArMDA6MDAiLCJmcm9tIjoiMjAyNi0wOS0xMlQwMDowMDowMCswMDowMCIsImludGVydmFsIjoiZGF5IiwicHJvamVjdElkIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwidGFibGVJZCI6bnVsbCwidGltZXpvbmUiOiJBc2lhL1NoYW5naGFpIiwidG8iOiIyMDI2LTA5LTE5VDAzOjMwOjAwKzAwOjAwIn0.c777fd12d025667e"
+  const signedRoute = { projectId, tab: 'runs' as const, runFrozen: { resultSetId: signed, result: 'failed' as const, intervalStart: '2026-09-18T16:00:00.000Z' } }
+  expect(parseAppLocation(projectHash(signedRoute))).toEqual({ section: 'projects', project: signedRoute })
+})

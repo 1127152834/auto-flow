@@ -29,6 +29,16 @@ from .project_excel_schemas import (
     ExcelReconcileResult,
 )
 from .project_run_schemas import BatchView
+from .project_sheets_schemas import (
+    SheetsBinding,
+    SheetsConnection,
+    SheetsConnectionResourceLocator,
+    SheetsDisconnectResult,
+    SheetsInspection,
+    SheetsUnbindResult,
+    SyncOperation,
+    SyncRunResult,
+)
 from .schemas import ApiModel
 
 
@@ -66,8 +76,8 @@ class ProjectCapabilities(ApiModel):
     data: Literal["available"]
     runs: Literal["available"]
     environments: Literal["available"]
-    statistics: Literal["notImplemented"]
-    sync: Literal["notImplemented"]
+    statistics: Literal["available"]
+    sync: Literal["available"]
 
 
 class ProjectView(ApiModel):
@@ -84,14 +94,6 @@ class ProjectView(ApiModel):
 
 class ProjectSummary(ProjectView):
     availability: ProjectCapabilities
-
-
-class ProjectOverview(ApiModel):
-    project: ProjectView
-    counts: dict[str, int]
-    availability: ProjectCapabilities
-    activity: list[dict[str, Any]]
-    recent: list[dict[str, Any]]
 
 
 class ProjectPage(ApiModel):
@@ -119,6 +121,67 @@ class BatchResourceLocator(ApiModel):
     batch_id: str
 
 
+class TaskResourceLocator(ApiModel):
+    type: Literal["task"]
+    project_id: str
+    task_id: str
+
+
+class SyncResourceLocator(ApiModel):
+    type: Literal["sync"]
+    project_id: str
+    table_id: str
+    sync_operation_id: str
+
+
+OverviewResourceLocator = Annotated[
+    ProjectResourceLocator
+    | AutomationResourceLocator
+    | BatchResourceLocator
+    | TaskResourceLocator
+    | TableResourceLocator
+    | RecordResourceLocator
+    | FieldResourceLocator
+    | StatusResourceLocator
+    | SheetsConnectionResourceLocator
+    | SyncResourceLocator,
+    Field(discriminator="type"),
+]
+
+
+class AttentionItem(ApiModel):
+    kind: Literal["batch", "task", "manual", "resource", "sync", "cleanup"]
+    resource: OverviewResourceLocator
+    severity: Literal["info", "warning", "error"]
+    message: str
+    occurred_at: datetime
+
+
+class ActivityItem(ApiModel):
+    activity_id: str
+    kind: str
+    resource: OverviewResourceLocator
+    summary: str
+    occurred_at: datetime
+
+
+class DataChanges(ApiModel):
+    timezone: str
+    day_start: datetime
+    new_records: int
+    updated_records: int
+
+
+class ProjectOverview(ApiModel):
+    project: ProjectView
+    counts: dict[str, int]
+    availability: ProjectCapabilities
+    activity: list[AttentionItem]
+    current: list[ActivityItem]
+    recent: list[ActivityItem]
+    data_changes: DataChanges | None = None
+
+
 class ProjectBatchResult(ApiModel):
     batch: BatchView
 
@@ -135,6 +198,7 @@ class ProjectOperationView(ApiModel):
         "startBatch",
         "stopBatch",
         "forceStopBatch",
+        "followUpBatch",
         "createTable",
         "updateTable",
         "mutateField",
@@ -151,6 +215,14 @@ class ProjectOperationView(ApiModel):
         "importExcel",
         "exportXlsx",
         "reconcileOperation",
+        "connectSheets",
+        "disconnectSheets",
+        "inspectSheets",
+        "changeSheetsBinding",
+        "removeSheetsBinding",
+        "syncPull",
+        "syncPush",
+        "reconcileSync",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int
@@ -161,7 +233,8 @@ class ProjectOperationView(ApiModel):
         | TableResourceLocator
         | FieldResourceLocator
         | StatusResourceLocator
-        | RecordResourceLocator,
+        | RecordResourceLocator
+        | SheetsConnectionResourceLocator,
         Field(discriminator="type"),
     ]
     result: (
@@ -182,6 +255,13 @@ class ProjectOperationView(ApiModel):
         | ExcelExportResult
         | ExcelReconcileResult
         | CancelRecordStatusesResult
+        | SheetsConnection
+        | SheetsDisconnectResult
+        | SheetsInspection
+        | SheetsBinding
+        | SheetsUnbindResult
+        | SyncRunResult
+        | SyncOperation
         | None
     )
     error: dict[str, Any] | None

@@ -5,7 +5,7 @@ import { createProjectDataApi, DataCommandUncertain } from './api'
 function client(request: StreamingApiClient['request']): StreamingApiClient {
   return { request, health: vi.fn(), stream: vi.fn() }
 }
-const table = { projectId: 'p', tableId: 't', name: 'Data', tableRevision: 1 }
+const table = { projectId: 'p', tableId: 't', name: 'Data', tableRevision: 1, sourceKind: 'local' as const }
 const operation = {
   projectId: 'p', idempotencyKey: 'key', kind: 'createTable', status: 'succeeded',
   resource: { type: 'table', projectId: 'p', tableId: 't' }, result: table,

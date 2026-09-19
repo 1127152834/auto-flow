@@ -1,0 +1,56 @@
+{
+  "status": "failed",
+  "scenario": "PM7-A management-side overview/statistics/evidence/follow-up",
+  "scope": "PM7 A 管理侧验收未通过",
+  "boundary": {
+    "executor": "isolatedQaExecutor",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  },
+  "steps": [
+    "E2E-1 概览事实：界面创建项目/三表/自动化并跑出成功、失败与停止结果",
+    "E2E-2 统计与下钻：四指标、口径、失败去向、冻结集合下钻与刷新",
+    "E2E-3 失败后续：从原输入组发起后续批次并保留来源任务",
+    "E2E-4 任务证据：原始输入、当前值对照、数据写入与节点日志",
+    "E2E-5 异常：概览读取失败、统计结果集过期、修订冲突、响应丢失、迟到事件",
+    "E2E-6 边界：200% 缩放与长文本不撑宽（双工作区切换见手测 M-12）"
+  ],
+  "visualReview": "pending",
+  "injected": [],
+  "gitHead": "c88999b91b4be9bd077e0f2e58a42971defd83fa",
+  "sourceSha256": "ed703c065be8f5ca307dfcc1ef89706bdc089e641d9f2ae4258e1c10e5a39aab",
+  "platform": "darwin",
+  "arch": "arm64",
+  "runId": "20260918183327",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm7-qa-20260918183327-Wr1Io6",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm7-qa-20260918183327-Wr1Io6/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918183327",
+  "checkpoints": [],
+  "screenshots": [
+    {
+      "name": "99-failure",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/docs/project-management/implementation/pm7/qa-runs/20260918183327/99-failure.png",
+      "route": "#/projects/e6636ed0-821c-4120-9426-8d6530b4b2bd/overview",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "d31a0d6d8d4b772abfdf49b15e764bba99d1a2759786d7f95a9f93a76a6174f1",
+      "visualReview": "pending"
+    }
+  ],
+  "error": "Error: timed out waiting for 项目资料: false\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/electron-cdp.mjs:82:9)\n    at async main (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/qa-project-management-pm7.mjs:518:5)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm7/scripts/qa-project-management-pm7.mjs:809:68",
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器执行",
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果",
+    "双工作区切换（见手测 M-12）"
+  ],
+  "createdAt": "2026-09-18T18:33:51.393Z"
+}

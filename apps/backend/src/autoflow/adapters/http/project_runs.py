@@ -18,6 +18,7 @@ from .project_run_schemas import (
     BatchPage,
     BatchStartRequest,
     BatchStopRequest,
+    FollowUpBatchRequest,
     InputPreviewRequest,
     InputPreviewResponse,
     ProjectRunOperationAccepted,
@@ -56,6 +57,29 @@ def project_runs_router(
             _batch, operation, _replayed = coordinator.start(
                 str(projectId),
                 str(automationId),
+                str(idempotency_key),
+                body.payload(),
+            )
+        scheduler.wake()
+        return {"operation": _operation(operation)}
+
+    @router.post(
+        "/tasks/{taskId}/follow-up-batches",
+        status_code=202,
+        response_model=ProjectRunOperationAccepted,
+        responses=browser_error_responses(401, 404, 409, 422, 423, 503),
+    )
+    async def follow_up_batch(
+        projectId: UUID, taskId: UUID, body: FollowUpBatchRequest, idempotency_key: Key
+    ):
+        with gate.mutation() as admitted:
+            if not admitted:
+                raise ProjectRunError(
+                    "SERVICE_UNAVAILABLE", "系统正在暂停写入，请稍后重试", 503
+                )
+            _batch, operation, _replayed = coordinator.follow_up(
+                str(projectId),
+                str(taskId),
                 str(idempotency_key),
                 body.payload(),
             )

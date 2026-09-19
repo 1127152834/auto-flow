@@ -1,0 +1,169 @@
+{
+  "date": "2026-09-19",
+  "milestone": "PM7",
+  "branch": "codex/project-management-pm7",
+  "status": "delivered-management-scope-verified-executor-pending",
+  "deliveryStatus": "delivered-management-scope",
+  "verificationStatus": "verifiedForManagementScope",
+  "scope": "管理侧通过，真实执行核心接入待验收",
+  "head": "56112678c43a61f7f3f03ff181e31482a26fa3ce",
+  "headNote": "这里包含本轮全部源码与 QA 脚本改动（统计下钻独立页面、冻结集合标识与文案修复、端到端脚本证据修正）；`verification.json`、`coverage.json`、执行账本与 `.ai` 记录在其后的文档提交中，不改变源码摘要。",
+  "workingTree": "clean（除 4 个预期未跟踪 reference/* 只读符号链接）",
+  "sourceDigest": "c799fa292cafbb8cdd82e9553f94f2ced1a68a64d1137f4557b3383d159976a3",
+  "sourceDigestMethod": "find apps/backend/src apps/desktop/src -type f \\( -name '*.py' -o -name '*.ts' -o -name '*.tsx' -o -name '*.css' \\) | sort | xargs shasum -a 256 | shasum -a 256",
+  "sourceDigestNote": "对 56112678 的工作树计算：apps/backend/src 与 apps/desktop/src 下 .py/.ts/.tsx/.css 逐文件 sha256 再整体 sha256。本轮交付的界面与 QA 截图由该值对应的源码产出。",
+  "authoritativeManagementRun": {
+    "result": "docs/project-management/implementation/pm7/qa-runs/20260918203625/report.json",
+    "status": "passed",
+    "scenario": "PM7-A management-side overview/statistics/evidence/follow-up",
+    "scope": "管理侧通过，真实执行核心接入待验收",
+    "evidenceType": "真实 Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 隔离 QA 测试执行器",
+    "capturedGitHead": "56112678c43a61f7f3f03ff181e31482a26fa3ce",
+    "capturedSourceSha256": "0aaa73f155bc5d4760a79f815bf2e9d8e488e56dcd12a8d93957d1ab0d0cfc76",
+    "platform": "darwin",
+    "arch": "arm64",
+    "checkpoints": 16,
+    "screenshots": 16,
+    "viewport": "1440x1024",
+    "dpr": 1,
+    "boundary": {
+      "executor": "isolatedQaExecutor（tests.qa.pm7_sidecar + tests/qa 隔离执行器）",
+      "browser": "notExecuted",
+      "studio": "notExecuted"
+    },
+    "facts": {
+      "lifecycle": "界面创建项目；只读 GET 找回同一真实项目。",
+      "data": "界面创建三张表、必要字段、人员/邮箱记录与待使用/已使用状态；账号表为空。",
+      "automation": "界面创建自动化并配置两个独立必填输入。",
+      "successBatch": "批次 6a0330c2-642c-47ee-a326-db3a0f5014bd，3 个任务全部 succeeded。",
+      "failedBatch": "隔离执行器在 create_record:account（CREATE_ACCOUNT）注入失败，任务 0218655b-bfe3-49de-b062-e81dba347bb6 落为 failed。",
+      "stopBatch": "批次 85f67125-c3b9-4637-bfd9-96d36e90d7f9，界面普通停止后强制停止落为 stopped；cancelled 0 条。",
+      "overview": "表 3、自动化 1、今日新增 21 / 更新 5、活动 1 条、最近 20 条。",
+      "statistics": "已结束 5（成功 3 / 失败 1 / 取消 0），成功率 0.75，平均耗时 11ms，冻结结果集下钻 1 条。",
+      "evidence": "原始输入、项目数据操作、当前值对照与失败证据均在真实页面渲染。",
+      "conflict": "源任务状态修订在提交前被推进，后续批次被真实拒绝且表单保留。",
+      "responseLoss": "后续批次提交后响应丢失且核验查询同样失败，用户按原操作身份核对找回；批次总数 4，未产生第二条创建事实。",
+      "statisticsTtl": "冻结结果集 TTL 到期后下钻被拒绝，页面提示「统计结果已过期，请刷新后重试」（修复前被二次兜底成「操作失败，请重试」）。",
+      "statisticsRefreshFailure": "刷新失败保留上次范围与数值，并提示「统计刷新失败」。",
+      "lateEvent": "注入 sequence 6 后任务仍为 failed，事件可按游标补读。",
+      "overviewRefreshFailure": "先成功取数再注入失败，页面保留上次数值并提示「概览刷新失败」。",
+      "zoom": "200% 缩放与长文本下没有横向撑宽。",
+      "noDuplicates": "账号数 3；人员记录在整条批次链后按记录身份逐字段不变（contentRevision/statusRevision/linkRevision 均为 1）。",
+      "drillDown": "统计下钻是独立页面 #/projects/{id}/runs/frozen/{resultSetId}/{result}：面包屑「项目 / 项目名 / 运行记录 / 任务」、运行记录页签高亮、批次/任务/等待人工子页签、冻结筛选胶囊、统计快照条、六列表格与页脚说明。"
+    },
+    "defectsFoundByThisRun": [
+      "`followUpBatch` 不在 `ProjectOperationView.kind` 与 operations 路由的 Literal 联合中，按幂等键找回该类型操作时 FastAPI 响应校验失败 → 500，响应丢失后的恢复通道实际不可用。修复：6e26c6bd，并补「路由能写的每种 kind 都能被操作查询读回」的契约测试。",
+      "`useProjectOverview` 只在挂载时取数一次，先建表/自动化/批次再回概览页签会显示已确认的过期事实（0/0/0/0 与空活动）。修复：5ad992de。",
+      "`StatisticsPage` 每次挂载用当前时间生成新窗口，查询键随之变化，刷新失败时丢失上次已确认的范围与数值，只剩错误提示。修复：5144079c。",
+      "QA 脚本自身的三处定位/时序缺陷（页面 aria-label 与产品实际值不一致、「注入失败保留上次结果」用例未先成功取数、迟到事件前未回到失败任务详情）已在 19823f1e 修正，属测试资产缺陷，不计为产品缺陷。",
+      "统计下钻在实现里只是统计页内联卡片，原型 04-statistics/007 要求运行记录下的独立页面（面包屑、页签高亮、子页签、筛选胶囊、快照条、六列表格、页脚与分页）。修复：56112678 —— 新增 RunFrozen 路由与 StatisticsDrillPage，TaskDirectory 增加 frozen 上下文。逐画板评分 62 → 88。",
+      "冻结结果集标识是服务端签名令牌（实测约 340 字符），路由按 200 字符上限校验，点击下钻直接落到「项目地址无效」。失败运行 20260918202945/99-failure.png 保留该画面。修复：去掉长度猜测并改用与后端同形状的令牌做回归。",
+      "TaskDirectory 对已格式化错误字符串做二次白名单兜底，冻结集合过期被显示成「操作失败，请重试」，用户看不到「统计结果已过期」。失败运行 20260918203241/99-failure.png 保留该画面。修复：TaskDirectory 接收原始错误并补 STATISTICS_RESULT_EXPIRED 映射。",
+      "统计刷新失败的通用读取错误缺少重试动作（原型 006 有「重新加载」）。修复：5077cf1a 之前的工作区改动随 56112678 一起交付，逐画板评分 80 → 88。",
+      "QA 证据缺陷：04-statistics-006-failure-destinations 与 001 截图完全相同（同屏重复截图）、03-runs-002-task-detail 引用指向任务列表画板、两个 followup 画面引用指向批次详情画板。修复：本轮脚本与 report 引用修正。"
+    ],
+    "capturedGitHeadNote": "运行开始时工作区已包含 D0/D15 修复但尚未提交，因此 report.json 里的 gitHead 是 3a52182b、sourceSha256 是 0aaa73f1…；两者与上述源码摘要对应同一份工作树内容。",
+    "visualReview": "passed（docs/project-management/implementation/pm7/visual-review.md，逐画面人工核对）"
+  },
+  "automatedChecks": {
+    "backend": {
+      "command": "uv run --directory apps/backend pytest -q -p no:randomly",
+      "result": "3085 passed, 16 skipped, 2 warnings",
+      "failed": 0,
+      "durationSeconds": 535,
+      "note": "56112678 的源码改动仅限前端与 QA 脚本，后端仍为本会话重跑的真实结果。"
+    },
+    "backendStyle": {
+      "ruff": "uv run --directory apps/backend ruff check . → All checks passed",
+      "mypy": "uv run --directory apps/backend mypy src → Success: no issues found in 383 source files"
+    },
+    "frontendUnit": {
+      "command": "npm test",
+      "result": "399 个测试文件 / 5417 项测试通过",
+      "failed": 0,
+      "durationSeconds": 173
+    },
+    "frontendChecks": {
+      "openapiCheck": "npm run openapi:check → 无差异",
+      "typecheck": "npm run typecheck → 通过",
+      "lint": "npm run lint → 通过",
+      "build": "npm run build → 通过"
+    },
+    "scriptAndStructure": {
+      "testScripts": "npm run test:scripts → 78 pass / 0 fail",
+      "testStructure": "npm run test:structure → 4 pass / 0 fail",
+      "diffCheck": "git diff --check → 干净"
+    },
+    "qaTooling": {
+      "selfTest": "node scripts/qa-project-management-pm7.mjs --self-test → passed",
+      "scriptTests": "node scripts/qa-project-management-pm7.test.mjs → 5 pass / 0 fail"
+    }
+  },
+  "regressions": {
+    "pm3": {
+      "command": "node scripts/qa-project-management-pm3.mjs",
+      "result": "passed",
+      "evidence": "docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/result.json",
+      "note": "当前 HEAD 重新真实运行，非沿用历史候选。"
+    },
+    "pm4": {
+      "command": "node scripts/qa-project-management-pm4.mjs",
+      "result": "passed",
+      "evidence": "docs/project-management/implementation/pm4/qa-runs/v1-f52SNQ/result.json",
+      "note": "当前 HEAD 重新真实运行，非沿用历史候选。"
+    }
+  },
+  "deliveredScope": {
+    "PM7-B1": "`GET /projects/{projectId}/overview` 返回真实 counts / dataChanges / activity / recent，`availability.statistics` 置为 available。",
+    "PM7-B2": "`GET /statistics` 与 `GET /statistics/{resultSetId}/tasks`；冻结谓词、HMAC 结果集标识、口径按规格，零分母省略 successRate。",
+    "PM7-C1": "`select_required(..., candidate_restriction=...)`；受限批次走同一领取路径，无 restriction 时行为与旧路径一致。",
+    "PM7-C2": "`POST .../follow-up-batches` → 202；保留原始输入分组与来源任务，不自动改业务状态。",
+    "PM7-A1": "节点访问与重试链、输入快照 vs 当前值、变化来源、日志游标分页与迟到事件。",
+    "PM7-UI": "概览页（统计条 / 项目活动 / 需要关注 / 继续工作）、统计页（四指标 / 趋势 / 失败去向 / 口径脚注 / 冻结下钻）、任务证据与失败后续入口接入真实页面。"
+  },
+  "knownGaps": [
+    {
+      "item": "真实生产执行核心接入",
+      "status": "notExecuted",
+      "reason": "本轮使用隔离 QA 执行器；管理界面、FastAPI、SQLite、领取、数据操作、运行事实与恢复均为真实，但执行核心不是生产实现。交付声明固定为「管理侧通过，真实执行核心接入待验收」。"
+    },
+    {
+      "item": "真实 CloakBrowser 执行",
+      "status": "notExecuted",
+      "reason": "report.json 的 boundary.browser 为 notExecuted；本轮不调用真实浏览器。"
+    },
+    {
+      "item": "Studio demo 联合测试",
+      "status": "notExecuted",
+      "reason": "按用户指示不联合测试 Studio demo，未修改其画布、transport 或 bridge。"
+    },
+    {
+      "item": "双工作区切换",
+      "status": "deferredToManualTest",
+      "reason": "本轮端到端不覆盖；见手测 M-12。历史 PM2–PM6 证据中已有双工作区隔离记录，本轮未重跑。"
+    },
+    {
+      "item": "概览「需要关注」的资源健康类项",
+      "status": "byDesign",
+      "reason": "只覆盖已提交事实，不做资源健康探测；已在设计规格 D6 登记为明确边界。"
+    },
+    {
+      "item": "统计聚合的索引与超大项目开销",
+      "status": "acceptedRisk",
+      "reason": "本期直接聚合，未对 completed_at 之外新增索引；出现实测瓶颈再加索引，已在执行卡风险表登记。"
+    }
+  ],
+  "notExecuted": [
+    "真实生产执行核心接入",
+    "真实 CloakBrowser 执行",
+    "Studio demo 联合测试",
+    "Windows",
+    "其他 CPU 架构",
+    "打包应用验收",
+    "用户手动验收",
+    "双工作区切换（走手测 M-12）"
+  ],
+  "manualTest": "docs/project-management/implementation/pm7/manual-test.md",
+  "visualVerification": "docs/project-management/implementation/pm7/visual-review.md",
+  "executionLedger": "docs/project-management/implementation/execution-ledger.md"
+}

@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
-import { launchElectron, connectCdp, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
 import { assertOutsideHistory } from './project-smoke-output.mjs'
 
@@ -62,7 +62,7 @@ try {
   await input('[aria-label="搜索项目"]', '修改后的项目 A')
   await waitFor(main, `document.querySelectorAll('tbody tr').length === 1 && document.querySelector('tbody')?.innerText.includes('项目 A')`, 'name/description search')
   await click('项目 A', 'tbody tr')
-  await visible('项目资料')
+  await waitForProjectPage(main)
   await click('返回项目目录')
   assert.equal(await main.evaluate(`document.querySelector('[aria-label="搜索项目"]').value`), '修改后的项目 A')
   checkpoint('overview tabs expose only available capability; returning preserves search')
@@ -75,7 +75,7 @@ try {
   await click('下一页')
   await waitFor(main, `document.querySelectorAll('tbody tr').length === 5`, 'second directory page')
   await click('批量项目 51', 'tbody tr')
-  await visible('项目资料')
+  await waitForProjectPage(main)
   await click('返回项目目录')
   await waitFor(main, `document.querySelectorAll('tbody tr').length === 5`, 'page restored')
   assert.equal(await main.evaluate(`document.querySelector('[aria-label="项目排序"]').dataset.choiceValue`), 'name')
@@ -86,7 +86,7 @@ try {
   await capture('directory')
   await click('批量项目 08', 'tbody tr')
   const beforeLeaveScroll = 240
-  await visible('项目资料')
+  await waitForProjectPage(main)
   await click('返回项目目录')
   await waitFor(main, `document.querySelector('[data-radix-scroll-area-viewport]')?.scrollTop >= ${beforeLeaveScroll}`, 'directory viewport restored')
   checkpoint('real 55-row query paginates, retains sorting/page and restores contained scroll')
@@ -94,7 +94,7 @@ try {
   await input('[aria-label="搜索项目"]', '项目 A')
   await waitFor(main, `document.querySelectorAll('tbody tr').length === 1`, 'project A search')
   await click('项目 A', 'tbody tr')
-  await visible('项目资料')
+  await waitForProjectPage(main)
   await click('编辑项目')
   await input('#project-description', '冲突中保留的输入')
   const before = await api(`/projects/${a}`)
@@ -193,7 +193,7 @@ try {
   await input('[aria-label="搜索项目"]', '重连后项目 A')
   await waitFor(main, `document.querySelectorAll('tbody tr').length === 1`, 'restarted project directory')
   await click('重连后项目 A', 'tbody tr')
-  await visible('项目资料')
+  await waitForProjectPage(main)
   await capture('restarted')
   checkpoint('full Electron restart retains projects and last-opened timestamps, then reopens A')
   const result = { scope: 'PM1 project entry and existing-module regression; PM2 data entry only; detailed data behavior not tested', result: 'passed', entry, platform: process.platform, arch: process.arch, checkedAt: new Date().toISOString(), checks, measurements, windows: 'not-run' }
@@ -239,7 +239,7 @@ async function key(key) { await main.command('Input.dispatchKeyEvent', { type: '
 async function choose(label, value) { await click('', `[aria-label="${label}"]`); await click('', `[role=option][data-choice-value="${value}"]`) }
 async function closedForm() { await waitFor(main, `!document.querySelector('#project-name')`, 'project form closes') }
 async function create(name, description) {
-  await click('新建项目'); await waitFor(main, `document.activeElement?.id === 'project-name'`, 'name autofocus'); await key('Tab'); assert.equal(await main.evaluate('document.activeElement.id'), 'project-description'); await input('#project-name', name); await input('#project-description', description); await capture('form'); if (name === '项目 B') { await main.evaluate(`document.querySelector('#project-name').focus()`); await key('Enter') } else await click('创建项目'); await closedForm(); await visible('项目资料')
+  await click('新建项目'); await waitFor(main, `document.activeElement?.id === 'project-name'`, 'name autofocus'); await key('Tab'); assert.equal(await main.evaluate('document.activeElement.id'), 'project-description'); await input('#project-name', name); await input('#project-description', description); await capture('form'); if (name === '项目 B') { await main.evaluate(`document.querySelector('#project-name').focus()`); await key('Enter') } else await click('创建项目'); await closedForm(); await waitForProjectPage(main)
   return (await api(`/projects?q=${encodeURIComponent(name)}`)).items.find(p => p.name === name).projectId
 }
 async function switchWorkspace() {

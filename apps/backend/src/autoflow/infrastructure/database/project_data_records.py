@@ -34,6 +34,7 @@ from autoflow.infrastructure.database.project_data_models import (
     DataStatusRow,
     DataTableRow,
 )
+from autoflow.infrastructure.database.project_sync import enqueue_intent
 
 
 class SqlAlchemyProjectDataRecords:
@@ -47,7 +48,18 @@ class SqlAlchemyProjectDataRecords:
         generation: str,
         values: dict[str, object],
         operation: ProjectOperation,
+        key: RecordKey | None = None,
+        origin: str = "local",
     ) -> tuple[dict[str, Any], ProjectOperation, bool]:
+        """``key`` overrides the derived identity for sources that know it.
+
+        A Sheets row keeps the type the spreadsheets API reported for the cell
+        ("1" text versus 1 number), which the local identity column alone loses.
+
+        ``origin`` separates a local business write from a write the source
+        itself produced. A pull materialises remote rows, so it must not queue
+        them for an outbound push (design §11): only local changes are intents.
+        """
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             existing = SqlAlchemyProjectDataCatalog._existing(session, operation)
@@ -56,9 +68,11 @@ class SqlAlchemyProjectDataRecords:
                 return _operation_result(existing), _operation(existing), True
             table = self._table(session, project_id, table_id, generation, True)
             fields = self._fields(session, table)
-            canonical = self._validate(fields, values, True)
+            canonical = self._validate(fields, values, True, origin)
             identity = table.identity
-            if identity.get("mode") == "system":
+            if key is not None:
+                pass
+            elif identity.get("mode") == "system":
                 key = system_record_key()
             else:
                 identity_field_id = identity.get("fieldId")
@@ -93,6 +107,8 @@ class SqlAlchemyProjectDataRecords:
                 session.add(_operation_row(done))
                 session.flush()
                 session.add(_change(done, None, snapshot))
+                if origin == "local":
+                    enqueue_intent(session, table, key, row.content_revision)
                 session.commit()
                 return snapshot, done, False
             except IntegrityError as error:
@@ -248,6 +264,7 @@ class SqlAlchemyProjectDataRecords:
         values: dict[str, object],
         expected: int,
         operation: ProjectOperation,
+        origin: str = "local",
     ) -> tuple[dict[str, Any], ProjectOperation, bool]:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -269,7 +286,7 @@ class SqlAlchemyProjectDataRecords:
                 raise ProjectError(
                     "IDENTITY_FIELD_IMMUTABLE", "Identity field cannot be changed", 422
                 )
-            canonical = self._validate(fields, values, False)
+            canonical = self._validate(fields, values, False, origin)
             before = self._snapshot(row, fields)
             merged = {**row.values_json, **canonical}
             changed = merged != row.values_json
@@ -281,6 +298,8 @@ class SqlAlchemyProjectDataRecords:
             done = _completed(operation, snapshot)
             session.add(_operation_row(done))
             session.flush()
+            if changed and origin == "local":
+                enqueue_intent(session, table, key, row.content_revision)
             if changed:
                 session.add(_change(done, before, snapshot))
             session.commit()
@@ -381,7 +400,7 @@ class SqlAlchemyProjectDataRecords:
                 "Dataset generation is no longer current",
                 410,
             )
-        if table.source_kind not in {"local", "excel"}:
+        if table.source_kind not in {"local", "excel", "sheets"}:
             raise ProjectError(
                 "SOURCE_WRITE_UNAVAILABLE", "Source does not support record writes", 412
             )
@@ -426,8 +445,17 @@ class SqlAlchemyProjectDataRecords:
 
     @staticmethod
     def _validate(
-        fields: list[DataFieldRow], values: dict[str, object], creating: bool
+        fields: list[DataFieldRow],
+        values: dict[str, object],
+        creating: bool,
+        origin: str = "local",
     ) -> dict[str, object]:
+        """Check values against the field definitions.
+
+        ``origin`` marks a write the source itself produced. A Sheets pull
+        materialises the formula a row actually holds, which the local
+        read-only rule exists to protect rather than to reject (DATA-SH-11).
+        """
         by_id = {field.id: field for field in fields}
         unknown = set(values) - set(by_id)
         if unknown:
@@ -435,7 +463,7 @@ class SqlAlchemyProjectDataRecords:
         result: dict[str, object] = {}
         for field_id, value in values.items():
             field = by_id[field_id]
-            if not field.writable or field.formula:
+            if origin != "source" and (not field.writable or field.formula):
                 raise ProjectError("FIELD_NOT_WRITABLE", "Field is not writable", 422)
             result[field_id] = validate_value(
                 {

@@ -18,7 +18,7 @@ export function createProjectDataApi(client: StreamingApiClient, projectId: stri
     return execute(tableId ? `${base}/${encode(tableId)}` : base, tableId ? 'PATCH' : 'POST', body, key, kind, resume, operation => {
       const { resource, result } = operation
       if (resource.type !== 'table' || resource.projectId !== projectId || (tableId !== undefined && resource.tableId !== tableId)
-        || !result || !('tableId' in result) || result.tableId !== resource.tableId || result.projectId !== projectId) {
+        || !result || !('sourceKind' in result) || !('tableId' in result) || result.tableId !== resource.tableId || result.projectId !== projectId) {
         throw new Error('操作结果与当前数据表保存请求不一致')
       }
       return result

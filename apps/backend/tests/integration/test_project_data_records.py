@@ -490,8 +490,12 @@ def test_formula_fields_and_unsupported_sources_are_not_writable(ctx):
             },
         )
     assert error.value.code == "FIELD_NOT_WRITABLE"
+    # "unconfigured" is a present source kind whose source is gone, so it is the
+    # one kind that still refuses record writes outright. A Sheets table is not
+    # in that group: PM6 keeps bound tables locally editable and turns the edit
+    # into an outbound push intent.
     with factory.begin() as session:
-        session.get(DataTableRow, table["tableId"]).source_kind = "sheets"
+        session.get(DataTableRow, table["tableId"]).source_kind = "unconfigured"
     with pytest.raises(ProjectError) as error:
         service.create(
             project,
@@ -503,6 +507,23 @@ def test_formula_fields_and_unsupported_sources_are_not_writable(ctx):
             },
         )
     assert error.value.status == 412
+
+
+def test_sheets_sourced_tables_accept_local_writes(ctx):
+    service, _, factory, project, table, field = ctx
+    field_id = field["ref"]["fieldId"]
+    with factory.begin() as session:
+        session.get(DataTableRow, table["tableId"]).source_kind = "sheets"
+    record = service.create(
+        project,
+        table["tableId"],
+        uid(),
+        {
+            "datasetGeneration": table["datasetGeneration"],
+            "values": [{"fieldId": field_id, "value": "本地编辑"}],
+        },
+    )[0]
+    assert [cell["value"] for cell in record["values"]] == ["本地编辑"]
 
 
 @pytest.mark.parametrize(

@@ -24,10 +24,20 @@ it('never exposes a system record UUID in visible or accessible UI', () => {
 it('keeps the same UUID visible when it is user-owned field identity data', () => {
   const uuid = '11111111-2222-4333-8444-555555555555'
   render(<DataRecordsTable {...props} identityMode={{ mode: 'field', fieldId: 'f' }} page={page([row({ type: 'uuid', value: uuid }, [cell(uuid)])])} />)
-  expect(screen.getAllByText(uuid)).toHaveLength(2)
+  expect(screen.getAllByText(uuid)).toHaveLength(1)
+  expect(screen.getAllByRole('columnheader', { name: '业务值' })).toHaveLength(1)
+  expect(screen.queryByRole('columnheader', { name: '记录' })).toBeNull()
+})
+
+it('falls back to the dedicated identity column when the identity field is hidden', () => {
+  render(<DataRecordsTable {...props} identityMode={{ mode: 'field', fieldId: 'f' }} visibleFieldIds={[]} page={page([row({ type: 'text', value: '001' }, [cell('隐藏值')])])} />)
+  expect(screen.getAllByRole('columnheader', { name: '业务值' })).toHaveLength(1)
+  expect(screen.getAllByText('001')).toHaveLength(1)
+  expect(screen.queryByText('隐藏值')).toBeNull()
+  expect(document.querySelector('[data-record-column="identity"]')).not.toBeNull()
 })
 it('preserves typed identities and opens the exact record', async () => {
-  const records = [row({ type: 'text', value: '001' }), row({ type: 'text', value: '1' }), row({ type: 'integer', value: '1' })], open = vi.fn()
+  const records = [row({ type: 'text', value: '001' }, [cell('001')]), row({ type: 'text', value: '1' }, [cell('1')]), row({ type: 'integer', value: '1' }, [cell(1)])], open = vi.fn()
   render(<DataRecordsTable {...props} page={page(records)} onOpen={open} />)
   expect(screen.getByText('001')).toBeVisible(); expect(screen.getAllByText('1')).toHaveLength(2)
   await userEvent.setup().click(screen.getAllByRole('button', { name: '查看记录 1' })[1])
@@ -48,7 +58,7 @@ it('does not leak unreadable values and only renders selected columns', () => {
 })
 it('uses server pagination, preserves stale data on error and blocks write actions while readonly', async () => {
   const next = vi.fn(), retry = vi.fn(), status = vi.fn(), create = vi.fn()
-  render(<DataRecordsTable {...props} page={page([row({ type: 'text', value: '1' }), row({ type: 'text', value: '2' })], 4)} error="连接中断" readonly onRetry={retry} onPageChange={next} onCreate={create} onStatusChange={status} />)
+  render(<DataRecordsTable {...props} identityMode={{ mode: 'field', fieldId: 'other' }} page={page([row({ type: 'text', value: '1' }, [cell('1')]), row({ type: 'text', value: '2' }, [cell('2')])], 4)} error="连接中断" readonly onRetry={retry} onPageChange={next} onCreate={create} onStatusChange={status} />)
   expect(screen.getByRole('alert')).toHaveTextContent('连接中断'); expect(screen.getByText('1')).toBeVisible()
   await userEvent.setup().click(screen.getByRole('button', { name: '下一页' })); expect(next).toHaveBeenCalledWith(2)
   expect(screen.queryByRole('button', { name: '新增记录' })).not.toBeInTheDocument()

@@ -8,11 +8,12 @@ from fastapi.testclient import TestClient
 from autoflow.adapters.http.project_runs import project_runs_router
 from autoflow.adapters.http.projects import projects_router
 from autoflow.application.project_runs.queries import ProjectRunQueries
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
-from autoflow.infrastructure.database.models import ProjectRow
+from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_run_models import ProjectBatchRow
 from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
@@ -38,13 +39,57 @@ def client_for(tmp_path, resolver=None):
     factory, _, _, coordinator, _, project, automation = setup(tmp_path, resolver)
     scheduler = Scheduler()
     app = FastAPI()
-    app.include_router(projects_router(ProjectService(SqlAlchemyProjects(factory))))
+    app.include_router(
+        projects_router(
+            ProjectService(SqlAlchemyProjects(factory)), ProjectOverviewService(factory)
+        )
+    )
     app.include_router(
         project_runs_router(
             coordinator, ProjectRunQueries(factory), scheduler, QuiesceGate()
         )
     )
     return TestClient(app), factory, project, automation, scheduler
+
+
+def test_operation_lookup_accepts_every_kind_the_runs_router_can_write(tmp_path):
+    """The unknown-result recovery reads the operation back by its key.
+
+    A follow-up Batch writes ``followUpBatch``; if the read schema does not list
+    that kind the lookup answers 500 and the UI can never reconcile the command.
+    """
+    client, factory, project, _automation, _scheduler = client_for(tmp_path)
+    key = str(uuid4())
+    now = datetime.now(UTC)
+    with factory() as session:
+        session.add(
+            ProjectOperationRow(
+                id=str(uuid4()),
+                project_id=project.project_id,
+                idempotency_key=key,
+                kind="followUpBatch",
+                request_digest="0" * 64,
+                status="succeeded",
+                status_revision=2,
+                resource={
+                    "type": "batch",
+                    "projectId": project.project_id,
+                    "batchId": str(uuid4()),
+                },
+                result=None,
+                created_at=now,
+                updated_at=now,
+                completed_at=now,
+            )
+        )
+        session.commit()
+
+    response = client.get(
+        f"/api/v1/projects/{project.project_id}/operations/by-idempotency-key/{key}"
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["kind"] == "followUpBatch"
 
 
 def test_start_returns_accepted_operation_then_wakes_scheduler(tmp_path):

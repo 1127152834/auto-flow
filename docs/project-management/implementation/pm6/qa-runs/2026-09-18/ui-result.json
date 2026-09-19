@@ -1,0 +1,313 @@
+{
+  "status": "passed",
+  "scenario": "PM6 Google Sheets 来源与同步闭环（管理侧）",
+  "scope": "管理侧与本地契约已验证；真实 Google 端到端未执行",
+  "evidenceType": "真实 Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 受控 Sheets REST 替身",
+  "standIns": {
+    "sheetsRest": "tests/fixtures/sheets.FakeSheetsTransport（spreadsheetId=pm6-source-1）",
+    "credentialStore": "QA 侧车内的文件凭据库，替代系统钥匙串",
+    "googleConfigPicker": "AUTOFLOW_QA_GOOGLE_CONFIG 仅在未打包时生效，替代原生文件选择框"
+  },
+  "notEvidence": [
+    "真实 Google OAuth / 真实 Spreadsheet 读写",
+    "Studio demo",
+    "Windows、其他架构与打包应用",
+    "用户手动执行结果"
+  ],
+  "gitHead": "94c8d903074e64dc9cefb7f358fc6e519c93c95d",
+  "dirtyFiles": [
+    "M apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.test.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/SheetsBindingWizard.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/SheetsConnectionPanel.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/components/SyncOperationPanel.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+    " M apps/desktop/src/renderer/domains/project-data/presentation.ts",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/01-source-tab-unbound.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/02-google-connection.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/03-binding-wizard-inspection.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/04-binding-bound.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/05-pulled-record.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/06-push-confirmed.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/07-formula-refreshed.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/07b-paused-and-resumed.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/08-lost-response-reconciled.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/09-unbind-confirm.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/10-unbound.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/11-records-entry-after-unbind.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/99-failure.png",
+    " M docs/project-management/implementation/pm6/qa-runs/2026-09-18/ui-result.json",
+    " M scripts/qa-project-management-pm6.mjs",
+    " M scripts/structure.test.mjs",
+    "?? docs/project-management/implementation/pm6/qa-runs/2026-09-18/08a-push-result-unknown.png",
+    "?? reference/RedroidManager",
+    "?? reference/redroid-script",
+    "?? reference/vphone-aio",
+    "?? reference/vphone-cli"
+  ],
+  "platform": "darwin",
+  "arch": "arm64",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V/workspace",
+  "checkpoints": [
+    "真实界面创建项目。",
+    "真实界面在字段抽屉里建立三个字段并整体保存。",
+    "真实界面录入本地记录（绑定前），本地数据代次已存在。",
+    "真实界面经桌面主进程交接建立 Google 连接，凭据状态可用且可写。",
+    "真实界面完成检查与绑定：新数据代次、身份列 A、公式列 C 只读，旧本地记录不继承。",
+    "拉取把远端行引入新代次，文本身份 “001” 保持原样，公式列保存公式。",
+    "推送写入替身远端并被核验：同步操作已确认，远端证据为远端一致。",
+    "远端改动公式列后拉取：只有公式列刷新，普通值保持原样。",
+    "暂停调度期间推送被拒绝且不改远端；恢复后同一条本地改动推送并核验。",
+    "提交后响应丢失进入结果未知；核对结果依据远端证据判定已确认，且没有重复写入。",
+    "解除绑定先给出影响确认；取消不改变已保存绑定。",
+    "解除绑定后表进入待配置，本地数据与证据保留，绑定记录为空。",
+    "解除绑定没有移除 PM2 的记录入口。"
+  ],
+  "screenshots": [
+    {
+      "name": "01-source-tab-unbound",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/01-source-tab-unbound.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "02-google-connection",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/02-google-connection.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "03-binding-wizard-inspection",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/03-binding-wizard-inspection.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "04-binding-bound",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/04-binding-bound.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "05-pulled-record",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/05-pulled-record.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "06-push-confirmed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/06-push-confirmed.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "07-formula-refreshed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/07-formula-refreshed.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "07b-paused-and-resumed",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/07b-paused-and-resumed.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "08a-push-result-unknown",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/08a-push-result-unknown.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "08-lost-response-reconciled",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/08-lost-response-reconciled.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "09-unbind-confirm",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/09-unbind-confirm.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428
+    },
+    {
+      "name": "10-unbound",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/10-unbound.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    },
+    {
+      "name": "11-records-entry-after-unbind",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm6/docs/project-management/implementation/pm6/qa-runs/2026-09-18/11-records-entry-after-unbind.png",
+      "route": "#/projects/0e0c09ef-1023-4769-9971-7988aee09cd6/data/5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440
+    }
+  ],
+  "facts": {
+    "standIns": {},
+    "sidecarModule": "tests.qa.pm6_sidecar",
+    "desktopLog": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V/desktop.log",
+    "workspaceKey": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm6-ui-qa-73az5V/workspace",
+    "debugPort": "64929",
+    "projectId": "0e0c09ef-1023-4769-9971-7988aee09cd6",
+    "tableId": "5d8ab9d6-041b-41d8-8bfa-c49b7801f5c5",
+    "tableSourceBeforeBinding": "local",
+    "localRecordBeforeBinding": [
+      "001",
+      "local@example.com"
+    ],
+    "connection": {
+      "connectionId": "fccfa967-93de-4f93-accf-cb1eab60b641",
+      "credentialState": "available",
+      "writable": true
+    },
+    "inspection": "来源检查\n\n表头 3 列；身份列 唯一（缺失 0，重复 0）。\n\n没有发现问题。",
+    "binding": {
+      "spreadsheetId": "pm6-source-1",
+      "sheetId": 1000,
+      "bindingEpoch": 1,
+      "identityStrategy": {
+        "kind": "column",
+        "columnId": "A"
+      },
+      "mapping": [
+        {
+          "columnId": "A",
+          "direction": "both",
+          "formula": false
+        },
+        {
+          "columnId": "B",
+          "direction": "both",
+          "formula": false
+        },
+        {
+          "columnId": "C",
+          "direction": "read",
+          "formula": true
+        }
+      ]
+    },
+    "generationAfterBinding": "4240d5c2-5074-40e7-b0b6-1b90f4213f52",
+    "sourceFacts": [
+      "来源表格\tPM6 来源表",
+      "工作表\t记录",
+      "本地记录\t0 条",
+      "写入方式\t与来源工作表保持一致"
+    ],
+    "pulledRecordKey": {
+      "type": "text",
+      "value": "001"
+    },
+    "pulledValues": {
+      "code": "001",
+      "mail": "remote@example.com",
+      "check": "=LOWER(\"A@B.COM\")"
+    },
+    "remoteWritesBeforePush": 0,
+    "pushOperation": {
+      "syncOperationId": "a76c1afa-18ae-4a10-a090-345cb065ef57",
+      "status": "confirmed",
+      "outcome": "matched",
+      "fields": [
+        "A",
+        "B"
+      ]
+    },
+    "remoteMailAfterPush": "pushed@example.com",
+    "formulaRefresh": {
+      "check": "=UPPER(\"a@b.com\")",
+      "mail": "pushed@example.com"
+    },
+    "lostResponse": {
+      "remoteMail": "unknown@example.com",
+      "writesDelta": 1
+    },
+    "reconcile": {
+      "confirmedCount": 3,
+      "writesUnchanged": 3
+    },
+    "unbindImpacts": "确认解除绑定\n本地记录、状态和同步历史都会保留，表回到待配置状态。\n停止向该来源发送；0 条未发送修改、0 条结果未知的发送与 1 条本地记录都会保留为历史证据。\n解除绑定\n取消",
+    "afterUnbind": {
+      "sourceKind": "unconfigured",
+      "binding": null
+    },
+    "existingEntries": [
+      "筛选",
+      "排序",
+      "显示列",
+      "批量设置状态",
+      "重新导入 Excel",
+      "导出 Excel"
+    ]
+  },
+  "error": null,
+  "createdAt": "2026-09-18T14:35:45.653Z"
+}

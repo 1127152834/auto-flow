@@ -22,6 +22,13 @@ from autoflow.adapters.http.project_excel_imports import project_excel_import_ro
 from autoflow.adapters.http.project_run_events import project_run_events_router
 from autoflow.adapters.http.project_run_evidence import project_run_evidence_router
 from autoflow.adapters.http.project_runs import project_runs_router
+from autoflow.adapters.http.project_sheets import (
+    internal_google_authorizations_router,
+    project_sheets_binding_router,
+    project_sheets_connections_router,
+    project_sync_router,
+)
+from autoflow.adapters.http.project_statistics import project_statistics_router
 from autoflow.adapters.http.projects import projects_router
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.project_automations.service import ProjectAutomationService
@@ -40,7 +47,13 @@ from autoflow.application.project_runs.events import ProjectRunEvents
 from autoflow.application.project_runs.evidence import ProjectRunEvidence
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
+from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.connections import SheetsConnectionService
+from autoflow.application.project_sync.impacts import SheetsImpactService
+from autoflow.application.project_sync.outbound import SheetsSyncService
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
+from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.runtime import QuiesceGate
 
 
@@ -53,6 +66,8 @@ class ProjectHttpServices:
     run_scheduler: ProjectBatchScheduler
     gate: QuiesceGate
     projects: ProjectService
+    overview: ProjectOverviewService
+    statistics: ProjectStatisticsService
     automations: ProjectAutomationService
     tables: DataTableService
     catalog: DataCatalogService
@@ -65,17 +80,26 @@ class ProjectHttpServices:
     imports: ExcelImportService
     exports: ProjectExcelExportService
     environments: EnvironmentService
+    sheets_connections: SheetsConnectionService
+    sheets_bindings: SheetsBindingService
+    sheets_impacts: SheetsImpactService
+    sync: SheetsSyncService
 
 
 def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None:
-    app.include_router(projects_router(services.projects))
+    app.include_router(projects_router(services.projects, services.overview))
+    app.include_router(project_statistics_router(services.statistics))
     app.include_router(project_runs_router(services.run_coordinator, services.run_queries, services.run_scheduler, services.gate))
     app.include_router(project_run_evidence_router(services.run_evidence))
     app.include_router(project_run_events_router(services.run_events))
     app.include_router(project_automations_router(services.automations))
     app.include_router(project_records_router(services.records, services.queries))
     app.include_router(project_data_router(services.tables, services.catalog))
-    app.include_router(project_data_impact_router(services.catalog, services.deletions))
+    app.include_router(
+        project_data_impact_router(
+            services.catalog, services.deletions, services.sheets_impacts
+        )
+    )
     app.include_router(project_data_schema_router(services.schema))
     app.include_router(project_data_deletion_router(services.deletions))
     app.include_router(record_status_batches_router(services.status_batches))
@@ -84,3 +108,7 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(internal_project_files_router(services.excel))
     app.include_router(project_excel_inspection_router(services.excel))
     app.include_router(project_environments_router(services.environments))
+    app.include_router(internal_google_authorizations_router(services.sheets_connections))
+    app.include_router(project_sheets_connections_router(services.sheets_connections))
+    app.include_router(project_sheets_binding_router(services.sheets_bindings))
+    app.include_router(project_sync_router(services.sync))

@@ -24,7 +24,7 @@ def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
 ):
     database = tmp_path / "automation-migration.sqlite3"
     config = config_for(database)
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm07_environments"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm08_project_sync"]
     before = {}
     if previous:
         command.upgrade(config, previous)
@@ -64,7 +64,7 @@ def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
         connection.execute("PRAGMA foreign_keys=ON")
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm07_environments",)
+        ).fetchone() == ("pm08_project_sync",)
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         for table, rows in before.items():
             assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
@@ -153,4 +153,4 @@ def test_empty_downgrade_roundtrip_and_nonempty_downgrade_preserves_data(tmp_pat
         )
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm07_environments",)
+        ).fetchone() == ("pm08_project_sync",)

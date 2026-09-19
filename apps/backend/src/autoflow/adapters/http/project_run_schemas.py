@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field, JsonValue, StrictBool, StrictFloat, StrictInt, StrictStr
 
@@ -24,6 +24,15 @@ class BatchStartRequest(ApiModel):
 
 class InputPreviewRequest(ApiModel):
     expected_automation_revision: StrictInt = Field(ge=1)
+
+
+class FollowUpBatchRequest(ApiModel):
+    mode: Literal["originalInputGroup"]
+    expected_task_status_revision: StrictInt = Field(ge=1)
+    parameter_overrides: dict[str, JsonScalar] = Field(default_factory=dict)
+
+    def payload(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True, exclude_unset=True)
 
 
 class InputPreviewItem(ApiModel):
@@ -162,12 +171,25 @@ class TaskDataWriteView(ApiModel):
     table_display: str
     record_display: str
     outcome: str
+    node_id: str | None = None
+    node_name: str | None = None
     previous_status: str | None = None
     next_status: str | None = None
     reference_display: str | None = None
     before_summary: str | None = None
     after_summary: str | None = None
     detail: str | None = None
+
+
+class TaskCurrentInputView(ApiModel):
+    input_id: str | None = None
+    record_ref: dict[str, JsonValue]
+    exists: bool
+    values: list[dict[str, JsonValue]] = Field(default_factory=list)
+    record_status: str | None = None
+    content_revision: int | None = None
+    updated_at: datetime | None = None
+    changed_field_ids: list[str] = Field(default_factory=list)
 
 
 class TaskDetail(ApiModel):
@@ -177,6 +199,7 @@ class TaskDetail(ApiModel):
     node_names: dict[str, str] = Field(default_factory=dict)
     task: TaskView
     input_snapshot: TaskInputSnapshotView
+    current_inputs: list[TaskCurrentInputView] = Field(default_factory=list)
     run: RunSnapshotView
     data_writes: list[TaskDataWriteView] = Field(default_factory=list)
 

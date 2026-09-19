@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { createInterface } from 'node:readline/promises'
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..'), exec = promisify(execFile)
@@ -106,7 +106,7 @@ WorkflowService(SqlAlchemyWorkflowRepository(factory)).create(document,str(uuid4
 factory.dispose()`, runtime.workspaceKey, workflowId], { cwd: root })
   check('PM3-M00', '工作流资料通过真实文档服务预置；未操作 Studio，未制造运行结果')
   await click('项目'); await click('新建项目'); await input('#project-name', '自动化管理验收'); await input('#project-description', '整理资料与维护自动化配置'); await click('创建项目')
-  await waitFor(renderer, "document.body.innerText.includes('项目资料')", 'created project')
+  await waitForProjectPage(renderer)
   const project = (await api('/projects?q=自动化管理验收')).items[0]
   await click('数据', '[aria-label=项目功能] button'); await click('新建数据表')
   await input('#data-table-name', '内容资料库'); await input('#data-table-description', '自动化输入管理验收'); await click('创建数据表')

@@ -177,7 +177,7 @@ def test_task_projection_uses_confirmed_operation_result_for_field_facts(tmp_pat
         )
 
     with factory() as session:
-        writes = _data_writes(session, project_id, task.task_id)
+        writes = _data_writes(session, project_id, task.task_id, visits=[])
 
     assert [write["kind"] for write in writes] == [
         "query",

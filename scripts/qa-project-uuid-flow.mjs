@@ -9,7 +9,7 @@ import { homedir, tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { checkCdpPage } from './qa-project-uuid-leaks.mjs'
 import { kernelExecutablePath } from './smoke-browser-management.mjs'
 import { stop } from './smoke-sidecar.mjs'
@@ -69,7 +69,7 @@ try {
 }
 
 async function createProject(runtime) {
-  await click('项目'); await click('新建项目'); await input('#project-name', `UUID专项${scenario}`); await click('创建项目'); await visible('项目资料')
+  await click('项目'); await click('新建项目'); await input('#project-name', `UUID专项${scenario}`); await click('创建项目'); await waitForProjectPage(renderer)
   const project = (await api(runtime, `/projects?q=UUID专项${scenario}`)).items[0]
   collect(project)
   return project

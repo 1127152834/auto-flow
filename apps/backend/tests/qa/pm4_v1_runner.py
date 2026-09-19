@@ -249,11 +249,12 @@ class PM4V1FakeRunner:
                 force_requested = any(
                     operation.kind == "forceStopBatch" for operation in operations
                 )
-                if not force_requested and not self._settle_normal_stops:
-                    continue
                 tasks = session.scalars(
                     select(ProjectTaskRow).where(ProjectTaskRow.batch_id == batch.id)
                 ).all()
+                if not force_requested and not self._settle_normal_stops:
+                    self._fence_suspended_runs(session, tasks, now)
+                    continue
                 for task in tasks:
                     run = session.get(WorkflowRunRow, task.run_id)
                     if run is None or run.status in {
@@ -318,6 +319,97 @@ class PM4V1FakeRunner:
                     operation.result = result
                     operation.updated_at = operation.completed_at = now
             session.commit()
+
+    def fence_stopping_runs(self) -> None:
+        """Apply the production stop fences the suspended runner loop cannot do itself.
+
+        A normal stop fences non-terminal runs to ``stopping``. An accepted force stop
+        additionally revokes worker authority through ``reconciling`` so late writes
+        from the released fake executor are refused exactly like production.
+        """
+        if self._settle_normal_stops:
+            return
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            batches = session.scalars(
+                select(ProjectBatchRow).where(
+                    ProjectBatchRow.status.in_(("stopping", "reconciling"))
+                )
+            ).all()
+            if not batches:
+                session.rollback()
+                return
+            now = datetime.now(UTC)
+            for batch in batches:
+                revoke = (
+                    session.scalar(
+                        select(ProjectOperationRow.id).where(
+                            ProjectOperationRow.project_id == batch.project_id,
+                            ProjectOperationRow.kind == "forceStopBatch",
+                            ProjectOperationRow.status == "running",
+                            ProjectOperationRow.resource["batchId"].as_string()
+                            == batch.id,
+                        )
+                    )
+                    is not None
+                )
+                self._fence_suspended_runs(
+                    session,
+                    session.scalars(
+                        select(ProjectTaskRow).where(
+                            ProjectTaskRow.batch_id == batch.id
+                        )
+                    ).all(),
+                    now,
+                    revoke=revoke,
+                )
+            session.commit()
+
+    def _fence_suspended_runs(
+        self,
+        session: Session,
+        tasks: Sequence[ProjectTaskRow],
+        now: datetime,
+        *,
+        revoke: bool = False,
+    ) -> None:
+        """Mirror the production normal-stop fence for the QA-owned executor.
+
+        Production ``ProjectBatchScheduler._stop_active_runs`` cancels the running
+        CoreRun, and that fence is what makes the real force-stop gate legal. F mode
+        keeps the suspended run unsettled on purpose, so it still has to fence it or
+        ``validate_force_stop`` keeps refusing with FORCE_STOP_GRACE_ACTIVE.
+        """
+        for task in tasks:
+            run = session.get(WorkflowRunRow, task.run_id)
+            if run is None or run.status in {
+                "succeeded",
+                "failed",
+                "cancelled",
+                "timed_out",
+                "interrupted",
+            }:
+                continue
+            if run.status == "reconciling":
+                continue
+            if not revoke and run.status == "stopping":
+                continue
+            run.status = "reconciling" if revoke else "stopping"
+            if revoke:
+                run.execution_generation += 1
+            run.status_revision += 1
+            run.updated_at = now
+            run.completed_at = None
+            run.last_sequence += 1
+            session.add(
+                _event(
+                    run,
+                    run.last_sequence,
+                    "status",
+                    {"status": run.status, "statusRevision": run.status_revision},
+                    now,
+                )
+            )
 
     def _claim_one(
         self, *, reader_only: bool = False

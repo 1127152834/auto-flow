@@ -226,3 +226,33 @@ PM4-F 当前源码权威管理链为 `pm4/qa-runs/f-QHALLW/result.json`：有限
 前一提交候选检查记录：后端 1,580 passed/8 skipped、Ruff 通过、mypy 260 个源文件通过；前端 298 个测试文件/3,273 项测试通过；OpenAPI、typecheck、lint、build、test:structure 通过；补齐被 Git ignore 的 WebRPA 冻结清单单文件后 test:scripts 64/64 通过。PM2 数据目录回归见 `docs/migration/project-data-directory-qa/run-A6Nzd9/result.json`，PM2 详情/文件回归见 `docs/migration/pm2-detail-qa/run-5r0BCW/result.json`，其中 10,000 行导入 7,211ms、第二页 169ms。该候选视觉为 `passed`：19 张截图、强制结构通过、逐屏最低分 85；noMatch、temporarilyBusy、configurationError 管理态、Escape 及日志搜索 Enter 通过。
 
 候选后 `d3a397cf` 完成人工删除 lease 保护，82 项主测试及 15 项相关回归通过；`f07bb83b` 完成 Excel 替换 lease 保护，7 项新增测试及 117 项相关回归通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过。当前源码的 19 张截图同视口视觉复审和阶段全量检查已重跑通过，管理侧 F 退出条件闭合；真实执行核心 PM3 QA、Windows、其他架构、打包和用户手测保持 pending。
+
+## PM7 管理侧交付记录（2026-09-19）
+
+本节取代本文件早前对 PM7 的“尚未实施”描述，保留历史检查点。权威报告为 [pm7/verification.json](pm7/verification.json)，逐画面审查为 [pm7/visual-review.md](pm7/visual-review.md)。
+
+| 包 | 提交 | 当前结果 | 权威证据 |
+|---|---|---|---|
+| B1 概览聚合 | `837f9576` 及前置 | delivered | `tests/integration/test_project_overview.py`；真实页面事实见下 |
+| B2 统计与冻结下钻 | 前置包 | delivered | `tests/integration/test_project_statistics.py` |
+| C1 固定候选领取 | 前置包 | delivered | `tests/integration/test_project_claim.py` 系列回归 |
+| C2 失败后续批次 | 前置包 | delivered | `tests/integration/test_project_failure_followup.py` |
+| A1 证据补强 | 前置包 | delivered | `tests/integration/test_project_run_evidence.py` |
+| FE-OV/FE-ST/FE-EV 前端 | `0ae21ba8` 等 | delivered | 组件与页面测试；真实截图见下 |
+| F 集成与阶段验收 | `6e26c6bd`、`5ad992de`、`19823f1e`、`5144079c`、`38a9f983`、`3a52182b` 及本节文档提交 | delivered / 管理侧通过 | [pm7/qa-runs/20260918203625/report.json](pm7/qa-runs/20260918203625/report.json) |
+
+**权威端到端运行**：`docs/project-management/implementation/pm7/qa-runs/20260918203625/report.json`，`status: passed`，16 个检查点、16 张截图，viewport 1440×1024、dpr 1，darwin/arm64。核心项目、三张表、字段、记录、状态与自动化均由界面创建；浏览器与 Studio 明确记为 notExecuted。固定交付声明：**管理侧通过，真实执行核心接入待验收**。
+
+**本轮端到端抓出并修复的三个真实缺陷**（每个都先补失败用例）：
+
+1. `6e26c6bd` —— `followUpBatch` 不在 `ProjectOperationView.kind` 与 operations 路由的 Literal 联合里，按幂等键找回该类型操作时 FastAPI 响应校验失败 → 500，用户无法在响应丢失后按原操作身份核对。补 `test_operation_lookup_accepts_every_kind_the_runs_router_can_write`。
+2. `5ad992de` —— `useProjectOverview` 只在工作区挂载时取数一次，先建表/自动化/批次再回到概览页签会显示 0/0/0/0 与空活动。改为进入概览页签即重新取数。
+3. `5144079c` —— `StatisticsPage` 每次挂载用当前时间生成新的查询窗口，查询键随之变化，刷新失败时会丢失上次已确认的范围与数值，只剩错误提示。改为按工作区+项目把最后一次成功快照写入 `sessionStorage`。
+
+**回归证据**：PM3 管理链 `docs/project-management/implementation/pm3/qa-runs/run-mjhCtH/result.json`；PM4 管理链 `docs/project-management/implementation/pm4/qa-runs/v1-f52SNQ/result.json`。两者均以当前 HEAD 重新真实运行，非沿用历史候选。
+
+**命名更正**：PM7 规格裁决沿用既有 `TaskEvidence.tsx`，不新建 `TaskEvidencePanel`。核对后 `coverage.json` 未引用该文件名，更正落在 PM7 执行卡 §1 与本记录。
+
+**未执行**：真实生产执行核心、真实 CloakBrowser 执行、Studio demo、Windows、其他 CPU 架构、打包应用、用户手动验收、双工作区切换（见手测 M-12）。这些不因本轮管理侧通过而被标为通过。
+
+PM7 完成后停在 PM7 验收点，不进入 PM8。

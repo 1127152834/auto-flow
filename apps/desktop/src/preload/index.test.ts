@@ -2,11 +2,12 @@ import { EventEmitter } from 'node:events'
 import { beforeEach, expect, it, vi } from 'vitest'
 import type { AutomationStudioBridge } from '../shared/automation-studio'
 import type { ExternalLinkBridge } from '../shared/external-links'
+import type { GoogleSheetsBridge } from '../shared/google-sheets'
 import type { ProjectFileBridge } from '../shared/project-files'
 import type { RuntimeBridge } from '../shared/runtime'
 
 let ipc: EventEmitter & { invoke: ReturnType<typeof vi.fn> }
-let bridge: AutomationStudioBridge & RuntimeBridge & ProjectFileBridge & ExternalLinkBridge
+let bridge: AutomationStudioBridge & RuntimeBridge & ProjectFileBridge & ExternalLinkBridge & GoogleSheetsBridge
 
 beforeEach(async () => {
   vi.resetModules()
@@ -46,6 +47,13 @@ it('exposes controlled project file choices and per-window proof without paths',
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:choose-excel-input', 'project')
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:choose-xlsx-output', 'project', '资料.xlsx')
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:context')
+})
+
+it('forwards the Google Sheets handshake without exposing a credential path', async () => {
+  await bridge.connectGoogleSheets('project', '运营账号')
+  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:google-sheets:connect', 'project', '运营账号')
+  expect(bridge).not.toHaveProperty('googleCredentials')
+  expect(bridge).not.toHaveProperty('readConfigFile')
 })
 
 it('exposes only the named external link invocation', async () => {

@@ -8,6 +8,7 @@ const apiFailureMessages: Record<string, string> = {
   RUN_FACTS_INCOMPLETE: '运行事实尚未完整写入，请稍后核对',
   RUN_EVENT_HISTORY_UNAVAILABLE: '运行事件记录不完整，无法继续补读',
   RUN_ARTIFACT_UNAVAILABLE: '运行截图当前不可读取',
+  STATISTICS_RESULT_EXPIRED: '统计结果已过期，请刷新后重试',
 }
 const safeFailureMessages = new Set([
   '操作失败，请重试',

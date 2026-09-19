@@ -7,6 +7,7 @@ import type { SettingsBridge, UiPreferences } from '../shared/settings'
 import type { AutomationStudioBridge, StudioLeaveRequest } from '../shared/automation-studio'
 import type { ExternalLinkBridge } from '../shared/external-links'
 import type { ProjectFileBridge } from '../shared/project-files'
+import type { GoogleSheetsBridge } from '../shared/google-sheets'
 import type { DesktopRuntimeContext } from '../shared/runtime'
 
 const automationStudioBridge: AutomationStudioBridge = {
@@ -37,6 +38,8 @@ const projectFileBridge: ProjectFileBridge = {
   chooseXlsxOutput: (projectId, suggestedName) => ipcRenderer.invoke('autoflow:project-files:choose-xlsx-output', projectId, suggestedName),
 }
 
+const googleSheetsBridge: GoogleSheetsBridge = { connectGoogleSheets: (projectId, accountLabel) => ipcRenderer.invoke('autoflow:google-sheets:connect', projectId, accountLabel) }
+
 const settingsBridge: SettingsBridge = {
   getSettings: () => ipcRenderer.invoke('autoflow:settings:get'),
   setPreferences: preferences => ipcRenderer.invoke('autoflow:settings:preferences', preferences),
@@ -55,6 +58,7 @@ contextBridge.exposeInMainWorld('autoflow', {
   ...automationStudioBridge,
   ...settingsBridge,
   ...projectFileBridge,
+  ...googleSheetsBridge,
   ...externalLinkBridge,
   getRuntimeContext: (): Promise<DesktopRuntimeContext> => ipcRenderer.invoke('autoflow:runtime-context'),
   onRuntimeContextChanged: (handler: (context: DesktopRuntimeContext) => void) => {

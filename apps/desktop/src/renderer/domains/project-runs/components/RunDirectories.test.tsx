@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ApiClientError } from '../../../shared/api/client'
 import { BatchDetail } from './BatchDetail'
 import { BatchDirectory } from './BatchDirectory'
 import { TaskDirectory } from './TaskDirectory'
@@ -28,6 +29,14 @@ describe('run directories', () => {
     expect(screen.getByText('资料整理')).toBeInTheDocument()
   })
 
+  it('never claims a finished task is still running when no end node was recorded', () => {
+    const done = { ...task, endNodeName: undefined }
+    const open = { ...task, taskId: 'task-2', taskOrdinal: 2, endNodeName: undefined, status: 'running', completedAt: undefined }
+    render(<TaskDirectory context="batch" page={{ items: [done, open], page: 1, pageSize: 50, total: 2, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={vi.fn()} onRetry={vi.fn()}/>)
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('尚未结束')).toHaveLength(1)
+  })
+
   it('shows task status from the server value and opens it', async () => {
     const onOpen = vi.fn()
     render(<TaskDirectory page={{ items: [task], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={onOpen} onRetry={vi.fn()}/>)
@@ -48,6 +57,24 @@ describe('run directories', () => {
     expect(row).toHaveTextContent('资料整理')
     // 时间列使用服务端返回的最近状态时间，不按客户端时钟推断。
     expect(row?.querySelector('time')?.getAttribute('dateTime')).toBe('2026-09-15T01:00:30Z')
+  })
+
+  it('renders a frozen statistics result set as a read-only six column board', async () => {
+    const onOpen = vi.fn()
+    render(<TaskDirectory context="frozen" page={{ items: [task], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} footerNote={<span>共 1 条符合条件的任务</span>} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={onOpen} onRetry={vi.fn()}/>)
+    expect(screen.getByText('共 1 条符合条件的任务')).toBeVisible()
+    // 冻结集合不能改筛选：原型的下钻页没有搜索框或筛选下拉。
+    expect(screen.queryByRole('search')).not.toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: '任务结束时间' })).toBeVisible()
+    expect(screen.queryByRole('columnheader', { name: /当前或结束节点/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: '查看日志' }))
+    expect(onOpen).toHaveBeenCalledWith(task)
+  })
+
+  it('translates the expired frozen result set instead of collapsing it into a generic failure', () => {
+    render(<TaskDirectory context="frozen" filters={{ q: null, batchId: null, status: null, period: null }} error={new ApiClientError('expired', 410, 'STATISTICS_RESULT_EXPIRED')} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={vi.fn()} onRetry={vi.fn()}/>)
+    expect(screen.getByRole('alert')).toHaveTextContent('统计结果已过期，请刷新后重试')
+    expect(screen.getByRole('alert')).not.toHaveTextContent('操作失败，请重试')
   })
 
   it('never invents a latest status time when the server has not reported one', () => {

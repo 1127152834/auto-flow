@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.projects import projects_router
+from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.infrastructure.database.models import Base
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
@@ -13,12 +14,11 @@ from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 def make_client(tmp_path):
     engine = create_engine(f"sqlite:///{tmp_path / 'p.sqlite3'}")
     Base.metadata.create_all(engine)
-    service = ProjectService(
-        SqlAlchemyProjects(sessionmaker(bind=engine, expire_on_commit=False))
-    )
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    service = ProjectService(SqlAlchemyProjects(factory))
     app = FastAPI()
     install_error_handlers(app)
-    app.include_router(projects_router(service))
+    app.include_router(projects_router(service, ProjectOverviewService(factory)))
     return TestClient(app)
 
 
@@ -78,12 +78,20 @@ def test_create_list_patch_open_overview_and_operations(tmp_path):
         "data": "available",
         "runs": "available",
         "environments": "available",
-        "statistics": "notImplemented",
-        "sync": "notImplemented",
+        "statistics": "available",
+        "sync": "available",
     }
     overview = client.get(f"/api/v1/projects/{project_id}/overview").json()
-    assert overview["counts"] == {}
+    assert overview["counts"] == {
+        "automations": 0,
+        "tables": 0,
+        "batches": 0,
+        "environments": 0,
+    }
+    assert overview["activity"] == [] and overview["recent"] == []
+    assert overview["dataChanges"]["newRecords"] == 0
     assert overview["availability"] == listed["availability"]
+    assert client.get(f"/api/v1/projects/{project_id}/overview?timezone=Nope/Nowhere").status_code == 422
     opened = client.post(f"/api/v1/projects/{project_id}/open").json()
     assert opened["project"]["lastOpenedAt"]
     assert opened["lastOpenedAt"] == opened["project"]["lastOpenedAt"]

@@ -11,6 +11,11 @@ const scalarText = (cell: Schema['DataCellView'] | undefined): string | null => 
 const recordTime = (record: Schema['DataRecordView']): string =>
   new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(record.updatedAt || record.createdAt))
 
+/** A table shows its identity exactly once: the mapped field when it is on screen, otherwise a dedicated key column. */
+export function showsDedicatedIdentityColumn(identity: TableIdentity, visibleFieldIds: readonly string[]): boolean {
+  return identity.mode === 'system' || !visibleFieldIds.includes(identity.fieldId)
+}
+
 /** Converts only the table-owned record identity; user field values remain untouched. */
 export function recordDisplayLabel(identity: TableIdentity, fields: readonly Schema['DataFieldView'][], record: Schema['DataRecordView']): string {
   if (identity.mode === 'field') {

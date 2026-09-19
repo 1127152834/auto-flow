@@ -259,7 +259,7 @@ class SqlAlchemyProjectDataDeletions:
         write: bool = False,
     ) -> tuple[dict[str, Any], str]:
         table = self._table(session, project_id, table_id, write)
-        if write and table.source_kind not in {"local", "excel"}:
+        if write and table.source_kind not in {"local", "excel", "sheets"}:
             raise ProjectError(
                 "SOURCE_WRITE_UNAVAILABLE", "Source does not support status writes", 412
             )

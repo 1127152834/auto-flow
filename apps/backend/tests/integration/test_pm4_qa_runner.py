@@ -47,6 +47,7 @@ from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_data_start import _setup, uid
 from tests.qa.pm4_fake_executor import CREATE_ACCOUNT, PauseBarrier
 from tests.qa.pm4_sidecar import (
+    _F_FORCE_STOP_GRACE,
     _apply_f_preview_override,
     _b_capability_manifest,
     _create_targets,
@@ -69,6 +70,19 @@ def test_f_force_stop_projection_keeps_a_real_grace_before_the_fake_gate() -> No
         "stopping", accepted, now=accepted + timedelta(seconds=2)
     ) == (True, accepted + timedelta(seconds=2))
     assert _f_force_stop_projection("completed", accepted, now=accepted)[0] is False
+
+
+def test_f_sidecar_aligns_the_real_force_stop_grace_with_its_projection(tmp_path) -> None:
+    """Both gates must share one grace or the UI enables what the core refuses."""
+    app = create_qa_app(
+        Settings(
+            data_dir=str(tmp_path),
+            instance_id="pm4-f-force-stop-grace",
+            instance_token="secret",
+        ),
+        mode="f",
+    )
+    assert app.state.workflow_dispatcher._force_stop_grace == _F_FORCE_STOP_GRACE
 
 
 @pytest.mark.parametrize(
@@ -872,6 +886,101 @@ async def test_active_force_stop_revokes_generation_and_releases_leases(tmp_path
     assert stopped is not None and stopped.status == "stopped"
     assert leases and all(lease.state == "released" for lease in leases)
     assert force_operation is not None and force_operation.status == "succeeded"
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_f_runner_fences_suspended_run_so_real_force_stop_gate_accepts(tmp_path):
+    """F-mode normal stop must mirror the production fence, not leave the run running.
+
+    The QA sidecar disables the production scheduler, so the QA runner owns the
+    normal-stop fence. Without it the real dispatcher gate still sees a
+    ``running`` run and rejects force stop with FORCE_STOP_GRACE_ACTIVE.
+    """
+    from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
+
+    factory, project_id, automation, coordinator = _setup(tmp_path)
+    _status, account = _target_data(factory, project_id, automation)
+    _grant_account_target(coordinator, account)
+    batch = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )[0]
+    assert (
+        ProjectBatchScheduler.claim_data_task(factory, project_id, batch.batch_id)
+        == "ready"
+    )
+    task = coordinator.list_tasks(project_id, batch.batch_id)[0]
+    now = datetime.now(UTC)
+    with factory() as session:
+        run = session.get(WorkflowRunRow, task.run_id)
+        assert run is not None
+        run.status = "running"
+        run.status_revision += 1
+        run.execution_generation += 1
+        run.started_at = run.updated_at = now
+        session.commit()
+
+    runner = PM4V1FakeRunner(factory, settle_normal_stops=False)
+    core = WorkflowRunDispatcher(
+        factory,
+        SimpleNamespace(busy=lambda: False),  # type: ignore[arg-type]
+        SimpleNamespace(),
+        QuiesceGate(),
+        lambda _run: None,
+        force_stop_grace=timedelta(seconds=0),
+    )
+    scheduler = ProjectBatchScheduler(factory, core, QuiesceGate())
+    await scheduler.stop(
+        project_id,
+        batch.batch_id,
+        uid(),
+        {"expectedStatusRevision": batch.status_revision, "reason": "普通停止"},
+    )
+    stopping = coordinator.get_batch(project_id, batch.batch_id)
+    assert stopping.status == "stopping"
+    # The suspended runner loop cannot tick, so the sidecar fences on wake instead.
+    runner.fence_stopping_runs()
+
+    with factory() as session:
+        fenced = session.get(WorkflowRunRow, task.run_id)
+        assert fenced is not None and fenced.status == "stopping"
+        assert fenced.completed_at is None
+        fenced_generation = fenced.execution_generation
+
+    forced = await scheduler.stop(
+        project_id,
+        batch.batch_id,
+        uid(),
+        {"expectedStatusRevision": stopping.status_revision, "reason": "强制停止"},
+        force=True,
+    )
+    assert forced.status == "running"
+    # An accepted force stop revokes worker authority before the worker is released.
+    runner.fence_stopping_runs()
+    with factory() as session:
+        revoked = session.get(WorkflowRunRow, task.run_id)
+        assert revoked is not None and revoked.status == "reconciling"
+        assert revoked.execution_generation == fenced_generation + 1
+    await runner.tick()
+    with factory() as session:
+        interrupted = session.get(WorkflowRunRow, task.run_id)
+        final = session.get(ProjectBatchRow, batch.batch_id)
+        operation = session.scalar(
+            select(ProjectOperationRow).where(
+                ProjectOperationRow.idempotency_key == forced.idempotency_key
+            )
+        )
+        assert interrupted is not None and interrupted.status == "interrupted"
+        assert final is not None and final.status == "stopped"
+        assert operation is not None and operation.status == "succeeded"
     factory.dispose()
 
 

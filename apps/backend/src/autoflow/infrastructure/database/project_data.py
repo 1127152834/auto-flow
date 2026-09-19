@@ -232,7 +232,12 @@ class SqlAlchemyProjectData:
                     if key in raw
                 }
             )
-        return table_to_dict(_table(row, record_count, source))
+        from .project_sync import SqlAlchemyProjectSync
+
+        return table_to_dict(
+            _table(row, record_count, source),
+            SqlAlchemyProjectSync.summary(session, row.id),
+        )
 
 
 def _table(
