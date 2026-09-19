@@ -47,6 +47,18 @@ it('keeps open and more actions independent', async () => {
   expect(screen.queryByText('删除自动化')).toBeNull()
 })
 
+it('offers deletion from the card menu only where the host can delete', async () => {
+  const p = props(), user = userEvent.setup()
+  const onDelete = vi.fn()
+  const view = render(<AutomationDirectory {...p} onDelete={onDelete} />)
+  await user.click(screen.getByRole('button', { name: '更多资料整理操作' }))
+  await user.click(screen.getByRole('menuitem', { name: '删除自动化' }))
+  expect(onDelete).toHaveBeenCalledWith(items[0])
+  expect(p.onOpen).not.toHaveBeenCalled()
+  view.rerender(<AutomationDirectory {...p} readOnly />)
+  expect(screen.queryByText('删除自动化')).toBeNull()
+})
+
 it('emits controlled search, clear, all four backend sorts and page changes', async () => {
   const p = props(), user = userEvent.setup()
   const view = render(<AutomationDirectory {...p} total={45} />)
