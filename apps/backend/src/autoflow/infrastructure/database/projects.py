@@ -200,7 +200,11 @@ class SqlAlchemyProjects:
                 else query.where(ProjectOperationRow.idempotency_key == key)
             )
             if workspace:
-                query = query.where(ProjectOperationRow.kind == "createProject")
+                # createProject has no project yet; deleteProject is the only way
+                # back to its result once the project row is gone.
+                query = query.where(
+                    ProjectOperationRow.kind.in_(("createProject", "deleteProject"))
+                )
             else:
                 query = query.where(ProjectOperationRow.project_id == project_id)
             row = session.scalar(query)

@@ -51,6 +51,10 @@ from autoflow.application.project_sync.connections import (
 from autoflow.application.project_sync.impacts import SheetsImpactService
 from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.application.project_sync.runs import SheetsRun
+from autoflow.application.projects.lifecycle import (
+    ProjectLifecycleCoordinator,
+    ProjectLifecycleService,
+)
 from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.projects.statistics import ProjectStatisticsService
@@ -122,6 +126,9 @@ from autoflow.infrastructure.database.project_excel_exports import (
 )
 from autoflow.infrastructure.database.project_excel_imports import (
     SqlAlchemyExcelImports,
+)
+from autoflow.infrastructure.database.project_lifecycle import (
+    SqlAlchemyProjectLifecycle,
 )
 from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
 from autoflow.infrastructure.database.project_sync_impacts import (
@@ -434,6 +441,7 @@ def create_app(
         lambda: [
             *project_workflow_dispatcher.blockers(),
             *project_run_scheduler.blockers(),
+            *project_lifecycle_coordinator.blockers(),
             *(
                 ["project_excel_operation_active"]
                 if project_excel.pending_operations()
@@ -486,6 +494,7 @@ def create_app(
             async def close_project_workflows() -> None:
                 try:
                     await project_run_scheduler.shutdown()
+                    await project_lifecycle_coordinator.shutdown()
                 finally:
                     await project_workflow_dispatcher.shutdown()
 
@@ -537,6 +546,20 @@ def create_app(
         SqlAlchemyWorkflowRepository(session_factory)
     )
     app.include_router(workflow_catalog_router(project_workflow_service))
+    project_lifecycle_repository = SqlAlchemyProjectLifecycle(
+        session_factory, environment_root=environment_store.root
+    )
+    project_lifecycle_coordinator = ProjectLifecycleCoordinator(
+        project_lifecycle_repository, quiesce_gate
+    )
+    project_lifecycle = ProjectLifecycleService(
+        SqlAlchemyProjects(session_factory),
+        project_lifecycle_repository,
+        project_lifecycle_coordinator,
+    )
+    app.state.project_lifecycle = project_lifecycle
+    app.state.project_lifecycle_coordinator = project_lifecycle_coordinator
+    app.router.add_event_handler("startup", project_lifecycle_coordinator.startup)
     register_project_routes(app, ProjectHttpServices(
         run_coordinator=project_run_coordinator,
         run_queries=ProjectRunQueries(session_factory),
@@ -545,6 +568,7 @@ def create_app(
         run_scheduler=project_run_scheduler,
         gate=quiesce_gate,
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
+        lifecycle=project_lifecycle,
         overview=ProjectOverviewService(session_factory),
         statistics=ProjectStatisticsService(session_factory),
         automations=ProjectAutomationService(

@@ -134,6 +134,13 @@ class SyncResourceLocator(ApiModel):
     sync_operation_id: str
 
 
+
+class EnvironmentResourceLocator(ApiModel):
+    type: Literal["environment"]
+    project_id: str
+    environment_id: str
+
+
 OverviewResourceLocator = Annotated[
     ProjectResourceLocator
     | AutomationResourceLocator
@@ -144,9 +151,56 @@ OverviewResourceLocator = Annotated[
     | FieldResourceLocator
     | StatusResourceLocator
     | SheetsConnectionResourceLocator
-    | SyncResourceLocator,
+    | SyncResourceLocator
+    | EnvironmentResourceLocator,
     Field(discriminator="type"),
 ]
+
+
+class Blocker(ApiModel):
+    code: str
+    resource: OverviewResourceLocator
+    state: str
+    message: str
+    operation_id: str | None = None
+
+
+class Impact(ApiModel):
+    code: str
+    resource: OverviewResourceLocator
+    message: str
+    blocking: bool
+
+
+class ProjectLifecycleImpact(ApiModel):
+    impact_revision: int
+    blockers: list[Blocker]
+    impacts: list[Impact]
+    unsynced_count: int
+
+
+class ArchiveProjectRequest(ApiModel):
+    impact_revision: int
+    expected_management_revision: int
+
+    def payload(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True)
+
+
+class RestoreProjectRequest(ApiModel):
+    expected_management_revision: int
+
+    def payload(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True)
+
+
+class DeleteProjectRequest(ApiModel):
+    confirmation_name: str
+    impact_revision: int
+    expected_management_revision: int
+
+    def payload(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True)
 
 
 class AttentionItem(ApiModel):
@@ -186,6 +240,11 @@ class ProjectBatchResult(ApiModel):
     batch: BatchView
 
 
+class DeletedResourceResult(ApiModel):
+    target: OverviewResourceLocator
+    deleted: Literal[True]
+
+
 class ProjectOperationView(ApiModel):
     operation_id: str
     project_id: str | None
@@ -223,6 +282,10 @@ class ProjectOperationView(ApiModel):
         "syncPull",
         "syncPush",
         "reconcileSync",
+        "archiveProject",
+        "restoreProject",
+        "deleteProject",
+        "deleteAutomation",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int
@@ -262,6 +325,7 @@ class ProjectOperationView(ApiModel):
         | SheetsUnbindResult
         | SyncRunResult
         | SyncOperation
+        | DeletedResourceResult
         | None
     )
     error: dict[str, Any] | None
