@@ -49,6 +49,15 @@ class EnvironmentDetailView(ApiModel):
     linked_record_count: int = 0
 
 
+class EnvironmentDeleteRequest(ApiModel):
+    impact_revision: int
+    expected_metadata_revision: int
+    expected_content_generation: int
+
+    def payload(self):
+        return self.model_dump(by_alias=True)
+
+
 class EnvironmentImpactView(ApiModel):
     impact_revision: int
     impacts: list[dict[str, Any]]

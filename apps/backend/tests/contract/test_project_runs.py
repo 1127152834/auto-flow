@@ -450,6 +450,60 @@ def test_task_detail_recursively_serializes_only_public_resource_snapshot(tmp_pa
     factory.dispose()
 
 
+def test_task_detail_publishes_a_cleanup_summary_on_the_wire(tmp_path):
+    """Cleanup is a frozen TaskDetail field; the UI reads it, never guesses it."""
+    client, factory, project, automation, _ = client_for(tmp_path)
+    batch = client.post(
+        f"/api/v1/projects/{project.project_id}/automations/{automation.automation_id}/batches",
+        headers={"Idempotency-Key": str(uuid4())},
+        json=start_payload(automation),
+    ).json()["operation"]["result"]["batch"]
+    task_id = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"batchId": batch["batchId"]},
+    ).json()["items"][0]["taskId"]
+
+    cleanup = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks/{task_id}"
+    ).json()["cleanup"]
+
+    # The synthetic seam resolves ``browser: none``, so nothing is left to clean.
+    assert cleanup == {"status": "notRequired", "operationId": None, "message": None}
+    factory.dispose()
+
+
+def test_task_detail_reports_pending_cleanup_for_a_browser_run(tmp_path):
+    def resources(_automation, _defaults):
+        return {
+            "browser": "newFromProfile",
+            "profileId": "profile-1",
+            "kernelId": "public:1",
+            "proxy": {"mode": "none"},
+            "modelProviderId": None,
+            "frozenConfiguration": {},
+        }
+
+    client, factory, project, automation, _ = client_for(tmp_path, resources)
+    batch = client.post(
+        f"/api/v1/projects/{project.project_id}/automations/{automation.automation_id}/batches",
+        headers={"Idempotency-Key": str(uuid4())},
+        json=start_payload(automation),
+    ).json()["operation"]["result"]["batch"]
+    task_id = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks",
+        params={"batchId": batch["batchId"]},
+    ).json()["items"][0]["taskId"]
+
+    cleanup = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks/{task_id}"
+    ).json()["cleanup"]
+
+    assert cleanup["status"] == "pending"
+    assert cleanup["operationId"] is None
+    assert cleanup["message"]
+    factory.dispose()
+
+
 @pytest.mark.parametrize("path", ["batches", "tasks"])
 def test_http_rejects_page_that_cannot_form_a_safe_sql_offset(tmp_path, path):
     client, factory, project, _, _ = client_for(tmp_path)

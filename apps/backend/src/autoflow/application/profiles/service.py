@@ -20,6 +20,7 @@ from autoflow.domain.profiles.ports import (
     ProfileUsageGuard,
     ProxyOptionsLookup,
 )
+from autoflow.domain.projects.ports import ProjectResourceReferences
 
 RepositoryTransaction = Callable[[], AbstractContextManager[ProfileRepository]]
 logger = logging.getLogger(__name__)
@@ -40,12 +41,14 @@ class ProfileService:
         proxy_options: ProxyOptionsLookup,
         profile_usage: ProfileUsageGuard,
         data_store: ProfileDataStore,
+        references: ProjectResourceReferences | None = None,
     ) -> None:
         self.transaction = transaction
         self.installed_kernels = installed_kernels
         self.proxy_options = proxy_options
         self.profile_usage = profile_usage
         self.data_store = data_store
+        self.references = references
 
     def list(self) -> list[Profile]:
         with self.transaction() as repository:
@@ -98,6 +101,8 @@ class ProfileService:
             try:
                 with self.transaction() as repository:
                     self._require(repository, profile_id)
+                    if self.references is not None:
+                        self.references.ensure_unreferenced("profile", profile_id)
                     staged = self.data_store.stage(profile_id)
                     repository.remove(profile_id)
             except Exception:

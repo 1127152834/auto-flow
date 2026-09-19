@@ -3,13 +3,18 @@ from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Response
 
+from autoflow.application.projects.lifecycle import ProjectLifecycleService
 from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import AVAILABILITY, ProjectService
 from autoflow.domain.projects.models import project_to_dict
 
 from .errors import browser_error_responses
 from .project_schemas import (
+    ArchiveProjectRequest,
+    DeleteProjectRequest,
+    OperationAccepted,
     ProjectCreate,
+    ProjectLifecycleImpact,
     ProjectOpenResult,
     ProjectOperationPage,
     ProjectOperationView,
@@ -18,6 +23,7 @@ from .project_schemas import (
     ProjectPatch,
     ProjectSummary,
     ProjectView,
+    RestoreProjectRequest,
 )
 
 Key = Annotated[UUID, Header(alias="Idempotency-Key")]
@@ -156,6 +162,10 @@ def projects_router(
             "importExcel",
             "exportXlsx",
             "reconcileOperation",
+            "archiveProject",
+            "restoreProject",
+            "deleteProject",
+            "deleteAutomation",
         ]
         | None = None,
         status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
@@ -211,6 +221,98 @@ def projects_router(
         return _op(service.workspace_operation(str(key)))
 
     return router
+
+
+def project_lifecycle_router(lifecycle: ProjectLifecycleService) -> APIRouter:
+    """Archive, restore and permanent delete of one project.
+
+    Declared async so the coordinator wake-up stays on the event loop; the
+    commands themselves are short local transactions.
+    """
+    router = APIRouter(prefix="/api/v1/projects/{projectId}")
+
+    @router.get(
+        "/lifecycle-impact",
+        response_model=ProjectLifecycleImpact,
+        responses=browser_error_responses(401, 404, 409, 422),
+    )
+    def lifecycle_impact(
+        projectId: UUID,
+        action: Literal["archive", "delete"] = Query(...),
+    ):
+        return lifecycle.impact(str(projectId), action)
+
+    @router.post(
+        "/archive",
+        response_model=OperationAccepted,
+        status_code=202,
+        responses={
+            200: {"model": OperationAccepted},
+            **browser_error_responses(401, 404, 409, 412, 422, 423),
+        },
+    )
+    async def archive_project(
+        projectId: UUID,
+        body: ArchiveProjectRequest,
+        response: Response,
+        idempotency_key: Key,
+    ):
+        operation = lifecycle.archive(
+            str(projectId), str(idempotency_key), body.payload()
+        )
+        if _terminal(operation):
+            response.status_code = 200
+        return {"operation": _op(operation)}
+
+    @router.post(
+        "/restore",
+        response_model=OperationAccepted,
+        status_code=202,
+        responses={
+            200: {"model": OperationAccepted},
+            **browser_error_responses(401, 404, 409, 412, 422),
+        },
+    )
+    async def restore_project(
+        projectId: UUID,
+        body: RestoreProjectRequest,
+        response: Response,
+        idempotency_key: Key,
+    ):
+        operation = lifecycle.restore(
+            str(projectId), str(idempotency_key), body.payload()
+        )
+        if _terminal(operation):
+            response.status_code = 200
+        return {"operation": _op(operation)}
+
+    @router.delete(
+        "",
+        response_model=OperationAccepted,
+        status_code=202,
+        responses={
+            200: {"model": OperationAccepted},
+            **browser_error_responses(401, 404, 409, 412, 422, 423),
+        },
+    )
+    async def delete_project(
+        projectId: UUID,
+        body: DeleteProjectRequest,
+        response: Response,
+        idempotency_key: Key,
+    ):
+        operation = lifecycle.delete(
+            str(projectId), str(idempotency_key), body.payload()
+        )
+        if _terminal(operation):
+            response.status_code = 200
+        return {"operation": _op(operation)}
+
+    return router
+
+
+def _terminal(operation) -> bool:
+    return operation.status in {"succeeded", "failed"}
 
 
 def _op(value):

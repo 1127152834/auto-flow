@@ -6,6 +6,7 @@ import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescript
 import { Button } from '../../../shared/components/ui/button'
 import { Pagination } from '../../../shared/components/ui/pagination'
 import { createAutomationApi } from '../api'
+import { AutomationDeleteDialog, type AutomationDeleteSubmit } from '../components/AutomationDeleteDialog'
 import { AutomationEditor } from '../components/AutomationEditor'
 import { InputPlanEditor } from '../components/InputPlanEditor'
 import { automationToForm, emptyAutomationForm } from '../form-schema'
@@ -21,6 +22,8 @@ export type AutomationDetailPageProps = {
   projectDefaults?: ProjectView['defaultResources'];
   workspaceKey: string; instanceId: string; projectId: string; automationId?: string; client: StreamingApiClient; disabled: boolean; readOnly: boolean
   onCreated(automationId: string): void
+  /** Leaving the editor after this automation stopped existing. */
+  onDeleted?(): void
   onBatchCreated?(batchId: string): void
   registerLeaveGuard(guard: (() => Promise<boolean>) | null): void
 }
@@ -28,7 +31,7 @@ type Baseline = { value: AutomationWrite; revision: number; resetKey: string }
 export function AutomationDetailPage(props: AutomationDetailPageProps) {
   return <Detail key={JSON.stringify([props.workspaceKey, props.projectId, props.automationId ?? 'new'])} {...props} />
 }
-function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automationId, client, disabled, readOnly, onCreated, onBatchCreated, registerLeaveGuard }: AutomationDetailPageProps) {
+function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automationId, client, disabled, readOnly, onCreated, onDeleted, onBatchCreated, registerLeaveGuard }: AutomationDetailPageProps) {
   const api = useMemo(() => createAutomationApi(client, projectId), [client, projectId])
   const resources = useMemo(() => createAutomationResourcesApi(client, projectId), [client, projectId])
   const prefix = [workspaceKey, instanceId, 'automations', projectId]
@@ -49,6 +52,7 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
   const [recordTableId, setRecordTableId] = useState<string | null>(null)
   const [recordPage, setRecordPage] = useState(1)
   const [startOpen, setStartOpen] = useState(false)
+  const [removing, setRemoving] = useState<{ key: string } | null>(null)
   const recordTable = tables.data?.find(table => table.id === recordTableId)
   const records = useQuery({ queryKey: [...prefix, 'input-records', recordTableId, recordTable?.datasetGeneration, recordPage], queryFn: ({ signal }) => resources.records(recordTable!, recordPage, signal), enabled: Boolean(recordTable) && !disabled })
 
@@ -64,6 +68,17 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
     notify({ title: automationId ? '自动化配置已保存' : '自动化已创建', tone: 'success', operationId: JSON.stringify([workspaceKey, key]) })
     if (!automationId) onCreated(saved.automationId)
   } })
+  const submitRemoval = (values: AutomationDeleteSubmit) => {
+    if (!automationId || !removing) throw new Error('缺少待删除的自动化')
+    return api.remove(automationId, values, removing.key)
+  }
+  const finishRemoval = (operation: { status: string; operationId: string }) => {
+    notify({ title: operation.status === 'succeeded' ? '自动化已删除' : '删除命令已接受，正在处理', tone: 'success', operationId: operation.operationId })
+    if (operation.status !== 'succeeded') return
+    dirty.current = false
+    void cache.invalidateQueries({ queryKey: prefix })
+    onDeleted?.()
+  }
   useEffect(() => {
     const original = command.restoredCommand
     if (original) setBaseline({ value: automationToForm(original.body), revision: 'expectedManagementRevision' in original.body ? original.body.expectedManagementRevision : 0, resetKey: `recover:${original.key}` })
@@ -111,6 +126,11 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
       { label: '执行方式', value: '按顺序执行' },
       { label: '环境', value: ({ newFromProfile: '每个任务创建临时环境', fixedEnvironment: '固定保存环境', inputEnvironment: '使用记录关联环境' } as Record<string, string>)[baseline.value.environmentPolicy.source] ?? baseline.value.environmentPolicy.source },
     ]}/> : null}
+    {automationId && result.data && !readOnly ? <section aria-label="危险操作" className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface px-5 py-4"><div className="min-w-0"><h3 className="m-0 text-base font-semibold">删除自动化</h3><p className="m-0 mt-1 text-sm text-muted">删除前会读取真实影响范围；关联的工作流文档只解除关联，不会被删除。</p></div><Button variant="danger" disabled={disabled || command.locked()} onClick={() => setRemoving({ key: crypto.randomUUID() })}>删除自动化</Button></section> : null}
+    {automationId ? <AutomationDeleteDialog open={Boolean(removing)} automation={automationId && result.data ? { automationId, name: result.data.name, managementRevision: result.data.managementRevision } : null} disabled={disabled} onOpenChange={open => { if (!open) setRemoving(null) }} onLoadImpact={() => {
+      if (!automationId) return Promise.reject(new Error('缺少待删除的自动化'))
+      return api.impact(automationId)
+    }} onSubmit={submitRemoval} onFinished={finishRemoval} /> : null}
     <AlertDialog open={confirmation !== null} onOpenChange={open => { if (!open) finishConfirmation(false) }}><AlertDialogContent><AlertDialogTitle>{confirmation === 'latest' ? '替换为最新资料？' : '放弃未保存的修改？'}</AlertDialogTitle><AlertDialogDescription>当前草稿会被放弃，已保存的数据不会改变。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button onClick={() => finishConfirmation(false)}>继续编辑</Button></AlertDialogCancel><Button variant="danger" onClick={() => finishConfirmation(true)}>{confirmation === 'latest' ? '载入最新资料' : '放弃修改'}</Button></div></AlertDialogContent></AlertDialog>
   </section>
 }

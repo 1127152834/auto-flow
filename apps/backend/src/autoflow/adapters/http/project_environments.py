@@ -7,6 +7,7 @@ from autoflow.application.environments.service import EnvironmentService
 
 from .errors import browser_error_responses
 from .project_environment_schemas import (
+    EnvironmentDeleteRequest,
     EnvironmentDetailView,
     EnvironmentEndRequest,
     EnvironmentImpactView,
@@ -84,6 +85,23 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
     )
     def environment_impact(projectId: UUID, environmentId: UUID, action: str = "delete"):
         return service.impact(str(projectId), str(environmentId), action)
+
+    @router.delete(
+        "/environments/{environmentId}",
+        status_code=202,
+        response_model=EnvironmentOperationView,
+        responses=browser_error_responses(401, 404, 409, 412, 422, 423),
+    )
+    def delete_environment(
+        projectId: UUID,
+        environmentId: UUID,
+        body: EnvironmentDeleteRequest,
+        idempotency_key: Key,
+    ):
+        _result, operation = service.delete(
+            str(projectId), str(environmentId), str(idempotency_key), body.payload()
+        )
+        return {"operation": _op(operation), "outcome": None}
 
     @router.patch(
         "/environments/{environmentId}",

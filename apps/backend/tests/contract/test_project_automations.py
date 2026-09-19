@@ -115,21 +115,25 @@ def body(workflow_id):
     }
 
 
-def test_five_routes_dtos_and_no_delete(tmp_path):
+def test_routes_and_dtos_match_the_frozen_contract(tmp_path):
     api, _, _ = client(tmp_path)
     openapi = api.get("/openapi.json").json()
     paths = openapi["paths"]
     assert set(paths) == {
         "/api/v1/projects/{projectId}/automations",
         "/api/v1/projects/{projectId}/automations/{automationId}",
+        "/api/v1/projects/{projectId}/automations/{automationId}/impact",
         "/api/v1/projects/{projectId}/automations/{automationId}/validation",
     }
     assert set(paths["/api/v1/projects/{projectId}/automations"]) == {"get", "post"}
     assert set(paths["/api/v1/projects/{projectId}/automations/{automationId}"]) == {
         "get",
         "put",
+        "delete",
     }
-    assert "delete" not in str(paths).lower()
+    assert set(
+        paths["/api/v1/projects/{projectId}/automations/{automationId}/impact"]
+    ) == {"get"}
     assert {
         "AutomationView",
         "AutomationWrite",

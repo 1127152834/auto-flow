@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Modal } from '../../../shared/components/Modal'
+import { ResourceReferenceList } from '../../../shared/components/ResourceReferenceList'
 import { Button } from '../../../shared/components/ui/button'
 import type { ModelApi } from '../api'
 import { refreshAfterModelConflict } from '../cache'
@@ -16,5 +17,6 @@ export function ProviderDeleteDialog({ provider, api, instanceId, blocked, onClo
   </>}>
     <p>同时移除该供应商下的 {provider.models.length} 个本地模型配置。此操作无法撤销，不影响供应商的远端账号。</p>
     {remove.error && <p role="alert" className="text-red-700">{remove.error.message}</p>}
+    <ResourceReferenceList error={remove.error} />
   </Modal>
 }

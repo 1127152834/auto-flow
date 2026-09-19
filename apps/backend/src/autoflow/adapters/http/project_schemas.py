@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from .project_automation_schemas import AutomationView
 from .project_data_catalog_schemas import (
@@ -134,6 +134,13 @@ class SyncResourceLocator(ApiModel):
     sync_operation_id: str
 
 
+
+class EnvironmentResourceLocator(ApiModel):
+    type: Literal["environment"]
+    project_id: str
+    environment_id: str
+
+
 OverviewResourceLocator = Annotated[
     ProjectResourceLocator
     | AutomationResourceLocator
@@ -144,9 +151,62 @@ OverviewResourceLocator = Annotated[
     | FieldResourceLocator
     | StatusResourceLocator
     | SheetsConnectionResourceLocator
-    | SyncResourceLocator,
+    | SyncResourceLocator
+    | EnvironmentResourceLocator,
     Field(discriminator="type"),
 ]
+
+
+class Blocker(ApiModel):
+    code: str
+    resource: OverviewResourceLocator
+    state: str
+    message: str
+    operation_id: str | None = None
+
+
+class Impact(ApiModel):
+    code: str
+    resource: OverviewResourceLocator
+    message: str
+    blocking: bool
+
+
+class AutomationImpactView(ApiModel):
+    impact_revision: int
+    impacts: list[Impact]
+    blockers: list[Blocker]
+
+
+class ProjectLifecycleImpact(ApiModel):
+    impact_revision: int
+    blockers: list[Blocker]
+    impacts: list[Impact]
+    unsynced_count: int
+
+
+class ArchiveProjectRequest(ApiModel):
+    impact_revision: int
+    expected_management_revision: int
+
+    def payload(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True)
+
+
+class RestoreProjectRequest(ApiModel):
+    expected_management_revision: int
+
+    def payload(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True)
+
+
+class DeleteProjectRequest(ApiModel):
+    confirmation_name: str
+    impact_revision: int
+    expected_management_revision: int
+
+    def payload(self) -> dict[str, Any]:
+        return self.model_dump(by_alias=True)
 
 
 class AttentionItem(ApiModel):
@@ -186,6 +246,13 @@ class ProjectBatchResult(ApiModel):
     batch: BatchView
 
 
+class DeletedResourceResult(ApiModel):
+    target: OverviewResourceLocator
+    deleted: Literal[True]
+    workflow_id: str | None = None
+    workflow_disposition: Literal["unlink", "deleteOwned"] | None = None
+
+
 class ProjectOperationView(ApiModel):
     operation_id: str
     project_id: str | None
@@ -223,6 +290,11 @@ class ProjectOperationView(ApiModel):
         "syncPull",
         "syncPush",
         "reconcileSync",
+        "archiveProject",
+        "restoreProject",
+        "deleteProject",
+        "deleteAutomation",
+        "deleteEnvironment",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int
@@ -234,6 +306,7 @@ class ProjectOperationView(ApiModel):
         | FieldResourceLocator
         | StatusResourceLocator
         | RecordResourceLocator
+        | TaskResourceLocator
         | SheetsConnectionResourceLocator,
         Field(discriminator="type"),
     ]
@@ -262,12 +335,30 @@ class ProjectOperationView(ApiModel):
         | SheetsUnbindResult
         | SyncRunResult
         | SyncOperation
+        | DeletedResourceResult
         | None
     )
     error: dict[str, Any] | None
     created_at: datetime
     updated_at: datetime
     completed_at: datetime | None
+
+    @field_validator("resource", mode="before")
+    @classmethod
+    def _contract_resource(cls, value: Any) -> Any:
+        """把工作流能力操作的行内运行范围字段投影掉。
+
+        工作流数据能力会把 taskId/runId/executionGeneration 与目标资源写在同一行，
+        供按任务回查；但项目操作视图按契约只暴露 ResourceLocator。缺这一步会让
+        任何存在工作流写入的项目在 GET /projects/{id}/operations 上直接 500。
+        """
+        if not isinstance(value, dict):
+            return value
+        drop = {"runId", "executionGeneration"}
+        if value.get("type") in ("record", "field"):
+            # 记录/字段定位器只暴露嵌套 ref，projectId 与 taskId 属于行内运行范围。
+            drop |= {"projectId", "taskId"}
+        return {key: item for key, item in value.items() if key not in drop}
 
 
 class ProjectOperationPage(ApiModel):

@@ -1,5 +1,7 @@
 import { ApiClientError, type StreamingApiClient } from '../../shared/api/client'
-import type { ProjectCreate, ProjectListConditions, ProjectOpenResult, ProjectOperationPage, ProjectOperationView, ProjectOverview, ProjectPage, ProjectPatch, ProjectView } from './types'
+import type { ProjectCreate, ProjectLifecycleImpact, ProjectListConditions, ProjectOpenResult, ProjectOperationPage, ProjectOperationView, ProjectOverview, ProjectPage, ProjectPatch, ProjectView } from './types'
+
+export type ProjectLifecycleAction = 'archive' | 'delete'
 
 export type ProjectsApi = ReturnType<typeof createProjectsApi>
 
@@ -80,6 +82,33 @@ export function createProjectsApi(client: StreamingApiClient, createKey: () => s
     }
   }
 
+  async function accepted(submit: () => Promise<{ operation: ProjectOperationView }>, lookup: () => Promise<ProjectOperationView>): Promise<ProjectOperationView> {
+    try { return (await submit()).operation } catch (error) {
+      if (!outcomeUnknown(error)) throw error
+      try { return await lookup() } catch (lookupError) {
+        if (operationNotFound(lookupError)) throw new ProjectCommandUncertain(error)
+        throw new ProjectCommandUncertain(lookupError)
+      }
+    }
+  }
+
+  const archive = (projectId: string, body: { impactRevision: number; expectedManagementRevision: number }, key = createKey()) => accepted(
+    () => client.request<{ operation: ProjectOperationView }>(`/api/v1/projects/${encoded(projectId)}/archive`, { method: 'POST', headers: { 'Idempotency-Key': key }, body }),
+    () => projectOperationByKey(projectId, key),
+  )
+
+  const restore = (projectId: string, body: { expectedManagementRevision: number }, key = createKey()) => accepted(
+    () => client.request<{ operation: ProjectOperationView }>(`/api/v1/projects/${encoded(projectId)}/restore`, { method: 'POST', headers: { 'Idempotency-Key': key }, body }),
+    () => projectOperationByKey(projectId, key),
+  )
+
+  // A deleted project answers 404 on every project-scoped read, so the command
+  // identity survives only through the workspace-scoped lookup.
+  const remove = (projectId: string, body: { confirmationName: string; impactRevision: number; expectedManagementRevision: number }, key = createKey()) => accepted(
+    () => client.request<{ operation: ProjectOperationView }>(`/api/v1/projects/${encoded(projectId)}`, { method: 'DELETE', headers: { 'Idempotency-Key': key }, body }),
+    () => workspaceOperationByKey(key),
+  )
+
   return {
     list: (conditions: ProjectListConditions, signal?: AbortSignal) => {
       const lifecycle = conditions.lifecycle === 'all' ? '' : `&lifecycleState=${conditions.lifecycle}`
@@ -94,6 +123,10 @@ export function createProjectsApi(client: StreamingApiClient, createKey: () => s
     open: (projectId: string) => client.request<ProjectOpenResult>(`/api/v1/projects/${encoded(projectId)}/open`, { method: 'POST' }),
     overview: (projectId: string, signal?: AbortSignal) => client.request<ProjectOverview>(`/api/v1/projects/${encoded(projectId)}/overview`, { signal }),
     operations: (projectId: string, signal?: AbortSignal) => client.request<ProjectOperationPage>(`/api/v1/projects/${encoded(projectId)}/operations`, { signal }),
+    lifecycleImpact: (projectId: string, action: ProjectLifecycleAction, signal?: AbortSignal) => client.request<ProjectLifecycleImpact>(`/api/v1/projects/${encoded(projectId)}/lifecycle-impact?action=${action}`, { signal }),
+    archive,
+    restore,
+    remove,
     workspaceOperationByKey,
     projectOperationByKey,
   }

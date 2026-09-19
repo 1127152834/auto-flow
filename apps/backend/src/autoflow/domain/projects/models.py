@@ -18,6 +18,29 @@ class ProjectError(Exception):
         self.details = details or {}
 
 
+class ResourceReferenced(ProjectError):
+    """A saved project fact still names this global resource.
+
+    Deleting the resource would silently break the next run of that project or
+    automation, so the delete is refused with the exact owners; there is no
+    force flag and no implicit cleanup.
+    """
+
+    def __init__(
+        self, resource_type: str, resource_id: str, references: list[dict[str, Any]]
+    ) -> None:
+        super().__init__(
+            "RESOURCE_REFERENCED",
+            "资源仍被项目或自动化引用，请先处理引用",
+            409,
+            {
+                "resourceType": resource_type,
+                "resourceId": resource_id,
+                "references": references,
+            },
+        )
+
+
 @dataclass(frozen=True)
 class ProjectRecord:
     project_id: str

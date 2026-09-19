@@ -192,6 +192,14 @@ class TaskCurrentInputView(ApiModel):
     changed_field_ids: list[str] = Field(default_factory=list)
 
 
+class CleanupSummaryView(ApiModel):
+    status: Literal[
+        "notRequired", "pending", "running", "succeeded", "failed", "unknown"
+    ]
+    operation_id: str | None = None
+    message: str | None = None
+
+
 class TaskDetail(ApiModel):
     automation_name: str | None = None
     batch_started_at: datetime | None = None
@@ -202,6 +210,7 @@ class TaskDetail(ApiModel):
     current_inputs: list[TaskCurrentInputView] = Field(default_factory=list)
     run: RunSnapshotView
     data_writes: list[TaskDataWriteView] = Field(default_factory=list)
+    cleanup: CleanupSummaryView
 
 
 class BatchStopRequest(ApiModel):

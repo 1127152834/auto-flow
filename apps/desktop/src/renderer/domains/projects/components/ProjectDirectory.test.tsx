@@ -124,6 +124,24 @@ it('keeps stale rows visible and reports a refresh failure', () => {
   expect(screen.getByRole('alert')).toHaveTextContent('刷新项目失败')
   expect(screen.getByRole('button', { name: '新建项目' })).toBeDisabled()
 })
+it('surfaces a project stuck in deleting with its residue and a retry entry', async () => {
+  const onLifecycle = vi.fn(); const user = userEvent.setup()
+  const stuck = { ...summary, projectId: 'stuck', name: '待清理项目', lifecycleState: 'deleting' } as ProjectSummary
+  const wait = render(<ProjectDirectory page={page([stuck])} cleanupResidue={{ stuck: ['/tmp/environments/instances/e1'] }} conditions={{ query: '', lifecycle: 'archived', sort: '-lastOpenedAt', page: 1, pageSize: 50 }} loading={false} refreshing={false} disabled={false} error={null} onConditionsChange={vi.fn()} onRefresh={vi.fn()} onCreate={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} onLifecycle={onLifecycle} />)
+
+  expect(screen.getByText('清理未完成')).toBeVisible()
+  expect(screen.getByText('正在删除')).toBeVisible()
+  expect(screen.getByRole('article')).toHaveAttribute('aria-disabled', 'true')
+  await user.click(screen.getByRole('button', { name: '更多待清理项目操作' }))
+  expect(screen.queryByRole('menuitem', { name: '永久删除' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('menuitem', { name: '重试清理' }))
+  expect(onLifecycle).toHaveBeenCalledWith(stuck, 'delete')
+
+  // Without residue the card stays a plain `deleting` row with no action.
+  wait.rerender(<ProjectDirectory page={page([stuck])} conditions={{ query: '', lifecycle: 'archived', sort: '-lastOpenedAt', page: 1, pageSize: 50 }} loading={false} refreshing={false} disabled={false} error={null} onConditionsChange={vi.fn()} onRefresh={vi.fn()} onCreate={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} onLifecycle={onLifecycle} />)
+  expect(screen.queryByText('清理未完成')).not.toBeInTheDocument()
+})
+
 it('does not turn an unresolved recent directory into a zero count',()=>{
  const props={mode:'recent' as const,recentItems:[],conditions:{query:'',lifecycle:'active',sort:'-lastOpenedAt',page:1,pageSize:50} as const,loading:false,refreshing:false,disabled:false,error:null,onConditionsChange:vi.fn(),onRefresh:vi.fn(),onCreate:vi.fn(),onOpen:vi.fn(),onEdit:vi.fn()};
  const v=render(<ProjectDirectory {...props} recentLoading/>);expect(screen.queryByText('0 个项目')).not.toBeInTheDocument();

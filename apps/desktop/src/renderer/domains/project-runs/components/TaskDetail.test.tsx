@@ -5,7 +5,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { TaskDetail } from './TaskDetail'
 
 afterEach(cleanup)
-const detail = { automationName: '链接采集', batchStartedAt: '2026-09-15T00:59:00Z', nodeNames: { 'node-03': '读取页面' }, parameterDefinitions: [{ parameterId: 'p0', name: '零', description: '', type: 'number' as const, required: true }, { parameterId: 'pf', name: '开关', description: '', type: 'boolean' as const, required: true }, { parameterId: 'pn', name: '空值', description: '', type: 'string' as const, required: false }], task: { taskId: 'task-1', taskOrdinal: 49, projectId: 'project-1', batchId: 'batch-1', runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, inputSnapshotId: 'snapshot-1', createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:01:00Z' }, inputSnapshot: { inputSnapshotId: 'snapshot-1', taskId: 'task-1', batchId: 'batch-1', parameters: { p0: 0, pf: false, pn: null }, inputs: [], capturedAt: '2026-09-15T01:00:00Z' }, run: { runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, executionGeneration: 1, preparedContentId: 'content-1', capabilityBindings: [], resourceRequest: {}, lastSequence: 4, terminal: true, error: { code: 'E_PAGE_TIMEOUT', message: '读取页面超时' }, startedAt: '2026-09-15T01:00:00Z', finishedAt: '2026-09-15T01:01:00Z' } }
+const detail = { automationName: '链接采集', batchStartedAt: '2026-09-15T00:59:00Z', nodeNames: { 'node-03': '读取页面' }, parameterDefinitions: [{ parameterId: 'p0', name: '零', description: '', type: 'number' as const, required: true }, { parameterId: 'pf', name: '开关', description: '', type: 'boolean' as const, required: true }, { parameterId: 'pn', name: '空值', description: '', type: 'string' as const, required: false }], task: { taskId: 'task-1', taskOrdinal: 49, projectId: 'project-1', batchId: 'batch-1', runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, inputSnapshotId: 'snapshot-1', createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:01:00Z' }, inputSnapshot: { inputSnapshotId: 'snapshot-1', taskId: 'task-1', batchId: 'batch-1', parameters: { p0: 0, pf: false, pn: null }, inputs: [], capturedAt: '2026-09-15T01:00:00Z' }, run: { runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, executionGeneration: 1, preparedContentId: 'content-1', capabilityBindings: [], resourceRequest: {}, lastSequence: 4, terminal: true, error: { code: 'E_PAGE_TIMEOUT', message: '读取页面超时' }, startedAt: '2026-09-15T01:00:00Z', finishedAt: '2026-09-15T01:01:00Z' }, cleanup: { status: 'notRequired' as const, operationId: null, message: null } }
 const attempts = { items: [{ nodeVisitId: 'visit-1', nodeId: 'node-03', nodeName: '读取页面', attempt: 2, status: 'failed' as const, startedAt: '2026-09-15T01:00:20Z', completedAt: '2026-09-15T01:01:00Z', error: { code: 'E_PAGE_TIMEOUT' } }], page: 1, pageSize: 50, total: 1, sort: 'createdAt' }
 const logs = { items: [{ runId: 'run-1', sequence: 3, eventId: 'event-3', executionGeneration: 1, nodeId: 'node-03', nodeVisitId: 'visit-1', attempt: 2, level: 'error' as const, message: '页面读取超时', occurredAt: '2026-09-15T01:01:00Z' }], afterSequence: 3, lastSequence: 4, hasMore: false }
 const outputs = { items: [{ outputId: 'out-1', kind: 'value' as const, name: '计数', value: 0, runId: 'run-1', sequence: 2, nodeId: 'node-03', nodeVisitId: 'visit-1', attempt: 1, createdAt: '2026-09-15T01:00:10Z' }], page: 1, pageSize: 50, total: 1, sort: 'createdAt' }
@@ -54,6 +54,26 @@ it('renders real failure facts without fake attachment actions', () => {
   expect(screen.queryByText('E_PAGE_TIMEOUT')).not.toBeInTheDocument()
   expect(screen.getAllByText('读取页面超时')).not.toHaveLength(0)
   expect(screen.queryByRole('button', { name: /查看截图|查看附件/ })).not.toBeInTheDocument()
+})
+
+it('renders the real environment cleanup residue instead of a success claim', () => {
+  const cleanup = { status: 'failed' as const, operationId: null, message: '清理失败，临时工作副本仍残留，需要核验后重试。' }
+  render(<TaskDetail {...props} detail={{ ...detail, cleanup }} selectedTab="logs"/>)
+  expect(screen.getByText('环境清理')).toBeVisible()
+  expect(screen.getByText('清理失败')).toHaveAttribute('data-table-status', 'danger')
+  expect(screen.getByText(/临时工作副本仍残留/)).toBeVisible()
+})
+
+it('keeps an unconfirmed cleanup visible and does not borrow the task result', () => {
+  const cleanup = { status: 'unknown' as const, operationId: null, message: '上次清理结果未确认，请先核验运行现场，避免重复清理。' }
+  render(<TaskDetail {...props} detail={{ ...detail, cleanup }} selectedTab="logs"/>)
+  expect(screen.getByText('待核验')).toHaveAttribute('data-table-status', 'warning')
+  expect(screen.queryByText('已清理')).not.toBeInTheDocument()
+})
+
+it('omits the cleanup row when the run has no browser work copy', () => {
+  render(<TaskDetail {...props} selectedTab="logs"/>)
+  expect(screen.queryByText('环境清理')).not.toBeInTheDocument()
 })
 
 it('reports controlled tab selection', async () => {

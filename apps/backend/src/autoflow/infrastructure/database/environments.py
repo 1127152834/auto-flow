@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import builtins
-from datetime import UTC, datetime
+import hashlib
+import json
+from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
-from sqlalchemy import func, or_, select, text
+from sqlalchemy import delete, func, or_, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -32,7 +35,13 @@ from autoflow.infrastructure.database.environment_models import (
     ProjectManualItemRow,
 )
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
-from autoflow.infrastructure.database.project_data_models import DataRecordRow
+from autoflow.infrastructure.database.project_automation_models import (
+    ProjectAutomationRow,
+)
+from autoflow.infrastructure.database.project_data_models import (
+    DataImpactRow,
+    DataRecordRow,
+)
 from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 
@@ -680,6 +689,181 @@ class SqlAlchemyEnvironments:
             session.commit()
             return done
 
+
+    def delete_impact(
+        self, project_id: str, environment_id: str, action: str
+    ) -> dict[str, Any]:
+        if action != "delete":
+            raise environment_error(
+                "VALIDATION_ERROR",
+                "Unsupported impact action",
+                422,
+                {"fields": {"action": "Only delete impact is available"}},
+            )
+        with self._session_factory() as session:
+            session.execute(text("BEGIN"))
+            row = self._environment(session, project_id, environment_id, writable=False)
+            facts = _delete_facts(session, project_id, row)
+            revision, generation = row.metadata_revision, row.content_generation
+            session.rollback()
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            saved = DataImpactRow(
+                project_id=project_id,
+                action="deleteEnvironment",
+                target={
+                    "type": "environment",
+                    "projectId": project_id,
+                    "environmentId": environment_id,
+                },
+                change_digest=hashlib.sha256(b"deleteEnvironment").hexdigest(),
+                expected_revisions={
+                    "metadataRevision": revision,
+                    "contentGeneration": generation,
+                },
+                facts_digest=_digest(facts),
+                report={},
+                expires_at=datetime.now(UTC) + IMPACT_TTL,
+            )
+            session.add(saved)
+            session.flush()
+            saved.report = {
+                "impacts": facts["impacts"],
+                "blockers": facts["blockers"],
+                "impactRevision": saved.id,
+            }
+            session.commit()
+            return saved.report
+
+    def delete_environment(
+        self,
+        project_id: str,
+        environment_id: str,
+        operation: ProjectOperation,
+        *,
+        impact_revision: int,
+        expected_metadata_revision: int,
+        expected_content_generation: int,
+    ) -> tuple[dict[str, Any], ProjectOperation]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            existing = session.scalar(
+                select(ProjectOperationRow).where(
+                    ProjectOperationRow.idempotency_key == operation.idempotency_key
+                )
+            )
+            if existing:
+                self._match(existing, operation)
+                result = existing.result or {}
+                session.rollback()
+                return result, _operation(existing)
+            row = self._environment(session, project_id, environment_id, writable=True)
+            if row.metadata_revision != expected_metadata_revision:
+                session.rollback()
+                raise environment_error(
+                    "ENVIRONMENT_METADATA_CONFLICT",
+                    "Environment metadata has changed",
+                    409,
+                    {
+                        "domainCode": "environment_metadata_conflict",
+                        "expectedRevision": expected_metadata_revision,
+                        "currentRevision": row.metadata_revision,
+                    },
+                )
+            if row.content_generation != expected_content_generation:
+                session.rollback()
+                raise environment_error(
+                    "ENVIRONMENT_CONTENT_CONFLICT",
+                    "Environment content has changed",
+                    409,
+                    {
+                        "domainCode": "environment_content_conflict",
+                        "expectedGeneration": expected_content_generation,
+                        "currentGeneration": row.content_generation,
+                    },
+                )
+            facts = _delete_facts(session, project_id, row)
+            saved = session.get(DataImpactRow, impact_revision)
+            if (
+                type(impact_revision) is not int
+                or saved is None
+                or saved.project_id != project_id
+                or saved.action != "deleteEnvironment"
+                or (saved.target or {}).get("environmentId") != environment_id
+                or _aware(saved.expires_at) <= datetime.now(UTC)
+                or saved.facts_digest != _digest(facts)
+            ):
+                session.rollback()
+                raise environment_error(
+                    "PRECONDITION_FAILED",
+                    "重新执行删除影响检查后再提交",
+                    412,
+                    {"blockers": facts["blockers"], "retryable": False},
+                )
+            if facts["blockers"]:
+                session.rollback()
+                raise environment_error(
+                    "ENVIRONMENT_BUSY",
+                    "Environment still has unresolved work",
+                    409,
+                    {
+                        "blockers": facts["blockers"],
+                        "domainCode": "environment_busy",
+                        "retryable": False,
+                    },
+                )
+            now = datetime.now(UTC)
+            detached = 0
+            for record in session.scalars(
+                select(DataRecordRow).where(
+                    DataRecordRow.project_id == project_id,
+                    DataRecordRow.current_environment_id == environment_id,
+                )
+            ):
+                record.current_environment_id = None
+                record.link_revision += 1
+                detached += 1
+            session.execute(
+                delete(ProjectEnvironmentOccupancyRow).where(
+                    ProjectEnvironmentOccupancyRow.environment_id == environment_id
+                )
+            )
+            for save in session.scalars(
+                select(ProjectEnvironmentSaveRow).where(
+                    ProjectEnvironmentSaveRow.environment_id == environment_id
+                )
+            ):
+                save.environment_id = None
+            for instance in session.scalars(
+                select(ProjectEnvironmentInstanceRow).where(
+                    ProjectEnvironmentInstanceRow.environment_id == environment_id
+                )
+            ):
+                instance.environment_id = None
+            session.execute(
+                delete(ProjectEnvironmentRow).where(ProjectEnvironmentRow.id == environment_id)
+            )
+            result = {
+                "target": {
+                    "type": "environment",
+                    "projectId": project_id,
+                    "environmentId": environment_id,
+                },
+                "deleted": True,
+                "detachedRecordCount": detached,
+            }
+            done = replace(
+                operation,
+                status="succeeded",
+                status_revision=2,
+                result=result,
+                updated_at=now,
+                completed_at=now,
+            )
+            session.add(_operation_row(done))
+            session.commit()
+            return result, done
+
     def linked_record_count(self, project_id: str, environment_id: str) -> int:
         return len(self.list_linked_records(project_id, environment_id))
 
@@ -1019,3 +1203,120 @@ def _operation_row(value: ProjectOperation) -> ProjectOperationRow:
         updated_at=value.updated_at,
         completed_at=value.completed_at,
     )
+
+
+IMPACT_TTL = timedelta(minutes=10)
+# A live, unpublished or unreconciled work copy still owns this environment.
+BUSY_ENVIRONMENT_STATES = (
+    "reserved",
+    "starting",
+    "active",
+    "waiting_manual",
+    "closing",
+    "saving",
+    "cleaning",
+    "cleanup_failed",
+)
+OPEN_OPERATION_STATUSES = ("accepted", "running", "reconciling")
+
+
+def _delete_facts(
+    session: Session, project_id: str, row: ProjectEnvironmentRow
+) -> dict[str, Any]:
+    """Real references to one environment; nothing here is estimated."""
+    resource = {
+        "type": "environment",
+        "projectId": project_id,
+        "environmentId": row.id,
+    }
+    linked = session.scalars(
+        select(DataRecordRow).where(
+            DataRecordRow.project_id == project_id,
+            DataRecordRow.current_environment_id == row.id,
+            DataRecordRow.deleted.is_(False),
+        )
+    ).all()
+    fixed: list[ProjectAutomationRow] = []
+    for automation in session.scalars(
+        select(ProjectAutomationRow).where(ProjectAutomationRow.project_id == project_id)
+    ):
+        policy = automation.environment_policy or {}
+        if (
+            policy.get("source") == "fixedEnvironment"
+            and policy.get("environmentId") == row.id
+        ):
+            fixed.append(automation)
+    instances = list(
+        session.execute(
+            select(ProjectEnvironmentInstanceRow.id, ProjectEnvironmentInstanceRow.state).where(
+                ProjectEnvironmentInstanceRow.environment_id == row.id
+            )
+        )
+    )
+    pending = list(
+        session.execute(
+            select(ProjectOperationRow.id, ProjectOperationRow.kind).where(
+                ProjectOperationRow.project_id == project_id,
+                ProjectOperationRow.status.in_(OPEN_OPERATION_STATUSES),
+                ProjectOperationRow.resource["environmentId"].as_string() == row.id,
+            )
+        )
+    )
+    impacts = [
+        _impact(resource, "ENVIRONMENT_RECORDS", f"记录关联 {len(linked)} 条"),
+        _impact(resource, "AUTOMATION_FIXED_CHOICE", f"自动化固定选择 {len(fixed)} 个"),
+        _impact(
+            resource,
+            "REFERENCED_RESOURCES_KEPT",
+            "历史任务、Profile、记录内容与其它项目资源保留",
+        ),
+    ]
+    blockers = [
+        _blocker(
+            "ENVIRONMENT_BUSY",
+            resource,
+            state,
+            "环境现场仍在使用或待清理",
+        )
+        for _instance_id, state in instances
+        if state not in {"closed", "cleaned"}
+    ]
+    blockers.extend(
+        _blocker(
+            "ENVIRONMENT_OPERATION_ACTIVE",
+            resource,
+            kind,
+            "环境操作尚未结束",
+            operation_id=operation_id,
+        )
+        for operation_id, kind in pending
+    )
+    return {"impacts": impacts, "blockers": blockers}
+
+
+def _impact(resource: dict[str, Any], code: str, message: str) -> dict[str, Any]:
+    return {"code": code, "resource": resource, "message": message, "blocking": False}
+
+
+def _blocker(
+    code: str,
+    resource: dict[str, Any],
+    state: str,
+    message: str,
+    *,
+    operation_id: str | None = None,
+) -> dict[str, Any]:
+    blocker = {"code": code, "resource": resource, "state": state, "message": message}
+    if operation_id is not None:
+        blocker["operationId"] = operation_id
+    return blocker
+
+
+def _digest(value: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()
+    ).hexdigest()
+
+
+def _aware(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value

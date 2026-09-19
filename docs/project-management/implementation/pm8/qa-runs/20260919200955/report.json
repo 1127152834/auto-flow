@@ -1,0 +1,445 @@
+{
+  "status": "passed",
+  "scenario": "PM8-A management-side lifecycle, restart reconciliation and resource protection",
+  "scope": "管理侧通过，真实执行核心接入待验收",
+  "boundary": {
+    "executor": "isolatedQaExecutor",
+    "browser": "notExecuted",
+    "studio": "notExecuted"
+  },
+  "steps": [
+    "E2E-1 界面创建项目、数据表、记录与自动化；启动一个真实任务",
+    "E2E-2 活动任务阻断：设置页与归档影响都列出真实阻断项",
+    "E2E-3 归档：影响预检 → 归档 → 写命令 409 → 只读导出可用",
+    "E2E-4 恢复：历史任务状态与出站事实逐条不变",
+    "E2E-5 永久删除：影响过期 412、确认名不符、删除后对象与本地文件消失",
+    "E2E-6 资源保护：被项目引用的全局资源删除被拒并给出引用清单",
+    "E2E-7 响应丢失：按原操作身份找回归档结果，不产生第二条事实"
+  ],
+  "visualReview": "pending",
+  "injected": [
+    {
+      "injected": true,
+      "kind": "executor-pause",
+      "beforeStep": "create_record:account",
+      "at": "2026-09-19T20:10:16.718Z"
+    },
+    {
+      "injected": true,
+      "kind": "executor-resume",
+      "released": true,
+      "at": "2026-09-19T20:10:23.367Z"
+    },
+    {
+      "injected": true,
+      "kind": "expire-lifecycle-impact",
+      "expiredImpacts": 8,
+      "at": "2026-09-19T20:10:36.843Z"
+    },
+    {
+      "injected": true,
+      "kind": "lifecycle-response-loss",
+      "at": "2026-09-19T20:10:43.294Z"
+    }
+  ],
+  "gitHead": "28ab6f5162b78c5b3b5397019c5f5bc6a3b021c8",
+  "sourceSha256": "d92004ceb0e0fad7bd2a7ca0fe33bf16cefedc69c013d24cc93a1da2386c85a7",
+  "platform": "darwin",
+  "arch": "arm64",
+  "runId": "20260919200955",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm8-qa-20260919200955-B24ZAJ",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm8-qa-20260919200955-B24ZAJ/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955",
+  "checkpoints": [
+    "界面创建项目；只读 GET 找回同一真实项目。",
+    "界面创建三张表、必要字段、一条人员记录与一条未设置业务状态的邮箱；邮箱表带待使用/已使用两个状态；账号表为空。",
+    "界面创建自动化，绑定一个真实数据输入与浏览器资源。",
+    "E2E-1 界面启动 1 个真实任务并保持运行：批次 8c68e4fc-cc9c-4a9d-b1d6-d59caed15816、任务 79a939b6-b8bd-4936-b727-8867305a771d。",
+    "E2E-2 设置页退出/切换工作区阻断列出项目侧真实阻断：BATCH_ACTIVE、TASK_ACTIVE。",
+    "E2E-2 归档影响预检展示同一组真实阻断，且预检未改变任何状态。",
+    "E2E-2 恢复执行后批次 completed、任务 succeeded，阻断随真实事实消失。",
+    "E2E-3 归档命令被接受并在无 HTTP 请求维持下收敛为 archived。",
+    "E2E-3 归档后写命令 409 LIFECYCLE_CONFLICT，只读查询仍返回 3 张表。",
+    "E2E-3 归档项目只读导出成功：人员.xlsx（4859 字节）。",
+    "E2E-4 恢复后 1 条历史任务事实逐字不变，归档/恢复各一条操作记录，导出未被重放。",
+    "E2E-6 被引用的浏览器配置删除被拒：接口 409 与真实界面引用清单都命名 1 条引用（项目 + 自动化）。",
+    "E2E-5 影响确认过期后删除被拒 412，界面要求重新核对且未产生删除事实。",
+    "E2E-5 确认名不符时界面禁用提交，直连接口同样拒绝 422。",
+    "E2E-5 永久删除完成：A 的数据表行归零、项目行保留为 deleted 墓碑且对外读取 404，B 项目与全局浏览器配置保留。",
+    "E2E-7 响应丢失后按原操作身份找回同一条归档事实（状态 succeeded，共 1 条）。"
+  ],
+  "screenshots": [
+    {
+      "name": "01-runs-batch-running",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/01-runs-batch-running.png",
+      "reference": "03-runs/004-batch-detail-approved-459f25.png",
+      "route": "#/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/runs/batches/8c68e4fc-cc9c-4a9d-b1d6-d59caed15816",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "09e89ba5a7e6698015d8e110c98cd009e4f61790eaf45086c6a2075db150addd",
+      "visualReview": "pending"
+    },
+    {
+      "name": "02-settings-blockers",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/02-settings-blockers.png",
+      "route": "#/settings",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1428,
+      "sha256": "2471ca5cb61c8cae79c3b0cc8d6e4d1be82dc70609954c2a87630e364b26e947",
+      "visualReview": "pending"
+    },
+    {
+      "name": "03-archive-blocked",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/03-archive-blocked.png",
+      "reference": "05-data/015-delete-table-blocked-2b8a64.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "ab48ebb54b5ff83e626ee6368c5800d92b31f63ca7585d2e18fc0a6a078cda77",
+      "visualReview": "pending"
+    },
+    {
+      "name": "04-archive-confirm",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/04-archive-confirm.png",
+      "reference": "02-automation/004-delete-confirm-54c904.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "4acadd0982b2378b686f9829c69f9e2854c220e38e664c33b76a5956b09f7be3",
+      "visualReview": "pending"
+    },
+    {
+      "name": "05-archived-readonly",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/05-archived-readonly.png",
+      "reference": "02-automation/010-archived-readonly-46a6a4.png",
+      "route": "#/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/data/c0922ec6-b5b8-4e6c-a405-d2fa8921609f/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "0d74d5bd4d73c7ba93b3283fb65c89d7f790f719f0fd72ea0fb6ab44decfb94c",
+      "visualReview": "pending"
+    },
+    {
+      "name": "06-export-dialog",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/06-export-dialog.png",
+      "route": "#/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/data/c0922ec6-b5b8-4e6c-a405-d2fa8921609f/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "f7f81046f68ec2a1c3d5a43584bf3f47f6e8052c4a715adc72e5ab4c2fe937d5",
+      "visualReview": "pending"
+    },
+    {
+      "name": "07-resource-referenced",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/07-resource-referenced.png",
+      "reference": "05-data/015-delete-table-blocked-2b8a64.png",
+      "route": "#/profiles",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "0848b8cec557717a25e5dc1fe9027c7e27538e373556bacff4b43f2bce991fe8",
+      "visualReview": "pending"
+    },
+    {
+      "name": "08-delete-stale-impact",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/08-delete-stale-impact.png",
+      "reference": "05-data/015-delete-table-blocked-2b8a64.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "e1b5ddddc850376a79bb911fed69751db6a0db0aad7648856f1f595d9af9967a",
+      "visualReview": "pending"
+    },
+    {
+      "name": "09-delete-name-guard",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/09-delete-name-guard.png",
+      "reference": "02-automation/004-delete-confirm-54c904.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "f85751991ea7bf6c8a16e0e7ce4bb00b8ac80c33209e4559d1e1098c04c6118d",
+      "visualReview": "pending"
+    },
+    {
+      "name": "10-deleted-project-kept-neighbour",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/10-deleted-project-kept-neighbour.png",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "90298c887940a318fdb32999664cedcdd8961e6e246865243c8448530c82b643",
+      "visualReview": "pending"
+    },
+    {
+      "name": "11-archive-response-loss",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8/docs/project-management/implementation/pm8/qa-runs/20260919200955/11-archive-response-loss.png",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "scrollWidth": 1440,
+      "sha256": "de6a16feb73f7b2dae4325d6f9c86d7b9efea5d555bd9de5d9fea956971d7a04",
+      "visualReview": "pending"
+    }
+  ],
+  "network": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects",
+      "status": 201,
+      "body": "{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"name\":\"PM8 生命周期验收\",\"description\":\"PM8 生命周期：归档、只读导出、恢复与永久删除\",\"managementRevision\":1,\"lifecycleState\":\"active\",\"defaultResources\":{\"profileId\":null,\"proxy\":{\"mode\":\"sourceDefault\"},\"modelProviderId\":null},\"createdAt\":\"2026-09-19T20:09:59.252659Z\",\"updatedAt\":\"2026-09-19T20:09:59.252659Z\",\"lastOpenedAt\":null}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables",
+      "status": 201,
+      "body": "{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c0922ec6-b5b8-4e6c-a405-d2fa8921609f\",\"name\":\"人员\",\"description\":\"人员用于 PM8 生命周期验收\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"3591b26d-fca0-4d32-a375-bff908fc7374\",\"tableRevision\":1,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":0,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-19T20:10:00.029816Z\",\"updatedAt\":\"2026-09-19T20:10:00.029816Z\"}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/c0922ec6-b5b8-4e6c-a405-d2fa8921609f/schema/preview",
+      "status": 200,
+      "body": "{\"impactRevision\":1,\"calculatedAt\":\"2026-09-19T20:10:01.044160+00:00\",\"expiresAt\":\"2026-09-19T20:20:01.044160+00:00\",\"affectedRecords\":0,\"backfillBytes\":0,\"blockers\":[],\"warnings\":[],\"referenceAvailability\":{\"automations\":\"notImplemented\",\"sync\":\"notImplemented\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/c0922ec6-b5b8-4e6c-a405-d2fa8921609f/schema",
+      "status": 200,
+      "body": "{\"action\":\"saveSchema\",\"datasetGeneration\":\"3591b26d-fca0-4d32-a375-bff908fc7374\",\"tableRevision\":2,\"fields\":[{\"key\":\"name\",\"name\":\"姓名\",\"type\":\"string\",\"required\":true,\"validation\":{},\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c0922ec6-b5b8-4e6c-a405-d2fa8921609f\",\"datasetGeneration\":\"3591b26d-fca0-4d32-a375-bff908fc7374\",\"fieldId\":\"c5574753-38a4-4031-a7bd-bdb2f67e162d\"},\"writable\":true,\"formula\":false,\"fieldRevision\":1}],\"createdFieldIds\":{\"2778d307-2f35-48aa-b654-ff6131ab761c\":\"c5574753-38a4-4031-a7bd-bdb2f67e162d\"},\"backfilledRecords\":0}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/c0922ec6-b5b8-4e6c-a405-d2fa8921609f/records/batch",
+      "status": 201,
+      "body": "{\"records\":[{\"clientRowId\":\"0f864b30-d524-42f1-878f-9bb459f7bf8b\",\"record\":{\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c0922ec6-b5b8-4e6c-a405-d2fa8921609f\",\"datasetGeneration\":\"3591b26d-fca0-4d32-a375-bff908fc7374\",\"recordKey\":{\"type\":\"uuid\",\"value\":\"2fcdaf0f-1841-4f91-bf00-a8dc3bae1ac1\"}},\"values\":[{\"fieldId\":\"c5574753-38a4-4031-a7bd-bdb2f67e162d\",\"value\":\"张三\",\"source\":\"local\",\"readable\":true}],\"recordSlots\":[],\"statusId\":null,\"currentEnvironmentId\":null,\"contentRevision\":1,\"statusRevision\":1,\"linkRevision\":1,\"deleted\":false,\"createdAt\":\"2026-09-19T20:10:02.299071Z\",\"updatedAt\":\"2026-09-19T20:10:02.299071Z\"}}],\"operation\":{\"operationId\":\"b3e71d49-2d81-4b2c-a592-1e4c351b4b68\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"fe0eba13-48ef-47b9-aca5-208d32cef221\",\"kind\":\"createRecords\",\"status\":\"succeeded\",\"statusRevision\":2,\"resource\":{\"type\":\"table\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c0922ec6-b5b8-4e6c-a405-d2fa8921609f\"},\"result\":{\"records\":[{\"clientRowId\":\"0f864b30-d524-42f1-878f-9bb459f7bf8b\",\"record\":{\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c0922ec6-b5b8-4e6c-a405-d2fa8921609f\",\"datasetGeneration\":\"3591b26d-fca0-4d32-a375-bff908fc7374\",\"recordKey\":{\"type\":\"uuid\",\"value\":\"2fcdaf0f-1841-4f91-bf00-a8dc3bae1ac1\"}},\"values\":[{\"fieldId\":\"c5574753-38a4-4031-a7bd-bdb2f67e162d\",\"value\":\"张三\",\"source\":\"local\",\"readable\":true}],\"recordSlots\":[],\"statusId\":null,\"currentEnvironmentId\":null,\"contentRevision\":1,\"statusRevision\":1,\"linkRevision\":1,\"deleted\":false,\"createdAt\":\"2026-09-19T20:10:02.299071Z\",\"updatedAt\":\"2026-09-19T20:10:02.299071Z\"}}]},\"error\":null,\"createdAt\":\"2026-09-19T20:10:02.296739Z\",\"updatedAt\":\"2026-09-19T20:10:02.300903Z\",\"completedAt\":\"2026-09-19T20:10:02.300903Z\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables",
+      "status": 201,
+      "body": "{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"2f8768c6-a865-41d5-9e44-1d4210561b0f\",\"name\":\"邮箱\",\"description\":\"邮箱用于 PM8 生命周期验收\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"6353f991-e830-4e06-b35d-45e5b80200d3\",\"tableRevision\":1,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":0,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-19T20:10:02.979287Z\",\"updatedAt\":\"2026-09-19T20:10:02.979287Z\"}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/2f8768c6-a865-41d5-9e44-1d4210561b0f/schema/preview",
+      "status": 200,
+      "body": "{\"impactRevision\":2,\"calculatedAt\":\"2026-09-19T20:10:03.981725+00:00\",\"expiresAt\":\"2026-09-19T20:20:03.981725+00:00\",\"affectedRecords\":0,\"backfillBytes\":0,\"blockers\":[],\"warnings\":[],\"referenceAvailability\":{\"automations\":\"notImplemented\",\"sync\":\"notImplemented\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/2f8768c6-a865-41d5-9e44-1d4210561b0f/schema",
+      "status": 200,
+      "body": "{\"action\":\"saveSchema\",\"datasetGeneration\":\"6353f991-e830-4e06-b35d-45e5b80200d3\",\"tableRevision\":2,\"fields\":[{\"key\":\"email\",\"name\":\"邮箱地址\",\"type\":\"string\",\"required\":true,\"validation\":{},\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"2f8768c6-a865-41d5-9e44-1d4210561b0f\",\"datasetGeneration\":\"6353f991-e830-4e06-b35d-45e5b80200d3\",\"fieldId\":\"dd766758-ed6d-4335-8fb2-9ffaa052be68\"},\"writable\":true,\"formula\":false,\"fieldRevision\":1}],\"createdFieldIds\":{\"dbc26347-ac01-4e40-a9e3-0f25d87cac3f\":\"dd766758-ed6d-4335-8fb2-9ffaa052be68\"},\"backfilledRecords\":0}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/2f8768c6-a865-41d5-9e44-1d4210561b0f/statuses",
+      "status": 201,
+      "body": "{\"statusId\":\"53c7e61e-0b82-4a1a-b259-c60ac8a6d375\",\"name\":\"待使用\",\"color\":\"#a86f4c\",\"order\":0,\"statusRevision\":1}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/2f8768c6-a865-41d5-9e44-1d4210561b0f/statuses",
+      "status": 201,
+      "body": "{\"statusId\":\"eb45e193-a598-43af-bb60-11d93b67b5d2\",\"name\":\"已使用\",\"color\":\"#a86f4c\",\"order\":0,\"statusRevision\":1}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/2f8768c6-a865-41d5-9e44-1d4210561b0f/records/batch",
+      "status": 201,
+      "body": "{\"records\":[{\"clientRowId\":\"cb052a86-5df2-4b3b-8cad-a21d707764a6\",\"record\":{\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"2f8768c6-a865-41d5-9e44-1d4210561b0f\",\"datasetGeneration\":\"6353f991-e830-4e06-b35d-45e5b80200d3\",\"recordKey\":{\"type\":\"uuid\",\"value\":\"958296d3-5e88-4538-a850-30bc79cca82f\"}},\"values\":[{\"fieldId\":\"dd766758-ed6d-4335-8fb2-9ffaa052be68\",\"value\":\"zhangsan+1@example.test\",\"source\":\"local\",\"readable\":true}],\"recordSlots\":[],\"statusId\":null,\"currentEnvironmentId\":null,\"contentRevision\":1,\"statusRevision\":1,\"linkRevision\":1,\"deleted\":false,\"createdAt\":\"2026-09-19T20:10:08.738657Z\",\"updatedAt\":\"2026-09-19T20:10:08.738657Z\"}}],\"operation\":{\"operationId\":\"2715b59d-a01a-4e55-8983-9c5b817f33e6\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"44f04cb3-5f19-4fd8-99dd-a63c43618be0\",\"kind\":\"createRecords\",\"status\":\"succeeded\",\"statusRevision\":2,\"resource\":{\"type\":\"table\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"2f8768c6-a865-41d5-9e44-1d4210561b0f\"},\"result\":{\"records\":[{\"clientRowId\":\"cb052a86-5df2-4b3b-8cad-a21d707764a6\",\"record\":{\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"2f8768c6-a865-41d5-9e44-1d4210561b0f\",\"datasetGeneration\":\"6353f991-e830-4e06-b35d-45e5b80200d3\",\"recordKey\":{\"type\":\"uuid\",\"value\":\"958296d3-5e88-4538-a850-30bc79cca82f\"}},\"values\":[{\"fieldId\":\"dd766758-ed6d-4335-8fb2-9ffaa052be68\",\"value\":\"zhangsan+1@example.test\",\"source\":\"local\",\"readable\":true}],\"recordSlots\":[],\"statusId\":null,\"currentEnvironmentId\":null,\"contentRevision\":1,\"statusRevision\":1,\"linkRevision\":1,\"deleted\":false,\"createdAt\":\"2026-09-19T20:10:08.738657Z\",\"updatedAt\":\"2026-09-19T20:10:08.738657Z\"}}]},\"error\":null,\"createdAt\":\"2026-09-19T20:10:08.735523Z\",\"updatedAt\":\"2026-09-19T20:10:08.739147Z\",\"completedAt\":\"2026-09-19T20:10:08.739147Z\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables",
+      "status": 201,
+      "body": "{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c5dc2cfb-7e51-4a5d-bf7c-ea8ee4e44a81\",\"name\":\"账号\",\"description\":\"账号用于 PM8 生命周期验收\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"837daeea-7e53-4f7a-a8b2-94722e6cff55\",\"tableRevision\":1,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":0,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-19T20:10:09.408854Z\",\"updatedAt\":\"2026-09-19T20:10:09.408854Z\"}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/c5dc2cfb-7e51-4a5d-bf7c-ea8ee4e44a81/schema/preview",
+      "status": 200,
+      "body": "{\"impactRevision\":3,\"calculatedAt\":\"2026-09-19T20:10:11.755335+00:00\",\"expiresAt\":\"2026-09-19T20:20:11.755335+00:00\",\"affectedRecords\":0,\"backfillBytes\":0,\"blockers\":[],\"warnings\":[],\"referenceAvailability\":{\"automations\":\"notImplemented\",\"sync\":\"notImplemented\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/c5dc2cfb-7e51-4a5d-bf7c-ea8ee4e44a81/schema",
+      "status": 200,
+      "body": "{\"action\":\"saveSchema\",\"datasetGeneration\":\"837daeea-7e53-4f7a-a8b2-94722e6cff55\",\"tableRevision\":2,\"fields\":[{\"key\":\"person\",\"name\":\"人员\",\"type\":\"string\",\"required\":true,\"validation\":{},\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c5dc2cfb-7e51-4a5d-bf7c-ea8ee4e44a81\",\"datasetGeneration\":\"837daeea-7e53-4f7a-a8b2-94722e6cff55\",\"fieldId\":\"516f68bf-2cf8-42c1-a159-401754ed7f43\"},\"writable\":true,\"formula\":false,\"fieldRevision\":1},{\"key\":\"email\",\"name\":\"邮箱\",\"type\":\"string\",\"required\":true,\"validation\":{},\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c5dc2cfb-7e51-4a5d-bf7c-ea8ee4e44a81\",\"datasetGeneration\":\"837daeea-7e53-4f7a-a8b2-94722e6cff55\",\"fieldId\":\"7a607472-6bd3-4964-b0b3-fd6f4f742d72\"},\"writable\":true,\"formula\":false,\"fieldRevision\":1},{\"key\":\"result\",\"name\":\"网页结果\",\"type\":\"string\",\"required\":true,\"validation\":{},\"ref\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c5dc2cfb-7e51-4a5d-bf7c-ea8ee4e44a81\",\"datasetGeneration\":\"837daeea-7e53-4f7a-a8b2-94722e6cff55\",\"fieldId\":\"b48b8d8d-dfd7-40ed-8216-d81472144188\"},\"writable\":true,\"formula\":false,\"fieldRevision\":1}],\"createdFieldIds\":{\"8a77839f-3142-4aa7-a101-acdab9ee1bd9\":\"516f68bf-2cf8-42c1-a159-401754ed7f43\",\"6f472ea6-4ec2-42b7-bf13-e4d08169f3cb\":\"7a607472-6bd3-4964-b0b3-fd6f4f742d72\",\"7fbfe946-13d7-4515-8608-a865f460d480\":\"b48b8d8d-dfd7-40ed-8216-d81472144188\"},\"backfilledRecords\":0}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/automations",
+      "status": 201,
+      "body": "{\"name\":\"PM8 生命周期自动化\",\"description\":\"PM8 生命周期验收：真实任务阻断、归档、只读导出与恢复\",\"workflowId\":\"17dd5146-2b89-4653-9150-9549d744f4d3\",\"inputPlan\":{\"inputs\":[{\"inputId\":\"fe8cf5ed-0d83-4628-8fe5-579c7b188b27\",\"alias\":\"人员输入\",\"tableId\":\"c0922ec6-b5b8-4e6c-a405-d2fa8921609f\",\"datasetGeneration\":\"3591b26d-fca0-4d32-a375-bff908fc7374\",\"mode\":\"independent\",\"required\":true,\"fieldBindings\":[],\"filter\":{\"type\":\"all\",\"items\":[]},\"orderBy\":[]},{\"inputId\":\"e106ab68-c75f-42c2-906c-2ca66885e484\",\"alias\":\"邮箱输入\",\"tableId\":\"2f8768c6-a865-41d5-9e44-1d4210561b0f\",\"datasetGeneration\":\"6353f991-e830-4e06-b35d-45e5b80200d3\",\"mode\":\"independent\",\"required\":true,\"fieldBindings\":[],\"filter\":{\"type\":\"all\",\"items\":[{\"type\":\"status\",\"operator\":\"isNull\"}]},\"orderBy\":[]}]},\"parameterSchema\":[],\"environmentPolicy\":{\"source\":\"newFromProfile\",\"profileId\":\"22fe35ba-c408-416b-8aae-e35ec068de2b\"},\"runPolicy\":{\"maxTasks\":1,\"concurrency\":1,\"maxLiveInstances\":1,\"continueAfterFailure\":false,\"automaticExecutionTimeoutSeconds\":900,\"manualDeadlineSeconds\":900},\"automationId\":\"182a1b4f-a792-4b23-8beb-cdf09bae8539\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"managementRevision\":1,\"capabilityRequirements\":[],\"createdAt\":\"2026-09-19T20:10:16.510635Z\",\"updatedAt\":\"2026-09-19T20:10:16.510635Z\"}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/automations/182a1b4f-a792-4b23-8beb-cdf09bae8539/input-preview",
+      "status": 200,
+      "body": "{\"runnable\":true,\"selectionStatus\":\"ready\",\"evaluatedCandidateBindings\":2,\"inputs\":[{\"inputId\":\"fe8cf5ed-0d83-4628-8fe5-579c7b188b27\",\"alias\":\"人员输入\",\"tableDisplay\":\"人员\",\"recordDisplay\":\"uuid · 2fcdaf0f-1841-4f91-bf00-a8dc3bae1ac1\",\"values\":[{\"fieldId\":\"c5574753-38a4-4031-a7bd-bdb2f67e162d\",\"fieldName\":\"姓名\",\"value\":\"张三\"}],\"outcome\":\"ready\",\"required\":true,\"detail\":null,\"scannedCount\":null},{\"inputId\":\"e106ab68-c75f-42c2-906c-2ca66885e484\",\"alias\":\"邮箱输入\",\"tableDisplay\":\"邮箱\",\"recordDisplay\":\"uuid · 958296d3-5e88-4538-a850-30bc79cca82f\",\"values\":[{\"fieldId\":\"dd766758-ed6d-4335-8fb2-9ffaa052be68\",\"fieldName\":\"邮箱地址\",\"value\":\"zhangsan+1@example.test\"}],\"outcome\":\"ready\",\"required\":true,\"detail\":null,\"scannedCount\":null}]}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/automations/182a1b4f-a792-4b23-8beb-cdf09bae8539/batches",
+      "status": 202,
+      "body": "{\"operation\":{\"operationId\":\"dffe6f15-2924-4eec-b16a-bfbe5631ee95\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"84aedfc6-9162-4ade-b723-fde83b444ead\",\"kind\":\"startBatch\",\"status\":\"succeeded\",\"statusRevision\":2,\"resource\":{\"type\":\"batch\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"batchId\":\"8c68e4fc-cc9c-4a9d-b1d6-d59caed15816\"},\"result\":{\"batch\":{\"batchId\":\"8c68e4fc-cc9c-4a9d-b1d6-d59caed15816\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"automationId\":\"182a1b4f-a792-4b23-8beb-cdf09bae8539\",\"automationName\":\"PM8 生命周期自动化\",\"startOperationId\":\"dffe6f15-2924-4eec-b16a-bfbe5631ee95\",\"status\":\"accepted\",\"statusRevision\":1,\"managementRevision\":1,\"requestedCount\":1,\"createdTaskCount\":0,\"activeTaskCount\":0,\"claimGateState\":\"open\",\"selectionOutcome\":{\"status\":\"pending\"},\"createdAt\":\"2026-09-19T20:10:17.278706+00:00\"}},\"error\":null,\"createdAt\":\"2026-09-19T20:10:17.278706Z\",\"updatedAt\":\"2026-09-19T20:10:17.278706Z\",\"completedAt\":\"2026-09-19T20:10:17.278706Z\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/archive",
+      "status": 202,
+      "body": "{\"operation\":{\"operationId\":\"16f1b00d-0667-492a-8680-241ee52369e4\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"caec45e1-2678-4c53-9604-3ef414e41922\",\"kind\":\"archiveProject\",\"status\":\"running\",\"statusRevision\":1,\"resource\":{\"type\":\"project\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\"},\"result\":null,\"error\":null,\"createdAt\":\"2026-09-19T20:10:25.273159Z\",\"updatedAt\":\"2026-09-19T20:10:25.273159Z\",\"completedAt\":null}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/open",
+      "status": 200,
+      "body": "{\"project\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"name\":\"PM8 生命周期验收\",\"description\":\"PM8 生命周期：归档、只读导出、恢复与永久删除\",\"managementRevision\":1,\"lifecycleState\":\"archived\",\"defaultResources\":{\"profileId\":null,\"proxy\":{\"mode\":\"sourceDefault\"},\"modelProviderId\":null},\"createdAt\":\"2026-09-19T20:09:59.252659Z\",\"updatedAt\":\"2026-09-19T20:10:25.280984Z\",\"lastOpenedAt\":\"2026-09-19T20:10:26.259265Z\"},\"lastOpenedAt\":\"2026-09-19T20:10:26.259265Z\"}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/tables/c0922ec6-b5b8-4e6c-a405-d2fa8921609f/exports/xlsx",
+      "status": 202,
+      "body": "{\"operation\":{\"operationId\":\"bbd90c79-c556-4c82-a356-e58560026b09\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"d3219e39-95eb-4d08-84df-10488495bfb4\",\"kind\":\"exportXlsx\",\"status\":\"accepted\",\"statusRevision\":1,\"resource\":{\"type\":\"table\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"tableId\":\"c0922ec6-b5b8-4e6c-a405-d2fa8921609f\"},\"result\":null,\"error\":null,\"createdAt\":\"2026-09-19T20:10:30.440648Z\",\"updatedAt\":\"2026-09-19T20:10:30.440648Z\",\"completedAt\":null}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/restore",
+      "status": 200,
+      "body": "{\"operation\":{\"operationId\":\"0d04d074-4c1c-4318-87ee-8138c35ebc7a\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"c364df1c-5191-45e1-988d-b2a96ab92602\",\"kind\":\"restoreProject\",\"status\":\"succeeded\",\"statusRevision\":2,\"resource\":{\"type\":\"project\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\"},\"result\":{\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"name\":\"PM8 生命周期验收\",\"description\":\"PM8 生命周期：归档、只读导出、恢复与永久删除\",\"managementRevision\":1,\"lifecycleState\":\"active\",\"defaultResources\":{\"profileId\":null,\"proxy\":{\"mode\":\"sourceDefault\"},\"modelProviderId\":null},\"createdAt\":\"2026-09-19T20:09:59.252659Z\",\"updatedAt\":\"2026-09-19T20:10:31.069569Z\",\"lastOpenedAt\":\"2026-09-19T20:10:26.259265Z\"},\"error\":null,\"createdAt\":\"2026-09-19T20:10:31.067801Z\",\"updatedAt\":\"2026-09-19T20:10:31.069615Z\",\"completedAt\":\"2026-09-19T20:10:31.069615Z\"}}"
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:50085/api/v1/profiles/22fe35ba-c408-416b-8aae-e35ec068de2b",
+      "status": 409,
+      "body": "{\"error\":{\"code\":\"RESOURCE_REFERENCED\",\"message\":\"资源仍被项目或自动化引用，请先处理引用\",\"details\":{\"resourceType\":\"profile\",\"resourceId\":\"22fe35ba-c408-416b-8aae-e35ec068de2b\",\"references\":[{\"kind\":\"automation\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"projectName\":\"PM8 生命周期验收\",\"automationId\":\"182a1b4f-a792-4b23-8beb-cdf09bae8539\",\"automationName\":\"PM8 生命周期自动化\",\"path\":[\"environmentPolicy\",\"profileId\"]}],\"domainCode\":\"resource_referenced\",\"retryable\":false},\"requestId\":\"c1368b87-5d2d-432c-abfc-77b8d49ca0d5\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects",
+      "status": 201,
+      "body": "{\"projectId\":\"6d8ba773-1eba-4173-ac4b-e628d90edb14\",\"name\":\"PM8 保留项目\",\"description\":\"永久删除 A 之后必须保留的项目与全局资源\",\"managementRevision\":1,\"lifecycleState\":\"active\",\"defaultResources\":{\"profileId\":null,\"proxy\":{\"mode\":\"sourceDefault\"},\"modelProviderId\":null},\"createdAt\":\"2026-09-19T20:10:34.101141Z\",\"updatedAt\":\"2026-09-19T20:10:34.101141Z\",\"lastOpenedAt\":null}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed/archive",
+      "status": 202,
+      "body": "{\"operation\":{\"operationId\":\"c64c4e44-63e6-4572-846b-7a23680fed53\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"18a7955d-8cc4-46f3-94dc-a0064aa041c4\",\"kind\":\"archiveProject\",\"status\":\"running\",\"statusRevision\":1,\"resource\":{\"type\":\"project\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\"},\"result\":null,\"error\":null,\"createdAt\":\"2026-09-19T20:10:35.500237Z\",\"updatedAt\":\"2026-09-19T20:10:35.500237Z\",\"completedAt\":null}}"
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed",
+      "status": 412,
+      "body": "{\"error\":{\"code\":\"PRECONDITION_FAILED\",\"message\":\"重新执行生命周期影响检查后再提交\",\"details\":{\"blockers\":[],\"retryable\":false,\"domainCode\":\"precondition_failed\"},\"requestId\":\"879cb856-1445-49ca-a868-ddc4d5b12fb0\"}}"
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:50085/api/v1/projects/a2b35a55-b245-42cf-bbf7-c23827b8e5ed",
+      "status": 202,
+      "body": "{\"operation\":{\"operationId\":\"611f3b30-abcc-4e0e-8d4e-4884a77e72b4\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\",\"idempotencyKey\":\"8cae9dff-ab88-4765-84b7-d69b847e5f0a\",\"kind\":\"deleteProject\",\"status\":\"running\",\"statusRevision\":1,\"resource\":{\"type\":\"project\",\"projectId\":\"a2b35a55-b245-42cf-bbf7-c23827b8e5ed\"},\"result\":null,\"error\":null,\"createdAt\":\"2026-09-19T20:10:40.642688Z\",\"updatedAt\":\"2026-09-19T20:10:40.642688Z\",\"completedAt\":null}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/6d8ba773-1eba-4173-ac4b-e628d90edb14/archive",
+      "status": 202,
+      "body": ""
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:50085/api/v1/projects/6d8ba773-1eba-4173-ac4b-e628d90edb14/archive",
+      "status": 200,
+      "body": "{\"operation\":{\"operationId\":\"ce64b0e5-1357-4b67-b785-18ff3921bb38\",\"projectId\":\"6d8ba773-1eba-4173-ac4b-e628d90edb14\",\"idempotencyKey\":\"b897230c-3c48-4216-8d18-e8b82c6a4d48\",\"kind\":\"archiveProject\",\"status\":\"succeeded\",\"statusRevision\":2,\"resource\":{\"type\":\"project\",\"projectId\":\"6d8ba773-1eba-4173-ac4b-e628d90edb14\"},\"result\":{\"projectId\":\"6d8ba773-1eba-4173-ac4b-e628d90edb14\",\"name\":\"PM8 保留项目\",\"description\":\"永久删除 A 之后必须保留的项目与全局资源\",\"managementRevision\":1,\"lifecycleState\":\"archived\",\"defaultResources\":{\"profileId\":null,\"proxy\":{\"mode\":\"sourceDefault\"},\"modelProviderId\":null},\"createdAt\":\"2026-09-19T20:10:34.101141Z\",\"updatedAt\":\"2026-09-19T20:10:43.656051Z\",\"lastOpenedAt\":null},\"error\":null,\"createdAt\":\"2026-09-19T20:10:43.644116Z\",\"updatedAt\":\"2026-09-19T20:10:43.656051Z\",\"completedAt\":\"2026-09-19T20:10:43.656051Z\"}}"
+    }
+  ],
+  "facts": {
+    "projectId": "a2b35a55-b245-42cf-bbf7-c23827b8e5ed",
+    "keptProjectId": "6d8ba773-1eba-4173-ac4b-e628d90edb14",
+    "automationId": "182a1b4f-a792-4b23-8beb-cdf09bae8539",
+    "batchId": "8c68e4fc-cc9c-4a9d-b1d6-d59caed15816",
+    "batchTerminal": "completed",
+    "taskTerminal": "succeeded",
+    "archiveBlockers": [
+      {
+        "code": "BATCH_ACTIVE",
+        "state": "running"
+      },
+      {
+        "code": "TASK_ACTIVE",
+        "state": "running"
+      }
+    ],
+    "archivedExport": {
+      "name": "人员.xlsx",
+      "size": 4859
+    },
+    "tasksUnchanged": 1,
+    "archiveOperations": 1,
+    "restoreOperations": 1,
+    "referencedProfileRefusals": [
+      {
+        "kind": "automation",
+        "projectId": "a2b35a55-b245-42cf-bbf7-c23827b8e5ed",
+        "projectName": "PM8 生命周期验收",
+        "automationId": "182a1b4f-a792-4b23-8beb-cdf09bae8539",
+        "automationName": "PM8 生命周期自动化",
+        "path": [
+          "environmentPolicy",
+          "profileId"
+        ]
+      }
+    ],
+    "remainingProjectId": "6d8ba773-1eba-4173-ac4b-e628d90edb14",
+    "note": "项目、表、字段、记录与自动化均由界面创建；浏览器资源与工作流文档是明确标注的测试夹具；执行核心为隔离 QA 执行器。"
+  },
+  "excluded": [
+    "真实执行核心",
+    "Studio demo",
+    "真实浏览器执行",
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果",
+    "双工作区切换（见手测 M-08）"
+  ],
+  "createdAt": "2026-09-19T20:10:45.763Z"
+}

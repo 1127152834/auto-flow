@@ -109,36 +109,51 @@ class EnvironmentService:
         return environment, instance, self.environments.linked_record_count(project_id, environment_id)
 
     def impact(self, project_id: str, environment_id: str, action: str):
-        if action != "delete":
+        self._project(project_id)
+        return self.environments.delete_impact(project_id, environment_id, action)
+
+    def delete(self, project_id: str, environment_id: str, key: str, payload: dict[str, Any]):
+        self._writable(project_id)
+        impact_revision = _positive_int(payload, "impactRevision")
+        metadata_revision = _positive_int(payload, "expectedMetadataRevision")
+        content_generation = _positive_int(payload, "expectedContentGeneration")
+        if set(payload) != {
+            "impactRevision",
+            "expectedMetadataRevision",
+            "expectedContentGeneration",
+        }:
             raise environment_error(
                 "VALIDATION_ERROR",
-                "Unsupported impact action",
+                "Unexpected field",
                 422,
-                {"fields": {"action": "Only delete impact is available"}},
+                {"fields": {"form": "Unexpected field"}},
             )
-        environment, instance = self.environments.get_with_instance(project_id, environment_id)
-        links = self.environments.list_linked_records(project_id, environment_id)
-        blockers = []
-        if instance is not None and instance.state not in {"closed", "cleaned", "cleanup_failed"}:
-            blockers.append(
-                {
-                    "kind": "environment_busy",
-                    "instanceId": instance.instance_id,
-                    "state": instance.state,
-                }
-            )
-        impacts = [{"kind": "record_link", **item} for item in links]
-        impact_revision = (
-            environment.ref.metadata_revision
-            + environment.ref.content_generation * 1000
-            + len(links) * 10
-            + len(blockers)
+        operation = self._command(
+            key,
+            "deleteEnvironment",
+            project_id,
+            environment_id,
+            {
+                "scope": "environment",
+                "projectId": project_id,
+                "environmentId": environment_id,
+                "request": {
+                    "impactRevision": impact_revision,
+                    "expectedMetadataRevision": metadata_revision,
+                    "expectedContentGeneration": content_generation,
+                },
+            },
+            datetime.now(UTC),
         )
-        return {
-            "impactRevision": impact_revision,
-            "impacts": impacts,
-            "blockers": blockers,
-        }
+        result, done = self.environments.delete_environment(
+            project_id,
+            environment_id,
+            operation,
+            impact_revision=impact_revision,
+            expected_metadata_revision=metadata_revision,
+            expected_content_generation=content_generation,
+        )
+        return result, done
 
     def patch(self, project_id: str, environment_id: str, key: str, payload: dict[str, Any]):
         self._writable(project_id)
@@ -646,6 +661,18 @@ class EnvironmentService:
         if project.lifecycle_state != "active":
             raise ProjectError("LIFECYCLE_CONFLICT", "Project cannot be edited", 409)
         return project
+
+
+def _positive_int(payload: dict[str, Any], field: str) -> int:
+    value = payload.get(field)
+    if type(value) is not int or value < 1:
+        raise environment_error(
+            "VALIDATION_ERROR",
+            "Invalid environment delete",
+            422,
+            {"fields": {field: "Must be a positive integer"}},
+        )
+    return value
 
 
 def _operation(key, kind, project_id, environment_id, canonical, now):

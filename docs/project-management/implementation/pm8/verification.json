@@ -1,0 +1,166 @@
+{
+  "date": "2026-09-20",
+  "milestone": "PM8",
+  "branch": "codex/project-management-pm8",
+  "status": "delivered-management-scope-verified-executor-pending",
+  "deliveryStatus": "delivered-management-scope",
+  "verificationStatus": "verifiedForManagementScope",
+  "scope": "管理侧通过，真实执行核心接入待验收",
+  "head": "5e19f19040f8df783ec9bb88f5a452d124630f71",
+  "headNote": "head 是 `git rev-parse HEAD` 复核后的实际提交号（5e19f190，含全部 PM8 源码修复与 QA 资产）。本文件、覆盖表、账本与 .ai 记录在随后的文档提交中落库，不改变 apps/*/src 的源码摘要（仍为 d92004ce…）。",
+  "sourceDigest": "d92004ceb0e0fad7bd2a7ca0fe33bf16cefedc69c013d24cc93a1da2386c85a7",
+  "sourceDigestMethod": "对 apps/backend/src 与 apps/desktop/src 递归取 .py/.ts/.tsx/.css，按路径排序后依次 update('路径' + 文件字节) 再整体 sha256（与 QA 脚本 scripts/qa-project-management-pm8.mjs 的算法一致）",
+  "sourceDigestNote": "该摘要与权威端到端运行 report.json 里的 sourceSha256 完全一致，说明 11 张截图对应的工作树源码就是本次提交的源码，不是事后补拍。",
+  "authoritativeManagementRun": {
+    "result": "docs/project-management/implementation/pm8/qa-runs/20260919200955/report.json",
+    "status": "passed",
+    "scenario": "PM8-A management-side lifecycle, restart reconciliation and resource protection",
+    "scope": "管理侧通过，真实执行核心接入待验收",
+    "evidenceType": "真实 Electron 渲染层点击（CDP 指针输入）+ 应用自启 FastAPI + 隔离 SQLite + 隔离 QA 测试执行器",
+    "capturedGitHead": "28ab6f5162b78c5b3b5397019c5f5bc6a3b021c8",
+    "capturedGitHeadNote": "运行时 HEAD 是 28ab6f51，工作树已包含随后以 5e19f190 提交的源码修复；两者源码摘要相同（d92004ce…），属同一份源码。",
+    "capturedSourceSha256": "d92004ceb0e0fad7bd2a7ca0fe33bf16cefedc69c013d24cc93a1da2386c85a7",
+    "platform": "darwin",
+    "arch": "arm64",
+    "viewport": "1440x1024",
+    "dpr": 1,
+    "checkpoints": 16,
+    "screenshots": 11,
+    "visualReview": "passed（docs/project-management/implementation/pm8/visual-review.md，逐画面自审，最低 85 分）",
+    "boundary": {
+      "executor": "isolatedQaExecutor（apps/backend/tests/qa/pm8_sidecar.py + tests/qa 隔离执行器）",
+      "browser": "notExecuted",
+      "studio": "notExecuted"
+    },
+    "facts": {
+      "lifecycle": "界面创建项目；只读 GET 找回同一真实项目。",
+      "data": "界面创建三张表、必要字段、一条人员记录与一条未设置业务状态的邮箱；邮箱表带待使用/已使用两个状态；账号表为空。",
+      "automation": "界面创建自动化，绑定一个真实数据输入与浏览器资源。",
+      "activeTask": "E2E-1 界面启动 1 个真实任务并保持运行：批次 8c68e4fc-cc9c-4a9d-b1d6-d59caed15816、任务已进入 running。",
+      "blockers": "E2E-2 设置页与归档影响预检都列出真实阻断 BATCH_ACTIVE、TASK_ACTIVE；预检未改变任何状态；任务结束后阻断随真实事实消失（批次 completed、任务 succeeded）。",
+      "archive": "E2E-3 归档命令被接受并在无 HTTP 请求维持下收敛为 archived；归档后写命令返回 409 LIFECYCLE_CONFLICT，只读查询仍返回 3 张表。",
+      "archivedExport": "E2E-3 归档项目只读导出成功：人员.xlsx（4859 字节，PK 魔数确认真实 xlsx 容器）。",
+      "restore": "E2E-4 恢复后历史任务的 taskId/status/statusRevision/updatedAt/startedAt/completedAt 逐字段不变；归档与恢复各只有一条 Operation 事实；导出未被重放。",
+      "resourceProtection": "E2E-6 被项目引用的浏览器配置删除被拒：接口 409 RESOURCE_REFERENCED，真实界面删除对话框同时列出「PM8 生命周期验收 · 自动化「PM8 生命周期自动化」（environmentPolicy.profileId）」，且不提供强制删除。",
+      "deleteGuards": "E2E-5 影响确认过期后删除被拒 412；确认名不符时界面禁用提交且直连接口 422。",
+      "delete": "E2E-5 永久删除完成：A 的项目行保留为 lifecycle_state='deleted' 的墓碑、数据表行归零、对外读取 404；B 项目与全局浏览器配置保留。",
+      "responseLoss": "E2E-7 注入响应丢失后按原操作身份找回同一条归档事实（1 条，状态 succeeded），未产生第二条创建事实。"
+    },
+    "injected": [
+      "executor-pause / executor-resume：在 create_record:account 前暂停隔离执行器，用于制造真实的活动批次与任务阻断；这是测试注入，不是产品故障。",
+      "expire-lifecycle-impact：过期 8 条生命周期影响，用于验证 412 与界面重新核对。",
+      "lifecycle-response-loss：丢弃归档命令的响应，用于验证按原幂等身份找回。"
+    ],
+    "excluded": [
+      "真实执行核心",
+      "Studio demo",
+      "真实浏览器执行",
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果",
+      "双工作区切换（见手测 M-08）"
+    ]
+  },
+  "defectsFoundByThisRun": [
+    "`ProjectOperationView.resource` 判别联合没有 `task` 分支，而工作流数据能力会把 `taskId/runId/executionGeneration` 与目标资源写进 `project_operations.resource` 同一行，导致 `GET /projects/{id}/operations` 响应校验失败 → 500。任何存在工作流写入的项目连归档影响预检都打不开。修复：5e19f190 —— 补 `TaskResourceLocator` 分支，并在校验前丢弃工作流域多余的字段（record/field 型另丢 `projectId`/`taskId`，但 `project`/`table`/`status`/`batch`/`task` 等顶层 `projectId` 必须保留）。反例测试直接插入 record 型与 task 型真实投影行，断言 200 且定位字段不丢失。",
+    "设置页 `BLOCKER_LABELS` 缺 11 个真实阻断码，退出/切换工作区把 `project_batches_active`、`workflow_runs_active` 等退化成泛化的「本地任务进行中，请等待任务结束」，用户看不到该去处理哪个对象。失败画面保留在 `qa-runs/20260919192109/99-failure.png`（截图里是两条相同的兜底文案）。修复：5e19f190 补齐阻断码文案；权威运行的 `02-settings-blockers.png` 显示「项目批次正在运行；自动化运行记录尚未结束」。",
+    "归档只读提示文案与手测方案/画板不一致（旧文案不含导出），改为「项目已归档，仅可查看与导出」。修复：5e19f190。",
+    "QA 证据缺陷：`07-resource-referenced` 原先取在纯 API DELETE 之后，画面停在项目目录，根本看不到引用清单；已在 QA 脚本里改为真实界面路径（顶部导航 → 浏览器配置 → 删除被引用配置 → 断言引用清单点名项目与自动化）后重跑。",
+    "QA 证据缺陷：`10-deleted-project-kept-neighbour` 原先停在「已归档」筛选的 0 条空视图，无法核对被保留的邻居项目；已改为切换「全部状态」后截图，同一画面同时证明 A 已消失、B 仍保留。",
+    "QA 脚本自身缺陷（不计为产品缺陷）：`waitFor` 在页面导航瞬态会中断而不是重试（已加 try/catch 重试）；目录/归档视图下的返回入口、生命周期进度视图关闭、归档与恢复的对话框分支、归档项目不在默认状态筛选里等定位假设不成立，逐项按真实 UI 修正。"
+  ],
+  "automatedChecks": {
+    "backend": {
+      "command": "uv run --directory apps/backend pytest -q -p no:randomly",
+      "result": "3132 passed, 16 skipped, 2 warnings",
+      "failed": 0,
+      "durationSeconds": 552.54
+    },
+    "backendStyle": {
+      "ruff": "uv run --directory apps/backend ruff check . → All checks passed",
+      "mypy": "uv run --directory apps/backend mypy src → Success: no issues found in 387 source files"
+    },
+    "frontendUnit": {
+      "command": "npm test",
+      "result": "404 files / 5443 tests passed",
+      "failed": 0,
+      "durationSeconds": 180.66,
+      "note": "此前唯一失败的 recording-source-parity.test.ts 依赖只读的 reference/WebRPA 符号链接，补链后全量重跑通过。"
+    },
+    "api": {
+      "openapiCheck": "npm run openapi:check → 通过（客户端已用 openapi:generate 重新生成，只多 TaskResourceLocator 分支）",
+      "typecheck": "npm run typecheck → 通过",
+      "lint": "npm run lint → 通过",
+      "build": "npm run build → 通过（34.12s；Electron 启动读取 apps/desktop/out，构建是启动前置）"
+    },
+    "scripts": {
+      "testScripts": "npm run test:scripts → 84 passed",
+      "testStructure": "npm run test:structure → 4 passed",
+      "qaHarness": "node --test scripts/qa-project-management-pm8.test.mjs → 6 passed"
+    },
+    "endToEnd": {
+      "command": "node scripts/qa-project-management-pm8.mjs",
+      "result": "passed",
+      "checkpoints": 16,
+      "screenshots": 11
+    },
+    "diffCheck": "git diff --check → 通过"
+  },
+  "packages": {
+    "PM8-A1": {
+      "status": "delivered",
+      "commits": ["a3e4cb62", "8fbd6e45", "5e19f190"],
+      "evidence": ["apps/backend/tests/integration/test_project_lifecycle.py", "apps/backend/tests/contract/test_projects.py", "qa-runs/20260919200955/report.json"]
+    },
+    "PM8-A2": {
+      "status": "delivered",
+      "commits": ["2d148ce5", "159dd0a9"],
+      "evidence": ["apps/backend/tests/integration/test_project_lifecycle.py"]
+    },
+    "PM8-A3": {
+      "status": "delivered",
+      "commits": ["8255e9cf", "5e19f190"],
+      "evidence": ["apps/desktop/src/renderer/domains/projects/components/ProjectLifecycleDialog.test.tsx", "qa-runs/20260919200955/04-archive-confirm.png"]
+    },
+    "PM8-B1": {
+      "status": "delivered",
+      "commits": ["9404982b"],
+      "evidence": ["apps/backend/tests/integration/test_project_crash_recovery.py", "qa-runs/20260919200955/11-archive-response-loss.png"]
+    },
+    "PM8-B2": {
+      "status": "delivered-with-open-item",
+      "note": "任务详情 cleanup: CleanupSummary 已真实渲染；归档对话框的清理残留与重试入口在 onLoadResidue +「重试清理」闭合，但本轮端到端没有制造出真实残留，因此该分支只有组件测试证据，没有真实截图。"
+    },
+    "PM8-C1": {
+      "status": "delivered",
+      "commits": ["3ef676ab", "5e19f190"],
+      "evidence": ["apps/desktop/src/main/settings/settings.test.ts", "qa-runs/20260919200955/02-settings-blockers.png"]
+    },
+    "PM8-C2": {
+      "status": "delivered-with-open-item",
+      "commits": ["91bcdc2a", "d390931b"],
+      "evidence": ["apps/backend/tests/integration/test_project_resource_references.py", "qa-runs/20260919200955/07-resource-referenced.png"],
+      "openItem": "代理连接/代理组删除走的是 PROFILE_DIRECTORY_BUSY 语义，未接入 RESOURCE_REFERENCED 引用清单，本轮未改错误码、未在界面展示引用对象。属已登记未闭合项。"
+    },
+    "PM8-F": {
+      "status": "delivered",
+      "evidence": ["scripts/qa-project-management-pm8.mjs", "docs/project-management/implementation/pm8/**"]
+    }
+  },
+  "independentReview": {
+    "status": "notExecuted",
+    "reason": "计划中的独立规格/工程审查智能体三次投递（followup_task ×2、spawn_agent ×1、send_message + followup ×1）都只收到模式提示、收不到任务正文，回复均为“没有任务可做”。判定为工具投递故障，不构成独立审查。",
+    "fallback": "改为主协调自审：对规格 §6 逐条核对、对本次未提交改动逐项复核，并把自审结论、偏离与未闭合项写进 visual-review.md 与本节。不得据此声称“已通过独立审查”。"
+  },
+  "knownLimitations": [
+    "真实生产执行核心、真实 CloakBrowser 执行、Studio demo 未接入；本轮由隔离测试执行器驱动真实批次/任务事实，管理侧之外的执行链未验证。",
+    "Windows、其他 CPU 架构、打包应用未执行。",
+    "用户手动验收未执行；手测入口 docs/project-management/implementation/pm8/manual-test.md（proposed）。",
+    "双工作区切换未在本轮端到端中执行（手测 M-08 覆盖）。",
+    "PM8-B2 的清理残留重试分支、PM8-C2 的代理类删除引用清单为已登记未闭合项。",
+    "reference/* 只读符号链接本应存在；PM8 工作区最初缺失，已从主项目补齐并写入 .git/info/exclude（不入库）。报告与手测方案把它记为环境前置条件。",
+    "`project_batches_active` 只在隔离执行器暂停注入下出现；它是测试注入制造的状态，不是产品缺陷。"
+  ],
+  "outcome": "PM8 完成后停在 PM8 验收点，不进入 PM9。"
+}

@@ -137,7 +137,15 @@ class SqlAlchemyProjects:
                     )
                 )
             if lifecycle_state:
-                query = query.where(ProjectRow.lifecycle_state == lifecycle_state)
+                # The archive directory also holds projects stuck in `deleting`:
+                # their cleanup residue must stay visible and retryable there
+                # (PM8 spec 2.3 / 3 残留可见).
+                states = (
+                    ("archived", "deleting")
+                    if lifecycle_state == "archived"
+                    else (lifecycle_state,)
+                )
+                query = query.where(ProjectRow.lifecycle_state.in_(states))
             total = (
                 session.scalar(select(func.count()).select_from(query.subquery())) or 0
             )
@@ -200,7 +208,11 @@ class SqlAlchemyProjects:
                 else query.where(ProjectOperationRow.idempotency_key == key)
             )
             if workspace:
-                query = query.where(ProjectOperationRow.kind == "createProject")
+                # createProject has no project yet; deleteProject is the only way
+                # back to its result once the project row is gone.
+                query = query.where(
+                    ProjectOperationRow.kind.in_(("createProject", "deleteProject"))
+                )
             else:
                 query = query.where(ProjectOperationRow.project_id == project_id)
             row = session.scalar(query)

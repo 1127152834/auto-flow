@@ -51,6 +51,10 @@ from autoflow.application.project_sync.connections import (
 from autoflow.application.project_sync.impacts import SheetsImpactService
 from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.application.project_sync.runs import SheetsRun
+from autoflow.application.projects.lifecycle import (
+    ProjectLifecycleCoordinator,
+    ProjectLifecycleService,
+)
 from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.projects.statistics import ProjectStatisticsService
@@ -123,6 +127,15 @@ from autoflow.infrastructure.database.project_excel_exports import (
 from autoflow.infrastructure.database.project_excel_imports import (
     SqlAlchemyExcelImports,
 )
+from autoflow.infrastructure.database.project_lifecycle import (
+    SqlAlchemyProjectLifecycle,
+)
+from autoflow.infrastructure.database.project_pending import (
+    SqlAlchemyProjectPendingWork,
+)
+from autoflow.infrastructure.database.project_resource_references import (
+    SqlAlchemyProjectResourceReferences,
+)
 from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
 from autoflow.infrastructure.database.project_sync_impacts import (
     SqlAlchemySheetsImpacts,
@@ -190,6 +203,7 @@ def create_app(
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
     session_factory = create_session_factory(paths.database)
+    resource_references = SqlAlchemyProjectResourceReferences(session_factory)
     kernel_events = KernelEventBroker()
     kernel_worker_manager = KernelWorkerManager(
         kernels_dir=paths.kernels,
@@ -214,6 +228,7 @@ def create_app(
         SqlAlchemyDefaultKernelRepository(session_factory),
         installations,
         kernel_worker_manager,
+        resource_references,
     )
     transaction = partial(profile_repository_transaction, session_factory)
     proxy_options = SqlAlchemyProxyOptions(session_factory)
@@ -228,6 +243,7 @@ def create_app(
         proxy_options,
         usage_guard,
         data_store,
+        resource_references,
     )
     test_browser_workers = TestBrowserWorkerManager(paths.temp)
 
@@ -235,6 +251,7 @@ def create_app(
         partial(model_repository_transaction, session_factory),
         credential_store if credential_store is not None else credentials,
         model_gateway or HttpModelProvider(),
+        resource_references,
     )
     model_service.recover_credentials()
 
@@ -284,7 +301,7 @@ def create_app(
     app.state.status_batch_service = status_batch_service
     app.state.status_batch_coordinator = status_batch_coordinator
     app.router.add_event_handler("startup", status_batch_coordinator.resume)
-    proxy_runtime = configure_proxy_management(app, paths.database)
+    proxy_runtime = configure_proxy_management(app, paths.database, resource_references)
     profile_test_browser = ProfileTestBrowserService(
         profile_service,
         catalog_provider.installed,
@@ -416,6 +433,7 @@ def create_app(
     project_run_scheduler = ProjectBatchScheduler(
         session_factory, project_workflow_dispatcher, quiesce_gate, environment_service
     )
+    project_pending_work = SqlAlchemyProjectPendingWork(session_factory)
     app.state.project_run_coordinator = project_run_coordinator
     app.state.project_run_scheduler = project_run_scheduler
     app.router.add_event_handler("startup", project_run_scheduler.startup)
@@ -432,8 +450,10 @@ def create_app(
         settings.api_version,
         lambda: len(catalog_provider.installed()),
         lambda: [
+            *project_pending_work.blockers(),
             *project_workflow_dispatcher.blockers(),
             *project_run_scheduler.blockers(),
+            *project_lifecycle_coordinator.blockers(),
             *(
                 ["project_excel_operation_active"]
                 if project_excel.pending_operations()
@@ -486,6 +506,7 @@ def create_app(
             async def close_project_workflows() -> None:
                 try:
                     await project_run_scheduler.shutdown()
+                    await project_lifecycle_coordinator.shutdown()
                 finally:
                     await project_workflow_dispatcher.shutdown()
 
@@ -537,6 +558,20 @@ def create_app(
         SqlAlchemyWorkflowRepository(session_factory)
     )
     app.include_router(workflow_catalog_router(project_workflow_service))
+    project_lifecycle_repository = SqlAlchemyProjectLifecycle(
+        session_factory, environment_root=environment_store.root
+    )
+    project_lifecycle_coordinator = ProjectLifecycleCoordinator(
+        project_lifecycle_repository, quiesce_gate
+    )
+    project_lifecycle = ProjectLifecycleService(
+        SqlAlchemyProjects(session_factory),
+        project_lifecycle_repository,
+        project_lifecycle_coordinator,
+    )
+    app.state.project_lifecycle = project_lifecycle
+    app.state.project_lifecycle_coordinator = project_lifecycle_coordinator
+    app.router.add_event_handler("startup", project_lifecycle_coordinator.startup)
     register_project_routes(app, ProjectHttpServices(
         run_coordinator=project_run_coordinator,
         run_queries=ProjectRunQueries(session_factory),
@@ -545,6 +580,7 @@ def create_app(
         run_scheduler=project_run_scheduler,
         gate=quiesce_gate,
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
+        lifecycle=project_lifecycle,
         overview=ProjectOverviewService(session_factory),
         statistics=ProjectStatisticsService(session_factory),
         automations=ProjectAutomationService(

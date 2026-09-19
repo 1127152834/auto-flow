@@ -5,6 +5,7 @@ from typing import Literal
 from uuid import uuid4
 
 from autoflow.domain.credentials import CredentialStore, CredentialStoreUnavailableError
+from autoflow.domain.projects.ports import ProjectResourceReferences
 from autoflow.domain.proxies.errors import CredentialStoreError, ProxyError
 from autoflow.domain.proxies.models import Connection, Health, Projection, ProxyGroup
 from autoflow.domain.proxies.ports import (
@@ -27,11 +28,13 @@ class ProxyApplication:
         credentials: CredentialStore,
         provider: ProxyPanelProvider,
         probe: ProxyHealthProbe | None = None,
+        references: ProjectResourceReferences | None = None,
     ):
         self._uow_factory = uow_factory
         self._credentials = credentials
         self._provider = provider
         self._probe = probe
+        self._references = references
 
     def list_connections(self) -> list[Connection]:
         with self._uow_factory() as uow:
@@ -112,6 +115,8 @@ class ProxyApplication:
         deleted_secret = None
         try:
             with self._uow_factory() as uow:
+                if self._references is not None:
+                    self._references.ensure_unreferenced_proxy_connection(connection_id)
                 deleted_secret = ConnectionService(uow.repository, self._credentials).delete(connection_id)
                 uow.commit()
         except Exception:
@@ -234,6 +239,8 @@ class ProxyApplication:
 
     def delete_group(self, group_id: str) -> None:
         with self._uow_factory() as uow:
+            if self._references is not None:
+                self._references.ensure_unreferenced("proxyPool", group_id)
             GroupService(uow.repository).delete(group_id)
             uow.commit()
 

@@ -27,6 +27,12 @@ const BLOCKER_LABELS: Record<string, string> = {
   profile_in_use: '浏览器配置正在使用', api_mutation_in_progress: '数据保存或资源操作进行中',
   api_mutations_paused: '服务正在准备切换',
   test_browser_process_active: '测试浏览器仍在运行',
+  workflow_runs_active: '自动化运行记录尚未结束', workflow_worker_busy: '自动化正在执行',
+  workflow_process_active: '自动化进程仍在运行',
+  project_batches_active: '项目批次正在运行', project_lifecycle_pending: '项目归档或删除正在收尾',
+  project_excel_operation_active: '项目导入导出进行中', project_data_status_batch_active: '批量状态更新进行中',
+  project_manual_item_pending: '项目人工事项等待处理', project_sync_outcome_unknown: '项目同步结果尚未确认',
+  android_management_active: '安卓设备管理进行中', android_console_active: '安卓控制台会话进行中',
 }
 
 export class SettingsController {

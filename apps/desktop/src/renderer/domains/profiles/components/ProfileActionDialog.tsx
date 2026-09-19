@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '../../../shared/components/ui/dialog'
 import { Input } from '../../../shared/components/ui/input'
+import { ResourceReferenceList, resourceReferences } from '../../../shared/components/ResourceReferenceList'
 import { useDuplicateProfile, useRemoveProfile } from '../hooks'
 
 export type ProfileAction = { kind: 'delete' | 'duplicate'; id: string; name: string }
@@ -29,6 +30,7 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
   const [name, setName] = useState('')
   const [nameError, setNameError] = useState('')
   const [operationError, setOperationError] = useState('')
+  const [operationCause, setOperationCause] = useState<unknown>(null)
   const lock = useRef(false)
   const form = useRef<HTMLFormElement>(null)
   const formId = useId()
@@ -51,6 +53,7 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
     lock.current = true
     setNameError('')
     setOperationError('')
+    setOperationCause(null)
     try {
       if (copying) await duplicate.mutateAsync({ profileId: action.id, body: { name: trimmed } })
       else await remove.mutateAsync(action.id)
@@ -58,7 +61,7 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
       onClose(!copying)
     } catch (error) {
       if (copying && error instanceof ApiClientError && error.fields?.name) setNameError(error.fields.name)
-      else setOperationError(errorMessage(error))
+      else { setOperationError(errorMessage(error)); setOperationCause(error) }
     } finally {
       lock.current = false
     }
@@ -78,6 +81,7 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
           }} />
         </FormField> : <p className="m-0 text-sm text-ink">此浏览器配置将被永久删除，无法恢复。</p>}
         {operationError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{operationError}</p> : null}
+        {resourceReferences(operationCause).length ? <ResourceReferenceList error={operationCause} /> : null}
       </form>
       <div className="flex justify-end gap-2">
         <Button type="button" autoFocus={!copying} disabled={busy} onClick={close}>取消</Button>

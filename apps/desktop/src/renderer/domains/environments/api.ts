@@ -1,5 +1,6 @@
 import type { StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
+import { createOperationCommand } from '../project-data/operation-command'
 
 type Schema = components['schemas']
 export type Environment = Schema['EnvironmentView']
@@ -11,6 +12,7 @@ export type EnvironmentOperation = Schema['EnvironmentOperationView']
 export type EnvironmentPatch = Schema['EnvironmentPatch']
 export type EnvironmentEndRequest = Schema['EnvironmentEndRequest']
 export type EnvironmentImpact = Schema['EnvironmentImpactView']
+export type EnvironmentDeleteBody = Schema['EnvironmentDeleteRequest']
 export type ManualItem = Schema['ManualItemView']
 export type ManualSort = 'expiresAt' | '-updatedAt'
 export type EnvironmentQuery = { query: string; page: number; pageSize: number; sort: 'name' | '-name' | 'updatedAt' | '-updatedAt'; state?: string }
@@ -19,6 +21,9 @@ const encode = encodeURIComponent
 
 export function createEnvironmentApi(client: StreamingApiClient, projectId: string) {
   const base = `/api/v1/projects/${encode(projectId)}`
+  // Environment deletes are stored in the same project operation table, so the
+  // shared by-idempotency-key lookup recovers an uncertain outcome.
+  const operations = createOperationCommand(client, projectId)
   return {
     list: (query: EnvironmentQuery, signal?: AbortSignal) => {
       const state = query.state ? `&state=${encode(query.state)}` : ''
@@ -68,6 +73,7 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
       body: { expectedUseGeneration },
     }),
     impact: (environmentId: string, signal?: AbortSignal) => client.request<EnvironmentImpact>(`${base}/environments/${encode(environmentId)}/impact?action=delete`, { signal }),
+    remove: (environmentId: string, body: EnvironmentDeleteBody, key: string, current: () => boolean = () => true) => operations.submit(`${base}/environments/${encode(environmentId)}`, body, key, 'deleteEnvironment', current, 'DELETE'),
     listManual: (query: { page: number; pageSize: number; status?: string; q?: string; sort?: ManualSort }, signal?: AbortSignal) => {
       const params = new URLSearchParams({ page: String(query.page), pageSize: String(query.pageSize) })
       if (query.status) params.set('status', query.status)

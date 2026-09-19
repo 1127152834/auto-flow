@@ -9,14 +9,21 @@ from sqlalchemy.exc import OperationalError
 
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
+from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
 from autoflow.infrastructure.database.models import (
     KernelOperationRow,
     LocalModelRow,
     ModelProviderRow,
     ProfileRow,
+    ProjectRow,
     ProxyPoolRow,
     ProxyRow,
 )
+from autoflow.infrastructure.database.project_data_models import (
+    DataGenerationRow,
+    DataTableRow,
+)
+from autoflow.infrastructure.database.project_sync_models import SyncOperationRow
 from autoflow.infrastructure.database.proxy_models import (
     ProxyConnectionRow,
     ProxyOperationRow,
@@ -199,6 +206,53 @@ def test_quiesce_reports_persisted_and_inflight_blockers(tmp_path):
             )
         assert response.status_code == 409
         assert "api_mutation_in_progress" in response.json()["error"]["details"]["blockers"]
+
+
+def test_quiesce_reports_project_side_pending_work(tmp_path):
+    """A waiting manual item or an unresolved send must block the workspace switch."""
+    app = _app(tmp_path)
+    now = datetime.now(UTC)
+    project_id, table_id, generation_id = str(uuid4()), str(uuid4()), str(uuid4())
+    with app.state.session_factory.begin() as session:
+        session.add(ProjectRow(
+            id=project_id, name="P", name_key="p", description="", search_text="p",
+            default_resources={}, management_revision=1, lifecycle_state="active",
+            created_at=now, updated_at=now,
+        ))
+        session.add(DataTableRow(
+            id=table_id, project_id=project_id, name="T", name_key="t",
+            search_text="t", description="", source_kind="local", published=True,
+            current_generation=generation_id, table_revision=1,
+            schema_guard_revision=1, identity={}, slot_definitions=[],
+            created_at=now, updated_at=now,
+        ))
+        session.flush()
+        session.add(DataGenerationRow(
+            id=generation_id, project_id=project_id, table_id=table_id,
+            identity={}, source={}, created_at=now,
+        ))
+        session.flush()
+        session.add(ProjectManualItemRow(
+            id=str(uuid4()), project_id=project_id, task_id=str(uuid4()),
+            run_id=str(uuid4()), instance_id=None, checkpoint_revision=1,
+            status="waiting", status_revision=1, expires_at=None, allowed_targets=[],
+            resume_started=False, reason=None, created_at=now, updated_at=now,
+        ))
+        session.add(SyncOperationRow(
+            id=str(uuid4()), project_id=project_id, table_id=table_id, kind="push",
+            binding_epoch=1, status="unknown", status_revision=2,
+            dedupe_key=str(uuid4()), request={}, target={}, attempts=1,
+            created_at=now, updated_at=now,
+        ))
+    with TestClient(app) as client:
+        response = client.post(
+            "/internal/settings/quiesce", headers={"x-autoflow-host-token": "host"}
+        )
+        assert response.status_code == 409
+        assert response.json()["error"]["details"]["blockers"] == [
+            "project_manual_item_pending",
+            "project_sync_outcome_unknown",
+        ]
 
 
 def test_dashboard_read_failure_uses_safe_error_envelope(tmp_path, monkeypatch):

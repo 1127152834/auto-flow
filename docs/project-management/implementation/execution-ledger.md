@@ -256,3 +256,33 @@ PM4-F 当前源码权威管理链为 `pm4/qa-runs/f-QHALLW/result.json`：有限
 **未执行**：真实生产执行核心、真实 CloakBrowser 执行、Studio demo、Windows、其他 CPU 架构、打包应用、用户手动验收、双工作区切换（见手测 M-12）。这些不因本轮管理侧通过而被标为通过。
 
 PM7 完成后停在 PM7 验收点，不进入 PM8。
+
+## PM8 实际交付记录（2026-09-20）
+
+工作区 `autoflow-project-management-pm8`，分支 `codex/project-management-pm8`；源码提交 `5e19f190`（含本轮两处产品修复与 QA 资产），本轮权威端到端运行 `docs/project-management/implementation/pm8/qa-runs/20260919200955/report.json`。
+
+| 包 | 提交 | 当前结果 | 权威证据 | 尚未闭合 |
+|---|---|---|---|---|
+| PM8-A1 生命周期后端 | `a3e4cb62`、`8fbd6e45`、`5e19f190` | delivered | `tests/integration/test_project_lifecycle.py`；`pm8/qa-runs/20260919200955/report.json` | — |
+| PM8-A2 自动化删除/解绑 + 环境删除影响 | `2d148ce5`、`159dd0a9` | delivered | 同上 + 后端定向测试 | 界面删除自动化路径本轮未复验 |
+| PM8-A3 前端生命周期入口 | `8255e9cf`、`5e19f190` | delivered | `ProjectLifecycleDialog.test.tsx`；`04-archive-confirm.png` | — |
+| PM8-B1 跨重启核验与残留 | `9404982b` | delivered | `tests/integration/test_project_crash_recovery.py`；`11-archive-response-loss.png` | — |
+| PM8-B2 残留可见入口 | 随 A3/B1 | delivered-with-open-item | 任务详情 `cleanup: CleanupSummary`；归档对话框 `onLoadResidue` +「重试清理」 | 清理失败分支只有组件测试证据，端到端未制造真实残留 |
+| PM8-C1 退出与工作区阻断 | `3ef676ab`、`5e19f190` | delivered | `settings.test.ts`；`02-settings-blockers.png` | — |
+| PM8-C2 全局资源引用保护 | `91bcdc2a`、`d390931b` | delivered-with-open-item | `tests/contract/test_project_resource_references.py`；`07-resource-referenced.png` | 代理连接/代理组删除仍走 `PROFILE_DIRECTORY_BUSY`，未接入引用清单 |
+| PM8-F 集成与阶段验收 | `5e19f190` 及本节文档提交 | delivered / 管理侧通过 | `pm8/verification.json`、`pm8/visual-review.md`、`pm8/qa-runs/20260919200955/report.json` | 真实执行核心、用户手测、未运行平台 |
+
+**权威端到端运行**：`status: passed`、16 个检查点、11 张截图、viewport 1440×1024、dpr 1、darwin/arm64。核心项目、三张表、字段、记录与自动化由界面创建；浏览器配置与工作流文档是明确标注的测试夹具；执行核心是隔离 QA 测试执行器。固定交付声明：**管理侧通过，真实执行核心接入待验收**。
+
+**本轮端到端抓出并修复的两个真实缺陷**（先补反例再改）：
+
+1. `5e19f190` —— `ProjectOperationView.resource` 缺 `task` 分支，而工作流数据能力把 `taskId/runId/executionGeneration` 与目标资源写进 `project_operations.resource` 同一行，导致 `GET /projects/{id}/operations` 响应校验失败 → 500。任何存在工作流写入的项目连归档影响预检都打不开。修复为补 `TaskResourceLocator` 分支 + 校验前丢弃工作流域多余字段。
+2. `5e19f190` —— 设置页 `BLOCKER_LABELS` 缺 11 个真实阻断码，退出/切换工作区把项目侧阻断退化成泛化文案。失败画面保留在 `pm8/qa-runs/20260919192109/99-failure.png`。
+
+**回归证据**：后端全量 3132 passed / 16 skipped；前端全量 404 文件 / 5443 项通过；Ruff、mypy（387 源文件）、OpenAPI 检查、typecheck、lint、build、test:scripts（84）、test:structure（4）通过；PM8 QA 脚本单测 6 项通过。历史运行台账见 `pm8/qa-runs/LEDGER.md`（含 24 次因 QA 脚本自身定位/时序失败而删除截图的运行及原因）。
+
+**独立审查**：计划中的独立规格/工程审查智能体四次投递都只收到模式提示、收不到任务正文，判为工具投递故障；本轮改为主协调自审并如实登记为未执行（`pm8/verification.json` 的 `independentReview`）。
+
+**未执行**：真实生产执行核心、真实 CloakBrowser、Studio demo、Windows、其他 CPU 架构、打包应用、用户手动验收、双工作区切换（见手测 M-08）。这些不因本轮管理侧通过而被标为通过。
+
+PM8 完成后停在 PM8 验收点，不进入 PM9。

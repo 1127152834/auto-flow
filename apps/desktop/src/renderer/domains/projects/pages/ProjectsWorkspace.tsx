@@ -7,9 +7,12 @@ import { notify, Toaster } from '../../../shared/components/Toaster'
 import { createProjectsApi, isDefinitiveProjectFailure } from '../api'
 import { safeProjectError } from '../presentation-error'
 import { toProjectCreate, toProjectPatch, type ProjectFormValues } from '../form-schema'
-import { projectKeys, useProject, useProjectDirectory, useProjectOverview } from '../hooks'
+import { projectKeys, useProject, useProjectCleanupResidues, useProjectDirectory, useProjectOverview } from '../hooks'
 import type { ProjectCreate, ProjectListConditions, ProjectPatch, ProjectRoute, ProjectSummary, ProjectView } from '../types'
 import { ProjectFormDialog } from '../components/ProjectFormDialog'
+import { ProjectLifecycleDialog, type LifecycleSubmit } from '../components/ProjectLifecycleDialog'
+import { reportedCleanupResidue } from '../cleanup-residue'
+import type { ProjectLifecycleChoice } from '../components/ProjectCard'
 import { ProjectDirectoryPage } from './ProjectDirectoryPage'
 import { ProjectOverviewPage } from './ProjectOverviewPage'
 import { DataTableDirectoryPage } from '../../project-data/pages/DataTableDirectoryPage'
@@ -96,6 +99,9 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const [mode, setModeState] = useState<DirectoryMode>(() => readMode(workspaceKey))
   const [scrollTop, setScrollTop] = useState(() => readScrollTop(workspaceKey, readMode(workspaceKey)))
   const [editor, setEditor] = useState<Editor | null>(null)
+  // One confirmation session owns one command identity: a lost response is
+  // replayed under the same key instead of archiving or deleting twice.
+  const [lifecycle, setLifecycle] = useState<{ project: ProjectView; action: ProjectLifecycleChoice; key: string } | null>(null)
   const [saving, setSaving] = useState(false)
   const [recoveryPending, setRecoveryPending] = useState(false)
   const dataGuard = useRef<(() => Promise<boolean>) | null>(null)
@@ -116,6 +122,9 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
 
   const directory = useProjectDirectory(api, workspaceKey, instanceId, conditions, mode === 'all')
   const recent = useProjectDirectory(api, workspaceKey, instanceId, recentConditions, mode === 'recent')
+  // Only projects that are still deleting can carry cleanup residue; they live
+  // in the archive directory until the residue is gone.
+  const lifecycleResidue = useProjectCleanupResidues(api, workspaceKey, instanceId, useMemo(() => [...(directory.data?.items ?? []), ...(recent.data?.items ?? [])].filter(item => item.lifecycleState === 'deleting').map(item => item.projectId), [directory.data, recent.data]))
   const detail = useProject(api, workspaceKey, instanceId, route.projectId)
   const overview = useProjectOverview(api, workspaceKey, instanceId, route.projectId, route.tab === 'overview')
   useLayoutEffect(() => { if (detail.data) setRetainedProject({ workspaceKey, project: detail.data }) }, [detail.data, workspaceKey])
@@ -194,6 +203,46 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     if (command.kind === 'create') onNavigate({ projectId: saved.projectId, tab: 'overview' })
   }
 
+  const startLifecycle = (project: ProjectSummary, action: ProjectLifecycleChoice) => setLifecycle({ project: project as ProjectView, action, key: crypto.randomUUID() })
+
+  const lifecycleImpact = async () => {
+    if (!lifecycle || lifecycle.action === 'restore') throw new Error('缺少生命周期动作')
+    return api.lifecycleImpact(lifecycle.project.projectId, lifecycle.action)
+  }
+
+  const lifecycleSubmit = async (values: LifecycleSubmit) => {
+    if (!lifecycle) throw new Error('缺少生命周期动作')
+    const { projectId } = lifecycle.project
+    const operation = lifecycle.action === 'archive'
+      ? await api.archive(projectId, { impactRevision: values.impactRevision, expectedManagementRevision: values.expectedManagementRevision }, lifecycle.key)
+      : await api.remove(projectId, values, lifecycle.key)
+    void cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'projects'] })
+    void cache.invalidateQueries({ queryKey: projectKeys.detail(workspaceKey, instanceId, projectId) })
+    notify({
+      title: operation.status === 'failed' ? '归档未完成，请核对残留' : lifecycle.action === 'archive' ? '归档命令已接受' : '删除命令已接受',
+      tone: operation.status === 'failed' ? 'error' : 'success',
+      operationId: operation.operationId,
+    })
+    if (lifecycle.action === 'delete' && operation.status === 'succeeded' && route.projectId === projectId) onNavigate({ tab: 'overview' })
+    return operation
+  }
+
+  const restoreProject = async (project: ProjectSummary) => {
+    try {
+      const operation = await api.restore(project.projectId, { expectedManagementRevision: (project as ProjectView).managementRevision })
+      void cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'projects'] })
+      void cache.invalidateQueries({ queryKey: projectKeys.detail(workspaceKey, instanceId, project.projectId) })
+      notify({ title: operation.status === 'succeeded' ? '项目已恢复' : '恢复命令已接受', tone: 'success', operationId: operation.operationId })
+    } catch (error) {
+      notify({ title: safeProjectError(error), tone: 'error' })
+    }
+  }
+
+  const selectLifecycle = (project: ProjectSummary, action: ProjectLifecycleChoice) => {
+    if (action === 'restore') void restoreProject(project)
+    else startLifecycle(project, action)
+  }
+
   const openProject = async (project: ProjectSummary) => {
     const ticket = ++openTicket.current
     const captured = `${workspaceKey}:${instanceId}`
@@ -220,7 +269,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     {openError ? <div className="fixed bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 shadow-lg" role="alert"><span>{openError.message}</span><Button size="sm" onClick={() => void openProject(openError.project)}>重试</Button></div> : null}
     {route.projectId && project ? <ProjectOverviewPage overview={overview.data ?? null} overviewError={overview.isError ? safeProjectError(overview.error) : null} onOpenResource={target => onNavigate({ ...target, projectId: project.projectId })} detailContext={route.automationId || route.automationCreate ? { name: route.automationCreate ? '新建自动化' : automationContext.data?.name ?? '自动化配置', label: '返回自动化目录', onBack: () => onNavigate({ projectId: project.projectId, tab: 'automations' }) } : route.tab === 'runs' && (route.batchId || route.taskId || route.manualItemId || route.runFrozen) ? { name: route.manualItemId ? '人工事项' : route.taskId ? '任务详情' : route.runFrozen ? '任务' : '批次详情', label: route.runFrozen ? '返回统计' : route.manualItemId ? '返回等待人工' : '返回运行记录', onBack: () => onNavigate(route.runFrozen ? { projectId: project.projectId, tab: 'statistics' } : { projectId: project.projectId, tab: 'runs', ...(route.manualItemId ? { runView: 'manual' } : { runView: 'batches' }) }) } : route.tab === 'environments' && route.environmentId ? { name: '环境详情', label: '返回环境', onBack: () => onNavigate({ projectId: project.projectId, tab: 'environments' }) } : undefined} tableBackLabel={route.record ? "返回记录列表" : "返回数据表"} onTableBack={() => onNavigate({ projectId: project.projectId, tab: "data", ...(route.record ? { tableId: route.tableId, dataTab: "records" } : {}) })} tableName={tableContext.data?.name} tableDetail={Boolean(route.tableId)} project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
       {route.tab === 'automations' ? route.automationId || route.automationCreate
-        ? <AutomationDetailPage projectDefaults={project.defaultResources} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} automationId={route.automationId} client={client} disabled={disabled} readOnly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBatchCreated={batchId => onNavigate({ projectId: project.projectId, tab: 'runs', runView: 'batches', batchId })} onCreated={automationId => onNavigate({ projectId: project.projectId, tab: 'automations', automationId }, { replace: true })} />
+        ? <AutomationDetailPage projectDefaults={project.defaultResources} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} automationId={route.automationId} client={client} disabled={disabled} readOnly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBatchCreated={batchId => onNavigate({ projectId: project.projectId, tab: 'runs', runView: 'batches', batchId })} onCreated={automationId => onNavigate({ projectId: project.projectId, tab: 'automations', automationId }, { replace: true })} onDeleted={() => onNavigate({ projectId: project.projectId, tab: 'automations' })} />
         : <AutomationDirectoryPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readOnly={project.lifecycleState !== 'active'} onOpen={automationId => onNavigate({ projectId: project.projectId, tab: 'automations', automationId })} onCreate={() => onNavigate({ projectId: project.projectId, tab: 'automations', automationCreate: true })} />
         : route.tab === 'runs' ? route.manualItemId
         ? <ManualDetailPage key={`${workspaceKey}:${instanceId}:${project.projectId}:${route.manualItemId}`} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readOnly={project.lifecycleState !== 'active'} onNavigate={onNavigate} manualItemId={route.manualItemId}/>
@@ -239,8 +288,19 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
       </ProjectOverviewPage>
       : route.projectId && detail.isLoading ? <main className="p-6" role="status">正在加载项目…</main>
       : route.projectId && detail.isError ? <main className="grid gap-3 p-6" role="alert"><p>无法加载项目。</p><div className="flex gap-2"><Button onClick={() => void detail.refetch()}>重试</Button><Button variant="ghost" onClick={() => onNavigate({ tab: 'overview' })}>返回项目目录</Button></div></main>
-      : <ProjectDirectoryPage key={mode} mode={mode} onModeChange={setMode} recentItems={recent.data?.items} recentLoading={recent.isLoading} recentError={recent.isError ? '刷新最近项目失败' : null} page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={mode === 'recent' ? recent.isFetching : directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, mode, value) }} onConditionsChange={setConditions} onRefresh={() => void (mode === 'recent' ? recent.refetch() : directory.refetch())} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} />}
+      : <ProjectDirectoryPage key={mode} mode={mode} onModeChange={setMode} recentItems={recent.data?.items} recentLoading={recent.isLoading} recentError={recent.isError ? '刷新最近项目失败' : null} page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={mode === 'recent' ? recent.isFetching : directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, mode, value) }} onConditionsChange={setConditions} onRefresh={() => void (mode === 'recent' ? recent.refetch() : directory.refetch())} cleanupResidue={lifecycleResidue} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} onLifecycle={selectLifecycle} />}
     <ProjectFormDialog open={Boolean(editor)} project={editor?.project ?? null} draftSession={editor?.draftSession ?? 'closed'} submissionEpoch={`${instanceId}:${editor?.draftSession ?? 'closed'}`} recoveryPending={recoveryPending} disabled={disabled} onOpenChange={open => { if (!open) setEditor(null) }} onSubmit={submit} onLoadLatest={editorProjectId ? () => api.get(editorProjectId) : undefined} onDirtyChange={value => { dirtyRef.current = value }} onSavingChange={value => { savingRef.current = value; setSaving(value) }} onRequestClose={guard} />
+    {lifecycle && lifecycle.action !== 'restore' ? <ProjectLifecycleDialog
+      open
+      action={lifecycle.action}
+      project={lifecycle.project}
+      disabled={disabled}
+      onOpenChange={open => { if (!open) setLifecycle(null) }}
+      onLoadImpact={lifecycleImpact}
+      onLoadResidue={() => api.operations(lifecycle.project.projectId).then(reportedCleanupResidue)}
+      onSubmit={lifecycleSubmit}
+      onFinished={operation => { if (operation.status === 'succeeded' || operation.status === 'failed') setLifecycle(null) }}
+    /> : null}
     <AlertDialog open={leaveOpen} onOpenChange={open => { if (!open && !savingRef.current) finishLeave(false) }}><AlertDialogContent><AlertDialogTitle>保存项目修改后离开？</AlertDialogTitle><AlertDialogDescription>{recoveryPending ? '上次保存结果尚未确认。请先核对，避免遗失操作结果。' : '可以先保存修改、放弃本次修改，或继续编辑。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={saving} onClick={() => finishLeave(false)}>继续编辑</Button></AlertDialogCancel><Button variant="ghost" disabled={saving || recoveryPending} onClick={() => finishLeave(true)}>放弃修改</Button><AlertDialogAction asChild><Button variant="primary" disabled={saving || disabled} onClick={event => { event.preventDefault(); document.querySelector<HTMLFormElement>('#project-form')?.requestSubmit() }}>{recoveryPending ? '核对后离开' : '保存后离开'}</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
   </>
 }

@@ -62,7 +62,7 @@ def test_app_shutdown_stops_kernel_workers(monkeypatch, tmp_path):
     proxy_runtime = Mock(resolve_profile=AsyncMock(), close=close_proxies)
     monkeypatch.setattr(
         "autoflow.bootstrap.app.configure_proxy_management",
-        lambda _app, _database: proxy_runtime,
+        lambda _app, _database, _references: proxy_runtime,
     )
     app = create_app(Settings(data_dir=str(tmp_path), instance_id="test"))
     shutdown = AsyncMock()
