@@ -39,6 +39,7 @@ export function useProxyManagement(api: ProxyApi) {
   const [filters, setFilters] = useState<ProxyFilters>({ limit: 50 })
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string>()
+  const [loadErrorCause, setLoadErrorCause] = useState<unknown>()
   const [syncing, setSyncing] = useState(false)
   const [checkingId, setCheckingId] = useState<string>()
   const [connectionBusy, setConnectionBusy] = useState(false)
@@ -81,6 +82,7 @@ export function useProxyManagement(api: ProxyApi) {
   const loadBase = useCallback(async () => {
     setLoading(true)
     setLoadError(undefined)
+    setLoadErrorCause(undefined)
     try {
       const [nextConnection, nextGroups] = await Promise.all([api.getConnection(), api.listGroups()])
       setConnection(nextConnection)
@@ -173,6 +175,7 @@ export function useProxyManagement(api: ProxyApi) {
     } catch (error) {
       rememberRetryAfter(error)
       setLoadError(errorMessage(error))
+      setLoadErrorCause(error)
       notify({ title: errorMessage(error), tone: 'error' })
     }
   }, [api, connection, rememberRetryAfter])
@@ -318,7 +321,11 @@ export function useProxyManagement(api: ProxyApi) {
       notify({ title: '本地代理组已删除', tone: 'success' })
     } catch (error) {
       rememberRetryAfter(error)
-      if (errorDetail(error)?.code === 'PROXY_GROUP_IN_USE') {
+      setLoadErrorCause(error)
+      const code = errorDetail(error)?.code
+      if (code === 'RESOURCE_REFERENCED') {
+        setLoadError(`无法删除“${group.name}”，仍被以下项目或自动化引用`)
+      } else if (code === 'PROXY_GROUP_IN_USE') {
         try {
           const references = await api.getGroupReferences(group.id)
           const names = (references.profiles ?? []).map((item) => item.name).join('、')
@@ -339,6 +346,7 @@ export function useProxyManagement(api: ProxyApi) {
     filters,
     loading,
     loadError,
+    loadErrorCause,
     syncing,
     checkingId,
     connectionBusy,

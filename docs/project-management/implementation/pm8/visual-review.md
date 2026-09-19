@@ -2,8 +2,8 @@
 
 - 日期：2026-09-20
 - 工作区：`/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8`，分支 `codex/project-management-pm8`
-- 权威运行：`docs/project-management/implementation/pm8/qa-runs/20260919200955/report.json`（`status: passed`）
-- 实际截图：`qa-runs/20260919200955/*.png`，11 张，viewport **1440×1024**、dpr 1、`document.documentElement.scrollWidth ≤ 1440`（每张都在 `report.json` 里逐条记录，无横向撑宽）
+- 权威运行：`docs/project-management/implementation/pm8/qa-runs/20260919202620/report.json`（`status: passed`，源码摘要 `3502e24d…`）
+- 评分依据的截图：`qa-runs/20260919200955/*.png`，11 张，viewport **1440×1024**、dpr 1、`document.documentElement.scrollWidth ≤ 1440`（每张都在 `report.json` 里逐条记录，无横向撑宽）；与权威运行的等价性见第 5 节
 - 原型目录（只读）：`/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/`
 - **审查者：主协调（自审）。** 原计划的独立审查智能体三次投递均只收到模式提示、收不到任务正文（工具投递故障），因此本次逐图审查由交付者本人完成，并在 `verification.json` 的 `independentReview` 里如实登记为未执行。这不是"已通过独立审查"。
 
@@ -84,3 +84,16 @@
 - 11 张真实截图全部满足 S1–S8，逐画面最低 85 分，无画面低于门槛。
 - 三处与画板的结构性差异（D1 归档阻断非拒绝、D2 归档用可逆确认样式、D3 归档提示为整宽信息条）都有规格或语义依据，按可接受偏离登记，不隐藏。
 - **本审查由交付者自审，独立审查因工具投递故障未执行**；不构成独立评审通过。
+
+## 5. 截图等价性（2026-09-20 复跑）
+
+补齐 PM8-C2 的前端引用清单后，真实端到端按同一脚本重跑为权威运行 `20260919202620`（`passed`、16 检查点、11 截图、源码摘要 `3502e24d…`，与交付源码一致）。两轮截图逐像素比对（1474560 像素/张）：
+
+| 结果 | 画面 |
+|---|---|
+| 完全一致（4 张） | `04-archive-confirm`、`09-delete-name-guard`、`10-deleted-project-kept-neighbour`、`11-archive-response-loss` |
+| 差异 ≤0.20%（7 张） | `01-runs-batch-running` 0.05%、`02-settings-blockers` 0.20%、`03-archive-blocked` 0.19%、`05-archived-readonly` 0.01%、`06-export-dialog` 0.01%、`07-resource-referenced` 0.03%、`08-delete-stale-impact` 0.17% |
+
+差异集中在临时工作区路径（`/tmp/autoflow-pm8-qa-<runId>`）、批次开始时间与计数、引用对象名称等运行期动态值；已抽取三张最大差异画面（`02`、`03`、`01`）做上下对照确认：版式、页头、页签、表格线、圆角、弹窗结构与文案逐项一致，无结构变化。因此第 1–3 节的逐画面评分对权威运行 `20260919202620` 同样成立。
+
+本轮前端改动只落在**代理管理**页面（错误条渲染引用清单、阻断态隐藏「重新加载」），该页面不在这 11 张画板内，未参与上面的视觉评分；它的证据是组件测试（wire→UI）与后端契约测试，见 `verification.json` 的 `PM8-C2`。

@@ -3,6 +3,7 @@ import { QueryClientContext } from '@tanstack/react-query'
 import type { ApiClient } from '../../../shared/api/client'
 import { Button } from '../../../shared/components/ui/button'
 import { Toaster } from '../../../shared/components/Toaster'
+import { ResourceReferenceList, resourceReferences } from '../../../shared/components/ResourceReferenceList'
 import { createProxyApi, type GroupView } from '../api'
 import { useProxyManagement } from '../hooks/useProxyManagement'
 import { ConnectionCard, ConnectionDialog } from '../components/ProxyConnection'
@@ -24,6 +25,8 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
     setGroupOpen(true)
   }
 
+  const blockedByReferences = resourceReferences(state.loadErrorCause).length > 0
+
   return (
     <main className="min-h-dvh bg-canvas px-4 py-6 text-ink sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-[1480px] gap-5">
@@ -44,9 +47,12 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
         {state.loading ? <ProxyPageSkeleton /> : null}
 
         {!state.loading && state.loadError ? (
-          <div className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
-            <span>{state.loadError}。已加载的数据会继续保留。</span>
-            <Button className="shrink-0" disabled={state.retryAfterSeconds > 0} onClick={() => void state.reload()}>{state.retryAfterSeconds > 0 ? `${state.retryAfterSeconds} 秒后可重试` : '重新加载'}</Button>
+          <div className="grid gap-3 rounded-control border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span>{state.loadError}。已加载的数据会继续保留。</span>
+              {blockedByReferences ? null : <Button className="shrink-0" disabled={state.retryAfterSeconds > 0} onClick={() => void state.reload()}>{state.retryAfterSeconds > 0 ? `${state.retryAfterSeconds} 秒后可重试` : '重新加载'}</Button>}
+            </div>
+            <ResourceReferenceList error={state.loadErrorCause} />
           </div>
         ) : null}
 
