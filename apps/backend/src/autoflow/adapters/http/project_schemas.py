@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from .project_automation_schemas import AutomationView
 from .project_data_catalog_schemas import (
@@ -306,6 +306,7 @@ class ProjectOperationView(ApiModel):
         | FieldResourceLocator
         | StatusResourceLocator
         | RecordResourceLocator
+        | TaskResourceLocator
         | SheetsConnectionResourceLocator,
         Field(discriminator="type"),
     ]
@@ -341,6 +342,23 @@ class ProjectOperationView(ApiModel):
     created_at: datetime
     updated_at: datetime
     completed_at: datetime | None
+
+    @field_validator("resource", mode="before")
+    @classmethod
+    def _contract_resource(cls, value: Any) -> Any:
+        """把工作流能力操作的行内运行范围字段投影掉。
+
+        工作流数据能力会把 taskId/runId/executionGeneration 与目标资源写在同一行，
+        供按任务回查；但项目操作视图按契约只暴露 ResourceLocator。缺这一步会让
+        任何存在工作流写入的项目在 GET /projects/{id}/operations 上直接 500。
+        """
+        if not isinstance(value, dict):
+            return value
+        drop = {"runId", "executionGeneration"}
+        if value.get("type") in ("record", "field"):
+            # 记录/字段定位器只暴露嵌套 ref，projectId 与 taskId 属于行内运行范围。
+            drop |= {"projectId", "taskId"}
+        return {key: item for key, item in value.items() if key not in drop}
 
 
 class ProjectOperationPage(ApiModel):

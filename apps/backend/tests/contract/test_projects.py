@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -7,8 +9,15 @@ from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.projects import projects_router
 from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
-from autoflow.infrastructure.database.models import Base
+from autoflow.infrastructure.database.models import Base, ProjectOperationRow
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+
+
+def _app(service, overview_service):
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(projects_router(service, overview_service))
+    return app
 
 
 def make_client(tmp_path):
@@ -16,10 +25,7 @@ def make_client(tmp_path):
     Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     service = ProjectService(SqlAlchemyProjects(factory))
-    app = FastAPI()
-    install_error_handlers(app)
-    app.include_router(projects_router(service, ProjectOverviewService(factory)))
-    return TestClient(app)
+    return TestClient(_app(service, ProjectOverviewService(factory)))
 
 
 def test_all_ten_routes_and_dto_names_are_exposed(tmp_path):
@@ -50,6 +56,86 @@ def test_all_ten_routes_and_dto_names_are_exposed(tmp_path):
             assert "401" in operation["responses"]
     assert "HTTPValidationError" not in str(paths)
     assert not any("delete" in methods for methods in paths.values())
+
+
+def test_workflow_scoped_operations_still_serialize_as_contract_resource_locators(tmp_path):
+    engine = create_engine(f"sqlite:///{tmp_path / 'p.sqlite3'}")
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    client = TestClient(_app(ProjectService(SqlAlchemyProjects(factory)), ProjectOverviewService(factory)))
+    key = "00000000-0000-0000-0000-0000000000f1"
+    created = client.post(
+        "/api/v1/projects",
+        headers={"Idempotency-Key": key},
+        json={"name": "工作流操作投影", "description": ""},
+    )
+    assert created.status_code == 201, created.text
+    project_id = created.json()["projectId"]
+    now = datetime.now(UTC)
+    record_ref = {
+        "projectId": project_id,
+        "tableId": "00000000-0000-0000-0000-0000000000aa",
+        "datasetGeneration": "00000000-0000-0000-0000-0000000000bb",
+        "recordKey": {"type": "uuid", "value": "00000000-0000-0000-0000-0000000000cc"},
+    }
+    # 工作流能力操作把 task/run/执行代次与目标资源存在同一行，用于按任务回查；
+    # 项目操作视图按契约只暴露 ResourceLocator，不能因此 500。
+    run_scoped = {
+        "projectId": project_id,
+        "taskId": "00000000-0000-0000-0000-0000000000dd",
+        "runId": "00000000-0000-0000-0000-0000000000ee",
+        "executionGeneration": 1,
+    }
+    with factory() as session:
+        session.add_all(
+            [
+                ProjectOperationRow(
+                    id="00000000-0000-0000-0000-000000000101",
+                    project_id=project_id,
+                    idempotency_key="00000000-0000-0000-0000-000000000102",
+                    kind="setRecordStatus",
+                    request_digest="0" * 64,
+                    status="succeeded",
+                    status_revision=1,
+                    resource={**run_scoped, "type": "record", "recordRef": record_ref},
+                    result=None,
+                    error=None,
+                    created_at=now,
+                    updated_at=now,
+                    completed_at=now,
+                ),
+                ProjectOperationRow(
+                    id="00000000-0000-0000-0000-000000000103",
+                    project_id=project_id,
+                    idempotency_key="00000000-0000-0000-0000-000000000104",
+                    kind="setRecordStatus",
+                    request_digest="1" * 64,
+                    status="succeeded",
+                    status_revision=1,
+                    resource={**run_scoped, "type": "task"},
+                    result=None,
+                    error=None,
+                    created_at=now,
+                    updated_at=now,
+                    completed_at=now,
+                ),
+            ]
+        )
+        session.commit()
+    response = client.get(f"/api/v1/projects/{project_id}/operations")
+    assert response.status_code == 200, response.text
+    resources = {
+        item["operationId"]: item["resource"] for item in response.json()["items"]
+    }
+    assert resources["00000000-0000-0000-0000-000000000101"] == {
+        "type": "record",
+        "recordRef": record_ref,
+    }
+    assert resources["00000000-0000-0000-0000-000000000103"] == {
+        "type": "task",
+        "projectId": project_id,
+        "taskId": run_scoped["taskId"],
+    }
 
 
 def test_create_list_patch_open_overview_and_operations(tmp_path):

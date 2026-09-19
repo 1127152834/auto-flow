@@ -138,6 +138,21 @@ describe('workspace and preference controller', () => {
     expect(h.sidecars[0].stops).toBe(1)
   })
 
+  it('labels every project-lifecycle blocker with actionable text instead of the generic fallback', async () => {
+    const h = harness({ request: vi.fn(async () => new Response(JSON.stringify({ blockers: [
+      'project_batches_active', 'project_lifecycle_pending', 'project_excel_operation_active',
+      'project_data_status_batch_active', 'project_manual_item_pending', 'project_sync_outcome_unknown',
+      'workflow_runs_active', 'workflow_worker_busy', 'workflow_process_active',
+      'android_management_active', 'android_console_active',
+    ] }))) })
+    await h.controller.start()
+    const { blockers } = (await h.controller.snapshot()).workspace
+    expect(blockers).not.toContain('本地任务进行中，请等待任务结束')
+    expect(new Set(blockers).size).toBe(blockers.length)
+    expect(blockers).toContain('项目批次正在运行')
+    expect(blockers).toContain('项目归档或删除正在收尾')
+  })
+
   it('reads a synchronous runtime snapshot without mixing workspace identity and credentials during a switch', async () => {
     const target = temporary('runtime-context')
     const h = harness({ selectDirectory: async () => target })
