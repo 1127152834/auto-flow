@@ -63,6 +63,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   const [licenseError, setLicenseError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<KernelRef | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteCause, setDeleteCause] = useState<unknown>(null)
   const pendingDownloads = useRef(new Set<string>())
   const pendingCancellations = useRef(new Set<string>())
   const [pendingDownloadKeys, setPendingDownloadKeys] = useState<ReadonlySet<string>>(new Set())
@@ -208,12 +209,14 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   async function confirmDelete(kernel: KernelRef) {
     if (disabled) return
     setDeleteError(null)
+    setDeleteCause(null)
     try {
       await remove.mutateAsync(kernel)
       setDeleteTarget(null)
       notify({ title: '内核已删除', tone: 'success' })
     } catch (error) {
       setDeleteError(message(error))
+      setDeleteCause(error)
     }
   }
 
@@ -256,10 +259,10 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
           {catalog.error || catalog.data?.catalogError ? <p role="alert" className="m-0 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">发布列表暂不可用：{catalog.data?.catalogError ?? message(catalog.error)}。仍可管理本机已安装内核。</p> : null}
           {selectedUnavailable ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">当前表单选择的内核已不可用；原选择值会保留，请改选已安装内核后再保存。</p> : null}
           {actionError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{actionError}</p> : null}
-          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationIds={cancellingOperationIds} cancellationErrors={cancellationErrors} pendingDownloadKeys={pendingDownloadKeys} downloadErrors={downloadErrors} busy={actionBusy} disabled={disabled} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { if (disabled) return; deleteTrigger.current = trigger; setDeleteError(null); setDeleteTarget(kernel) }} />}
+          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationIds={cancellingOperationIds} cancellationErrors={cancellationErrors} pendingDownloadKeys={pendingDownloadKeys} downloadErrors={downloadErrors} busy={actionBusy} disabled={disabled} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { if (disabled) return; deleteTrigger.current = trigger; setDeleteError(null); setDeleteCause(null); setDeleteTarget(kernel) }} />}
         </section>
       </DialogContent>
     </Dialog>
-    <DeleteKernelDialog kernel={deleteTarget} busy={remove.isPending} disabled={disabled} error={deleteError} onReconnect={onReconnect} returnFocusTo={deleteTrigger.current} onOpenChange={(nextOpen) => { if (!nextOpen) setDeleteTarget(null) }} onConfirm={confirmDelete} />
+    <DeleteKernelDialog kernel={deleteTarget} busy={remove.isPending} disabled={disabled} error={deleteError} cause={deleteCause} onReconnect={onReconnect} returnFocusTo={deleteTrigger.current} onOpenChange={(nextOpen) => { if (!nextOpen) setDeleteTarget(null) }} onConfirm={confirmDelete} />
   </>
 }
