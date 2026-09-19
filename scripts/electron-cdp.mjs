@@ -74,12 +74,23 @@ export async function connectCdp(url) {
 export async function waitFor(cdp, expression, description, timeoutMs = 15_000) {
   const deadline = Date.now() + timeoutMs
   let value
+  let failure
   while (Date.now() < deadline) {
-    value = await cdp.evaluate(expression)
+    // A page that is mid-navigation has no document body yet; that is a normal
+    // transient, so it retries like any other unmet condition instead of
+    // aborting the wait.
+    try {
+      value = await cdp.evaluate(expression)
+      failure = undefined
+    } catch (error) {
+      failure = error
+      value = undefined
+    }
     if (value) return value
     await wait(100)
   }
-  throw new Error(`timed out waiting for ${description}: ${JSON.stringify(value)}`)
+  const detail = failure ? String(failure.message ?? failure) : JSON.stringify(value)
+  throw new Error(`timed out waiting for ${description}: ${detail}`)
 }
 
 // The project page is identified structurally (its tab bar), never by copy that
