@@ -6,7 +6,7 @@ import { ScrollArea } from '../../../shared/components/ui/scroll-area'
 import { SearchInput } from '../../../shared/components/ui/search-input'
 import { Select } from '../../../shared/components/ui/select'
 import type { ProjectListConditions, ProjectPage, ProjectSummary } from '../types'
-import { ProjectCard } from './ProjectCard'
+import { ProjectCard, type ProjectLifecycleChoice } from './ProjectCard'
 
 export type ProjectDirectoryMode = 'recent' | 'all'
 
@@ -27,6 +27,7 @@ type Props = {
   onCreate(): void
   onOpen(project: ProjectSummary): void
   onEdit(project: ProjectSummary): void
+  onLifecycle?(project: ProjectSummary, action: ProjectLifecycleChoice): void
   initialScrollTop?: number
   onScrollTopChange?(value: number): void
 }
@@ -34,7 +35,7 @@ type Props = {
 const lifecycleOptions = [{ value: 'active', label: '活动项目' }, { value: 'archived', label: '已归档' }, { value: 'all', label: '全部状态' }]
 const sortOptions = [{ value: '-lastOpenedAt', label: '最近打开' }, { value: 'lastOpenedAt', label: '最早打开' }, { value: '-updatedAt', label: '最近更新' }, { value: 'updatedAt', label: '最早更新' }, { value: 'name', label: '名称 A–Z' }, { value: '-name', label: '名称 Z–A' }]
 
-export function ProjectDirectory({ mode = 'all', onModeChange, recentItems = [], recentLoading = false, recentError = null, page, conditions, loading, refreshing, disabled, error, onConditionsChange, onRefresh, onCreate, onOpen, onEdit, initialScrollTop = 0, onScrollTopChange }: Props) {
+export function ProjectDirectory({ mode = 'all', onModeChange, recentItems = [], recentLoading = false, recentError = null, page, conditions, loading, refreshing, disabled, error, onConditionsChange, onRefresh, onCreate, onOpen, onEdit, onLifecycle, initialScrollTop = 0, onScrollTopChange }: Props) {
   const recent = recentItems.filter(project => project.lifecycleState === 'active' && project.lastOpenedAt != null).slice(0, 6)
   const items = mode === 'recent' ? recent : page?.items ?? []
   const currentLoading = mode === 'recent' ? recentLoading : loading
@@ -58,7 +59,7 @@ export function ProjectDirectory({ mode = 'all', onModeChange, recentItems = [],
     {currentError ? <div role="alert" className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm">{currentError}{items.length ? '。当前仍显示上次成功载入的内容。' : '。'}</div> : null}
     <div className="flex flex-wrap items-center gap-3"><h2 className="m-0 text-xl font-semibold text-ink">{mode === 'recent' ? '最近项目' : '全部项目'}</h2>{(mode === 'recent' ? items.length > 0 || !currentLoading && !currentError : Boolean(page)) ? <span className="text-sm text-muted">{mode === 'recent' ? `${items.length} 个项目` : page ? `${page.total} 个项目` : ''}</span> : null}{mode === 'all' ? <Button className="ml-auto" variant="ghost" onClick={() => onModeChange?.('recent')}><ArrowLeft aria-hidden="true" />返回最近</Button> : null}</div>
     <ScrollArea ref={viewport} onScroll={event => onScrollTopChange?.(event.currentTarget.scrollTop)} className="max-h-[min(62vh,44rem)]" viewportClassName="max-h-[min(62vh,44rem)]">
-      {items.length ? <div className="grid gap-5 lg:grid-cols-2">{items.map(project => <ProjectCard key={project.projectId} project={project} disabled={disabled} onOpen={onOpen} onEdit={onEdit} />)}</div> : null}
+      {items.length ? <div className="grid gap-5 lg:grid-cols-2">{items.map(project => <ProjectCard key={project.projectId} project={project} disabled={disabled} onOpen={onOpen} onEdit={onEdit} onLifecycle={onLifecycle} />)}</div> : null}
       {currentLoading ? <p role="status" className="m-0 rounded-card border border-line bg-surface px-6 py-14 text-center text-muted">正在加载项目…</p> : !items.length && !currentError ? <div role="status" className="rounded-card border border-line bg-surface px-6 py-14 text-center text-muted"><p className="m-0">{mode === 'recent' ? '尚无最近访问，可查看全部项目或新建项目。' : conditions.query.trim() || conditions.lifecycle !== 'active' ? '没有匹配的项目' : '还没有项目'}</p></div> : null}
     </ScrollArea>
     {mode === 'recent' ? <div><Button variant="ghost" className="px-0 text-ink" aria-label="查看全部项目" onClick={() => onModeChange?.('all')}>全部项目<CaretRight aria-hidden="true" /></Button></div> : null}

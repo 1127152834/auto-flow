@@ -1,7 +1,9 @@
-import { DotsThree, Folder, PencilSimple } from '@phosphor-icons/react'
+import { Archive, ArrowCounterClockwise, DotsThree, Folder, PencilSimple, Trash } from '@phosphor-icons/react'
 import { Button } from '../../../shared/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../shared/components/ui/dropdown-menu'
 import type { ProjectSummary } from '../types'
+
+export type ProjectLifecycleChoice = 'archive' | 'restore' | 'delete'
 
 const lifecycleLabel: Record<string, string> = { active: '活动', closing: '正在归档', archived: '已归档', deleting: '正在删除', deleted: '已删除' }
 
@@ -10,7 +12,7 @@ function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
 
-export function ProjectCard({ project, disabled, onOpen, onEdit }: { project: ProjectSummary; disabled: boolean; onOpen(project: ProjectSummary): void; onEdit(project: ProjectSummary): void }) {
+export function ProjectCard({ project, disabled, onOpen, onEdit, onLifecycle }: { project: ProjectSummary; disabled: boolean; onOpen(project: ProjectSummary): void; onEdit(project: ProjectSummary): void; onLifecycle?(project: ProjectSummary, action: ProjectLifecycleChoice): void }) {
   const canOpen = !disabled && project.lifecycleState !== 'deleting' && project.lifecycleState !== 'deleted'
   const open = () => { if (canOpen) onOpen(project) }
   return <article aria-disabled={!canOpen || undefined} className={`group relative flex min-h-[150px] min-w-0 items-start gap-5 rounded-card border border-line bg-surface p-5 pr-14 shadow-card ${canOpen ? 'cursor-pointer hover:border-clay/50 hover:bg-surface-hover' : 'opacity-60'}`} onClick={event => { if (!(event.target as Element).closest('button')) open() }}>
@@ -23,7 +25,7 @@ export function ProjectCard({ project, disabled, onOpen, onEdit }: { project: Pr
       </div>
     </div>
     <div data-project-menu className="absolute right-3 top-3">
-      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0" aria-label={`更多${project.name}操作`} onClick={event => event.stopPropagation()}><DotsThree aria-hidden="true" size={20} /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" onClick={event => event.stopPropagation()}><DropdownMenuItem disabled={disabled || project.lifecycleState !== 'active'} onSelect={() => onEdit(project)}><PencilSimple aria-hidden="true" className="mr-2" />编辑项目</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0" aria-label={`更多${project.name}操作`} onClick={event => event.stopPropagation()}><DotsThree aria-hidden="true" size={20} /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" onClick={event => event.stopPropagation()}><DropdownMenuItem disabled={disabled || project.lifecycleState !== 'active'} onSelect={() => onEdit(project)}><PencilSimple aria-hidden="true" className="mr-2" />编辑项目</DropdownMenuItem>{project.lifecycleState === 'active' ? <DropdownMenuItem disabled={disabled} onSelect={() => onLifecycle?.(project, 'archive')}><Archive aria-hidden="true" className="mr-2" />归档项目</DropdownMenuItem> : null}{project.lifecycleState === 'archived' ? <><DropdownMenuItem disabled={disabled} onSelect={() => onLifecycle?.(project, 'restore')}><ArrowCounterClockwise aria-hidden="true" className="mr-2" />恢复项目</DropdownMenuItem><DropdownMenuItem disabled={disabled} onSelect={() => onLifecycle?.(project, 'delete')}><Trash aria-hidden="true" className="mr-2" />永久删除</DropdownMenuItem></> : null}</DropdownMenuContent></DropdownMenu>
     </div>
   </article>
 }

@@ -10,6 +10,8 @@ import { toProjectCreate, toProjectPatch, type ProjectFormValues } from '../form
 import { projectKeys, useProject, useProjectDirectory, useProjectOverview } from '../hooks'
 import type { ProjectCreate, ProjectListConditions, ProjectPatch, ProjectRoute, ProjectSummary, ProjectView } from '../types'
 import { ProjectFormDialog } from '../components/ProjectFormDialog'
+import { ProjectLifecycleDialog, type LifecycleSubmit } from '../components/ProjectLifecycleDialog'
+import type { ProjectLifecycleChoice } from '../components/ProjectCard'
 import { ProjectDirectoryPage } from './ProjectDirectoryPage'
 import { ProjectOverviewPage } from './ProjectOverviewPage'
 import { DataTableDirectoryPage } from '../../project-data/pages/DataTableDirectoryPage'
@@ -96,6 +98,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const [mode, setModeState] = useState<DirectoryMode>(() => readMode(workspaceKey))
   const [scrollTop, setScrollTop] = useState(() => readScrollTop(workspaceKey, readMode(workspaceKey)))
   const [editor, setEditor] = useState<Editor | null>(null)
+  const [lifecycle, setLifecycle] = useState<{ project: ProjectView; action: ProjectLifecycleChoice } | null>(null)
   const [saving, setSaving] = useState(false)
   const [recoveryPending, setRecoveryPending] = useState(false)
   const dataGuard = useRef<(() => Promise<boolean>) | null>(null)
@@ -194,6 +197,46 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     if (command.kind === 'create') onNavigate({ projectId: saved.projectId, tab: 'overview' })
   }
 
+  const startLifecycle = (project: ProjectSummary, action: ProjectLifecycleChoice) => setLifecycle({ project: project as ProjectView, action })
+
+  const lifecycleImpact = async () => {
+    if (!lifecycle || lifecycle.action === 'restore') throw new Error('缺少生命周期动作')
+    return api.lifecycleImpact(lifecycle.project.projectId, lifecycle.action)
+  }
+
+  const lifecycleSubmit = async (values: LifecycleSubmit) => {
+    if (!lifecycle) throw new Error('缺少生命周期动作')
+    const { projectId } = lifecycle.project
+    const operation = lifecycle.action === 'archive'
+      ? await api.archive(projectId, { impactRevision: values.impactRevision, expectedManagementRevision: values.expectedManagementRevision })
+      : await api.remove(projectId, values)
+    void cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'projects'] })
+    void cache.invalidateQueries({ queryKey: projectKeys.detail(workspaceKey, instanceId, projectId) })
+    notify({
+      title: operation.status === 'failed' ? '归档未完成，请核对残留' : lifecycle.action === 'archive' ? '归档命令已接受' : '删除命令已接受',
+      tone: operation.status === 'failed' ? 'error' : 'success',
+      operationId: operation.operationId,
+    })
+    if (lifecycle.action === 'delete' && operation.status === 'succeeded' && route.projectId === projectId) onNavigate({ tab: 'overview' })
+    return operation
+  }
+
+  const restoreProject = async (project: ProjectSummary) => {
+    try {
+      const operation = await api.restore(project.projectId, { expectedManagementRevision: (project as ProjectView).managementRevision })
+      void cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'projects'] })
+      void cache.invalidateQueries({ queryKey: projectKeys.detail(workspaceKey, instanceId, project.projectId) })
+      notify({ title: operation.status === 'succeeded' ? '项目已恢复' : '恢复命令已接受', tone: 'success', operationId: operation.operationId })
+    } catch (error) {
+      notify({ title: safeProjectError(error), tone: 'error' })
+    }
+  }
+
+  const selectLifecycle = (project: ProjectSummary, action: ProjectLifecycleChoice) => {
+    if (action === 'restore') void restoreProject(project)
+    else startLifecycle(project, action)
+  }
+
   const openProject = async (project: ProjectSummary) => {
     const ticket = ++openTicket.current
     const captured = `${workspaceKey}:${instanceId}`
@@ -239,8 +282,18 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
       </ProjectOverviewPage>
       : route.projectId && detail.isLoading ? <main className="p-6" role="status">正在加载项目…</main>
       : route.projectId && detail.isError ? <main className="grid gap-3 p-6" role="alert"><p>无法加载项目。</p><div className="flex gap-2"><Button onClick={() => void detail.refetch()}>重试</Button><Button variant="ghost" onClick={() => onNavigate({ tab: 'overview' })}>返回项目目录</Button></div></main>
-      : <ProjectDirectoryPage key={mode} mode={mode} onModeChange={setMode} recentItems={recent.data?.items} recentLoading={recent.isLoading} recentError={recent.isError ? '刷新最近项目失败' : null} page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={mode === 'recent' ? recent.isFetching : directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, mode, value) }} onConditionsChange={setConditions} onRefresh={() => void (mode === 'recent' ? recent.refetch() : directory.refetch())} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} />}
+      : <ProjectDirectoryPage key={mode} mode={mode} onModeChange={setMode} recentItems={recent.data?.items} recentLoading={recent.isLoading} recentError={recent.isError ? '刷新最近项目失败' : null} page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={mode === 'recent' ? recent.isFetching : directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, mode, value) }} onConditionsChange={setConditions} onRefresh={() => void (mode === 'recent' ? recent.refetch() : directory.refetch())} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} onLifecycle={selectLifecycle} />}
     <ProjectFormDialog open={Boolean(editor)} project={editor?.project ?? null} draftSession={editor?.draftSession ?? 'closed'} submissionEpoch={`${instanceId}:${editor?.draftSession ?? 'closed'}`} recoveryPending={recoveryPending} disabled={disabled} onOpenChange={open => { if (!open) setEditor(null) }} onSubmit={submit} onLoadLatest={editorProjectId ? () => api.get(editorProjectId) : undefined} onDirtyChange={value => { dirtyRef.current = value }} onSavingChange={value => { savingRef.current = value; setSaving(value) }} onRequestClose={guard} />
+    {lifecycle && lifecycle.action !== 'restore' ? <ProjectLifecycleDialog
+      open
+      action={lifecycle.action}
+      project={lifecycle.project}
+      disabled={disabled}
+      onOpenChange={open => { if (!open) setLifecycle(null) }}
+      onLoadImpact={lifecycleImpact}
+      onSubmit={lifecycleSubmit}
+      onFinished={operation => { if (operation.status === 'succeeded' || operation.status === 'failed') setLifecycle(null) }}
+    /> : null}
     <AlertDialog open={leaveOpen} onOpenChange={open => { if (!open && !savingRef.current) finishLeave(false) }}><AlertDialogContent><AlertDialogTitle>保存项目修改后离开？</AlertDialogTitle><AlertDialogDescription>{recoveryPending ? '上次保存结果尚未确认。请先核对，避免遗失操作结果。' : '可以先保存修改、放弃本次修改，或继续编辑。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={saving} onClick={() => finishLeave(false)}>继续编辑</Button></AlertDialogCancel><Button variant="ghost" disabled={saving || recoveryPending} onClick={() => finishLeave(true)}>放弃修改</Button><AlertDialogAction asChild><Button variant="primary" disabled={saving || disabled} onClick={event => { event.preventDefault(); document.querySelector<HTMLFormElement>('#project-form')?.requestSubmit() }}>{recoveryPending ? '核对后离开' : '保存后离开'}</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
   </>
 }

@@ -12,6 +12,7 @@ export type ProjectOperationPage = components['schemas']['ProjectOperationPage']
 export type ProjectOpenResult = components['schemas']['ProjectOpenResult']
 export type ProjectCreate = components['schemas']['ProjectCreate']
 export type ProjectPatch = components['schemas']['ProjectPatch']
+export type ProjectLifecycleImpact = components['schemas']['ProjectLifecycleImpact']
 
 export type ProjectTab = 'overview' | 'automations' | 'runs' | 'statistics' | 'data' | 'environments'
 export type RecordLocation = { mode: 'create' } | { mode: 'detail' | 'edit'; datasetGeneration: string; recordKey: RecordKey }

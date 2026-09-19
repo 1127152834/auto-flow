@@ -29,7 +29,7 @@ export function createRecordsApi(client: StreamingApiClient, context: CatalogSco
       if (resource.type !== 'record' || !sameScope(resource.recordRef) || !sameKey(resource.recordRef.recordKey, key)
         || !snapshot || !('target' in snapshot) || snapshot.target.type !== 'record' || snapshot.deleted !== true
         || !sameScope(snapshot.target.recordRef) || !sameKey(snapshot.target.recordRef.recordKey, key)) throw new Error('删除结果与原记录请求不一致')
-      return snapshot
+      return snapshot as Schema['RecordDeleteResult']
     }
   }
   return {
