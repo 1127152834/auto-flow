@@ -6,7 +6,7 @@ import '@testing-library/jest-dom/vitest'
 import { chooseOption, choiceTestEnvironment, choiceValue } from '../../../shared/testing/choice-user'
 
 choiceTestEnvironment()
-import { ApiClientError, type ApiClient } from '../../../shared/api/client'
+import { ApiClientError, createApiClient, type ApiClient } from '../../../shared/api/client'
 import type { ApiError, ConnectionView, GroupPage, GroupView, ProxyPage, ProxyView } from '../api'
 import { ProxyManagementPage } from '../pages/ProxyManagementPage'
 import { LocalProxyGroupEditor } from '../components/LocalProxyGroups'
@@ -418,4 +418,93 @@ it('uses the explicitly selected probe protocol without falling back silently', 
   await user.click(within(drawer).getByRole('button', { name: '测试连接' }))
   await waitFor(() => expect(protocols).toEqual(['http']))
   expect(choiceValue(select)).toBe('http')
+})
+
+function json(value: unknown): Response {
+  return new Response(JSON.stringify(value), { status: 200, headers: { 'content-type': 'application/json' } })
+}
+
+function wireApi(routes: (path: string, init?: RequestInit) => Response | undefined): ApiClient {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const response = routes(new URL(String(input)).pathname, init)
+    if (!response) throw new Error(`Unexpected request: ${String(input)}`)
+    return response
+  }))
+  return createApiClient({ baseUrl: 'http://127.0.0.1:1', token: 'fixture-token' })
+}
+
+function referenced(resourceType: string, references: Record<string, unknown>[]): Response {
+  return new Response(JSON.stringify({
+    error: { code: 'RESOURCE_REFERENCED', message: 'Resource is still referenced', details: { resourceType, references }, requestId: 'request-1' },
+  }), { status: 409, headers: { 'content-type': 'application/json' } })
+}
+
+it('names the project and automation that still reference a proxy group', async () => {
+  const user = userEvent.setup()
+  const group: GroupView = {
+    id: 'group-1',
+    name: '美国移动组',
+    description: '',
+    member_ids: [],
+    revision: 1,
+    reference_count: 0,
+    created_at: '2026-09-12T01:00:00Z',
+    updated_at: '2026-09-12T01:00:00Z',
+  }
+  const api = wireApi((path, init) => {
+    if (path === '/api/v1/proxy-panel/connections') return json({ items: [{ ...connection, last_synced_at: new Date().toISOString() }] })
+    if (path === '/api/v1/proxy-groups') return json({ ...groups, items: [group], matched_count: 1 })
+    if (path === '/api/v1/proxies') return json(proxies)
+    if (path === `/api/v1/proxy-groups/${group.id}` && init?.method === 'DELETE') {
+      return referenced('proxyPool', [{
+        kind: 'automation',
+        projectId: 'project-1',
+        projectName: '温室采集',
+        automationId: 'automation-1',
+        automationName: '每日填表',
+        path: ['environmentPolicy', 'proxyOverride', 'proxyPoolId'],
+      }])
+    }
+    return undefined
+  })
+  render(<ProxyManagementPage api={api} />)
+
+  await user.click(await screen.findByRole('button', { name: '删除' }))
+  await user.click(await screen.findByRole('button', { name: '确认删除' }))
+
+  expect(await screen.findByText(/无法删除“美国移动组”，仍被以下项目或自动化引用/)).toBeInTheDocument()
+  expect(await screen.findByText('温室采集 · 自动化「每日填表」')).toBeInTheDocument()
+  expect(screen.getByText('（environmentPolicy.proxyOverride.proxyPoolId）')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '重新加载' })).not.toBeInTheDocument()
+  expect(screen.getByText('温室采集 · 自动化「每日填表」')).toBeInTheDocument()
+  expect(screen.getByText('（environmentPolicy.proxyOverride.proxyPoolId）')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '重新加载' })).not.toBeInTheDocument()
+})
+
+it('names the project that still references the ProxyPanel connection before disconnecting', async () => {
+  const user = userEvent.setup()
+  const api = wireApi((path, init) => {
+    if (path === '/api/v1/proxy-panel/connections' && init?.method !== 'DELETE') return json({ items: [{ ...connection, last_synced_at: new Date().toISOString() }] })
+    if (path === '/api/v1/proxy-groups') return json(groups)
+    if (path === '/api/v1/proxies') return json(proxies)
+    if (path === `/api/v1/proxy-panel/connections/${connection.id}` && init?.method === 'DELETE') {
+      return referenced('proxyConnection', [{
+        kind: 'project',
+        projectId: 'project-2',
+        projectName: '账号池',
+        path: ['defaultResources', 'proxy', 'proxyId'],
+      }])
+    }
+    return undefined
+  })
+  render(<ProxyManagementPage api={api} />)
+
+  await user.click(await screen.findByRole('button', { name: '断开' }))
+  await user.click(await screen.findByRole('button', { name: '确认断开' }))
+
+  expect(await screen.findByText('账号池')).toBeInTheDocument()
+  expect(screen.getByText('（defaultResources.proxy.proxyId）')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '重新加载' })).not.toBeInTheDocument()
+  expect(screen.getByText('账号池')).toBeInTheDocument()
+  expect(screen.getByText('（defaultResources.proxy.proxyId）')).toBeInTheDocument()
 })
