@@ -522,11 +522,11 @@ export function FirecrawlScrapeConfig({ data, onChange }: { data: NodeData; onCh
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="waitFor">等待时间 (毫秒，可选)</Label>
+        <Label htmlFor="waitFor">等待选择器 (可选)</Label>
         <VariableInput
           value={(data.waitFor as string) || ''}
           onChange={(v) => onChange('waitFor', v)}
-          placeholder="3000"
+          placeholder="#content-ready，最多等待 5 秒"
         />
       </div>
       

@@ -58,6 +58,10 @@ class _AIPageExecutor(ModuleExecutor):
         finally:
             if temporary is not None:
                 await temporary.close()
+                try:
+                    context.browser.select_page(current.id)
+                except Exception:  # noqa: BLE001,S110 - original page may be user-closed.
+                    pass
 
 
 class AISmartScraperExecutor(_AIPageExecutor):

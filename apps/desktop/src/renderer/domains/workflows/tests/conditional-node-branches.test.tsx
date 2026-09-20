@@ -259,16 +259,18 @@ it('NODE.ai_dedup_semantic.conditional-ui: uses a list input instead of the shar
   expect(screen.queryByText('输入文本')).toBeNull()
 })
 
-it.each(['ai_smart_scraper', 'ai_element_selector'] as const)('NODE.%s.conditional-ui: switches local, cloud and Azure provider fields', (type) => {
-  const { id } = open(type)
+it.each(['ai_smart_scraper', 'ai_element_selector'] as const)('NODE.%s.conditional-ui: consumes only main-app managed models', async (type) => {
+  open(type)
+  expect(await screen.findByText('主应用模型')).toBeDefined()
   expect(screen.queryByText('API地址')).toBeNull()
   expect(screen.queryByText('API Key')).toBeNull()
-  choose('LLM提供商', 'OpenAI')
-  expect(screen.getByPlaceholderText('https://api.openai.com/v1')).toBeDefined()
-  expect(screen.getByText('API Key')).toBeDefined()
-  choose('LLM提供商', 'Azure OpenAI')
-  expect(screen.getByText('Azure Endpoint')).toBeDefined()
-  expect(nodeData(id).llmProvider).toBe('azure')
+  expect(screen.queryByText('Azure Endpoint')).toBeNull()
+})
+
+it('NODE.firecrawl_scrape.conditional-ui: labels waitFor with its source selector semantics', () => {
+  open('firecrawl_scrape')
+  expect(screen.getByText('等待选择器 (可选)')).toBeDefined()
+  expect(screen.getByPlaceholderText('#content-ready，最多等待 5 秒')).toBeDefined()
 })
 
 it.each([

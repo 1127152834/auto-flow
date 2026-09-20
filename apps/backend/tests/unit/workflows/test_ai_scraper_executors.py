@@ -27,6 +27,7 @@ class Models:
 
 class Page:
     def __init__(self, url: str, html: str) -> None:
+        self.id = url
         self.url = url
         self.html = html
         self.goto_calls: list[str] = []
@@ -54,7 +55,13 @@ class Browser:
     async def new_page(self) -> Page:
         page = Page("about:blank", "<html><button id='login'>登录</button></html>")
         self.created.append(page)
+        self.current = page
         return page
+
+    def select_page(self, page_id: str) -> Page:
+        assert page_id == "https://example.test/current"
+        self.current = Page("https://example.test/current", "<html>current</html>")
+        return self.current
 
 
 @pytest.mark.asyncio
@@ -105,6 +112,7 @@ async def test_ai_element_selector_uses_temporary_cloakbrowser_page_and_closes_i
     assert context.variables["selector"] == "#login"
     assert browser.created[0].goto_calls == ["https://example.test/login"]
     assert browser.created[0].closed is True
+    assert browser.current.url == "https://example.test/current"
 
 
 @pytest.mark.parametrize("module_type", ["ai_smart_scraper", "ai_element_selector"])

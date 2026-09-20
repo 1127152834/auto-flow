@@ -42,6 +42,7 @@ from .dict_advanced import (
     DictMergeExecutor,
     DictSortExecutor,
 )
+from .firecrawl import FIRECRAWL_EXECUTORS
 from .input_prompt import InputPromptExecutor
 from .list_advanced import (
     ListCartesianProductExecutor,
@@ -149,6 +150,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     AIVisionActExecutor,
     *AI_TASK_EXECUTORS,
     *AI_SCRAPER_EXECUTORS,
+    *FIRECRAWL_EXECUTORS,
     InputPromptExecutor,
     RunWorkflowFileExecutor,
     SubflowExecutor,
