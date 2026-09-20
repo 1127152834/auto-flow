@@ -21,7 +21,7 @@ const ids = {
   operation: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', snapshot: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
 }
 const businessUuid = 'ffffffff-ffff-4fff-8fff-ffffffffffff'
-const batch = { batchId: ids.batch, projectId: ids.project, automationId: ids.automation, automationName: '参数运行验收', startOperationId: ids.operation, status: 'running', statusRevision: 2, managementRevision: 3, requestedCount: 2, createdTaskCount: 2, activeTaskCount: 2, createdAt: '2026-09-15T04:41:00Z', completedAt: null } satisfies Schema['BatchView']
+const batch = { batchId: ids.batch, projectId: ids.project, automationId: ids.automation, automationName: '参数运行验收', startOperationId: ids.operation, status: 'running', statusRevision: 2, managementRevision: 3, requestedCount: 2, createdTaskCount: 2, activeTaskCount: 2, createdAt: new Date(2026, 8, 15, 12, 41).toISOString(), completedAt: null } satisfies Schema['BatchView']
 const task = (taskId: string, taskOrdinal: number) => ({ taskId, taskOrdinal, projectId: ids.project, batchId: ids.batch, runId: ids.run, runRequestId: ids.request, status: 'failed', statusRevision: 2, inputSnapshotId: ids.snapshot, createdAt: batch.createdAt, completedAt: '2026-09-15T04:42:00Z' }) satisfies Schema['TaskView']
 const detail = {
   automationName: '参数运行验收', batchStartedAt: batch.createdAt, nodeNames: { [ids.node]: '冻结的读取页面' },

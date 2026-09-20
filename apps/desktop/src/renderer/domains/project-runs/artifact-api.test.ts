@@ -19,10 +19,11 @@ it('uses project-scoped encoded artifact routes', async () => {
 })
 
 it('loads screenshot bytes through the authenticated streaming client', async () => {
-  const body = new Blob(['png'], { type: 'image/png' })
-  const stream = vi.fn().mockResolvedValue(new Response(body, { headers: { 'content-type': 'image/png' } }))
+  const stream = vi.fn().mockResolvedValue(new Response('png', { headers: { 'content-type': 'image/png' } }))
   const signal = new AbortController().signal
 
-  await expect(createTaskArtifactApi(client(vi.fn(), stream), 'project', 'task').content('artifact', signal)).resolves.toEqual(body)
+  const body = await createTaskArtifactApi(client(vi.fn(), stream), 'project', 'task').content('artifact', signal)
+  expect(body.type).toBe('image/png')
+  await expect(body.text()).resolves.toBe('png')
   expect(stream).toHaveBeenCalledWith('/api/v1/projects/project/tasks/task/artifacts/artifact/content', { signal })
 })

@@ -32,7 +32,6 @@ jobs:
       - run: uv sync --directory apps/backend --locked
       - run: npm ci
       - run: npm run typecheck
-      - run: npm test
       - run: npm run test:scripts
       - run: npm run lint
       - run: npm run build
@@ -100,6 +99,7 @@ jobs:
       - run: npm run openapi:check
       - run: uv run --directory apps/backend ruff check .
       - run: uv run --directory apps/backend mypy src
+      - run: npm test
       - run: uv run --directory apps/backend pytest -q
       - name: Upload PM9 reports and installer artifacts
         if: always()

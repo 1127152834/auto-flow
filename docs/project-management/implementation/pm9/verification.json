@@ -20,7 +20,8 @@
     "packageDir": "passed",
     "dmg": "built locally, unsigned/unnotarized; installer itself not manually installed",
     "backend": "3159 passed / 15 skipped",
-    "realBrowser": "8 passed in 49.12s; production four-node browser chain, batch and service recreation; full graph not covered"
+    "realBrowser": "8 passed in 49.12s; production four-node browser chain, batch and service recreation; full graph not covered",
+    "node22Portability": "10 passed under UTC; 94 script checks passed under Node 22; typecheck/lint passed"
   },
   "platforms": {
     "darwin-arm64": {
@@ -41,8 +42,9 @@
   "volume": "volume.json",
   "coverage": "coverage-audit.json",
   "ci": {
-    "status": "awaiting-branch-push",
-    "note": "GitHub Actions enabled, but workflow list and run list currently empty; dispatch to be attempted after branch push."
+    "status": "rerun-required",
+    "firstRun": "https://github.com/1127152834/auto-flow/actions/runs/35507028913",
+    "note": "Workflow registration became available after push. macOS arm64 ran 5445 frontend tests: 5442 passed, 3 failed due to Node 22 Blob fixture and fixed Shanghai-time assertions. All 3 reproduced locally under Node 22 UTC; corrected fixture suite 10 passed. New CI places full frontend suite after build/package smoke; all checks retained."
   },
   "remaining": [
     "Production full graph/project data/End/manual integration requires approved architecture work; see production runtime integration spec.",
@@ -52,6 +54,6 @@
   "sourceFiles": {
     "scripts/smoke-project-management.mjs": "271a0a7753bd1cb684ff6ff87f8f3c4d21dbeb3a7ef40daddf09a9ff97ba5800",
     "scripts/smoke-project-management-desktop.mjs": "14633bcd3741ed0dff8299522071b302189528bfa8dfcb4068d542d63a50779b",
-    ".github/workflows/ci.yml": "c2934a092c5aba67e5d57ca9abd263f8cc3069dc61995b54ef25a3e5877918b5"
+    ".github/workflows/ci.yml": "acf951b9e00b76eae11867e772a5047163361d2313833ad2310e49cf7e60d623"
   }
 }
