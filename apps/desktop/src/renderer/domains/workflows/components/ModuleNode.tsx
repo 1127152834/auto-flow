@@ -250,7 +250,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
           </div>
           <Handle type="source" position={Position.Right} id="error" className="!bg-[hsl(var(--warning-500))] !border-[2px] !border-white" style={{ top: '50%', width: `${handleSize * 0.83}px`, height: `${handleSize * 0.83}px` }} />
         </>
-      ) : nodeData.moduleType === 'loop' || nodeData.moduleType === 'foreach' || nodeData.moduleType === 'foreach_dict' ? (
+      ) : nodeData.moduleType === 'loop' || nodeData.moduleType === 'infinite_loop' || nodeData.moduleType === 'foreach' || nodeData.moduleType === 'foreach_dict' ? (
         <>
           <Handle type="source" position={Position.Bottom} id="loop" className="!bg-[hsl(var(--success-500))] !border-[2px] !border-white" style={{ left: '30%', width: `${handleSize}px`, height: `${handleSize}px` }} />
           <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-control bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '30%', transform: 'translateX(-50%)' }}>循环</div>

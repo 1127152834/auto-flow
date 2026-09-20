@@ -66,7 +66,7 @@
     "typescript": "desktop typecheck通过",
     "eslint": "desktop lint通过",
     "b3ClosureMatrix": "62 passed；冻结解析器覆盖空流程、悬空边、非法回环和控制端口，冻结变量对照覆盖缺失变量；运行时覆盖并行取消，真实worker覆盖1,000轮停止以及画布子流程32层成功/33层拒绝。",
-    "formalElectronCombination": "passed；真实UI编排、保存、系统级Cmd+W正常关闭、重开并运行条件、次数循环、设置/增减变量、分组子流程和两个顶层并行入口；SQLite终态及资源槽清理通过。证据：formal-control-flow-electron-Fgh30z/result.json",
+    "formalElectronCombination": "passed；真实UI编排、保存、系统级Cmd+W正常关闭、重开并运行条件、次数循环、设置/增减变量、分组子流程和两个顶层并行入口；SQLite终态及资源槽清理通过。证据：formal-control-flow-electron-LRYNGD/result.json",
     "affectedRegression": "231 passed；B3运行时、冻结差分、依赖合同、HTTP合同及工作流单元回归；Ruff和mypy受影响文件通过。"
   },
   "remaining": [

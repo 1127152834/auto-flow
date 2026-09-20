@@ -24,7 +24,7 @@ export const CONDITION_TYPES = new Set([
   'image_exists', 'phone_image_exists', 'face_recognition',
   'probability_trigger',
 ])
-export const LOOP_TYPES = new Set(['loop', 'foreach', 'foreach_dict'])
+export const LOOP_TYPES = new Set(['loop', 'infinite_loop', 'foreach', 'foreach_dict'])
 
 /** 不同分支模块的两个出口 handle（与 ModuleNode/后端约定一致） */
 export function branchHandles(moduleType: string): [string, string] {

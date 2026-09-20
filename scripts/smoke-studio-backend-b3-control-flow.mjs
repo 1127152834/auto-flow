@@ -192,6 +192,193 @@ try {
   assert.equal(sqlite.run[0].status, 'completed')
   assert.equal(sqlite.run[0].cleanupState, 'completed')
   assert.equal(sqlite.run[0].activeSlot, null)
+
+  const childName = 'B3 子工作流目标'
+  await newWorkflow(studio, childName)
+  const childNodeId = await addCanvasNode(studio, '设置变量')
+  await setInput(studio, '[placeholder="变量名"]', 'child_value')
+  await setInput(studio, '[placeholder="变量的值"]', 'child_done')
+  const childWorkflow = await saveWorkflow(studio, runtime, childName)
+
+  const utilityName = 'B3 变量交互与依赖正式闭环'
+  await newWorkflow(studio, utilityName)
+  await addGlobalVariable(studio, 'json_data', 'string', '{"data":{"name":"AutoFlow"}}')
+  const utilityNodes = {}
+
+  utilityNodes.json_parse = await addCanvasNode(studio, 'JSON解析')
+  await setInput(studio, '[placeholder="填写变量名，如: jsonData"]', 'json_data')
+  await setInput(studio, '[placeholder="$.data.items[0].name，支持 {变量名}"]', '$.data.name')
+  await setInput(studio, '#variableName', 'parsed_name')
+
+  utilityNodes.base64 = await addCanvasNode(studio, 'Base64编解码')
+  await setInput(studio, 'textarea[placeholder="要编码的文本，支持 {变量名}"]', '{parsed_name}')
+  await setInput(studio, '#variableName', 'encoded_name')
+
+  utilityNodes.random_number = await addCanvasNode(studio, '随机数')
+  await setInput(studio, '[placeholder="最小值，支持 {变量名}"]', '7')
+  await setInput(studio, '[placeholder="最大值，支持 {变量名}"]', '7')
+  await setInput(studio, '#variableName', 'fixed_random')
+
+  utilityNodes.get_time = await addCanvasNode(studio, '获取时间')
+  await setInput(studio, '#variableName', 'captured_time')
+
+  utilityNodes.assert_checkpoint = await addCanvasNode(studio, '断言/检查点')
+  await setInput(studio, '[placeholder="要校验的值，支持 {变量名}"]', '{encoded_name}')
+  await setInput(studio, '[placeholder="期望对照的值，支持 {变量名}"]', 'QXV0b0Zsb3c=')
+  await setInput(studio, '[placeholder="存储断言结果布尔值，如 assert_passed"]', 'assert_passed')
+
+  utilityNodes.wait = await addCanvasNode(studio, '固定等待')
+  await setInput(studio, '#duration', '0.01')
+
+  utilityNodes.input_prompt = await addCanvasNode(studio, '用户输入')
+  await setInput(studio, '#variableName', 'operator_answer')
+  await setInput(studio, '[placeholder="输入框的标题"]', 'B3 正式输入')
+  await setInput(studio, '[placeholder="输入框的提示信息"]', '请输入验收值')
+
+  utilityNodes.run_workflow_file = await addCanvasNode(studio, '运行其它工作流')
+  await setInput(studio, '[placeholder="工作流文件名，如 数据采集.json，支持 {变量名}"]', childName)
+  await setInput(studio, '[placeholder="sub_workflow_result"]', 'child_result')
+
+  utilityNodes.note = await addCanvasNode(studio, '便签')
+  await setInput(studio, 'textarea[placeholder="在这里输入便签内容..."]', 'B3 正式便签，不参与执行')
+
+  const utilityChain = ['json_parse', 'base64', 'random_number', 'get_time', 'assert_checkpoint', 'wait', 'input_prompt', 'run_workflow_file']
+  for (let index = 0; index < utilityChain.length - 1; index++) {
+    await connectNodes(studio, utilityNodes[utilityChain[index]], utilityNodes[utilityChain[index + 1]])
+  }
+  const utilityWorkflow = await saveWorkflow(studio, runtime, utilityName)
+  const utilityRun = await startWorkflow(studio, runtime, utilityWorkflow.id)
+  await waitFor(studio, `document.querySelector('[role="dialog"]')?.getAttribute('aria-label') === 'B3 正式输入'`, 'input prompt dialog', 20_000)
+  await setInput(studio, '[role="dialog"] input[type="text"]', '正式输入值')
+  await click(studio, '确定', '[role="dialog"] button')
+  const utilityTerminal = await waitForTerminal(runtime, utilityRun.runId)
+  assert.equal(utilityTerminal.status, 'completed')
+  const utilityResults = await api(runtime, `/workflow-runs/${encodeURIComponent(utilityRun.runId)}/results?cursor=0&limit=100`)
+  const utilityLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(utilityRun.runId)}/logs?cursor=0&limit=200`)
+  const utilityByNode = Object.fromEntries(utilityResults.items.map(item => [item.nodeId, item]))
+  for (const type of utilityChain.filter(type => type !== 'wait')) assert.ok(utilityByNode[utilityNodes[type]], `missing ${type} result`)
+  assert.ok(utilityLogs.items.some(item => item.nodeId === utilityNodes.wait && item.message.includes('已等待')))
+  assert.equal(utilityByNode[utilityNodes.json_parse].values.value, 'AutoFlow')
+  assert.equal(utilityByNode[utilityNodes.base64].values.value, 'QXV0b0Zsb3c=')
+  assert.equal(utilityByNode[utilityNodes.random_number].values.value, 7)
+  assert.equal(utilityByNode[utilityNodes.assert_checkpoint].values.passed, true)
+  assert.equal(utilityByNode[utilityNodes.input_prompt].values.value, '正式输入值')
+  assert.equal(utilityResults.items.some(item => item.nodeId === utilityNodes.note), false)
+  assert.ok(utilityResults.items.some(item => item.nodeId === childNodeId && item.executionContext.scopes.some(scope => scope.kind === 'workflow')))
+  checkpoint('正式 UI 完成 JSON、Base64、随机数、时间、断言、等待、用户输入、运行其它工作流和便签的保存与真实执行')
+
+  const foreachName = 'B3 列表字典循环正式闭环'
+  await newWorkflow(studio, foreachName)
+  await click(studio, '模块条')
+  const foreachNodes = {}
+  foreachNodes.listFirst = await addBlock(studio, '添加模块', '列表操作')
+  await setInput(studio, '[placeholder="填写变量名，如: myList"]', 'items')
+  await setInput(studio, '[placeholder="要添加/删除的值，支持 {变量名}"]', '10')
+  foreachNodes.listSecond = await addBlock(studio, '添加模块', '列表操作')
+  await setInput(studio, '[placeholder="填写变量名，如: myList"]', 'items')
+  await setInput(studio, '[placeholder="要添加/删除的值，支持 {变量名}"]', '20')
+  foreachNodes.dictFirst = await addBlock(studio, '添加模块', '字典操作')
+  await setInput(studio, '[placeholder="填写变量名，如: myDict"]', 'mapping')
+  await setInput(studio, '[placeholder="键名，支持 {变量名}"]', 'a')
+  await setInput(studio, '[placeholder="要设置的值，支持 {变量名}"]', '1')
+  foreachNodes.dictSecond = await addBlock(studio, '添加模块', '字典操作')
+  await setInput(studio, '[placeholder="填写变量名，如: myDict"]', 'mapping')
+  await setInput(studio, '[placeholder="键名，支持 {变量名}"]', 'b')
+  await setInput(studio, '[placeholder="要设置的值，支持 {变量名}"]', '2')
+  foreachNodes.initialize = await addBlock(studio, '添加模块', '设置变量')
+  await setInput(studio, '[placeholder="变量名"]', 'visited')
+  await setInput(studio, '[placeholder="变量的值"]', '0')
+  foreachNodes.foreach = await addBlock(studio, '添加模块', '遍历列表')
+  await setInput(studio, '[placeholder="输入列表变量名"]', 'items')
+  await setInput(studio, '[placeholder="元素变量名（默认：item）"]', 'current_item')
+  foreachNodes.foreachIncrement = await addLoopBodyBlock(studio, foreachNodes.foreach, '自增自减')
+  await setInput(studio, '[placeholder="要操作的变量名"]', 'visited')
+  await setInput(studio, '[placeholder="每次增加或减少的值"]', '1')
+  foreachNodes.foreachDict = await addBlock(studio, '添加模块', '遍历字典')
+  await setInput(studio, '[placeholder="输入字典变量名"]', 'mapping')
+  await setInput(studio, '[placeholder="键变量名（默认：key）"]', 'current_key')
+  await setInput(studio, '[placeholder="值变量名（默认：value）"]', 'current_value')
+  foreachNodes.dictIncrement = await addLoopBodyBlock(studio, foreachNodes.foreachDict, '自增自减')
+  await setInput(studio, '[placeholder="要操作的变量名"]', 'visited')
+  await setInput(studio, '[placeholder="每次增加或减少的值"]', '1')
+  foreachNodes.assert = await addBlock(studio, '添加模块', '断言/检查点')
+  await setInput(studio, '[placeholder="要校验的值，支持 {变量名}"]', '{visited}')
+  await setInput(studio, '[placeholder="期望对照的值，支持 {变量名}"]', '4')
+  const foreachWorkflow = await saveWorkflow(studio, runtime, foreachName)
+  const foreachRun = await startWorkflow(studio, runtime, foreachWorkflow.id)
+  const foreachTerminal = await waitForTerminal(runtime, foreachRun.runId)
+  assert.equal(foreachTerminal.status, 'completed')
+  const foreachResults = await api(runtime, `/workflow-runs/${encodeURIComponent(foreachRun.runId)}/results?cursor=0&limit=100`)
+  assert.deepEqual(foreachResults.items.filter(item => item.nodeId === foreachNodes.foreachIncrement).map(item => item.values.new_value), [1, 2])
+  assert.deepEqual(foreachResults.items.filter(item => item.nodeId === foreachNodes.dictIncrement).map(item => item.values.new_value), [3, 4])
+  assert.equal(foreachResults.items.find(item => item.nodeId === foreachNodes.assert)?.values.passed, true)
+  checkpoint('正式模块条完成列表和字典循环；两类循环各执行两轮并累积到 4')
+
+  const breakName = 'B3 无限循环退出正式闭环'
+  await newWorkflow(studio, breakName)
+  await click(studio, '模块条')
+  const breakNodes = {}
+  breakNodes.loop = await addBlock(studio, '添加模块', '无限循环')
+  breakNodes.break = await addLoopBodyBlock(studio, breakNodes.loop, '跳出循环')
+  breakNodes.tail = await addBlock(studio, '添加模块', '设置变量')
+  await setInput(studio, '[placeholder="变量名"]', 'after_break')
+  await setInput(studio, '[placeholder="变量的值"]', '1')
+  const breakWorkflow = await saveWorkflow(studio, runtime, breakName)
+  const breakRun = await startWorkflow(studio, runtime, breakWorkflow.id)
+  const breakTerminal = await waitForTerminal(runtime, breakRun.runId)
+  assert.equal(breakTerminal.status, 'completed')
+  const breakResults = await api(runtime, `/workflow-runs/${encodeURIComponent(breakRun.runId)}/results?cursor=0&limit=100`)
+  const breakLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(breakRun.runId)}/logs?cursor=0&limit=100`)
+  assert.equal(breakLogs.items.filter(item => item.nodeId === breakNodes.break && item.message.includes('跳出循环')).length, 1)
+  assert.equal(breakResults.items.find(item => item.nodeId === breakNodes.tail)?.values.value, 1)
+  checkpoint('正式模块条完成无限循环、跳出循环和循环完成路径；退出后尾节点只执行一次')
+
+  const continueName = 'B3 跳过当前循环正式闭环'
+  await newWorkflow(studio, continueName)
+  await click(studio, '模块条')
+  const continueNodes = {}
+  continueNodes.initialize = await addBlock(studio, '添加模块', '设置变量')
+  await setInput(studio, '[placeholder="变量名"]', 'skipped')
+  await setInput(studio, '[placeholder="变量的值"]', '0')
+  continueNodes.loop = await addBlock(studio, '添加模块', '循环')
+  await setInput(studio, '[placeholder="输入循环次数或变量"]', '2')
+  continueNodes.continue = await addLoopBodyBlock(studio, continueNodes.loop, '跳过当前循环')
+  continueNodes.skipped = await addLoopBodyBlock(studio, continueNodes.loop, '自增自减')
+  await setInput(studio, '[placeholder="要操作的变量名"]', 'skipped')
+  await setInput(studio, '[placeholder="每次增加或减少的值"]', '1')
+  continueNodes.tail = await addBlock(studio, '添加模块', '设置变量')
+  await setInput(studio, '[placeholder="变量名"]', 'after_continue')
+  await setInput(studio, '[placeholder="变量的值"]', '1')
+  const continueWorkflow = await saveWorkflow(studio, runtime, continueName)
+  const continueRun = await startWorkflow(studio, runtime, continueWorkflow.id)
+  const continueTerminal = await waitForTerminal(runtime, continueRun.runId)
+  assert.equal(continueTerminal.status, 'completed')
+  const continueResults = await api(runtime, `/workflow-runs/${encodeURIComponent(continueRun.runId)}/results?cursor=0&limit=100`)
+  const continueLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(continueRun.runId)}/logs?cursor=0&limit=100`)
+  assert.equal(continueLogs.items.filter(item => item.nodeId === continueNodes.continue && item.message.includes('继续下一次循环')).length, 2)
+  assert.equal(continueResults.items.some(item => item.nodeId === continueNodes.skipped), false)
+  assert.equal(continueResults.items.find(item => item.nodeId === continueNodes.tail)?.values.value, 1)
+  checkpoint('正式模块条完成跳过当前循环；每轮剩余节点均未执行，循环完成路径继续执行')
+
+  const stopName = 'B3 强制停止正式闭环'
+  await newWorkflow(studio, stopName)
+  await click(studio, '模块条')
+  const stopNodes = {}
+  stopNodes.stop = await addBlock(studio, '添加模块', '强制停止工作流执行')
+  await setInput(studio, '[placeholder="输入停止原因，将显示在日志中"]', 'B3 正式停止')
+  stopNodes.tail = await addBlock(studio, '添加模块', '设置变量')
+  await setInput(studio, '[placeholder="变量名"]', 'should_not_run')
+  await setInput(studio, '[placeholder="变量的值"]', '1')
+  const stopWorkflow = await saveWorkflow(studio, runtime, stopName)
+  const stopRun = await startWorkflow(studio, runtime, stopWorkflow.id)
+  const stopTerminal = await waitForTerminal(runtime, stopRun.runId)
+  assert.equal(stopTerminal.status, 'completed')
+  const stopResults = await api(runtime, `/workflow-runs/${encodeURIComponent(stopRun.runId)}/results?cursor=0&limit=100`)
+  const stopLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(stopRun.runId)}/logs?cursor=0&limit=100`)
+  assert.ok(stopLogs.items.some(item => item.nodeId === stopNodes.stop && item.message.includes('B3 正式停止')))
+  assert.equal(stopResults.items.some(item => item.nodeId === stopNodes.tail), false)
+  checkpoint('正式模块条完成强制停止；停止原因持久化，后续节点没有执行')
+
   await capture(studio, join(evidenceDir, 'completed.png'))
   const report = {
     evidenceId: 'BE-B3-formal-control-flow-electron', checkedAt: new Date().toISOString(), gitHead,
@@ -207,6 +394,17 @@ try {
       parallelStartNodes: [byType('set_variable').find(node => node.data.variableName === 'total').id, subflowCallId],
     },
     httpEvidence: { results: results.items, logs: logs.items }, sqliteEvidence: sqlite,
+    additionalEvidence: {
+      childWorkflowId: childWorkflow.id,
+      utilityWorkflowId: utilityWorkflow.id,
+      utilityRunId: utilityRun.runId,
+      utilityNodeIds: utilityNodes,
+      utilityResultCount: utilityResults.items.length,
+      foreach: { workflowId: foreachWorkflow.id, runId: foreachRun.runId, nodeIds: foreachNodes },
+      breakLoop: { workflowId: breakWorkflow.id, runId: breakRun.runId, nodeIds: breakNodes },
+      continueLoop: { workflowId: continueWorkflow.id, runId: continueRun.runId, nodeIds: continueNodes },
+      stopWorkflow: { workflowId: stopWorkflow.id, runId: stopRun.runId, nodeIds: stopNodes },
+    },
     browserEvidence: { cloakBrowserProcessesAfter: cloakProcesses(userData) },
     boundaries: {
       workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none (pure data)',
@@ -276,6 +474,52 @@ async function waitForNoStudio(origin, timeoutMs = 15_000) {
   }, 'Studio window close', timeoutMs)
 }
 
+async function newWorkflow(cdp, name) {
+  await click(cdp, '新建')
+  await waitFor(cdp, "document.querySelectorAll('.react-flow__node').length === 0", `new workflow ${name}`)
+  await setInput(cdp, 'input[placeholder="工作流名称"]', name)
+}
+
+async function addGlobalVariable(cdp, name, type, value) {
+  if (!await cdp.evaluate("[...document.querySelectorAll('button')].some(e=>e.getClientRects().length&&e.textContent.trim()==='添加变量')")) {
+    await click(cdp, '全局变量')
+    if (await cdp.evaluate("Boolean(document.querySelector('button[title=\"展开\"]')?.getClientRects().length)")) await click(cdp, '', 'button[title="展开"]')
+    await waitFor(cdp, "[...document.querySelectorAll('button')].some(e=>e.getClientRects().length&&e.textContent.trim()==='添加变量')", 'global variable editor')
+  }
+  await clickRect(cdp, "[...document.querySelectorAll('button')].find(e=>e.getClientRects().length&&e.textContent.trim()==='添加变量')", '添加变量')
+  await setInput(cdp, 'input[placeholder="变量名"]', name)
+  if (type !== 'string') await selectNative(cdp, '[aria-label="变量类型"]', ({ array: '列表', object: '字典', number: '数字', boolean: '布尔' })[type])
+  await setInput(cdp, `input[placeholder=${JSON.stringify(({ string: '值', array: '[]', object: '{}', number: '0' })[type])}]`, value)
+  await click(cdp, '确认添加变量', 'button')
+}
+
+async function saveWorkflow(cdp, runtime, name) {
+  await click(cdp, '保存')
+  return waitForValue(async () => {
+    const saved = (await api(runtime, '/workflows')).find(item => item.name === name)
+    if (saved) return saved
+    const failure = await cdp.evaluate("[...document.querySelectorAll('*')].find(e=>e.getClientRects().length&&e.textContent?.startsWith('保存失败:'))?.textContent||''")
+    assert.equal(failure, '', failure)
+    return null
+  }, `save ${name}`, 15_000)
+}
+
+async function startWorkflow(cdp, runtime, documentId) {
+  await click(cdp, '运行 (F5)', '[aria-label="运行 (F5)"]')
+  await click(cdp, '运行 (F5)', '[role="menuitem"]')
+  return waitForValue(async () => {
+    const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(documentId)}&cursor=0&limit=20`)
+    return page.items[0] ?? null
+  }, `run ${documentId}`, 20_000)
+}
+
+async function waitForTerminal(runtime, runId) {
+  return waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}`)
+    return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.status) ? value : null
+  }, `terminal run ${runId}`, 60_000)
+}
+
 async function closeWindowThroughOs() {
   for (let attempt = 0; attempt < 3; attempt++) {
     const exists = await native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>w.getTitle().includes('工作流工作台'));if(!w)return false;qaElectron.app.focus({steal:true});w.show();w.focus();return true})()")
@@ -314,6 +558,14 @@ async function click(cdp, text, selector = 'button') {
   await wait(100)
 }
 
+async function clickRect(cdp, expression, description) {
+  const p = await waitFor(cdp, `(()=>{const e=${expression};if(!e||e.disabled)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, description)
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...p })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', buttons: 1, clickCount: 1 })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', buttons: 0, clickCount: 1 })
+  await wait(100)
+}
+
 async function setInput(cdp, selector, value) { return setInputAt(cdp, selector, 0, value) }
 
 async function setInputAt(cdp, selector, index, value) {
@@ -344,6 +596,18 @@ async function addBlock(cdp, slotText, label) {
   await setInput(cdp, 'input[placeholder="搜索模块（支持拼音）"]', label)
   await click(cdp, label)
   const nodeId = await waitFor(cdp, `(()=>{const before=new Set(${JSON.stringify(before)});return[...document.querySelectorAll('[data-block-id]')].map(e=>e.getAttribute('data-block-id')).find(id=>!before.has(id))||null})()`, `new ${label} block`)
+  await click(cdp, '', `[data-block-id="${nodeId}"]`)
+  return nodeId
+}
+
+async function addLoopBodyBlock(cdp, loopId, label) {
+  const before = await cdp.evaluate("[...document.querySelectorAll('[data-block-id]')].map(e=>e.getAttribute('data-block-id'))")
+  const p = await waitFor(cdp, `(()=>{let root=document.querySelector('[data-block-id=${JSON.stringify(loopId)}]')?.parentElement;while(root){const e=[...root.querySelectorAll('div')].find(e=>e.getClientRects().length&&e.textContent.trim()==='添加循环体步骤');if(e){const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}}root=root.parentElement}return null})()`, `loop body slot ${loopId}`)
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', clickCount: 1 })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', clickCount: 1 })
+  await setInput(cdp, 'input[placeholder="搜索模块（支持拼音）"]', label)
+  await click(cdp, label)
+  const nodeId = await waitFor(cdp, `(()=>{const before=new Set(${JSON.stringify(before)});return[...document.querySelectorAll('[data-block-id]')].map(e=>e.getAttribute('data-block-id')).find(id=>!before.has(id))||null})()`, `new ${label} block in ${loopId}`)
   await click(cdp, '', `[data-block-id="${nodeId}"]`)
   return nodeId
 }

@@ -22,6 +22,15 @@ describe('blockFlowModel', () => {
     expect((loop.node.data as Record<string, unknown>).indexVariable).toBe('index')
   })
 
+  it('无限循环沿用循环体与完成端口', () => {
+    const loop = createBlock('infinite_loop' as never)
+    const body = createBlock('break_loop' as never)
+    const blocks = insertIntoContainer([loop], loop.id, 'body', body)
+    const { edges } = generateGraphFromBlocks(blocks)
+    expect(loop.kind).toBe('loop')
+    expect(edges).toContainEqual(expect.objectContaining({ source: loop.id, target: body.id, sourceHandle: 'loop' }))
+  })
+
   it('createBlock 对条件类返回 if 结构', () => {
     const cond = createBlock('condition' as never)
     expect(cond.kind).toBe('if')
