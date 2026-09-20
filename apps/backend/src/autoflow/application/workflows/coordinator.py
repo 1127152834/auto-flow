@@ -17,6 +17,8 @@ from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.workflows.browser import WorkflowBrowserBusy
 from autoflow.domain.workflows.document import WorkflowDraft
+from autoflow.domain.workflows.errors import WorkflowDocumentError
+from autoflow.domain.workflows.modules import custom_module_reference
 from autoflow.domain.workflows.runs import (
     TerminalRunStatus,
     WorkflowRun,
@@ -26,6 +28,7 @@ from autoflow.domain.workflows.runs import (
 from autoflow.domain.workflows.variables import resolve_value
 
 from .documents import WorkflowDocumentService
+from .modules import CustomModuleService
 from .runs import WorkflowRunRepository, WorkflowRunService
 from .runtime import WorkflowRuntime
 
@@ -77,6 +80,7 @@ class WorkflowRunCoordinator:
         resources: WorkflowResources,
         events: StudioEventJournal,
         artifact_root: Path,
+        modules: CustomModuleService | None = None,
     ) -> None:
         self._documents = documents
         self._runs = runs
@@ -90,6 +94,7 @@ class WorkflowRunCoordinator:
         self._resources = resources
         self._events = events
         self._artifact_root = artifact_root.resolve()
+        self._modules = modules
         self._terminal_intents: dict[str, dict[str, Any]] = {}
         self._command_lock = asyncio.Lock()
         self._event_command_lock = asyncio.Lock()
@@ -150,9 +155,59 @@ class WorkflowRunCoordinator:
             workflow_dependencies = _workflow_dependency_snapshots(
                 self._documents, document
             )
+            module_references = _custom_module_references(
+                (document, *workflow_dependencies.values())
+            )
+            if module_references and self._modules is None:
+                raise WorkflowRunError(
+                    "CUSTOM_MODULES_NOT_READY",
+                    "自定义模块服务尚未就绪",
+                    503,
+                )
+            try:
+                custom_module_dependencies = (
+                    self._modules.freeze_closure(module_references)
+                    if self._modules is not None
+                    else {}
+                )
+            except WorkflowDocumentError as error:
+                raise WorkflowRunError(
+                    error.code, error.message, error.status, error.details
+                ) from error
+            for module_id, snapshot in custom_module_dependencies.items():
+                workflow = snapshot.get("workflow")
+                if not isinstance(workflow, Mapping):
+                    raise WorkflowRunError(
+                        "CUSTOM_MODULE_WORKFLOW_INVALID",
+                        f"自定义模块工作流无效: {module_id}",
+                        422,
+                    )
+                module_issues = self._runtime.preflight(workflow)
+                if module_issues:
+                    raise WorkflowRunError(
+                        "WORKFLOW_PREFLIGHT_FAILED",
+                        "自定义模块包含尚未迁入或无法运行的节点",
+                        422,
+                        {
+                            "moduleId": module_id,
+                            "issues": [
+                                {
+                                    "nodeId": issue.node_id,
+                                    "path": issue.path,
+                                    "code": issue.code,
+                                    "message": issue.message,
+                                }
+                                for issue in module_issues
+                            ],
+                        },
+                    )
             requires_browser = self._runtime.requires_browser(document) or any(
                 self._runtime.requires_browser(snapshot)
                 for snapshot in workflow_dependencies.values()
+            ) or any(
+                self._runtime.requires_browser(workflow)
+                for snapshot in custom_module_dependencies.values()
+                if isinstance((workflow := snapshot.get("workflow")), Mapping)
             )
             profile = self._profiles.get(profile_id)
             kernel = self._kernel(profile) if requires_browser else None
@@ -173,6 +228,7 @@ class WorkflowRunCoordinator:
                     },
                 },
                 mode=cast(Any, mode),
+                custom_module_snapshots=copy.deepcopy(custom_module_dependencies),
             )
             run = self._runs.start(start)
             if run.status != "starting" or self._resources.owner_id == run_id:
@@ -211,6 +267,7 @@ class WorkflowRunCoordinator:
                     artifact_root=self._artifact_root,
                     requires_browser=requires_browser,
                     workflow_dependencies=workflow_dependencies,
+                    custom_module_dependencies=custom_module_dependencies,
                 )
                 await self._workers.start(
                     run_id,
@@ -643,6 +700,7 @@ def _worker_payload(
     artifact_root: Path,
     requires_browser: bool,
     workflow_dependencies: dict[str, dict[str, Any]],
+    custom_module_dependencies: dict[str, dict[str, object]],
 ) -> dict[str, Any]:
     spec = profile.spec
     return {
@@ -677,6 +735,7 @@ def _worker_payload(
         "requiresBrowser": requires_browser,
         "document": copy.deepcopy(start.document_snapshot),
         "workflowDependencies": workflow_dependencies,
+        "customModuleDependencies": custom_module_dependencies,
         "executableIdentity": executable.name if executable is not None else None,
     }
 
@@ -763,6 +822,31 @@ def _workflow_references(document: Mapping[str, Any]) -> tuple[str, ...]:
         resolved = resolve_value(raw, variables)
         if isinstance(resolved, str) and resolved.strip():
             references.append(resolved.strip().strip('"'))
+    return tuple(references)
+
+
+def _custom_module_references(
+    documents: Sequence[Mapping[str, Any]],
+) -> tuple[str, ...]:
+    references: list[str] = []
+    for document in documents:
+        nodes = document.get("nodes", [])
+        if not isinstance(nodes, list):
+            continue
+        for node in nodes:
+            if not isinstance(node, Mapping):
+                continue
+            data = node.get("data")
+            module_type = (
+                data.get("moduleType")
+                if isinstance(data, Mapping)
+                else node.get("type")
+            )
+            if module_type != "custom_module":
+                continue
+            module_id = custom_module_reference(node)
+            if module_id and module_id not in references:
+                references.append(module_id)
     return tuple(references)
 
 

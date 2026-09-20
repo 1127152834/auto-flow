@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 
+from autoflow.application.workflows.executors.custom_module import CustomModuleExecutor
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.executors.subflow import SubflowExecutor
 from autoflow.application.workflows.executors.workflow_chain import (
@@ -16,6 +17,7 @@ from autoflow.application.workflows.executors.workflow_chain import (
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.document import WorkflowDraft
 from autoflow.domain.workflows.execution import (
+    CustomModuleResult,
     ExecutionContext,
     NestedWorkflowResult,
 )
@@ -146,6 +148,76 @@ def test_frozen_custom_module_validation(case: str, error: str) -> None:
         "data": None,
         "variables": {"source": "parent"},
     }
+
+
+@pytest.mark.asyncio
+async def test_autoflow_custom_module_marker_matches_frozen_source() -> None:
+    definition = {
+        "id": "module-1",
+        "display_name": "格式化器",
+        "parameters": [
+            {"name": "explicit", "default_value": "fallback"},
+            {"name": "defaulted", "default_value": 7},
+        ],
+        "outputs": [{"name": "answer"}],
+        "workflow": {"nodes": [{"id": "inner"}], "edges": []},
+    }
+
+    class Modules:
+        def definition(self, module_id: str) -> Any:
+            return definition if module_id == "ready" else None
+
+        async def run_custom_module(self, **_values: Any) -> CustomModuleResult:
+            raise AssertionError("marker differential must not run the child graph")
+
+    context = ExecutionContext(
+        variables={"source": "parent"}, custom_modules=Modules()
+    )
+    result = await CustomModuleExecutor().execute(
+        {
+            "customModuleId": "ready",
+            "parameterValues": {"explicit": "provided", "ignored": True},
+        },
+        context,
+    )
+
+    assert {
+        "success": result.success,
+        "message": result.message,
+        "error": result.error,
+        "data": result.data,
+        "variables": context.variables,
+    } == frozen_result("custom:ready")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("config", "definition", "expected"),
+    [
+        ({}, None, "未指定自定义模块ID"),
+        ({"customModuleId": "not-found"}, None, "自定义模块不存在: not-found"),
+        (
+            {"customModuleId": "empty"},
+            {"workflow": {"nodes": [], "edges": []}},
+            "自定义模块内部工作流为空",
+        ),
+    ],
+)
+async def test_autoflow_custom_module_validation_matches_frozen_source(
+    config: dict[str, Any], definition: Any, expected: str
+) -> None:
+    class Modules:
+        def definition(self, _module_id: str) -> Any:
+            return definition
+
+        async def run_custom_module(self, **_values: Any) -> CustomModuleResult:
+            raise AssertionError
+
+    result = await CustomModuleExecutor().execute(
+        config, ExecutionContext(custom_modules=Modules())
+    )
+    assert result.success is False
+    assert result.error == expected
 
 
 def test_frozen_workflow_file_sync_variable_and_result_contract() -> None:
@@ -414,11 +486,64 @@ async def test_autoflow_empty_subflow_preserves_frozen_message() -> None:
     assert completed["message"] == "子流程 [空流程] 为空"
 
 
-@pytest.mark.skip(
-    reason=(
-        "待 CustomModuleRepository 与 runtime 隔离作用域入口；需要传入参数解析、"
-        "仅声明输出回收、16层递归保护、取消传播及原执行图/变量恢复"
+@pytest.mark.asyncio
+async def test_autoflow_custom_module_runtime_integration() -> None:
+    definition = {
+        "id": "formatter",
+        "name": "formatter",
+        "display_name": "格式化器",
+        "parameters": [
+            {"name": "explicit", "default_value": "fallback"},
+            {"name": "defaulted", "default_value": 7},
+        ],
+        "outputs": [{"name": "answer"}],
+        "workflow": {"nodes": [{"id": "inner"}], "edges": []},
+    }
+
+    class Modules:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, dict[str, Any]]] = []
+
+        def definition(self, module_id: str) -> Any:
+            return definition if module_id == "formatter" else None
+
+        async def run_custom_module(
+            self, *, module_id: str, parameter_values: Any
+        ) -> CustomModuleResult:
+            self.calls.append((module_id, dict(parameter_values)))
+            return CustomModuleResult(
+                module_id, "格式化器", True, {"answer": "done"}, 1, 0
+            )
+
+    modules = Modules()
+    context = ExecutionContext(
+        variables={"source": "parent", "keep": 1}, custom_modules=modules
     )
-)
-def test_autoflow_custom_module_runtime_integration() -> None:
-    """自定义模块真实执行属于 runtime 与定义仓储的联合能力。"""
+    registry = ExecutorRegistry()
+    registry.register(CustomModuleExecutor)
+    result = await WorkflowRuntime(registry).execute(
+        {
+            "nodes": [
+                {
+                    "id": "custom",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "custom_module",
+                        "customModuleId": "formatter",
+                        "parameterValues": {"explicit": "{source}"},
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        context,
+    )
+
+    assert result.success is True
+    assert modules.calls == [
+        (
+            "formatter",
+            {"explicit": "{source}", "defaulted": 7},
+        )
+    ]
+    assert context.variables == {"source": "parent", "keep": 1, "answer": "done"}

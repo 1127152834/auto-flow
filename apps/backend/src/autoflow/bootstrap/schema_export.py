@@ -45,6 +45,7 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
     register_project_routes(app, projects)
     workflows = WorkflowServices(
         documents=unavailable,
+        modules=unavailable,
         runs=unavailable,
         commands=unavailable,
         events=unavailable,

@@ -46,6 +46,36 @@ class WorkflowDocumentRequestRow(Base):
     )
 
 
+class WorkflowCustomModuleRow(Base):
+    __tablename__ = "workflow_custom_modules"
+
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    definition: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    dependency_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    usage_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+
+
+class WorkflowCustomModuleRequestRow(Base):
+    __tablename__ = "workflow_custom_module_requests"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    kind: Mapped[str] = mapped_column(String(20), nullable=False)
+    module_id: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
+    response: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+
+
 class WorkflowRunRow(Base):
     __tablename__ = "workflow_runs"
 

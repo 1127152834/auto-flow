@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal
 
@@ -43,6 +43,7 @@ class WorkflowRunStart:
     profile_id: str
     profile_snapshot: dict[str, Any]
     mode: RunMode
+    custom_module_snapshots: dict[str, Any] = field(default_factory=dict)
 
     def request_payload(self) -> dict[str, Any]:
         return {
@@ -55,6 +56,7 @@ class WorkflowRunStart:
             "profileId": self.profile_id,
             "profileSnapshot": self.profile_snapshot,
             "mode": self.mode,
+            "customModuleSnapshots": self.custom_module_snapshots,
         }
 
 
@@ -79,6 +81,7 @@ class WorkflowRun:
     log_count: int
     stop_requested: bool
     error: dict[str, Any] | None
+    custom_module_snapshots: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)

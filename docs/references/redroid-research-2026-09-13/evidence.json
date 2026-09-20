@@ -1,0 +1,291 @@
+{
+  "date": "2026-09-13",
+  "status": "confirmed for source facts; recommendations proposed",
+  "verification": "Public GitHub metadata, pinned source and documentation inspection; static AST/text assertions. No deployment, upstream test suite, emulator launch, or performance tests executed.",
+  "repositories": [
+    {
+      "repository": "mostakimnasim5/redroid-cpp",
+      "url": "https://github.com/mostakimnasim5/redroid-cpp",
+      "commit": "75b3a0fe7ac529a670dd1e9108bc98a0daf1c5bf",
+      "default_branch": "main",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "75b3a0fe7ac529a670dd1e9108bc98a0daf1c5bf",
+          "committed_at": "2026-09-10T10:22:08Z",
+          "url": "https://github.com/mostakimnasim5/redroid-cpp/commit/75b3a0fe7ac529a670dd1e9108bc98a0daf1c5bf"
+        },
+        "releases": []
+      },
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "CNflysky/redroid-rk3588",
+      "url": "https://github.com/CNflysky/redroid-rk3588",
+      "commit": "c742a34f3d65df479214a10d4e9375c57c95b52f",
+      "default_branch": "main",
+      "archived": false,
+      "activity": null,
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "jimedrandatorg/reddock",
+      "url": "https://github.com/jimedrandatorg/reddock",
+      "commit": "843382fc4bf54470e80a1fcfc82256a03c7de418",
+      "default_branch": "main",
+      "archived": false,
+      "activity": null,
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "a782987770/yimi-cloud-phone",
+      "url": "https://github.com/a782987770/yimi-cloud-phone",
+      "commit": "fbdb90a56a1621e68646d033f896acef55d74558",
+      "default_branch": "main",
+      "archived": false,
+      "activity": null,
+      "top_level_license_files": []
+    },
+    {
+      "repository": "ayasa520/redroid-script",
+      "url": "https://github.com/ayasa520/redroid-script",
+      "commit": "a4951b782fc8e06c845d9553bf07bb643fd8c158",
+      "default_branch": "main",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "a4951b782fc8e06c845d9553bf07bb643fd8c158",
+          "committed_at": "2026-09-12T16:58:21Z",
+          "url": "https://github.com/ayasa520/redroid-script/commit/a4951b782fc8e06c845d9553bf07bb643fd8c158"
+        },
+        "releases": []
+      },
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "huonwe/webscreen",
+      "url": "https://github.com/huonwe/webscreen",
+      "commit": "2961169f863f1f00bbeba6bc77e86742607f8914",
+      "default_branch": "main",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "2961169f863f1f00bbeba6bc77e86742607f8914",
+          "committed_at": "2026-05-28T03:16:45Z",
+          "url": "https://github.com/huonwe/webscreen/commit/2961169f863f1f00bbeba6bc77e86742607f8914"
+        },
+        "releases": [
+          {
+            "tag": "v1.3.5",
+            "published_at": "2026-05-25T07:15:49Z",
+            "url": "https://github.com/huonwe/webscreen/releases/tag/v1.3.5",
+            "asset_names": [
+              "webscreen-android-arm64",
+              "webscreen-darwin-amd64",
+              "webscreen-darwin-arm64",
+              "webscreen-linux-amd64",
+              "webscreen-linux-arm64",
+              "webscreen-windows-amd64.exe",
+              "webscreen-windows-arm64.exe"
+            ]
+          },
+          {
+            "tag": "v1.3.4",
+            "published_at": "2026-05-25T06:20:52Z",
+            "url": "https://github.com/huonwe/webscreen/releases/tag/v1.3.4",
+            "asset_names": [
+              "webscreen-android-arm64",
+              "webscreen-darwin-amd64",
+              "webscreen-darwin-arm64",
+              "webscreen-linux-amd64",
+              "webscreen-linux-arm64",
+              "webscreen-windows-amd64.exe",
+              "webscreen-windows-arm64.exe"
+            ]
+          }
+        ]
+      },
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "SakuraPuare/Hydra",
+      "url": "https://github.com/SakuraPuare/Hydra",
+      "commit": "fca0db7e5a32f112e7e83ca729b3291900b6d624",
+      "default_branch": "main",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "fca0db7e5a32f112e7e83ca729b3291900b6d624",
+          "committed_at": "2026-08-03T04:02:37Z",
+          "url": "https://github.com/SakuraPuare/Hydra/commit/fca0db7e5a32f112e7e83ca729b3291900b6d624"
+        },
+        "releases": []
+      },
+      "top_level_license_files": []
+    },
+    {
+      "repository": "thanhrohan1/vphone-rental-crm",
+      "url": "https://github.com/thanhrohan1/vphone-rental-crm",
+      "commit": "c09e0e895abf5be99f3e112d7585811cc45cf75c",
+      "default_branch": "main",
+      "archived": false,
+      "activity": null,
+      "top_level_license_files": []
+    },
+    {
+      "repository": "akwin1234/damru",
+      "url": "https://github.com/akwin1234/damru",
+      "commit": "56988fc8067e8e51cc6f362662b5fd5762522af1",
+      "default_branch": "main",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "56988fc8067e8e51cc6f362662b5fd5762522af1",
+          "committed_at": "2026-07-05T09:40:57Z",
+          "url": "https://github.com/akwin1234/damru/commit/56988fc8067e8e51cc6f362662b5fd5762522af1"
+        },
+        "releases": [
+          {
+            "tag": "v0.1.0-beta",
+            "published_at": "2026-06-04T19:46:32Z",
+            "url": "https://github.com/akwin1234/damru/releases/tag/v0.1.0-beta",
+            "asset_names": []
+          }
+        ]
+      },
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "mattyperrott/Virtroid",
+      "url": "https://github.com/mattyperrott/Virtroid",
+      "commit": "3bfee99e1fdf8b484c7e48613061e4bc5c7bac5f",
+      "default_branch": "main",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "3bfee99e1fdf8b484c7e48613061e4bc5c7bac5f",
+          "committed_at": "2026-09-08T17:43:22Z",
+          "url": "https://github.com/mattyperrott/Virtroid/commit/3bfee99e1fdf8b484c7e48613061e4bc5c7bac5f"
+        },
+        "releases": []
+      },
+      "top_level_license_files": []
+    },
+    {
+      "repository": "kasmtech/workspaces-images",
+      "url": "https://github.com/kasmtech/workspaces-images",
+      "commit": "bafab6d531eefd5a5aa6f2c9088ebc8f02e12fae",
+      "default_branch": "develop",
+      "archived": false,
+      "activity": null,
+      "top_level_license_files": [
+        "LICENSE.md"
+      ]
+    },
+    {
+      "repository": "DeviceFarmer/stf",
+      "url": "https://github.com/DeviceFarmer/stf",
+      "commit": "1d321cb3e72d90abd817ead5b003860dcbcd831c",
+      "default_branch": "master",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "1d321cb3e72d90abd817ead5b003860dcbcd831c",
+          "committed_at": "2026-09-12T10:20:03Z",
+          "url": "https://github.com/DeviceFarmer/stf/commit/1d321cb3e72d90abd817ead5b003860dcbcd831c"
+        },
+        "releases": [
+          {
+            "tag": "v3.7.9",
+            "published_at": "2026-07-08T21:52:18Z",
+            "url": "https://github.com/DeviceFarmer/stf/releases/tag/v3.7.9",
+            "asset_names": []
+          },
+          {
+            "tag": "v3.7.8",
+            "published_at": "2026-06-30T11:26:45Z",
+            "url": "https://github.com/DeviceFarmer/stf/releases/tag/v3.7.8",
+            "asset_names": []
+          }
+        ]
+      },
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    },
+    {
+      "repository": "JinHisAndy/RedroidManager",
+      "url": "https://github.com/JinHisAndy/RedroidManager",
+      "commit": "853b786b29430886ae8db58eb2d9e3432e0c8684",
+      "default_branch": "main",
+      "archived": false,
+      "activity": {
+        "latest_default_commit": {
+          "sha": "853b786b29430886ae8db58eb2d9e3432e0c8684",
+          "committed_at": "2026-08-14T02:41:32Z",
+          "url": "https://github.com/JinHisAndy/RedroidManager/commit/853b786b29430886ae8db58eb2d9e3432e0c8684"
+        },
+        "releases": []
+      },
+      "top_level_license_files": [
+        "LICENSE"
+      ]
+    }
+  ],
+  "static_checks": [
+    {
+      "id": "manager_port_mapping",
+      "pass": true,
+      "finding": "Both create and clone use allocated host port as container port; default redroid ADB listens on 5555."
+    },
+    {
+      "id": "manager_clone_new_volume",
+      "pass": true,
+      "finding": "Clone starts a fresh volume and copies display configuration; no source data copy path in this function."
+    },
+    {
+      "id": "hydra_missing_control_plane",
+      "pass": true,
+      "finding": "Public root lacks control-plane/frontend paths described in README quickstart."
+    },
+    {
+      "id": "cpp_placeholder_methods",
+      "pass": true,
+      "finding": "Selected methods ignore arguments and return success without the named mutation."
+    }
+  ],
+  "source_hashes": [
+    {
+      "url": "https://github.com/JinHisAndy/RedroidManager/blob/853b786b29430886ae8db58eb2d9e3432e0c8684/app.py",
+      "sha256": "1e192b9ad390439acb9ccf104cb176690057d6f94f5b177c8ab1c926f96e58ee"
+    },
+    {
+      "url": "https://github.com/SakuraPuare/Hydra/blob/fca0db7e5a32f112e7e83ca729b3291900b6d624/README.md",
+      "sha256": "679d5222658ceb035deeceb151c4e4d25145a7f395fa57e1ad05080836a3c0e2"
+    },
+    {
+      "url": "https://github.com/mostakimnasim5/redroid-cpp/blob/75b3a0fe7ac529a670dd1e9108bc98a0daf1c5bf/src/ReDroidController/APIServer.cpp",
+      "sha256": "6540e37025798e6f70a811a5bb025545ea22a5fe3522adb0e18c70e6302e2218"
+    },
+    {
+      "url": "https://github.com/akwin1234/damru/blob/56988fc8067e8e51cc6f362662b5fd5762522af1/LICENSE",
+      "sha256": "c8017a4d68ce04d6fc011fc10cf325975e233e05c6b24781f4eeef56a9c7eaf5"
+    },
+    {
+      "url": "https://github.com/huonwe/webscreen/blob/2961169f863f1f00bbeba6bc77e86742607f8914/doc/quick-start-redroid.md",
+      "sha256": "ddec6a963a176e6bec86ca8c666e119b4ecdbb589cde202a78280c1b070248d4"
+    }
+  ]
+}

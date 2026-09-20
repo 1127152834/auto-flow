@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-09-15T16:16:31.844Z",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，并选择真实 sidecar Profile"
+  ],
+  "observedEvents": [],
+  "error": "Error: timed out waiting for unobscured [placeholder=\"例如: #title, .content\"]: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:82:9)\n    at async setInput (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b2-page-load.mjs:262:13)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b2-page-load.mjs:93:7"
+}

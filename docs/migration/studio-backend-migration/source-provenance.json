@@ -112,7 +112,7 @@
       "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
       "sourcePath": "reference/WebRPA/backend/app/services/workflow_executor.py",
       "targetPath": "apps/backend/src/autoflow/application/workflows/runtime.py",
-      "changeSummary": "迁入真实并行、条件死路消除、汇合、错误边、循环重复调度、嵌套break/continue及原版执行结果语义；接入AutoFlow事件、取消、敏感值和节点任务级产物边界，并增加整次运行调度上限。",
+      "changeSummary": "迁入真实并行、条件死路消除、汇合、错误边、循环重复调度、嵌套break/continue、自定义模块标记调度及原版执行结果语义；接入AutoFlow事件、取消、敏感值和节点任务级产物边界，并增加整次运行调度上限。",
       "retainedDependencies": [
         "执行图",
         "执行器注册",
@@ -713,7 +713,7 @@
       "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
       "sourcePath": "reference/WebRPA/backend/app/services/workflow_executor.py",
       "targetPath": "apps/backend/src/autoflow/providers/browser/workflow_worker.py",
-      "changeSummary": "迁入subflow名称优先/ID回退、分组几何、subflow_header可达图、定义节点主图隔离、共享变量及32层/循环保护。",
+      "changeSummary": "迁入subflow名称优先/ID回退、分组几何、subflow_header可达图、定义节点主图隔离，以及自定义模块参数隔离、声明输出回传、递归深度保护和冻结依赖执行；复用AutoFlow窄端口。",
       "retainedDependencies": [
         "Python标准库",
         "autoflow.application.workflows.runtime",
@@ -722,6 +722,87 @@
       "removedDependencies": [
         "WebRPA全局WorkflowExecutor状态替换",
         "Socket.IO日志全局实例"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/models/custom_module.py",
+      "targetPath": "apps/backend/src/autoflow/domain/workflows/modules.py",
+      "changeSummary": "迁入自定义模块字段、默认值、节点结构校验、参数/输出/工作流定义与安全模块ID规则；增加依赖引用提取和revision领域对象。",
+      "retainedDependencies": [
+        "Python标准库",
+        "WebRPA自定义模块字段语义"
+      ],
+      "removedDependencies": [
+        "Pydantic持久化模型",
+        "本地时间隐式默认"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/api/custom_modules.py",
+      "targetPath": "apps/backend/src/autoflow/adapters/http/custom_modules.py",
+      "changeSummary": "迁入八个自定义模块HTTP入口、搜索/分类/复制/导入/用量行为；按AutoFlow错误包、稳定请求ID与revision合同适配。",
+      "retainedDependencies": [
+        "FastAPI",
+        "Pydantic",
+        "WebRPA路由语义"
+      ],
+      "removedDependencies": [
+        "全局BACKEND_DATA_DIR",
+        "直接JSON文件IO",
+        "print日志"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/api/custom_modules.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/modules.py",
+      "changeSummary": "迁入列表过滤、名称冲突、复制、导入和依赖定义业务；增加AutoFlow要求的revision、幂等写、依赖闭包、循环检测与运行快照摘要。",
+      "retainedDependencies": [
+        "Python标准库",
+        "WebRPA模块管理业务语义"
+      ],
+      "removedDependencies": [
+        "直接文件读写",
+        "HTTPException业务层传播"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/api/custom_modules.py",
+      "targetPath": "apps/backend/src/autoflow/infrastructure/database/workflow_modules.py",
+      "changeSummary": "将原版JSON文件模块存储适配为AutoFlow SQLite仓储，保留模块内容并增加事务、revision、稳定请求回执和原子冲突处理。",
+      "retainedDependencies": [
+        "SQLAlchemy",
+        "SQLite事务",
+        "WebRPA模块正文结构"
+      ],
+      "removedDependencies": [
+        "CUSTOM_MODULES_DIR",
+        "Path直接读写",
+        "进程内非事务列表"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/custom_module.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/custom_module.py",
+      "changeSummary": "迁入custom_module校验、参数默认值、输出声明和特殊运行标记语义；定义加载改为协调器冻结快照和worker窄端口。",
+      "retainedDependencies": [
+        "ModuleExecutor",
+        "ModuleResult",
+        "WebRPA参数与错误文本"
+      ],
+      "removedDependencies": [
+        "生产运行时reference目录读取",
+        "CUSTOM_MODULES_DIR",
+        "直接JSON文件加载"
       ],
       "licenseRecord": "LICENSE.WebRPA"
     }

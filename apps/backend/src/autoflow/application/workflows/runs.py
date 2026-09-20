@@ -146,6 +146,7 @@ class WorkflowRunService:
             profile_id=start.profile_id,
             profile_snapshot=_sanitize_profile(start.profile_snapshot),
             mode=start.mode,
+            custom_module_snapshots=copy.deepcopy(start.custom_module_snapshots),
         )
         return self._repository.create(
             sanitized,

@@ -18,3 +18,9 @@ reference/vphone-aio/
 reference/vphone-cli/
 
 .superpowers/verification/
+
+# Local scratch and tool state, not project content.
+.tmp-tests/
+logs/
+.workbuddy-ai/
+.cursor/

@@ -52,6 +52,9 @@ def _run(row: WorkflowRunRow) -> WorkflowRun:
         log_count=int(value.get("logCount", 0)),
         stop_requested=bool(value.get("stopRequested", False)),
         error=copy.deepcopy(value.get("error")),
+        custom_module_snapshots=copy.deepcopy(
+            value.get("customModuleSnapshots", {})
+        ),
     )
 
 
@@ -121,6 +124,9 @@ class SqlAlchemyWorkflowRuns:
                     "profileId": start.profile_id,
                     "profileSnapshot": copy.deepcopy(start.profile_snapshot),
                     "mode": start.mode,
+                    "customModuleSnapshots": copy.deepcopy(
+                        start.custom_module_snapshots
+                    ),
                     "status": "starting",
                     "cleanupState": "pending",
                     "startedAt": _iso(now),
