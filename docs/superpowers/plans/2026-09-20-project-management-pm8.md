@@ -93,3 +93,5 @@ git diff --check
 - 新增注入：`leak-work-copy`（QA 侧车按真实环境仓库登记「浏览器已关闭、工作副本未删除」的遗留实例）。原因：隔离执行器不启动浏览器，**不会**产生任务环境实例；共享执行器路径（`tests/qa/pm4_v1_runner.py` 静态调用 `claim_data_task` 不传 `environments`）与生产 `_claim_data_task` 的这条差异不在本次修改范围内，改它会让未终结实例变成真实生命周期阻断并影响已闭合 PM4/PM7 证据。
 - 仍未闭合（外部条件，保持原样）：代理路径真实截图（需真实 ProxyPanel 连接）、用户手测 M-01…M-13（含新增 M-05b）、Windows/其他架构/打包、真实执行核心与 Studio demo。
 - 独立审查：本轮四次投递智能体均只收到模式提示、收不到任务正文（工具投递故障），仍为交付者自审，如实登记在 `verification.json`。
+- 收尾一致性：`npm run lint` 在 `44a3fe7a` 后重跑通过（作用域是 `apps/desktop` 的 eslint，根 `scripts/*.mjs` 由 `node --check` + `npm run test:scripts` 覆盖）；同时订正两处过期登记——`coverage.json` 的 PM7 仍为 `planned`、note 末尾仍写「PM8 保持 planned」，并把仍被交付文档引用的历史对照运行在 `qa-runs/LEDGER.md` 里改为「保留」而不是「删除」。
+

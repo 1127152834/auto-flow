@@ -1,9 +1,9 @@
 {
   "date": "2026-09-19",
-  "status": "confirmed-pm5-management-delivered-pm6-management-delivered-pm5-scope-visual-passed-real-executor-partial-user-acceptance-pending",
+  "status": "confirmed-pm5-management-delivered-pm6-management-delivered-pm5-scope-visual-passed-real-executor-partial-user-acceptance-pending-pm7-management-delivered-pm8-management-delivered",
   "design_baseline": "906deda",
   "plan": "docs/superpowers/plans/2026-09-13-project-management-milestones.md",
-  "note": "PM0–PM3历史证据保留。PM4 V1/A/B/C/F 管理功能已交付；macOS arm64 的 Electron、FastAPI、SQLite、输入领取、项目数据能力、有限/不限调度、第二自动化读取链，以及 noMatch/temporarilyBusy/configurationError 管理态和日志搜索 Enter 均通过，执行步骤使用隔离 fake executor。PM4 交付状态为 delivered，验证状态保持 partially_verified。当前源码管理链、19 张截图同视口复审和阶段全量检查均已通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过，真实执行核心 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、packaged 及用户手测未执行；PM5 管理侧及实际浏览器环境存取已交付：界面点击、FastAPI、SQLite、环境目录副本与 CloakBrowser 145 的登录保存/恢复均真实，执行步骤由隔离测试执行器驱动，任务保持排队态；PM5 范围内 6 个画板（001/003/004/005/010/100-rename-drawer）同视口对照通过，范围外的 002 运行环境详情、006 默认资源编辑及 007–009、100-cleanup-* 仍缺失并已登记，100-rename-validation-conflict 的项目内名称唯一规则与已批准设计冲突待产品确认；真实生产执行核心、CloakBrowser 执行核心、Studio、Windows、其他架构、packaged 及用户手测未执行；PM6–PM9 保持 planned。 第二轮补交付（2026-09-18）：03-runs 的人工链已接通真实页面——运行记录新增「等待人工」页签、唯一一份人工详情（继续节点/标记完成二次确认/标记失败必填）、超时终态处理结果，以及任务列表等待人工行的「查看事项」入口；同轮修复三处真实缺陷：ProjectsWorkspace 的人工详情分支被 taskId 短路、标记完成提交按钮被弹窗内的知情勾选永久锁死、等待人工目录空态在有默认状态筛选时误报「没有匹配」。证据 docs/project-management/implementation/pm5/qa-runs/2026-09-18/（15 检查点 / 25 截图）。 第三轮补交付（2026-09-18）：03-runs 人工链接通真实页面（运行记录「等待人工」页签、唯一一份人工详情、完成二次确认、失败必填、超时终态处理结果），任务列表按原型 002 补齐「所属批次」「当前或结束节点」「时间（最近状态时间）」并新增服务端 lastStatusAt；同轮修复四处真实缺陷（人工详情路由被 taskId 短路、「标记完成」被弹窗内勾选锁死、等待人工空态误报、终态仍渲染不可用表单）。证据 docs/project-management/implementation/pm5/qa-runs/2026-09-18/（16 检查点 / 27 截图）与 pm5/ui-verification.md（03-runs 逐画面评分）。 PM6 补交付（2026-09-18）：Google Sheets 来源与同步闭环的管理侧与本地契约已交付并验证——连接与多绑定、结构/身份/映射全量核验、公式列只读刷新、出站意图队列与发送核验状态机、pull/push、暂停恢复、断开连接、解除绑定影响预检、超时转 unknown 后只核验不盲重发。真实界面证据 13 检查点 / 13 截图见 docs/project-management/implementation/pm6/qa-runs/2026-09-18/，逐画面对照见 docs/project-management/implementation/pm6/ui-verification.md。该轮端到端抓出四个真实缺陷并已修复：绑定命令用 POST 打只接受 PUT 的路由（真实界面绑定必然 405）、拉取/推送后记录页不重取、来源页把读取失败显示为空事实、连接面板列错位。实网 Google 端到端未执行（需用户 OAuth 桌面客户端 JSON 与授权测试表）；远端增列与系统身份列因冻结契约无对应路由/初始化动作而按缺口登记。第三轮补交付（2026-09-18）：来源页签按原型 100-sheets-directions 改为两栏骨架，修复四处 <td> 嵌在 <thead> 的表头、记录身份重复渲染与解绑确认脱离触发按钮，并新增「推送结果未知」状态截图；原型 011/100 逐画面评分 86/88，唯一未对齐项是「来源核对」卡（冻结契约没有漂移汇总 DTO）。PM7 管理侧已交付并端到端验证（2026-09-19，run 20260918203625）：项目概览、统计与冻结下钻、任务证据、失败后续批次、停止与强停，以及概览/统计刷新失败保留上次结果、结果集过期、修订冲突、提交后响应丢失按原操作核对、迟到事件补读，均由真实 Electron 界面点击驱动，FastAPI、SQLite 与项目数据服务真实，执行步骤由隔离 QA 测试执行器驱动；逐画面对照见 docs/project-management/implementation/pm7/visual-review.md。交付边界固定为「管理侧通过，真实执行核心接入待验收」，真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包与用户手测未执行。PM8 保持 planned。",
+  "note": "PM0–PM3历史证据保留。PM4 V1/A/B/C/F 管理功能已交付；macOS arm64 的 Electron、FastAPI、SQLite、输入领取、项目数据能力、有限/不限调度、第二自动化读取链，以及 noMatch/temporarilyBusy/configurationError 管理态和日志搜索 Enter 均通过，执行步骤使用隔离 fake executor。PM4 交付状态为 delivered，验证状态保持 partially_verified。当前源码管理链、19 张截图同视口复审和阶段全量检查均已通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过，真实执行核心 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、packaged 及用户手测未执行；PM5 管理侧及实际浏览器环境存取已交付：界面点击、FastAPI、SQLite、环境目录副本与 CloakBrowser 145 的登录保存/恢复均真实，执行步骤由隔离测试执行器驱动，任务保持排队态；PM5 范围内 6 个画板（001/003/004/005/010/100-rename-drawer）同视口对照通过，范围外的 002 运行环境详情、006 默认资源编辑及 007–009、100-cleanup-* 仍缺失并已登记，100-rename-validation-conflict 的项目内名称唯一规则与已批准设计冲突待产品确认；真实生产执行核心、CloakBrowser 执行核心、Studio、Windows、其他架构、packaged 及用户手测未执行；PM6–PM9 保持 planned。 第二轮补交付（2026-09-18）：03-runs 的人工链已接通真实页面——运行记录新增「等待人工」页签、唯一一份人工详情（继续节点/标记完成二次确认/标记失败必填）、超时终态处理结果，以及任务列表等待人工行的「查看事项」入口；同轮修复三处真实缺陷：ProjectsWorkspace 的人工详情分支被 taskId 短路、标记完成提交按钮被弹窗内的知情勾选永久锁死、等待人工目录空态在有默认状态筛选时误报「没有匹配」。证据 docs/project-management/implementation/pm5/qa-runs/2026-09-18/（15 检查点 / 25 截图）。 第三轮补交付（2026-09-18）：03-runs 人工链接通真实页面（运行记录「等待人工」页签、唯一一份人工详情、完成二次确认、失败必填、超时终态处理结果），任务列表按原型 002 补齐「所属批次」「当前或结束节点」「时间（最近状态时间）」并新增服务端 lastStatusAt；同轮修复四处真实缺陷（人工详情路由被 taskId 短路、「标记完成」被弹窗内勾选锁死、等待人工空态误报、终态仍渲染不可用表单）。证据 docs/project-management/implementation/pm5/qa-runs/2026-09-18/（16 检查点 / 27 截图）与 pm5/ui-verification.md（03-runs 逐画面评分）。 PM6 补交付（2026-09-18）：Google Sheets 来源与同步闭环的管理侧与本地契约已交付并验证——连接与多绑定、结构/身份/映射全量核验、公式列只读刷新、出站意图队列与发送核验状态机、pull/push、暂停恢复、断开连接、解除绑定影响预检、超时转 unknown 后只核验不盲重发。真实界面证据 13 检查点 / 13 截图见 docs/project-management/implementation/pm6/qa-runs/2026-09-18/，逐画面对照见 docs/project-management/implementation/pm6/ui-verification.md。该轮端到端抓出四个真实缺陷并已修复：绑定命令用 POST 打只接受 PUT 的路由（真实界面绑定必然 405）、拉取/推送后记录页不重取、来源页把读取失败显示为空事实、连接面板列错位。实网 Google 端到端未执行（需用户 OAuth 桌面客户端 JSON 与授权测试表）；远端增列与系统身份列因冻结契约无对应路由/初始化动作而按缺口登记。第三轮补交付（2026-09-18）：来源页签按原型 100-sheets-directions 改为两栏骨架，修复四处 <td> 嵌在 <thead> 的表头、记录身份重复渲染与解绑确认脱离触发按钮，并新增「推送结果未知」状态截图；原型 011/100 逐画面评分 86/88，唯一未对齐项是「来源核对」卡（冻结契约没有漂移汇总 DTO）。PM7 管理侧已交付并端到端验证（2026-09-19，run 20260918203625）：项目概览、统计与冻结下钻、任务证据、失败后续批次、停止与强停，以及概览/统计刷新失败保留上次结果、结果集过期、修订冲突、提交后响应丢失按原操作核对、迟到事件补读，均由真实 Electron 界面点击驱动，FastAPI、SQLite 与项目数据服务真实，执行步骤由隔离 QA 测试执行器驱动；逐画面对照见 docs/project-management/implementation/pm7/visual-review.md。交付边界固定为「管理侧通过，真实执行核心接入待验收」，真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包与用户手测未执行。PM7 管理侧已交付并端到端验证（run 20260918203625，delivered-management-scope）。PM8 管理侧已交付（delivered-management-scope、partially_verified），权威运行 20260920010843；真实执行核心接入待验收。",
   "pm8_note": "PM8 只升级有直接 PM8 证据的条目。complete_acceptance=PM8 但本轮未新增证据、保持原状态的条目：DATA-STATE-05、DATA-TABLE-06/07、DATA-WRITE-07、XE-A05/XE-A06、XE-C06/XE-C15/XE-C16。权威运行为 20260920010843（passed、18 检查点、13 截图）；此前对 20260919200955 / 20260919202620 的引用已统一指向它。边界：隔离执行器不启动浏览器、不产生任务环境实例，删除清理残留的前置工作副本由 QA 侧车 leak-work-copy 注入。独立规格/工程审查因智能体投递故障未执行，见 docs/project-management/implementation/pm8/verification.json 的 independentReview。",
   "milestones": [
     {
@@ -152,12 +152,21 @@
         "PM5",
         "PM6"
       ],
-      "status": "planned",
+      "status": "partially_verified",
       "start_dependencies": [
         "PM4"
       ],
       "external_capabilities": [
         "core_diagnostics"
+      ],
+      "delivery_status": "delivered-management-scope",
+      "user_acceptance": "pending",
+      "scope": "管理侧通过，真实执行核心接入待验收。项目概览、统计与冻结下钻、任务证据、失败后续批次、停止与强停、刷新失败保留上次结果、结果集过期、修订冲突、提交后响应丢失按原操作核对、迟到事件补读均由真实 Electron 界面点击驱动；FastAPI、SQLite 与项目数据服务真实，执行步骤由隔离 QA 测试执行器驱动。真实生产执行核心、真实 CloakBrowser、Studio demo、Windows/其他架构/打包应用与用户手测未执行。",
+      "evidence": [
+        "docs/project-management/implementation/pm7/verification.json",
+        "docs/project-management/implementation/pm7/qa-runs/20260918203625/report.json",
+        "docs/project-management/implementation/pm7/visual-review.md",
+        "docs/project-management/implementation/pm7/manual-test.md"
       ]
     },
     {
