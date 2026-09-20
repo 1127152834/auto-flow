@@ -22,7 +22,7 @@ export function parseModuleTypeLabels() {
 
 export function realModules() {
   const labels = new Map(parseModuleTypeLabels().map(entry => [entry.type, entry.label]))
-  const types = moduleCategories.flatMap(category => category.modules)
+  const types = moduleCategories.filter(category => category.name !== '项目能力').flatMap(category => category.modules)
   if (types.length !== 227 || new Set(types).size !== 227) throw new Error('已批准的 227 节点范围发生变化')
   return types.map(type => {
     const label = labels.get(type)

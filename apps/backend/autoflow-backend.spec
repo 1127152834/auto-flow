@@ -1,5 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import sys
+from importlib.util import find_spec
+from pathlib import Path
+
+from PyInstaller.depend.bindepend import get_imports
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
 
 
@@ -28,10 +33,21 @@ hiddenimports = [
 ]
 
 
+# Intel cryptography can be built against Homebrew OpenSSL while Python uses an
+# older libssl with the same basename. Prefer the extension's actual ABI pair.
+binaries = []
+if sys.platform == 'darwin':
+    rust = find_spec('cryptography.hazmat.bindings._rust')
+    if rust is not None and rust.origin:
+        for _name, library in get_imports(rust.origin):
+            if library and Path(library).name in {'libssl.3.dylib', 'libcrypto.3.dylib'}:
+                binaries.append((library, '.'))
+
+
 a = Analysis(
     ['src/autoflow/__main__.py'],
     pathex=['src'],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
