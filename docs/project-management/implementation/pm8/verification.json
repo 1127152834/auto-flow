@@ -6,27 +6,27 @@
   "deliveryStatus": "delivered-management-scope",
   "verificationStatus": "verifiedForManagementScope",
   "scope": "管理侧通过，真实执行核心接入待验收",
-  "head": "2021c74a7107a5369bec2f0feff175ffc8f8e7df",
-  "headNote": "head 是 `git rev-parse HEAD` 复核后的实际提交号（2021c74a 的 PM8-C2 补齐提交）。本文件、覆盖表、账本与 .ai 记录在随后的文档提交中落库，不改变 apps/*/src 的源码摘要。",
+  "head": "44a3fe7a4fa1889ca7a1511ca47a821c9e80009f",
+  "headNote": "head 是 QA 侧车/脚本补齐提交（`44a3fe7a`，本轮真实证据来自它驱动的工作树）。本文件的文档更新随其后的文档提交落库，不改变 apps/*/src 的源码摘要。",
   "sourceDigest": "3502e24d7321efc5e5b92bbc83b181a236a0e07f10bdaa9cc29b8b16d8196462",
   "sourceDigestMethod": "对 apps/backend/src 与 apps/desktop/src 递归取 .py/.ts/.tsx/.css，按路径排序后依次 update('路径' + 文件字节) 再整体 sha256（与 QA 脚本 scripts/qa-project-management-pm8.mjs 的算法一致）",
   "sourceDigestNote": "该摘要与权威端到端运行 qa-runs/20260919202620/report.json 里的 sourceSha256 完全一致，说明 11 张截图对应的工作树源码就是本次交付的源码（含 2021c74a 的替换器修复前的全部 PM8 源码）。",
   "authoritativeManagementRun": {
-    "result": "docs/project-management/implementation/pm8/qa-runs/20260919202620/report.json",
+    "result": "docs/project-management/implementation/pm8/qa-runs/20260920010843/report.json",
     "status": "passed",
     "scenario": "PM8-A management-side lifecycle, restart reconciliation and resource protection",
     "scope": "管理侧通过，真实执行核心接入待验收",
     "evidenceType": "真实 Electron 渲染层点击（CDP 指针输入）+ 应用自启 FastAPI + 隔离 SQLite + 隔离 QA 测试执行器",
-    "capturedGitHead": "fbdb7f98b9aa3bee2dddfd3a2013e423e4a24329",
-    "capturedGitHeadNote": "运行时 HEAD 是 fbdb7f98，工作树已包含随后以 2021c74a 提交的代理引用清单修复；源码摘要 3502e24d… 是含该修复的工作树，属同一份源码。",
+    "capturedGitHead": "14e70fad18c5afa1ce286a9e3b38f03951acc40c",
+    "capturedGitHeadNote": "运行时 HEAD 是 14e70fad，工作树已包含随后以 44a3fe7a 提交的 QA 侧车/脚本改动；源码摘要 3502e24d… 只覆盖 apps/*/src，未变，因此 13 张截图仍对应本次交付源码。",
     "capturedSourceSha256": "3502e24d7321efc5e5b92bbc83b181a236a0e07f10bdaa9cc29b8b16d8196462",
     "platform": "darwin",
     "arch": "arm64",
     "viewport": "1440x1024",
     "dpr": 1,
-    "checkpoints": 16,
-    "screenshots": 11,
-    "visualReview": "passed（docs/project-management/implementation/pm8/visual-review.md，逐画面自审，最低 85 分；截图等价性见 supersededRuns）",
+    "checkpoints": 18,
+    "screenshots": 13,
+    "visualReview": "passed（docs/project-management/implementation/pm8/visual-review.md，13 张逐画面审查，最低 85 分）",
     "boundary": {
       "executor": "isolatedQaExecutor（apps/backend/tests/qa/pm8_sidecar.py + tests/qa 隔离执行器）",
       "browser": "notExecuted",
@@ -44,12 +44,14 @@
       "resourceProtection": "E2E-6 被项目引用的浏览器配置删除被拒：接口 409 RESOURCE_REFERENCED，真实界面删除对话框同时列出「PM8 生命周期验收 · 自动化「PM8 生命周期自动化」（environmentPolicy.profileId）」，且不提供强制删除。",
       "deleteGuards": "E2E-5 影响确认过期后删除被拒 412；确认名不符时界面禁用提交且直连接口 422。",
       "delete": "E2E-5 永久删除完成：A 的项目行保留为 lifecycle_state='deleted' 的墓碑、数据表行归零、对外读取 404；B 项目与全局浏览器配置保留。",
-      "responseLoss": "E2E-7 注入响应丢失后按原操作身份找回同一条归档事实（1 条，状态 succeeded），未产生第二条创建事实。"
+      "responseLoss": "E2E-7 注入响应丢失后按原操作身份找回同一条归档事实（1 条，状态 succeeded），未产生第二条创建事实。",
+      "cleanupResidue": "E2E-8 用真实权限故障制造清理失败：删除命令 ceaa78b8-09a1-4430-9d9a-77334b3cdbeb 返回 DELETE_CLEANUP_FAILED，details.cleanup.residue 点名真实工作副本路径，项目停留在 deleting；归档目录卡片显示「清理未完成」，重试入口与重试对话框都列出同一路径；解除故障后第二条删除命令收敛为 succeeded，残留目录真实消失且先前失败事实保留。"
     },
     "injected": [
       "executor-pause / executor-resume：在 create_record:account 前暂停隔离执行器，用于制造真实的活动批次与任务阻断；这是测试注入，不是产品故障。",
       "expire-lifecycle-impact：过期 8 条生命周期影响，用于验证 412 与界面重新核对。",
-      "lifecycle-response-loss：丢弃归档命令的响应，用于验证按原幂等身份找回。"
+      "lifecycle-response-loss：丢弃归档命令的响应，用于验证按原幂等身份找回。",
+      "leak-work-copy：隔离执行器不启动浏览器、不会自动产生任务环境实例，因此由 QA 侧车按真实环境仓库登记一个「浏览器已关闭（state=closed）、工作副本仍在磁盘」的遗留实例，模拟进程在 close 与清理之间中断；随后 chmod 000 让本地清理真实失败、chmod 755 解除。删除、残留判定、重试收敛全部走产品代码。"
     ],
     "excluded": [
       "真实执行核心",
@@ -74,7 +76,8 @@
     "归档只读提示文案与手测方案/画板不一致（旧文案不含导出），改为「项目已归档，仅可查看与导出」。修复：5e19f190。",
     "QA 证据缺陷：`07-resource-referenced` 原先取在纯 API DELETE 之后，画面停在项目目录，根本看不到引用清单；已在 QA 脚本里改为真实界面路径（顶部导航 → 浏览器配置 → 删除被引用配置 → 断言引用清单点名项目与自动化）后重跑。",
     "QA 证据缺陷：`10-deleted-project-kept-neighbour` 原先停在「已归档」筛选的 0 条空视图，无法核对被保留的邻居项目；已改为切换「全部状态」后截图，同一画面同时证明 A 已消失、B 仍保留。",
-    "QA 脚本自身缺陷（不计为产品缺陷）：`waitFor` 在页面导航瞬态会中断而不是重试（已加 try/catch 重试）；目录/归档视图下的返回入口、生命周期进度视图关闭、归档与恢复的对话框分支、归档项目不在默认状态筛选里等定位假设不成立，逐项按真实 UI 修正。"
+    "QA 脚本自身缺陷（不计为产品缺陷）：`waitFor` 在页面导航瞬态会中断而不是重试（已加 try/catch 重试）；目录/归档视图下的返回入口、生命周期进度视图关闭、归档与恢复的对话框分支、归档项目不在默认状态筛选里等定位假设不成立，逐项按真实 UI 修正。",
+    "QA 证据缺陷（不计为产品缺陷）：此前 E2E-8 断言「批次启动必须为项目预约一个真实隔离工作副本」，但隔离执行器（tests/qa/pm4_v1_runner.py）是静态调用 ProjectBatchScheduler.claim_data_task，不像生产 _claim_data_task 那样传入 environments，因此 PM4/PM7/PM8 的 QA 运行从不产生任务环境实例。本轮没有为了跑通去改这条共享执行器路径（改它会让未终结的 active 实例变成真实阻断，并影响已闭合的 PM4/PM7 证据），而是按 E2E-8 的真实目的（删除时的残留判定与重试收敛）由侧车注入「清理中断遗留的工作副本」，其余全部真实。"
   ],
   "automatedChecks": {
     "backend": {
@@ -108,8 +111,9 @@
     "endToEnd": {
       "command": "node scripts/qa-project-management-pm8.mjs",
       "result": "passed",
-      "checkpoints": 16,
-      "screenshots": 11
+      "checkpoints": 18,
+      "screenshots": 13,
+      "note": "运行 20260920010843，源码摘要 3502e24d…，与交付源码一致。"
     },
     "diffCheck": "git diff --check → 通过"
   },
@@ -159,8 +163,13 @@
       ]
     },
     "PM8-B2": {
-      "status": "delivered-with-open-item",
-      "note": "任务详情 cleanup: CleanupSummary 已真实渲染；归档对话框的清理残留与重试入口在 onLoadResidue +「重试清理」闭合，但本轮端到端没有制造出真实残留，因此该分支只有组件测试证据，没有真实截图。"
+      "status": "delivered",
+      "note": "任务详情 cleanup: CleanupSummary 已真实渲染；删除清理残留与「重试清理」在端到端里由真实权限故障制造，截图 12/13 逐项可核对（归档卡片「清理未完成」、重试对话框列出真实残留路径、重试后残留真实消失且先前失败事实保留）。",
+      "evidence": [
+        "qa-runs/20260920010843/12-delete-cleanup-residue.png",
+        "qa-runs/20260920010843/13-cleanup-residue-retry.png",
+        "apps/backend/tests/integration/test_project_lifecycle.py::test_delete_cleanup_failure_keeps_the_project_deleting_with_residue"
+      ]
     },
     "PM8-C1": {
       "status": "delivered",
@@ -197,18 +206,18 @@
   },
   "independentReview": {
     "status": "notExecuted",
-    "reason": "计划中的独立规格/工程审查智能体三次投递（followup_task ×2、spawn_agent ×1、send_message + followup ×1）都只收到模式提示、收不到任务正文，回复均为“没有任务可做”。判定为工具投递故障，不构成独立审查。",
-    "fallback": "改为主协调自审：对规格 §6 逐条核对、对本次未提交改动逐项复核，并把自审结论、偏离与未闭合项写进 visual-review.md 与本节。不得据此声称“已通过独立审查”。"
+    "reason": "计划中的独立规格/工程审查智能体四次投递（followup_task ×2、spawn_agent ×2，含一次最小化探针）都只收到模式提示、收不到任务正文，回复均为「没有任务可做」；探针同样失败，判定为工具投递故障，不构成独立审查。",
+    "fallback": "改为主协调自审：对规格 §2.1/§3/§6 逐条核对、对未提交改动逐项复核、对新增截图逐画面评分，结论写进 visual-review.md 与本节；缺陷与未闭合项逐条登记在 defectsFoundByThisRun 与 knownLimitations。不得据此声称「已通过独立审查」。"
   },
   "knownLimitations": [
     "真实生产执行核心、真实 CloakBrowser 执行、Studio demo 未接入；本轮由隔离测试执行器驱动真实批次/任务事实，管理侧之外的执行链未验证。",
     "Windows、其他 CPU 架构、打包应用未执行。",
     "用户手动验收未执行；手测入口 docs/project-management/implementation/pm8/manual-test.md（proposed）。",
     "双工作区切换未在本轮端到端中执行（手测 M-08 覆盖）。",
-    "PM8-B2 的清理残留重试分支只有组件测试证据，端到端没有制造出真实清理残留。",
     "代理连接/代理组删除的引用清单没有真实截图：隔离环境无法建立真实 ProxyPanel 连接；证据为组件测试与后端契约测试。",
     "reference/* 只读符号链接本应存在；PM8 工作区最初缺失，已从主项目补齐并写入 .git/info/exclude（不入库）。报告与手测方案把它记为环境前置条件。",
-    "`project_batches_active` 只在隔离执行器暂停注入下出现；它是测试注入制造的状态，不是产品缺陷。"
+    "`project_batches_active` 只在隔离执行器暂停注入下出现；它是测试注入制造的状态，不是产品缺陷。",
+    "隔离执行器不启动浏览器，因此不会产生任务环境实例；删除时的「工作副本残留」由 QA 侧车按真实环境仓库注入（leak-work-copy），注入的只是崩溃遗留这一前置条件，清理失败、残留上报与重试收敛都是真实产品行为。"
   ],
   "outcome": "PM8 完成后停在 PM8 验收点，不进入 PM9。",
   "postDeliveryFixes": [

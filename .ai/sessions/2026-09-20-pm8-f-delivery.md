@@ -36,3 +36,13 @@
 ## 环境前置条件
 
 PM8 工作区出厂时缺少 `reference/WebRPA`、`RedroidManager`、`redroid-script`、`vphone-aio`、`vphone-cli` 只读符号链接，已从主项目补齐并写入 `.git/info/exclude`（不入库）。缺少它们时 `recording-source-parity.test.ts` 会失败。
+
+## 本轮补齐（提交 44a3fe7a + 文档提交）
+
+上一节遗留的「清理残留端到端未制造真实残留」已闭合。
+
+- 定位：E2E-8 首次尝试断言「批次启动必须为项目预约一个真实隔离工作副本」并失败（运行 `20260920010249`）。根因是隔离执行器 `apps/backend/tests/qa/pm4_v1_runner.py` 静态调用 `ProjectBatchScheduler.claim_data_task`，不像生产 `_claim_data_task` 那样传 `environments`，所以 PM4/PM7/PM8 的 QA 运行从不产生任务环境实例。
+- 取舍：没有去改这条共享执行器路径。改它会让未终结的 `active` 实例落进 `BUSY_INSTANCE_STATES`，把归档/删除真实阻断，并影响已闭合的 PM4/PM7 证据；这属于 QA 夹具保真度，不是 E2E-8 要验的产品行为。
+- 做法：QA 侧车新增 `leak-work-copy` 故障注入，按真实环境仓库（`EnvironmentInstance` + `reserve_instance_in_session` + `EnvironmentStore.prepare_instance`）登记一个「浏览器已关闭（state=closed）、工作副本仍在磁盘」的遗留实例，模拟进程在 `close` 与清理之间中断；残留失败、残留上报、重试收敛全部走产品代码。
+- 结果：权威端到端 `20260920010843`（`passed`、18 检查点、13 截图、源码摘要 `3502e24d…`）。新增画面 `12-delete-cleanup-residue`（86 分）与 `13-cleanup-residue-retry`（87 分）；与前一轮 11 张逐像素比对为 4 张完全一致、6 张差异 ≤0.23%、1 张 1.686% 且差异只在过期通知条区域。
+- 后续如需在 PM8 之上扩展：QA 侧车不启动浏览器这一条边界不变；真实执行核心接入后，本用例应改为在真实浏览器任务中制造中断再复验。
