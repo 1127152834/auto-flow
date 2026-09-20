@@ -1222,7 +1222,7 @@ export function AITaskConfig({ moduleType, data, onChange, onBatchChange }: { mo
   )
 }
 
-// AI视觉操作配置（看屏点选，不依赖选择器）
+// AI视觉操作配置（看当前页面点选，不依赖选择器）
 export function AIVisionActConfig({ data, onChange, onBatchChange }: { data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   const action = (data.action as string) || 'click'
   const needButton = action === 'click' || action === 'double'
@@ -1239,7 +1239,7 @@ export function AIVisionActConfig({ data, onChange, onBatchChange }: { data: Nod
           multiline
           rows={3}
         />
-        <p className="text-xs text-muted-foreground">AI 会截取当前屏幕，根据描述定位目标并返回坐标。</p>
+        <p className="text-xs text-muted-foreground">AI 会截取当前浏览器页面，根据描述定位目标并返回坐标。</p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="action">执行动作</Label>
@@ -1291,9 +1291,9 @@ export function AIVisionActConfig({ data, onChange, onBatchChange }: { data: Nod
       </div>
       <div className="p-3 bg-violet-50 border border-violet-200 rounded-lg">
         <p className="text-xs text-violet-800">
-          <strong>AI视觉操作</strong>让 AI 直接"看屏幕"定位目标并真实点击，无需任何选择器。<br/>
+          <strong>AI视觉操作</strong>让 AI 直接"看页面"定位目标并真实点击，无需任何选择器。<br/>
           • 适合 Canvas、图片按钮、防自动化页面等取不到选择器的场景<br/>
-          • 操作的是整个桌面屏幕（物理鼠标），请确保目标窗口在前台
+          • 操作仅限当前 CloakBrowser 页面，不控制 Windows 桌面
         </p>
       </div>
     </>

@@ -145,6 +145,16 @@ class CloakBrowserWorkflowMouse(BrowserMousePort):
     async def wheel(self, delta_x: float, delta_y: float) -> None:
         await self._raw.wheel(delta_x, delta_y)
 
+    async def click(
+        self,
+        x: float,
+        y: float,
+        *,
+        button: str = "left",
+        click_count: int = 1,
+    ) -> None:
+        await self._raw.click(x, y, button=button, click_count=click_count)
+
 
 class CloakBrowserWorkflowElementHandle(BrowserElementHandlePort):
     def __init__(self, raw: Any) -> None:

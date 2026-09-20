@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/advanced_vision_act.py",
+    "symbol": "AIVisionActExecutor",
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "保留冻结源码的视觉坐标提取、0至1/0至1000/像素坐标换算和边界裁剪",
+    "保留定位、移动、单击、双击、右键及可选鼠标按键行为",
+    "模型连接改为主应用modelId和CredentialStore边界",
+    "按产品硬约束将Windows全屏截图和SendInput替换为当前CloakBrowser页面截图与页面鼠标",
+    "扩展既有CloakBrowser鼠标端口支持原生button和clickCount，不增加第二套浏览器控制",
+    "前端说明同步为当前CloakBrowser页面，不再声称控制桌面"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/differential/workflows/test_b5_ai_vision_act_parity.py -q",
+      "exitCode": 0,
+      "result": "1 passed",
+      "covers": "冻结源码与迁入实现的视觉坐标解析、换算、结果和变量变化"
+    },
+    {
+      "command": "uv run --project apps/backend pytest <B5 affected backend suite> -q",
+      "exitCode": 0,
+      "result": "148 passed",
+      "covers": "五种动作、鼠标按键、CloakBrowser端口、托管模型、注册表和既有worker协议"
+    },
+    {
+      "command": "npm test --workspace @autoflow/desktop -- --run src/renderer/domains/workflows/tests/ai-model-picker-entry.test.tsx && npm run typecheck --workspace @autoflow/desktop && npx eslint apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
+      "exitCode": 0,
+      "result": "24 tests, TypeScript and ESLint passed"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <AI vision act affected files> && uv run --project apps/backend mypy <AI vision act production modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "remaining": [
+    "正式Electron中使用真实CloakBrowser页面截图和鼠标动作验收",
+    "真实模型供应商调用"
+  ]
+}

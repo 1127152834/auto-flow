@@ -73,6 +73,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "screenshot",
         "ai_chat",
         "ai_vision",
+        "ai_vision_act",
         "ai_extract",
         "ai_classify",
         "ai_summarize",

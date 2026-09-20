@@ -88,6 +88,15 @@ class BrowserMousePort(Protocol):
 
     async def wheel(self, delta_x: float, delta_y: float) -> None: ...
 
+    async def click(
+        self,
+        x: float,
+        y: float,
+        *,
+        button: str = "left",
+        click_count: int = 1,
+    ) -> None: ...
+
 
 class BrowserDownloadPort(Protocol):
     @property

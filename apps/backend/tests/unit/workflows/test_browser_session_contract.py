@@ -11,7 +11,6 @@ from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
-
 from autoflow.application.workflows.executors.web_basic import SwitchIframeExecutor
 from autoflow.domain.workflows.browser import CurrentPageClosed, UnknownPage
 from autoflow.domain.workflows.execution import ExecutionContext
@@ -299,6 +298,11 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
         async def wheel(self, x: float, y: float) -> None:
             calls.append(("wheel", x, y))
 
+        async def click(
+            self, x: float, y: float, *, button: str, click_count: int
+        ) -> None:
+            calls.append(("mouse-click", x, y, button, click_count))
+
     class RawChooser:
         async def set_files(self, path: str) -> None:
             calls.append(("chooser", path))
@@ -340,6 +344,7 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
     await wrapped_page.mouse.down()
     await wrapped_page.mouse.up()
     await wrapped_page.mouse.wheel(0, 500)
+    await wrapped_page.mouse.click(50, 60, button="right", click_count=2)
 
     async def click() -> None:
         calls.append(("click",))
@@ -347,6 +352,7 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
     await wrapped_page.choose_file(click, str(upload), timeout_ms=2500)
 
     assert ("select", ".item:first", {"label": "二"}) in calls
+    assert ("mouse-click", 50, 60, "right", 2) in calls
     assert ("chooser", str(upload)) in calls
 
 
