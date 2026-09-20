@@ -33,9 +33,9 @@ json.dump(result, sys.stdout, ensure_ascii=False)
     env = dict(os.environ)
     env["PYTHONPATH"] = str(FROZEN_BACKEND)
     process = subprocess.run(
-        [sys.executable, "-c", script],
+        [sys.executable, "-X", "utf8", "-c", script],
         input=json.dumps({"variables": variables, "value": value}, ensure_ascii=False),
-        text=True,
+        text=True, encoding="utf-8",
         capture_output=True,
         env=env,
         check=True,

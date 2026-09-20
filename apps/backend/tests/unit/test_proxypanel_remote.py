@@ -15,7 +15,7 @@ def detail():
     body = json.loads(
         (
             Path(__file__).parents[1] / "fixtures/proxypanel/list-redacted.json"
-        ).read_text()
+        ).read_text(encoding="utf-8")
     )["proxies"][0]
     return {
         **body,

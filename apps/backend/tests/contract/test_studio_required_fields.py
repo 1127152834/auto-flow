@@ -11,7 +11,7 @@ BASE = {'schemaRevision': 'fixture', 'coveredModules': ['demo'], 'requiredFields
 
 
 def test_frozen_metadata_roundtrip():
-    data = json.loads(FIXTURE.read_text())
+    data = json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert StudioModuleRequiredFields.model_validate(data).model_dump(by_alias=True) == data
 
 

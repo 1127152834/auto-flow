@@ -20,10 +20,10 @@ FROZEN_HARNESS = Path(__file__).with_name("frozen_b2_advanced_browser_harness.py
 
 def frozen_result(case: str) -> dict[str, Any]:
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS), case],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS), case],
         check=True,
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8",
         env={"PYTHONPATH": str(FROZEN_BACKEND)},
     )
     return json.loads(completed.stdout)

@@ -20,6 +20,9 @@ def profile(values):
 def test_process_identity_does_not_reclaim_reused_worker_pid_or_diagnostic_command(monkeypatch, tmp_path):
     from autoflow.infrastructure.process import browser_processes as module
 
+    monkeypatch.setattr(module, "sys", SimpleNamespace(platform="darwin", executable=sys.executable))
+    monkeypatch.setattr(module.os, "getpgrp", lambda: 100, raising=False)
+
     run = tmp_path / "run"
     executable = tmp_path / "Chromium"
     rows = (
@@ -38,7 +41,7 @@ def test_process_identity_does_not_reclaim_reused_worker_pid_or_diagnostic_comma
     assert module.capture_processes(700, 11, run, executable) == {900: (900, 4)}
     assert module.capture_processes(700, 11, None, None, {700: (500, 11)}) == {}
     sent = []
-    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args))
+    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args), raising=False)
     module.signal_processes({700: (500, 11)}, 9)
     assert sent == []
 
@@ -86,12 +89,15 @@ async def test_test_browser_shutdown_cannot_cancel_start_cleanup_twice(monkeypat
 def test_unreadable_metadata_never_confirms_a_live_owned_process_exited(monkeypatch):
     from autoflow.infrastructure.process import browser_processes as module
 
+    monkeypatch.setattr(module, "sys", SimpleNamespace(platform="darwin", executable=sys.executable))
+    monkeypatch.setattr(module.os, "getpgrp", lambda: 100, raising=False)
+
     monkeypatch.setattr(module, "process_birth", lambda _: None)
     monkeypatch.setattr(module, "_process_exists", lambda pid: pid == 700)
     owned = {700: (700, 123), 701: (700, 456)}
     assert module.living_processes(owned) == {700: (700, 123)}
     sent = []
-    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args))
+    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args), raising=False)
     module.signal_processes(owned, 9)
     assert sent == []
 

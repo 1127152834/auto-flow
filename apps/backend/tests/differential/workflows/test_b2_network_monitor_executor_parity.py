@@ -26,9 +26,9 @@ def _source_result(operation: str) -> dict[str, Any]:
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(FROZEN_BACKEND)
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps({"operation": operation}),
-        text=True,
+        text=True, encoding="utf-8",
         capture_output=True,
         check=True,
         env=environment,

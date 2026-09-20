@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import os
+import sys
 import threading
 from datetime import UTC, datetime
 from pathlib import Path
@@ -21,6 +22,11 @@ from autoflow.infrastructure.database.session import (
 )
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
+
+requires_posix_output = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Native Windows workflow output is unsupported; refusal is tested separately",
+)
 
 
 def _start() -> WorkflowRunStart:
@@ -195,6 +201,7 @@ async def test_disk_failure_does_not_register_artifact(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_writes_relative_output_and_immutable_artifact_snapshot(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -231,6 +238,7 @@ async def test_text_export_writes_relative_output_and_immutable_artifact_snapsho
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_writes_relative_output_and_xlsx_snapshot(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -268,6 +276,7 @@ async def test_binary_export_writes_relative_output_and_xlsx_snapshot(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_failure_keeps_existing_target_and_registers_nothing(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     monkeypatch: pytest.MonkeyPatch,
@@ -306,6 +315,7 @@ async def test_binary_export_failure_keeps_existing_target_and_registers_nothing
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_rejects_path_escape_and_symlink(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -339,6 +349,7 @@ async def test_binary_export_rejects_path_escape_and_symlink(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_cancellation_keeps_existing_target(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -382,6 +393,7 @@ async def test_binary_export_cancellation_keeps_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_preserves_overwrite_append_and_utf8_sig_semantics(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -433,6 +445,7 @@ async def test_text_export_preserves_overwrite_append_and_utf8_sig_semantics(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_empty_utf8_sig_content_still_writes_one_bom(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -457,6 +470,7 @@ async def test_text_export_empty_utf8_sig_content_still_writes_one_bom(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_allows_explicit_absolute_target_and_rejects_relative_escape(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -495,6 +509,7 @@ async def test_text_export_allows_explicit_absolute_target_and_rejects_relative_
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_failure_keeps_existing_target_and_registers_nothing(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -525,6 +540,7 @@ async def test_text_export_failure_keeps_existing_target_and_registers_nothing(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_rejects_symlink_escape(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -562,6 +578,7 @@ async def test_text_export_rejects_symlink_escape(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_parent_swap_cannot_escape_verified_directory(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -635,6 +652,7 @@ async def test_text_export_refuses_unverified_windows_path_operations(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_cancellation_during_append_keeps_original_file(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -680,6 +698,7 @@ async def test_text_export_cancellation_during_append_keeps_original_file(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_cancellation_during_snapshot_publishes_nothing(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -722,6 +741,7 @@ async def test_text_export_cancellation_during_snapshot_publishes_nothing(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_registration_failure_restores_existing_target(
     tmp_path: Path,
 ) -> None:
@@ -756,6 +776,7 @@ async def test_text_export_registration_failure_restores_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_registration_failure_restores_existing_target(
     tmp_path: Path,
 ) -> None:
@@ -789,6 +810,7 @@ async def test_binary_export_registration_failure_restores_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_rejects_concurrent_change_after_read(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -823,6 +845,7 @@ async def test_binary_export_rejects_concurrent_change_after_read(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_serializes_competing_autoflow_writers(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -901,6 +924,7 @@ async def test_binary_export_serializes_competing_autoflow_writers(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_registration_failure_does_not_overwrite_newer_external_output(
     tmp_path: Path,
 ) -> None:
@@ -936,6 +960,7 @@ async def test_registration_failure_does_not_overwrite_newer_external_output(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("binary", [False, True])
+@requires_posix_output
 async def test_publish_identity_comes_from_staged_file_before_replace(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -997,6 +1022,7 @@ async def test_publish_identity_comes_from_staged_file_before_replace(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("binary", [False, True])
+@requires_posix_output
 async def test_output_publish_fsync_failure_restores_existing_target(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1065,6 +1091,7 @@ async def test_output_publish_fsync_failure_restores_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_backup_cleanup_failure_is_persisted_and_retried(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1122,6 +1149,7 @@ async def test_backup_cleanup_failure_is_persisted_and_retried(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_backup_cleanup_rename_failure_falls_back_to_direct_cleanup(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1167,6 +1195,7 @@ async def test_backup_cleanup_rename_failure_falls_back_to_direct_cleanup(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_backup_cleanup_transition_and_unlink_failure_records_retry_marker(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

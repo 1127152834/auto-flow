@@ -67,11 +67,11 @@ def _source_result(payload: dict[str, Any]) -> dict[str, Any]:
     env = dict(os.environ)
     env["PYTHONPATH"] = str(FROZEN_BACKEND)
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps(payload, ensure_ascii=False),
         check=True,
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8",
         env=env,
     )
     return json.loads(completed.stdout.splitlines()[-1])
@@ -1053,7 +1053,7 @@ def test_table_exports_formula_like_text_as_literal_data(tmp_path: Path) -> None
         )
     )
     assert csv_result.success is True
-    assert Path(csv_result.data["path"]).read_text() == (
+    assert Path(csv_result.data["path"]).read_text(encoding="utf-8") == (
         "'=header,equals,plus,minus,at\n"
         "safe,'=1+1,'+SUM(A1:A2),'-2+3,'@SUM(A1:A2)\n"
     )

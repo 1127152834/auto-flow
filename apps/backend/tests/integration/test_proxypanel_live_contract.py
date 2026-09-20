@@ -40,9 +40,9 @@ class Memory:
 
 @pytest.fixture
 def runtime(tmp_path):
-    body = json.loads((FIXTURES / "list-redacted.json").read_text())
+    body = json.loads((FIXTURES / "list-redacted.json").read_text(encoding="utf-8"))
     body["proxies"].append({**body["proxies"][0], "id": "expired", "state": "expired"})
-    secret = json.loads((FIXTURES / "credentials-redacted.json").read_text())
+    secret = json.loads((FIXTURES / "credentials-redacted.json").read_text(encoding="utf-8"))
     calls = []
 
     def respond(request):

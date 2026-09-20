@@ -141,9 +141,9 @@ def _target_executors() -> dict[str, type[Any]]:
 
 def _source(payload: dict[str, Any]) -> dict[str, Any]:
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps(payload),
-        text=True,
+        text=True, encoding="utf-8",
         capture_output=True,
         check=True,
         env={"PYTHONPATH": str(FROZEN_BACKEND)},
