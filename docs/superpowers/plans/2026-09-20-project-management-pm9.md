@@ -23,6 +23,6 @@ Ruling: 当前 `domain/workflows/catalog.py` 只开放四节点，`run_validatio
 - 合并检查：原定向 52 项中旧 checkpoint 的 position 必需测试失败；代码与文档均明确布局/语义分离，改为 data 必需且无 position 合法。29 项模块/差分测试、ruff、mypy 392 文件、typecheck、OpenAPI 通过；迁移冲突保留 pm08_project_sync。
 - 合并快照全量后端 3155 passed / 15 skipped；前端 5445 passed / 404 文件。修复后的全量后端 3159 passed / 15 skipped，脚本测试 94 passed。
 - Task 1：源码和打包 sidecar / Electron 管理链均通过；六页真实状态、原生 200% zoom 与 Studio 双窗口认证通过。
-- Task 2：本机 sidecar/.app/DMG 构建通过；三平台 CI 已扩展，实际运行仍待服务返回。
+- Task 2：本机 sidecar/.app/DMG 构建通过；三平台 CI 已扩展，Actions 已启动，最新运行 35507610003（10dc916c）尚未完成，不能记作三平台通过。
 - Task 3：251 条历史覆盖逐项核对，不升级状态；万行导入/分页/导出通过，完整生产接入见独立 proposed 规格。
 - Final review: 独立审查发现等号 executable 参数会误跑源码及 QA 环境可混入生产验收；已规范化 cliArgs 并拒绝 QA 环境，新增入口失败检查通过。PM1 历史输出保护保留。
