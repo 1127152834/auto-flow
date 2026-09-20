@@ -1283,7 +1283,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1351,7 +1351,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、生产注册、共享CloakBrowser页面身份端口和真实HTTP协调器准入已通过；真实CloakBrowser标签切换、正式Electron、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、macOS arm64真实CloakBrowser及正式Electron开发入口均已通过；重建目录包与其他平台仍待验收。",
       "risk": "标签页索引、标题、URL、前后页和变量输出已对照冻结实现；真实页面身份与正式UI仍须集中验收。",
       "acceptanceCases": [
         {
@@ -1380,7 +1380,7 @@
         },
         {
           "id": "BE.switch_tab.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -1388,10 +1388,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 switch_tab，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：标签页切换执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-remaining-browser-electron-peBC4L/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实CloakBrowser页面副作用与正式Electron UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser动作及正式Electron UI保存、恢复、执行、Excel产物哈希、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -5800,7 +5800,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -5865,7 +5865,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、生产注册、真实HTTP协调器准入及OpenPyXL工作区产物往返已通过；真实CloakBrowser表格提取、正式Electron、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、macOS arm64真实CloakBrowser及正式Electron开发入口均已通过；重建目录包与其他平台仍待验收。",
       "risk": "表格读取语义已与冻结实现对照；文件输出按AutoFlow必要边界改经工作区产物服务，真实页面和正式UI仍须集中验收。",
       "acceptanceCases": [
         {
@@ -5894,7 +5894,7 @@
         },
         {
           "id": "BE.extract_table_data.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -5902,10 +5902,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 extract_table_data，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：表格数据提取模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-remaining-browser-electron-peBC4L/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实CloakBrowser页面副作用与正式Electron UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser动作及正式Electron UI保存、恢复、执行、Excel产物哈希、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -6811,7 +6811,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -6882,7 +6882,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、浏览器模式生产注册和真实HTTP协调器准入已通过；系统进程与代理抓包按批准的Web-only范围明确返回CapabilityUnavailable；真实CloakBrowser请求捕获、正式Electron、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、macOS arm64真实CloakBrowser及正式Electron开发入口均已通过；重建目录包与其他平台仍待验收。",
       "risk": "浏览器模式已复用CloakBrowser请求监听并对URL和请求数据执行容量与秘密保护；真实请求时序和正式UI仍须集中验收。",
       "acceptanceCases": [
         {
@@ -6911,7 +6911,7 @@
         },
         {
           "id": "BE.network_capture.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -6919,10 +6919,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 network_capture，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：网络抓包模块执行器 - 支持浏览器抓包、系统抓包和代理抓包",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-remaining-browser-electron-peBC4L/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实CloakBrowser页面副作用与正式Electron UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser动作及正式Electron UI保存、恢复、执行、Excel产物哈希、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -7109,7 +7109,7 @@
         },
         {
           "id": "BE.network_monitor_start.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -7117,7 +7117,7 @@
           ],
           "operation": "通过正式传输提交包含 network_monitor_start 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/network-monitor-family.json"
         },
         {
           "id": "BE.network_monitor_start.real-execution",
@@ -7367,7 +7367,7 @@
         },
         {
           "id": "BE.network_monitor_wait.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -7375,7 +7375,7 @@
           ],
           "operation": "通过正式传输提交包含 network_monitor_wait 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/network-monitor-family.json"
         },
         {
           "id": "BE.network_monitor_wait.real-execution",
@@ -7562,7 +7562,7 @@
         },
         {
           "id": "BE.network_monitor_stop.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -7570,7 +7570,7 @@
           ],
           "operation": "通过正式传输提交包含 network_monitor_stop 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/network-monitor-family.json"
         },
         {
           "id": "BE.network_monitor_stop.real-execution",

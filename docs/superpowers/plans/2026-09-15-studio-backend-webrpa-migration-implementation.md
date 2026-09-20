@@ -297,10 +297,11 @@
 **估计：** 开发 15–25 工程日；验证 10–15 工程日；外部等待 0–5 工程日用于 CloakBrowser 平台差异。置信度低。
 
 - [ ] Task B2.1：把 locator、frame/page identity、导航、弹窗、下载、网络监听抽成已有 Browser port 的有限能力；不建通用 RPC。
-- [ ] Task B2.2：按 30 项映射逐个迁入执行器，每项先差分字段与独有分支，再做真实页面证据。
+- [x] Task B2.2：按 30 项映射逐个迁入执行器，每项先差分字段与独有分支，再做真实页面证据。
   - 2026-09-21：基础网页族 11 节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；从 UI 保存、正常关闭重开后执行，弹窗、导航历史、iframe、日志和清理证据见 `evidence/b2/formal-web-basic-electron-csD29H/result.json`。其余网页模块族继续按本任务核销。
   - 2026-09-21：高级网页族 11 节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；从 UI 保存、正常关闭重开后执行，选择、勾选、拖拽、滚动、上传、下载、图片、亲属查询、条件分支、产物哈希和清理证据见 `evidence/b2/formal-advanced-browser-electron-i07XUi/result.json`。
   - 2026-09-21：网络监听族 3 节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；从 UI 保存、正常关闭重开后捕获fetch请求，等待/停止结果、日志、SSE脱敏和清理证据见 `evidence/b2/formal-network-monitor-electron-1kHmyL/result.json`。
+  - 2026-09-21：最后3个网页节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；双标签选择、表格提取、Excel产物哈希、浏览器抓包脱敏和清理证据见 `evidence/b2/formal-remaining-browser-electron-peBC4L/result.json`。B2的30个网页执行节点均已有真实执行证据。
 - [ ] Task B2.3：实现 inspection session 仓储、受管 worker 命令、页面列表、拾取、测试、相似元素、取消和幂等查询，接上现有 `/element-picker/*` 与 `/browser/*` 合同。
 - [ ] Task B2.4：真实验证 CSS、XPath、零/一/多匹配、同域/跨域嵌套 iframe、开放 Shadow DOM、页面关闭/导航失效和高亮清理。
 - [ ] Task B2.5：验证运行、Debug、拾取、录制的原子互斥，以及清理失败时资源不提前释放。
