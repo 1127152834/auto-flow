@@ -38,6 +38,9 @@ jobs:
       - run: npm run openapi:check
       - run: uv run --directory apps/backend ruff check .
       - run: uv run --directory apps/backend mypy src
+      - name: Check native Windows process cleanup
+        if: runner.os == 'Windows'
+        run: uv run --directory apps/backend pytest -q tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_protocol.py tests/integration/test_b1_stop_and_browser_crash_regressions.py tests/integration/test_workflow_recovery.py
       - run: uv run --directory apps/backend pytest -q
       - run: npm test
       - run: npm run build

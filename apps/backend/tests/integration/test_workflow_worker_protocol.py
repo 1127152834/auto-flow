@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
 from pathlib import Path
 
 import pytest
 
+from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowWorkerBusy,
     WorkflowWorkerManager,
@@ -50,6 +50,8 @@ def _crashing_worker(tmp_path: Path) -> tuple[str, ...]:
     script.write_text(
         """
 import json, os, subprocess, sys, time
+from autoflow.bootstrap.test_browser_worker import _windows_kill_on_exit_job
+job = _windows_kill_on_exit_job()
 command = json.loads(sys.stdin.readline())
 child = subprocess.Popen(
     [
@@ -99,8 +101,7 @@ async def test_worker_start_stream_and_stop_clean_the_real_process_tree(
 
     assert manager.active_processes() == []
     assert manager.busy() is False
-    with pytest.raises(ProcessLookupError):
-        os.kill(session.child_pid, 0)
+    assert not process_identity_is_alive(session.child_pid, None)
     assert not any((tmp_path / "workflow-worker").rglob("run-1"))
 
 
@@ -1047,8 +1048,7 @@ async def test_event_consumer_failure_still_cleans_worker_tree(tmp_path: Path) -
     assert manager.active_processes() == []
     assert manager.failure("run-event-failure") == "WORKER_EVENT_CONSUMER_FAILED"
     if session.child_pid is not None:
-        with pytest.raises(ProcessLookupError):
-            os.kill(session.child_pid, 0)
+        assert not process_identity_is_alive(session.child_pid, None)
 
 
 @pytest.mark.asyncio
@@ -1125,8 +1125,7 @@ async def test_worker_crash_cleans_descendants_before_reporting_nonzero_exit(
     assert manager.active_processes() == []
     assert manager.busy() is False
     if session.child_pid is not None:
-        with pytest.raises(ProcessLookupError):
-            os.kill(session.child_pid, 0)
+        assert not process_identity_is_alive(session.child_pid, None)
 
 
 @pytest.mark.asyncio

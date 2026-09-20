@@ -21,7 +21,10 @@ from uuid import uuid4
 
 from autoflow.domain.android.ports import AndroidError
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
-from autoflow.infrastructure.process.browser_processes import process_birth
+from autoflow.infrastructure.process.browser_processes import (
+    process_birth,
+    process_identity_is_alive,
+)
 from autoflow.infrastructure.process.test_browser_worker import _wait_for_spawn
 
 VM = "autoflow-redroid"
@@ -369,9 +372,7 @@ class MacAndroidRuntime:
         for identity in device.get("processes", {}).values():
             pid, birth = identity["pid"], identity["birth"]
             if birth is None:
-                try:
-                    os.kill(pid, 0)
-                except ProcessLookupError:
+                if not process_identity_is_alive(pid, None):
                     continue
                 raise AndroidError("ANDROID_RECOVERY_REQUIRED", "旧进程身份无法核实，设备保持隔离", 503)
             if birth is not None and process_birth(pid) == birth:

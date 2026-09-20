@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 from autoflow.domain.profiles.models import Profile, ProfileSpec
+from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
 
 
 def profile(values):
@@ -82,8 +83,7 @@ async def test_test_browser_shutdown_cannot_cancel_start_cleanup_twice(monkeypat
     with pytest.raises(asyncio.CancelledError):
         await opening
     assert not manager.busy()
-    with pytest.raises(ProcessLookupError):
-        os.kill(pid, 0)
+    assert not process_identity_is_alive(pid, None)
 
 
 def test_unreadable_metadata_never_confirms_a_live_owned_process_exited(monkeypatch):
@@ -135,12 +135,11 @@ async def test_test_browser_failed_start_cleanup_can_be_stopped_again(monkeypatc
     with pytest.raises(RuntimeError, match="metadata unavailable"):
         await opening
     assert manager.busy()
-    os.kill(pid, 0)
+    assert process_identity_is_alive(pid, None)
     monkeypatch.setattr(module, "stop_process_tree", cleanup)
     await manager.stop("profile-1")
     assert not manager.busy()
-    with pytest.raises(ProcessLookupError):
-        os.kill(pid, 0)
+    assert not process_identity_is_alive(pid, None)
     await manager.shutdown()
 
 
@@ -217,3 +216,60 @@ def test_framework_python_worker_uses_native_interpreter_identity(monkeypatch, t
     ))
     assert module._belongs_to_run(700, run, tmp_path / 'Chromium') is True
     assert module._belongs_to_run(701, run, tmp_path / 'Chromium') is False
+
+
+def test_windows_unknown_birth_probe_never_sends_a_signal(monkeypatch):
+    from autoflow.infrastructure.process import browser_processes as module
+
+    monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
+    monkeypatch.setattr(module, 'process_birth', lambda _: None)
+    monkeypatch.setattr(module, '_windows_process_exists', lambda _: True, raising=False)
+
+    def forbidden(*_args):
+        raise AssertionError('a liveness probe must never send a Windows signal')
+
+    monkeypatch.setattr(module.os, 'kill', forbidden)
+    assert module.process_identity_is_alive(700, None)
+
+
+@pytest.mark.asyncio
+async def test_native_liveness_probe_preserves_a_live_process_and_detects_exit():
+    from autoflow.infrastructure.process.browser_processes import (
+        process_birth,
+        process_identity_is_alive,
+    )
+
+    process = await asyncio.create_subprocess_exec(sys.executable, '-c', 'import time; time.sleep(30)')
+    birth = process_birth(process.pid)
+    try:
+        assert process_identity_is_alive(process.pid, None)
+        assert process_identity_is_alive(process.pid, birth)
+        await asyncio.sleep(.05)
+        assert process.returncode is None
+    finally:
+        if process.returncode is None:
+            process.terminate()
+        await process.wait()
+    assert not process_identity_is_alive(process.pid, birth)
+
+
+@pytest.mark.parametrize('handle,wait,error,expected', [
+    (700, 258, 0, True), (700, 0, 0, False), (700, 0xFFFFFFFF, 0, True),
+    (0, 0, 87, False), (0, 0, 5, True),
+])
+def test_windows_handle_probe_requires_positive_exit_evidence(monkeypatch, handle, wait, error, expected):
+    from autoflow.infrastructure.process import browser_processes as module
+
+    calls = []
+    closed = []
+
+    def open_process(*args):
+        calls.append(args)
+        return handle
+
+    kernel = SimpleNamespace(OpenProcess=open_process, WaitForSingleObject=lambda *_: wait, CloseHandle=lambda h: closed.append(h))
+    monkeypatch.setattr(module.ctypes, 'WinDLL', lambda *_args, **_kwargs: kernel, raising=False)
+    monkeypatch.setattr(module.ctypes, 'get_last_error', lambda: error, raising=False)
+    assert module._windows_process_exists(700) is expected
+    assert calls == [(0x00100000, False, 700)]
+    assert closed == ([handle] if handle else [])

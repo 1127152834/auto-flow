@@ -93,9 +93,9 @@ def _windows_process_birth(pid: int) -> int | None:
 def process_identity_is_alive(pid: int, birth: int | None) -> bool:
     """Check that *pid* still denotes the process observed at launch."""
 
-    current = process_birth(pid)
+    current = process_birth(pid) if birth is not None else None
     if birth is not None and current is not None:
-        return current == birth
+        return current == birth and (sys.platform != "win32" or _process_exists(pid))
     return _process_exists(pid)
 
 
@@ -207,7 +207,27 @@ def capture_processes(
     return result
 
 
+def _windows_process_exists(pid: int) -> bool:
+    from ctypes import wintypes
+
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined]
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    handle = kernel.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE; never signal.
+    if not handle:
+        return ctypes.get_last_error() != 87  # type: ignore[attr-defined]  # Invalid PID; denied/unknown stays live.
+    try:
+        return kernel.WaitForSingleObject(handle, 0) != 0  # Only WAIT_OBJECT_0 proves exit.
+    finally:
+        kernel.CloseHandle(handle)
+
+
 def _process_exists(pid: int) -> bool:
+    if sys.platform == "win32":
+        return _windows_process_exists(pid)
     try:
         os.kill(pid, 0)
     except ProcessLookupError:

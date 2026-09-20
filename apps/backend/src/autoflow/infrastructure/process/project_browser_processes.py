@@ -8,6 +8,8 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
+from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
+
 # PID -> (process group, kernel process-start identifier).
 OwnedProcesses = dict[int, tuple[int, int]]
 
@@ -160,13 +162,7 @@ def capture_processes(
 
 
 def _process_exists(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+    return process_identity_is_alive(pid, None)
 
 
 def living_processes(owned: OwnedProcesses) -> OwnedProcesses:
