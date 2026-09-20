@@ -1,0 +1,57 @@
+{
+  "evidenceId": "BE-B3-custom-module-runtime-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "verifiedAt": "2026-09-20",
+  "result": "自定义模块已接入真实SQLite仓储、工作流依赖校验和生产worker；运行使用启动时冻结的模块闭包，运行后修改模块不会改变本次输出。",
+  "implementationCommits": [
+    "f62827cb",
+    "4976c4db",
+    "1bfa57f7",
+    "45c114ff",
+    "8e5564e0"
+  ],
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "backend/app/models/custom_module.py",
+      "backend/app/api/custom_modules.py",
+      "backend/app/executors/custom_module.py",
+      "backend/app/services/workflow_executor.py"
+    ],
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "classifications": {
+    "fieldsDefaultsSearchDuplicateImportAndRuntimeMarker": "原版直接迁入",
+    "sqliteRevisionIdempotencyDependencyClosureAndFrozenSnapshot": "AutoFlow必要适配",
+    "workflowReferenceDeleteProtectionAndSensitiveOutputPropagation": "已批准增强"
+  },
+  "verification": {
+    "backendCustomModuleFamily": "65 passed；覆盖领域、仓储、八个HTTP入口、冻结源码差分、协调器、真实worker、嵌套依赖和浏览器需求传播",
+    "migrationAndSourceMapping": "46 passed；覆盖历史revision升级、唯一head、失败回滚、旧数据保留和来源台账",
+    "frontendCustomModuleFamily": "51 passed；覆盖创建、编辑、列表、稳定请求ID、响应丢失恢复和Mock合同",
+    "mypy": "395 source files passed",
+    "ruff": "自定义模块及直接集成文件通过",
+    "typescript": "passed",
+    "eslint": "passed",
+    "openapi": "generated contract is current"
+  },
+  "behaviorEvidence": [
+    "创建、更新、删除、复制和导入使用稳定请求ID；同ID同内容重放原结果，同ID不同内容返回冲突",
+    "模块名称冲突、revision冲突、依赖缺失、模块循环引用及被工作流引用时删除均返回机器可读错误",
+    "运行记录公开保存模块revision、解析内容和SHA-256摘要；启动后编辑模块不改变本次运行",
+    "模块参数在隔离变量域执行，只回传声明输出；敏感参数和敏感输出继续保持敏感标记",
+    "跨工作流和嵌套自定义模块依赖递归冻结；16层嵌套允许，17层明确拒绝",
+    "模块内部包含网页节点时，CloakBrowser需求向外层运行传播"
+  ],
+  "remaining": [
+    "正式Electron中通过真实UI完成模块创建、加入画布、保存重开和执行",
+    "与复杂条件、循环、并行及子流程组合的集中B3验收"
+  ],
+  "notClaimed": [
+    "B3里程碑整体完成",
+    "正式Electron自定义模块验收",
+    "macOS Intel或Windows实机结果"
+  ],
+  "userDatabaseModified": false
+}
