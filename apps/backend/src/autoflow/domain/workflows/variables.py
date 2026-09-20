@@ -16,9 +16,10 @@ class CredentialReader(Protocol):
 _CREDENTIAL_REFERENCE = re.compile(
     r"\{\{\s*(?:cred|凭据)\s*[:：]\s*([^{}]+?)\s*\}\}"
 )
+_VARIABLE_NAME = r"(?:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|[a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)"
 _VARIABLE_REFERENCE = re.compile(
     r"(?:\$\{?|(?<!\$)\{)"
-    r"([a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)"
+    rf"({_VARIABLE_NAME})"
 )
 
 
@@ -77,13 +78,14 @@ def resolve_value(
     value: Any,
     variables: Mapping[str, Any],
     credentials: CredentialReader | None = None,
+    *, preserve_types: bool = False,
 ) -> Any:
     if isinstance(value, dict):
-        return {key: resolve_value(item, variables, credentials) for key, item in value.items()}
+        return {key: resolve_value(item, variables, credentials, preserve_types=preserve_types) for key, item in value.items()}
     if isinstance(value, list):
-        return [resolve_value(item, variables, credentials) for item in value]
+        return [resolve_value(item, variables, credentials, preserve_types=preserve_types) for item in value]
     if isinstance(value, tuple):
-        return tuple(resolve_value(item, variables, credentials) for item in value)
+        return tuple(resolve_value(item, variables, credentials, preserve_types=preserve_types) for item in value)
     if not isinstance(value, str):
         return value
 
@@ -110,7 +112,7 @@ def resolve_value(
     def resolve_access_path(expression: str) -> Any:
         expression = resolve_nested(expression.strip(), max_depth=3)
         match = re.match(
-            r"^([a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)((?:\[[^\]]+\])*)",
+            rf"^({_VARIABLE_NAME})((?:\[[^\]]+\])*)",
             expression,
         )
         if not match:
@@ -164,6 +166,12 @@ def resolve_value(
             return resolve_nested(text, max_depth - 1)
         return text
 
+    if preserve_types:
+        reference = re.fullmatch(r"\$?\{([^{}]+)\}", value)
+        if reference:
+            resolved = resolve_access_path(reference.group(1))
+            if resolved is not missing:
+                return resolved
     result = value
     for match in reversed(list(re.finditer(r"\$\{([^}]+)\}", result))):
         resolved = resolve_access_path(match.group(1).strip())

@@ -2,7 +2,7 @@ import { expect, it } from 'vitest'
 import { getAllAvailableModules, moduleCategories } from '../components/ModuleSidebar'
 
 it('keeps the approved 227-node scope and removes database, DP, office, media and bot nodes', () => {
-  const modules = getAllAvailableModules().filter(module => !module.isCustom)
+  const modules = getAllAvailableModules().filter(module => !module.isCustom && module.type !== 'project_data')
   const types = modules.map(module => module.type)
   expect(types).toHaveLength(227)
   expect(new Set(types).size).toBe(227)
@@ -16,4 +16,8 @@ it('keeps the approved 227-node scope and removes database, DP, office, media an
   for (const category of ['DP 反检测自动化', '数据库', '图像编辑', '盲水印', '视频处理', '音频处理', '媒体格式转换', '文件管理']) {
     expect(moduleCategories.map(item => item.name)).not.toContain(category)
   }
+})
+
+it('exposes the AutoFlow project extension alongside the frozen source catalog', () => {
+  expect(getAllAvailableModules().some(module => module.type === 'project_data')).toBe(true)
 })

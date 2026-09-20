@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping
+from contextvars import ContextVar
 from itertools import pairwise
 from time import monotonic
 from typing import Any
@@ -17,6 +18,25 @@ from autoflow.domain.workflows.execution import ExecutionContext
 
 from .workflow_executor import WorkflowExecutor
 from .workflow_session import CloakBrowserWorkflowSession
+
+_visit: ContextVar[tuple[str, str]] = ContextVar('project_node_visit')
+
+
+class _ProjectDataNode(ModuleExecutor):
+    module_type = 'project_data'
+
+    def __init__(self, request: Callable[..., Awaitable[Any]]) -> None:
+        self.request = request
+
+    async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
+        node_id, visit = _visit.get()
+        reply = await self.request(node_id, visit, config['operation'], context.resolve_value(config.get('arguments', {}), preserve_types=True))
+        if 'error' in reply:
+            return ModuleResult(False, error=reply['error']['code'])
+        value = reply['result']
+        if name := config.get('variableName'):
+            context.set_variable(name, value)
+        return ModuleResult(True, data=value)
 
 
 class _Cancellation:
@@ -73,17 +93,20 @@ class _LegacyBrowserNode(ModuleExecutor):
 
 
 class _ProjectRegistry(ExecutorRegistry):
-    def __init__(self, legacy: WorkflowExecutor) -> None:
+    def __init__(self, legacy: WorkflowExecutor, capability: Callable[..., Awaitable[Any]] | None) -> None:
         super().__init__()
         self.source = build_production_executor_registry()
         self.legacy = legacy
+        self.capability = capability
 
     def get_all_types(self) -> list[str]:
-        return self.source.get_all_types()
+        return [*self.source.get_all_types(), *(['project_data'] if self.capability else [])]
 
     def get(self, module_type: str) -> ModuleExecutor | None:
         executor: ModuleExecutor | None
-        if module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
+        if module_type == 'project_data' and self.capability is not None:
+            executor = _ProjectDataNode(self.capability)
+        elif module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
             executor = _LegacyBrowserNode(module_type, self.legacy)
         else:
             executor = self.source.get(module_type)
@@ -96,6 +119,7 @@ class ProjectGraphExecutor:
         emit: Callable[[str, str, str, dict[str, object]], Awaitable[None]],
         should_stop: Callable[[], bool],
         capture_failure: Callable[[Any, str, str], Awaitable[dict[str, object]]] | None = None,
+        capability: Callable[..., Awaitable[Any]] | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
@@ -104,6 +128,7 @@ class ProjectGraphExecutor:
         self.legacy.variables = self.context.variables
         self.emit = emit
         self.capture_failure = capture_failure
+        self.capability = capability
         self.nodes: dict[str, Any] = {}
         self.started: dict[str, float] = {}
         self.error: dict[str, str] | None = None
@@ -118,7 +143,7 @@ class ProjectGraphExecutor:
                 'edges': [{'id': f'edge-{index}', 'source': source, 'target': target} for index, (source, target) in enumerate(pairwise(identities))],
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
-        result = await WorkflowRuntime(_ProjectRegistry(self.legacy)).execute(document, self.context)
+        result = await WorkflowRuntime(_ProjectRegistry(self.legacy, self.capability)).execute(document, self.context)
         if not result.success and self.error is None:
             self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
         return {'status': 'succeeded' if result.success else 'failed', 'error': self.error}
@@ -126,6 +151,7 @@ class ProjectGraphExecutor:
     async def publish(self, event: Mapping[str, Any]) -> None:
         node_id, visit = event['nodeId'], event['executionId']
         if event['type'] == 'execution:node_start':
+            _visit.set((node_id, visit))
             self.started[visit] = monotonic()
             await self.emit('nodeAttempt', node_id, visit, {'status': 'started'})
             self.cancellation.raise_if_cancelled()

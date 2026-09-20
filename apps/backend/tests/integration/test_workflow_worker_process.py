@@ -338,3 +338,25 @@ async def test_spawn_failure_and_directory_failure_can_retry_after_task_finished
     fail = False
     await instance.force_stop('a088a638-5afb-4b4b-8d83-45410a3cab42')
     assert not instance.busy()
+
+@pytest.mark.asyncio
+async def test_capability_reply_waits_for_authoritative_handler(tmp_path):
+    child = CHILD.replace("send('finished',status='succeeded',error=None,cleanupConfirmed=True)", """
+send('capability',commandId='command',nodeId='open',nodeVisitId='visit-1',attempt=1,operation='inputs',arguments={})
+reply=json.loads(sys.stdin.readline())
+assert reply['type']=='capability_result' and reply['commandId']=='command'
+assert reply['result']=={'confirmed':True}
+send('finished',status='succeeded',error=None,cleanupConfirmed=True)
+""")
+    seen = []
+
+    async def capability(run_id, generation, request):
+        seen.append((run_id, generation, request['operation']))
+        return {'confirmed': True}
+
+    executable = tmp_path / 'kernel'
+    executable.write_text('identity')
+    instance = ProjectWorkflowWorkerManager(tmp_path / 'temp', command=(sys.executable, '-c', child), worker_env={'PROOF': str(tmp_path / 'proof')}, on_capability=capability)
+    outcome = await start(instance, executable, lambda _event: asyncio.sleep(0))
+    assert outcome.status == 'succeeded'
+    assert seen == [('a088a638-5afb-4b4b-8d83-45410a3cab42', 1, 'inputs')]

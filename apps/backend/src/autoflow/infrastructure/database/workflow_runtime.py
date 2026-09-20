@@ -680,7 +680,7 @@ class _EventAppendRace(Exception):
 
 def _prepared_content_is_executable(row: WorkflowPreparedContentRow) -> bool:
     return (
-        row.adapter_version == "webrpa-chain/v1"
+        row.adapter_version in {"webrpa-chain/v1", "webrpa-graph/v2"}
         and row.execution_plan.get("replayable") is not False
     )
 

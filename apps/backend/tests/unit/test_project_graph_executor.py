@@ -56,3 +56,20 @@ async def test_stop_at_committed_start_prevents_first_node():
     with pytest.raises(asyncio.CancelledError):
         await executor.run({'document': {'nodes': [node('set', 'set_variable', variableName='answer', variableValue=5)], 'edges': []}})
     assert len(events) == 1 and 'answer' not in executor.context.variables
+
+
+@pytest.mark.asyncio
+async def test_project_capability_preserves_typed_reference_uuid_and_leading_zero():
+    from uuid import uuid4
+    parameter = str(uuid4())
+    reference = {'projectId': str(uuid4()), 'recordKey': {'type': 'text', 'value': '001'}}
+    calls = []
+    async def emit(*_event): pass
+    async def request(node_id, visit, operation, arguments):
+        calls.append((node_id, visit, operation, arguments))
+        return {'result': {'saved': True}}
+    executor = ProjectGraphExecutor(None, {'row': reference, parameter: 7, 'code': '001'}, emit, lambda: False, capability=request)
+    document = {'nodes': [node('write', 'project_data', operation='updateRecord', variableName='saved', arguments={'recordRef': '{row}', 'expectedContentRevision': '{'+parameter+'}', 'values': {'code': '{code}'}})], 'edges': []}
+    result = await executor.run({'document': document})
+    assert result['status'] == 'succeeded'
+    assert calls[0][3] == {'recordRef': reference, 'expectedContentRevision': 7, 'values': {'code': '001'}}

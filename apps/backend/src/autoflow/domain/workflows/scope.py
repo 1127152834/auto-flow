@@ -6,6 +6,9 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
+# AutoFlow extensions are separate from the frozen WebRPA source catalog.
+PROJECT_NODE_TYPES = frozenset({'project_data'})
+
 APPROVED_NODE_TYPES: frozenset[str] = frozenset(
     {
         "ai_chat",
@@ -377,7 +380,7 @@ def validate_workflow_scope(
                 if module is not None:
                     visit(_module_nodes(module), f"customModules.{module_id}.nodes")
                 continue
-            if node_type not in APPROVED_NODE_TYPES:
+            if node_type not in APPROVED_NODE_TYPES | PROJECT_NODE_TYPES:
                 issues.append(
                     WorkflowScopeIssue(
                         node_id=node_id,

@@ -245,7 +245,12 @@ def configure_project_workflow_runtime(
         profiles, installed, resolve_proxy, read_license, usage_guard, guard,
         environment_directory=environment_directory,
     )
-    worker = ProjectWorkflowWorkerManager(temp_dir)
+    from autoflow.application.project_runs.worker_capabilities import (
+        ProjectWorkerCapabilities,
+    )
+
+    capabilities = ProjectWorkerCapabilities(session_factory)
+    worker = ProjectWorkflowWorkerManager(temp_dir, on_capability=capabilities.handle)
 
     async def recover(run: Any) -> None:
         for kernel in installed():

@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -86,7 +86,6 @@ async def test_real_project_batch_http(
         service = WorkflowService(
             SqlAlchemyWorkflowRepository(app.state.session_factory)
         )
-        workflow = service.create(document, str(uuid4()))
         await app.state.project_workflow_dispatcher.startup()
         await app.state.project_run_scheduler.startup()
         async with httpx.AsyncClient(
@@ -102,6 +101,41 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
+            if scenario == "data":
+                table_response = await client.post(prefix + "/tables", headers={"Idempotency-Key": str(uuid4())}, json={"name": "真实写入", "sourceKind": "local"})
+                assert table_response.status_code == 201, table_response.text
+                table = table_response.json()
+                table_path = prefix + f"/tables/{table['tableId']}"
+                field_response = await client.post(table_path + "/fields", headers={"Idempotency-Key": str(uuid4())}, json={"definition": {"key": "result", "name": "结果", "type": "string", "required": False, "validation": {}}, "sourceColumnPolicy": "localOnly", "expectedTableRevision": table['tableRevision']})
+                assert field_response.status_code == 200, field_response.text
+                field_id = field_response.json()['field']['ref']['fieldId']
+                nodes.append({'id': 'write', 'type': 'project_data', 'position': {'x': 100, 'y': 680}, 'data': {
+                    'moduleType': 'project_data', 'operation': 'createRecord', 'variableName': 'saved',
+                    'arguments': {'tableId': table['tableId'], 'datasetGeneration': table['datasetGeneration'], 'values': {field_id: '{实际输入}'}},
+                    'tableGrant': {'tableId': table['tableId'], 'datasetGeneration': table['datasetGeneration'], 'operations': ['createRecord'], 'fieldIds': [field_id], 'readPurposes': []},
+                }})
+                source_table_response = await client.post(prefix + '/tables', headers={'Idempotency-Key': str(uuid4())}, json={'name': '来源数据', 'sourceKind': 'local'})
+                source_table = source_table_response.json()
+                source_path = prefix + f"/tables/{source_table['tableId']}"
+                source_field_response = await client.post(source_path + '/fields', headers={'Idempotency-Key': str(uuid4())}, json={'definition': {'key': 'code', 'name': '代码', 'type': 'string', 'required': False, 'validation': {}}, 'sourceColumnPolicy': 'localOnly', 'expectedTableRevision': source_table['tableRevision']})
+                source_field = source_field_response.json()['field']['ref']['fieldId']
+                source_record = await client.post(source_path + '/records', headers={'Idempotency-Key': str(uuid4())}, json={'datasetGeneration': source_table['datasetGeneration'], 'values': [{'fieldId': source_field, 'value': '001'}]})
+                assert source_record.status_code == 201, source_record.text
+                nodes.extend([
+                    {'id': 'query', 'type': 'project_data', 'position': {'x': 100, 'y': 700}, 'data': {
+                        'moduleType': 'project_data', 'operation': 'queryRecords', 'variableName': 'source_rows',
+                        'arguments': {'tableId': source_table['tableId'], 'datasetGeneration': source_table['datasetGeneration'], 'fieldIds': [source_field], 'readPurpose': 'condition', 'filter': None, 'orderBy': [], 'cursor': None, 'limit': 20},
+                        'tableGrant': {'tableId': source_table['tableId'], 'datasetGeneration': source_table['datasetGeneration'], 'operations': ['queryRecords'], 'fieldIds': [source_field], 'readPurposes': ['condition']},
+                    }},
+                    {'id': 'check', 'type': 'condition', 'position': {'x': 100, 'y': 800}, 'data': {'moduleType': 'condition', 'leftValue': "{source_rows['items'][0]['values'][0]['value']}", 'rightValue': '001'}},
+                ])
+                next(node for node in nodes if node['id'] == 'write')['data']['arguments']['values'][field_id] = "{实际输入}-{source_rows['items'][0]['values'][0]['value']}"
+                document['content']['edges'].extend([
+                    {'id': 'query-data', 'source': 'read-input', 'target': 'query'},
+                    {'id': 'check-data', 'source': 'query', 'target': 'check'},
+                    {'id': 'save', 'source': 'check', 'target': 'write', 'sourceHandle': 'true'},
+                ])
+            workflow = service.create(document, str(uuid4()))
             response = await client.post(
                 prefix + "/automations",
                 headers={"Idempotency-Key": str(uuid4())},
@@ -230,6 +264,15 @@ async def test_real_project_batch_http(
                     assert [event.sequence for event in events] == list(
                         range(1, len(events) + 1)
                     )
+            elif scenario == "data":
+                assert detail['statusCounts']['succeeded'] == 2, {
+                    'batch': detail,
+                    'tasks': [(await client.get(prefix + f"/tasks/{task['taskId']}")).json() for task in tasks],
+                    'attempts': [(await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json() for task in tasks],
+                }
+                records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()
+                assert records['total'] == 2
+                assert [row['values'][0]['value'] for row in records['items']] == ['before-真实参数-001'] * 2
             elif scenario == "stop":
                 assert scenario_stopped and detail["batch"]["status"] == "stopped"
                 assert detail["statusCounts"]["cancelled"] == 2

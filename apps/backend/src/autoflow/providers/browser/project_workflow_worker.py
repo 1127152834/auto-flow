@@ -13,6 +13,7 @@ from threading import Event, Thread
 from typing import Any, TextIO
 from uuid import uuid4
 
+from autoflow.domain.project_runs.worker_commands import project_command_id
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
@@ -63,7 +64,14 @@ class _Input:
             self.messages.put(exc)
 
     async def next(self) -> dict[str, Any]:
-        item = await asyncio.to_thread(self.messages.get)
+        # Cancelling a to_thread(queue.get) leaves a blocked executor thread and
+        # prevents asyncio.run from exiting after a lost parent.
+        while True:
+            try:
+                item = self.messages.get_nowait()
+                break
+            except queue.Empty:
+                await asyncio.sleep(0.01)
         if isinstance(item, BaseException):
             raise ProtocolFailure from item
         return item
@@ -92,8 +100,9 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
     stop_requested = stopped.is_set()
     context = None
     relay_guard = _CleanupGuard(relay_context)
+    exchange_lock = asyncio.Lock()
 
-    async def emit(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
+    async def send_event(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
         nonlocal stop_requested
         event_id = uuid4().hex
         event = {
@@ -129,6 +138,28 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                 raise ProtocolFailure("WORKFLOW_OUTPUT_TOO_LARGE")
             return
 
+    async def emit(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
+        async with exchange_lock:
+            await send_event(kind, node_id, visit, payload)
+
+    async def capability(node_id: str, visit: str, operation: str, arguments: dict[str, Any]) -> dict[str, Any]:
+        nonlocal stop_requested
+        command_id = project_command_id(run_id, generation, visit)
+        async with exchange_lock:
+            if stop_requested or stopped.is_set():
+                raise asyncio.CancelledError
+            _write(stdout, _envelope(command, 'capability', commandId=command_id, nodeId=node_id, nodeVisitId=visit, attempt=1, operation=operation, arguments=arguments))
+            while True:
+                reply = await incoming.next()
+                if reply.get('type') == 'stop' and reply.get('executionGeneration') == generation:
+                    stop_requested = True
+                    continue
+                if (reply.get('type') != 'capability_result' or reply.get('commandId') != command_id
+                    or reply.get('runId') != run_id or reply.get('executionGeneration') != generation
+                    or ('result' in reply) == ('error' in reply)):
+                    raise ProtocolFailure
+                return reply
+
     result: dict[str, object] = {"status": "failed", "error": {"code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"}}
     cleanup_failed = False
     try:
@@ -159,6 +190,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                     lambda page, node_id, visit: _capture_failure_screenshot(
                         command, page, node_id, visit
                     ),
+                    capability=capability,
                 )
                 result = await executor.run(command["executionPlan"])
     except asyncio.CancelledError:

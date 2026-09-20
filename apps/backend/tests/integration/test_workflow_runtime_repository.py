@@ -569,7 +569,7 @@ def test_application_prepares_content_from_the_current_server_document_and_recov
         created_at=NOW,
     )
     plan = thaw_json(prepared.execution_plan)
-    assert prepared.adapter_version == "webrpa-chain/v1"
+    assert prepared.adapter_version == "webrpa-graph/v2"
     assert plan["orderedNodeIds"] == ["open", "input", "click", "read"]
     assert plan["nodes"][0]["data"]["timeout"] == 60
     assert prepared.checksum

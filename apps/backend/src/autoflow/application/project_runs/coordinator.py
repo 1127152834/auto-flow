@@ -91,9 +91,7 @@ class ProjectRunCoordinator:
         self._resolve_status_input_ids = resolve_status_input_ids or (
             lambda _automation: ()
         )
-        self._resolve_data_capability_manifest = resolve_data_capability_manifest or (
-            lambda _session, _automation: {}
-        )
+        self._resolve_data_capability_manifest = resolve_data_capability_manifest or _workflow_data_manifest
 
     def inspect_capabilities(self, workflow_id: str) -> list[dict[str, Any]]:
         # Workflow shape and actual resource availability are checked separately.
@@ -858,3 +856,19 @@ def _present_input_issue(message: str) -> str:
         "candidate binding budget exceeded": "完整输入组的候选组合过多，请收紧筛选条件",
     }
     return messages.get(message, "输入筛选、字段或状态配置已失效")
+
+
+def _workflow_data_manifest(session: Session, automation: AutomationRecord) -> dict[str, Any]:
+    workflow = session.get(WorkflowDocumentRow, automation.workflow_id)
+    if workflow is None:
+        return {}
+    grants = []
+    for node in workflow.document['content']['nodes']:
+        data = node['data']
+        config = data.get('config', data)
+        if data['moduleType'] == 'project_data' and 'tableGrant' in config:
+            grant = config['tableGrant']
+            if not isinstance(grant, dict) or grant.get('operations') != [config.get('operation')]:
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点授权必须与节点操作一致', 422)
+            grants.append(grant)
+    return {'tableGrants': grants}

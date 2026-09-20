@@ -248,6 +248,7 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
   wait_page_load: RefreshCw,
   page_load_complete: GitBranch,
   // 变量与数据
+  project_data: Database,
   set_variable: Variable,
   increment_decrement: TrendingUp,
   json_parse: FileJson,
@@ -882,6 +883,7 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   switch_iframe: ['切换', 'iframe', '内嵌', '框架', 'frame', '子页面', '嵌入', '内联框架', 'qhiframe', 'qh', 'nq', 'kj', 'zyym', 'qiehuan', 'neiqian', 'kuangjia', 'ziyemian', 'qianru', 'neilianku angjia'],
   switch_to_main: ['切换', '主页面', '退出', 'iframe', 'frame', '返回', '主框架', 'main', 'qhzyym', 'qh', 'zyym', 'tc', 'fh', 'zkj', 'qiehuan', 'zhuyemian', 'tuichu', 'fanhui', 'zhukuangjia'],
   switch_tab: ['切换', '标签页', 'tab', '页面', '窗口', '索引', '标题', 'url', '下一个', '上一个', 'qhbqy', 'qh', 'bqy', 'ym', 'ck', 'qiehuan', 'biaoqianye', 'yemian', 'chuangkou'],
+  project_data: ['项目', '记录', '数据', 'project', 'record'],
   set_variable: ['设置', '变量', 'set', 'variable', '赋值'],
   increment_decrement: ['自增', '自减', '加', '减', 'increment', 'decrement', '计数', '累加', '累减', '步长'],
   json_parse: ['json', '解析', '提取', 'parse', '数据', 'jsonpath'],

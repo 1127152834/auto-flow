@@ -156,6 +156,8 @@ class WorkflowRuntimeService:
         record = workflow_record(current)
         prepared = compile_workflow(record.document)
         requirements = ["browser.cloakbrowser"]
+        if 'project_data' in prepared.module_types:
+            requirements.append('project.data')
         missing = sorted(set(requirements) - set(available_capabilities))
         if missing:
             raise WorkflowRuntimeError(
@@ -165,7 +167,7 @@ class WorkflowRuntimeService:
                 details={"capabilities": missing},
             )
         execution_plan = _execution_plan(prepared.document, prepared.node_ids)
-        adapter_version = "webrpa-chain/v1"
+        adapter_version = "webrpa-graph/v2"
         checksum = _digest(
             {
                 "document": prepared.document,
@@ -312,6 +314,7 @@ class WorkflowRuntimeService:
 def _execution_plan(document: dict[str, Any], node_ids: list[str]) -> dict[str, Any]:
     nodes = {node["id"]: node for node in document["content"]["nodes"]}
     return {
+        "document": document["content"],
         "orderedNodeIds": list(node_ids),
         "nodes": [
             {

@@ -219,10 +219,10 @@ class ExecutionContext:
         self._node_uses_sensitive_values = True
         self._node_sensitive_context.set(True)
 
-    def resolve_value(self, value: Any) -> Any:
+    def resolve_value(self, value: Any, *, preserve_types: bool = False) -> Any:
         if references_sensitive_value(value, self.sensitive_variables):
             self.mark_sensitive_use()
-        return resolve_value(value, self.variables, self.credentials)
+        return resolve_value(value, self.variables, self.credentials, preserve_types=preserve_types)
 
     def resolve_value_with_sensitivity(self, value: Any) -> tuple[Any, bool]:
         sensitive = references_sensitive_value(value, self.sensitive_variables)

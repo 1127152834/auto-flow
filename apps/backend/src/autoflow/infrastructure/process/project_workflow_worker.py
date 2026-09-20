@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Literal, cast
 from uuid import UUID
 
+from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.process.project_browser_processes import process_birth
 from autoflow.infrastructure.process.project_test_browser_worker import (
     force_process_tree,
@@ -66,6 +67,7 @@ class ProjectWorkflowWorkerManager:
         self, temp_dir: Path, *, command: tuple[str, ...] | None = None,
         worker_env: dict[str, str] | None = None, start_timeout: float = 90,
         termination_timeout: float = 3,
+        on_capability: Callable[[str, int, dict[str, Any]], Awaitable[Any]] | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-runs").resolve()
         self._artifact_root = (temp_dir.parent / "workspace" / "runs").resolve()
@@ -73,6 +75,7 @@ class ProjectWorkflowWorkerManager:
         self._worker_env = worker_env or {}
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
+        self._on_capability = on_capability
         self._worker: _Worker | None = None
         self._closed = False
         self._lock = asyncio.Lock()
@@ -182,6 +185,20 @@ class ProjectWorkflowWorkerManager:
                     "type": "event_committed", "eventId": event["eventId"],
                     "executionGeneration": worker.generation,
                 })
+            elif message.get("type") == "capability":
+                if self._on_capability is None or not isinstance(message.get("commandId"), str):
+                    raise _protocol_error()
+                reply: dict[str, Any] = {
+                    "type": "capability_result", "commandId": message["commandId"],
+                    "runId": worker.run_id, "executionGeneration": worker.generation,
+                }
+                try:
+                    reply["result"] = await self._on_capability(worker.run_id, worker.generation, message)
+                except ProjectError as rejected:
+                    reply["error"] = {"code": rejected.code, "message": "项目能力请求未完成"}
+                # Unknown failures may follow a commit. Fence the run rather than
+                # telling the worker it is safe to execute an error branch.
+                await self._send(worker, reply)
             elif message.get("type") == "finished":
                 if message.get("cleanupConfirmed") is not True:
                     raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "浏览器清理尚未确认")

@@ -331,9 +331,9 @@ export const excludedModuleTypes = new Set<ModuleType>([
   ...sourceModuleCategories.filter(c => excludedCategories.has(c.name)).flatMap(c => c.modules),
   'read_excel', 'notify_feishu',
 ])
-export const moduleCategories = sourceModuleCategories
+export const moduleCategories = [{ name: '项目能力', color: 'bg-teal-500', modules: ['project_data'] as ModuleType[] }, ...sourceModuleCategories
   .filter(c => !excludedCategories.has(c.name))
-  .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))
+  .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))]
 
 /** Check imported custom-module contents as well as top-level nodes, without modifying documents. */
 export function findExcludedModuleType(nodes: readonly unknown[], resolveCustomNodes: (id: string) => readonly unknown[] | undefined = () => undefined): string | null {

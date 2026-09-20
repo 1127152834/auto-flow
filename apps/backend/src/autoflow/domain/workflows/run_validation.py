@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .catalog import runnable_module_types
+from .graph import WorkflowDefinition
 from .models import WorkflowError, WorkflowIssue
 from .validation import project_document
 
@@ -54,7 +55,7 @@ def prepare_run(document: object) -> PreparedWorkflow:
         )
     by_id = {node["id"]: node for node in nodes}
     for node in nodes:
-        for key, value in _DEFAULT_CONFIGS[node["data"]["moduleType"]].items():
+        for key, value in _DEFAULT_CONFIGS.get(node["data"]["moduleType"], {}).items():
             node["data"].setdefault(key, value)
     config_issues = [
         issue
@@ -68,7 +69,13 @@ def prepare_run(document: object) -> PreparedWorkflow:
             422,
             config_issues,
         )
-    node_ids = _ordered_chain(nodes, projected["content"]["edges"])
+    if all(node['data']['moduleType'] in _DEFAULT_CONFIGS for node in nodes):
+        node_ids = _ordered_chain(nodes, projected["content"]["edges"])
+    else:
+        valid, errors = WorkflowDefinition.from_raw(projected['content']).validate()
+        if not valid:
+            raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '；'.join(errors), 422)
+        node_ids = list(by_id)
     return PreparedWorkflow(
         projected,
         node_ids,
@@ -188,7 +195,12 @@ def _config_issues(node: dict[str, Any], index: int) -> list[WorkflowIssue]:
             _nonempty_string(data.get("variableName")),
             "必须是非空字符串",
         )
-    field("timeout", _nonnegative_number(data.get("timeout")), "必须是有限非负数")
+    elif module_type == 'project_data':
+        field('operation', isinstance(data.get('operation'), str) and data.get('operation') in {'inputs', 'readRecord', 'queryRecords', 'createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus', 'addField', 'ensureField', 'modifyField', 'previewFieldChange'}, '不受支持')
+        field('arguments', isinstance(data.get('arguments'), dict) and data.get('argumentsValid', True) is True, '必须是有效对象')
+        field('variableName', _nonempty_string(data.get('variableName')), '必须是非空字符串')
+    if module_type in _DEFAULT_CONFIGS or 'timeout' in data:
+        field("timeout", _nonnegative_number(data.get("timeout")), "必须是有限非负数")
     return issues
 
 

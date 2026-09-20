@@ -426,6 +426,7 @@ export const moduleTypeLabels: Record<ModuleType, string> = {
   get_child_elements: '获取子元素',
   get_sibling_elements: '获取兄弟元素',
   // 数据处理
+  project_data: '项目数据',
   set_variable: '设置变量',
   increment_decrement: '自增自减',
   json_parse: 'JSON解析',
@@ -1565,7 +1566,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     // 根据模块类型应用默认配置
     let defaultData: Partial<NodeData> = {}
     
-    if (type === 'gesture_trigger') {
+    if (type === 'project_data') {
+      defaultData = { operation: 'inputs', arguments: {}, variableName: 'task_inputs' }
+    } else if (type === 'gesture_trigger') {
       // 手势触发器默认配置
       defaultData = {
         timeout: 60000,  // 默认60秒（60000毫秒）

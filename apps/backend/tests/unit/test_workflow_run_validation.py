@@ -8,12 +8,14 @@ from autoflow.domain.workflows.run_validation import prepare_run
 from tests.fixtures.workflows import workflow_payload
 
 
-def test_runnable_catalog_is_exactly_the_pm3_worker_fixture_chain():
+def test_runnable_catalog_includes_project_graph_and_data_nodes():
     assert {item["moduleType"] for item in node_catalog() if item["runnable"]} == {
         "open_page",
         "input_text",
         "click_element",
         "get_element_info",
+        "condition", "loop", "foreach", "foreach_dict", "break_loop",
+        "continue_loop", "set_variable", "project_data",
     }
 
 
@@ -162,7 +164,7 @@ def test_prepare_accepts_zero_timeout_as_no_limit_for_every_worker_node():
 
 
 @pytest.mark.parametrize(
-    "module_type", ["wait_element", "screenshot", "ai_chat", "condition", "group"]
+    "module_type", ["wait_element", "screenshot", "ai_chat", "group"]
 )
 def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
     payload = workflow_payload()
@@ -264,3 +266,16 @@ def test_prepare_rejects_non_finite_configuration_values():
     with pytest.raises(WorkflowError) as caught:
         prepare_run(payload)
     assert caught.value.code == "WORKFLOW_INVALID"
+
+
+def test_prepare_project_graph_preserves_branch_edges_and_capability_config():
+    payload = workflow_payload()
+    template = payload['content']['nodes'][0]
+    payload['content']['nodes'] = [
+        {**deepcopy(template), 'id': 'branch', 'type': 'condition', 'data': {'moduleType': 'condition', 'leftValue': 1, 'rightValue': 1}},
+        {**deepcopy(template), 'id': 'inputs', 'type': 'project_data', 'data': {'moduleType': 'project_data', 'operation': 'inputs', 'arguments': {}, 'variableName': 'inputs'}},
+    ]
+    payload['content']['edges'] = [{'id': 'route', 'source': 'branch', 'target': 'inputs', 'sourceHandle': 'true'}]
+    prepared = prepare_run(payload)
+    assert prepared.node_ids == ['branch', 'inputs']
+    assert prepared.document['content']['edges'] == payload['content']['edges']

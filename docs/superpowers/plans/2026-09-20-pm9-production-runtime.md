@@ -24,3 +24,7 @@ Ruling: 实际对照发现 Studio 同名输入节点会覆盖文本，且变量�
 
 - R1 适配器新增三个回归先失败后通过；原 worker 单元/图适配 20 项通过，真实 CloakBrowser 8 项通过（45.25 秒）。ruff 通过，mypy 393 文件通过；打包验证随最终 worker 协议一起执行。
 - 预检：R2 消费 R1 的 nodeVisitId 及事件提交确认；R3 消费 R2 的固定请求身份与父进程权限检查；R4 消费所有切片最终同一版本产物。不得在 RPC 中绕开事件确认或新建第二套数据库状态。
+
+- R2 数据/图切片：父进程固定能力路由、冻结表授权、访问提交确认、稳定命令身份、graph/v2 与旧 chain/v1 兼容已接通；真实浏览器多表条件写入通过（2 个 Task、2 条结果，18.82 秒）。目标后端和变量差分 130 项、前端配置/范围/注册/往返 459 项通过；类型与 lint 通过。
+- R2 Ruling: 使用已有 `test_project_batch_real_cloakbrowser.py` 增加真实多表场景，复用实际 bootstrap/HTTP/进程/浏览器夹具，不复制另一个完整测试脚手架。自定义模块与其他尚未接入项目端口的节点仍在准备阶段拒绝；不得仅扩目录使其假装可执行。
+- 协作隔离：发现 Studio 任务同目录写入后，将 23 个 PM9 工作文件逐一校验迁入 `/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow`，分支 `codex/project-management-pm9-runtime`，基点 `31bfbb51`；原检出只清除了内容校验一致的本任务改动。
