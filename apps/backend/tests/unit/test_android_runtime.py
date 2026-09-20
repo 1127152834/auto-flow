@@ -88,10 +88,13 @@ async def test_stale_screenshot_basis_never_sends_tap(tmp_path):
 async def test_reused_pid_is_not_signalled_but_unknown_live_identity_is_quarantined(tmp_path, monkeypatch):
     runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
     monkeypatch.setattr(mac, 'process_birth', lambda _: 222)
+    probes = []
+    monkeypatch.setattr(mac, 'process_identity_is_alive', lambda pid, birth: probes.append((pid, birth)) or True)
     signals = []
     monkeypatch.setattr(mac.os, 'kill', lambda pid, signal: signals.append((pid, signal)))
     await runtime.recover({'processes': {'viewer': {'pid': 123, 'birth': 111}}})
     assert not signals
     with pytest.raises(AndroidError, match='身份'):
         await runtime.recover({'processes': {'viewer': {'pid': 123, 'birth': None}}})
-    assert signals == [(123, 0)]
+    assert probes == [(123, None)]
+    assert not signals

@@ -127,7 +127,7 @@ def test_opener_launches_headed_on_the_instance_directory(tmp_path):
     assert directory == store.root / "instances" / instance.instance_id
     assert command["headless"] is False
     assert command["fingerprintSeed"] == 31415
-    assert command["executablePath"] == "/kernels/chromium/Chromium"
+    assert command["executablePath"] == str(Path("/kernels/chromium/Chromium"))
 
 
 def test_closer_confirms_close_and_retries_when_it_fails(tmp_path):
@@ -356,7 +356,7 @@ def test_launch_pins_the_declared_kernel_for_cloakbrowser(tmp_path, monkeypatch)
 
     asyncio.run(_launch_context(tmp_path / "work", command))
 
-    assert seen == ["/kernels/chromium/Chromium"]
+    assert seen == [str(Path("/kernels/chromium/Chromium"))]
     assert "CLOAKBROWSER_BINARY_PATH" not in os.environ
 
 
@@ -380,5 +380,5 @@ def test_pinned_kernel_restores_the_previous_override(tmp_path, monkeypatch):
 
     asyncio.run(_launch_context(tmp_path / "work", command))
 
-    assert seen == ["/kernels/chromium/Chromium"]
+    assert seen == [str(Path("/kernels/chromium/Chromium"))]
     assert os.environ["CLOAKBROWSER_BINARY_PATH"] == "/kernels/outer/Chromium"

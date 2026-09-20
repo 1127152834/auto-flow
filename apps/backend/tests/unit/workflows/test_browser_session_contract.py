@@ -780,8 +780,16 @@ async def test_workflow_worker_exports_list_and_emits_registered_artifact(
 
     result = await _run(command, Event(), output)
 
-    assert result == 0, output.getvalue()
     events = [json.loads(line) for line in output.getvalue().splitlines()]
+    if sys.platform == "win32":
+        assert result == 2
+        assert events[-1]["type"] == "execution:failed"
+        assert events[-1]["failedNodeId"] == "export"
+        assert "Windows 安全文件输出" in events[-1]["error"]
+        assert not any(event["type"] == "artifact:registered" for event in events)
+        assert not list(artifact_root.rglob("result.*"))
+        return
+    assert result == 0, output.getvalue()
     assert [event["type"] for event in events] == [
         "ready",
         "execution:node_start",
@@ -1218,8 +1226,19 @@ async def test_workflow_worker_runs_table_family_and_registers_excel_artifact(
 
     result = await _run(command, Event(), output)
 
-    assert result == 0, output.getvalue()
     events = [json.loads(line) for line in output.getvalue().splitlines()]
+    if sys.platform == "win32":
+        assert result == 2
+        assert events[-1]["type"] == "execution:failed"
+        assert events[-1]["failedNodeId"] == "export"
+        assert "Windows 安全文件输出" in events[-1]["error"]
+        assert not any(event["type"] == "artifact:registered" for event in events)
+        assert not list(artifact_root.rglob("result.*"))
+        completed = [event for event in events if event["type"] == "execution:node_complete"]
+        assert all(event["success"] for event in completed[:5])
+        assert completed[4]["data"] == 3
+        return
+    assert result == 0, output.getvalue()
     completions = [
         event for event in events if event["type"] == "execution:node_complete"
     ]
