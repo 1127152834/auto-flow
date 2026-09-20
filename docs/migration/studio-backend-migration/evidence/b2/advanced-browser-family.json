@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B2-advanced-browser-family-2026-09-16",
-  "recordedAt": "2026-09-16",
-  "result": "11个批准的高级网页节点已完成冻结源码差分、生产注册、共享CloakBrowser动作端口和真实HTTP协调器准入；真实CloakBrowser用例已建立但因本机无隔离测试内核而未执行，正式Electron集中验收尚未执行。",
+  "recordedAt": "2026-09-21",
+  "result": "11个批准的高级网页节点已完成冻结源码差分、生产注册、共享CloakBrowser动作端口、真实HTTP协调器准入、macOS arm64真实CloakBrowser执行及正式Electron UI闭环。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -50,25 +50,34 @@
       "result": "真实协调器接收22节点批量文档并向worker下发原始节点序列，requiresBrowser=true"
     },
     "affectedRegression": {
-      "command": "cd apps/backend && uv run pytest -q tests/differential/workflows/test_b2_web_basic_executor_parity.py tests/differential/workflows/test_b2_advanced_browser_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py tests/integration/test_workflow_artifacts.py tests/integration/test_b2_web_basic_cloakbrowser_flow.py tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py",
-      "result": "163 passed, 2 opt-in real-CloakBrowser tests skipped"
+      "command": "cd apps/backend && AUTOFLOW_B1_CLOAK_EXECUTABLE=<CloakBrowser> uv run pytest -q tests/differential/workflows/test_b2_advanced_browser_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py",
+      "result": "60 passed, 2 dependency deprecation warnings"
     },
     "capacityAndCancellation": {
       "test": "apps/backend/tests/integration/test_workflow_artifacts.py and apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_externalizes_large_node_result",
       "result": "二进制写盘后取消会删除未登记文件；超过64 KiB的JSON节点结果写入登记产物，worker事件只保留摘要和artifactIds"
+    },
+    "realCloakBrowser": {
+      "test": "apps/backend/tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py",
+      "result": "11种高级网页节点在真实CloakBrowser中串联成功；下载内容与图片PNG落盘可读"
+    },
+    "formalElectron": {
+      "evidence": "docs/migration/studio-backend-migration/evidence/b2/formal-advanced-browser-electron-i07XUi/result.json",
+      "result": "正式Studio UI添加配置、保存、正常关闭重开并执行12节点链；11种高级节点完成，下载与PNG哈希核对且进程/资源清理通过"
     }
   },
   "quality": {
     "ruff": "passed",
-    "mypy": "passed"
+    "mypy": "passed",
+    "nodeCheck": "passed",
+    "visualInspection": "passed"
   },
   "productionSha256BeforeCommit": "0f36d86784952843f0d92cc8c20fde69b99c0959420597b638361056ac5bdd5a",
   "notClaimed": [
-    "真实CloakBrowser高级网页动作矩阵",
     "URL下载不启动浏览器的动态准入优化",
-    "正式Electron UI执行",
-    "打包sidecar执行",
-    "macOS Intel或Windows验证"
+    "重建后的Electron目录包执行",
+    "macOS Intel或Windows验证",
+    "B2其他网页模块族与拾取会话验收"
   ],
   "userDatabaseModified": false
 }

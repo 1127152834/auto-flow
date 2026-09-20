@@ -16,7 +16,6 @@ from typing import Any
 from urllib.parse import unquote, urlparse
 
 import httpx
-
 from autoflow.domain.workflows.browser import BrowserLocatorPort, BrowserPagePort
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.providers.browser.workflow_actions import wait_for_locator

@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
@@ -55,6 +54,7 @@ async def test_real_cloakbrowser_runs_advanced_browser_family(
         "drag_element",
         "scroll_page",
         "upload_file",
+        "download_file",
         "save_image",
         "get_child_elements",
         "get_sibling_elements",
@@ -68,6 +68,11 @@ async def test_real_cloakbrowser_runs_advanced_browser_family(
         {"sourceSelector": "#drag-source", "targetSelector": "#drag-target"},
         {"direction": "down", "distance": 300, "scrollMode": "wheel"},
         {"selector": "#upload", "filePath": str(upload)},
+        {
+            "downloadMode": "click",
+            "triggerSelector": "#download-link",
+            "variableName": "downloaded_file",
+        },
         {
             "selector": "#fixture-image",
             "savePath": "fixture-image.png",
@@ -142,4 +147,7 @@ async def test_real_cloakbrowser_runs_advanced_browser_family(
     }
     assert context.variables["children"] == ["#child-a", "#child-b"]
     assert context.variables["siblings"] == ["#sibling-a", "#sibling-b"]
+    assert Path(context.variables["downloaded_file"]).read_text(encoding="utf-8") == (
+        "AutoFlow 下载"
+    )
     assert Path(context.variables["saved_image"]).read_bytes().startswith(b"\x89PNG")
