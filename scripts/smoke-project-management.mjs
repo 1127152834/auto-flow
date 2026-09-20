@@ -27,23 +27,36 @@ export async function checkConcurrentRecordWrites(api, prefix, count = 1000) {
   const concurrent = await api(`${prefix}/tables`, { method: 'POST', body: { name: count === 10_000 ? 'PM9 一万行容量' : 'PM9 并发写入回归', sourceKind: 'local' } })
   const concurrentPath = `${prefix}/tables/${concurrent.tableId}`
   const concurrentField = (await api(`${concurrentPath}/fields`, { method: 'POST', body: { definition: { key: 'code', name: '编号', type: 'string', required: false, validation: {} }, sourceColumnPolicy: 'localOnly', expectedTableRevision: concurrent.tableRevision } })).field
-  let claimed = 0, failure
+  let claimed = 0, busyRetries = 0, failure
   await Promise.allSettled(Array.from({ length: 5 }, async () => {
     while (claimed < count && !failure) {
-      const index = ++claimed
-      try { await api(`${concurrentPath}/records`, { method: 'POST', body: { datasetGeneration: concurrent.datasetGeneration, values: [{ fieldId: concurrentField.ref.fieldId, value: String(index).padStart(6, '0') }] } }) }
-      catch (error) { failure ??= error; throw error }
+      const index = ++claimed, key = randomUUID()
+      for (let attempt = 0; ; attempt++) {
+        try {
+          await api(`${concurrentPath}/records`, { method: 'POST', key, body: { datasetGeneration: concurrent.datasetGeneration, values: [{ fieldId: concurrentField.ref.fieldId, value: String(index).padStart(6, '0') }] } })
+          break
+        } catch (error) {
+          if (error.cause?.status === 503 && error.cause?.code === 'DATABASE_BUSY' && attempt < 9) {
+            busyRetries++
+            await new Promise(resolveWait => setTimeout(resolveWait, 1000))
+            continue
+          }
+          failure ??= error
+          throw error
+        }
+      }
     }
   }))
   if (failure) throw failure
   assert.equal((await api(concurrentPath)).recordCount, count)
-  return { status: 'passed', producers: 5, records: count, table: concurrent }
+  return { status: 'passed', producers: 5, records: count, busyRetries, table: concurrent }
 }
 
 // The caller supplies a service belonging to a disposable workspace it created.
 // The same assertions run against source Python and the bundled sidecar.
 export async function checkProjectManagement(baseUrl, token, existingProject) {
   const checks = []
+  let concurrentWrites
   async function api(path, { method = 'GET', body, key = randomUUID(), status } = {}) {
     const response = await fetch(`${baseUrl}/api/v1${path}`, {
       method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': key },
@@ -51,15 +64,15 @@ export async function checkProjectManagement(baseUrl, token, existingProject) {
     })
     const result = await response.json()
     if (status) assert.equal(response.status, status, `${method} ${path}: ${JSON.stringify(result)}`)
-    else assert.ok(response.ok, `${method} ${path}: ${response.status} ${JSON.stringify(result)}`)
+    else if (!response.ok) throw new Error(`${method} ${path}: ${response.status} ${JSON.stringify(result)}`, { cause: { status: response.status, code: result.error?.code } })
     return result
   }
   const project = existingProject ?? await api('/projects', { method: 'POST', body: { name: 'PM9 中文 空格项目', description: '发行验收' } })
   const prefix = `/projects/${project.projectId}`
   const neighbour = await api('/projects', { method: 'POST', body: { name: 'PM9 隔离项目' } })
   if (!existingProject) {
-    await checkConcurrentRecordWrites(api, prefix)
-    checks.push('1000 single-record writes through five concurrent HTTP producers complete without server errors')
+    concurrentWrites = await checkConcurrentRecordWrites(api, prefix)
+    checks.push('1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses')
   }
   const table = await api(`${prefix}/tables`, { method: 'POST', body: { name: '中文 数据表', sourceKind: 'local' } })
   const tablePath = `${prefix}/tables/${table.tableId}`
@@ -131,7 +144,7 @@ export async function checkProjectManagement(baseUrl, token, existingProject) {
   }
   assert.equal((await api(tablePath)).recordCount, 1)
   checks.push('wrong deletion name rejected; safe deletion preserves neighbouring project records')
-  return { checks, projectId: project.projectId, tableId: table.tableId, tablePath, boundary: 'production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed' }
+  return { checks, concurrentWrites, projectId: project.projectId, tableId: table.tableId, tablePath, boundary: 'production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed' }
 }
 
 export async function installRuntimeKernel(kernel, directory) {

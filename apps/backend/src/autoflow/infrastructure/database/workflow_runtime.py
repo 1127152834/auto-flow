@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sqlite3
 from datetime import UTC, datetime
 from typing import Any
 
@@ -23,6 +22,9 @@ from autoflow.domain.workflows.runtime import (
     restore_core_run,
     thaw_json,
     transition_core_run,
+)
+from autoflow.infrastructure.database.session import (
+    is_sqlite_contention as _is_sqlite_contention,
 )
 
 from .workflow_runtime_models import (
@@ -683,19 +685,3 @@ def _prepared_content_is_executable(row: WorkflowPreparedContentRow) -> bool:
         row.adapter_version in {"webrpa-chain/v1", "webrpa-graph/v2"}
         and row.execution_plan.get("replayable") is not False
     )
-
-
-def _is_sqlite_contention(error: OperationalError) -> bool:
-    code = getattr(error.orig, "sqlite_errorcode", None)
-    if isinstance(code, int) and code & 0xFF in {
-        sqlite3.SQLITE_BUSY,
-        sqlite3.SQLITE_LOCKED,
-    }:
-        return True
-    message = str(error.orig).lower()
-    return message in {
-        "database is busy",
-        "database is locked",
-        "database schema is locked",
-        "database table is locked",
-    }

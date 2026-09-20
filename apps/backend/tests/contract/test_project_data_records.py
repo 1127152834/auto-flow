@@ -276,3 +276,30 @@ def test_record_http_rejects_cell_metadata_and_unsafe_scalar(catalog):
         },
     )
     assert response.status_code == 422
+
+
+def test_busy_database_does_not_accept_or_duplicate_a_record_command(catalog):
+    from fastapi.testclient import TestClient
+    from sqlalchemy import text
+
+    client, project, table, base = catalog
+    identity = key()
+    body = {"datasetGeneration": table["datasetGeneration"], "values": []}
+    # The existing fixture owns lifespan; this client only observes HTTP errors.
+    quiet = TestClient(client.app, headers=client.headers, raise_server_exceptions=False)
+    try:
+        with client.app.state.session_factory() as writer:
+            writer.execute(text("BEGIN IMMEDIATE"))
+            response = quiet.post(base + "/records", headers=identity, json=body)
+            assert response.status_code == 503, response.text
+            assert response.json()["error"]["code"] == "DATABASE_BUSY"
+            assert response.headers["retry-after"] == "1"
+    finally:
+        quiet.close()
+    operation = f"/api/v1/projects/{project}/operations/by-idempotency-key/{identity['Idempotency-Key']}"
+    assert client.get(operation).status_code == 404
+    created = client.post(base + "/records", headers=identity, json=body)
+    assert created.status_code == 201, created.text
+    replay = client.post(base + "/records", headers=identity, json=body)
+    assert replay.status_code == 200 and replay.json() == created.json()
+    assert client.get(base).json()["recordCount"] == 1

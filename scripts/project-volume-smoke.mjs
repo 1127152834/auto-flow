@@ -8,10 +8,10 @@ import { checkConcurrentRecordWrites } from './smoke-project-management.mjs'
 
 // Only called with the smoke runner's disposable workspace and real HTTP service.
 export async function checkProjectVolume(sidecar, cdp, click, runtime, workspace) {
-  async function api(path, body) {
-    const response = await fetch(sidecar.baseUrl + '/api/v1' + path, { method: body ? 'POST' : 'GET', headers: { 'x-autoflow-token': sidecar.token, 'Idempotency-Key': randomUUID(), 'content-type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(60_000) })
+  async function api(path, body, key = randomUUID()) {
+    const response = await fetch(sidecar.baseUrl + '/api/v1' + path, { method: body ? 'POST' : 'GET', headers: { 'x-autoflow-token': sidecar.token, 'Idempotency-Key': key, 'content-type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(60_000) })
     const result = await response.json()
-    assert.ok(response.ok, `${body ? 'POST' : 'GET'} ${path}: ${JSON.stringify(result)}`)
+    if (!response.ok) throw new Error(`${body ? 'POST' : 'GET'} ${path}: ${JSON.stringify(result)}`, { cause: { status: response.status, code: result.error?.code } })
     return result
   }
   await cdp.command('Performance.enable')
@@ -35,7 +35,7 @@ export async function checkProjectVolume(sidecar, cdp, click, runtime, workspace
   await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + runtime.projectId + '/overview')}`)
   const prefix = `/projects/${runtime.projectId}`
   const started = performance.now()
-  const { table, ...concurrentWrites } = await checkConcurrentRecordWrites((path, options = {}) => api(path, options.body), prefix, 10_000)
+  const { table, ...concurrentWrites } = await checkConcurrentRecordWrites((path, options = {}) => api(path, options.body, options.key), prefix, 10_000)
   const seedMs = Math.round(performance.now() - started)
   await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + runtime.projectId + '/data/' + table.tableId + '/records')}`)
   const recordRows = `document.querySelectorAll('[data-record-open]').length`

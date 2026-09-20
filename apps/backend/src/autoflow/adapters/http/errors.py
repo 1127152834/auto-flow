@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.exc import OperationalError
 
 from autoflow.domain.android.ports import AndroidError
 from autoflow.domain.kernels.errors import (
@@ -40,6 +41,7 @@ from autoflow.domain.workflows.errors import WorkflowDocumentError
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.domain.workflows.runs import WorkflowRunError
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+from autoflow.infrastructure.database.session import is_sqlite_contention
 
 _MODEL_ERROR_MESSAGES = {
     "VALIDATION_ERROR": "请求参数无效",
@@ -83,7 +85,7 @@ class BrowserErrorEnvelope(BaseModel):
 
 def browser_error_responses(*status_codes: int) -> dict[int | str, dict[str, Any]]:
     return {
-        status_code: {"model": BrowserErrorEnvelope} for status_code in status_codes
+        status_code: {"model": BrowserErrorEnvelope} for status_code in (*status_codes, 503)
     }
 
 
@@ -143,6 +145,14 @@ def _safe_model_details(details: dict[str, Any]) -> dict[str, Any]:
 
 
 def install_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(OperationalError)
+    async def database_error(_request: Request, error: OperationalError) -> JSONResponse:
+        if not is_sqlite_contention(error):
+            raise error
+        response = error_response(503, "DATABASE_BUSY", "数据库正忙，请稍后重试")
+        response.headers["Retry-After"] = "1"
+        return response
+
     @app.exception_handler(AndroidError)
     async def android_error(_request: Request, error: AndroidError) -> JSONResponse:
         return error_response(error.status, error.code, error.message)

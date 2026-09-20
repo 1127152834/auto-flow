@@ -122,3 +122,22 @@ def test_model_provider_status_messages_are_clear_and_never_echo_upstream_text()
             "requestId": response.json()["error"]["requestId"],
         }
         assert "sk-test-secret" not in response.text
+
+
+def test_non_contention_database_failure_remains_an_internal_error() -> None:
+    import sqlite3
+
+    from sqlalchemy.exc import OperationalError
+
+    app = FastAPI()
+    install_error_handlers(app)
+
+    @app.get("/failure")
+    def fail() -> None:
+        raise OperationalError("secret query", {}, sqlite3.OperationalError("disk I/O error"))
+
+    response = TestClient(app, raise_server_exceptions=False).get("/failure")
+    assert response.status_code == 500
+    assert response.json()["error"]["code"] == "INTERNAL_ERROR"
+    assert "secret query" not in response.text
+    assert "disk I/O" not in response.text

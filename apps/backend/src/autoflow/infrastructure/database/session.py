@@ -1,8 +1,10 @@
+import sqlite3
 from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, event
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
 
@@ -32,3 +34,19 @@ def create_session_factory(path: Path):
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     factory.dispose = engine.dispose  # type: ignore[attr-defined]
     return factory
+
+
+def is_sqlite_contention(error: OperationalError) -> bool:
+    code = getattr(error.orig, "sqlite_errorcode", None)
+    if isinstance(code, int) and code & 0xFF in {
+        sqlite3.SQLITE_BUSY,
+        sqlite3.SQLITE_LOCKED,
+    }:
+        return True
+    message = str(error.orig).lower()
+    return message in {
+        "database is busy",
+        "database is locked",
+        "database schema is locked",
+        "database table is locked",
+    }

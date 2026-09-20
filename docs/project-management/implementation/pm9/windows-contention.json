@@ -1,0 +1,17 @@
+{
+  "date": "2026-09-21",
+  "status": "confirmed",
+  "reproductionCommit": "7aacd53f5728ec876ce7e027fd6f1a1a99eefade",
+  "jobUrl": "https://github.com/1127152834/auto-flow/actions/runs/35530376377/job/106129789729",
+  "scenario": "five concurrent single-record HTTP writers",
+  "backendFrame": "autoflow/infrastructure/database/project_data_records.py:64",
+  "statement": "BEGIN IMMEDIATE",
+  "exception": "sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked",
+  "httpStatusBefore": 500,
+  "errorCodeBefore": "INTERNAL_ERROR",
+  "requestId": "1b6ff821-bee6-4a61-9551-c8bc6d593e33",
+  "remediation": "Reuse SQLite contention classification across HTTP; 503 DATABASE_BUSY with Retry-After 1. Concurrent smoke retries only that declared status/code with the same command key, at most 10 attempts, preserving actual retry counts. Other errors still fail.",
+  "localVerification": "Held real SQLite write lock: RED 500 versus expected 503, then GREEN; after release the same key creates/replays exactly one record. Unrelated database errors stay opaque 500. Related backend 70 passed, scripts 97 passed.",
+  "nativeRemediationVerification": "pending next candidate CI",
+  "historicalNote": "The d2ab2bcb packaged 10k failure had no retained sidecar log. This reproduction supplies a real Windows trace; no original missing log is reconstructed."
+}
