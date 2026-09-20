@@ -300,7 +300,9 @@ def _anthropic_payload(
     body: dict[str, Any] = {
         "model": model_key,
         "messages": [
-            item for item in messages if item.get("role") in {"user", "assistant"}
+            {**item, "content": _anthropic_content(item.get("content"))}
+            for item in messages
+            if item.get("role") in {"user", "assistant"}
         ],
         "temperature": temperature,
         "max_tokens": max_tokens,
@@ -322,7 +324,7 @@ def _gemini_payload(
         "contents": [
             {
                 "role": "model" if item.get("role") == "assistant" else "user",
-                "parts": [{"text": str(item.get("content") or "")}],
+                "parts": _gemini_parts(item.get("content")),
             }
             for item in messages
             if item.get("role") in {"user", "assistant"}
@@ -335,6 +337,69 @@ def _gemini_payload(
     if system:
         body["systemInstruction"] = {"parts": [{"text": system}]}
     return body
+
+
+def _data_image(url: str) -> tuple[str, str] | None:
+    if not url.startswith("data:image/") or "," not in url:
+        return None
+    metadata, data = url[5:].split(",", 1)
+    if ";base64" not in metadata:
+        return None
+    return metadata.split(";", 1)[0], data
+
+
+def _anthropic_content(value: Any) -> Any:
+    if not isinstance(value, list):
+        return value
+    content: list[dict[str, Any]] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        if item.get("type") == "text" and isinstance(item.get("text"), str):
+            content.append({"type": "text", "text": item["text"]})
+            continue
+        image = item.get("image_url")
+        url = image.get("url") if isinstance(image, dict) else None
+        if item.get("type") != "image_url" or not isinstance(url, str):
+            continue
+        inline = _data_image(url)
+        source = (
+            {
+                "type": "base64",
+                "media_type": inline[0],
+                "data": inline[1],
+            }
+            if inline
+            else {"type": "url", "url": url}
+        )
+        content.append({"type": "image", "source": source})
+    return content
+
+
+def _gemini_parts(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return [{"text": str(value or "")}]
+    parts: list[dict[str, Any]] = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        if item.get("type") == "text" and isinstance(item.get("text"), str):
+            parts.append({"text": item["text"]})
+            continue
+        image = item.get("image_url")
+        url = image.get("url") if isinstance(image, dict) else None
+        if item.get("type") != "image_url" or not isinstance(url, str):
+            continue
+        inline = _data_image(url)
+        if inline:
+            parts.append(
+                {"inlineData": {"mimeType": inline[0], "data": inline[1]}}
+            )
+        else:
+            parts.append(
+                {"fileData": {"mimeType": "image/*", "fileUri": url}}
+            )
+    return parts
 
 
 def _validate_key(connection: ProviderConnection, secret: str) -> None:

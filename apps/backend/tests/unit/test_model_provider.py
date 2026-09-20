@@ -351,6 +351,72 @@ async def test_workflow_invocation_adapts_managed_provider_protocol(kind):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("kind", ["anthropic", "gemini"])
+async def test_workflow_invocation_adapts_managed_vision_content(kind):
+    async def handler(request):
+        payload = json.loads(request.content)
+        if kind == "anthropic":
+            assert payload["messages"] == [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": "UE5H",
+                            },
+                        },
+                        {"type": "text", "text": "识别"},
+                    ],
+                }
+            ]
+            return httpx.Response(
+                200, json={"content": [{"type": "text", "text": "识别结果"}]}
+            )
+        assert payload["contents"] == [
+            {
+                "role": "user",
+                "parts": [
+                    {"inlineData": {"mimeType": "image/png", "data": "UE5H"}},
+                    {"text": "识别"},
+                ],
+            }
+        ]
+        return httpx.Response(
+            200,
+            json={"candidates": [{"content": {"parts": [{"text": "识别结果"}]}}]},
+        )
+
+    result = await HttpModelProvider(
+        transport=httpx.MockTransport(handler)
+    ).invoke(
+        ProviderConnection(kind, kind, "https://model.example/v1"),
+        "managed-secret",
+        "vision-model",
+        {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": "data:image/png;base64,UE5H"
+                            },
+                        },
+                        {"type": "text", "text": "识别"},
+                    ],
+                }
+            ]
+        },
+    )
+
+    assert result.content == "识别结果"
+
+
+@pytest.mark.asyncio
 async def test_generation_payload_encoding_and_preview_limits():
     async def handler(request):
         assert (
