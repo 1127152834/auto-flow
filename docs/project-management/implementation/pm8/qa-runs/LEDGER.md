@@ -29,13 +29,18 @@
 | `20260919195240` | failed | 28ab6f51 | 15 | 11 | 删除。响应丢失提示文案与实际不一致（QA 脚本）。 |
 | `20260919195426` | passed | 28ab6f51 | 16 | 11 | 删除。已被 `20260919200955` 取代（缺少真实界面引用清单与保留项目画面）。 |
 | `20260919200747` | passed | 28ab6f51 | 16 | 11 | 删除。已被 `20260919200955` 取代（`07-resource-referenced` 未回到文档顶部，缺全局导航）。 |
-| **`20260919200955`** | **passed** | 28ab6f51（工作树 = 源码摘要 `d92004ce…`） | **16** | **11** | **权威运行。** `status: passed`、`scope: 管理侧通过，真实执行核心接入待验收`。 |
+| `20260919200955` | passed | 28ab6f51（工作树 = 源码摘要 `d92004ce…`） | 16 | 11 | 删除。已被 `20260919202620` 取代（`07-resource-referenced` 未走真实界面路径）。 |
+| `20260919202620` | passed | fbdb7f98（工作树 = 源码摘要 `3502e24d…`） | 16 | 11 | 删除。已被 `20260920010843` 取代（未覆盖清理残留与重试清理）。 |
+| `20260920010249` | failed | 14e70fad | 14 | 10 | 删除。E2E-8 首次尝试断言「批次启动必须为项目预约一个真实隔离工作副本」，而隔离执行器从调用 `claim_data_task` 时就不传 `environments`，因此 QA 运行从不产生任务环境实例（QA 夹具保真度缺口，非产品缺陷）。处置见本轮改动：残留前置改由侧车 `leak-work-copy` 注入，见 `44a3fe7a`。 |
+| **`20260920010843`** | **passed** | 14e70fad（工作树 = 源码摘要 `3502e24d…` + QA 侧车改动 `44a3fe7a`） | **18** | **13** | **权威运行。** `status: passed`、`scope: 管理侧通过，真实执行核心接入待验收`。新增 E2E-8 清理残留与重试清理。 |
 
 ## 权威运行边界
 
 - 执行核心：隔离 QA 测试执行器（`apps/backend/tests/qa/pm8_sidecar.py`），**不是**生产工作流执行核心。
 - 浏览器：`notExecuted`；Studio：`notExecuted`。
 - 界面创建：项目、三张表、字段、记录、自动化。测试夹具：浏览器配置、工作流文档（明确标注）。
-- 注入（均为测试注入，不是产品故障）：`executor-pause` / `executor-resume` 制造真实运行中批次与任务；`expire-lifecycle-impact` 过期 8 条影响；`lifecycle-response-loss` 丢弃归档命令响应。
+- 注入（均为测试注入，不是产品故障）：`executor-pause` / `executor-resume` 制造真实运行中批次与任务；`expire-lifecycle-impact` 过期 8 条影响；`lifecycle-response-loss` 丢弃归档命令响应；`leak-work-copy` 登记一个「浏览器已关闭、工作副本未删除」的遗留实例（隔离执行器不启动浏览器，不会自动产生实例），随后 chmod 000 让本地清理真实失败、chmod 755 解除。
+- 隔离执行器（`apps/backend/tests/qa/pm4_v1_runner.py`）静态调用 `ProjectBatchScheduler.claim_data_task`，不传 `environments`，因此 QA 运行不产生任务环境实例；这是 QA 夹具与生产 `_claim_data_task` 的已知差异，未在本次修改（改它会让未终结的 active 实例变成真实生命周期阻断并影响已闭合的 PM4/PM7 证据）。
 - 复现命令：`node scripts/qa-project-management-pm8.mjs`；保持窗口供手测：`node scripts/qa-project-management-pm8.mjs --manual`。
 - 未执行：真实执行核心、真实 CloakBrowser、Studio demo、Windows、其他 CPU 架构、打包应用、用户手动验收、双工作区切换（手测 M-08）。
+- 独立审查：计划的独立规格/工程审查智能体四次投递（followup_task ×2、spawn_agent ×2）都只收到模式提示、收不到任务正文，判定为工具投递故障；本轮为交付者自审，见 `verification.json` 的 `independentReview`。

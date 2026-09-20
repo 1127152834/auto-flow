@@ -13,7 +13,7 @@ import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { constants } from 'node:fs'
-import { cp, lstat, mkdir, mkdtemp, readdir, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises'
+import { chmod, cp, lstat, mkdir, mkdtemp, readdir, readFile, realpath, rm, stat, writeFile } from 'node:fs/promises'
 import { homedir, tmpdir } from 'node:os'
 import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { promisify } from 'node:util'
@@ -40,6 +40,7 @@ export const PM8_STEPS = Object.freeze([
   'E2E-5 永久删除：影响过期 412、确认名不符、删除后对象与本地文件消失',
   'E2E-6 资源保护：被项目引用的全局资源删除被拒并给出引用清单',
   'E2E-7 响应丢失：按原操作身份找回归档结果，不产生第二条事实',
+  'E2E-8 清理残留：真实权限故障让删除停留在 deleting，重试清理后完成删除',
 ])
 
 // 手测模式还需要执行器暂停/恢复/失败：PM8 sidecar 继承 PM7 的故障端点，
@@ -78,7 +79,7 @@ export async function main(cliArgs = process.argv.slice(2)) {
     assert.equal(isOwnedPm8Workspace('/tmp/pm8-owner/workspace', '/tmp/pm8-owner', { kind: 'pm8-project-management-qa', version: 1 }), true)
     assert.equal(isOwnedPm8Workspace('/tmp/pm8-other/workspace', '/tmp/pm8-owner', { kind: 'pm8-project-management-qa', version: 1 }), false)
     assert.equal(isOwnedPm8Workspace('/tmp/pm8-owner/workspace', '/tmp/pm8-owner', { kind: 'pm7-project-management-qa', version: 1 }), false)
-    assert.equal(PM8_STEPS.length, 7)
+    assert.equal(PM8_STEPS.length, 8)
     assert.equal(PM8_FAULT_KINDS.length, 2)
     assert.deepEqual(
       parsePm8QaArgs(['--manual', '--inject=expire-lifecycle-impact']),
@@ -529,6 +530,24 @@ export async function main(cliArgs = process.argv.slice(2)) {
     return rows
   }
 
+  async function waitDeleteCleanupFailure(runtime, projectId, residuePath) {
+    let seen
+    for (let attempt = 0; attempt < 150; attempt += 1) {
+      const page = await apiOk(runtime, `/projects/${projectId}/operations`)
+      const failed = page.items.find(item => item.kind === 'deleteProject' && item.status === 'failed')
+      if (failed) {
+        assert.equal(failed.error?.code, 'DELETE_CLEANUP_FAILED', '清理失败必须留下明确的失败码')
+        assert.equal(failed.error?.details?.retryable, true, '清理失败必须标记为可重试')
+        const residue = failed.error?.details?.cleanup?.residue ?? []
+        assert.ok(residue.includes(residuePath), `残留清单必须点名真实路径 ${residuePath}，实际 ${JSON.stringify(residue)}`)
+        return failed
+      }
+      seen = page.items.filter(item => item.kind === 'deleteProject').map(item => item.status).join('、') || '（无删除操作）'
+      await wait(200)
+    }
+    throw new Error(`删除清理未在 30s 内因真实权限故障失败并报告残留（deleteProject 状态：${seen}）`)
+  }
+
   async function waitForExportFile() {
     for (let attempt = 0; attempt < 300; attempt += 1) {
       const names = (await readdir(exportDir).catch(() => [])).filter(name => name.endsWith('.xlsx'))
@@ -882,10 +901,56 @@ print(created.workflow_id); factory.dispose()`
     await capture('09-delete-name-guard', '02-automation/004-delete-confirm-54c904.png')
     checkpoint('E2E-5 确认名不符时界面禁用提交，直连接口同样拒绝 422。')
 
+    // ── E2E-8：清理残留真实可见 + 重试清理 ─────────────────────────────
+    // 残留必须来自产品在文件系统层的真实失败：把项目自己的隔离工作副本置为
+    // 不可遍历，让本地清理真的删不掉它，而不是伪造一条失败事实。
+    // 隔离执行器不启动浏览器，因此工作副本由侧车按真实环境仓库登记（测试注入）；
+    // 删除、残留判定、重试收敛本身全部走产品路径。
+    step('E2E-8 清理残留与重试清理')
+    const leaked = await fault(runtime, 'leak-work-copy', { projectId: project.projectId, profileId })
+    const instanceDir = leaked.directory
+    assert.ok(await stat(instanceDir).then(() => true, () => false), `隔离工作副本必须真实存在：${instanceDir}`)
+    const instancePage = await apiOk(runtime, `/projects/${project.projectId}/environment-instances`)
+    assert.ok(instancePage.items.some(item => item.instanceId === leaked.instanceId), '遗留工作副本必须能按真实实例身份读回')
+    await chmod(instanceDir, 0o000)
+    injections.push(`cleanup-residue：将遗留工作副本 ${instanceDir} 置为 000 权限，令真实删除的本地清理失败（测试注入）`)
+
     await input('[aria-label="确认项目名称"]', projectName)
     await click('永久删除')
     await dismissLifecycleProgress()
+    const residueOperation = await waitDeleteCleanupFailure(runtime, project.projectId, instanceDir)
+    const stuck = await apiOk(runtime, `/projects/${project.projectId}`)
+    assert.equal(stuck.lifecycleState, 'deleting', '清理失败后项目必须停留在 deleting')
+    checkpoint(`E2E-8 真实权限故障让删除失败：操作 ${residueOperation.operationId} 报告 DELETE_CLEANUP_FAILED 与 ${residueOperation.error.details.cleanup.residue.length} 条残留，项目停留在 deleting。`)
+
+    // 归档目录筛选同时承载 deleting 项目：刷新后卡片必须把残留与重试入口摆出来。
+    await visibleDirectory()
+    await click('', '[aria-label="刷新项目"]')
+    await ensureProjectCard(projectName, 'archived')
+    await waitFor(renderer, `(document.body?.innerText ?? '').includes('清理未完成')`, '清理未完成标记', 30_000)
+    await capture('12-delete-cleanup-residue', '00-projects/100-projects-prototype-5238b4.png')
+    await click('', `[aria-label=${JSON.stringify(`更多${projectName}操作`)}]`)
+    await waitFor(renderer, `Boolean([...document.querySelectorAll('[role=menuitem]')].find(item=>item.textContent.trim()==='重试清理'))`, '重试清理入口', 30_000)
+    await click('重试清理', '[role=menuitem]')
+    // 重试对话框的残留清单来自 onLoadResidue 读到的真实操作证据，不是本地状态。
+    await visible('本地文件未能完全清理', 30_000)
+    await visible(instanceDir, 30_000)
+    await capture('13-cleanup-residue-retry', '02-automation/004-delete-confirm-54c904.png')
+    checkpoint('E2E-8 归档目录卡片显示「清理未完成」，重试入口与重试对话框的残留清单都点名真实路径。')
+
+    await input('[aria-label="确认项目名称"]', projectName)
+    await click('重试清理')
+    await dismissLifecycleProgress()
+    // 重试是新的删除命令（残留证据保留在先前那条失败事实上），不是换键重发旧命令。
+    const deleteOperations = (await apiOk(runtime, `/projects/${project.projectId}/operations`)).items.filter(item => item.kind === 'deleteProject')
+    assert.equal(deleteOperations.length, 2, `重试必须产生第二条删除命令，实际 ${deleteOperations.length} 条（${deleteOperations.map(item => item.status).join('、')}）`)
+    assert.ok(deleteOperations.some(item => item.status === 'failed' && (item.error?.details?.cleanup?.residue ?? []).includes(instanceDir)), '先前失败事实与残留证据必须保留')
+
+    // 故障注入解除后，收敛循环用同一条重试命令完成真实清理。
+    await chmod(instanceDir, 0o755)
+    injections.push(`cleanup-residue-cleared：将 ${instanceDir} 恢复为 755，允许真实重试清理（测试注入解除）`)
     await waitProjectGone(runtime, project.projectId)
+    assert.ok(!(await stat(instanceDir).then(() => true, () => false)), '重试清理必须真的删掉残留目录')
     // 删除在后台收敛：行清理晚于只读视图消失，等待真实事实落地而不是立刻断言。
     const rows = await waitProjectRowsGone(runtime, project.projectId)
     // 契约（spec §2.1 deleted + test_project_lifecycle.py）要求：数据表/记录等业务对象全部删除，

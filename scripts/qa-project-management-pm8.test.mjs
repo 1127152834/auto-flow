@@ -29,8 +29,8 @@ test('PM8 workspace ownership requires both marker and containment', () => {
 })
 
 test('every PM8 end-to-end step and fault injection is named', () => {
-  assert.equal(PM8_STEPS.length, 7)
-  assert.ok(PM8_STEPS.every(step => /^E2E-[1-7]/.test(step)))
+  assert.equal(PM8_STEPS.length, 8)
+  assert.ok(PM8_STEPS.every(step => /^E2E-[1-8]/.test(step)))
   assert.deepEqual([...PM8_FAULT_KINDS].sort(), ['expire-lifecycle-impact', 'lifecycle-response-loss'])
 })
 
@@ -61,6 +61,12 @@ test('runner drives the product through the renderer and labels the executor bou
   // 生命周期退回必须以真实幂等身份重发，不能在响应丢失后换键。
   assert.match(source, /lifecycle-response-loss/)
   assert.match(source, /同一幂等身份不得产生第二条归档事实/)
+  // 清理残留必须是真实文件系统故障 + 真实重试，不能伪造失败事实。
+  assert.match(source, /fault\(runtime, 'leak-work-copy', \{ projectId: project\.projectId, profileId \}\)/)
+  assert.match(source, /chmod\(instanceDir, 0o000\)/)
+  assert.match(source, /DELETE_CLEANUP_FAILED/)
+  assert.match(source, /click\('重试清理', '\[role=menuitem\]'\)/)
+  assert.match(source, /重试清理必须真的删掉残留目录/)
 })
 
 test('lifecycle fault injection only exists in the QA sidecar and never in production modules', async () => {

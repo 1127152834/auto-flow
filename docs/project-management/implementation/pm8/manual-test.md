@@ -129,6 +129,18 @@ node scripts/qa-project-management-pm8.mjs --manual --inject=executor-pause
 
 预期：项目与本地数据集消失（`projects` / `project_data_tables` 行归零）；`手测-B` 与 `PM8 隔离执行器资源` **完整保留**；外部 Excel 原文件字节不变。
 
+**M-05b 清理残留与「重试清理」（自动端到端已验证，手动路径需真实执行核心）**
+
+当项目自己的隔离工作副本删不掉时，删除必须失败并留下可核对的残留，而不是假装成功：
+
+1. （自动）`node scripts/qa-project-management-pm8.mjs` → E2E-8：侧车登记一个「浏览器已关闭、工作副本未删除」的遗留实例，`chmod 000` 让它真实删不掉。
+2. 预期：`DELETE /projects/{id}` 收敛为 `failed`，`error.code = DELETE_CLEANUP_FAILED`、`details.retryable = true`、`details.cleanup.residue` 点名真实路径；项目停留在 `deleting`，目录卡片显示「清理未完成」+「重试清理」。
+3. 点「重试清理」→ 对话框列出服务端残留清单原文 → 输入精确项目名 → 提交第二条删除命令 → 解除故障后收敛为 `succeeded`，残留目录真实消失，先前失败事实与残留证据保留。
+
+证据：`qa-runs/20260920010843/12-delete-cleanup-residue.png`、`13-cleanup-residue-retry.png`。
+
+**手动未执行的原因（如实登记）：** 遗留工作副本只有在真实浏览器执行被中断时才会产生；本机隔离执行器不启动浏览器，因此手动段落没有可制造的同一前置条件，只有自动段落覆盖。真实执行核心接入后，本用例应改为在真实浏览器任务中制造中断再复验。
+
 ### M-06 自动化删除 / 解绑
 
 1. `手测-A` 自动化目录 → 卡片「更多」→「删除自动化」。
@@ -213,6 +225,7 @@ node scripts/qa-project-management-pm8.mjs --manual --inject=service-restart    
 | M-03 归档只读与导出 |  |  |  |
 | M-04 恢复不改写历史 |  |  |  |
 | M-05 永久删除与影响过期 |  |  |  |
+| M-05b 清理残留与重试清理 | 未执行（自动端到端 `20260920010843` 已验证） | `qa-runs/20260920010843/12,13` | 手动缺真实浏览器中断前置 |
 | M-06 自动化删除 / 解绑 |  |  |  |
 | M-07 环境删除影响 |  |  |  |
 | M-08 双工作区隔离 |  |  |  |
@@ -231,7 +244,7 @@ node scripts/qa-project-management-pm8.mjs --manual --inject=service-restart    
 
 ## 6. 我已验证 vs 交给你执行
 
-- **我已验证**（本轮机器上真实执行）：见 `verification.json` 与 `qa-runs/<runId>/report.json` 的实际输出；自动段落覆盖界面创建项目/表/记录/自动化、活动任务阻断、归档、只读导出、恢复、永久删除、资源引用保护与响应丢失找回。
+- **我已验证**（本轮机器上真实执行）：见 `verification.json` 与 `qa-runs/20260920010843/report.json` 的实际输出；自动段落覆盖界面创建项目/表/记录/自动化、活动任务阻断、归档、只读导出、恢复、永久删除、**清理残留与重试清理（E2E-8）**、资源引用保护与响应丢失找回。M-05b 属自动已验证、手动未执行。
 - **交给你执行**：本文件 §3 的 M-01…M-13。未执行项一律记「未执行」，不得因自动脚本通过而标记通过。
 
 ---

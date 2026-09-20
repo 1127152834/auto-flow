@@ -2,8 +2,8 @@
 
 - 日期：2026-09-20
 - 工作区：`/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm8`，分支 `codex/project-management-pm8`
-- 权威运行：`docs/project-management/implementation/pm8/qa-runs/20260919202620/report.json`（`status: passed`，源码摘要 `3502e24d…`）
-- 评分依据的截图：`qa-runs/20260919200955/*.png`，11 张，viewport **1440×1024**、dpr 1、`document.documentElement.scrollWidth ≤ 1440`（每张都在 `report.json` 里逐条记录，无横向撑宽）；与权威运行的等价性见第 5 节
+- 权威运行：`docs/project-management/implementation/pm8/qa-runs/20260920010843/report.json`（`status: passed`，18 检查点，源码摘要 `3502e24d…`）
+- 评分依据的截图：`qa-runs/20260920010843/*.png`，13 张，viewport **1440×1024**、dpr 1、`document.documentElement.scrollWidth ≤ 1440`（每张都在 `report.json` 里逐条记录，无横向撑宽）；与前一轮 11 张的等价性见第 5 节
 - 原型目录（只读）：`/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/`
 - **审查者：主协调（自审）。** 原计划的独立审查智能体三次投递均只收到模式提示、收不到任务正文（工具投递故障），因此本次逐图审查由交付者本人完成，并在 `verification.json` 的 `independentReview` 里如实登记为未执行。这不是"已通过独立审查"。
 
@@ -39,6 +39,8 @@
 | 9 | `09-delete-name-guard.png` | `02-automation/004-delete-confirm-54c904.png` | **88** | S1–S8 全过 | 通过 |
 | 10 | `10-deleted-project-kept-neighbour.png` | `00-projects/100-projects-prototype-5238b4.png` | **87** | S1–S8 全过 | 通过 |
 | 11 | `11-archive-response-loss.png` | 无对应画板（PM8-B1 响应丢失恢复） | **86** | S1–S8 全过 | 通过 |
+| 12 | `12-delete-cleanup-residue.png` | `00-projects/100-projects-prototype-5238b4.png` | **86** | S1–S8 全过 | 通过（见偏离 D4） |
+| 13 | `13-cleanup-residue-retry.png` | `02-automation/004-delete-confirm-54c904.png` | **87** | S1–S8 全过 | 通过（见偏离 D5） |
 
 最低分 85（画面 3），无画面低于门槛。
 
@@ -70,6 +72,12 @@
 
 **画面 11（响应丢失后找回）** —— 归档对话框在命令结果未确认时显示「上次保存结果尚未确认，请核对保存结果」并保留重试入口；按原幂等身份核对后只存在一条归档事实。
 
+**画面 12（删除清理未完成）** —— 「已归档」筛选下的项目卡片：名称、描述、`正在删除` 与「清理未完成」徽标、最近打开时间并列；卡片右上「更多」提供「重试清理」。徽标与状态都由服务端 `lifecycleState`/失败操作的真实残留驱动，不是本地状态。
+偏离 D4：画板 `00-projects/100-projects-prototype-5238b4.png` 是普通项目卡片，没有「清理未完成」这种异常态徽标；本画面按产品新增状态渲染，卡片结构、页头、查询与网格与画板一致。
+
+**画面 13（重试清理对话框）** —— 标题「重试清理」、说明「项目停留在『正在删除』，上次本地文件清理未完成。重试只处理残留文件，不重跑历史任务。」、「将删除 / 将保留」、「必须先处置 / 没有阻断项」、「输入项目名称以确认」、服务端残留清单「本地文件未能完全清理」+ 真实绝对路径、主操作「重试清理」。
+偏离 D5：对话框比画板的删除确认多一段残留清单（服务端 `details.cleanup.residue` 的原文），内容较长时可在对话框内部滚动，不撑宽页面。
+
 ## 3. 未覆盖的画面与原因
 
 | 画板 | 状态 | 原因 |
@@ -81,8 +89,8 @@
 
 ## 4. 结论
 
-- 11 张真实截图全部满足 S1–S8，逐画面最低 85 分，无画面低于门槛。
-- 三处与画板的结构性差异（D1 归档阻断非拒绝、D2 归档用可逆确认样式、D3 归档提示为整宽信息条）都有规格或语义依据，按可接受偏离登记，不隐藏。
+- 13 张真实截图全部满足 S1–S8，逐画面最低 85 分，无画面低于门槛。
+- 五处与画板的结构性差异（D1 归档阻断非拒绝、D2 归档用可逆确认样式、D3 归档提示为整宽信息条、D4 卡片新增「清理未完成」异常态徽标、D5 重试对话框多一段服务端残留清单）都有规格或语义依据，按可接受偏离登记，不隐藏。
 - **本审查由交付者自审，独立审查因工具投递故障未执行**；不构成独立评审通过。
 
 ## 5. 截图等价性（2026-09-20 复跑）
@@ -97,3 +105,24 @@
 差异集中在临时工作区路径（`/tmp/autoflow-pm8-qa-<runId>`）、批次开始时间与计数、引用对象名称等运行期动态值；已抽取三张最大差异画面（`02`、`03`、`01`）做上下对照确认：版式、页头、页签、表格线、圆角、弹窗结构与文案逐项一致，无结构变化。因此第 1–3 节的逐画面评分对权威运行 `20260919202620` 同样成立。
 
 本轮前端改动只落在**代理管理**页面（错误条渲染引用清单、阻断态隐藏「重新加载」），该页面不在这 11 张画板内，未参与上面的视觉评分；它的证据是组件测试（wire→UI）与后端契约测试，见 `verification.json` 的 `PM8-C2`。
+
+## 6. 本轮新增画面（2026-09-20 清理残留端到端）
+
+新增 E2E-8 后重跑为权威运行 `20260920010843`（`passed`、18 检查点、13 截图、源码摘要 `3502e24d…`）。新增画面 12/13 已在上表逐条评分（86 / 87），并覆盖两个此前只有组件测试证据的行为：
+
+1. 真实权限故障（`chmod 000` 遗留工作副本）导致删除失败时，卡片显示「清理未完成」、项目保持 `deleting`、失败操作报告 `DELETE_CLEANUP_FAILED` 与真实残留路径；
+2. 点「重试清理」后：对话框列出服务端残留清单原文，第二条删除命令收敛为 `succeeded`，残留目录真实消失，先前失败事实与残留证据保留。
+
+边界：隔离执行器不启动浏览器，因此「崩溃遗留的工作副本」由 QA 侧车 `leak-work-copy` 注入（已记入 `report.json` 的 `injected`）；清理失败、残留上报与重试收敛都是真实产品代码路径。
+
+原 11 张画面与前一轮（`20260919202620`）逐像素比对（1474560 像素/张，阈值 ±8）：
+
+| 结果 | 画面 |
+|---|---|
+| 完全一致（4 张） | `03-archive-blocked`、`04-archive-confirm`、`09-delete-name-guard`、`11-archive-response-loss` |
+| 差异 ≤0.23%（7 张） | `05-archived-readonly` 0.012%、`06-export-dialog` 0.011%、`07-resource-referenced` 0.018%、`08-delete-stale-impact` 0.005%、`01-runs-batch-running` 0.051%、`02-settings-blockers` 0.230% |
+| 差异 1.686%（1 张） | `10-deleted-project-kept-neighbour` |
+
+`10-deleted-project-kept-neighbour` 的差异全部落在右上角通知区域（x 1038–1425、y 96–160）：上一轮画面还留着「删除命令已接受」提示，本轮该提示已超时消失。除通知条外无差异，不是版式变化。
+
+本轮脚本改动不触及 `apps/*/src`，源码摘要与上一轮相同（`3502e24d…`），因此上表第 1–3 节的逐画面评分对权威运行 `20260920010843` 成立。
