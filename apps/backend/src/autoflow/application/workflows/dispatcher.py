@@ -94,6 +94,8 @@ class WorkflowRunDispatcher:
         self._recover_orphan = recover_orphan
         self._force_stop_grace = force_stop_grace
         self._now = now
+        self._automatic_timeout: asyncio.Timeout | None = None
+        self._automatic_remaining: float | None = None
         self._task: asyncio.Task[None] | None = None
         self._lease: LeasePort | None = None
         self._run_id: str | None = None
@@ -173,6 +175,26 @@ class WorkflowRunDispatcher:
             self._run_id = run_id
             self._task = asyncio.create_task(self._execute(run))
             return run
+
+    def pause_manual(self, run_id: str, generation: int) -> None:
+        run = self._get_run(run_id)
+        if run_id != self._run_id or run.status != 'running' or run.execution_generation != generation:
+            raise WorkflowRuntimeError('EXECUTION_GENERATION_REVOKED', '执行代次已失效')
+        self._transition(run, 'waiting_manual')
+        if self._automatic_timeout is not None:
+            deadline = self._automatic_timeout.when()
+            self._automatic_remaining = max(0, deadline - asyncio.get_running_loop().time()) if deadline is not None else None
+            self._automatic_timeout.reschedule(None)
+
+    def resume_manual(self, run_id: str, generation: int) -> None:
+        run = self._get_run(run_id)
+        if run_id != self._run_id or run.status != 'waiting_manual' or run.execution_generation != generation:
+            raise WorkflowRuntimeError('EXECUTION_GENERATION_REVOKED', '执行代次已失效')
+        # Same live owner continues; resume_queued -> running is reserved for
+        # dispatching a new owner and deliberately increments the generation.
+        self._transition(run, 'running')
+        if self._automatic_timeout is not None and self._automatic_remaining is not None:
+            self._automatic_timeout.reschedule(asyncio.get_running_loop().time() + self._automatic_remaining)
 
     async def cancel(
         self,
@@ -406,6 +428,7 @@ class WorkflowRunDispatcher:
                     "automaticExecutionTimeoutSeconds", 0
                 )
                 timeout = asyncio.timeout(budget or None)
+                self._automatic_timeout = timeout
                 try:
                     async with timeout:
                         outcome = await self._worker.run(
@@ -488,6 +511,8 @@ class WorkflowRunDispatcher:
                 error=UNKNOWN_RESULT_ERROR,
             )
         finally:
+            self._automatic_timeout = None
+            self._automatic_remaining = None
             async with self._lock:
                 if self._task is asyncio.current_task():
                     if not cancelled and not unhandled:

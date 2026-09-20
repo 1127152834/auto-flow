@@ -32,11 +32,50 @@ class _ProjectDataNode(ModuleExecutor):
         node_id, visit = _visit.get()
         reply = await self.request(node_id, visit, config['operation'], context.resolve_value(config.get('arguments', {}), preserve_types=True))
         if 'error' in reply:
-            return ModuleResult(False, error=reply['error']['code'])
+            return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
         value = reply['result']
         if name := config.get('variableName'):
             context.set_variable(name, value)
         return ModuleResult(True, data=value)
+
+
+class _ProjectEndNode(ModuleExecutor):
+    module_type = 'project_end'
+
+    def __init__(self, request: Callable[..., Awaitable[Any]]) -> None:
+        self.request = request
+
+    async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
+        node_id, visit = _visit.get()
+        retain = context.resolve_value(config.get('retainEnvironment', {'enabled': False}), preserve_types=True)
+        reply = await self.request(node_id, visit, 'end', {'retainEnvironment': retain})
+        if 'error' in reply:
+            return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
+        value = reply['result']
+        return ModuleResult(value.get('complete') is True and value.get('phase') == 'completed', data=value, error=None if value.get('complete') is True else 'ENVIRONMENT_END_INCOMPLETE')
+
+
+class _ProjectManualNode(ModuleExecutor):
+    module_type = 'project_manual'
+
+    def __init__(self, request: Callable[..., Awaitable[Any]]) -> None:
+        self.request = request
+
+    async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
+        node_id, visit = _visit.get()
+        reply = await self.request(node_id, visit, 'manual', {
+            'reason': context.resolve_value(config.get('reason', '等待人工处理')),
+            'timeoutSeconds': config.get('timeoutSeconds', 1800),
+        })
+        if 'error' in reply:
+            return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
+        result = reply['result']
+        if result['action'] == 'resume':
+            if name := config.get('variableName'):
+                context.set_variable(name, result.get('inputs', {}))
+            return ModuleResult(True, data=result.get('inputs', {}))
+        context.stop_workflow = True
+        return ModuleResult(result.get('complete') is True and result.get('outcome') == 'succeeded', data=result, error='MANUAL_FINISHED')
 
 
 class _Cancellation:
@@ -100,11 +139,15 @@ class _ProjectRegistry(ExecutorRegistry):
         self.capability = capability
 
     def get_all_types(self) -> list[str]:
-        return [*self.source.get_all_types(), *(['project_data'] if self.capability else [])]
+        return [*self.source.get_all_types(), *(['project_data', 'project_end', 'project_manual'] if self.capability else [])]
 
     def get(self, module_type: str) -> ModuleExecutor | None:
         executor: ModuleExecutor | None
-        if module_type == 'project_data' and self.capability is not None:
+        if module_type == 'project_manual' and self.capability is not None:
+            executor = _ProjectManualNode(self.capability)
+        elif module_type == 'project_end' and self.capability is not None:
+            executor = _ProjectEndNode(self.capability)
+        elif module_type == 'project_data' and self.capability is not None:
             executor = _ProjectDataNode(self.capability)
         elif module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
             executor = _LegacyBrowserNode(module_type, self.legacy)
@@ -132,6 +175,8 @@ class ProjectGraphExecutor:
         self.nodes: dict[str, Any] = {}
         self.started: dict[str, float] = {}
         self.error: dict[str, str] | None = None
+        self.end_completed = False
+        self.manual_outcome: str | None = None
 
     async def run(self, plan: Mapping[str, Any]) -> dict[str, object]:
         document = plan.get('document')
@@ -144,9 +189,11 @@ class ProjectGraphExecutor:
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
         result = await WorkflowRuntime(_ProjectRegistry(self.legacy, self.capability)).execute(document, self.context)
+        if result.success and not self.context.stop_workflow and any(node.get('moduleType') == 'project_end' for node in self.nodes.values()) and not self.end_completed:
+            return {'status': 'failed', 'error': {'code': 'WORKFLOW_END_NOT_REACHED', 'message': '执行分支未到达 End，环境收尾未完成'}}
         if not result.success and self.error is None:
             self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
-        return {'status': 'succeeded' if result.success else 'failed', 'error': self.error}
+        return {'status': self.manual_outcome or ('succeeded' if result.success else 'failed'), 'error': self.error}
 
     async def publish(self, event: Mapping[str, Any]) -> None:
         node_id, visit = event['nodeId'], event['executionId']
@@ -162,9 +209,13 @@ class ProjectGraphExecutor:
             return
         duration = round((monotonic() - self.started.pop(visit)) * 1000)
         success = bool(event['success'])
+        if self.nodes[node_id].get('moduleType') == 'project_manual' and isinstance(event.get('data'), dict) and event['data'].get('action') == 'finish':
+            self.manual_outcome = event['data'].get('outcome') if event['data'].get('complete') else 'failed'
         payload: dict[str, object] = {'status': 'succeeded' if success else 'failed', 'durationMs': duration}
         if success:
             data = self.nodes[node_id]
+            if data.get('moduleType') == 'project_end':
+                self.end_completed = True
             config = data.get('config', data)
             name = config.get('variableName')
             if name and event.get('data') is not None:
@@ -173,6 +224,9 @@ class ProjectGraphExecutor:
         else:
             timeout = event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
             self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': '工作流节点执行超时' if timeout else '工作流节点执行失败'}
+            details = event.get('data')
+            if isinstance(details, dict) and isinstance(details.get('projectErrorCode'), str):
+                self.error = {**self.error, 'code': details['projectErrorCode']}
             payload['error'] = self.error
             await self.emit('log', node_id, visit, {'level': 'error', 'message': self.error['message']})
         await self.emit('nodeAttempt', node_id, visit, payload)

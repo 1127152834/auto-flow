@@ -9,6 +9,8 @@ export interface Position {
 // 模块类型
 export type ModuleType =
   | 'project_data'
+  | 'project_end'
+  | 'project_manual'
   // 浏览器操作
   | 'open_page'
   | 'use_opened_page'

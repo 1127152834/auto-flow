@@ -17,6 +17,7 @@ from autoflow.infrastructure.database.project_capabilities import (
     SqlAlchemyProjectDataCapabilities,
 )
 from autoflow.infrastructure.database.project_run_models import (
+    ProjectRecordLeaseRow,
     ProjectTaskInputSnapshotRow,
     ProjectTaskRow,
 )
@@ -60,8 +61,13 @@ def json_value(value: Any) -> Any:
 
 
 class ProjectWorkerCapabilities:
-    def __init__(self, sessions: Any) -> None:
+    def __init__(self, sessions: Any, environments: Any = None) -> None:
         self.sessions = sessions
+        self.environments = environments
+        from .manual_runtime import ProjectManualRuntime
+        self.manual = ProjectManualRuntime(sessions, environments, self.end) if environments else None
+        if environments:
+            environments.manual_runtime = self.manual
         self.data = ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(sessions))
 
     async def handle(self, run_id: str, generation: int, request: dict[str, Any]) -> Any:
@@ -81,7 +87,10 @@ class ProjectWorkerCapabilities:
             assert prepared is not None
             node = next((node for node in prepared.execution_plan['nodes'] if node['nodeId'] == request.get('nodeId')), None)
             config = node['data'].get('config', node['data']) if node else {}
-            if node is None or node['moduleType'] != 'project_data' or config.get('operation') != request.get('operation'):
+            expected_operation = 'end' if node and node['moduleType'] == 'project_end' else ('manual' if node and node['moduleType'] == 'project_manual' else config.get('operation'))
+            if expected_operation == 'manual' and request.get('operation') == 'manualComplete':
+                expected_operation = 'manualComplete'
+            if node is None or node['moduleType'] not in {'project_data', 'project_end', 'project_manual'} or expected_operation != request.get('operation'):
                 raise _denied()
             event = session.scalar(select(WorkflowRunEventRow).where(
                 WorkflowRunEventRow.run_id == run_id,
@@ -94,6 +103,7 @@ class ProjectWorkerCapabilities:
             if event is None or event.payload.get('status') != 'started':
                 raise _denied()
             project_id, task_id = task.project_id, task.id
+            manual_limit = min(config.get('timeoutSeconds', 1800), run.resource_request.get('manualDeadlineSeconds', 1800)) if expected_operation == 'manual' else None
             if request['operation'] == 'inputs':
                 if request.get('arguments') != {}:
                     raise _denied()
@@ -103,6 +113,17 @@ class ProjectWorkerCapabilities:
         arguments = request.get('arguments')
         if not isinstance(arguments, dict) or set(arguments) & {'projectId', 'executionGeneration', 'operationId'}:
             raise _denied()
+        if request['operation'] == 'manual' and self.manual is not None:
+            if not isinstance(arguments.get('timeoutSeconds'), (int, float)) or isinstance(arguments['timeoutSeconds'], bool):
+                raise _denied()
+            request = {**request, 'arguments': {**arguments, 'timeoutSeconds': min(arguments['timeoutSeconds'], manual_limit)}}
+            return await self.manual.wait(project_id, task_id, run_id, generation, request)
+        if request['operation'] == 'manualComplete' and self.manual is not None:
+            return json_value(self.manual.complete(project_id, task_id, run_id, generation, request))
+        if request['operation'] == 'end':
+            if set(arguments) != {'retainEnvironment'}:
+                raise _denied()
+            return self.end(project_id, task_id, run_id, generation, request, arguments['retainEnvironment'])
         selected = DATA_COMMANDS.get(request['operation'])
         if selected is None:
             raise _denied()
@@ -127,3 +148,30 @@ class ProjectWorkerCapabilities:
         result = getattr(self.data, method)(scope, command)
         # Mutations return (original result, replayed); the wire result is stable on replay.
         return json_value(result[0] if isinstance(result, tuple) else result)
+
+    def end(self, project_id, task_id, run_id, generation, request, retain):
+        if request.get('browserClosed') is not True or self.environments is None:
+            raise _denied()
+        instance = self.environments.environments.find_instance_by_task(project_id, task_id)
+        if instance is None or instance.active_run_id != run_id:
+            raise _denied()
+        if not isinstance(retain, dict) or type(retain.get('enabled')) is not bool:
+            raise _denied()
+        with self.sessions() as session:
+            owned_refs = list(session.scalars(select(ProjectRecordLeaseRow.record_ref).where(
+                ProjectRecordLeaseRow.project_id == project_id,
+                ProjectRecordLeaseRow.task_id == task_id,
+                ProjectRecordLeaseRow.run_id == run_id,
+                ProjectRecordLeaseRow.state == 'held',
+            )))
+        targets = retain.get('recordTargets', [])
+        if not isinstance(targets, list) or any(not isinstance(target, dict) or target.get('recordRef') not in owned_refs for target in targets):
+            raise _denied()
+        # The owned worker has awaited BrowserContext.close. The existing
+        # End ledger still verifies filesystem quiescence before publication.
+        result, _operation, _replayed = self.environments.end(project_id, request['commandId'], {
+            'taskId': task_id, 'runId': run_id, 'instanceId': instance.instance_id,
+            'expectedUseGeneration': instance.instance_use_generation,
+            'executionGeneration': generation, 'retainEnvironment': retain,
+        })
+        return json_value(result)

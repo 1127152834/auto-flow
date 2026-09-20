@@ -148,7 +148,13 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
         async with exchange_lock:
             if stop_requested or stopped.is_set():
                 raise asyncio.CancelledError
-            _write(stdout, _envelope(command, 'capability', commandId=command_id, nodeId=node_id, nodeVisitId=visit, attempt=1, operation=operation, arguments=arguments))
+            closed = False
+            if operation in {'end', 'manualComplete'}:
+                if context is None:
+                    raise ProtocolFailure('WORKFLOW_CLEANUP_FAILED')
+                await context.close()
+                closed = True
+            _write(stdout, _envelope(command, 'capability', commandId=command_id, nodeId=node_id, nodeVisitId=visit, attempt=1, operation=operation, arguments=arguments, browserClosed=closed))
             while True:
                 reply = await incoming.next()
                 if reply.get('type') == 'stop' and reply.get('executionGeneration') == generation:
@@ -158,7 +164,14 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                     or reply.get('runId') != run_id or reply.get('executionGeneration') != generation
                     or ('result' in reply) == ('error' in reply)):
                     raise ProtocolFailure
-                return reply
+                break
+        if operation == 'manual' and 'result' in reply:
+            action = reply['result'].get('action')
+            if action == 'cancel':
+                raise asyncio.CancelledError
+            if action in {'finish', 'expired'}:
+                return await capability(node_id, visit, 'manualComplete', {})
+        return reply
 
     result: dict[str, object] = {"status": "failed", "error": {"code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"}}
     cleanup_failed = False

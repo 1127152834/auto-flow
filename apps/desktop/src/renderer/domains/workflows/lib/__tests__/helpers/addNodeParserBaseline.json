@@ -14,18 +14,22 @@
     "签名（见 forbiddenInBody），这同样能抓出「括号配对被字符串里的花括号带偏、把相邻动作",
     "吞进来」这类真实错误，且不随行号变化。"
   ],
-  "forbiddenInBody": ["updateNodeData:", "blockInsertNode:", "deleteNode:"],
-  "branchCount": 162,
+  "forbiddenInBody": [
+    "updateNodeData:",
+    "blockInsertNode:",
+    "deleteNode:"
+  ],
+  "branchCount": 165,
   "multiTypeBranchCount": 7,
-  "moduleTypeCount": 185,
-  "varFieldCount": 187,
-  "modulesWithVarFieldsCount": 174,
+  "moduleTypeCount": 188,
+  "varFieldCount": 188,
+  "modulesWithVarFieldsCount": 175,
   "computedVarFieldCount": 8,
   "fieldDistribution": {
     "resultVariable": 115,
     "saveToVariable": 24,
     "appVariable": 15,
-    "variableName": 14,
+    "variableName": 15,
     "controlVariable": 14,
     "indexVariable": 2,
     "itemVariable": 1,

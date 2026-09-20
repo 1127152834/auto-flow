@@ -54,6 +54,10 @@ def prepare_run(document: object) -> PreparedWorkflow:
             "WORKFLOW_NOT_RUNNABLE", "工作流包含尚不可执行的节点", 422, issues
         )
     by_id = {node["id"]: node for node in nodes}
+    ends = [node['id'] for node in nodes if node['data']['moduleType'] == 'project_end']
+    if len(ends) > 1 or any(edge['source'] in ends for edge in projected['content']['edges']):
+        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 必须是唯一的最终节点，不能有后续连线', 422)
+    _validate_lifecycle_graph(nodes, projected['content']['edges'], ends)
     for node in nodes:
         for key, value in _DEFAULT_CONFIGS.get(node["data"]["moduleType"], {}).items():
             node["data"].setdefault(key, value)
@@ -199,6 +203,14 @@ def _config_issues(node: dict[str, Any], index: int) -> list[WorkflowIssue]:
         field('operation', isinstance(data.get('operation'), str) and data.get('operation') in {'inputs', 'readRecord', 'queryRecords', 'createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus', 'addField', 'ensureField', 'modifyField', 'previewFieldChange'}, '不受支持')
         field('arguments', isinstance(data.get('arguments'), dict) and data.get('argumentsValid', True) is True, '必须是有效对象')
         field('variableName', _nonempty_string(data.get('variableName')), '必须是非空字符串')
+    elif module_type == 'project_manual':
+        data.setdefault('timeoutSeconds', 1800)
+        field('timeoutSeconds', _nonnegative_number(data['timeoutSeconds']) and 0 < data['timeoutSeconds'] <= 86400, '必须大于 0 且不超过 86400 秒')
+        field('reason', _nonempty_string(data.get('reason')), '必须是非空字符串')
+    elif module_type == 'project_end':
+        data.setdefault('retainEnvironment', {'enabled': False})
+        retain = data.get('retainEnvironment')
+        field('retainEnvironment', isinstance(retain, dict) and type(retain.get('enabled')) is bool and data.get('retentionValid', True) is True, '必须明确是否保留环境')
     if module_type in _DEFAULT_CONFIGS or 'timeout' in data:
         field("timeout", _nonnegative_number(data.get("timeout")), "必须是有限非负数")
     return issues
@@ -215,3 +227,53 @@ def _nonnegative_number(value: object) -> bool:
         and math.isfinite(value)
         and value >= 0
     )
+
+
+def _validate_lifecycle_graph(nodes, edges, ends):
+    if not ends and not any(n['data']['moduleType'] == 'project_manual' for n in nodes):
+        return
+    outgoing = {node['id']: [] for node in nodes}
+    incoming = {node['id']: [] for node in nodes}
+    for edge in edges:
+        if edge['source'] in outgoing and edge['target'] in incoming:
+            outgoing[edge['source']].append(edge['target'])
+            incoming[edge['target']].append(edge['source'])
+    # Lifecycle commands own the single browser. Exclusive conditions and loop
+    # bodies are supported; concurrent roots/fan-out must first be joined.
+    if any(n['data']['moduleType'] == 'project_manual' for n in nodes) and (
+        sum(not value for value in incoming.values()) != 1 or any(
+            len(outgoing[n['id']]) > 1 and (
+                n['data']['moduleType'] not in {'condition', 'loop', 'foreach', 'foreach_dict'}
+                or len({edge.get('sourceHandle') for edge in edges if edge['source'] == n['id']}) != len(outgoing[n['id']])
+            ) for n in nodes
+        )
+    ):
+        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '人工处理节点不能与其他分支并行执行', 422)
+    if not ends:
+        return
+    reachable = set(ends)
+    while True:
+        previous = set(reachable)
+        reachable.update(source for target in tuple(reachable) for source in incoming[target])
+        if previous == reachable:
+            break
+    # Loop bodies return to their owner without explicit back edges. They must
+    # not contain End, which would close the browser in the first iteration.
+    for node in nodes:
+        if node['data']['moduleType'] not in {'loop', 'foreach', 'foreach_dict'}:
+            continue
+        body = [e['target'] for e in edges if e['source'] == node['id'] and e.get('sourceHandle') == 'loop']
+        done = {e['target'] for e in edges if e['source'] == node['id'] and e.get('sourceHandle') != 'loop'}
+        seen = {node['id'], *done}
+        while body:
+            current = body.pop()
+            if current in seen:
+                continue
+            seen.add(current)
+            if current in ends:
+                raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 不能放在循环体内', 422)
+            if node['id'] in reachable:
+                reachable.add(current)
+            body.extend(outgoing[current])
+    if reachable != set(outgoing):
+        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '所有执行分支必须汇合到唯一 End', 422)

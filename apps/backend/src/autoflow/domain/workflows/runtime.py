@@ -42,7 +42,7 @@ _TRANSITIONS: dict[str, frozenset[str]] = {
         }
     ),
     "waiting_manual": frozenset(
-        {"resume_queued", "stopping", "reconciling", "timed_out"}
+        {"running", "resume_queued", "stopping", "reconciling", "timed_out"}
     ),
     "resume_queued": frozenset({"running", "stopping", "reconciling", "timed_out"}),
     "finishing": frozenset(

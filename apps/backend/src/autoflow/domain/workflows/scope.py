@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 # AutoFlow extensions are separate from the frozen WebRPA source catalog.
-PROJECT_NODE_TYPES = frozenset({'project_data'})
+PROJECT_NODE_TYPES = frozenset({'project_data', 'project_end', 'project_manual'})
 
 APPROVED_NODE_TYPES: frozenset[str] = frozenset(
     {

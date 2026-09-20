@@ -395,6 +395,8 @@ def validate_end_phase(current: EndPhase, nxt: EndPhase) -> EndPhase:
             403,
             {"domainCode": "end_access_revoked", "phase": current},
         )
+    if current == "quiescing" and nxt == "completed":
+        return nxt  # No retention requested; confirmed closure is sufficient.
     if nxt == "failed":
         return nxt
     if current == "saving" and nxt == "saved_unlinked":

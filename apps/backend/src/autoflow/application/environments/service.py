@@ -53,6 +53,7 @@ class EnvironmentService:
         closer=None,
         execution_generation_lookup=None,
     ):
+        self.manual_runtime: Any = None
         self.projects = projects
         self.environments = environments
         self.store = store
@@ -508,12 +509,18 @@ class EnvironmentService:
         return self.environments.get_manual_item(project_id, manual_item_id)
 
     def resume_manual(self, project_id: str, key: str, manual_item_id: str, payload: dict[str, Any]):
+        item = self.get_manual(project_id, manual_item_id)
+        if self.manual_runtime is not None and self.manual_runtime.owns(item):
+            return self.manual_runtime.command(project_id, key, item, payload, 'resume')
         return resume_manual(self, project_id, key, manual_item_id, payload)
 
     def begin_resume(self, project_id: str, manual_item_id: str, expected_status_revision: int):
         return begin_resume(self, project_id, manual_item_id, expected_status_revision)
 
     def finish_manual(self, project_id: str, key: str, manual_item_id: str, payload: dict[str, Any]):
+        item = self.get_manual(project_id, manual_item_id)
+        if self.manual_runtime is not None and self.manual_runtime.owns(item):
+            return self.manual_runtime.command(project_id, key, item, payload, 'finish')
         return finish_manual(self, project_id, key, manual_item_id, payload)
 
     def expire_manual(self, project_id: str, manual_item_id: str, expected_status_revision: int):

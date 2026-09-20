@@ -1278,7 +1278,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 444,
+          "line": 446,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSelected()"
         }
@@ -1301,7 +1301,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 481,
+          "line": 483,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSimilar()"
         }
@@ -1379,7 +1379,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 422,
+          "line": 424,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.start(resolvedUrl || undefined)"
         }
@@ -1423,13 +1423,13 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 304,
+          "line": 306,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 357,
+          "line": 359,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         },
@@ -1463,7 +1463,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 654,
+          "line": 656,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.testSelector(selector, hints)"
         }
@@ -3808,7 +3808,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 196,
+          "line": 198,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "systemApi.setClipboard(text)"
         }
@@ -4693,7 +4693,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 342,
+          "line": 344,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "via": "emitAssistantUiEvent"
         },
@@ -5903,13 +5903,13 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 273,
+          "line": 275,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "via": "window.addEventListener"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-          "line": 1805,
+          "line": 1811,
           "source": "frontend/src/components/workflow/ModuleSidebar.tsx",
           "via": "window.addEventListener"
         },
@@ -6247,6 +6247,12 @@
           "via": "window.addEventListener"
         },
         {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+          "line": 25,
+          "source": null,
+          "via": "window.addEventListener"
+        },
+        {
           "file": "apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts",
           "line": 70,
           "source": "frontend/src/lib/requiredFields.ts",
@@ -6366,6 +6372,12 @@
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowOpenDialog.tsx",
           "line": 75,
+          "source": null,
+          "via": "window.addEventListener"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+          "line": 24,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -7690,6 +7702,36 @@
       "line": 2868,
       "source": "frontend/src/components/workflow/config-panels/AdvancedModuleConfigs.tsx",
       "call": "studioFetch(`${getBackendUrl()}/api/system/pick-mouse-position`, {\n        method: 'POST',\n      })"
+    },
+    {
+      "endpoint": "'/v1/projects?pageSize=100&lifecycle=active'",
+      "method": "GET",
+      "body": null,
+      "responseType": "Schema['ProjectPage']",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+      "line": 32,
+      "source": null,
+      "call": "apiRequest<Schema['ProjectPage']>('/v1/projects?pageSize=100&lifecycle=active', { signal: controller.signal })"
+    },
+    {
+      "endpoint": "`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100`",
+      "method": "GET",
+      "body": null,
+      "responseType": "Schema['DataTablePage']",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+      "line": 37,
+      "source": null,
+      "call": "apiRequest<Schema['DataTablePage']>(`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100`, { signal: controller.signal })"
+    },
+    {
+      "endpoint": "`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/fields`",
+      "method": "GET",
+      "body": null,
+      "responseType": "Schema['DataFieldDirectory']",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+      "line": 42,
+      "source": null,
+      "call": "apiRequest<Schema['DataFieldDirectory']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/fields`, { signal: controller.signal })"
     },
     {
       "endpoint": "`${getBackendUrl()}/api/triggers/gesture/custom`",

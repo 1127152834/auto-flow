@@ -2,7 +2,7 @@ import { expect, it } from 'vitest'
 import { getAllAvailableModules, moduleCategories } from '../components/ModuleSidebar'
 
 it('keeps the approved 227-node scope and removes database, DP, office, media and bot nodes', () => {
-  const modules = getAllAvailableModules().filter(module => !module.isCustom && module.type !== 'project_data')
+  const modules = getAllAvailableModules().filter(module => !module.isCustom && !['project_data', 'project_end', 'project_manual'].includes(module.type))
   const types = modules.map(module => module.type)
   expect(types).toHaveLength(227)
   expect(new Set(types).size).toBe(227)

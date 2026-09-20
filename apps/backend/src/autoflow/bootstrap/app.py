@@ -410,6 +410,7 @@ def create_app(
         temp_dir=paths.temp,
         gate=quiesce_gate,
         environment_directory=environment_service.run_work_directory,
+        environments=environment_service,
     )
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory),

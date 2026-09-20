@@ -427,6 +427,8 @@ export const moduleTypeLabels: Record<ModuleType, string> = {
   get_sibling_elements: '获取兄弟元素',
   // 数据处理
   project_data: '项目数据',
+  project_end: '结束并保留环境',
+  project_manual: '人工处理',
   set_variable: '设置变量',
   increment_decrement: '自增自减',
   json_parse: 'JSON解析',
@@ -1566,7 +1568,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     // 根据模块类型应用默认配置
     let defaultData: Partial<NodeData> = {}
     
-    if (type === 'project_data') {
+    if (type === 'project_end') {
+      defaultData = { retainEnvironment: { enabled: false, mode: 'saveAs', recordTargets: [] } }
+    } else if (type === 'project_manual') {
+      defaultData = { reason: '等待人工处理', timeoutSeconds: 1800 }
+    } else if (type === 'project_data') {
       defaultData = { operation: 'inputs', arguments: {}, variableName: 'task_inputs' }
     } else if (type === 'gesture_trigger') {
       // 手势触发器默认配置

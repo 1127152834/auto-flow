@@ -198,6 +198,7 @@ def configure_project_workflow_runtime(
     temp_dir: Path,
     gate: Any,
     environment_directory: Any | None = None,
+    environments: Any | None = None,
 ) -> Any:
     """Compose the PM4 durable runtime beside the current Studio runtime."""
     from contextlib import contextmanager
@@ -249,10 +250,12 @@ def configure_project_workflow_runtime(
         ProjectWorkerCapabilities,
     )
 
-    capabilities = ProjectWorkerCapabilities(session_factory)
+    capabilities = ProjectWorkerCapabilities(session_factory, environments)
     worker = ProjectWorkflowWorkerManager(temp_dir, on_capability=capabilities.handle)
 
     async def recover(run: Any) -> None:
+        if capabilities.manual is not None:
+            capabilities.manual.cancel_run(run.run_id)
         for kernel in installed():
             if f"{kernel.edition}:{kernel.version}" == run.resource_request.get(
                 "kernelId"
@@ -269,6 +272,8 @@ def configure_project_workflow_runtime(
     dispatcher = WorkflowRunDispatcher(
         session_factory, worker, resources, gate, recover
     )
+    if capabilities.manual is not None:
+        capabilities.manual.dispatcher = dispatcher
     runtime = WorkflowRuntimeService(
         session_factory, SqlAlchemyWorkflowRepository(session_factory)
     )

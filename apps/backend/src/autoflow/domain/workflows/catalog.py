@@ -16,6 +16,8 @@ _RUNNABLE_MODULES = (
     ("continue_loop", "继续循环"),
     ("set_variable", "设置变量"),
     ("project_data", "项目数据"),
+    ("project_manual", "人工处理"),
+    ("project_end", "结束并保留环境"),
 )
 
 

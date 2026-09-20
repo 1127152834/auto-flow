@@ -1,3 +1,4 @@
+import { ProjectLifecycleConfig } from './config-panels/ProjectLifecycleConfig'
 import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
 // Source: WebRPA@5ccb900e, components/workflow/ConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
@@ -816,8 +817,11 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
             关闭当前打开的网页，无需额外配置
           </p>
         )
+      case 'project_manual':
+      case 'project_end':
+        return <ProjectLifecycleConfig key={selectedNodeId} data={nodeData} onChange={handleChange} />
       case 'project_data':
-        return <ProjectDataConfig data={nodeData} onChange={handleChange} />
+        return <ProjectDataConfig key={selectedNodeId} data={nodeData} onChange={handleChange} />
       case 'set_variable':
         return <SetVariableConfig data={nodeData} onChange={handleChange} />
       case 'increment_decrement':

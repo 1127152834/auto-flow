@@ -795,3 +795,26 @@ async def test_budget_with_unknown_cleanup_does_not_claim_terminal_timeout(runti
     worker.cleanup_fail = False
     await dispatcher.reconcile(run.run_id)
     assert dispatcher._get_run(run.run_id).status == "interrupted"
+
+
+@pytest.mark.asyncio
+async def test_live_manual_continuation_keeps_owner_and_excludes_wait_from_budget(runtime):
+    from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+    run, _ = create_queued_run(runtime)
+    with runtime.begin() as session:
+        row = session.get(WorkflowRunRow, run.run_id)
+        row.resource_request = {**row.resource_request, 'automaticExecutionTimeoutSeconds': .1}
+    release = asyncio.Event()
+    worker = SyntheticWorker(blocked=release)
+    dispatcher = make_dispatcher(runtime, worker, SyntheticResources())
+    await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+    while not worker.calls:
+        await asyncio.sleep(.001)
+    dispatcher.pause_manual(run.run_id, 1)
+    await asyncio.sleep(.15)
+    assert dispatcher.query_run(run.run_id).status == 'waiting_manual'
+    dispatcher.resume_manual(run.run_id, 1)
+    assert dispatcher.query_run(run.run_id).execution_generation == 1
+    release.set()
+    await dispatcher.wait_idle()
+    assert dispatcher.query_run(run.run_id).status == 'succeeded'

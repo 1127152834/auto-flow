@@ -7,14 +7,12 @@ from uuid import uuid4
 import httpx
 import pytest
 
-from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
 from autoflow.domain.profiles.models import ProfileSpec
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
-from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
@@ -24,7 +22,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "manual-resume", "manual-finish", "manual-expire", "manual-stop", "manual-restart"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -59,7 +57,7 @@ async def test_real_project_batch_http(
         parameter_id = str(uuid4())
         document = workflow_payload(str(uuid4()))
         nodes = document["content"]["nodes"]
-        nodes[0]["data"]["url"] = url
+        nodes[0]["data"]["url"] = url.replace("/fixture", "/login") if scenario == "data" else url
         nodes[1]["data"].update(
             selector="#field", text="{" + parameter_id + "}", clearBefore=False
         )
@@ -82,9 +80,6 @@ async def test_real_project_batch_http(
         )
         document["content"]["edges"].append(
             {"id": "edge-input-read", "source": "read", "target": "read-input"}
-        )
-        service = WorkflowService(
-            SqlAlchemyWorkflowRepository(app.state.session_factory)
         )
         await app.state.project_workflow_dispatcher.startup()
         await app.state.project_run_scheduler.startup()
@@ -135,14 +130,23 @@ async def test_real_project_batch_http(
                     {'id': 'check-data', 'source': 'query', 'target': 'check'},
                     {'id': 'save', 'source': 'check', 'target': 'write', 'sourceHandle': 'true'},
                 ])
-            workflow = service.create(document, str(uuid4()))
+                nodes.append({'id': 'end', 'type': 'project_end', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': True, 'mode': 'saveAs',  'name': "{saved['ref']['recordKey']['value']}", 'recordTargets': [{'recordRef': "{saved['ref']}", 'expectedLinkRevision': "{saved['linkRevision']}", 'replaceAllowed': False}]}}})
+                document['content']['edges'].append({'id': 'end-task', 'source': 'write', 'target': 'end'})
+            if scenario.startswith('manual-'):
+                nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 30}})
+                document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
+                nodes.append({'id': 'after-manual', 'type': 'set_variable', 'position': {'x': 100, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'continued', 'variableValue': 'once'}})
+                document['content']['edges'].append({'id': 'continue-task', 'source': 'manual', 'target': 'after-manual'})
+            saved_workflow = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
+            assert saved_workflow.status_code == 201, saved_workflow.text
+            workflow_id = saved_workflow.json()['id']
             response = await client.post(
                 prefix + "/automations",
                 headers={"Idempotency-Key": str(uuid4())},
                 json={
                     "name": "真实浏览器批次",
                     "description": "",
-                    "workflowId": workflow.workflow_id,
+                    "workflowId": workflow_id,
                     "inputPlan": {"inputs": []},
                     "parameterSchema": [
                         {
@@ -193,7 +197,44 @@ async def test_real_project_batch_http(
             found_operation = await client.get(prefix+f"/operations/by-idempotency-key/{key}")
             assert found_operation.status_code == 200, found_operation.text
             assert found_operation.json()["operationId"] == accepted["operationId"]
+            handled_manual = set()
+            manual_interrupted = False
             for _ in range(300):
+                if scenario in {'manual-resume', 'manual-finish'}:
+                    manual = await client.get(prefix + '/manual-items')
+                    assert manual.status_code == 200, manual.text
+                    for item in manual.json()['items']:
+                        if item['status'] != 'waiting' or item['manualItemId'] in handled_manual:
+                            continue
+                        manual_id = item['manualItemId']
+                        if scenario == 'manual-resume':
+                            body = {'checkpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision']}
+                            action = 'resume'
+                        else:
+                            body = {'expectedCheckpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision'], 'outcome': 'succeeded', 'reason': '已核验', 'retainEnvironment': {'enabled': False}}
+                            action = 'finish'
+                        command = await client.post(prefix + f'/manual-items/{manual_id}/{action}', headers={'Idempotency-Key': str(uuid4())}, json=body)
+                        assert command.status_code == 202, command.text
+                        handled_manual.add(manual_id)
+
+                if scenario in {'manual-stop', 'manual-restart'} and not manual_interrupted:
+                    items = (await client.get(prefix + '/manual-items')).json()['items']
+                    waiting = next((item for item in items if item['status'] == 'waiting'), None)
+                    if waiting:
+                        manual_interrupted = True
+                        if scenario == 'manual-restart':
+                            await app.router.on_shutdown[-1]()
+                            app = create_app(settings)
+                            await app.state.project_workflow_dispatcher.startup()
+                            await app.state.project_run_scheduler.startup()
+                            await client.aclose()
+                            client = httpx.AsyncClient(transport=httpx.ASGITransport(app), base_url='http://test', headers={'x-autoflow-token': settings.instance_token})
+                            rejected = await client.post(prefix + f"/manual-items/{waiting['manualItemId']}/resume", headers={'Idempotency-Key': str(uuid4())}, json={'checkpointRevision': waiting['checkpointRevision'], 'expectedStatusRevision': waiting['statusRevision']})
+                            assert rejected.status_code == 409, rejected.text
+                        else:
+                            current = (await client.get(prefix + f'/batches/{batch_id}')).json()
+                            stopped = await client.post(prefix + f'/batches/{batch_id}/stop', headers={'Idempotency-Key': str(uuid4())}, json={'expectedStatusRevision': current['batch']['statusRevision'], 'reason': '人工等待时停止'})
+                            assert stopped.status_code == 202, stopped.text
                 response = await client.get(prefix + f"/batches/{batch_id}")
                 assert response.status_code == 200, response.text
                 detail = response.json()
@@ -264,6 +305,21 @@ async def test_real_project_batch_http(
                     assert [event.sequence for event in events] == list(
                         range(1, len(events) + 1)
                     )
+            elif scenario.startswith('manual-'):
+                if scenario in {'manual-stop', 'manual-restart'}:
+                    assert manual_interrupted
+                    assert detail['statusCounts']['interrupted' if scenario == 'manual-restart' else 'cancelled'] >= 1, detail
+                    manual_items = (await client.get(prefix + '/manual-items')).json()['items']
+                    assert all(item['status'] == 'cancelled' for item in manual_items)
+                elif scenario != 'manual-expire':
+                    assert detail['statusCounts']['succeeded'] == 2, detail
+                    assert len(handled_manual) == 2
+                    for task in tasks:
+                        attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
+                        assert len([a for a in attempts if a['nodeId'] == 'read-input']) == 1
+                        assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario == 'manual-resume')
+                else:
+                    assert detail['statusCounts']['timed_out'] == 1, detail
             elif scenario == "data":
                 assert detail['statusCounts']['succeeded'] == 2, {
                     'batch': detail,
@@ -273,6 +329,35 @@ async def test_real_project_batch_http(
                 records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()
                 assert records['total'] == 2
                 assert [row['values'][0]['value'] for row in records['items']] == ['before-真实参数-001'] * 2
+                assert all(row['currentEnvironmentId'] for row in records['items'])
+                restored_document = workflow_payload(str(uuid4()))
+                restored_document['content']['nodes'] = [
+                    {'id': 'open', 'type': 'open_page', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'open_page', 'url': url.replace('/fixture', '/account')}},
+                    {'id': 'read', 'type': 'get_element_info', 'position': {'x': 0, 'y': 100}, 'data': {'moduleType': 'get_element_info', 'selector': '#auth', 'attribute': 'text', 'variableName': 'login'}},
+                    {'id': 'end', 'type': 'project_end', 'position': {'x': 0, 'y': 200}, 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': False}}},
+                ]
+                restored_document['content']['edges'] = [{'id': 'read', 'source': 'open', 'target': 'read'}, {'id': 'end', 'source': 'read', 'target': 'end'}]
+                saved_restore = await client.post('/api/workflows', json={**restored_document['content'], 'id': restored_document['id'], 'clientRequestId': str(uuid4())})
+                assert saved_restore.status_code == 201, saved_restore.text
+                restored_workflow_id = saved_restore.json()['id']
+                restore_config = {name: automation[name] for name in ['description', 'inputPlan', 'runPolicy']}
+                restore_config.update(name='复用已登录环境', workflowId=restored_workflow_id, parameterSchema=[], environmentPolicy={'source': 'fixedEnvironment', 'environmentId': records['items'][0]['currentEnvironmentId'], 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None})
+                restored = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json=restore_config)
+                assert restored.status_code == 201, restored.text
+                restored = restored.json()
+                started = await client.post(prefix + f"/automations/{restored['automationId']}/batches", headers={'Idempotency-Key': str(uuid4())}, json={'expectedAutomationRevision': restored['managementRevision'], 'parameters': {}, 'maxTasks': 1, 'concurrency': 1})
+                assert started.status_code == 202, started.text
+                restore_batch = started.json()['operation']['result']['batch']['batchId']
+                for _ in range(200):
+                    state = (await client.get(prefix + f'/batches/{restore_batch}')).json()
+                    if state['batch']['status'] in {'completed', 'failed', 'interrupted'}:
+                        break
+                    await asyncio.sleep(.1)
+                assert state['statusCounts']['succeeded'] == 1, state
+                restored_tasks = (await client.get(prefix + '/tasks', params={'batchId': restore_batch})).json()['items']
+                outputs = (await client.get(prefix + f"/tasks/{restored_tasks[0]['taskId']}/outputs")).json()['items']
+                assert [output['value'] for output in outputs] == ['signed-in']
+
             elif scenario == "stop":
                 assert scenario_stopped and detail["batch"]["status"] == "stopped"
                 assert detail["statusCounts"]["cancelled"] == 2
@@ -293,6 +378,7 @@ async def test_real_project_batch_http(
                 assert screenshot.status_code == 200
                 assert screenshot.headers["content-type"] == "image/png"
                 assert screenshot.content.startswith(b"\x89PNG\r\n\x1a\n")
+            await client.aclose()
             assert not app.state.project_workflow_worker_manager.busy()
             assert app.state.project_workflow_dispatcher.blockers() == []
             assert app.state.project_run_scheduler.blockers() == []

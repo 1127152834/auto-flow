@@ -1,0 +1,85 @@
+import assert from 'node:assert/strict'
+import { randomUUID } from 'node:crypto'
+import { createServer } from 'node:http'
+
+// Real Studio HTTP -> project batch -> child worker -> browser -> data/End.
+export async function checkProjectRuntime(baseUrl, token, browserVersion) {
+  const server = createServer((request, response) => {
+    if (request.url === '/login') response.setHeader('Set-Cookie', 'pm9=logged-in; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax')
+    response.setHeader('Content-Type', 'text/html; charset=utf-8')
+    response.end(`<output id="account">001</output><output id="auth">${request.headers.cookie?.includes('pm9=logged-in') ? 'signed-in' : 'signed-out'}</output>`)
+  })
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  const site = `http://127.0.0.1:${server.address().port}`
+  async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
+    const response = await fetch(baseUrl + path, { method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': randomUUID() }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(60_000) })
+    const result = await response.json()
+    assert.ok(response.ok, `${method} ${path}: ${response.status} ${JSON.stringify(result)}`)
+    return result
+  }
+  const node = (id, moduleType, config) => ({ id, type: moduleType, position: { x: 100, y: 100 }, data: { moduleType, ...config } })
+  const edge = (source, target, sourceHandle) => ({ id: randomUUID(), source, target, ...(sourceHandle ? { sourceHandle } : {}) })
+  try {
+    const project = await api('/api/v1/projects', { name: 'PM9 生产运行链' })
+    const prefix = `/api/v1/projects/${project.projectId}`
+    const profile = await api('/api/v1/profiles', { name: 'PM9 真实浏览器', browserVersion, headless: true })
+    async function table(name) {
+      const table = await api(`${prefix}/tables`, { name, sourceKind: 'local' })
+      const field = (await api(`${prefix}/tables/${table.tableId}/fields`, { definition: { key: 'code', name: '编号', type: 'string', required: false, validation: {} }, sourceColumnPolicy: 'localOnly', expectedTableRevision: table.tableRevision })).field
+      return { table, fieldId: field.ref.fieldId }
+    }
+    const source = await table('来源'), target = await table('结果')
+    await api(`${prefix}/tables/${source.table.tableId}/records`, { datasetGeneration: source.table.datasetGeneration, values: [{ fieldId: source.fieldId, value: '001' }] })
+    const parameter = randomUUID()
+    const grant = (binding, operation) => ({ tableId: binding.table.tableId, datasetGeneration: binding.table.datasetGeneration, operations: [operation], fieldIds: [binding.fieldId], readPurposes: ['condition', 'derivedWrite'] })
+    const workflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 多表登录保存', variables: [], nodes: [
+      node('query', 'project_data', { operation: 'queryRecords', variableName: 'rows', tableGrant: grant(source, 'queryRecords'), arguments: { tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, fieldIds: [source.fieldId], readPurpose: 'condition', filter: null, orderBy: [], cursor: null, limit: 10 } }),
+      node('condition', 'condition', { leftValue: "{rows['items'][0]['values'][0]['value']}", rightValue: '001' }),
+      node('login', 'open_page', { url: site + '/login' }),
+      node('read', 'get_element_info', { selector: '#account', attribute: 'text', variableName: 'account' }),
+      node('write', 'project_data', { operation: 'createRecord', variableName: 'saved', tableGrant: grant(target, 'createRecord'), arguments: { tableId: target.table.tableId, datasetGeneration: target.table.datasetGeneration, values: { [target.fieldId]: `{account}-{${parameter}}` } } }),
+      node('manual', 'project_manual', { reason: '核验登录后继续', timeoutSeconds: 30 }),
+      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: "{saved['ref']['recordKey']['value']}", recordTargets: [{ recordRef: "{saved['ref']}", expectedLinkRevision: "{saved['linkRevision']}", replaceAllowed: false }] } }),
+    ], edges: [edge('query', 'condition'), edge('condition', 'login', 'true'), edge('login', 'read'), edge('read', 'write'), edge('write', 'manual'), edge('manual', 'end')] })
+    const runPolicy = { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 60, manualDeadlineSeconds: 30 }
+    async function run(workflowId, environmentPolicy, parameterSchema = [], parameters = {}) {
+      const automation = await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId, inputPlan: { inputs: [] }, parameterSchema, environmentPolicy, runPolicy })
+      const validation = await api(`${prefix}/automations/${automation.automationId}/validation`)
+      assert.equal(validation.runnable, true, JSON.stringify(validation))
+      const started = await api(`${prefix}/automations/${automation.automationId}/batches`, { expectedAutomationRevision: automation.managementRevision, parameters, maxTasks: 1, concurrency: 1 })
+      const batchId = started.operation.result.batch.batchId
+      const handled = new Set()
+      for (let attempt = 0; attempt < 600; attempt++) {
+        const manual = await api(prefix + '/manual-items')
+        for (const item of manual.items.filter(item => item.status === 'waiting' && !handled.has(item.manualItemId))) {
+          await api(`${prefix}/manual-items/${item.manualItemId}/resume`, { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision })
+          handled.add(item.manualItemId)
+        }
+        const state = await api(`${prefix}/batches/${batchId}`)
+        if (['completed', 'failed', 'interrupted', 'stopped'].includes(state.batch.status)) {
+          assert.equal(state.statusCounts.succeeded, 1, JSON.stringify(state))
+          const tasks = await api(`${prefix}/tasks?batchId=${batchId}`)
+          const task = tasks.items[0]
+          const attempts = await api(`${prefix}/tasks/${task.taskId}/node-attempts`)
+          assert.equal(new Set(attempts.items.map(item => item.nodeId)).size, attempts.total, 'completed nodes must not replay')
+          return { task, resumedManualItems: handled.size, outputs: (await api(`${prefix}/tasks/${task.taskId}/outputs`)).items }
+        }
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      throw new Error('project runtime did not finish within 60 seconds')
+    }
+    const first = await run(workflow.id, { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }, [{ parameterId: parameter, name: '后缀', type: 'string', required: true }], { [parameter]: '中文' })
+    assert.equal(first.resumedManualItems, 1)
+    const records = await api(`${prefix}/tables/${target.table.tableId}/records?datasetGeneration=${target.table.datasetGeneration}`)
+    assert.equal(records.total, 1)
+    assert.equal(records.items[0].values[0].value, '001-中文')
+    const environmentId = records.items[0].currentEnvironmentId
+    assert.ok(environmentId)
+    const readLogin = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 登录复用', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: '#auth', attribute: 'text', variableName: 'login' }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'read'), edge('read', 'end')] })
+    const second = await run(readLogin.id, { source: 'fixedEnvironment', environmentId, proxyOverride: { mode: 'none' }, modelProviderId: null })
+    assert.equal(second.outputs.find(output => output.name === 'login')?.value, 'signed-in')
+    return { projectId: project.projectId, environmentId, taskIds: [first.task.taskId, second.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login'] }
+  } finally {
+    await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
+  }
+}

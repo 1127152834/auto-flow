@@ -92,6 +92,7 @@ class ProjectRunResourceResolver:
             request = {**request, "environmentResolution": "atTaskStart"}
         return {
             **request,
+            "manualDeadlineSeconds": automation.run_policy["manualDeadlineSeconds"],
             "automaticExecutionTimeoutSeconds": automation.run_policy[
                 "automaticExecutionTimeoutSeconds"
             ],

@@ -73,3 +73,36 @@ async def test_project_capability_preserves_typed_reference_uuid_and_leading_zer
     result = await executor.run({'document': document})
     assert result['status'] == 'succeeded'
     assert calls[0][3] == {'recordRef': reference, 'expectedContentRevision': 7, 'values': {'code': '001'}}
+
+
+@pytest.mark.asyncio
+async def test_end_requires_confirmed_retention_before_graph_success():
+    async def emit(*_event): pass
+    async def request(_node_id, _visit, operation, arguments):
+        assert operation == 'end'
+        assert arguments == {'retainEnvironment': {'enabled': True, 'mode': 'saveAs', 'name': '保留登录'}}
+        return {'result': {'phase': 'saved_unlinked', 'complete': False}}
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False, capability=request)
+    result = await executor.run({'document': {'nodes': [node('end', 'project_end', retainEnvironment={'enabled': True, 'mode': 'saveAs', 'name': '保留登录'})], 'edges': []}})
+    assert result['status'] == 'failed'
+    assert result['error']['code'] == 'WORKFLOW_NODE_FAILED'
+
+
+@pytest.mark.asyncio
+async def test_manual_resume_continues_once_and_finish_skips_successors():
+    for action in ('resume', 'finish'):
+        calls = []
+        async def emit(*_event): pass
+        async def request(_node, _visit, operation, arguments, calls=calls, action=action):
+            calls.append(operation)
+            return {'result': {'action': action, 'inputs': {'answer': 'verified'}, 'outcome': 'succeeded', 'complete': True}}
+        executor = ProjectGraphExecutor(None, {}, emit, lambda: False, capability=request)
+        result = await executor.run({'document': {'nodes': [
+            node('before', 'set_variable', variableName='before', variableValue='done'),
+            node('manual', 'project_manual', reason='确认登录', timeoutSeconds=30, variableName='manual'),
+            node('after', 'set_variable', variableName='after', variableValue='done'),
+        ], 'edges': [{'source': 'before', 'target': 'manual'}, {'source': 'manual', 'target': 'after'}]}})
+        assert result['status'] == 'succeeded'
+        assert executor.context.variables['before'] == 'done'
+        assert ('after' in executor.context.variables) == (action == 'resume')
+        assert calls == ['manual']

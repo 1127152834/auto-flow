@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { assertOutsideHistory } from './project-smoke-output.mjs'
+import { checkProjectRuntime } from './project-runtime-smoke.mjs'
 import { stop, waitForReady } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
@@ -15,7 +16,7 @@ export function projectSmokeOptions(args) {
   const injected = Object.keys(process.env).find(key => process.env[key] && (key.startsWith('AUTOFLOW_QA_') || key === 'AUTOFLOW_PM4_QA' || key === 'ELECTRON_RENDERER_URL'))
   assert.ok(!injected, `production smoke forbids injected environment: ${injected}`)
   const { values, tokens } = parseArgs({ args, options: {
-    executable: { type: 'string' }, 'output-dir': { type: 'string' },
+    executable: { type: 'string' }, 'runtime-kernel': { type: 'string' }, 'output-dir': { type: 'string' },
   }, tokens: true })
   assert.equal(new Set(tokens.map(token => token.name)).size, tokens.length, 'duplicate option')
   for (const [name, value] of Object.entries(values)) assert.ok(value.trim(), `--${name} requires a value`)
@@ -131,8 +132,24 @@ export async function main(args = process.argv.slice(2)) {
     return `http://127.0.0.1:${ready.port}`
   }
   try {
+    let browserVersion
+    if (options['runtime-kernel']) {
+      const executable = await realpath(options['runtime-kernel'])
+      let source = dirname(executable)
+      while (!basename(source).startsWith('chromium-')) {
+        const parent = dirname(source)
+        assert.notEqual(parent, source, 'runtime kernel must belong to a chromium-VERSION installation')
+        source = parent
+      }
+      browserVersion = basename(source).slice('chromium-'.length)
+      await cp(source, join(directory, 'data/kernels', basename(source)), { recursive: true })
+    }
     const baseUrl = await launch()
     report = { ...report, ...await checkProjectManagement(baseUrl, token) }
+    if (browserVersion) {
+      report.runtime = await checkProjectRuntime(baseUrl, token, browserVersion)
+      report.boundary = 'production management and real browser runtime chains; live Sheets and physical installer acceptance remain pending'
+    }
     await stop(child)
     const restartedUrl = await launch()
     const response = await fetch(`${restartedUrl}/api/v1${report.tablePath}`, { headers: { 'x-autoflow-token': token }, signal: AbortSignal.timeout(20_000) })

@@ -863,7 +863,8 @@ def _workflow_data_manifest(session: Session, automation: AutomationRecord) -> d
     if workflow is None:
         return {}
     grants = []
-    for node in workflow.document['content']['nodes']:
+    from autoflow.infrastructure.database.core_workflows import _record
+    for node in _record(workflow).document['content']['nodes']:
         data = node['data']
         config = data.get('config', data)
         if data['moduleType'] == 'project_data' and 'tableGrant' in config:

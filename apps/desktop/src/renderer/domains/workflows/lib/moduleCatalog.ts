@@ -331,7 +331,7 @@ export const excludedModuleTypes = new Set<ModuleType>([
   ...sourceModuleCategories.filter(c => excludedCategories.has(c.name)).flatMap(c => c.modules),
   'read_excel', 'notify_feishu',
 ])
-export const moduleCategories = [{ name: '项目能力', color: 'bg-teal-500', modules: ['project_data'] as ModuleType[] }, ...sourceModuleCategories
+export const moduleCategories = [{ name: '项目能力', color: 'bg-teal-500', modules: ['project_data', 'project_manual', 'project_end'] as ModuleType[] }, ...sourceModuleCategories
   .filter(c => !excludedCategories.has(c.name))
   .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))]
 

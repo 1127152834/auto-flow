@@ -8,6 +8,7 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.workflows.document import WorkflowDraft
 from autoflow.domain.workflows.models import (
     LegacyWorkflowRecord,
     WorkflowError,
@@ -150,8 +151,19 @@ def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
                 "retryable": False,
             },
         )
+    document = row.document
+    if _studio_document(document):
+        # Project preparation consumes its established envelope; the Studio row
+        # and revision stay authoritative and are never rewritten by this read.
+        content = WorkflowDraft(row.id, row.name, document, row.layout).to_payload()
+        document = {
+            'id': row.id,
+            'source': {'product': SOURCE_PRODUCT, 'commit': SOURCE_COMMIT},
+            'format': {'kind': FORMAT_KIND, 'version': FORMAT_VERSION},
+            'content': content,
+        }
     return WorkflowRecord(
-        row.document,
+        document,
         row.revision,
         _aware(row.created_at),
         _aware(row.updated_at),
@@ -159,13 +171,24 @@ def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
 
 
 def _current_document(document: object) -> bool:
-    return (
+    return _studio_document(document) or (
         isinstance(document, dict)
         and document.get("source")
         == {"product": SOURCE_PRODUCT, "commit": SOURCE_COMMIT}
         and document.get("format")
         == {"kind": FORMAT_KIND, "version": FORMAT_VERSION}
         and isinstance(document.get("content"), dict)
+    )
+
+
+def _studio_document(document: object) -> bool:
+    return (
+        isinstance(document, dict)
+        and 'format' not in document and 'source' not in document
+        and isinstance(document.get('nodes'), list)
+        and isinstance(document.get('edges'), list)
+        and all(isinstance(node, dict) and isinstance(node.get('data'), dict)
+                and isinstance(node['data'].get('moduleType'), str) for node in document['nodes'])
     )
 
 

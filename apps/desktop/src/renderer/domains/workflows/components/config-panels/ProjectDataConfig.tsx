@@ -17,6 +17,10 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
   const [projects, setProjects] = useState<Schema['ProjectPage']['items']>([])
   const [tables, setTables] = useState<Schema['DataTablePage']['items']>([])
   const [fields, setFields] = useState<Schema['DataFieldDirectory']['items']>([])
+  const [projectPage, setProjectPage] = useState(1)
+  const [tablePage, setTablePage] = useState(1)
+  const [projectTotal, setProjectTotal] = useState(0)
+  const [tableTotal, setTableTotal] = useState(0)
   const [error, setError] = useState('')
   const [revision, refresh] = useState(0)
   useEffect(() => {
@@ -29,15 +33,15 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     const controller = new AbortController()
     async function load() {
       setError('')
-      const result = await apiRequest<Schema['ProjectPage']>('/v1/projects?pageSize=100&lifecycle=active', { signal: controller.signal })
+      const result = await apiRequest<Schema['ProjectPage']>(`/v1/projects?pageSize=100&lifecycleState=active&page=${projectPage}`, { signal: controller.signal })
       if (controller.signal.aborted) return
       if (!result.success || !result.data) { setError('项目列表读取失败，请重试'); return }
-      setProjects(result.data.items)
+      setProjects(result.data.items); setProjectTotal(result.data.total)
       if (!projectId) { setTables([]); setFields([]); return }
-      const tableResult = await apiRequest<Schema['DataTablePage']>(`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100`, { signal: controller.signal })
+      const tableResult = await apiRequest<Schema['DataTablePage']>(`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100&page=${tablePage}`, { signal: controller.signal })
       if (controller.signal.aborted) return
       if (!tableResult.success || !tableResult.data) { setError('数据表读取失败，请重试'); return }
-      setTables(tableResult.data.items)
+      setTables(tableResult.data.items); setTableTotal(tableResult.data.total)
       if (!tableId) { setFields([]); return }
       const fieldResult = await apiRequest<Schema['DataFieldDirectory']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/fields`, { signal: controller.signal })
       if (controller.signal.aborted) return
@@ -46,7 +50,7 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     }
     void load()
     return () => controller.abort()
-  }, [projectId, tableId, revision])
+  }, [projectId, tableId, revision, projectPage, tablePage])
   function bind(table: Schema['DataTableView'], op = operation) {
     onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [op], fieldIds: [], readPurposes: ['condition', 'derivedWrite'] })
     onChange('argumentsValid', true)
@@ -61,15 +65,21 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     }}>{Object.entries(operations).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select>
     {operation !== 'inputs' && <>
       <Label htmlFor="project-data-project">所属项目</Label>
-      <Select id="project-data-project" value={projectId} onChange={event => { onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}>
+      <Select id="project-data-project" value={projectId} onChange={event => { setTablePage(1); onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}>
         <option value="">选择项目</option>{projects.map(project => <option key={project.projectId} value={project.projectId}>{project.name}</option>)}
       </Select>
+      <div className="flex gap-2"><button type="button" disabled={projectPage === 1} onClick={() => setProjectPage(value => value - 1)}>上一页项目</button><span>第 {projectPage} 页</span><button type="button" disabled={projectPage * 100 >= projectTotal} onClick={() => setProjectPage(value => value + 1)}>下一页项目</button></div>
       <Label htmlFor="project-data-table">授权数据表</Label>
       <Select id="project-data-table" value={tableId} onChange={event => { const table = tables.find(item => item.tableId === event.target.value); if (table) bind(table) }}>
         <option value="">选择数据表</option>{tables.map(table => <option key={table.tableId} value={table.tableId}>{table.name}</option>)}
       </Select>
+      <div className="flex gap-2"><button type="button" disabled={tablePage === 1} onClick={() => setTablePage(value => value - 1)}>上一页数据表</button><span>第 {tablePage} 页</span><button type="button" disabled={tablePage * 100 >= tableTotal} onClick={() => setTablePage(value => value + 1)}>下一页数据表</button></div>
       {fields.length > 0 && <fieldset><legend>允许访问的字段</legend>{fields.map(field => <label className="flex gap-2" key={field.ref.fieldId}>
-        <input type="checkbox" checked={grant?.fieldIds.includes(field.ref.fieldId) ?? false} onChange={event => onChange('tableGrant', { ...grant, operations: [operation], readPurposes: ['condition', 'derivedWrite'], fieldIds: event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : grant?.fieldIds.filter(id => id !== field.ref.fieldId) })} />{field.name} <code className="break-all text-xs">{field.ref.fieldId}</code>
+        <input type="checkbox" checked={grant?.fieldIds.includes(field.ref.fieldId) ?? false} onChange={event => {
+          const fieldIds = event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : (grant?.fieldIds ?? []).filter(id => id !== field.ref.fieldId)
+          onChange('tableGrant', { ...grant, operations: [operation], readPurposes: ['condition', 'derivedWrite'], fieldIds })
+          if (operation === 'readRecord' || operation === 'queryRecords') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })
+        }} />{field.name} <code className="break-all text-xs">{field.ref.fieldId}</code>
       </label>)}</fieldset>}
       <Arguments key={JSON.stringify(data.arguments)} value={data.arguments} onChange={value => { onChange('argumentsValid', true); onChange('arguments', value) }} onInvalid={() => onChange('argumentsValid', false)} />
     </>}

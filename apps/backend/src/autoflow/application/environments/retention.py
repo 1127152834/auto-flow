@@ -313,6 +313,11 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
     try:
         if not wants_retain:
             if ledger["phase"] not in END_TERMINAL_PHASES:
+                if ledger["phase"] == "accepted":
+                    record("prechecking")
+                if ledger["phase"] == "prechecking":
+                    service.quiesce_instance(project_id, payload["instanceId"])
+                    record("quiescing")
                 current = service.environments.get_instance(project_id, payload["instanceId"])
                 service.close_instance(project_id, payload["instanceId"], current.environment_id)
                 record("completed")

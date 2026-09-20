@@ -15,7 +15,7 @@ def test_runnable_catalog_includes_project_graph_and_data_nodes():
         "click_element",
         "get_element_info",
         "condition", "loop", "foreach", "foreach_dict", "break_loop",
-        "continue_loop", "set_variable", "project_data",
+        "continue_loop", "set_variable", "project_data", "project_end", "project_manual",
     }
 
 
@@ -279,3 +279,20 @@ def test_prepare_project_graph_preserves_branch_edges_and_capability_config():
     prepared = prepare_run(payload)
     assert prepared.node_ids == ['branch', 'inputs']
     assert prepared.document['content']['edges'] == payload['content']['edges']
+
+
+@pytest.mark.parametrize('case', ['parallel-end', 'parallel-manual', 'end-in-loop'])
+def test_project_lifecycle_rejects_unsafe_graph_ownership(case):
+    payload = workflow_payload()
+    nodes, edges = payload['content']['nodes'], payload['content']['edges']
+    kind = 'project_manual' if case == 'parallel-manual' else 'project_end'
+    nodes.append({'id': 'lifecycle', 'type': kind, 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': kind, 'reason': '确认'}})
+    if case == 'parallel-end':
+        edges.append({'id': 'early-end', 'source': 'open', 'target': 'lifecycle'})
+    elif case == 'parallel-manual':
+        edges.append({'id': 'early-manual', 'source': 'open', 'target': 'lifecycle'})
+    else:
+        nodes.append({'id': 'loop', 'type': 'loop', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'loop', 'count': 2}})
+        edges.extend([{'id': 'loop-start', 'source': 'read', 'target': 'loop'}, {'id': 'loop-end', 'source': 'loop', 'target': 'lifecycle', 'sourceHandle': 'loop'}])
+    with pytest.raises(WorkflowError):
+        prepare_run(payload)

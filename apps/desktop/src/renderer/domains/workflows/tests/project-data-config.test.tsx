@@ -14,3 +14,12 @@ it('keeps task authority out of user arguments and supports a result variable', 
   fireEvent.change(editor, { target: { value: '{"values":{"field":"{browser_result}"}}' } }); fireEvent.blur(editor)
   await waitFor(() => expect(change).toHaveBeenCalledWith('arguments', { values: { field: '{browser_result}' } }))
 })
+
+it('does not retain valid End arguments when the current JSON is invalid', async () => {
+  const { ProjectLifecycleConfig } = await import('../components/config-panels/ProjectLifecycleConfig')
+  const change = vi.fn()
+  render(<ProjectLifecycleConfig data={{ moduleType: 'project_end', retainEnvironment: { enabled: true, mode: 'saveAs', recordTargets: [] } } as unknown as NodeData} onChange={change} />)
+  const input = screen.getByLabelText('关联记录（JSON 数组，支持变量）')
+  fireEvent.change(input, { target: { value: '{}' } }); fireEvent.blur(input)
+  expect(change).toHaveBeenCalledWith('retentionValid', false)
+})

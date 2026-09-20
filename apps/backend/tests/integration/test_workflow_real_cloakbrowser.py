@@ -32,7 +32,12 @@ def real_cloak_page():
         def do_GET(self):
             requests.append(self.path)
             content = page.read_bytes()
+            if self.path == '/account':
+                signed_in = 'pm9-login=verified' in self.headers.get('Cookie', '')
+                content = f'<output id=auth>{"signed-in" if signed_in else "signed-out"}</output>'.encode()
             self.send_response(200)
+            if self.path == '/login':
+                self.send_header('Set-Cookie', 'pm9-login=verified; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax')
             self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.send_header('Content-Length', str(len(content)))
             self.end_headers()
