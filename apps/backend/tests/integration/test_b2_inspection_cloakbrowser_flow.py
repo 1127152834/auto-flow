@@ -3,12 +3,19 @@ from __future__ import annotations
 import os
 from contextlib import contextmanager
 from datetime import UTC, datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
 
 import pytest
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
 from autoflow.application.workflows.inspection import WorkflowInspectionService
+from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.models import Profile, ProfileSpec
+from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowResourceCoordinator,
@@ -147,6 +154,11 @@ async def test_real_inspection_handles_selector_and_page_change_edges(
             {"selector": "#shadow-target", "highlight": False}
         )
         assert shadow["matched"] is True and shadow["count"] == 1
+        await controller.start_picker()
+        await page.locator("#shadow-target").click(modifiers=["Meta"])
+        shadow_pick = await controller.picker_result("__elementPickerResult")
+        assert shadow_pick["selected"] is True
+        assert shadow_pick["value"]["selector"] == "#shadow-target"
 
         pages = await controller.pages()
         await page.context.new_page()
@@ -183,6 +195,96 @@ async def test_real_inspection_handles_selector_and_page_change_edges(
         after_close = await controller.pages()
         assert after_close["targetPageId"] is None
         assert {item["pageId"] for item in after_close["pages"]} == {pages["targetPageId"]}
+
+
+@pytest.mark.asyncio
+async def test_real_picker_and_runtime_share_nested_cross_origin_frame_target(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    configured = os.environ.get("AUTOFLOW_B1_CLOAK_EXECUTABLE")
+    if not configured:
+        pytest.skip("set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test")
+    executable = Path(configured)
+    if not executable.is_file():
+        pytest.fail("AUTOFLOW_B1_CLOAK_EXECUTABLE does not point to a file")
+    monkeypatch.setenv("CLOAKBROWSER_BINARY_PATH", str(executable))
+    monkeypatch.setenv("CLOAKBROWSER_CACHE_DIR", str(tmp_path / "cloak-cache"))
+    command = {
+        "fingerprintSeed": 98765,
+        "expertArgs": [],
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai",
+        "colorScheme": "light",
+        "geoip": False,
+        "humanize": False,
+        "humanPreset": "default",
+        "extensionPaths": [],
+        "licenseKey": None,
+        "browserVersion": "145.0.7632.109.2",
+        "releaseChannel": "stable",
+        "headless": True,
+    }
+
+    with _nested_frame_site() as url:
+        async with launch_workflow_session(command) as browser:
+            controller = InspectionController(browser)
+            await controller.navigate(url)
+            page = browser.current_page()._raw
+            await page.frame_locator("#same").frame_locator("#cross").locator(
+                "#deep-target"
+            ).wait_for()
+            deep = next(frame for frame in page.frames if frame.url.endswith("/deep"))
+            await controller.start_picker()
+            await deep.locator("#deep-target").click(modifiers=["Meta"])
+            picked = await controller.picker_result("__elementPickerResult")
+            assert picked["value"]["selector"] == "#deep-target"
+            await controller.stop_picker()
+
+            document = {
+                "nodes": [
+                    {
+                        "id": "same",
+                        "type": "moduleNode",
+                        "data": {
+                            "moduleType": "switch_iframe",
+                            "config": {
+                                "locateBy": "selector",
+                                "iframeSelector": "#same",
+                            },
+                        },
+                    },
+                    {
+                        "id": "cross",
+                        "type": "moduleNode",
+                        "data": {
+                            "moduleType": "switch_iframe",
+                            "config": {
+                                "locateBy": "selector",
+                                "iframeSelector": "#cross",
+                            },
+                        },
+                    },
+                    {
+                        "id": "click",
+                        "type": "moduleNode",
+                        "data": {
+                            "moduleType": "click_element",
+                            "config": {"selector": "#deep-target"},
+                        },
+                    },
+                ],
+                "edges": [
+                    {"id": "same-cross", "source": "same", "target": "cross"},
+                    {"id": "cross-click", "source": "cross", "target": "click"},
+                ],
+                "variables": [],
+            }
+            result = await WorkflowRuntime(
+                build_production_executor_registry()
+            ).execute(document, ExecutionContext(browser=browser))
+
+            assert result.success is True
+            assert await deep.evaluate("() => window.deepClicks") == 1
 
 
 @pytest.mark.asyncio
@@ -279,3 +381,52 @@ async def test_real_inspection_worker_owns_profile_and_cleans_process_tree(
 
 async def _none():
     return None
+
+
+@contextmanager
+def _nested_frame_site():
+    class DeepHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            body = (
+                b"<button id='deep-target' onclick='window.deepClicks += 1'>deep</button>"
+                b"<script>window.deepClicks=0</script>"
+            )
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            pass
+
+    deep_server = ThreadingHTTPServer(("127.0.0.1", 0), DeepHandler)
+    Thread(target=deep_server.serve_forever, daemon=True).start()
+    deep_url = f"http://localhost:{deep_server.server_port}/deep"
+
+    class OuterHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            html = (
+                f"<iframe id='cross' src='{deep_url}'></iframe>"
+                if self.path == "/same"
+                else "<iframe id='same' src='/same'></iframe>"
+            )
+            body = html.encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            pass
+
+    outer_server = ThreadingHTTPServer(("127.0.0.1", 0), OuterHandler)
+    Thread(target=outer_server.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{outer_server.server_port}/"
+    finally:
+        outer_server.shutdown()
+        outer_server.server_close()
+        deep_server.shutdown()
+        deep_server.server_close()

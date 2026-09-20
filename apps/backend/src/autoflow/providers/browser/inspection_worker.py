@@ -206,6 +206,8 @@ class InspectionController:
             raise ValueError("invalid picker key")
         if self.picker_active:
             await self.start_picker()
+        selected: dict[str, Any] | None = None
+        selected_at = -1.0
         for page in self.browser.pages():
             frames = [page.main_frame, *page.frames]
             seen: set[int] = set()
@@ -217,8 +219,12 @@ class InspectionController:
                 with suppress(Exception):
                     value = await frame.evaluate(f"() => window.{key} || null")
                     if isinstance(value, dict):
-                        return {"selected": True, "value": value}
-        return {"selected": False, "value": None}
+                        timestamp = value.get("selectedAt")
+                        rank = float(timestamp) if isinstance(timestamp, (int, float)) else 0
+                        if selected is None or rank >= selected_at:
+                            selected = value
+                            selected_at = rank
+        return {"selected": selected is not None, "value": selected}
 
     async def test_selector(self, command: dict[str, Any]) -> dict[str, Any]:
         selector = _required(command, "selector").strip()

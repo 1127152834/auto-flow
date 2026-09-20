@@ -1,6 +1,6 @@
 # Source-derived from WebRPA backend/app/services/element_picker/script.py
 # Frozen source: 5ccb900e8dcf1530aae66f676d87593c416c7ebb
-# Adaptation: module path plus macOS Command-click parity with Ctrl-click.
+# Adaptation: module path, macOS Command-click parity, and open Shadow DOM targets.
 """WebRPA 元素选择器统一注入脚本（共享给所有 picker 入口）
 
 支持：
@@ -164,7 +164,11 @@ PICKER_SCRIPT += r"""
 
     // selector 是否唯一命中该元素
     function isUnique(sel, el) {
-        try { var list = document.querySelectorAll(sel); return list.length === 1 && list[0] === el; } catch (e) { return false; }
+        try {
+            var root = el && el.getRootNode ? el.getRootNode() : document;
+            var list = root.querySelectorAll(sel);
+            return list.length === 1 && list[0] === el;
+        } catch (e) { return false; }
     }
 
     function attrValEscape(v) { return String(v).replace(/(["\\])/g, '\\$1'); }
@@ -360,6 +364,16 @@ PICKER_SCRIPT += r"""
     var firstSample = null;
     var firstSampleTime = 0;
 
+    function eventElement(e) {
+        try {
+            var path = e.composedPath ? e.composedPath() : [];
+            for (var i = 0; i < path.length; i++) {
+                if (path[i] && path[i].tagName && !isPickerUI(path[i])) return path[i];
+            }
+        } catch (_) {}
+        return document.elementFromPoint(e.clientX, e.clientY);
+    }
+
     // 最近一次 Ctrl+点击选中的元素 + 高亮框跟随（滚动/缩放时重新定位）
     var lastSelectedEl = null;
     function positionSelectedBox() {
@@ -420,7 +434,7 @@ PICKER_SCRIPT += r"""
 
     document.addEventListener('mousemove', function(e) {
         if (window.__elementPickerDisabled === true) return;
-        var el = document.elementFromPoint(e.clientX, e.clientY);
+        var el = eventElement(e);
         if (!el || isPickerUI(el)) return;
         var r = el.getBoundingClientRect();
         box.style.display = 'block';
@@ -444,7 +458,7 @@ PICKER_SCRIPT += r"""
         e.stopPropagation();
         if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-        var el = document.elementFromPoint(e.clientX, e.clientY);
+        var el = eventElement(e);
         if (!el || isPickerUI(el)) return;
 
         if (e.altKey) {
@@ -485,7 +499,8 @@ PICKER_SCRIPT += r"""
                 minIndex: result.indices.length > 0 ? Math.min.apply(null, result.indices) : 1,
                 maxIndex: result.indices.length > 0 ? Math.max.apply(null, result.indices) : result.elements.length,
                 selector1: getSelector(sampleA),
-                selector2: getSelector(sampleB)
+                selector2: getSelector(sampleB),
+                selectedAt: Date.now()
             };
             tip.textContent = '已识别 ' + result.elements.length + ' 个相似元素：' + result.pattern.slice(0, 60);
             tip.style.background = '#059669';
@@ -501,7 +516,8 @@ PICKER_SCRIPT += r"""
                 tagName: el.tagName.toLowerCase(),
                 text: ((el.innerText || el.textContent || '') + '').substring(0, 100).trim(),
                 attributes: attrs,
-                rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+                rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+                selectedAt: Date.now()
             };
             // 保留最近点击元素的高亮（行进虚线动效），让用户清楚刚刚点的是哪个
             lastSelectedEl = el;

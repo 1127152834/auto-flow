@@ -298,6 +298,10 @@ class _WorkerEventSink:
             elif event.get("type") == "execution:node_complete":
                 await self._externalize_large_result(event, execution_id)
                 event["artifactIds"] = list(self._artifacts.take(execution_id))
+        for key in ("message", "error"):
+            value = event.get(key)
+            if isinstance(value, str) and len(value.encode("utf-8")) > 4096:
+                event[key] = value[:1000] + "…"
         _write(
             self._stdout,
             {
