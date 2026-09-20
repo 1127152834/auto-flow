@@ -3,6 +3,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   checks:
@@ -13,6 +14,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout frozen source used by parity tests
+        uses: actions/checkout@v4
+        with:
+          repository: pmh1314520/WebRPA
+          ref: 5ccb900e8dcf1530aae66f676d87593c416c7ebb
+          path: reference/WebRPA
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -28,9 +36,8 @@ jobs:
       - run: npm run test:scripts
       - run: npm run lint
       - run: npm run build
-      - run: npm run smoke:desktop
-      - run: node scripts/smoke-browser-management-desktop.mjs
-      - run: node scripts/smoke-browser-management.mjs
+      - run: node scripts/smoke-project-management.mjs --output-dir artifacts/pm9/source
+      - run: node scripts/smoke-project-management-desktop.mjs --output-dir artifacts/pm9/source
       - run: npm run backend:build
       - run: npm run package:dir
       - name: Check and smoke packaged sidecar
@@ -59,6 +66,11 @@ jobs:
           console.log(`smoking ${executable}`)
           const result = spawnSync(process.execPath, ['scripts/smoke-sidecar.mjs', '--executable', executable], { stdio: 'inherit' })
           if (result.status !== 0) process.exit(result.status ?? 1)
+          const project = spawnSync(process.execPath, ['scripts/smoke-project-management.mjs', '--executable', executable, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
+          if (project.status !== 0) process.exit(project.status ?? 1)
+          const projectDesktopExecutable = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
+          const projectDesktop = spawnSync(process.execPath, ['scripts/smoke-project-management-desktop.mjs', '--executable', projectDesktopExecutable, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
+          if (projectDesktop.status !== 0) process.exit(projectDesktop.status ?? 1)
           const browser = spawnSync(process.execPath, ['scripts/smoke-browser-management.mjs', '--executable', executable], { stdio: 'inherit' })
           if (browser.status !== 0) process.exit(browser.status ?? 1)
           const desktop = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
@@ -82,7 +94,20 @@ jobs:
           if (!artifacts.length) throw new Error(`installer artifact not found in ${root}`)
           console.log(`installer artifacts: ${artifacts.join(', ')}`)
           NODE
+      - run: npm run smoke:desktop
+      - run: node scripts/smoke-browser-management-desktop.mjs
+      - run: node scripts/smoke-browser-management.mjs
       - run: npm run openapi:check
       - run: uv run --directory apps/backend ruff check .
       - run: uv run --directory apps/backend mypy src
       - run: uv run --directory apps/backend pytest -q
+      - name: Upload PM9 reports and installer artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pm9-${{ matrix.os }}
+          path: |
+            artifacts/pm9/**
+            apps/desktop/dist/*.dmg
+            apps/desktop/dist/*.exe
+          if-no-files-found: warn

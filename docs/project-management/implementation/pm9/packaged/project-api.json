@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-20T11:07:04.725Z",
+  "checks": [
+    "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+    "archive blocks writes, repeat command recovers one operation, restore preserves data",
+    "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+    "restarted production sidecar retains the same project and record"
+  ],
+  "projectId": "91387b66-bf8b-44c8-80c4-42490b126680",
+  "tableId": "00f574a0-151a-4770-8e36-38a2e52fb4c6",
+  "tablePath": "/projects/91387b66-bf8b-44c8-80c4-42490b126680/tables/00f574a0-151a-4770-8e36-38a2e52fb4c6",
+  "boundary": "production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed"
+}

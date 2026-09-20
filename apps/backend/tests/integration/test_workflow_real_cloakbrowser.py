@@ -25,7 +25,7 @@ def real_cloak_page():
     if not configured:
         pytest.skip('set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable')
     executable = Path(configured).resolve(strict=True)
-    page = Path(__file__).parents[1] / 'fixtures' / 'workflow-page.html'
+    page = Path(__file__).parents[1] / 'fixtures' / 'project-management' / 'index.html'
     requests = []
 
     class Handler(BaseHTTPRequestHandler):
@@ -138,26 +138,26 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         nodes[3]['data'].update(selector='#field', attribute='value')
         documents = WorkflowService(SqlAlchemyWorkflowRepository(app.state.session_factory))
         record = documents.create(document, str(uuid4()))
-        prepared = app.state.workflow_runtime.prepare_content(
+        prepared = app.state.project_workflow_runtime.prepare_content(
             prepare_operation_id=str(uuid4()), workflow_id=record.document['id'],
             source_revision=record.revision, available_capabilities=['browser.cloakbrowser'],
         )
         with app.state.session_factory() as session:
-            run = app.state.workflow_runtime.prepare_run(
+            run = app.state.project_workflow_runtime.prepare_run(
                 run_request_id=str(uuid4()), prepared_content_id=prepared.prepared_content_id,
                 parameters={'zero': 0, 'flag': False}, input_snapshot_ref=None,
-                resource_request=app.state.workflow_resources.freeze(profile.id),
+                resource_request=app.state.project_workflow_resources.freeze(profile.id),
                 capability_bindings=[], uow=session,
             )
             session.commit()
         document['content']['variables'][0]['value'] = '后续修改不应进入本次运行'
         documents.save(record.document['id'], document, record.revision, str(uuid4()))
-        await app.state.workflow_dispatcher.dispatch(
+        await app.state.project_workflow_dispatcher.dispatch(
             run.run_id, expected_status_revision=run.status_revision,
             execution_generation=run.execution_generation,
         )
-        await asyncio.wait_for(app.state.workflow_dispatcher.wait_idle(), 60)
-        result = app.state.workflow_runtime.query_run(run_id=run.run_id)
+        await asyncio.wait_for(app.state.project_workflow_dispatcher.wait_idle(), 60)
+        result = app.state.project_workflow_runtime.query_run(run_id=run.run_id)
         assert result.status == 'succeeded'
         assert result.parameters == {'zero': 0, 'flag': False}
         with app.state.session_factory() as session:
@@ -165,14 +165,14 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         assert [event.payload['value'] for event in events if event.kind == 'output'] == ['before测试用户']
         assert [event.sequence for event in events] == list(range(1, len(events) + 1))
         assert events[-1].kind == 'status' and events[-1].payload['status'] == 'succeeded'
-        assert app.state.workflow_dispatcher.blockers() == []
+        assert app.state.project_workflow_dispatcher.blockers() == []
     finally:
         await app.router.on_shutdown[-1]()
     restored = create_app(settings)
     try:
-        await restored.state.workflow_dispatcher.startup()
-        found = restored.state.workflow_runtime.query_run(run_id=run.run_id)
+        await restored.state.project_workflow_dispatcher.startup()
+        found = restored.state.project_workflow_runtime.query_run(run_id=run.run_id)
         assert found == result
-        assert not restored.state.workflow_worker_manager.busy()
+        assert not restored.state.project_workflow_worker_manager.busy()
     finally:
         await restored.router.on_shutdown[-1]()

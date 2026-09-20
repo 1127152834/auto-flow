@@ -87,7 +87,7 @@ async def test_real_project_batch_http(
             SqlAlchemyWorkflowRepository(app.state.session_factory)
         )
         workflow = service.create(document, str(uuid4()))
-        await app.state.workflow_dispatcher.startup()
+        await app.state.project_workflow_dispatcher.startup()
         await app.state.project_run_scheduler.startup()
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app),
@@ -204,7 +204,10 @@ async def test_real_project_batch_http(
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
             if scenario == "success":
-                assert detail["statusCounts"]["succeeded"] == 2 and requests
+                assert detail["statusCounts"]["succeeded"] == 2 and requests, {
+                    "batch": detail,
+                    "tasks": [(await client.get(prefix + f"/tasks/{task['taskId']}")).json() for task in tasks],
+                }
                 for task in tasks:
                     task_path = prefix+f"/tasks/{task['taskId']}"
                     logs = await client.get(task_path+"/logs")
@@ -247,8 +250,8 @@ async def test_real_project_batch_http(
                 assert screenshot.status_code == 200
                 assert screenshot.headers["content-type"] == "image/png"
                 assert screenshot.content.startswith(b"\x89PNG\r\n\x1a\n")
-            assert not app.state.workflow_worker_manager.busy()
-            assert app.state.workflow_dispatcher.blockers() == []
+            assert not app.state.project_workflow_worker_manager.busy()
+            assert app.state.project_workflow_dispatcher.blockers() == []
             assert app.state.project_run_scheduler.blockers() == []
             assert (workspace / "tmp").is_dir()
             assert not list((workspace / "tmp").glob("**/generation-*"))

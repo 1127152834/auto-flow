@@ -1,0 +1,1544 @@
+{
+  "date": "2026-09-20",
+  "status": "incomplete",
+  "source": "docs/project-management/implementation/coverage.json",
+  "scope": "historical coverage audit; no status upgrades inferred from file existence",
+  "groups": {
+    "features": {
+      "count": 48,
+      "statuses": {
+        "partially_verified": 43,
+        "verified": 4,
+        "planned": 1
+      },
+      "items": [
+        {
+          "id": "PM-01",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "PM-02",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "PM-03",
+          "status": "partially_verified",
+          "evidenceCount": 3,
+          "plannedTestExists": true
+        },
+        {
+          "id": "PM-04",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "PM-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "OV-01",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "OV-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "OV-03",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "AU-01",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "AU-02",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "AU-03",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "AU-04",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "AU-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "AU-06",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "AU-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "AU-08",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "RUN-01",
+          "status": "partially_verified",
+          "evidenceCount": 3,
+          "plannedTestExists": true
+        },
+        {
+          "id": "RUN-02",
+          "status": "partially_verified",
+          "evidenceCount": 3,
+          "plannedTestExists": true
+        },
+        {
+          "id": "RUN-03",
+          "status": "partially_verified",
+          "evidenceCount": 3,
+          "plannedTestExists": true
+        },
+        {
+          "id": "RUN-04",
+          "status": "partially_verified",
+          "evidenceCount": 3,
+          "plannedTestExists": true
+        },
+        {
+          "id": "RUN-05",
+          "status": "partially_verified",
+          "evidenceCount": 3,
+          "plannedTestExists": true
+        },
+        {
+          "id": "RUN-06",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "ST-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "ST-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "ST-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DT-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-04",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-06",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DT-08",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DT-09",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DT-10",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-11",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DT-12",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DT-13",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DT-14",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "ENV-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "ENV-02",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "ENV-03",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "ENV-04",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "ENV-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "ENV-06",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "ENV-07",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": false
+        },
+        {
+          "id": "ENV-08",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "ENV-09",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        }
+      ]
+    },
+    "acceptance_scenarios": {
+      "count": 178,
+      "statuses": {
+        "partially_verified": 89,
+        "planned": 72,
+        "verified": 17
+      },
+      "items": [
+        {
+          "id": "DATA-CLAIM-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-03",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-04",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-08",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-09",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-10",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-11",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-12",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-13",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-14",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-15",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-16",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-CLAIM-17",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-E2E-01",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-E2E-02",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-E2E-03",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-E2E-04",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-E2E-05",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-E2E-06",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-ID-01",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-ID-02",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-ID-03",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-ID-04",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-ID-05",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-ID-06",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-04",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-08",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-09",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-10",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-11",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-IN-12",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-01",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-02",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-04",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-07",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-08",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-09",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-10",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-11",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LIFE-12",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-LINK-01",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-LINK-02",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-LINK-03",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-LINK-04",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-LINK-05",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-LINK-06",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-OBJ-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-OBJ-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-04",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-06",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-07",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-08",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SCHEMA-09",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-01",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-02",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-03",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-04",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-08",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-09",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-10",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-11",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-12",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-13",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SH-14",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-01",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-02",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-04",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-06",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-07",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-08",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-09",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-10",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-11",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-12",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-STATE-13",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-02",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-04",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-07",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-08",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-09",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-SYNC-10",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-01",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-02",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-03",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-04",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-TABLE-08",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-VER-01",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-VER-02",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-04",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-06",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "DATA-WRITE-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-08",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-09",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-10",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-11",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-12",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-WRITE-13",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-XLS-01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-XLS-02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-XLS-03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-XLS-04",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-XLS-05",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-XLS-06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "DATA-XLS-07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A01",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A02",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A03",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A04",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A05",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A06",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A07",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A08",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A09",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "FLOW-A10",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A11",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A12",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A13",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A14",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A15",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "FLOW-A16",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A01",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A02",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A04",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A05",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A08",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A09",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A10",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A11",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A12",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A13",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A14",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A15",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A16",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A17",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A18",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A19",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A20",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A21",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A22",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-A23",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A24",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-A25",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        }
+      ]
+    },
+    "execution_contracts_and_gates": {
+      "count": 25,
+      "statuses": {
+        "partially_verified": 14,
+        "planned": 10,
+        "verified": 1
+      },
+      "items": [
+        {
+          "id": "XE-C01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C02",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C03",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C04",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C05",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C07",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C08",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C09",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C10",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-C11",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C12",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-C13",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-C14",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-C15",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-C16",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C17",
+          "status": "partially_verified",
+          "evidenceCount": 2,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-C18",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-G01",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-G02",
+          "status": "verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-G03",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-G04",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-G05",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        },
+        {
+          "id": "XE-G06",
+          "status": "partially_verified",
+          "evidenceCount": 1,
+          "plannedTestExists": true
+        },
+        {
+          "id": "XE-G07",
+          "status": "planned",
+          "evidenceCount": 0,
+          "plannedTestExists": false
+        }
+      ]
+    }
+  }
+}

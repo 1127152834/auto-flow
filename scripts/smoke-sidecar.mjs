@@ -20,7 +20,7 @@ export function smokeMode(args, env) {
   return { executable, baseUrl, token }
 }
 
-function waitForReady(child, timeoutMs = 15_000) {
+export function waitForReady(child, timeoutMs = 15_000) {
   return new Promise((resolveReady, reject) => {
     let buffer = ''
     const timer = setTimeout(() => reject(new Error('sidecar readiness timeout')), timeoutMs)

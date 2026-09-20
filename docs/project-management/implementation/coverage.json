@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-19",
+  "date": "2026-09-20",
   "status": "confirmed-pm5-management-delivered-pm6-management-delivered-pm5-scope-visual-passed-real-executor-partial-user-acceptance-pending-pm7-management-delivered-pm8-management-delivered",
   "design_baseline": "906deda",
   "plan": "docs/superpowers/plans/2026-09-13-project-management-milestones.md",
@@ -207,7 +207,7 @@
         "PM7",
         "PM8"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "start_dependencies": [
         "PM1",
         "PM2",
@@ -220,7 +220,11 @@
       ],
       "external_capabilities": [
         "consumed_core_platform_acceptance"
-      ]
+      ],
+      "evidence": [
+        "docs/project-management/implementation/pm9/verification.json"
+      ],
+      "limitations": "macOS arm64 管理链源码与打包冒烟通过；生产完整链、其他平台与实机专项未通过，不抵扣发行验收。"
     }
   ],
   "features": [
@@ -11135,5 +11139,6 @@
     "data-source": "来源同步负责人；Excel/Sheets适配",
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
-  "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md"
+  "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
+  "pm9_note": "PM9 已获实施授权并从合并基线建立独立分支。管理链源码、packaged sidecar、packaged Electron 已在 macOS arm64 运行；全覆盖复核保持历史状态，生产核心仍受四节点边界限制。见 pm9/verification.json。"
 }

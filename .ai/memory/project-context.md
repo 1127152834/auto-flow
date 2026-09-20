@@ -154,3 +154,12 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - Android 分支的设备持久化、生命周期、环境、批量创建、控制台及手动控制已接入。旧分支的工作流分配/接管直接依赖已退役运行时，因此当前接口明确返回不可用错误，不伪造兼容性。
 - UI 控件、全局表格与代理管理已完成能力核对；当前更新实现优先，缺失的独立控件被移植，历史分支以树不变归并纳入提交图。
 - `codex/m6-unfinished-checkpoint-20260913@59ae8d44` 与 `codex/studio-before-removal-20260913@4eda2074` 保持排除：前者是未完成检查点，后者是退役前快照，二者均不是当前产品能力来源。
+
+## PM9 基线与发行验收（2026-09-20，confirmed）
+
+来源：本次 Git 归并、`docs/project-management/implementation/pm9/verification.json` 与用户平台安排。
+
+- 有效 Studio checkpoint、Android 规划已合入 `codex/architecture-baseline@8e5564e0` 并推送；已退役两个历史快照继续排除。PM9 基于该基线在 `codex/project-management-pm9` 实施。
+- 生产源码/打包 HTTP 与 Electron 管理链、万行数据测量通过；后端 3159 passed / 15 skipped、前端 5445 passed、脚本 94 passed；真实 CloakBrowser 四节点/批次/重建测试 8 passed。
+- PM9 仍 in_progress；生产项目执行器尚未接入完整图、项目数据节点、End 和人工检查点。已提交 R1–R4 架构规格等待用户确认，不能将管理侧/四节点证据扩写为完整执行通过。
+- 用户指定 Windows x64/macOS Intel 使用现有 GitHub Actions，缺少的实机证据明确待验收。本机 arm64 DMG 已构建但无签名、公证或手工安装证据；CI 实际状态见 PM9 报告。

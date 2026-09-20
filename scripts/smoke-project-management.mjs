@@ -1,252 +1,154 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, realpath, rm, writeFile } from 'node:fs/promises'
+import { spawn } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
-import { stop } from './smoke-sidecar.mjs'
 import { assertOutsideHistory } from './project-smoke-output.mjs'
+import { stop, waitForReady } from './smoke-sidecar.mjs'
 
-// Only disposable workspaces are used. UI commands use the real local service.
 const root = resolve(import.meta.dirname, '..')
-const { values: options, tokens } = parseArgs({ options: { 'output-dir': { type: 'string' }, dev: { type: 'boolean' } }, tokens: true })
-assert.equal(new Set(tokens.map(token => token.name)).size, tokens.length, 'duplicate option')
-assert.ok(options['output-dir'] === undefined || options['output-dir'].trim(), '--output-dir requires a directory')
-const historicalQa = join(root, 'docs/migration/project-management-pm1-qa')
-const defaultParent = join(root, 'docs/migration/project-management-regression-qa')
-if (!options['output-dir']) {
-  await assertOutsideHistory(historicalQa, defaultParent)
-  await mkdir(defaultParent, { recursive: true })
-}
-const qa = options['output-dir'] ? resolve(options['output-dir']) : await mkdtemp(join(defaultParent, 'run-'))
-await assertOutsideHistory(historicalQa, qa)
-await mkdir(qa, { recursive: true })
-const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-pm1-qa-')))
-const otherWorkspace = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-pm1-other-')))
-await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
-await writeFile(join(userData, 'desktop-settings.json'), JSON.stringify({ schemaVersion: 1, currentPath: userData, previousPath: otherWorkspace, preferences: { zoom: 100, motion: 'system' } }))
-let desktop, native, main, devServer
-const checks = []
-const measurements = {}
-const entry = options.dev ? 'development-url' : 'built-html'
 
-try {
-  if (options.dev) {
-    const { resolveConfig } = await import('electron-vite')
-    const { createServer } = await import('vite')
-    const { config } = await resolveConfig({ root: join(root, 'apps/desktop') }, 'serve', 'development')
-    devServer = await createServer({ ...config.renderer, root: join(root, 'apps/desktop/src/renderer'), server: { host: '127.0.0.1', port: 0 } })
-    await devServer.listen()
-    process.env.ELECTRON_RENDERER_URL = devServer.resolvedUrls.local[0]
+export function projectSmokeOptions(args) {
+  const injected = Object.keys(process.env).find(key => process.env[key] && (key.startsWith('AUTOFLOW_QA_') || key === 'AUTOFLOW_PM4_QA' || key === 'ELECTRON_RENDERER_URL'))
+  assert.ok(!injected, `production smoke forbids injected environment: ${injected}`)
+  const { values, tokens } = parseArgs({ args, options: {
+    executable: { type: 'string' }, 'output-dir': { type: 'string' },
+  }, tokens: true })
+  assert.equal(new Set(tokens.map(token => token.name)).size, tokens.length, 'duplicate option')
+  for (const [name, value] of Object.entries(values)) assert.ok(value.trim(), `--${name} requires a value`)
+  return values
+}
+
+// The caller supplies a service belonging to a disposable workspace it created.
+// The same assertions run against source Python and the bundled sidecar.
+export async function checkProjectManagement(baseUrl, token, existingProject) {
+  const checks = []
+  async function api(path, { method = 'GET', body, key = randomUUID(), status } = {}) {
+    const response = await fetch(`${baseUrl}/api/v1${path}`, {
+      method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': key },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(20_000),
+    })
+    const result = await response.json()
+    if (status) assert.equal(response.status, status, `${method} ${path}: ${JSON.stringify(result)}`)
+    else assert.ok(response.ok, `${method} ${path}: ${response.status} ${JSON.stringify(result)}`)
+    return result
   }
-  await launch()
-  await click('项目')
-  await visible('还没有项目')
-  await capture('empty')
-  const a = await create('项目 A', '浏览器自动化配置与业务资料')
-  await click('编辑项目')
-  await input('#project-description', '修改后的项目 A')
-  await click('保存')
-  await closedForm()
-  assert.equal((await api(`/projects/${a}`)).description, '修改后的项目 A')
-  const edited = await api(`/projects/${a}`)
-  assert.equal(edited.managementRevision, 2)
-  await click('项目')
-  const b = await create('项目 B', '另一项独立工作')
-  checkpoint('UI creates A/B and edits A using persisted project revisions')
-  await capture('overview')
-  for (const tab of ['自动化', '运行记录', '统计', '环境']) { await click(tab); await visible(`${tab}暂未开放`) }
-  await click('数据'); await visible('还没有数据表')
-  await click('概览')
-  await click('项目')
-  await input('[aria-label="搜索项目"]', '修改后的项目 A')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 1 && document.querySelector('tbody')?.innerText.includes('项目 A')`, 'name/description search')
-  await click('项目 A', 'tbody tr')
-  await waitForProjectPage(main)
-  await click('返回项目目录')
-  assert.equal(await main.evaluate(`document.querySelector('[aria-label="搜索项目"]').value`), '修改后的项目 A')
-  checkpoint('overview tabs expose only available capability; returning preserves search')
+  const project = existingProject ?? await api('/projects', { method: 'POST', body: { name: 'PM9 中文 空格项目', description: '发行验收' } })
+  const prefix = `/projects/${project.projectId}`
+  const neighbour = await api('/projects', { method: 'POST', body: { name: 'PM9 隔离项目' } })
+  const table = await api(`${prefix}/tables`, { method: 'POST', body: { name: '中文 数据表', sourceKind: 'local' } })
+  const tablePath = `${prefix}/tables/${table.tableId}`
+  const field = (await api(`${tablePath}/fields`, { method: 'POST', body: {
+    definition: { key: 'name', name: '名称', type: 'string', required: false, validation: {} },
+    sourceColumnPolicy: 'localOnly', expectedTableRevision: table.tableRevision,
+  } })).field
+  const fieldId = field.ref.fieldId
+  const recordKey = randomUUID()
+  const body = { datasetGeneration: table.datasetGeneration, values: [{ fieldId, value: '中文/空格 ' + '长文本'.repeat(100) }] }
+  const record = await api(`${tablePath}/records`, { method: 'POST', body, key: recordKey })
+  assert.deepEqual(await api(`${tablePath}/records`, { method: 'POST', body, key: recordKey }), record)
+  assert.deepEqual((await api(`${prefix}/operations/by-idempotency-key/${recordKey}`)).result, record)
+  const recordPath = `${tablePath}/records/${Buffer.from(record.ref.recordKey.value).toString('base64url')}`
+  const recordIdentity = { datasetGeneration: table.datasetGeneration, recordKeyType: record.ref.recordKey.type }
+  const changed = await api(recordPath, { method: 'PATCH', body: { ...recordIdentity, expectedContentRevision: record.contentRevision, values: [{ fieldId, value: '已修改' }] } })
+  assert.equal(changed.contentRevision, record.contentRevision + 1)
+  const conflict = await api(recordPath, { method: 'PATCH', status: 409, body: { ...recordIdentity, expectedContentRevision: record.contentRevision, values: [{ fieldId, value: '过期写入' }] } })
+  assert.equal(conflict.error.code, 'REVISION_CONFLICT')
+  const page = await api(`${tablePath}/records?datasetGeneration=${table.datasetGeneration}&pageSize=1`)
+  assert.equal(page.total, 1)
+  assert.equal(page.items[0].values[0].value, '已修改')
+  await api(`/projects/${neighbour.projectId}/tables/${table.tableId}`, { status: 404 })
+  checks.push('real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation')
 
-  // Real HTTP creates enough synthetic records to exercise actual pagination/scroll.
-  for (let i = 1; i <= 55; i++) await api('/projects', { method: 'POST', body: { name: `批量项目 ${String(i).padStart(2, '0')}${i === 1 ? '长'.repeat(29) : ''}` } })
-  await input('[aria-label="搜索项目"]', '批量项目')
-  await choose('项目排序', 'name')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 50`, 'first directory page')
-  await click('下一页')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 5`, 'second directory page')
-  await click('批量项目 51', 'tbody tr')
-  await waitForProjectPage(main)
-  await click('返回项目目录')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 5`, 'page restored')
-  assert.equal(await main.evaluate(`document.querySelector('[aria-label="项目排序"]').dataset.choiceValue`), 'name')
-  await click('上一页')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 50`, 'directory page one')
-  const scroll = await main.evaluate(`(() => { const viewport = document.querySelector('[data-radix-scroll-area-viewport]'); viewport.scrollTop = 240; return {top:viewport.scrollTop, max:viewport.scrollHeight-viewport.clientHeight} })()`)
-  assert.ok(scroll.max > 240 && scroll.top === 240, 'directory must have a usable contained scrollbar')
-  await capture('directory')
-  await click('批量项目 08', 'tbody tr')
-  const beforeLeaveScroll = 240
-  await waitForProjectPage(main)
-  await click('返回项目目录')
-  await waitFor(main, `document.querySelector('[data-radix-scroll-area-viewport]')?.scrollTop >= ${beforeLeaveScroll}`, 'directory viewport restored')
-  checkpoint('real 55-row query paginates, retains sorting/page and restores contained scroll')
+  async function settle(operation, path = `${prefix}/operations/${operation.operationId}`) {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const current = await api(path)
+      if (current.status === 'succeeded') return current
+      assert.notEqual(current.status, 'failed', JSON.stringify(current))
+      await new Promise(resolveWait => setTimeout(resolveWait, 100))
+    }
+    throw new Error(`operation did not settle: ${operation.operationId}`)
+  }
+  const impact = await api(`${prefix}/lifecycle-impact?action=archive`)
+  const archiveKey = randomUUID()
+  const archiveBody = { impactRevision: impact.impactRevision, expectedManagementRevision: project.managementRevision }
+  const archived = await api(`${prefix}/archive`, { method: 'POST', key: archiveKey, body: archiveBody })
+  await settle(archived.operation)
+  assert.equal((await api(`${prefix}/archive`, { method: 'POST', key: archiveKey, body: archiveBody })).operation.operationId, archived.operation.operationId)
+  const archivedProject = await api(prefix)
+  assert.equal(archivedProject.lifecycleState, 'archived')
+  await api(`${prefix}/tables`, { method: 'POST', status: 409, body: { name: '归档时不得写入' } })
+  const restored = await api(`${prefix}/restore`, { method: 'POST', body: { expectedManagementRevision: archivedProject.managementRevision } })
+  await settle(restored.operation)
+  assert.equal((await api(prefix)).lifecycleState, 'active')
+  assert.equal((await api(tablePath)).recordCount, 1)
+  checks.push('archive blocks writes, repeat command recovers one operation, restore preserves data')
 
-  await input('[aria-label="搜索项目"]', '项目 A')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 1`, 'project A search')
-  await click('项目 A', 'tbody tr')
-  await waitForProjectPage(main)
-  await click('编辑项目')
-  await input('#project-description', '冲突中保留的输入')
-  const before = await api(`/projects/${a}`)
-  await api(`/projects/${a}`, { method: 'PATCH', body: { description: '另一编辑者保存的资料', expectedManagementRevision: before.managementRevision } })
-  await click('保存')
-  await visible('基于最新内容重新编辑')
-  assert.equal(await main.evaluate(`document.querySelector('#project-description').value`), '冲突中保留的输入')
-  await capture('conflict')
-  await click('基于最新内容重新编辑')
-  await input('#project-description', '确认冲突后的资料')
-  await click('保存')
-  await closedForm()
-  assert.equal((await api(`/projects/${a}`)).description, '确认冲突后的资料')
-  checkpoint('real competing PATCH yields 409, preserves draft and explicitly rebases')
-
-  await click('编辑项目')
-  await input('#project-name', '重连后项目 A')
-  const oldInstance = (await main.evaluate('window.autoflow.getRuntimeContext()')).sidecar.instanceId
-  await main.evaluate('window.autoflow.restartSidecar()')
-  await waitFor(main, `window.autoflow.getRuntimeContext().then(r => r.sidecar.state === 'ready' && r.sidecar.instanceId !== ${JSON.stringify(oldInstance)})`, 'new backend instance', 30000)
-  await waitFor(main, `document.body.innerText.includes('本地服务正常') && !document.querySelector('#project-form button[type=submit]')?.disabled`, 'reconnected form')
-  assert.equal(await main.evaluate(`document.querySelector('#project-name').value`), '重连后项目 A')
-  await key('Escape')
-  await visible('继续编辑')
-  await capture('leave-confirmation')
-  await click('继续编辑')
-  assert.equal(await main.evaluate(`document.querySelector('#project-name').value`), '重连后项目 A')
-  await click('保存')
-  await closedForm()
-  assert.equal((await api(`/projects/${a}`)).name, '重连后项目 A')
-  checkpoint('same-workspace service restart preserves draft; Escape cancellation and later save work')
-
-  // macOS Electron zoom, not a CSS simulation. The product's settings may offer fewer presets.
-  await click('项目')
-  await input('[aria-label="搜索项目"]', '')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 50`, 'directory ready before zoom')
-  await native.evaluate('pm1Electron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(2)')
-  await waitFor(main, `innerWidth <= 720`, '200% layout applied')
-  assert.equal(await native.evaluate('pm1Electron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()'), 2)
-  const width = await main.evaluate(`({inner:innerWidth,root:document.querySelector('#root').getBoundingClientRect().width,doc:document.documentElement.scrollWidth})`)
-  await click('', '[aria-label="项目排序"]')
-  await waitFor(main, `Boolean(document.querySelector('[role=listbox]'))`, 'custom dropdown at 200%')
-  const expanded = await main.evaluate(`({inner:innerWidth,root:document.querySelector('#root').getBoundingClientRect().width,doc:document.documentElement.scrollWidth})`)
-  assert.equal(expanded.root, width.root)
-  assert.equal(expanded.inner, width.inner)
-  assert.ok(expanded.doc <= expanded.inner + 1)
-  assert.ok(width.doc <= width.inner + 1, 'zoom must not cause page-wide overflow')
-  const popup = await main.evaluate(`(() => { const r=document.querySelector('[role=listbox]').getBoundingClientRect(); return {top:r.top,bottom:r.bottom,height:r.height,viewportHeight:innerHeight} })()`)
-  measurements.zoom = { factor: 2, before: width, after: expanded, popup }
-  console.log(JSON.stringify(measurements.zoom))
-  assert.ok(popup.top >= 0 && popup.bottom <= popup.viewportHeight, 'dropdown must fit the zoomed viewport')
-  await capture('zoom-200-dropdown')
-  await key('Escape')
-  assert.equal(await main.evaluate('document.activeElement?.getAttribute("aria-label")'), '项目排序')
-  await click('', '[aria-label="项目排序"]')
-  await key('End'); await key('Enter')
-  await waitFor(main, `document.querySelector('[aria-label="项目排序"]').dataset.choiceValue === '-name'`, 'keyboard reaches last zoomed option')
-  await native.evaluate('pm1Electron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1)')
-  checkpoint('200% Electron zoom and open dropdown preserve application width')
-
-  await switchWorkspace()
-  await visible('还没有项目')
-  const c = await create('隔离项目 C', '第二工作区')
-  assert.equal((await api('/projects')).total, 1)
-  await switchWorkspace()
-  await visible('新建项目')
-  const restored = await api('/projects?pageSize=200')
-  assert.equal(restored.total, 57)
-  assert.ok(restored.items.some(p => p.projectId === a) && restored.items.some(p => p.projectId === b))
-  assert.ok(!restored.items.some(p => p.projectId === c))
-  checkpoint('two real workspaces isolate projects and switch back to saved data')
-
-  for (const [label, expected] of [['浏览器配置', '新建配置'], ['代理管理', '代理管理'], ['模型管理', '模型管理'], ['设置', '工作区']]) { await click(label); await visible(expected) }
-  await click('总览'); await visible('工作流工作台')
-  await main.evaluate('window.autoflow.openAutomationStudio()')
-  let studioTarget
-  for (let i = 0; i < 50; i++) { studioTarget = (await (await fetch(`${desktop.debugOrigin}/json/list`)).json()).find(t => t.url.includes('view=automation-studio')); if (studioTarget) break; await wait(100) }
-  assert.ok(studioTarget, 'Studio M1 entry retained')
-  const studio = await connectCdp(studioTarget.webSocketDebuggerUrl)
-  await waitFor(studio, `Boolean(document.querySelector('[aria-label="添加打开网页"]'))`, 'Studio M1 usable catalog')
-  studio.close()
-  await native.evaluate(`pm1Electron.BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('view=automation-studio')).close()`)
-  checkpoint('browser/proxy/model/settings/dashboard and Studio M1 entries regress successfully')
-
-  const lastOpened = (await api(`/projects/${a}`)).lastOpenedAt
-  assert.ok(lastOpened)
-  native.close() // Disconnect Node inspector so normal app exit can complete.
-  await main.evaluate('window.autoflow.quitApplication()')
-  for (let i = 0; i < 150 && desktop.child.exitCode === null; i++) await wait(100)
-  assert.equal(desktop.child.exitCode, 0)
-  main.close(); native.close()
-  await launch()
-  await click('项目')
-  assert.equal((await api(`/projects/${a}`)).lastOpenedAt, lastOpened)
-  assert.equal((await api(`/projects/${a}`)).name, '重连后项目 A')
-  await input('[aria-label="搜索项目"]', '重连后项目 A')
-  await waitFor(main, `document.querySelectorAll('tbody tr').length === 1`, 'restarted project directory')
-  await click('重连后项目 A', 'tbody tr')
-  await waitForProjectPage(main)
-  await capture('restarted')
-  checkpoint('full Electron restart retains projects and last-opened timestamps, then reopens A')
-  const result = { scope: 'PM1 project entry and existing-module regression; PM2 data entry only; detailed data behavior not tested', result: 'passed', entry, platform: process.platform, arch: process.arch, checkedAt: new Date().toISOString(), checks, measurements, windows: 'not-run' }
-  await writeFile(join(qa, `${entry}.json`), JSON.stringify(result, null, 2) + '\n')
-  console.log(JSON.stringify(result, null, 2))
-} catch (error) {
-  try { await capture('failure'); console.error(await main.evaluate('({hash:location.hash,text:document.body.innerText})')) } catch { /* keep original failure */ }
-  throw error
-} finally {
-  main?.close(); native?.close(); await stop(desktop?.child)
-  await devServer?.close()
-  await rm(userData, { recursive: true, force: true })
-  await rm(otherWorkspace, { recursive: true, force: true })
+  // Delete only the extra empty project; retain the populated one to verify restart and UI.
+  const other = `/projects/${neighbour.projectId}`
+  const otherImpact = await api(`${other}/lifecycle-impact?action=archive`)
+  const otherArchive = await api(`${other}/archive`, { method: 'POST', body: { impactRevision: otherImpact.impactRevision, expectedManagementRevision: neighbour.managementRevision } })
+  await settle(otherArchive.operation, `${other}/operations/${otherArchive.operation.operationId}`)
+  const archivedNeighbour = await api(other)
+  const deletion = await api(`${other}/lifecycle-impact?action=delete`)
+  await api(other, { method: 'DELETE', status: 422, body: { confirmationName: '错误名字', impactRevision: deletion.impactRevision, expectedManagementRevision: archivedNeighbour.managementRevision } })
+  const deleteKey = randomUUID()
+  const deleted = await api(other, { method: 'DELETE', key: deleteKey, body: { confirmationName: neighbour.name, impactRevision: deletion.impactRevision, expectedManagementRevision: archivedNeighbour.managementRevision } })
+  // Project-scoped lookups disappear with the project; its receipt survives at workspace scope.
+  const receipt = await settle(deleted.operation, `/workspace/operations/by-idempotency-key/${deleteKey}`)
+  assert.equal(receipt.result.deleted, true)
+  assert.equal(receipt.result.target.projectId, neighbour.projectId)
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const result = await api('/projects')
+    if (!result.items.some(item => item.projectId === neighbour.projectId)) break
+    assert.ok(attempt < 99, 'deleted project remains visible')
+    await new Promise(resolveWait => setTimeout(resolveWait, 100))
+  }
+  assert.equal((await api(tablePath)).recordCount, 1)
+  checks.push('wrong deletion name rejected; safe deletion preserves neighbouring project records')
+  return { checks, projectId: project.projectId, tableId: table.tableId, tablePath, boundary: 'production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed' }
 }
 
-async function launch() {
-  desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`, '--inspect=0'] })
-  main = desktop.cdp; native = await connectCdp(desktop.inspectorUrl)
-  await native.evaluate("globalThis.pm1Electron = process.getBuiltinModule('module').createRequire(process.cwd() + '/package.json')('electron'); true")
-  await main.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
-  await visible('本地服务正常', 30000)
+export async function main(args = process.argv.slice(2)) {
+  const options = projectSmokeOptions(args)
+  if (options['output-dir']) await assertOutsideHistory(join(root, 'docs/migration/project-management-pm1-qa'), options['output-dir'])
+  const directory = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-pm9 中文 空格-')))
+  const token = randomUUID()
+  let child
+  let report = { status: 'failed', platform: process.platform, arch: process.arch, packaged: Boolean(options.executable), startedAt: new Date().toISOString() }
+  async function launch() {
+    const command = options.executable ? [resolve(options.executable)] : ['uv', 'run', '--directory', 'apps/backend', 'python', '-m', 'autoflow']
+    child = spawn(command[0], [...command.slice(1), '--instance-id', randomUUID(), '--data-dir', directory, '--port', '0'], {
+      cwd: root, env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token }, stdio: ['ignore', 'pipe', 'inherit'],
+    })
+    const ready = await waitForReady(child, 60_000)
+    return `http://127.0.0.1:${ready.port}`
+  }
+  try {
+    const baseUrl = await launch()
+    report = { ...report, ...await checkProjectManagement(baseUrl, token) }
+    await stop(child)
+    const restartedUrl = await launch()
+    const response = await fetch(`${restartedUrl}/api/v1${report.tablePath}`, { headers: { 'x-autoflow-token': token }, signal: AbortSignal.timeout(20_000) })
+    assert.equal(response.status, 200)
+    assert.equal((await response.json()).recordCount, 1)
+    report.checks.push('restarted production sidecar retains the same project and record')
+    report.status = 'passed'
+  } catch (error) {
+    report.error = String(error.stack ?? error)
+    throw error
+  } finally {
+    await stop(child)
+    await rm(directory, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 })
+    if (options['output-dir']) {
+      await mkdir(options['output-dir'], { recursive: true })
+      await writeFile(join(options['output-dir'], 'project-api.json'), JSON.stringify(report, null, 2))
+    }
+    console.log(JSON.stringify(report, null, 2))
+  }
 }
-function checkpoint(text) { checks.push(text); console.log(text) }
-async function visible(text, timeout = 15000) { return waitFor(main, `Boolean(document.body?.innerText.includes(${JSON.stringify(text)}))`, text, timeout) }
-async function api(path, options = {}) {
-  const { sidecar } = await main.evaluate('window.autoflow.getRuntimeContext()')
-  const response = await fetch(`${sidecar.baseUrl}/api/v1${path}`, { ...options, body: options.body ? JSON.stringify(options.body) : undefined, headers: { 'x-autoflow-token': sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': crypto.randomUUID() } })
-  assert.ok(response.ok, `${options.method ?? 'GET'} ${path}: ${response.status}`)
-  return response.json()
-}
-async function click(text, selector = 'button') {
-  const point = await main.evaluate(`(() => { const el = [...document.querySelectorAll(${JSON.stringify(selector)})].find(e => !${JSON.stringify(text)} || e.textContent.trim() === ${JSON.stringify(text)} || e.getAttribute('aria-label') === ${JSON.stringify(text)} || (${JSON.stringify(selector)} === 'tbody tr' && e.firstElementChild?.textContent.trim() === ${JSON.stringify(text)})); if(!el) return null; el.scrollIntoView({block:'nearest'}); const r=el.getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2} })()`)
-  assert.ok(point, `control missing: ${text || selector}`)
-  await main.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 })
-  await main.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 })
-  await wait(120)
-}
-async function input(selector, value) {
-  assert.equal(await main.evaluate(`(() => { const el=document.querySelector(${JSON.stringify(selector)}); if(!el) return false; el.focus(); Object.getOwnPropertyDescriptor(el.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set.call(el,${JSON.stringify(value)}); el.dispatchEvent(new Event('input',{bubbles:true})); return true })()`), true)
-  await wait(120)
-}
-async function key(key) { await main.command('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, ...(key === 'Enter' ? { text: '\r', unmodifiedText: '\r' } : {}), windowsVirtualKeyCode: key === 'Escape' ? 27 : key === 'Tab' ? 9 : key === 'End' ? 35 : 13 }); await main.command('Input.dispatchKeyEvent', { type: 'keyUp', key }); await wait(150) }
-async function choose(label, value) { await click('', `[aria-label="${label}"]`); await click('', `[role=option][data-choice-value="${value}"]`) }
-async function closedForm() { await waitFor(main, `!document.querySelector('#project-name')`, 'project form closes') }
-async function create(name, description) {
-  await click('新建项目'); await waitFor(main, `document.activeElement?.id === 'project-name'`, 'name autofocus'); await key('Tab'); assert.equal(await main.evaluate('document.activeElement.id'), 'project-description'); await input('#project-name', name); await input('#project-description', description); await capture('form'); if (name === '项目 B') { await main.evaluate(`document.querySelector('#project-name').focus()`); await key('Enter') } else await click('创建项目'); await closedForm(); await waitForProjectPage(main)
-  return (await api(`/projects?q=${encodeURIComponent(name)}`)).items.find(p => p.name === name).projectId
-}
-async function switchWorkspace() {
-  const choice = await main.evaluate("window.autoflow.chooseWorkspace('previous')")
-  assert.ok(choice.ok && choice.value)
-  const switched = await main.evaluate(`window.autoflow.confirmWorkspace(${JSON.stringify(choice.value.id)})`, 30000)
-  assert.equal(switched.ok, true)
-  await visible('本地服务正常', 30000)
-}
-async function capture(name) { if (!main) return; const { data } = await main.command('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }); await writeFile(join(qa, `${entry}-${name}.png`), data, 'base64') }
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) await main()

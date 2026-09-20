@@ -1,0 +1,14 @@
+✔ does not allow a passed page without real evidence or missing required states (17.437042ms)
+✔ rejects duplicate source and page identities and evidence traversal (7.252125ms)
+✔ requires actual evidence files instead of an existing directory or blank path (6.982542ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (4.006917ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.921334ms)
+✔ a green machine report cannot substitute for real application evidence (0.308833ms)
+ℹ tests 94
+ℹ suites 0
+ℹ pass 94
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2391.773792

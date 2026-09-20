@@ -1,0 +1,57 @@
+{
+  "date": "2026-09-20",
+  "status": "in_progress",
+  "releaseAccepted": false,
+  "confidence": "high",
+  "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
+  "branch": "codex/project-management-pm9",
+  "checks": {
+    "frontend": "5445 passed / 404 files",
+    "studioMergeFixes": "36 passed; red-to-green regression cases",
+    "ruff": "passed",
+    "mypy": "392 source files passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "passed",
+    "scripts": "94 passed",
+    "structure": "4 passed",
+    "build": "passed",
+    "backendBuild": "passed",
+    "packageDir": "passed",
+    "dmg": "built locally, unsigned/unnotarized; installer itself not manually installed",
+    "backend": "3159 passed / 15 skipped",
+    "realBrowser": "8 passed in 49.12s; production four-node browser chain, batch and service recreation; full graph not covered"
+  },
+  "platforms": {
+    "darwin-arm64": {
+      "apiSource": "source/project-api.json",
+      "desktopSource": "desktop-source/project-desktop.json",
+      "apiPackaged": "packaged/project-api.json",
+      "desktopPackaged": "desktop-packaged/project-desktop.json",
+      "managementSmoke": "passed",
+      "productionFullChain": "not-accepted"
+    },
+    "darwin-x64": {
+      "status": "not-verified"
+    },
+    "win32-x64": {
+      "status": "not-verified"
+    }
+  },
+  "volume": "volume.json",
+  "coverage": "coverage-audit.json",
+  "ci": {
+    "status": "awaiting-branch-push",
+    "note": "GitHub Actions enabled, but workflow list and run list currently empty; dispatch to be attempted after branch push."
+  },
+  "remaining": [
+    "Production full graph/project data/End/manual integration requires approved architecture work; see production runtime integration spec.",
+    "1000 logs/minute, memory growth, full UI volume interactions remain unverified.",
+    "Real Sheets full-chain execution, native file picker/credentials, Windows/macOS Intel and manual installer acceptance remain unverified."
+  ],
+  "sourceFiles": {
+    "scripts/smoke-project-management.mjs": "271a0a7753bd1cb684ff6ff87f8f3c4d21dbeb3a7ef40daddf09a9ff97ba5800",
+    "scripts/smoke-project-management-desktop.mjs": "14633bcd3741ed0dff8299522071b302189528bfa8dfcb4068d542d63a50779b",
+    ".github/workflows/ci.yml": "c2934a092c5aba67e5d57ca9abd263f8cc3069dc61995b54ef25a3e5877918b5"
+  }
+}
