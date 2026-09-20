@@ -309,6 +309,15 @@ class _WorkerEventSink:
             elif event.get("type") == "execution:node_complete":
                 await self._externalize_large_result(event, execution_id)
                 event["artifactIds"] = list(self._artifacts.take(execution_id))
+                self._context.log_records.append(
+                    {
+                        "timestamp": self._context.clock.now().isoformat(),
+                        "level": event.get("logLevel") or ("error" if not event.get("success") else "info"),
+                        "message": event.get("message") or event.get("error") or "",
+                        "duration": event.get("duration") or 0,
+                        "nodeId": node_id,
+                    }
+                )
         for key in ("message", "error"):
             value = event.get(key)
             if isinstance(value, str) and len(value.encode("utf-8")) > 4096:
@@ -467,6 +476,7 @@ class _WorkerNestedWorkflows:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
             clock=self._parent.clock,
         )
@@ -634,6 +644,7 @@ class _WorkerCustomModules:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
             clock=self._parent.clock,
         )
@@ -771,6 +782,7 @@ class _WorkerCanvasSubflows:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
             clock=self._parent.clock,
         )

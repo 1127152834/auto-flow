@@ -96,6 +96,8 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "api_request",
         "webhook_request",
         "notify_webhook",
+        "print_log",
+        "export_log",
         "wait_page_load",
         "page_load_complete",
         "list_operation",

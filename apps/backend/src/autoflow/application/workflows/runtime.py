@@ -307,6 +307,8 @@ class _WorkflowScheduler:
                 "message": reported_result.message,
                 "error": reported_result.error,
                 "data": reported_result.data,
+                "logLevel": reported_result.log_level,
+                "duration": reported_result.duration,
             },
         )
         return reported_result if self.context.node_uses_sensitive_values else result

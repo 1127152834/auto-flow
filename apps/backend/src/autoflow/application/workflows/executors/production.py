@@ -64,6 +64,7 @@ from .list_advanced import (
     ListShuffleExecutor,
     ListUnionExecutor,
 )
+from .logging import LOG_EXECUTORS
 from .math_advanced import (
     MathClampExecutor,
     MathExpExecutor,
@@ -157,6 +158,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *AI_SCRAPER_EXECUTORS,
     *FIRECRAWL_EXECUTORS,
     *EXTERNAL_HTTP_EXECUTORS,
+    *LOG_EXECUTORS,
     *CAPTCHA_EXECUTORS,
     *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,

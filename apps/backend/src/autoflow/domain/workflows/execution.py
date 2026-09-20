@@ -230,6 +230,7 @@ class ExecutionContext:
     cancellation: CancellationToken | None = None
     clock: WorkflowClock = field(default_factory=WorkflowClock)
     data_rows: list[dict[str, Any]] = field(default_factory=list)
+    log_records: list[dict[str, Any]] = field(default_factory=list)
     sensitive_table_cells: set[tuple[int, Any]] = field(default_factory=set)
     network_monitors: dict[Any, BrowserRequestWatchPort] = field(default_factory=dict)
     current_row: dict[str, Any] = field(default_factory=dict)
