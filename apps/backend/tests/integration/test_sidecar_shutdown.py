@@ -96,9 +96,12 @@ def ensure_binary(**kwargs):
                     assert response.status_code == 202
                     operation = response.json()
                     staging = data / "data" / "kernels" / ".staging" / operation["id"]
-                    deadline = time.monotonic() + 5
+                    # Wait for the fixture to start before measuring shutdown; cold
+                    # interpreter startup under CI load is not shutdown latency.
+                    deadline = time.monotonic() + 20
                     while not (staging / "worker.pid").exists() and time.monotonic() < deadline:
                         time.sleep(0.02)
+                    assert (staging / "worker.pid").is_file(), (tmp_path / "stderr.log").read_text(errors="replace")
                     worker_pid = int((staging / "worker.pid").read_text())
                 with client.stream("GET", "/api/v1/kernels/events", headers=headers) as stream:
                     assert stream.status_code == 200

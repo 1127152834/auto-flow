@@ -42,6 +42,9 @@ jobs:
         timeout-minutes: 10
         if: runner.os == 'Windows'
         run: uv run --directory apps/backend pytest -vv --tb=short --maxfail=10 tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_protocol.py tests/integration/test_b1_stop_and_browser_crash_regressions.py tests/integration/test_workflow_recovery.py tests/unit/test_new_file.py tests/unit/test_project_excel_publication.py tests/integration/test_workflow_artifacts.py tests/integration/test_project_excel_exports.py tests/integration/test_project_crash_recovery.py tests/integration/test_workflow_worker_process.py tests/integration/test_kernel_worker.py tests/differential/workflows/test_b1_executor_parity.py tests/unit/test_android_runtime.py tests/unit/test_environment_browser.py tests/unit/workflows/test_browser_session_contract.py
+      - name: Check native desktop path and settings contracts
+        if: runner.os == 'Windows'
+        run: npm --workspace @autoflow/desktop test -- src/main/platform/paths.test.ts src/main/sidecar/supervisor.test.ts src/main/settings/settings.integration.test.ts src/renderer/domains/project-automations/pages/AutomationDetailPage.test.tsx
       - run: uv run --directory apps/backend pytest -q --maxfail=20
       - run: npm test
       - run: npm run build

@@ -102,7 +102,7 @@ it('runs settings and workspace lifecycle against real local sidecars', async ()
     expect(readFileSync(sentinel, 'utf8')).toBe('workspace-a')
     const persistedB = JSON.parse(readFileSync(store.path, 'utf8'))
     expect(persistedB).toMatchObject({ currentPath: realpathSync(workspaceB), preferences: { zoom: 110, motion: 'reduce' } })
-    expect(store.path.startsWith(`${userData}/`)).toBe(true)
+    expect(dirname(store.path)).toBe(userData)
 
     selectedDirectory = null
     const choiceA = await controller.chooseWorkspace('previous')

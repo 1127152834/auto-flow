@@ -40,7 +40,8 @@ it('submits one normalized payload containing values edited across all four tabs
   await waitFor(() => expect(props.onCreated).toHaveBeenCalledWith('a'))
   expect(writes).toHaveLength(1)
   expect(writes[0].body).toMatchObject({ name: '自动运行', workflowId: 'wf', parameterSchema: [{ name: '次数', type: 'number', defaultValue: 12 }], environmentPolicy: { source: 'newFromProfile', proxyOverride: { mode: 'none' } }, runPolicy: { maxTasks: 7, automaticExecutionTimeoutSeconds: 150 } })
-})
+// This exercises four tabs and persisted submission, not a five-second latency SLO.
+}, 15_000)
 
 it('keeps the edit draft through background refresh and a 409 until latest data is explicitly accepted', async () => {
   let current = automation

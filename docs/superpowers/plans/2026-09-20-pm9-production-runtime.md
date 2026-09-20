@@ -58,3 +58,5 @@ Ruling: 实际对照发现 Studio 同名输入节点会覆盖文本，且变量�
 
 - 2026-09-21：补齐 PM9-B 固定速率输入，复用既有运行事件仓库，仅在 smoke 创建的临时工作区对成功任务生成合成日志；无新增生产 API。60 秒计划写入 1000 条，同时通过实际 HTTP 分页读回并操作万行记录页、采样 GC 后 JS 堆。本机打包应用完整链通过：1000 条全部读回，60032 ms，最大批次延迟 38 ms；此证据不代表 worker 吞吐或长时间无泄漏。脚本测试 95 项、lint/typecheck 和 Python lint 通过。
 - Intel 候选 0f883cb1 后端全量 3212 passed / 23 skipped；前端 5454 passed / 1 failed，失败在记录初次加载的 role 查询等待，尚未进入代次替换操作。测试沿用相邻用例先等待记录文本再查询按钮，避免全 DOM role 查询占用异步加载窗口；未修改生产代码或放宽超时，记录页 50 项通过。
+
+- 候选 95597237 ARM 整个 CI 成功（后端 3212 passed / 23 skipped，前端 5455 passed，arm64 DMG）；Windows 后端完整 3178 passed / 57 skipped，前端 5451 passed / 4 failed，三处为硬编码 POSIX 路径，改用原生 join/dirname；四页签交互测试超过默认 5 秒，单用例给 15 秒预算，不将此交互契约测试当作性能 SLO。Intel 后端 3211 passed / 23 skipped / 1 failed，内核夹具未在 5 秒内启动；启动准备等待改为 20 秒，原服务关闭 3/8 秒断言保持。相关桌面 16 项、关闭 5 项及 lint 通过，Windows 桌面平台检查前置。未修改生产代码。
