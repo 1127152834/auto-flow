@@ -80,7 +80,7 @@ try {
   report.checks.push('all six project tabs open settled production pages')
   if (browserVersion) {
     report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion)
-    report.volume = await checkProjectVolume(sidecar, cdp, click, report.runtime)
+    report.volume = await checkProjectVolume(sidecar, cdp, click, report.runtime, userData)
     report.boundary = 'production management, real runtime and renderer volume; live Sheets and physical installation remain pending'
     await capture('volume')
     await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + project.projectId + '/environments')}`)
