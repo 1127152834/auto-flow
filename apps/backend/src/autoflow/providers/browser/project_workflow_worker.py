@@ -13,9 +13,9 @@ from threading import Event, Thread
 from typing import Any, TextIO
 from uuid import uuid4
 
+from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
-from autoflow.providers.browser.workflow_executor import WorkflowExecutor
 
 PROTOCOL_VERSION = 1
 MAX_JSONL_BYTES = 1024 * 1024
@@ -151,7 +151,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                 _write(stdout, _envelope(command, "ready"))
                 variables = dict(command.get("variables", {}))
                 variables.update(command.get("parameters", {}))
-                executor = WorkflowExecutor(
+                executor = ProjectGraphExecutor(
                     context,
                     variables,
                     emit,
