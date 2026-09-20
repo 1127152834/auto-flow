@@ -5,9 +5,11 @@
     "b7258a49",
     "67bd0fcb",
     "9d849d40",
-    "531255bd"
+    "531255bd",
+    "9603191d",
+    "44b35fa9"
   ],
-  "result": "18个控制、变量和视觉节点已按冻结源码迁入并注册；生产runtime已支持真实并行、条件死路消除、汇合、错误边、四类循环、嵌套break/continue、停止和总调度上限。",
+  "result": "18个控制、变量和视觉节点已按冻结源码迁入并注册；生产runtime支持真实并行、条件汇合、错误边、四类循环、嵌套break/continue、停止和总调度上限；每次调度的循环与子流程上下文已持久化到事件、日志和结果。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -58,19 +60,21 @@
     "mypy": "263 source files passed",
     "ruff": "本批受影响文件通过；全库仍有7个本批未修改测试文件的既有import排序问题",
     "diffCheck": "passed",
-    "visualNodeDifferential": "2 passed；group和note结果与冻结执行器一致，生产运行图按视觉节点语义过滤且不发布伪执行事件"
+    "visualNodeDifferential": "2 passed；group和note结果与冻结执行器一致，生产运行图按视觉节点语义过滤且不发布伪执行事件",
+    "executionContextAndStop": "37 passed；循环每轮生成独立executionId与轮次上下文，自定义模块内部事件包含嵌套scope，HTTP持久化日志/结果保留上下文；真实worker在1,000轮纯变量循环中停止后无后续节点、完成事件或残留进程。1,000轮停止专项连续运行3次通过。",
+    "openapi": "生成类型已更新且openapi:check通过",
+    "typescript": "desktop typecheck通过",
+    "eslint": "desktop lint通过",
+    "b3ClosureMatrix": "62 passed；冻结解析器覆盖空流程、悬空边、非法回环和控制端口，冻结变量对照覆盖缺失变量；运行时覆盖并行取消，真实worker覆盖1,000轮停止以及画布子流程32层成功/33层拒绝。"
   },
   "remaining": [
-    "B3批准范围内21个节点均已生产注册；自定义模块仓储和运行时作为必要配套仍未完成",
-    "自定义模块仓储、revision、依赖图、运行冻结解析和递归执行尚未实现",
-    "循环/子流程上下文尚未写入持久事件字段，产物分页仍需按executionId集中验收",
-    "1000轮纯变量停止与正式Electron复杂控制流链路尚未验收"
+    "正式Electron中编排复杂控制流、保存重开并真实执行尚未验收"
   ],
   "notClaimed": [
-    "B3里程碑完成",
-    "子流程或自定义模块真实执行",
-    "正式Electron控制流验收",
+    "B3里程碑整体完成",
+    "正式Electron复杂控制流验收",
     "macOS Intel或Windows实机结果"
   ],
-  "userDatabaseModified": false
+  "userDatabaseModified": false,
+  "verifiedAt": "2026-09-20"
 }

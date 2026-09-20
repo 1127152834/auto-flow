@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B3-canvas-subflow-runtime-2026-09-16",
   "recordedAt": "2026-09-16",
-  "result": "subflow已完成冻结标记语义与生产子图执行；定义区节点不会在主图误跑，调用时按名称优先、ID回退执行分组几何或subflow_header可达图。",
+  "result": "subflow已完成冻结标记语义与生产子图执行；定义区节点不会在主图误跑，调用时按名称优先、ID回退执行分组几何或subflow_header可达图；嵌套事件保留完整scope链。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -24,17 +24,21 @@
     "mypy": "受影响生产模块通过",
     "ruff": "受影响生产与测试文件通过",
     "fullBackend": "2390 passed, 5 skipped, 2 warnings in 268.44s",
-    "affectedRegression": "源码映射、真实worker、依赖合同及registry合计51 passed, 1 skipped in 13.78s"
+    "affectedRegression": "源码映射、真实worker、依赖合同及registry合计51 passed, 1 skipped in 13.78s",
+    "depthBoundary": "真实worker中32层画布子流程成功，最深节点事件包含32层scope；33层在进入第33层前以嵌套层数过深(>32)明确失败。",
+    "executionContext": "每层子流程绑定对应ExecutionContext并共享同一递归栈，避免深层事件错误回落到根上下文。"
   },
   "remaining": [
-    "正式Electron真实UI编排、保存重开和执行",
-    "32层深度上限与嵌套网页副作用集中验收",
-    "自定义模块仓储与运行时为B3必要配套"
+    "正式Electron真实UI编排、保存重开和执行"
   ],
   "notClaimed": [
-    "B3里程碑完成",
-    "自定义模块完成",
-    "正式Electron验收"
+    "B3里程碑整体完成",
+    "正式Electron验收",
+    "macOS Intel或Windows实机结果"
   ],
-  "userDatabaseModified": false
+  "userDatabaseModified": false,
+  "verifiedAt": "2026-09-20",
+  "implementationCommits": [
+    "44b35fa9"
+  ]
 }

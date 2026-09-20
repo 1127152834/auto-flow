@@ -68,14 +68,14 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B3-001 | 起始节点、孤立节点、条件/错误边和汇合 | 与冻结 parser 的选路和副作用一致 | 应用层已通过：10 组解析器差分和 15 项运行时合同覆盖起点、条件真假、死路消除、真实汇合、错误边、环与调度上限；错误分支会继续执行但仍保留原失败终态。正式 Electron 组合仍待验收。[解析器差分证据](studio-backend-migration/evidence/b3/graph-parser-differential-2026-09-16.json)、[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-002 | 循环、foreach、foreach_dict、infinite_loop、break/continue | 轮次、局部变量和退出路径一致；可停止 | 部分通过：四类循环入口、列表/字典初值、count/range/while推进和嵌套最近层 break/continue 已通过冻结差分及生产图测试；总调度上限与每轮主动让出已实现。1,000 轮停止和正式 UI 尚未验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-001 | 起始节点、孤立节点、条件/错误边和汇合 | 与冻结 parser 的选路和副作用一致 | 应用层已通过：冻结解析器差分及运行时合同覆盖空流程、起点、悬空边、条件真假、死路消除、真实汇合、错误边、非法回环与调度上限；错误分支会继续执行但仍保留原失败终态。正式 Electron 组合仍待验收。[解析器差分证据](studio-backend-migration/evidence/b3/graph-parser-differential-2026-09-16.json)、[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-002 | 循环、foreach、foreach_dict、infinite_loop、break/continue | 轮次、局部变量和退出路径一致；可停止 | 后端通过、正式 UI 待验收：四类循环入口、列表/字典初值、count/range/while 推进、嵌套最近层 break/continue、总调度上限与每轮主动让出均已验证；真实 worker 的 1,000 轮纯变量循环中途停止后无后继调度或残留进程。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-003 | 并行分支 | 验证偏序和结果集合；不为测试稳定改成串行 | 应用层已通过：双分支必须同时进入后才能完成，汇合只执行一次；产物 writer 与敏感值状态按节点任务隔离，没有为测试串行化。正式 worker/Electron 组合仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 | BE-B3-004 | `${name}`、`{name}`、递归列表/字典、表达式和缺失变量 | 与冻结变量测试一致，错误明确 | 部分通过：16 个控制/变量节点的 48 项冻结差分已覆盖模板、表达式、变量写入、JSONPath、时间及错误文本；完整递归变量矩阵与正式 UI 尚未关闭。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 部分通过：冻结标记语义、名称优先/ID回退、分组几何、subflow_header可达图、定义区主图隔离及循环引用已在真实worker通过；32层上限和正式Electron保存恢复待验收。[子流程证据](studio-backend-migration/evidence/b3/canvas-subflow-runtime-2026-09-16.json) |
+| BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 后端通过、正式 UI 待验收：冻结标记语义、名称优先/ID回退、分组几何、subflow_header可达图、定义区主图隔离及循环引用已在真实 worker 通过；32 层成功并保留完整 scope，33 层明确拒绝。正式 Electron 保存恢复仍归 B3.6。[子流程证据](studio-backend-migration/evidence/b3/canvas-subflow-runtime-2026-09-16.json) |
 | BE-B3-006 | 自定义模块更新、依赖缺失、运行中修改 | 运行使用冻结解析内容；缺失依赖启动前拒绝 | 后端与前端合同已通过：八个入口、revision/幂等、名称冲突、依赖缺失/循环、引用删除保护、运行中修改不影响冻结 revision/digest、真实 worker 隔离参数与声明输出、递归深度及浏览器需求传播均有证据。正式 Electron 真实 UI 组合仍待 B3.6 集中验收。[自定义模块证据](studio-backend-migration/evidence/b3/custom-module-runtime-2026-09-16.json) |
-| BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 部分通过：每次调度产生独立 executionId，同一节点多轮保留重复执行顺序；并行节点产物 writer 按任务绑定。循环事件持久化、分页和正式 UI 仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 部分通过：正在执行节点可被取消且不调度后继，纯变量循环每轮主动让出，总调度上限阻止普通环无限运行；尚缺 1,000 轮正式 worker 停止证据。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 后端通过、正式 UI 待验收：每次调度产生独立 executionId，同一节点多轮保留顺序及循环轮次；嵌套工作流、自定义模块和画布子流程记录 scope；协调器持久化上下文，日志、结果和产物均按 executionId 关联。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 后端通过：真实 worker 在 1,000 轮纯变量循环中途停止，停止后事件数量不再增加，不执行 done 节点、不发布 execution:completed，worker 进程和活跃槽均清空；专项连续运行 3 次通过。正式 Electron 组合仍归 B3.6。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
 
 ## 7. B4 纯数据与表格
 
