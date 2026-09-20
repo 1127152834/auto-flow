@@ -379,3 +379,12 @@ async def test_worker_exit_interrupts_pending_manual_capability(tmp_path):
         await asyncio.wait_for(instance.run(run_id=str(uuid4()), execution_generation=1, execution_plan={}, parameters={}, variables={}, browser={}, executable=executable, on_event=event), 3)
     assert cancelled.is_set()
     assert not instance.busy()
+
+
+def test_worker_protocol_is_utf8_even_with_legacy_pipe_encoding():
+    import os
+    import subprocess
+    code = "from autoflow.bootstrap.test_browser_worker import browser_worker_main; import sys; browser_worker_main(lambda stopped: print(sys.stdin.readline().strip()) or 0)"
+    result = subprocess.run([sys.executable, '-c', code], input='中文参数\n'.encode(), capture_output=True, env={**os.environ, 'PYTHONIOENCODING': 'ascii'}, timeout=10, check=False)
+    assert result.returncode == 0, result.stderr.decode(errors='replace')
+    assert result.stdout.decode().splitlines() == ['中文参数']

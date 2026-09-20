@@ -22,6 +22,10 @@ def test_browser_worker_main() -> int:
 
 
 def browser_worker_main(runner: Callable[[Event], int]) -> int:
+    # JSONL is UTF-8 on every platform, including Windows legacy pipe locales.
+    for stream in (sys.stdin, sys.stdout):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     job = _windows_kill_on_exit_job()
     stopped = Event()
     watcher_done = Event()
