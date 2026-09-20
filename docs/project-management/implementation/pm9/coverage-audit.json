@@ -1,8 +1,8 @@
 {
-  "date": "2026-09-20",
+  "date": "2026-09-21",
   "status": "incomplete",
   "source": "docs/project-management/implementation/coverage.json",
-  "scope": "逐项复核保留历史状态；PM9 仅为直接测试的功能添加生产证据，不批量升级发行状态",
+  "scope": "Coverage bookkeeping and direct CI evidence reconciliation; planned/partial does not prove missing implementation. No blanket acceptance promotion.",
   "groups": {
     "features": {
       "count": 48,
@@ -304,8 +304,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 89,
-        "planned": 72,
+        "partially_verified": 91,
+        "planned": 70,
         "verified": 17
       },
       "items": [
@@ -653,8 +653,8 @@
         },
         {
           "id": "DATA-LINK-05",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false
         },
         {
@@ -1223,8 +1223,8 @@
         },
         {
           "id": "FLOW-A16",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false
         },
         {
@@ -1382,8 +1382,8 @@
     "execution_contracts_and_gates": {
       "count": 25,
       "statuses": {
-        "partially_verified": 14,
-        "planned": 10,
+        "partially_verified": 18,
+        "planned": 6,
         "verified": 1
       },
       "items": [
@@ -1455,8 +1455,8 @@
         },
         {
           "id": "XE-C12",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false
         },
         {
@@ -1491,8 +1491,8 @@
         },
         {
           "id": "XE-C18",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false
         },
         {
@@ -1515,14 +1515,14 @@
         },
         {
           "id": "XE-G04",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false
         },
         {
           "id": "XE-G05",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false
         },
         {
@@ -1539,5 +1539,25 @@
         }
       ]
     }
-  }
+  },
+  "missingPlannedPaths": {
+    "affectedEntries": 73,
+    "paths": {
+      "apps/backend/tests/integration/test_project_excel.py": 13,
+      "apps/backend/tests/integration/test_project_environment_retention.py": 32,
+      "apps/backend/tests/integration/test_project_claims.py": 17,
+      "apps/backend/tests/integration/test_project_full_scenarios.py": 7,
+      "apps/backend/tests/integration/test_project_manual_actions.py": 4
+    },
+    "meaning": "Original planned paths are absent; actual tests may be split/renamed. Each acceptance assertion still needs mapping; absence is not a missing-test verdict."
+  },
+  "directEvidenceReconciled": [
+    "DATA-LINK-05",
+    "FLOW-A16",
+    "XE-C12",
+    "XE-C18",
+    "XE-G04",
+    "XE-G05"
+  ],
+  "remainingReport": "completion-gaps.md"
 }

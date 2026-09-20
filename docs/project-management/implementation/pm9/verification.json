@@ -279,10 +279,10 @@
       }
     ],
     "conclusion": "success",
-    "evidenceCommitPolicy": "Subsequent final evidence commit changes documentation and screenshots only, with [skip ci]. Source hashes match tested d59607f3; no later production/test/config changes."
+    "evidenceCommitPolicy": "Subsequent evidence/audit commits change documentation and screenshots only with [skip ci]. Source hashes match tested d59607f3; no later production/test/config changes."
   },
   "remaining": [
-    "Live Sheets full-chain requires real authorization/resource evidence.",
+    "PM6 historical service-account live Sheets and system credential evidence exists; current PM9 packaged full-chain and desktop OAuth remain unverified. Prior run removed local credentials; current authorization availability is not established.",
     "Windows x64, Intel and Apple Silicon manual installation, native file picker/credential store, signing/notarization remain pending.",
     "Parallel graphs containing loop/manual nodes are rejected; cross-process manual replay and undeclared jump/input are unsupported.",
     "Historical full-spec coverage remains partial; no blanket promotion of 251 entries.",
@@ -312,5 +312,6 @@
   },
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "databaseContention": "windows-contention.json",
-  "deliveryStatus": "implemented_and_ci_verified; physical/live-service/full-spec acceptance remains pending"
+  "deliveryStatus": "implemented_and_ci_verified; physical/live-service/full-spec acceptance remains pending",
+  "remainingReport": "completion-gaps.md"
 }

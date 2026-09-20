@@ -34,3 +34,5 @@ Windows 原生安全工作流文件输出与缺少原生所有权证据的孤儿
 | macOS Apple Silicon | 3214 / 23 | 5455 | 85377 ms / 0 | 1539 | [ARM DMG 与原始报告](../project-management/implementation/pm9/ci-darwin-arm64.json) |
 
 各平台前端均为 405 文件；五个报告分别记录 HTTP 前置、源码 API、源码桌面、打包 API 和打包桌面。所有安装包均已上传到同轮 Actions artifact，链接、摘要与过期时间见平台报告。Windows 万条准备约 12.1 分钟，真实 worker 未达到每分钟千条；独立合成输入 1000 条全部读回只证明该输入速率下的有界分页与界面行为。工程交付与 CI 已完成，发行验收仍保持未关闭。
+
+2026-09-21 完整性复核：PM9 仍有实现与逐项验收缺口，详见 [剩余工作清单](../project-management/implementation/pm9/completion-gaps.md)。历史 PM6 已完成服务账号实网与系统凭据读写，待补的是本次 PM9 打包完整链、OAuth 和原生/实机专项，不将历史已做事项写成从未验证。
