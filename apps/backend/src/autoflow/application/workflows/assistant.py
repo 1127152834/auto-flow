@@ -28,7 +28,9 @@ from autoflow.providers.assistant import (
 
 
 class ManagedModels(Protocol):
-    async def invoke(self, model_id: str, payload: dict[str, Any]) -> ModelInvocationResult: ...
+    async def invoke(
+        self, model_id: str, payload: dict[str, Any]
+    ) -> ModelInvocationResult: ...
 
 
 def _now() -> datetime:
@@ -75,6 +77,16 @@ class WorkflowAssistantService:
     ) -> AssistantModelReply:
         provider_payload = dict(payload)
         fallback_ids = provider_payload.pop("fallbackModelIds", [])
+        session_id = provider_payload.pop("_assistantSessionId", None)
+
+        async def on_chunk(kind: str, delta: str, full: str) -> None:
+            if isinstance(session_id, str):
+                await self._events.publish(
+                    f"ai_assistant:{kind}_partial",
+                    {"session_id": session_id, "delta": delta, "full": full},
+                )
+
+        provider_payload["_onChunk"] = on_chunk
         model_ids = list(dict.fromkeys([model_id, *fallback_ids]))
         last_error: ModelError | None = None
         for candidate in model_ids:
@@ -121,7 +133,9 @@ class WorkflowAssistantService:
                 session_id, message.strip()[:24] or "新对话", now=_now()
             )
             if session.status in {"running", "waiting_for_action"}:
-                raise WorkflowRunError("ASSISTANT_SESSION_BUSY", "小助手正在处理上一条消息", 409)
+                raise WorkflowRunError(
+                    "ASSISTANT_SESSION_BUSY", "小助手正在处理上一条消息", 409
+                )
             user = _message("user", message, images=list(images or []))
             session = self._repository.save(
                 session.with_changes(
@@ -136,7 +150,11 @@ class WorkflowAssistantService:
                     continue
                 content: Any = item.get("content", "")
                 attached = item.get("images")
-                if item.get("role") == "user" and isinstance(attached, list) and attached:
+                if (
+                    item.get("role") == "user"
+                    and isinstance(attached, list)
+                    and attached
+                ):
                     content = [
                         {"type": "text", "text": str(content)},
                         *[
@@ -162,6 +180,7 @@ class WorkflowAssistantService:
             task = asyncio.create_task(
                 self._graph.start(
                     thread_id=f"assistant/{session_id}",
+                    session_id=session_id,
                     model_id=model_id,
                     messages=graph_messages,
                     enable_tools=enable_tools,
@@ -192,7 +211,10 @@ class WorkflowAssistantService:
     ) -> dict[str, Any] | None:
         session = self._required(session_id)
         if session.status == "cancelled":
-            return {"session_id": session_id, "message": copy.deepcopy(session.messages[-1])}
+            return {
+                "session_id": session_id,
+                "message": copy.deepcopy(session.messages[-1]),
+            }
         if result.status == "waiting_for_action":
             assert result.tool_call is not None and result.command_id is not None
             call = result.tool_call
@@ -208,6 +230,10 @@ class WorkflowAssistantService:
                     status="waiting_for_action",
                     pending_action=pending,
                 )
+            )
+            await self._events.publish(
+                "ai_assistant:assistant_partial",
+                {"session_id": session_id, "message": copy.deepcopy(assistant)},
             )
             await self._events.publish(
                 "ai_assistant:tool_call",
@@ -250,7 +276,7 @@ class WorkflowAssistantService:
             )
             await self._events.publish(
                 "ai_assistant:content_partial",
-                {"session_id": session_id, "delta": result.content, "full": result.content},
+                {"session_id": session_id, "delta": "", "full": result.content},
             )
             response = {"session_id": session_id, "message": assistant}
         waiter = self._waiters.get(session_id)
@@ -272,12 +298,19 @@ class WorkflowAssistantService:
         if (
             not isinstance(tool_call_id, str)
             or not tool_call_id
-            or (requested_session_id is not None and not isinstance(requested_session_id, str))
+            or (
+                requested_session_id is not None
+                and not isinstance(requested_session_id, str)
+            )
             or not isinstance(claim_command_id, str)
             or not claim_command_id
             or not isinstance(result, dict)
         ):
-            return {"commandId": command_id, "success": False, "error": "工具结果无效"}, 422
+            return {
+                "commandId": command_id,
+                "success": False,
+                "error": "工具结果无效",
+            }, 422
         fingerprint = hashlib.sha256(
             json.dumps(
                 {"event": event, "data": data},
@@ -290,9 +323,15 @@ class WorkflowAssistantService:
         previous = self._repository.get_command(command_id)
         if previous is not None:
             if previous.request_hash != fingerprint:
-                return {"commandId": command_id, "success": False, "error": "commandId 已用于不同请求"}, 409
+                return {
+                    "commandId": command_id,
+                    "success": False,
+                    "error": "commandId 已用于不同请求",
+                }, 409
             if previous.receipt is not None:
-                return copy.deepcopy(previous.receipt), 200 if previous.receipt.get("success") else 409
+                return copy.deepcopy(previous.receipt), 200 if previous.receipt.get(
+                    "success"
+                ) else 409
         session = (
             self._repository.get(previous.session_id)
             if previous is not None
@@ -307,9 +346,17 @@ class WorkflowAssistantService:
             or not session.pending_action
             or session.pending_action.get("commandId") != tool_call_id
         ) and previous is None:
-            return {"commandId": command_id, "success": False, "error": "工具请求不存在或已结束"}, 409
+            return {
+                "commandId": command_id,
+                "success": False,
+                "error": "工具请求不存在或已结束",
+            }, 409
         if session is None:
-            return {"commandId": command_id, "success": False, "error": "助手会话不存在"}, 409
+            return {
+                "commandId": command_id,
+                "success": False,
+                "error": "助手会话不存在",
+            }, 409
         claim = self._repository.get_command(claim_command_id)
         pending_claim_id = (
             session.pending_action.get("claimCommandId")
@@ -338,7 +385,11 @@ class WorkflowAssistantService:
                     now=_now(),
                 )
             except ValueError as error:
-                return {"commandId": command_id, "success": False, "error": str(error)}, 409
+                return {
+                    "commandId": command_id,
+                    "success": False,
+                    "error": str(error),
+                }, 409
         graph_thread = f"assistant/{session.id}"
         current_graph = await self._graph.current(thread_id=graph_thread)
         resumed = (
@@ -394,7 +445,11 @@ class WorkflowAssistantService:
             isinstance(value, str) and value
             for value in (session_id, tool_call_id, executor_id)
         ):
-            return {"commandId": command_id, "success": False, "error": "工具认领信息无效"}, 422
+            return {
+                "commandId": command_id,
+                "success": False,
+                "error": "工具认领信息无效",
+            }, 422
         assert isinstance(session_id, str)
         assert isinstance(tool_call_id, str)
         assert isinstance(executor_id, str)
@@ -457,7 +512,9 @@ class WorkflowAssistantService:
                 pending["claimCommandId"] = command_id
                 self._repository.save(session.with_changes(pending_action=pending))
             receipt = {"commandId": command_id, "success": True}
-            self._repository.finish_command(command_id, status="completed", receipt=receipt)
+            self._repository.finish_command(
+                command_id, status="completed", receipt=receipt
+            )
             return receipt, 200
 
     def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
@@ -465,7 +522,12 @@ class WorkflowAssistantService:
         if command is None:
             raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)
         if command.receipt is None:
-            return {"commandId": command_id, "success": False, "status": "confirmed", "httpStatus": 202}, 200
+            return {
+                "commandId": command_id,
+                "success": False,
+                "status": "confirmed",
+                "httpStatus": 202,
+            }, 200
         return {**copy.deepcopy(command.receipt), "httpStatus": 200}, 200
 
     def get_session(self, session_id: str) -> dict[str, Any]:
@@ -487,7 +549,11 @@ class WorkflowAssistantService:
                 "message_count": len(item.messages),
                 "updated_at": item.updated_at.isoformat(),
                 "last_message_preview": next(
-                    (str(message.get("content", ""))[:120] for message in reversed(item.messages) if message.get("content")),
+                    (
+                        str(message.get("content", ""))[:120]
+                        for message in reversed(item.messages)
+                        if message.get("content")
+                    ),
                     "",
                 ),
             }
@@ -510,7 +576,11 @@ class WorkflowAssistantService:
     def truncate_session(self, session_id: str, message_id: str) -> dict[str, Any]:
         session = self._required(session_id)
         index = next(
-            (index for index, item in enumerate(session.messages) if item.get("id") == message_id),
+            (
+                index
+                for index, item in enumerate(session.messages)
+                if item.get("id") == message_id
+            ),
             None,
         )
         if index is None:
@@ -592,7 +662,9 @@ class WorkflowAssistantService:
             "success": True,
             "message": "模型连接正常",
             "detail": result.content[:120],
-            "latency_ms": round((asyncio.get_running_loop().time() - started) * 1000, 2),
+            "latency_ms": round(
+                (asyncio.get_running_loop().time() - started) * 1000, 2
+            ),
         }
 
     def has_command(self, command_id: str) -> bool:
@@ -601,5 +673,7 @@ class WorkflowAssistantService:
     def _required(self, session_id: str) -> AssistantSession:
         session = self._repository.get(session_id)
         if session is None:
-            raise WorkflowRunError("ASSISTANT_SESSION_NOT_FOUND", "小助手会话不存在", 404)
+            raise WorkflowRunError(
+                "ASSISTANT_SESSION_NOT_FOUND", "小助手会话不存在", 404
+            )
         return session

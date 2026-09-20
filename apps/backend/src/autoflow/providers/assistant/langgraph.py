@@ -13,12 +13,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
+from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
-
-from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +48,7 @@ ModelInvoker = Callable[[str, dict[str, Any]], Awaitable[AssistantModelReply]]
 
 
 class _State(TypedDict, total=False):
+    session_id: str
     model_id: str
     fallback_model_ids: list[str]
     messages: list[dict[str, Any]]
@@ -251,6 +251,7 @@ class AssistantGraph:
                 "temperature": state["temperature"],
                 "maxTokens": state["max_tokens"],
                 "fallbackModelIds": state.get("fallback_model_ids", []),
+                "_assistantSessionId": state["session_id"],
             }
             if state.get("enable_tools"):
                 payload["tools"] = _tool_schema()
@@ -280,12 +281,22 @@ class AssistantGraph:
                 ]
             messages.append(assistant)
             if len(reply.tool_calls) > 1:
-                return {**state, "messages": messages, "steps": steps, "error": "一次只允许一个画布工具请求"}
+                return {
+                    **state,
+                    "messages": messages,
+                    "steps": steps,
+                    "error": "一次只允许一个画布工具请求",
+                }
             if reply.tool_calls:
                 call = reply.tool_calls[0]
                 error = _validate_tool_call(call)
                 if error:
-                    return {**state, "messages": messages, "steps": steps, "error": error}
+                    return {
+                        **state,
+                        "messages": messages,
+                        "steps": steps,
+                        "error": error,
+                    }
                 return {
                     **state,
                     "messages": messages,
@@ -352,6 +363,7 @@ class AssistantGraph:
         model_id: str,
         messages: list[dict[str, Any]],
         enable_tools: bool,
+        session_id: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 4000,
         fallback_model_ids: list[str] | None = None,
@@ -359,6 +371,7 @@ class AssistantGraph:
         if not thread_id or not model_id:
             raise ValueError("助手会话和模型不能为空")
         initial: _State = {
+            "session_id": session_id or thread_id.rsplit("/", 1)[-1],
             "model_id": model_id,
             "fallback_model_ids": list(fallback_model_ids or []),
             "messages": messages,

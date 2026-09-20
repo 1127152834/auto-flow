@@ -4,7 +4,6 @@ import asyncio
 from pathlib import Path
 
 import pytest
-
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.assistant import WorkflowAssistantService
 from autoflow.domain.models import ModelError, ModelInvocationResult
@@ -75,7 +74,20 @@ class FallbackModels:
         self.calls.append(model_id)
         if model_id == "model-primary":
             raise ModelError("MODEL_PROVIDER_RATE_LIMITED", "限流", 429)
-        return ModelInvocationResult(model_id, "备用模型完成", "", {}, "https://safe.test")
+        return ModelInvocationResult(
+            model_id, "备用模型完成", "", {}, "https://safe.test"
+        )
+
+
+class StreamingModels:
+    async def invoke(self, model_id: str, payload):
+        on_chunk = payload["_onChunk"]
+        await on_chunk("reasoning", "检查", "检查")
+        await on_chunk("content", "已", "已")
+        await on_chunk("content", "完成", "已完成")
+        return ModelInvocationResult(
+            model_id, "已完成", "检查", {}, "https://safe.test"
+        )
 
 
 def _service(tmp_path: Path):
@@ -112,7 +124,9 @@ async def _claim(
 
 
 @pytest.mark.asyncio
-async def test_assistant_projects_tool_wait_and_result_to_numbered_events(tmp_path) -> None:
+async def test_assistant_projects_tool_wait_and_result_to_numbered_events(
+    tmp_path,
+) -> None:
     service, events, factory, models = _service(tmp_path)
     chat = asyncio.create_task(
         service.chat(
@@ -124,16 +138,17 @@ async def test_assistant_projects_tool_wait_and_result_to_numbered_events(tmp_pa
         )
     )
     for _ in range(100):
-        if events.sequence >= 2:
+        if events.sequence >= 3:
             break
         await asyncio.sleep(0.01)
 
     projected = events.replay(after_sequence=0)
     assert [item.event for item in projected] == [
+        "ai_assistant:assistant_partial",
         "ai_assistant:tool_call",
         "ai_assistant:client_action_request",
     ]
-    request = projected[1].data
+    request = projected[2].data
     assert request == {
         "session_id": "session-1",
         "tool_call_id": "tool-1",
@@ -157,7 +172,7 @@ async def test_assistant_projects_tool_wait_and_result_to_numbered_events(tmp_pa
     assert status == 200 and receipt == {"commandId": "command-1", "success": True}
     assert response["message"]["content"] == "已添加打开网页节点"
     assert models.calls == 2
-    assert [item.event for item in events.replay(after_sequence=2)] == [
+    assert [item.event for item in events.replay(after_sequence=3)] == [
         "ai_assistant:tool_result",
         "ai_assistant:content_partial",
     ]
@@ -169,7 +184,9 @@ async def test_assistant_projects_tool_wait_and_result_to_numbered_events(tmp_pa
 
 
 @pytest.mark.asyncio
-async def test_assistant_ack_is_idempotent_and_different_payload_conflicts(tmp_path) -> None:
+async def test_assistant_ack_is_idempotent_and_different_payload_conflicts(
+    tmp_path,
+) -> None:
     service, events, factory, _models = _service(tmp_path)
     chat = asyncio.create_task(
         service.chat(
@@ -181,7 +198,7 @@ async def test_assistant_ack_is_idempotent_and_different_payload_conflicts(tmp_p
         )
     )
     for _ in range(100):
-        if events.sequence >= 2:
+        if events.sequence >= 3:
             break
         await asyncio.sleep(0.01)
     await _claim(service, "session-2", "tool-1", "claim-command-2")
@@ -191,8 +208,13 @@ async def test_assistant_ack_is_idempotent_and_different_payload_conflicts(tmp_p
         "claim_command_id": "claim-command-2",
         "result": {"success": True},
     }
-    first = await service.submit_event_command("command-2", "ai_client_action_ack", payload)
-    assert await service.submit_event_command("command-2", "ai_client_action_ack", payload) == first
+    first = await service.submit_event_command(
+        "command-2", "ai_client_action_ack", payload
+    )
+    assert (
+        await service.submit_event_command("command-2", "ai_client_action_ack", payload)
+        == first
+    )
     conflict, status = await service.submit_event_command(
         "command-2",
         "ai_client_action_ack",
@@ -216,7 +238,7 @@ async def test_assistant_action_must_be_claimed_once_before_result(tmp_path) -> 
         )
     )
     for _ in range(100):
-        if events.sequence >= 2:
+        if events.sequence >= 3:
             break
         await asyncio.sleep(0.01)
 
@@ -242,9 +264,12 @@ async def test_assistant_action_must_be_claimed_once_before_result(tmp_path) -> 
         "claim-tool-1", "ai_client_action_claim", claim_payload
     )
     assert claimed == ({"commandId": "claim-tool-1", "success": True}, 200)
-    assert await service.submit_event_command(
-        "claim-tool-1", "ai_client_action_claim", claim_payload
-    ) == claimed
+    assert (
+        await service.submit_event_command(
+            "claim-tool-1", "ai_client_action_claim", claim_payload
+        )
+        == claimed
+    )
 
     conflict, conflict_status = await service.submit_event_command(
         "other-claim",
@@ -270,7 +295,9 @@ async def test_assistant_action_must_be_claimed_once_before_result(tmp_path) -> 
 
 
 @pytest.mark.asyncio
-async def test_cancel_interrupts_active_model_and_cannot_be_overwritten(tmp_path) -> None:
+async def test_cancel_interrupts_active_model_and_cannot_be_overwritten(
+    tmp_path,
+) -> None:
     database = tmp_path / "workspace.db"
     migrate_database(database)
     factory = create_session_factory(database)
@@ -366,6 +393,68 @@ async def test_assistant_uses_managed_fallback_ids_in_order(tmp_path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_assistant_projects_real_model_chunks_to_numbered_events(
+    tmp_path,
+) -> None:
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    events = StudioEventJournal()
+    service = WorkflowAssistantService(
+        SqlAlchemyWorkflowAssistant(factory),
+        tmp_path / "workspace" / "assistant" / "checkpoints.sqlite3",
+        StreamingModels(),
+        events,
+    )
+
+    response = await service.chat(
+        session_id="stream-session",
+        message="检查流程",
+        model_id="model-main",
+        enable_tools=False,
+        workflow_context={},
+    )
+
+    assert response["message"]["content"] == "已完成"
+    projected = events.replay(after_sequence=0)
+    assert [(item.sequence, item.event, item.data) for item in projected] == [
+        (
+            1,
+            "ai_assistant:reasoning_partial",
+            {
+                "session_id": "stream-session",
+                "delta": "检查",
+                "full": "检查",
+            },
+        ),
+        (
+            2,
+            "ai_assistant:content_partial",
+            {"session_id": "stream-session", "delta": "已", "full": "已"},
+        ),
+        (
+            3,
+            "ai_assistant:content_partial",
+            {
+                "session_id": "stream-session",
+                "delta": "完成",
+                "full": "已完成",
+            },
+        ),
+        (
+            4,
+            "ai_assistant:content_partial",
+            {
+                "session_id": "stream-session",
+                "delta": "",
+                "full": "已完成",
+            },
+        ),
+    ]
+    factory.dispose()
+
+
+@pytest.mark.asyncio
 async def test_confirmed_action_recovers_after_graph_advanced_before_session_save(
     tmp_path, monkeypatch
 ) -> None:
@@ -380,7 +469,7 @@ async def test_confirmed_action_recovers_after_graph_advanced_before_session_sav
         )
     )
     for _ in range(100):
-        if events.sequence >= 2:
+        if events.sequence >= 3:
             break
         await asyncio.sleep(0.01)
 

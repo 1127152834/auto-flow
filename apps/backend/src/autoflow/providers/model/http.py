@@ -4,12 +4,11 @@ import asyncio
 import base64
 import json
 import time
-from collections.abc import Callable, Mapping
-from typing import Any
+from collections.abc import Awaitable, Callable, Mapping
+from typing import Any, cast
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 import httpx
-
 from autoflow.domain.models import (
     DiscoveryResult,
     ModelError,
@@ -24,6 +23,7 @@ from autoflow.domain.models.validation import validate_connection
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_MEDIA_BYTES = 64 * 1024 * 1024
 MAX_SAFE_INTEGER = 9_007_199_254_740_991
+ChunkCallback = Callable[[str, str, str], Awaitable[None]]
 
 
 def normalize_base_url(connection: ProviderConnection) -> str:
@@ -149,6 +149,7 @@ class HttpModelProvider:
         timeout = payload.get("timeoutSeconds", 180)
         tools = payload.get("tools")
         tool_choice = payload.get("toolChoice", payload.get("tool_choice", "auto"))
+        on_chunk = payload.get("_onChunk")
         if (
             not isinstance(temperature, (int, float))
             or isinstance(temperature, bool)
@@ -165,6 +166,8 @@ class HttpModelProvider:
             or not all(isinstance(item, dict) for item in tools)
             or not isinstance(tool_choice, (str, dict))
         ):
+            raise _invalid("模型调用")
+        if on_chunk is not None and not callable(on_chunk):
             raise _invalid("模型调用")
         if tools and connection.provider_kind in {"anthropic", "gemini"}:
             raise ModelError(
@@ -191,19 +194,32 @@ class HttpModelProvider:
                 "messages": messages,
                 "temperature": float(temperature),
                 "max_tokens": max_tokens,
-                "stream": False,
+                "stream": on_chunk is not None,
             }
             if tools:
                 body.update(tools=tools, tool_choice=tool_choice)
-        response = await self._request(
-            "POST",
-            endpoint,
-            _headers(connection, secret),
-            params,
-            body,
-            float(timeout),
-            "模型调用",
-        )
+        if on_chunk is not None and connection.provider_kind not in {
+            "anthropic",
+            "gemini",
+        }:
+            response = await self._request_openai_stream(
+                endpoint,
+                _headers(connection, secret),
+                params,
+                body,
+                float(timeout),
+                cast(ChunkCallback, on_chunk),
+            )
+        else:
+            response = await self._request(
+                "POST",
+                endpoint,
+                _headers(connection, secret),
+                params,
+                body,
+                float(timeout),
+                "模型调用",
+            )
         content, reasoning = _previews(connection.provider_kind, response)
         tool_calls = _openai_tool_calls(response) if tools else ()
         if not content and reasoning:
@@ -219,6 +235,105 @@ class HttpModelProvider:
             _safe_endpoint(endpoint),
             tool_calls,
         )
+
+    async def _request_openai_stream(
+        self,
+        endpoint: str,
+        headers: dict[str, str],
+        params: dict[str, str | int],
+        payload: dict[str, Any],
+        timeout: float,
+        on_chunk: ChunkCallback,
+    ) -> dict[str, Any]:
+        content = ""
+        reasoning = ""
+        usage: dict[str, Any] = {}
+        tool_parts: dict[int, dict[str, str]] = {}
+        received = 0
+        try:
+            endpoint = _with_params(endpoint, params)
+            async with (
+                self._client_factory(
+                    timeout=timeout,
+                    follow_redirects=False,
+                    trust_env=False,
+                    transport=self._transport,
+                ) as client,
+                client.stream(
+                    "POST", endpoint, headers=headers, json=payload
+                ) as response,
+            ):
+                if response.status_code >= 300:
+                    await response.aclose()
+                    _raise_status(response)
+                async for line in response.aiter_lines():
+                    received += len(line.encode("utf-8"))
+                    if received > MAX_RESPONSE_BYTES:
+                        raise _invalid("模型调用")
+                    if not line.startswith("data:"):
+                        continue
+                    encoded = line[5:].strip()
+                    if not encoded:
+                        continue
+                    if encoded == "[DONE]":
+                        break
+                    try:
+                        chunk = json.loads(encoded)
+                    except json.JSONDecodeError:
+                        continue
+                    if not isinstance(chunk, dict):
+                        raise _invalid("模型调用")
+                    raw_usage = chunk.get("usage")
+                    if isinstance(raw_usage, dict):
+                        usage = dict(raw_usage)
+                    choices = chunk.get("choices")
+                    choice = (
+                        choices[0] if isinstance(choices, list) and choices else None
+                    )
+                    delta = choice.get("delta") if isinstance(choice, dict) else None
+                    if not isinstance(delta, dict):
+                        continue
+                    reasoning_delta = delta.get("reasoning_content") or delta.get(
+                        "reasoning"
+                    )
+                    if isinstance(reasoning_delta, str) and reasoning_delta:
+                        reasoning += reasoning_delta
+                        await on_chunk("reasoning", reasoning_delta, reasoning)
+                    content_delta = delta.get("content")
+                    if isinstance(content_delta, str) and content_delta:
+                        content += content_delta
+                        await on_chunk("content", content_delta, content)
+                    _merge_tool_call_deltas(tool_parts, delta.get("tool_calls"))
+        except ModelError:
+            raise
+        except httpx.TimeoutException:
+            raise ModelError(
+                "MODEL_PROVIDER_TIMEOUT", "模型调用超时，请检查网络或 Base URL", 504
+            ) from None
+        except httpx.RequestError:
+            raise ModelError(
+                "MODEL_PROVIDER_UNREACHABLE", "模型调用失败：无法连接供应商", 409
+            ) from None
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):
+            raise _invalid("模型调用") from None
+
+        message: dict[str, Any] = {
+            "content": content,
+            "reasoning_content": reasoning,
+        }
+        if tool_parts:
+            message["tool_calls"] = [
+                {
+                    "id": part.get("id", ""),
+                    "type": "function",
+                    "function": {
+                        "name": part.get("name", ""),
+                        "arguments": part.get("arguments", ""),
+                    },
+                }
+                for _index, part in sorted(tool_parts.items())
+            ]
+        return {"choices": [{"message": message}], "usage": usage}
 
     async def invoke_media(
         self,
@@ -750,13 +865,9 @@ def _gemini_parts(value: Any) -> list[dict[str, Any]]:
             continue
         inline = _data_image(url)
         if inline:
-            parts.append(
-                {"inlineData": {"mimeType": inline[0], "data": inline[1]}}
-            )
+            parts.append({"inlineData": {"mimeType": inline[0], "data": inline[1]}})
         else:
-            parts.append(
-                {"fileData": {"mimeType": "image/*", "fileUri": url}}
-            )
+            parts.append({"fileData": {"mimeType": "image/*", "fileUri": url}})
     return parts
 
 
@@ -839,7 +950,11 @@ def _text(value: Any) -> str:
 
 def _openai_tool_calls(body: dict[str, Any]) -> tuple[dict[str, Any], ...]:
     choices = body.get("choices")
-    message = choices[0].get("message") if isinstance(choices, list) and choices and isinstance(choices[0], dict) else None
+    message = (
+        choices[0].get("message")
+        if isinstance(choices, list) and choices and isinstance(choices[0], dict)
+        else None
+    )
     raw_calls = message.get("tool_calls") if isinstance(message, dict) else None
     if raw_calls is None:
         return ()
@@ -868,6 +983,28 @@ def _openai_tool_calls(body: dict[str, Any]) -> tuple[dict[str, Any], ...]:
             raise _invalid("模型调用")
         calls.append({"id": call_id, "name": name, "arguments": arguments})
     return tuple(calls)
+
+
+def _merge_tool_call_deltas(target: dict[int, dict[str, str]], raw_calls: Any) -> None:
+    if raw_calls is None:
+        return
+    if not isinstance(raw_calls, list):
+        raise _invalid("模型调用")
+    for raw in raw_calls:
+        index = raw.get("index") if isinstance(raw, dict) else None
+        function = raw.get("function") if isinstance(raw, dict) else None
+        if not isinstance(index, int) or index < 0 or not isinstance(function, dict):
+            raise _invalid("模型调用")
+        part = target.setdefault(index, {})
+        call_id = raw.get("id")
+        name = function.get("name")
+        arguments = function.get("arguments")
+        if isinstance(call_id, str):
+            part["id"] = call_id
+        if isinstance(name, str):
+            part["name"] = part.get("name", "") + name
+        if isinstance(arguments, str):
+            part["arguments"] = part.get("arguments", "") + arguments
 
 
 def _previews(kind: str, body: dict[str, Any]) -> tuple[str, str]:
