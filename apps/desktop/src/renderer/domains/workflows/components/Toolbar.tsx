@@ -12,6 +12,7 @@ import { staticNumberIssues } from '../lib/staticNumberPreflight'
 import { studioFetch, getStudioTransportRevision } from '../api/transport'
 import { useWorkflowStore } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
+import { useAIAssistantStore } from '../hooks/stores/aiAssistantStore'
 import { useCustomModuleStore } from '../hooks/stores/customModuleStore'
 import { lazy, Suspense } from 'react'
 import { Button } from './controls/button'
@@ -118,6 +119,8 @@ export function Toolbar() {
   const [editingCustomModuleId, setEditingCustomModuleId] = useState<string | null>(null)
   const [editingCustomModuleName, setEditingCustomModuleName] = useState<string>('')
   const [showRecorder, setShowRecorder] = useState(false)
+  const showAIAssistantButton = useGlobalConfigStore(state => state.config.system.showAIAssistantButton)
+  const toggleAIAssistant = useAIAssistantStore(state => state.togglePanel)
   const [isAutoLayouting, setIsAutoLayouting] = useState(false)
   const { ConfirmDialog } = useConfirm()
   const { promptPassword, passwordDialog } = usePasswordPrompt()
@@ -1490,6 +1493,11 @@ export function Toolbar() {
 
       {/* 右侧操作 - 大屏幕显示部分，小屏幕使用下拉菜单 */}
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
+        {showAIAssistantButton && (
+          <Button variant="outline" size="sm" title="AI 小助手 (Ctrl/Cmd+K)" aria-label="AI 小助手" onClick={toggleAIAssistant}>
+            <Sparkles className="w-4 h-4" /><span className="hidden @[64rem]:inline">小助手</span>
+          </Button>
+        )}
         {/* 工作流仓库 - 紫色（语义：内容/收藏） */}
         
 
@@ -1539,6 +1547,7 @@ export function Toolbar() {
               size="sm" 
               className=""
               title="更多操作"
+              aria-label="更多操作"
             >
               <MoreHorizontal className="w-4 h-4" />
             </Button>

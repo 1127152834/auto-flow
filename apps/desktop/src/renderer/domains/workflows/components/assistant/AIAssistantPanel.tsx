@@ -1031,13 +1031,14 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
           </div>
         </div>
         <div className="flex items-center gap-0.5 flex-shrink-0">
-          <Button variant="ghost" size="icon-sm" title="新对话" onClick={handleNewSession}>
+          <Button variant="ghost" size="icon-sm" title="新对话" aria-label="新对话" onClick={handleNewSession}>
             <Plus className="w-3.5 h-3.5" />
           </Button>
           <Button
             variant={showSessions ? 'tonal' : 'ghost'}
             size="icon-sm"
             title="历史对话"
+            aria-label="历史对话"
             onClick={() => { setShowSessions((v) => !v); setShowTimeline(false) }}
           >
             <History className="w-3.5 h-3.5" />
@@ -1047,6 +1048,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
               variant={showTimeline ? 'tonal' : 'ghost'}
               size="icon-sm"
               title="AI 操作时间线（可一键回退）"
+              aria-label="AI 操作时间线"
               onClick={() => { setShowTimeline((v) => !v); setShowSessions(false) }}
             >
               <Clock className="w-3.5 h-3.5" />
@@ -1513,6 +1515,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             <Button
               onClick={() => (isSending ? stopCurrent() : handleSend())}
               disabled={!isSending && ((!input.trim() && attachedImages.length === 0 && attachedDocs.length === 0) || !configReady)}
+              aria-label={isSending ? '停止小助手' : '发送消息'}
               size="icon-sm"
               variant={isSending ? 'destructive' : 'default'}
               className="!h-8 !w-8 flex-shrink-0"

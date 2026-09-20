@@ -7,6 +7,7 @@ import { currentBrowserSession, browserApi, currentPickerSession, elementPickerA
 import { useWorkflowStore } from '../editor-store'
 import { socketService } from '../events'
 import { useGlobalConfigStore } from './stores/globalConfigStore'
+import { useAIAssistantStore } from './stores/aiAssistantStore'
 import { eventToCombo, SHORTCUT_ACTION_MAP } from '../lib/customShortcuts'
 
 export function useStudioIntegration() {
@@ -84,6 +85,9 @@ export function useStudioIntegration() {
   },[])
   useEffect(()=>{
     const handler=(event:KeyboardEvent)=>{
+      if((event.ctrlKey||event.metaKey)&&!event.altKey&&!event.shiftKey&&event.key.toLowerCase()==='k'){
+        event.preventDefault();useAIAssistantStore.getState().togglePanel();return
+      }
       const target=event.target
       if(target instanceof Element && target.closest('input,textarea,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))return
       const combo=eventToCombo(event)
