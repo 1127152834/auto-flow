@@ -1,3 +1,3 @@
-from .http import HttpIntegrationGateway
+from .gateway import WorkflowIntegrationGateway
 
-__all__ = ["HttpIntegrationGateway"]
+__all__ = ["WorkflowIntegrationGateway"]

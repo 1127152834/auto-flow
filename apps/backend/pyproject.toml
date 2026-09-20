@@ -31,6 +31,7 @@ dependencies = [
   "xlrd>=2,<3",
   "faster-whisper>=1.2,<2",
   "mcp>=1,<2",
+  "paramiko>=3.4,<4",
 ]
 
 [build-system]
@@ -54,6 +55,7 @@ dev = [
   "types-openpyxl>=3.1.5.20260827",
   "types-defusedxml>=0.7.0.20260504",
   "types-regex>=2026.9.10.20260911",
+  "types-paramiko>=5.0.0.20260724",
 ]
 build = [
   "pyinstaller",

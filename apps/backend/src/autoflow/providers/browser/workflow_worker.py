@@ -27,7 +27,7 @@ from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifa
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
 )
-from autoflow.providers.integrations import HttpIntegrationGateway
+from autoflow.providers.integrations import WorkflowIntegrationGateway
 from autoflow.providers.model import WorkflowModelGateway
 
 from .workflow_session import launch_workflow_session
@@ -105,13 +105,14 @@ async def _run_in_session(
         if not artifact_root.is_absolute():
             raise ValueError("artifactRoot must be absolute")
         artifacts = _WorkerArtifactRepository(stdout)
+        integrations = WorkflowIntegrationGateway()
         context = ExecutionContext(
             variables=_initial_variables(document),
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
             models=WorkflowModelGateway(_model_bindings(command)),
-            external_integrations=HttpIntegrationGateway(),
+            external_integrations=integrations,
         )
         sink = _WorkerEventSink(
             stdout,
@@ -151,10 +152,13 @@ async def _run_in_session(
             nested_workflows=nested,
         )
         context.canvas_subflows = canvas_subflows
-        result = await WorkflowRuntime(registry).execute(
-            canvas_subflows.top_level_document(), context
-        )
-        await nested.drain()
+        try:
+            result = await WorkflowRuntime(registry).execute(
+                canvas_subflows.top_level_document(), context
+            )
+            await nested.drain()
+        finally:
+            await integrations.close()
         terminal = "execution:completed" if result.success else "execution:failed"
         _write(
             stdout,

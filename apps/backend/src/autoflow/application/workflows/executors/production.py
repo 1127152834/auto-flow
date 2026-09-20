@@ -103,6 +103,7 @@ from .network_monitor import (
 )
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .registry import ExecutorRegistry
+from .ssh import SSH_EXECUTORS
 from .statistics import (
     MedianExecutor,
     ModeExecutor,
@@ -161,6 +162,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *EXTERNAL_HTTP_EXECUTORS,
     *LOG_EXECUTORS,
     *MESSAGE_EXECUTORS,
+    *SSH_EXECUTORS,
     *CAPTCHA_EXECUTORS,
     *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,

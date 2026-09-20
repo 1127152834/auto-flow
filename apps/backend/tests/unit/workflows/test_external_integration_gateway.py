@@ -4,14 +4,14 @@ from typing import Any, Self
 from unittest.mock import AsyncMock
 
 import pytest
-from autoflow.providers.integrations import HttpIntegrationGateway
+from autoflow.providers.integrations import WorkflowIntegrationGateway
 
 
 @pytest.mark.asyncio
 async def test_telegram_gateway_uses_bot_api_without_returning_token(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    gateway = HttpIntegrationGateway()
+    gateway = WorkflowIntegrationGateway()
     request = AsyncMock(return_value={"statusCode": 200, "body": {"ok": True}})
     monkeypatch.setattr(gateway, "_http", request)
 
@@ -54,9 +54,11 @@ def test_qq_smtp_gateway_sends_utf8_message_without_returning_auth_code(
         def send_message(self, message: Any) -> None:
             seen["message"] = message
 
-    monkeypatch.setattr("autoflow.providers.integrations.http.smtplib.SMTP_SSL", SMTP)
+    monkeypatch.setattr(
+        "autoflow.providers.integrations.gateway.smtplib.SMTP_SSL", SMTP
+    )
 
-    result = HttpIntegrationGateway._smtp_qq(
+    result = WorkflowIntegrationGateway._smtp_qq(
         {
             "senderEmail": "from@qq.com",
             "authCode": "smtp-secret",
