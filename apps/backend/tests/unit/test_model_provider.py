@@ -299,6 +299,60 @@ async def test_workflow_invocation_uses_managed_connection_and_normalizes_result
 
 
 @pytest.mark.asyncio
+async def test_workflow_invocation_preserves_openai_tool_calls_for_assistant():
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "client_action",
+                "parameters": {"type": "object"},
+            },
+        }
+    ]
+
+    async def handler(request):
+        payload = json.loads(request.content)
+        assert payload["tools"] == tools
+        assert payload["tool_choice"] == "auto"
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": "",
+                            "tool_calls": [
+                                {
+                                    "id": "tool-1",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "client_action",
+                                        "arguments": '{"action":"fit_view","payload":{}}',
+                                    },
+                                }
+                            ],
+                        }
+                    }
+                ]
+            },
+        )
+
+    result = await HttpModelProvider(
+        transport=httpx.MockTransport(handler)
+    ).invoke(
+        connection(),
+        "managed-secret",
+        "managed-model",
+        {"messages": [{"role": "user", "content": "适应画布"}], "tools": tools, "toolChoice": "auto"},
+    )
+
+    assert result.content == ""
+    assert result.tool_calls == (
+        {"id": "tool-1", "name": "client_action", "arguments": {"action": "fit_view", "payload": {}}},
+    )
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("kind", ["anthropic", "gemini"])
 async def test_workflow_invocation_adapts_managed_provider_protocol(kind):
     async def handler(request):

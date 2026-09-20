@@ -43,6 +43,7 @@ class ModelInvocationResult:
     reasoning: str
     usage: dict[str, Any]
     endpoint: str
+    tool_calls: tuple[dict[str, Any], ...] = ()
 
 
 def utc_now() -> datetime:

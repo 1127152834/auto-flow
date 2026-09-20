@@ -2775,6 +2775,127 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/ai-assistant/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sessions */
+        get: operations["sessions_api_ai_assistant_sessions_get"];
+        put?: never;
+        /** Create Session */
+        post: operations["create_session_api_ai_assistant_sessions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/sessions/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Session */
+        get: operations["get_session_api_ai_assistant_sessions__session_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Session */
+        delete: operations["delete_session_api_ai_assistant_sessions__session_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/sessions/{session_id}/title": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename Session */
+        patch: operations["rename_session_api_ai_assistant_sessions__session_id__title_patch"];
+        trace?: never;
+    };
+    "/api/ai-assistant/sessions/{session_id}/truncate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Truncate Session */
+        post: operations["truncate_session_api_ai_assistant_sessions__session_id__truncate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/sessions/{session_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_ai_assistant_sessions__session_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat */
+        post: operations["chat_api_ai_assistant_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Connection */
+        post: operations["test_connection_api_ai_assistant_test_connection_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/custom-modules": {
         parameters: {
             query?: never;
@@ -3889,6 +4010,179 @@ export type components = {
             impactRevision: number;
             /** Expectedmanagementrevision */
             expectedManagementRevision: number;
+        };
+        /** AssistantCancelled */
+        AssistantCancelled: {
+            /** Success */
+            success: boolean;
+            /** Sessionid */
+            sessionId: string;
+        };
+        /** AssistantChatRequest */
+        AssistantChatRequest: {
+            /** Sessionid */
+            sessionId?: string | null;
+            /** Message */
+            message: string;
+            config: components["schemas"]["AssistantConfig"];
+            /** Workflowcontext */
+            workflowContext?: {
+                [key: string]: unknown;
+            };
+            /** Images */
+            images?: string[] | null;
+            /** Fallbackmodelids */
+            fallbackModelIds?: string[] | null;
+        };
+        /** AssistantChatResponse */
+        AssistantChatResponse: {
+            /** Sessionid */
+            sessionId: string;
+            message: components["schemas"]["AssistantMessage"];
+        };
+        /** AssistantConfig */
+        AssistantConfig: {
+            /** Modelid */
+            modelId: string;
+            /**
+             * Temperature
+             * @default 0.7
+             */
+            temperature: number;
+            /**
+             * Maxtokens
+             * @default 4000
+             */
+            maxTokens: number;
+            /**
+             * Systemprompt
+             * @default
+             */
+            systemPrompt: string;
+            /**
+             * Enabletools
+             * @default true
+             */
+            enableTools: boolean;
+            /**
+             * Autoapprove
+             * @default false
+             */
+            autoApprove: boolean;
+        };
+        /** AssistantCreateSession */
+        AssistantCreateSession: {
+            /** Title */
+            title?: string | null;
+        };
+        /** AssistantCreatedSession */
+        AssistantCreatedSession: {
+            /** Sessionid */
+            sessionId: string;
+            /** Title */
+            title: string;
+        };
+        /** AssistantMessage */
+        AssistantMessage: {
+            /** Id */
+            id: string;
+            /** Role */
+            role: string;
+            /** Content */
+            content: string;
+            /** Timestamp */
+            timestamp?: string | null;
+            /** Tool Calls */
+            tool_calls?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Tool Call Id */
+            tool_call_id?: string | null;
+            /** Images */
+            images?: string[] | null;
+            /** Attachmentnames */
+            attachmentNames?: string[] | null;
+            /** Reasoning Content */
+            reasoning_content?: string | null;
+        };
+        /** AssistantModelTest */
+        AssistantModelTest: {
+            /** Modelid */
+            modelId: string;
+        };
+        /** AssistantModelTestResponse */
+        AssistantModelTestResponse: {
+            /** Success */
+            success: boolean;
+            /** Message */
+            message: string;
+            /** Detail */
+            detail: string;
+            /** Latencyms */
+            latencyMs: number;
+        };
+        /** AssistantPendingAction */
+        AssistantPendingAction: {
+            /** Commandid */
+            commandId: string;
+            /** Action */
+            action: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+        };
+        /** AssistantRenameSession */
+        AssistantRenameSession: {
+            /** Title */
+            title: string;
+        };
+        /** AssistantSessionResponse */
+        AssistantSessionResponse: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Messages */
+            messages: components["schemas"]["AssistantMessage"][];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "idle" | "running" | "waiting_for_action" | "completed" | "failed" | "cancelled";
+            pendingAction?: components["schemas"]["AssistantPendingAction"] | null;
+            /** Revision */
+            revision: number;
+        };
+        /** AssistantSessionSummary */
+        AssistantSessionSummary: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Messagecount */
+            messageCount: number;
+            /** Updatedat */
+            updatedAt: string;
+            /** Lastmessagepreview */
+            lastMessagePreview: string;
+        };
+        /** AssistantSuccess */
+        AssistantSuccess: {
+            /** Success */
+            success: boolean;
+        };
+        /** AssistantTruncateSession */
+        AssistantTruncateSession: {
+            /** Messageid */
+            messageId: string;
+        };
+        /** AssistantTruncated */
+        AssistantTruncated: {
+            /** Success */
+            success: boolean;
+            /** Messages */
+            messages: components["schemas"]["AssistantMessage"][];
         };
         /** AttentionItem */
         AttentionItem: {
@@ -21382,6 +21676,288 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudioSelectorTestResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sessions_api_ai_assistant_sessions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantSessionSummary"][];
+                };
+            };
+        };
+    };
+    create_session_api_ai_assistant_sessions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantCreateSession"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantCreatedSession"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_session_api_ai_assistant_sessions__session_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_session_api_ai_assistant_sessions__session_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantSuccess"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_session_api_ai_assistant_sessions__session_id__title_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantRenameSession"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantSuccess"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    truncate_session_api_ai_assistant_sessions__session_id__truncate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantTruncateSession"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantTruncated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_ai_assistant_sessions__session_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantCancelled"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_api_ai_assistant_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantChatResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_connection_api_ai_assistant_test_connection_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantModelTest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantModelTestResponse"];
                 };
             };
             /** @description Validation Error */

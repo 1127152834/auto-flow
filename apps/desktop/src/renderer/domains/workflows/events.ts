@@ -150,6 +150,11 @@ class SocketService {
     }
   }
 
+  command(event: string, data: unknown, commandId: string) {
+    if (this.socket) return this.socket.command(event, data, commandId)
+    return Promise.resolve({ commandId, success: false, error: '服务未连接，命令尚未提交' })
+  }
+
   private speechRequests = new Map<string, {fingerprint:string;controller:AbortController;workflowId:string}>()
 
   private cancelSpeech(workflowId?: string) {

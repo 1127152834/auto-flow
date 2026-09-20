@@ -12,6 +12,7 @@ from autoflow.adapters.events.workflows import (
     workflow_events_router,
 )
 from autoflow.adapters.http.custom_modules import custom_modules_router
+from autoflow.adapters.http.workflow_ai import workflow_ai_router
 from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
 from autoflow.adapters.http.workflow_runs import (
     WorkflowRunCommands,
@@ -19,6 +20,7 @@ from autoflow.adapters.http.workflow_runs import (
     workflow_runs_router,
 )
 from autoflow.adapters.http.workflows import workflows_router
+from autoflow.application.workflows.assistant import WorkflowAssistantService
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.production import (
@@ -29,6 +31,9 @@ from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.runs import WorkflowRunError
+from autoflow.infrastructure.database.workflow_assistant import (
+    SqlAlchemyWorkflowAssistant,
+)
 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
@@ -73,6 +78,27 @@ class PendingWorkflowRunCommands:
         )
 
 
+class StudioEventCommandMux:
+    def __init__(self, workflows: Any, assistant: WorkflowAssistantService) -> None:
+        self._workflows = workflows
+        self._assistant = assistant
+
+    async def submit_event_command(
+        self, command_id: str, event: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        if event in {"ai_client_action_claim", "ai_client_action_ack"}:
+            return await self._assistant.submit_event_command(command_id, event, dict(data))
+        return await self._workflows.submit_event_command(command_id, event, data)
+
+    def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
+        if self._assistant.has_command(command_id):
+            return self._assistant.event_command(command_id)
+        return self._workflows.event_command(command_id)
+
+    def input_prompt_state(self, request_id: str) -> dict[str, str]:
+        return self._workflows.input_prompt_state(request_id)
+
+
 @dataclass(slots=True)
 class WorkflowServices:
     documents: WorkflowDocumentService
@@ -83,6 +109,8 @@ class WorkflowServices:
     workers: WorkflowWorkerManager | None = None
     artifact_root: Path | None = None
     inspection: WorkflowInspectionService | Any | None = None
+    assistant: WorkflowAssistantService | Any | None = None
+    event_commands: Any | None = None
 
     async def shutdown(self) -> None:
         tasks = []
@@ -90,6 +118,8 @@ class WorkflowServices:
             tasks.append(self.workers.shutdown())
         if self.inspection is not None:
             tasks.append(self.inspection.shutdown())
+        if self.assistant is not None:
+            tasks.append(self.assistant.shutdown())
         if tasks:
             import asyncio
 
@@ -128,6 +158,16 @@ def build_workflow_services(
     run_repository = SqlAlchemyWorkflowRuns(session_factory)
     runs = WorkflowRunService(run_repository)
     events = StudioEventJournal()
+    assistant = (
+        WorkflowAssistantService(
+            SqlAlchemyWorkflowAssistant(session_factory),
+            artifact_root / "assistant" / "checkpoints.sqlite3",
+            models,
+            events,
+        )
+        if artifact_root is not None and models is not None
+        else None
+    )
     if any(
         value is None
         for value in (
@@ -147,6 +187,7 @@ def build_workflow_services(
             runs=runs,
             commands=PendingWorkflowRunCommands(),
             events=events,
+            assistant=assistant,
         )
     assert profiles is not None
     assert installed_kernels is not None
@@ -212,7 +253,16 @@ def build_workflow_services(
     )
     holder["coordinator"] = coordinator
     return WorkflowServices(
-        documents, modules, runs, coordinator, events, workers, artifact_root, inspection
+        documents=documents,
+        modules=modules,
+        runs=runs,
+        commands=coordinator,
+        events=events,
+        workers=workers,
+        artifact_root=artifact_root,
+        inspection=inspection,
+        assistant=assistant,
+        event_commands=StudioEventCommandMux(coordinator, assistant) if assistant else None,
     )
 
 
@@ -221,10 +271,16 @@ def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     app.include_router(workflow_run_command_router(services.commands))
     if services.inspection is not None:
         app.include_router(workflow_inspection_router(services.inspection))
+    if services.assistant is not None:
+        app.include_router(workflow_ai_router(services.assistant))
     app.include_router(custom_modules_router(services.modules))
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))
-    app.include_router(workflow_events_router(services.events, services.commands))
+    app.include_router(
+        workflow_events_router(
+            services.events, services.event_commands or services.commands
+        )
+    )
 
 
 def configure_project_workflow_runtime(

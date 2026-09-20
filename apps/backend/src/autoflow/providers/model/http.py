@@ -9,6 +9,7 @@ from typing import Any
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 import httpx
+
 from autoflow.domain.models import (
     DiscoveryResult,
     ModelError,
@@ -146,6 +147,8 @@ class HttpModelProvider:
         temperature = payload.get("temperature", 0.7)
         max_tokens = payload.get("maxTokens", payload.get("max_tokens", 2000))
         timeout = payload.get("timeoutSeconds", 180)
+        tools = payload.get("tools")
+        tool_choice = payload.get("toolChoice", payload.get("tool_choice", "auto"))
         if (
             not isinstance(temperature, (int, float))
             or isinstance(temperature, bool)
@@ -157,6 +160,18 @@ class HttpModelProvider:
             or timeout <= 0
         ):
             raise _invalid("模型调用")
+        if tools is not None and (
+            not isinstance(tools, list)
+            or not all(isinstance(item, dict) for item in tools)
+            or not isinstance(tool_choice, (str, dict))
+        ):
+            raise _invalid("模型调用")
+        if tools and connection.provider_kind in {"anthropic", "gemini"}:
+            raise ModelError(
+                "MODEL_PROVIDER_UNSUPPORTED_OPERATION",
+                "所选模型供应商暂不支持助手工具调用",
+                422,
+            )
         params: dict[str, str | int] = {}
         if connection.provider_kind == "gemini":
             endpoint = _append_path(
@@ -178,6 +193,8 @@ class HttpModelProvider:
                 "max_tokens": max_tokens,
                 "stream": False,
             }
+            if tools:
+                body.update(tools=tools, tool_choice=tool_choice)
         response = await self._request(
             "POST",
             endpoint,
@@ -188,9 +205,10 @@ class HttpModelProvider:
             "模型调用",
         )
         content, reasoning = _previews(connection.provider_kind, response)
+        tool_calls = _openai_tool_calls(response) if tools else ()
         if not content and reasoning:
             content = reasoning
-        if not content:
+        if not content and not tool_calls:
             raise _invalid("模型调用")
         usage = response.get("usage")
         return ModelInvocationResult(
@@ -199,6 +217,7 @@ class HttpModelProvider:
             reasoning,
             dict(usage) if isinstance(usage, dict) else {},
             _safe_endpoint(endpoint),
+            tool_calls,
         )
 
     async def invoke_media(
@@ -816,6 +835,39 @@ def _text(value: Any) -> str:
             if isinstance(item, dict) and isinstance(item.get("text"), str)
         ).strip()
     return ""
+
+
+def _openai_tool_calls(body: dict[str, Any]) -> tuple[dict[str, Any], ...]:
+    choices = body.get("choices")
+    message = choices[0].get("message") if isinstance(choices, list) and choices and isinstance(choices[0], dict) else None
+    raw_calls = message.get("tool_calls") if isinstance(message, dict) else None
+    if raw_calls is None:
+        return ()
+    if not isinstance(raw_calls, list):
+        raise _invalid("模型调用")
+    calls: list[dict[str, Any]] = []
+    for raw in raw_calls:
+        function = raw.get("function") if isinstance(raw, dict) else None
+        call_id = raw.get("id") if isinstance(raw, dict) else None
+        name = function.get("name") if isinstance(function, dict) else None
+        encoded = function.get("arguments") if isinstance(function, dict) else None
+        if (
+            not isinstance(call_id, str)
+            or not call_id
+            or not isinstance(name, str)
+            or not name
+            or not isinstance(encoded, str)
+            or not encoded
+        ):
+            raise _invalid("模型调用")
+        try:
+            arguments = json.loads(encoded)
+        except json.JSONDecodeError:
+            raise _invalid("模型调用") from None
+        if not isinstance(arguments, dict):
+            raise _invalid("模型调用")
+        calls.append({"id": call_id, "name": name, "arguments": arguments})
+    return tuple(calls)
 
 
 def _previews(kind: str, body: dict[str, Any]) -> tuple[str, str]:

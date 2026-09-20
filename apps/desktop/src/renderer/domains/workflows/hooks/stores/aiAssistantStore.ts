@@ -34,9 +34,9 @@ export interface ChatMessage {
 export interface SessionListItem {
   id: string
   title: string
-  message_count: number
-  updated_at: string
-  last_message_preview: string
+  messageCount: number
+  updatedAt: string
+  lastMessagePreview: string
 }
 
 /** 回滚快照：记录某条用户消息发送「之前」的画布状态，供一键回滚 */

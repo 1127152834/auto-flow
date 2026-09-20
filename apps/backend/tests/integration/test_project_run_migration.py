@@ -36,13 +36,13 @@ def test_empty_database_upgrades_to_the_single_project_run_head(tmp_path):
     database = tmp_path / "empty.sqlite3"
     config = config_for(database)
 
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm08_project_sync"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0014_workflow_assistant"]
     database_session.migrate_database(database)
 
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm08_project_sync",)
+        ).fetchone() == ("0014_workflow_assistant",)
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         assert {
             row[0]
@@ -125,7 +125,7 @@ def test_pm03_upgrade_preserves_real_project_automation_and_workflow_rows(tmp_pa
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm08_project_sync",)
+        ).fetchone() == ("0014_workflow_assistant",)
         for table, rows in before.items():
             assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
         assert connection.execute(
@@ -177,7 +177,7 @@ def test_empty_project_run_tables_can_downgrade_and_upgrade(tmp_path):
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm08_project_sync",)
+        ).fetchone() == ("0014_workflow_assistant",)
 
 
 def test_nonempty_project_run_evidence_refuses_downgrade_without_data_loss(tmp_path):
@@ -280,7 +280,7 @@ def test_nonempty_project_run_evidence_refuses_downgrade_without_data_loss(tmp_p
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm08_project_sync",)
+        ).fetchone() == ("0014_workflow_assistant",)
         assert (
             connection.execute(
                 "SELECT * FROM project_batches WHERE id=?", (batch_id,)

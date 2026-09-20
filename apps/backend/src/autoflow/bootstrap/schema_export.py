@@ -50,6 +50,8 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
         commands=unavailable,
         events=unavailable,
         inspection=unavailable,
+        assistant=unavailable,
+        event_commands=unavailable,
     )
     register_workflow_routes(app, workflows)
     app.include_router(android_router(unavailable))

@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "pm08_project_sync"
+EXPECTED_HEAD = "0014_workflow_assistant"
 
 
 def _config(path: Path) -> Config:

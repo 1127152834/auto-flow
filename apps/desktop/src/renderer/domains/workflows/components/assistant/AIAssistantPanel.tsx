@@ -36,8 +36,10 @@ import { useGlobalConfigStore } from '../../hooks/stores/globalConfigStore'
 import { useAiActionLogStore } from '../../hooks/stores/aiActionLogStore'
 import { useWorkflowStore } from '../../editor-store'
 import { aiAssistantApi } from '../../api/aiAssistantApi'
+import { modelApi, type ModelOptionList } from '../../api'
 import {
   bindAssistantSocketEvents,
+  acknowledgeAssistantClientAction,
   buildWorkflowContext,
   executeClientAction,
   onAssistantUiEvent,
@@ -89,9 +91,10 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
   const rollbackSnapshots = useAIAssistantStore((s) => s.rollbackSnapshots)
 
   const aiAssistantConfig = useGlobalConfigStore((s) => s.config.aiAssistant)
-  const aiFallbackConfig = useGlobalConfigStore((s) => s.config.ai)
   const updateAIAssistantConfig = useGlobalConfigStore((s) => s.updateAIAssistantConfig)
   const [showModelMenu, setShowModelMenu] = useState(false)
+  const [managedModels, setManagedModels] = useState<ModelOptionList['items']>([])
+  const [modelError, setModelError] = useState('')
 
   // 独立 Agent 窗口（Electron）置顶状态
   const [agentPinned, setAgentPinned] = useState(true)
@@ -465,56 +468,51 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     })
   }, [setOpen])
 
-  // 编辑器：把小助手配置推送到后端，供独立 Agent 窗口跨上下文读取
-  // （编辑器在系统浏览器、Agent 在 Electron 独立窗口，localStorage 互相隔离，必须经后端共享）
   useEffect(() => {
-    if (standalone) return
-    const t = setTimeout(() => {
-      aiAssistantApi.saveSharedConfig({ aiAssistant: aiAssistantConfig, ai: aiFallbackConfig }).catch(() => {})
-    }, 400)
-    return () => clearTimeout(t)
-  }, [standalone, aiAssistantConfig, aiFallbackConfig])
-
-  // 独立 Agent 窗口：从后端拉取共享配置并水合（首次 + 每 4 秒轮询，编辑器改了配置后自动跟上）
-  useEffect(() => {
-    if (!standalone) return
-    let cancelled = false
-    const load = () => {
-      aiAssistantApi.getSharedConfig().then((res) => {
-        if (cancelled) return
-        const cfg = (res.success ? res.data?.config : null) as { aiAssistant?: any; ai?: any } | null
-        if (!cfg) return
-        if (cfg.aiAssistant) updateAIAssistantConfig(cfg.aiAssistant)
-        if (cfg.ai) useGlobalConfigStore.getState().updateAIConfig(cfg.ai)
-      }).catch(() => {})
+    if (!isOpen && !standalone) return
+    let active = true
+    const load = async () => {
+      const response = await modelApi.listOptions()
+      if (!active) return
+      if (!response.success || !Array.isArray(response.data?.items)) {
+        setManagedModels([])
+        setModelError(response.error || '主应用模型列表加载失败')
+        return
+      }
+      setManagedModels(response.data.items)
+      setModelError('')
+      const selected = aiAssistantConfig?.modelId
+      if (!selected && response.data.items[0]) {
+        updateAIAssistantConfig({ modelId: response.data.items[0].id })
+      }
     }
-    load()
-    const iv = setInterval(load, 4000)
-    return () => { cancelled = true; clearInterval(iv) }
-  }, [standalone, updateAIAssistantConfig])
+    void load()
+    window.addEventListener('studio:transport-changed', load)
+    return () => { active = false; window.removeEventListener('studio:transport-changed', load) }
+  }, [isOpen, standalone, aiAssistantConfig?.modelId, updateAIAssistantConfig])
+
+  const activeModelId = aiAssistantConfig?.modelId
+  const activeModel = managedModels.find((model) => model.id === activeModelId)
 
   const resolvedConfig = (() => {
     const a = aiAssistantConfig
-    const b = aiFallbackConfig
-    const model = a?.model || b?.model || ''
+    const model = activeModel?.displayName || activeModel?.modelKey || ''
     return {
-      api_url: a?.apiUrl || b?.apiUrl || '',
-      api_key: a?.apiKey || b?.apiKey || '',
+      modelId: activeModel?.id || '',
       model,
       temperature: a?.temperature ?? 0.7,
-      max_tokens: a?.maxTokens ?? 4000,
-      system_prompt: a?.systemPrompt || '',
-      enable_tools: a?.enableTools ?? true,
-      auto_approve: a?.autoApprove ?? false,
+      maxTokens: a?.maxTokens ?? 4000,
+      systemPrompt: a?.systemPrompt || '',
+      enableTools: a?.enableTools ?? true,
+      autoApprove: a?.autoApprove ?? false,
       max_heal_rounds: (a as any)?.maxHealRounds ?? 5,
-      // 多模态：用户手动声明优先，未声明时按模型名自动判断
-      supports_vision: a?.supportsVision ?? isVisionModelName(model),
-      is_thinking: a?.isThinking ?? false,
+      supports_vision: activeModel?.tagsJson.some(tag => /vision|multimodal/i.test(tag)) ?? isVisionModelName(model),
+      is_thinking: activeModel?.tagsJson.some(tag => /thinking|reasoning/i.test(tag)) ?? false,
       agent_mode: standalone,
     }
   })()
 
-  const configReady = !!(resolvedConfig.api_url && resolvedConfig.model)
+  const configReady = !!activeModel && !modelError
 
   // 当前正在执行的操作（用于"工作中"指示器展示具体在干什么，避免用户以为卡住）
   const currentActivity = (() => {
@@ -532,31 +530,9 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     return ''
   })()
   // ===== 多模型：模型档案列表（聊天处上拉栏 + 候选排序用） =====
-  const assistantModels = (aiAssistantConfig?.models || []).filter((m) => m.apiUrl && m.model)
-  const activeModelId = aiAssistantConfig?.activeModelId
+  const assistantModels = managedModels
   const autoSceneRoute = aiAssistantConfig?.autoSceneRoute ?? false
   const autoFallback = aiAssistantConfig?.autoFallback ?? false
-  const activeModel = assistantModels.find((m) => m.id === activeModelId) || assistantModels[0]
-
-  function modelToCfg(m: typeof assistantModels[number]) {
-    const a = aiAssistantConfig
-    return {
-      api_url: (m.apiUrl || '').trim(),
-      api_key: (m.apiKey || '').trim(),
-      model: (m.model || '').trim(),
-      temperature: m.temperature ?? a?.temperature ?? 0.7,
-      max_tokens: m.maxTokens ?? a?.maxTokens ?? 4000,
-      system_prompt: a?.systemPrompt || '',
-      enable_tools: a?.enableTools ?? true,
-      auto_approve: a?.autoApprove ?? false,
-      max_heal_rounds: (a as any)?.maxHealRounds ?? 5,
-      // 模型支持多模态：勾选了「多模态」场景，或模型名命中视觉关键词
-      supports_vision: (m.scenes || []).includes('vision') || isVisionModelName(m.model || ''),
-      // 勾选了「深度思考」场景即视为思考模型（不下发 temperature）
-      is_thinking: (m.scenes || []).includes('thinking'),
-      agent_mode: standalone,
-    }
-  }
 
   // 判断模型名是否为多模态/视觉模型（用于决定是否启用编辑器截图、识图能力）
   function isVisionModelName(model: string): boolean {
@@ -569,12 +545,12 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     if (text.length > 80) return true
     return /分析|为什么|原因|设计|规划|方案|推理|优化|排查|诊断|比较|对比|架构|算法|证明|论证|思考/i.test(text)
   }  // 构建候选模型列表（已排序）：第一个是主模型，其余是备用
-  function buildCandidates(hasImages: boolean, messageText: string): any[] {
-    if (assistantModels.length === 0) return [resolvedConfig]
+  function buildCandidates(hasImages: boolean, messageText: string): typeof assistantModels {
+    if (assistantModels.length === 0) return []
     let ordered = [...assistantModels]
     if (autoSceneRoute) {
       const scene: 'vision' | 'thinking' | 'chat' = hasImages ? 'vision' : (isThinkingQuery(messageText) ? 'thinking' : 'chat')
-      const inScene = assistantModels.filter((m) => (m.scenes || []).includes(scene))
+      const inScene = assistantModels.filter((m) => m.tagsJson.some(tag => tag.toLowerCase() === scene))
       const rest = assistantModels.filter((m) => !inScene.includes(m))
       ordered = [...inScene, ...rest]
     } else {
@@ -583,8 +559,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
       ordered = [...primary, ...rest]
       if (!autoFallback) ordered = ordered.slice(0, 1)
     }
-    const cfgs = ordered.map(modelToCfg).filter((c) => c.api_url && c.model)
-    return cfgs.length > 0 ? cfgs : [resolvedConfig]
+    return ordered
   }
 
 
@@ -736,6 +711,14 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     if (res.success && res.data) {
       setCurrentSessionId(res.data.id)
       setMessages(res.data.messages || [])
+      if (res.data.pendingAction) {
+        void acknowledgeAssistantClientAction({
+          session_id: res.data.id,
+          tool_call_id: res.data.pendingAction.commandId,
+          action: res.data.pendingAction.action,
+          payload: res.data.pendingAction.payload,
+        })
+      }
     } else {
       setError(res.error || '加载会话失败')
     }
@@ -761,7 +744,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     const docNames = text === undefined ? attachedDocs.map((d) => d.name) : []
     if (!messageText && images.length === 0 && docs.length === 0) return
     if (!configReady) {
-      setError('请先在「全局配置 → 小助手」中填写 API 地址和模型')
+      setError(modelError || '请先在主应用模型管理中添加并选择模型')
       return
     }
     // 文档附件仍在解析中则提示等待
@@ -824,22 +807,28 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     try {
       // 多模型：构建候选（场景路由/手动选择/自动回退），首个为主模型，其余为备用
       const candidates = buildCandidates(images.length > 0, messageText)
-      const primaryCfg = candidates[0]
-      const fallbackCfgs = candidates.slice(1)
+      const primaryModel = candidates[0]
       const res = await aiAssistantApi.chat({
-        session_id: sidForRequest,
+        sessionId: sidForRequest,
         message: enriched,
-        config: primaryCfg,
-        workflow_context: buildWorkflowContext(),
+        config: {
+          modelId: primaryModel.id,
+          temperature: resolvedConfig.temperature,
+          maxTokens: resolvedConfig.maxTokens,
+          systemPrompt: resolvedConfig.systemPrompt,
+          enableTools: resolvedConfig.enableTools,
+          autoApprove: resolvedConfig.autoApprove,
+        },
+        workflowContext: buildWorkflowContext(),
         images: images.length > 0 ? images : undefined,
-        fallback_configs: fallbackCfgs.length > 0 ? fallbackCfgs : undefined,
-      } as any, ac.signal)
+        fallbackModelIds: candidates.length > 1 ? candidates.slice(1).map(model => model.id) : undefined,
+      }, ac.signal)
       if (!res.success || !res.data) {
         if (ac.signal.aborted) return
         setError(res.error || '请求失败')
         return
       }
-      const sid = res.data.session_id
+      const sid = res.data.sessionId
       setCurrentSessionId(sid)
       inflightSessionIdRef.current = sid
       const full = await aiAssistantApi.getSession(sid)
@@ -1128,7 +1117,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                       {s.title}
                     </div>
                     <div className="text-[11px] text-[hsl(var(--muted-foreground))] truncate mt-0.5">
-                      {s.last_message_preview || `${s.message_count} 条消息`}
+                      {s.lastMessagePreview || `${s.messageCount} 条消息`}
                     </div>
                   </div>
                   <button
@@ -1528,9 +1517,9 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
         </div>
         <div className="mt-2 flex items-center justify-between text-[10.5px] text-[hsl(var(--muted-foreground))] px-1">
           <div className="flex items-center gap-1.5">
-            <span className={`w-1.5 h-1.5 rounded-full ${resolvedConfig.enable_tools ? 'bg-[hsl(var(--success-500))]' : 'bg-[hsl(var(--slate-400))]'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${resolvedConfig.enableTools ? 'bg-[hsl(var(--success-500))]' : 'bg-[hsl(var(--slate-400))]'}`} />
             <Wrench className="w-2.5 h-2.5" />
-            <span className="font-medium">{resolvedConfig.enable_tools ? 'Skills 已启用' : 'Skills 已关闭'}</span>
+            <span className="font-medium">{resolvedConfig.enableTools ? 'Skills 已启用' : 'Skills 已关闭'}</span>
           </div>
           {/* 模型一键切换上拉栏 */}
           <div className="relative">
@@ -1544,7 +1533,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
               <span className="font-medium truncate">
                 {autoSceneRoute && assistantModels.length > 0
                   ? '场景自动选模型'
-                  : (activeModel ? (activeModel.label || activeModel.model) : (resolvedConfig.model || '未配置'))}
+                  : (activeModel ? activeModel.displayName : (resolvedConfig.model || '未配置'))}
               </span>
               <ChevronUp className={'w-3 h-3 flex-shrink-0 transition-transform ' + (showModelMenu ? 'rotate-180' : '')} />
             </button>
@@ -1555,7 +1544,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                   <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">选择模型</div>
                   {assistantModels.length === 0 ? (
                     <div className="px-2 py-2 text-[11.5px] text-[hsl(var(--muted-foreground))]">
-                      未配置多模型，当前用：{resolvedConfig.model || '（无）'}
+                      主应用尚未配置可用模型
                     </div>
                   ) : (
                     assistantModels.map((m) => {
@@ -1564,15 +1553,15 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                         <button
                           key={m.id}
                           onClick={() => {
-                            updateAIAssistantConfig({ activeModelId: m.id, autoSceneRoute: false })
+                            updateAIAssistantConfig({ modelId: m.id, autoSceneRoute: false })
                             setShowModelMenu(false)
                           }}
                           className={'w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-left transition-colors ' + (on ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
                         >
                           <Cpu className="w-3.5 h-3.5 flex-shrink-0 text-[hsl(var(--brand-600))]" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-[12px] font-medium text-[hsl(var(--slate-800))] truncate">{m.label || m.model}</div>
-                            <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">{m.model}{m.scenes && m.scenes.length > 0 ? ' · ' + m.scenes.map((s) => s === 'vision' ? '多模态' : s === 'thinking' ? '深度思考' : '普通').join('/') : ''}</div>
+                            <div className="text-[12px] font-medium text-[hsl(var(--slate-800))] truncate">{m.displayName}</div>
+                            <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">{m.providerName} · {m.modelKey}</div>
                           </div>
                           {on && <Check className="w-3.5 h-3.5 text-[hsl(var(--brand-600))] flex-shrink-0" />}
                         </button>

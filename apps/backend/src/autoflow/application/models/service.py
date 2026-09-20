@@ -1,5 +1,5 @@
 import secrets
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from contextlib import AbstractContextManager
 from dataclasses import dataclass, field, replace
 
@@ -9,6 +9,7 @@ from autoflow.domain.models.models import (
     DiscoveryResult,
     LocalModel,
     LocalModelSpec,
+    ModelInvocationResult,
     ModelOptionRecord,
     ModelProvider,
     ModelTestResult,
@@ -100,6 +101,14 @@ class ModelService:
             model.model_key,
             self._connection(provider),
             secret,
+        )
+
+    async def invoke(
+        self, model_id: str, payload: Mapping[str, object]
+    ) -> ModelInvocationResult:
+        binding = self.execution_binding(model_id)
+        return await self._gateway.invoke(
+            binding.connection, binding.secret, binding.model_key, payload
         )
 
     async def preview(self, profile: ProviderProfile, secret: str) -> DiscoveryResult:

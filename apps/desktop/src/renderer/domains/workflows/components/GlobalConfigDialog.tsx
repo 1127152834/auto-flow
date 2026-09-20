@@ -13,7 +13,7 @@ import { useConfirm } from './controls/confirm-dialog'
 import { DialogPortal } from './controls/dialog-portal'
 import { useGlobalConfigStore, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
 import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
-import { systemApi, localWorkflowApi } from '../api'
+import { systemApi, localWorkflowApi, modelApi, type ModelOptionList } from '../api'
 import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
@@ -159,6 +159,8 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
   const [isSelectingFolder, setIsSelectingFolder] = useState(false)
   // 小助手「测试连接」状态
   const [assistantTest, setAssistantTest] = useState<{ status: 'idle' | 'testing' | 'ok' | 'fail'; message: string; detail?: string; latency?: number }>({ status: 'idle', message: '' })
+  const [assistantModels, setAssistantModels] = useState<ModelOptionList['items']>([])
+  const [assistantModelsError, setAssistantModelsError] = useState('')
   const { confirm, alert, ConfirmDialog } = useConfirm()
 
   // 获取默认文件夹路径
@@ -174,6 +176,25 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
         })
         .catch(console.error)
     }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+    let active = true
+    const load = async () => {
+      const response = await modelApi.listOptions()
+      if (!active) return
+      if (!response.success || !Array.isArray(response.data?.items)) {
+        setAssistantModels([])
+        setAssistantModelsError(response.error || '主应用模型列表加载失败')
+      } else {
+        setAssistantModels(response.data.items)
+        setAssistantModelsError('')
+      }
+    }
+    void load()
+    window.addEventListener('studio:transport-changed', load)
+    return () => { active = false; window.removeEventListener('studio:transport-changed', load) }
   }, [isOpen])
 
   // 把「工作流保存文件夹」同步到后端持久化，使计划任务/启动/热键/Webhook 触发等
@@ -586,131 +607,57 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                 <div className="flex items-start gap-2">
                   <Bot className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900 mb-0.5">WebRPA 小助手</div>
+                    <div className="text-sm font-medium text-gray-900 mb-0.5">AutoFlow 小助手</div>
                     <p className="text-xs text-gray-600 leading-relaxed">
-                      内置的全能 AI 助手，能够回答 WebRPA 相关问题、帮你搭建/运行工作流、配置全局设置。
-                      未配置时会自动回退使用「AI对话」的配置。
+                      小助手复用主应用的模型管理。模型地址和密钥仅由主应用安全存储，Studio 只保存稳定模型 ID。
                     </p>
                   </div>
                 </div>
               </div>
-                <div className="mb-3 p-3 rounded-md bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200/50">
-                  <div className="flex items-start gap-2">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center mt-0.5">
-                      <span className="text-purple-600 text-xs font-bold">✨</span>
-                    </div>
-                    <div className="flex-1 text-xs leading-relaxed">
-                      <p className="text-gray-700 mb-1.5">
-                        <strong className="text-purple-700">APINEBULA</strong> 是银河录像局旗下的企业级 AI 聚合平台，聚合 Claude、GPT、Gemini 等主流满血模型，
-                        一个接口接入全球顶尖 AI 大模型，各大模型价格低至 1 折起，支持企业级高并发、正式合同、对公打款与开票服务，
-                        适合 AI 编程、Agent 开发、业务系统集成等多种场景！
-                      </p>
-                      <p className="text-gray-600">
-                        <a href="https://apinebula.ai/ref/MdtprCNE" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 font-medium underline">
-                          点击此处注册
-                        </a>
-                        {" "}并在充值时填写 <span className="font-semibold text-purple-700">"RPA"</span> 优惠码可享九折优惠！
-                      </p>
-                    </div>
-                  </div>
-                </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-gray-700">API地址</Label>
-                  <Input
-                    value={config.aiAssistant?.apiUrl || ''}
-                    onChange={(e) => updateAIAssistantConfig({ apiUrl: e.target.value })}
-                    placeholder="https://api.openai.com/v1/chat/completions"
-                    className="bg-white text-black border-gray-300"
-                  />
-                  <p className="text-xs text-gray-500">
-                    支持 OpenAI 兼容协议（OpenAI / 智谱 / Deepseek / Groq / Ollama 等）。
-                    可填基础地址（如 https://api.openai.com/v1），系统会自动补全。
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">API密钥</Label>
-                  <Input
-                    type="password"
-                    value={config.aiAssistant?.apiKey || ''}
-                    onChange={(e) => updateAIAssistantConfig({ apiKey: e.target.value })}
-                    placeholder="sk-xxx"
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">模型名称</Label>
-                  <Input
-                    value={config.aiAssistant?.model || ''}
-                    onChange={(e) => updateAIAssistantConfig({ model: e.target.value })}
-                    placeholder="gpt-4o-mini / glm-4-plus / deepseek-chat"
-                    className="bg-white text-black border-gray-300"
-                  />
-                  <p className="text-xs text-gray-500">
-                    建议使用支持 Function Calling 的模型，例如 gpt-4o-mini、glm-4-plus、deepseek-chat、qwen-plus
-                  </p>
+                  <Label className="text-gray-700">主应用模型</Label>
+                  <SelectNative
+                    aria-label="小助手主应用模型"
+                    value={config.aiAssistant?.modelId || ''}
+                    onChange={(event) => updateAIAssistantConfig({ modelId: event.target.value || undefined })}
+                  >
+                    <option value="">请选择模型…</option>
+                    {assistantModels.map((model) => (
+                      <option key={model.id} value={model.id}>{model.displayName}（{model.providerName}）</option>
+                    ))}
+                  </SelectNative>
+                  {assistantModelsError && <p role="alert" className="text-xs text-red-600">{assistantModelsError}</p>}
+                  {!assistantModelsError && assistantModels.length === 0 && (
+                    <p className="text-xs text-amber-700">主应用尚未配置可用模型，请先到主应用的模型管理中添加。</p>
+                  )}
+                  {!!config.aiAssistant?.modelId && !assistantModels.some(model => model.id === config.aiAssistant?.modelId) && (
+                    <p className="text-xs text-amber-700">已选模型不可用，请重新选择。</p>
+                  )}
                 </div>
 
-                {/* 单模型能力声明：多模态 / 思考模型 */}
-                <div className="grid grid-cols-1 gap-2">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="flex-1">
-                      <Label className="text-sm font-medium text-gray-700">多模态（视觉）模型</Label>
-                      <p className="text-xs text-gray-500 mt-1">开启后可给小助手发图片/自动截图分析。不填则按模型名自动判断（如 gpt-4o、glm-4v 等）。</p>
-                    </div>
-                    <Switch
-                      aria-label="多模态（视觉）模型"
-                      checked={config.aiAssistant?.supportsVision ?? false}
-                      onCheckedChange={(c) => updateAIAssistantConfig({ supportsVision: c })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="flex-1">
-                      <Label className="text-sm font-medium text-gray-700">深度思考（推理）模型</Label>
-                      <p className="text-xs text-gray-500 mt-1">如 DeepSeek-Reasoner、o1 等推理模型。开启后请求不再下发 temperature，避免部分推理模型报错。</p>
-                    </div>
-                    <Switch
-                      aria-label="深度思考（推理）模型"
-                      checked={config.aiAssistant?.isThinking ?? false}
-                      onCheckedChange={(c) => updateAIAssistantConfig({ isThinking: c })}
-                    />
-                  </div>
-                </div>
-
-                {/* 测试连接：发一条极简请求，当场校验 地址/密钥/模型 是否正确 */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      disabled={assistantTest.status === 'testing'}
+                      disabled={assistantTest.status === 'testing' || !config.aiAssistant?.modelId}
                       onClick={async () => {
-                        const a = config.aiAssistant
-                        const b = config.ai
-                        const payload = {
-                          api_url: (a?.apiUrl || b?.apiUrl || '').trim(),
-                          api_key: (a?.apiKey || b?.apiKey || '').trim(),
-                          model: (a?.model || b?.model || '').trim(),
-                          temperature: a?.temperature ?? 0.7,
-                          max_tokens: a?.maxTokens ?? 4000,
-                          system_prompt: '',
-                          enable_tools: false,
-                          auto_approve: false,
-                        }
-                        if (!payload.api_url || !payload.model) {
-                          setAssistantTest({ status: 'fail', message: '请先填写 API 地址和模型名称' })
+                        const modelId = config.aiAssistant?.modelId
+                        if (!modelId) {
+                          setAssistantTest({ status: 'fail', message: '请先选择主应用模型' })
                           return
                         }
                         setAssistantTest({ status: 'testing', message: '正在测试连接…' })
-                        const res = await aiAssistantApi.testConnection(payload)
+                        const res = await aiAssistantApi.testConnection(modelId)
                         if (res.success && res.data) {
-                          const d = res.data
+                          const data = res.data
                           setAssistantTest({
-                            status: d.success ? 'ok' : 'fail',
-                            message: d.message,
-                            detail: d.detail,
-                            latency: d.latency_ms,
+                            status: data.success ? 'ok' : 'fail',
+                            message: data.message,
+                            detail: data.detail,
+                            latency: data.latencyMs,
                           })
                         } else {
                           setAssistantTest({ status: 'fail', message: res.error || '测试请求失败' })
@@ -724,7 +671,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                         <><Zap className="w-4 h-4 mr-1.5" />测试连接</>
                       )}
                     </Button>
-                    <span className="text-xs text-gray-500">发一条极简请求，立即验证 地址/密钥/模型 是否正确</span>
+                    <span className="text-xs text-gray-500">使用主应用安全存储的连接信息发起测试。</span>
                   </div>
                   {assistantTest.status === 'ok' && (
                     <div className="flex items-start gap-2 p-2.5 rounded-md bg-green-50 border border-green-200 text-green-700 text-xs">
@@ -738,10 +685,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                   {assistantTest.status === 'fail' && (
                     <div className="flex items-start gap-2 p-2.5 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs">
                       <X className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <div className="font-semibold break-all">{assistantTest.message}</div>
-                        {assistantTest.detail && <div className="mt-0.5 text-red-500 break-all">{assistantTest.detail}</div>}
-                      </div>
+                      <div className="font-semibold break-all">{assistantTest.message}</div>
                     </div>
                   )}
                 </div>
@@ -750,25 +694,21 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                   <div className="space-y-2">
                     <Label className="text-gray-700">温度</Label>
                     <Input
-                      type="number"
-                      min={0}
-                      max={2}
-                      step={0.1}
+                      type="number" min={0} max={2} step={0.1}
                       value={config.aiAssistant?.temperature ?? 0.7}
-                      onChange={(e) => {
-                        const value = Number(e.target.value)
+                      onChange={(event) => {
+                        const value = Number(event.target.value)
                         updateAIAssistantConfig({ temperature: Number.isFinite(value) ? value : 0.7 })
                       }}
                       className="bg-white text-black border-gray-300"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-700">最大Token</Label>
+                    <Label className="text-gray-700">最大 Token</Label>
                     <Input
-                      type="number"
-                      min={1}
+                      type="number" min={1}
                       value={config.aiAssistant?.maxTokens ?? 4000}
-                      onChange={(e) => updateAIAssistantConfig({ maxTokens: parseInt(e.target.value) || 4000 })}
+                      onChange={(event) => updateAIAssistantConfig({ maxTokens: parseInt(event.target.value) || 4000 })}
                       className="bg-white text-black border-gray-300"
                     />
                   </div>
@@ -777,116 +717,79 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                   <Label className="text-gray-700">附加系统提示词（可选）</Label>
                   <textarea
                     value={config.aiAssistant?.systemPrompt || ''}
-                    onChange={(e) => updateAIAssistantConfig({ systemPrompt: e.target.value })}
-                    placeholder="为小助手追加额外的角色设定或行为约束（小助手已内置 WebRPA 的全部知识，留空即可）"
+                    onChange={(event) => updateAIAssistantConfig({ systemPrompt: event.target.value })}
+                    placeholder="为小助手追加额外的角色设定或行为约束"
                     className="w-full min-h-[80px] px-3 py-2 text-sm rounded-md border border-gray-300 bg-white text-black"
                   />
                 </div>
+
                 <div className="space-y-3 pt-2 border-t border-gray-100">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <Label className="text-sm font-medium text-gray-700">启用 Skills 工具调用</Label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        让小助手能够直接操作 WebRPA（搭建/运行工作流、修改配置等）。
-                        关闭后小助手只能进行问答。
-                      </p>
+                      <p className="text-xs text-gray-500 mt-1">允许小助手读取和修改当前工作流；关闭后只进行问答。</p>
                     </div>
-                    <Switch
-                      aria-label="启用 Skills 工具调用"
-                      checked={config.aiAssistant?.enableTools ?? true}
-                      onCheckedChange={(c) => updateAIAssistantConfig({ enableTools: c })}
-                    />
+                    <Switch aria-label="启用 Skills 工具调用" checked={config.aiAssistant?.enableTools ?? true} onCheckedChange={(checked) => updateAIAssistantConfig({ enableTools: checked })} />
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <Label className="text-sm font-medium text-gray-700">自动批准工具调用</Label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        开启后小助手的工具调用会立即执行，无需人工确认。建议熟悉后再开启。
-                      </p>
+                      <p className="text-xs text-gray-500 mt-1">开启后立即执行，不再逐项请求确认。</p>
                     </div>
-                    <Switch
-                      aria-label="自动批准工具调用"
-                      checked={config.aiAssistant?.autoApprove ?? false}
-                      onCheckedChange={(c) => updateAIAssistantConfig({ autoApprove: c })}
-                    />
+                    <Switch aria-label="自动批准工具调用" checked={config.aiAssistant?.autoApprove ?? false} onCheckedChange={(checked) => updateAIAssistantConfig({ autoApprove: checked })} />
                   </div>
-
-                  {/* 操作权限模式（三档） */}
                   <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
                     <div>
                       <Label className="text-sm font-medium text-gray-700">操作权限</Label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        控制小助手操作 WebRPA / 你电脑时是否需要你授权。拒绝某次操作不会终止任务，小助手会继续。
-                      </p>
+                      <p className="text-xs text-gray-500 mt-1">控制小助手操作画布时是否需要人工授权。</p>
                     </div>
                     {([
-                      ['approval', '逐项确认', '小助手每次真正要操作前都在聊天上方弹授权，你允许才执行'],
-                      ['smart', '智能放行', '仅在检测到高风险操作（删除/清空/运行/回档等）时才请求确认，其余自动执行'],
-                      ['full', '自由执行', '完全不拦截，小助手可不受限地操作一切（请谨慎开启）'],
-                    ] as const).map(([val, title, desc]) => {
+                      ['approval', '逐项确认', '每次操作前都显示授权入口'],
+                      ['smart', '智能放行', '高风险操作请求确认，其余自动执行'],
+                      ['full', '自由执行', '不拦截小助手操作'],
+                    ] as const).map(([value, title, description]) => {
                       const current = config.aiAssistant?.permissionMode || 'smart'
-                      const active = current === val
                       return (
                         <button
-                          key={val}
-                          type="button"
-                          onClick={() => updateAIAssistantConfig({ permissionMode: val })}
-                          className={`w-full text-left p-2.5 rounded-md border transition-colors ${active ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300'}`}
+                          key={value} type="button"
+                          onClick={() => updateAIAssistantConfig({ permissionMode: value })}
+                          className={`w-full text-left p-2.5 rounded-md border transition-colors ${current === value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300'}`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className={`w-3.5 h-3.5 rounded-full border-2 flex-none ${active ? 'border-blue-600 bg-blue-600' : 'border-gray-300'}`} />
+                            <span className={`w-3.5 h-3.5 rounded-full border-2 flex-none ${current === value ? 'border-blue-600 bg-blue-600' : 'border-gray-300'}`} />
                             <span className="text-[13px] font-medium text-gray-800">{title}</span>
                           </div>
-                          <p className="text-[11px] text-gray-500 mt-0.5 ml-[22px]">{desc}</p>
+                          <p className="text-[11px] text-gray-500 mt-0.5 ml-[22px]">{description}</p>
                         </button>
                       )
                     })}
                   </div>
                 </div>
 
-                {/* ===== 多模型管理 ===== */}
                 <div className="space-y-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-blue-600" />
-                    <Label className="text-sm font-semibold text-gray-700">多模型（一键切换 / 自动切换 / 场景路由）</Label>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    配置多个模型后，可在聊天框右下角一键切换；也可开启下方自动切换/场景路由。顶部单模型字段作为未配置多模型时的兜底。
-                  </p>
-                  <ModelProfilesManager
-                    models={config.aiAssistant?.models || []}
-                    activeModelId={config.aiAssistant?.activeModelId}
-                    showScenes
-                    onChange={(patch) => updateAIAssistantConfig(patch)}
-                  />
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <Label className="text-sm font-medium text-gray-700">失败自动切换</Label>
-                      <p className="text-xs text-gray-500 mt-1">某模型请求失败时，自动换其它已配置模型重试，全部失败才报错。</p>
+                      <p className="text-xs text-gray-500 mt-1">使用主应用中其余启用模型作为有序备用模型。</p>
                     </div>
-                    <Switch aria-label="失败自动切换" checked={config.aiAssistant?.autoFallback ?? false} onCheckedChange={(c) => updateAIAssistantConfig({ autoFallback: c })} />
+                    <Switch aria-label="失败自动切换" checked={config.aiAssistant?.autoFallback ?? false} onCheckedChange={(checked) => updateAIAssistantConfig({ autoFallback: checked })} />
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <Label className="text-sm font-medium text-gray-700">场景自动选模型</Label>
-                      <p className="text-xs text-gray-500 mt-1">按问答场景自动挑选模型：发图片→多模态组、复杂分析→深度思考组、其余→普通对话组（需给模型勾选场景）。</p>
+                      <p className="text-xs text-gray-500 mt-1">按主应用模型标签中的 vision、thinking、chat 选择模型。</p>
                     </div>
-                    <Switch aria-label="场景自动选模型" checked={config.aiAssistant?.autoSceneRoute ?? false} onCheckedChange={(c) => updateAIAssistantConfig({ autoSceneRoute: c })} />
+                    <Switch aria-label="场景自动选模型" checked={config.aiAssistant?.autoSceneRoute ?? false} onCheckedChange={(checked) => updateAIAssistantConfig({ autoSceneRoute: checked })} />
                   </div>
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <Label className="text-sm font-medium text-gray-700">自愈循环最大轮数</Label>
-                      <p className="text-xs text-gray-500 mt-1">工作流运行失败时，小助手自动「诊断→修复→重跑」的最多轮数。简单任务用不满，复杂任务可调高（1-20，默认 5）。</p>
+                      <p className="text-xs text-gray-500 mt-1">限制自动诊断和修复的最多轮数。</p>
                     </div>
                     <input
-                      type="number"
-                      min={1}
-                      max={20}
+                      type="number" min={1} max={20}
                       value={config.aiAssistant?.maxHealRounds ?? 5}
-                      onChange={(e) => {
-                        const n = Math.max(1, Math.min(20, parseInt(e.target.value || '5', 10) || 5))
-                        updateAIAssistantConfig({ maxHealRounds: n })
-                      }}
+                      onChange={(event) => updateAIAssistantConfig({ maxHealRounds: Math.max(1, Math.min(20, parseInt(event.target.value || '5', 10) || 5)) })}
                       className="w-20 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
                     />
                   </div>

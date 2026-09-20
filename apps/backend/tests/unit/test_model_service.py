@@ -8,7 +8,7 @@ import pytest
 from autoflow.application.models.service import ModelService
 from autoflow.domain.credentials import CredentialStoreUnavailableError
 from autoflow.domain.models.errors import ModelError
-from autoflow.domain.models.models import LocalModelSpec, ProviderProfile
+from autoflow.domain.models.models import ModelInvocationResult, LocalModelSpec, ProviderProfile
 from autoflow.infrastructure.database.model_providers import (
     model_repository_transaction,
 )
@@ -410,6 +410,42 @@ async def test_execution_binding_resolves_stable_model_id_and_secret(tmp_path):
     assert binding.connection.provider_kind == "openai"
     assert binding.secret == "runtime-secret"
     assert "runtime-secret" not in repr(binding)
+
+
+@pytest.mark.asyncio
+async def test_invoke_uses_managed_model_binding_without_exposing_secret(tmp_path):
+    class InvokeGateway(FakeModelGateway):
+        def __init__(self):
+            super().__init__()
+            self.request = None
+
+        async def invoke(self, connection, secret, model_key, payload):
+            self.request = (connection, secret, model_key, payload)
+            return ModelInvocationResult(model_key, "回复", "", {}, "https://safe.test")
+
+    path = tmp_path / "invoke.db"
+    migrate_database(path)
+    factory = create_session_factory(path)
+    gateway = InvokeGateway()
+    service = ModelService(
+        partial(model_repository_transaction, factory), FakeCredentialStore(), gateway
+    )
+    provider = await service.connect(
+        _profile(),
+        "runtime-secret",
+        [LocalModelSpec.from_values("Model-A", "Model A")],
+    )
+
+    result = await service.invoke(
+        provider.models[0].id, {"messages": [{"role": "user", "content": "问题"}]}
+    )
+
+    assert result.content == "回复"
+    assert gateway.request[1:] == (
+        "runtime-secret",
+        "Model-A",
+        {"messages": [{"role": "user", "content": "问题"}]},
+    )
 
 
 @pytest.mark.asyncio
