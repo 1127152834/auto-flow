@@ -144,6 +144,10 @@ def _belongs_to_run(pid: int, directory: Path, executable: Path) -> bool:
     # The worker and Playwright driver also retain the unique inherited run marker.
     if actual.resolve() == Path(sys.executable).resolve():
         return True
+    # Framework Python launches Python.app; sys.executable names its launcher.
+    current = _native_arguments(os.getpid())
+    if current is not None and actual.resolve() == current[0].resolve():
+        return True
     if actual.parts[-3:] == ("playwright", "driver", "node") and any(
         arg.endswith("/playwright/driver/package/cli.js") for arg in arguments
     ) and "run-driver" in arguments:

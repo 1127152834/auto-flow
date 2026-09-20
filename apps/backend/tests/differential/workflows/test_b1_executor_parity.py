@@ -34,7 +34,7 @@ def frozen_result(case: str) -> dict[str, Any]:
         text=True,
         env={"PYTHONPATH": str(FROZEN_BACKEND)},
     )
-    return json.loads(completed.stdout)
+    return json.loads(completed.stdout.splitlines()[-1])
 
 
 class FakeLocator:

@@ -195,3 +195,19 @@ async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
                 await module.force_process_tree(process, 0.01)
     finally:
         exited.set()
+
+
+@pytest.mark.parametrize('module_name', ['browser_processes', 'project_browser_processes'])
+def test_framework_python_worker_uses_native_interpreter_identity(monkeypatch, tmp_path, module_name):
+    from importlib import import_module
+
+    module = import_module(f'autoflow.infrastructure.process.{module_name}')
+    native_python = Path('/Library/Frameworks/Python.framework/Resources/Python.app/Contents/MacOS/Python')
+    run = tmp_path / 'run'
+    marker = {'CLOAKBROWSER_CACHE_DIR': str(run)}
+    monkeypatch.setattr(module, '_native_arguments', lambda pid: (
+        native_python if pid in (700, os.getpid()) else Path('/unrelated/python'),
+        ['python', '--workflow-worker'], marker,
+    ))
+    assert module._belongs_to_run(700, run, tmp_path / 'Chromium') is True
+    assert module._belongs_to_run(701, run, tmp_path / 'Chromium') is False
