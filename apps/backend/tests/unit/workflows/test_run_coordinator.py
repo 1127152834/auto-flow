@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
@@ -126,6 +125,7 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
                 {
                     "id": "open",
                     "type": "moduleNode",
+                    "position": {"x": 120, "y": 80},
                     "data": {
                         "moduleType": "open_page",
                         "config": {"url": "https://example.test"},
@@ -188,6 +188,7 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
     assert len(workers.payloads) == 1
     payload = workers.payloads[0]
     assert payload["document"]["nodes"][0]["id"] == "open"
+    assert payload["document"]["nodes"][0]["position"] == {"x": 120, "y": 80}
     assert payload["headless"] is True
     assert payload["requiresBrowser"] is True
     assert "startUrl" not in payload
@@ -249,7 +250,8 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
 @pytest.mark.asyncio
 @pytest.mark.parametrize("via_workflow", [False, True])
 async def test_browser_requirement_propagates_from_frozen_custom_module(
-    tmp_path: Path, via_workflow: bool,
+    tmp_path: Path,
+    via_workflow: bool,
 ) -> None:
     database = tmp_path / "custom-module-browser.sqlite3"
     migrate_database(database)
@@ -283,15 +285,32 @@ async def test_browser_requirement_propagates_from_frozen_custom_module(
     )
     if via_workflow:
         documents.create(
-            {"id": "browser-child", "name": "browser-child", **module.definition["workflow"]},
+            {
+                "id": "browser-child",
+                "name": "browser-child",
+                **module.definition["workflow"],
+            },
             client_request_id="create-child",
         )
         module = modules.update(
             module.id,
-            {"workflow": {"nodes": [{"id": "nested", "type": "moduleNode", "data": {
-                "moduleType": "run_workflow_file", "workflowFile": "browser-child"
-            }}], "edges": []}},
-            expected_revision=1, client_request_id="use-child",
+            {
+                "workflow": {
+                    "nodes": [
+                        {
+                            "id": "nested",
+                            "type": "moduleNode",
+                            "data": {
+                                "moduleType": "run_workflow_file",
+                                "workflowFile": "browser-child",
+                            },
+                        }
+                    ],
+                    "edges": [],
+                }
+            },
+            expected_revision=1,
+            client_request_id="use-child",
         )
     documents.create(
         {
@@ -349,7 +368,10 @@ async def test_browser_requirement_propagates_from_frozen_custom_module(
         ("module-browser-run", "profile-1", "public", "145.0.1")
     ]
     assert workers.payloads[0]["requiresBrowser"] is True
-    assert workers.payloads[0]["customModuleDependencies"][module.id]["revision"] == module.revision
+    assert (
+        workers.payloads[0]["customModuleDependencies"][module.id]["revision"]
+        == module.revision
+    )
     if via_workflow:
         assert "browser-child" in workers.payloads[0]["workflowDependencies"]
 

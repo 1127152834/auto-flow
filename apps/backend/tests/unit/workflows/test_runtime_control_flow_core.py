@@ -4,7 +4,6 @@ import asyncio
 from typing import Any
 
 import pytest
-
 from autoflow.application.workflows.executors.base import ModuleExecutor, ModuleResult
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
@@ -144,6 +143,65 @@ async def test_parallel_fork_runs_concurrently_and_waits_before_join() -> None:
     assert result.success is True
     assert calls[-1] == "join"
     assert result.executed_node_ids.count("join") == 1
+
+
+@pytest.mark.asyncio
+async def test_parallel_root_does_not_inherit_sibling_loop_context() -> None:
+    events: list[dict[str, Any]] = []
+    loop_started = asyncio.Event()
+
+    class Sink:
+        async def publish(self, event: dict[str, Any]) -> None:
+            events.append(event)
+
+    async def loop(
+        _self: ModuleExecutor, _config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        state = {"type": "count", "count": 1, "current_index": 0}
+        context.loop_stack.append(state)
+        loop_started.set()
+        return ModuleResult(success=True, data=state)
+
+    async def wait_for_loop(
+        _self: ModuleExecutor, _config: dict[str, Any], _context: ExecutionContext
+    ) -> ModuleResult:
+        await loop_started.wait()
+        return ModuleResult(success=True)
+
+    async def success(
+        _self: ModuleExecutor, _config: dict[str, Any], _context: ExecutionContext
+    ) -> ModuleResult:
+        return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(_executor("loop", loop))
+    registry.register(_executor("set_variable", success))
+    registry.register(_executor("string_concat", wait_for_loop))
+    document = {
+        "nodes": [
+            _node("loop", "loop"),
+            _node("body", "set_variable"),
+            _node("parallel", "string_concat"),
+            _node("parallel-tail", "set_variable"),
+        ],
+        "edges": [
+            _edge("body", "loop", "body", "loop"),
+            _edge("parallel-tail", "parallel", "parallel-tail"),
+        ],
+    }
+
+    result = await WorkflowRuntime(registry).execute(
+        document, ExecutionContext(events=Sink())
+    )
+
+    assert result.success is True
+    tail_start = next(
+        event
+        for event in events
+        if event["type"] == "execution:node_start"
+        and event["nodeId"] == "parallel-tail"
+    )
+    assert tail_start["executionContext"]["loops"] == []
 
 
 @pytest.mark.asyncio

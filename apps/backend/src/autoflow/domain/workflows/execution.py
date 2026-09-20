@@ -1,13 +1,52 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping, Sequence
-from contextvars import ContextVar
+from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, Protocol
+from typing import Any, Protocol, SupportsIndex
 
 from .browser import BrowserRequestWatchPort, BrowserSessionPort
 from .variables import CredentialReader, references_sensitive_value, resolve_value
+
+
+class _TaskLocalStack(list[dict[str, Any]]):
+    def __init__(self, values: list[dict[str, Any]] | None = None) -> None:
+        super().__init__(values or [])
+        self._branch: ContextVar[list[dict[str, Any]] | None] = ContextVar(
+            "workflow_branch_loop_stack", default=None
+        )
+
+    def bind_branch(self) -> Token[list[dict[str, Any]] | None]:
+        active = self._branch.get()
+        source = list.__iter__(self) if active is None else iter(active)
+        return self._branch.set([dict(state) for state in source])
+
+    def reset_branch(self, token: Token[list[dict[str, Any]] | None]) -> None:
+        self._branch.reset(token)
+
+    def append(self, value: dict[str, Any]) -> None:
+        active = self._branch.get()
+        (list.append(self, value) if active is None else active.append(value))
+
+    def pop(self, index: SupportsIndex = -1) -> dict[str, Any]:
+        active = self._branch.get()
+        return list.pop(self, index) if active is None else active.pop(index)
+
+    def __len__(self) -> int:
+        active = self._branch.get()
+        return list.__len__(self) if active is None else len(active)
+
+    def __iter__(self):  # type: ignore[no-untyped-def]
+        active = self._branch.get()
+        return list.__iter__(self) if active is None else iter(active)
+
+    def __getitem__(self, index):  # type: ignore[no-untyped-def]
+        active = self._branch.get()
+        return list.__getitem__(self, index) if active is None else active[index]
+
+    def __eq__(self, other: object) -> bool:
+        return list(self) == other
 
 
 class ArtifactWriter(Protocol):
@@ -207,6 +246,10 @@ class ExecutionContext:
         repr=False,
     )
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.loop_stack, _TaskLocalStack):
+            self.loop_stack = _TaskLocalStack(self.loop_stack)
+
     def begin_node(self) -> None:
         self._node_uses_sensitive_values = False
         self._node_sensitive_context.set(False)
@@ -214,6 +257,16 @@ class ExecutionContext:
     def bind_node_artifacts(self) -> None:
         """Bind the current writer to this task before parallel node execution."""
         self._node_artifact_context.set((True, self.artifacts))
+
+    def bind_branch_loop_stack(self) -> Token[list[dict[str, Any]] | None]:
+        assert isinstance(self.loop_stack, _TaskLocalStack)
+        return self.loop_stack.bind_branch()
+
+    def reset_branch_loop_stack(
+        self, token: Token[list[dict[str, Any]] | None]
+    ) -> None:
+        assert isinstance(self.loop_stack, _TaskLocalStack)
+        self.loop_stack.reset_branch(token)
 
     def mark_sensitive_use(self) -> None:
         self._node_uses_sensitive_values = True

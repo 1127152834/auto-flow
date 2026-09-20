@@ -8773,7 +8773,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -8832,7 +8832,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码执行器、生产注册、HTTP准入和控制流运行时已接入；正式Electron真实执行仍待B3集中验收。",
+      "gap": "源码差分、生产合同与正式Electron真实UI执行均已通过；B3共享异常矩阵继续由里程碑验收记录统一约束。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
@@ -8861,7 +8861,7 @@
         },
         {
           "id": "BE.condition.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -8869,10 +8869,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 condition，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：条件判断模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-Fgh30z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -9050,7 +9050,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -9110,7 +9110,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码执行器、生产注册、HTTP准入和控制流运行时已接入；正式Electron真实执行仍待B3集中验收。",
+      "gap": "源码差分、生产合同与正式Electron真实UI执行均已通过；B3共享异常矩阵继续由里程碑验收记录统一约束。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
@@ -9139,7 +9139,7 @@
         },
         {
           "id": "BE.loop.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -9147,10 +9147,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 loop，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：循环执行模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-Fgh30z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -11056,7 +11056,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -11106,7 +11106,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码标记执行器、生产注册及完整同画布子图运行已接入；名称优先/ID回退、分组几何、subflow_header可达图、定义区主图隔离和循环保护已通过真实worker，正式Electron仍待集中验收。",
+      "gap": "源码差分、生产合同与正式Electron真实UI执行均已通过；B3共享异常矩阵继续由里程碑验收记录统一约束。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
@@ -11135,7 +11135,7 @@
         },
         {
           "id": "BE.subflow.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -11143,10 +11143,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 subflow，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：子流程执行器 - 执行画布中的子流程分组内的模块",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-Fgh30z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "remainingDetails": [
         "正式Electron真实UI编排、保存重开和运行验收",
@@ -15042,7 +15042,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -15094,7 +15094,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码执行器、生产注册、HTTP准入和控制流运行时已接入；正式Electron真实执行仍待B3集中验收。",
+      "gap": "源码差分、生产合同与正式Electron真实UI执行均已通过；B3共享异常矩阵继续由里程碑验收记录统一约束。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
@@ -15123,7 +15123,7 @@
         },
         {
           "id": "BE.set_variable.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -15131,10 +15131,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 set_variable，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：设置变量模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-Fgh30z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -15259,7 +15259,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -15311,7 +15311,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码执行器、生产注册、HTTP准入和控制流运行时已接入；正式Electron真实执行仍待B3集中验收。",
+      "gap": "源码差分、生产合同与正式Electron真实UI执行均已通过；B3共享异常矩阵继续由里程碑验收记录统一约束。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
@@ -15340,7 +15340,7 @@
         },
         {
           "id": "BE.increment_decrement.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -15348,10 +15348,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 increment_decrement，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：自增自减模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-Fgh30z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -50096,7 +50096,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B3",
       "source": {
@@ -50141,7 +50141,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码无操作执行器已注册并通过HTTP准入；运行图按原版视觉节点语义过滤，不产生伪执行事件；正式Electron验收仍待集中完成。",
+      "gap": "源码差分、生产合同与正式Electron真实UI执行均已通过；B3共享异常矩阵继续由里程碑验收记录统一约束。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
@@ -50170,7 +50170,7 @@
         },
         {
           "id": "BE.group.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -50178,10 +50178,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 group，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：备注分组模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-Fgh30z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },

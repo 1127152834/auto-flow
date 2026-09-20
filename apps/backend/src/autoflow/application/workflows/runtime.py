@@ -128,7 +128,7 @@ class _WorkflowScheduler:
             return
 
         tasks = [
-            asyncio.create_task(self._execute_claimed(node_id)) for node_id in claimed
+            asyncio.create_task(self._execute_branch(node_id)) for node_id in claimed
         ]
         try:
             await asyncio.gather(*tasks)
@@ -138,6 +138,13 @@ class _WorkflowScheduler:
                     task.cancel()
             await asyncio.gather(*tasks, return_exceptions=True)
             raise
+
+    async def _execute_branch(self, node_id: str) -> None:
+        token = self.context.bind_branch_loop_stack()
+        try:
+            await self._execute_claimed(node_id)
+        finally:
+            self.context.reset_branch_loop_stack(token)
 
     async def _execute_claimed(self, node_id: str) -> None:
         node = self.graph.get_node(node_id)
@@ -232,9 +239,7 @@ class _WorkflowScheduler:
         ):
             module_id = str(result.data.get("module_id") or "")
             raw_parameters = result.data.get("parameter_mappings", {})
-            parameters = (
-                raw_parameters if isinstance(raw_parameters, Mapping) else {}
-            )
+            parameters = raw_parameters if isinstance(raw_parameters, Mapping) else {}
             custom_result = await self.context.custom_modules.run_custom_module(
                 module_id=module_id,
                 parameter_values=parameters,

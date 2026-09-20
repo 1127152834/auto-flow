@@ -65,14 +65,16 @@
     "openapi": "生成类型已更新且openapi:check通过",
     "typescript": "desktop typecheck通过",
     "eslint": "desktop lint通过",
-    "b3ClosureMatrix": "62 passed；冻结解析器覆盖空流程、悬空边、非法回环和控制端口，冻结变量对照覆盖缺失变量；运行时覆盖并行取消，真实worker覆盖1,000轮停止以及画布子流程32层成功/33层拒绝。"
+    "b3ClosureMatrix": "62 passed；冻结解析器覆盖空流程、悬空边、非法回环和控制端口，冻结变量对照覆盖缺失变量；运行时覆盖并行取消，真实worker覆盖1,000轮停止以及画布子流程32层成功/33层拒绝。",
+    "formalElectronCombination": "passed；真实UI编排、保存、系统级Cmd+W正常关闭、重开并运行条件、次数循环、设置/增减变量、分组子流程和两个顶层并行入口；SQLite终态及资源槽清理通过。证据：formal-control-flow-electron-Fgh30z/result.json",
+    "affectedRegression": "231 passed；B3运行时、冻结差分、依赖合同、HTTP合同及工作流单元回归；Ruff和mypy受影响文件通过。"
   },
   "remaining": [
-    "正式Electron中编排复杂控制流、保存重开并真实执行尚未验收"
+    "15个B3节点的formal Electron real-execution入口仍待逐项核销；63条节点用例当前48条通过"
   ],
   "notClaimed": [
     "B3里程碑整体完成",
-    "正式Electron复杂控制流验收",
+    "其余15个节点的正式Electron入口",
     "macOS Intel或Windows实机结果"
   ],
   "userDatabaseModified": false,

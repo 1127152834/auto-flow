@@ -99,9 +99,7 @@ class WorkflowRunCoordinator:
         self._command_lock = asyncio.Lock()
         self._event_command_lock = asyncio.Lock()
         self._input_prompts: dict[str, dict[str, str]] = {}
-        self._command_receipts: dict[
-            str, tuple[str, dict[str, Any], int]
-        ] = {}
+        self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
         self._command_waiters: dict[str, asyncio.Future[None]] = {}
 
     async def start(
@@ -155,8 +153,10 @@ class WorkflowRunCoordinator:
             custom_module_dependencies: dict[str, dict[str, object]] = {}
             try:
                 workflow_dependencies = _workflow_dependency_snapshots(
-                    self._documents, document,
-                    modules=self._modules, custom_modules=custom_module_dependencies,
+                    self._documents,
+                    document,
+                    modules=self._modules,
+                    custom_modules=custom_module_dependencies,
                 )
             except WorkflowDocumentError as error:
                 raise WorkflowRunError(
@@ -189,13 +189,17 @@ class WorkflowRunCoordinator:
                             ],
                         },
                     )
-            requires_browser = self._runtime.requires_browser(document) or any(
-                self._runtime.requires_browser(snapshot)
-                for snapshot in workflow_dependencies.values()
-            ) or any(
-                self._runtime.requires_browser(workflow)
-                for snapshot in custom_module_dependencies.values()
-                if isinstance((workflow := snapshot.get("workflow")), Mapping)
+            requires_browser = (
+                self._runtime.requires_browser(document)
+                or any(
+                    self._runtime.requires_browser(snapshot)
+                    for snapshot in workflow_dependencies.values()
+                )
+                or any(
+                    self._runtime.requires_browser(workflow)
+                    for snapshot in custom_module_dependencies.values()
+                    if isinstance((workflow := snapshot.get("workflow")), Mapping)
+                )
             )
             profile = self._profiles.get(profile_id)
             kernel = self._kernel(profile) if requires_browser else None
@@ -371,7 +375,12 @@ class WorkflowRunCoordinator:
             )
             await self._events.publish(
                 event_type,
-                {**payload, "runId": run_id, "workflowId": run.workflow_id, "sequence": persisted.sequence},
+                {
+                    **payload,
+                    "runId": run_id,
+                    "workflowId": run.workflow_id,
+                    "sequence": persisted.sequence,
+                },
             )
             return
         if event_type == "execution:input_prompt_closed":
@@ -406,7 +415,9 @@ class WorkflowRunCoordinator:
             if raw_execution_context is not None and not isinstance(
                 raw_execution_context, Mapping
             ):
-                raise WorkflowRunError("WORKER_EVENT_INVALID", "节点执行上下文无效", 422)
+                raise WorkflowRunError(
+                    "WORKER_EVENT_INVALID", "节点执行上下文无效", 422
+                )
             execution_context = (
                 copy.deepcopy(dict(raw_execution_context))
                 if isinstance(raw_execution_context, Mapping)
@@ -598,8 +609,7 @@ class WorkflowRunCoordinator:
         if state is None:
             raise WorkflowRunError("INPUT_PROMPT_NOT_FOUND", "输入请求不存在", 404)
         return {
-            key: state[key]
-            for key in ("requestId", "workflowId", "nodeId", "status")
+            key: state[key] for key in ("requestId", "workflowId", "nodeId", "status")
         }
 
     async def on_worker_exit(self, run_id: str, return_code: int) -> None:
@@ -712,6 +722,12 @@ def _worker_payload(
     custom_module_dependencies: dict[str, dict[str, object]],
 ) -> dict[str, Any]:
     spec = profile.spec
+    executable_document = WorkflowDraft(
+        start.document_id,
+        start.workflow_name,
+        copy.deepcopy(start.document_snapshot),
+        copy.deepcopy(start.layout_snapshot),
+    ).to_payload()
     return {
         "runId": start.run_id,
         "workflowId": start.workflow_id,
@@ -742,7 +758,7 @@ def _worker_payload(
         "headless": headless,
         "artifactRoot": str(artifact_root),
         "requiresBrowser": requires_browser,
-        "document": copy.deepcopy(start.document_snapshot),
+        "document": executable_document,
         "workflowDependencies": workflow_dependencies,
         "customModuleDependencies": custom_module_dependencies,
         "executableIdentity": executable.name if executable is not None else None,
@@ -762,11 +778,7 @@ def _workflow_dependency_snapshots(
         page = documents.list_summaries(cursor=cursor, limit=200)
         for summary in page.items:
             saved = documents.get(summary.id)
-            payload = {
-                "id": saved.id,
-                "name": saved.name,
-                **copy.deepcopy(saved.document),
-            }
+            payload = saved.to_payload()
             available[saved.id] = payload
             available.setdefault(saved.name, payload)
             available.setdefault(f"{saved.name}.json", payload)
@@ -793,7 +805,9 @@ def _workflow_dependency_snapshots(
         visited.add(identity)
         references = _custom_module_references((document,))
         if references and modules is None:
-            raise WorkflowRunError("CUSTOM_MODULES_NOT_READY", "自定义模块服务尚未就绪", 503)
+            raise WorkflowRunError(
+                "CUSTOM_MODULES_NOT_READY", "自定义模块服务尚未就绪", 503
+            )
         if modules is not None:
             missing = tuple(ref for ref in references if ref not in frozen_modules)
             if missing:
@@ -811,7 +825,11 @@ def _workflow_dependency_snapshots(
             else:
                 candidates.append(f"{reference}.json")
             dependency = next(
-                (available[candidate] for candidate in candidates if candidate in available),
+                (
+                    available[candidate]
+                    for candidate in candidates
+                    if candidate in available
+                ),
                 None,
             )
             if dependency is None:
@@ -824,13 +842,17 @@ def _workflow_dependency_snapshots(
 
 
 def _workflow_references(document: Mapping[str, Any]) -> tuple[str, ...]:
-    variables = {
-        item["name"]: item.get("value")
-        for item in document.get("variables", [])
-        if isinstance(item, Mapping)
-        and isinstance(item.get("name"), str)
-        and item["name"]
-    } if isinstance(document.get("variables"), list) else {}
+    variables = (
+        {
+            item["name"]: item.get("value")
+            for item in document.get("variables", [])
+            if isinstance(item, Mapping)
+            and isinstance(item.get("name"), str)
+            and item["name"]
+        }
+        if isinstance(document.get("variables"), list)
+        else {}
+    )
     references: list[str] = []
     nodes = document.get("nodes", [])
     if not isinstance(nodes, list):
@@ -839,7 +861,10 @@ def _workflow_references(document: Mapping[str, Any]) -> tuple[str, ...]:
         if not isinstance(node, Mapping):
             continue
         data = node.get("data")
-        if not isinstance(data, Mapping) or data.get("moduleType") != "run_workflow_file":
+        if (
+            not isinstance(data, Mapping)
+            or data.get("moduleType") != "run_workflow_file"
+        ):
             continue
         config = data.get("config")
         values = config if isinstance(config, Mapping) else data
