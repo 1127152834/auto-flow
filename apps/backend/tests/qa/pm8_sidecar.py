@@ -18,6 +18,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import Event, Thread
 from typing import Any
+from uuid import uuid4
 
 from fastapi import HTTPException, Request
 from sqlalchemy import update
@@ -25,12 +26,14 @@ from sqlalchemy import update
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.parent import watch_parent
 from autoflow.bootstrap.ready import ready_line
+from autoflow.domain.environments.models import EnvironmentInstance
 from autoflow.infrastructure.database.project_data_models import DataImpactRow
 from tests.qa.pm7_sidecar import create_qa_app as _create_pm7_qa_app
 
 FAULT_KINDS = (
     "expire-lifecycle-impact",
     "lifecycle-response-loss",
+    "leak-work-copy",
 )
 
 # One second short of a live confirmation, so the command under test answers 412
@@ -51,6 +54,55 @@ def _expire_impacts(factory: Any, project_id: str | None) -> dict[str, Any]:
         return {"expiredImpacts": result.rowcount}
 
 
+def _leak_work_copy(app: Any, body: dict[str, Any]) -> dict[str, Any]:
+    """Leave behind a real isolated work copy, as an interrupted cleanup would.
+
+    ``quiesce_instance`` marks an instance ``closed`` before ``close_instance``
+    removes its directory, so a process killed in between leaves exactly this
+    durable state: browser gone, work copy still on disk, instance not busy. The
+    QA sidecar cannot kill itself mid-cleanup, so it recreates that state through
+    the real environment repository and store instead of writing rows by hand;
+    every later step (delete, residue reporting, retry, purge) stays production
+    code.
+    """
+    project_id = body.get("projectId")
+    profile_id = body.get("profileId")
+    if not project_id or not profile_id:
+        raise HTTPException(
+            status_code=422, detail="leak-work-copy requires projectId and profileId"
+        )
+    service = app.state.environment_service
+    instance_id = str(uuid4())
+    directory = service.store.prepare_instance(instance_id)
+    (directory / "crash-note.txt").write_text(
+        "interrupted before the work copy was removed", encoding="utf-8"
+    )
+    now = datetime.now(UTC)
+    record = EnvironmentInstance(
+        instance_id=instance_id,
+        project_id=project_id,
+        environment_id=None,
+        state="closed",
+        source="newFromProfile",
+        source_content_generation=None,
+        instance_use_generation=1,
+        active_task_id=None,
+        active_run_id=None,
+        maintenance_operation_id=None,
+        profile_id=profile_id,
+        created_at=now,
+        updated_at=now,
+    )
+    with app.state.session_factory() as session:
+        service.environments.reserve_instance_in_session(session, record, None)
+        session.commit()
+    return {
+        "instanceId": instance_id,
+        "directory": str(directory),
+        "state": "closed",
+    }
+
+
 def _install_pm8_controls(app: Any) -> None:
     factory = app.state.session_factory
     drop = app.state.pm7_drop
@@ -67,6 +119,8 @@ def _install_pm8_controls(app: Any) -> None:
         result: dict[str, Any] = {"injected": True, "kind": kind}
         if kind == "expire-lifecycle-impact":
             result.update(_expire_impacts(factory, project_id))
+        elif kind == "leak-work-copy":
+            result.update(_leak_work_copy(app, body))
         elif kind == "lifecycle-response-loss":
             # "Committed but the caller never learned the outcome": the command
             # body is dropped together with the by-key lookup the renderer runs
