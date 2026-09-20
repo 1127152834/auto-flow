@@ -736,7 +736,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
             size="icon"
             onClick={() => handleTestSelector(id)}
             title="测试定位：在当前浏览器页面验证选择器是否命中并高亮"
-            disabled={testingField === id || !rawValue}
+            disabled={isPicking || testingField === id || !rawValue}
           >
             {testingField === id ? (
               <Loader2 className="w-4 h-4 animate-spin" />

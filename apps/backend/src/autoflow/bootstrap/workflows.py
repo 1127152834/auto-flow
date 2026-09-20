@@ -12,6 +12,7 @@ from autoflow.adapters.events.workflows import (
     workflow_events_router,
 )
 from autoflow.adapters.http.custom_modules import custom_modules_router
+from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
 from autoflow.adapters.http.workflow_runs import (
     WorkflowRunCommands,
     workflow_run_command_router,
@@ -23,6 +24,7 @@ from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
+from autoflow.application.workflows.inspection import WorkflowInspectionService
 from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
@@ -30,6 +32,7 @@ from autoflow.domain.workflows.runs import WorkflowRunError
 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
+from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowResourceCoordinator,
     WorkflowWorkerManager,
@@ -79,14 +82,27 @@ class WorkflowServices:
     events: StudioEventJournal
     workers: WorkflowWorkerManager | None = None
     artifact_root: Path | None = None
+    inspection: WorkflowInspectionService | Any | None = None
 
     async def shutdown(self) -> None:
+        tasks = []
         if self.workers is not None:
-            await self.workers.shutdown()
+            tasks.append(self.workers.shutdown())
+        if self.inspection is not None:
+            tasks.append(self.inspection.shutdown())
+        if tasks:
+            import asyncio
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for result in results:
+                if isinstance(result, BaseException):
+                    raise result
 
     def blockers(self) -> list[str]:
         if self.workers is not None and self.workers.busy():
             return ["workflow_process_active"]
+        if self.inspection is not None and self.inspection.busy():
+            return ["workflow_inspection_active"]
         return []
 
 
@@ -141,6 +157,7 @@ def build_workflow_services(
     assert artifact_root is not None
 
     holder: dict[str, WorkflowRunCoordinator] = {}
+    inspection_holder: dict[str, WorkflowInspectionService] = {}
 
     async def on_event(event: dict[str, object]) -> None:
         await holder["coordinator"].on_worker_event(event)
@@ -148,12 +165,33 @@ def build_workflow_services(
     async def on_exit(run_id: str, return_code: int) -> None:
         await holder["coordinator"].on_worker_exit(run_id, return_code)
 
+    async def on_inspection_event(event: dict[str, object]) -> None:
+        await inspection_holder["service"].on_worker_event(event)
+
+    async def on_inspection_exit(session_id: str, return_code: int) -> None:
+        await inspection_holder["service"].on_worker_exit(session_id, return_code)
+
     workers = WorkflowWorkerManager(
         temp_root,
         on_event=on_event,
         on_exit=on_exit,
     )
     resources = WorkflowResourceCoordinator(profile_guard, kernels_root)
+    inspection_workers = WorkflowWorkerManager(
+        temp_root,
+        command=inspection_worker_command(),
+        on_event=on_inspection_event,
+        on_exit=on_inspection_exit,
+    )
+    inspection = WorkflowInspectionService(
+        profiles=profiles,
+        installed_kernels=installed_kernels,
+        resolve_proxy=resolve_proxy,
+        read_license=read_license,
+        resources=resources,
+        workers=inspection_workers,
+    )
+    inspection_holder["service"] = inspection
     registry = build_production_executor_registry()
     coordinator = WorkflowRunCoordinator(
         documents=documents,
@@ -172,13 +210,15 @@ def build_workflow_services(
     )
     holder["coordinator"] = coordinator
     return WorkflowServices(
-        documents, modules, runs, coordinator, events, workers, artifact_root
+        documents, modules, runs, coordinator, events, workers, artifact_root, inspection
     )
 
 
 def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     # Static workflow commands must be registered before the dynamic document ID.
     app.include_router(workflow_run_command_router(services.commands))
+    if services.inspection is not None:
+        app.include_router(workflow_inspection_router(services.inspection))
     app.include_router(custom_modules_router(services.modules))
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))

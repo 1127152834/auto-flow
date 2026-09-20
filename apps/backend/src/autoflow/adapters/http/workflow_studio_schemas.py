@@ -496,6 +496,9 @@ class StudioBrowserStatus(ApiModel):
 
     is_open: bool
     picker_active: bool
+    session_id: str | None = None
+    profile_id: str | None = None
+    picker_session_id: str | None = None
 
 
 class StudioJsScriptRequest(ApiModel):

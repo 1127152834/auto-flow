@@ -12,6 +12,7 @@ def main() -> None:
     parser.add_argument("--kernel-worker", action="store_true")
     parser.add_argument("--test-browser-worker", action="store_true")
     parser.add_argument("--workflow-worker", action="store_true")
+    parser.add_argument("--inspection-worker", action="store_true")
     parser.add_argument("--project-workflow-worker", action="store_true")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=0)
@@ -35,6 +36,10 @@ def main() -> None:
         from autoflow.bootstrap.workflow_worker import workflow_worker_main
 
         raise SystemExit(workflow_worker_main())
+    if args.inspection_worker:
+        from autoflow.bootstrap.inspection_worker import inspection_worker_main
+
+        raise SystemExit(inspection_worker_main())
     if args.instance_id is None:
         parser.error("the following arguments are required: --instance-id")
     if args.data_dir is None:

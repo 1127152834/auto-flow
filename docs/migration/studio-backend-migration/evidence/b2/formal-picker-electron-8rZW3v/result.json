@@ -1,0 +1,28 @@
+{
+  "evidenceId": "BE-B2-picker-formal-electron",
+  "checkedAt": "2026-09-20T17:46:12.634Z",
+  "gitHead": "027d29bc4342a370487e2ef743a154f2cff0ebfe",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "_HclFmeQtduF7sM9_v9SJ",
+  "profileId": "f61cf98c-7578-4041-8eee-f85c32dd147a",
+  "runId": "6a8c231e-6d6a-4656-8716-6701d76b6f37",
+  "selector": "#pick-target",
+  "clickCount": 1,
+  "checks": [
+    "临时工作区创建真实 CloakBrowser Profile",
+    "通过正式配置面板启动真实拾取，定位写回点击节点且页面动作被拦截",
+    "正式 Studio 测试定位命中真实页面并返回数量",
+    "拾取结果经真实 HTTP/SQLite 保存",
+    "拾取会话占用期间真实运行被原子拒绝，Profile原始无头配置未被修改",
+    "拾取浏览器经正式 UI 关闭并完成清理",
+    "关闭拾取会话后，独立 CloakBrowser 运行保存流程并点击同一元素"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "formal Studio UI through CDP; picker event executes inside the real CloakBrowser fixture; no Store access"
+  }
+}

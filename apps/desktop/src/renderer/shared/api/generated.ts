@@ -2553,6 +2553,228 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/browser/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Browser Status */
+        get: operations["browser_status_api_browser_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/browser/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Browser Open */
+        post: operations["browser_open_api_browser_open_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/browser/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Browser Close */
+        post: operations["browser_close_api_browser_close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/browser/navigate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Browser Navigate */
+        post: operations["browser_navigate_api_browser_navigate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/browser/url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Browser Url */
+        get: operations["browser_url_api_browser_url_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/browser/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Browser Pages */
+        get: operations["browser_pages_api_browser_pages_get"];
+        put?: never;
+        /** Browser Page */
+        post: operations["browser_page_api_browser_pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/element-picker/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Picker Start */
+        post: operations["picker_start_api_element_picker_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/element-picker/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Picker Stop */
+        post: operations["picker_stop_api_element_picker_stop_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/element-picker/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Picker Status */
+        get: operations["picker_status_api_element_picker_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/element-picker/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Picker Result */
+        get: operations["picker_result_api_element_picker_result_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/element-picker/selected": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Picker Selected */
+        get: operations["picker_selected_api_element_picker_selected_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/element-picker/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Picker Similar */
+        get: operations["picker_similar_api_element_picker_similar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/element-picker/test-selector": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Selector */
+        post: operations["test_selector_api_element_picker_test_selector_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/custom-modules": {
         parameters: {
             query?: never;
@@ -4059,9 +4281,26 @@ export type components = {
             /** Requestid */
             requestId: string;
         };
+        /** BrowserCloseRequest */
+        BrowserCloseRequest: {
+            /** Sessionid */
+            sessionId?: string | null;
+        };
         /** BrowserErrorEnvelope */
         BrowserErrorEnvelope: {
             error: components["schemas"]["BrowserApiError"];
+        };
+        /** BrowserNavigateRequest */
+        BrowserNavigateRequest: {
+            /** Url */
+            url: string;
+        };
+        /** BrowserOpenRequest */
+        BrowserOpenRequest: {
+            /** Profileid */
+            profileId: string;
+            /** Url */
+            url?: string | null;
         };
         /** CancelRecordStatusesResult */
         CancelRecordStatusesResult: {
@@ -8232,6 +8471,57 @@ export type components = {
             /** Statusid */
             statusId: string;
         };
+        /** StudioBrowserPage */
+        StudioBrowserPage: {
+            /** Pageid */
+            pageId: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
+        };
+        /** StudioBrowserPageCommand */
+        StudioBrowserPageCommand: {
+            /** Sessionid */
+            sessionId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Pageid */
+            pageId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "select" | "focus" | "navigate";
+            /** Url */
+            url?: string | null;
+        };
+        /** StudioBrowserPages */
+        StudioBrowserPages: {
+            /** Sessionid */
+            sessionId: string;
+            /** Revision */
+            revision: number;
+            /** Targetpageid */
+            targetPageId: string | null;
+            /** Pages */
+            pages: components["schemas"]["StudioBrowserPage"][];
+        };
+        /** StudioBrowserStatus */
+        StudioBrowserStatus: {
+            /** Isopen */
+            isOpen: boolean;
+            /** Pickeractive */
+            pickerActive: boolean;
+            /** Sessionid */
+            sessionId?: string | null;
+            /** Profileid */
+            profileId?: string | null;
+            /** Pickersessionid */
+            pickerSessionId?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioCommandLookup */
         StudioCommandLookup: {
             /** Commandid */
@@ -8276,6 +8566,39 @@ export type components = {
              * @enum {string}
              */
             status: "pending" | "answered" | "cancelled" | "expired";
+        };
+        /** StudioPickerSessionRequest */
+        StudioPickerSessionRequest: {
+            /** Sessionid */
+            sessionId: string;
+        };
+        /** StudioPickerSessionStartRequest */
+        StudioPickerSessionStartRequest: {
+            /** Sessionid */
+            sessionId: string;
+            /** Url */
+            url?: string | null;
+            /** Profileid */
+            profileId?: string | null;
+        };
+        /** StudioPickerSessionState */
+        StudioPickerSessionState: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Sessionid */
+            sessionId: string;
+            /** Active */
+            active: boolean;
+            /**
+             * Selected
+             * @default false
+             */
+            selected: boolean;
+        } & {
+            [key: string]: unknown;
         };
         /** StudioRunResultPage */
         StudioRunResultPage: {
@@ -8322,6 +8645,59 @@ export type components = {
             /** Key */
             key: string;
             value: components["schemas"]["JsonValue"];
+        };
+        /** StudioSelectorAttempt */
+        StudioSelectorAttempt: {
+            /** Selector */
+            selector: string;
+            /** Count */
+            count?: number | null;
+            /** Error */
+            error?: string | null;
+        };
+        /** StudioSelectorElement */
+        StudioSelectorElement: {
+            /** Tag */
+            tag?: string | null;
+            /** Text */
+            text?: string | null;
+        };
+        /** StudioSelectorTestRequest */
+        StudioSelectorTestRequest: {
+            /** Selector */
+            selector: string;
+            /** Hints */
+            hints?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Highlight
+             * @default true
+             */
+            highlight: boolean;
+            /** Sessionid */
+            sessionId?: string | null;
+        };
+        /** StudioSelectorTestResult */
+        StudioSelectorTestResult: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Matched */
+            matched: boolean;
+            /** Count */
+            count: number;
+            /** Matchedselector */
+            matchedSelector?: string | null;
+            /** Isprimary */
+            isPrimary?: boolean | null;
+            element?: components["schemas"]["StudioSelectorElement"] | null;
+            /** Tried */
+            tried?: components["schemas"]["StudioSelectorAttempt"][] | null;
+            /** Error */
+            error?: string | null;
         };
         /** SyncAbandonRequest */
         SyncAbandonRequest: {
@@ -8858,45 +9234,6 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
-        /** StudioBrowserPage */
-        StudioBrowserPage: {
-            /** Pageid */
-            pageId: string;
-            /** Title */
-            title: string;
-            /** Url */
-            url: string;
-        };
-        /** StudioBrowserPageCommand */
-        StudioBrowserPageCommand: {
-            /** Sessionid */
-            sessionId: string;
-            /** Expectedrevision */
-            expectedRevision: number;
-            /** Pageid */
-            pageId: string;
-            /**
-             * Action
-             * @enum {string}
-             */
-            action: "select" | "focus" | "navigate";
-            /**
-             * Url
-             * @default null
-             */
-            url: string | null;
-        };
-        /** StudioBrowserPages */
-        StudioBrowserPages: {
-            /** Sessionid */
-            sessionId: string;
-            /** Revision */
-            revision: number;
-            /** Targetpageid */
-            targetPageId: string | null;
-            /** Pages */
-            pages: components["schemas"]["StudioBrowserPage"][];
-        };
         /** StudioBrowserScriptContext */
         StudioBrowserScriptContext: {
             /** Browsersessionid */
@@ -8951,15 +9288,6 @@ export type components = {
             pageId: string;
             /** Revision */
             revision: number;
-        };
-        /** StudioBrowserStatus */
-        StudioBrowserStatus: {
-            /** Isopen */
-            isOpen: boolean;
-            /** Pickeractive */
-            pickerActive: boolean;
-        } & {
-            [key: string]: unknown;
         };
         /** StudioClaimedRequestState */
         StudioClaimedRequestState: {
@@ -9715,45 +10043,6 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
-        /** StudioPickerSessionRequest */
-        StudioPickerSessionRequest: {
-            /** Sessionid */
-            sessionId: string;
-        };
-        /** StudioPickerSessionStartRequest */
-        StudioPickerSessionStartRequest: {
-            /** Sessionid */
-            sessionId: string;
-            /**
-             * Url
-             * @default null
-             */
-            url: string | null;
-            /**
-             * Profileid
-             * @default null
-             */
-            profileId: string | null;
-        };
-        /** StudioPickerSessionState */
-        StudioPickerSessionState: {
-            /**
-             * Success
-             * @constant
-             */
-            success: true;
-            /** Sessionid */
-            sessionId: string;
-            /** Active */
-            active: boolean;
-            /**
-             * Selected
-             * @default false
-             */
-            selected: boolean;
-        } & {
-            [key: string]: unknown;
-        };
         /** StudioRecorderBatch */
         StudioRecorderBatch: {
             /**
@@ -10057,90 +10346,6 @@ export type components = {
             largeValues?: {
                 [key: string]: string;
             };
-        };
-        /** StudioSelectorAttempt */
-        StudioSelectorAttempt: {
-            /** Selector */
-            selector: string;
-            /**
-             * Count
-             * @default null
-             */
-            count: number | null;
-            /**
-             * Error
-             * @default null
-             */
-            error: string | null;
-        };
-        /** StudioSelectorElement */
-        StudioSelectorElement: {
-            /**
-             * Tag
-             * @default null
-             */
-            tag: string | null;
-            /**
-             * Text
-             * @default null
-             */
-            text: string | null;
-        };
-        /** StudioSelectorTestRequest */
-        StudioSelectorTestRequest: {
-            /** Selector */
-            selector: string;
-            /**
-             * Hints
-             * @default null
-             */
-            hints: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Highlight
-             * @default true
-             */
-            highlight: boolean;
-            /**
-             * Sessionid
-             * @default null
-             */
-            sessionId: string | null;
-        };
-        /** StudioSelectorTestResult */
-        StudioSelectorTestResult: {
-            /**
-             * Success
-             * @constant
-             */
-            success: true;
-            /** Matched */
-            matched: boolean;
-            /** Count */
-            count: number;
-            /**
-             * Matchedselector
-             * @default null
-             */
-            matchedSelector: string | null;
-            /**
-             * Isprimary
-             * @default null
-             */
-            isPrimary: boolean | null;
-            /** @default null */
-            element: components["schemas"]["StudioSelectorElement"] | null;
-            /**
-             * Tried
-             * @default null
-             */
-            tried: components["schemas"]["StudioSelectorAttempt"][] | null;
-            /**
-             * Error
-             * @default null
-             */
-            error: string | null;
         };
         /** StudioSimilarElements */
         StudioSimilarElements: {
@@ -20750,6 +20955,433 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    browser_status_api_browser_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioBrowserStatus"];
+                };
+            };
+        };
+    };
+    browser_open_api_browser_open_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserOpenRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioBrowserStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    browser_close_api_browser_close_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserCloseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    browser_navigate_api_browser_navigate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserNavigateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    browser_url_api_browser_url_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    browser_pages_api_browser_pages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioBrowserPages"];
+                };
+            };
+        };
+    };
+    browser_page_api_browser_pages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioBrowserPageCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioBrowserPages"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    picker_start_api_element_picker_start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioPickerSessionStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioPickerSessionState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    picker_stop_api_element_picker_stop_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioPickerSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioPickerSessionState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    picker_status_api_element_picker_status_get: {
+        parameters: {
+            query?: {
+                sessionId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioPickerSessionState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    picker_result_api_element_picker_result_get: {
+        parameters: {
+            query?: {
+                sessionId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    picker_selected_api_element_picker_selected_get: {
+        parameters: {
+            query?: {
+                sessionId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    picker_similar_api_element_picker_similar_get: {
+        parameters: {
+            query?: {
+                sessionId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_selector_api_element_picker_test_selector_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioSelectorTestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioSelectorTestResult"];
                 };
             };
             /** @description Validation Error */
