@@ -675,6 +675,7 @@ class _WorkerCanvasSubflows:
         sink: _WorkerEventSink,
         command_bus: _WorkerCommandBus,
         nested_workflows: _WorkerNestedWorkflows,
+        stack: ContextVar[tuple[str, ...]] | None = None,
     ) -> None:
         self._document = copy.deepcopy(document)
         self._registry = registry
@@ -682,8 +683,19 @@ class _WorkerCanvasSubflows:
         self._sink = sink
         self._command_bus = command_bus
         self._nested_workflows = nested_workflows
-        self._stack: ContextVar[tuple[str, ...]] = ContextVar(
-            "canvas_subflow_stack", default=()
+        self._stack = stack or ContextVar("canvas_subflow_stack", default=())
+
+    def for_context(
+        self, parent: ExecutionContext, sink: _WorkerEventSink
+    ) -> _WorkerCanvasSubflows:
+        return _WorkerCanvasSubflows(
+            self._document,
+            registry=self._registry,
+            parent=parent,
+            sink=sink,
+            command_bus=self._command_bus,
+            nested_workflows=self._nested_workflows,
+            stack=self._stack,
         )
 
     def top_level_document(self) -> dict[str, Any]:
@@ -755,7 +767,7 @@ class _WorkerCanvasSubflows:
             child.custom_modules = self._parent.custom_modules.for_context(
                 child, child_sink
             )
-        child.canvas_subflows = self
+        child.canvas_subflows = self.for_context(child, child_sink)
         try:
             result = await WorkflowRuntime(self._registry).execute(
                 self._subset(members), child

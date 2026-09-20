@@ -502,6 +502,106 @@ async def test_real_worker_stops_recursive_canvas_subflow_with_clear_error(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(("depth", "expected_success"), [(32, True), (33, False)])
+async def test_real_worker_enforces_canvas_subflow_depth_limit(
+    tmp_path: Path, depth: int, expected_success: bool
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    nodes: list[dict[str, object]] = []
+    edges: list[dict[str, object]] = []
+    for index in range(depth):
+        header_id = f"header-{index}"
+        child_id = f"child-{index}"
+        nodes.append(
+            {
+                "id": header_id,
+                "type": "moduleNode",
+                "data": {
+                    "moduleType": "subflow_header",
+                    "subflowName": f"子流程-{index}",
+                },
+            }
+        )
+        nodes.append(
+            {
+                "id": child_id,
+                "type": "moduleNode",
+                "data": (
+                    {
+                        "moduleType": "subflow",
+                        "config": {"subflowGroupId": f"header-{index + 1}"},
+                    }
+                    if index < depth - 1
+                    else {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "deepest", "variableValue": "1"},
+                    }
+                ),
+            }
+        )
+        edges.append(
+            {
+                "id": f"definition-{index}",
+                "source": header_id,
+                "target": child_id,
+            }
+        )
+    nodes.append(
+        {
+            "id": "root-call",
+            "type": "moduleNode",
+            "data": {
+                "moduleType": "subflow",
+                "config": {"subflowGroupId": "header-0"},
+            },
+        }
+    )
+    payload = {
+        "runId": f"canvas-depth-{depth}",
+        "workflowId": "canvas-depth-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {},
+        "document": {"nodes": nodes, "edges": edges, "variables": []},
+    }
+
+    await manager.start(f"canvas-depth-{depth}", "profile-1", None, payload)
+    for _ in range(500):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    terminal = next(
+        event
+        for event in reversed(events)
+        if event.get("type") in {"execution:completed", "execution:failed"}
+    )
+    errors = [event.get("error") for event in events if event.get("error")]
+    assert (terminal["type"] == "execution:completed") is expected_success, errors
+    if expected_success:
+        deepest = next(
+            event
+            for event in events
+            if event.get("type") == "execution:node_complete"
+            and event.get("nodeId") == f"child-{depth - 1}"
+        )
+        assert len(deepest["executionContext"]["scopes"]) == 32
+    else:
+        assert any(
+            "嵌套层数过深(>32)" in str(event.get("error"))
+            for event in events
+            if event.get("type") == "execution:node_complete"
+            and event.get("success") is False
+        )
+
+
+@pytest.mark.asyncio
 async def test_real_worker_runs_frozen_custom_module_with_isolated_outputs(
     tmp_path: Path,
 ) -> None:

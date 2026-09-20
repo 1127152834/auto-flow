@@ -233,6 +233,17 @@ def test_plain_cycle_has_no_start_and_fails_frozen_validation() -> None:
     }
 
 
+def test_empty_workflow_fails_frozen_validation() -> None:
+    snapshot = _parity(
+        {"id": "empty", "name": "空流程", "nodes": [], "edges": [], "variables": []}
+    )
+
+    assert snapshot["validation"] == {
+        "ok": False,
+        "errors": ["工作流没有任何节点"],
+    }
+
+
 def test_validation_reports_the_same_structural_failures() -> None:
     document = {
         "id": "invalid",
