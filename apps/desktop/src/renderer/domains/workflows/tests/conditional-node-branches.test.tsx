@@ -223,6 +223,24 @@ it.each([
   expect(nodeData(id).targetDistance).toBe(expected)
 })
 
+it('NODE.ocr_captcha.source-contract: exposes optional fill and submit branches from the frozen executor', () => {
+  const { id } = open('ocr_captcha')
+  expect(screen.getByText('验证码输入框选择器（可选）')).toBeDefined()
+  expect(screen.getByRole('checkbox', { name: '识别后自动提交' })).toBeDefined()
+  expect(screen.queryByText('提交按钮选择器')).toBeNull()
+  expect(nodeData(id).variableName).toBe('captcha_text')
+  fireEvent.click(screen.getByRole('checkbox', { name: '识别后自动提交' }))
+  expect(screen.getByText('提交按钮选择器')).toBeDefined()
+  expect(nodeData(id).autoSubmit).toBe(true)
+})
+
+it('NODE.slider_captcha.source-contract: exposes the background and gap selectors used by automatic matching', () => {
+  open('slider_captcha')
+  expect(screen.getByText('背景图片选择器（可选）')).toBeDefined()
+  expect(screen.getByText('缺口图片选择器（可选）')).toBeDefined()
+  expect(screen.queryByText('滑轨选择器')).toBeNull()
+})
+
 it.each([
   ['append', '追加元素', true, false, false],
   ['insert', '插入元素', true, true, false],

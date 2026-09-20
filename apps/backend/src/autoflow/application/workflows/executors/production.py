@@ -13,6 +13,7 @@ from .basic import (
     OpenPageExecutor,
     ScreenshotExecutor,
 )
+from .captcha import CAPTCHA_EXECUTORS
 from .control_variable import CONTROL_VARIABLE_EXECUTORS
 from .custom_module import CustomModuleExecutor
 from .data_structure import (
@@ -151,6 +152,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *AI_TASK_EXECUTORS,
     *AI_SCRAPER_EXECUTORS,
     *FIRECRAWL_EXECUTORS,
+    *CAPTCHA_EXECUTORS,
     InputPromptExecutor,
     RunWorkflowFileExecutor,
     SubflowExecutor,

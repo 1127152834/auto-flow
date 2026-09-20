@@ -1769,7 +1769,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     } else if (type === 'ocr_captcha') {
       // OCR验证码模块默认变量
       defaultData = {
-        resultVariable: 'captcha_text',
+        variableName: 'captcha_text',
       }
     } else if (type === 'get_clipboard') {
       // 获取剪贴板模块默认变量

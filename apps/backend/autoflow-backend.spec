@@ -9,6 +9,7 @@ datas = [
     ('src/autoflow/infrastructure/database/migrations', 'autoflow/infrastructure/database/migrations'),
     *collect_data_files('tzdata'),
     *collect_data_files('playwright'),
+    *collect_data_files('ddddocr', includes=['*.onnx']),
     *copy_metadata('tzdata'),
     *copy_metadata('cloakbrowser'),
     *copy_metadata('keyring'),
@@ -16,6 +17,7 @@ datas = [
     *copy_metadata('langgraph'),
     *copy_metadata('langgraph-checkpoint'),
     *copy_metadata('langgraph-checkpoint-sqlite'),
+    *copy_metadata('ddddocr'),
 ]
 hiddenimports = [
     'autoflow.bootstrap.kernel_worker',

@@ -1,0 +1,62 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/captcha.py",
+    "symbols": [
+      "OCRCaptchaExecutor",
+      "SliderCaptchaExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "两个节点保留冻结源码的图片 data URI/元素截图识别、结果变量、自动填入/提交、手动滑动距离、OpenCV 缺口匹配、人工轨迹和 200px 回退语义",
+    "所有页面、定位、截图和鼠标操作统一进入当前运行的 CloakBrowser Profile 会话，并复用 AutoFlow 选择器等待和取消边界",
+    "保留冻结前端既有 resultVariable 与 trackSelector 文档兼容读取；新文档写入执行器实际使用的 variableName、backgroundSelector 和 gapSelector",
+    "补齐冻结前端遗漏的验证码输入框、自动提交、提交按钮、背景图和缺口图入口；所有选择器入口均接入现有拾取器",
+    "屏蔽 ddddocr 初始化时的 stdout 广告，避免破坏 worker 结构化协议；取消滑动时保证释放鼠标",
+    "ddddocr、NumPy、OpenCV 依赖进入正式锁文件，三个 ONNX 模型进入 PyInstaller 产物"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b5_captcha_executor_parity.py apps/backend/tests/unit/workflows/test_captcha_executors.py",
+      "exitCode": 0,
+      "result": "11 passed",
+      "covers": "冻结源码 OCR/滑块输出差分、data URI/截图、旧字段兼容、自动填入提交、OpenCV 匹配、取消释放及生产注册"
+    },
+    {
+      "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<installed-kernel> uv run --project apps/backend pytest -q apps/backend/tests/integration/test_b5_captcha_cloakbrowser_flow.py",
+      "exitCode": 0,
+      "result": "1 passed",
+      "covers": "darwin-arm64 CloakBrowser 151 在本地受控网页真实识别 1234、填入提交并完成 35px 滑动"
+    },
+    {
+      "command": "vitest conditional-node-branches + selector-entry-wiring; tsc --noEmit; ESLint affected files",
+      "exitCode": 0,
+      "result": "79 tests, TypeScript and ESLint passed",
+      "covers": "OCR/滑块完整字段分支、五个新选择器入口、Store 写入、撤销重做和保存恢复"
+    },
+    {
+      "command": "ruff affected files && mypy captcha.py",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    },
+    {
+      "command": "npm run backend:build && npm run smoke:sidecar",
+      "exitCode": 0,
+      "result": "PyInstaller arm64 build and frozen sidecar smoke passed; ddddocr common.onnx/common_det.onnx/common_old.onnx present",
+      "covers": "OCR 本地模型、NumPy、OpenCV、ONNX Runtime 进入冻结后端"
+    },
+    {
+      "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<installed-kernel> uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b5_*.py apps/backend/tests/unit/workflows/test_ai_*.py apps/backend/tests/unit/workflows/test_firecrawl_executors.py apps/backend/tests/unit/workflows/test_captcha_executors.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/integration/test_b5_*.py",
+      "exitCode": 0,
+      "result": "92 passed",
+      "covers": "B5 已迁入节点的差分、注册、模型 worker 与真实 CloakBrowser 回归"
+    }
+  ],
+  "remaining": [
+    "正式 Electron 中通过真实 UI 保存、运行并查看两个节点的日志和结果",
+    "Windows 与 macOS Intel 实机未验收"
+  ]
+}

@@ -87,6 +87,8 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "firecrawl_scrape",
         "firecrawl_map",
         "firecrawl_crawl",
+        "ocr_captcha",
+        "slider_captcha",
         "wait_page_load",
         "page_load_complete",
         "list_operation",
