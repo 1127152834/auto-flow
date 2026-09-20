@@ -13,6 +13,7 @@ jobs:
         os: [windows-2022, macos-15-intel, macos-15]
     runs-on: ${{ matrix.os }}
     steps:
+      - run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - name: Checkout frozen source used by parity tests
         uses: actions/checkout@v4
@@ -35,6 +36,8 @@ jobs:
       - run: npm run test:scripts
       - run: npm run lint
       - run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
       - run: node scripts/smoke-project-management.mjs --output-dir artifacts/pm9/source
       - run: node scripts/smoke-project-management-desktop.mjs --output-dir artifacts/pm9/source
       - run: npm run backend:build

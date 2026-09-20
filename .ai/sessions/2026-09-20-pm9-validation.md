@@ -13,3 +13,5 @@
 Actions 首次推送运行 35507028913 的 arm64 前端结果为 5442 passed / 3 failed：测试写死上海时间、jsdom Blob 被 Node 22 Response 当作原生 Blob。已在 Node 22 + UTC 复现并修正夹具，相关 10 项通过，Node 22 脚本 94 项、类型和 lint 通过。CI 全量前端测试移到打包冒烟后以尽早采集平台构建证据，未删减测试或忽略失败；继续实际重跑。
 
 当前代码提交 `10dc916c` 已推送，Actions 运行 35507610003 已开始；本记录时三平台均进行中，未宣称结果通过。PM9 仍未完成，R1–R4 架构确认待用户答复，缺失实机证据仍待验收。
+
+用户已确认 R1–R4 架构，进入持续实现。第二次 Actions 35507610003 失败：macOS Node 默认堆上限不足；Windows URL pathname 被当成本地路径、POSIX 执行位、默认文本编码及斜杠边界假设。已修正为 fileURLToPath/平台执行位/UTF-8/原生 sep，并固定 CI checkout LF 与构建堆 6 GiB；本机新增 Windows 无执行位用例先失败后通过，脚本 95 项及构建通过。

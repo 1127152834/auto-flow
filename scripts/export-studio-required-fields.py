@@ -23,7 +23,7 @@ def extract():
             found.add(node.target.id)
     if found != names:
         raise ValueError('Frozen schema literal groups changed')
-    retained = {entry['type'] for entry in json.loads(CAPABILITIES.read_text())}
+    retained = {entry['type'] for entry in json.loads(CAPABILITIES.read_text(encoding='utf-8'))}
     if len(retained) != 227:
         raise ValueError(f'Approved 227-node scope changed: {len(retained)}')
     covered = sorted(retained & schemas.keys())
@@ -40,7 +40,7 @@ def extract():
         condition = schema.get('conditional_required')
         if isinstance(condition, dict) and condition.get('map'):
             result['conditionalRequired'][name] = {'field': condition['field'], 'default': condition.get('default'), 'map': {key: [field for field in fields if field not in defaults] for key, fields in condition['map'].items()}}
-    manifest = {'source': str(SOURCE.relative_to(ROOT)), 'sha256': hashlib.sha256(raw).hexdigest(), 'approvedCount': len(retained), 'coveredCount': len(covered), 'covered': covered, 'uncovered': sorted(retained - schemas.keys()), 'boundary': 'Source metadata coverage only, not complete node configuration validation.'}
+    manifest = {'source': SOURCE.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(raw).hexdigest(), 'approvedCount': len(retained), 'coveredCount': len(covered), 'covered': covered, 'uncovered': sorted(retained - schemas.keys()), 'boundary': 'Source metadata coverage only, not complete node configuration validation.'}
     return result, manifest
 
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     for target, content in zip([TARGET, MANIFEST], extract()):
         text = json.dumps(content, ensure_ascii=False, indent=2) + '\n'
         if '--check' in sys.argv:
-            if not target.exists() or target.read_text() != text:
+            if not target.exists() or target.read_text(encoding='utf-8') != text:
                 raise SystemExit(f'Generated metadata is stale: {target}')
         else:
-            target.write_text(text)
+            target.write_text(text, encoding='utf-8')

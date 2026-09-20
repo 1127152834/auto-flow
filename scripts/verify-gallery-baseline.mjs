@@ -1,10 +1,10 @@
 import { readFile, stat } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { resolve, relative, isAbsolute, join } from 'node:path'
+import { resolve, relative, isAbsolute, join, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const hash=value=>createHash('sha256').update(value).digest('hex')
-const outside=(root,path)=>{const part=relative(root,path);return part==='..'||part.startsWith('../')||isAbsolute(part)}
+const outside=(root,path)=>{const part=relative(root,path);return part==='..'||part.startsWith(`..${sep}`)||isAbsolute(part)}
 
 // Structural provenance checks only. Business assertions and visual review remain separate gates.
 export async function verifyGalleryBaseline({manifest,maps,evidenceRoot,requiredStates=[]}) {

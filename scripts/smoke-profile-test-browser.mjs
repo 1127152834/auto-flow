@@ -44,7 +44,7 @@ export async function inspectPublicKernel(directory, platform = process.platform
   }
   const executable = kernelExecutablePath(source, platform)
   const executableInfo = await stat(executable).catch(() => undefined)
-  if (!executableInfo?.isFile() || !(executableInfo.mode & 0o111)) {
+  if (!executableInfo?.isFile() || (platform !== 'win32' && !(executableInfo.mode & 0o111))) {
     throw new Error(`kernel executable is missing or not executable: ${executable}`)
   }
   const resolvedExecutable = await realpath(executable)
