@@ -131,6 +131,7 @@ from .table import (
     TableSetCellExecutor,
 )
 from .table_extract import ExtractTableDataExecutor
+from .text_to_speech import TextToSpeechExecutor
 from .utility_tools import (
     HEXToCMYKExecutor,
     MD5EncryptExecutor,
@@ -168,6 +169,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,
     JsScriptExecutor,
+    TextToSpeechExecutor,
     RunWorkflowFileExecutor,
     SubflowExecutor,
     WaitPageLoadExecutor,

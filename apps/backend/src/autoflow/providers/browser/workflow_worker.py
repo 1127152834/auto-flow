@@ -22,6 +22,7 @@ from autoflow.domain.workflows.execution import (
     InputPromptRequest,
     JsScriptResult,
     NestedWorkflowResult,
+    SpeechResult,
 )
 from autoflow.domain.workflows.runs import WorkflowArtifact
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
@@ -127,6 +128,7 @@ async def _run_in_session(
         interactive = command_bus.for_context(context)
         context.input_prompts = interactive
         context.browser_scripts = interactive
+        context.speech = interactive
         registry = build_production_executor_registry()
         nested = _WorkerNestedWorkflows(
             command.get("workflowDependencies"),
@@ -492,6 +494,7 @@ class _WorkerNestedWorkflows:
         interactive = self._command_bus.for_context(child)
         child.input_prompts = interactive
         child.browser_scripts = interactive
+        child.speech = interactive
         child.nested_workflows = self
         if self.custom_modules is not None:
             child.custom_modules = self.custom_modules.for_context(child, child_sink)
@@ -662,6 +665,7 @@ class _WorkerCustomModules:
         interactive = self._command_bus.for_context(child)
         child.input_prompts = interactive
         child.browser_scripts = interactive
+        child.speech = interactive
         child.nested_workflows = self._nested_workflows
         child.custom_modules = self.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
@@ -802,6 +806,7 @@ class _WorkerCanvasSubflows:
         interactive = self._command_bus.for_context(child)
         child.input_prompts = interactive
         child.browser_scripts = interactive
+        child.speech = interactive
         child.nested_workflows = self._nested_workflows
         if isinstance(self._parent.custom_modules, _WorkerCustomModules):
             child.custom_modules = self._parent.custom_modules.for_context(
@@ -971,6 +976,7 @@ class _WorkerCommandBus:
         self._workflow_id = workflow_id if isinstance(workflow_id, str) else ""
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
+        self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
 
     def for_context(self, context: ExecutionContext) -> _BoundInputPrompts:
         return _BoundInputPrompts(self, context)
@@ -1057,8 +1063,58 @@ class _WorkerCommandBus:
                     }
                 )
 
+    async def request_speech(
+        self,
+        context: ExecutionContext,
+        text: str,
+        *,
+        lang: str,
+        rate: float,
+        pitch: float,
+        volume: float,
+        timeout_seconds: float,
+    ) -> SpeechResult:
+        request_id = str(uuid4())
+        future: asyncio.Future[SpeechResult] = self._loop.create_future()
+        self._pending_speech[request_id] = future
+        if context.events is None:
+            raise RuntimeError("语音请求事件服务不可用")
+        await context.events.publish(
+            {
+                "type": "execution:tts_request",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "text": text,
+                "lang": lang,
+                "rate": rate,
+                "pitch": pitch,
+                "volume": volume,
+            }
+        )
+        status = "expired"
+        try:
+            result = await asyncio.wait_for(future, timeout_seconds)
+            status = "completed" if result.success else "failed"
+            return result
+        finally:
+            self._pending_speech.pop(request_id, None)
+            if context.events is not None:
+                await context.events.publish(
+                    {
+                        "type": "execution:tts_request_closed",
+                        "requestId": request_id,
+                        "nodeId": context.current_node_id,
+                        "executionId": context.current_execution_id,
+                        "status": status,
+                    }
+                )
+
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type == "tts_result":
+            self._apply_speech_result(command)
+            return
         if command_type == "js_script_result":
             self._apply_script_result(command)
             return
@@ -1073,6 +1129,36 @@ class _WorkerCommandBus:
         if value is not None and not isinstance(value, str):
             return
         future.set_result(value)
+        _write(
+            self._stdout,
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
+    def _apply_speech_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        future = (
+            self._pending_speech.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if future is None or future.done() or not isinstance(command_id, str):
+            return
+        success = command.get("success")
+        error = command.get("error")
+        if not isinstance(success, bool):
+            return
+        if not success and (not isinstance(error, str) or not error.strip()):
+            return
+        future.set_result(
+            SpeechResult(success, error if isinstance(error, str) else None)
+        )
         _write(
             self._stdout,
             {
@@ -1131,6 +1217,9 @@ class _WorkerCommandBus:
         for script_future in self._pending_scripts.values():
             if not script_future.done():
                 script_future.cancel()
+        for speech_future in self._pending_speech.values():
+            if not speech_future.done():
+                speech_future.cancel()
 
 
 class _BoundInputPrompts:
@@ -1156,6 +1245,26 @@ class _BoundInputPrompts:
             self._context,
             code,
             variables,
+            timeout_seconds=timeout_seconds,
+        )
+
+    async def speak(
+        self,
+        text: str,
+        *,
+        lang: str,
+        rate: float,
+        pitch: float,
+        volume: float,
+        timeout_seconds: float,
+    ) -> SpeechResult:
+        return await self._bus.request_speech(
+            self._context,
+            text,
+            lang=lang,
+            rate=rate,
+            pitch=pitch,
+            volume=volume,
             timeout_seconds=timeout_seconds,
         )
 

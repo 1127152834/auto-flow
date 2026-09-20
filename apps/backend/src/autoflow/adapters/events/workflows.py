@@ -16,6 +16,7 @@ from autoflow.adapters.http.workflow_studio_schemas import (
     StudioEventCommandRequest,
     StudioInputPromptState,
     StudioJsScriptState,
+    StudioSpeechState,
 )
 from autoflow.domain.workflows.runs import WorkflowRunError
 
@@ -97,6 +98,8 @@ class StudioEventCommands(Protocol):
 
     def js_script_state(self, request_id: str) -> dict[str, str]: ...
 
+    def tts_request_state(self, request_id: str) -> dict[str, str]: ...
+
 
 def workflow_events_router(
     journal: StudioEventJournal, commands: StudioEventCommands | None = None
@@ -151,5 +154,11 @@ def workflow_events_router(
         )
         def get_js_script(request_id: str) -> dict[str, str]:
             return commands.js_script_state(request_id)
+
+        @router.get(
+            "/tts-requests/{request_id}", response_model=StudioSpeechState
+        )
+        def get_tts_request(request_id: str) -> dict[str, str]:
+            return commands.tts_request_state(request_id)
 
     return router

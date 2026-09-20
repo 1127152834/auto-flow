@@ -86,6 +86,12 @@ class PendingWorkflowRunCommands:
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
 
+    def tts_request_state(self, request_id: str) -> dict[str, str]:
+        del request_id
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
 
 class StudioEventCommandMux:
     def __init__(self, workflows: Any, assistant: WorkflowAssistantService) -> None:
@@ -109,6 +115,9 @@ class StudioEventCommandMux:
 
     def js_script_state(self, request_id: str) -> dict[str, str]:
         return self._workflows.js_script_state(request_id)
+
+    def tts_request_state(self, request_id: str) -> dict[str, str]:
+        return self._workflows.tts_request_state(request_id)
 
 
 @dataclass(slots=True)

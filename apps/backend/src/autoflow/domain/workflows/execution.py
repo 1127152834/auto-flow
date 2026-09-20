@@ -168,6 +168,25 @@ class BrowserScriptGateway(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class SpeechResult:
+    success: bool
+    error: str | None = None
+
+
+class SpeechGateway(Protocol):
+    async def speak(
+        self,
+        text: str,
+        *,
+        lang: str,
+        rate: float,
+        pitch: float,
+        volume: float,
+        timeout_seconds: float,
+    ) -> SpeechResult: ...
+
+
+@dataclass(frozen=True, slots=True)
 class NestedWorkflowResult:
     reference: str
     name: str
@@ -243,6 +262,7 @@ class ExecutionContext:
     events: WorkflowEventSink | None = None
     input_prompts: InputPromptGateway | None = None
     browser_scripts: BrowserScriptGateway | None = None
+    speech: SpeechGateway | None = None
     nested_workflows: NestedWorkflowGateway | None = None
     canvas_subflows: CanvasSubflowGateway | None = None
     custom_modules: CustomModuleGateway | None = None

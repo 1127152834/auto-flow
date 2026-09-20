@@ -42,3 +42,4 @@ def test_studio_command_routes_publish_the_existing_shared_envelopes():
     assert "/api/events/commands/{command_id}" in schema["paths"]
     assert "/api/events/input-prompts/{request_id}" in schema["paths"]
     assert "/api/events/js-requests/{request_id}" in schema["paths"]
+    assert "/api/events/tts-requests/{request_id}" in schema["paths"]

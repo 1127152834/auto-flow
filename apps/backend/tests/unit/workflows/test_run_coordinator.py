@@ -726,6 +726,51 @@ async def test_js_script_claim_and_result_are_owned_idempotent_commands(
 
     await coordinator.on_worker_event(
         {
+            "type": "execution:tts_request",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-tts",
+            "requestId": "speech-1",
+            "text": "通知",
+            "lang": "zh-CN",
+            "rate": 1.0,
+            "pitch": 1.0,
+            "volume": 1.0,
+        }
+    )
+    speech_claim = {"requestId": "speech-1", "claimId": "studio-1"}
+    assert (await coordinator.submit_event_command(
+        "speech-claim", "tts_claim", speech_claim
+    ))[1] == 200
+    speech_result = {**speech_claim, "success": True}
+    speaking = asyncio.create_task(
+        coordinator.submit_event_command("speech-result", "tts_result", speech_result)
+    )
+    for _ in range(100):
+        if len(workers.commands) == 2:
+            break
+        await asyncio.sleep(0)
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:command_applied",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "commandId": "speech-result",
+            "requestId": "speech-1",
+        }
+    )
+    assert (await speaking)[1] == 200
+    assert coordinator.tts_request_state("speech-1") == {
+        "requestId": "speech-1",
+        "workflowId": "js-flow",
+        "nodeId": "script",
+        "status": "completed",
+        "claimId": "studio-1",
+    }
+
+    await coordinator.on_worker_event(
+        {
             "type": "execution:js_script",
             "runId": "js-run",
             "workflowId": "js-flow",
