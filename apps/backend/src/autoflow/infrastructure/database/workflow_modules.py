@@ -83,6 +83,13 @@ class SqlAlchemyWorkflowModules:
             )
         return row
 
+    def recover_save(
+        self, client_request_id: str, request_digest: str
+    ) -> SavedCustomModule | None:
+        with self._session_factory() as session:
+            previous = self._receipt(session, client_request_id, request_digest)
+            return _from_response(previous.response) if previous is not None else None
+
     def create(
         self,
         module_id: str,

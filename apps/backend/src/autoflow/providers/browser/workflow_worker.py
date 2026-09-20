@@ -597,10 +597,15 @@ class _WorkerCustomModules:
         document = copy.deepcopy(dict(workflow))
         token = self._stack.set((*stack, module_id))
         variables = _initial_variables(document)
+        sensitive_parameters: set[str] = set()
         for key, value in parameter_values.items():
-            variables[str(key)] = copy.deepcopy(self._parent.resolve_value(value))
+            resolved, sensitive = self._parent.resolve_value_with_sensitivity(value)
+            variables[str(key)] = copy.deepcopy(resolved)
+            if sensitive:
+                sensitive_parameters.add(str(key))
         child = ExecutionContext(
             variables=variables,
+            sensitive_variables=sensitive_parameters,
             browser=self._parent.browser,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
@@ -646,6 +651,7 @@ class _WorkerCustomModules:
                 len(result.executed_node_ids),
                 0 if result.success else 1,
                 result.node_result.error if result.node_result else None,
+                frozenset(output_values) & child.sensitive_variables,
             )
         finally:
             self._stack.reset(token)

@@ -247,8 +247,9 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("via_workflow", [False, True])
 async def test_browser_requirement_propagates_from_frozen_custom_module(
-    tmp_path: Path,
+    tmp_path: Path, via_workflow: bool,
 ) -> None:
     database = tmp_path / "custom-module-browser.sqlite3"
     migrate_database(database)
@@ -280,6 +281,18 @@ async def test_browser_requirement_propagates_from_frozen_custom_module(
     documents = WorkflowDocumentService(
         SqlAlchemyWorkflowDocuments(sessions), custom_module_exists=modules.exists
     )
+    if via_workflow:
+        documents.create(
+            {"id": "browser-child", "name": "browser-child", **module.definition["workflow"]},
+            client_request_id="create-child",
+        )
+        module = modules.update(
+            module.id,
+            {"workflow": {"nodes": [{"id": "nested", "type": "moduleNode", "data": {
+                "moduleType": "run_workflow_file", "workflowFile": "browser-child"
+            }}], "edges": []}},
+            expected_revision=1, client_request_id="use-child",
+        )
     documents.create(
         {
             "id": "module-browser-flow",
@@ -336,7 +349,9 @@ async def test_browser_requirement_propagates_from_frozen_custom_module(
         ("module-browser-run", "profile-1", "public", "145.0.1")
     ]
     assert workers.payloads[0]["requiresBrowser"] is True
-    assert workers.payloads[0]["customModuleDependencies"][module.id]["revision"] == 1
+    assert workers.payloads[0]["customModuleDependencies"][module.id]["revision"] == module.revision
+    if via_workflow:
+        assert "browser-child" in workers.payloads[0]["workflowDependencies"]
 
 
 @pytest.mark.asyncio

@@ -139,6 +139,7 @@ class CustomModuleResult:
     executed_nodes: int
     failed_nodes: int
     error: str | None = None
+    sensitive_outputs: frozenset[str] = frozenset()
 
 
 class CustomModuleGateway(Protocol):
@@ -213,10 +214,13 @@ class ExecutionContext:
         """Bind the current writer to this task before parallel node execution."""
         self._node_artifact_context.set((True, self.artifacts))
 
+    def mark_sensitive_use(self) -> None:
+        self._node_uses_sensitive_values = True
+        self._node_sensitive_context.set(True)
+
     def resolve_value(self, value: Any) -> Any:
         if references_sensitive_value(value, self.sensitive_variables):
-            self._node_uses_sensitive_values = True
-            self._node_sensitive_context.set(True)
+            self.mark_sensitive_use()
         return resolve_value(value, self.variables, self.credentials)
 
     def resolve_value_with_sensitivity(self, value: Any) -> tuple[Any, bool]:

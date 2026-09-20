@@ -95,18 +95,28 @@ class CustomModuleService:
     def create(
         self, payload: Mapping[str, object], *, client_request_id: str
     ) -> SavedCustomModule:
+        return self._create(payload, client_request_id=client_request_id)
+
+    def _create(
+        self, payload: Mapping[str, object], *, client_request_id: str,
+        request_digest: str | None = None,
+    ) -> SavedCustomModule:
         self._require_request_id(client_request_id)
         draft = CustomModuleDraft.from_payload(payload)
         suffix = uuid5(
             NAMESPACE_URL, f"autoflow-custom-module:{client_request_id}"
         ).hex[:8]
         module_id = CustomModuleDraft.generated_id(draft.name, suffix)
+        digest = request_digest or _digest("create", module_id, draft.definition, None)
+        previous = self._repository.recover_save(client_request_id, digest)
+        if previous is not None:
+            return previous
         self._validate_dependencies(module_id, draft.dependencies)
         return self._repository.create(
             module_id,
             draft,
             client_request_id=client_request_id,
-            request_digest=_digest("create", module_id, draft.definition, None),
+            request_digest=digest,
             now=self._clock(),
         )
 
@@ -119,6 +129,10 @@ class CustomModuleService:
         client_request_id: str,
     ) -> SavedCustomModule:
         self._require_request_id(client_request_id)
+        digest = _digest("update", module_id, payload, expected_revision)
+        previous = self._repository.recover_save(client_request_id, digest)
+        if previous is not None:
+            return previous
         current = self.get(module_id)
         draft = CustomModuleDraft.from_payload(payload, base=current.definition)
         self._validate_dependencies(module_id, draft.dependencies)
@@ -127,9 +141,7 @@ class CustomModuleService:
             draft,
             expected_revision=expected_revision,
             client_request_id=client_request_id,
-            request_digest=_digest(
-                "update", module_id, draft.definition, expected_revision
-            ),
+            request_digest=digest,
             now=self._clock(),
         )
 
@@ -175,6 +187,11 @@ class CustomModuleService:
         new_name: str | None,
         client_request_id: str,
     ) -> SavedCustomModule:
+        self._require_request_id(client_request_id)
+        digest = _digest("duplicate", module_id, {"newName": new_name}, None)
+        previous = self._repository.recover_save(client_request_id, digest)
+        if previous is not None:
+            return previous
         source = self.get(module_id)
         names = {module.name for module in self._repository.list_all()}
         candidate = (new_name or "").strip()
@@ -192,11 +209,16 @@ class CustomModuleService:
                 "display_name": f"{source.definition.get('display_name', source.name)} (副本)",
             }
         )
-        return self.create(payload, client_request_id=client_request_id)
+        return self._create(payload, client_request_id=client_request_id, request_digest=digest)
 
     def import_module(
         self, payload: Mapping[str, object], *, client_request_id: str
     ) -> SavedCustomModule:
+        self._require_request_id(client_request_id)
+        digest = _digest("import", "", payload, None)
+        previous = self._repository.recover_save(client_request_id, digest)
+        if previous is not None:
+            return previous
         name = str(payload.get("name") or "imported_module").strip()
         names = {module.name for module in self._repository.list_all()}
         if name in names:
@@ -209,7 +231,7 @@ class CustomModuleService:
         imported["name"] = name
         imported["usage_count"] = 0
         imported["download_count"] = 0
-        return self.create(imported, client_request_id=client_request_id)
+        return self._create(imported, client_request_id=client_request_id, request_digest=digest)
 
     def increment_usage(self, module_id: str) -> SavedCustomModule:
         self.get(module_id)

@@ -237,7 +237,12 @@ class _WorkflowScheduler:
                 parameter_values=parameters,
             )
             if custom_result.success:
-                self.context.variables.update(dict(custom_result.outputs))
+                for name, value in custom_result.outputs.items():
+                    self.context.set_variable(
+                        name, value, sensitive=name in custom_result.sensitive_outputs
+                    )
+                if custom_result.sensitive_outputs:
+                    self.context.mark_sensitive_use()
             result = ModuleResult(
                 success=custom_result.success,
                 message=(

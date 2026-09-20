@@ -36,6 +36,10 @@ class WorkflowDocumentRepository(Protocol):
 
 
 class CustomModuleRepository(Protocol):
+    def recover_save(
+        self, client_request_id: str, request_digest: str
+    ) -> SavedCustomModule | None: ...
+
     def create(
         self,
         module_id: str,

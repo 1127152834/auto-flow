@@ -152,23 +152,11 @@ class WorkflowRunCoordinator:
                         ]
                     },
                 )
-            workflow_dependencies = _workflow_dependency_snapshots(
-                self._documents, document
-            )
-            module_references = _custom_module_references(
-                (document, *workflow_dependencies.values())
-            )
-            if module_references and self._modules is None:
-                raise WorkflowRunError(
-                    "CUSTOM_MODULES_NOT_READY",
-                    "自定义模块服务尚未就绪",
-                    503,
-                )
+            custom_module_dependencies: dict[str, dict[str, object]] = {}
             try:
-                custom_module_dependencies = (
-                    self._modules.freeze_closure(module_references)
-                    if self._modules is not None
-                    else {}
+                workflow_dependencies = _workflow_dependency_snapshots(
+                    self._documents, document,
+                    modules=self._modules, custom_modules=custom_module_dependencies,
                 )
             except WorkflowDocumentError as error:
                 raise WorkflowRunError(
@@ -743,6 +731,9 @@ def _worker_payload(
 def _workflow_dependency_snapshots(
     documents: WorkflowDocumentService,
     root_document: Mapping[str, Any],
+    *,
+    modules: CustomModuleService | None = None,
+    custom_modules: dict[str, dict[str, object]] | None = None,
 ) -> dict[str, dict[str, Any]]:
     available: dict[str, dict[str, Any]] = {}
     cursor = 0
@@ -771,14 +762,27 @@ def _workflow_dependency_snapshots(
         available[f"{root_name}.json"] = root
 
     snapshots: dict[str, dict[str, Any]] = {}
-    queue = [root]
+    frozen_modules = custom_modules if custom_modules is not None else {}
+    queue = [("root", root)]
     visited: set[str] = set()
     while queue:
-        document = queue.pop(0)
-        identity = str(document.get("id") or id(document))
+        identity, document = queue.pop(0)
         if identity in visited:
             continue
         visited.add(identity)
+        references = _custom_module_references((document,))
+        if references and modules is None:
+            raise WorkflowRunError("CUSTOM_MODULES_NOT_READY", "自定义模块服务尚未就绪", 503)
+        if modules is not None:
+            missing = tuple(ref for ref in references if ref not in frozen_modules)
+            if missing:
+                for module_id, snapshot in modules.freeze_closure(missing).items():
+                    if module_id in frozen_modules:
+                        continue
+                    frozen_modules[module_id] = snapshot
+                    workflow = snapshot.get("workflow")
+                    if isinstance(workflow, Mapping):
+                        queue.append((f"module:{module_id}", dict(workflow)))
         for reference in _workflow_references(document):
             candidates = [reference]
             if reference.lower().endswith(".json"):
@@ -794,7 +798,7 @@ def _workflow_dependency_snapshots(
             for key, value in available.items():
                 if value is dependency:
                     snapshots[key] = copy.deepcopy(dependency)
-            queue.append(dependency)
+            queue.append((f"workflow:{dependency.get('id')}", dependency))
     return snapshots
 
 

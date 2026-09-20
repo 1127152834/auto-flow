@@ -309,3 +309,18 @@ def test_list_filters_searches_and_sorts_by_latest_update(
         refreshed.id,
         newest.id,
     ]
+
+
+def test_retry_uses_original_request_before_changed_or_deleted_source(module_service):
+    source = module_service.create(_payload("retry_source"), client_request_id="source")
+    copied = module_service.duplicate(source.id, new_name=None, client_request_id="copy")
+    imported = module_service.import_module(_payload("retry_source"), client_request_id="import")
+    updated = module_service.update(source.id, {"description": "first"}, expected_revision=1, client_request_id="update")
+    module_service.update(source.id, {"tags": ["later"]}, expected_revision=2, client_request_id="later")
+    assert module_service.update(source.id, {"description": "first"}, expected_revision=1, client_request_id="update") == updated
+    module_service.delete(source.id, expected_revision=3, client_request_id="delete")
+    assert module_service.duplicate(source.id, new_name=None, client_request_id="copy") == copied
+    assert module_service.import_module(_payload("retry_source"), client_request_id="import") == imported
+    with pytest.raises(WorkflowDocumentError) as conflict:
+        module_service.duplicate(source.id, new_name="different", client_request_id="copy")
+    assert conflict.value.code == "IDEMPOTENCY_CONFLICT"

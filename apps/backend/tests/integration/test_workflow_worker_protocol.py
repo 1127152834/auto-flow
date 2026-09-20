@@ -939,3 +939,44 @@ async def test_worker_crash_cleans_descendants_before_reporting_nonzero_exit(
     if session.child_pid is not None:
         with pytest.raises(ProcessLookupError):
             os.kill(session.child_pid, 0)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('internal_secret', [False, True])
+async def test_custom_module_preserves_sensitive_parameters_and_outputs(internal_secret):
+    import json
+
+    from autoflow.application.workflows.executors.production import (
+        build_production_executor_registry,
+    )
+    from autoflow.application.workflows.runtime import WorkflowRuntime
+    from autoflow.domain.workflows.execution import ExecutionContext
+    from autoflow.providers.browser.workflow_worker import _WorkerCustomModules
+
+    class Sink:
+        def __init__(self):
+            self.events = []
+        def for_context(self, context):
+            return self
+        async def publish(self, event):
+            self.events.append(event)
+
+    class Bus:
+        def for_context(self, context):
+            return None
+
+    class Credentials:
+        def get_field(self, name, field):
+            return 'fake-sensitive-marker'
+
+    sink = Sink()
+    context = ExecutionContext(variables={'secret': 'fake-sensitive-marker'}, sensitive_variables={'secret'}, events=sink, credentials=Credentials())
+    registry = build_production_executor_registry()
+    value = '{{cred:test.password}}' if internal_secret else '{incoming}'
+    definition = {'name': 'm', 'parameters': [{'name': 'incoming'}], 'outputs': [{'name': 'answer'}], 'workflow': {'nodes': [{'id': 'set', 'type': 'moduleNode', 'data': {'moduleType': 'set_variable', 'variableName': 'answer', 'variableValue': value}}], 'edges': []}}
+    context.custom_modules = _WorkerCustomModules({'m': definition}, registry=registry, parent=context, sink=sink, command_bus=Bus(), nested_workflows=None)
+    result = await WorkflowRuntime(registry).execute({'nodes': [{'id': 'call', 'type': 'moduleNode', 'data': {'moduleType': 'custom_module', 'customModuleId': 'm', 'parameterValues': {'incoming': 'public' if internal_secret else '{secret}'}}}], 'edges': []}, context)
+    assert result.success
+    assert context.variables['answer'] == 'fake-sensitive-marker'
+    assert 'answer' in context.sensitive_variables
+    assert 'fake-sensitive-marker' not in json.dumps(sink.events)
