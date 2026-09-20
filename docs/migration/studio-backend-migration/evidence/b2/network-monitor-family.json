@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B2-network-monitor-family-2026-09-16",
-  "recordedAt": "2026-09-16",
-  "result": "3个批准的网络监听节点已完成冻结源码差分、生产注册、CloakBrowser请求监听适配、真实HTTP协调器准入及独立P1复核；真实CloakBrowser及正式Electron集中验收尚未执行。",
+  "recordedAt": "2026-09-21",
+  "result": "3个批准的网络监听节点已完成冻结源码差分、生产注册、CloakBrowser请求监听适配、真实HTTP协调器准入、macOS arm64真实CloakBrowser执行及正式Electron UI闭环。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -44,24 +44,32 @@
       "result": "真实协调器接收三节点文档并向worker下发完整快照，requiresBrowser=true"
     },
     "affectedRegression": {
-      "command": "uv run pytest -q <network monitor differential + browser session + registry + run API + source mapping + scope preflight>",
-      "result": "105 passed in 6.02s"
+      "command": "cd apps/backend && AUTOFLOW_B1_CLOAK_EXECUTABLE=<CloakBrowser> uv run pytest -q tests/differential/workflows/test_b2_network_monitor_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py tests/integration/test_b2_network_monitor_cloakbrowser_flow.py",
+      "result": "53 passed, 2 dependency deprecation warnings"
+    },
+    "realCloakBrowser": {
+      "test": "apps/backend/tests/integration/test_b2_network_monitor_cloakbrowser_flow.py",
+      "result": "真实CloakBrowser中开始监听、点击触发fetch、等待首个请求及停止回收通过；URL查询秘密和非白名单请求头均脱敏"
+    },
+    "formalElectron": {
+      "evidence": "docs/migration/studio-backend-migration/evidence/b2/formal-network-monitor-electron-1kHmyL/result.json",
+      "result": "正式Studio UI添加配置、保存、正常关闭重开并执行5节点链；结果、日志、SSE脱敏及进程/监听资源清理通过"
     }
   },
   "quality": {
     "ruff": "passed",
     "mypy": "passed",
-    "diffCheck": "passed"
+    "nodeCheck": "passed",
+    "visualInspection": "passed"
   },
   "productionSha256": {
     "network_monitor.py": "378e2585ba3872a62b307de36fbdb5dcbd839d8224ca4177a1eb87c3c659948c"
   },
   "notClaimed": [
-    "真实CloakBrowser请求捕获",
-    "节点事件和SSE断流补读",
-    "正式Electron UI执行",
-    "打包sidecar执行",
-    "macOS Intel或Windows验证"
+    "SSE传输层主动断流后的补读（共享运行合同另行验收）",
+    "重建后的Electron目录包执行",
+    "macOS Intel或Windows验证",
+    "B2拾取、定位及其他网页模块族验收"
   ],
   "userDatabaseModified": false,
   "implementationCommits": [
