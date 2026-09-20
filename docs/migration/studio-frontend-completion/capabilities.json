@@ -351,7 +351,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -412,7 +412,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -441,7 +441,7 @@
         },
         {
           "id": "BE.use_opened_page.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -449,10 +449,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 use_opened_page，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：操作已打开的网页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -513,7 +513,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -564,7 +564,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -593,7 +593,7 @@
         },
         {
           "id": "BE.close_page.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -601,10 +601,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 close_page，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：关闭网页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -693,7 +693,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -748,7 +748,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -777,7 +777,7 @@
         },
         {
           "id": "BE.refresh_page.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -785,10 +785,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 refresh_page，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：刷新页面模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -877,7 +877,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -932,7 +932,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -961,7 +961,7 @@
         },
         {
           "id": "BE.go_back.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -969,10 +969,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 go_back，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：返回上一页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -1061,7 +1061,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1116,7 +1116,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -1145,7 +1145,7 @@
         },
         {
           "id": "BE.go_forward.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -1153,10 +1153,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 go_forward，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：前进下一页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -1509,7 +1509,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1573,7 +1573,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -1602,7 +1602,7 @@
         },
         {
           "id": "BE.switch_iframe.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -1610,10 +1610,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 switch_iframe，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：切换到iframe模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -1676,7 +1676,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1734,7 +1734,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -1763,7 +1763,7 @@
         },
         {
           "id": "BE.switch_to_main.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -1771,10 +1771,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 switch_to_main，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：切换回主页面模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -2502,7 +2502,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -2568,7 +2568,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -2597,7 +2597,7 @@
         },
         {
           "id": "BE.hover_element.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -2605,10 +2605,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 hover_element，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：悬停元素模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -3757,7 +3757,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -3816,7 +3816,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -3845,7 +3845,7 @@
         },
         {
           "id": "BE.handle_dialog.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -3853,10 +3853,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 handle_dialog，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：处理弹窗模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -4230,7 +4230,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -4294,7 +4294,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -4323,7 +4323,7 @@
         },
         {
           "id": "BE.inject_javascript.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -4331,10 +4331,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 inject_javascript，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：JS脚本注入模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -5554,7 +5554,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -5615,7 +5615,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
+      "gap": "冻结源码差分、正式注册、真实HTTP协调器准入、真实CloakBrowser动作和正式Electron开发入口已通过；重建后的打包入口及macOS Intel/Windows仍待平台验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
@@ -5644,7 +5644,7 @@
         },
         {
           "id": "BE.wait_element.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -5652,10 +5652,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 wait_element，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：等待元素模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser和正式Electron开发入口均已通过；未测打包入口及其他平台已单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
