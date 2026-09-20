@@ -598,7 +598,8 @@ class KernelWorkerManager:
     async def _stop_process(self, process: asyncio.subprocess.Process) -> None:
         try:
             process.terminate()
-        except ProcessLookupError:
+        except (PermissionError, ProcessLookupError):
+            await asyncio.wait_for(process.wait(), self._termination_timeout)
             return
         try:
             await asyncio.wait_for(
@@ -607,8 +608,8 @@ class KernelWorkerManager:
         except TimeoutError:
             try:
                 process.kill()
-            except ProcessLookupError:
-                pass
+            except (PermissionError, ProcessLookupError):
+                await asyncio.wait_for(process.wait(), self._termination_timeout)
             await process.wait()
 
     async def _acquire_maintenance_lock(self) -> ExclusiveFileLock:

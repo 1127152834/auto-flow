@@ -84,12 +84,14 @@ try {
     report.boundary = 'production management, real runtime and renderer volume; live Sheets and physical installation remain pending'
     await capture('volume')
     await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + project.projectId + '/environments')}`)
+    await waitFor(cdp, "document.querySelector('[aria-label=\"项目功能\"] [aria-current=page]')?.textContent.trim()==='环境' && !document.querySelector('main [role=progressbar]')", 'environment route settled before zoom')
   }
   await native.evaluate('pm9Electron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(2)')
-  assert.equal(await native.evaluate('pm9Electron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()'), 2)
+  await waitFor(native, 'pm9Electron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()===2', 'native 200% zoom applied', 5_000)
   await waitFor(cdp, 'document.documentElement.scrollWidth <= innerWidth + 1', '200% zoom has no document horizontal overflow')
   await capture('zoom-200')
   await native.evaluate('pm9Electron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1)')
+  await waitFor(native, 'pm9Electron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()===1', 'native zoom reset', 5_000)
   await cdp.evaluate('window.autoflow.openAutomationStudio()')
   let studioTarget
   for (let attempt = 0; attempt < 100; attempt++) {

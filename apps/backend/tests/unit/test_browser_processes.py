@@ -190,6 +190,8 @@ def test_browser_worker_can_be_identified_after_initial_birth_probe_was_unavaila
 async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
     from autoflow.infrastructure.process import test_browser_worker as module
 
+    monkeypatch.setattr(module, "sys", SimpleNamespace(platform="darwin"))
+
     exited = asyncio.Event()
     process = SimpleNamespace(pid=700, returncode=None, wait=exited.wait)
     monkeypatch.setattr(module, 'capture_processes', lambda *_args, **_kwargs: {})
@@ -273,3 +275,46 @@ def test_windows_handle_probe_requires_positive_exit_evidence(monkeypatch, handl
     assert module._windows_process_exists(700) is expected
     assert calls == [(0x00100000, False, 700)]
     assert closed == ([handle] if handle else [])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('module_name', ['test_browser_worker', 'project_test_browser_worker', 'kernel_worker'])
+@pytest.mark.parametrize('still_alive', [False, True])
+async def test_exit_race_never_releases_a_process_without_confirming_exit(monkeypatch, module_name, still_alive):
+    from importlib import import_module
+
+    module = import_module(f'autoflow.infrastructure.process.{module_name}')
+    if module_name != 'kernel_worker':
+        monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
+
+    def denied():
+        raise PermissionError('process may have exited before its watcher updated')
+
+    async def wait():
+        if still_alive:
+            await asyncio.Event().wait()
+        process.returncode = 0
+        return 0
+
+    process = SimpleNamespace(pid=700, returncode=None, kill=denied, terminate=denied, wait=wait)
+
+    async def killer_wait():
+        return 0
+
+    async def spawn(*_args, **_kwargs):
+        return SimpleNamespace(wait=killer_wait)
+
+    monkeypatch.setattr(module.asyncio, 'create_subprocess_exec', spawn)
+    if module_name == 'kernel_worker':
+        manager = object.__new__(module.KernelWorkerManager)
+        manager._termination_timeout = .01
+        cleanup = manager._stop_process(process)
+    else:
+        cleanup = module.force_process_tree(process, .01)
+    if still_alive:
+        with pytest.raises(TimeoutError):
+            await cleanup
+        assert process.returncode is None
+    else:
+        await cleanup
+        assert process.returncode == 0

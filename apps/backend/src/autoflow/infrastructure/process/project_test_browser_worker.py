@@ -432,7 +432,10 @@ async def force_process_tree(
         )
         await killer.wait()
         if process.returncode is None:
-            process.kill()
+            try:
+                process.kill()
+            except (PermissionError, ProcessLookupError):
+                await asyncio.wait_for(process.wait(), termination_timeout)
             await process.wait()
         return
     owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)

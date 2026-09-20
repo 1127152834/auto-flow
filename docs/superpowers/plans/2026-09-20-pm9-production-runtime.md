@@ -44,3 +44,6 @@ Ruling: 实际对照发现 Studio 同名输入节点会覆盖文本，且变量�
 
 - 存活探测审计发现 Windows 的 `os.kill(pid, 0)` 实际会调用 TerminateProcess，不能沿用 POSIX 的只读语义（[Python 官方定义](https://docs.python.org/3.11/library/os.html#os.kill)）。共享适配器改用仅 SYNCHRONIZE 权限的 OpenProcess + [WaitForSingleObject](https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject)，仅明确退出/无此 PID 才返回不存活，权限拒绝与未知状态保留；项目与 Android 探测复用此入口。回归先失败后通过，54 项进程/回收测试及双平台 mypy 通过；真实子进程验证探测不杀死进程，退出后能识别。崩溃夹具使用生产 Windows Job，引入 Windows 原生定向前置检查以缩短失败反馈。
 - Intel 全量后端候选 `fd5c1058` 只有浏览器崩溃释放槽位测试超时（3195 passed / 23 skipped）。该测试等待 1 秒短于生产清理允许窗口，同步等待调整为 5 秒，未改变生产超时；本机对应 3 项通过。Apple Silicon 同候选整个 CI 已成功。
+
+- 2026-09-21：Windows 原生前置检查在候选 311d2889 报出 4 个测试模型问题：POSIX 假进程未限定平台、命令夹具 stdin 非 UTF-8、Windows 退出码断言使用 POSIX 信号值、回收模型仍调用真实平台信号函数。修正夹具后本机同组 57 项通过；原生结果等待下一候选 CI。两个浏览器清理入口和内核 worker 同步处理 TerminateProcess 与退出观察器的竞争，只有有界等待确认退出后才释放；6 个回归先失败后通过，相关 86 项通过，双平台 mypy 396 文件通过。
+- 桌面负载后等待环境路由稳定，并观察原生 zoom 达到 2 后才检查溢出/截图，复位也等待实际生效；本机打包桌面管理、200% 缩放及重启检查通过。旧打包运行链失败时，事件补读的 409 曾遮住原始 Task 失败，脚本现在保留原始失败和补读错误，仍使验收失败；最新运行链继续验证。

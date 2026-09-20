@@ -63,8 +63,8 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
           const task = tasks.items[0]
           const attempts = await api(`${prefix}/tasks/${task.taskId}/node-attempts`)
           if (state.statusCounts[expectedStatus] !== 1) {
-            const events = await api(`${prefix}/tasks/${task.taskId}/events?afterSequence=0&pageSize=200`)
-            throw new Error(JSON.stringify({ batch: state.batch, counts: state.statusCounts, task, attempts: { total: attempts.total, latest: attempts.items.at(-1) }, events: { lastSequence: events.lastSequence, statuses: events.items.filter(event => event.kind === 'status') } }))
+            const events = await api(`${prefix}/tasks/${task.taskId}/events?afterSequence=0&pageSize=200`).catch(error => ({ error: String(error) }))
+            throw new Error(JSON.stringify({ batch: state.batch, counts: state.statusCounts, task, attempts: { total: attempts.total, latest: attempts.items.at(-1) }, events: events.error ? events : { lastSequence: events.lastSequence, statuses: events.items.filter(event => event.kind === 'runStatus') } }))
           }
           if (handled.size) assert.equal(new Set(attempts.items.map(item => item.nodeId)).size, attempts.total, 'completed nodes must not replay across manual continuation')
           return { task, resumedManualItems: handled.size, outputs: (await api(`${prefix}/tasks/${task.taskId}/outputs`)).items }

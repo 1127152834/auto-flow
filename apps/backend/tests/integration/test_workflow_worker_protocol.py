@@ -27,7 +27,7 @@ time.sleep(300)
 """,
         encoding="utf-8",
     )
-    return (sys.executable, str(script))
+    return (sys.executable, "-X", "utf8", str(script))
 
 
 def _command_worker(tmp_path: Path) -> tuple[str, ...]:
@@ -42,7 +42,7 @@ print(json.dumps({**reply, 'type':'command-observed'}), flush=True)
 """,
         encoding="utf-8",
     )
-    return (sys.executable, str(script))
+    return (sys.executable, "-X", "utf8", str(script))
 
 
 def _crashing_worker(tmp_path: Path) -> tuple[str, ...]:
@@ -69,7 +69,7 @@ sys.exit(17)
 """,
         encoding="utf-8",
     )
-    return (sys.executable, str(script))
+    return (sys.executable, "-X", "utf8", str(script))
 
 
 @pytest.mark.asyncio
@@ -1082,7 +1082,7 @@ async def test_worker_exit_callback_runs_after_process_and_temp_cleanup(
 
     await manager.stop("run-exit")
 
-    assert observed == [("run-exit", -15, False, False)]
+    assert observed == [("run-exit", 1 if sys.platform == "win32" else -15, False, False)]
 
 
 @pytest.mark.asyncio

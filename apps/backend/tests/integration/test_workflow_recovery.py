@@ -32,6 +32,8 @@ async def test_recovery_only_removes_verified_run_generation(tmp_path, monkeypat
         return {}
 
     monkeypatch.setattr(module, 'capture_processes', capture)
+    monkeypatch.setattr(module, 'signal_processes', lambda *_args: None)
+    monkeypatch.setattr(module, 'signal', SimpleNamespace(SIGTERM=15, SIGKILL=9))
     await recover_worker_directories(tmp_path, run_id, tmp_path / 'CloakBrowser')
     assert scans and all(folder == directory for folder in scans)
     assert not directory.exists()
