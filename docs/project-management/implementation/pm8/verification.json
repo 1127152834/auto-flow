@@ -10,7 +10,7 @@
   "headNote": "head 是 QA 侧车/脚本补齐提交（`44a3fe7a`，本轮真实证据来自它驱动的工作树）。本文件的文档更新随其后的文档提交落库，不改变 apps/*/src 的源码摘要。",
   "sourceDigest": "3502e24d7321efc5e5b92bbc83b181a236a0e07f10bdaa9cc29b8b16d8196462",
   "sourceDigestMethod": "对 apps/backend/src 与 apps/desktop/src 递归取 .py/.ts/.tsx/.css，按路径排序后依次 update('路径' + 文件字节) 再整体 sha256（与 QA 脚本 scripts/qa-project-management-pm8.mjs 的算法一致）",
-  "sourceDigestNote": "该摘要与权威端到端运行 qa-runs/20260919202620/report.json 里的 sourceSha256 完全一致，说明 11 张截图对应的工作树源码就是本次交付的源码（含 2021c74a 的替换器修复前的全部 PM8 源码）。",
+  "sourceDigestNote": "该摘要与权威端到端运行 qa-runs/20260920010843/report.json 里的 sourceSha256 完全一致，说明 13 张截图对应的工作树源码就是本次交付源码（含 2021c74a 的替换器修复与本轮 QA 侧车改动驱动的同一份 apps/*/src）。",
   "authoritativeManagementRun": {
     "result": "docs/project-management/implementation/pm8/qa-runs/20260920010843/report.json",
     "status": "passed",
@@ -100,7 +100,7 @@
     "api": {
       "openapiCheck": "npm run openapi:check → 通过（客户端已用 openapi:generate 重新生成，只多 TaskResourceLocator 分支）",
       "typecheck": "npm run typecheck → 通过",
-      "lint": "npm run lint → 通过",
+      "lint": "npm run lint → 通过（本轮在 44a3fe7a 后重跑，7.7s，0 error。作用域是 apps/desktop 的 eslint；仓库根 scripts/*.mjs 不在该命令覆盖范围内，由 node --check 与 npm run test:scripts 覆盖）",
       "build": "npm run build → 通过（34.12s；Electron 启动读取 apps/desktop/out，构建是启动前置）"
     },
     "scripts": {
@@ -232,6 +232,21 @@
         "npm run build"
       ],
       "e2e": "qa-runs/20260919202620：status passed，16 检查点，11 截图，源码摘要 3502e24d…"
+    },
+    {
+      "commit": "44a3fe7a",
+      "summary": "PM8-B2 清理残留补齐端到端证据：此前「删除清理残留 + 重试清理」只有组件/集成测试，无真实界面证据。QA 侧车新增 leak-work-copy，按真实环境仓库登记「浏览器已关闭、工作副本仍在磁盘」的遗留实例，再用真实 chmod 000 让本地清理失败，验证 DELETE_CLEANUP_FAILED → 卡片「清理未完成」→ 重试清理 → 收敛为 succeeded。隔离执行器静态调用 claim_data_task 不传 environments（QA 夹具保真度缺口，非产品缺陷）这一边界未修，理由见 qa-runs/LEDGER.md。",
+      "checks": [
+        "node scripts/qa-project-management-pm8.mjs --self-test",
+        "node --test scripts/qa-project-management-pm8.test.mjs（6 项）",
+        "uv run ruff check tests/qa/pm8_sidecar.py",
+        "uv run pytest tests/integration/test_project_lifecycle.py -k \"residue or cleanup or deleting\"（2 项）",
+        "npm run test:scripts（84 passed）",
+        "npm run test:structure（4 passed）",
+        "npm run lint（本轮重跑通过）",
+        "git diff --check"
+      ],
+      "e2e": "qa-runs/20260920010843：status passed，18 检查点，13 截图，源码摘要 3502e24d…"
     }
   ]
 }
