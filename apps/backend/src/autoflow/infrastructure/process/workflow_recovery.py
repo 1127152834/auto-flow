@@ -33,7 +33,9 @@ async def recover_worker_directories(
             or str(int(suffix)) != suffix or int(suffix) < 1
             or directory.is_symlink() or not directory.is_dir()):
             raise RuntimeError("Workflow cleanup generation path is invalid")
-    if directories and sys.platform == "win32":
+    if sys.platform == "win32":
+        if not directories:
+            return
         # Never infer process death from an absent old parent. Until native restart
         # ownership is available, retain reconciling instead of reporting success.
         raise RuntimeError("Windows workflow restart cleanup needs native ownership verification")

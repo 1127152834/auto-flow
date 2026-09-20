@@ -179,6 +179,8 @@ def living_processes(owned: OwnedProcesses) -> OwnedProcesses:
 
 
 def signal_processes(owned: OwnedProcesses, number: int) -> None:
+    if sys.platform == "win32":
+        raise RuntimeError("POSIX process groups are unavailable on Windows")
     # A still-live original member proves that its group has not been recycled.
     live = living_processes(owned)
     groups = {group for group, _ in live.values()}

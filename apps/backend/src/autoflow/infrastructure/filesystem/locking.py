@@ -1,5 +1,6 @@
 import errno
 import os
+import sys
 from pathlib import Path
 from typing import BinaryIO
 
@@ -38,7 +39,7 @@ class ExclusiveFileLock:
 
 
 def _lock(handle: BinaryIO) -> None:
-    if os.name == "nt":
+    if sys.platform == "win32":
         import msvcrt
 
         handle.seek(0, os.SEEK_END)
@@ -54,7 +55,7 @@ def _lock(handle: BinaryIO) -> None:
 
 
 def _unlock(handle: BinaryIO) -> None:
-    if os.name == "nt":
+    if sys.platform == "win32":
         import msvcrt
 
         handle.seek(0)

@@ -617,7 +617,7 @@ async def test_text_export_refuses_unverified_windows_path_operations(
         purpose="result",
     )
     monkeypatch.setattr(
-        "autoflow.infrastructure.filesystem.workflow_artifacts.os.name", "nt"
+        "autoflow.infrastructure.filesystem.workflow_artifacts.sys.platform", "win32"
     )
 
     with pytest.raises(WorkflowRunError) as caught:

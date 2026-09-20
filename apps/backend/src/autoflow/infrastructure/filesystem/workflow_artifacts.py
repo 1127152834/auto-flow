@@ -5,6 +5,7 @@ import errno
 import hashlib
 import os
 import stat
+import sys
 from pathlib import Path, PurePosixPath
 from typing import Protocol
 from uuid import uuid4
@@ -246,7 +247,7 @@ class WorkflowArtifactStore:
     def _open_output_parent(self, run_id: str, output_path: str) -> tuple[Path, int]:
         if not isinstance(output_path, str) or not output_path:
             raise WorkflowRunError("ARTIFACT_PATH_INVALID", "输出文件路径无效", 422)
-        if os.name == "nt":
+        if sys.platform == "win32":
             raise WorkflowRunError(
                 "ARTIFACT_PLATFORM_UNSUPPORTED",
                 "Windows 安全文件输出尚未完成实机验收",
@@ -290,6 +291,8 @@ class WorkflowArtifactStore:
 
     @staticmethod
     def _open_directory(path: Path) -> int:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         return os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
 
     @staticmethod
@@ -378,6 +381,8 @@ class WorkflowArtifactStore:
     def _acquire_output_lock(self, target: Path) -> int:
         # Output publication only runs on POSIX (see _open_output_parent). Keep the
         # platform-specific lock local so importing the backend remains portable.
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         import fcntl
 
         lock_root = self._output_lock_root()
@@ -405,6 +410,8 @@ class WorkflowArtifactStore:
 
     @staticmethod
     def _release_output_lock(lock_fd: int) -> None:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         import fcntl
 
         try:
@@ -471,6 +478,8 @@ class WorkflowArtifactStore:
         cancellation: CancellationToken | None,
         expected_identity: str | None = None,
     ) -> Path | None:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         try:
             source_fd = os.open(
                 target_name,
@@ -544,6 +553,8 @@ class WorkflowArtifactStore:
         *,
         expected_current_identity: str | None,
     ) -> None:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         if expected_current_identity is not None:
             try:
                 current_metadata = os.stat(
@@ -699,6 +710,8 @@ class WorkflowArtifactStore:
         target: Path,
         directory_fd: int,
     ) -> str:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         temporary_name = f".{target.name}.{uuid4().hex}.tmp"
         snapshot_path: Path | None = None
         backup_path: Path | None = None
@@ -874,6 +887,8 @@ class WorkflowArtifactStore:
         max_bytes: int,
         cancellation: CancellationToken | None,
     ) -> BinaryOutputSnapshot:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         if max_bytes <= 0:
             raise WorkflowRunError(
                 "ARTIFACT_SIZE_INVALID", "读取容量限制必须为正数", 422
@@ -997,6 +1012,8 @@ class WorkflowArtifactStore:
         target: Path,
         directory_fd: int,
     ) -> str:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         temporary_name = f".{target.name}.{uuid4().hex}.tmp"
         snapshot_path: Path | None = None
         backup_path: Path | None = None

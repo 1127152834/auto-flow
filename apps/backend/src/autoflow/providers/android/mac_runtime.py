@@ -12,6 +12,7 @@ import signal
 import socket
 import struct
 import subprocess
+import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -287,6 +288,8 @@ class MacAndroidRuntime:
                 raise AndroidError("ANDROID_INSTALL_FAILED", "Android 未确认 APK 安装成功", 422)
 
     async def open_window(self, title: str, readonly: bool = False) -> None:
+        if sys.platform == "win32":
+            raise RuntimeError("The macOS Android runtime is unavailable on Windows")
         self.window_readonly = readonly
         if self.window_open():
             return
