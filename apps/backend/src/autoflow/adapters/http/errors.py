@@ -45,6 +45,8 @@ _MODEL_ERROR_MESSAGES = {
     "VALIDATION_ERROR": "请求参数无效",
     "MODEL_PROVIDER_NOT_FOUND": "模型供应商不存在",
     "MODEL_NOT_FOUND": "模型不存在",
+    "MODEL_DISABLED": "所选模型已停用",
+    "MODEL_PROVIDER_DISABLED": "模型供应商已停用",
     "MODEL_PROVIDER_EXISTS": "模型供应商已存在",
     "MODEL_EXISTS": "模型已存在",
     "MODEL_PROVIDER_CHANGED": "模型供应商已被修改，请刷新后重试",

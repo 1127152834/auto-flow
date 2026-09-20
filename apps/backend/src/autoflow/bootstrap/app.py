@@ -319,6 +319,7 @@ def create_app(
         kernels_root=paths.kernels,
         temp_root=paths.temp,
         artifact_root=paths.workspace,
+        models=model_service,
     )
     workflow_services.runs.recover_interrupted()
     android = android_service(session_factory, paths.workspace)

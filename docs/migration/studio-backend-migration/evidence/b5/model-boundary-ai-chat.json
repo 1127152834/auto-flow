@@ -1,0 +1,47 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/ai.py",
+    "symbol": "AIChatExecutor",
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "按主应用稳定 modelId 解析启用的模型与供应商",
+    "仅从系统 CredentialStore 读取运行密钥",
+    "通过现有 stdin worker 通道传入本次运行所需绑定",
+    "运行快照、事件和节点结果不包含密钥",
+    "OpenAI兼容、Anthropic和Gemini文本协议适配",
+    "ai_chat 主模型、顺序 fallback、变量解析和结果写回"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/unit/test_model_service.py apps/backend/tests/unit/test_model_provider.py apps/backend/tests/unit/workflows/test_model_gateway.py apps/backend/tests/unit/workflows/test_ai_executors.py apps/backend/tests/unit/workflows/test_run_coordinator.py apps/backend/tests/integration/test_workflow_worker_protocol.py -q",
+      "exitCode": 0,
+      "result": "76 passed"
+    },
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/unit/test_model_provider.py -q",
+      "exitCode": 0,
+      "result": "33 passed after adding Anthropic and Gemini invocation coverage"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <B5.1 affected files> && uv run --project apps/backend mypy <B5.1 backend modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "realWorker": {
+    "service": "local controlled HTTP model fixture",
+    "requestVerified": true,
+    "resultVerified": true,
+    "secretScanPassed": true
+  },
+  "remaining": [
+    "Studio 前端仍需从主应用模型选项读取 modelId，移除本地 API URL/API Key 持久化",
+    "其余 21 个 AI 节点尚未迁入",
+    "流式、完整取消/超时/限流矩阵和正式 Electron 真实 UI 尚未验收",
+    "真实供应商调用属于外部等待"
+  ]
+}

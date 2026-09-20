@@ -2,7 +2,6 @@ import json
 
 import httpx
 import pytest
-
 from autoflow.domain.models import ModelError, ProviderConnection
 from autoflow.providers.model import HttpModelProvider, normalize_base_url
 
@@ -244,6 +243,111 @@ async def test_client_security_and_timeout_options_are_explicit():
     assert [
         (item["trust_env"], item["follow_redirects"], item["timeout"]) for item in seen
     ] == [(False, False, 15), (False, False, 30)]
+
+
+@pytest.mark.asyncio
+async def test_workflow_invocation_uses_managed_connection_and_normalizes_result():
+    async def handler(request):
+        assert str(request.url) == "https://api.example/v1/chat/completions"
+        assert request.headers["authorization"] == "Bearer managed-secret"
+        payload = json.loads(request.content)
+        assert payload == {
+            "model": "managed-model",
+            "messages": [
+                {"role": "system", "content": "系统"},
+                {"role": "user", "content": "问题"},
+            ],
+            "temperature": 0.25,
+            "max_tokens": 321,
+            "stream": False,
+        }
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": "回答",
+                            "reasoning_content": "推理",
+                        }
+                    }
+                ],
+                "usage": {"total_tokens": 12},
+            },
+        )
+
+    result = await HttpModelProvider(
+        transport=httpx.MockTransport(handler)
+    ).invoke(
+        connection(),
+        "managed-secret",
+        "managed-model",
+        {
+            "messages": [
+                {"role": "system", "content": "系统"},
+                {"role": "user", "content": "问题"},
+            ],
+            "temperature": 0.25,
+            "maxTokens": 321,
+        },
+    )
+
+    assert result.content == "回答"
+    assert result.reasoning == "推理"
+    assert result.usage == {"total_tokens": 12}
+    assert result.endpoint == "https://api.example/v1/chat/completions"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("kind", ["anthropic", "gemini"])
+async def test_workflow_invocation_adapts_managed_provider_protocol(kind):
+    async def handler(request):
+        payload = json.loads(request.content)
+        if kind == "anthropic":
+            assert request.url.path == "/v1/messages"
+            assert request.headers["x-api-key"] == "managed-secret"
+            assert payload["system"] == "系统"
+            assert payload["messages"] == [{"role": "user", "content": "问题"}]
+            return httpx.Response(
+                200,
+                json={
+                    "content": [{"type": "text", "text": "Claude回答"}],
+                    "usage": {"input_tokens": 2},
+                },
+            )
+        assert request.url.path == "/v1/models/gemini-pro:generateContent"
+        assert request.url.params["key"] == "managed-secret"
+        assert payload["systemInstruction"] == {"parts": [{"text": "系统"}]}
+        assert payload["contents"] == [
+            {"role": "user", "parts": [{"text": "问题"}]}
+        ]
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {"content": {"parts": [{"text": "Gemini回答"}]}}
+                ],
+                "usage": {"promptTokenCount": 2},
+            },
+        )
+
+    result = await HttpModelProvider(
+        transport=httpx.MockTransport(handler)
+    ).invoke(
+        ProviderConnection(kind, kind, "https://model.example/v1"),
+        "managed-secret",
+        "claude" if kind == "anthropic" else "gemini-pro",
+        {
+            "messages": [
+                {"role": "system", "content": "系统"},
+                {"role": "user", "content": "问题"},
+            ],
+            "temperature": 0.1,
+            "maxTokens": 99,
+        },
+    )
+
+    assert result.content == ("Claude回答" if kind == "anthropic" else "Gemini回答")
 
 
 @pytest.mark.asyncio

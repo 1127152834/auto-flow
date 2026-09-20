@@ -27,6 +27,7 @@ from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifa
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
 )
+from autoflow.providers.model import WorkflowModelGateway
 
 from .workflow_session import launch_workflow_session
 
@@ -108,6 +109,7 @@ async def _run_in_session(
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
+            models=WorkflowModelGateway(_model_bindings(command)),
         )
         sink = _WorkerEventSink(
             stdout,
@@ -176,6 +178,13 @@ async def _run_in_session(
     while not stopped.is_set():
         await asyncio.sleep(0.05)
     return 0
+
+
+def _model_bindings(command: dict[str, Any]) -> list[Mapping[str, Any]]:
+    raw = command.pop("modelBindings", [])
+    if not isinstance(raw, list) or not all(isinstance(item, Mapping) for item in raw):
+        raise ValueError("modelBindings must be a list")
+    return raw
 
 
 class _ThreadCancellation:

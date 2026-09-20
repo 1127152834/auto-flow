@@ -5,7 +5,6 @@ from datetime import timedelta
 from functools import partial
 
 import pytest
-
 from autoflow.application.models.service import ModelService
 from autoflow.domain.credentials import CredentialStoreUnavailableError
 from autoflow.domain.models.errors import ModelError
@@ -17,6 +16,7 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+
 from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
 
 
@@ -391,3 +391,49 @@ async def test_concurrent_provider_delete_maps_to_not_found(tmp_path):
     with pytest.raises(ModelError) as captured:
         racing.delete_provider(provider.id)
     assert captured.value.code == "MODEL_PROVIDER_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_execution_binding_resolves_stable_model_id_and_secret(tmp_path):
+    store = FakeCredentialStore()
+    service, _factory = _service(tmp_path, store)
+    provider = await service.connect(
+        _profile(),
+        "runtime-secret",
+        [LocalModelSpec.from_values("Model-A", "Model A")],
+    )
+
+    binding = service.execution_binding(provider.models[0].id)
+
+    assert binding.model_id == provider.models[0].id
+    assert binding.model_key == "Model-A"
+    assert binding.connection.provider_kind == "openai"
+    assert binding.secret == "runtime-secret"
+    assert "runtime-secret" not in repr(binding)
+
+
+@pytest.mark.asyncio
+async def test_execution_binding_rejects_disabled_model_or_provider(tmp_path):
+    service, _factory = _service(tmp_path)
+    provider = await service.connect(
+        _profile(),
+        "runtime-secret",
+        [LocalModelSpec.from_values("Model-A", "Model A")],
+    )
+    model = provider.models[0]
+    service.update_model(
+        model.id,
+        LocalModelSpec.from_values(model.model_key, model.display_name, enabled=False),
+    )
+    with pytest.raises(ModelError) as model_error:
+        service.execution_binding(model.id)
+    assert model_error.value.code == "MODEL_DISABLED"
+
+    service.update_model(
+        model.id,
+        LocalModelSpec.from_values(model.model_key, model.display_name, enabled=True),
+    )
+    service.update_metadata(provider.id, provider.name, provider.description, False)
+    with pytest.raises(ModelError) as provider_error:
+        service.execution_binding(model.id)
+    assert provider_error.value.code == "MODEL_PROVIDER_DISABLED"

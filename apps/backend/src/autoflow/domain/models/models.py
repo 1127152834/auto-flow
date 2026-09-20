@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 
@@ -33,6 +34,15 @@ class ModelTestResult:
     output_preview: str
     reasoning_preview: str
     message: str
+
+
+@dataclass(frozen=True, slots=True)
+class ModelInvocationResult:
+    model_key: str
+    content: str
+    reasoning: str
+    usage: dict[str, Any]
+    endpoint: str
 
 
 def utc_now() -> datetime:

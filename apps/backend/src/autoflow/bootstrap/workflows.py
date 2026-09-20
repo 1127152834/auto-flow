@@ -117,6 +117,7 @@ def build_workflow_services(
     kernels_root: Path | None = None,
     temp_root: Path | None = None,
     artifact_root: Path | None = None,
+    models: Any | None = None,
 ) -> WorkflowServices:
     modules = CustomModuleService(SqlAlchemyWorkflowModules(session_factory))
     documents = WorkflowDocumentService(
@@ -207,6 +208,7 @@ def build_workflow_services(
         events=events,
         artifact_root=artifact_root,
         modules=modules,
+        resolve_model=models.execution_binding if models is not None else None,
     )
     holder["coordinator"] = coordinator
     return WorkflowServices(

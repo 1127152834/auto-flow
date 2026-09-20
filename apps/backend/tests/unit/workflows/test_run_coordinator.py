@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 from autoflow.adapters.events.workflows import StudioEventJournal
+from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.basic import OpenPageExecutor
@@ -19,6 +21,7 @@ from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.kernels.models import InstalledKernel
+from autoflow.domain.models import ProviderConnection
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 from autoflow.domain.workflows.browser import WorkflowWorkerSession
 from autoflow.infrastructure.database.session import (
@@ -107,6 +110,103 @@ def _profile() -> Profile:
     )
     now = datetime(2026, 9, 15, tzinfo=UTC)
     return Profile("profile-1", spec, 12345, now, now)
+
+
+@pytest.mark.asyncio
+async def test_coordinator_resolves_model_id_without_persisting_secret(tmp_path: Path):
+    database = tmp_path / "model-run.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(sessions))
+    documents.create(
+        {
+            "id": "ai-flow",
+            "name": "模型流程",
+            "nodes": [
+                {
+                    "id": "ask",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "ai_chat",
+                        "config": {
+                            "modelId": "model-1",
+                            "fallbackModelIds": ["model-2"],
+                            "userPrompt": "问题",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+        client_request_id="create-ai-flow",
+    )
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    runs = WorkflowRunService(repository)
+    workers = FakeWorkers()
+    resolved: list[str] = []
+
+    def resolve(model_id: str) -> ModelExecutionBinding:
+        resolved.append(model_id)
+        return ModelExecutionBinding(
+            model_id,
+            f"key-{model_id}",
+            ProviderConnection(
+                "custom-openai-compatible",
+                "openai-compatible",
+                "https://model.example/v1",
+            ),
+            f"secret-{model_id}",
+        )
+
+    coordinator = WorkflowRunCoordinator(
+        documents=documents,
+        runs=runs,
+        run_repository=repository,
+        runtime=WorkflowRuntime(build_production_executor_registry()),
+        profiles=FakeProfiles(_profile()),
+        installed_kernels=list,
+        resolve_proxy=lambda _profile, _run_id: _none(),
+        read_license=lambda: None,
+        workers=workers,
+        resources=FakeResources(),
+        events=StudioEventJournal(),
+        artifact_root=tmp_path / "workspace",
+        resolve_model=resolve,
+    )
+
+    accepted = await coordinator.start(
+        "ai-flow",
+        {
+            "runId": "ai-run",
+            "documentId": "ai-flow",
+            "profileId": "profile-1",
+        },
+    )
+
+    assert accepted["status"] == "running"
+    assert resolved == ["model-1", "model-2"]
+    assert workers.payloads[0]["modelBindings"] == [
+        {
+            "modelId": "model-1",
+            "modelKey": "key-model-1",
+            "presetId": "custom-openai-compatible",
+            "providerKind": "openai-compatible",
+            "baseUrl": "https://model.example/v1",
+            "secret": "secret-model-1",
+        },
+        {
+            "modelId": "model-2",
+            "modelKey": "key-model-2",
+            "presetId": "custom-openai-compatible",
+            "providerKind": "openai-compatible",
+            "baseUrl": "https://model.example/v1",
+            "secret": "secret-model-2",
+        },
+    ]
+    assert "secret-model" not in json.dumps(
+        runs.get("ai-run").document_snapshot, ensure_ascii=False
+    )
 
 
 @pytest.mark.asyncio

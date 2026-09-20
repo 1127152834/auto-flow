@@ -374,7 +374,8 @@
 
 **估计：** 开发 12–20 工程日；验证 8–15 工程日；外部等待未知，取决于供应商凭据、额度、模型可用性和 MCP server。置信度低。
 
-- [ ] Task B5.1：定义 Model/MCP 窄端口，复用主应用 model ID 和系统秘密存储；不迁入第二套 provider 配置。
+- [x] Task B5.1：定义 Model/MCP 窄端口，复用主应用 model ID 和系统秘密存储；不迁入第二套 provider 配置。
+  - 2026-09-21：复用 `ExecutionContext.models`，父进程按稳定 `modelId` 从主应用 ModelService/系统 CredentialStore 解析临时绑定，经既有 stdin 通道交给 worker；运行快照、事件和结果不含密钥。首个 `ai_chat` 已通过真实 worker + 本地受控模型 HTTP 服务，见 `evidence/b5/model-boundary-ai-chat.json`。MCP 窄端口的具体服务接入仍归 B5.6，不在此任务虚构实现。
 - [x] Task B5.2：建立 `tests/compatibility/test_langgraph_runtime.py`，验证候选 LangGraph 版本在 Python 3.11 下的图中断、检查点恢复、取消、无默认外部遥测和 PyInstaller 收集；通过后才修改 `apps/backend/pyproject.toml` 与锁文件。
   - 2026-09-21：锁定 LangGraph 1.2.11 与 SQLite checkpoint 3.1.1；Python 3.11 的持久化中断恢复、异步取消、核心路径无网络连接、PyInstaller 收集、隔离冻结构建及 sidecar 启停均通过。生产助手图的冻结暂停/恢复仍归 B5.3–B5.4 验收，见 `evidence/b5/langgraph-runtime-compatibility.json`。
 - [ ] Task B5.3：实现小助手图：上下文→模型→结构化工具校验→权限中断→工具结果→后续模型；`assistantSessionId` 映射受工作区隔离的 thread/checkpoint，恢复查询原 commandId，不重放副作用。

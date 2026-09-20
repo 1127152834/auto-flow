@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import sys
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
 
 import pytest
-
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowWorkerBusy,
     WorkflowWorkerManager,
@@ -218,6 +220,122 @@ async def test_real_worker_waits_for_input_then_resumes_node_execution(
     assert completed["data"] == {"value": 42}
     assert any(event.get("type") == "execution:completed" for event in events)
     assert manager.busy() is False
+
+
+@pytest.mark.asyncio
+async def test_real_worker_invokes_parent_resolved_model_without_leaking_secret(
+    tmp_path: Path,
+) -> None:
+    requests: list[dict[str, object]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            body = json.loads(self.rfile.read(int(self.headers["content-length"])))
+            requests.append(
+                {
+                    "path": self.path,
+                    "authorization": self.headers.get("authorization"),
+                    "body": body,
+                }
+            )
+            content = json.dumps(
+                {
+                    "choices": [{"message": {"content": "真实 worker 回复"}}],
+                    "usage": {"total_tokens": 9},
+                },
+                ensure_ascii=False,
+            ).encode()
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("content-length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    try:
+        payload = {
+            "runId": "ai-run",
+            "workflowId": "ai-flow",
+            "profileId": "profile-1",
+            "requiresBrowser": False,
+            "artifactRoot": str(tmp_path / "artifacts"),
+            "modelBindings": [
+                {
+                    "modelId": "model-1",
+                    "modelKey": "fixture-model",
+                    "presetId": "custom-openai-compatible",
+                    "providerKind": "openai-compatible",
+                    "baseUrl": f"http://127.0.0.1:{server.server_port}/v1",
+                    "secret": "worker-only-secret",
+                }
+            ],
+            "document": {
+                "nodes": [
+                    {
+                        "id": "ask",
+                        "type": "moduleNode",
+                        "data": {
+                            "moduleType": "ai_chat",
+                            "config": {
+                                "modelId": "model-1",
+                                "userPrompt": "请回答",
+                                "variableName": "answer",
+                            },
+                        },
+                    }
+                ],
+                "edges": [],
+                "variables": [],
+            },
+        }
+        await manager.start("ai-run", "profile-1", None, payload)
+        for _ in range(300):
+            if not manager.busy():
+                break
+            await asyncio.sleep(0.01)
+
+        assert manager.busy() is False
+        assert requests == [
+            {
+                "path": "/v1/chat/completions",
+                "authorization": "Bearer worker-only-secret",
+                "body": {
+                    "model": "fixture-model",
+                    "messages": [{"role": "user", "content": "请回答"}],
+                    "temperature": 0.7,
+                    "max_tokens": 2000,
+                    "stream": False,
+                },
+            }
+        ]
+        complete = next(
+            event for event in events if event.get("type") == "execution:node_complete"
+        )
+        assert complete["success"] is True
+        assert complete["data"] == {
+            "response": "真实 worker 回复",
+            "reasoning": None,
+            "model": "fixture-model",
+            "modelId": "model-1",
+            "usage": {"total_tokens": 9},
+        }
+        assert "worker-only-secret" not in json.dumps(events, ensure_ascii=False)
+    finally:
+        await manager.shutdown()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
 
 
 @pytest.mark.asyncio

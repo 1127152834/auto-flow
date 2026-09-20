@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 import httpx
-
 from autoflow.domain.models import (
     DiscoveryResult,
     ModelError,
+    ModelInvocationResult,
     ModelTestResult,
     ProviderConnection,
     RemoteModel,
@@ -127,6 +127,77 @@ class HttpModelProvider:
             "模型调用成功",
         )
 
+    async def invoke(
+        self,
+        connection: ProviderConnection,
+        secret: str,
+        model_key: str,
+        payload: Mapping[str, Any],
+    ) -> ModelInvocationResult:
+        base_url = validate_connection(connection, secret)
+        messages = payload.get("messages")
+        if not isinstance(messages, list) or not all(
+            isinstance(item, dict) for item in messages
+        ):
+            raise _invalid("模型调用")
+        temperature = payload.get("temperature", 0.7)
+        max_tokens = payload.get("maxTokens", payload.get("max_tokens", 2000))
+        timeout = payload.get("timeoutSeconds", 180)
+        if (
+            not isinstance(temperature, (int, float))
+            or isinstance(temperature, bool)
+            or not isinstance(max_tokens, int)
+            or isinstance(max_tokens, bool)
+            or max_tokens <= 0
+            or not isinstance(timeout, (int, float))
+            or isinstance(timeout, bool)
+            or timeout <= 0
+        ):
+            raise _invalid("模型调用")
+        params: dict[str, str | int] = {}
+        if connection.provider_kind == "gemini":
+            endpoint = _append_path(
+                base_url, f"models/{quote(model_key, safe='-._')}:generateContent"
+            )
+            params["key"] = secret
+            body = _gemini_payload(messages, float(temperature), max_tokens)
+        elif connection.provider_kind == "anthropic":
+            endpoint = _append_path(base_url, "messages")
+            body = _anthropic_payload(
+                model_key, messages, float(temperature), max_tokens
+            )
+        else:
+            endpoint = _append_path(base_url, "chat/completions")
+            body = {
+                "model": model_key,
+                "messages": messages,
+                "temperature": float(temperature),
+                "max_tokens": max_tokens,
+                "stream": False,
+            }
+        response = await self._request(
+            "POST",
+            endpoint,
+            _headers(connection, secret),
+            params,
+            body,
+            float(timeout),
+            "模型调用",
+        )
+        content, reasoning = _previews(connection.provider_kind, response)
+        if not content and reasoning:
+            content = reasoning
+        if not content:
+            raise _invalid("模型调用")
+        usage = response.get("usage")
+        return ModelInvocationResult(
+            model_key,
+            content,
+            reasoning,
+            dict(usage) if isinstance(usage, dict) else {},
+            _safe_endpoint(endpoint),
+        )
+
     async def _request(
         self,
         method: str,
@@ -213,6 +284,57 @@ def _headers(connection: ProviderConnection, secret: str) -> dict[str, str]:
     elif connection.provider_kind != "gemini" and secret.strip():
         headers["authorization"] = f"Bearer {secret}"
     return headers
+
+
+def _anthropic_payload(
+    model_key: str,
+    messages: list[dict[str, Any]],
+    temperature: float,
+    max_tokens: int,
+) -> dict[str, Any]:
+    system = "\n".join(
+        str(item.get("content") or "")
+        for item in messages
+        if item.get("role") == "system"
+    ).strip()
+    body: dict[str, Any] = {
+        "model": model_key,
+        "messages": [
+            item for item in messages if item.get("role") in {"user", "assistant"}
+        ],
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    if system:
+        body["system"] = system
+    return body
+
+
+def _gemini_payload(
+    messages: list[dict[str, Any]], temperature: float, max_tokens: int
+) -> dict[str, Any]:
+    system = "\n".join(
+        str(item.get("content") or "")
+        for item in messages
+        if item.get("role") == "system"
+    ).strip()
+    body: dict[str, Any] = {
+        "contents": [
+            {
+                "role": "model" if item.get("role") == "assistant" else "user",
+                "parts": [{"text": str(item.get("content") or "")}],
+            }
+            for item in messages
+            if item.get("role") in {"user", "assistant"}
+        ],
+        "generationConfig": {
+            "temperature": temperature,
+            "maxOutputTokens": max_tokens,
+        },
+    }
+    if system:
+        body["systemInstruction"] = {"parts": [{"text": system}]}
+    return body
 
 
 def _validate_key(connection: ProviderConnection, secret: str) -> None:

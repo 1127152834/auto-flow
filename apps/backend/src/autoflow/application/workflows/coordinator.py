@@ -10,9 +10,11 @@ from pathlib import Path
 from typing import Any, Protocol, cast
 
 from autoflow.adapters.events.workflows import StudioEventJournal
+from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.profiles.service import ProfileService
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel, KernelRef
+from autoflow.domain.models.errors import ModelError
 from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.workflows.browser import WorkflowBrowserBusy
@@ -81,6 +83,7 @@ class WorkflowRunCoordinator:
         events: StudioEventJournal,
         artifact_root: Path,
         modules: CustomModuleService | None = None,
+        resolve_model: Callable[[str], ModelExecutionBinding] | None = None,
     ) -> None:
         self._documents = documents
         self._runs = runs
@@ -95,6 +98,7 @@ class WorkflowRunCoordinator:
         self._events = events
         self._artifact_root = artifact_root.resolve()
         self._modules = modules
+        self._resolve_model = resolve_model
         self._terminal_intents: dict[str, dict[str, Any]] = {}
         self._command_lock = asyncio.Lock()
         self._event_command_lock = asyncio.Lock()
@@ -201,6 +205,11 @@ class WorkflowRunCoordinator:
                     if isinstance((workflow := snapshot.get("workflow")), Mapping)
                 )
             )
+            model_bindings = self._resolve_model_bindings(
+                document,
+                workflow_dependencies,
+                custom_module_dependencies,
+            )
             profile = self._profiles.get(profile_id)
             kernel = self._kernel(profile) if requires_browser else None
             start = WorkflowRunStart(
@@ -260,6 +269,7 @@ class WorkflowRunCoordinator:
                     requires_browser=requires_browser,
                     workflow_dependencies=workflow_dependencies,
                     custom_module_dependencies=custom_module_dependencies,
+                    model_bindings=model_bindings,
                 )
                 await self._workers.start(
                     run_id,
@@ -325,6 +335,42 @@ class WorkflowRunCoordinator:
                         "RUN_START_FAILED", "工作流浏览器启动失败", 503
                     ) from error
                 raise
+
+    def _resolve_model_bindings(
+        self,
+        document: Mapping[str, Any],
+        workflow_dependencies: Mapping[str, Mapping[str, Any]],
+        custom_module_dependencies: Mapping[str, Mapping[str, object]],
+    ) -> tuple[ModelExecutionBinding, ...]:
+        references = _model_references(
+            [
+                document,
+                *workflow_dependencies.values(),
+                *(
+                    workflow
+                    for snapshot in custom_module_dependencies.values()
+                    if isinstance((workflow := snapshot.get("workflow")), Mapping)
+                ),
+            ]
+        )
+        if not references:
+            return ()
+        if self._resolve_model is None:
+            raise WorkflowRunError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
+        bindings: dict[str, ModelExecutionBinding] = {}
+        for model_id, node_id, path in references:
+            if model_id in bindings:
+                continue
+            try:
+                bindings[model_id] = self._resolve_model(model_id)
+            except ModelError as error:
+                raise WorkflowRunError(
+                    error.code,
+                    error.message,
+                    error.status,
+                    {**error.details, "nodeId": node_id, "path": path},
+                ) from error
+        return tuple(bindings.values())
 
     async def stop(self, workflow_id: str, run_id: str) -> Mapping[str, Any]:
         async with self._command_lock:
@@ -720,6 +766,7 @@ def _worker_payload(
     requires_browser: bool,
     workflow_dependencies: dict[str, dict[str, Any]],
     custom_module_dependencies: dict[str, dict[str, object]],
+    model_bindings: Sequence[ModelExecutionBinding],
 ) -> dict[str, Any]:
     spec = profile.spec
     executable_document = WorkflowDraft(
@@ -761,8 +808,69 @@ def _worker_payload(
         "document": executable_document,
         "workflowDependencies": workflow_dependencies,
         "customModuleDependencies": custom_module_dependencies,
+        "modelBindings": [
+            {
+                "modelId": binding.model_id,
+                "modelKey": binding.model_key,
+                "presetId": binding.connection.preset_id,
+                "providerKind": binding.connection.provider_kind,
+                "baseUrl": binding.connection.base_url,
+                "secret": binding.secret,
+            }
+            for binding in model_bindings
+        ],
         "executableIdentity": executable.name if executable is not None else None,
     }
+
+
+def _model_references(
+    documents: Sequence[Mapping[str, Any]],
+) -> tuple[tuple[str, str, str], ...]:
+    references: list[tuple[str, str, str]] = []
+    for document in documents:
+        nodes = document.get("nodes")
+        if not isinstance(nodes, list):
+            continue
+        for node in nodes:
+            if not isinstance(node, Mapping):
+                continue
+            node_id = node.get("id")
+            data = node.get("data")
+            if not isinstance(node_id, str) or not isinstance(data, Mapping):
+                continue
+            config = data.get("config")
+            values = config if isinstance(config, Mapping) else data
+            model_id = values.get("modelId")
+            if isinstance(model_id, str) and model_id.strip():
+                references.append((model_id.strip(), node_id, "config.modelId"))
+            fallbacks = values.get("fallbackModels")
+            if isinstance(fallbacks, list):
+                for index, fallback in enumerate(fallbacks):
+                    fallback_id = (
+                        fallback.get("modelId")
+                        if isinstance(fallback, Mapping)
+                        else None
+                    )
+                    if isinstance(fallback_id, str) and fallback_id.strip():
+                        references.append(
+                            (
+                                fallback_id.strip(),
+                                node_id,
+                                f"config.fallbackModels.{index}.modelId",
+                            )
+                        )
+            fallback_ids = values.get("fallbackModelIds")
+            if isinstance(fallback_ids, list):
+                for index, fallback_id in enumerate(fallback_ids):
+                    if isinstance(fallback_id, str) and fallback_id.strip():
+                        references.append(
+                            (
+                                fallback_id.strip(),
+                                node_id,
+                                f"config.fallbackModelIds.{index}",
+                            )
+                        )
+    return tuple(references)
 
 
 def _workflow_dependency_snapshots(
