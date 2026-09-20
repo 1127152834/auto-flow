@@ -948,7 +948,7 @@ AutoFlow 提供了基于AI的图像识别功能，包括人脸识别和图片OCR
 \`\`\`
 
 **注意事项**：
-- 首次使用需要安装 face_recognition 库（依赖 dlib）
+- face_recognition、dlib 和识别模型随 AutoFlow 后端提供，无需单独安装
 - 图片中应包含清晰的正面人脸
 - 光线、角度会影响识别准确度
 - 建议使用高质量的目标人脸图片

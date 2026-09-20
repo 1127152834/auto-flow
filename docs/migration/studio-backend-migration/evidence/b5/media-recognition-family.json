@@ -1,0 +1,65 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/media_recognition.py",
+    "symbols": [
+      "FaceRecognitionExecutor",
+      "ImageOCRExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "face_recognition",
+    "image_ocr"
+  ],
+  "implemented": [
+    "保留冻结源码的人脸匹配结果、置信度、true/false 分支、OCR 文本和变量写回语义",
+    "图片读取统一经过 AutoFlow 的受控 workflow artifact reader，单值上限 64 MiB",
+    "图片 OCR 支持文件和屏幕区域、通用中英文与验证码两种模式；EasyOCR 模型禁止运行时下载",
+    "人脸识别使用 face_recognition/dlib，图像解码在内存中完成，不绕过工作区文件边界",
+    "CPU 推理前后响应工作流取消；区域截屏使用 Pillow 的跨平台 ImageGrab，不引入 WebRPA 的 Windows 专用窗口 API",
+    "EasyOCR、人脸模型、torchvision 原生库和依赖均进入正式 PyInstaller 产物，生产运行时不读取 reference 目录"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b5_media_recognition_parity.py apps/backend/tests/unit/workflows/test_media_recognition_executors.py apps/backend/tests/integration/test_b5_media_recognition_worker.py apps/backend/tests/unit/workflows/test_executor_registry.py",
+      "exitCode": 0,
+      "result": "23 passed",
+      "covers": "冻结源码结果差分、错误分支、取消、文件边界、生产注册、真实 dlib 与 EasyOCR worker"
+    },
+    {
+      "command": "npm run backend:build",
+      "exitCode": 0,
+      "result": "macOS arm64 PyInstaller build passed; 79 MiB/21 MiB EasyOCR models and torchvision _C_stable.so/image_stable.so present",
+      "covers": "本地模型、原生推理库和正式 worker 入口进入冻结后端"
+    },
+    {
+      "command": "AUTOFLOW_FROZEN_BACKEND=<dist executable> uv run --project apps/backend pytest -q apps/backend/tests/integration/test_b5_media_recognition_worker.py",
+      "exitCode": 0,
+      "result": "1 passed in 49.50s",
+      "covers": "冻结 worker 对真实人脸图片完成匹配，并用 EasyOCR 识别 AUTOFLOW 123"
+    },
+    {
+      "command": "npm run smoke:sidecar -- --executable apps/backend/dist/autoflow-backend/autoflow-backend",
+      "exitCode": 0,
+      "result": "frozen sidecar health and shutdown passed"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <media recognition affected files> && uv run --project apps/backend mypy apps/backend/src/autoflow/application/workflows/executors/media_recognition.py apps/backend/src/autoflow/application/workflows/executors/production.py",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "observations": {
+    "frozenPackageSize": "1.3 GiB",
+    "reason": "EasyOCR requires torch/torchvision plus two frozen recognition models",
+    "coldStart": "macOS arm64 frozen worker first OCR run completed within 49.50 seconds"
+  },
+  "remaining": [
+    "正式 Electron 中通过真实 UI 保存、运行并查看两个节点的日志和结果",
+    "屏幕区域 OCR 的 macOS 截屏权限与 Windows 实机验收",
+    "macOS Intel 与 Windows 冻结包未验收"
+  ]
+}

@@ -1,7 +1,20 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
+from pathlib import Path
 
+from PyInstaller.utils.hooks import (
+    collect_data_files,
+    collect_dynamic_libs,
+    collect_submodules,
+    copy_metadata,
+    get_package_paths,
+)
+
+_, torchvision_path = get_package_paths('torchvision')
+torchvision_binaries = collect_dynamic_libs('torchvision') + [
+    (str(path), 'torchvision')
+    for path in Path(torchvision_path).glob('*_stable.so')
+]
 
 datas = [
     ('src/autoflow/infrastructure/filesystem/profile_environment.json', 'autoflow/infrastructure/filesystem'),
@@ -10,6 +23,9 @@ datas = [
     *collect_data_files('tzdata'),
     *collect_data_files('playwright'),
     *collect_data_files('ddddocr', includes=['*.onnx']),
+    *collect_data_files('easyocr'),
+    *collect_data_files('face_recognition_models'),
+    ('../../reference/WebRPA/backend/models/ocr/easyocr/*.pth', 'autoflow/resources/easyocr'),
     *copy_metadata('tzdata'),
     *copy_metadata('cloakbrowser'),
     *copy_metadata('keyring'),
@@ -18,6 +34,9 @@ datas = [
     *copy_metadata('langgraph-checkpoint'),
     *copy_metadata('langgraph-checkpoint-sqlite'),
     *copy_metadata('ddddocr'),
+    *copy_metadata('easyocr'),
+    *copy_metadata('face-recognition'),
+    *copy_metadata('face-recognition-models'),
 ]
 hiddenimports = [
     'autoflow.bootstrap.kernel_worker',
@@ -34,13 +53,15 @@ hiddenimports = [
     *collect_submodules('cloakbrowser'),
     *collect_submodules('langgraph'),
     *collect_submodules('langgraph.checkpoint'),
+    *collect_submodules('easyocr'),
+    *collect_submodules('face_recognition'),
 ]
 
 
 a = Analysis(
     ['src/autoflow/__main__.py'],
     pathex=['src'],
-    binaries=[],
+    binaries=torchvision_binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],

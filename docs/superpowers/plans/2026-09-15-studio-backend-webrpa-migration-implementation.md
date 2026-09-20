@@ -381,6 +381,7 @@
 - [ ] Task B5.3：实现小助手图：上下文→模型→结构化工具校验→权限中断→工具结果→后续模型；`assistantSessionId` 映射受工作区隔离的 thread/checkpoint，恢复查询原 commandId，不重放副作用。
 - [ ] Task B5.4：把模型文本、工具请求、权限状态、结果、错误和结束投影到现有 SSE/查询合同；服务端重复检查 227 范围、工具开关、参数和批准修订。
 - [ ] Task B5.5：用本地可控 HTTP/MCP fixture 迁入 22 节点，验证请求形状、流式分块、取消、超时、限流和错误映射。
+  - 2026-09-21：22 个节点已全部进入生产注册表；最后两个 `image_ocr`、`face_recognition` 保留冻结源码结果结构并复用 AutoFlow 文件边界，EasyOCR、人脸模型及 torchvision 原生库随冻结后端提供。冻结源码差分、真实 worker、macOS arm64 冻结 worker 通过，见 `evidence/b5/media-recognition-family.json`。本任务仍需集中完成流式/限流错误矩阵、正式 UI 和真实供应商核销。
 - [ ] Task B5.6：实现现有 MCP 保存、测试、重载和调用合同，写操作带 revision/commandId，MCP 工具不能绕过小助手权限。
 - [ ] Task B5.7：大图像/视频/文本经 artifact 引用传输；日志、SSE、诊断、LangGraph 检查点和导出扫描不得出现 API key、代理密码或 License。
   - 2026-09-21：`ai_generate_image`、`ai_generate_video` 已按冻结源码迁入 OpenAI、Stability、Runway 和自定义接口分支；节点只引用主应用 `modelId`，协议选择仍保留，密钥与地址由系统模型绑定提供。差分输出、真实 worker、产物落盘、轮询取消及秘密扫描通过；第三方真实供应商与正式 Electron 验收仍为外部等待，见 `evidence/b5/ai-media-family.json`。
