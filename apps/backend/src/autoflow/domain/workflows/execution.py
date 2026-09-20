@@ -187,6 +187,7 @@ class ExecutionContext:
     network_monitors: dict[Any, BrowserRequestWatchPort] = field(default_factory=dict)
     current_row: dict[str, Any] = field(default_factory=dict)
     loop_stack: list[dict[str, Any]] = field(default_factory=list)
+    execution_scopes: tuple[dict[str, Any], ...] = ()
     progress: Callable[[str, str], Awaitable[None]] | None = None
     current_node_id: str | None = None
     current_execution_id: str | None = None

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import json
 from collections.abc import Coroutine, Mapping
 from dataclasses import dataclass, field
@@ -201,6 +202,7 @@ class _WorkflowScheduler:
             return result
 
         execution_id = str(uuid4())
+        execution_context = _execution_context(self.context)
         async with self.event_binding_lock:
             self.context.current_node_id = node.id
             self.context.current_execution_id = execution_id
@@ -210,6 +212,7 @@ class _WorkflowScheduler:
                     "type": "execution:node_start",
                     "nodeId": node.id,
                     "executionId": execution_id,
+                    "executionContext": execution_context,
                 },
             )
             self.context.bind_node_artifacts()
@@ -294,6 +297,7 @@ class _WorkflowScheduler:
                 "type": "execution:node_complete",
                 "nodeId": node.id,
                 "executionId": execution_id,
+                "executionContext": execution_context,
                 "success": reported_result.success,
                 "message": reported_result.message,
                 "error": reported_result.error,
@@ -309,6 +313,7 @@ class _WorkflowScheduler:
             await self._notify_successors(done_nodes, loop_node.id)
             return
         loop_state = self.context.loop_stack[-1]
+        loop_state.setdefault("node_id", loop_node.id)
         body_scope = self._collect_loop_body_nodes(loop_node.id, body_nodes, done_nodes)
         while not self.halted and self._loop_should_continue(loop_state):
             self._raise_if_cancelled()
@@ -526,6 +531,35 @@ def _reported_result(result: ModuleResult, context: ExecutionContext) -> ModuleR
         skipped=result.skipped,
         is_timeout=result.is_timeout,
     )
+
+
+def _execution_context(context: ExecutionContext) -> dict[str, Any]:
+    loops: list[dict[str, Any]] = []
+    for state in context.loop_stack:
+        current = _integer(state.get("current_index"))
+        loop_type = str(state.get("type") or "")
+        if loop_type == "range":
+            start = _integer(state.get("start_value"))
+            step = _integer(state.get("step_value")) or 1
+            iteration = abs(current - start) // abs(step) + 1
+        else:
+            iteration = current + 1
+        loops.append(
+            {
+                "nodeId": str(state.get("node_id") or ""),
+                "type": loop_type,
+                "currentIndex": current,
+                "iteration": iteration,
+            }
+        )
+    return {
+        "scopes": [copy.deepcopy(scope) for scope in context.execution_scopes],
+        "loops": loops,
+    }
+
+
+def _integer(value: Any) -> int:
+    return value if isinstance(value, int) and not isinstance(value, bool) else 0
 
 
 def _is_json_value(value: Any) -> bool:

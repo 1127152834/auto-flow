@@ -190,6 +190,11 @@ async def test_error_edge_handles_failure_without_running_normal_successor() -> 
 @pytest.mark.asyncio
 async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
     calls: list[int] = []
+    events: list[dict[str, Any]] = []
+
+    class Sink:
+        async def publish(self, event: dict[str, Any]) -> None:
+            events.append(event)
 
     async def loop(
         _self: ModuleExecutor, _config: dict[str, Any], context: ExecutionContext
@@ -231,7 +236,7 @@ async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
             _edge("done", "loop", "done", "done"),
         ],
     }
-    context = ExecutionContext()
+    context = ExecutionContext(events=Sink())
 
     result = await WorkflowRuntime(registry).execute(document, context)
 
@@ -240,6 +245,23 @@ async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
     assert context.variables["done"] is True
     assert context.loop_stack == []
     assert result.executed_node_ids == ("loop", "body", "body", "body", "done")
+    body_starts = [
+        event
+        for event in events
+        if event["type"] == "execution:node_start" and event["nodeId"] == "body"
+    ]
+    assert len({event["executionId"] for event in body_starts}) == 3
+    assert [event["executionContext"]["loops"] for event in body_starts] == [
+        [
+            {
+                "nodeId": "loop",
+                "type": "count",
+                "currentIndex": index,
+                "iteration": index + 1,
+            }
+        ]
+        for index in range(3)
+    ]
 
 
 @pytest.mark.asyncio

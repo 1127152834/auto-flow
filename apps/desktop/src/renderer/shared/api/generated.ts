@@ -8300,6 +8300,10 @@ export type components = {
             nodeId: string;
             /** Executionid */
             executionId: string;
+            /** Executioncontext */
+            executionContext?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /** Values */
             values: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -9260,6 +9264,18 @@ export type components = {
              * @default null
              */
             nodeId: string | null;
+            /**
+             * Executionid
+             * @default null
+             */
+            executionId: string | null;
+            /**
+             * Executioncontext
+             * @default null
+             */
+            executionContext: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /**
              * Duration
              * @default null

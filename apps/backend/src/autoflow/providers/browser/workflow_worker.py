@@ -443,6 +443,10 @@ class _WorkerNestedWorkflows:
         child = ExecutionContext(
             variables={**_initial_variables(snapshot), **copy.deepcopy(dict(variables))},
             sensitive_variables=set(self._parent.sensitive_variables),
+            execution_scopes=(
+                *self._parent.execution_scopes,
+                {"kind": "workflow", "id": canonical, "name": name},
+            ),
             browser=self._parent.browser,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
@@ -606,6 +610,10 @@ class _WorkerCustomModules:
         child = ExecutionContext(
             variables=variables,
             sensitive_variables=sensitive_parameters,
+            execution_scopes=(
+                *self._parent.execution_scopes,
+                {"kind": "customModule", "id": module_id, "name": name},
+            ),
             browser=self._parent.browser,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
@@ -727,6 +735,10 @@ class _WorkerCanvasSubflows:
         child = ExecutionContext(
             variables=self._parent.variables,
             sensitive_variables=self._parent.sensitive_variables,
+            execution_scopes=(
+                *self._parent.execution_scopes,
+                {"kind": "subflow", "id": identity, "name": display_name},
+            ),
             browser=self._parent.browser,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,

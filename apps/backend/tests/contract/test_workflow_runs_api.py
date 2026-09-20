@@ -352,6 +352,17 @@ def test_real_run_coordinator_is_reached_through_http_and_stop_waits_for_cleanup
             "runId": "real-http-run",
             "nodeId": "open",
             "executionId": "execution-contract",
+            "executionContext": {
+                "scopes": [{"kind": "subflow", "id": "login", "name": "登录"}],
+                "loops": [
+                    {
+                        "nodeId": "items",
+                        "type": "foreach",
+                        "currentIndex": 2,
+                        "iteration": 3,
+                    }
+                ],
+            },
             "success": True,
             "message": "已提取结果",
             "data": {"value": "中文结果"},
@@ -367,6 +378,12 @@ def test_real_run_coordinator_is_reached_through_http_and_stop_waits_for_cleanup
 
     assert results.status_code == artifacts.status_code == downloaded.status_code == 200
     assert results.json()["items"][0]["values"] == {"value": "中文结果"}
+    assert results.json()["items"][0]["executionContext"]["loops"][0][
+        "iteration"
+    ] == 3
+    logs = client.get("/api/workflow-runs/real-http-run/logs").json()["items"]
+    assert logs[0]["executionId"] == "execution-contract"
+    assert logs[0]["executionContext"]["scopes"][0]["id"] == "login"
     assert artifacts.json()["items"][0]["artifactId"] == "artifact-contract"
     assert downloaded.content == artifact_file.read_bytes()
     assert downloaded.headers["content-type"] == "image/png"

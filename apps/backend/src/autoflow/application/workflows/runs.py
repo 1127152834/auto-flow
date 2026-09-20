@@ -216,6 +216,8 @@ class WorkflowRunService:
                 "level": level,
                 "message": message,
                 "nodeId": event_node_id,
+                "executionId": event.execution_id,
+                "executionContext": copy.deepcopy(payload.get("executionContext")),
                 "duration": payload.get("duration"),
                 "details": copy.deepcopy(payload.get("details")),
             }
@@ -241,15 +243,17 @@ class WorkflowRunService:
                     continue
                 data = copy.deepcopy(result["data"])
                 values = data if isinstance(data, dict) else {"value": data}
-                rows.append(
-                    {
-                        "sequence": event.sequence,
-                        "nodeId": event.node_id,
-                        "executionId": event.execution_id
-                        or f"{run_id}-{event.sequence}",
-                        "values": values,
-                    }
-                )
+                row = {
+                    "sequence": event.sequence,
+                    "nodeId": event.node_id,
+                    "executionId": event.execution_id
+                    or f"{run_id}-{event.sequence}",
+                    "values": values,
+                }
+                execution_context = event.payload.get("executionContext")
+                if isinstance(execution_context, dict):
+                    row["executionContext"] = copy.deepcopy(execution_context)
+                rows.append(row)
             if len(events) < 1000:
                 break
             after_sequence = events[-1].sequence

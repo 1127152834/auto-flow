@@ -402,6 +402,16 @@ class WorkflowRunCoordinator:
         if event_type == "execution:node_complete":
             if node_id is None or execution_id is None:
                 raise WorkflowRunError("WORKER_EVENT_INVALID", "节点事件身份无效", 422)
+            raw_execution_context = event.get("executionContext")
+            if raw_execution_context is not None and not isinstance(
+                raw_execution_context, Mapping
+            ):
+                raise WorkflowRunError("WORKER_EVENT_INVALID", "节点执行上下文无效", 422)
+            execution_context = (
+                copy.deepcopy(dict(raw_execution_context))
+                if isinstance(raw_execution_context, Mapping)
+                else None
+            )
             success = event.get("success") is True
             artifact_ids = event.get("artifactIds", [])
             if not isinstance(artifact_ids, list) or not all(
@@ -414,32 +424,41 @@ class WorkflowRunCoordinator:
                 "error": event.get("error"),
                 "data": copy.deepcopy(event.get("data")),
             }
+            event_payload: dict[str, Any] = {"result": result}
+            if execution_context is not None:
+                event_payload["executionContext"] = execution_context
             persisted = self._repository.append_event(
                 run_id,
                 "execution:node-succeeded" if success else "execution:node-failed",
-                {"result": result},
+                event_payload,
                 now=datetime_now(),
                 node_id=node_id,
                 execution_id=execution_id,
                 run_patch={"currentNodeId": node_id},
                 artifact_ids=tuple(artifact_ids),
             )
+            completion_event: dict[str, Any] = {
+                **_event_identity(run),
+                "nodeId": node_id,
+                "executionId": execution_id,
+                "success": success,
+                "sequence": persisted.sequence,
+            }
+            if execution_context is not None:
+                completion_event["executionContext"] = execution_context
             await self._events.publish(
                 "execution:node_complete",
-                {
-                    **_event_identity(run),
-                    "nodeId": node_id,
-                    "executionId": execution_id,
-                    "success": success,
-                    "sequence": persisted.sequence,
-                },
+                completion_event,
             )
             level = "success" if success else "error"
             message = str(event.get("message") or event.get("error") or "节点执行完成")
+            log_payload: dict[str, Any] = {"level": level, "message": message}
+            if execution_context is not None:
+                log_payload["executionContext"] = execution_context
             log = self._repository.append_event(
                 run_id,
                 "execution:log",
-                {"level": level, "message": message},
+                log_payload,
                 now=datetime_now(),
                 node_id=node_id,
                 execution_id=execution_id,
@@ -455,6 +474,8 @@ class WorkflowRunCoordinator:
                         "level": level,
                         "message": message,
                         "nodeId": node_id,
+                        "executionId": execution_id,
+                        "executionContext": execution_context,
                     },
                 },
             )

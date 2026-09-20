@@ -584,6 +584,7 @@ async def test_real_worker_runs_frozen_custom_module_with_isolated_outputs(
         event for event in events if event.get("type") == "execution:node_complete"
     ]
     custom = next(event for event in completed if event.get("nodeId") == "call")
+    internal = next(event for event in completed if event.get("nodeId") == "answer")
     assert custom["success"] is True
     assert custom["data"] == {
         "outputs": {"answer": "parent"},
@@ -591,6 +592,9 @@ async def test_real_worker_runs_frozen_custom_module_with_isolated_outputs(
         "failed_nodes": 0,
     }
     assert "internal_only" not in custom["data"]["outputs"]
+    assert internal["executionContext"]["scopes"] == [
+        {"kind": "customModule", "id": "formatter", "name": "格式化器"}
+    ]
 
 
 @pytest.mark.asyncio
@@ -676,6 +680,90 @@ async def test_real_worker_enforces_custom_module_depth_limit(
             and event.get("success") is False
         ]
         assert any("嵌套层数过深(>16)" in str(event.get("error")) for event in failures)
+
+
+@pytest.mark.asyncio
+async def test_real_worker_stops_during_long_pure_variable_loop(tmp_path: Path) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    payload = {
+        "runId": "long-loop-stop",
+        "workflowId": "long-loop-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": "repeat",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "loop",
+                        "config": {"loopCount": 1_000, "indexVariable": "index"},
+                    },
+                },
+                {
+                    "id": "body",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "value", "variableValue": "{index}"},
+                    },
+                },
+                {
+                    "id": "done",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "completed", "variableValue": True},
+                    },
+                },
+            ],
+            "edges": [
+                {
+                    "id": "repeat-body",
+                    "source": "repeat",
+                    "sourceHandle": "loop",
+                    "target": "body",
+                },
+                {
+                    "id": "repeat-done",
+                    "source": "repeat",
+                    "sourceHandle": "done",
+                    "target": "done",
+                },
+            ],
+            "variables": [],
+        },
+    }
+
+    await manager.start("long-loop-stop", "profile-1", None, payload)
+    for _ in range(300):
+        body_starts = [
+            event
+            for event in events
+            if event.get("type") == "execution:node_start"
+            and event.get("nodeId") == "body"
+        ]
+        if len(body_starts) >= 20:
+            break
+        await asyncio.sleep(0.01)
+    assert len(body_starts) >= 20
+
+    await manager.stop("long-loop-stop")
+    event_count = len(events)
+    await asyncio.sleep(0.05)
+
+    assert manager.busy() is False
+    assert manager.active_processes() == []
+    assert len(events) == event_count
+    assert len(body_starts) < 1_000
+    assert not any(event.get("nodeId") == "done" for event in events)
+    assert not any(event.get("type") == "execution:completed" for event in events)
 
 
 @pytest.mark.asyncio

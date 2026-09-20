@@ -205,6 +205,8 @@ class StudioExecutionLogEntry(ApiModel):
     level: Literal["debug", "info", "success", "warning", "error"]
     message: str
     node_id: str | None = None
+    execution_id: str | None = None
+    execution_context: dict[str, JsonValue] | None = None
     duration: float | None = Field(default=None, ge=0)
     details: dict[str, JsonValue] | None = None
 
@@ -254,6 +256,7 @@ class StudioRunResultRow(ApiModel):
     sequence: int = Field(ge=1, le=9007199254740991)
     node_id: str
     execution_id: str
+    execution_context: dict[str, JsonValue] | None = None
     values: dict[str, JsonValue]
     large_values: dict[str, str] = Field(default_factory=dict)
 
