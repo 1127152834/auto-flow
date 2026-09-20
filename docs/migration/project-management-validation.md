@@ -1,35 +1,36 @@
-# 项目管理 PM9 发行验收
+# 项目管理 PM9 验证
 
-- 日期：2026-09-20；状态：进行中，**未达到 PM9 发行退出条件**。
-- 分支：`codex/project-management-pm9`；有效代码已先合并到 `codex/architecture-baseline@8e5564e0` 并推送。
-- 验证入口：[本轮机器报告](../project-management/implementation/pm9/verification.json)、[251 项覆盖核对](../project-management/implementation/pm9/coverage-audit.json)、[执行卡](../superpowers/plans/2026-09-20-project-management-pm9.md)。
+日期：2026-09-21；状态：生产运行时已接通，本机与三平台 CI 工程、打包和安装包构建通过；**最终发行验收保持未关闭**。
 
-## 本轮实际证据
+有效代码先合入并推送 `codex/architecture-baseline@8e5564e0`。实施分支现为 `codex/project-management-pm9-runtime`，工作树独立，避免与 Studio 任务交叉编辑。
 
-macOS arm64 生产 HTTP 与 Electron 管理链分别在源码和打包应用中运行。界面真实创建项目；同一生产 API 断言覆盖表/字段/记录、长中文文本、CAS、原请求恢复、归档恢复和邻项目安全删除。重启同一隔离工作区后核对记录仍在；六个项目页签等待真实空态/数据加载后截图。原生窗口 200% zoom 无文档级水平溢出；Studio 第二窗口与主窗口连接同一认证服务。这些检查不冒充每个控件的完整视觉/键盘验收。
+权威入口：[机器报告](../project-management/implementation/pm9/verification.json)、[覆盖核对](../project-management/implementation/pm9/coverage-audit.json)、[独立审查处置](../project-management/implementation/pm9/final-review.md)、[R1–R4 实施卡](../superpowers/plans/2026-09-20-pm9-production-runtime.md)。早期“四节点/待架构确认”结论已由用户确认后的 R1–R4 实施取代，历史报告不删除。
 
-本机 PyInstaller sidecar、Electron 应用目录和 `AutoFlow-0.1.0-arm64.dmg` 已构建。没有 Developer ID 签名、公证或手工安装验证；`.app` 运行通过不等于 DMG 安装体验通过。
+生产链使用正式 Studio HTTP 保存、生产 sidecar、SQLite、项目调度、真实 worker 与 CloakBrowser，没有 QA 执行器。覆盖参数、多表条件读写、End 保存关联、另一自动化读回登录、人工继续/终结/超时/停止/重启/进程丢失、原键恢复、真实超时后的原输入组后续、统计下钻及归档恢复。失败工作副本通过现有任务收尾命令明确清理后再归档，不自动丢弃现场。
 
-复用万行测量程序，但将本次输出写入 PM9，不覆盖 PM2 原报告：10,000 行 / 3 列、50 页真实 SQLite/HTTP 读取、Excel 导入导出与前导零均通过，来源文件 SHA-256 保持不变。单次本机导入约 2.67 秒、全页读取约 2.10 秒；这不是一般性能承诺，尚无 1,000 日志/分钟和内存增长结果。
+打包 Electron 候选 d59607f3：通过五路并发正式 HTTP 单行命令创建 10,000 条记录，每页显示 50 行；保持原规模验证。另以既有事件仓库按 1000 条/分钟生成合成日志，同时测量真实 HTTP 分页、记录翻页和 GC 后堆；本机全部读回，60031 ms，最大批次延迟 41 ms。详细逐次数据见机器报告；合成输入与实际 worker 吞吐分别记录，一次短时测量不是持续压力或无泄漏保证。
 
-## 可复跑命令
+Windows 前置回归已取得写锁故障堆栈：BEGIN IMMEDIATE 报 database is locked。复用既有 SQLite 错误分类，HTTP 返回 503 DATABASE_BUSY 与 Retry-After；仅该明确响应在并发 smoke 中用原命令键有界重试，其他错误继续失败。原规模万条写入保留，并记录 busyRetries。真实持锁/释放/原键重放验证仅一条记录；最终 Windows 原规模万条运行通过，发生 1 次忙重试后仍正好 10000 条，原生持锁 HTTP 回归也通过。万行 Excel 导入/分页/导出另见 volume.json。
 
 ```sh
-node scripts/smoke-project-management.mjs --output-dir /tmp/pm9-api
-node scripts/smoke-project-management-desktop.mjs --output-dir /tmp/pm9-desktop
+node scripts/smoke-project-management.mjs --runtime-kernel /absolute/path/to/installed/Chromium --output-dir /tmp/pm9-source
 npm run backend:build
 npm run package:dir
-node scripts/smoke-project-management.mjs --executable apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend --output-dir /tmp/pm9-packaged-api
-node scripts/smoke-project-management-desktop.mjs --executable apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow --output-dir /tmp/pm9-packaged-desktop
+node scripts/smoke-project-management-desktop.mjs --executable /absolute/path/to/AutoFlow --runtime-kernel /absolute/path/to/installed/Chromium --output-dir /tmp/pm9-packaged
 ```
 
-Windows/Intel 路径由 CI 根据实际产物定位；不要在其他架构硬套上面的 arm64 路径。两脚本拒绝 QA sidecar/开发 URL 环境注入，只在各自新建的临时工作区写入；报告不包含认证 token。`smoke-project-management.mjs` 由过时的 PM1 桌面脚本更新为可复用生产 HTTP 链，桌面入口为新增的 `-desktop.mjs`；PM1 历史报告原样保留。
+两个 smoke 只写本次创建的临时工作区，拒绝 QA sidecar/开发 URL 注入。桌面入口提供键盘焦点、六个真实页签、200% 原生缩放、Studio 双窗口共享服务与重启证据。报告不保存 token。
 
-## 尚未关闭的条件
+三平台同一代码候选 d59607f3 的 [Actions 运行](https://github.com/1127152834/auto-flow/actions/runs/35531206432) 已全部成功，原始报告与安装包摘要如下。Windows 负载测量预算为 600 秒，实际吞吐必须保留，不能把放宽超时当作性能提升。
 
-- 项目生产执行器只支持四个线性浏览器节点；PM4–PM8 的项目数据/End/人工完整闭环尚需接入。[具体架构与 R1–R4 计划](../superpowers/specs/2026-09-20-pm9-production-runtime-integration.md)待确认，不以隔离执行器和单元测试代替。
-- 原真实浏览器项目测试的共用 HTML 已被 Studio B1 改成另一组选项，导致旧选择器超时；本轮新增独立项目 HTML，并更新测试中已更名的项目 worker 状态入口。修正后 8 项真实 CloakBrowser 测试通过，覆盖四节点执行、批次与服务重建；夹具失败不记为产品缺陷。
-- Windows x64 / macOS Intel 使用 GitHub Actions；配置已加入同一生产管理链、固定参考源码检出和证据上传。[当前三平台运行](https://github.com/1127152834/auto-flow/actions/runs/35507610003)正在执行 `10dc916c`，尚无最终结论；实机结果仍待验收。初次运行暴露的时区与 Blob 测试夹具问题已在 Node 22 / UTC 下复现修正，相关 10 项通过。
-- 全图生产链、授权 Sheets 实网组合、原生文件面板/凭据、平台异常退出、千日志/分钟与内存测量、完整视觉及人工安装检查仍不齐。
+Windows 原生安全工作流文件输出与缺少原生所有权证据的孤儿进程回收仍明确拒绝；POSIX 输出场景在 Windows 跳过，拒绝与证据保留行为独立测试。这些限制不影响已验证的项目记录写入链，但不能算作 Windows 完整工作流能力通过。
 
-历史覆盖仍为 48 功能、178 场景、25 契约/门槛，PM9 本轮没有批量提升这些条目。任何一条新管理冒烟通过，都不能将整个模块标记为发行完成。
+实网 Sheets、签名/公证、物理安装、原生文件面板与凭据专项仍待验收。包含循环或人工节点的并行图、跨进程人工恢复及未接入项目端口的 Studio 节点明确不支持。48 功能、178 场景、25 契约的历史状态逐项保留；新增有界证据不等于整个产品规格全部通过。
+
+| 原生 CI 平台 | 后端通过 / 跳过 | 前端通过 | 五路万条耗时 / 忙重试 | 真实 worker 日志/分钟 | 安装包及报告 |
+| --- | --- | --- | --- | --- | --- |
+| Windows x64 | 3180 / 57 | 5455 | 725733 ms / 1 | 537 | [EXE 与原始报告](../project-management/implementation/pm9/ci-win32-x64.json) |
+| macOS Intel | 3214 / 23 | 5455 | 104904 ms / 0 | 1642 | [Intel DMG 与原始报告](../project-management/implementation/pm9/ci-darwin-x64.json) |
+| macOS Apple Silicon | 3214 / 23 | 5455 | 85377 ms / 0 | 1539 | [ARM DMG 与原始报告](../project-management/implementation/pm9/ci-darwin-arm64.json) |
+
+各平台前端均为 405 文件；五个报告分别记录 HTTP 前置、源码 API、源码桌面、打包 API 和打包桌面。所有安装包均已上传到同轮 Actions artifact，链接、摘要与过期时间见平台报告。Windows 万条准备约 12.1 分钟，真实 worker 未达到每分钟千条；独立合成输入 1000 条全部读回只证明该输入速率下的有界分页与界面行为。工程交付与 CI 已完成，发行验收仍保持未关闭。

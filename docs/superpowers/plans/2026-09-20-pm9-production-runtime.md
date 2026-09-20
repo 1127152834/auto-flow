@@ -69,3 +69,5 @@ Ruling: 实际对照发现 Studio 同名输入节点会覆盖文本，且变量�
 
 - 原生 Windows 候选 7aacd53f 的前置 HTTP 回归复现并拿到完整堆栈：`project_data_records.py:64` 的 `BEGIN IMMEDIATE` 报 `sqlite3.OperationalError: database is locked`，被转换成不透明 500。真实持锁 HTTP 回归先得到 500 后修为 503 DATABASE_BUSY / Retry-After 1；释放锁后原幂等键创建及重放仅一条记录，其他数据库错误仍是安全的 500。共享 SQLite 分类由原 Runtime 移至 session 工具，原四处调用保持行为；HTTP 错误契约与生成类型同步。
 - 并发 smoke 仅对明确 503 DATABASE_BUSY 退避，每行始终使用原命令键，最多 10 次；记录实际 busyRetries，其余错误不重试。原规模五路万条保留。相关后端 70 项、脚本 97 项、双平台 mypy 397 文件、ruff/lint/typecheck/OpenAPI 均通过；新冻结后端和打包桌面的真实运行、五路万条写入与固定日志负载已通过（1000 条 / 60031 ms，最大批次延迟 41 ms）。Windows 修复结果等待下一候选，不把修复前的成功平台报告套用到新代码。
+
+2026-09-21 最终候选 d59607f3（confirmed；来源：Actions 35531206432 三个原生 job 全部 success）：Windows 后端 3180 passed / 57 skipped；Intel/ARM 各 3214 passed / 23 skipped；前端各 5455 passed / 405 文件。源码及打包真实执行链、原规模五路万条、固定 1000 条/分钟合成输入、安装包构建及上传全部通过。Windows 万条耗时 725733 ms，发生 1 次明确 503 忙重试且保留原键，最终正好 10000 条；真实 worker 1004 条耗时 112121 ms（537 条/分钟），不能把独立合成输入通过写成 worker 达到千条/分钟。Windows/Intel/ARM 合成 1000 条全部读回，分别 60105/60038/60055 ms，最大批次延迟 143/181/202 ms。实网 Sheets、物理安装/原生专项、签名公证和历史完整规格余项仍待验收，releaseAccepted=false。

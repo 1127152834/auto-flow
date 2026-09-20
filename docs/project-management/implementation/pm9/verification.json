@@ -1,101 +1,316 @@
 {
-  "date": "2026-09-20",
+  "date": "2026-09-21",
   "status": "in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
-  "branch": "codex/project-management-pm9",
+  "branch": "codex/project-management-pm9-runtime",
+  "codeCandidate": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
   "checks": {
-    "frontend": "5445 passed / 404 files",
-    "studioMergeFixes": "36 passed; red-to-green regression cases",
+    "backend": "d59607f3 complete CI: Windows 3180 passed / 57 skipped; Intel and ARM each 3214 passed / 23 skipped. Related local regressions: 70 passed.",
+    "frontend": "d59607f3 complete CI: 5455 passed / 405 files on each of Windows x64, Intel and ARM.",
+    "realBrowser": "12 passed in 117.20s after native Framework Python cleanup fix",
+    "workerProtocol": "d59607f3 native Windows platform gate: 205 passed / 27 skipped; desktop path/settings gate: 16 passed. All platform full suites passed.",
+    "reviewRegression": "90 passed",
     "ruff": "passed",
-    "mypy": "392 source files passed",
+    "mypy": "397 source files passed for win32 and local macOS",
     "typecheck": "passed",
     "lint": "passed",
     "openapi": "passed",
-    "scripts": "94 passed",
+    "scripts": "97 passed",
     "structure": "4 passed",
     "build": "passed",
-    "backendBuild": "passed",
-    "packageDir": "passed",
-    "dmg": "built locally, unsigned/unnotarized; installer itself not manually installed",
-    "backend": "3159 passed / 15 skipped",
-    "realBrowser": "8 passed in 49.12s; production four-node browser chain, batch and service recreation; full graph not covered",
-    "node22Portability": "10 passed under UTC; 94 script checks passed under Node 22; typecheck/lint passed"
+    "backendBuild": "d59607f3 local PyInstaller build passed.",
+    "packageDir": "d59607f3 complete packaged real runtime, five concurrent writers with 10k records, fixed 1k logs/min and renderer/zoom/restart passed.",
+    "installer": "d59607f3 CI built and uploaded AutoFlow Setup 0.1.0.exe, AutoFlow-0.1.0.dmg and AutoFlow-0.1.0-arm64.dmg; physical installation and signing/notarization remain pending.",
+    "platformRegression": "Current three-platform full CI and native Windows gates passed; previous local 114 filesystem/lifecycle/worker, 959 frozen-source parity and 31 kernel checks remain historical supporting evidence.",
+    "sourceRuntime": "d59607f3 source and freshly built packaged real runtime chains passed locally and on all three native CI platforms.",
+    "protocolAndPublication": "25 passed after EOF fixture termination and publication failure-injection correction",
+    "platformContract": "41 passed after native process-probe mocks, native path expectations and explicit unsupported-output assertions; no additional skipped tests",
+    "shutdownReadiness": "5 passed; fixture startup allowed 20s, existing 3/8s shutdown assertions unchanged",
+    "databaseContention": "Real held-write-lock HTTP regression passed locally and on Windows. Final Windows packaged five-writer 10k run passed with one declared 503 busy retry under the same key, preserving exactly 10k records. Other internal failures are not retried."
   },
+  "productionChain": [
+    "formal Studio HTTP save",
+    "UUID parameters",
+    "cross-table query/condition/create",
+    "real browser worker",
+    "manual continuation without replay",
+    "End close/save/link",
+    "second automation restores login",
+    "real browser timeout",
+    "original-input failure follow-up with parameter override",
+    "statistics drilldown",
+    "explicit failed work-copy cleanup",
+    "archive/restore",
+    "safe deletion in management smoke",
+    "service and Electron restart"
+  ],
   "platforms": {
     "darwin-arm64": {
-      "apiSource": "source/project-api.json",
-      "desktopSource": "desktop-source/project-desktop.json",
-      "apiPackaged": "packaged/project-api.json",
-      "desktopPackaged": "desktop-packaged/project-desktop.json",
-      "managementSmoke": "passed",
-      "productionFullChain": "not-accepted"
+      "localPackagedVolumeUI": "runtime-desktop-volume.json",
+      "status": "ci-passed",
+      "physicalInstaller": "pending",
+      "sourceRuntime": "runtime-source.json",
+      "packagedRuntime": "runtime-packaged.json",
+      "ci": "ci-darwin-arm64.json"
     },
     "darwin-x64": {
-      "status": "not-verified"
+      "status": "ci-passed",
+      "physicalInstaller": "pending",
+      "ci": "ci-darwin-x64.json"
     },
     "win32-x64": {
-      "status": "not-verified"
+      "status": "ci-passed",
+      "physicalInstaller": "pending",
+      "ci": "ci-win32-x64.json"
     }
   },
-  "volume": "volume.json",
+  "volume": {
+    "excel10000": "volume.json",
+    "realWorkerLogsAndRenderer": "runtime-desktop-volume.json",
+    "note": "Original five-writer 10k preparation retained. Only declared 503 DATABASE_BUSY can be retried under the original command identity; raw internal errors fail. Fixed-cadence synthetic input is separate from actual worker throughput.",
+    "synthetic": {
+      "codeCandidate": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
+      "samples": [
+        {
+          "received": 83,
+          "logReadMs": 18,
+          "pageMs": 122,
+          "heapBytes": 10722008
+        },
+        {
+          "received": 183,
+          "logReadMs": 7,
+          "pageMs": 116,
+          "heapBytes": 10750640
+        },
+        {
+          "received": 283,
+          "logReadMs": 13,
+          "pageMs": 123,
+          "heapBytes": 10777500
+        },
+        {
+          "received": 400,
+          "logReadMs": 12,
+          "pageMs": 119,
+          "heapBytes": 10821292
+        },
+        {
+          "received": 500,
+          "logReadMs": 13,
+          "pageMs": 121,
+          "heapBytes": 10850240
+        },
+        {
+          "received": 600,
+          "logReadMs": 13,
+          "pageMs": 124,
+          "heapBytes": 10891484
+        },
+        {
+          "received": 700,
+          "logReadMs": 16,
+          "pageMs": 124,
+          "heapBytes": 10926824
+        },
+        {
+          "received": 800,
+          "logReadMs": 16,
+          "pageMs": 124,
+          "heapBytes": 10958540
+        },
+        {
+          "received": 900,
+          "logReadMs": 14,
+          "pageMs": 120,
+          "heapBytes": 10984028
+        },
+        {
+          "received": 1000,
+          "logReadMs": 13,
+          "pageMs": 120,
+          "heapBytes": 11026744
+        }
+      ],
+      "received": 1000,
+      "scope": "60-second synthetic repository input; real HTTP pagination and renderer interaction during ingestion, not worker throughput or long-duration leak proof",
+      "producer": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60031,
+        "maxBatchLagMs": 41
+      }
+    },
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
+    "ciMeasurements": {
+      "win32-x64": {
+        "report": "ci-win32-x64.json",
+        "concurrentWrites": {
+          "status": "passed",
+          "producers": 5,
+          "records": 10000,
+          "busyRetries": 1
+        },
+        "seedMs": 725733,
+        "realWorker": {
+          "logCount": 1004,
+          "logPages": 6,
+          "elapsedMs": 112121,
+          "logsPerMinute": 537,
+          "scope": "real worker throughput and server pagination; no renderer memory claim"
+        },
+        "synthetic": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60105,
+          "maxBatchLagMs": 143
+        }
+      },
+      "darwin-x64": {
+        "report": "ci-darwin-x64.json",
+        "concurrentWrites": {
+          "status": "passed",
+          "producers": 5,
+          "records": 10000,
+          "busyRetries": 0
+        },
+        "seedMs": 104904,
+        "realWorker": {
+          "logCount": 1004,
+          "logPages": 6,
+          "elapsedMs": 36697,
+          "logsPerMinute": 1642,
+          "scope": "real worker throughput and server pagination; no renderer memory claim"
+        },
+        "synthetic": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60038,
+          "maxBatchLagMs": 181
+        }
+      },
+      "darwin-arm64": {
+        "report": "ci-darwin-arm64.json",
+        "concurrentWrites": {
+          "status": "passed",
+          "producers": 5,
+          "records": 10000,
+          "busyRetries": 0
+        },
+        "seedMs": 85377,
+        "realWorker": {
+          "logCount": 1004,
+          "logPages": 6,
+          "elapsedMs": 39150,
+          "logsPerMinute": 1539,
+          "scope": "real worker throughput and server pagination; no renderer memory claim"
+        },
+        "synthetic": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60055,
+          "maxBatchLagMs": 202
+        }
+      }
+    },
+    "performanceLimit": "Windows 10k preparation took 725733 ms and real worker measured 537 logs/min. Synthetic 1000/min input passed separately; it does not establish 1000/min worker throughput or a sustained latency/memory SLO."
+  },
   "coverage": "coverage-audit.json",
+  "independentReview": {
+    "report": "final-review.md",
+    "findings": "4 P1 / 3 P2 addressed; one final reviewer, no second review claimed"
+  },
   "ci": {
-    "status": "in_progress",
-    "firstRun": "https://github.com/1127152834/auto-flow/actions/runs/35507028913",
-    "note": "Workflow registration became available after push. macOS arm64 ran 5445 frontend tests: 5442 passed, 3 failed due to Node 22 Blob fixture and fixed Shanghai-time assertions. All 3 reproduced locally under Node 22 UTC; corrected fixture suite 10 passed. New CI places full frontend suite after build/package smoke; all checks retained.",
-    "currentRun": "https://github.com/1127152834/auto-flow/actions/runs/35507610003",
-    "testedCommit": "10dc916c7dc98613d71d73f196948d7e0672855c",
-    "checkedAt": "2026-09-20T11:23:02.939846+00:00",
+    "status": "completed",
+    "currentRun": "https://github.com/1127152834/auto-flow/actions/runs/35531206432",
+    "testedCommit": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
+    "supersededRuns": [
+      "https://github.com/1127152834/auto-flow/actions/runs/35507610003",
+      "https://github.com/1127152834/auto-flow/actions/runs/35516918007",
+      "https://github.com/1127152834/auto-flow/actions/runs/35517682498",
+      "https://github.com/1127152834/auto-flow/actions/runs/35518593231",
+      "https://github.com/1127152834/auto-flow/actions/runs/35519113631",
+      "https://github.com/1127152834/auto-flow/actions/runs/35519504712",
+      "https://github.com/1127152834/auto-flow/actions/runs/35519985390",
+      "https://github.com/1127152834/auto-flow/actions/runs/35521398353",
+      "https://github.com/1127152834/auto-flow/actions/runs/35521995501",
+      "https://github.com/1127152834/auto-flow/actions/runs/35522221723",
+      "https://github.com/1127152834/auto-flow/actions/runs/35522736122",
+      "https://github.com/1127152834/auto-flow/actions/runs/35523313202",
+      "https://github.com/1127152834/auto-flow/actions/runs/35524737948",
+      "https://github.com/1127152834/auto-flow/actions/runs/35525977827",
+      "https://github.com/1127152834/auto-flow/actions/runs/35526740369",
+      "https://github.com/1127152834/auto-flow/actions/runs/35529993436",
+      "https://github.com/1127152834/auto-flow/actions/runs/35530376377"
+    ],
+    "note": "All three native jobs succeeded for d59607f3, including complete regression, source and packaged production chains, original five-writer 10k volume, fixed 1k/min synthetic input, installers and uploaded artifacts. Windows 10k required one declared busy retry with the original command identity.",
     "jobs": [
       {
-        "active": [
-          {
-            "conclusion": "",
-            "name": "Run npm ci"
-          }
-        ],
-        "conclusion": "",
-        "name": "checks (macos-15)",
-        "status": "in_progress",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35507610003/job/106069958883"
+        "id": 106131997139,
+        "platform": "win32-x64",
+        "runner": "windows-2022",
+        "status": "completed",
+        "conclusion": "success"
       },
       {
-        "active": [
-          {
-            "conclusion": "",
-            "name": "Checkout frozen source used by parity tests"
-          }
-        ],
-        "conclusion": "",
-        "name": "checks (macos-15-intel)",
-        "status": "in_progress",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35507610003/job/106069959115"
+        "id": 106131997280,
+        "platform": "darwin-arm64",
+        "runner": "macos-15",
+        "status": "completed",
+        "conclusion": "success"
       },
       {
-        "active": [
-          {
-            "conclusion": "",
-            "name": "Run npm ci"
-          }
-        ],
-        "conclusion": "",
-        "name": "checks (windows-2022)",
-        "status": "in_progress",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35507610003/job/106069959164"
+        "id": 106131997287,
+        "platform": "darwin-x64",
+        "runner": "macos-15-intel",
+        "status": "completed",
+        "conclusion": "success"
       }
     ],
-    "firstRunDisposition": "macOS arm64 failed; remaining jobs cancelled after reproduction and fix, superseded by currentRun"
+    "conclusion": "success",
+    "evidenceCommitPolicy": "Subsequent final evidence commit changes documentation and screenshots only, with [skip ci]. Source hashes match tested d59607f3; no later production/test/config changes."
   },
   "remaining": [
-    "Production full graph/project data/End/manual integration requires approved architecture work; see production runtime integration spec.",
-    "1000 logs/minute, memory growth, full UI volume interactions remain unverified.",
-    "Real Sheets full-chain execution, native file picker/credentials, Windows/macOS Intel and manual installer acceptance remain unverified."
+    "Live Sheets full-chain requires real authorization/resource evidence.",
+    "Windows x64, Intel and Apple Silicon manual installation, native file picker/credential store, signing/notarization remain pending.",
+    "Parallel graphs containing loop/manual nodes are rejected; cross-process manual replay and undeclared jump/input are unsupported.",
+    "Historical full-spec coverage remains partial; no blanket promotion of 251 entries.",
+    "Windows native workflow file output and orphan cleanup without native ownership evidence remain unsupported/refused."
   ],
   "sourceFiles": {
-    "scripts/smoke-project-management.mjs": "271a0a7753bd1cb684ff6ff87f8f3c4d21dbeb3a7ef40daddf09a9ff97ba5800",
-    "scripts/smoke-project-management-desktop.mjs": "14633bcd3741ed0dff8299522071b302189528bfa8dfcb4068d542d63a50779b",
-    ".github/workflows/ci.yml": "acf951b9e00b76eae11867e772a5047163361d2313833ad2310e49cf7e60d623"
-  }
+    "scripts/project-runtime-smoke.mjs": "2c16875970c362faba07962bd0b61eee62569f719f55025d30227930ac829e79",
+    "scripts/project-volume-smoke.mjs": "ec2893c79fb3bd5bb2b572627f953f304d589a76709a15b3f78408995afcf38e",
+    "scripts/smoke-project-management.mjs": "338380dc31648551d32f4f1ab8b8d69432a462434c7a25a87b07733083264296",
+    "scripts/smoke-project-management-desktop.mjs": "8029fffb0479775b780adb5d420477e4494f91914e1a415fef4cc8f716f7d505",
+    ".github/workflows/ci.yml": "60992b719549d23566011566379c23982263b21bff7bbbcf485ea3885a645497",
+    "apps/backend/src/autoflow/infrastructure/process/browser_processes.py": "c27f8860e3cb4231a4f4cfb449cb78056abdf86d84cc240c0f6ae46fd4ef4825",
+    "apps/backend/src/autoflow/infrastructure/process/project_browser_processes.py": "6b87005e224be376b463fc3dfbc5d05ec7b9842125c656b64d20060b80b5ee09",
+    "apps/backend/src/autoflow/bootstrap/schema_export.py": "e593f29d47b7532eaea27cbc64adfc4aacaa2f1a72f222a27b966a76fe3b422b",
+    "apps/backend/src/autoflow/infrastructure/process/kernel_worker.py": "f2baf4ec8f64857f88b578dec5d2b51b2b2c458f7fda2f98127d272f7042f30d",
+    "apps/backend/src/autoflow/infrastructure/process/test_browser_worker.py": "d782ee54c81d9c7795b76c53aabee0bf4c558fc90a42b04a3a631aef672cba7d",
+    "apps/backend/src/autoflow/infrastructure/process/project_test_browser_worker.py": "b43912816bcbd82eaf6c3d422c825e69f21499b7a07e060fec7cc6d982881706",
+    "apps/backend/src/autoflow/infrastructure/filesystem/new_file.py": "42435fe98b7a587997cca0adabcb873bcb065056ef55f607fd38859dcd1196d3",
+    "apps/backend/src/autoflow/infrastructure/filesystem/project_excel.py": "405a294fe1d8034649c066e97a9963b0973785937d4fd0298959f6e27101145b",
+    "apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py": "99436a1eb929cbdda57c99f4a4def0b55f96d208ba8a3df10994ee699364e00d",
+    "scripts/emit-pm9-log-load.py": "8570aa2eaa8978ce01bb157b8017e814caa5edf87fd9774bed5774d9134035df",
+    "apps/backend/src/autoflow/adapters/http/errors.py": "5bfd7e5b9a5e7d412d12a94286a7a345c2830b8e37ac8f5165c9e350a2640d13",
+    "apps/backend/src/autoflow/infrastructure/database/session.py": "32d35213251444170807d2e5c7935c217bb10ed25d1dfabedb9a1c9bae273e04",
+    "apps/backend/src/autoflow/infrastructure/database/workflow_runtime.py": "269d93a0593cddb4d4aadea106e5262820a6c026c3d581b2580b8bc07e5593eb",
+    "scripts/project-smoke-output.mjs": "590e95b14d5dd9ee0c4b517951365789cfa20282e7dd6b15e478a9d1c231f1b8",
+    "apps/desktop/vitest.config.ts": "756ec9a853272e4cdafed64df249195a1a53641eeda945296ff9d00255232ec0"
+  },
+  "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
+  "databaseContention": "windows-contention.json",
+  "deliveryStatus": "implemented_and_ci_verified; physical/live-service/full-spec acceptance remains pending"
 }

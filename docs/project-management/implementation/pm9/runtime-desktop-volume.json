@@ -3,7 +3,7 @@
   "platform": "darwin",
   "arch": "arm64",
   "packaged": true,
-  "startedAt": "2026-09-20T14:44:39.202Z",
+  "startedAt": "2026-09-20T19:01:33.360Z",
   "checks": [
     "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
     "archive blocks writes, repeat command recovers one operation, restore preserves data",
@@ -24,24 +24,24 @@
     "project-zoom-200.png",
     "project-restarted.png"
   ],
-  "projectId": "af833a5d-a9f6-4564-8517-a6f445f3b975",
-  "tableId": "1cc5afaa-7503-40b2-97fe-1a785b7655d2",
-  "tablePath": "/projects/af833a5d-a9f6-4564-8517-a6f445f3b975/tables/1cc5afaa-7503-40b2-97fe-1a785b7655d2",
+  "projectId": "25b1fdd1-1f0e-4726-99f9-94ef683f8201",
+  "tableId": "f96a959e-e093-417b-b35a-551f6f444967",
+  "tablePath": "/projects/25b1fdd1-1f0e-4726-99f9-94ef683f8201/tables/f96a959e-e093-417b-b35a-551f6f444967",
   "boundary": "production management, real runtime and renderer volume; live Sheets and physical installation remain pending",
   "runtime": {
-    "projectId": "5920e232-f416-478b-847e-1950e28fd297",
-    "environmentId": "47f59eaf-d7f1-5c87-9eed-c93c489fa109",
+    "projectId": "6011bcf4-a22a-40d9-b531-7331c9eae0ea",
+    "environmentId": "bc549f3c-9926-5609-8740-1532f4cdecf6",
     "logLoad": {
       "logCount": 1004,
       "logPages": 6,
-      "elapsedMs": 31070,
-      "logsPerMinute": 1939,
+      "elapsedMs": 33345,
+      "logsPerMinute": 1807,
       "scope": "real worker throughput and server pagination; no renderer memory claim"
     },
     "taskIds": [
-      "a844eeb1-ec06-4be7-a51b-47041a62ffb9",
-      "a149fedd-b87a-411e-aab4-77f8bb7496a4",
-      "5c680b9e-a3a1-41df-a4c3-7d6e1e74fb0e"
+      "5a7024bb-945c-4c28-afd6-d0adc24c2b52",
+      "3193d6e0-73d5-4205-a382-6f4bdd237066",
+      "908e18d9-63c1-4b1d-a987-bded1a1b8ee2"
     ],
     "checks": [
       "Studio HTTP saved graph",
@@ -57,40 +57,123 @@
     ]
   },
   "volume": {
+    "synthetic": {
+      "samples": [
+        {
+          "received": 83,
+          "logReadMs": 18,
+          "pageMs": 122,
+          "heapBytes": 10722008
+        },
+        {
+          "received": 183,
+          "logReadMs": 7,
+          "pageMs": 116,
+          "heapBytes": 10750640
+        },
+        {
+          "received": 283,
+          "logReadMs": 13,
+          "pageMs": 123,
+          "heapBytes": 10777500
+        },
+        {
+          "received": 400,
+          "logReadMs": 12,
+          "pageMs": 119,
+          "heapBytes": 10821292
+        },
+        {
+          "received": 500,
+          "logReadMs": 13,
+          "pageMs": 121,
+          "heapBytes": 10850240
+        },
+        {
+          "received": 600,
+          "logReadMs": 13,
+          "pageMs": 124,
+          "heapBytes": 10891484
+        },
+        {
+          "received": 700,
+          "logReadMs": 16,
+          "pageMs": 124,
+          "heapBytes": 10926824
+        },
+        {
+          "received": 800,
+          "logReadMs": 16,
+          "pageMs": 124,
+          "heapBytes": 10958540
+        },
+        {
+          "received": 900,
+          "logReadMs": 14,
+          "pageMs": 120,
+          "heapBytes": 10984028
+        },
+        {
+          "received": 1000,
+          "logReadMs": 13,
+          "pageMs": 120,
+          "heapBytes": 11026744
+        }
+      ],
+      "received": 1000,
+      "scope": "60-second synthetic repository input; real HTTP pagination and renderer interaction during ingestion, not worker throughput or long-duration leak proof",
+      "producer": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60031,
+        "maxBatchLagMs": 41
+      }
+    },
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
     "records": 10000,
+    "seedMode": "five concurrent single-record HTTP writers",
     "renderedRecordRows": 50,
     "logRows": 1004,
-    "seedMs": 43448,
+    "seedMs": 41623,
     "logPageMs": [
-      141,
-      106,
-      105,
-      113,
-      106
+      140,
+      108,
+      107,
+      107,
+      109
     ],
     "recordPageMs": [
+      115,
+      118,
       116,
       117,
-      116,
-      116,
       117,
       116,
+      118,
       116,
       116,
-      116,
-      117
+      126
     ],
-    "twoFramesMs": 1,
+    "twoFramesMs": 5,
     "heapBytes": {
-      "before": 6646972,
-      "withLogs": 12046340,
+      "before": 6621656,
+      "withLogs": 11591180,
       "recordPageSamples": [
-        10120192,
-        10547708,
-        10856940
+        9761536,
+        10375500,
+        10687304
       ],
-      "recordPageGrowth": 736748
+      "recordPageGrowth": 925768
     },
     "scope": "one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim"
-  }
+  },
+  "codeCandidate": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
+  "productionCode": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
+  "screenshotDirectory": "runtime-desktop"
 }

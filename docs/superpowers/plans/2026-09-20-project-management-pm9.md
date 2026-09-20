@@ -26,3 +26,7 @@ Ruling: 当前 `domain/workflows/catalog.py` 只开放四节点，`run_validatio
 - Task 2：本机 sidecar/.app/DMG 构建通过；三平台 CI 已扩展，Actions 已启动，最新运行 35507610003（10dc916c）尚未完成，不能记作三平台通过。
 - Task 3：251 条历史覆盖逐项核对，不升级状态；万行导入/分页/导出通过，完整生产接入见独立 proposed 规格。
 - Final review: 独立审查发现等号 executable 参数会误跑源码及 QA 环境可混入生产验收；已规范化 cliArgs 并拒绝 QA 环境，新增入口失败检查通过。PM1 历史输出保护保留。
+
+## R1–R4 补交付（2026-09-20，confirmed）
+
+以上初始“四节点、proposed 规格、10dc916c CI”结论已 superseded。用户明确确认后接通生产共享图、数据能力、End 与人工，工作分支迁为 `codex/project-management-pm9-runtime`。源码和打包真实链、万行/千日志 UI 与工程回归已完成；最终三平台 CI 及物理/实网边界见机器报告，不沿用早期 CI 状态。审查发现和取舍见 `pm9-production-runtime` 实施卡与 `pm9/final-review.md`。

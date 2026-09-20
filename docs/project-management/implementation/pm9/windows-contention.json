@@ -12,6 +12,18 @@
   "requestId": "1b6ff821-bee6-4a61-9551-c8bc6d593e33",
   "remediation": "Reuse SQLite contention classification across HTTP; 503 DATABASE_BUSY with Retry-After 1. Concurrent smoke retries only that declared status/code with the same command key, at most 10 attempts, preserving actual retry counts. Other errors still fail.",
   "localVerification": "Held real SQLite write lock: RED 500 versus expected 503, then GREEN; after release the same key creates/replays exactly one record. Unrelated database errors stay opaque 500. Related backend 70 passed, scripts 97 passed.",
-  "nativeRemediationVerification": "pending next candidate CI",
+  "nativeRemediationVerification": {
+    "status": "passed",
+    "codeCandidate": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
+    "jobUrl": "https://github.com/1127152834/auto-flow/actions/runs/35531206432/job/106131997139",
+    "nativeGate": "205 passed / 27 skipped, including the real held-write-lock HTTP test",
+    "packagedConcurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 1
+    },
+    "seedMs": 725733
+  },
   "historicalNote": "The d2ab2bcb packaged 10k failure had no retained sidecar log. This reproduction supplies a real Windows trace; no original missing log is reconstructed."
 }
