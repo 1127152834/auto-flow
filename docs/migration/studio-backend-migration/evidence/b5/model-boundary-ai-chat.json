@@ -51,7 +51,7 @@
     "secretScanPassed": true
   },
   "remaining": [
-    "其余 21 个 AI 节点尚未迁入",
+    "其余 13 个 AI 节点尚未迁入",
     "流式、完整取消/超时/限流矩阵和正式 Electron 真实 UI 尚未验收",
     "真实供应商调用属于外部等待"
   ]

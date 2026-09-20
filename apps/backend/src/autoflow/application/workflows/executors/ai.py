@@ -17,6 +17,78 @@ from .base import ModuleExecutor, ModuleResult
 from .type_utils import to_float, to_int
 
 
+def _model_candidates(config: Mapping[str, Any]) -> list[dict[str, Any]]:
+    candidates = [dict(config)]
+    fallbacks = config.get("fallbackModels")
+    if isinstance(fallbacks, list):
+        candidates.extend(
+            {**config, **item}
+            for item in fallbacks
+            if isinstance(item, dict) and item.get("modelId")
+        )
+    fallback_ids = config.get("fallbackModelIds")
+    if isinstance(fallback_ids, list):
+        candidates.extend(
+            {**config, "modelId": model_id}
+            for model_id in fallback_ids
+            if isinstance(model_id, str) and model_id
+        )
+    return candidates
+
+
+async def invoke_managed_chat(
+    config: Mapping[str, Any],
+    context: ExecutionContext,
+    system_prompt: str,
+    user_prompt: str,
+    *,
+    default_temperature: float,
+) -> tuple[ModelInvocationResult, str]:
+    if context.models is None:
+        raise RuntimeError("模型服务不可用")
+    messages: list[dict[str, str]] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": user_prompt})
+    candidates = _model_candidates(config)
+    last_error = "所有候选模型均调用失败"
+    for index, candidate in enumerate(candidates):
+        model_id = candidate.get("modelId")
+        if not isinstance(model_id, str) or not model_id.strip():
+            continue
+        try:
+            result = await context.models.invoke(
+                model_id,
+                {
+                    "messages": messages,
+                    "temperature": to_float(
+                        candidate.get("temperature", default_temperature),
+                        default_temperature,
+                        context,
+                    ),
+                    "maxTokens": to_int(
+                        candidate.get("maxTokens", 2000), 2000, context
+                    ),
+                    "timeoutSeconds": to_float(
+                        candidate.get("timeoutSeconds", 180), 180, context
+                    ),
+                },
+            )
+            if not isinstance(result, ModelInvocationResult):
+                raise TypeError("模型服务返回格式异常")
+            if not result.content.strip():
+                raise ValueError("AI返回内容为空")
+            return result, model_id
+        except Exception as error:  # noqa: BLE001 - provider errors become node errors.
+            last_error = str(error) or "模型调用失败"
+            if index + 1 < len(candidates):
+                await context.send_progress(
+                    f"模型[{index + 1}/{len(candidates)}]调用失败，尝试切换下一个…",
+                    "warning",
+                )
+    raise RuntimeError(last_error)
+
+
 class AIChatExecutor(ModuleExecutor):
     @property
     def module_type(self) -> str:
@@ -34,85 +106,43 @@ class AIChatExecutor(ModuleExecutor):
     async def execute(
         self, config: dict[str, Any], context: ExecutionContext
     ) -> ModuleResult:
-        if context.models is None:
-            return ModuleResult(success=False, error="模型服务不可用")
-        candidates = [config]
-        fallbacks = config.get("fallbackModels")
-        if isinstance(fallbacks, list):
-            candidates.extend(
-                {**config, **item}
-                for item in fallbacks
-                if isinstance(item, dict) and item.get("modelId")
-            )
-        fallback_ids = config.get("fallbackModelIds")
-        if isinstance(fallback_ids, list):
-            candidates.extend(
-                {**config, "modelId": model_id}
-                for model_id in fallback_ids
-                if isinstance(model_id, str) and model_id
-            )
-        last_error = "所有候选模型均调用失败"
-        for index, candidate in enumerate(candidates):
-            model_id = candidate.get("modelId")
-            if not isinstance(model_id, str) or not model_id.strip():
-                continue
-            try:
-                result = await self._invoke(model_id, candidate, context)
-            except Exception as error:  # noqa: BLE001 - provider errors become node errors.
-                last_error = str(error) or "模型调用失败"
-                if index + 1 < len(candidates):
-                    await context.send_progress(
-                        f"模型[{index + 1}/{len(candidates)}]调用失败，尝试切换下一个…",
-                        "warning",
-                    )
-                continue
-            variable_name = candidate.get("variableName", "")
-            if isinstance(variable_name, str) and variable_name:
-                context.set_variable(variable_name, result.content)
-            preview = (
-                f"{result.content[:100]}..."
-                if len(result.content) > 100
-                else result.content
-            )
-            return ModuleResult(
-                success=True,
-                message=f"AI回复: {preview}",
-                data={
-                    "response": result.content,
-                    "reasoning": result.reasoning or None,
-                    "model": result.model_key,
-                    "modelId": model_id,
-                    "usage": result.usage,
-                },
-            )
-        return ModuleResult(success=False, error=last_error)
+        try:
+            result, model_id = await self._invoke(config, context)
+        except Exception as error:  # noqa: BLE001 - provider errors become node errors.
+            return ModuleResult(success=False, error=str(error) or "模型调用失败")
+        variable_name = config.get("variableName", "")
+        if isinstance(variable_name, str) and variable_name:
+            context.set_variable(variable_name, result.content)
+        preview = (
+            f"{result.content[:100]}..."
+            if len(result.content) > 100
+            else result.content
+        )
+        return ModuleResult(
+            success=True,
+            message=f"AI回复: {preview}",
+            data={
+                "response": result.content,
+                "reasoning": result.reasoning or None,
+                "model": result.model_key,
+                "modelId": model_id,
+                "usage": result.usage,
+            },
+        )
 
     async def _invoke(
         self,
-        model_id: str,
         config: Mapping[str, Any],
         context: ExecutionContext,
-    ) -> ModelInvocationResult:
+    ) -> tuple[ModelInvocationResult, str]:
         system_prompt = self.get_text(config.get("systemPrompt", ""), context)
         user_prompt = self.get_text(config.get("userPrompt", ""), context)
         if not user_prompt:
             raise ValueError("用户提示词不能为空")
-        messages: list[dict[str, str]] = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": user_prompt})
-        assert context.models is not None
-        result = await context.models.invoke(
-            model_id,
-            {
-                "messages": messages,
-                "temperature": to_float(config.get("temperature", 0.7), 0.7, context),
-                "maxTokens": to_int(config.get("maxTokens", 2000), 2000, context),
-                "timeoutSeconds": to_float(
-                    config.get("timeoutSeconds", 180), 180, context
-                ),
-            },
+        return await invoke_managed_chat(
+            config,
+            context,
+            system_prompt,
+            user_prompt,
+            default_temperature=0.7,
         )
-        if not isinstance(result, ModelInvocationResult):
-            raise TypeError("模型服务返回格式异常")
-        return result

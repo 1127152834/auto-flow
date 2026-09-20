@@ -4,7 +4,6 @@ import json
 from typing import Any
 
 import pytest
-
 from autoflow.application.workflows.executors.base import (
     ModuleExecutor,
     ModuleResult,
@@ -72,6 +71,15 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "input_text",
         "get_element_info",
         "screenshot",
+        "ai_chat",
+        "ai_extract",
+        "ai_classify",
+        "ai_summarize",
+        "ai_translate",
+        "ai_sentiment",
+        "ai_normalize",
+        "ai_dedup_semantic",
+        "ai_route",
         "wait_page_load",
         "page_load_complete",
         "list_operation",

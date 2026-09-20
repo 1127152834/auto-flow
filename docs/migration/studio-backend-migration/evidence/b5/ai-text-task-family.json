@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/ai_tasks.py",
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "ai_extract",
+    "ai_classify",
+    "ai_summarize",
+    "ai_translate",
+    "ai_sentiment",
+    "ai_normalize",
+    "ai_dedup_semantic",
+    "ai_route"
+  ],
+  "implemented": [
+    "保留冻结源码的输入校验、提示词、JSON容错、结果结构和变量写回行为",
+    "模型连接改为主应用稳定 modelId 和 CredentialStore 边界",
+    "主模型及有序 fallback 复用统一托管模型调用",
+    "全部八种节点登记到生产执行器注册表",
+    "真实 worker 中按顺序执行八节点并持久化完成事件"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/differential/workflows/test_b5_ai_task_executor_parity.py -q",
+      "exitCode": 0,
+      "result": "8 passed",
+      "covers": "冻结源码与迁入实现的输出、消息、节点数据、错误和变量变化"
+    },
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/integration/test_b5_ai_task_worker.py -q",
+      "exitCode": 0,
+      "result": "1 passed",
+      "covers": "真实 WorkflowWorkerManager 子进程、受控 OpenAI 兼容 HTTP 服务、八次模型请求、秘密不进入事件"
+    },
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/unit/workflows/test_ai_executors.py apps/backend/tests/unit/workflows/test_ai_task_executors.py apps/backend/tests/unit/workflows/test_run_coordinator.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/integration/test_b5_ai_task_worker.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/differential/workflows/test_b5_ai_task_executor_parity.py -q",
+      "exitCode": 0,
+      "result": "76 passed"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <AI text task affected files> && uv run --project apps/backend mypy <AI text task production modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "externalWaiting": [
+    "正式 Electron 真实 UI 运行验收",
+    "真实模型供应商调用"
+  ]
+}

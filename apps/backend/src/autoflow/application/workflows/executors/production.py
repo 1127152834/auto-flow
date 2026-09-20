@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .advanced_browser import ADVANCED_BROWSER_EXECUTORS
 from .ai import AIChatExecutor
+from .ai_tasks import AI_TASK_EXECUTORS
 from .base import ModuleExecutor
 from .basic import (
     ClickElementExecutor,
@@ -142,6 +143,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     GetElementInfoExecutor,
     ScreenshotExecutor,
     AIChatExecutor,
+    *AI_TASK_EXECUTORS,
     InputPromptExecutor,
     RunWorkflowFileExecutor,
     SubflowExecutor,
