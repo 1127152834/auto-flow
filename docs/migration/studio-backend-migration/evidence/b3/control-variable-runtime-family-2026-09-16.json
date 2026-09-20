@@ -66,15 +66,12 @@
     "typescript": "desktop typecheck通过",
     "eslint": "desktop lint通过",
     "b3ClosureMatrix": "62 passed；冻结解析器覆盖空流程、悬空边、非法回环和控制端口，冻结变量对照覆盖缺失变量；运行时覆盖并行取消，真实worker覆盖1,000轮停止以及画布子流程32层成功/33层拒绝。",
-    "formalElectronCombination": "passed；真实UI编排、保存、系统级Cmd+W正常关闭、重开并运行条件、次数循环、设置/增减变量、分组子流程和两个顶层并行入口；SQLite终态及资源槽清理通过。证据：formal-control-flow-electron-LRYNGD/result.json",
-    "affectedRegression": "231 passed；B3运行时、冻结差分、依赖合同、HTTP合同及工作流单元回归；Ruff和mypy受影响文件通过。"
+    "formalElectronCombination": "passed；真实UI编排、保存、系统级Cmd+W正常关闭、重开并运行条件、四类循环、break/continue、递归对象变量、分组子流程、自定义模块和两个顶层并行入口；1,000轮纯变量流程通过真实停止按钮终止，后继未调度、结果停止增长，SQLite终态及资源槽清理通过。证据：formal-control-flow-electron-GwtmUx/result.json",
+    "affectedRegression": "231 passed；B3运行时、冻结差分、依赖合同、HTTP合同及工作流单元回归；Ruff和mypy受影响文件通过。",
+    "recursiveVariableDifferential": "30 passed；新增完整递归矩阵覆盖多层列表/字典、动态索引、负索引、字符串/数字字典键、递归容器、链式模板、缺失/越界路径、空值/布尔/数字及tuple容器；逐项与冻结WebRPA输出比较。"
   },
-  "remaining": [
-    "15个B3节点的formal Electron real-execution入口仍待逐项核销；63条节点用例当前48条通过"
-  ],
+  "remaining": [],
   "notClaimed": [
-    "B3里程碑整体完成",
-    "其余15个节点的正式Electron入口",
     "macOS Intel或Windows实机结果"
   ],
   "userDatabaseModified": false,

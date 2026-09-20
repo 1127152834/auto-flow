@@ -27,11 +27,10 @@
     "affectedRegression": "源码映射、真实worker、依赖合同及registry合计51 passed, 1 skipped in 13.78s",
     "depthBoundary": "真实worker中32层画布子流程成功，最深节点事件包含32层scope；33层在进入第33层前以嵌套层数过深(>32)明确失败。",
     "executionContext": "每层子流程绑定对应ExecutionContext并共享同一递归栈，避免深层事件错误回落到根上下文。",
-    "formalElectron": "正式UI创建分组子流程、组内节点和稳定ID调用，保存、系统级正常关闭、重开后由真实worker执行；布局在worker边界合并，组内事件保留scope。证据：formal-control-flow-electron-LRYNGD/result.json"
+    "formalElectron": "正式UI创建分组子流程、组内节点和稳定ID调用，保存、系统级正常关闭、重开后由真实worker执行；布局在worker边界合并，组内事件保留scope。证据：formal-control-flow-electron-GwtmUx/result.json"
   },
   "remaining": [],
   "notClaimed": [
-    "B3里程碑整体完成",
     "macOS Intel或Windows实机结果"
   ],
   "userDatabaseModified": false,

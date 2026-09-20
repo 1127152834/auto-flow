@@ -328,9 +328,9 @@
   - 2026-09-20 检查点：循环每轮、嵌套工作流、自定义模块和画布子流程均产生独立执行上下文；协调器将上下文与 executionId 一起写入顺序事件、日志和结果 API，产物继续按 executionId 登记。相关运行时、真实 worker 和 HTTP 合同 37 项通过。
 - [x] Task B3.5：测试并行取消、1,000 轮纯变量停止、空/非法控制流、缺变量和嵌套 32 层；失败位置必须指向 nodeId/path。
   - 2026-09-20 检查点：真实 worker 在 1,000 轮纯变量循环中间停止后不再调度后继、不发布完成事件且清理进程；专项连续运行 3 次通过。冻结解析器和变量差分覆盖空流程、悬空边、非法回环及缺失变量；并行取消不调度后继；画布子流程 32 层成功且最深事件保留 32 层 scope，33 层明确拒绝。集中回归 62 项通过。
-- [ ] Task B3.6：正式 UI 编排包含真假分支、循环、并行和子流程的流程，保存重开并真实执行；关闭 B3 的 63 条节点用例与 `BE-B3-001` 至 `008`。
-  - 2026-09-20 检查点：正式 Electron 开发入口已通过真实 UI 编排、保存、系统级 Cmd+W 正常关闭、重开和运行；条件、次数循环、设置/增减变量、分组子流程及两个顶层入口的真实并行均有 SQLite、HTTP、日志和结果证据。修复了运行快照未向 worker 合并布局、并行循环上下文串线两个根因。63 条节点用例现为 48 条通过，剩余 15 个节点的正式 Electron real-execution 入口仍需逐项核销，B3.6 暂不关闭。[正式组合证据](../../migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json)
-  - 2026-09-20 续验：15 个剩余节点已全部经正式 Studio UI 配置、真实保存及生产 worker 执行核销，B3 的 63 条节点级用例现为 63 条通过。覆盖列表/字典/无限循环、break/continue、停止、断言、等待、交互输入、跨工作流调用、JSON/Base64/随机数/时间及便签非执行语义，并修复无限循环在两种编辑视图中缺少控制块端口的前端缺口。B3.6 仍等待自定义模块正式 Electron 组合、递归变量矩阵和 1,000 轮 UI 停止场景，不提前关闭。[完整节点证据](../../migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json)
+- [x] Task B3.6：正式 UI 编排包含真假分支、循环、并行和子流程的流程，保存重开并真实执行；关闭 B3 的 63 条节点用例与 `BE-B3-001` 至 `008`。
+  - 2026-09-20 检查点：正式 Electron 开发入口已通过真实 UI 编排、保存、系统级 Cmd+W 正常关闭、重开和运行；条件、次数循环、设置/增减变量、分组子流程及两个顶层入口的真实并行均有 SQLite、HTTP、日志和结果证据。修复了运行快照未向 worker 合并布局、并行循环上下文串线两个根因。63 条节点用例现为 48 条通过，剩余 15 个节点的正式 Electron real-execution 入口仍需逐项核销，B3.6 暂不关闭。[正式组合证据](../../migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json)
+  - 2026-09-20 续验：15 个剩余节点已全部经正式 Studio UI 配置、真实保存及生产 worker 执行核销，B3 的 63 条节点级用例现为 63 条通过。覆盖列表/字典/无限循环、break/continue、停止、断言、等待、交互输入、跨工作流调用、JSON/Base64/随机数/时间及便签非执行语义，并修复无限循环在两种编辑视图中缺少控制块端口的前端缺口。自定义模块通过正式 UI 完成创建、输出声明、拖入画布、保存和生产 worker 隔离执行；1,000 轮纯变量流程通过真实停止按钮终止，后继未调度、结果停止增长且资源槽释放。递归变量增加 30 项冻结差分，并通过正式 UI 保存对象初值、解析嵌套索引和断言。`BE-B3-001` 至 `008` 全部关闭，B3.6 完成。[完整组合证据](../../migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json)
 
 **B3 退出门槛：** 图和变量差分无未解释差异；并行没有为测试被串行化；模块运行快照不受运行中编辑影响；停止可中断纯算法循环和网页动作。
 

@@ -8869,7 +8869,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 condition，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：条件判断模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
@@ -9147,7 +9147,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 loop，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：循环执行模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
@@ -9317,7 +9317,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 infinite_loop，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：无限循环模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -9516,7 +9516,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 foreach，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：遍历列表模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -9706,7 +9706,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 foreach_dict，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：遍历字典模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -9854,7 +9854,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 break_loop，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：跳出循环模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -10002,7 +10002,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 continue_loop，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：继续下一次循环模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -10297,7 +10297,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 assert_checkpoint，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：断言/检查点：校验变量、页面元素或表达式是否满足预期",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -10468,7 +10468,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 stop_workflow，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：强制停止工作流执行模块",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -10688,7 +10688,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 wait，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：等待模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -11143,7 +11143,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 subflow，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：子流程执行器 - 执行画布中的子流程分组内的模块",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
@@ -11409,7 +11409,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 run_workflow_file，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：运行其它工作流（把多条工作流串成一条业务链）",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -11723,7 +11723,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 input_prompt，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：变量输入框模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -15131,7 +15131,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 set_variable，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：设置变量模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
@@ -15348,7 +15348,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 increment_decrement，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：自增自减模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
@@ -15576,7 +15576,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 json_parse，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：JSON解析模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -15849,7 +15849,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 base64，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：Base64处理模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -16086,7 +16086,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 random_number，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：生成随机数模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -16312,7 +16312,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 get_time，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：获取时间模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
@@ -50178,7 +50178,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 group，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：备注分组模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、真实HTTP/worker及正式Electron开发入口的编排、保存、系统级正常关闭、重开、执行、日志/结果和清理均有证据。",
@@ -50373,7 +50373,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 note，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：便签模块执行器 - 仅用于画布上的注释，不执行任何操作",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-LRYNGD/result.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json"
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
