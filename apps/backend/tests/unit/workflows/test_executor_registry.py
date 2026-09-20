@@ -98,6 +98,8 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "notify_webhook",
         "print_log",
         "export_log",
+        "notify_telegram",
+        "send_email",
         "wait_page_load",
         "page_load_complete",
         "list_operation",

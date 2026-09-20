@@ -94,6 +94,7 @@ from .math_list_ops import (
     MathSqrtExecutor,
 )
 from .media_recognition import MEDIA_RECOGNITION_EXECUTORS
+from .messaging import MESSAGE_EXECUTORS
 from .network_capture import NetworkCaptureExecutor
 from .network_monitor import (
     NetworkMonitorStartExecutor,
@@ -159,6 +160,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *FIRECRAWL_EXECUTORS,
     *EXTERNAL_HTTP_EXECUTORS,
     *LOG_EXECUTORS,
+    *MESSAGE_EXECUTORS,
     *CAPTCHA_EXECUTORS,
     *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,
