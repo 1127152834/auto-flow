@@ -26,9 +26,15 @@ export async function launchElectron(root, { launchArgs = [], cliArgs = process.
   })
   const origin = new URL(debugUrl).origin.replace('ws:', 'http:')
   let page
-  for (let attempt = 0; attempt < 150; attempt++) {
-    const targets = await (await fetch(`${origin}/json/list`, { signal: AbortSignal.timeout(3000) })).json()
-    page = targets.find(target => target.type === 'page')
+  const rendererDeadline = Date.now() + 30_000
+  while (Date.now() < rendererDeadline) {
+    if (child.exitCode !== null || child.signalCode !== null) throw new Error('desktop exited before renderer creation')
+    try {
+      const targets = await (await fetch(`${origin}/json/list`, { signal: AbortSignal.timeout(Math.min(3000, Math.max(1, rendererDeadline - Date.now()))) })).json()
+      page = targets.find(target => target.type === 'page')
+    } catch (error) {
+      if (!(error instanceof TypeError) && error.name !== 'TimeoutError') throw error
+    }
     if (page) break
     await wait(100)
   }

@@ -120,7 +120,10 @@ export async function main(args = process.argv.slice(2)) {
   let child
   let report = { status: 'failed', platform: process.platform, arch: process.arch, packaged: Boolean(options.executable), startedAt: new Date().toISOString() }
   async function launch() {
-    const command = options.executable ? [resolve(options.executable)] : ['uv', 'run', '--directory', 'apps/backend', 'python', '-m', 'autoflow']
+    // Run the already-synced interpreter directly: terminating uv on Windows
+    // leaves its Python child holding the workspace and stdout pipe open.
+    const python = join(root, 'apps/backend/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
+    const command = options.executable ? [resolve(options.executable)] : [python, '-m', 'autoflow']
     child = spawn(command[0], [...command.slice(1), '--instance-id', randomUUID(), '--data-dir', directory, '--port', '0'], {
       cwd: root, env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token }, stdio: ['ignore', 'pipe', 'inherit'],
     })

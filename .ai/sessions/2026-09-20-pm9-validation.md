@@ -15,3 +15,7 @@ Actions 首次推送运行 35507028913 的 arm64 前端结果为 5442 passed / 3
 当前代码提交 `10dc916c` 已推送，Actions 运行 35507610003 已开始；本记录时三平台均进行中，未宣称结果通过。PM9 仍未完成，R1–R4 架构确认待用户答复，缺失实机证据仍待验收。
 
 用户已确认 R1–R4 架构，进入持续实现。第二次 Actions 35507610003 失败：macOS Node 默认堆上限不足；Windows URL pathname 被当成本地路径、POSIX 执行位、默认文本编码及斜杠边界假设。已修正为 fileURLToPath/平台执行位/UTF-8/原生 sep，并固定 CI checkout LF 与构建堆 6 GiB；本机新增 Windows 无执行位用例先失败后通过，脚本 95 项及构建通过。
+
+## CI 第三轮修复（confirmed）
+
+Actions 35511554906：arm64 源码及打包 PM9 API/桌面 smoke 均通过，后续旧浏览器桌面脚本错误使用 native select。已按实际 Radix 下拉键盘打开、选项点击、值确认修正，本机源码桌面脚本通过。Intel 的 CDP 发现端点首个 3 秒请求超时，改为启动总期限内重试瞬时连接/超时，仍保留 30 秒失败门槛。Windows 源码 smoke 停 uv 会遗留 Python 子进程，改为直接使用已锁定同步的 venv 解释器；本机真实重启持久化 smoke 通过，Windows 修复须由下一轮 CI 核验。脚本测试 95/95 通过。

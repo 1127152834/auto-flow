@@ -28,6 +28,7 @@ try {
   delete process.env.CLOAKBROWSER_LICENSE_KEY
   desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`] })
   const { cdp } = desktop
+  console.log('Browser desktop smoke: connected')
   const sidecar = await waitFor(cdp, `(async () => {
     const status = await window.autoflow.getSidecarStatus()
     if (status.state !== 'ready') return null
@@ -36,6 +37,7 @@ try {
     return health?.status === 'ok' && health?.instanceId === status.instanceId ? status : null
   })()`, 'authenticated sidecar health', 30_000)
 
+  console.log('Browser desktop smoke: service ready')
   await clickText(cdp, '浏览器配置')
   await waitFor(cdp, `document.querySelector('main h1')?.textContent === '浏览器配置'`, 'browser management page')
   await setViewport(cdp, 1280, 900)
@@ -46,8 +48,9 @@ try {
   await setValue(cdp, '#profile-name', originalName)
   await setValue(cdp, '#profile-description', 'Created through the real Electron workspace')
   await clickText(cdp, '内核与代理')
-  await waitFor(cdp, `Boolean(document.querySelector('#profile-browser-kernel option[value="public|${version}"]'))`, 'installed kernel option')
+  await setSelectValue(cdp, '#profile-browser-kernel', `public|${version}`)
 
+  console.log('Browser desktop smoke: kernel selected')
   await assertNoHorizontalOverflow(cdp, '1280px profile form', '新建浏览器配置')
   await setViewport(cdp, 1024, 800)
   await assertNoHorizontalOverflow(cdp, '1024px profile form', '新建浏览器配置')
@@ -74,6 +77,7 @@ try {
   await clickText(cdp, '创建配置')
   await waitFor(cdp, `document.querySelector('[aria-label="浏览器配置列表"]')?.innerText.includes(${JSON.stringify(originalName)})`, 'created profile list')
 
+  console.log('Browser desktop smoke: profile created')
   let saved = await profileList(sidecar)
   assert.equal(saved.total, 1)
   assert.equal(saved.items[0].name, originalName)
@@ -203,14 +207,18 @@ async function setValue(cdp, selector, value) {
 }
 
 async function setSelectValue(cdp, selector, value) {
-  const changed = await evaluate(cdp, (query, next) => {
+  const opened = await evaluate(cdp, query => {
     const element = document.querySelector(query)
-    if (!(element instanceof HTMLSelectElement)) return false
-    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(element, next)
-    element.dispatchEvent(new Event('change', { bubbles: true }))
-    return element.value === next
-  }, selector, value)
-  if (!changed) throw new Error(`select option not found: ${selector}/${value}`)
+    if (!(element instanceof HTMLButtonElement)) return false
+    element.focus()
+    element.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
+    return true
+  }, selector)
+  if (!opened) throw new Error(`select trigger not found: ${selector}`)
+  const option = `[role="option"][data-choice-value=${JSON.stringify(value)}]`
+  await waitFor(cdp, `Boolean(document.querySelector(${JSON.stringify(option)}))`, 'installed kernel option')
+  await evaluate(cdp, query => document.querySelector(query).click(), option)
+  await waitFor(cdp, `document.querySelector(${JSON.stringify(selector)})?.dataset.choiceValue === ${JSON.stringify(value)}`, 'selected kernel')
 }
 
 async function valueOf(cdp, selector) {
