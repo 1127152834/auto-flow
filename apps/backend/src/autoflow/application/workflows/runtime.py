@@ -114,7 +114,7 @@ class _WorkflowScheduler:
         )
 
     async def _execute_parallel(self, node_ids: list[str]) -> None:
-        if not node_ids or self.halted:
+        if not node_ids or self.halted or self.context.stop_workflow:
             return
         self._raise_if_cancelled()
         async with self.lock:
@@ -153,8 +153,9 @@ class _WorkflowScheduler:
             raise
 
         async with self.lock:
-            self.executed.add(node_id)
-            self.executing.discard(node_id)
+            if node.type not in _LOOP_NODE_TYPES or not result.success:
+                self.executed.add(node_id)
+                self.executing.discard(node_id)
             self.executed_order.append(node_id)
 
         if not result.success:
@@ -310,17 +311,19 @@ class _WorkflowScheduler:
         body_nodes = self.graph.get_loop_body_nodes(loop_node.id)
         done_nodes = self.graph.get_loop_done_nodes(loop_node.id)
         if not self.context.loop_stack:
+            self.executed.add(loop_node.id)
+            self.executing.discard(loop_node.id)
             await self._notify_successors(done_nodes, loop_node.id)
             return
         loop_state = self.context.loop_stack[-1]
         loop_state.setdefault("node_id", loop_node.id)
         body_scope = self._collect_loop_body_nodes(loop_node.id, body_nodes, done_nodes)
-        while not self.halted and self._loop_should_continue(loop_state):
+        while not self.halted and not self.context.stop_workflow and self._loop_should_continue(loop_state):
             self._raise_if_cancelled()
             self.context.should_continue = False
             await self._reset_nodes(body_scope)
             await self._execute_parallel(body_nodes)
-            if self.halted:
+            if self.halted or self.context.stop_workflow:
                 break
             if bool(getattr(self.context, "should_break", False)):
                 self.context.should_break = False
@@ -331,7 +334,9 @@ class _WorkflowScheduler:
 
         if self.context.loop_stack and self.context.loop_stack[-1] is loop_state:
             self.context.loop_stack.pop()
-        if done_nodes and not self.halted:
+        self.executed.add(loop_node.id)
+        self.executing.discard(loop_node.id)
+        if done_nodes and not self.halted and not self.context.stop_workflow:
             await self._notify_successors(done_nodes, loop_node.id)
 
     def _loop_should_continue(self, state: Mapping[str, Any]) -> bool:

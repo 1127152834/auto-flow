@@ -869,7 +869,9 @@ def _workflow_data_manifest(session: Session, automation: AutomationRecord) -> d
         config = data.get('config', data)
         if data['moduleType'] == 'project_data' and 'tableGrant' in config:
             grant = config['tableGrant']
-            if not isinstance(grant, dict) or grant.get('operations') != [config.get('operation')]:
+            operation = config.get('operation')
+            required = 'modifyField' if operation == 'previewFieldChange' else operation
+            if not isinstance(grant, dict) or grant.get('operations') != [required]:
                 raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点授权必须与节点操作一致', 422)
             grants.append(grant)
     return {'tableGrants': grants}

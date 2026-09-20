@@ -22,7 +22,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "manual-resume", "manual-finish", "manual-expire", "manual-stop", "manual-restart"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "manual-resume", "manual-finish", "manual-expire", "manual-stop", "manual-restart", "manual-loss", "manual-double"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -137,6 +137,9 @@ async def test_real_project_batch_http(
                 document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
                 nodes.append({'id': 'after-manual', 'type': 'set_variable', 'position': {'x': 100, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'continued', 'variableValue': 'once'}})
                 document['content']['edges'].append({'id': 'continue-task', 'source': 'manual', 'target': 'after-manual'})
+                if scenario == 'manual-double':
+                    nodes.append({'id': 'second-manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 1000}, 'data': {'moduleType': 'project_manual', 'reason': '第二次确认', 'timeoutSeconds': 30}})
+                    document['content']['edges'].append({'id': 'second-checkpoint', 'source': 'after-manual', 'target': 'second-manual'})
             saved_workflow = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
             assert saved_workflow.status_code == 201, saved_workflow.text
             workflow_id = saved_workflow.json()['id']
@@ -198,31 +201,43 @@ async def test_real_project_batch_http(
             assert found_operation.status_code == 200, found_operation.text
             assert found_operation.json()["operationId"] == accepted["operationId"]
             handled_manual = set()
+            manual_receipts = {}
+            replayed_manual = set()
             manual_interrupted = False
             for _ in range(300):
-                if scenario in {'manual-resume', 'manual-finish'}:
+                if scenario in {'manual-resume', 'manual-finish', 'manual-double'}:
                     manual = await client.get(prefix + '/manual-items')
                     assert manual.status_code == 200, manual.text
                     for item in manual.json()['items']:
                         if item['status'] != 'waiting' or item['manualItemId'] in handled_manual:
                             continue
                         manual_id = item['manualItemId']
-                        if scenario == 'manual-resume':
+                        if scenario in {'manual-resume', 'manual-double'}:
                             body = {'checkpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision']}
                             action = 'resume'
                         else:
                             body = {'expectedCheckpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision'], 'outcome': 'succeeded', 'reason': '已核验', 'retainEnvironment': {'enabled': False}}
                             action = 'finish'
-                        command = await client.post(prefix + f'/manual-items/{manual_id}/{action}', headers={'Idempotency-Key': str(uuid4())}, json=body)
+                        manual_key = str(uuid4())
+                        if scenario == 'manual-double' and item['runId'] in manual_receipts:
+                            previous_id, previous_key, previous_body, operation_id = manual_receipts[item['runId']]
+                            replay = await client.post(prefix + f'/manual-items/{previous_id}/resume', headers={'Idempotency-Key': previous_key}, json=previous_body)
+                            assert replay.status_code == 202, replay.text
+                            assert replay.json()['operation']['operationId'] == operation_id
+                            replayed_manual.add(previous_id)
+                        command = await client.post(prefix + f'/manual-items/{manual_id}/{action}', headers={'Idempotency-Key': manual_key}, json=body)
                         assert command.status_code == 202, command.text
                         handled_manual.add(manual_id)
+                        manual_receipts[item['runId']] = (manual_id, manual_key, body, command.json()['operation']['operationId'])
 
-                if scenario in {'manual-stop', 'manual-restart'} and not manual_interrupted:
+                if scenario in {'manual-stop', 'manual-restart', 'manual-loss'} and not manual_interrupted:
                     items = (await client.get(prefix + '/manual-items')).json()['items']
                     waiting = next((item for item in items if item['status'] == 'waiting'), None)
                     if waiting:
                         manual_interrupted = True
-                        if scenario == 'manual-restart':
+                        if scenario == 'manual-loss':
+                            app.state.project_workflow_worker_manager._worker.process.kill()
+                        elif scenario == 'manual-restart':
                             await app.router.on_shutdown[-1]()
                             app = create_app(settings)
                             await app.state.project_workflow_dispatcher.startup()
@@ -306,18 +321,20 @@ async def test_real_project_batch_http(
                         range(1, len(events) + 1)
                     )
             elif scenario.startswith('manual-'):
-                if scenario in {'manual-stop', 'manual-restart'}:
+                if scenario in {'manual-stop', 'manual-restart', 'manual-loss'}:
                     assert manual_interrupted
-                    assert detail['statusCounts']['interrupted' if scenario == 'manual-restart' else 'cancelled'] >= 1, detail
+                    assert detail['statusCounts']['interrupted' if scenario in {'manual-restart', 'manual-loss'} else 'cancelled'] >= 1, detail
                     manual_items = (await client.get(prefix + '/manual-items')).json()['items']
                     assert all(item['status'] == 'cancelled' for item in manual_items)
                 elif scenario != 'manual-expire':
                     assert detail['statusCounts']['succeeded'] == 2, detail
-                    assert len(handled_manual) == 2
+                    assert len(handled_manual) == (4 if scenario == 'manual-double' else 2)
+                    if scenario == 'manual-double':
+                        assert len(replayed_manual) == 2
                     for task in tasks:
                         attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
                         assert len([a for a in attempts if a['nodeId'] == 'read-input']) == 1
-                        assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario == 'manual-resume')
+                        assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario in {'manual-resume', 'manual-double'})
                 else:
                     assert detail['statusCounts']['timed_out'] == 1, detail
             elif scenario == "data":

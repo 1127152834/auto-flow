@@ -193,7 +193,7 @@ class ProjectWorkflowWorkerManager:
                     "runId": worker.run_id, "executionGeneration": worker.generation,
                 }
                 try:
-                    reply["result"] = await self._on_capability(worker.run_id, worker.generation, message)
+                    reply["result"] = await self._capability_while_alive(worker, message)
                 except ProjectError as rejected:
                     reply["error"] = {"code": rejected.code, "message": "项目能力请求未完成"}
                 # Unknown failures may follow a commit. Fence the run rather than
@@ -215,6 +215,21 @@ class ProjectWorkflowWorkerManager:
                 raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "执行进程未确认完成，需核验清理结果")
             else:
                 raise _protocol_error()
+
+    async def _capability_while_alive(self, worker: _Worker, message: dict[str, Any]) -> Any:
+        assert self._on_capability is not None and worker.process is not None
+        capability = asyncio.ensure_future(self._on_capability(worker.run_id, worker.generation, message))
+        exited = asyncio.create_task(worker.process.wait())
+        try:
+            done, _ = await asyncio.wait({capability, exited}, return_when=asyncio.FIRST_COMPLETED)
+            if exited in done:
+                raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程失联，运行结果待核验")
+            return await capability
+        finally:
+            for task in (capability, exited):
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(capability, exited, return_exceptions=True)
 
     async def _read(self, worker: _Worker) -> dict[str, Any]:
         assert worker.process is not None and worker.process.stdout is not None

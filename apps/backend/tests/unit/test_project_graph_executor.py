@@ -106,3 +106,50 @@ async def test_manual_resume_continues_once_and_finish_skips_successors():
         assert executor.context.variables['before'] == 'done'
         assert ('after' in executor.context.variables) == (action == 'resume')
         assert calls == ['manual']
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('outcome', ['succeeded', 'failed', 'timed_out'])
+async def test_manual_finish_stops_remaining_loop_iterations_and_done(outcome):
+    calls = []
+    async def emit(*_event):
+        await asyncio.sleep(0)
+    async def request(node_id, *_args):
+        calls.append(node_id)
+        return {'result': {'action': 'finish', 'outcome': outcome, 'complete': True}}
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False, capability=request)
+    result = await executor.run({'document': {'nodes': [node('loop', 'loop', count=3), node('manual', 'project_manual', reason='stop'), node('end', 'project_end')], 'edges': [{'source': 'loop', 'target': 'manual', 'sourceHandle': 'loop'}, {'source': 'loop', 'target': 'end', 'sourceHandle': 'done'}]}})
+    assert calls == ['manual']
+    assert result['status'] == outcome
+
+
+@pytest.mark.asyncio
+async def test_end_join_waits_for_entire_loop():
+    calls = []
+    async def emit(*_event):
+        await asyncio.sleep(0)
+    async def request(node_id, *_args):
+        await asyncio.sleep(.001)
+        calls.append(node_id)
+        return {'result': {'complete': True, 'phase': 'completed'}}
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False, capability=request)
+    result = await executor.run({'document': {'nodes': [node('loop', 'loop', count=2), node('body', 'project_data', operation='inputs'), node('other', 'set_variable', variableName='x', variableValue='1'), node('end', 'project_end')], 'edges': [{'source': 'loop', 'target': 'body', 'sourceHandle': 'loop'}, {'source': 'loop', 'target': 'end', 'sourceHandle': 'done'}, {'source': 'other', 'target': 'end'}]}})
+    assert result['status'] == 'succeeded', (result, calls)
+    assert calls == ['body', 'body', 'end']
+
+
+@pytest.mark.asyncio
+async def test_browser_action_resolves_nested_reference_exactly_once():
+    from unittest.mock import AsyncMock, Mock
+    locator = Mock()
+    locator.first = locator
+    locator.fill = AsyncMock()
+    page = Mock()
+    page.is_closed.return_value = False
+    page.locator.return_value = locator
+    async def emit(*_args): pass
+    executor = ProjectGraphExecutor(None, {'record': {'name': '001-{literal}'}}, emit, lambda: False)
+    executor.legacy.page = page
+    result = await executor.run({'document': {'nodes': [node('input', 'input_text', selector='#name', text="{record['name']}", clearBefore=True)], 'edges': []}})
+    assert result['status'] == 'succeeded'
+    locator.fill.assert_awaited_once_with('001-{literal}')

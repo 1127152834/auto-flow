@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -84,6 +85,7 @@ class WorkflowRunDispatcher:
         gate: QuiesceGate,
         recover_orphan: Recovery,
         *,
+        on_fenced: Callable[[str], None] = lambda _run_id: None,
         force_stop_grace: timedelta = timedelta(seconds=30),
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
@@ -92,6 +94,7 @@ class WorkflowRunDispatcher:
         self._resources = resources
         self._gate = gate
         self._recover_orphan = recover_orphan
+        self._on_fenced = on_fenced
         self._force_stop_grace = force_stop_grace
         self._now = now
         self._automatic_timeout: asyncio.Timeout | None = None
@@ -482,7 +485,8 @@ class WorkflowRunDispatcher:
         except asyncio.CancelledError:
             cancelled = True
             raise
-        except Exception:
+        except Exception as error:
+            logging.getLogger(__name__).warning("Project worker requires reconciliation: %s (%s)", type(error).__name__, getattr(error, "code", "unclassified"))
             current = self._get_run(dispatched.run_id)
             if current.execution_generation != dispatched.execution_generation:
                 unhandled = True
@@ -616,6 +620,8 @@ class WorkflowRunDispatcher:
                 repository.append_event(self._status_event(changed))
                 changed = repository.get_run(run_id=run_id) or changed
             session.commit()
+            if changed.status == "reconciling":
+                self._on_fenced(run_id)
             return changed
 
     def _transition(self, run: CoreRun, target: CoreRunStatus) -> CoreRun:
@@ -645,6 +651,8 @@ class WorkflowRunDispatcher:
                 repository.append_event(self._status_event(changed))
                 changed = repository.get_run(run_id=run_id) or changed
             session.commit()
+            if changed.status == "reconciling":
+                self._on_fenced(run_id)
             return changed
 
     def _nonterminal_runs(self) -> list[CoreRun]:

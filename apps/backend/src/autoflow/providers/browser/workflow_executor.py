@@ -123,8 +123,10 @@ class WorkflowExecutor:
         return self.page
 
     async def _execute(
-        self, module_type: str, data: Mapping[str, Any]
+        self, module_type: str, data: Mapping[str, Any], *,
+        resolve_text: Callable[[object], str] | None = None,
     ) -> tuple[str, object] | None:
+        text_value = resolve_text or self._text
         if module_type == "open_page":
             mode = data.get("openMode", "new_tab")
             if mode == "new_tab" or self.page is None:
@@ -132,17 +134,17 @@ class WorkflowExecutor:
             elif mode != "current_tab":
                 raise ExecutionFailure("WORKFLOW_NODE_INVALID", "打开方式无效")
             await self._current().goto(
-                self._text(data.get("url")),
+                text_value(data.get("url")),
                 wait_until=data.get("waitUntil", "load"),
             )
             return None
         if self.page is None:
             self.page = await self.context.new_page()
         page = self._current()
-        selector = self._text(data.get("selector"))
+        selector = text_value(data.get("selector"))
         locator = page.locator(selector).first
         if module_type == "input_text":
-            text = self._text(data.get("text"))
+            text = text_value(data.get("text"))
             if data.get("clearBefore", True):
                 await locator.fill(text)
             else:

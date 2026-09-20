@@ -296,3 +296,18 @@ def test_project_lifecycle_rejects_unsafe_graph_ownership(case):
         edges.extend([{'id': 'loop-start', 'source': 'read', 'target': 'loop'}, {'id': 'loop-end', 'source': 'loop', 'target': 'lifecycle', 'sourceHandle': 'loop'}])
     with pytest.raises(WorkflowError):
         prepare_run(payload)
+
+
+@pytest.mark.parametrize('with_end', [False, True])
+def test_parallel_loop_graph_is_rejected_before_side_effects(with_end):
+    payload = workflow_payload()
+    payload['content']['nodes'] = [
+        {'id': identity, 'type': 'loop', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'loop', 'count': count}}
+        for identity, count in [('left', 2), ('right', 5)]
+    ]
+    payload['content']['edges'] = []
+    if with_end:
+        payload['content']['nodes'].append({'id': 'end', 'type': 'project_end', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'project_end'}})
+        payload['content']['edges'] = [{'id': identity, 'source': identity, 'target': 'end', 'sourceHandle': 'done'} for identity in ('left', 'right')]
+    with pytest.raises(WorkflowError, match='并行'):
+        prepare_run(payload)

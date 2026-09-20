@@ -35,6 +35,7 @@ class ProjectManualRuntime:
             return session.scalar(select(WorkflowRunEventRow).where(
                 WorkflowRunEventRow.run_id == item['runId'],
                 WorkflowRunEventRow.kind == 'checkpoint',
+                WorkflowRunEventRow.payload['manualItemId'].as_string() == item['manualItemId'],
             ).order_by(WorkflowRunEventRow.sequence.desc()).limit(1))
 
     def owns(self, item):

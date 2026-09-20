@@ -16,7 +16,7 @@ from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ExecutionContext
 
-from .workflow_executor import WorkflowExecutor
+from .workflow_executor import WorkflowExecutor, _scalar_text
 from .workflow_session import CloakBrowserWorkflowSession
 
 _visit: ContextVar[tuple[str, str]] = ContextVar('project_node_visit')
@@ -121,7 +121,7 @@ class _LegacyBrowserNode(ModuleExecutor):
         # Existing project documents use UUID substitutions and append semantics.
         # Reuse their actions while the shared Runtime owns graph traversal.
         try:
-            output = await self.executor._execute(self.kind, config)
+            output = await self.executor._execute(self.kind, config, resolve_text=lambda value: _scalar_text(context.resolve_value(value, preserve_types=True)))
         except Exception as error:  # noqa: BLE001 -- provider diagnostics become stable codes.
             return ModuleResult(False, error=self.executor._safe_error(error)['code'])
         if output is not None:

@@ -230,7 +230,8 @@ def _nonnegative_number(value: object) -> bool:
 
 
 def _validate_lifecycle_graph(nodes, edges, ends):
-    if not ends and not any(n['data']['moduleType'] == 'project_manual' for n in nodes):
+    owns_control = any(n['data']['moduleType'] in {'project_manual', 'loop', 'foreach', 'foreach_dict'} for n in nodes)
+    if not ends and not owns_control:
         return
     outgoing = {node['id']: [] for node in nodes}
     incoming = {node['id']: [] for node in nodes}
@@ -240,7 +241,9 @@ def _validate_lifecycle_graph(nodes, edges, ends):
             incoming[edge['target']].append(edge['source'])
     # Lifecycle commands own the single browser. Exclusive conditions and loop
     # bodies are supported; concurrent roots/fan-out must first be joined.
-    if any(n['data']['moduleType'] == 'project_manual' for n in nodes) and (
+    # ponytail: shared loop/control state cannot cross parallel branches; enable
+    # this shape only after the shared Runtime isolates branch control state.
+    if owns_control and (
         sum(not value for value in incoming.values()) != 1 or any(
             len(outgoing[n['id']]) > 1 and (
                 n['data']['moduleType'] not in {'condition', 'loop', 'foreach', 'foreach_dict'}
@@ -248,7 +251,7 @@ def _validate_lifecycle_graph(nodes, edges, ends):
             ) for n in nodes
         )
     ):
-        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '人工处理节点不能与其他分支并行执行', 422)
+        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '人工处理或循环节点不能与其他分支并行执行', 422)
     if not ends:
         return
     reachable = set(ends)

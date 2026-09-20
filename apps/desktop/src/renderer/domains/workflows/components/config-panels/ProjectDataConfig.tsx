@@ -52,7 +52,7 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     return () => controller.abort()
   }, [projectId, tableId, revision, projectPage, tablePage])
   function bind(table: Schema['DataTableView'], op = operation) {
-    onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [op], fieldIds: [], readPurposes: ['condition', 'derivedWrite'] })
+    onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [op === 'previewFieldChange' ? 'modifyField' : op], fieldIds: [], readPurposes: ['condition', 'derivedWrite'] })
     onChange('argumentsValid', true)
     onChange('arguments', initialArguments(op, table))
   }

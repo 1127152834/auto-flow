@@ -360,3 +360,22 @@ send('finished',status='succeeded',error=None,cleanupConfirmed=True)
     outcome = await start(instance, executable, lambda _event: asyncio.sleep(0))
     assert outcome.status == 'succeeded'
     assert seen == [('a088a638-5afb-4b4b-8d83-45410a3cab42', 1, 'inputs')]
+
+
+@pytest.mark.asyncio
+async def test_worker_exit_interrupts_pending_manual_capability(tmp_path):
+    from uuid import uuid4
+    instance, executable = manager(tmp_path)
+    instance._command = (sys.executable, '-c', CHILD[:CHILD.index("\ne=dict")] + "\nsend('capability', commandId='manual')\n")
+    cancelled = asyncio.Event()
+    async def capability(*_args):
+        try:
+            await asyncio.Future()
+        finally:
+            cancelled.set()
+    async def event(_event): pass
+    instance._on_capability = capability
+    with pytest.raises(WorkflowWorkerError, match='执行进程'):
+        await asyncio.wait_for(instance.run(run_id=str(uuid4()), execution_generation=1, execution_plan={}, parameters={}, variables={}, browser={}, executable=executable, on_event=event), 3)
+    assert cancelled.is_set()
+    assert not instance.busy()

@@ -67,3 +67,38 @@ async def test_untrusted_worker_cannot_expand_authority(rpc, mutation):
         await service.handle(task.run_id, generation, request)
     with factory() as session:
         assert session.scalar(select(func.count()).select_from(DataRecordRow).where(DataRecordRow.values_json == request['arguments']['values'])) == 0
+
+
+def test_previous_manual_checkpoint_remains_addressable_after_next_checkpoint(rpc):
+    from autoflow.application.project_runs.manual_runtime import ProjectManualRuntime
+    factory, task, request, _ = rpc
+    identities = [str(uuid4()), str(uuid4())]
+    with factory.begin() as session:
+        repository = SqlAlchemyWorkflowRuntimeRepository(session)
+        for identity in identities:
+            repository.append_event({'eventId': str(uuid4()), 'runId': task.run_id, 'executionGeneration': 1, 'nodeId': request['nodeId'], 'nodeVisitId': request['nodeVisitId'], 'attempt': 1, 'kind': 'checkpoint', 'occurredAt': datetime.now(UTC), 'payload': {'manualItemId': identity}})
+    runtime = ProjectManualRuntime(factory, None, None)
+    first = runtime.checkpoint({'runId': task.run_id, 'manualItemId': identities[0]})
+    assert first.payload['manualItemId'] == identities[0]
+
+
+def test_field_preview_manifest_uses_existing_modify_field_permission(rpc):
+    from types import SimpleNamespace
+
+    from autoflow.application.project_runs.coordinator import _workflow_data_manifest
+    from autoflow.domain.project_data.capabilities import TableCapabilityGrant
+    from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
+    from tests.fixtures.workflows import workflow_payload
+    factory, _, request, _ = rpc
+    table_id = request['arguments']['tableId']
+    generation = request['arguments']['datasetGeneration']
+    payload = workflow_payload()
+    grant = {'tableId': table_id, 'datasetGeneration': generation, 'operations': ['modifyField'], 'fieldIds': [], 'readPurposes': []}
+    payload['content']['nodes'] = [{'id': 'preview', 'type': 'project_data', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'project_data', 'operation': 'previewFieldChange', 'variableName': 'preview', 'arguments': {}, 'tableGrant': grant}}]
+    payload['content']['edges'] = []
+    with factory() as session:
+        row = session.scalars(select(WorkflowDocumentRow)).first()
+        row.document = payload
+        manifest = _workflow_data_manifest(session, SimpleNamespace(workflow_id=row.id))
+    assert manifest == {'tableGrants': [grant]}
+    TableCapabilityGrant(table_id, generation, frozenset(grant['operations']), frozenset(), frozenset())

@@ -270,7 +270,8 @@ def configure_project_workflow_runtime(
         raise KernelNotFound()
 
     dispatcher = WorkflowRunDispatcher(
-        session_factory, worker, resources, gate, recover
+        session_factory, worker, resources, gate, recover,
+        on_fenced=capabilities.manual.cancel_run if capabilities.manual else lambda _run_id: None,
     )
     if capabilities.manual is not None:
         capabilities.manual.dispatcher = dispatcher
