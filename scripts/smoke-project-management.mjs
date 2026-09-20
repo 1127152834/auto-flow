@@ -23,6 +23,23 @@ export function projectSmokeOptions(args) {
   return values
 }
 
+export async function checkConcurrentRecordWrites(api, prefix, count = 1000) {
+  const concurrent = await api(`${prefix}/tables`, { method: 'POST', body: { name: count === 10_000 ? 'PM9 一万行容量' : 'PM9 并发写入回归', sourceKind: 'local' } })
+  const concurrentPath = `${prefix}/tables/${concurrent.tableId}`
+  const concurrentField = (await api(`${concurrentPath}/fields`, { method: 'POST', body: { definition: { key: 'code', name: '编号', type: 'string', required: false, validation: {} }, sourceColumnPolicy: 'localOnly', expectedTableRevision: concurrent.tableRevision } })).field
+  let claimed = 0, failure
+  await Promise.allSettled(Array.from({ length: 5 }, async () => {
+    while (claimed < count && !failure) {
+      const index = ++claimed
+      try { await api(`${concurrentPath}/records`, { method: 'POST', body: { datasetGeneration: concurrent.datasetGeneration, values: [{ fieldId: concurrentField.ref.fieldId, value: String(index).padStart(6, '0') }] } }) }
+      catch (error) { failure ??= error; throw error }
+    }
+  }))
+  if (failure) throw failure
+  assert.equal((await api(concurrentPath)).recordCount, count)
+  return { status: 'passed', producers: 5, records: count, table: concurrent }
+}
+
 // The caller supplies a service belonging to a disposable workspace it created.
 // The same assertions run against source Python and the bundled sidecar.
 export async function checkProjectManagement(baseUrl, token, existingProject) {
@@ -41,21 +58,7 @@ export async function checkProjectManagement(baseUrl, token, existingProject) {
   const prefix = `/projects/${project.projectId}`
   const neighbour = await api('/projects', { method: 'POST', body: { name: 'PM9 隔离项目' } })
   if (!existingProject) {
-    // Reproduce the Windows five-writer failure through source and packaged HTTP.
-    // Desktop volume setup uses the separate atomic batch API.
-    const concurrent = await api(`${prefix}/tables`, { method: 'POST', body: { name: 'PM9 并发写入回归', sourceKind: 'local' } })
-    const concurrentPath = `${prefix}/tables/${concurrent.tableId}`
-    const concurrentField = (await api(`${concurrentPath}/fields`, { method: 'POST', body: { definition: { key: 'code', name: '编号', type: 'string', required: false, validation: {} }, sourceColumnPolicy: 'localOnly', expectedTableRevision: concurrent.tableRevision } })).field
-    let claimed = 0, failure
-    await Promise.allSettled(Array.from({ length: 5 }, async () => {
-      while (claimed < 1000 && !failure) {
-        const index = ++claimed
-        try { await api(`${concurrentPath}/records`, { method: 'POST', body: { datasetGeneration: concurrent.datasetGeneration, values: [{ fieldId: concurrentField.ref.fieldId, value: String(index).padStart(6, '0') }] } }) }
-        catch (error) { failure ??= error; throw error }
-      }
-    }))
-    if (failure) throw failure
-    assert.equal((await api(concurrentPath)).recordCount, 1000)
+    await checkConcurrentRecordWrites(api, prefix)
     checks.push('1000 single-record writes through five concurrent HTTP producers complete without server errors')
   }
   const table = await api(`${prefix}/tables`, { method: 'POST', body: { name: '中文 数据表', sourceKind: 'local' } })
