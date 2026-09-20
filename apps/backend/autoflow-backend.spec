@@ -13,6 +13,9 @@ datas = [
     *copy_metadata('cloakbrowser'),
     *copy_metadata('keyring'),
     *copy_metadata('playwright'),
+    *copy_metadata('langgraph'),
+    *copy_metadata('langgraph-checkpoint'),
+    *copy_metadata('langgraph-checkpoint-sqlite'),
 ]
 hiddenimports = [
     'autoflow.bootstrap.kernel_worker',
@@ -27,6 +30,8 @@ hiddenimports = [
     'keyring.backends.macOS.api',
     'keyring.backends.Windows',
     *collect_submodules('cloakbrowser'),
+    *collect_submodules('langgraph'),
+    *collect_submodules('langgraph.checkpoint'),
 ]
 
 

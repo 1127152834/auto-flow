@@ -375,7 +375,8 @@
 **估计：** 开发 12–20 工程日；验证 8–15 工程日；外部等待未知，取决于供应商凭据、额度、模型可用性和 MCP server。置信度低。
 
 - [ ] Task B5.1：定义 Model/MCP 窄端口，复用主应用 model ID 和系统秘密存储；不迁入第二套 provider 配置。
-- [ ] Task B5.2：建立 `tests/compatibility/test_langgraph_runtime.py`，验证候选 LangGraph 版本在 Python 3.11 下的图中断、检查点恢复、取消、无默认外部遥测和 PyInstaller 收集；通过后才修改 `apps/backend/pyproject.toml` 与锁文件。
+- [x] Task B5.2：建立 `tests/compatibility/test_langgraph_runtime.py`，验证候选 LangGraph 版本在 Python 3.11 下的图中断、检查点恢复、取消、无默认外部遥测和 PyInstaller 收集；通过后才修改 `apps/backend/pyproject.toml` 与锁文件。
+  - 2026-09-21：锁定 LangGraph 1.2.11 与 SQLite checkpoint 3.1.1；Python 3.11 的持久化中断恢复、异步取消、核心路径无网络连接、PyInstaller 收集、隔离冻结构建及 sidecar 启停均通过。生产助手图的冻结暂停/恢复仍归 B5.3–B5.4 验收，见 `evidence/b5/langgraph-runtime-compatibility.json`。
 - [ ] Task B5.3：实现小助手图：上下文→模型→结构化工具校验→权限中断→工具结果→后续模型；`assistantSessionId` 映射受工作区隔离的 thread/checkpoint，恢复查询原 commandId，不重放副作用。
 - [ ] Task B5.4：把模型文本、工具请求、权限状态、结果、错误和结束投影到现有 SSE/查询合同；服务端重复检查 227 范围、工具开关、参数和批准修订。
 - [ ] Task B5.5：用本地可控 HTTP/MCP fixture 迁入 22 节点，验证请求形状、流式分块、取消、超时、限流和错误映射。

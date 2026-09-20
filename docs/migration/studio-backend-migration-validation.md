@@ -96,7 +96,7 @@
 | BE-B5-003 | MCP 保存、测试、重载、调用、拒绝和断线 | 修订与命令幂等；权限结果不被绕过 | 尚未验收 |
 | BE-B5-004 | API key、代理密码和 License | 不进入快照、事件、日志、诊断或导出 | 尚未验收 |
 | BE-B5-005 | AI 助手添加/修改节点及权限批准、拒绝、取消 | 排除类型仍拒绝；画布变化与命令确认一致且可撤销 | 尚未验收 |
-| BE-B5-006 | LangGraph 候选版本在 Python 3.11、SQLite 检查点和 PyInstaller 中运行 | 版本被锁定；不默认外发追踪；冻结包启动、暂停和恢复通过 | 尚未验收 |
+| BE-B5-006 | LangGraph 候选版本在 Python 3.11、SQLite 检查点和 PyInstaller 中运行 | 版本被锁定；不默认外发追踪；冻结包启动、暂停和恢复通过 | 部分通过：LangGraph 1.2.11 与 SQLite checkpoint 3.1.1 已锁定；持久化中断恢复、异步取消、核心路径无网络连接、PyInstaller 收集、隔离冻结构建和 sidecar 启停通过。生产助手图的冻结暂停/恢复等待 B5.3–B5.4。[兼容性证据](studio-backend-migration/evidence/b5/langgraph-runtime-compatibility.json) |
 | BE-B5-007 | 小助手多轮模型→工具→权限→结果→后续模型 | 实际路径经过 LangGraph；不存在绕过图的完整助手循环；前端确认前不报告画布已改 | 尚未验收 |
 | BE-B5-008 | 权限等待中拒绝、取消、断线、重启和参数变化 | 旧批准不可复用，恢复查询原命令，不重复有副作用工具 | 尚未验收 |
 | BE-B5-009 | 助手检查点、事件、日志与导出秘密扫描 | 工作区隔离；API key、代理密码、License 和完整 Profile 均不出现 | 尚未验收 |
