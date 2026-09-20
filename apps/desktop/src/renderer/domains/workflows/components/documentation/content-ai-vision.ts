@@ -1,8 +1,6 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-ai-vision.ts; see SOURCE.md for license and adaptation boundaries.
 export const aiVisionGuideContent = `# AI 识别与计算机视觉
 
-> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
-
 本章介绍 OCR 文字识别、验证码识别、人脸识别，以及 AI 智能爬虫模块。
 
 ---
@@ -155,11 +153,11 @@ Firecrawl 是专业的 AI 爬虫服务，支持 JS 渲染、智能内容提取�
 
 | 参数 | 说明 |
 |------|------|
-| 提供商 | openai（DALL-E）或 stability |
+| 主应用模型 | 从 AutoFlow 模型管理中选择，密钥和接口地址由系统提供 |
+| 接口协议 | openai（DALL-E 兼容）或 stability |
 | 提示词 | 描述想要的画面，必填 |
 | 反向提示词 | 不希望出现的内容（stability 支持） |
 | 尺寸 / 数量 | 如 1024x1024、生成张数 |
-| API Key / API Base | 对应平台的密钥与接口地址 |
 | 保存路径 | 填写则下载到本地，多张自动加序号 |
 | 结果变量 | 默认 ai_image_urls，保存 URL 或本地路径列表 |
 
@@ -167,10 +165,10 @@ Firecrawl 是专业的 AI 爬虫服务，支持 JS 渲染、智能内容提取�
 
 | 参数 | 说明 |
 |------|------|
-| 提供商 | runway 或 custom（自定义接口） |
+| 主应用模型 | 从 AutoFlow 模型管理中选择，密钥和接口地址由系统提供 |
+| 接口协议 | runway 或 custom（模型地址直接返回视频） |
 | 提示词 | 描述视频内容，必填 |
 | 时长 / 宽高比 / 帧率 | 如 5 秒、16:9、24 fps |
-| API Key / API Base / API URL | 对应平台配置 |
 | 保存路径 | 填写则下载到本地 |
 | 结果变量 | 默认 ai_video_url，保存视频 URL 或本地路径 |
 

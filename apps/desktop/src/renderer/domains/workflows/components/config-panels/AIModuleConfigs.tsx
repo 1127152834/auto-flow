@@ -20,7 +20,7 @@ type ModelOption = ModelOptionList['items'][number]
 type BatchChange = (data: Partial<NodeData>) => void
 
 // 模型凭据只留在主应用；工作流文档仅保存稳定 modelId。
-function AIModelPicker({ data, onBatchChange }: { data: NodeData; onBatchChange: BatchChange }) {
+export function AIModelPicker({ data, onBatchChange }: { data: NodeData; onBatchChange: BatchChange }) {
   const [models, setModels] = useState<ModelOption[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -68,6 +68,8 @@ function AIModelPicker({ data, onBatchChange }: { data: NodeData; onBatchChange:
             modelId,
             apiUrl: undefined,
             apiKey: undefined,
+            apiBase: undefined,
+            engineId: undefined,
             model: undefined,
             llmProvider: undefined,
             llmModel: undefined,

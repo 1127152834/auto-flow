@@ -383,6 +383,7 @@
 - [ ] Task B5.5：用本地可控 HTTP/MCP fixture 迁入 22 节点，验证请求形状、流式分块、取消、超时、限流和错误映射。
 - [ ] Task B5.6：实现现有 MCP 保存、测试、重载和调用合同，写操作带 revision/commandId，MCP 工具不能绕过小助手权限。
 - [ ] Task B5.7：大图像/视频/文本经 artifact 引用传输；日志、SSE、诊断、LangGraph 检查点和导出扫描不得出现 API key、代理密码或 License。
+  - 2026-09-21：`ai_generate_image`、`ai_generate_video` 已按冻结源码迁入 OpenAI、Stability、Runway 和自定义接口分支；节点只引用主应用 `modelId`，协议选择仍保留，密钥与地址由系统模型绑定提供。差分输出、真实 worker、产物落盘、轮询取消及秘密扫描通过；第三方真实供应商与正式 Electron 验收仍为外部等待，见 `evidence/b5/ai-media-family.json`。
 - [ ] Task B5.8：正式 UI 验证小助手多轮添加/修改节点、批准/拒绝/取消、断线重连及历史；排除节点请求必须拒绝，页面确认前不得宣称草稿已修改。
 - [ ] Task B5.9：核销本地合同和真实供应商证据；没有凭据的供应商保持“外部等待”，不能用 fixture 核销 real-execution。
 

@@ -1,0 +1,65 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/ai_media.py",
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "ai_generate_image",
+    "ai_generate_video"
+  ],
+  "implemented": [
+    "保留 OpenAI、Stability、Runway 和自定义媒体接口协议及原版变量写回行为",
+    "节点级 API Key 和地址改为主应用稳定 modelId 与系统 CredentialStore 边界",
+    "图片、视频下载限制为 64 MiB，并经现有 workflow artifact writer 登记落盘",
+    "Runway 异步轮询支持工作流取消，自定义视频协议直接使用托管模型地址",
+    "前端保留协议、提示词、尺寸、质量、数量、时长、路径和结果变量，增加主应用模型选择",
+    "两个节点均已登记到生产执行器注册表并通过真实 worker 子进程"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b5_ai_media_parity.py",
+      "exitCode": 0,
+      "result": "2 passed",
+      "covers": "冻结源码与迁入实现的图片、视频输出、消息和变量变化"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_model_gateway.py apps/backend/tests/unit/workflows/test_ai_media_executors.py apps/backend/tests/integration/test_b5_ai_media_worker.py",
+      "exitCode": 0,
+      "result": "16 passed",
+      "covers": "四种协议、托管凭据、即时轮询、取消、下载、产物路径及真实 worker"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q <B5 AI text, vision and media related tests>",
+      "exitCode": 0,
+      "result": "72 passed",
+      "covers": "模型共享边界和既有 AI 节点回归"
+    },
+    {
+      "command": "npm --workspace apps/desktop test -- --run <AI media related tests> && npm --workspace apps/desktop run typecheck",
+      "exitCode": 0,
+      "result": "339 passed; TypeScript passed",
+      "covers": "模型选择、协议分支、保存重开、选择器与路径控件"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <AI media affected files> && uv run --project apps/backend mypy <AI media production modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    },
+    {
+      "command": "npm run openapi:check && npm --workspace apps/desktop run build",
+      "exitCode": 0,
+      "result": "OpenAPI current; Electron main, preload and renderer built"
+    }
+  ],
+  "knownUnrelatedFailure": {
+    "command": "npm --workspace apps/desktop test -- --run src/renderer/domains/workflows/tests/catalog-field-contract.test.ts",
+    "result": "14 个已排除通知节点仍残留于并行范围清理的字段用例；不属于 AI 媒体实现，待范围清理工作线同步删除"
+  },
+  "externalWaiting": [
+    "正式 Electron 真实 UI 保存、运行、停止和产物查看验收",
+    "真实 OpenAI、Stability、Runway 或自定义媒体供应商调用"
+  ]
+}

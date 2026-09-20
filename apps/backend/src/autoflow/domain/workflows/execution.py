@@ -112,6 +112,14 @@ class TableWorkbookRenderer(Protocol):
 class ModelGateway(Protocol):
     async def invoke(self, model_id: str, payload: Mapping[str, Any]) -> Any: ...
 
+    async def invoke_media(
+        self,
+        model_id: str,
+        payload: Mapping[str, Any],
+        *,
+        check_cancelled: Callable[[], None] | None = None,
+    ) -> Mapping[str, Any]: ...
+
 
 class ExternalIntegrationGateway(Protocol):
     async def call(self, integration: str, payload: Mapping[str, Any]) -> Any: ...

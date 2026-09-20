@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .advanced_browser import ADVANCED_BROWSER_EXECUTORS
 from .ai import AIChatExecutor, AIVisionExecutor
+from .ai_media import AI_MEDIA_EXECUTORS
 from .ai_scraper import AI_SCRAPER_EXECUTORS
 from .ai_tasks import AI_TASK_EXECUTORS
 from .ai_vision_act import AIVisionActExecutor
@@ -149,6 +150,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     AIChatExecutor,
     AIVisionExecutor,
     AIVisionActExecutor,
+    *AI_MEDIA_EXECUTORS,
     *AI_TASK_EXECUTORS,
     *AI_SCRAPER_EXECUTORS,
     *FIRECRAWL_EXECUTORS,

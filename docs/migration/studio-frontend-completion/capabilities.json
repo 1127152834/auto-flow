@@ -35898,7 +35898,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端已迁入，正式Electron待验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -35952,7 +35952,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/ai_media.py#AIGenerateImageExecutor",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -35967,12 +35967,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
+      "gap": "真实执行器、生产注册、受控模型HTTP和worker产物链已完成；正式Electron和第三方真实供应商待验收。",
+      "risk": "主应用模型ID、系统秘密和64 MiB产物边界已接入；第三方供应商配额、限流和正式UI仍须真实服务验证。",
       "acceptanceCases": [
         {
           "id": "BE.ai_generate_image.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/ai_media.py#AIGenerateImageExecutor",
@@ -35980,7 +35980,7 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 ai_generate_image 的默认配置、合法分支和错误分支；配置键为 apiBase, apiKey, engineId, model, n, negativePrompt, prompt, provider, quality, savePath, size, style, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：AI生图执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
         },
         {
           "id": "BE.ai_generate_image.contract",
@@ -36243,7 +36243,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端已迁入，正式Electron待验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -36292,7 +36292,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/ai_media.py#AIGenerateVideoExecutor",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -36307,12 +36307,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
+      "gap": "真实执行器、生产注册、受控模型HTTP和worker产物链已完成；正式Electron和第三方真实供应商待验收。",
+      "risk": "主应用模型ID、系统秘密和64 MiB产物边界已接入；第三方供应商配额、限流和正式UI仍须真实服务验证。",
       "acceptanceCases": [
         {
           "id": "BE.ai_generate_video.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/ai_media.py#AIGenerateVideoExecutor",
@@ -36320,7 +36320,7 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 ai_generate_video 的默认配置、合法分支和错误分支；配置键为 apiBase, apiKey, apiUrl, aspectRatio, duration, fps, prompt, provider, savePath, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：AI生视频执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
         },
         {
           "id": "BE.ai_generate_video.contract",

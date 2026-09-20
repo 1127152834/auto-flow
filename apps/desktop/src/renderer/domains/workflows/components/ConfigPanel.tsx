@@ -1362,9 +1362,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       
       // AI生图生视频模块
       case 'ai_generate_image':
-        return <AIGenerateImageConfig data={nodeData} onChange={handleChange} />
+        return <AIGenerateImageConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_generate_video':
-        return <AIGenerateVideoConfig data={nodeData} onChange={handleChange} />
+        return <AIGenerateVideoConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       
       // 概率触发器模块
       case 'probability_trigger':

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 from autoflow.domain.models import ModelError, ProviderConnection
@@ -16,9 +16,7 @@ class WorkflowModelGateway:
         provider: HttpModelProvider | None = None,
     ) -> None:
         self._provider = provider or HttpModelProvider()
-        self._bindings: dict[
-            str, tuple[ProviderConnection, str, str]
-        ] = {}
+        self._bindings: dict[str, tuple[ProviderConnection, str, str]] = {}
         for raw in bindings:
             required = ("modelId", "modelKey", "providerKind", "secret")
             if any(not isinstance(raw.get(key), str) for key in required):
@@ -48,3 +46,24 @@ class WorkflowModelGateway:
             )
         connection, secret, model_key = binding
         return await self._provider.invoke(connection, secret, model_key, payload)
+
+    async def invoke_media(
+        self,
+        model_id: str,
+        payload: Mapping[str, Any],
+        *,
+        check_cancelled: Callable[[], None] | None = None,
+    ) -> dict[str, Any]:
+        binding = self._bindings.get(model_id)
+        if binding is None:
+            raise ModelError(
+                "MODEL_NOT_AVAILABLE_FOR_RUN", "运行快照中没有所选模型", 409
+            )
+        connection, secret, model_key = binding
+        return await self._provider.invoke_media(
+            connection,
+            secret,
+            model_key,
+            payload,
+            check_cancelled=check_cancelled,
+        )

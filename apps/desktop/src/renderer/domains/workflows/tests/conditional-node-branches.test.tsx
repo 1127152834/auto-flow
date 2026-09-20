@@ -363,12 +363,15 @@ it('NODE.api_trigger.conditional-ui: hydrates defaults and exposes the POST requ
 })
 
 it.each([
-  ['ai_generate_image', { imageApiKey: 'image-key', imageApiBase: 'https://image.fixture.invalid' }, { apiKey: 'image-key', apiBase: 'https://image.fixture.invalid' }],
-  ['ai_generate_video', { videoApiKey: 'video-key', videoApiBase: 'https://video.fixture.invalid' }, { apiKey: 'video-key', apiBase: 'https://video.fixture.invalid' }],
-] as const)('NODE.%s.conditional-ui: hydrates only its matching global media service', async (type, globalValues, expected) => {
+  ['ai_generate_image', { imageApiKey: 'image-key', imageApiBase: 'https://image.fixture.invalid' }],
+  ['ai_generate_video', { videoApiKey: 'video-key', videoApiBase: 'https://video.fixture.invalid' }],
+] as const)('NODE.%s.conditional-ui: ignores legacy media secrets and uses the main model service', async (type, globalValues) => {
   globalConfig.getState().updateAIConfig(globalValues)
   const { id } = open(type)
-  await waitFor(() => expect(nodeData(id)).toMatchObject(expected))
+  expect(screen.getByText('主应用模型')).toBeDefined()
+  await waitFor(() => expect(nodeData(id).apiKey).toBeUndefined())
+  expect(nodeData(id).apiBase).toBeUndefined()
+  expect(screen.getByText('接口协议')).toBeDefined()
 })
 
 it('NODE.ssh_connect.conditional-ui: hydrates host identity without overriding explicit node values', async () => {
