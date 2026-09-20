@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from fastapi import APIRouter
+from fastapi.responses import FileResponse
 from pydantic import ConfigDict, Field
 
 from autoflow.application.workflows.assistant import WorkflowAssistantService
@@ -88,6 +89,10 @@ class AssistantMessage(ApiModel):
     images: list[str] | None = None
     attachment_names: list[str] | None = None
     reasoning_content: str | None = Field(default=None, alias="reasoning_content")
+    content_ref: str | None = None
+    content_artifact: dict[str, Any] | None = None
+    reasoning_content_ref: str | None = None
+    reasoning_artifact: dict[str, Any] | None = None
 
 
 class AssistantPendingAction(ApiModel):
@@ -207,6 +212,11 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
     @router.post("/test-connection", response_model=AssistantModelTestResponse)
     async def test_connection(body: AssistantModelTest) -> dict[str, Any]:
         return await service.test_model(body.model_id)
+
+    @router.get("/artifacts/{kind}/{artifact_id}", response_class=FileResponse)
+    def artifact(kind: str, artifact_id: str) -> FileResponse:
+        path, media_type = service.artifact_file(kind, artifact_id)
+        return FileResponse(path, media_type=media_type, filename=path.name)
 
     @router.post("/extract-file", response_model=AssistantExtractedFile)
     async def extract_file(body: AssistantExtractFile) -> dict[str, Any]:

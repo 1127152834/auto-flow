@@ -29,6 +29,10 @@ export interface ChatMessage {
   attachmentNames?: string[]
   /** DeepSeek-Reasoner 等思考模型的内部思考链（用于回传给 LLM，不在 UI 显示） */
   reasoning_content?: string | null
+  contentRef?: string
+  contentArtifact?: { artifactRef: string; mediaType: string; size: number; sha256: string }
+  reasoningContentRef?: string
+  reasoningArtifact?: { artifactRef: string; mediaType: string; size: number; sha256: string }
 }
 
 export interface SessionListItem {

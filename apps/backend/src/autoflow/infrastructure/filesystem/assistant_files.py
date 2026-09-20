@@ -4,6 +4,7 @@ import base64
 import binascii
 import hashlib
 import io
+import json
 import os
 import re
 import tempfile
@@ -25,6 +26,7 @@ MAX_ATTACHMENT_BYTES = 16 * 1024 * 1024
 MAX_IMAGE_TOTAL_BYTES = 64 * 1024 * 1024
 MAX_AUDIO_BYTES = 32 * 1024 * 1024
 MAX_EXTRACTED_CHARS = 30_000
+MAX_INLINE_VALUE_BYTES = 64 * 1024
 MAX_ARCHIVE_ENTRIES = 10_000
 MAX_ARCHIVE_BYTES = 128 * 1024 * 1024
 _IMAGE_TYPES = {
@@ -66,6 +68,7 @@ class AssistantFileStore:
     def __init__(self, root: Path) -> None:
         self._root = root.resolve()
         self._attachments = self._root / "attachments"
+        self._artifacts = self._root / "artifacts"
         self._whisper_models: dict[str, Any] = {}
         self._whisper_lock = threading.Lock()
 
@@ -95,6 +98,9 @@ class AssistantFileStore:
         hydrated = deepcopy(messages)
         for message in hydrated:
             content = message.get("content")
+            if isinstance(content, str):
+                message["content"] = self._hydrate_message_content(content)
+                continue
             if not isinstance(content, list):
                 continue
             for part in content:
@@ -108,15 +114,102 @@ class AssistantFileStore:
     def public_messages(
         self, messages: tuple[dict[str, Any], ...]
     ) -> list[dict[str, Any]]:
-        result = deepcopy(list(messages))
-        for message in result:
-            images = message.get("images")
-            if isinstance(images, list):
-                message["images"] = [
-                    self.resolve_image(image) if isinstance(image, str) else image
-                    for image in images
-                ]
-        return result
+        return deepcopy(list(messages))
+
+    def externalize(self, value: Any) -> Any:
+        """Keep large assistant values out of SQLite, checkpoints and SSE."""
+
+        if isinstance(value, str):
+            content = value.encode("utf-8")
+            if len(content) <= MAX_INLINE_VALUE_BYTES:
+                return value
+            return self._store_artifact(content, "txt", "text/plain; charset=utf-8")
+        encoded = json.dumps(
+            value,
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        if len(encoded) <= MAX_INLINE_VALUE_BYTES:
+            return deepcopy(value)
+        return self._store_artifact(encoded, "json", "application/json")
+
+    def externalize_large_leaves(self, value: Any) -> Any:
+        """Externalize large text while retaining action/object structure."""
+
+        if isinstance(value, dict):
+            return {
+                key: self.externalize_large_leaves(item) for key, item in value.items()
+            }
+        if isinstance(value, list):
+            return [self.externalize_large_leaves(item) for item in value]
+        return self.externalize(value) if isinstance(value, str) else value
+
+    def hydrate_value(self, value: Any) -> Any:
+        if isinstance(value, dict):
+            reference = value.get("artifactRef")
+            if isinstance(reference, str) and reference.startswith(
+                "assistant-artifact://"
+            ):
+                return self._read_artifact(reference)
+            return {key: self.hydrate_value(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [self.hydrate_value(item) for item in value]
+        if isinstance(value, str) and value.startswith("assistant-artifact://"):
+            return self._read_artifact(value)
+        return value
+
+    def artifact_file(self, reference: str) -> tuple[Path, str]:
+        if reference.startswith("assistant-attachment://"):
+            path = self._attachment_path(reference)
+            if not path.is_file():
+                raise WorkflowRunError(
+                    "ASSISTANT_ATTACHMENT_MISSING", "小助手图片附件不存在", 409
+                )
+            media_type = next(
+                (
+                    mime
+                    for mime, extension in _IMAGE_TYPES.items()
+                    if path.suffix == f".{extension}"
+                ),
+                None,
+            )
+            if media_type is None:
+                raise WorkflowRunError(
+                    "ASSISTANT_ATTACHMENT_INVALID", "小助手图片附件格式无效", 409
+                )
+            return path, media_type
+        if reference.startswith("assistant-artifact://"):
+            path = self._artifact_path(reference)
+            if not path.is_file():
+                raise WorkflowRunError(
+                    "ASSISTANT_ARTIFACT_MISSING", "小助手产物不存在", 409
+                )
+            media_type = (
+                "application/json"
+                if path.suffix == ".json"
+                else "text/plain; charset=utf-8"
+            )
+            return path, media_type
+        raise WorkflowRunError(
+            "ASSISTANT_ARTIFACT_INVALID", "小助手产物标识无效", 422
+        )
+
+    def artifact_info(self, reference: str) -> dict[str, Any]:
+        path, media_type = self.artifact_file(reference)
+        try:
+            size = path.stat().st_size
+        except OSError as error:
+            raise WorkflowRunError(
+                "ASSISTANT_ARTIFACT_MISSING", "小助手产物不存在", 409
+            ) from error
+        return {
+            "artifactRef": reference,
+            "mediaType": media_type,
+            "size": size,
+            "sha256": path.stem,
+        }
 
     def resolve_image(self, reference: str) -> str:
         if not reference.startswith("assistant-attachment://"):
@@ -141,6 +234,47 @@ class AssistantFileStore:
                 "ASSISTANT_ATTACHMENT_INVALID", "小助手图片附件格式无效", 409
             )
         return f"data:{mime_type};base64,{base64.b64encode(content).decode()}"
+
+    def _store_artifact(
+        self, content: bytes, extension: str, media_type: str
+    ) -> dict[str, Any]:
+        digest = hashlib.sha256(content).hexdigest()
+        name = f"{digest}.{extension}"
+        self._write_once(self._artifacts / name, content)
+        return {
+            "artifactRef": f"assistant-artifact://{name}",
+            "mediaType": media_type,
+            "size": len(content),
+            "sha256": digest,
+        }
+
+    def _read_artifact(self, reference: str) -> Any:
+        path = self._artifact_path(reference)
+        try:
+            content = path.read_bytes()
+        except OSError as error:
+            raise WorkflowRunError(
+                "ASSISTANT_ARTIFACT_MISSING", "小助手产物不存在", 409
+            ) from error
+        if path.suffix == ".json":
+            return json.loads(content)
+        return content.decode("utf-8")
+
+    def _hydrate_message_content(self, content: str) -> str:
+        if content.startswith("assistant-artifact://"):
+            return str(self.hydrate_value(content))
+        if "assistant-artifact://" not in content:
+            return content
+        try:
+            value = json.loads(content)
+        except (TypeError, ValueError):
+            return content
+        return json.dumps(
+            self.hydrate_value(value),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
 
     def extract_file(self, filename: str, encoded: str) -> dict[str, Any]:
         try:
@@ -286,6 +420,19 @@ class AssistantFileStore:
         if not path.is_relative_to(self._attachments.resolve()):
             raise WorkflowRunError(
                 "ASSISTANT_ATTACHMENT_INVALID", "小助手图片附件标识无效", 422
+            )
+        return path
+
+    def _artifact_path(self, reference: str) -> Path:
+        name = reference.removeprefix("assistant-artifact://")
+        if not name or PurePosixPath(name).name != name:
+            raise WorkflowRunError(
+                "ASSISTANT_ARTIFACT_INVALID", "小助手产物标识无效", 422
+            )
+        path = (self._artifacts / name).resolve()
+        if not path.is_relative_to(self._artifacts.resolve()):
+            raise WorkflowRunError(
+                "ASSISTANT_ARTIFACT_INVALID", "小助手产物标识无效", 422
             )
         return path
 

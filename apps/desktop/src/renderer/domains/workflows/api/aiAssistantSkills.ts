@@ -19,6 +19,7 @@ import { localWorkflowApi, workflowApi, imageAssetApi, scheduledTaskApi } from '
 import { socketService } from '../events'
 import { useAiActionLogStore, type AiActionEntry } from '../hooks/stores/aiActionLogStore'
 import { actionNeedsApproval, requestApproval } from '../hooks/stores/aiPermissionStore'
+import { hydrateAssistantArtifacts } from './assistantArtifacts'
 
 // 会改动画布、需要记入「AI 操作时间线」并可一键回退的 client_action
 const MUTATING_ACTIONS = new Set<string>([
@@ -1875,7 +1876,7 @@ async function acknowledgeClaimedAssistantAction(
   if (!claim.success) return claim
   let result
   try {
-    result = await executeClientAction(action, payload)
+    result = await executeClientAction(action, await hydrateAssistantArtifacts(payload))
   } catch (error: any) {
     result = { success: false, error: error?.message || String(error) || '前端执行 client_action 异常' }
   }

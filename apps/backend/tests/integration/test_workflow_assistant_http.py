@@ -110,12 +110,20 @@ async def test_http_chat_uses_managed_model_and_persists_session(tmp_path) -> No
         )
         assert response.status_code == 200
         restored = await client.get("/api/ai-assistant/sessions/http-session")
+        image_reference = restored.json()["messages"][0]["images"][0]
+        image = await client.get(
+            "/api/ai-assistant/artifacts/attachment/"
+            + image_reference.removeprefix("assistant-attachment://")
+        )
     finally:
         await client.aclose()
 
     assert restored.json()["status"] == "completed"
     assert restored.json()["messages"][-1]["content"] == "已完成"
-    assert restored.json()["messages"][0]["images"] == ["data:image/png;base64,YQ=="]
+    assert image_reference.startswith("assistant-attachment://")
+    assert image.status_code == 200
+    assert image.content == b"a"
+    assert image.headers["content-type"] == "image/png"
     assert gateway.invocations[0]["temperature"] == 0.25
     assert gateway.invocations[0]["maxTokens"] == 512
     assert gateway.invocations[0]["messages"][-1]["content"] == [

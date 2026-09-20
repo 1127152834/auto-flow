@@ -1,9 +1,11 @@
 import pytest
-from keyring.errors import KeyringError
-
 from autoflow.domain.credentials import CredentialStoreUnavailableError
-from autoflow.infrastructure.credentials.redaction import redact_sensitive_text
+from autoflow.infrastructure.credentials.redaction import (
+    redact_sensitive_text,
+    redact_sensitive_value,
+)
 from autoflow.infrastructure.credentials.system import SystemCredentialStore
+from keyring.errors import KeyringError
 
 
 class FakeMacBackend:
@@ -84,3 +86,29 @@ def test_error_redaction_covers_known_and_structured_credentials():
     for secret in ("live-token", "proxy-pass", "path-token", "json-pass", "known-secret"):
         assert secret not in redacted
     assert redacted.count("[REDACTED]") == 5
+
+
+def test_structured_redaction_removes_nested_credentials_without_changing_shape():
+    value = {
+        "apiKey": "api-secret",
+        "nested": {
+            "proxyPassword": "proxy-secret",
+            "licenseKey": "license-secret",
+            "maxTokens": 4096,
+            "message": "Authorization: Bearer header-secret",
+        },
+        "items": [{"password": "password-secret"}, "safe"],
+    }
+
+    redacted = redact_sensitive_value(value)
+
+    assert redacted == {
+        "apiKey": "[REDACTED]",
+        "nested": {
+            "proxyPassword": "[REDACTED]",
+            "licenseKey": "[REDACTED]",
+            "maxTokens": 4096,
+            "message": "Authorization: Bearer [REDACTED]",
+        },
+        "items": [{"password": "[REDACTED]"}, "safe"],
+    }

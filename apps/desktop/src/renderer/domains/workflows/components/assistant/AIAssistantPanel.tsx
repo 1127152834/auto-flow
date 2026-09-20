@@ -369,6 +369,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
       },
       onReasoningPartial: (data: any) => {
         const fullText = (data?.full as string) || ''
+        const reasoningContentRef = typeof data?.artifactRef === 'string' ? data.artifactRef : undefined
         // 防御：非思考模型某些代理也会发空字符串的 reasoning_partial，过滤掉
         if (!fullText.trim()) return
         const state = useAIAssistantStore.getState()
@@ -384,6 +385,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             state.upsertMessage({
               ...exists,
               reasoning_content: fullText,
+              reasoningContentRef,
               thinking_started_at: startedAt,
               thinking_duration_sec: duration,
             } as any)
@@ -397,12 +399,14 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
           role: 'assistant',
           content: '',
           reasoning_content: fullText,
+          reasoningContentRef,
           thinking_started_at: Date.now(),
           thinking_duration_sec: 0,
         } as any)
       },
       onContentPartial: (data: any) => {
         const fullText = (data?.full as string) || ''
+        const contentRef = typeof data?.artifactRef === 'string' ? data.artifactRef : undefined
         const state = useAIAssistantStore.getState()
         const id = streamingMsgIdRef.current
         const msgs = state.messages
@@ -417,6 +421,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             state.upsertMessage({
               ...exists,
               content: fullText,
+              contentRef,
               thinking_duration_sec: finalDuration,
             } as any)
             return
@@ -428,6 +433,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
           id: newId,
           role: 'assistant',
           content: fullText,
+          contentRef,
         })
       },
     })

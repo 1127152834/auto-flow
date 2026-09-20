@@ -4,7 +4,6 @@ import asyncio
 from pathlib import Path
 
 import pytest
-
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.assistant import WorkflowAssistantService
 from autoflow.domain.models import ModelError, ModelInvocationResult
@@ -88,6 +87,56 @@ class StreamingModels:
         await on_chunk("content", "完成", "已完成")
         return ModelInvocationResult(
             model_id, "已完成", "检查", {}, "https://safe.test"
+        )
+
+
+class LargeResultModels:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def invoke(self, model_id: str, payload):
+        self.calls += 1
+        if self.calls == 1:
+            system = payload["messages"][0]["content"]
+            assert "context-api-secret" not in system
+            assert "context-proxy-secret" not in system
+            assert "context-license-secret" not in system
+            return ModelInvocationResult(
+                model_id,
+                "",
+                "",
+                {},
+                "https://safe.test",
+                (
+                    {
+                        "id": "large-tool",
+                        "name": "client_action",
+                        "arguments": {"action": "get_logs", "payload": {}},
+                    },
+                ),
+            )
+        content = payload["messages"][-1]["content"]
+        assert "大" * 70_000 in content
+        for secret in ("result-api-secret", "result-proxy-secret", "result-license-secret"):
+            assert secret not in content
+        return ModelInvocationResult(
+            model_id, "大结果已读取", "", {}, "https://safe.test"
+        )
+
+
+class LargeReplyModels:
+    async def invoke(self, model_id: str, payload):
+        return ModelInvocationResult(
+            model_id, "长" * 70_000, "思" * 70_000, {}, "https://safe.test"
+        )
+
+
+class LargeInputModels:
+    async def invoke(self, model_id: str, payload):
+        assert "问" * 70_000 in payload["messages"][-1]["content"]
+        assert "境" * 70_000 in payload["messages"][0]["content"]
+        return ModelInvocationResult(
+            model_id, "输入已读取", "", {}, "https://safe.test"
         )
 
 
@@ -676,6 +725,157 @@ async def test_assistant_projects_real_model_chunks_to_numbered_events(
             },
         ),
     ]
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_large_tool_result_is_referenced_and_secrets_do_not_reach_state_or_events(
+    tmp_path,
+) -> None:
+    database = tmp_path / "assistant.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    events = StudioEventJournal()
+    models = LargeResultModels()
+    checkpoint = tmp_path / "assistant" / "checkpoints.sqlite3"
+    service = WorkflowAssistantService(
+        SqlAlchemyWorkflowAssistant(factory), checkpoint, models, events
+    )
+    chat = asyncio.create_task(
+        service.chat(
+            session_id="large-result",
+            message="读取大结果 Authorization: Bearer user-secret",
+            model_id="model-main",
+            enable_tools=True,
+            system_prompt="Authorization: Bearer prompt-secret",
+            workflow_context={
+                "apiKey": "context-api-secret",
+                "proxyPassword": "context-proxy-secret",
+                "licenseKey": "context-license-secret",
+            },
+        )
+    )
+    for _ in range(100):
+        if events.sequence >= 3:
+            break
+        await asyncio.sleep(0.01)
+    await _claim(service, "large-result", "large-tool", "large-claim")
+    receipt, status = await service.submit_event_command(
+        "large-result-command",
+        "ai_client_action_ack",
+        {
+            "session_id": "large-result",
+            "tool_call_id": "large-tool",
+            "claim_command_id": "large-claim",
+            "result": {
+                "success": True,
+                "data": {
+                    "content": "大" * 70_000,
+                    "apiKey": "result-api-secret",
+                    "proxyPassword": "result-proxy-secret",
+                    "licenseKey": "result-license-secret",
+                },
+            },
+        },
+    )
+
+    response = await asyncio.wait_for(chat, 2)
+    restored = service.get_session("large-result")
+    tool_result = restored["messages"][1]["tool_calls"][0]["result"]
+    serialized_events = repr(events.replay(after_sequence=0))
+    persisted = database.read_bytes() + checkpoint.read_bytes()
+    artifact_bytes = b"".join(
+        path.read_bytes()
+        for path in (tmp_path / "assistant" / "artifacts").glob("*")
+    )
+
+    assert status == 200 and receipt["success"] is True
+    assert response["message"]["content"] == "大结果已读取"
+    assert tool_result["artifactRef"].startswith("assistant-artifact://")
+    assert "大" * 200 not in serialized_events
+    assert b"\xe5\xa4\xa7" * 200 not in persisted
+    for secret in (
+        "prompt-secret",
+        "user-secret",
+        "context-api-secret",
+        "context-proxy-secret",
+        "context-license-secret",
+        "result-api-secret",
+        "result-proxy-secret",
+        "result-license-secret",
+    ):
+        assert secret not in serialized_events
+        assert secret.encode() not in persisted
+        assert secret.encode() not in artifact_bytes
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_large_model_text_uses_references_in_session_event_and_checkpoint(
+    tmp_path,
+) -> None:
+    database = tmp_path / "large-reply.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    events = StudioEventJournal()
+    checkpoint = tmp_path / "large-reply" / "checkpoints.sqlite3"
+    service = WorkflowAssistantService(
+        SqlAlchemyWorkflowAssistant(factory), checkpoint, LargeReplyModels(), events
+    )
+
+    response = await service.chat(
+        session_id="large-reply",
+        message="生成长回复",
+        model_id="model-main",
+        enable_tools=False,
+        workflow_context={},
+    )
+
+    message = response["message"]
+    assert message["content"] == "（内容过长，已保存为小助手产物）"
+    assert message["reasoning_content"] == "（思考内容过长，已保存为小助手产物）"
+    assert message["contentRef"].startswith("assistant-artifact://")
+    assert message["reasoningContentRef"].startswith("assistant-artifact://")
+    content_path, _ = service.artifact_file(
+        "artifact", message["contentRef"].removeprefix("assistant-artifact://")
+    )
+    assert content_path.read_text() == "长" * 70_000
+    projected = events.replay(after_sequence=0)[-1].data
+    assert projected["artifactRef"] == message["contentRef"]
+    assert "长" * 200 not in repr(projected)
+    assert b"\xe9\x95\xbf" * 200 not in checkpoint.read_bytes()
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_large_user_message_and_context_are_hydrated_only_for_model(tmp_path) -> None:
+    database = tmp_path / "large-input.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    checkpoint = tmp_path / "large-input" / "checkpoints.sqlite3"
+    service = WorkflowAssistantService(
+        SqlAlchemyWorkflowAssistant(factory),
+        checkpoint,
+        LargeInputModels(),
+        StudioEventJournal(),
+    )
+
+    response = await service.chat(
+        session_id="large-input",
+        message="问" * 70_000,
+        model_id="model-main",
+        enable_tools=False,
+        workflow_context={"description": "境" * 70_000},
+    )
+
+    restored = service.get_session("large-input")
+    assert response["message"]["content"] == "输入已读取"
+    assert restored["messages"][0]["contentRef"].startswith(
+        "assistant-artifact://"
+    )
+    persisted = database.read_bytes() + checkpoint.read_bytes()
+    assert b"\xe9\x97\xae" * 200 not in persisted
+    assert b"\xe5\xa2\x83" * 200 not in persisted
     factory.dispose()
 
 

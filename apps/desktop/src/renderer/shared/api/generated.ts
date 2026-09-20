@@ -2896,6 +2896,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/ai-assistant/artifacts/{kind}/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifact */
+        get: operations["artifact_api_ai_assistant_artifacts__kind___artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai-assistant/extract-file": {
         parameters: {
             query?: never;
@@ -4154,6 +4171,18 @@ export type components = {
             attachmentNames?: string[] | null;
             /** Reasoning Content */
             reasoning_content?: string | null;
+            /** Contentref */
+            contentRef?: string | null;
+            /** Contentartifact */
+            contentArtifact?: {
+                [key: string]: unknown;
+            } | null;
+            /** Reasoningcontentref */
+            reasoningContentRef?: string | null;
+            /** Reasoningartifact */
+            reasoningArtifact?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** AssistantModelTest */
         AssistantModelTest: {
@@ -22077,6 +22106,36 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AssistantModelTestResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    artifact_api_ai_assistant_artifacts__kind___artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -92,6 +92,17 @@ describe('MessageBubble 渲染', () => {
     render(<MessageBubble message={message} />)
     expect(container.textContent).toContain('设计工作流')
   })
+
+  it('大回复引用提供按需读取入口', () => {
+    render(<MessageBubble message={{
+      id: 'large',
+      role: 'assistant',
+      content: '（内容过长，已保存为小助手产物）',
+      contentRef: 'assistant-artifact://large.txt',
+    }} />)
+
+    expect(findButtonByText('读取完整内容')).toBeDefined()
+  })
 })
 
 describe('MessageBubble 用户消息操作按钮', () => {

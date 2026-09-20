@@ -45,6 +45,7 @@ class AssistantGraphResult:
 
 
 ModelInvoker = Callable[[str, dict[str, Any]], Awaitable[AssistantModelReply]]
+ProtectValue = Callable[[Any], Any]
 
 
 class _State(TypedDict, total=False):
@@ -239,9 +240,15 @@ def _validate_tool_call(call: AssistantToolCall) -> str | None:
 
 
 class AssistantGraph:
-    def __init__(self, checkpoint_path: Path, invoke_model: ModelInvoker) -> None:
+    def __init__(
+        self,
+        checkpoint_path: Path,
+        invoke_model: ModelInvoker,
+        protect_value: ProtectValue | None = None,
+    ) -> None:
         self._checkpoint_path = Path(checkpoint_path)
         self._invoke_model = invoke_model
+        self._protect_value = protect_value or (lambda value: value)
 
     def _builder(self) -> StateGraph[_State]:
         async def call_model(state: _State) -> _State:
@@ -259,10 +266,24 @@ class AssistantGraph:
                 payload["tools"] = _tool_schema()
                 payload["toolChoice"] = "auto"
             reply = await self._invoke_model(state["model_id"], payload)
+            protected_content = self._protect_value(reply.content)
+            protected_reasoning = self._protect_value(reply.reasoning)
+            content = (
+                str(protected_content["artifactRef"])
+                if isinstance(protected_content, dict)
+                and isinstance(protected_content.get("artifactRef"), str)
+                else str(protected_content)
+            )
+            reasoning = (
+                str(protected_reasoning["artifactRef"])
+                if isinstance(protected_reasoning, dict)
+                and isinstance(protected_reasoning.get("artifactRef"), str)
+                else str(protected_reasoning)
+            )
             messages = list(state["messages"])
             assistant: dict[str, Any] = {
                 "role": "assistant",
-                "content": reply.content,
+                "content": content,
             }
             if reply.tool_calls:
                 assistant["tool_calls"] = [
@@ -272,7 +293,7 @@ class AssistantGraph:
                         "function": {
                             "name": item.name,
                             "arguments": json.dumps(
-                                item.arguments,
+                                self._protect_value(item.arguments),
                                 ensure_ascii=False,
                                 sort_keys=True,
                                 separators=(",", ":"),
@@ -306,18 +327,18 @@ class AssistantGraph:
                     "pending_tool_call": {
                         "id": call.id,
                         "name": call.name,
-                        "arguments": call.arguments,
+                        "arguments": self._protect_value(call.arguments),
                     },
                     "content": "",
-                    "reasoning": reply.reasoning,
+                    "reasoning": reasoning,
                 }
             return {
                 **state,
                 "messages": messages,
                 "steps": steps,
                 "pending_tool_call": None,
-                "content": reply.content,
-                "reasoning": reply.reasoning,
+                "content": content,
+                "reasoning": reasoning,
                 "error": None,
             }
 

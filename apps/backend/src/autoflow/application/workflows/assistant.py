@@ -16,6 +16,7 @@ from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.domain.models import ModelError, ModelInvocationResult
 from autoflow.domain.workflows.assistant import AssistantSession
 from autoflow.domain.workflows.runs import WorkflowRunError
+from autoflow.infrastructure.credentials.redaction import redact_sensitive_value
 from autoflow.infrastructure.database.workflow_assistant import (
     SqlAlchemyWorkflowAssistant,
 )
@@ -79,7 +80,9 @@ class WorkflowAssistantService:
         self._events = events
         self._mcp = mcp
         self._files = AssistantFileStore(checkpoint_path.parent)
-        self._graph = AssistantGraph(checkpoint_path, self._invoke_model)
+        self._graph = AssistantGraph(
+            checkpoint_path, self._invoke_model, self._protect_graph_value
+        )
         self._waiters: dict[str, asyncio.Future[dict[str, Any]]] = {}
         self._tasks: dict[str, asyncio.Task[AssistantGraphResult]] = {}
         self._locks: dict[str, asyncio.Lock] = {}
@@ -93,9 +96,18 @@ class WorkflowAssistantService:
 
         async def on_chunk(kind: str, delta: str, full: str) -> None:
             if isinstance(session_id, str):
+                protected_delta = self._protect_graph_value(delta)
+                protected_full = self._protect_graph_value(full)
+                event = {
+                    "session_id": session_id,
+                    "delta": self._inline_or_summary(protected_delta),
+                    "full": self._inline_or_summary(protected_full),
+                }
+                if isinstance(protected_full, dict):
+                    event.update(protected_full)
                 await self._events.publish(
                     f"ai_assistant:{kind}_partial",
-                    {"session_id": session_id, "delta": delta, "full": full},
+                    event,
                 )
 
         provider_payload["_onChunk"] = on_chunk
@@ -145,10 +157,11 @@ class WorkflowAssistantService:
     ) -> dict[str, Any]:
         if not message.strip():
             raise WorkflowRunError("ASSISTANT_MESSAGE_REQUIRED", "消息不能为空", 422)
+        safe_message = str(redact_sensitive_value(message))
         lock = self._locks.setdefault(session_id, asyncio.Lock())
         async with lock:
             session = self._repository.get(session_id) or self._repository.create(
-                session_id, message.strip()[:24] or "新对话", now=_now()
+                session_id, safe_message.strip()[:24] or "新对话", now=_now()
             )
             if session.status in {"running", "waiting_for_action"}:
                 raise WorkflowRunError(
@@ -157,7 +170,9 @@ class WorkflowAssistantService:
             stored_images = await asyncio.to_thread(
                 self._files.store_images, list(images or [])
             )
-            user = _message("user", message, images=stored_images)
+            user = self._stored_text_message(
+                "user", safe_message, images=stored_images
+            )
             session = self._repository.save(
                 session.with_changes(
                     messages=(*session.messages, user),
@@ -169,7 +184,7 @@ class WorkflowAssistantService:
             for item in session.messages:
                 if item.get("role") not in {"user", "assistant", "tool"}:
                     continue
-                content: Any = item.get("content", "")
+                content: Any = item.get("contentRef", item.get("content", ""))
                 attached = item.get("images")
                 if (
                     item.get("role") == "user"
@@ -186,16 +201,27 @@ class WorkflowAssistantService:
                     ]
                 graph_messages.append({"role": item["role"], "content": content})
             context = json.dumps(
-                workflow_context,
+                redact_sensitive_value(workflow_context),
                 ensure_ascii=False,
                 sort_keys=True,
                 separators=(",", ":"),
             )
             prompt = "你是 AutoFlow Studio 小助手。只能使用提供的工具，前端确认前不得声称操作成功。"
             if system_prompt.strip():
-                prompt += "\n" + system_prompt.strip()
+                prompt += "\n" + str(redact_sensitive_value(system_prompt.strip()))
             prompt += "\n当前工作流上下文：" + context
-            graph_messages.insert(0, {"role": "system", "content": prompt})
+            protected_prompt = self._protect_graph_value(prompt)
+            graph_messages.insert(
+                0,
+                {
+                    "role": "system",
+                    "content": (
+                        protected_prompt["artifactRef"]
+                        if isinstance(protected_prompt, dict)
+                        else str(protected_prompt)
+                    ),
+                },
+            )
             waiter = asyncio.get_running_loop().create_future()
             self._waiters[session_id] = waiter
             task = asyncio.create_task(
@@ -292,7 +318,10 @@ class WorkflowAssistantService:
             )
             return None
         if result.status == "failed":
-            failed = _message("assistant", result.error or "小助手执行失败")
+            error = str(
+                redact_sensitive_value(result.error or "小助手执行失败")
+            )
+            failed = _message("assistant", error)
             self._repository.save(
                 session.with_changes(
                     messages=(*session.messages, failed),
@@ -302,13 +331,11 @@ class WorkflowAssistantService:
             )
             await self._events.publish(
                 "ai_assistant:error",
-                {"session_id": session_id, "error": result.error or "小助手执行失败"},
+                {"session_id": session_id, "error": error},
             )
             response = {"session_id": session_id, "message": failed}
         else:
-            assistant = _message(
-                "assistant", result.content, reasoning_content=result.reasoning or None
-            )
+            assistant = self._graph_message(result.content, result.reasoning)
             self._repository.save(
                 session.with_changes(
                     messages=(*session.messages, assistant),
@@ -318,7 +345,7 @@ class WorkflowAssistantService:
             )
             await self._events.publish(
                 "ai_assistant:content_partial",
-                {"session_id": session_id, "delta": "", "full": result.content},
+                self._stream_event(session_id, result.content),
             )
             response = {"session_id": session_id, "message": assistant}
         waiter = self._waiters.get(session_id)
@@ -369,6 +396,7 @@ class WorkflowAssistantService:
                 "success": False,
                 "error": "工具结果无效",
             }, 422
+        protected_request = self._compact_tool_result(result)
         fingerprint = hashlib.sha256(
             json.dumps(
                 {"event": event, "data": data},
@@ -446,7 +474,7 @@ class WorkflowAssistantService:
                     command_id,
                     session.id,
                     request_hash=fingerprint,
-                    result=result,
+                    result=protected_request,
                     now=_now(),
                 )
             except ValueError as error:
@@ -465,16 +493,28 @@ class WorkflowAssistantService:
                             "success": True,
                             "data": await self._mcp.call_tool(
                                 str(pending_action["action"]),
-                                dict(pending_action.get("payload") or {}),
+                                dict(
+                                    self._files.hydrate_value(
+                                        pending_action.get("payload") or {}
+                                    )
+                                ),
                             ),
                         }
                     except Exception as error:  # noqa: BLE001 - tool failures return to the model.
-                        result = {"success": False, "error": str(error)[:500]}
+                        result = {
+                            "success": False,
+                            "error": str(redact_sensitive_value(str(error)[:500])),
+                        }
             else:
                 result = {
                     "success": False,
-                    "error": str(result.get("error") or "用户拒绝执行 MCP 工具"),
+                    "error": str(
+                        redact_sensitive_value(
+                            str(result.get("error") or "用户拒绝执行 MCP 工具")
+                        )
+                    ),
                 }
+        result = self._compact_tool_result(result)
         graph_thread = f"assistant/{session.id}"
         current_graph = await self._graph.current(thread_id=graph_thread)
         resumed = (
@@ -629,6 +669,17 @@ class WorkflowAssistantService:
             "revision": session.revision,
         }
 
+    def artifact_file(self, kind: str, artifact_id: str) -> tuple[Path, str]:
+        scheme = {
+            "attachment": "assistant-attachment://",
+            "artifact": "assistant-artifact://",
+        }.get(kind)
+        if scheme is None:
+            raise WorkflowRunError(
+                "ASSISTANT_ARTIFACT_INVALID", "小助手产物类型无效", 422
+            )
+        return self._files.artifact_file(f"{scheme}{artifact_id}")
+
     def list_sessions(self) -> list[dict[str, Any]]:
         return [
             {
@@ -694,6 +745,62 @@ class WorkflowAssistantService:
         return await asyncio.to_thread(
             self._files.transcribe_audio, audio_base64, language, model_size
         )
+
+    def _protect_graph_value(self, value: Any) -> Any:
+        return self._files.externalize_large_leaves(redact_sensitive_value(value))
+
+    @staticmethod
+    def _inline_or_summary(value: Any) -> str:
+        if isinstance(value, dict) and isinstance(value.get("artifactRef"), str):
+            return "（内容过长，已保存为小助手产物）"
+        return str(value)
+
+    def _stream_event(self, session_id: str, content: str) -> dict[str, Any]:
+        if content.startswith("assistant-artifact://"):
+            info = self._files.artifact_info(content)
+            return {
+                "session_id": session_id,
+                "delta": "",
+                "full": "（内容过长，已保存为小助手产物）",
+                **info,
+            }
+        return {"session_id": session_id, "delta": "", "full": content}
+
+    def _graph_message(self, content: str, reasoning: str) -> dict[str, Any]:
+        extra: dict[str, Any] = {}
+        if content.startswith("assistant-artifact://"):
+            extra["contentRef"] = content
+            extra["contentArtifact"] = self._files.artifact_info(content)
+            content = "（内容过长，已保存为小助手产物）"
+        if reasoning.startswith("assistant-artifact://"):
+            extra["reasoningContentRef"] = reasoning
+            extra["reasoningArtifact"] = self._files.artifact_info(reasoning)
+            reasoning = "（思考内容过长，已保存为小助手产物）"
+        return _message(
+            "assistant", content, reasoning_content=reasoning or None, **extra
+        )
+
+    def _stored_text_message(
+        self, role: str, content: str, **extra: Any
+    ) -> dict[str, Any]:
+        protected = self._protect_graph_value(content)
+        if not isinstance(protected, dict):
+            return _message(role, str(protected), **extra)
+        reference = str(protected["artifactRef"])
+        return _message(
+            role,
+            "（内容过长，已保存为小助手产物）",
+            contentRef=reference,
+            contentArtifact=protected,
+            **extra,
+        )
+
+    def _compact_tool_result(self, result: dict[str, Any]) -> dict[str, Any]:
+        protected = redact_sensitive_value(result)
+        assert isinstance(protected, dict)
+        if "data" in protected:
+            protected["data"] = self._files.externalize(protected["data"])
+        return protected
 
     def delete_session(self, session_id: str) -> dict[str, bool]:
         session = self._required(session_id)
