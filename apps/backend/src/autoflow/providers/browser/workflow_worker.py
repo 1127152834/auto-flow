@@ -27,6 +27,7 @@ from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifa
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
 )
+from autoflow.providers.integrations import HttpIntegrationGateway
 from autoflow.providers.model import WorkflowModelGateway
 
 from .workflow_session import launch_workflow_session
@@ -110,6 +111,7 @@ async def _run_in_session(
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
             models=WorkflowModelGateway(_model_bindings(command)),
+            external_integrations=HttpIntegrationGateway(),
         )
         sink = _WorkerEventSink(
             stdout,

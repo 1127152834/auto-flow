@@ -44,6 +44,7 @@ from .dict_advanced import (
     DictMergeExecutor,
     DictSortExecutor,
 )
+from .external_http import EXTERNAL_HTTP_EXECUTORS
 from .firecrawl import FIRECRAWL_EXECUTORS
 from .input_prompt import InputPromptExecutor
 from .list_advanced import (
@@ -155,6 +156,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *AI_TASK_EXECUTORS,
     *AI_SCRAPER_EXECUTORS,
     *FIRECRAWL_EXECUTORS,
+    *EXTERNAL_HTTP_EXECUTORS,
     *CAPTCHA_EXECUTORS,
     *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,
