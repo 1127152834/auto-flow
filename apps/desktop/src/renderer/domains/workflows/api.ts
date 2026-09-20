@@ -47,6 +47,7 @@ export interface ApiResponse<T = any> {
 export type WorkflowRunSummary = components['schemas']['StudioWorkflowRunSummary']
 export type WorkflowRunPage = components['schemas']['StudioWorkflowRunPage']
 export type ExecutionLogPage = components['schemas']['StudioExecutionLogPage']
+export type ModelOptionList = components['schemas']['ModelOptionListRead']
 export interface ExecutionLogQuery {
   cursor?: number
   limit?: number
@@ -160,6 +161,10 @@ export const systemApi = {
     apiRequest<{ success: boolean; dataUrl?: string; width?: number; height?: number; error?: string }>(
       '/system/screenshot-base64', { method: 'POST', body: '{}' }
     ),
+}
+
+export const modelApi = {
+  listOptions: () => apiRequest<ModelOptionList>('/v1/models/options'),
 }
 
 // ==================== 工作流 API ====================

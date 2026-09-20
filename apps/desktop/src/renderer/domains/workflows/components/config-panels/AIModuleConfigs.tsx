@@ -1,7 +1,9 @@
 // Source: WebRPA@5ccb900e, components/workflow/config-panels/AIModuleConfigs.tsx; see SOURCE.md for license and adaptation boundaries.
 import type React from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { NodeData } from '../../editor-store'
+import type { ModelOptionList } from '../../api'
+import { modelApi } from '../../api'
 import { Label } from '../controls/label'
 import { Checkbox } from '../controls/checkbox'
 import { NumberInput } from '../controls/number-input'
@@ -14,88 +16,75 @@ import { Bot, Cpu } from 'lucide-react'
 import { useGlobalConfigStore } from '../../hooks/stores/globalConfigStore'
 
 type RenderSelectorInput = (id: string, label: string, placeholder: string) => React.ReactNode
+type ModelOption = ModelOptionList['items'][number]
+type BatchChange = (data: Partial<NodeData>) => void
 
-// 已配置 AI 对话模型的一键选择下拉：选中即把该模型的 地址/密钥/模型名 填入当前模块
-function AIModelPicker({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  const models = useGlobalConfigStore((s) => s.config.ai?.models) || []
+// 模型凭据只留在主应用；工作流文档仅保存稳定 modelId。
+function AIModelPicker({ data, onBatchChange }: { data: NodeData; onBatchChange: BatchChange }) {
+  const [models, setModels] = useState<ModelOption[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const autoFallback = useGlobalConfigStore((s) => s.config.ai?.autoFallback) ?? false
 
-  // 全局开启「失败自动切换」时，自动把其它已配置模型注入本模块的 fallbackModels（运行时按序回退）；
-  // 关闭时清空。用序列化对比避免无限渲染。
   useEffect(() => {
-    const curUrl = (data.apiUrl as string) || ''
-    const curModel = (data.model as string) || ''
-    const desired = (autoFallback && models.length > 0)
-      ? models
-          .filter((m) => m.apiUrl && m.model && !(m.apiUrl === curUrl && m.model === curModel))
-          .map((m) => ({ apiUrl: m.apiUrl, apiKey: m.apiKey, model: m.model, temperature: m.temperature, maxTokens: m.maxTokens }))
-      : []
-    const prev = (data.fallbackModels as any[]) || []
-    if (JSON.stringify(prev) !== JSON.stringify(desired)) {
-      onChange('fallbackModels', desired.length > 0 ? desired : undefined)
+    let active = true
+    const load = async () => {
+      setLoading(true)
+      const result = await modelApi.listOptions()
+      if (!active) return
+      if (!result.success || !Array.isArray(result.data?.items)) {
+        setError(`模型列表加载失败：${result.error || '响应格式错误'}`)
+        setModels([])
+      } else {
+        setError('')
+        setModels(result.data.items)
+      }
+      setLoading(false)
     }
+    void load()
+    window.addEventListener('studio:transport-changed', load)
+    return () => { active = false; window.removeEventListener('studio:transport-changed', load) }
+  }, [])
 
-  }, [autoFallback, JSON.stringify(models), data.apiUrl, data.model])
+  useEffect(() => {
+    if (loading || !data.modelId) return
+    const desired = autoFallback ? models.filter(model => model.id !== data.modelId).map(model => model.id) : []
+    const current = Array.isArray(data.fallbackModelIds) ? data.fallbackModelIds : []
+    if (JSON.stringify(current) !== JSON.stringify(desired)) {
+      onBatchChange({ fallbackModelIds: desired.length ? desired : undefined })
+    }
+  }, [autoFallback, data.modelId, loading, models, onBatchChange])
 
-  if (models.length === 0) return null
-  const current = models.find((m) => (m.model || '') === (data.model as string) && (m.apiUrl || '') === (data.apiUrl as string))
+  const selectedMissing = Boolean(data.modelId) && !loading && !error && !models.some(model => model.id === data.modelId)
   return (
     <div className="space-y-2">
-      <Label className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-violet-600" />从已配置模型选择</Label>
+      <Label className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-violet-600" />主应用模型</Label>
       <Select
-        value={current?.id || ''}
+        value={(data.modelId as string) || ''}
+        disabled={loading || models.length === 0}
         onChange={(e) => {
-          const m = models.find((x) => x.id === e.target.value)
-          if (!m) return
-          onChange('apiUrl', m.apiUrl || '')
-          onChange('apiKey', m.apiKey || '')
-          onChange('model', m.model || '')
-          if (m.temperature != null) onChange('temperature', m.temperature)
-          if (m.maxTokens != null) onChange('maxTokens', m.maxTokens)
+          const modelId = e.target.value || undefined
+          onBatchChange({ modelId, apiUrl: undefined, apiKey: undefined, model: undefined, fallbackModels: undefined })
         }}
       >
-        <option value="">手动填写 / 选择一个已配置模型…</option>
-        {models.map((m) => (
-          <option key={m.id} value={m.id}>{m.label || m.model}（{m.model}）</option>
+        <option value="">{loading ? '正在读取主应用模型…' : '请选择模型…'}</option>
+        {models.map((model) => (
+          <option key={model.id} value={model.id}>{model.displayName}（{model.providerName}）</option>
         ))}
       </Select>
-      <p className="text-xs text-muted-foreground">在「全局配置 → AI对话 → 多模型」中维护模型；选择后会自动填入下方地址/密钥/模型。</p>
+      {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+      {!loading && !error && models.length === 0 && <p className="text-xs text-amber-700">主应用尚未配置可用模型</p>}
+      {selectedMissing && <p className="text-xs text-amber-700">已选模型不可用，请从主应用模型中重新选择</p>}
+      <p className="text-xs text-muted-foreground">模型地址和密钥由主应用安全管理，不写入工作流文档。</p>
     </div>
   )
 }
 
 // AI大脑配置
-export function AIChatConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function AIChatConfig({ data, onChange, onBatchChange }: { data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   return (
     <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://api.openai.com/v1/chat/completions，支持 {变量名}"
-        />
-        <p className="text-xs text-muted-foreground">
-          支持 OpenAI、智谱、Deepseek 等兼容接口
-        </p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="sk-xxx 或其他API密钥，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="gpt-3.5-turbo / glm-4 / deepseek-chat，支持 {变量名}"
-        />
-      </div>
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
       <div className="space-y-2">
         <Label htmlFor="systemPrompt">系统提示词 (可选)</Label>
         <VariableInput
@@ -154,44 +143,19 @@ export function AIChatConfig({ data, onChange }: { data: NodeData; onChange: (ke
 export function AIVisionConfig({ 
   data, 
   onChange, 
+  onBatchChange,
   renderSelectorInput 
 }: { 
   data: NodeData
   onChange: (key: string, value: unknown) => void
+  onBatchChange: BatchChange
   renderSelectorInput: RenderSelectorInput
 }) {
   const imageSource = (data.imageSource as string) || 'element'
   
   return (
     <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions，支持 {变量名}"
-        />
-        <p className="text-xs text-muted-foreground">
-          支持 OpenAI、智谱GLM-4V 等视觉模型接口
-        </p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="API密钥，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="glm-4v / gpt-4-vision-preview，支持 {变量名}"
-        />
-      </div>
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
       
       <div className="space-y-2">
         <Label htmlFor="imageSource">图片来源</Label>
@@ -1107,39 +1071,11 @@ export function FirecrawlCrawlConfig({ data, onChange }: { data: NodeData; onCha
 // AI 数据处理任务（抽取/分类/摘要/翻译/情感）通用配置面板
 // 复用全局 AI 模型选择 + API 字段，按 moduleType 渲染任务专属字段。
 // ============================================================
-function AITaskApiBlock({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  return (
-    <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://api.openai.com/v1/chat/completions，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="sk-xxx，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="gpt-3.5-turbo / glm-4 / deepseek-chat，支持 {变量名}"
-        />
-      </div>
-    </>
-  )
+function AITaskApiBlock({ data, onBatchChange }: { data: NodeData; onBatchChange: BatchChange }) {
+  return <AIModelPicker data={data} onBatchChange={onBatchChange} />
 }
 
-export function AITaskConfig({ moduleType, data, onChange }: { moduleType: string; data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function AITaskConfig({ moduleType, data, onChange, onBatchChange }: { moduleType: string; data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   return (
     <div className="space-y-3">
       {moduleType === 'ai_dedup_semantic' ? (
@@ -1277,9 +1213,9 @@ export function AITaskConfig({ moduleType, data, onChange }: { moduleType: strin
       </div>
 
       <details className="rounded-lg border border-[hsl(var(--border))] p-2">
-        <summary className="text-sm cursor-pointer select-none text-[hsl(var(--muted-foreground))]">AI 接口设置（默认取全局 AI 配置）</summary>
+        <summary className="text-sm cursor-pointer select-none text-[hsl(var(--muted-foreground))]">AI 模型设置</summary>
         <div className="space-y-2 mt-2">
-          <AITaskApiBlock data={data} onChange={onChange} />
+          <AITaskApiBlock data={data} onBatchChange={onBatchChange} />
         </div>
       </details>
     </div>
@@ -1287,37 +1223,12 @@ export function AITaskConfig({ moduleType, data, onChange }: { moduleType: strin
 }
 
 // AI视觉操作配置（看屏点选，不依赖选择器）
-export function AIVisionActConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function AIVisionActConfig({ data, onChange, onBatchChange }: { data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   const action = (data.action as string) || 'click'
   const needButton = action === 'click' || action === 'double'
   return (
     <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions，支持 {变量名}"
-        />
-        <p className="text-xs text-muted-foreground">需支持坐标定位的视觉模型（如 GLM-4V、UI-TARS、GPT-4o）</p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="API密钥，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="glm-4v / ui-tars / gpt-4o，支持 {变量名}"
-        />
-      </div>
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
 
       <div className="space-y-2">
         <Label htmlFor="instruction">目标描述</Label>

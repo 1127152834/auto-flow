@@ -13,7 +13,9 @@
     "通过现有 stdin worker 通道传入本次运行所需绑定",
     "运行快照、事件和节点结果不包含密钥",
     "OpenAI兼容、Anthropic和Gemini文本协议适配",
-    "ai_chat 主模型、顺序 fallback、变量解析和结果写回"
+    "ai_chat 主模型、顺序 fallback、变量解析和结果写回",
+    "Studio 的 11 个共用 AI 配置入口从主应用模型选项读取 modelId",
+    "选择模型时原子清除旧 URL、密钥、模型名和含密钥 fallback 对象"
   ],
   "checks": [
     {
@@ -30,6 +32,16 @@
       "command": "uv run --project apps/backend ruff check <B5.1 affected files> && uv run --project apps/backend mypy <B5.1 backend modules>",
       "exitCode": 0,
       "result": "Ruff and mypy passed"
+    },
+    {
+      "command": "npm test --workspace @autoflow/desktop -- --run src/renderer/domains/workflows/tests/config-field-context.test.tsx src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx src/renderer/domains/workflows/tests/ai-model-picker-entry.test.tsx",
+      "exitCode": 0,
+      "result": "79 passed"
+    },
+    {
+      "command": "npm run typecheck --workspace @autoflow/desktop && npx eslint <B5 model picker affected files>",
+      "exitCode": 0,
+      "result": "TypeScript and ESLint passed"
     }
   ],
   "realWorker": {
@@ -39,7 +51,6 @@
     "secretScanPassed": true
   },
   "remaining": [
-    "Studio 前端仍需从主应用模型选项读取 modelId，移除本地 API URL/API Key 持久化",
     "其余 21 个 AI 节点尚未迁入",
     "流式、完整取消/超时/限流矩阵和正式 Electron 真实 UI 尚未验收",
     "真实供应商调用属于外部等待"

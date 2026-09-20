@@ -1575,16 +1575,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       }
     } else if (type === 'ai_chat') {
       defaultData = {
-        apiUrl: globalConfig.ai.apiUrl,
-        apiKey: globalConfig.ai.apiKey,
-        model: globalConfig.ai.model,
         temperature: globalConfig.ai.temperature,
         maxTokens: globalConfig.ai.maxTokens,
         systemPrompt: globalConfig.ai.systemPrompt,
         resultVariable: 'ai_response',
       }
     } else if (type === 'ai_extract' || type === 'ai_classify' || type === 'ai_summarize' || type === 'ai_translate' || type === 'ai_sentiment' || type === 'ai_normalize' || type === 'ai_dedup_semantic' || type === 'ai_route') {
-      // AI 数据处理任务：复用全局 AI 配置（接口/密钥/模型）
+      // AI 数据处理任务：模型由主应用按稳定 modelId 管理。
       const varName = {
         ai_extract: 'extracted_data',
         ai_classify: 'category',
@@ -1597,9 +1594,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       }[type] || 'ai_result'
       const lowTemp = ['ai_extract', 'ai_classify', 'ai_sentiment', 'ai_normalize', 'ai_dedup_semantic', 'ai_route']
       defaultData = {
-        apiUrl: globalConfig.ai.apiUrl,
-        apiKey: globalConfig.ai.apiKey,
-        model: globalConfig.ai.model,
         temperature: lowTemp.includes(type) ? 0.2 : 0.5,
         maxTokens: globalConfig.ai.maxTokens,
         variableName: varName,

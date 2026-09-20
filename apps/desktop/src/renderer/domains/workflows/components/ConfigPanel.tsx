@@ -312,6 +312,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     }
   }, [selectedNodeId, updateNodeData])
 
+  const handleBatchChange = useCallback((data: Partial<NodeData>) => {
+    if (selectedNodeId) updateNodeData(selectedNodeId, data)
+  }, [selectedNodeId, updateNodeData])
+
   const handleDelete = () => {
     if (selectedNodeId) {
       deleteNode(selectedNodeId)
@@ -757,7 +761,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     if (excludedModuleTypes.has(nodeData.moduleType)) {
       return <div role="status">此节点已排除，保留原配置，仅供查看和导出<pre className="whitespace-pre-wrap break-all text-xs">{JSON.stringify(nodeData, null, 2)}</pre></div>
     }
-    const props = { data: nodeData, onChange: handleChange, renderSelectorInput }
+    const props = { data: nodeData, onChange: handleChange, onBatchChange: handleBatchChange, renderSelectorInput }
 
 
     switch (nodeData.moduleType) {
@@ -880,7 +884,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'network_capture':
         return <NetworkCaptureConfig data={nodeData} onChange={handleChange} />
       case 'ai_chat':
-        return <AIChatConfig data={nodeData} onChange={handleChange} />
+        return <AIChatConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_extract':
       case 'ai_classify':
       case 'ai_summarize':
@@ -889,11 +893,11 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'ai_normalize':
       case 'ai_dedup_semantic':
       case 'ai_route':
-        return <AITaskConfig moduleType={String(nodeData.moduleType)} data={nodeData} onChange={handleChange} />
+        return <AITaskConfig moduleType={String(nodeData.moduleType)} data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_vision':
         return <AIVisionConfig {...props} />
       case 'ai_vision_act':
-        return <AIVisionActConfig data={nodeData} onChange={handleChange} />
+        return <AIVisionActConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_smart_scraper':
         return <AISmartScraperConfig data={nodeData} onChange={handleChange} />
       case 'ai_element_selector':
