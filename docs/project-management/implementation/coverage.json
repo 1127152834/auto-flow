@@ -1,6 +1,6 @@
 {
   "date": "2026-09-20",
-  "status": "confirmed-pm5-management-delivered-pm6-management-delivered-pm5-scope-visual-passed-real-executor-partial-user-acceptance-pending-pm7-management-delivered-pm8-management-delivered",
+  "status": "pm9-production-runtime-implemented-release-acceptance-in-progress",
   "design_baseline": "906deda",
   "plan": "docs/superpowers/plans/2026-09-13-project-management-milestones.md",
   "note": "PM0–PM3历史证据保留。PM4 V1/A/B/C/F 管理功能已交付；macOS arm64 的 Electron、FastAPI、SQLite、输入领取、项目数据能力、有限/不限调度、第二自动化读取链，以及 noMatch/temporarilyBusy/configurationError 管理态和日志搜索 Enter 均通过，执行步骤使用隔离 fake executor。PM4 交付状态为 delivered，验证状态保持 partially_verified。当前源码管理链、19 张截图同视口复审和阶段全量检查均已通过。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过，真实执行核心 PM3 QA 未执行；真实生产执行核心、CloakBrowser、Studio、Windows、其他架构、packaged 及用户手测未执行；PM5 管理侧及实际浏览器环境存取已交付：界面点击、FastAPI、SQLite、环境目录副本与 CloakBrowser 145 的登录保存/恢复均真实，执行步骤由隔离测试执行器驱动，任务保持排队态；PM5 范围内 6 个画板（001/003/004/005/010/100-rename-drawer）同视口对照通过，范围外的 002 运行环境详情、006 默认资源编辑及 007–009、100-cleanup-* 仍缺失并已登记，100-rename-validation-conflict 的项目内名称唯一规则与已批准设计冲突待产品确认；真实生产执行核心、CloakBrowser 执行核心、Studio、Windows、其他架构、packaged 及用户手测未执行；PM6–PM9 保持 planned。 第二轮补交付（2026-09-18）：03-runs 的人工链已接通真实页面——运行记录新增「等待人工」页签、唯一一份人工详情（继续节点/标记完成二次确认/标记失败必填）、超时终态处理结果，以及任务列表等待人工行的「查看事项」入口；同轮修复三处真实缺陷：ProjectsWorkspace 的人工详情分支被 taskId 短路、标记完成提交按钮被弹窗内的知情勾选永久锁死、等待人工目录空态在有默认状态筛选时误报「没有匹配」。证据 docs/project-management/implementation/pm5/qa-runs/2026-09-18/（15 检查点 / 25 截图）。 第三轮补交付（2026-09-18）：03-runs 人工链接通真实页面（运行记录「等待人工」页签、唯一一份人工详情、完成二次确认、失败必填、超时终态处理结果），任务列表按原型 002 补齐「所属批次」「当前或结束节点」「时间（最近状态时间）」并新增服务端 lastStatusAt；同轮修复四处真实缺陷（人工详情路由被 taskId 短路、「标记完成」被弹窗内勾选锁死、等待人工空态误报、终态仍渲染不可用表单）。证据 docs/project-management/implementation/pm5/qa-runs/2026-09-18/（16 检查点 / 27 截图）与 pm5/ui-verification.md（03-runs 逐画面评分）。 PM6 补交付（2026-09-18）：Google Sheets 来源与同步闭环的管理侧与本地契约已交付并验证——连接与多绑定、结构/身份/映射全量核验、公式列只读刷新、出站意图队列与发送核验状态机、pull/push、暂停恢复、断开连接、解除绑定影响预检、超时转 unknown 后只核验不盲重发。真实界面证据 13 检查点 / 13 截图见 docs/project-management/implementation/pm6/qa-runs/2026-09-18/，逐画面对照见 docs/project-management/implementation/pm6/ui-verification.md。该轮端到端抓出四个真实缺陷并已修复：绑定命令用 POST 打只接受 PUT 的路由（真实界面绑定必然 405）、拉取/推送后记录页不重取、来源页把读取失败显示为空事实、连接面板列错位。实网 Google 端到端未执行（需用户 OAuth 桌面客户端 JSON 与授权测试表）；远端增列与系统身份列因冻结契约无对应路由/初始化动作而按缺口登记。第三轮补交付（2026-09-18）：来源页签按原型 100-sheets-directions 改为两栏骨架，修复四处 <td> 嵌在 <thead> 的表头、记录身份重复渲染与解绑确认脱离触发按钮，并新增「推送结果未知」状态截图；原型 011/100 逐画面评分 86/88，唯一未对齐项是「来源核对」卡（冻结契约没有漂移汇总 DTO）。PM7 管理侧已交付并端到端验证（2026-09-19，run 20260918203625）：项目概览、统计与冻结下钻、任务证据、失败后续批次、停止与强停，以及概览/统计刷新失败保留上次结果、结果集过期、修订冲突、提交后响应丢失按原操作核对、迟到事件补读，均由真实 Electron 界面点击驱动，FastAPI、SQLite 与项目数据服务真实，执行步骤由隔离 QA 测试执行器驱动；逐画面对照见 docs/project-management/implementation/pm7/visual-review.md。交付边界固定为「管理侧通过，真实执行核心接入待验收」，真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包与用户手测未执行。PM7 管理侧已交付并端到端验证（run 20260918203625，delivered-management-scope）。PM8 管理侧已交付（delivered-management-scope、partially_verified），权威运行 20260920010843；真实执行核心接入待验收。",
@@ -224,7 +224,7 @@
       "evidence": [
         "docs/project-management/implementation/pm9/verification.json"
       ],
-      "limitations": "macOS arm64 管理链源码与打包冒烟通过；生产完整链、其他平台与实机专项未通过，不抵扣发行验收。"
+      "limitations": "生产运行时与本机源码/打包链、容量 UI 通过；同提交三平台 CI、实网 Sheets、物理安装/签名/凭据验收分开记录，不将工程通过等同最终发行验收。"
     }
   ],
   "features": [
@@ -354,6 +354,15 @@
           "limitations": "管理侧真实验证：Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 隔离 QA 测试执行器。真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包应用与用户手测未执行。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM1-B",
@@ -393,6 +402,15 @@
           "scope": "管理侧通过，真实执行核心接入待验收。归档/恢复/永久删除、跨重启核验、退出与工作区阻断、全局资源引用保护已在真实 Electron + FastAPI + 隔离 SQLite + 隔离测试执行器上端到端通过；13 张截图逐画面审查最低 85 分。真实生产执行核心、真实 CloakBrowser、Studio demo、Windows/其他架构/打包应用与用户手测未执行。",
           "limitations": "归档与恢复：真实界面归档 → 只读 → 恢复，历史任务逐字段不变、导出未重放。",
           "platform": "darwin/arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
       ],
@@ -438,6 +456,15 @@
           "scope": "管理侧通过，真实执行核心接入待验收。归档/恢复/永久删除、跨重启核验、退出与工作区阻断、全局资源引用保护已在真实 Electron + FastAPI + 隔离 SQLite + 隔离测试执行器上端到端通过；13 张截图逐画面审查最低 85 分。真实生产执行核心、真实 CloakBrowser、Studio demo、Windows/其他架构/打包应用与用户手测未执行。",
           "limitations": "永久删除：影响过期 412、确认名 422、删除后墓碑与邻居保留已验证；清理失败残留只有后端集成与组件测试证据，端到端未制造真实残留。",
           "platform": "darwin/arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
       ],
@@ -872,8 +899,18 @@
       "first_usable": "PM3",
       "complete_acceptance": "PM5",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "primary_package": "PM3-A",
       "owner": "project-runs",
       "planned_test_file": "apps/backend/tests/integration/test_project_run_start.py",
@@ -915,6 +952,15 @@
           "report": "docs/project-management/implementation/pm3/verification.json",
           "real_application": "docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/result.json; docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/result.json; docs/project-management/implementation/pm3/qa-runs/run-KdlnGO/result.json",
           "scope": "PM3管理端已交付子范围；complete_acceptance指向后续里程碑的能力保持未验收。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
@@ -1037,6 +1083,15 @@
           "limitations": "管理侧真实验证：Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 隔离 QA 测试执行器。真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包应用与用户手测未执行。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-C",
@@ -1100,6 +1155,15 @@
           "real_application": "docs/project-management/implementation/pm7/qa-runs/20260918203625/report.json",
           "scope": "批次详情显示本次启动参数、任务数量摘要、真实起止时间与结束原因。",
           "limitations": "管理侧真实验证：Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 隔离 QA 测试执行器。真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包应用与用户手测未执行。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
@@ -1167,6 +1231,15 @@
           "limitations": "管理侧真实验证：Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 隔离 QA 测试执行器。真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包应用与用户手测未执行。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-C",
@@ -1231,6 +1304,15 @@
           "scope": "管理侧通过，真实执行核心接入待验收。归档/恢复/永久删除、跨重启核验、退出与工作区阻断、全局资源引用保护已在真实 Electron + FastAPI + 隔离 SQLite + 隔离测试执行器上端到端通过；13 张截图逐画面审查最低 85 分。真实生产执行核心、真实 CloakBrowser、Studio demo、Windows/其他架构/打包应用与用户手测未执行。",
           "limitations": "PM8 未复验停止/强停链（PM3 已交付并有独立证据）。",
           "platform": "darwin/arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
       ],
@@ -1298,6 +1380,15 @@
           "limitations": "PM8-B1 交付未知结果保持未知的核验与恢复；本轮端到端注入的是命令响应丢失，不是运行结果未知。",
           "platform": "darwin/arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-C",
@@ -1353,6 +1444,15 @@
           "real_application": "docs/project-management/implementation/pm7/qa-runs/20260918203625/report.json",
           "scope": "失败任务从原输入组发起后续批次：修订冲突被真实拒绝且表单保留；提交后响应丢失时用户按原操作身份核对找回，批次总数恰好增加 1，旧结果集下钻不变。",
           "limitations": "管理侧真实验证：Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 隔离 QA 测试执行器。真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包应用与用户手测未执行。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
@@ -1481,6 +1581,15 @@
           "limitations": "管理侧真实验证：Electron 渲染层点击 + 应用自启 FastAPI + SQLite + 隔离 QA 测试执行器。真实执行核心、CloakBrowser、Studio demo、Windows、其他架构、打包应用与用户手测未执行。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM7-B",
@@ -1561,6 +1670,15 @@
           "platform": "macOS arm64",
           "user_acceptance": "pending",
           "real_application": "docs/migration/pm2-detail-qa/run-Z9O6af/result.json"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM2-A",
@@ -2094,6 +2212,15 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM4-B",
@@ -2244,6 +2371,15 @@
           "limitations": "PM8 未复验等待人工列表与处理详情。",
           "platform": "darwin/arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM5-C",
@@ -2338,6 +2474,15 @@
           "real_application": "docs/project-management/implementation/pm5/qa-runs/2026-09-18/ui-result.json",
           "visual_review": "docs/project-management/implementation/pm5/ui-verification.md",
           "limitations": "管理侧及实际浏览器环境存取已验证；隔离测试执行器把任务保持排队态，真实执行核心接入、Windows/其他架构、打包与用户手测未验收。 三种来源与持续使用在管理侧与真实浏览器存取中验证；真实执行核心未验收。"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM5-A",
@@ -2440,6 +2585,15 @@
           "scope": "管理侧通过，真实执行核心接入待验收。归档/恢复/永久删除、跨重启核验、退出与工作区阻断、全局资源引用保护已在真实 Electron + FastAPI + 隔离 SQLite + 隔离测试执行器上端到端通过；13 张截图逐画面审查最低 85 分。真实生产执行核心、真实 CloakBrowser、Studio demo、Windows/其他架构/打包应用与用户手测未执行。",
           "limitations": "PM8 未复验从任务保存环境与后续选择。",
           "platform": "darwin/arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_runtime_and_packaged_application",
+          "report": "docs/project-management/implementation/pm9/verification.json",
+          "scope": "仅本报告列明场景；正式 HTTP、生产 worker、真实浏览器及打包 Electron，非 QA 执行器",
+          "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
+          "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
       ],
@@ -11140,5 +11294,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "PM9 已获实施授权并从合并基线建立独立分支。管理链源码、packaged sidecar、packaged Electron 已在 macOS arm64 运行；全覆盖复核保持历史状态，生产核心仍受四节点边界限制。见 pm9/verification.json。"
+  "pm9_note": "2026-09-20：已按用户确认接通共享图、父进程项目数据 RPC、End 和人工存活 worker 延续；正式 Studio HTTP 与真实 CloakBrowser/打包产物通过多表、参数、登录复用、人工、失败后续、统计和生命周期链。万行/千条日志的打包 UI 测量已完成。三平台 CI 及缺少实机/Sheets 证据见 pm9/verification.json；历史阶段 note 保留，仅其“生产核心未接入”结论由本条取代。并行循环与跨进程人工恢复明确不支持。"
 }

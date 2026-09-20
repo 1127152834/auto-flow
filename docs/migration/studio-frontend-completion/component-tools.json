@@ -34287,129 +34287,137 @@
     ],
     "conditions": [
       {
-        "line": 33,
+        "line": 37,
         "expression": "controller.signal.aborted"
-      },
-      {
-        "line": 34,
-        "expression": "!result.success || !result.data"
-      },
-      {
-        "line": 36,
-        "expression": "!projectId"
       },
       {
         "line": 38,
+        "expression": "!result.success || !result.data"
+      },
+      {
+        "line": 40,
+        "expression": "!projectId"
+      },
+      {
+        "line": 42,
         "expression": "controller.signal.aborted"
-      },
-      {
-        "line": 39,
-        "expression": "!tableResult.success || !tableResult.data"
-      },
-      {
-        "line": 41,
-        "expression": "!tableId"
       },
       {
         "line": 43,
+        "expression": "!tableResult.success || !tableResult.data"
+      },
+      {
+        "line": 45,
+        "expression": "!tableId"
+      },
+      {
+        "line": 47,
         "expression": "controller.signal.aborted"
       },
       {
-        "line": 44,
+        "line": 48,
         "expression": "!fieldResult.success || !fieldResult.data"
       },
       {
-        "line": 68,
+        "line": 55,
+        "expression": "op === 'previewFieldChange'"
+      },
+      {
+        "line": 73,
         "expression": "table"
       },
       {
-        "line": 72,
+        "line": 79,
         "expression": "event.target.checked"
+      },
+      {
+        "line": 81,
+        "expression": "operation === 'readRecord' || operation === 'queryRecords'"
       }
     ],
     "bindings": [
       {
-        "line": 58,
+        "line": 62,
         "attribute": "value",
         "expression": "{operation}"
       },
       {
-        "line": 58,
+        "line": 62,
         "attribute": "onChange",
         "expression": "{event => {\n      const next = event.target.value\n      onChange('operation', next); onChange('argumentsValid', true); onChange('arguments', {}); onChange('tableGrant', undefined)\n    }}"
       },
       {
-        "line": 61,
+        "line": 65,
         "attribute": "value",
         "expression": "{value}"
       },
       {
-        "line": 64,
+        "line": 68,
         "attribute": "value",
         "expression": "{projectId}"
       },
       {
-        "line": 64,
+        "line": 68,
         "attribute": "onChange",
-        "expression": "{event => { onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}"
+        "expression": "{event => { setTablePage(1); onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}"
       },
       {
-        "line": 65,
+        "line": 69,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 65,
+        "line": 69,
         "attribute": "value",
         "expression": "{project.projectId}"
       },
       {
-        "line": 68,
+        "line": 73,
         "attribute": "value",
         "expression": "{tableId}"
       },
       {
-        "line": 68,
+        "line": 73,
         "attribute": "onChange",
         "expression": "{event => { const table = tables.find(item => item.tableId === event.target.value); if (table) bind(table) }}"
       },
       {
-        "line": 69,
+        "line": 74,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 69,
+        "line": 74,
         "attribute": "value",
         "expression": "{table.tableId}"
       },
       {
-        "line": 72,
+        "line": 78,
         "attribute": "checked",
         "expression": "{grant?.fieldIds.includes(field.ref.fieldId) ?? false}"
       },
       {
-        "line": 72,
+        "line": 78,
         "attribute": "onChange",
-        "expression": "{event => onChange('tableGrant', { ...grant, operations: [operation], readPurposes: ['condition', 'derivedWrite'], fieldIds: event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : grant?.fieldIds.filter(id => id !== field.ref.fieldId) })}"
+        "expression": "{event => {\n          const fieldIds = event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : (grant?.fieldIds ?? []).filter(id => id !== field.ref.fieldId)\n          onChange('tableGrant', { ...grant, operations: [operation], readPurposes: ['condition', 'derivedWrite'], fieldIds })\n          if (operation === 'readRecord' || operation === 'queryRecords') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })\n        }}"
       },
       {
-        "line": 74,
+        "line": 84,
         "attribute": "value",
         "expression": "{data.arguments}"
       },
       {
-        "line": 74,
+        "line": 84,
         "attribute": "onChange",
         "expression": "{value => { onChange('argumentsValid', true); onChange('arguments', value) }}"
       },
       {
-        "line": 78,
+        "line": 88,
         "attribute": "value",
         "expression": "{String(data.variableName ?? '')}"
       },
       {
-        "line": 78,
+        "line": 88,
         "attribute": "onChange",
         "expression": "{value => onChange('variableName', value)}"
       }
@@ -34419,29 +34427,29 @@
   {
     "component": "Arguments",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-    "line": 82,
+    "line": 92,
     "fields": [],
     "tools": [
       "Label"
     ],
     "conditions": [
       {
-        "line": 89,
+        "line": 99,
         "expression": "!parsed || typeof parsed !== 'object' || Array.isArray(parsed)"
       },
       {
-        "line": 90,
+        "line": 100,
         "expression": "['projectId', 'operationId', 'executionGeneration'].some(key => key in parsed)"
       }
     ],
     "bindings": [
       {
-        "line": 86,
+        "line": 96,
         "attribute": "value",
         "expression": "{text}"
       },
       {
-        "line": 86,
+        "line": 96,
         "attribute": "onChange",
         "expression": "{event => setText(event.target.value)}"
       }

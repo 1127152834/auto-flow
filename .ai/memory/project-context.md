@@ -163,3 +163,14 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - 生产源码/打包 HTTP 与 Electron 管理链、万行数据测量通过；后端 3159 passed / 15 skipped、前端 5445 passed、脚本 94 passed；真实 CloakBrowser 四节点/批次/重建测试 8 passed。
 - PM9 仍 in_progress；生产项目执行器尚未接入完整图、项目数据节点、End 和人工检查点。已提交 R1–R4 架构规格等待用户确认，不能将管理侧/四节点证据扩写为完整执行通过。
 - 用户指定 Windows x64/macOS Intel 使用现有 GitHub Actions，缺少的实机证据明确待验收。本机 arm64 DMG 已构建但无签名、公证或手工安装证据；CI 实际状态见 PM9 报告。
+
+## PM9 生产运行时补交付（2026-09-20，confirmed）
+
+来源：用户 R1–R4 确认、`docs/project-management/implementation/pm9/verification.json`、正式 Studio HTTP/真实 worker/CloakBrowser/打包 Electron。
+
+前节“仅四节点、等待架构确认、生产图/数据/End/人工未接入”已 superseded。工作隔离在 `codex/project-management-pm9-runtime`，基线仍为 `codex/architecture-baseline@8e5564e0`。
+
+- 共享图、固定身份数据 RPC、End 关闭后保存关联、人工存活 owner 延续已接通；worker 消失会撤权并取消人工项，不自动重放。并行循环暂在准备阶段拒绝。
+- 本机全量后端 3191 passed / 23 skipped；前端 5454 passed。新增平台边界与配置回归另列报告。12 场景真实浏览器包括登录复用、人工继续/终结/超时/停止/重启/进程丢失和旧人工命令重试。
+- 打包 Electron 万行记录显示每页 50 条、1004 条真实日志分页、连续翻页时延与 JS 堆测量已完成；测量不构成所有硬件或持续负载承诺。
+- 同提交三平台 Actions、实网 Sheets、签名/公证/物理安装证据仍以 PM9 报告逐项为准。历史阶段的隔离 QA 证据不自动升级。

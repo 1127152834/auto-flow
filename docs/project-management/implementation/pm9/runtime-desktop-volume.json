@@ -1,0 +1,96 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-20T14:44:39.202Z",
+  "checks": [
+    "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+    "archive blocks writes, repeat command recovers one operation, restore preserves data",
+    "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+    "Electron UI creates project with keyboard focus and real preload/sidecar authentication",
+    "all six project tabs open settled production pages",
+    "200% native window zoom keeps document within viewport; Studio second window shares the authenticated service",
+    "Electron and its production sidecar restart retain the same data"
+  ],
+  "screenshots": [
+    "project-概览.png",
+    "project-自动化.png",
+    "project-运行记录.png",
+    "project-统计.png",
+    "project-数据.png",
+    "project-环境.png",
+    "project-volume.png",
+    "project-zoom-200.png",
+    "project-restarted.png"
+  ],
+  "projectId": "af833a5d-a9f6-4564-8517-a6f445f3b975",
+  "tableId": "1cc5afaa-7503-40b2-97fe-1a785b7655d2",
+  "tablePath": "/projects/af833a5d-a9f6-4564-8517-a6f445f3b975/tables/1cc5afaa-7503-40b2-97fe-1a785b7655d2",
+  "boundary": "production management, real runtime and renderer volume; live Sheets and physical installation remain pending",
+  "runtime": {
+    "projectId": "5920e232-f416-478b-847e-1950e28fd297",
+    "environmentId": "47f59eaf-d7f1-5c87-9eed-c93c489fa109",
+    "logLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 31070,
+      "logsPerMinute": 1939,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "taskIds": [
+      "a844eeb1-ec06-4be7-a51b-47041a62ffb9",
+      "a149fedd-b87a-411e-aab4-77f8bb7496a4",
+      "5c680b9e-a3a1-41df-a4c3-7d6e1e74fb0e"
+    ],
+    "checks": [
+      "Studio HTTP saved graph",
+      "real browser and UUID parameters",
+      "cross-table query/condition/create",
+      "manual checkpoint continues without replay",
+      "End closes, saves and links",
+      "second automation restores login",
+      "1000 worker logs and paginated retrieval",
+      "real browser timeout and original-input follow-up succeeds",
+      "statistics drilldown reaches real task",
+      "archive and restore preserve executed project"
+    ]
+  },
+  "volume": {
+    "records": 10000,
+    "renderedRecordRows": 50,
+    "logRows": 1004,
+    "seedMs": 43448,
+    "logPageMs": [
+      141,
+      106,
+      105,
+      113,
+      106
+    ],
+    "recordPageMs": [
+      116,
+      117,
+      116,
+      116,
+      117,
+      116,
+      116,
+      116,
+      116,
+      117
+    ],
+    "twoFramesMs": 1,
+    "heapBytes": {
+      "before": 6646972,
+      "withLogs": 12046340,
+      "recordPageSamples": [
+        10120192,
+        10547708,
+        10856940
+      ],
+      "recordPageGrowth": 736748
+    },
+    "scope": "one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim"
+  }
+}

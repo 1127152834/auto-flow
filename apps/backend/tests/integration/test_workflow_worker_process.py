@@ -388,3 +388,23 @@ def test_worker_protocol_is_utf8_even_with_legacy_pipe_encoding():
     result = subprocess.run([sys.executable, '-c', code], input='中文参数\n'.encode(), capture_output=True, env={**os.environ, 'PYTHONIOENCODING': 'ascii'}, timeout=10, check=False)
     assert result.returncode == 0, result.stderr.decode(errors='replace')
     assert result.stdout.decode().splitlines() == ['中文参数']
+
+
+@pytest.mark.asyncio
+async def test_windows_cleanup_confirms_exit_after_kill_access_denied(tmp_path, monkeypatch):
+    from autoflow.infrastructure.process import project_workflow_worker as module
+    instance, _ = manager(tmp_path)
+    exited = False
+    class Process:
+        returncode = None
+        def kill(self):
+            raise PermissionError('process already exiting')
+        async def wait(self):
+            nonlocal exited
+            exited = True
+            return 0
+    worker = SimpleNamespace(process=Process(), created_directory=False)
+    instance._worker = worker
+    monkeypatch.setattr(module.sys, 'platform', 'win32')
+    await instance._cleanup_owned(worker)
+    assert exited and not instance.busy()

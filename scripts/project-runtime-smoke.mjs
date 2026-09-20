@@ -41,15 +41,17 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
       node('manual', 'project_manual', { reason: '核验登录后继续', timeoutSeconds: 30 }),
       node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: "{saved['ref']['recordKey']['value']}", recordTargets: [{ recordRef: "{saved['ref']}", expectedLinkRevision: "{saved['linkRevision']}", replaceAllowed: false }] } }),
     ], edges: [edge('query', 'condition'), edge('condition', 'login', 'true'), edge('login', 'read'), edge('read', 'write'), edge('write', 'manual'), edge('manual', 'end')] })
-    const runPolicy = { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 180, manualDeadlineSeconds: 30 }
-    async function run(workflowId, environmentPolicy, parameterSchema = [], parameters = {}, expectedStatus = 'succeeded') {
-      const automation = await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId, inputPlan: { inputs: [] }, parameterSchema, environmentPolicy, runPolicy })
-      const validation = await api(`${prefix}/automations/${automation.automationId}/validation`)
-      assert.equal(validation.runnable, true, JSON.stringify(validation))
-      const started = await api(`${prefix}/automations/${automation.automationId}/batches`, { expectedAutomationRevision: automation.managementRevision, parameters, maxTasks: 1, concurrency: 1 })
+    const runPolicy = { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 600, manualDeadlineSeconds: 30 }
+    async function run(workflowId, environmentPolicy, parameterSchema = [], parameters = {}, expectedStatus = 'succeeded', inputPlan = { inputs: [] }, followUp = null) {
+      const automation = followUp ? null : await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId, inputPlan, parameterSchema, environmentPolicy, runPolicy })
+      if (automation) {
+        const validation = await api(`${prefix}/automations/${automation.automationId}/validation`)
+        assert.equal(validation.runnable, true, JSON.stringify(validation))
+      }
+      const started = followUp ? await api(`${prefix}/tasks/${followUp.taskId}/follow-up-batches`, { mode: 'originalInputGroup', expectedTaskStatusRevision: followUp.statusRevision, parameterOverrides: parameters }) : await api(`${prefix}/automations/${automation.automationId}/batches`, { expectedAutomationRevision: automation.managementRevision, parameters, maxTasks: 1, concurrency: 1 })
       const batchId = started.operation.result.batch.batchId
       const handled = new Set()
-      for (let attempt = 0; attempt < 1800; attempt++) {
+      for (let attempt = 0; attempt < 1200; attempt++) {
         const manual = await api(prefix + '/manual-items')
         for (const item of manual.items.filter(item => item.status === 'waiting' && !handled.has(item.manualItemId))) {
           await api(`${prefix}/manual-items/${item.manualItemId}/resume`, { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision })
@@ -62,14 +64,14 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
           const attempts = await api(`${prefix}/tasks/${task.taskId}/node-attempts`)
           if (state.statusCounts[expectedStatus] !== 1) {
             const events = await api(`${prefix}/tasks/${task.taskId}/events?afterSequence=0&pageSize=200`)
-            throw new Error(JSON.stringify({ state, task, attempts, events }))
+            throw new Error(JSON.stringify({ batch: state.batch, counts: state.statusCounts, task, attempts: { total: attempts.total, latest: attempts.items.at(-1) }, events: { lastSequence: events.lastSequence, statuses: events.items.filter(event => event.kind === 'status') } }))
           }
           if (handled.size) assert.equal(new Set(attempts.items.map(item => item.nodeId)).size, attempts.total, 'completed nodes must not replay across manual continuation')
           return { task, resumedManualItems: handled.size, outputs: (await api(`${prefix}/tasks/${task.taskId}/outputs`)).items }
         }
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 500))
       }
-      throw new Error('project runtime did not finish within 180 seconds')
+      throw new Error('project runtime did not finish within 600 seconds')
     }
     const first = await run(workflow.id, { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }, [{ parameterId: parameter, name: '后缀', type: 'string', required: true }], { [parameter]: '中文' })
     assert.equal(first.resumedManualItems, 1)
@@ -95,16 +97,32 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
       cursor = logs.afterSequence
     }
     assert.ok(logCount >= 1000, `expected at least 1000 real worker log events, got ${logCount}`)
+    const selectorParameter = randomUUID()
+    const failureWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 失败后续', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: `{${selectorParameter}}`, attribute: 'text', variableName: 'account', timeout: .3 }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'read'), edge('read', 'end')] })
+    const inputPlan = { inputs: [{ inputId: randomUUID(), alias: '来源', tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, mode: 'independent', required: true, fieldBindings: [{ inputFieldId: randomUUID(), inputFieldAlias: '编号', fieldRef: { projectId: project.projectId, tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, fieldId: source.fieldId } }], filter: { type: 'all', items: [] }, orderBy: [{ systemField: 'recordKey', direction: 'asc' }] }] }
+    const environment = { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }
+    const failed = await run(failureWorkflow.id, environment, [{ parameterId: selectorParameter, name: '定位', type: 'string', required: true }], { [selectorParameter]: '#missing' }, 'failed', inputPlan)
+    const failedDetail = await api(`${prefix}/tasks/${failed.task.taskId}`)
+    const followed = await run(null, null, [], { [selectorParameter]: '#account' }, 'succeeded', inputPlan, { taskId: failed.task.taskId, statusRevision: failedDetail.run.statusRevision })
+    const followedDetail = await api(`${prefix}/tasks/${followed.task.taskId}`)
+    assert.deepEqual(followedDetail.inputSnapshot.inputs.map(input => input.recordRef), failedDetail.inputSnapshot.inputs.map(input => input.recordRef), 'follow-up must reuse the original input group')
+    assert.equal(followed.outputs.find(output => output.name === 'account')?.value, '001')
     const statistics = await api(prefix + '/statistics')
     const drilldown = await api(`${prefix}/statistics/${statistics.resultSetId}/tasks?result=succeeded`)
     assert.ok(drilldown.items.some(item => item.taskId === loaded.task.taskId), 'statistics must link to real terminal tasks')
+    // A failed run preserves its work copy for inspection; explicitly discard it
+    // through the same End command offered by the task page before archiving.
+    const failedInstance = (await api(`${prefix}/environment-instances?taskId=${failed.task.taskId}`)).items[0]
+    assert.ok(failedInstance)
+    const cleaned = await api(`${prefix}/tasks/${failed.task.taskId}/end`, { taskId: failed.task.taskId, runId: failed.task.runId, instanceId: failedInstance.instanceId, expectedUseGeneration: failedInstance.instanceUseGeneration, executionGeneration: failedDetail.run.executionGeneration, retainEnvironment: { enabled: false } })
+    assert.equal(cleaned.outcome.complete, true)
     const impact = await api(prefix + '/lifecycle-impact?action=archive')
     const archived = await api(prefix + '/archive', { impactRevision: impact.impactRevision, expectedManagementRevision: (await api(prefix)).managementRevision })
     for (let attempt = 0; attempt < 100; attempt++) {
       const operation = await api(`${prefix}/operations/${archived.operation.operationId}`)
       if (operation.status === 'succeeded') break
       assert.notEqual(operation.status, 'failed', JSON.stringify(operation))
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
     assert.equal((await api(prefix)).lifecycleState, 'archived')
     const restored = await api(prefix + '/restore', { expectedManagementRevision: (await api(prefix)).managementRevision })
@@ -112,10 +130,10 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
       const operation = await api(`${prefix}/operations/${restored.operation.operationId}`)
       if (operation.status === 'succeeded') break
       assert.notEqual(operation.status, 'failed', JSON.stringify(operation))
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
     assert.equal((await api(prefix)).lifecycleState, 'active')
-    return { projectId: project.projectId, environmentId, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
+    return { projectId: project.projectId, environmentId, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
   } finally {
     await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
   }

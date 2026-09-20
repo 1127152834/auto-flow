@@ -3,7 +3,9 @@ import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { connectCdp, launchElectron, waitFor, waitForProjectPage } from './electron-cdp.mjs'
-import { checkProjectManagement, projectSmokeOptions } from './smoke-project-management.mjs'
+import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from './smoke-project-management.mjs'
+import { checkProjectRuntime } from './project-runtime-smoke.mjs'
+import { checkProjectVolume } from './project-volume-smoke.mjs'
 import { assertOutsideHistory } from './project-smoke-output.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
@@ -44,6 +46,7 @@ async function capture(name) {
   report.screenshots.push(filename)
 }
 try {
+  const browserVersion = options['runtime-kernel'] ? await installRuntimeKernel(options['runtime-kernel'], userData) : null
   const sidecar = await launch()
   await click('项目')
   await click('新建项目')
@@ -75,6 +78,13 @@ try {
     await capture(tab)
   }
   report.checks.push('all six project tabs open settled production pages')
+  if (browserVersion) {
+    report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion)
+    report.volume = await checkProjectVolume(sidecar, cdp, click, report.runtime)
+    report.boundary = 'production management, real runtime and renderer volume; live Sheets and physical installation remain pending'
+    await capture('volume')
+    await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + project.projectId + '/environments')}`)
+  }
   await native.evaluate('pm9Electron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(2)')
   assert.equal(await native.evaluate('pm9Electron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()'), 2)
   await waitFor(cdp, 'document.documentElement.scrollWidth <= innerWidth + 1', '200% zoom has no document horizontal overflow')

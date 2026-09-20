@@ -327,7 +327,12 @@ class ProjectWorkflowWorkerManager:
                 # Terminate through the retained process handle, never a recycled PID.
                 # The bootstrap's kill-on-close Job owns the descendants.
                 if process.returncode is None:
-                    process.kill()
+                    try:
+                        process.kill()
+                    except (PermissionError, ProcessLookupError):
+                        # Windows may deny TerminateProcess after exit, before
+                        # asyncio has observed it. Confirm exit before release.
+                        await asyncio.wait_for(process.wait(), self._termination_timeout)
                 await process.wait()
             else:
                 await force_process_tree(

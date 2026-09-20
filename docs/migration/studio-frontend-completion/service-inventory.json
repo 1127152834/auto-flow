@@ -6248,7 +6248,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-          "line": 25,
+          "line": 29,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -6377,7 +6377,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-          "line": 24,
+          "line": 28,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -7704,24 +7704,24 @@
       "call": "studioFetch(`${getBackendUrl()}/api/system/pick-mouse-position`, {\n        method: 'POST',\n      })"
     },
     {
-      "endpoint": "'/v1/projects?pageSize=100&lifecycle=active'",
+      "endpoint": "`/v1/projects?pageSize=100&lifecycleState=active&page=${projectPage}`",
       "method": "GET",
       "body": null,
       "responseType": "Schema['ProjectPage']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 32,
+      "line": 36,
       "source": null,
-      "call": "apiRequest<Schema['ProjectPage']>('/v1/projects?pageSize=100&lifecycle=active', { signal: controller.signal })"
+      "call": "apiRequest<Schema['ProjectPage']>(`/v1/projects?pageSize=100&lifecycleState=active&page=${projectPage}`, { signal: controller.signal })"
     },
     {
-      "endpoint": "`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100`",
+      "endpoint": "`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100&page=${tablePage}`",
       "method": "GET",
       "body": null,
       "responseType": "Schema['DataTablePage']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 37,
+      "line": 41,
       "source": null,
-      "call": "apiRequest<Schema['DataTablePage']>(`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100`, { signal: controller.signal })"
+      "call": "apiRequest<Schema['DataTablePage']>(`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100&page=${tablePage}`, { signal: controller.signal })"
     },
     {
       "endpoint": "`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/fields`",
@@ -7729,7 +7729,7 @@
       "body": null,
       "responseType": "Schema['DataFieldDirectory']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 42,
+      "line": 46,
       "source": null,
       "call": "apiRequest<Schema['DataFieldDirectory']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/fields`, { signal: controller.signal })"
     },

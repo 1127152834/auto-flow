@@ -2,14 +2,13 @@
   "date": "2026-09-20",
   "status": "incomplete",
   "source": "docs/project-management/implementation/coverage.json",
-  "scope": "historical coverage audit; no status upgrades inferred from file existence",
+  "scope": "逐项复核保留历史状态；PM9 仅为直接测试的功能添加生产证据，不批量升级发行状态",
   "groups": {
     "features": {
       "count": 48,
       "statuses": {
-        "partially_verified": 43,
-        "verified": 4,
-        "planned": 1
+        "partially_verified": 44,
+        "verified": 4
       },
       "items": [
         {
@@ -27,19 +26,19 @@
         {
           "id": "PM-03",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": true
         },
         {
           "id": "PM-04",
           "status": "verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true
         },
         {
           "id": "PM-05",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true
         },
         {
@@ -92,14 +91,14 @@
         },
         {
           "id": "AU-06",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true
         },
         {
           "id": "AU-07",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true
         },
         {
@@ -111,37 +110,37 @@
         {
           "id": "RUN-01",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": true
         },
         {
           "id": "RUN-02",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": true
         },
         {
           "id": "RUN-03",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": true
         },
         {
           "id": "RUN-04",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": true
         },
         {
           "id": "RUN-05",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": true
         },
         {
           "id": "RUN-06",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true
         },
         {
@@ -159,7 +158,7 @@
         {
           "id": "ST-03",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true
         },
         {
@@ -171,7 +170,7 @@
         {
           "id": "DT-02",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false
         },
         {
@@ -243,7 +242,7 @@
         {
           "id": "DT-14",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true
         },
         {
@@ -261,7 +260,7 @@
         {
           "id": "ENV-03",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": false
         },
         {
@@ -273,7 +272,7 @@
         {
           "id": "ENV-05",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false
         },
         {
@@ -285,7 +284,7 @@
         {
           "id": "ENV-07",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": false
         },
         {

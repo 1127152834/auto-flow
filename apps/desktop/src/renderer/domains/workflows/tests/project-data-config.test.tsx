@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, expect, it, vi } from 'vitest'
 import { ProjectDataConfig } from '../components/config-panels/ProjectDataConfig'
 import type { NodeData } from '../editor-store'
+afterEach(cleanup)
 vi.mock('../api', () => ({ apiRequest: vi.fn(async () => ({ success: true, data: { items: [] } })) }))
 it('keeps task authority out of user arguments and supports a result variable', async () => {
   const change = vi.fn()
@@ -22,4 +23,16 @@ it('does not retain valid End arguments when the current JSON is invalid', async
   const input = screen.getByLabelText('关联记录（JSON 数组，支持变量）')
   fireEvent.change(input, { target: { value: '{}' } }); fireEvent.blur(input)
   expect(change).toHaveBeenCalledWith('retentionValid', false)
+})
+
+it('binds field preview to the existing modifyField permission', async () => {
+  Element.prototype.scrollIntoView = vi.fn()
+  const { apiRequest } = await import('../api')
+  vi.mocked(apiRequest).mockImplementation(async (path) => ({ success: true, data: { items: path.includes('/tables?') ? [{ tableId: 'table', datasetGeneration: 'generation', name: '来源', tableRevision: 1 }] : [], total: 1 } }) as never)
+  const change = vi.fn()
+  render(<ProjectDataConfig data={{ moduleType: 'project_data', operation: 'previewFieldChange', bindingProjectId: 'project', arguments: {}, variableName: 'preview' } as unknown as NodeData} onChange={change} />)
+  await waitFor(() => expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('/tables?'), expect.anything()))
+  fireEvent.keyDown(screen.getByLabelText('授权数据表'), { key: 'ArrowDown' })
+  fireEvent.keyDown(await screen.findByRole('option', { name: '来源' }), { key: 'Enter' })
+  expect(change).toHaveBeenCalledWith('tableGrant', expect.objectContaining({ operations: ['modifyField'] }))
 })

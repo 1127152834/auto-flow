@@ -113,6 +113,18 @@ export async function checkProjectManagement(baseUrl, token, existingProject) {
   return { checks, projectId: project.projectId, tableId: table.tableId, tablePath, boundary: 'production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed' }
 }
 
+export async function installRuntimeKernel(kernel, directory) {
+  const executable = await realpath(kernel)
+  let source = dirname(executable)
+  while (!basename(source).startsWith('chromium-')) {
+    const parent = dirname(source)
+    assert.notEqual(parent, source, 'runtime kernel must belong to a chromium-VERSION installation')
+    source = parent
+  }
+  await cp(source, join(directory, 'data/kernels', basename(source)), { recursive: true })
+  return basename(source).slice('chromium-'.length)
+}
+
 export async function main(args = process.argv.slice(2)) {
   const options = projectSmokeOptions(args)
   if (options['output-dir']) await assertOutsideHistory(join(root, 'docs/migration/project-management-pm1-qa'), options['output-dir'])
@@ -134,15 +146,7 @@ export async function main(args = process.argv.slice(2)) {
   try {
     let browserVersion
     if (options['runtime-kernel']) {
-      const executable = await realpath(options['runtime-kernel'])
-      let source = dirname(executable)
-      while (!basename(source).startsWith('chromium-')) {
-        const parent = dirname(source)
-        assert.notEqual(parent, source, 'runtime kernel must belong to a chromium-VERSION installation')
-        source = parent
-      }
-      browserVersion = basename(source).slice('chromium-'.length)
-      await cp(source, join(directory, 'data/kernels', basename(source)), { recursive: true })
+      browserVersion = await installRuntimeKernel(options['runtime-kernel'], directory)
     }
     const baseUrl = await launch()
     report = { ...report, ...await checkProjectManagement(baseUrl, token) }

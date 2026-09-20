@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-20T14:36:20.095Z",
+  "checks": [
+    "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+    "archive blocks writes, repeat command recovers one operation, restore preserves data",
+    "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+    "restarted production sidecar retains the same project and record"
+  ],
+  "projectId": "86b6086e-76e8-4e41-9da0-06ca82243dac",
+  "tableId": "8d2b3e48-665a-44c0-9f49-71e5bc173e67",
+  "tablePath": "/projects/86b6086e-76e8-4e41-9da0-06ca82243dac/tables/8d2b3e48-665a-44c0-9f49-71e5bc173e67",
+  "boundary": "production management and real browser runtime chains; live Sheets and physical installer acceptance remain pending",
+  "runtime": {
+    "projectId": "dc2a8a99-f9e9-481f-89d2-d24eb3a77876",
+    "environmentId": "339d74c8-8a55-5953-b5d3-006fd975c64f",
+    "logLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 33831,
+      "logsPerMinute": 1781,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "taskIds": [
+      "c89bca8b-aa50-4c3f-9b46-d91b22f3aeaf",
+      "249d67c8-782b-4461-b2db-162def43646f",
+      "064cae3d-f8f5-48b1-9918-c7de75ee4f4d"
+    ],
+    "checks": [
+      "Studio HTTP saved graph",
+      "real browser and UUID parameters",
+      "cross-table query/condition/create",
+      "manual checkpoint continues without replay",
+      "End closes, saves and links",
+      "second automation restores login",
+      "1000 worker logs and paginated retrieval",
+      "statistics drilldown reaches real task",
+      "archive and restore preserve executed project"
+    ]
+  }
+}
