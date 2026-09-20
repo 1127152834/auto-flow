@@ -191,6 +191,7 @@ async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
     from autoflow.infrastructure.process import test_browser_worker as module
 
     monkeypatch.setattr(module, "sys", SimpleNamespace(platform="darwin"))
+    monkeypatch.setattr(module, "signal", SimpleNamespace(SIGTERM=15, SIGKILL=9))
 
     exited = asyncio.Event()
     process = SimpleNamespace(pid=700, returncode=None, wait=exited.wait)
