@@ -26,7 +26,7 @@ if os.environ.get('MODE')=='wrong-run': e['runId']='other'
 if os.environ.get('MODE')=='unterminated':
  sys.stdout.write(json.dumps(dict(type='event',protocolVersion=1,runId=c['runId'],executionGeneration=c['executionGeneration'],event=e)))
  sys.stdout.flush()
- os.close(sys.stdout.fileno())
+ raise SystemExit(0)
 else:
  send('event',event=e)
 a=json.loads(sys.stdin.readline())
@@ -297,7 +297,7 @@ async def test_eof_fragment_never_gets_persisted_or_acknowledged(tmp_path):
         received.append(event)
 
     with pytest.raises(WorkflowWorkerError):
-        await start(instance, executable, persist)
+        await asyncio.wait_for(start(instance, executable, persist), 5)
     assert received == []
     assert not (tmp_path / 'proof').exists()
 

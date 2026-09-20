@@ -51,3 +51,5 @@ Ruling: 实际对照发现 Studio 同名输入节点会覆盖文本，且变量�
 - 2026-09-21：Windows 候选 2c7f4441 原生进程前置检查已通过（55 passed / 2 skipped）。旧候选 303c7b90 全量在取消时返回 224 failed / 2070 passed / 51 skipped，不能作为验收；203 个失败集中于覆盖全部环境变量的冻结源码子进程。对照夹具沿用已有 `os.environ` 继承方式，仅覆盖 PYTHONPATH，保留 Windows SystemRoot（[Python subprocess 文档](https://docs.python.org/3.11/library/subprocess.html)）。959 项源码对照通过；内核测试的并发判定改为同时进入停止的屏障，31 项重跑通过。
 - Windows 文件失败修复：XLSX 使用可写文件句柄执行 fsync；运行目录产物和 XLSX 共用不覆盖的文件提交入口，Windows 使用 [MoveFileExW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexw) WRITE_THROUGH，POSIX 保留硬链接与目录 fsync。保持文件先刷盘、证据先持久、禁止覆盖和失败清理；没有放开任意路径工作流文件输出。114 项文件/生命周期/worker 回归通过，双平台 mypy 397 文件通过。
 - 删除失败测试用明确的 PermissionError 替代 chmod，保留跨重启残留与查询断言；worker 清理失败注入点改到两平台共用的 owned-cleanup 边界。新增 3 个 POSIX 原生工作流输出场景在 Windows 明确跳过，对应 501 拒绝测试继续执行。CI 原生前置检查包含已暴露边界，全量遇到 20 个失败即退出失败，只有零失败跑完整套才算通过。
+
+- 候选 6b20d5ac 的 Windows 前置检查已执行 88 passed / 27 skipped，文件提交与重启恢复的实际测试通过，但一个旧提交失败注入点未更新，随后 EOF 夹具阻塞；该轮取消，不能算通过。提交丢响应改为注入共用文件提交入口；EOF 夹具发出半条消息后真正退出，并给测试加 5 秒外层等待，仍断言事件不提交、动作不执行。本机对应 26 项通过。CI 前置检查显示逐项名称，10 分钟上限将未结束的等待报告为失败。

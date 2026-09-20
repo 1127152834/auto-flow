@@ -41,14 +41,14 @@ def test_lost_publication_result_can_be_verified_without_writing_again(
     tmp_path: Path, monkeypatch
 ):
     target = tmp_path / "result.xlsx"
-    link = excel.os.link
+    publish = excel.publish_new_file
     evidence = []
 
     def lose_response(source, destination):
-        link(source, destination)
+        publish(source, destination)
         raise OSError("interrupted after publication")
 
-    monkeypatch.setattr(excel.os, "link", lose_response)
+    monkeypatch.setattr(excel, "publish_new_file", lose_response)
     with pytest.raises(ProjectError):
         excel.write_workbook(
             target, ["编号"], [["001"]], before_publish=evidence.append
