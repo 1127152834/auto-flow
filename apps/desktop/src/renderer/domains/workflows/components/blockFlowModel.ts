@@ -309,7 +309,7 @@ export function createBlock(type: ModuleType, extraData?: Partial<NodeData>): Bl
   const defVars = getModuleAllDefaultVars(type as string)
   const node: Node<NodeData> = {
     id,
-    type: 'moduleNode',
+    type: type === 'subflow_header' ? 'subflowHeaderNode' : 'moduleNode',
     position: { x: 0, y: 0 },
     data: { label: moduleTypeLabels[type] || type, moduleType: type, ...(defVars as Partial<NodeData>), ...(extraData || {}) } as NodeData,
   }

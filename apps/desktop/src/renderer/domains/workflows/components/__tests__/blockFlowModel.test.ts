@@ -11,6 +11,10 @@ import {
 } from '../blockFlowModel'
 
 describe('blockFlowModel', () => {
+  it('creates subflow definitions with the callable header node type', () => {
+    expect(createBlock('subflow_header').node.type).toBe('subflowHeaderNode')
+  })
+
   it('createBlock 套用模块默认变量（循环自带 index）', () => {
     const loop = createBlock('loop' as never)
     expect(loop.kind).toBe('loop')

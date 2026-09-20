@@ -2482,13 +2482,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     // 分组节点和便签节点使用特殊的节点类型和默认尺寸
     const isGroup = type === 'group'
     const isNote = type === 'note'
+    const isSubflowHeader = type === 'subflow_header'
     
     // 获取模块默认超时时间
     const defaultTimeout = getModuleDefaultTimeout(type)
     
     const newNode: Node<NodeData> = {
       id: nanoid(),
-      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : 'moduleNode',
+      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : isSubflowHeader ? 'subflowHeaderNode' : 'moduleNode',
       position,
       ...(isGroup ? {
         style: { width: 300, height: 200 },
@@ -2583,6 +2584,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     get().pushHistory()
     const isGroup = type === 'group'
     const isNote = type === 'note'
+    const isSubflowHeader = type === 'subflow_header'
     const nodes = get().nodes
     // 计算插入位置（紧跟在 afterNode 下方，纵向排布）
     const afterNode = afterNodeId ? nodes.find((n) => n.id === afterNodeId) : null
@@ -2592,7 +2594,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const newId = nanoid()
     const newNode: Node<NodeData> = {
       id: newId,
-      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : 'moduleNode',
+      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : isSubflowHeader ? 'subflowHeaderNode' : 'moduleNode',
       position: { x: baseX, y: baseY },
       ...(isGroup ? { style: { width: 300, height: 200 }, zIndex: -1 } : {}),
       ...(isNote ? { style: { width: 200, height: 120 }, zIndex: -1 } : {}),

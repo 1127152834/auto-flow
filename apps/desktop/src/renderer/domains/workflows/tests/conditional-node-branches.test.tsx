@@ -164,6 +164,20 @@ it('NODE.subflow.conditional-ui: lists group and header definitions and stores s
   expect(nodeData(id)).toMatchObject({ subflowGroupId: headerId, subflowName: '函数子流程' })
 })
 
+it('NODE.subflow_header.entry: creates a callable header from both canvas entry points', () => {
+  store.getState().addNode('subflow_header', { x: 0, y: 0 }, { subflowName: '画布函数' })
+  store.getState().blockInsertNode(null, 'subflow_header', { subflowName: '模块条函数' })
+  const [canvasHeader, blockHeader] = store.getState().nodes
+  expect(canvasHeader.type).toBe('subflowHeaderNode')
+  expect(blockHeader.type).toBe('subflowHeaderNode')
+
+  const { id } = open('subflow')
+  choose('选择子流程', '[函数头] 画布函数')
+  expect(nodeData(id)).toMatchObject({ subflowGroupId: canvasHeader.id, subflowName: '画布函数' })
+  choose('选择子流程', '[函数头] 模块条函数')
+  expect(nodeData(id)).toMatchObject({ subflowGroupId: blockHeader.id, subflowName: '模块条函数' })
+})
+
 it('NODE.run_workflow_file.conditional-ui: loads choices and hides dependent result controls when not waiting', async () => {
   vi.spyOn(localWorkflowApi, 'list').mockResolvedValue({
     success: true,
