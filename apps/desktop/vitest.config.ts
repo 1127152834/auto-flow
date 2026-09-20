@@ -7,5 +7,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/renderer/domains/workflows/tests/setup-connection.ts'],
     maxWorkers: 4,
+    // Multi-step UI contracts run on shared CI CPUs; explicit latency assertions
+    // and per-test shutdown/startup budgets remain independently enforced.
+    testTimeout: 15_000,
   },
 })

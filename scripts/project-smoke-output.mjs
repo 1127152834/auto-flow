@@ -30,3 +30,7 @@ export async function assertOutsideHistory(history, destination) {
   ])
   assert.ok(!isWithinPath(canonicalHistory, canonicalOutput), 'output directory must preserve PM1 historical evidence')
 }
+
+export function redactSidecarLog(log, token) {
+  return log.split('\n').filter(line => !line.trimStart().startsWith('AUTOFLOW_READY ')).join('\n').replaceAll(token || '[no-service-token]', '[redacted]').slice(-20_000)
+}

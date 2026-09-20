@@ -45,6 +45,8 @@ jobs:
       - name: Check native desktop path and settings contracts
         if: runner.os == 'Windows'
         run: npm --workspace @autoflow/desktop test -- src/main/platform/paths.test.ts src/main/sidecar/supervisor.test.ts src/main/settings/settings.integration.test.ts src/renderer/domains/project-automations/pages/AutomationDetailPage.test.tsx
+      - name: Check project HTTP writes before full regression
+        run: node scripts/smoke-project-management.mjs --output-dir artifacts/pm9/http-preflight
       - run: uv run --directory apps/backend pytest -q --maxfail=20
       - run: npm test
       - run: npm run build

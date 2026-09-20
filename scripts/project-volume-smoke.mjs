@@ -10,7 +10,7 @@ export async function checkProjectVolume(sidecar, cdp, click, runtime, workspace
   async function api(path, body) {
     const response = await fetch(sidecar.baseUrl + '/api/v1' + path, { method: body ? 'POST' : 'GET', headers: { 'x-autoflow-token': sidecar.token, 'Idempotency-Key': randomUUID(), 'content-type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(60_000) })
     const result = await response.json()
-    assert.ok(response.ok, JSON.stringify(result))
+    assert.ok(response.ok, `${body ? 'POST' : 'GET'} ${path}: ${JSON.stringify(result)}`)
     return result
   }
   await cdp.command('Performance.enable')
@@ -37,14 +37,13 @@ export async function checkProjectVolume(sidecar, cdp, click, runtime, workspace
   const base = `${prefix}/tables/${table.tableId}`
   const field = (await api(base + '/fields', { definition: { key: 'code', name: '编号', type: 'string', required: false, validation: {} }, expectedTableRevision: table.tableRevision, sourceColumnPolicy: 'localOnly' })).field
   const started = performance.now()
-  // Five producers exercise normal writes without exhausting the HTTP thread pool.
-  let next = 0
-  await Promise.all(Array.from({ length: 5 }, async () => {
-    while (next < 10_000) {
-      const index = ++next
-      await api(base + '/records', { datasetGeneration: table.datasetGeneration, values: [{ fieldId: field.ref.fieldId, value: String(index).padStart(6, '0') }] })
-    }
-  }))
+  // Use the same atomic batch API as the record-entry grid for test data setup.
+  const expectedTableRevision = (await api(base)).tableRevision
+  for (let offset = 0; offset < 10_000; offset += 100) {
+    const rows = Array.from({ length: 100 }, (_, index) => ({ clientRowId: randomUUID(), values: [{ fieldId: field.ref.fieldId, value: String(offset + index + 1).padStart(6, '0') }] }))
+    const result = await api(base + '/records/batch', { datasetGeneration: table.datasetGeneration, expectedTableRevision, rows })
+    assert.deepEqual(result.records.map(row => row.clientRowId), rows.map(row => row.clientRowId))
+  }
   assert.equal((await api(base)).recordCount, 10_000)
   const seedMs = Math.round(performance.now() - started)
   await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + runtime.projectId + '/data/' + table.tableId + '/records')}`)
@@ -109,5 +108,5 @@ export async function checkProjectVolume(sidecar, cdp, click, runtime, workspace
   } finally {
     await producer
   }
-  return { synthetic, records: 10_000, renderedRecordRows: 50, logRows: runtime.logLoad.logCount, seedMs, logPageMs, recordPageMs: pageMs, twoFramesMs: Math.round(frameMs), heapBytes: { before: heapBefore, withLogs: heapWithLogs, recordPageSamples: heapSamples, recordPageGrowth: heapSamples.at(-1) - heapSamples[0] }, scope: 'one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim' }
+  return { synthetic, records: 10_000, seedMode: '100 sequential atomic HTTP batches of 100 rows; not a concurrent single-row write benchmark', renderedRecordRows: 50, logRows: runtime.logLoad.logCount, seedMs, logPageMs, recordPageMs: pageMs, twoFramesMs: Math.round(frameMs), heapBytes: { before: heapBefore, withLogs: heapWithLogs, recordPageSamples: heapSamples, recordPageGrowth: heapSamples.at(-1) - heapSamples[0] }, scope: 'one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim' }
 }

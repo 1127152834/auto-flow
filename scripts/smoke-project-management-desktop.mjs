@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { connectCdp, launchElectron, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from './smoke-project-management.mjs'
 import { checkProjectRuntime } from './project-runtime-smoke.mjs'
 import { checkProjectVolume } from './project-volume-smoke.mjs'
-import { assertOutsideHistory } from './project-smoke-output.mjs'
+import { assertOutsideHistory, redactSidecarLog } from './project-smoke-output.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
@@ -16,6 +16,7 @@ const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-pm9 deskt
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 await writeFile(join(userData, 'desktop-settings.json'), JSON.stringify({ schemaVersion: 1, currentPath: userData, previousPath: null, preferences: { zoom: 100, motion: 'reduce' } }))
 let desktop
+let sidecar
 let cdp
 let native
 let studio
@@ -47,7 +48,7 @@ async function capture(name) {
 }
 try {
   const browserVersion = options['runtime-kernel'] ? await installRuntimeKernel(options['runtime-kernel'], userData) : null
-  const sidecar = await launch()
+  sidecar = await launch()
   await click('项目')
   await click('新建项目')
   await waitFor(cdp, "document.activeElement?.id==='project-name'", 'keyboard autofocus')
@@ -122,6 +123,8 @@ try {
   report.status = 'passed'
 } catch (error) {
   report.error = String(error.stack ?? error)
+  // Preserve the disposable service's failure evidence before removing its workspace.
+  report.sidecarLog = await readFile(join(userData, 'logs/sidecar.log'), 'utf8').then(log => redactSidecarLog(log, sidecar?.token)).catch(() => 'sidecar log unavailable')
   await capture('failure').catch(() => {})
   throw error
 } finally {
