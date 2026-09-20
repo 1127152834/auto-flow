@@ -35,6 +35,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:scripts
       - run: npm run lint
+      - run: npm run openapi:check
+      - run: uv run --directory apps/backend ruff check .
+      - run: uv run --directory apps/backend mypy src
+      - run: uv run --directory apps/backend pytest -q
+      - run: npm test
       - run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=6144
@@ -109,11 +114,6 @@ jobs:
       - run: npm run smoke:desktop
       - run: node scripts/smoke-browser-management-desktop.mjs
       - run: node scripts/smoke-browser-management.mjs
-      - run: npm run openapi:check
-      - run: uv run --directory apps/backend ruff check .
-      - run: uv run --directory apps/backend mypy src
-      - run: npm test
-      - run: uv run --directory apps/backend pytest -q
       - name: Upload PM9 reports and installer artifacts
         if: always()
         uses: actions/upload-artifact@v4

@@ -57,4 +57,4 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
 
 
 if __name__ == '__main__':
-    print(json.dumps(export_schema(), ensure_ascii=False))
+    print(json.dumps(export_schema()))

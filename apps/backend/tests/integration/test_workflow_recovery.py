@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -15,6 +16,7 @@ async def test_absent_run_has_no_cleanup_work(tmp_path):
 
 @pytest.mark.asyncio
 async def test_recovery_only_removes_verified_run_generation(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='darwin'))
     import autoflow.infrastructure.process.workflow_recovery as module
 
     run_id = str(uuid4())
@@ -38,6 +40,7 @@ async def test_recovery_only_removes_verified_run_generation(tmp_path, monkeypat
 
 @pytest.mark.asyncio
 async def test_uncertain_process_cleanup_preserves_directory(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='darwin'))
     import autoflow.infrastructure.process.workflow_recovery as module
 
     run_id = str(uuid4())
@@ -55,6 +58,7 @@ async def test_uncertain_process_cleanup_preserves_directory(tmp_path, monkeypat
 
 @pytest.mark.asyncio
 async def test_unreadable_live_native_candidate_is_not_proof_of_cleanup(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='darwin'))
     import autoflow.infrastructure.process.project_browser_processes as processes
 
     run_id = str(uuid4())
@@ -171,3 +175,14 @@ async def test_bootstrap_recovery_waits_for_profile_guard_release(tmp_path):
     finally:
         await dispatcher.shutdown()
         factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_windows_restart_keeps_directory_without_native_ownership(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='win32'))
+    run_id = str(uuid4())
+    directory = tmp_path / 'workflow-runs' / run_id / 'generation-1'
+    directory.mkdir(parents=True)
+    with pytest.raises(RuntimeError, match='Windows workflow restart cleanup needs native ownership'):
+        await recover_worker_directories(tmp_path, run_id, tmp_path / 'CloakBrowser')
+    assert directory.exists()
