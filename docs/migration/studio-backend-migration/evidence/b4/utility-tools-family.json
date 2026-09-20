@@ -1,8 +1,8 @@
 {
   "evidenceId": "BE-B4-utility-tools-family-2026-09-16",
-  "recordedAt": "2026-09-16",
-  "gitHead": "a126935",
-  "result": "9 approved utility nodes passed frozen-source differential, production registration, HTTP admission and browser-free worker execution; formal Electron UI remains pending",
+  "recordedAt": "2026-09-20",
+  "gitHead": "a80ea75a",
+  "result": "all 9 approved utility nodes passed frozen-source differential, production registration, HTTP admission, browser-free worker execution and formal Electron UI execution",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -56,6 +56,22 @@
     "focusedRegression": {
       "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q <utility differential, registry, HTTP admission and browser-free worker tests>",
       "result": "36 passed, 2 dependency deprecation warnings"
+    },
+    "formalElectron": {
+      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json",
+      "result": "passed on darwin-arm64 development build",
+      "uiExecutedTypes": [
+        "random_password_generator",
+        "url_encode_decode",
+        "md5_encrypt",
+        "sha_encrypt",
+        "timestamp_converter",
+        "rgb_to_hsv",
+        "rgb_to_cmyk",
+        "hex_to_cmyk",
+        "uuid_generator"
+      ],
+      "observed": "The formal Studio UI created, configured and connected all 9 approved utility nodes in one workflow, saved the exact 9-node/8-edge document to SQLite, and executed every node through the production worker. All 9 results and node logs were persisted; URL, MD5, SHA-256, timestamp, RGB/HEX color conversions and UUID output matched the configured values; no CloakBrowser process existed before or after the pure-data run."
     }
   },
   "quality": {
@@ -64,7 +80,6 @@
     "diffCheck": "passed"
   },
   "notClaimed": [
-    "formal Electron UI execution of the 9-node family",
     "rebuilt packaged sidecar execution",
     "macOS Intel verification",
     "Windows verification",

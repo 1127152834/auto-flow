@@ -44848,7 +44848,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -44904,8 +44904,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.md5_encrypt.source-parity",
@@ -44933,7 +44933,7 @@
         },
         {
           "id": "BE.md5_encrypt.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -44941,10 +44941,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 md5_encrypt，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：MD5加密模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45093,7 +45093,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45150,8 +45150,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.sha_encrypt.source-parity",
@@ -45179,7 +45179,7 @@
         },
         {
           "id": "BE.sha_encrypt.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -45187,10 +45187,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 sha_encrypt，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：SHA加密模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45331,7 +45331,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45386,8 +45386,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.url_encode_decode.source-parity",
@@ -45415,7 +45415,7 @@
         },
         {
           "id": "BE.url_encode_decode.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -45423,10 +45423,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 url_encode_decode，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：URL编解码模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45577,7 +45577,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45637,8 +45637,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.random_password_generator.source-parity",
@@ -45666,7 +45666,7 @@
         },
         {
           "id": "BE.random_password_generator.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -45674,10 +45674,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 random_password_generator，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：随机密码生成模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45835,7 +45835,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45893,8 +45893,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.uuid_generator.source-parity",
@@ -45922,7 +45922,7 @@
         },
         {
           "id": "BE.uuid_generator.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -45930,10 +45930,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 uuid_generator，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：UUID生成器模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -46058,7 +46058,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -46113,8 +46113,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.rgb_to_hsv.source-parity",
@@ -46142,7 +46142,7 @@
         },
         {
           "id": "BE.rgb_to_hsv.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -46150,10 +46150,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 rgb_to_hsv，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：RGB转HSV模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -46278,7 +46278,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -46332,8 +46332,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.rgb_to_cmyk.source-parity",
@@ -46361,7 +46361,7 @@
         },
         {
           "id": "BE.rgb_to_cmyk.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -46369,10 +46369,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 rgb_to_cmyk，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：RGB转CMYK模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -46481,7 +46481,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -46533,8 +46533,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.hex_to_cmyk.source-parity",
@@ -46562,7 +46562,7 @@
         },
         {
           "id": "BE.hex_to_cmyk.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -46570,10 +46570,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 hex_to_cmyk，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：HEX转CMYK模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -46728,7 +46728,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -46785,8 +46785,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker执行及darwin-arm64正式Electron逐节点UI均已通过；重建目录包与其他平台仍作为B4共享门槛验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码保留1 MiB结果上限及协作取消。重建目录包、时区可移植性及macOS Intel/Windows结果仍须按B4共享门槛分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.timestamp_converter.source-parity",
@@ -46814,7 +46814,7 @@
         },
         {
           "id": "BE.timestamp_converter.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -46822,10 +46822,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 timestamp_converter，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：时间戳转换器模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json"
         }
       ],
-      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
