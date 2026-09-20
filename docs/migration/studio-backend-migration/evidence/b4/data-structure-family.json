@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B4-data-structure-family-2026-09-16",
-  "recordedAt": "2026-09-16",
-  "result": "all 15 approved nodes passed source parity, production registration, HTTP admission and worker execution; 5 representative nodes passed formal Electron UI execution",
+  "recordedAt": "2026-09-20",
+  "result": "all 15 approved nodes passed source parity, production registration, HTTP admission, worker execution and formal Electron UI execution",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -54,7 +54,7 @@
     },
     "fileOutput": {
       "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_artifacts.py",
-      "result": "15 passed",
+      "result": "32 passed",
       "observed": [
         "relative output is isolated under the current run using verified directory descriptors",
         "explicit absolute output, overwrite, append, empty and non-empty utf-8-sig semantics are preserved",
@@ -69,16 +69,26 @@
       "scope": "differential, artifact storage, worker protocol, run repository, browser contract, production registry, admission, coordinator and HTTP run contract"
     },
     "formalElectron": {
-      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-electron-84TG6p/result.json",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-electron-e63pS8/result.json",
       "result": "passed on darwin-arm64 development build",
       "uiExecutedTypes": [
-        "string_split",
+        "list_operation",
+        "list_get",
+        "list_length",
         "list_export",
-        "regex_extract",
         "dict_operation",
-        "dict_get"
+        "dict_get",
+        "dict_keys",
+        "regex_extract",
+        "string_replace",
+        "string_split",
+        "string_join",
+        "string_concat",
+        "string_trim",
+        "string_case",
+        "string_substring"
       ],
-      "observed": "The formal Studio UI created, configured, connected, saved and ran a five-node pure-data chain. SQLite contained the same document, every node completed with persisted logs, list_export produced a registered immutable artifact with verified content and SHA-256, and no CloakBrowser process existed before or after the pure-data run."
+      "observed": "The formal Studio UI created, configured and connected all 15 approved data-structure nodes in one workflow, saved the exact 15-node/14-edge document to SQLite, and executed every node through the production worker. All 15 results and node logs were persisted; list_export produced a registered immutable artifact whose downloaded content and SHA-256 matched; no CloakBrowser process existed before or after the pure-data run."
     }
   },
   "quality": {
@@ -87,7 +97,6 @@
     "diffCheck": "passed"
   },
   "notClaimed": [
-    "formal Electron UI execution of list_operation, list_get, list_length, dict_keys, string_replace, string_join, string_concat, string_trim, string_case and string_substring",
     "all CPU-intensive operation cancellation checkpoints",
     "rebuilt packaged sidecar execution",
     "Windows list_export execution (fails closed with ARTIFACT_PLATFORM_UNSUPPORTED until handle-level path validation is implemented and tested)",

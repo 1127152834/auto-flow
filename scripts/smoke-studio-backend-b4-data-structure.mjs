@@ -66,6 +66,83 @@ const modules = [
       await setInput(cdp, '#variableName', 'dict_value')
     },
   },
+  {
+    label: '列表操作', type: 'list_operation', expected: { listVariable: 'items', listValue: 'delta' },
+    configure: async cdp => {
+      await setInput(cdp, '#listVariable', 'items')
+      await setInput(cdp, '[placeholder="要添加/删除的值，支持 {变量名}"]', 'delta')
+    },
+  },
+  {
+    label: '列表取值', type: 'list_get', expected: { listVariable: 'items', listIndex: '3', variableName: 'last_item' },
+    configure: async cdp => {
+      await setInput(cdp, '#listVariable', 'items')
+      await setInput(cdp, '[placeholder="从0开始，支持负数和 {变量名}"]', '3')
+      await setInput(cdp, '#variableName', 'last_item')
+    },
+  },
+  {
+    label: '列表长度', type: 'list_length', expected: { listVariable: 'items', variableName: 'item_count' },
+    configure: async cdp => {
+      await setInput(cdp, '#listVariable', 'items')
+      await setInput(cdp, '#variableName', 'item_count')
+    },
+  },
+  {
+    label: '字典键列表', type: 'dict_keys', expected: { dictVariable: 'meta', variableName: 'meta_keys' },
+    configure: async cdp => {
+      await setInput(cdp, '#dictVariable', 'meta')
+      await setInput(cdp, '#variableName', 'meta_keys')
+    },
+  },
+  {
+    label: '替换文本', type: 'string_replace', expected: { inputText: 'hello world', searchValue: 'world', replaceValue: 'AutoFlow', variableName: 'replaced' },
+    configure: async cdp => {
+      await setInput(cdp, '[placeholder="要处理的文本，支持 {变量名}"]', 'hello world')
+      await setInput(cdp, '[placeholder="要查找的文本"]', 'world')
+      await setInput(cdp, '[placeholder="替换后的文本，支持 {变量名}"]', 'AutoFlow')
+      await setInput(cdp, '#variableName', 'replaced')
+    },
+  },
+  {
+    label: '连接文本', type: 'string_join', expected: { listVariable: 'items', separator: '|', variableName: 'joined' },
+    configure: async cdp => {
+      await setInput(cdp, '#listVariable', 'items')
+      await setInput(cdp, '[placeholder="如: , 或 - 或留空，支持 {变量名}"]', '|')
+      await setInput(cdp, '#variableName', 'joined')
+    },
+  },
+  {
+    label: '拼接文本', type: 'string_concat', expected: { string1: '{joined}', string2: '!', variableName: 'concatenated' },
+    configure: async cdp => {
+      await setInput(cdp, '[placeholder="第一个字符串，支持 {变量名}"]', '{joined}')
+      await setInput(cdp, '[placeholder="第二个字符串，支持 {变量名}"]', '!')
+      await setInput(cdp, '#variableName', 'concatenated')
+    },
+  },
+  {
+    label: '去除空白', type: 'string_trim', expected: { inputText: '  padded  ', variableName: 'trimmed' },
+    configure: async cdp => {
+      await setInput(cdp, '[placeholder="要处理的文本，支持 {变量名}"]', '  padded  ')
+      await setInput(cdp, '#variableName', 'trimmed')
+    },
+  },
+  {
+    label: '大小写', type: 'string_case', expected: { inputText: '{trimmed}', variableName: 'upper' },
+    configure: async cdp => {
+      await setInput(cdp, '[placeholder="要转换的文本，支持 {变量名}"]', '{trimmed}')
+      await setInput(cdp, '#variableName', 'upper')
+    },
+  },
+  {
+    label: '截取文本', type: 'string_substring', expected: { inputText: '{concatenated}', startIndex: '1', endIndex: '6', variableName: 'slice_value' },
+    configure: async cdp => {
+      await setInput(cdp, '[placeholder="要截取的文本，支持 {变量名}"]', '{concatenated}')
+      await setInput(cdp, '[placeholder="从0开始，支持负数和 {变量名}"]', '1')
+      await setInput(cdp, '[placeholder="留空表示到末尾，支持 {变量名}"]', '6')
+      await setInput(cdp, '#variableName', 'slice_value')
+    },
+  },
 ]
 const executedTypes = modules.map(module => module.type)
 const notUiExecutedTypes = approvedTypes.filter(type => !executedTypes.includes(type))
@@ -103,7 +180,7 @@ try {
   checkpoint('真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程')
 
   studio = await openStudioFromMain(main, desktop.debugOrigin)
-  await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
+  await studio.command('Emulation.setDeviceMetricsOverride', { width: 2560, height: 1600, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('227')", 'formal Studio', 30_000)
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
@@ -125,6 +202,8 @@ try {
   }
   assert.equal(new Set(nodeIds).size, modules.length)
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__node').length"), modules.length)
+  await click(studio, '', '.react-flow__controls-fitview')
+  await wait(300)
   checkpoint(`通过画布原生右键菜单和配置面板添加并配置 ${modules.length} 个代表节点`)
 
   for (let index = 0; index < nodeIds.length - 1; index++) {
@@ -175,6 +254,16 @@ try {
   assert.deepEqual(values.regex_extract, { value: 'ITEM-42' })
   assert.deepEqual(values.dict_operation, { dict: { status: 'ITEM-42' }, keys: ['status'] })
   assert.deepEqual(values.dict_get, { value: 'ITEM-42' })
+  assert.deepEqual(values.list_operation, { list: ['alpha', 'beta', 'gamma', 'delta'], length: 4 })
+  assert.deepEqual(values.list_get, { value: 'delta' })
+  assert.deepEqual(values.list_length, { value: 4 })
+  assert.deepEqual(values.dict_keys, { value: ['status'] })
+  assert.deepEqual(values.string_replace, { value: 'hello AutoFlow' })
+  assert.deepEqual(values.string_join, { value: 'alpha|beta|gamma|delta' })
+  assert.deepEqual(values.string_concat, { value: 'alpha|beta|gamma|delta!' })
+  assert.deepEqual(values.string_trim, { value: 'padded' })
+  assert.deepEqual(values.string_case, { value: 'PADDED' })
+  assert.deepEqual(values.string_substring, { value: 'lpha|' })
 
   const logs = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}/logs?cursor=0&limit=200`)
   for (const nodeId of nodeIds) assert.ok(logs.items.some(item => item.nodeId === nodeId), `missing persisted log for ${nodeId}`)
@@ -378,7 +467,14 @@ async function connectNodes(cdp, sourceId, targetId) {
 async function moveNode(cdp, nodeId, index, count) {
   const pane = await cdp.evaluate(`(()=>{const r=document.querySelector('.react-flow__pane').getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()`)
   const from = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, `node position ${nodeId}`)
-  const to = { x: pane.x + pane.width * .46, y: pane.y + 65 + index * ((pane.height - 130) / Math.max(1, count - 1)) }
+  const columns = count > 8 ? 3 : 1
+  const rows = Math.ceil(count / columns)
+  const column = index % columns
+  const row = Math.floor(index / columns)
+  const to = {
+    x: pane.x + pane.width * (.12 + column * .38),
+    y: pane.y + 220 + row * ((pane.height - 440) / Math.max(1, rows - 1)),
+  }
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...from })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...from, button: 'left', buttons: 1, clickCount: 1 })
   for (let step = 1; step <= 10; step++) await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', x: from.x + (to.x - from.x) * step / 10, y: from.y + (to.y - from.y) * step / 10, button: 'left', buttons: 1 })
