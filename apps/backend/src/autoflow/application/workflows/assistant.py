@@ -19,6 +19,7 @@ from autoflow.domain.workflows.runs import WorkflowRunError
 from autoflow.infrastructure.database.workflow_assistant import (
     SqlAlchemyWorkflowAssistant,
 )
+from autoflow.infrastructure.filesystem.assistant_files import AssistantFileStore
 from autoflow.providers.assistant import (
     AssistantGraph,
     AssistantGraphResult,
@@ -67,6 +68,7 @@ class WorkflowAssistantService:
         self._repository = repository
         self._models = models
         self._events = events
+        self._files = AssistantFileStore(checkpoint_path.parent)
         self._graph = AssistantGraph(checkpoint_path, self._invoke_model)
         self._waiters: dict[str, asyncio.Future[dict[str, Any]]] = {}
         self._tasks: dict[str, asyncio.Task[AssistantGraphResult]] = {}
@@ -87,6 +89,9 @@ class WorkflowAssistantService:
                 )
 
         provider_payload["_onChunk"] = on_chunk
+        messages = provider_payload.get("messages")
+        if isinstance(messages, list):
+            provider_payload["messages"] = self._files.hydrate_model_messages(messages)
         model_ids = list(dict.fromkeys([model_id, *fallback_ids]))
         last_error: ModelError | None = None
         for candidate in model_ids:
@@ -136,7 +141,10 @@ class WorkflowAssistantService:
                 raise WorkflowRunError(
                     "ASSISTANT_SESSION_BUSY", "小助手正在处理上一条消息", 409
                 )
-            user = _message("user", message, images=list(images or []))
+            stored_images = await asyncio.to_thread(
+                self._files.store_images, list(images or [])
+            )
+            user = _message("user", message, images=stored_images)
             session = self._repository.save(
                 session.with_changes(
                     messages=(*session.messages, user),
@@ -535,7 +543,7 @@ class WorkflowAssistantService:
         return {
             "id": session.id,
             "title": session.title,
-            "messages": copy.deepcopy(list(session.messages)),
+            "messages": self._files.public_messages(session.messages),
             "status": session.status,
             "pending_action": copy.deepcopy(session.pending_action),
             "revision": session.revision,
@@ -590,7 +598,22 @@ class WorkflowAssistantService:
                 messages=session.messages[:index], status="idle", pending_action=None
             )
         )
-        return {"success": True, "messages": copy.deepcopy(list(saved.messages))}
+        return {
+            "success": True,
+            "messages": self._files.public_messages(saved.messages),
+        }
+
+    async def extract_file(self, filename: str, content_base64: str) -> dict[str, Any]:
+        return await asyncio.to_thread(
+            self._files.extract_file, filename, content_base64
+        )
+
+    async def transcribe(
+        self, audio_base64: str, language: str, model_size: str
+    ) -> dict[str, Any]:
+        return await asyncio.to_thread(
+            self._files.transcribe_audio, audio_base64, language, model_size
+        )
 
     def delete_session(self, session_id: str) -> dict[str, bool]:
         session = self._required(session_id)

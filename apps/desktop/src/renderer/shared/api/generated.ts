@@ -2896,6 +2896,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/ai-assistant/extract-file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extract File */
+        post: operations["extract_file_api_ai_assistant_extract_file_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/transcribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transcribe */
+        post: operations["transcribe_api_ai_assistant_transcribe_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/custom-modules": {
         parameters: {
             query?: never;
@@ -4082,6 +4116,22 @@ export type components = {
             /** Title */
             title: string;
         };
+        /** AssistantExtractFile */
+        AssistantExtractFile: {
+            /** Filename */
+            filename: string;
+            /** Contentbase64 */
+            contentBase64: string;
+        };
+        /** AssistantExtractedFile */
+        AssistantExtractedFile: {
+            /** Success */
+            success: boolean;
+            /** Text */
+            text: string;
+            /** Error */
+            error: string;
+        };
         /** AssistantMessage */
         AssistantMessage: {
             /** Id */
@@ -4171,6 +4221,35 @@ export type components = {
         AssistantSuccess: {
             /** Success */
             success: boolean;
+        };
+        /** AssistantTranscribe */
+        AssistantTranscribe: {
+            /** Audiobase64 */
+            audioBase64: string;
+            /**
+             * Language
+             * @default zh
+             */
+            language: string;
+            /**
+             * Modelsize
+             * @default base
+             */
+            modelSize: string;
+        };
+        /** AssistantTranscription */
+        AssistantTranscription: {
+            /** Success */
+            success: boolean;
+            /** Text */
+            text: string;
+            /**
+             * Error
+             * @default
+             */
+            error: string;
+            /** Language */
+            language?: string | null;
         };
         /** AssistantTruncateSession */
         AssistantTruncateSession: {
@@ -21958,6 +22037,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AssistantModelTestResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_file_api_ai_assistant_extract_file_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantExtractFile"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantExtractedFile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transcribe_api_ai_assistant_transcribe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantTranscribe"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantTranscription"];
                 };
             };
             /** @description Validation Error */

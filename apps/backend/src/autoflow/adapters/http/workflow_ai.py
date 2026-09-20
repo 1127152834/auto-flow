@@ -24,7 +24,9 @@ class AssistantConfig(ApiModel):
 class AssistantChatRequest(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
-    session_id: str | None = Field(default=None, min_length=1, max_length=128, pattern=r"\S")
+    session_id: str | None = Field(
+        default=None, min_length=1, max_length=128, pattern=r"\S"
+    )
     message: str = Field(min_length=1, pattern=r"\S")
     config: AssistantConfig
     workflow_context: dict[str, Any] = Field(default_factory=dict)
@@ -46,6 +48,34 @@ class AssistantTruncateSession(ApiModel):
 
 class AssistantModelTest(ApiModel):
     model_id: str = Field(min_length=1, pattern=r"\S")
+
+
+class AssistantExtractFile(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    filename: str = Field(min_length=1, max_length=512, pattern=r"\S")
+    content_base64: str = Field(min_length=1, max_length=24 * 1024 * 1024)
+
+
+class AssistantExtractedFile(ApiModel):
+    success: bool
+    text: str
+    error: str
+
+
+class AssistantTranscribe(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    audio_base64: str = Field(min_length=1, max_length=48 * 1024 * 1024)
+    language: str = Field(default="zh", min_length=2, max_length=16)
+    model_size: str = Field(default="base", min_length=1, max_length=16)
+
+
+class AssistantTranscription(ApiModel):
+    success: bool
+    text: str
+    error: str = ""
+    language: str | None = None
 
 
 class AssistantMessage(ApiModel):
@@ -70,7 +100,9 @@ class AssistantSessionResponse(ApiModel):
     id: str
     title: str
     messages: list[AssistantMessage]
-    status: Literal["idle", "running", "waiting_for_action", "completed", "failed", "cancelled"]
+    status: Literal[
+        "idle", "running", "waiting_for_action", "completed", "failed", "cancelled"
+    ]
     pending_action: AssistantPendingAction | None = None
     revision: int
 
@@ -135,7 +167,9 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
         return service.delete_session(session_id)
 
     @router.patch("/sessions/{session_id}/title", response_model=AssistantSuccess)
-    def rename_session(session_id: str, body: AssistantRenameSession) -> dict[str, bool]:
+    def rename_session(
+        session_id: str, body: AssistantRenameSession
+    ) -> dict[str, bool]:
         return service.rename_session(session_id, body.title)
 
     @router.post(
@@ -143,7 +177,9 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
         response_model=AssistantTruncated,
         response_model_exclude_none=True,
     )
-    def truncate_session(session_id: str, body: AssistantTruncateSession) -> dict[str, Any]:
+    def truncate_session(
+        session_id: str, body: AssistantTruncateSession
+    ) -> dict[str, Any]:
         return service.truncate_session(session_id, body.message_id)
 
     @router.post("/sessions/{session_id}/cancel", response_model=AssistantCancelled)
@@ -171,5 +207,19 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
     @router.post("/test-connection", response_model=AssistantModelTestResponse)
     async def test_connection(body: AssistantModelTest) -> dict[str, Any]:
         return await service.test_model(body.model_id)
+
+    @router.post("/extract-file", response_model=AssistantExtractedFile)
+    async def extract_file(body: AssistantExtractFile) -> dict[str, Any]:
+        return await service.extract_file(body.filename, body.content_base64)
+
+    @router.post(
+        "/transcribe",
+        response_model=AssistantTranscription,
+        response_model_exclude_none=True,
+    )
+    async def transcribe(body: AssistantTranscribe) -> dict[str, Any]:
+        return await service.transcribe(
+            body.audio_base64, body.language, body.model_size
+        )
 
     return router

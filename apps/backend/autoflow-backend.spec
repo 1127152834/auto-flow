@@ -11,10 +11,14 @@ from PyInstaller.utils.hooks import (
 )
 
 _, torchvision_path = get_package_paths('torchvision')
-torchvision_binaries = collect_dynamic_libs('torchvision') + [
+torchvision_binaries = (
+    collect_dynamic_libs('torchvision')
+    + collect_dynamic_libs('ctranslate2')
+    + [
     (str(path), 'torchvision')
     for path in Path(torchvision_path).glob('*_stable.so')
-]
+    ]
+)
 
 datas = [
     ('src/autoflow/infrastructure/filesystem/profile_environment.json', 'autoflow/infrastructure/filesystem'),
@@ -25,6 +29,7 @@ datas = [
     *collect_data_files('ddddocr', includes=['*.onnx']),
     *collect_data_files('easyocr'),
     *collect_data_files('face_recognition_models'),
+    *collect_data_files('faster_whisper'),
     ('../../reference/WebRPA/backend/models/ocr/easyocr/*.pth', 'autoflow/resources/easyocr'),
     *copy_metadata('tzdata'),
     *copy_metadata('cloakbrowser'),
@@ -37,6 +42,10 @@ datas = [
     *copy_metadata('easyocr'),
     *copy_metadata('face-recognition'),
     *copy_metadata('face-recognition-models'),
+    *copy_metadata('faster-whisper'),
+    *copy_metadata('ctranslate2'),
+    *copy_metadata('huggingface-hub'),
+    *copy_metadata('tokenizers'),
 ]
 hiddenimports = [
     'autoflow.bootstrap.kernel_worker',
@@ -55,6 +64,7 @@ hiddenimports = [
     *collect_submodules('langgraph.checkpoint'),
     *collect_submodules('easyocr'),
     *collect_submodules('face_recognition'),
+    *collect_submodules('faster_whisper'),
 ]
 
 

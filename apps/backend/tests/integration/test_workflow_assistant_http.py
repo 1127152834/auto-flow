@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import io
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
+import faster_whisper
 import httpx
+import openpyxl
 import pytest
-
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
 from autoflow.domain.models import ModelInvocationResult
+
 from tests.contract.test_models_api import _provider
 from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
 
@@ -110,6 +115,7 @@ async def test_http_chat_uses_managed_model_and_persists_session(tmp_path) -> No
 
     assert restored.json()["status"] == "completed"
     assert restored.json()["messages"][-1]["content"] == "已完成"
+    assert restored.json()["messages"][0]["images"] == ["data:image/png;base64,YQ=="]
     assert gateway.invocations[0]["temperature"] == 0.25
     assert gateway.invocations[0]["maxTokens"] == 512
     assert gateway.invocations[0]["messages"][-1]["content"] == [
@@ -118,6 +124,126 @@ async def test_http_chat_uses_managed_model_and_persists_session(tmp_path) -> No
     ]
     assert "apiKey" not in str(gateway.invocations)
     assert app.state.workflow_services.assistant is not None
+    database = (tmp_path / "data" / "autoflow.sqlite3").read_bytes()
+    assert b"data:image/png;base64,YQ==" not in database
+    checkpoint = (
+        tmp_path / "workspace" / "assistant" / "checkpoints.sqlite3"
+    ).read_bytes()
+    assert b"data:image/png;base64,YQ==" not in checkpoint
+    assert (
+        len(list((tmp_path / "workspace" / "assistant" / "attachments").glob("*.png")))
+        == 1
+    )
+
+
+@pytest.mark.asyncio
+async def test_http_chat_rejects_non_local_image_references(tmp_path) -> None:
+    _app, client, model_id = await _client(tmp_path, AssistantGateway())
+    try:
+        response = await client.post(
+            "/api/ai-assistant/chat",
+            json={
+                "sessionId": "invalid-image",
+                "message": "分析图片",
+                "config": {"modelId": model_id, "enableTools": False},
+                "images": ["https://outside.example/image.png"],
+            },
+        )
+    finally:
+        await client.aclose()
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "ASSISTANT_ATTACHMENT_INVALID"
+
+
+@pytest.mark.asyncio
+async def test_http_extracts_text_and_xlsx_attachments_with_source_limits(
+    tmp_path,
+) -> None:
+    _app, client, _model_id = await _client(tmp_path, AssistantGateway())
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "数据"
+    sheet.append(["姓名", "数量"])
+    sheet.append(["甲", 2])
+    content = io.BytesIO()
+    workbook.save(content)
+    workbook.close()
+    try:
+        text = await client.post(
+            "/api/ai-assistant/extract-file",
+            json={
+                "filename": "说明.txt",
+                "content_base64": base64.b64encode("中文内容".encode()).decode(),
+            },
+        )
+        xlsx = await client.post(
+            "/api/ai-assistant/extract-file",
+            json={
+                "filename": "数据.xlsx",
+                "content_base64": base64.b64encode(content.getvalue()).decode(),
+            },
+        )
+        invalid = await client.post(
+            "/api/ai-assistant/extract-file",
+            json={"filename": "损坏.pdf", "content_base64": "%%%"},
+        )
+    finally:
+        await client.aclose()
+
+    assert text.json() == {"success": True, "text": "中文内容", "error": ""}
+    assert xlsx.status_code == 200
+    assert xlsx.json() == {
+        "success": True,
+        "text": "# 工作表: 数据\n姓名\t数量\n甲\t2",
+        "error": "",
+    }
+    assert invalid.status_code == 200
+    assert invalid.json()["success"] is False
+    assert invalid.json()["text"] == ""
+    assert invalid.json()["error"].startswith("文件解码失败")
+
+
+@pytest.mark.asyncio
+async def test_http_transcribes_audio_with_cached_local_whisper(
+    tmp_path, monkeypatch
+) -> None:
+    created = []
+
+    class FakeWhisper:
+        def __init__(self, model, **options):
+            created.append((model, options))
+
+        def transcribe(self, path, *, language):
+            assert Path(path).read_bytes() == b"audio"
+            assert language == "zh"
+            return [type("Segment", (), {"text": " 语音指令"})()], type(
+                "Info", (), {"language": "zh"}
+            )()
+
+    monkeypatch.setattr(faster_whisper, "WhisperModel", FakeWhisper)
+    _app, client, _model_id = await _client(tmp_path, AssistantGateway())
+    payload = {
+        "audio_base64": "data:audio/webm;base64," + base64.b64encode(b"audio").decode(),
+        "language": "zh",
+        "model_size": "base",
+    }
+    try:
+        first = await client.post("/api/ai-assistant/transcribe", json=payload)
+        second = await client.post("/api/ai-assistant/transcribe", json=payload)
+    finally:
+        await client.aclose()
+
+    assert first.json() == {
+        "success": True,
+        "text": "语音指令",
+        "error": "",
+        "language": "zh",
+    }
+    assert second.json() == first.json()
+    assert len(created) == 1
+    assert created[0][0] == "Systran/faster-whisper-base"
+    assert list((tmp_path / "workspace" / "assistant" / "tmp").iterdir()) == []
 
 
 @pytest.mark.asyncio
@@ -139,7 +265,10 @@ async def test_http_event_command_resumes_exact_pending_action(tmp_path) -> None
         pending = None
         for _ in range(100):
             response = await client.get("/api/ai-assistant/sessions/tool-session")
-            if response.status_code == 200 and response.json()["status"] == "waiting_for_action":
+            if (
+                response.status_code == 200
+                and response.json()["status"] == "waiting_for_action"
+            ):
                 pending = response.json()["pendingAction"]
                 break
             await asyncio.sleep(0.01)
