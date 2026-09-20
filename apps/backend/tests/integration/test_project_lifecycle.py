@@ -458,7 +458,7 @@ def test_delete_purges_only_this_project_and_keeps_external_files(tmp_path):
     assert recreated.name == context.record.name
 
 
-def test_delete_cleanup_failure_keeps_the_project_deleting_with_residue(tmp_path):
+def test_delete_cleanup_failure_keeps_the_project_deleting_with_residue(tmp_path, monkeypatch):
     environment_root = tmp_path / "environments"
     context = Context(tmp_path, environment_root=environment_root)
     instance_id = _busy_environment(context.factory, context.project_id, state="closed")
@@ -468,11 +468,12 @@ def test_delete_cleanup_failure_keeps_the_project_deleting_with_residue(tmp_path
     context.archive_to_settled()
     operation = context.delete()
     container = environment_root / "instances"
-    container.chmod(0o500)
+    original_rmtree = shutil.rmtree
+    monkeypatch.setattr(shutil, "rmtree", lambda *_args, **_kwargs: (_ for _ in ()).throw(PermissionError("injected deletion denial")))
     try:
         context.repository.advance(context.project_id)
     finally:
-        container.chmod(0o755)
+        monkeypatch.setattr(shutil, "rmtree", original_rmtree)
 
     assert context.state() == "deleting"
     saved = context.operation(operation.operation_id)
@@ -497,7 +498,7 @@ def test_delete_cleanup_failure_keeps_the_project_deleting_with_residue(tmp_path
     shutil.rmtree(container, ignore_errors=True)
 
 
-def test_archive_directory_lists_a_project_stuck_in_deleting(tmp_path):
+def test_archive_directory_lists_a_project_stuck_in_deleting(tmp_path, monkeypatch):
     environment_root = tmp_path / "environments"
     context = Context(tmp_path, environment_root=environment_root)
     instance_id = _busy_environment(context.factory, context.project_id, state="closed")
@@ -518,11 +519,12 @@ def test_archive_directory_lists_a_project_stuck_in_deleting(tmp_path):
     context.delete()
     container = environment_root / "instances"
     try:
-        container.chmod(0o500)
+        original_rmtree = shutil.rmtree
+        monkeypatch.setattr(shutil, "rmtree", lambda *_args, **_kwargs: (_ for _ in ()).throw(PermissionError("injected deletion denial")))
         try:
             context.repository.advance(context.project_id)
         finally:
-            container.chmod(0o755)
+            monkeypatch.setattr(shutil, "rmtree", original_rmtree)
 
         # The stuck project stays inside the archive directory, not only "all".
         assert listed("archived") == ([context.project_id], 1)
@@ -533,7 +535,7 @@ def test_archive_directory_lists_a_project_stuck_in_deleting(tmp_path):
         context.repository.advance(context.project_id)
         assert listed("archived") == ([], 0)
     finally:
-        container.chmod(0o755)
+        monkeypatch.setattr(shutil, "rmtree", original_rmtree)
         shutil.rmtree(container, ignore_errors=True)
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -126,7 +127,7 @@ def frozen_result(case: str) -> dict[str, Any]:
         check=True,
         capture_output=True,
         text=True, encoding="utf-8",
-        env={"PYTHONPATH": str(FROZEN_BACKEND)},
+        env={**os.environ, "PYTHONPATH": str(FROZEN_BACKEND)},
     )
     return json.loads(completed.stdout)
 

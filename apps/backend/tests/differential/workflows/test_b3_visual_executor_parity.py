@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -29,7 +30,7 @@ def test_visual_noop_executor_matches_frozen(
         text=True, encoding="utf-8",
         capture_output=True,
         check=True,
-        env={"PYTHONPATH": str(FROZEN_BACKEND)},
+        env={**os.environ, "PYTHONPATH": str(FROZEN_BACKEND)},
     )
     source = json.loads(completed.stdout.splitlines()[-1])
     result = asyncio.run(executor_type().execute({}, ExecutionContext()))

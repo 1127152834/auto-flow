@@ -74,3 +74,19 @@ def test_verification_does_not_follow_replaced_target_symlinks(tmp_path: Path):
         )
         == "conflict"
     )
+
+
+def test_export_flushes_a_writable_handle(tmp_path, monkeypatch):
+    original = excel.os.fsync
+
+    def flush(descriptor):
+        # Windows _commit requires a writable file descriptor; a zero-byte write
+        # checks access without changing workbook contents (directory flush excluded).
+        import stat
+        if stat.S_ISREG(excel.os.fstat(descriptor).st_mode):
+            excel.os.write(descriptor, b"")
+        original(descriptor)
+
+    monkeypatch.setattr(excel.os, "fsync", flush)
+    result = excel.write_workbook(tmp_path / "out.xlsx", ["编号"], [["001"]])
+    assert result.record_count == 1

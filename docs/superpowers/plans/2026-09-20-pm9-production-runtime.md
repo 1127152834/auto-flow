@@ -47,3 +47,7 @@ Ruling: 实际对照发现 Studio 同名输入节点会覆盖文本，且变量�
 
 - 2026-09-21：Windows 原生前置检查在候选 311d2889 报出 4 个测试模型问题：POSIX 假进程未限定平台、命令夹具 stdin 非 UTF-8、Windows 退出码断言使用 POSIX 信号值、回收模型仍调用真实平台信号函数。修正夹具后本机同组 57 项通过；原生结果等待下一候选 CI。两个浏览器清理入口和内核 worker 同步处理 TerminateProcess 与退出观察器的竞争，只有有界等待确认退出后才释放；6 个回归先失败后通过，相关 86 项通过，双平台 mypy 396 文件通过。
 - 桌面负载后等待环境路由稳定，并观察原生 zoom 达到 2 后才检查溢出/截图，复位也等待实际生效；本机打包桌面管理、200% 缩放及重启检查通过。旧打包运行链失败时，事件补读的 409 曾遮住原始 Task 失败，脚本现在保留原始失败和补读错误，仍使验收失败；最新运行链继续验证。
+
+- 2026-09-21：Windows 候选 2c7f4441 原生进程前置检查已通过（55 passed / 2 skipped）。旧候选 303c7b90 全量在取消时返回 224 failed / 2070 passed / 51 skipped，不能作为验收；203 个失败集中于覆盖全部环境变量的冻结源码子进程。对照夹具沿用已有 `os.environ` 继承方式，仅覆盖 PYTHONPATH，保留 Windows SystemRoot（[Python subprocess 文档](https://docs.python.org/3.11/library/subprocess.html)）。959 项源码对照通过；内核测试的并发判定改为同时进入停止的屏障，31 项重跑通过。
+- Windows 文件失败修复：XLSX 使用可写文件句柄执行 fsync；运行目录产物和 XLSX 共用不覆盖的文件提交入口，Windows 使用 [MoveFileExW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexw) WRITE_THROUGH，POSIX 保留硬链接与目录 fsync。保持文件先刷盘、证据先持久、禁止覆盖和失败清理；没有放开任意路径工作流文件输出。114 项文件/生命周期/worker 回归通过，双平台 mypy 397 文件通过。
+- 删除失败测试用明确的 PermissionError 替代 chmod，保留跨重启残留与查询断言；worker 清理失败注入点改到两平台共用的 owned-cleanup 边界。新增 3 个 POSIX 原生工作流输出场景在 Windows 明确跳过，对应 501 拒绝测试继续执行。CI 原生前置检查包含已暴露边界，全量遇到 20 个失败即退出失败，只有零失败跑完整套才算通过。

@@ -12,6 +12,7 @@ from uuid import uuid4
 
 from autoflow.domain.workflows.execution import BinaryOutputSnapshot, CancellationToken
 from autoflow.domain.workflows.runs import WorkflowArtifact, WorkflowRunError
+from autoflow.infrastructure.filesystem.new_file import publish_new_file
 
 
 class WorkflowArtifactRepository(Protocol):
@@ -172,18 +173,13 @@ class WorkflowArtifactStore:
                 output.flush()
                 os.fsync(output.fileno())
             try:
-                os.link(temporary, target)
+                publish_new_file(temporary, target)
             except FileExistsError as error:
                 raise WorkflowRunError(
                     "ARTIFACT_ALREADY_EXISTS", "产物文件已存在", 409
                 ) from error
             finally:
                 temporary.unlink(missing_ok=True)
-            directory_fd = os.open(target.parent, os.O_RDONLY)
-            try:
-                os.fsync(directory_fd)
-            finally:
-                os.close(directory_fd)
         except BaseException:
             temporary.unlink(missing_ok=True)
             raise

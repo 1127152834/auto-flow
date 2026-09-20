@@ -27,6 +27,7 @@ from openpyxl.worksheet._writer import ALL_TEMP_FILES
 from openpyxl.xml import DEFUSEDXML
 
 from autoflow.domain.projects.models import ProjectError
+from autoflow.infrastructure.filesystem.new_file import publish_new_file
 
 MAX_FILE_BYTES = 64 * 1024 * 1024
 MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024
@@ -695,14 +696,14 @@ def write_workbook(
         _check(deadline)
         if temporary.stat().st_size > MAX_FILE_BYTES:
             raise _error("EXCEL_FILE_TOO_LARGE", "Export exceeds 64 MiB")
-        with temporary.open("rb") as output_file:
+        with temporary.open("r+b") as output_file:
             os.fsync(output_file.fileno())
             digest = hashlib.file_digest(output_file, "sha256").hexdigest()
         publication = WorkbookPublication(digest, temporary.stat().st_size, row_count)
         if before_publish is not None:
             before_publish(publication)
         try:
-            os.link(temporary, path)
+            publish_new_file(temporary, path)
         except FileExistsError as exc:
             raise _error("EXCEL_OUTPUT_EXISTS", "Output exists") from exc
         return publication

@@ -181,10 +181,8 @@ async def test_shutdown_rejects_future_launches(tmp_path):
 
 @pytest.mark.asyncio
 async def test_failed_cleanup_retains_capacity_until_a_verified_retry(tmp_path, monkeypatch):
-    import autoflow.infrastructure.process.project_workflow_worker as module
-
     instance, executable = manager(tmp_path)
-    real_cleanup = module.force_process_tree
+    real_cleanup = instance._cleanup_owned
     fail = True
 
     async def cleanup(*args, **kwargs):
@@ -192,7 +190,7 @@ async def test_failed_cleanup_retains_capacity_until_a_verified_retry(tmp_path, 
             raise RuntimeError('synthetic cleanup failure')
         return await real_cleanup(*args, **kwargs)
 
-    monkeypatch.setattr(module, 'force_process_tree', cleanup)
+    monkeypatch.setattr(instance, '_cleanup_owned', cleanup)
 
     async def persist(_event):
         pass
@@ -249,12 +247,10 @@ async def test_already_removed_cache_is_successfully_cleaned(tmp_path):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('shutdown', [False, True])
 async def test_stop_during_spawn_reports_cleanup_failure_and_retains_retry(tmp_path, monkeypatch, shutdown):
-    import autoflow.infrastructure.process.project_workflow_worker as module
-
     instance, executable = manager(tmp_path)
     spawning, release = asyncio.Event(), asyncio.Event()
     original_spawn = asyncio.create_subprocess_exec
-    real_cleanup = module.force_process_tree
+    real_cleanup = instance._cleanup_owned
     fail = True
 
     async def delayed_spawn(*args, **kwargs):
@@ -269,7 +265,7 @@ async def test_stop_during_spawn_reports_cleanup_failure_and_retains_retry(tmp_p
         return await real_cleanup(*args, **kwargs)
 
     monkeypatch.setattr(asyncio, 'create_subprocess_exec', delayed_spawn)
-    monkeypatch.setattr(module, 'force_process_tree', cleanup)
+    monkeypatch.setattr(instance, '_cleanup_owned', cleanup)
 
     async def persist(_event):
         pass
@@ -309,9 +305,9 @@ async def test_eof_fragment_never_gets_persisted_or_acknowledged(tmp_path):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('direct_await', [False, True])
 async def test_spawn_failure_and_directory_failure_can_retry_after_task_finished(tmp_path, monkeypatch, direct_await):
+    instance, executable = manager(tmp_path)
     import autoflow.infrastructure.process.project_workflow_worker as module
 
-    instance, executable = manager(tmp_path)
     real_remove = module.shutil.rmtree
     fail = True
 

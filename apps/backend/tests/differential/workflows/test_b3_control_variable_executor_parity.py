@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import importlib
 import json
+import os
 import random
 import subprocess
 import sys
@@ -146,7 +147,7 @@ def _source(payload: dict[str, Any]) -> dict[str, Any]:
         text=True, encoding="utf-8",
         capture_output=True,
         check=True,
-        env={"PYTHONPATH": str(FROZEN_BACKEND)},
+        env={**os.environ, "PYTHONPATH": str(FROZEN_BACKEND)},
     )
     return json.loads(completed.stdout.splitlines()[-1])
 
