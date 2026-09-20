@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0014_workflow_assistant"
+EXPECTED_HEAD = "0015_workflow_mcp"
 
 
 def _config(path: Path) -> Config:

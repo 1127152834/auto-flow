@@ -26,7 +26,7 @@ def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, 
     database_session.migrate_database(database)
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
-        assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0014_workflow_assistant',)]
+        assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0015_workflow_mcp',)]
         assert connection.execute('SELECT request_hash FROM workflow_runs').fetchone() == ('original-hash',)
         assert json.loads(connection.execute('SELECT payload FROM workflow_run_artifacts').fetchone()[0]) == artifact
         if revision in {'0007_android_devices', '0008_merge_android_m4'}:

@@ -1784,6 +1784,9 @@ export function bindAssistantSocketEvents(handlers: {
   socketService.on('ai_assistant:client_action_request', (data: any) => {
     void acknowledgeAssistantClientAction(data)
   })
+  socketService.on('ai_assistant:mcp_tool_request', (data: any) => {
+    void acknowledgeAssistantMcpTool(data)
+  })
 }
 
 const assistantActionTasks = new Map<string, Promise<unknown>>()
@@ -1806,6 +1809,50 @@ export function acknowledgeAssistantClientAction(data: any) {
   const task = acknowledgeClaimedAssistantAction(identity, sessionId, toolCallId, action, payload)
   assistantActionTasks.set(identity, task)
   return task
+}
+
+export function acknowledgeAssistantMcpTool(data: any) {
+  const toolCallId = data?.tool_call_id
+  const sessionId = data?.session_id
+  const action = data?.action
+  const payload = data?.payload || {}
+  if (!toolCallId || typeof action !== 'string' || !action.startsWith('mcp__')) return Promise.resolve(null)
+  const identity = `${sessionId || ''}:${toolCallId}`
+  const pending = assistantActionTasks.get(identity)
+  if (pending) return pending
+  const task = acknowledgeClaimedAssistantMcpTool(identity, sessionId, toolCallId, action, payload)
+  assistantActionTasks.set(identity, task)
+  return task
+}
+
+async function acknowledgeClaimedAssistantMcpTool(
+  identity: string,
+  sessionId: string | undefined,
+  toolCallId: string,
+  action: string,
+  payload: Record<string, any>,
+) {
+  try {
+    const mine = await shouldExecuteClientAction(identity)
+    if (!mine) return null
+  } catch { /* 服务端幂等认领仍会阻止重复执行。 */ }
+  const commandIds = await assistantActionCommandIds(identity)
+  const claim = await socketService.command('ai_client_action_claim', {
+    session_id: sessionId,
+    tool_call_id: toolCallId,
+    executor_id: _electionId,
+  }, commandIds.claim)
+  if (!claim.success) return claim
+  const toolsEnabled = useGlobalConfigStore.getState().config.aiAssistant?.enableTools !== false
+  const approved = toolsEnabled && await requestApproval(action, `MCP 工具：${action.slice(5).replaceAll('__', ' / ')}`, payload)
+  return socketService.command('ai_client_action_ack', {
+    session_id: sessionId,
+    tool_call_id: toolCallId,
+    claim_command_id: commandIds.claim,
+    result: approved
+      ? { success: true }
+      : { success: false, error: toolsEnabled ? '用户拒绝执行 MCP 工具' : '小助手工具调用已关闭' },
+  }, commandIds.result)
 }
 
 async function acknowledgeClaimedAssistantAction(

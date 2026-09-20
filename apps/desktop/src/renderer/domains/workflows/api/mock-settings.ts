@@ -120,13 +120,26 @@ export function mockSettingsRequest(path: string, method: string, body: Value): 
     return json({success:true,config:read('webdav'),mock:true})
   }
   if(path==='/local-workflows/webdav-test')return json({success:false,error:'Mock 未执行 WebDAV 远程连接'})
+  if(path.startsWith('/ai-assistant/mcp/commands/')) {
+    if(method!=='GET')return json({success:false,error:'命令只支持读取'},405)
+    const state=read('mcp-state',{revision:0,config:{mcpServers:{}},commands:{}})
+    const entry=(state.commands as Value)[decodeURIComponent(path.slice('/ai-assistant/mcp/commands/'.length))] as {response:Value}|undefined
+    return entry?json({...entry.response,httpStatus:200}):json({success:false,error:'MCP 命令不存在'},404)
+  }
   if(path==='/ai-assistant/mcp/config') {
+    if(!['GET','PUT'].includes(method))return json({success:false,error:'不支持的配置操作'},405)
+    const state=read('mcp-state',{revision:0,config:{mcpServers:{}},commands:{}})
     if(method==='PUT'){
       if(!isMcpConfig(body.config))return json({success:false,error:'MCP 配置格式错误'},422)
-      save('mcp',body.config);return json({success:true,saved:true})
+      if(typeof body.commandId!=='string'||!body.commandId||!Number.isSafeInteger(body.expectedRevision)||Number(body.expectedRevision)<0)return json({success:false,error:'MCP 保存命令格式错误'},422)
+      const commands=state.commands as Value, fingerprint=JSON.stringify({config:body.config,expectedRevision:body.expectedRevision})
+      const previous=commands[body.commandId] as {fingerprint:string;response:Value}|undefined
+      if(previous)return previous.fingerprint===fingerprint?json(previous.response):json({success:false,error:'命令 ID 已用于不同内容'},409)
+      if(state.revision!==body.expectedRevision)return json({success:false,error:'MCP 配置已由其他窗口修改'},409)
+      const response={success:true,saved:true,commandId:body.commandId,revision:Number(state.revision)+1}
+      commands[body.commandId]={fingerprint,response};save('mcp-state',{revision:response.revision,config:body.config,commands});return json(response)
     }
-    if(method!=='GET')return json({success:false,error:'不支持的配置操作'},405)
-    return json(read('mcp',{mcpServers:{}}))
+    return json({...state.config as Value,revision:state.revision})
   }
   if(path==='/ai-assistant/mcp/status') {
     if(method!=='GET')return json({success:false,error:'状态只支持读取'},405)
@@ -134,14 +147,21 @@ export function mockSettingsRequest(path: string, method: string, body: Value): 
   }
   if(path==='/ai-assistant/mcp/reload') {
     if(method!=='POST')return json({success:false,error:'重连只支持 POST'},405)
-    const config=read('mcp',{mcpServers:{}}) as McpConfig
+    const state=read('mcp-state',{revision:0,config:{mcpServers:{}},commands:{}})
+    if(typeof body.commandId!=='string'||!body.commandId||!Number.isSafeInteger(body.expectedRevision)||Number(body.expectedRevision)<0)return json({success:false,error:'MCP 重连命令格式错误'},422)
+    const commands=state.commands as Value, fingerprint=JSON.stringify({expectedRevision:body.expectedRevision})
+    const previous=commands[body.commandId] as {fingerprint:string;response:Value}|undefined
+    if(previous)return previous.fingerprint===fingerprint?json(previous.response):json({success:false,error:'命令 ID 已用于不同内容'},409)
+    if(state.revision!==body.expectedRevision)return json({success:false,error:'MCP 配置已由其他窗口修改'},409)
+    const config=state.config as McpConfig
     if(!isMcpConfig(config))return json({success:false,error:'MCP 配置格式错误'},422)
     const servers=Object.entries(config.mcpServers).map(([name,server])=>({
       name,transport:mcpFormTransport(server),disabled:server.disabled===true,connected:false,
       tool_count:0,tools:[],last_error:server.disabled?null:'Mock 未执行外部 MCP 连接',connected_at:null,auto_approve:server.autoApprove||[],
     }))
     save('mcp-status',{servers,total_tools_injected:0,mock:true})
-    return json({connected:[],failed:servers.filter(server=>!server.disabled).map(server=>({name:server.name,error:server.last_error})),disabled:servers.filter(server=>server.disabled).map(server=>server.name),total_servers:servers.length,mock:true})
+    const response={connected:[],failed:servers.filter(server=>!server.disabled).map(server=>({name:server.name,error:server.last_error})),disabled:servers.filter(server=>server.disabled).map(server=>server.name),total_servers:servers.length,commandId:body.commandId,revision:state.revision,mock:true}
+    commands[body.commandId]={fingerprint,response};save('mcp-state',{...state,commands});return json(response)
   }
   return undefined
 }

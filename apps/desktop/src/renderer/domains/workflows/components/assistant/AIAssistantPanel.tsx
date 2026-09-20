@@ -40,6 +40,7 @@ import { modelApi, type ModelOptionList } from '../../api'
 import {
   bindAssistantSocketEvents,
   acknowledgeAssistantClientAction,
+  acknowledgeAssistantMcpTool,
   buildWorkflowContext,
   executeClientAction,
   onAssistantUiEvent,
@@ -712,7 +713,10 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
       setCurrentSessionId(res.data.id)
       setMessages(res.data.messages || [])
       if (res.data.pendingAction) {
-        void acknowledgeAssistantClientAction({
+        const acknowledge = res.data.pendingAction.action.startsWith('mcp__')
+          ? acknowledgeAssistantMcpTool
+          : acknowledgeAssistantClientAction
+        void acknowledge({
           session_id: res.data.id,
           tool_call_id: res.data.pendingAction.commandId,
           action: res.data.pendingAction.action,

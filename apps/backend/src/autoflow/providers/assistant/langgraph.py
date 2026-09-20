@@ -215,6 +215,8 @@ def _node_types(value: Any) -> list[str]:
 
 
 def _validate_tool_call(call: AssistantToolCall) -> str | None:
+    if call.name.startswith("mcp__"):
+        return None if isinstance(call.arguments, dict) else "MCP 工具参数必须是对象"
     if call.name != "client_action":
         return f"助手工具未获批准: {call.name}"
     action = call.arguments.get("action")

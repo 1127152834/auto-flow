@@ -15,7 +15,7 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["0014_workflow_assistant"]
+    assert scripts.get_heads() == ["0015_workflow_mcp"]
     assert scripts.get_revision("pm08_project_sync").down_revision == (
         "pm07_environments"
     )

@@ -212,6 +212,7 @@ def create_app(
     )
     kernel_worker_manager.recover_interrupted()
     credentials = LazySystemCredentialStore()
+    active_credentials = credential_store or credentials
     catalog_provider = CloakBrowserCatalogProvider(
         paths.kernels, licensed_catalog=kernel_worker_manager.licensed_catalog
     )
@@ -249,7 +250,7 @@ def create_app(
 
     model_service = ModelService(
         partial(model_repository_transaction, session_factory),
-        credential_store if credential_store is not None else credentials,
+        active_credentials,
         model_gateway or HttpModelProvider(),
         resource_references,
     )
@@ -320,6 +321,7 @@ def create_app(
         temp_root=paths.temp,
         artifact_root=paths.workspace,
         models=model_service,
+        credential_store=active_credentials,
     )
     workflow_services.runs.recover_interrupted()
     android = android_service(session_factory, paths.workspace)
@@ -374,7 +376,7 @@ def create_app(
     sheets_impacts = SqlAlchemySheetsImpacts(session_factory)
     sheets_repository = SqlAlchemyProjectSync(session_factory, sheets_impacts)
     sheets_tokens = google_tokens or HttpxTokenTransport()
-    google_credentials = credential_store or credentials
+    google_credentials = active_credentials
     sheets_access = GoogleAccess(
         sheets_repository,
         google_credentials,

@@ -763,8 +763,14 @@ class StudioMcpConfig(ApiModel):
         return self
 
 
+class StudioMcpConfigResponse(StudioMcpConfig):
+    revision: int = Field(ge=0, le=9007199254740991)
+
+
 class StudioMcpSaveRequest(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    expected_revision: int = Field(ge=0, le=9007199254740991)
     config: StudioMcpConfig
 
 
@@ -772,6 +778,8 @@ class StudioMcpSaved(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
     success: Literal[True]
     saved: Literal[True]
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    revision: int = Field(ge=1, le=9007199254740991)
 
     @field_validator("success", "saved", mode="before")
     @classmethod
@@ -825,6 +833,20 @@ class StudioMcpReloaded(ApiModel):
     failed: list[StudioMcpFailed]
     disabled: list[str]
     total_servers: int = Field(alias="total_servers", ge=0, le=9007199254740991)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    revision: int = Field(ge=0, le=9007199254740991)
+
+
+class StudioMcpReloadRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    expected_revision: int = Field(ge=0, le=9007199254740991)
+
+
+class StudioMcpCommandLookup(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    http_status: int = Field(ge=200, le=599)
 
 
 class StudioDebugPauseContext(ApiModel):

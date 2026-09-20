@@ -34,6 +34,14 @@ class ManagedModels(Protocol):
     ) -> ModelInvocationResult: ...
 
 
+class McpTools(Protocol):
+    def tool_schemas(self) -> list[dict[str, Any]]: ...
+
+    async def call_tool(
+        self, name: str, arguments: dict[str, Any]
+    ) -> dict[str, Any]: ...
+
+
 def _now() -> datetime:
     return datetime.now(UTC)
 
@@ -64,10 +72,12 @@ class WorkflowAssistantService:
         checkpoint_path: Path,
         models: ManagedModels,
         events: StudioEventJournal,
+        mcp: McpTools | None = None,
     ) -> None:
         self._repository = repository
         self._models = models
         self._events = events
+        self._mcp = mcp
         self._files = AssistantFileStore(checkpoint_path.parent)
         self._graph = AssistantGraph(checkpoint_path, self._invoke_model)
         self._waiters: dict[str, asyncio.Future[dict[str, Any]]] = {}
@@ -89,6 +99,9 @@ class WorkflowAssistantService:
                 )
 
         provider_payload["_onChunk"] = on_chunk
+        tools = provider_payload.get("tools")
+        if isinstance(tools, list) and self._mcp is not None:
+            provider_payload["tools"] = [*tools, *self._mcp.tool_schemas()]
         messages = provider_payload.get("messages")
         if isinstance(messages, list):
             provider_payload["messages"] = self._files.hydrate_model_messages(messages)
@@ -227,10 +240,29 @@ class WorkflowAssistantService:
             assert result.tool_call is not None and result.command_id is not None
             call = result.tool_call
             assistant = _message("assistant", "", tool_calls=[_tool_payload(call)])
+            is_mcp = call.name.startswith("mcp__")
+            available_mcp_tools = (
+                {
+                    str(schema.get("function", {}).get("name"))
+                    for schema in self._mcp.tool_schemas()
+                }
+                if self._mcp is not None
+                else set()
+            )
+            if is_mcp and call.name not in available_mcp_tools:
+                return await self._apply_graph_result(
+                    session_id,
+                    AssistantGraphResult(
+                        status="failed", error=f"MCP 工具未连接或不存在: {call.name}"
+                    ),
+                )
             pending = {
                 "commandId": call.id,
-                "action": call.arguments["action"],
-                "payload": copy.deepcopy(call.arguments.get("payload", {})),
+                "action": call.name if is_mcp else call.arguments["action"],
+                "payload": copy.deepcopy(
+                    call.arguments if is_mcp else call.arguments.get("payload", {})
+                ),
+                "kind": "mcp" if is_mcp else "client_action",
             }
             self._repository.save(
                 session.with_changes(
@@ -248,7 +280,9 @@ class WorkflowAssistantService:
                 {"session_id": session_id, "tool_call": _tool_payload(call)},
             )
             await self._events.publish(
-                "ai_assistant:client_action_request",
+                "ai_assistant:mcp_tool_request"
+                if is_mcp
+                else "ai_assistant:client_action_request",
                 {
                     "session_id": session_id,
                     "tool_call_id": call.id,
@@ -293,6 +327,22 @@ class WorkflowAssistantService:
         return response
 
     async def submit_event_command(
+        self, command_id: str, event: str, data: dict[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        if event != "ai_client_action_ack":
+            return await self._submit_event_command_unlocked(command_id, event, data)
+        session_id = data.get("session_id")
+        tool_call_id = data.get("tool_call_id")
+        lock_key = (
+            str(session_id)
+            if isinstance(session_id, str) and session_id
+            else f"tool:{tool_call_id}"
+        )
+        lock = self._locks.setdefault(lock_key, asyncio.Lock())
+        async with lock:
+            return await self._submit_event_command_unlocked(command_id, event, data)
+
+    async def _submit_event_command_unlocked(
         self, command_id: str, event: str, data: dict[str, Any]
     ) -> tuple[dict[str, Any], int]:
         if event == "ai_client_action_claim":
@@ -365,6 +415,13 @@ class WorkflowAssistantService:
                 "success": False,
                 "error": "助手会话不存在",
             }, 409
+        pending_action = session.pending_action
+        if pending_action is None:
+            return {
+                "commandId": command_id,
+                "success": False,
+                "status": "confirmed",
+            }, 202
         claim = self._repository.get_command(claim_command_id)
         pending_claim_id = (
             session.pending_action.get("claimCommandId")
@@ -398,6 +455,26 @@ class WorkflowAssistantService:
                     "success": False,
                     "error": str(error),
                 }, 409
+        if pending_action.get("kind") == "mcp":
+            if result.get("success") is True:
+                if self._mcp is None:
+                    result = {"success": False, "error": "MCP 服务不可用"}
+                else:
+                    try:
+                        result = {
+                            "success": True,
+                            "data": await self._mcp.call_tool(
+                                str(pending_action["action"]),
+                                dict(pending_action.get("payload") or {}),
+                            ),
+                        }
+                    except Exception as error:  # noqa: BLE001 - tool failures return to the model.
+                        result = {"success": False, "error": str(error)[:500]}
+            else:
+                result = {
+                    "success": False,
+                    "error": str(result.get("error") or "用户拒绝执行 MCP 工具"),
+                }
         graph_thread = f"assistant/{session.id}"
         current_graph = await self._graph.current(thread_id=graph_thread)
         resumed = (
@@ -540,12 +617,15 @@ class WorkflowAssistantService:
 
     def get_session(self, session_id: str) -> dict[str, Any]:
         session = self._required(session_id)
+        pending_action = copy.deepcopy(session.pending_action)
+        if pending_action is not None:
+            pending_action.pop("kind", None)
         return {
             "id": session.id,
             "title": session.title,
             "messages": self._files.public_messages(session.messages),
             "status": session.status,
-            "pending_action": copy.deepcopy(session.pending_action),
+            "pending_action": pending_action,
             "revision": session.revision,
         }
 

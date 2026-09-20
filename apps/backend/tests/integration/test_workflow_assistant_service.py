@@ -4,6 +4,7 @@ import asyncio
 from pathlib import Path
 
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.assistant import WorkflowAssistantService
 from autoflow.domain.models import ModelError, ModelInvocationResult
@@ -90,6 +91,91 @@ class StreamingModels:
         )
 
 
+class McpModels:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def invoke(self, model_id: str, payload):
+        self.calls += 1
+        names = [tool["function"]["name"] for tool in payload.get("tools", [])]
+        assert "client_action" in names
+        assert "mcp__fixture__echo" in names
+        if self.calls == 1:
+            return ModelInvocationResult(
+                model_id,
+                "",
+                "",
+                {},
+                "https://safe.test",
+                (
+                    {
+                        "id": "mcp-tool-1",
+                        "name": "mcp__fixture__echo",
+                        "arguments": {"text": "hello"},
+                    },
+                ),
+            )
+        assert "echo:hello" in payload["messages"][-1]["content"]
+        return ModelInvocationResult(
+            model_id, "MCP 已返回", "", {}, "https://safe.test"
+        )
+
+
+class UnknownMcpModels:
+    async def invoke(self, model_id: str, payload):
+        return ModelInvocationResult(
+            model_id,
+            "",
+            "",
+            {},
+            "https://safe.test",
+            (
+                {
+                    "id": "unknown-mcp-tool",
+                    "name": "mcp__missing__tool",
+                    "arguments": {},
+                },
+            ),
+        )
+
+
+class McpTools:
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, dict]] = []
+
+    def tool_schemas(self):
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": "mcp__fixture__echo",
+                    "description": "echo",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"text": {"type": "string"}},
+                    },
+                },
+            }
+        ]
+
+    async def call_tool(self, name: str, arguments: dict):
+        self.calls.append((name, arguments))
+        return {"content": f"echo:{arguments['text']}", "is_error": False}
+
+
+class BlockingMcpTools(McpTools):
+    def __init__(self) -> None:
+        super().__init__()
+        self.started = asyncio.Event()
+        self.release = asyncio.Event()
+
+    async def call_tool(self, name: str, arguments: dict):
+        self.calls.append((name, arguments))
+        self.started.set()
+        await self.release.wait()
+        return {"content": f"echo:{arguments['text']}", "is_error": False}
+
+
 def _service(tmp_path: Path):
     database = tmp_path / "workspace.db"
     migrate_database(database)
@@ -103,6 +189,145 @@ def _service(tmp_path: Path):
         events,
     )
     return service, events, factory, models
+
+
+@pytest.mark.asyncio
+async def test_mcp_tool_is_injected_and_runs_only_after_frontend_approval(
+    tmp_path,
+) -> None:
+    database = tmp_path / "mcp-assistant.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    events = StudioEventJournal()
+    models = McpModels()
+    mcp = McpTools()
+    service = WorkflowAssistantService(
+        SqlAlchemyWorkflowAssistant(factory),
+        tmp_path / "mcp-checkpoints.sqlite3",
+        models,
+        events,
+        mcp,
+    )
+    chat = asyncio.create_task(
+        service.chat(
+            session_id="mcp-session",
+            message="调用 echo",
+            model_id="model-main",
+            enable_tools=True,
+            workflow_context={},
+        )
+    )
+    for _ in range(100):
+        if events.sequence >= 3:
+            break
+        await asyncio.sleep(0.01)
+
+    assert mcp.calls == []
+    assert events.replay(after_sequence=2)[0].event == "ai_assistant:mcp_tool_request"
+    await _claim(service, "mcp-session", "mcp-tool-1", "mcp-claim")
+    receipt, status = await service.submit_event_command(
+        "mcp-approve",
+        "ai_client_action_ack",
+        {
+            "session_id": "mcp-session",
+            "tool_call_id": "mcp-tool-1",
+            "claim_command_id": "mcp-claim",
+            "result": {"success": True},
+        },
+    )
+    response = await asyncio.wait_for(chat, 2)
+
+    assert status == 200 and receipt["success"] is True
+    assert mcp.calls == [("mcp__fixture__echo", {"text": "hello"})]
+    assert response["message"]["content"] == "MCP 已返回"
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_mcp_approval_retry_does_not_call_external_tool_twice(tmp_path) -> None:
+    database = tmp_path / "mcp-retry.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    events = StudioEventJournal()
+    mcp = BlockingMcpTools()
+    service = WorkflowAssistantService(
+        SqlAlchemyWorkflowAssistant(factory),
+        tmp_path / "mcp-retry-checkpoints.sqlite3",
+        McpModels(),
+        events,
+        mcp,
+    )
+    chat = asyncio.create_task(
+        service.chat(
+            session_id="mcp-retry",
+            message="调用 echo",
+            model_id="model-main",
+            enable_tools=True,
+            workflow_context={},
+        )
+    )
+    for _ in range(100):
+        if events.sequence >= 3:
+            break
+        await asyncio.sleep(0.01)
+    await _claim(service, "mcp-retry", "mcp-tool-1", "mcp-retry-claim")
+    request = {
+        "session_id": "mcp-retry",
+        "tool_call_id": "mcp-tool-1",
+        "claim_command_id": "mcp-retry-claim",
+        "result": {"success": True},
+    }
+    first = asyncio.create_task(
+        service.submit_event_command(
+            "mcp-retry-result", "ai_client_action_ack", request
+        )
+    )
+    await asyncio.wait_for(mcp.started.wait(), 1)
+    repeated = asyncio.create_task(
+        service.submit_event_command(
+            "mcp-retry-result", "ai_client_action_ack", request
+        )
+    )
+    await asyncio.sleep(0)
+    assert mcp.calls == [("mcp__fixture__echo", {"text": "hello"})]
+    mcp.release.set()
+
+    assert await first == ({"commandId": "mcp-retry-result", "success": True}, 200)
+    assert await repeated == ({"commandId": "mcp-retry-result", "success": True}, 200)
+    assert (await asyncio.wait_for(chat, 2))["message"]["content"] == "MCP 已返回"
+    assert len(mcp.calls) == 1
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_model_cannot_request_an_unregistered_mcp_tool(tmp_path) -> None:
+    database = tmp_path / "mcp-missing.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    events = StudioEventJournal()
+    mcp = McpTools()
+    service = WorkflowAssistantService(
+        SqlAlchemyWorkflowAssistant(factory),
+        tmp_path / "mcp-missing-checkpoints.sqlite3",
+        UnknownMcpModels(),
+        events,
+        mcp,
+    )
+
+    response = await service.chat(
+        session_id="mcp-missing",
+        message="调用不存在的工具",
+        model_id="model-main",
+        enable_tools=True,
+        workflow_context={},
+    )
+
+    assert (
+        response["message"]["content"] == "MCP 工具未连接或不存在: mcp__missing__tool"
+    )
+    assert mcp.calls == []
+    assert service.get_session("mcp-missing")["status"] == "failed"
+    factory.dispose()
 
 
 async def _claim(

@@ -1,0 +1,64 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/services/mcp_manager.py",
+      "reference/WebRPA/backend/app/services/ai_assistant_skills_mcp.py"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "配置、状态、重载和命令查询接入真实FastAPI服务，保存与重载均使用revision和稳定commandId",
+    "MCP配置正文仅存系统CredentialStore，SQLite只保存secretRef、摘要、revision和幂等命令回执",
+    "复用官方MCP Python SDK连接stdio、SSE和streamable HTTP；单个服务器失败不阻断其他服务器",
+    "真实工具目录按服务器限定名称注入LangGraph，enableTools关闭时不注入",
+    "每次MCP工具调用都复用现有认领、可见权限确认和幂等回执；autoApprove不能绕过批准",
+    "批准后由后端调用MCP工具并把真实结果恢复给LangGraph；拒绝、工具失败和取消保持明确状态",
+    "前端在保存或重载响应丢失后查询原commandId，不生成新标识重复执行",
+    "启动恢复、服务关闭和冻结sidecar均接入现有生命周期"
+  ],
+  "checks": [
+    {
+      "command": "uv run pytest tests/contract/test_studio_mcp.py tests/integration/test_workflow_mcp_http.py tests/integration/test_workflow_assistant_service.py tests/integration/test_workflow_assistant_http.py tests/unit/workflows/test_assistant_langgraph.py -q",
+      "exitCode": 0,
+      "result": "54 passed",
+      "covers": "配置合同、CAS与幂等、秘密隔离、真实stdio发现与调用、并发重试不重复副作用、未注册工具拒绝、LangGraph权限暂停和恢复"
+    },
+    {
+      "command": "rg -l '0015_workflow_mcp' tests/integration | tr '\\n' '\\0' | xargs -0 uv run pytest -q",
+      "exitCode": 0,
+      "result": "71 passed",
+      "covers": "当前Alembic head、历史数据库升级和既有迁移兼容"
+    },
+    {
+      "command": "npm test --workspace @autoflow/desktop -- --run <MCP and assistant permission tests>",
+      "exitCode": 0,
+      "result": "66 passed",
+      "covers": "内存/HTTP合同、revision冲突、响应丢失恢复、离开保护、MCP可见批准和动作认领"
+    },
+    {
+      "command": "ruff + mypy affected backend modules; TypeScript + ESLint affected frontend modules; openapi:check",
+      "exitCode": 0,
+      "result": "all passed"
+    },
+    {
+      "command": "npm run build && npm run backend:build",
+      "exitCode": 0,
+      "result": "Electron main/preload/renderer and macOS arm64 PyInstaller sidecar built",
+      "covers": "生成合同、MCP SDK、迁移和正式入口进入构建产物"
+    },
+    {
+      "command": "<frozen-sidecar> --instance-id frozen-mcp --data-dir <temporary>; GET MCP config/status; authenticated shutdown",
+      "exitCode": 0,
+      "result": "AUTOFLOW_READY, revision 0, empty status and clean exit 0",
+      "covers": "冻结入口加载MCP模块、迁移临时数据库并完成生命周期清理"
+    }
+  ],
+  "externalWaiting": [
+    "正式Electron真实UI保存、重载、批准、拒绝、断线恢复和历史验收归B5.8",
+    "真实远程SSE与streamable HTTP MCP服务器互通；当前真实连接和工具调用使用本地stdio服务",
+    "Windows与macOS Intel冻结包实机验证"
+  ]
+}

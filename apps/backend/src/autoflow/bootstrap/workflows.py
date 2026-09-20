@@ -14,6 +14,7 @@ from autoflow.adapters.events.workflows import (
 from autoflow.adapters.http.custom_modules import custom_modules_router
 from autoflow.adapters.http.workflow_ai import workflow_ai_router
 from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
+from autoflow.adapters.http.workflow_mcp import workflow_mcp_router
 from autoflow.adapters.http.workflow_runs import (
     WorkflowRunCommands,
     workflow_run_command_router,
@@ -27,6 +28,7 @@ from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
 from autoflow.application.workflows.inspection import WorkflowInspectionService
+from autoflow.application.workflows.mcp import WorkflowMcpService
 from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
@@ -35,6 +37,7 @@ from autoflow.infrastructure.database.workflow_assistant import (
     SqlAlchemyWorkflowAssistant,
 )
 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+from autoflow.infrastructure.database.workflow_mcp import SqlAlchemyWorkflowMcp
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
 from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
@@ -110,6 +113,7 @@ class WorkflowServices:
     artifact_root: Path | None = None
     inspection: WorkflowInspectionService | Any | None = None
     assistant: WorkflowAssistantService | Any | None = None
+    mcp: WorkflowMcpService | Any | None = None
     event_commands: Any | None = None
 
     async def shutdown(self) -> None:
@@ -120,6 +124,8 @@ class WorkflowServices:
             tasks.append(self.inspection.shutdown())
         if self.assistant is not None:
             tasks.append(self.assistant.shutdown())
+        if self.mcp is not None:
+            tasks.append(self.mcp.shutdown())
         if tasks:
             import asyncio
 
@@ -148,6 +154,7 @@ def build_workflow_services(
     temp_root: Path | None = None,
     artifact_root: Path | None = None,
     models: Any | None = None,
+    credential_store: Any | None = None,
 ) -> WorkflowServices:
     modules = CustomModuleService(SqlAlchemyWorkflowModules(session_factory))
     documents = WorkflowDocumentService(
@@ -158,12 +165,20 @@ def build_workflow_services(
     run_repository = SqlAlchemyWorkflowRuns(session_factory)
     runs = WorkflowRunService(run_repository)
     events = StudioEventJournal()
+    mcp = (
+        WorkflowMcpService(
+            SqlAlchemyWorkflowMcp(session_factory), credential_store
+        )
+        if credential_store is not None
+        else None
+    )
     assistant = (
         WorkflowAssistantService(
             SqlAlchemyWorkflowAssistant(session_factory),
             artifact_root / "assistant" / "checkpoints.sqlite3",
             models,
             events,
+            mcp,
         )
         if artifact_root is not None and models is not None
         else None
@@ -188,6 +203,7 @@ def build_workflow_services(
             commands=PendingWorkflowRunCommands(),
             events=events,
             assistant=assistant,
+            mcp=mcp,
         )
     assert profiles is not None
     assert installed_kernels is not None
@@ -262,6 +278,7 @@ def build_workflow_services(
         artifact_root=artifact_root,
         inspection=inspection,
         assistant=assistant,
+        mcp=mcp,
         event_commands=StudioEventCommandMux(coordinator, assistant) if assistant else None,
     )
 
@@ -273,6 +290,9 @@ def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
         app.include_router(workflow_inspection_router(services.inspection))
     if services.assistant is not None:
         app.include_router(workflow_ai_router(services.assistant))
+    if services.mcp is not None:
+        app.include_router(workflow_mcp_router(services.mcp))
+        app.router.add_event_handler("startup", services.mcp.startup)
     app.include_router(custom_modules_router(services.modules))
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))

@@ -57,7 +57,7 @@ def test_custom_module_database_upgrades_to_integrated_head_without_data_loss(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("0014_workflow_assistant",)]
+        ).fetchall() == [("0015_workflow_mcp",)]
         assert connection.execute(
             "SELECT id, name, revision, usage_count FROM workflow_custom_modules"
         ).fetchall() == [("module-1", "保留模块", 3, 2)]

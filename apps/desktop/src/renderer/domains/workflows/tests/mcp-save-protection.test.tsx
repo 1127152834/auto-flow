@@ -15,7 +15,7 @@ function setup(write:(body:unknown)=>Promise<Response>,read?:()=>Promise<Respons
   if(init?.method==='PUT')return write(JSON.parse(String(init.body)))
   if(path.endsWith('/reload'))return reload?reload():Response.json({success:true})
   if(path.endsWith('/status'))return Response.json(status)
-  return read?read():Response.json(config)
+  return read?read():Response.json({...config,revision:0})
  });return calls
 }
 it.each([503,200])('shows load failure instead of pretending there are no servers at HTTP %s',async code=>{
@@ -32,7 +32,7 @@ it.each([503,200])('keeps confirmed enable state when saving fails at HTTP %s',a
 })
 it('retains new server input on rejected save and supports retry',async()=>{
  let rejected=true
- setup(async()=>Response.json(rejected?{success:false,error:'保存被拒绝'}:{success:true,saved:true}))
+ setup(async()=>Response.json(rejected?{success:false,error:'保存被拒绝'}:{success:true,saved:true,commandId:'save',revision:1}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture')
  fireEvent.click(screen.getByRole('button',{name:'添加'}))
  fireEvent.change(screen.getByPlaceholderText('例如 filesystem / weather / github'),{target:{value:'draft'}})
@@ -53,7 +53,7 @@ it('serializes pending save and does not update confirmed list before acknowledg
  await waitFor(()=>expect(calls.filter(call=>call.startsWith('PUT'))).toHaveLength(1))
  expect(button).toHaveProperty('disabled',true)
  expect(screen.queryByText('已禁用')).toBeNull()
- resolve(Response.json({success:true,saved:true}));await screen.findByRole('button',{name:'启用'})
+ resolve(Response.json({success:true,saved:true,commandId:'save',revision:1}));await screen.findByRole('button',{name:'启用'})
 })
 it('does not reload or remove a server when deletion save fails',async()=>{
  const calls=setup(async()=>Response.json({success:false,error:'删除保存失败'}))
@@ -65,7 +65,7 @@ it('does not reload or remove a server when deletion save fails',async()=>{
  expect(calls.some(call=>call.endsWith('/reload'))).toBe(false)
 })
 it('treats a named template as a new editable server and rejects duplicate names',async()=>{
- const calls=setup(async()=>Response.json({success:true,saved:true}))
+ const calls=setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture')
  fireEvent.click(screen.getByRole('button',{name:'推荐模板'}))
  fireEvent.click(screen.getByRole('button',{name:/通用 HTTP 抓取/}))
@@ -110,7 +110,7 @@ it.each(['memory','http'] as const)('saves and reloads a complete MCP form throu
  const request=async(input:RequestInfo|URL,init?:RequestInit)=>{
   const req=input instanceof Request?input:new Request(input,init)
   const path=new URL(req.url).pathname.replace(/^\/api/,'')
-  return mockSettingsRequest(path,req.method,req.method==='PUT'?await req.json():{}) || Response.json({success:false},{status:404})
+  return mockSettingsRequest(path,req.method,['PUT','POST'].includes(req.method)?await req.json():{}) || Response.json({success:false},{status:404})
  }
  const server=mode==='http'?await startHttpStudioFixture(request):null
  restore=configureStudioConnection(server?.origin||'http://mcp.fixture',server?fetch:request)
@@ -122,13 +122,13 @@ it.each(['memory','http'] as const)('saves and reloads a complete MCP form throu
   fireEvent.click(screen.getByRole('button',{name:'保存'}));await screen.findByText('controlled',{selector:'span'})
   view.unmount();render(<MCPConfigPanel/>);await screen.findByText('controlled',{selector:'span'})
   expect(screen.getByText('未连接')).toBeTruthy()
-  expect(JSON.parse(localStorage.getItem('autoflow:studio:mock:settings:mcp')!).mcpServers.controlled.command).toBe('node')
- }finally{cleanup();await server?.close();localStorage.removeItem('autoflow:studio:mock:settings:mcp')}
+  expect(JSON.parse(localStorage.getItem('autoflow:studio:mock:settings:mcp-state')!).config.mcpServers.controlled.command).toBe('node')
+ }finally{cleanup();await server?.close();localStorage.removeItem('autoflow:studio:mock:settings:mcp-state')}
 })
 
 it('retries a failed initial read before enabling configuration writes',async()=>{
  let failed=true
- setup(async()=>Response.json({success:true,saved:true}),async()=>Response.json(failed?{success:false,error:'初次读取失败'}:config))
+ setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}),async()=>Response.json(failed?{success:false,error:'初次读取失败'}:{...config,revision:0}))
  render(<MCPConfigPanel/>);await screen.findByText(/初次读取失败/)
  expect(screen.getByRole('button',{name:'添加'})).toHaveProperty('disabled',true)
  failed=false;fireEvent.click(screen.getByRole('button',{name:'重新读取配置'}))
@@ -136,7 +136,7 @@ it('retries a failed initial read before enabling configuration writes',async()=
  expect(screen.getByRole('button',{name:'添加'})).toHaveProperty('disabled',false)
 })
 it('keeps the confirmed list and error when reload is rejected in HTTP 200',async()=>{
- const calls=setup(async()=>Response.json({success:true,saved:true}),undefined,async()=>Response.json({success:false,error:'重连被拒绝'}))
+ const calls=setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}),undefined,async()=>Response.json({success:false,error:'重连被拒绝'}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture')
  fireEvent.click(screen.getByRole('button',{name:'重新连接'}));await screen.findByText(/重连失败：重连被拒绝/)
  expect(screen.getByText('fixture')).toBeTruthy()
@@ -144,7 +144,7 @@ it('keeps the confirmed list and error when reload is rejected in HTTP 200',asyn
 })
 
 it.each(['stdio','http','sse'] as const)('rejects malformed visible %s mapping before sending the form',async transport=>{
- const calls=setup(async()=>Response.json({success:true,saved:true}))
+ const calls=setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture')
  fireEvent.click(screen.getByRole('button',{name:'添加'}))
  fireEvent.change(screen.getByPlaceholderText('例如 filesystem / weather / github'),{target:{value:'text-check'}})
@@ -159,7 +159,7 @@ it.each(['stdio','http','sse'] as const)('rejects malformed visible %s mapping b
  expect(calls.some(call=>call.startsWith('PUT'))).toBe(false)
 })
 it('does not let a hidden invalid stdio field block a valid http submission',async()=>{
- const calls=setup(async()=>Response.json({success:true,saved:true}))
+ const calls=setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture');fireEvent.click(screen.getByRole('button',{name:'添加'}))
  fireEvent.change(screen.getByPlaceholderText('例如 filesystem / weather / github'),{target:{value:'switch-check'}})
  fireEvent.change(screen.getByRole('textbox',{name:'环境变量'}),{target:{value:'BAD LINE'}})
@@ -169,14 +169,14 @@ it('does not let a hidden invalid stdio field block a valid http submission',asy
  expect(calls.filter(call=>call.startsWith('PUT'))).toHaveLength(1)
 })
 it.each(['streamable_http','streamable-http'])('reads legacy %s transport without rewriting until explicit save',async transport=>{
- const calls=setup(async()=>Response.json({success:true,saved:true}),async()=>Response.json({mcpServers:{legacy:{transport,url:'https://fixture.invalid/mcp'}}}))
+ const calls=setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}),async()=>Response.json({mcpServers:{legacy:{transport,url:'https://fixture.invalid/mcp'}},revision:0}))
  render(<MCPConfigPanel/>);await screen.findByText('legacy');fireEvent.click(screen.getByRole('button',{name:'编辑'}))
  expect(screen.getByPlaceholderText('https://example.com/mcp')).toHaveProperty('value','https://fixture.invalid/mcp')
  expect(calls.some(call=>call.startsWith('PUT'))).toBe(false)
 })
 
 it.each(['not-a-url','file:///tmp/mcp'])('rejects invalid remote URL case %# without losing the input',async url=>{
- const calls=setup(async()=>Response.json({success:true,saved:true}))
+ const calls=setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture');fireEvent.click(screen.getByRole('button',{name:'添加'}))
  fireEvent.change(screen.getByPlaceholderText('例如 filesystem / weather / github'),{target:{value:'url-check'}})
  fireEvent.click(screen.getByRole('button',{name:'http'}))
@@ -187,7 +187,7 @@ it.each(['not-a-url','file:///tmp/mcp'])('rejects invalid remote URL case %# wit
 })
 it('saves a prototype-like server name as an own JSON field',async()=>{
  let payload:unknown
- const calls=setup(async body=>{payload=body;return Response.json({success:true,saved:true})})
+ const calls=setup(async body=>{payload=body;return Response.json({success:true,saved:true,commandId:'save',revision:1})})
  render(<MCPConfigPanel/>);await screen.findByText('fixture');fireEvent.click(screen.getByRole('button',{name:'添加'}))
  fireEvent.change(screen.getByPlaceholderText('例如 filesystem / weather / github'),{target:{value:'__proto__'}})
  fireEvent.change(screen.getByPlaceholderText('例如 npx / node / python'),{target:{value:'node'}})
@@ -198,14 +198,14 @@ it('saves a prototype-like server name as an own JSON field',async()=>{
 
 it('preserves root and server extensions when editing a supported field',async()=>{
  let payload:unknown
- setup(async body=>{payload=body;return Response.json({success:true,saved:true})},async()=>Response.json({mcpServers:{fixture:{command:'node',args:null,env:null,extensionSetting:{keep:42}}},extensionRoot:'keep'}))
+ setup(async body=>{payload=body;return Response.json({success:true,saved:true,commandId:'save',revision:1})},async()=>Response.json({mcpServers:{fixture:{command:'node',args:null,env:null,extensionSetting:{keep:42}}},extensionRoot:'keep',revision:0}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture');fireEvent.click(screen.getByRole('button',{name:'编辑'}))
  fireEvent.change(screen.getByPlaceholderText('例如 npx / node / python'),{target:{value:'python'}})
  fireEvent.click(screen.getByRole('button',{name:'保存'}));await waitFor(()=>expect(payload).toBeTruthy())
  expect(payload).toMatchObject({config:{extensionRoot:'keep',mcpServers:{fixture:{command:'python',extensionSetting:{keep:42}}}}})
 })
 it('reports partial reload failures after refreshing server status',async()=>{
- setup(async()=>Response.json({success:true,saved:true}),undefined,async()=>Response.json({connected:[],failed:[{name:'fixture',error:'连接被拒绝'}],disabled:[],total_servers:1}))
+ setup(async()=>Response.json({success:true,saved:true,commandId:'save',revision:1}),undefined,async()=>Response.json({connected:[],failed:[{name:'fixture',error:'连接被拒绝'}],disabled:[],total_servers:1,commandId:'reload',revision:0}))
  render(<MCPConfigPanel/>);await screen.findByText('fixture');fireEvent.click(screen.getByRole('button',{name:'重新连接'}))
  await screen.findByText('部分 MCP 服务器连接失败：fixture：连接被拒绝')
  expect(screen.getByText('fixture')).toBeTruthy()

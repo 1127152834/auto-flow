@@ -48,6 +48,7 @@ export function MCPConfigPanel({ registerLeaveGuard }: { registerLeaveGuard?: Re
   const mounted = useRef(true)
   const reads = useRef(0)
   const loadedRevision = useRef<number | null>(null)
+  const configRevision = useRef(0)
   const { confirm, ConfirmDialog } = useConfirm()
   useEffect(() => {
     if (editingName !== null) return
@@ -67,7 +68,9 @@ export function MCPConfigPanel({ registerLeaveGuard }: { registerLeaveGuard?: Re
       if (!current()) return false
       if (!cfgRes.success || !cfgRes.data) throw new Error(cfgRes.error)
       if (!stRes.success || !stRes.data) throw new Error(stRes.error)
-      setConfig(cfgRes.data)
+      const {revision: nextRevision, ...nextConfig} = cfgRes.data
+      configRevision.current = Number(nextRevision)
+      setConfig(nextConfig)
       setStatus(stRes.data)
       loadedRevision.current = revision
       setLoaded(true)
@@ -100,9 +103,10 @@ export function MCPConfigPanel({ registerLeaveGuard }: { registerLeaveGuard?: Re
     setSaving(true)
     setSavedFlash(false)
     try {
-      const result = await mcpApi.save(next)
+      const result = await mcpApi.save(next, configRevision.current)
       if (!current()) return false
       if (!result.success) throw new Error(result.error)
+      configRevision.current = result.data!.revision
       setConfig(next)
       setSavedFlash(true)
       setTimeout(() => { if (current()) setSavedFlash(false) }, 1500)
@@ -122,7 +126,7 @@ export function MCPConfigPanel({ registerLeaveGuard }: { registerLeaveGuard?: Re
     setReloading(true)
     setError(null)
     try {
-      const result = await mcpApi.reload()
+      const result = await mcpApi.reload(configRevision.current)
       if (!current()) return
       if (!result.success) throw new Error(result.error)
       if (await refresh() && result.data?.failed.length && current()) {

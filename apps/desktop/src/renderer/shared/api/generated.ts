@@ -10220,12 +10220,32 @@ export type components = {
              */
             claimId: string | null;
         };
+        /** StudioMcpCommandLookup */
+        StudioMcpCommandLookup: {
+            /** Commandid */
+            commandId: string;
+            /** Httpstatus */
+            httpStatus: number;
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioMcpConfig */
         StudioMcpConfig: {
             /** Mcpservers */
             mcpServers: {
                 [key: string]: components["schemas"]["StudioMcpServerConfig"];
             };
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpConfigResponse */
+        StudioMcpConfigResponse: {
+            /** Mcpservers */
+            mcpServers: {
+                [key: string]: components["schemas"]["StudioMcpServerConfig"];
+            };
+            /** Revision */
+            revision: number;
         } & {
             [key: string]: unknown;
         };
@@ -10249,6 +10269,13 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioMcpReloadRequest */
+        StudioMcpReloadRequest: {
+            /** Commandid */
+            commandId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+        };
         /** StudioMcpReloaded */
         StudioMcpReloaded: {
             /** Connected */
@@ -10259,11 +10286,19 @@ export type components = {
             disabled: string[];
             /** Total Servers */
             total_servers: number;
+            /** Commandid */
+            commandId: string;
+            /** Revision */
+            revision: number;
         } & {
             [key: string]: unknown;
         };
         /** StudioMcpSaveRequest */
         StudioMcpSaveRequest: {
+            /** Commandid */
+            commandId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
             config: components["schemas"]["StudioMcpConfig"];
         };
         /** StudioMcpSaved */
@@ -10278,6 +10313,10 @@ export type components = {
              * @constant
              */
             saved: true;
+            /** Commandid */
+            commandId: string;
+            /** Revision */
+            revision: number;
         } & {
             [key: string]: unknown;
         };

@@ -15,7 +15,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
 
-    assert ScriptDirectory.from_config(config).get_heads() == ["0014_workflow_assistant"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0015_workflow_mcp"]
 
     preserved = {}
     if existing:
@@ -51,7 +51,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchall() == [("0014_workflow_assistant",)]
+        ).fetchall() == [("0015_workflow_mcp",)]
 
         assert connection.execute("SELECT * FROM projects").fetchall() == []
         assert connection.execute("SELECT * FROM project_operations").fetchall() == []
