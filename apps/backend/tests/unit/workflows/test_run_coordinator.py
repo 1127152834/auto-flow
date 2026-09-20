@@ -13,6 +13,7 @@ from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.basic import OpenPageExecutor
 from autoflow.application.workflows.executors.input_prompt import InputPromptExecutor
+from autoflow.application.workflows.executors.js_script import JsScriptExecutor
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
@@ -592,6 +593,156 @@ async def test_input_command_waits_for_worker_ack_and_is_idempotent(
         {"commandId": "command-1", "success": True, "httpStatus": 200},
         200,
     )
+
+
+@pytest.mark.asyncio
+async def test_js_script_claim_and_result_are_owned_idempotent_commands(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "js-script.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(sessions))
+    documents.create(
+        {
+            "id": "js-flow",
+            "name": "真实脚本",
+            "nodes": [
+                {
+                    "id": "script",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "js_script",
+                        "config": {"code": "return 2", "resultVariable": "answer"},
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "count", "value": 1}],
+        },
+        client_request_id="create-js-flow",
+    )
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    runs = WorkflowRunService(repository)
+    registry = ExecutorRegistry()
+    registry.register(JsScriptExecutor)
+    workers = FakeWorkers()
+    coordinator = WorkflowRunCoordinator(
+        documents=documents,
+        runs=runs,
+        run_repository=repository,
+        runtime=WorkflowRuntime(registry),
+        profiles=FakeProfiles(_profile()),
+        installed_kernels=list,
+        resolve_proxy=lambda _profile, _run_id: _none(),
+        read_license=lambda: None,
+        workers=workers,
+        resources=FakeResources(),
+        events=StudioEventJournal(),
+        artifact_root=tmp_path / "workspace",
+    )
+    await coordinator.start(
+        "js-flow",
+        {"runId": "js-run", "documentId": "js-flow", "profileId": "profile-1"},
+    )
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:js_script",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-1",
+            "requestId": "request-1",
+            "code": "return 2",
+            "variables": {"count": 1},
+        }
+    )
+
+    claim = {"requestId": "request-1", "claimId": "studio-1"}
+    assert await coordinator.submit_event_command(
+        "claim-1", "js_script_claim", claim
+    ) == (
+        {
+            "commandId": "claim-1",
+            "success": True,
+            "requestId": "request-1",
+        },
+        200,
+    )
+    assert await coordinator.submit_event_command(
+        "claim-1", "js_script_claim", claim
+    ) == (
+        {
+            "commandId": "claim-1",
+            "success": True,
+            "requestId": "request-1",
+        },
+        200,
+    )
+    assert (await coordinator.submit_event_command(
+        "foreign", "js_script_claim", {"requestId": "request-1", "claimId": "other"}
+    ))[1] == 409
+
+    payload = {
+        **claim,
+        "success": True,
+        "result": 2,
+        "variables": {"count": 2, "notDeclared": 99},
+    }
+    completing = asyncio.create_task(
+        coordinator.submit_event_command("result-1", "js_script_result", payload)
+    )
+    for _ in range(100):
+        if workers.commands:
+            break
+        await asyncio.sleep(0)
+    assert workers.commands == [
+        (
+            "js-run",
+            {"type": "js_script_result", "commandId": "result-1", **payload},
+        )
+    ]
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:command_applied",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "commandId": "result-1",
+            "requestId": "request-1",
+        }
+    )
+    assert (await completing)[1] == 200
+    assert coordinator.js_script_state("request-1") == {
+        "requestId": "request-1",
+        "workflowId": "js-flow",
+        "nodeId": "script",
+        "status": "completed",
+        "claimId": "studio-1",
+    }
+    assert await coordinator.submit_event_command(
+        "result-1", "js_script_result", payload
+    ) == await completing
+    assert len(workers.commands) == 1
+
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:js_script",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-2",
+            "requestId": "request-2",
+            "code": "return 3",
+            "variables": {"count": 2},
+        }
+    )
+    await coordinator.on_worker_exit("js-run", 17)
+    assert coordinator.js_script_state("request-2")["status"] == "expired"
+    assert (await coordinator.submit_event_command(
+        "late-claim",
+        "js_script_claim",
+        {"requestId": "request-2", "claimId": "late"},
+    ))[1] == 409
 
 
 async def _none() -> None:

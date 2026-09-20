@@ -3310,6 +3310,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/events/js-requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Js Script */
+        get: operations["get_js_script_api_events_js_requests__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/environment": {
         parameters: {
             query?: never;
@@ -8969,6 +8986,22 @@ export type components = {
              */
             status: "pending" | "answered" | "cancelled" | "expired";
         };
+        /** StudioJsScriptState */
+        StudioJsScriptState: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "claimed" | "completed" | "failed" | "expired";
+            /** Claimid */
+            claimId?: string | null;
+        };
         /** StudioPickerSessionRequest */
         StudioPickerSessionRequest: {
             /** Sessionid */
@@ -10229,25 +10262,6 @@ export type components = {
              * @default null
              */
             error: string | null;
-        };
-        /** StudioJsScriptState */
-        StudioJsScriptState: {
-            /** Requestid */
-            requestId: string;
-            /** Workflowid */
-            workflowId: string;
-            /** Nodeid */
-            nodeId: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "pending" | "claimed" | "completed" | "failed" | "expired";
-            /**
-             * Claimid
-             * @default null
-             */
-            claimId: string | null;
         };
         /** StudioMcpCommandLookup */
         StudioMcpCommandLookup: {
@@ -23062,6 +23076,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudioInputPromptState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_js_script_api_events_js_requests__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioJsScriptState"];
                 };
             };
             /** @description Validation Error */

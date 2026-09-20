@@ -3,13 +3,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
 from autoflow.adapters.events.workflows import (
     StudioEventJournal,
     workflow_events_router,
 )
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 
 class FakeCommands:
@@ -31,6 +30,15 @@ class FakeCommands:
             "workflowId": "flow",
             "nodeId": "prompt",
             "status": "pending",
+        }
+
+    def js_script_state(self, request_id: str) -> dict[str, str]:
+        return {
+            "requestId": request_id,
+            "workflowId": "flow",
+            "nodeId": "script",
+            "status": "claimed",
+            "claimId": "studio",
         }
 
 
@@ -68,6 +76,13 @@ def test_input_command_http_contract_uses_camel_case_and_queryable_receipts() ->
         "workflowId": "flow",
         "nodeId": "prompt",
         "status": "pending",
+    }
+    assert client.get("/api/events/js-requests/script-1").json() == {
+        "requestId": "script-1",
+        "workflowId": "flow",
+        "nodeId": "script",
+        "status": "claimed",
+        "claimId": "studio",
     }
 
 

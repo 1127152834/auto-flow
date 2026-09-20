@@ -36,8 +36,8 @@ from autoflow.domain.workflows.runs import WorkflowRunError
 from autoflow.infrastructure.database.workflow_assistant import (
     SqlAlchemyWorkflowAssistant,
 )
-from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
 from autoflow.infrastructure.database.workflow_mcp import SqlAlchemyWorkflowMcp
+from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
 from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
@@ -80,6 +80,12 @@ class PendingWorkflowRunCommands:
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
 
+    def js_script_state(self, request_id: str) -> dict[str, str]:
+        del request_id
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
 
 class StudioEventCommandMux:
     def __init__(self, workflows: Any, assistant: WorkflowAssistantService) -> None:
@@ -100,6 +106,9 @@ class StudioEventCommandMux:
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]:
         return self._workflows.input_prompt_state(request_id)
+
+    def js_script_state(self, request_id: str) -> dict[str, str]:
+        return self._workflows.js_script_state(request_id)
 
 
 @dataclass(slots=True)

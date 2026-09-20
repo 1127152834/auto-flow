@@ -103,6 +103,7 @@ class WorkflowRunCoordinator:
         self._command_lock = asyncio.Lock()
         self._event_command_lock = asyncio.Lock()
         self._input_prompts: dict[str, dict[str, str]] = {}
+        self._js_requests: dict[str, dict[str, str]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
         self._command_waiters: dict[str, asyncio.Future[None]] = {}
 
@@ -436,6 +437,47 @@ class WorkflowRunCoordinator:
             if state is not None and status in {"answered", "cancelled", "expired"}:
                 state["status"] = status
             return
+        if event_type == "execution:js_script":
+            request_id = _required_string(event, "requestId")
+            js_node_id = _required_string(event, "nodeId")
+            payload = {
+                key: copy.deepcopy(value)
+                for key, value in event.items()
+                if key not in {"type", "runId"}
+            }
+            self._js_requests[request_id] = {
+                "requestId": request_id,
+                "workflowId": run.workflow_id,
+                "runId": run_id,
+                "nodeId": js_node_id,
+                "status": "pending",
+            }
+            persisted = self._repository.append_event(
+                run_id,
+                event_type,
+                payload,
+                now=datetime_now(),
+                node_id=js_node_id,
+                execution_id=_optional_string(event.get("executionId")),
+                run_patch={"currentNodeId": js_node_id},
+            )
+            await self._events.publish(
+                event_type,
+                {
+                    **payload,
+                    "runId": run_id,
+                    "workflowId": run.workflow_id,
+                    "sequence": persisted.sequence,
+                },
+            )
+            return
+        if event_type == "execution:js_script_closed":
+            request_id = _required_string(event, "requestId")
+            state = self._js_requests.get(request_id)
+            status = _required_string(event, "status")
+            if state is not None and status in {"completed", "failed", "expired"}:
+                state["status"] = status
+            return
         if event_type == "artifact:registered":
             self._repository.register_artifact(
                 run_id=run_id,
@@ -583,6 +625,10 @@ class WorkflowRunCoordinator:
                         "error": "commandId 已用于不同请求",
                     }, 409
                 return copy.deepcopy(receipt), status
+            if event == "js_script_claim":
+                return self._claim_js_script(command_id, fingerprint, data)
+            if event == "js_script_result":
+                return await self._complete_js_script(command_id, fingerprint, data)
             if event != "input_prompt_result":
                 receipt = {
                     "commandId": command_id,
@@ -643,6 +689,97 @@ class WorkflowRunCoordinator:
             self._command_receipts[command_id] = (fingerprint, receipt, 200)
             return copy.deepcopy(receipt), 200
 
+    def _claim_js_script(
+        self, command_id: str, fingerprint: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        request_id = data.get("requestId")
+        claim_id = data.get("claimId")
+        if (
+            not isinstance(request_id, str)
+            or not request_id
+            or not isinstance(claim_id, str)
+            or not claim_id
+            or set(data) != {"requestId", "claimId"}
+        ):
+            return self._remember_command(
+                command_id, fingerprint, "脚本请求及领取标识无效", 422
+            )
+        state = self._js_requests.get(request_id)
+        if state is None or state["status"] not in {"pending", "claimed"}:
+            return self._remember_command(
+                command_id, fingerprint, "脚本请求不存在或已结束", 409
+            )
+        if state["status"] == "claimed" and state.get("claimId") != claim_id:
+            return self._remember_command(
+                command_id, fingerprint, "脚本已由其它客户端领取", 409
+            )
+        state["status"] = "claimed"
+        state["claimId"] = claim_id
+        receipt = {"commandId": command_id, "success": True, "requestId": request_id}
+        self._command_receipts[command_id] = (fingerprint, receipt, 200)
+        return copy.deepcopy(receipt), 200
+
+    async def _complete_js_script(
+        self, command_id: str, fingerprint: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        request_id = data.get("requestId")
+        claim_id = data.get("claimId")
+        success = data.get("success")
+        variables = data.get("variables")
+        error = data.get("error")
+        allowed = {"requestId", "claimId", "success", "result", "variables", "error"}
+        if (
+            not isinstance(request_id, str)
+            or not request_id
+            or not isinstance(claim_id, str)
+            or not claim_id
+            or not isinstance(success, bool)
+            or not set(data).issubset(allowed)
+            or (success and not isinstance(variables, Mapping))
+            or (not success and (not isinstance(error, str) or not error.strip()))
+        ):
+            return self._remember_command(
+                command_id, fingerprint, "脚本结果格式无效", 422
+            )
+        state = self._js_requests.get(request_id)
+        if (
+            state is None
+            or state["status"] != "claimed"
+            or state.get("claimId") != claim_id
+        ):
+            return self._remember_command(
+                command_id, fingerprint, "脚本结果不属于当前领取者", 409
+            )
+        waiter = asyncio.get_running_loop().create_future()
+        self._command_waiters[command_id] = waiter
+        try:
+            await self._workers.send_command(
+                state["runId"],
+                {"type": "js_script_result", "commandId": command_id, **dict(data)},
+            )
+            await asyncio.wait_for(waiter, timeout=10)
+        except (RuntimeError, TimeoutError):
+            return self._remember_command(
+                command_id, fingerprint, "脚本结果未被运行进程确认", 503
+            )
+        finally:
+            self._command_waiters.pop(command_id, None)
+        state["status"] = "completed" if success else "failed"
+        receipt = {"commandId": command_id, "success": True, "requestId": request_id}
+        self._command_receipts[command_id] = (fingerprint, receipt, 200)
+        return copy.deepcopy(receipt), 200
+
+    def _remember_command(
+        self,
+        command_id: str,
+        fingerprint: str,
+        error: str,
+        status: int,
+    ) -> tuple[dict[str, Any], int]:
+        receipt = {"commandId": command_id, "success": False, "error": error}
+        self._command_receipts[command_id] = (fingerprint, receipt, status)
+        return copy.deepcopy(receipt), status
+
     def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
         record = self._command_receipts.get(command_id)
         if record is None:
@@ -658,12 +795,22 @@ class WorkflowRunCoordinator:
             key: state[key] for key in ("requestId", "workflowId", "nodeId", "status")
         }
 
+    def js_script_state(self, request_id: str) -> dict[str, str]:
+        state = self._js_requests.get(request_id)
+        if state is None:
+            raise WorkflowRunError("JS_SCRIPT_REQUEST_NOT_FOUND", "脚本请求不存在", 404)
+        keys = ("requestId", "workflowId", "nodeId", "status", "claimId")
+        return {key: state[key] for key in keys if key in state}
+
     async def on_worker_exit(self, run_id: str, return_code: int) -> None:
         # WorkflowWorkerManager invokes this only after the process tree and its
         # private directory are gone. Resource release is the final cleanup step.
         run = self._runs.get(run_id)
         for state in self._input_prompts.values():
             if state["runId"] == run_id and state["status"] == "pending":
+                state["status"] = "expired"
+        for state in self._js_requests.values():
+            if state["runId"] == run_id and state["status"] in {"pending", "claimed"}:
                 state["status"] = "expired"
         if self._resources.owner_id == run_id:
             await self._resources.release(run_id)

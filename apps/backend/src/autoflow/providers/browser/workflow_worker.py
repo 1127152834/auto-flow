@@ -20,6 +20,7 @@ from autoflow.domain.workflows.execution import (
     CustomModuleResult,
     ExecutionContext,
     InputPromptRequest,
+    JsScriptResult,
     NestedWorkflowResult,
 )
 from autoflow.domain.workflows.runs import WorkflowArtifact
@@ -123,7 +124,9 @@ async def _run_in_session(
             artifact_root=artifact_root,
         )
         context.events = sink
-        context.input_prompts = command_bus.for_context(context)
+        interactive = command_bus.for_context(context)
+        context.input_prompts = interactive
+        context.browser_scripts = interactive
         registry = build_production_executor_registry()
         nested = _WorkerNestedWorkflows(
             command.get("workflowDependencies"),
@@ -486,7 +489,9 @@ class _WorkerNestedWorkflows:
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        child.input_prompts = self._command_bus.for_context(child)
+        interactive = self._command_bus.for_context(child)
+        child.input_prompts = interactive
+        child.browser_scripts = interactive
         child.nested_workflows = self
         if self.custom_modules is not None:
             child.custom_modules = self.custom_modules.for_context(child, child_sink)
@@ -654,7 +659,9 @@ class _WorkerCustomModules:
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        child.input_prompts = self._command_bus.for_context(child)
+        interactive = self._command_bus.for_context(child)
+        child.input_prompts = interactive
+        child.browser_scripts = interactive
         child.nested_workflows = self._nested_workflows
         child.custom_modules = self.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
@@ -792,7 +799,9 @@ class _WorkerCanvasSubflows:
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        child.input_prompts = self._command_bus.for_context(child)
+        interactive = self._command_bus.for_context(child)
+        child.input_prompts = interactive
+        child.browser_scripts = interactive
         child.nested_workflows = self._nested_workflows
         if isinstance(self._parent.custom_modules, _WorkerCustomModules):
             child.custom_modules = self._parent.custom_modules.for_context(
@@ -961,6 +970,7 @@ class _WorkerCommandBus:
         workflow_id = command.get("workflowId")
         self._workflow_id = workflow_id if isinstance(workflow_id, str) else ""
         self._pending: dict[str, asyncio.Future[str | None]] = {}
+        self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
 
     def for_context(self, context: ExecutionContext) -> _BoundInputPrompts:
         return _BoundInputPrompts(self, context)
@@ -1006,8 +1016,53 @@ class _WorkerCommandBus:
                     }
                 )
 
+    async def request_script(
+        self,
+        context: ExecutionContext,
+        code: str,
+        variables: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> JsScriptResult:
+        request_id = str(uuid4())
+        future: asyncio.Future[JsScriptResult] = self._loop.create_future()
+        self._pending_scripts[request_id] = future
+        if context.events is None:
+            raise RuntimeError("脚本请求事件服务不可用")
+        await context.events.publish(
+            {
+                "type": "execution:js_script",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "code": code,
+                "variables": copy.deepcopy(dict(variables)),
+            }
+        )
+        status = "expired"
+        try:
+            result = await asyncio.wait_for(future, timeout_seconds)
+            status = "completed" if result.success else "failed"
+            return result
+        finally:
+            self._pending_scripts.pop(request_id, None)
+            if context.events is not None:
+                await context.events.publish(
+                    {
+                        "type": "execution:js_script_closed",
+                        "requestId": request_id,
+                        "nodeId": context.current_node_id,
+                        "executionId": context.current_execution_id,
+                        "status": status,
+                    }
+                )
+
     def _apply(self, command: dict[str, Any]) -> None:
-        if command.get("type") != "input_prompt_result":
+        command_type = command.get("type")
+        if command_type == "js_script_result":
+            self._apply_script_result(command)
+            return
+        if command_type != "input_prompt_result":
             return
         request_id = command.get("requestId")
         command_id = command.get("commandId")
@@ -1029,10 +1084,53 @@ class _WorkerCommandBus:
             },
         )
 
+    def _apply_script_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        future = (
+            self._pending_scripts.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if future is None or future.done() or not isinstance(command_id, str):
+            return
+        success = command.get("success")
+        variables = command.get("variables")
+        error = command.get("error")
+        if not isinstance(success, bool):
+            return
+        if success and not isinstance(variables, Mapping):
+            return
+        if not success and (not isinstance(error, str) or not error.strip()):
+            return
+        future.set_result(
+            JsScriptResult(
+                success=success,
+                result=copy.deepcopy(command.get("result")),
+                variables=copy.deepcopy(dict(variables))
+                if isinstance(variables, Mapping)
+                else None,
+                error=error if isinstance(error, str) else None,
+            )
+        )
+        _write(
+            self._stdout,
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
     def _cancel_pending(self) -> None:
         for future in self._pending.values():
             if not future.done():
                 future.cancel()
+        for script_future in self._pending_scripts.values():
+            if not script_future.done():
+                script_future.cancel()
 
 
 class _BoundInputPrompts:
@@ -1045,6 +1143,20 @@ class _BoundInputPrompts:
     ) -> str | None:
         return await self._bus.request_input(
             self._context, request, timeout_seconds=timeout_seconds
+        )
+
+    async def request_script(
+        self,
+        code: str,
+        variables: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> JsScriptResult:
+        return await self._bus.request_script(
+            self._context,
+            code,
+            variables,
+            timeout_seconds=timeout_seconds,
         )
 
 

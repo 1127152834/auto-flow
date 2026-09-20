@@ -31,6 +31,8 @@ class WorkflowRunCommands(Protocol):
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]: ...
 
+    def js_script_state(self, request_id: str) -> dict[str, str]: ...
+
 
 class WorkflowExecuteRequest(ApiModel):
     model_config = ConfigDict(extra="allow")

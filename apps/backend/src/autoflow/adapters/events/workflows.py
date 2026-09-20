@@ -15,6 +15,7 @@ from autoflow.adapters.http.workflow_studio_schemas import (
     StudioCommandReceipt,
     StudioEventCommandRequest,
     StudioInputPromptState,
+    StudioJsScriptState,
 )
 from autoflow.domain.workflows.runs import WorkflowRunError
 
@@ -94,6 +95,8 @@ class StudioEventCommands(Protocol):
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]: ...
 
+    def js_script_state(self, request_id: str) -> dict[str, str]: ...
+
 
 def workflow_events_router(
     journal: StudioEventJournal, commands: StudioEventCommands | None = None
@@ -142,5 +145,11 @@ def workflow_events_router(
         )
         def get_input_prompt(request_id: str) -> dict[str, str]:
             return commands.input_prompt_state(request_id)
+
+        @router.get(
+            "/js-requests/{request_id}", response_model=StudioJsScriptState
+        )
+        def get_js_script(request_id: str) -> dict[str, str]:
+            return commands.js_script_state(request_id)
 
     return router

@@ -150,6 +150,24 @@ class InputPromptGateway(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class JsScriptResult:
+    success: bool
+    result: Any = None
+    variables: Mapping[str, Any] | None = None
+    error: str | None = None
+
+
+class BrowserScriptGateway(Protocol):
+    async def request_script(
+        self,
+        code: str,
+        variables: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> JsScriptResult: ...
+
+
+@dataclass(frozen=True, slots=True)
 class NestedWorkflowResult:
     reference: str
     name: str
@@ -224,6 +242,7 @@ class ExecutionContext:
     external_integrations: ExternalIntegrationGateway | None = None
     events: WorkflowEventSink | None = None
     input_prompts: InputPromptGateway | None = None
+    browser_scripts: BrowserScriptGateway | None = None
     nested_workflows: NestedWorkflowGateway | None = None
     canvas_subflows: CanvasSubflowGateway | None = None
     custom_modules: CustomModuleGateway | None = None

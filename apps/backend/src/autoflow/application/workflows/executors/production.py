@@ -47,6 +47,7 @@ from .dict_advanced import (
 from .external_http import EXTERNAL_HTTP_EXECUTORS
 from .firecrawl import FIRECRAWL_EXECUTORS
 from .input_prompt import InputPromptExecutor
+from .js_script import JsScriptExecutor
 from .list_advanced import (
     ListCartesianProductExecutor,
     ListChunkExecutor,
@@ -166,6 +167,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *CAPTCHA_EXECUTORS,
     *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,
+    JsScriptExecutor,
     RunWorkflowFileExecutor,
     SubflowExecutor,
     WaitPageLoadExecutor,
