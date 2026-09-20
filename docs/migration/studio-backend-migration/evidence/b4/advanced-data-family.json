@@ -1,8 +1,8 @@
 {
   "evidenceId": "BE-B4-advanced-data-family-2026-09-16",
-  "recordedAt": "2026-09-16",
-  "gitHead": "eca3686",
-  "result": "26 approved advanced list, dictionary and CSV nodes passed frozen-source differential, production registration, HTTP admission, browser-free worker execution and independent P1 review; four representative types also passed formal Electron UI execution",
+  "recordedAt": "2026-09-20",
+  "gitHead": "347c5f90",
+  "result": "all 26 approved advanced list, dictionary and CSV nodes passed frozen-source differential, production registration, HTTP admission, browser-free worker execution, independent P1 review and formal Electron UI execution",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -86,15 +86,42 @@
       "result": "560 passed before the final white-list call capacity case; the final advanced suite and affected integration set then passed 165 tests"
     },
     "formalElectron": {
-      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-advanced-electron-WeXltn/result.json",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-advanced-electron-2gUQYE/result.json",
       "result": "passed on darwin-arm64 development build",
       "uiExecutedTypes": [
-        "csv_parse",
+        "list_reverse",
+        "list_find",
+        "list_count",
         "list_filter",
         "list_map",
+        "list_merge",
+        "list_flatten",
+        "list_chunk",
+        "list_remove_empty",
+        "list_intersection",
+        "list_union",
+        "list_difference",
+        "list_cartesian_product",
+        "list_shuffle",
+        "list_sample",
+        "dict_merge",
+        "dict_filter",
+        "dict_map_values",
+        "dict_invert",
+        "dict_sort",
+        "dict_deep_copy",
+        "dict_get_path",
+        "dict_flatten",
+        "csv_parse",
+        "csv_generate",
         "list_to_string_advanced"
       ],
-      "observed": "Formal Studio UI created, configured, connected, saved, closed, reopened and ran the four-node chain; persisted results were the parsed square table, the filtered list, [32], and scores=[32], with 15 events, four results, five logs, cleanup completed and no CloakBrowser launch."
+      "supportTypes": [
+        "string_split",
+        "list_get",
+        "dict_operation"
+      ],
+      "observed": "The formal Studio UI created, configured and connected all 26 approved advanced-data nodes plus 6 already-approved data-preparation nodes in one 32-node/31-edge workflow. All 32 results and 33 logs matched HTTP and SQLite; set/random results were checked by invariants; cleanup completed and no CloakBrowser process existed before, during or after the pure-data run."
     }
   },
   "review": {
@@ -115,7 +142,6 @@
     "safe_expr.py": "b8f22ae9fe753e616f85b7fb3d67e0992c9abe5e8d249443dc8630547e738a03"
   },
   "notClaimed": [
-    "formal Electron UI execution of the remaining 22 advanced-data nodes",
     "rebuilt packaged sidecar execution",
     "macOS Intel verification",
     "Windows verification"

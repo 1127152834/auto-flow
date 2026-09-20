@@ -34,54 +34,213 @@ const sourceFamilies = {
     'csv_parse', 'csv_generate', 'list_to_string_advanced',
   ],
 }
-const modules = [
+const moduleSpecs = [
   {
-    label: 'CSV解析', type: 'csv_parse', sourceFile: 'string_convert.py',
-    expected: { csvContent: '4;9;16;25', delimiter: ';', hasHeader: 'false', resultVariable: 'parsed_rows_ui' },
-    expectedResult: { value: [['4', '9', '16', '25']] },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入CSV内容或变量"]', '4;9;16;25')
-      await setInput(cdp, '[placeholder="分隔符（默认：,）"]', ';')
-      await selectNative(cdp, '#hasHeader', '否')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'parsed_rows_ui')
-    },
+    label: '分割文本', type: 'string_split', sourceFile: 'data_structure.py', support: true,
+    expected: { inputText: 'alpha,beta,alpha,,gamma', separator: ',', variableName: 'base_list' },
+    expectedResult: { value: ['alpha', 'beta', 'alpha', '', 'gamma'] },
+    inputs: [['[placeholder="要分割的文本，支持 {变量名}"]', 'alpha,beta,alpha,,gamma'], ['[placeholder^="如: , 或 |"]', ','], ['#variableName', 'base_list']],
+  },
+  {
+    label: '列表反转', type: 'list_reverse', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'base_list', resultVariable: 'reversed_ui' },
+    expectedResult: { value: ['gamma', '', 'alpha', 'beta', 'alpha'] },
+    inputs: [['[placeholder="输入列表变量名"]', 'base_list'], ['[placeholder="保存结果的变量名"]', 'reversed_ui']],
+  },
+  {
+    label: '列表查找', type: 'list_find', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'base_list', searchValue: 'beta', resultVariable: 'found_index_ui' },
+    expectedResult: { value: 1 },
+    inputs: [['[placeholder="输入列表变量名"]', 'base_list'], ['[placeholder="输入要查找的值"]', 'beta'], ['[placeholder="保存索引的变量名"]', 'found_index_ui']],
+  },
+  {
+    label: '列表计数', type: 'list_count', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'base_list', searchValue: 'alpha', resultVariable: 'alpha_count_ui' },
+    expectedResult: { value: 2 },
+    inputs: [['[placeholder="输入列表变量名"]', 'base_list'], ['[placeholder="输入要计数的值"]', 'alpha'], ['[placeholder="保存计数的变量名"]', 'alpha_count_ui']],
   },
   {
     label: '列表过滤', type: 'list_filter', sourceFile: 'list_advanced.py',
-    expected: { listVariable: 'parsed_rows_ui', condition: 'len(x) == 4', resultVariable: 'filtered_rows_ui' },
-    expectedResult: { value: [['4', '9', '16', '25']] },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入列表变量名"]', 'parsed_rows_ui')
-      await setInput(cdp, '[placeholder="例如：x > 10"]', 'len(x) == 4')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'filtered_rows_ui')
-    },
+    expected: { listVariable: 'base_list', condition: "x != ''", resultVariable: 'clean_list_ui' },
+    expectedResult: { value: ['alpha', 'beta', 'alpha', 'gamma'] },
+    inputs: [['[placeholder="输入列表变量名"]', 'base_list'], ['[placeholder="例如：x > 10"]', "x != ''"], ['[placeholder="保存结果的变量名"]', 'clean_list_ui']],
   },
   {
     label: '列表映射', type: 'list_map', sourceFile: 'list_advanced.py',
-    expected: { listVariable: 'filtered_rows_ui', expression: 'len(x) * 8', resultVariable: 'mapped_scores_ui' },
-    expectedResult: { value: [32] },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入列表变量名"]', 'filtered_rows_ui')
-      await setInput(cdp, '[placeholder="例如：x * 2"]', 'len(x) * 8')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'mapped_scores_ui')
-    },
+    expected: { listVariable: 'clean_list_ui', expression: 'x.upper()', resultVariable: 'upper_list_ui' },
+    expectedResult: { value: ['ALPHA', 'BETA', 'ALPHA', 'GAMMA'] },
+    inputs: [['[placeholder="输入列表变量名"]', 'clean_list_ui'], ['[placeholder="例如：x * 2"]', 'x.upper()'], ['[placeholder="保存结果的变量名"]', 'upper_list_ui']],
+  },
+  {
+    label: '列表取值', type: 'list_get', sourceFile: 'data_structure.py', support: true,
+    expected: { listVariable: 'base_list', listIndex: '0', variableName: 'first_item_ui' },
+    expectedResult: { value: 'alpha' },
+    inputs: [['#listVariable', 'base_list'], ['[placeholder="从0开始，支持负数和 {变量名}"]', '0'], ['#variableName', 'first_item_ui']],
+  },
+  {
+    label: '列表取值', type: 'list_get', sourceFile: 'data_structure.py', support: true,
+    expected: { listVariable: 'base_list', listIndex: '4', variableName: 'last_item_ui' },
+    expectedResult: { value: 'gamma' },
+    inputs: [['#listVariable', 'base_list'], ['[placeholder="从0开始，支持负数和 {变量名}"]', '4'], ['#variableName', 'last_item_ui']],
+  },
+  {
+    label: '字典操作', type: 'dict_operation', sourceFile: 'data_structure.py', support: true,
+    expected: { dictVariable: 'base_dict_ui', dictKey: 'score', dictValue: '{alpha_count_ui}' },
+    expectedResult: { dict: { score: '2' }, keys: ['score'] },
+    inputs: [['#dictVariable', 'base_dict_ui'], ['[placeholder="键名，支持 {变量名}"]', 'score'], ['[placeholder="要设置的值，支持 {变量名}"]', '{alpha_count_ui}']],
+  },
+  {
+    label: '字典操作', type: 'dict_operation', sourceFile: 'data_structure.py', support: true,
+    expected: { dictVariable: 'base_dict_ui', dictKey: 'name', dictValue: '{first_item_ui}' },
+    expectedResult: { dict: { score: '2', name: 'alpha' }, keys: ['score', 'name'] },
+    inputs: [['#dictVariable', 'base_dict_ui'], ['[placeholder="键名，支持 {变量名}"]', 'name'], ['[placeholder="要设置的值，支持 {变量名}"]', '{first_item_ui}']],
+  },
+  {
+    label: '字典操作', type: 'dict_operation', sourceFile: 'data_structure.py', support: true,
+    expected: { dictVariable: 'second_dict_ui', dictKey: 'extra', dictValue: '{last_item_ui}' },
+    expectedResult: { dict: { extra: 'gamma' }, keys: ['extra'] },
+    inputs: [['#dictVariable', 'second_dict_ui'], ['[placeholder="键名，支持 {变量名}"]', 'extra'], ['[placeholder="要设置的值，支持 {变量名}"]', '{last_item_ui}']],
+  },
+  {
+    label: '列表合并', type: 'list_merge', sourceFile: 'list_advanced.py',
+    expected: { list1: 'base_list', list2: 'clean_list_ui', resultVariable: 'merged_list_ui' },
+    expectedResult: { value: ['alpha', 'beta', 'alpha', '', 'gamma', 'alpha', 'beta', 'alpha', 'gamma'] },
+    inputs: [['[placeholder="输入第一个列表变量名"]', 'base_list'], ['[placeholder="输入第二个列表变量名"]', 'clean_list_ui'], ['[placeholder="保存结果的变量名"]', 'merged_list_ui']],
+  },
+  {
+    label: '列表分组', type: 'list_chunk', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'base_list', chunkSize: '2', resultVariable: 'chunked_list_ui' },
+    expectedResult: { value: [['alpha', 'beta'], ['alpha', ''], ['gamma']] },
+    inputs: [['[placeholder="输入列表变量名"]', 'base_list'], ['[placeholder="每块的元素数量"]', '2'], ['[placeholder="保存结果的变量名"]', 'chunked_list_ui']],
+  },
+  {
+    label: '列表扁平化', type: 'list_flatten', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'chunked_list_ui', depth: 2, resultVariable: 'flattened_list_ui' },
+    expectedResult: { value: ['alpha', 'beta', 'alpha', '', 'gamma'] },
+    inputs: [['[placeholder="输入嵌套列表变量名"]', 'chunked_list_ui'], ['#depth', '2'], ['[placeholder="保存结果的变量名"]', 'flattened_list_ui']],
+  },
+  {
+    label: '列表去空', type: 'list_remove_empty', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'base_list', resultVariable: 'nonempty_list_ui' },
+    expectedResult: { value: ['alpha', 'beta', 'alpha', 'gamma'] },
+    inputs: [['[placeholder="输入列表变量名"]', 'base_list'], ['[placeholder="保存结果的变量名"]', 'nonempty_list_ui']],
+  },
+  {
+    label: '列表交集', type: 'list_intersection', sourceFile: 'list_advanced.py',
+    expected: { list1: 'base_list', list2: 'clean_list_ui', resultVariable: 'intersection_ui' },
+    validateResult: result => assert.deepEqual(new Set(result.value), new Set(['alpha', 'beta', 'gamma'])),
+    inputs: [['[placeholder="输入第一个列表变量名"]', 'base_list'], ['[placeholder="输入第二个列表变量名"]', 'clean_list_ui'], ['[placeholder="保存结果的变量名"]', 'intersection_ui']],
+  },
+  {
+    label: '列表并集', type: 'list_union', sourceFile: 'list_advanced.py',
+    expected: { list1: 'base_list', list2: 'clean_list_ui', resultVariable: 'union_ui' },
+    validateResult: result => assert.deepEqual(new Set(result.value), new Set(['alpha', 'beta', '', 'gamma'])),
+    inputs: [['[placeholder="输入第一个列表变量名"]', 'base_list'], ['[placeholder="输入第二个列表变量名"]', 'clean_list_ui'], ['[placeholder="保存结果的变量名"]', 'union_ui']],
+  },
+  {
+    label: '列表差集', type: 'list_difference', sourceFile: 'list_advanced.py',
+    expected: { list1: 'base_list', list2: 'clean_list_ui', resultVariable: 'difference_ui' },
+    expectedResult: { value: [''] },
+    inputs: [['[placeholder="输入第一个列表变量名"]', 'base_list'], ['[placeholder="输入第二个列表变量名"]', 'clean_list_ui'], ['[placeholder="保存结果的变量名"]', 'difference_ui']],
+  },
+  {
+    label: '列表笛卡尔积', type: 'list_cartesian_product', sourceFile: 'list_advanced.py',
+    expected: { list1: 'base_list', list2: 'clean_list_ui', resultVariable: 'cartesian_ui' },
+    validateResult: result => { assert.equal(result.value.length, 20); assert.deepEqual(result.value[0], ['alpha', 'alpha']); assert.deepEqual(result.value.at(-1), ['gamma', 'gamma']) },
+    inputs: [['[placeholder="输入第一个列表变量名"]', 'base_list'], ['[placeholder="输入第二个列表变量名"]', 'clean_list_ui'], ['[placeholder="保存结果的变量名"]', 'cartesian_ui']],
+  },
+  {
+    label: '列表随机打乱', type: 'list_shuffle', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'base_list', resultVariable: 'shuffled_ui' },
+    validateResult: result => assert.deepEqual([...result.value].sort(), ['', 'alpha', 'alpha', 'beta', 'gamma'].sort()),
+    inputs: [['[placeholder="输入列表变量名"]', 'base_list'], ['[placeholder="保存结果的变量名"]', 'shuffled_ui']],
+  },
+  {
+    label: '列表采样', type: 'list_sample', sourceFile: 'list_advanced.py',
+    expected: { listVariable: 'clean_list_ui', sampleSize: '2', resultVariable: 'sample_ui' },
+    validateResult: result => { assert.equal(result.value.length, 2); assert.ok(result.value.every(value => ['alpha', 'beta', 'gamma'].includes(value))) },
+    inputs: [['[placeholder="输入列表变量名"]', 'clean_list_ui'], ['[placeholder="要抽取的元素数量"]', '2'], ['[placeholder="保存结果的变量名"]', 'sample_ui']],
+  },
+  {
+    label: '字典合并', type: 'dict_merge', sourceFile: 'dict_advanced.py',
+    expected: { dict1: 'base_dict_ui', dict2: 'second_dict_ui', resultVariable: 'merged_dict_ui' },
+    expectedResult: { score: '2', name: 'alpha', extra: 'gamma' },
+    inputs: [['[placeholder="输入第一个字典变量名"]', 'base_dict_ui'], ['[placeholder="输入第二个字典变量名"]', 'second_dict_ui'], ['[placeholder="保存结果的变量名"]', 'merged_dict_ui']],
+  },
+  {
+    label: '字典过滤', type: 'dict_filter', sourceFile: 'dict_advanced.py',
+    expected: { dictVariable: 'merged_dict_ui', condition: "k != 'extra'", resultVariable: 'filtered_dict_ui' },
+    expectedResult: { score: '2', name: 'alpha' },
+    inputs: [['[placeholder="输入字典变量名"]', 'merged_dict_ui'], ['[placeholder="例如：v > 10"]', "k != 'extra'"], ['[placeholder="保存结果的变量名"]', 'filtered_dict_ui']],
+  },
+  {
+    label: '字典映射值', type: 'dict_map_values', sourceFile: 'dict_advanced.py',
+    expected: { dictVariable: 'filtered_dict_ui', expression: 'str(v)', resultVariable: 'mapped_dict_ui' },
+    expectedResult: { score: '2', name: 'alpha' },
+    inputs: [['[placeholder="输入字典变量名"]', 'filtered_dict_ui'], ['[placeholder="例如：v * 2"]', 'str(v)'], ['[placeholder="保存结果的变量名"]', 'mapped_dict_ui']],
+  },
+  {
+    label: '字典反转', type: 'dict_invert', sourceFile: 'dict_advanced.py',
+    expected: { dictVariable: 'mapped_dict_ui', resultVariable: 'inverted_dict_ui' },
+    expectedResult: { '2': 'score', alpha: 'name' },
+    inputs: [['[placeholder="输入字典变量名"]', 'mapped_dict_ui'], ['[placeholder="保存结果的变量名"]', 'inverted_dict_ui']],
+  },
+  {
+    label: '字典排序', type: 'dict_sort', sourceFile: 'dict_advanced.py',
+    expected: { dictVariable: 'mapped_dict_ui', sortBy: 'value', order: 'desc', resultVariable: 'sorted_dict_ui' },
+    expectedResult: { score: '2', name: 'alpha' },
+    inputs: [['[placeholder="输入字典变量名"]', 'mapped_dict_ui'], ['[placeholder="保存结果的变量名"]', 'sorted_dict_ui']],
+    selects: [['#sortBy', '按值排序'], ['#order', '降序']],
+  },
+  {
+    label: '字典深拷贝', type: 'dict_deep_copy', sourceFile: 'dict_advanced.py',
+    expected: { dictVariable: 'merged_dict_ui', resultVariable: 'copied_dict_ui' },
+    expectedResult: { score: '2', name: 'alpha', extra: 'gamma' },
+    inputs: [['[placeholder="输入字典变量名"]', 'merged_dict_ui'], ['[placeholder="保存结果的变量名"]', 'copied_dict_ui']],
+  },
+  {
+    label: '字典路径取值', type: 'dict_get_path', sourceFile: 'dict_advanced.py',
+    expected: { dictVariable: 'merged_dict_ui', path: 'score', defaultValue: 'missing', resultVariable: 'path_value_ui' },
+    expectedResult: { value: '2' },
+    inputs: [['[placeholder="输入字典变量名"]', 'merged_dict_ui'], ['[placeholder="例如：user.profile.name"]', 'score'], ['[placeholder="路径不存在时返回的默认值"]', 'missing'], ['[placeholder="保存结果的变量名"]', 'path_value_ui']],
+  },
+  {
+    label: '字典扁平化', type: 'dict_flatten', sourceFile: 'dict_advanced.py',
+    expected: { dictVariable: 'merged_dict_ui', separator: '/', resultVariable: 'flat_dict_ui' },
+    expectedResult: { score: '2', name: 'alpha', extra: 'gamma' },
+    inputs: [['[placeholder="输入嵌套字典变量名"]', 'merged_dict_ui'], ['[placeholder="键路径分隔符（默认：.）"]', '/'], ['[placeholder="保存结果的变量名"]', 'flat_dict_ui']],
+  },
+  {
+    label: 'CSV解析', type: 'csv_parse', sourceFile: 'string_convert.py',
+    expected: { csvContent: 'alice;10', delimiter: ';', hasHeader: 'false', resultVariable: 'csv_rows_ui' },
+    expectedResult: { value: [['alice', '10']] },
+    inputs: [['[placeholder="输入CSV内容或变量"]', 'alice;10'], ['[placeholder="分隔符（默认：,）"]', ';'], ['[placeholder="保存结果的变量名"]', 'csv_rows_ui']],
+    selects: [['#hasHeader', '否']],
+  },
+  {
+    label: 'CSV生成', type: 'csv_generate', sourceFile: 'string_convert.py',
+    expected: { dataVariable: 'csv_rows_ui', delimiter: '|', resultVariable: 'csv_text_ui' },
+    expectedResult: { value: 'alice|10\r\n' },
+    inputs: [['[placeholder="输入数据列表变量名"]', 'csv_rows_ui'], ['[placeholder="分隔符（默认：,）"]', '|'], ['[placeholder="保存结果的变量名"]', 'csv_text_ui']],
   },
   {
     label: '列表转字符串（高级）', type: 'list_to_string_advanced', sourceFile: 'string_convert.py',
-    expected: { listVariable: 'mapped_scores_ui', separator: ' | ', prefix: 'scores=[', suffix: ']', resultVariable: 'summary_text_ui' },
-    expectedResult: { value: 'scores=[32]' },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入列表变量名"]', 'mapped_scores_ui')
-      await setInput(cdp, '[placeholder="元素之间的分隔符"]', ' | ')
-      await setInput(cdp, '[placeholder="字符串前缀"]', 'scores=[')
-      await setInput(cdp, '[placeholder="字符串后缀"]', ']')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'summary_text_ui')
-    },
+    expected: { listVariable: 'clean_list_ui', separator: '|', prefix: '[', suffix: ']', resultVariable: 'summary_text_ui' },
+    expectedResult: { value: '[alpha|beta|alpha|gamma]' },
+    inputs: [['[placeholder="输入列表变量名"]', 'clean_list_ui'], ['[placeholder="元素之间的分隔符"]', '|'], ['[placeholder="字符串前缀"]', '['], ['[placeholder="字符串后缀"]', ']'], ['[placeholder="保存结果的变量名"]', 'summary_text_ui']],
   },
 ]
+const modules = moduleSpecs.map(module => ({
+  ...module,
+  configure: async cdp => {
+    for (const [selector, value] of module.inputs ?? []) await setInput(cdp, selector, value)
+    for (const [selector, value] of module.selects ?? []) await selectNative(cdp, selector, value)
+  },
+}))
 const approvedTypes = Object.values(sourceFamilies).flat()
 const executedTypes = modules.map(module => module.type)
-const notUiExecutedTypes = approvedTypes.filter(type => !executedTypes.includes(type))
+const approvedExecutedTypes = modules.filter(module => !module.support).map(module => module.type)
+const notUiExecutedTypes = approvedTypes.filter(type => !approvedExecutedTypes.includes(type))
 const targetFiles = [
   'apps/backend/src/autoflow/application/workflows/executors/list_advanced.py',
   'apps/backend/src/autoflow/application/workflows/executors/dict_advanced.py',
@@ -109,8 +268,8 @@ await mkdir(join(userData, 'data', 'kernels'), { recursive: true })
 execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basename(sourceKernel))])
 const browserRequirement = productionBrowserRequirement(executedTypes)
 assert.equal(browserRequirement.workflowRequiresBrowser, false)
-assert.deepEqual(Object.values(browserRequirement.nodeRequiresBrowser), [false, false, false, false])
-checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=false')
+assert.ok(Object.values(browserRequirement.nodeRequiresBrowser).every(value => value === false))
+checkpoint(`生产执行器注册表对 ${modules.length} 节点文档计算 requiresBrowser=false`)
 
   desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`] })
   assert.equal(desktop.packaged, false, 'formal B4 evidence must use the development Electron entry')
@@ -137,7 +296,7 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
   checkpoint('真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程')
 
   studio = await openStudioFromMain(main, desktop.debugOrigin)
-  await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
+  await studio.command('Emulation.setDeviceMetricsOverride', { width: 3840, height: 2400, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('227')", 'formal Studio', 30_000)
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
@@ -159,13 +318,15 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
   }
   assert.equal(new Set(nodeIds).size, modules.length)
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__node').length"), modules.length)
-  checkpoint('通过画布原生右键菜单和配置面板添加并配置 4 个高级数据代表节点')
+  await click(studio, '', '.react-flow__controls-fitview')
+  await wait(300)
+  checkpoint(`通过画布原生右键菜单和配置面板添加并配置全部 ${approvedTypes.length} 个高级数据节点及 ${modules.length - approvedTypes.length} 个数据准备节点`)
 
   for (let index = 0; index < nodeIds.length - 1; index++) {
     await connectNodes(studio, nodeIds[index], nodeIds[index + 1])
     await waitFor(studio, `document.querySelectorAll('.react-flow__edge').length === ${index + 1}`, `workflow edge ${index + 1}`)
   }
-  checkpoint('通过画布拖拽节点与连接手柄建立 csv_parse → list_filter → list_map → list_to_string_advanced 全数据依赖链')
+  checkpoint(`通过画布拖拽节点与连接手柄建立 ${modules.length} 节点、${modules.length - 1} 条边的完整数据依赖链`)
 
   await click(studio, '执行日志')
   await click(studio, '保存')
@@ -174,7 +335,11 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
   const saved = savedList.find(item => item.name === workflowName)
   assert.ok(saved)
   assert.equal(saved.revision, 1)
-  assert.deepEqual(saved.variables, [])
+  assert.deepEqual(saved.variables, [
+    { name: 'split_result', type: 'string', scope: 'global' },
+    { name: 'list_item', type: 'string', scope: 'global' },
+    { name: 'dict_result', type: 'string', scope: 'global' },
+  ])
   assert.deepEqual(saved.nodes.map(node => node.data.moduleType), executedTypes)
   assert.equal(saved.edges.length, modules.length - 1)
   for (let index = 0; index < modules.length; index++) {
@@ -182,7 +347,7 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
     assert.ok(data)
     for (const [key, value] of Object.entries(modules[index].expected)) assert.deepEqual(data[key], value, `${modules[index].type}.${key}`)
   }
-  checkpoint('真实 UI 保存经正式 HTTP 写入 SQLite；4 个节点配置、数据变量引用和 3 条边均与输入一致')
+  checkpoint(`真实 UI 保存经正式 HTTP 写入 SQLite；${modules.length} 个节点配置、数据变量引用和 ${modules.length - 1} 条边均与输入一致`)
 
   observeCloakProcesses(userData, cloakProcessesObservedDuringRun)
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
@@ -209,21 +374,29 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
   const runId = startedRun.runId
   const results = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}/results?cursor=0&limit=50`)
   assert.equal(results.items.length, modules.length)
-  const values = Object.fromEntries(modules.map((module, index) => [module.type, results.items.find(item => item.nodeId === nodeIds[index])?.values]))
-  for (const module of modules) assert.deepEqual(values[module.type], module.expectedResult, `${module.type} result`)
+  const nodeValues = modules.map((module, index) => results.items.find(item => item.nodeId === nodeIds[index])?.values)
+  const values = Object.fromEntries(modules.map((module, index) => [module.type, nodeValues[index]]))
+  for (let index = 0; index < modules.length; index++) {
+    const module = modules[index]
+    if (module.validateResult) module.validateResult(nodeValues[index])
+    else assert.deepEqual(nodeValues[index], module.expectedResult, `${module.type} result`)
+  }
   const logs = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}/logs?cursor=0&limit=200`)
   for (const nodeId of nodeIds) assert.ok(logs.items.some(item => item.nodeId === nodeId), `missing persisted log for ${nodeId}`)
-  const expectedMessages = ['CSV解析完成，共 1 行', '过滤完成，得到 1 个元素', '映射完成，处理 1 个元素', '列表转字符串完成']
-  for (const message of expectedMessages) assert.ok(logs.items.some(item => item.message === message), `missing HTTP log: ${message}`)
-  checkpoint('HTTP 结果精确核对为 CSV 四列 → 过滤一行 → [32] → scores=[32]，且四个节点的持久化日志完整')
+  const nodeLogs = logs.items.filter(item => item.nodeId)
+  assert.equal(nodeLogs.length, modules.length)
+  checkpoint(`HTTP 精确核对 ${modules.length} 个结果；集合和随机分支按不变量验证，且全部节点的持久化日志完整`)
 
   const sqlite = sqliteEvidence(userData, saved.id, runId)
-  assert.deepEqual(sqlite.document, [{ id: saved.id, name: workflowName, revision: 1, nodeCount: 4, edgeCount: 3, variableCount: 0 }])
+  assert.deepEqual(sqlite.document, [{ id: saved.id, name: workflowName, revision: 1, nodeCount: modules.length, edgeCount: modules.length - 1, variableCount: saved.variables.length }])
   assert.deepEqual(sqlite.run.map(({ eventCount, ...row }) => row), [{ runId, workflowId: saved.id, status: 'completed', cleanupState: 'completed', activeSlot: null, logCount: terminalRun.logCount }])
   assert.equal(sqlite.eventTypes.reduce((sum, row) => sum + row.count, 0), sqlite.run[0].eventCount)
-  assert.deepEqual(sqlite.results.map(row => ({ nodeId: row.nodeId, value: row.value })), modules.map((module, index) => ({ nodeId: nodeIds[index], value: module.expectedResult.value })))
-  assert.deepEqual(sqlite.logs.filter(row => row.nodeId).map(row => row.message), expectedMessages)
-  assert.equal(sqlite.eventTypes.find(row => row.type === 'execution:node-succeeded')?.count, 4)
+  assert.deepEqual(
+    sqlite.results.map(row => ({ nodeId: row.nodeId, value: row.value })),
+    modules.map((module, index) => ({ nodeId: nodeIds[index], value: rawResultData(nodeValues[index]) })),
+  )
+  assert.deepEqual(sqlite.logs.filter(row => row.nodeId).map(row => row.message), nodeLogs.map(row => row.message))
+  assert.equal(sqlite.eventTypes.find(row => row.type === 'execution:node-succeeded')?.count, modules.length)
   assert.equal(sqlite.eventTypes.find(row => row.type === 'execution:log')?.count, terminalRun.logCount)
   checkpoint('直接读取临时 autoflow.sqlite3，文档、终态、事件、结果与日志均和正式 HTTP 响应一致')
 
@@ -256,14 +429,14 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
     workflowPersistence: { revision: saved.revision, nodeCount: saved.nodes.length, edgeCount: saved.edges.length, variables: saved.variables },
     execution: { status: terminalRun.status, cleanupState: sqlite.run[0].cleanupState, resultCount: results.items.length, logCount: logs.items.length, observedEvents },
     sourceFamilies, sourceFileHashes, targetSourceDirtyFiles, approvedFamilySize: approvedTypes.length,
-    uiExecutedTypes: executedTypes, notUiExecutedTypes, uiNodes, httpEvidence: { results: results.items, logs: logs.items }, sqliteEvidence: sqlite,
+    uiExecutedTypes: approvedExecutedTypes, supportTypes: modules.filter(module => module.support).map(module => module.type), notUiExecutedTypes, uiNodes, httpEvidence: { results: results.items, logs: logs.items }, sqliteEvidence: sqlite,
     requiresBrowserEvidence: browserRequirement,
     browserEvidence: { installedKernelEntries: [basename(sourceKernel)], cloakBrowserProcessesBefore: cloakBefore, cloakBrowserProcessesDuring: cloakDuring, cloakBrowserProcessesAfter: cloakAfter },
-    workflowDataFlow: 'csv_parse.parsed_rows_ui → list_filter.filtered_rows_ui → list_map.mapped_scores_ui → list_to_string_advanced.summary_text_ui',
+    workflowDataFlow: 'string_split.base_list → list/dict advanced operations → csv_parse/csv_generate → list_to_string_advanced.summary_text_ui',
     boundaries: {
       workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none (pure data)',
       interaction: 'CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for Profile setup and evidence reads; SQLite used only for evidence reads; no Store or page-internal function access',
-      claim: `${executedTypes.length} of ${approvedTypes.length} approved advanced-data nodes executed through the formal UI; the remaining ${notUiExecutedTypes.length} are explicitly not claimed by this run`,
+      claim: `${approvedExecutedTypes.length} of ${approvedTypes.length} approved advanced-data nodes executed through the formal UI; ${modules.length - approvedTypes.length} already-approved base nodes prepared typed inputs`,
     },
   }
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
@@ -271,7 +444,7 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
 } catch (error) {
   await writeFile(join(evidenceDir, 'blocked.json'), JSON.stringify({
     checkedAt: new Date().toISOString(), gitHead, checks, observedEvents,
-    executedTypes, notUiExecutedTypes, error: error instanceof Error ? error.stack : String(error),
+    executedTypes, approvedExecutedTypes, notUiExecutedTypes, error: error instanceof Error ? error.stack : String(error),
   }, null, 2) + '\n')
   throw error
 } finally {
@@ -280,6 +453,10 @@ checkpoint('生产执行器注册表对 4 节点文档计算 requiresBrowser=fal
 }
 
 function checkpoint(message) { checks.push(message); console.log(message) }
+
+function rawResultData(values) {
+  return values && Object.keys(values).length === 1 && Object.hasOwn(values, 'value') ? values.value : values
+}
 
 function productionBrowserRequirement(moduleTypes) {
   const program = `import json
@@ -438,7 +615,14 @@ async function connectNodes(cdp, sourceId, targetId) {
 async function moveNode(cdp, nodeId, index, count) {
   const pane = await cdp.evaluate(`(()=>{const r=document.querySelector('.react-flow__pane').getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()`)
   const from = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, `node position ${nodeId}`)
-  const to = { x: pane.x + pane.width * .46, y: pane.y + 65 + index * ((pane.height - 130) / Math.max(1, count - 1)) }
+  const columns = count > 24 ? 4 : count > 8 ? 3 : 1
+  const rows = Math.ceil(count / columns)
+  const column = index % columns
+  const row = Math.floor(index / columns)
+  const to = {
+    x: pane.x + pane.width * (.08 + column * (.84 / Math.max(1, columns - 1))),
+    y: pane.y + 220 + row * ((pane.height - 440) / Math.max(1, rows - 1)),
+  }
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...from })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...from, button: 'left', buttons: 1, clickCount: 1 })
   for (let step = 1; step <= 10; step++) await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', x: from.x + (to.x - from.x) * step / 10, y: from.y + (to.y - from.y) * step / 10, button: 'left', buttons: 1 })
