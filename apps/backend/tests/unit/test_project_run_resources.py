@@ -20,7 +20,7 @@ def automation(environment_policy):
         {"inputs": []},
         [],
         environment_policy,
-        {"automaticExecutionTimeoutSeconds": 12.5},
+        {"automaticExecutionTimeoutSeconds": 12.5, "manualDeadlineSeconds": 300},
         NOW,
         NOW,
     )
@@ -73,6 +73,7 @@ def test_freezes_project_defaults_and_automatic_timeout():
         )
     ]
     assert request["automaticExecutionTimeoutSeconds"] == 12.5
+    assert request["manualDeadlineSeconds"] == 300
     assert request["frozenConfiguration"] == {"safe": True}
 
 
