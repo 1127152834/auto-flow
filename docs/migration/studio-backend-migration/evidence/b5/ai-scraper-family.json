@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/ai_scraper.py",
+    "symbols": ["AISmartScraperExecutor", "AIElementSelectorExecutor"],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "保留URL、提示词、元素描述、等待、变量写回、结果预览和选择器结果兼容逻辑",
+    "移除ScrapeGraphAI私有浏览器与私有模型配置，统一复用CloakBrowser和主应用modelId",
+    "当前页URL匹配时复用当前页，否则在同一CloakBrowser会话创建临时页并在读取HTML后关闭",
+    "页面HTML超过1MiB时明确失败，不静默截断",
+    "前端删除llmProvider、llmModel、apiUrl、apiKey、azureEndpoint和headless配置，旧字段在选择模型时原子清除",
+    "两个节点登记到生产执行器注册表"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/differential/workflows/test_b5_ai_scraper_parity.py -q",
+      "exitCode": 0,
+      "result": "2 passed",
+      "covers": "冻结源码与迁入实现的成功消息、结果、变量变化和选择器兼容结构"
+    },
+    {
+      "command": "uv run --project apps/backend pytest <B5 affected backend suite> -q",
+      "exitCode": 0,
+      "result": "154 passed",
+      "covers": "当前页复用、临时页导航与关闭、托管模型、浏览器内容端口、注册表和既有worker协议"
+    },
+    {
+      "command": "npm test --workspace @autoflow/desktop -- --run src/renderer/domains/workflows/tests/ai-model-picker-entry.test.tsx && npm run typecheck --workspace @autoflow/desktop && npx eslint <AI scraper affected frontend files>",
+      "exitCode": 0,
+      "result": "28 tests, TypeScript and ESLint passed"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <AI scraper affected files> && uv run --project apps/backend mypy <AI scraper production modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "remaining": [
+    "正式Electron中真实CloakBrowser页面提取和模型请求验收",
+    "真实模型供应商调用"
+  ]
+}

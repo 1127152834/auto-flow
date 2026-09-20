@@ -60,10 +60,12 @@ it.each([
   'ai_chat', 'ai_vision', 'ai_vision_act',
   'ai_extract', 'ai_classify', 'ai_summarize', 'ai_translate',
   'ai_sentiment', 'ai_normalize', 'ai_dedup_semantic', 'ai_route',
+  'ai_smart_scraper', 'ai_element_selector',
 ] as const)('NODE.%s.model-picker.entry: stores only a managed model id and preserves it on document reopen', async type => {
   const id = create(type)
   store.getState().updateNodeData(id, {
     apiUrl: 'https://legacy.invalid', apiKey: 'legacy-secret', model: 'legacy-model',
+    llmProvider: 'custom', llmModel: 'legacy-scraper-model', azureEndpoint: 'https://legacy.azure.invalid',
     fallbackModels: [{ apiKey: 'fallback-secret' }], temperature: 0, maxTokens: 1234,
   })
   store.getState().addNode(type, { x: 400, y: 240 })
@@ -75,6 +77,9 @@ it.each([
   expect(data(id).apiUrl).toBeUndefined()
   expect(data(id).apiKey).toBeUndefined()
   expect(data(id).model).toBeUndefined()
+  expect(data(id).llmProvider).toBeUndefined()
+  expect(data(id).llmModel).toBeUndefined()
+  expect(data(id).azureEndpoint).toBeUndefined()
   expect(data(id).fallbackModels).toBeUndefined()
   expect(data(other.id)).toEqual(otherBefore)
   const content = store.getState().exportWorkflow()
@@ -123,7 +128,7 @@ it('TOOL.ai-model-picker.failure: preserves node data and shows the service erro
   expect(data(id).modelId).toBe(primary.id)
 })
 
-it.each(['ai_chat', 'ai_extract', 'ai_classify', 'ai_summarize', 'ai_translate', 'ai_sentiment', 'ai_normalize', 'ai_dedup_semantic', 'ai_route'] as const)(
+it.each(['ai_chat', 'ai_extract', 'ai_classify', 'ai_summarize', 'ai_translate', 'ai_sentiment', 'ai_normalize', 'ai_dedup_semantic', 'ai_route', 'ai_smart_scraper', 'ai_element_selector'] as const)(
   'NODE.%s.defaults: does not copy local provider credentials into new workflow documents', type => {
     config.getState().updateAIConfig({ apiUrl: 'https://legacy.invalid', apiKey: 'legacy-secret', model: 'legacy-model' })
     const id = create(type)

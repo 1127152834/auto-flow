@@ -899,9 +899,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'ai_vision_act':
         return <AIVisionActConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_smart_scraper':
-        return <AISmartScraperConfig data={nodeData} onChange={handleChange} />
+        return <AISmartScraperConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_element_selector':
-        return <AIElementSelectorConfig data={nodeData} onChange={handleChange} />
+        return <AIElementSelectorConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'firecrawl_scrape':
         return <FirecrawlScrapeConfig data={nodeData} onChange={handleChange} />
       case 'firecrawl_map':

@@ -1608,24 +1608,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     } else if (type === 'ai_smart_scraper') {
       // AI智能爬虫模块默认配置
       defaultData = {
-        llmProvider: globalConfig.aiScraper.llmProvider,
-        apiUrl: globalConfig.aiScraper.apiUrl,
-        llmModel: globalConfig.aiScraper.llmModel,
-        apiKey: globalConfig.aiScraper.apiKey,
-        azureEndpoint: globalConfig.aiScraper.azureEndpoint,
         variableName: 'scraper_result',
-        headless: true,
         verbose: false,
         waitTime: 3,  // 默认等待3秒
       }
     } else if (type === 'ai_element_selector') {
       // AI元素选择器模块默认配置
       defaultData = {
-        llmProvider: globalConfig.aiScraper.llmProvider,
-        apiUrl: globalConfig.aiScraper.apiUrl,
-        llmModel: globalConfig.aiScraper.llmModel,
-        apiKey: globalConfig.aiScraper.apiKey,
-        azureEndpoint: globalConfig.aiScraper.azureEndpoint,
         variableName: 'element_selector',
         verbose: false,
         url: '',  // 添加 URL 字段

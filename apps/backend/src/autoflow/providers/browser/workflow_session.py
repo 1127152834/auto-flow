@@ -453,6 +453,9 @@ class CloakBrowserWorkflowPage(BrowserPagePort):
     async def evaluate(self, expression: str) -> Any:
         return await self._raw.evaluate(expression)
 
+    async def content(self) -> str:
+        return str(await self._top_level_page().content())
+
     def frame(self, *, name: str) -> CloakBrowserWorkflowPage | None:
         raw_frame_method = getattr(self._raw, "frame", None)
         raw_frame = (

@@ -323,6 +323,7 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
     page.viewport_size = {"width": 1200, "height": 800}  # type: ignore[attr-defined]
     page.locator = lambda selector: RawLocator(selector)  # type: ignore[attr-defined]
     page.evaluate = AsyncMock(return_value="evaluated")  # type: ignore[attr-defined]
+    page.content = AsyncMock(return_value="<html>fixture</html>")  # type: ignore[attr-defined]
     page.expect_file_chooser = lambda **_options: ChooserContext()  # type: ignore[attr-defined]
     session = CloakBrowserWorkflowSession.from_context(raw)
     wrapped_page = session.current_page()
@@ -339,6 +340,7 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
     upload.write_text("fixture", encoding="utf-8")
     await locator.set_input_files(str(upload))
     assert await wrapped_page.evaluate("1 + 1") == "evaluated"
+    assert await wrapped_page.content() == "<html>fixture</html>"
     assert wrapped_page.viewport_size == {"width": 1200, "height": 800}
     await wrapped_page.mouse.move(10, 20, steps=2)
     await wrapped_page.mouse.down()
