@@ -34,46 +34,48 @@ const sourceFamilies = {
     'stat_percentile', 'stat_normalize', 'stat_standardize',
   ],
 }
-const modules = [
-  {
-    label: '列表求和', type: 'list_sum', sourceFile: 'math_list_ops.py',
-    expected: { listVariable: 'numbers', resultVariable: 'sum_value' },
-    expectedResult: { value: 32 },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入列表变量名"]', 'numbers')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'sum_value')
-    },
-  },
-  {
-    label: '四舍五入', type: 'math_round', sourceFile: 'math_list_ops.py',
-    expected: { value: '{sum_value}', decimals: 1, resultVariable: 'rounded_value' },
-    expectedResult: { value: 32 },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入数值或变量"]', '{sum_value}')
-      await setInput(cdp, '#decimals', '1')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'rounded_value')
-    },
-  },
-  {
-    label: '对数运算', type: 'math_log', sourceFile: 'math_advanced.py',
-    expected: { value: '{rounded_value}', base: '2', resultVariable: 'logged_value' },
-    expectedResult: { value: 5 },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入数值或变量"]', '{rounded_value}')
-      await selectNative(cdp, '#base', '二进制对数 (log2)')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'logged_value')
-    },
-  },
-  {
-    label: '中位数', type: 'stat_median', sourceFile: 'statistics.py',
-    expected: { listVariable: 'numbers', resultVariable: 'median_value' },
-    expectedResult: { value: 6.8 },
-    configure: async cdp => {
-      await setInput(cdp, '[placeholder="输入列表变量名"]', 'numbers')
-      await setInput(cdp, '[placeholder="保存结果的变量名"]', 'median_value')
-    },
-  },
+const listInput = variable => [['[placeholder="输入列表变量名"]', 'numbers'], ['[placeholder="保存结果的变量名"]', variable]]
+const scalarInputs = (value, variable) => [['[placeholder="输入数值或变量"]', value], ['[placeholder="保存结果的变量名"]', variable]]
+const moduleSpecs = [
+  { label: '列表求和', type: 'list_sum', sourceFile: 'math_list_ops.py', expected: { listVariable: 'numbers', resultVariable: 'sum_ui' }, expectedResult: { value: 8 }, inputs: listInput('sum_ui') },
+  { label: '列表求平均值', type: 'list_average', sourceFile: 'math_list_ops.py', expected: { listVariable: 'numbers', resultVariable: 'average_ui' }, expectedResult: { value: 2 }, inputs: listInput('average_ui') },
+  { label: '列表求最大值', type: 'list_max', sourceFile: 'math_list_ops.py', expected: { listVariable: 'numbers', resultVariable: 'max_ui' }, expectedResult: { value: 3 }, inputs: listInput('max_ui') },
+  { label: '列表求最小值', type: 'list_min', sourceFile: 'math_list_ops.py', expected: { listVariable: 'numbers', resultVariable: 'min_ui' }, expectedResult: { value: 1 }, inputs: listInput('min_ui') },
+  { label: '列表排序', type: 'list_sort', sourceFile: 'math_list_ops.py', expected: { listVariable: 'numbers', order: 'desc', resultVariable: 'sorted_ui' }, expectedResult: { value: [3, 2, 2, 1] }, inputs: listInput('sorted_ui'), selects: [['#order', '降序']] },
+  { label: '列表去重', type: 'list_unique', sourceFile: 'math_list_ops.py', expected: { listVariable: 'numbers', resultVariable: 'unique_ui' }, expectedResult: { value: [1, 2, 3] }, inputs: listInput('unique_ui') },
+  { label: '列表截取', type: 'list_slice', sourceFile: 'math_list_ops.py', expected: { listVariable: 'numbers', startIndex: '1', endIndex: '3', resultVariable: 'slice_ui' }, expectedResult: { value: [2, 2] }, inputs: [['[placeholder="输入列表变量名"]', 'numbers'], ['[placeholder="起始索引（默认：0）"]', '1'], ['[placeholder="结束索引（可选，留空表示到末尾）"]', '3'], ['[placeholder="保存结果的变量名"]', 'slice_ui']] },
+  { label: '四舍五入', type: 'math_round', sourceFile: 'math_list_ops.py', expected: { value: '3.14159', decimals: 2, resultVariable: 'round_ui' }, expectedResult: { value: 3.14 }, inputs: [...scalarInputs('3.14159', 'round_ui'), ['#decimals', '2']] },
+  { label: '进制转换', type: 'math_base_convert', sourceFile: 'math_list_ops.py', expected: { value: 'ff', fromBase: '16', toBase: '10', resultVariable: 'base_ui' }, expectedResult: { value: '255' }, inputs: scalarInputs('ff', 'base_ui'), selects: [['#fromBase', '十六进制'], ['#toBase', '十进制']] },
+  { label: '取整', type: 'math_floor', sourceFile: 'math_list_ops.py', expected: { value: '3.9', resultVariable: 'floor_ui' }, expectedResult: { value: 3 }, inputs: scalarInputs('3.9', 'floor_ui') },
+  { label: '求余', type: 'math_modulo', sourceFile: 'math_list_ops.py', expected: { dividend: '17', divisor: '5', resultVariable: 'modulo_ui' }, expectedResult: { value: 2 }, inputs: [['[placeholder="输入被除数或变量"]', '17'], ['[placeholder="输入除数或变量"]', '5'], ['[placeholder="保存结果的变量名"]', 'modulo_ui']] },
+  { label: '绝对值', type: 'math_abs', sourceFile: 'math_list_ops.py', expected: { value: '-7.5', resultVariable: 'abs_ui' }, expectedResult: { value: 7.5 }, inputs: scalarInputs('-7.5', 'abs_ui') },
+  { label: '开次方', type: 'math_sqrt', sourceFile: 'math_list_ops.py', expected: { value: '81', resultVariable: 'sqrt_ui' }, expectedResult: { value: 9 }, inputs: scalarInputs('81', 'sqrt_ui') },
+  { label: '求次方', type: 'math_power', sourceFile: 'math_list_ops.py', expected: { base: '2', exponent: '8', resultVariable: 'power_ui' }, expectedResult: { value: 256 }, inputs: [['[placeholder="输入底数或变量"]', '2'], ['[placeholder="输入指数或变量"]', '8'], ['[placeholder="保存结果的变量名"]', 'power_ui']] },
+  { label: '对数运算', type: 'math_log', sourceFile: 'math_advanced.py', expected: { value: '1000', base: '10', resultVariable: 'log_ui' }, expectedResult: { value: 3 }, inputs: scalarInputs('1000', 'log_ui'), selects: [['#base', '常用对数 (log10)']] },
+  { label: '三角函数', type: 'math_trig', sourceFile: 'math_advanced.py', expected: { function: 'cos', value: '30', unit: 'degree', resultVariable: 'trig_ui' }, inputs: scalarInputs('30', 'trig_ui'), selects: [['#function', '余弦 (cos)'], ['#unit', '角度']], validateResult: result => approximate(result.value, Math.sqrt(3) / 2) },
+  { label: '指数运算', type: 'math_exp', sourceFile: 'math_advanced.py', expected: { value: '1', resultVariable: 'exp_ui' }, inputs: [['[placeholder="输入指数值或变量"]', '1'], ['[placeholder="保存结果的变量名"]', 'exp_ui']], validateResult: result => approximate(result.value, Math.E) },
+  { label: '最大公约数', type: 'math_gcd', sourceFile: 'math_advanced.py', expected: { value1: '48', value2: '18', resultVariable: 'gcd_ui' }, expectedResult: { value: 6 }, inputs: [['[placeholder="输入第一个数值或变量"]', '48'], ['[placeholder="输入第二个数值或变量"]', '18'], ['[placeholder="保存结果的变量名"]', 'gcd_ui']] },
+  { label: '最小公倍数', type: 'math_lcm', sourceFile: 'math_advanced.py', expected: { value1: '12', value2: '18', resultVariable: 'lcm_ui' }, expectedResult: { value: 36 }, inputs: [['[placeholder="输入第一个数值或变量"]', '12'], ['[placeholder="输入第二个数值或变量"]', '18'], ['[placeholder="保存结果的变量名"]', 'lcm_ui']] },
+  { label: '阶乘', type: 'math_factorial', sourceFile: 'math_advanced.py', expected: { value: '6', resultVariable: 'factorial_ui' }, expectedResult: { value: 720 }, inputs: [['[placeholder="输入非负整数或变量"]', '6'], ['[placeholder="保存结果的变量名"]', 'factorial_ui']] },
+  { label: '排列组合', type: 'math_permutation', sourceFile: 'math_advanced.py', expected: { n: '5', r: '3', resultVariable: 'permutation_ui' }, expectedResult: { value: 60 }, inputs: [['[placeholder="输入总数或变量"]', '5'], ['[placeholder="输入选取数或变量"]', '3'], ['[placeholder="保存结果的变量名"]', 'permutation_ui']] },
+  { label: '百分比计算', type: 'math_percentage', sourceFile: 'math_advanced.py', expected: { operation: 'increase', value1: '100', value2: '25', resultVariable: 'percentage_ui' }, expectedResult: { value: 125 }, inputs: [['[placeholder="输入第一个数值或变量"]', '100'], ['[placeholder="输入第二个数值或变量"]', '25'], ['[placeholder="保存结果的变量名"]', 'percentage_ui']], selects: [['#operation', '增加百分比']] },
+  { label: '数字范围限制', type: 'math_clamp', sourceFile: 'math_advanced.py', expected: { value: '15', min: '0', max: '10', resultVariable: 'clamp_ui' }, expectedResult: { value: 10 }, inputs: [['[placeholder="输入数值或变量"]', '15'], ['[placeholder="输入最小值或变量"]', '0'], ['[placeholder="输入最大值或变量"]', '10'], ['[placeholder="保存结果的变量名"]', 'clamp_ui']] },
+  { label: '随机数生成（高级）', type: 'math_random_advanced', sourceFile: 'math_advanced.py', expected: { type: 'normal', mean: '5', stddev: '0', resultVariable: 'random_ui' }, expectedResult: { value: 5 }, inputs: [['[placeholder="均值"]', '5'], ['[placeholder="标准差"]', '0'], ['[placeholder="保存结果的变量名"]', 'random_ui']], selects: [['#type', '正态分布']] },
+  { label: '中位数', type: 'stat_median', sourceFile: 'statistics.py', expected: { listVariable: 'numbers', resultVariable: 'median_ui' }, expectedResult: { value: 2 }, inputs: listInput('median_ui') },
+  { label: '众数', type: 'stat_mode', sourceFile: 'statistics.py', expected: { listVariable: 'numbers', resultVariable: 'mode_ui' }, expectedResult: { value: 2 }, inputs: listInput('mode_ui') },
+  { label: '方差', type: 'stat_variance', sourceFile: 'statistics.py', expected: { listVariable: 'numbers', resultVariable: 'variance_ui' }, inputs: listInput('variance_ui'), validateResult: result => approximate(result.value, 2 / 3) },
+  { label: '标准差', type: 'stat_stdev', sourceFile: 'statistics.py', expected: { listVariable: 'numbers', resultVariable: 'stdev_ui' }, inputs: listInput('stdev_ui'), validateResult: result => approximate(result.value, Math.sqrt(2 / 3)) },
+  { label: '百分位数', type: 'stat_percentile', sourceFile: 'statistics.py', expected: { listVariable: 'numbers', percentile: 75, resultVariable: 'percentile_ui' }, expectedResult: { value: 2.75 }, inputs: [...listInput('percentile_ui'), ['#percentile', '75']] },
+  { label: '数据归一化', type: 'stat_normalize', sourceFile: 'statistics.py', expected: { listVariable: 'numbers', method: 'custom', newMin: '-1', newMax: '2', resultVariable: 'normalized_ui' }, expectedResult: { value: [-1, 0.5, 0.5, 2] }, inputs: [['[placeholder="输入列表变量名"]', 'numbers'], ['[placeholder="归一化后的最小值"]', '-1'], ['[placeholder="归一化后的最大值"]', '2'], ['[placeholder="保存结果的变量名"]', 'normalized_ui']], selects: [['#method', '自定义范围']] },
+  { label: '数据标准化', type: 'stat_standardize', sourceFile: 'statistics.py', expected: { listVariable: 'numbers', resultVariable: 'standardized_ui' }, inputs: listInput('standardized_ui'), validateResult: result => approximateArray(result.value, [-Math.sqrt(3 / 2), 0, 0, Math.sqrt(3 / 2)]) },
 ]
+const modules = moduleSpecs.map(module => ({
+  ...module,
+  configure: async cdp => {
+    for (const [selector, value] of module.selects ?? []) await selectNative(cdp, selector, value)
+    for (const [selector, value] of module.inputs ?? []) await setInput(cdp, selector, value)
+  },
+}))
 const approvedTypes = Object.values(sourceFamilies).flat()
 const executedTypes = modules.map(module => module.type)
 const notUiExecutedTypes = approvedTypes.filter(type => !executedTypes.includes(type))
@@ -91,6 +93,7 @@ let desktop
 let main
 let studio
 let eventAbort
+const cloakProcessesObservedDuringRun = new Set()
 
 try {
 assert.equal(process.platform, 'darwin', 'formal evidence requires macOS')
@@ -99,6 +102,10 @@ assert.match(gitHead, /^[0-9a-f]{40}$/)
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 await mkdir(join(userData, 'data', 'kernels'), { recursive: true })
 execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basename(sourceKernel))])
+const browserRequirement = productionBrowserRequirement(executedTypes)
+assert.equal(browserRequirement.workflowRequiresBrowser, false)
+assert.ok(Object.values(browserRequirement.nodeRequiresBrowser).every(value => value === false))
+checkpoint(`生产执行器注册表对 ${modules.length} 个数学/统计节点计算 requiresBrowser=false`)
 
   desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`] })
   assert.equal(desktop.packaged, false, 'formal B4 evidence must use the development Electron entry')
@@ -125,8 +132,8 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
   checkpoint('真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程')
 
   studio = await openStudioFromMain(main, desktop.debugOrigin)
-  await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
-  await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('227')", 'formal Studio', 30_000)
+  await studio.command('Emulation.setDeviceMetricsOverride', { width: 3840, height: 2400, deviceScaleFactor: 1, mobile: false })
+  await waitFor(studio, "document.body?.innerText.includes('模块库')", 'formal Studio', 30_000)
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   checkpoint('主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数')
@@ -138,10 +145,10 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
   await click(studio, '添加变量')
   await setInput(studio, 'input[placeholder="变量名"]', 'numbers')
   await selectNative(studio, '[aria-label="变量类型"]', '列表')
-  await setInput(studio, 'input[placeholder="[]"]', '[2.4,5.6,8,16]')
+  await setInput(studio, 'input[placeholder="[]"]', '[1,2,2,3]')
   await click(studio, '确认添加变量', 'button')
-  await waitFor(studio, "[...document.querySelectorAll('tbody tr')].some(row=>row.textContent.includes('numbers')&&row.textContent.includes('[2.4,5.6,8,16]')&&row.textContent.includes('array'))", 'numbers global variable')
-  checkpoint('通过 Studio 全局变量面板添加 numbers=[2.4,5.6,8,16] 列表变量')
+  await waitFor(studio, "[...document.querySelectorAll('tbody tr')].some(row=>row.textContent.includes('numbers')&&row.textContent.includes('[1,2,2,3]')&&row.textContent.includes('array'))", 'numbers global variable')
+  checkpoint('通过 Studio 全局变量面板添加 numbers=[1,2,2,3] 列表变量')
 
   const nodeIds = []
   for (let index = 0; index < modules.length; index++) {
@@ -155,13 +162,16 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
   }
   assert.equal(new Set(nodeIds).size, modules.length)
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__node').length"), modules.length)
-  checkpoint('通过画布原生右键菜单和配置面板添加并配置 4 个数学/统计代表节点')
+  checkpoint(`通过画布原生右键菜单和配置面板添加并配置全部 ${modules.length} 个数学/统计节点`)
+
+  await click(studio, '', '.react-flow__controls-fitview')
+  await wait(500)
 
   for (let index = 0; index < nodeIds.length - 1; index++) {
     await connectNodes(studio, nodeIds[index], nodeIds[index + 1])
     await waitFor(studio, `document.querySelectorAll('.react-flow__edge').length === ${index + 1}`, `workflow edge ${index + 1}`)
   }
-  checkpoint('通过画布拖拽节点与连接手柄建立 list_sum → math_round → math_log → stat_median 纯数据链')
+  checkpoint(`通过画布拖拽节点与连接手柄建立 ${modules.length} 节点、${modules.length - 1} 条边的纯数据链`)
 
   await click(studio, '执行日志')
   await click(studio, '保存')
@@ -170,7 +180,7 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
   const saved = savedList.find(item => item.name === workflowName)
   assert.ok(saved)
   assert.equal(saved.revision, 1)
-  assert.deepEqual(saved.variables, [{ name: 'numbers', value: [2.4, 5.6, 8, 16], type: 'array', scope: 'global' }])
+  assert.deepEqual(saved.variables, [{ name: 'numbers', value: [1, 2, 2, 3], type: 'array', scope: 'global' }])
   assert.deepEqual(saved.nodes.map(node => node.data.moduleType), executedTypes)
   assert.equal(saved.edges.length, modules.length - 1)
   for (let index = 0; index < modules.length; index++) {
@@ -178,7 +188,7 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
     assert.ok(data)
     for (const [key, value] of Object.entries(modules[index].expected)) assert.deepEqual(data[key], value, `${modules[index].type}.${key}`)
   }
-  checkpoint('真实 UI 保存经正式 HTTP 写入 SQLite；全局变量、4 个节点配置和 3 条边均与输入一致')
+  checkpoint(`真实 UI 保存经正式 HTTP 写入 SQLite；全局变量、${modules.length} 个节点配置和 ${modules.length - 1} 条边均与输入一致`)
 
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
@@ -187,6 +197,7 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
     return page.items[0] ?? null
   }, 'persisted workflow run', 20_000)
   const terminalRun = await waitForValue(async () => {
+    for (const process of cloakProcesses(userData)) cloakProcessesObservedDuringRun.add(process)
     const value = await api(runtime, `/workflow-runs/${encodeURIComponent(startedRun.runId)}`)
     return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.status) ? value : null
   }, 'workflow terminal persistence', 60_000)
@@ -198,23 +209,30 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
   }
 
   const runId = startedRun.runId
-  const results = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}/results?cursor=0&limit=50`)
+  const results = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}/results?cursor=0&limit=100`)
   assert.equal(results.items.length, modules.length)
   const values = Object.fromEntries(modules.map((module, index) => [module.type, results.items.find(item => item.nodeId === nodeIds[index])?.values]))
-  for (const module of modules) assert.deepEqual(values[module.type], module.expectedResult, `${module.type} result`)
+  for (const module of modules) {
+    if (module.validateResult) module.validateResult(values[module.type])
+    else assert.deepEqual(values[module.type], module.expectedResult, `${module.type} result`)
+  }
   const logs = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}/logs?cursor=0&limit=200`)
   for (const nodeId of nodeIds) assert.ok(logs.items.some(item => item.nodeId === nodeId), `missing persisted log for ${nodeId}`)
-  const expectedMessages = ['列表求和: 32.0', '四舍五入: 32.0 → 32.0', '对数运算: log2(32.0) = 5.0', '中位数: 6.8']
-  for (const message of expectedMessages) assert.ok(logs.items.some(item => item.message === message), `missing HTTP log: ${message}`)
-  checkpoint('HTTP 结果精确核对为 32 → 32 → 5 → 6.8，且四个节点的持久化日志完整')
+  checkpoint(`HTTP 结果逐节点核对通过，${modules.length} 个节点的持久化日志完整`)
 
   const sqlite = sqliteEvidence(userData, saved.id, runId)
-  assert.deepEqual(sqlite.document, [{ id: saved.id, name: workflowName, revision: 1, nodeCount: 4, edgeCount: 3, variableCount: 1 }])
+  assert.deepEqual(sqlite.document, [{ id: saved.id, name: workflowName, revision: 1, nodeCount: modules.length, edgeCount: modules.length - 1, variableCount: 1 }])
   assert.deepEqual(sqlite.run.map(({ eventCount, ...row }) => row), [{ runId, workflowId: saved.id, status: 'completed', cleanupState: 'completed', activeSlot: null, logCount: terminalRun.logCount }])
   assert.equal(sqlite.eventTypes.reduce((sum, row) => sum + row.count, 0), sqlite.run[0].eventCount)
-  assert.deepEqual(sqlite.results.map(row => ({ nodeId: row.nodeId, value: row.value })), modules.map((module, index) => ({ nodeId: nodeIds[index], value: module.expectedResult.value })))
-  assert.deepEqual(sqlite.logs.filter(row => row.nodeId).map(row => row.message), expectedMessages)
-  assert.equal(sqlite.eventTypes.find(row => row.type === 'execution:node-succeeded')?.count, 4)
+  assert.deepEqual(sqlite.results.map(row => row.nodeId), nodeIds)
+  for (let index = 0; index < modules.length; index++) {
+    const module = modules[index]
+    const sqliteValue = { value: sqlite.results[index].value }
+    if (module.validateResult) module.validateResult(sqliteValue)
+    else assert.deepEqual(sqliteValue.value, rawResultData(values[module.type]), `${module.type} SQLite result`)
+  }
+  assert.deepEqual(sqlite.logs.filter(row => row.nodeId).map(row => row.message), logs.items.filter(row => row.nodeId).map(row => row.message))
+  assert.equal(sqlite.eventTypes.find(row => row.type === 'execution:node-succeeded')?.count, modules.length)
   assert.equal(sqlite.eventTypes.find(row => row.type === 'execution:log')?.count, terminalRun.logCount)
   checkpoint('直接读取临时 autoflow.sqlite3，文档、终态、事件、结果与日志均和正式 HTTP 响应一致')
 
@@ -222,7 +240,8 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
   const cloakAfter = cloakProcesses(userData)
   assert.deepEqual(cloakAfter, [])
   assert.deepEqual(await installedKernels(), [basename(sourceKernel)])
-  checkpoint('纯数据链完成后无 CloakBrowser 进程；运行槽已释放且 sidecar 清理状态为 completed')
+  assert.deepEqual([...cloakProcessesObservedDuringRun], [])
+  checkpoint('纯数据链在运行前、中、后均无 CloakBrowser 进程；运行槽已释放且 sidecar 清理状态为 completed')
 
   await capture(studio, join(evidenceDir, 'completed.png'))
   const sourceFileHashes = Object.fromEntries(await Promise.all([...frozenFiles, ...targetFiles].map(async file => [file, await fileHash(join(root, file))])))
@@ -246,7 +265,8 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
     execution: { status: terminalRun.status, cleanupState: sqlite.run[0].cleanupState, resultCount: results.items.length, logCount: logs.items.length, observedEvents },
     sourceFamilies, sourceFileHashes, targetSourceDirtyFiles, approvedFamilySize: approvedTypes.length,
     uiExecutedTypes: executedTypes, notUiExecutedTypes, uiNodes, httpEvidence: { results: results.items, logs: logs.items }, sqliteEvidence: sqlite,
-    browserEvidence: { installedKernelEntries: [basename(sourceKernel)], cloakBrowserProcessesBefore: cloakBefore, cloakBrowserProcessesAfter: cloakAfter },
+    requiresBrowserEvidence: browserRequirement,
+    browserEvidence: { installedKernelEntries: [basename(sourceKernel)], cloakBrowserProcessesBefore: cloakBefore, cloakBrowserProcessesDuring: [...cloakProcessesObservedDuringRun], cloakBrowserProcessesAfter: cloakAfter },
     boundaries: {
       workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none (pure data)',
       interaction: 'CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for Profile setup and evidence reads; SQLite used only for evidence reads; no Store or page-internal function access',
@@ -267,6 +287,30 @@ execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basen
 }
 
 function checkpoint(message) { checks.push(message); console.log(message) }
+
+function approximate(actual, expected) {
+  assert.ok(Math.abs(actual - expected) < 1e-12, `expected ${actual} to approximate ${expected}`)
+}
+
+function approximateArray(actual, expected) {
+  assert.equal(actual.length, expected.length)
+  actual.forEach((value, index) => approximate(value, expected[index]))
+}
+
+function rawResultData(values) {
+  return values && Object.keys(values).length === 1 && Object.hasOwn(values, 'value') ? values.value : values
+}
+
+function productionBrowserRequirement(moduleTypes) {
+  const program = `import json
+from autoflow.application.workflows.executors.production import build_production_executor_registry
+from autoflow.application.workflows.runtime import WorkflowRuntime
+types = ${JSON.stringify(moduleTypes)}
+registry = build_production_executor_registry()
+document = {"nodes": [{"id": str(index), "data": {"moduleType": module_type}} for index, module_type in enumerate(types)]}
+print(json.dumps({"workflowRequiresBrowser": WorkflowRuntime(registry).requires_browser(document), "nodeRequiresBrowser": {module_type: registry.get(module_type).requires_browser for module_type in types}}))`
+  return JSON.parse(execFileSync('uv', ['run', '--project', join(root, 'apps/backend'), 'python', '-c', program], { cwd: root, encoding: 'utf8' }))
+}
 
 async function api(runtime, path, options = {}) {
   const response = await fetch(`${runtime.sidecar.baseUrl}/api${path}`, {
@@ -376,12 +420,7 @@ async function setInput(cdp, selector, value) {
 async function selectNative(cdp, selector, expectedText) {
   await click(cdp, '', selector)
   await waitFor(cdp, `document.querySelector(${JSON.stringify(selector)})?.getAttribute('data-state') === 'open'`, `${selector} dropdown open`)
-  const selection = await waitFor(cdp, `(()=>{const options=[...document.querySelectorAll('[role="option"]')].filter(e=>e.getClientRects().length),target=options.findIndex(e=>e.textContent.trim()===${JSON.stringify(expectedText)}),current=options.findIndex(e=>e.getAttribute('data-state')==='checked');return target>=0&&current>=0?{target,current,count:options.length,labels:options.map(e=>e.textContent.trim())}:null})()`, `${selector} visible options`)
-  assert.equal(selection.labels[selection.target], expectedText)
-  for (let step = 0; step < (selection.target - selection.current + selection.count) % selection.count; step++) {
-    await press(cdp, 'ArrowDown', { code: 'ArrowDown', keyCode: 40 })
-  }
-  await press(cdp, 'Enter', { code: 'Enter', keyCode: 13 })
+  await click(cdp, expectedText, '[role="option"]')
   await waitFor(cdp, `document.querySelector(${JSON.stringify(selector)})?.textContent.includes(${JSON.stringify(expectedText)})`, `${selector}=${expectedText}`)
 }
 
@@ -414,7 +453,14 @@ async function connectNodes(cdp, sourceId, targetId) {
 async function moveNode(cdp, nodeId, index, count) {
   const pane = await cdp.evaluate(`(()=>{const r=document.querySelector('.react-flow__pane').getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()`)
   const from = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, `node position ${nodeId}`)
-  const to = { x: pane.x + pane.width * .46, y: pane.y + 65 + index * ((pane.height - 130) / Math.max(1, count - 1)) }
+  const columns = count > 24 ? 4 : count > 8 ? 3 : 1
+  const rows = Math.ceil(count / columns)
+  const column = index % columns
+  const row = Math.floor(index / columns)
+  const to = {
+    x: pane.x + pane.width * (.08 + column * (.84 / Math.max(1, columns - 1))),
+    y: pane.y + 220 + row * ((pane.height - 440) / Math.max(1, rows - 1)),
+  }
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...from })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...from, button: 'left', buttons: 1, clickCount: 1 })
   for (let step = 1; step <= 10; step++) await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', x: from.x + (to.x - from.x) * step / 10, y: from.y + (to.y - from.y) * step / 10, button: 'left', buttons: 1 })
@@ -425,11 +471,13 @@ async function moveNode(cdp, nodeId, index, count) {
 function sqliteEvidence(workspace, workflowId, runId) {
   const database = join(workspace, 'data', 'autoflow.sqlite3')
   const workflow = sqlLiteral(workflowId), run = sqlLiteral(runId)
+  const results = sqliteRows(database, `SELECT seq AS sequence,json_extract(payload,'$.nodeId') AS nodeId,json_quote(json_extract(payload,'$.payload.result.data')) AS valueJson FROM workflow_run_events WHERE run_id=${run} AND json_extract(payload,'$.type')='execution:node-succeeded' ORDER BY seq`)
+    .map(({ valueJson, ...row }) => ({ ...row, value: JSON.parse(valueJson) }))
   return {
     document: sqliteRows(database, `SELECT id,name,revision,json_array_length(document,'$.nodes') AS nodeCount,json_array_length(document,'$.edges') AS edgeCount,json_array_length(document,'$.variables') AS variableCount FROM workflow_documents WHERE id=${workflow}`),
     run: sqliteRows(database, `SELECT id AS runId,workflow_id AS workflowId,json_extract(payload,'$.status') AS status,json_extract(payload,'$.cleanupState') AS cleanupState,active_slot AS activeSlot,CAST(json_extract(payload,'$.eventCount') AS INTEGER) AS eventCount,CAST(json_extract(payload,'$.logCount') AS INTEGER) AS logCount FROM workflow_runs WHERE id=${run}`),
     eventTypes: sqliteRows(database, `SELECT json_extract(payload,'$.type') AS type,COUNT(*) AS count FROM workflow_run_events WHERE run_id=${run} GROUP BY type ORDER BY type`),
-    results: sqliteRows(database, `SELECT seq AS sequence,json_extract(payload,'$.nodeId') AS nodeId,json_extract(payload,'$.payload.result.data') AS value FROM workflow_run_events WHERE run_id=${run} AND json_extract(payload,'$.type')='execution:node-succeeded' ORDER BY seq`),
+    results,
     logs: sqliteRows(database, `SELECT seq AS sequence,json_extract(payload,'$.nodeId') AS nodeId,json_extract(payload,'$.payload.message') AS message FROM workflow_run_events WHERE run_id=${run} AND json_extract(payload,'$.type')='execution:log' ORDER BY seq`),
   }
 }
