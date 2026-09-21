@@ -21,7 +21,7 @@ it('shows explicit unknown checks and disabled capability reasons', async () => 
       },
       capabilities: { management: false, control: false, images: 'unknown', workflow: false },
     }
-  const api: AndroidManagementApi = {
+  const api: Pick<AndroidManagementApi, 'environment' | 'capabilities'> = {
     environment: vi.fn(async () => environment),
     capabilities: vi.fn(async () => ({ management: false, control: false, images: 'unknown', bulk: false, backups: false, workflow: false, reasons: { workflow: '安卓管理不通过工作流执行入口' } })),
   }

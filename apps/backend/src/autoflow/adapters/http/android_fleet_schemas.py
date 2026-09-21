@@ -21,6 +21,7 @@ class EnvironmentProfile(AndroidRename):
     timezone: str = "Asia/Shanghai"
     shell_root: Literal["unknown", "available", "unavailable"] = "unknown"
     application_root: Literal["unknown", "available", "unavailable"] = "unknown"
+    archived: bool = False
 
     @field_validator("timezone")
     @classmethod
@@ -154,6 +155,7 @@ class SessionAction(ApiModel):
 
 
 class AppLaunch(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
     generation: int = Field(ge=0, strict=True)
     package_name: str = Field(
         pattern=r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$", max_length=240
@@ -161,6 +163,7 @@ class AppLaunch(ApiModel):
 
 
 class AppAction(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
     generation: int = Field(ge=0, strict=True)
     package_name: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$", max_length=240)
     action: Literal["stop", "uninstall", "clearData"]
@@ -170,8 +173,17 @@ class BatchAction(ApiModel):
     action: Literal["cancel", "retry"]
 
 
+class AppRecord(ApiModel):
+    package_name: str
+    version_code: int | None = None
+    version_name: str | None = None
+    system: bool
+    protected: bool
+
+
 class AppInfo(ApiModel):
     packages: list[str]
+    applications: list[AppRecord] = Field(default_factory=list)
     current_package: str | None
     shell_root: str
     application_root: str

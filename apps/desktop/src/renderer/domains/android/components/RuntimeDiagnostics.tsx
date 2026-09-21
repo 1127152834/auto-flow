@@ -4,7 +4,7 @@ import type { AndroidManagementApi } from '../management-api'
 const labels: Record<string, string> = { platform: '平台', adb: 'ADB', lima: 'Lima', ssh: 'SSH', scrcpy: 'scrcpy', vm: '虚拟机', docker: 'Docker', binder: '设备绑定', images: '镜像', capacity: '容量', disk: '磁盘' }
 const statusLabels = { pass: '通过', fail: '失败', unknown: '未知', unsupported: '不支持' }
 
-export function RuntimeDiagnostics({ api }: { api: AndroidManagementApi }) {
+export function RuntimeDiagnostics({ api }: { api: Pick<AndroidManagementApi, 'environment' | 'capabilities'> }) {
   const environment = useQuery({ queryKey: ['android-management', 'environment'], queryFn: api.environment })
   const capabilities = useQuery({ queryKey: ['android-management', 'capabilities'], queryFn: api.capabilities })
   if (environment.isPending || capabilities.isPending) return <section role="status" className="rounded-card border border-line bg-surface p-5">正在检查安卓运行环境…</section>

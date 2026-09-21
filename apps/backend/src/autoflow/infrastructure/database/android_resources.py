@@ -35,3 +35,9 @@ class AndroidResourceRepository:
             session.merge(
                 AndroidResourceRow(kind=kind, id=item["id"], payload=deepcopy(item))
             )
+
+    def delete(self, kind: str, identifier: str) -> None:
+        with self.sessions.begin() as session:
+            row = session.get(AndroidResourceRow, (kind, identifier))
+            if row is not None:
+                session.delete(row)

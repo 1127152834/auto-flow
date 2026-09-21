@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useQueries, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useApi } from '../../../app/ApiProvider'
 import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
-import { fleetApi, type ConsoleSession, type Profile, type DeviceRun, type AllocationRequest } from '../fleet-api'
+import { fleetApi, type ConsoleSession, type Profile } from '../fleet-api'
 import { androidManagementApi } from '../management-api'
 import { ResourceBoard } from '../components/ResourceBoard'
 import { CreateInstances } from '../components/CreateInstances'
@@ -10,17 +10,18 @@ import { DeviceConsole } from '../components/DeviceConsole'
 import { Action } from '../components/PrototypeControls'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../../shared/components/ui/dialog'
 import { RuntimeDiagnostics } from '../components/RuntimeDiagnostics'
+import { ManagementOverview } from '../components/ManagementOverview'
+import { ImageManager } from '../components/ImageManager'
+import { TemplateManager } from '../components/TemplateManager'
+import { DataMaintenance } from '../components/DataMaintenance'
+import { BackupPanel } from '../components/BackupPanel'
 import '../android.css'
 
 export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const { client, instanceId } = useApi(),
     api = useMemo(() => androidApi(client), [client]),
     managementApi = useMemo(() => androidManagementApi(client), [client]),
-    fleet = useMemo(() => fleetApi(client), [client]),
-    workflows = useMemo(() => ({
-      list: async () => ({ items: await client.request<Array<{ id: string; name: string }>>('/api/workflows') }),
-      get: (id: string) => client.request<{ document: { variables: Array<{ name: string; type: string; value?: unknown }> } }>(`/api/workflows/${encodeURIComponent(id)}`),
-    }), [client])
+    fleet = useMemo(() => fleetApi(client), [client])
   const [page, setPage] = useState<'board' | 'create' | 'detail'>('board'),
     [selected, setSelected] = useState<string | null>(null),
     [source, setSource] = useState<AndroidDevice>()
@@ -28,18 +29,10 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false)
   const [profilesOpen, setProfilesOpen] = useState(false),
-    [profileDraft, setProfileDraft] = useState<Profile | null>(null),
-    [allocateOpen, setAllocateOpen] = useState(false)
-  const [allocation, setAllocation] = useState<AllocationRequest | null>(null),
-    [management, setManagement] = useState<{ device: AndroidDevice; action: string } | null>(null),
+    [profileDraft, setProfileDraft] = useState<Profile | null>(null)
+  const [management, setManagement] = useState<{ device: AndroidDevice; action: string } | null>(null),
     [name, setName] = useState(''),
     [deleteData, setDeleteData] = useState(false)
-  const [allocationInputs, setAllocationInputs] = useState<Record<string, string>>({})
-  const allocationWorkflow = useQuery({
-    queryKey: ['android', instanceId, 'allocation-workflow', allocation?.workflowId],
-    queryFn: () => workflows.get(allocation!.workflowId),
-    enabled: Boolean(connected && allocateOpen && allocation?.workflowId),
-  })
   const [historyPage, setHistoryPage] = useState(0)
   const detailHistory = useQuery({
     queryKey: ['android', instanceId, 'device-history-page', selected, historyPage],
@@ -66,23 +59,6 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     queryFn: fleet.profiles,
     enabled: connected,
   })
-  const batches = useQuery({
-    queryKey: ['android', instanceId, 'batches'],
-    queryFn: fleet.batches,
-    enabled: connected,
-    refetchInterval: 3000,
-  })
-  const allocations = useQuery({
-    queryKey: ['android', instanceId, 'allocations'],
-    queryFn: fleet.allocations,
-    enabled: connected,
-    refetchInterval: 3000,
-  })
-  const workflowList = useQuery({
-    queryKey: ['android', instanceId, 'workflows'],
-    queryFn: workflows.list,
-    enabled: connected && allocateOpen,
-  })
   const sessionStatus = useQuery({
     queryKey: ['android', instanceId, 'session', session?.id],
     queryFn: () => fleet.heartbeat(session!, session!.clientSessionId ?? session!.id),
@@ -102,24 +78,6 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   }, [sessionStatus.data])
   const all = devices.data ?? [],
     device = all.find((d) => d.deviceId === selected)
-  const histories = useQueries({
-    queries: all.map((d) => ({
-      queryKey: ['android', instanceId, 'history', d.deviceId],
-      queryFn: () => fleet.history(d.deviceId),
-      enabled: connected,
-      refetchInterval: 3000,
-    })),
-  })
-  const historyMap = Object.fromEntries(all.map((d, i) => [d.deviceId, histories[i]?.data ?? []])) as Record<
-    string,
-    DeviceRun[]
-  >
-  const runs = Object.fromEntries(
-    all.map((d) => [
-      d.deviceId,
-      historyMap[d.deviceId]?.find((r) => !['succeeded', 'failed', 'stopped', 'interrupted'].includes(r.state)),
-    ]),
-  )
   const apps = useQuery({
     queryKey: ['android', instanceId, 'apps', session?.id, session?.generation],
     queryFn: () => fleet.apps(session!.id),
@@ -128,12 +86,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   })
   const refresh = () => {
     void devices.refetch()
-    void batches.refetch()
-    void allocations.refetch()
     void apps.refetch()
-    histories.forEach((h) => {
-      void h.refetch()
-    })
   }
   const perform = async (fn: () => Promise<unknown>) => {
     if (busy) return
@@ -200,30 +153,12 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
       setManagement(null)
     })
   }
-  const allocate = (d?: AndroidDevice) => {
-    setAllocationInputs({})
-    setAllocation({
-      requestId: crypto.randomUUID(),
-      workflowId: '',
-      profileId: d?.profileId ?? profiles.data?.[0]?.id ?? '',
-      mode: d ? 'specified' : 'automatic',
-      deviceId: d?.deviceId ?? null,
-      values: {},
-    })
-    setAllocateOpen(true)
-  }
-  const studio = () => {
-    void perform(async () => {
-      if (!window.autoflow?.openAutomationStudio) throw new Error('请使用 AutoFlow 桌面应用打开工作流工作台')
-      await window.autoflow.openAutomationStudio()
-    })
-  }
   return (
     <>
       <div
         className="ad-page"
         style={{
-          display: error && !management && !profilesOpen && !allocateOpen ? 'block' : 'none',
+          display: error && !management && !profilesOpen ? 'block' : 'none',
           minHeight: 0,
           paddingBottom: 0,
         }}
@@ -247,13 +182,14 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           }}
         />
       ) : page === 'detail' && device ? (
+        <>
         <DeviceConsole
           device={device}
           session={session?.deviceId === device.deviceId ? session : null}
           api={fleet}
           deviceApi={api}
-          run={runs[device.deviceId]}
-          history={detailHistory.data ?? historyMap[device.deviceId]}
+          run={undefined}
+          history={detailHistory.data ?? []}
           historyPage={historyPage}
           onHistoryPage={setHistoryPage}
           apps={apps.data}
@@ -261,16 +197,33 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           onSession={onSession}
           onOpen={() => void open(device)}
           onManage={(action) => manage(device, action)}
-          onAllocate={() => allocate(device)}
+          onAllocate={() => undefined}
           onRefresh={refresh}
         />
+        <BackupPanel api={managementApi} deviceId={device.deviceId} revision={device.generation} />
+        </>
       ) : (
-        <div className="space-y-5"><RuntimeDiagnostics api={managementApi} /><ResourceBoard
+        <div className="space-y-5"><RuntimeDiagnostics api={managementApi} /><ManagementOverview
+          api={managementApi}
+          onCreate={() => {
+            setSource(undefined)
+            setPage('create')
+          }}
+          onOpen={(id) => {
+            const target = all.find((item) => item.deviceId === id)
+            if (target) void open(target)
+          }}
+          onManage={(id, action) => {
+            const target = all.find((item) => item.deviceId === id)
+            if (target) manage(target, action)
+          }}
+        /><ResourceBoard
           devices={all}
           profiles={profiles.data ?? []}
-          allocations={allocations.data ?? []}
-          batches={batches.data ?? []}
-          runs={runs}
+          allocations={[]}
+          batches={[]}
+          runs={{}}
+          managementMode
           api={api}
           onCreate={() => {
             setSource(undefined)
@@ -278,12 +231,12 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           }}
           onProfiles={() => setProfilesOpen(true)}
           onOpen={(d) => void open(d)}
-          onAllocate={allocate}
+          onAllocate={() => undefined}
           onManage={manage}
-          onRuns={studio}
-          onBatch={(id, action) => void perform(() => fleet.batchAction(id, action))}
-          onCancelAllocation={(id) => void perform(() => fleet.cancelAllocation(id))}
-        /></div>
+          onRuns={() => undefined}
+          onBatch={() => undefined}
+          onCancelAllocation={() => undefined}
+        /><ImageManager api={managementApi} /><TemplateManager api={fleet} /><DataMaintenance api={managementApi} resourceIds={all.map((item) => item.deviceId)} /></div>
       )}
       <Dialog
         open={Boolean(management)}
@@ -415,6 +368,19 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
                   </div>
                 ))}
                 {!profiles.data?.length && <p>{environment.data?.message ?? '正在检查运行环境…'}</p>}
+                {!profiles.data?.length && (
+                  <Action
+                    primary
+                    onClick={() =>
+                      void perform(async () => {
+                        await fleet.standardProfile()
+                        await profiles.refetch()
+                      })
+                    }
+                  >
+                    创建标准模板
+                  </Action>
+                )}
                 <Action
                   onClick={() => {
                     void profiles.refetch()
@@ -431,128 +397,6 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
               </p>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={allocateOpen} onOpenChange={setAllocateOpen} busy={busy}>
-        <DialogContent>
-          <DialogTitle>分配给工作流</DialogTitle>
-          <DialogDescription>工作流执行期间独占设备；失败或中断时保留设备检查。</DialogDescription>
-          {allocation && (
-            <div className="ad-page ad-profile-editor" style={{ minHeight: 0, padding: 0 }}>
-              <label>
-                工作流
-                <select
-                  value={allocation.workflowId}
-                  onChange={(e) => {
-                    setAllocationInputs({})
-                    setAllocation({ ...allocation, workflowId: e.target.value })
-                  }}
-                >
-                  <option value="">选择已保存的工作流</option>
-                  {workflowList.data?.items.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                所需环境
-                <select
-                  value={allocation.profileId}
-                  onChange={(e) => setAllocation({ ...allocation, profileId: e.target.value })}
-                >
-                  {profiles.data?.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                分配方式
-                <select
-                  value={allocation.mode}
-                  onChange={(e) =>
-                    setAllocation({
-                      ...allocation,
-                      mode: e.target.value as AllocationRequest['mode'],
-                      deviceId: e.target.value === 'specified' ? (all[0]?.deviceId ?? null) : null,
-                    })
-                  }
-                >
-                  <option value="automatic">自动分配</option>
-                  <option value="specified">指定设备</option>
-                  <option value="temporary">新建临时实例</option>
-                </select>
-              </label>
-              {allocation.mode === 'specified' && (
-                <select
-                  aria-label="指定设备"
-                  value={allocation.deviceId ?? ''}
-                  onChange={(e) => setAllocation({ ...allocation, deviceId: e.target.value })}
-                >
-                  {all.map((d) => (
-                    <option key={d.deviceId} value={d.deviceId}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {allocationWorkflow.data?.document.variables.map((v) => (
-                <label key={v.name}>
-                  {v.name}
-                  {v.type === 'boolean' ? (
-                    <select
-                      value={allocationInputs[v.name] ?? String(v.value)}
-                      onChange={(e) => setAllocationInputs({ ...allocationInputs, [v.name]: e.target.value })}
-                    >
-                      <option value="true">是</option>
-                      <option value="false">否</option>
-                    </select>
-                  ) : (
-                    <input
-                      type={v.type === 'number' ? 'number' : 'text'}
-                      value={
-                        allocationInputs[v.name] ??
-                        (v.type === 'string' ? String(v.value ?? '') : JSON.stringify(v.value))
-                      }
-                      onChange={(e) => setAllocationInputs({ ...allocationInputs, [v.name]: e.target.value })}
-                    />
-                  )}
-                </label>
-              ))}
-              {error && (
-                <p role="alert" className="ad-error">
-                  {error}
-                </p>
-              )}
-              <Action
-                primary
-                disabled={busy || !allocation.workflowId || !allocation.profileId}
-                onClick={() =>
-                  void perform(async () => {
-                    const values = Object.fromEntries(
-                      (allocationWorkflow.data?.document.variables ?? []).map((v) => {
-                        const input = allocationInputs[v.name]
-                        if (input === undefined) return [v.name, v.value]
-                        try {
-                          return [v.name, v.type === 'string' ? input : JSON.parse(input)]
-                        } catch {
-                          throw new Error(`${v.name} 的输入格式无效`)
-                        }
-                      }),
-                    )
-                    await fleet.allocate({ ...allocation, values })
-                    setAllocateOpen(false)
-                  })
-                }
-              >
-                加入分配队列
-              </Action>
-              <Action onClick={studio}>打开工作流工作台</Action>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
     </>

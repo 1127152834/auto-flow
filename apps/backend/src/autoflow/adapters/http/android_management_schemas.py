@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from .schemas import ApiModel
 
@@ -23,6 +23,12 @@ class ManagementDeviceRead(ApiModel):
     latest_operation: dict[str, Any] | None
     allowed_actions: list[str]
     blocked_reasons: dict[str, str]
+
+
+class ManagementDevicePageRead(ApiModel):
+    items: list[ManagementDeviceRead]
+    next_cursor: str | None = None
+    total: int
 
 
 class EnvironmentCheckRead(ApiModel):
@@ -73,8 +79,19 @@ class OperationRead(ApiModel):
     allowed_actions: list[str] = Field(default_factory=list)
 
 
+class OperationPageRead(ApiModel):
+    items: list[OperationRead]
+    next_cursor: str | None = None
+    total: int
+
+
 class EnvironmentCheckCommand(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
+
+
+class ProfileArchiveCommand(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    expected_revision: int = Field(ge=0, strict=True)
 
 
 class OperationVerifyCommand(ApiModel):
@@ -90,6 +107,18 @@ class ImageRead(ApiModel):
     state: str
     verification: dict[str, Any]
     created_at: datetime
+    source_digest: str | None = None
+    architecture: str | None = None
+    os: str | None = None
+    android_version: str | None = None
+    google_components: str | None = None
+    references: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class ImagePageRead(ApiModel):
+    items: list[ImageRead]
+    next_cursor: str | None = None
+    total: int
 
 
 class ImageRegister(ApiModel):
@@ -98,9 +127,27 @@ class ImageRegister(ApiModel):
     reference: str = Field(min_length=1, max_length=255)
 
 
+class ImagePullCreate(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    reference: str = Field(min_length=1, max_length=255)
+
+    @field_validator("reference")
+    @classmethod
+    def safe_reference(cls, value: str) -> str:
+        if any(char.isspace() for char in value) or value.startswith("-"):
+            raise ValueError("镜像引用不能包含空白或命令选项")
+        return value
+
+
 class ImageDelete(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
     delete_content: bool = False
+
+
+class ImageVerificationCreate(ApiModel):
+    check: str = Field(min_length=1, max_length=80)
+    result: Literal["passed", "failed", "blocked"]
+    evidence: dict[str, Any] = Field(default_factory=dict)
 
 
 class BackupRead(ApiModel):
@@ -116,3 +163,60 @@ class BackupRead(ApiModel):
 
 class BackupCreate(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
+    device_id: str | None = None
+    expected_revision: int | None = Field(default=None, ge=1, strict=True)
+
+
+class BackupRestore(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    new_name: str = Field(min_length=1, max_length=80)
+
+
+class BulkItemCreate(ApiModel):
+    device_id: str
+    expected_revision: int = Field(ge=1, strict=True)
+
+
+class BulkCreate(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    action: Literal["start", "stop", "restart", "delete"]
+    items: list[BulkItemCreate] = Field(min_length=1, max_length=20)
+    delete_data: bool = False
+
+
+class BulkAction(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    action: Literal["cancelPending", "retryFailed"]
+
+
+class BulkRead(ApiModel):
+    id: str
+    request_id: str
+    action: str
+    delete_data: bool
+    state: str
+    items: list[dict[str, Any]]
+    created_at: datetime
+
+
+class CleanupPreviewCreate(ApiModel):
+    resource_ids: list[str] = Field(min_length=1, max_length=200)
+
+
+class CleanupExecute(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    confirmation_digest: str = Field(min_length=32, max_length=128)
+
+
+class DiagnosticsCreate(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    device_ids: list[str] = Field(default_factory=list, max_length=50)
+    include_advanced_logs: bool = False
+
+
+class DiagnosticRead(ApiModel):
+    id: str
+    request_id: str
+    state: str
+    payload: dict[str, Any]
+    created_at: datetime

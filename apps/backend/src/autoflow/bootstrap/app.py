@@ -20,10 +20,13 @@ from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
 from autoflow.application.android.backups import AndroidBackupService
+from autoflow.application.android.bulk import AndroidBulkService
+from autoflow.application.android.cleanup import CleanupService
 from autoflow.application.android.console import AndroidConsole
 from autoflow.application.android.diagnostics import EnvironmentCheckService
 from autoflow.application.android.fleet import AndroidFleet
 from autoflow.application.android.images import AndroidImageService
+from autoflow.application.android.observations import DeviceObservationService
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
@@ -195,6 +198,7 @@ from autoflow.infrastructure.filesystem.profile_environment import (
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
+from autoflow.providers.android.image_catalog import ImageCatalog
 from autoflow.providers.android.stream import AndroidStream
 from autoflow.providers.browser.environment_browser import EnvironmentBrowserLauncher
 from autoflow.providers.data import google_auth
@@ -389,8 +393,11 @@ def create_app(
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
     android_operations = SqlAlchemyAndroidOperationRepository(session_factory)
-    android_images = AndroidImageService(android_resources, android.repository)
+    android_images = AndroidImageService(android_resources, android.repository, ImageCatalog(android.runtime))
     android_backups = AndroidBackupService(android_resources, paths.workspace)
+    android_observations = DeviceObservationService(android.repository, android.runtime)
+    android_bulk = AndroidBulkService(android_resources, android)
+    android_cleanup = CleanupService(android_resources, android, android_backups)
     android.management.operations = android_operations
     android.management.workspace_identity = str(paths.workspace.resolve())
     android_runs = CurrentAndroidRunBoundary()
@@ -402,9 +409,11 @@ def create_app(
     app.state.android_fleet = android_fleet
     app.state.android_console = android_console
     app.state.android_operations = android_operations
+    app.state.android_observations = android_observations
     app.router.add_event_handler("startup", android.recover)
     app.router.add_event_handler("startup", android_fleet.start)
     app.router.add_event_handler("startup", android_console.start)
+    app.router.add_event_handler("startup", android_observations.start)
 
     environment_store = EnvironmentStore(paths.workspace / "environments")
 
@@ -589,6 +598,7 @@ def create_app(
                 android.management.shutdown(),
                 android_fleet.shutdown(),
                 android_console.shutdown(),
+                android_observations.shutdown(),
                 close_project_workflows(),
                 test_browser_workers.shutdown(),
                 kernel_worker_manager.shutdown(),
@@ -633,7 +643,7 @@ def create_app(
     app.include_router(studio_retention_router(studio_retention))
     app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
-    app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android))
+    app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android, android_bulk, android_cleanup, android_resources))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)

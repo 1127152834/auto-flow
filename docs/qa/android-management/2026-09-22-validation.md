@@ -1,6 +1,6 @@
 # 安卓模拟器管理验收证据（2026-09-22）
 
-- 状态：`partial`；代码验证通过，真实 macOS/Lima/ReDroid、网络和测试账号验收 `blocked`。
+- 状态：`partial`；代码、契约和真实基础 ReDroid 链路已验证，Google 组件、测试 APK、双实例和手动原生窗口仍 `blocked`。
 - worktree：`codex/android-management-complete`，起点 `a92f0688f206d4339ff4468c1871f3ccdd6816dc`。
 - 主工作区既有 Studio 未提交改动未复制、未修改。
 
@@ -8,23 +8,34 @@
 
 | 类别 | 命令 | 实际结果 |
 | --- | --- | --- |
-| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest ... -q`（Android 聚焦集合，含迁移、操作、诊断、会话、镜像、备份、容量、清理） | `44 passed, 1 warning` |
+| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q` | `101 passed, 1 warning` |
 | 前端 Android | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `7 files, 17 passed` |
-| 前端类型 | `npm run typecheck` | 通过 |
+| 前端类型 | `cd apps/desktop && npm run typecheck` | 通过 |
+| 前端 Android 更新后回归 | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `10 files, 24 passed` |
+| 前端 lint | `cd apps/desktop && npm run lint` | 通过 |
 | OpenAPI | `npm run openapi:generate`、`npm run openapi:check` | 通过 |
-| 前端 lint/build | `npm run lint`、`npm run build` | lint 通过；build 完成并有依赖注释 warning |
+| 前端 build | `npm run build` | 完成并有依赖注释 warning；本轮未重复构建 |
+| smoke 参数保护 | `cd apps/backend && uv run pytest tests/unit/test_android_management_smoke_args.py -q` | `2 passed`；带授权参数时明确输出 blocked |
+| 新增契约集合 | `cd apps/backend && uv run pytest tests/contract/test_android_{apps,backups,images,templates}.py -q` | `4 passed, 1 warning` |
 | 迁移 | Alembic 临时 SQLite 升级及旧 Android 历史回归 | head=`am01_management_operations`，通过 |
 | 结构检查 | `npm run test:structure` | `4 passed` |
-| 全脚本基线 | `npm run test:scripts` | `92 passed, 3 pre-existing Studio failures` |
+| 全脚本基线 | `npm run test:scripts` | `95 tests: 92 passed, 3 pre-existing Studio inventory/reference failures` |
+| Lima/Docker/binderfs 环境 | `limactl start autoflow-redroid`；`limactl shell autoflow-redroid sudo sh -lc 'mkdir -p /dev/binderfs && mountpoint -q /dev/binderfs || mount -t binder binder /dev/binderfs'`；`limactl shell autoflow-redroid sudo docker info --format '{{.Architecture}} {{.OperatingSystem}} {{.NCPU}} {{.MemTotal}}'` | Lima `Running`，Linux arm64，6 CPU，约 7.9 GiB；`/dev/binderfs/{binder,hwbinder,vndbinder}` 存在；`MacAndroidRuntime.environment()` 返回 `available: true` |
+| 真实基础实例准备 | `cd apps/backend && uv run python -m autoflow.bootstrap.android_prepare --data-dir /tmp/autoflow-android-real-20260922b --scrcpy-archive /Users/zhangtiancheng/.autoflow/android-runtime/scrcpy-macos-aarch64-v3.3.4.tar.gz` | 创建并连接真实 ReDroid Android 13 ARM64 实例；`androidStatus=ready`；固定 digest `sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b` |
+| 真实生命周期/画面/应用 | 临时实例上执行 `connect`、`app_info`、`android_screenshot`、HOME、stop、再次 connect | 应用清单 `102` 项；截图尺寸 `720x1280`；当前包 `com.android.launcher3`；停止后状态 `exited`，再次连接恢复 `ready` |
+| 真实备份恢复 | 临时实例通过 ADB 写入 `real-backup-check`，停机后 `backup_volume`、`restore_volume`，再读取目标卷 | `backup_bytes=25472000`；源/恢复标记均为 `real-backup-check`；归档字节数一致；容器/卷标签核验后已清理 |
+| 真实双实例隔离 | 两个独立临时 workspace 同时创建，分别 `for_device`、连接、发送 HOME、截图和读取应用 | ADB serial `127.0.0.1:58272` 与 `127.0.0.1:58287` 不同；两台均 `720x1280`、`102` 应用；按各自 workspace/device 标签清理 |
 
 ## 已覆盖
 
-只读环境诊断、显式 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、分页和迁移；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、不可变 imageId、引用阻止删除、模板读取/归档入口；persistent 默认创建并拒绝 temporary；停机备份前置条件、受限目录/权限、格式摘要、exact imageId 恢复边界；诊断脱敏；容量未知阻止准入；APK/应用安全边界；前端诊断面板和会话控制器。
+只读环境诊断、逐项 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、全量计数分页和迁移；管理首页不请求 workflows/allocations/runs；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、引用保护、来源校验、拉取引用安全校验、验证结果归并、模板 revision 归档；persistent 默认创建并拒绝 temporary；停机备份前置条件、受限目录/权限、归档摘要/字节数/镜像一致性和路径安全校验；诊断脱敏；容量未知和预留阻止准入；观察器活跃 3 秒刷新、失败指数退避和 10/45 秒陈旧规则；应用操作 requestId/保护包边界、真实 Android 平台包名解析；清理预览摘要冻结并执行受控删除；批量操作 UI 冻结设备 revision；smoke 授权保护；前端诊断面板、管理快照、批量操作、备份入口、镜像/模板和会话控制器。备份适配使用 Docker volume copy，不依赖 Android 镜像提供独立 `/bin/sh`。
 
 ## 阻塞项与风险
 
-- 当前验收主机没有可核实的 Docker/Lima/ReDroid 实例、ADB/scrcpy 联机设备、Google 组件网络和专用测试账号；真实创建、启动、手动窗口、应用安装/中文输入、备份恢复演练、GApps 验证全部 `blocked`，没有用 mock 结果代替。
-- 实机探测摘要：`docker info` 无法连接 `/Users/zhangtiancheng/.docker/run/docker.sock`；`limactl list` 显示 `autoflow-redroid Stopped`；`adb devices` 无设备；`scrcpy` 二进制存在但无设备可连接。
+- 主机的 Lima/Docker-in-Lima 和基础 ReDroid 已完成真实核验；宿主 Docker socket 仍不作为本模块运行时入口。测试实例使用独立临时 workspace，完成后按 workspace/device 标签删除。
+- Google 组件镜像、专用测试账号、可分发测试 APK 和人工原生 scrcpy 窗口未具备，因此 GApps 登录、免费测试应用安装/启动、中文输入、窗口交互仍 `blocked`；没有用 mock 结果代替。
 - `npm run test:scripts` 的三个 Studio inventory/reference 失败与本模块无关，未扩大范围修复；依赖安装/Node 版本会影响其复现。
 - 全量 `cd apps/backend && uv run pytest -x -q` 在第 3 个兼容性测试停止：环境缺少未安装的 `PyInstaller`（`tests/compatibility/test_langgraph_runtime.py`）；安卓聚焦集合不受此阻塞。
-- AM3/AM4 完整 UI 批次编排、聚合观察和备份恢复真实演练仍需后续实机验收；应用停止/卸载/清除接口已加保护，但未实机验证。
+- 镜像拉取和内容删除已接入 Mac runtime 的受限 Docker pull/inspect/rm 适配和兼容性门禁；内容删除仍受设备、模板和备份引用保护，本轮真实使用了缓存基础镜像并核对固定 digest，网络拉取、内容删除实机和 GApps 候选仍未验收。观察器规则已接入后台启动/关闭调度；应用列表已接入版本/系统应用标识、搜索、停止、卸载、清除数据、确认和结果未知复核。
+- 备份已接入受限数据卷 copy 归档、摘要、路径/特殊文件校验，并真实完成数据标记写入、停机归档和新卷恢复；缺失适配器、缺失精确镜像、旧 manifest 或损坏归档会明确失败，不发布“恢复成功”。清理按实际 workspace identity 汇总保留数据和备份，预览包含不可逆影响与引用指纹，执行前重检并分别走设备删除操作或受控备份目录删除。
+- AM3 的批量压力和人工窗口验收仍未执行；应用停止/卸载/清除的真实破坏性动作未执行，保持保护边界。

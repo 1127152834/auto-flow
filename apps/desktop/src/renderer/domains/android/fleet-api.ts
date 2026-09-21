@@ -13,6 +13,7 @@ export type DeviceRun = components['schemas']['DeviceRunRead']
 const base = '/api/v1/android'
 export const fleetApi = (client: StreamingApiClient) => ({
   profiles: () => client.request<Profile[]>(`${base}/profiles`, { timeoutMs: 25000 }),
+  standardProfile: () => client.request<Profile>(`${base}/profiles/standard`, { method: 'POST', timeoutMs: 25000 }),
   saveProfile: (body: Profile) => client.request<Profile>(`${base}/profiles/${body.id}`, { method: 'PUT', body }),
   batches: () => client.request<Batch[]>(`${base}/batches`),
   batch: (body: BatchRequest) => client.request<Batch>(`${base}/batches`, { method: 'POST', body }),
@@ -41,18 +42,18 @@ export const fleetApi = (client: StreamingApiClient) => ({
     client.request<ConsoleSession>(`${base}/sessions/${id}/input`, { method: 'POST', body }),
   stream: (id: string, signal: AbortSignal) => client.stream(`${base}/sessions/${id}/stream`, { signal }),
   apps: (id: string) => client.request<Apps>(`${base}/sessions/${id}/apps`, { timeoutMs: 30000 }),
-  launch: (s: ConsoleSession, packageName: string) =>
+  launch: (s: ConsoleSession, packageName: string, requestId = crypto.randomUUID()) =>
     client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/launch`, {
       method: 'POST',
-      body: { generation: s.generation, packageName },
+      body: { requestId, generation: s.generation, packageName },
       timeoutMs: 40000,
     }),
-  appAction: (s: ConsoleSession, action: 'stop' | 'uninstall' | 'clearData', packageName: string) =>
-    client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/actions`, { method: 'POST', body: { generation: s.generation, action, packageName }, timeoutMs: 40000 }),
+  appAction: (s: ConsoleSession, action: 'stop' | 'uninstall' | 'clearData', packageName: string, requestId = crypto.randomUUID()) =>
+    client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/actions`, { method: 'POST', body: { requestId, generation: s.generation, action, packageName }, timeoutMs: 40000 }),
   install: (s: ConsoleSession, file: File) => {
     const body = new FormData()
     body.append('file', file)
-    return client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/install?generation=${s.generation}`, {
+    return client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/install?generation=${s.generation}&requestId=${encodeURIComponent(crypto.randomUUID())}`, {
       method: 'POST', body, timeoutMs: 150000,
     })
   },

@@ -1,6 +1,6 @@
 from typing import Any
 
-_PRIVATE = {"path", "token", "password", "inputText", "apk", "screenshot", "rawLogcat"}
+_PRIVATE = {"path", "token", "password", "inputText", "apk", "screenshot", "rawLogcat", "logcat", "accounts", "username", "systemUser"}
 
 
 def redact_diagnostics(value: dict[str, Any]) -> dict[str, Any]:

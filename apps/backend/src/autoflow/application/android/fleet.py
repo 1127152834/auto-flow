@@ -44,9 +44,13 @@ class AndroidFleet:
         )
 
     async def profiles(self) -> list[dict[str, Any]]:
+        return self.resources.list("profile")
+
+    async def create_standard_profile(self) -> dict[str, Any]:
         profiles = self.resources.list("profile")
-        if profiles:
-            return profiles
+        existing = next((item for item in profiles if item.get("name") == "Android 13 标准 · ARM64" and not item.get("archived")), None)
+        if existing:
+            return existing
         environment = await self.devices.environment()
         if environment.get("images"):
             item = {
@@ -65,8 +69,8 @@ class AndroidFleet:
                 "applicationRoot": "unknown",
             }
             self.resources.save("profile", item)
-            return [item]
-        return []
+            return item
+        raise AndroidError("ANDROID_IMAGE_MISSING", "尚未发现兼容镜像", 409)
 
     def save_profile(self, item: dict[str, Any]) -> dict[str, Any]:
         try:

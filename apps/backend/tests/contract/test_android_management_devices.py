@@ -1,0 +1,37 @@
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
+from autoflow.adapters.http.android_management import android_management_router
+from autoflow.adapters.http.errors import install_error_handlers
+from autoflow.application.android.diagnostics import EnvironmentCheckService
+
+
+class _Runtime:
+    async def environment(self):
+        return {"available": True, "platformSupported": True, "runtimeId": "lima"}
+
+    async def inspect(self, _device):
+        raise AssertionError("management list must use observations, not inspect inline")
+
+
+class _Devices:
+    runtime = _Runtime()
+
+    def __init__(self):
+        self.repository = type("Repository", (), {"list": lambda _self: [{
+            "deviceId": "11111111-1111-4111-8111-111111111111", "name": "设备", "generation": 2,
+            "androidStatus": "ready", "control": "idle", "ownerRunId": None,
+            "profileId": "22222222-2222-4222-8222-222222222222", "dataRetained": False,
+            "deleted": False, "creationConfig": {"imageId": "sha256:" + "a" * 64},
+        }]})()
+
+
+def test_management_device_list_is_a_snapshot_page_and_does_not_inspect_inline():
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(_Devices().runtime), devices=_Devices()))
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/management/devices?limit=50")
+    assert response.status_code == 200
+    assert response.json()["items"][0]["deviceId"].startswith("1111")
+    assert response.json()["nextCursor"] is None

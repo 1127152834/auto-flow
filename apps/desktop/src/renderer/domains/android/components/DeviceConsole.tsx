@@ -25,6 +25,7 @@ import type { AndroidApi, AndroidDevice } from '../api'
 import type { Apps, ConsoleSession, DeviceRun, FleetApi, InputCommand, SessionAction } from '../fleet-api'
 import { Action, Badge, Dot, Phone, Toggle } from './PrototypeControls'
 import { AndroidVideo } from './AndroidVideo'
+import { ApplicationsPanel } from './ApplicationsPanel'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 export type ConsoleProps = {
   device: AndroidDevice
@@ -590,14 +591,7 @@ export function DeviceConsole(p: ConsoleProps) {
         ) : tab === '应用' ? (
           <section className="ad-secondary">
             {application}
-            <h2>已安装的应用</h2>
-            <select aria-label="选择应用" value={packageName} onChange={(e) => setPackage(e.target.value)}>
-              <option value="">选择应用</option>
-              {p.apps?.packages.map((pkg) => (
-                <option key={pkg}>{pkg}</option>
-              ))}
-            </select>
-            <p>工作流占用期间禁止人工启动和安装应用。</p>
+            {p.api && <ApplicationsPanel api={p.api} apps={p.apps} session={p.session} onSession={p.onSession} onRefresh={p.onRefresh} />}
           </section>
         ) : tab === '环境配置' ? (
           <section className="ad-secondary">

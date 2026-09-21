@@ -26,6 +26,13 @@ it('opens embedded control only on explicit click; refresh does not create a nat
   await userEvent.click(screen.getByRole('button', { name: '结束控制' }))
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
 })
+it('management home does not request retired workflow, allocation, or run endpoints', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await screen.findByText('安卓设备')
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalled())
+  expect(mocks.client.request.mock.calls.map(([path]) => path).filter((path) => /workflows|allocations|\/runs/.test(path))).toEqual([])
+  expect(screen.queryByRole('button', { name: '分配给工作流' })).not.toBeInTheDocument()
+})
 it('preserves the six-card three-column board and both waiting tasks', () => {
   render(<ResourceBoard devices={devices} profiles={[profile]} allocations={allocations} runs={runs} batches={[]} images={images} onCreate={noop} onProfiles={noop} onOpen={noop} onAllocate={noop} onManage={noop} onRuns={noop} onBatch={noop} />)
   expect(screen.getAllByRole('article')).toHaveLength(6)

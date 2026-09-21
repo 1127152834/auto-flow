@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from typing import Any, cast
 from uuid import uuid4
 
-from sqlalchemy import and_, or_, select, update
+from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
@@ -86,6 +86,13 @@ class SqlAlchemyAndroidOperationRepository:
                     raise AndroidError("ANDROID_OPERATION_CURSOR_INVALID", "分页位置无效", 422)
                 query = query.where(or_(AndroidOperationRow.created_at < boundary.created_at, and_(AndroidOperationRow.created_at == boundary.created_at, AndroidOperationRow.id < cursor)))
             return [OperationRecord(row) for row in session.scalars(query)]
+
+    def count(self, device_id: str | None = None) -> int:
+        with self.sessions() as session:
+            query = select(func.count()).select_from(AndroidOperationRow)
+            if device_id:
+                query = query.where(AndroidOperationRow.target_id == device_id)
+            return int(session.scalar(query) or 0)
 
     def transition(self, operation_id: str, expected_state: str, next_state: str, changes: dict[str, Any]) -> OperationRecord:
         if next_state not in _TRANSITIONS.get(expected_state, set()):

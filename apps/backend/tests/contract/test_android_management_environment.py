@@ -46,3 +46,23 @@ def test_environment_route_exposes_capabilities_without_workflow_entrypoints() -
     assert response.status_code == 200
     assert response.json()["checks"]["platform"]["status"] == "unsupported"
     assert capabilities.json()["workflow"] is False
+
+
+def test_capabilities_report_configured_bulk_service() -> None:
+    runtime = AsyncMock()
+    runtime.environment.return_value = {
+        "available": True,
+        "platformSupported": True,
+        "runtimeId": "autoflow-redroid",
+        "message": "可用",
+        "images": [{"id": "sha256:" + "a" * 64}],
+    }
+    app = FastAPI()
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), bulk=object()))
+
+    with TestClient(app) as client:
+        capabilities = client.get("/api/v1/android/management/capabilities")
+
+    assert capabilities.status_code == 200
+    assert capabilities.json()["bulk"] is True
+    assert capabilities.json()["backups"] is False

@@ -22,6 +22,7 @@ export type BoardProps = {
   onRuns(): void
   onBatch(id: string, action: 'retry' | 'cancel'): void
   onCancelAllocation?(id: string): void
+  managementMode?: boolean
 }
 const group = (d: AndroidDevice) =>
   d.control === 'managing' || d.control === 'recovery_required'
@@ -77,7 +78,7 @@ export function ResourceBoard(p: BoardProps) {
           {g !== 1 && !starting && <Badge tone="brown">{temporary ? '临时实例' : '持久实例'}</Badge>}
           {g === 1 ? (
             <>
-              <p className="ad-workflow">{run ? `工作流：${run.workflowName}` : '手动控制中'}</p>
+              <p className="ad-workflow">{p.managementMode ? '手动控制中' : run ? `工作流：${run.workflowName}` : '手动控制中'}</p>
               <p className="ad-step">
                 {run
                   ? `当前步骤：${run.steps[Math.max(0, run.currentStep - 1)]?.label ?? '等待执行'} · ${run.currentStep}/${run.totalSteps}`
@@ -135,9 +136,7 @@ export function ResourceBoard(p: BoardProps) {
         <div className="ad-card-actions">
           {g === 0 ? (
             <>
-              <Action primary onClick={() => p.onAllocate(d)}>
-                分配给工作流
-              </Action>
+              {!p.managementMode && <Action primary onClick={() => p.onAllocate(d)}>分配给工作流</Action>}
               <Action onClick={() => p.onOpen(d)}>打开设备</Action>
             </>
           ) : g === 1 ? (
@@ -163,8 +162,8 @@ export function ResourceBoard(p: BoardProps) {
     <main className="ad-page ad-board-page">
       <header className="ad-page-heading">
         <div>
-          <h1>安卓模拟器</h1>
-          <p>按工作流分配设备，跟踪运行与回收。</p>
+          <h1>{p.managementMode ? '安卓设备' : '安卓模拟器'}</h1>
+          <p>{p.managementMode ? '管理本机安卓实例、应用与数据。' : '按工作流分配设备，跟踪运行与回收。'}</p>
         </div>
         <div>
           <Action onClick={p.onProfiles}>
@@ -201,7 +200,7 @@ export function ResourceBoard(p: BoardProps) {
         </div>
         {view === 'board' ? (
           <div className="ad-columns">
-            {['可分配', '工作流占用', '启动与停止'].map((title, i) => (
+            {(p.managementMode ? ['可操作', '手动控制', '启动与停止'] : ['可分配', '工作流占用', '启动与停止']).map((title, i) => (
               <section className="ad-column" key={title}>
                 <h2>
                   <Dot tone={['green', 'brown', 'gray'][i]} />
@@ -242,9 +241,7 @@ export function ResourceBoard(p: BoardProps) {
                     <TableCell>{d.instanceType === 'temporary' ? '临时实例' : '持久实例'}</TableCell>
                     <TableCell>
                       <Action onClick={() => p.onOpen(d)}>打开设备</Action>
-                      <Action disabled={group(d) !== 0} onClick={() => p.onAllocate(d)}>
-                        分配工作流
-                      </Action>
+                      {!p.managementMode && <Action disabled={group(d) !== 0} onClick={() => p.onAllocate(d)}>分配工作流</Action>}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -253,7 +250,7 @@ export function ResourceBoard(p: BoardProps) {
           </TableScroll>
         )}
       </section>
-      <section className="ad-waiting">
+      {!p.managementMode && <section className="ad-waiting">
         <header>
           <h2>
             等待设备的任务 <span>{waiting.length}</span>
@@ -319,8 +316,8 @@ export function ResourceBoard(p: BoardProps) {
           <Info size={16} />
           工作流运行期间独占设备；释放持久实例时保留数据。
         </p>
-      </section>
-      {p.batches
+      </section>}
+      {!p.managementMode && p.batches
         .filter((b) => b.state !== 'succeeded' && b.state !== 'cancelled')
         .map((b) => (
           <section className="ad-batch" key={b.id}>

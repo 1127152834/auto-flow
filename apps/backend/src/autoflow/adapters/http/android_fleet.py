@@ -46,6 +46,11 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
         async with fleet.tick_lock:
             return await fleet.profiles()
 
+    @router.post("/profiles/standard", response_model=EnvironmentProfile, status_code=201)
+    async def standard_profile() -> Any:
+        async with fleet.tick_lock:
+            return project(EnvironmentProfile, await fleet.create_standard_profile())
+
     @router.put("/profiles/{identifier}", response_model=EnvironmentProfile)
     async def save_profile(identifier: UUID, body: EnvironmentProfile) -> Any:
         if identifier != body.id:
@@ -184,12 +189,12 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
     @router.post("/sessions/{identifier}/apps/launch", response_model=SessionRead)
     async def launch(identifier: UUID, body: AppLaunch) -> Any:
         return await console.app_operation(
-            str(identifier), body.generation, "launch", body.package_name
+            str(identifier), body.generation, "launch", body.package_name, body.request_id
         )
 
     @router.post("/sessions/{identifier}/apps/actions", response_model=SessionRead)
     async def app_action(identifier: UUID, body: AppAction) -> Any:
-        return await console.app_operation(str(identifier), body.generation, body.action, body.package_name)
+        return await console.app_operation(str(identifier), body.generation, body.action, body.package_name, body.request_id)
 
     @router.post(
         "/sessions/{identifier}/apps/install",
@@ -214,7 +219,7 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
             }
         },
     )
-    async def install(identifier: UUID, generation: int, request: Request) -> Any:
+    async def install(identifier: UUID, generation: int, request: Request, request_id: str = Query(..., alias="requestId")) -> Any:
         session = console.get(str(identifier))
         console._check(session, generation, True)
         chunks = bytearray()
@@ -239,7 +244,7 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
         if not chunks.startswith(b"PK"):
             raise AndroidError("ANDROID_APK_INVALID", "请选择 APK 文件", 422)
         return await console.app_operation(
-            str(identifier), generation, "install", bytes(chunks)
+            str(identifier), generation, "install", bytes(chunks), request_id
         )
 
     return router

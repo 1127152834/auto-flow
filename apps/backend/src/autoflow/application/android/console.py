@@ -386,13 +386,26 @@ class AndroidConsole:
             return await context.runtime.app_info()
 
     async def app_operation(
-        self, identifier: str, generation: int, operation: str, value: Any
+        self, identifier: str, generation: int, operation: str, value: Any, request_id: str | None = None
     ) -> dict[str, Any]:
         session = self.get(identifier)
         async with session["lock"], self.operations:
             context = self._check(session, generation, True)
+            receipts = session.setdefault("appReceipts", {})
+            if request_id:
+                previous = receipts.get(request_id)
+                current = {"generation": generation, "operation": operation, "value": value if isinstance(value, str) else "bytes"}
+                if previous is not None:
+                    if previous != current:
+                        raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他应用操作", 409)
+                    return session["view"]
+                receipts[request_id] = current
             if operation == "install":
-                await context.runtime.install_apk(value)
+                try:
+                    await context.runtime.install_apk(value)
+                except Exception:
+                    session["view"]["latestOperation"] = "安装结果待核实"
+                    raise
             else:
                 command = {"launch": "android_launch_app", "stop": "android_stop_app", "uninstall": "android_uninstall_app", "clearData": "android_clear_app_data"}[operation]
                 if operation in {"uninstall", "clearData"} and str(value).startswith(("com.android.", "com.google.android.")):
