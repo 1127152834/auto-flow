@@ -643,7 +643,7 @@ async def test_text_export_refuses_unverified_windows_path_operations(
             content="blocked",
             separator="\n",
             encoding="utf-8",
-            append=False,
+            append=True,
             mime_type="text/plain",
         )
 
@@ -1271,3 +1271,77 @@ def test_pending_cleanup_scan_cannot_escape_through_imported_workspace_symlink(
     WorkflowArtifactStore(root, object())  # type: ignore[arg-type]
 
     assert outside.read_bytes() == b"must remain"
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows file handles')
+@pytest.mark.parametrize('mode', ['success', 'collision', 'cancel', 'registration', 'junction', 'parent-rename'])
+async def test_native_windows_new_output_preserves_handle_boundaries(artifacts, tmp_path, monkeypatch, mode):
+    import subprocess
+
+    store, repository = artifacts
+    target = tmp_path / 'native' / '新文件.txt'
+    target.parent.mkdir()
+    writer = store.writer(run_id='run-artifacts', node_id='export', execution_id='native', purpose='result')
+    original = store._snapshot_from_descriptor
+    outsider = tmp_path / 'outside'
+    outsider.mkdir()
+    if mode == 'junction':
+        target.parent.rmdir()
+        await asyncio.to_thread(subprocess.run, ['cmd', '/c', 'mklink', '/J', str(target.parent), str(outsider)], check=True, capture_output=True)
+    def snapshot(**kwargs):
+        result = original(**kwargs)
+        if mode == 'collision':
+            target.write_text('foreign', encoding='utf-8')
+        elif mode == 'cancel':
+            cancelled[0] = True
+        elif mode == 'parent-rename':
+            with pytest.raises(OSError):
+                target.parent.rename(tmp_path / 'moved')
+        return result
+    cancelled = [False]
+    class Token:
+        def raise_if_cancelled(self):
+            if cancelled[0]: raise asyncio.CancelledError()
+    writer._cancellation = Token()
+    monkeypatch.setattr(store, '_snapshot_from_descriptor', snapshot)
+    if mode == 'registration':
+        def failed(**_kwargs):
+            # File has been published, but the held source handle denies replacement.
+            with pytest.raises(OSError):
+                target.unlink()
+            raise RuntimeError('registration failure')
+        monkeypatch.setattr(repository, 'register_artifact', failed)
+    async def write():
+        return await writer.write_text(output_path=str(target), content='中文\nvalue', separator='\n', encoding='utf-8', append=False, mime_type='text/plain')
+    if mode in {'success', 'parent-rename'}:
+        assert await write() == str(target)
+        assert target.read_bytes() == '中文\nvalue'.encode()
+        rows = repository.list_artifacts('run-artifacts', cursor=0, limit=20)
+        assert len(rows) == 1 and rows[0].sha256 == hashlib.sha256(target.read_bytes()).hexdigest()
+        assert (store._root / rows[0].relative_path).read_bytes() == target.read_bytes()
+        with pytest.raises(WorkflowRunError) as duplicate:
+            await write()
+        assert duplicate.value.code == 'ARTIFACT_WRITE_CONFLICT'
+        assert len(repository.list_artifacts('run-artifacts', cursor=0, limit=20)) == 1
+    else:
+        expected = asyncio.CancelledError if mode == 'cancel' else RuntimeError if mode == 'registration' else WorkflowRunError
+        with pytest.raises(expected):
+            await write()
+        if mode == 'collision': assert target.read_text() == 'foreign'
+        else: assert not target.exists()
+        assert repository.list_artifacts('run-artifacts', cursor=0, limit=20) == ()
+    assert not list(target.parent.glob('.*.tmp'))
+    assert list(outsider.iterdir()) == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows path parsing')
+@pytest.mark.parametrize('name', ['../escape.txt', 'file.txt:secret', 'CON.txt', 'name. ', r'\\server\share\result.txt', r'C:relative.txt', r'\device.txt'])
+async def test_native_windows_output_rejects_ambiguous_paths(artifacts, name):
+    store, repository = artifacts
+    writer = store.writer(run_id='run-artifacts', node_id='export', execution_id='native', purpose='result')
+    with pytest.raises(WorkflowRunError) as invalid:
+        await writer.write_binary_output(output_path=name, content=b'value', mime_type='application/octet-stream', expected_identity='missing')
+    assert invalid.value.code == 'ARTIFACT_PATH_INVALID'
+    assert repository.list_artifacts('run-artifacts', cursor=0, limit=20) == ()

@@ -133,12 +133,12 @@ def _verified_process(kernel, job, pid: int, birth: int):
         raise OSError("Worker process ownership unavailable")
     try:
         member = wintypes.BOOL()
-        if (
-            _windows_handle_birth(kernel, process) != birth
-            or not kernel.IsProcessInJob(process, job, ctypes.byref(member))
-            or not member.value
-        ):
-            raise OSError("Worker process does not own this Job")
+        if _windows_handle_birth(kernel, process) != birth:
+            raise OSError("Worker process does not own this Job: birth mismatch")
+        if not kernel.IsProcessInJob(process, job, ctypes.byref(member)):
+            raise ctypes.WinError(ctypes.get_last_error())  # type: ignore[attr-defined]
+        if not member.value:
+            raise OSError("Worker process does not own this Job: not a member")
         return process
     except BaseException:
         kernel.CloseHandle(process)

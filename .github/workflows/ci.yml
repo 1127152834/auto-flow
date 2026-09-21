@@ -21,7 +21,7 @@ jobs:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --directory apps/backend --locked
-      - run: uv run --directory apps/backend pytest -vv --tb=short tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_recovery.py
+      - run: uv run --directory apps/backend pytest -vv --tb=short tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_recovery.py tests/integration/test_workflow_artifacts.py
       - run: python scripts/pm9-windows-native-probe.py
       - uses: actions/upload-artifact@v4
         if: always()

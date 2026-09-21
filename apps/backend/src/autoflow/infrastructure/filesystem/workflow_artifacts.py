@@ -670,6 +670,10 @@ class WorkflowArtifactStore:
         cancellation: CancellationToken | None,
         expected_identity: str | None,
     ) -> str:
+        if sys.platform == "win32":
+            if expected_identity not in {None, "missing"}:
+                raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 现有文件原子替换尚未接通", 501)
+            return self._write_windows_new_output(run_id=run_id, node_id=node_id, execution_id=execution_id, purpose=purpose, output_path=output_path, content=content, mime_type=mime_type, cancellation=cancellation)
         target, directory_fd = self._open_output_parent(run_id, output_path)
         try:
             lock_fd = self._acquire_output_lock(target)
@@ -968,6 +972,10 @@ class WorkflowArtifactStore:
         mime_type: str,
         cancellation: CancellationToken | None,
     ) -> str:
+        if sys.platform == "win32":
+            if append:
+                raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 现有文件追加尚未接通", 501)
+            return self._write_windows_new_output(run_id=run_id, node_id=node_id, execution_id=execution_id, purpose=purpose, output_path=output_path, content=content.encode(encoding), mime_type=mime_type, cancellation=cancellation)
         target, directory_fd = self._open_output_parent(run_id, output_path)
         try:
             lock_fd = self._acquire_output_lock(target)
@@ -991,6 +999,32 @@ class WorkflowArtifactStore:
             )
         finally:
             self._release_output_lock(lock_fd)
+
+    def _write_windows_new_output(
+        self, *, run_id: str, node_id: str, execution_id: str | None,
+        purpose: str, output_path: str, content: bytes, mime_type: str,
+        cancellation: CancellationToken | None,
+    ) -> str:
+        from .windows_output import output_target, pinned_parent, publish, staged_output
+
+        target = output_target(self._root / "runs" / run_id / "outputs", output_path)
+        snapshot: Path | None = None
+        with pinned_parent(target), staged_output(target) as descriptor:
+            try:
+                for start in range(0, len(content), 1024 * 1024):
+                    self._raise_if_cancelled(cancellation)
+                    self._write_all(descriptor, content[start:start + 1024 * 1024])
+                os.fsync(descriptor)
+                snapshot, size, digest = self._snapshot_from_descriptor(source_fd=descriptor, run_id=run_id, cancellation=cancellation, suffix=target.suffix or ".bin")
+                self._raise_if_cancelled(cancellation)
+                publish(descriptor, target)
+                self._raise_if_cancelled(cancellation)
+                self._repository.register_artifact(run_id=run_id, artifact_id=str(uuid4()), node_id=node_id, execution_id=execution_id, relative_path=snapshot.relative_to(self._root).as_posix(), size=size, sha256=digest, mime_type=mime_type, purpose=purpose)
+            except BaseException:
+                if snapshot is not None:
+                    self._remove_unowned(snapshot, self._root / "runs" / run_id)
+                raise
+        return str(target)
 
     def _write_text_locked(
         self,
