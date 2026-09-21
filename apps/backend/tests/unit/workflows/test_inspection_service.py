@@ -450,6 +450,48 @@ async def test_shutdown_stops_active_recording_before_browser_cleanup(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_browser_cleanup_failure_retains_session_and_resource_for_retry(
+    monkeypatch, tmp_path
+):
+    selected = profile()
+    executable = tmp_path / "cloakbrowser"
+    executable.write_text("")
+    resources = Resources()
+    workers = Workers()
+    service = WorkflowInspectionService(
+        profiles=Profiles(selected),
+        installed_kernels=lambda: [InstalledKernel("public", "146.0.1.1", executable, 1)],
+        resolve_proxy=lambda _profile, _session: _none(),
+        read_license=lambda: None,
+        resources=resources,  # type: ignore[arg-type]
+        workers=workers,  # type: ignore[arg-type]
+    )
+    workers.service = service
+    opened = await service.open(profile_id="profile-1")
+    stop = workers.stop
+    attempts = 0
+
+    async def fail_once(session_id):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise RuntimeError("synthetic process tree cleanup failure")
+        await stop(session_id)
+
+    monkeypatch.setattr(workers, "stop", fail_once)
+    with pytest.raises(RuntimeError, match="process tree cleanup failure"):
+        await service.close(opened["sessionId"])
+    assert (await service.status())["isOpen"] is True
+    assert resources.owner_id == opened["sessionId"]
+    assert workers.busy() is True
+
+    assert await service.close(opened["sessionId"]) == {"success": True}
+    assert (await service.status())["isOpen"] is False
+    assert resources.owner_id is None
+    assert workers.busy() is False
+
+
+@pytest.mark.asyncio
 async def test_recording_retries_drained_events_after_transient_database_failure(
     monkeypatch, tmp_path
 ):

@@ -67,6 +67,11 @@
       "command": "pytest recording command contract/repository/HTTP/service and full migration-head compatibility; vitest recorder HTTP recovery/parity; formal Electron smoke",
       "result": "录制及命令专项56项、迁移兼容74项、前端相关80项通过；正式Electron darwin-arm64通过，evidence formal-recording-electron-72nI0V",
       "covers": "commandId同请求幂等、异请求冲突、成功/失败/待确认查询、响应丢失回查、重启持久化、崩溃不重放、0018到0019增量升级及正式UI全链路"
+    },
+    {
+      "command": "pytest -q apps/backend/tests/unit/workflows/test_inspection_service.py",
+      "result": "10 passed",
+      "covers": "进程树清理首次失败时浏览器会话、Profile/内核资源锁和工作区互斥继续占用；同一会话重试成功后才释放资源并报告关闭"
     }
   ],
   "realBrowser": {
@@ -88,7 +93,5 @@
     "formalElectronUiTested": true,
     "windowsTested": false
   },
-  "remaining": [
-    "验证底层进程树清理失败重试，不提前释放互斥资源"
-  ]
+  "remaining": []
 }
