@@ -64,6 +64,14 @@ class EnvironmentImpactView(ApiModel):
     blockers: list[dict[str, Any]]
 
 
+class ManualInputFieldView(ApiModel):
+    name: str
+    type: Literal['string', 'number', 'integer', 'boolean', 'array', 'object']
+    required: bool = False
+    enum: list[Any] | None = None
+    title: str | None = None
+
+
 class ManualItemView(ApiModel):
     manual_item_id: str
     project_id: str
@@ -75,6 +83,8 @@ class ManualItemView(ApiModel):
     status_revision: int
     expires_at: datetime | None
     allowed_targets: list[Any]
+    input_schema: list[ManualInputFieldView] = Field(default_factory=list)
+    can_resume: bool = False
     resume_started: bool
     reason: str | None
     created_at: datetime | None = None

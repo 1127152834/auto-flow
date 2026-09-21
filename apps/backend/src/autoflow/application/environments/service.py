@@ -505,10 +505,15 @@ class EnvironmentService:
 
     def list_manual(self, project_id: str, **query):
         self._project(project_id)
-        return self.environments.list_manual_items(project_id, **query)
+        items, total = self.environments.list_manual_items(project_id, **query)
+        # ponytail: at most 200 checkpoints per page; batch this lookup if it becomes measurable.
+        if self.manual_runtime is not None:
+            items = [self.manual_runtime.describe(item) for item in items]
+        return items, total
 
     def get_manual(self, project_id: str, manual_item_id: str):
-        return self.environments.get_manual_item(project_id, manual_item_id)
+        item = self.environments.get_manual_item(project_id, manual_item_id)
+        return self.manual_runtime.describe(item) if self.manual_runtime is not None else item
 
     def resume_manual(self, project_id: str, key: str, manual_item_id: str, payload: dict[str, Any]):
         item = self.get_manual(project_id, manual_item_id)

@@ -23,7 +23,7 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
   const base = `/api/v1/projects/${encode(projectId)}`
   // Environment deletes are stored in the same project operation table, so the
   // shared by-idempotency-key lookup recovers an uncertain outcome.
-  const operations = createOperationCommand(client, projectId)
+  const operations = createOperationCommand<Schema['EnvironmentOperationSnapshot']>(client, projectId)
   return {
     list: (query: EnvironmentQuery, signal?: AbortSignal) => {
       const state = query.state ? `&state=${encode(query.state)}` : ''
@@ -82,11 +82,11 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
       return client.request<{ items: ManualItem[]; page: number; pageSize: number; total: number }>(`${base}/manual-items?${params.toString()}`, { signal })
     },
     getManual: (manualItemId: string, signal?: AbortSignal) => client.request<ManualItem>(`${base}/manual-items/${encode(manualItemId)}`, { signal }),
-    resumeManual: (manualItemId: string, body: { checkpointRevision: number; expectedStatusRevision: number; targetNodeId?: string; inputs?: Record<string, unknown> }, key: string) => client.request<EnvironmentOperation>(`${base}/manual-items/${encode(manualItemId)}/resume`, {
-      method: 'POST',
-      headers: { 'Idempotency-Key': key },
-      body,
-    }),
+    lookupManualResume: (key: string) => operations.lookup(key, 'resumeManual', () => true),
+    resumeManual: async (manualItemId: string, body: { checkpointRevision: number; expectedStatusRevision: number; targetNodeId?: string; inputs?: Record<string, unknown> }, key: string) => {
+      const operation = await operations.submit(`${base}/manual-items/${encode(manualItemId)}/resume`, body, key, 'resumeManual', () => true)
+      return { operation, outcome: operation.result }
+    },
     finishManual: (manualItemId: string, body: Schema['ManualFinishRequest'], key: string) => client.request<EnvironmentOperation>(`${base}/manual-items/${encode(manualItemId)}/finish`, {
       method: 'POST',
       headers: { 'Idempotency-Key': key },

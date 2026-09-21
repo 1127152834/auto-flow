@@ -80,7 +80,16 @@ try {
   }
   report.checks.push('all six project tabs open settled production pages')
   if (browserVersion) {
-    report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion)
+    report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion, { resumeManual: async (projectId, item) => {
+      await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/manual/' + item.manualItemId)}`)
+      await waitFor(cdp, "Boolean(document.querySelector('input[type=radio][value=continue]:not(:disabled)'))", 'live manual continuation ready')
+      await cdp.evaluate("document.querySelector('input[type=radio][value=continue]').click()")
+      await fill('[aria-label="确认码"]', 'verified')
+      await capture('manual-declared-input')
+      await click('提交处理结果')
+      await waitFor(cdp, "!document.querySelector('[aria-label=确认码]')", 'manual command accepted and directory restored')
+      report.checks.push('manual detail submits declared input to the same real worker and selects one direct successor')
+    } })
     report.volume = await checkProjectVolume(sidecar, cdp, click, report.runtime, userData)
     report.boundary = 'production management, real runtime and renderer volume; live Sheets and physical installation remain pending'
     await capture('volume')

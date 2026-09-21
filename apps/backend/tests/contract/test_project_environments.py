@@ -1182,3 +1182,17 @@ def test_retained_update_reacquires_source_without_displacing_live_owner(tmp_pat
     assert owner is None
     next_source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': environment_id})
     service.reserve(project_id, next_source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+
+
+def test_manual_deadline_round_trips_utc_in_detail_and_list(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'manual-timezone')
+    deadline = datetime(2026, 9, 21, 7, 15, tzinfo=UTC)
+    item = service.open_manual(project_id, {'taskId': str(uuid4()), 'runId': str(uuid4()), 'instanceId': instance.instance_id, 'expiresAt': deadline})
+    base = f"/api/v1/projects/{project_id}/manual-items"
+    detail = client.get(base + '/' + item['manualItemId']).json()
+    listed = client.get(base).json()['items'][0]
+    for result in [detail, listed]:
+        assert datetime.fromisoformat(result['expiresAt']) == deadline
+        assert datetime.fromisoformat(result['createdAt']).tzinfo is not None

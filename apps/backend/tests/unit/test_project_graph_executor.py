@@ -194,3 +194,16 @@ async def test_subflow_failure_or_cancel_never_exports_partial_variables(failure
     else:
         assert (await executor.run({'document': {'nodes': nodes, 'edges': edges}}))['status'] == 'failed'
     assert executor.context.variables == {'answer': 'unchanged'}
+
+
+@pytest.mark.asyncio
+async def test_manual_declared_inputs_and_selected_successor_reach_same_live_context_once():
+    executed = []
+    async def emit(kind, node_id, _visit, payload):
+        if kind == 'nodeAttempt' and payload['status'] == 'started': executed.append(node_id)
+    async def request(*_args): return {'result': {'action': 'resume', 'inputs': {'code': '001'}, 'targetNodeId': 'chosen'}}
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False, capability=request)
+    document = {'nodes': [node('manual', 'project_manual', reason='code', inputSchema=[{'name': 'code', 'type': 'string', 'required': True}], resumeTargets=[{'nodeId': 'chosen'}, {'nodeId': 'other'}]), node('chosen', 'set_variable', variableName='answer', variableValue='code-{code}'), node('other', 'set_variable', variableName='answer', variableValue='wrong'), node('join', 'set_variable', variableName='joined', variableValue='{answer}')], 'edges': [{'source': 'manual', 'target': 'chosen'}, {'source': 'manual', 'target': 'other'}, {'source': 'chosen', 'target': 'join'}, {'source': 'other', 'target': 'join'}]}
+    assert (await executor.run({'document': document}))['status'] == 'succeeded'
+    assert executor.context.variables == {'code': '001', 'answer': 'code-001', 'joined': 'code-001'}
+    assert executed == ['manual', 'chosen', 'join']

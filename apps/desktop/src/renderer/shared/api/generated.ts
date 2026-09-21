@@ -6181,6 +6181,25 @@ export type components = {
                 [key: string]: unknown;
             };
         };
+        /** ManualInputFieldView */
+        ManualInputFieldView: {
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "string" | "number" | "integer" | "boolean" | "array" | "object";
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+            /** Enum */
+            enum?: unknown[] | null;
+            /** Title */
+            title?: string | null;
+        };
         /** ManualItemPage */
         ManualItemPage: {
             /** Items */
@@ -6214,6 +6233,13 @@ export type components = {
             expiresAt: string | null;
             /** Allowedtargets */
             allowedTargets: unknown[];
+            /** Inputschema */
+            inputSchema?: components["schemas"]["ManualInputFieldView"][];
+            /**
+             * Canresume
+             * @default false
+             */
+            canResume: boolean;
             /** Resumestarted */
             resumeStarted: boolean;
             /** Reason */

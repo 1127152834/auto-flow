@@ -4996,7 +4996,7 @@
           },
           {
             "kind": "implementation_missing",
-            "detail": "生产 dispatcher/worker 均仅一个 owner，capacity=1；人工等待占槽，第二参数批次 blocked/Task queued。多 Run 并发尚未实现，不能以串行成功代替；补充架构方案 2026-09-21-pm9-multi-run-capacity.md 待确认。"
+            "detail": "生产 dispatcher/worker 均仅一个 owner，capacity=1；人工等待占槽，第二参数批次 blocked/Task queued。多 Run 并发尚未实现，不能以串行成功代替；补充架构方案 2026-09-21-pm9-multi-run-capacity.md 已批准，S5 待实施。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -11361,7 +11361,7 @@
           },
           {
             "kind": "implementation_missing",
-            "detail": "生产 dispatcher/worker 均仅一个 owner，capacity=1；人工等待占槽，第二参数批次 blocked/Task queued。多 Run 并发尚未实现，不能以串行成功代替；补充架构方案 2026-09-21-pm9-multi-run-capacity.md 待确认。"
+            "detail": "生产 dispatcher/worker 均仅一个 owner，capacity=1；人工等待占槽，第二参数批次 blocked/Task queued。多 Run 并发尚未实现，不能以串行成功代替；补充架构方案 2026-09-21-pm9-multi-run-capacity.md 已批准，S5 待实施。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -12984,15 +12984,28 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "checks": [
           {
-            "kind": "implementation_missing",
-            "detail": "manual_runtime.command 明确拒绝指定 targetNodeId 和非空 inputs；需合法位置/声明输入契约及 UI，不能删除校验"
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "manual-declared：真实 worker 接受声明输入并只走合法后继；缺必填、错误类型/枚举、额外字段、非法目标、缺前置和旧版本拒绝；检查点不变",
+            "level": "automated_production_integration"
           },
+          {
+            "file": "apps/backend/tests/unit/test_project_graph_executor.py",
+            "symbol": "test_manual_declared_inputs_and_selected_successor_reach_same_live_context_once",
+            "scope": "同上下文声明输入、仅选定分支、汇合一次",
+            "level": "automated_unit"
+          }
+        ],
+        "gaps": [
           {
             "kind": "test_missing",
             "detail": "缺少声明输入与合法继续位置实现后的 token/子调用栈不满足、缺必填输入、非法跳转明确反馈场景；当前仅验证一律拒绝额外输入/目标"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "S2 Mac 源 Electron/HTTP/真实 worker 已通过；当前新候选三平台打包和跨片并行人工仍待 S3 验收。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -14281,6 +14294,18 @@
             "symbol": "test_manual_resume_timeout_and_repeat_have_one_winner",
             "scope": "重复继续冲突，继续真正开始后到期不能覆盖 resolved",
             "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "manual-declared：真实 worker 接受声明输入并只走合法后继；缺必填、错误类型/枚举、额外字段、非法目标、缺前置和旧版本拒绝；检查点不变",
+            "level": "automated_production_integration"
+          },
+          {
+            "file": "apps/backend/tests/unit/test_project_graph_executor.py",
+            "symbol": "test_manual_declared_inputs_and_selected_successor_reach_same_live_context_once",
+            "scope": "同上下文声明输入、仅选定分支、汇合一次",
+            "level": "automated_unit"
           }
         ],
         "gaps": [
@@ -14289,8 +14314,8 @@
             "detail": "持久命令的并发交错和真实 worker TTL 竞争需补；目标/声明输入当前不支持"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "manual_runtime.command 明确拒绝指定 targetNodeId 和非空 inputs；需合法位置/声明输入契约及 UI，不能删除校验"
+            "kind": "production_evidence_missing",
+            "detail": "S2 Mac 源 Electron/HTTP/真实 worker 已通过；当前新候选三平台打包和跨片并行人工仍待 S3 验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -14907,6 +14932,18 @@
             "symbol": "test_manual_resume_timeout_and_repeat_have_one_winner",
             "scope": "重复继续冲突，继续真正开始后到期不能覆盖 resolved",
             "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "manual-declared：真实 worker 接受声明输入并只走合法后继；缺必填、错误类型/枚举、额外字段、非法目标、缺前置和旧版本拒绝；检查点不变",
+            "level": "automated_production_integration"
+          },
+          {
+            "file": "apps/backend/tests/unit/test_project_graph_executor.py",
+            "symbol": "test_manual_declared_inputs_and_selected_successor_reach_same_live_context_once",
+            "scope": "同上下文声明输入、仅选定分支、汇合一次",
+            "level": "automated_unit"
           }
         ],
         "gaps": [
@@ -14915,8 +14952,8 @@
             "detail": "持久命令的并发交错和真实 worker TTL 竞争需补；目标/声明输入当前不支持"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "manual_runtime.command 明确拒绝指定 targetNodeId 和非空 inputs；需合法位置/声明输入契约及 UI，不能删除校验"
+            "kind": "production_evidence_missing",
+            "detail": "S2 Mac 源 Electron/HTTP/真实 worker 已通过；当前新候选三平台打包和跨片并行人工仍待 S3 验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"

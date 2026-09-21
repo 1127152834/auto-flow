@@ -95,6 +95,10 @@ it('opens on the current scene, keeps the two overview shortcuts, and lists live
   // 人工处理在运行记录里只有一份详情，环境页不再自己开一份浏览器
   enter.click()
   expect(onNavigate).toHaveBeenCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
+  screen.getByRole('button', { name: '继续原任务' }).click()
+  expect(onNavigate).toHaveBeenLastCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
+  screen.getByRole('button', { name: '明确结束' }).click()
+  expect(onNavigate).toHaveBeenLastCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
   // 任务与批次入口是可点击的真实跳转，不是编造的编号
   screen.getAllByRole('button', { name: '查看任务' })[0].click()
   expect(onNavigate).toHaveBeenCalledWith({ projectId, tab: 'runs', runView: 'tasks', taskId: manualItem.taskId, taskTab: 'logs' })

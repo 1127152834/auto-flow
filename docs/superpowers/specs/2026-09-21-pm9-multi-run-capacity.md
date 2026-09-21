@@ -19,7 +19,7 @@
 
 ## 文件级实施与验证切片
 
-所有路径位于现有 PM9 独立工作区。每片先补能失败的实际断言，再改实现；本文件不是执行授权。
+所有路径位于现有 PM9 独立工作区。每片先补能失败的实际断言，再改实现；本轮继续实现指令已授权执行这些切片。
 
 - **S5.1 owner 隔离。** 修改 `application/workflows/dispatcher.py` 与 `infrastructure/process/project_workflow_worker.py`，审查所有 pause/resume/cancel/force_stop/shutdown/reconcile 的 owner 定位。先在现有 dispatcher/worker 单元与集成测试里证明两 owner 独立预算、取消、迟到事件、清理失败、同 ID 旧代次拒绝；生产容量仍保持 1。
 - **S5.2 资源集合租约。** 修改 `application/workflows/browser_resources.py` 和 `bootstrap/workflows.py` 的项目装配；复用既有 OS 锁及 Profile guard，不改主目录 Studio 工作。测试同内核/同来源独立副本并发、不同内核、第二资源获取失败、非最后租约释放、未知清理保留；用另一个进程验证 Studio/内核修改/Profile 删除仍不能越过锁。若现有保护协议无法支持内部共享，先更新该设计，不绕过检查。
@@ -28,4 +28,4 @@
 
 ## 审批与退出
 
-依赖用户确认本新增的多 Run 架构范围。可独立于 S1–S4 排期，不能用“已确认 PM9”代替本片设计审查。当前生产仍保留单槽与安全锁。无论批准与否，既有有界缺陷修复和证据整理继续；完整 PM9 退出前 releaseAccepted=false。
+本新增多 Run 架构已于 2026-09-21 随用户“继续实现”批准。当前生产在 S5 完成安全租约验证前仍保留单槽与安全锁；完整 PM9 退出前 releaseAccepted=false。

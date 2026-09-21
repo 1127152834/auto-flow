@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-21",
+  "status": "source_verified_platform_pending",
+  "releaseAccepted": false,
+  "slice": "S2 declared manual inputs and continuation",
+  "checks": {
+    "backend": "122 passed",
+    "ui": "12 passed",
+    "scripts": "100 passed",
+    "realWorker": "manual-declared/manual-resume/manual-expire-race: 3 passed; after stale-version assertions and UTC fix manual-declared/manual-double/manual-finish: 3 passed",
+    "desktop": "manual-desktop-darwin-arm64.json passed with actual form submission",
+    "ruff": "passed",
+    "mypy": "399 source files passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "openapi": "generated and checked"
+  },
+  "fixedDefects": [
+    "Manual values and selected target previously ignored by worker/scheduler",
+    "Production manual page could not continue without alternate targets",
+    "SQLite naive manual deadlines were interpreted as local time, prematurely locking UI",
+    "Environment inline actions bypassed shared manual detail",
+    "Uncertain resume response now queries original command and preserves draft"
+  ],
+  "limitations": [
+    "New candidate three-platform packaged verification pending",
+    "Parallel manual execution requires S3; no cross-process restoration"
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/domain/workflows/manual_contract.py": "c0ea0366a41de430f00e9db39829182bdfb27e58629df2b34ab6ae12bbdb6757",
+    "apps/backend/src/autoflow/application/project_runs/manual_runtime.py": "237e8fd6c379a0bc563ce6687a2059c8c9f657c347ca579fdf6355b7dde7dbf8",
+    "apps/backend/src/autoflow/application/workflows/runtime.py": "26435c807704ebb1c254f8acf12ffffd0de24c0a0bc94ce9b7647ed034d8d8f7",
+    "apps/backend/src/autoflow/infrastructure/database/environments.py": "16799ff4529e1ab738dbb6d2cb1b8315130af159ec316ca28672a45148c7fc51",
+    "apps/desktop/src/renderer/domains/project-runs/pages/ManualDetailPage.tsx": "14417fb1ce99bf704e0d1e1945754687a198410f802f94f8eb408c04703d42f4"
+  }
+}

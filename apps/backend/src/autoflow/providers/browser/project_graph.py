@@ -67,6 +67,7 @@ class _ProjectManualNode(ModuleExecutor):
         reply = await self.request(node_id, visit, 'manual', {
             'reason': context.resolve_value(config.get('reason', '等待人工处理')),
             'timeoutSeconds': config.get('timeoutSeconds', 1800),
+            'availableVariables': sorted(context.variables),
         })
         if 'error' in reply:
             return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
@@ -74,7 +75,11 @@ class _ProjectManualNode(ModuleExecutor):
         if result['action'] == 'resume':
             if name := config.get('variableName'):
                 context.set_variable(name, result.get('inputs', {}))
-            return ModuleResult(True, data=result.get('inputs', {}))
+            declared = {field['name'] for field in config.get('inputSchema', [])}
+            for name, value in result.get('inputs', {}).items():
+                if name in declared:
+                    context.set_variable(name, value)
+            return ModuleResult(True, data=result.get('inputs', {}), target_node_id=result.get('targetNodeId'))
         context.stop_workflow = True
         return ModuleResult(result.get('complete') is True and result.get('outcome') == 'succeeded', data=result, error='MANUAL_FINISHED')
 

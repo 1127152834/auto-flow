@@ -181,6 +181,12 @@ class _WorkflowScheduler:
             if result.branch
             else self.graph.get_next_nodes(node_id)
         )
+        if result.target_node_id is not None:
+            if result.target_node_id not in next_nodes:
+                self._remember_failure(node_id, ModuleResult(False, error="MANUAL_TARGET_INVALID"))
+                self.halted = True
+                return
+            next_nodes = [result.target_node_id]
         await self._notify_successors(next_nodes, node_id)
 
     async def _dispatch(self, node: WorkflowNode) -> ModuleResult:
@@ -326,7 +332,7 @@ class _WorkflowScheduler:
             return
         loop_state = self.context.loop_stack[-1]
         loop_state.setdefault("node_id", loop_node.id)
-        body_scope = self._collect_loop_body_nodes(loop_node.id, body_nodes, done_nodes)
+        body_scope = self.graph.loop_body_scope(loop_node.id)
         while not self.halted and not self.context.stop_workflow and self._loop_should_continue(loop_state):
             self._raise_if_cancelled()
             self.context.should_continue = False
@@ -398,20 +404,6 @@ class _WorkflowScheduler:
             if isinstance(value_variable, str) and value_variable:
                 self.context.set_variable(value_variable, value)
 
-    def _collect_loop_body_nodes(
-        self, loop_id: str, roots: list[str], done_nodes: list[str]
-    ) -> set[str]:
-        blocked = {loop_id, *done_nodes}
-        collected: set[str] = set()
-        queue = list(roots)
-        while queue:
-            current = queue.pop(0)
-            if current in blocked or current in collected:
-                continue
-            collected.add(current)
-            queue.extend(self._full_successors(current))
-        return collected
-
     async def _reset_nodes(self, node_ids: set[str]) -> None:
         async with self.lock:
             for node_id in node_ids:
@@ -479,13 +471,7 @@ class _WorkflowScheduler:
         return False
 
     def _full_successors(self, node_id: str) -> list[str]:
-        successors = list(self.graph.adjacency.get(node_id, []))
-        for targets in self.graph.condition_branches.get(node_id, {}).values():
-            successors.extend(targets)
-        for targets in self.graph.loop_branches.get(node_id, {}).values():
-            successors.extend(targets)
-        successors.extend(self.graph.error_branches.get(node_id, []))
-        return successors
+        return self.graph.full_successors(node_id)
 
     def _is_back_edge(self, target_id: str, source_id: str) -> bool:
         return target_id == source_id or source_id in self._reachable_from(target_id)
@@ -544,6 +530,7 @@ def _reported_result(result: ModuleResult, context: ExecutionContext) -> ModuleR
         log_level=result.log_level,
         skipped=result.skipped,
         is_timeout=result.is_timeout,
+        target_node_id=result.target_node_id,
     )
 
 

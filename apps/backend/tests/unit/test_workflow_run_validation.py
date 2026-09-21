@@ -361,3 +361,21 @@ def test_prepare_limits_nested_call_depth_with_call_path():
         nodes.extend([header, body]); edges.append({'id': str(index), 'source': header['id'], 'target': body['id']})
     payload['content'].update(nodes=nodes, edges=edges)
     with pytest.raises(WorkflowError, match='嵌套层数过深.*call.*child-32'): prepare_run(payload)
+
+
+@pytest.mark.parametrize('bad', ['reserved-input', 'wrong-type', 'end-target', 'past-target', 'missing-target-declaration'])
+def test_prepare_rejects_unsafe_manual_declarations_before_checkpoint(bad):
+    payload = subflow_payload()
+    payload['content']['nodes'] = [n for n in payload['content']['nodes'] if n['id'] in {'call', 'end'}]
+    manual = payload['content']['nodes'][0]
+    manual.update(type='project_manual', data={'moduleType': 'project_manual', 'reason': 'check', 'inputSchema': [{'name': 'code', 'type': 'string'}], 'resumeTargets': []})
+    payload['content']['edges'] = [{'id': 'end', 'source': 'call', 'target': 'end'}]
+    if bad == 'reserved-input': manual['data']['inputSchema'][0]['name'] = 'executionGeneration'
+    elif bad == 'wrong-type': manual['data']['inputSchema'][0]['type'] = {}
+    elif bad == 'end-target': manual['data']['resumeTargets'] = [{'nodeId': 'end'}]
+    elif bad == 'past-target': manual['data']['resumeTargets'] = [{'nodeId': 'call'}]
+    else:
+        other = deepcopy(manual); other.update(id='other', type='set_variable', data={'moduleType': 'set_variable', 'variableName': 'x', 'variableValue': 1})
+        payload['content']['nodes'].append(other)
+        payload['content']['edges'].extend([{'id': 'other', 'source': 'call', 'target': 'other'}, {'id': 'other-end', 'source': 'other', 'target': 'end'}])
+    with pytest.raises(WorkflowError): prepare_run(payload)

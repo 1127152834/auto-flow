@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-link-race", "data-old-candidate", "manual-resume", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -250,6 +250,11 @@ async def test_real_project_batch_http(
                 if scenario == 'manual-double':
                     nodes.append({'id': 'second-manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 1000}, 'data': {'moduleType': 'project_manual', 'reason': '第二次确认', 'timeoutSeconds': 30}})
                     document['content']['edges'].append({'id': 'second-checkpoint', 'source': 'after-manual', 'target': 'second-manual'})
+            if scenario == 'manual-declared':
+                next(n for n in nodes if n['id'] == 'manual')['data'].update(inputSchema=[{'name': 'code', 'type': 'string', 'required': True, 'enum': ['001', '002']}, {'name': 'confirmed', 'type': 'boolean', 'required': True}], resumeTargets=[{'nodeId': 'after-manual', 'requiredVariables': ['code', 'confirmed']}, {'nodeId': 'other-manual', 'requiredVariables': ['absent']}])
+                next(n for n in nodes if n['id'] == 'after-manual')['data']['variableValue'] = 'code-{code}'
+                nodes.append({'id': 'other-manual', 'type': 'set_variable', 'position': {'x': 600, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'wrong', 'variableValue': 'must not execute'}})
+                document['content']['edges'].append({'id': 'alternate', 'source': 'manual', 'target': 'other-manual'})
             saved_workflow = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
             assert saved_workflow.status_code == 201, saved_workflow.text
             workflow_id = saved_workflow.json()['id']
@@ -353,19 +358,35 @@ async def test_real_project_batch_http(
                     waiting = next((item for item in manual if item['status'] == 'waiting'), None)
                     if waiting:
                         late_resume = asyncio.create_task(client.post(prefix + f"/manual-items/{waiting['manualItemId']}/resume", headers={'Idempotency-Key': str(uuid4())}, json={'checkpointRevision': waiting['checkpointRevision'], 'expectedStatusRevision': waiting['statusRevision']}))
-                if scenario in {'manual-resume', 'manual-finish', 'manual-double'}:
+                if scenario in {'manual-resume', 'manual-declared', 'manual-finish', 'manual-double'}:
                     manual = await client.get(prefix + '/manual-items')
                     assert manual.status_code == 200, manual.text
                     for item in manual.json()['items']:
                         if item['status'] != 'waiting' or item['manualItemId'] in handled_manual:
                             continue
                         manual_id = item['manualItemId']
-                        if scenario in {'manual-resume', 'manual-double'}:
+                        if scenario in {'manual-resume', 'manual-declared', 'manual-double'}:
                             body = {'checkpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision']}
                             action = 'resume'
                         else:
                             body = {'expectedCheckpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision'], 'outcome': 'succeeded', 'reason': '已核验', 'retainEnvironment': {'enabled': False}}
                             action = 'finish'
+                        if scenario == 'manual-declared':
+                            original = (await client.get(prefix + f'/manual-items/{manual_id}')).json()
+                            assert original['canResume'] and original['inputSchema'][0]['name'] == 'code'
+                            valid = {**body, 'targetNodeId': 'after-manual', 'inputs': {'code': '001', 'confirmed': True}}
+                            invalid = [{**valid, 'inputs': {}}, {**valid, 'inputs': {'code': 1, 'confirmed': True}}, {**valid, 'inputs': {'code': '003', 'confirmed': True}}, {**valid, 'inputs': {'code': '001', 'confirmed': True, 'extra': 1}}, {**valid, 'targetNodeId': 'manual'}, {**valid, 'targetNodeId': 'other-manual'}]
+                            for rejected_body in invalid:
+                                rejected_key = str(uuid4())
+                                rejected = await client.post(prefix + f'/manual-items/{manual_id}/resume', headers={'Idempotency-Key': rejected_key}, json=rejected_body)
+                                assert rejected.status_code == 422, rejected.text
+                                assert (await client.get(prefix + f'/manual-items/{manual_id}')).json() == original
+                                assert (await client.get(prefix + f'/operations/by-idempotency-key/{rejected_key}')).status_code == 404
+                            for revision in ['checkpointRevision', 'expectedStatusRevision']:
+                                rejected = await client.post(prefix + f'/manual-items/{manual_id}/resume', headers={'Idempotency-Key': str(uuid4())}, json={**valid, revision: valid[revision] + 1})
+                                assert rejected.status_code == 409, rejected.text
+                                assert (await client.get(prefix + f'/manual-items/{manual_id}')).json() == original
+                            body = valid
                         manual_key = str(uuid4())
                         if scenario == 'manual-double' and item['runId'] in manual_receipts:
                             previous_id, previous_key, previous_body, operation_id = manual_receipts[item['runId']]
@@ -488,7 +509,12 @@ async def test_real_project_batch_http(
                     for task in tasks:
                         attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
                         assert len([a for a in attempts if a['nodeId'] == 'read-input']) == 1
-                        assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario in {'manual-resume', 'manual-double'})
+                        if scenario == 'manual-declared':
+                            assert not any(a['nodeId'] == 'other-manual' for a in attempts)
+                            outputs = (await client.get(prefix + f"/tasks/{task['taskId']}/outputs")).json()['items']
+                            assert any(output['value'] == 'code-001' for output in outputs)
+
+                        assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario in {'manual-resume', 'manual-declared', 'manual-double'})
                 else:
                     assert detail['statusCounts']['timed_out'] == 1, detail
                     if scenario == 'manual-expire-race':

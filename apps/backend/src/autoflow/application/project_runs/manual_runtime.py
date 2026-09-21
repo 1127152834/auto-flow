@@ -9,7 +9,11 @@ from uuid import uuid4
 from sqlalchemy import select, text
 
 from autoflow.domain.projects.models import ProjectError
-from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
+from autoflow.domain.workflows.manual_contract import validate_resume
+from autoflow.infrastructure.database.environment_models import (
+    ProjectEnvironmentInstanceRow,
+    ProjectManualItemRow,
+)
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
@@ -38,6 +42,12 @@ class ProjectManualRuntime:
                 WorkflowRunEventRow.payload['manualItemId'].as_string() == item['manualItemId'],
             ).order_by(WorkflowRunEventRow.sequence.desc()).limit(1))
 
+    def describe(self, item):
+        checkpoint = self.checkpoint(item)
+        if checkpoint is None:
+            return item
+        return {**item, 'inputSchema': checkpoint.payload.get('inputSchema', []), 'canResume': True}
+
     def owns(self, item):
         checkpoint = self.checkpoint(item)
         if checkpoint is not None:
@@ -55,10 +65,8 @@ class ProjectManualRuntime:
         checkpoint = self.checkpoint(item)
         if checkpoint is None or checkpoint.payload.get('manualItemId') != item['manualItemId']:
             raise ProjectError('MANUAL_TRANSITION_LOST', '人工检查点不存在', 409)
-        if action == 'resume' and (payload.get('targetNodeId') is not None or payload.get('inputs')):
-            # The current editor exposes no declared manual inputs or alternate
-            # continuation targets. Reject rather than silently ignore a choice.
-            raise ProjectError('VALIDATION_ERROR', '当前检查点只支持从原节点继续，不能指定跳转或额外输入', 422)
+        if action == 'resume':
+            validate_resume(checkpoint.payload, payload)
         kind = 'resumeManual' if action == 'resume' else 'finishManual'
         operation = self.environments._command(key, kind, project_id, item['instanceId'], {
             'scope': kind, 'projectId': project_id, 'manualItemId': item['manualItemId'], 'request': payload,
@@ -71,8 +79,10 @@ class ProjectManualRuntime:
                 session.execute(text('BEGIN IMMEDIATE'))
                 row = session.get(ProjectManualItemRow, item['manualItemId'])
                 run = session.get(WorkflowRunRow, item['runId'])
+                instance = session.get(ProjectEnvironmentInstanceRow, row.instance_id) if row and row.instance_id else None
                 expected_checkpoint = payload.get('checkpointRevision', payload.get('expectedCheckpointRevision'))
                 if (row is None or run is None or run.status != 'waiting_manual'
+                    or instance is None or instance.active_run_id != run.id or instance.active_task_id != row.task_id or instance.state != 'waiting_manual'
                     or run.execution_generation != checkpoint.execution_generation
                     or row.status != 'waiting' or row.status_revision != payload['expectedStatusRevision']
                     or row.checkpoint_revision != expected_checkpoint
@@ -103,15 +113,22 @@ class ProjectManualRuntime:
         if instance is None or instance.active_run_id != run_id:
             raise ProjectError('CAPABILITY_SCOPE_DENIED', '人工处理实例与任务不一致', 403)
         args = request['arguments']
-        if set(args) != {'reason', 'timeoutSeconds'} or not isinstance(args['reason'], str) or type(args['timeoutSeconds']) not in {int, float} or not 0 < args['timeoutSeconds'] <= 86400:
+        if set(args) - {'reason', 'timeoutSeconds', 'availableVariables'} or not {'reason', 'timeoutSeconds'} <= set(args) or not isinstance(args.get('availableVariables', []), list) or any(not isinstance(name, str) for name in args.get('availableVariables', [])) or not isinstance(args['reason'], str) or type(args['timeoutSeconds']) not in {int, float} or not 0 < args['timeoutSeconds'] <= 86400:
             raise ProjectError('CAPABILITY_REQUEST_INVALID', '人工处理配置无效', 422)
         with self.sessions() as session:
             previous = session.scalar(select(WorkflowRunEventRow).where(WorkflowRunEventRow.run_id == run_id, WorkflowRunEventRow.node_visit_id == request['nodeVisitId'], WorkflowRunEventRow.kind == 'checkpoint'))
             if previous is not None:
                 raise ProjectError('MANUAL_TRANSITION_LOST', '该节点访问已建立人工检查点', 409)
+        with self.sessions() as session:
+            run = session.get(WorkflowRunRow, run_id)
+            prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
+            node = next(node for node in prepared.execution_plan['nodes'] if node['nodeId'] == request['nodeId'])
+            config = node['data'].get('config', node['data'])
+            contract = {'inputSchema': config.get('inputSchema', []), 'resumeTargets': config.get('resumeTargets', []), 'availableVariables': args.get('availableVariables', [])}
         item = self.environments.open_manual(project_id, {
             'taskId': task_id, 'runId': run_id, 'instanceId': instance.instance_id,
             'checkpointRevision': 1, 'reason': args['reason'],
+            'allowedTargets': contract['resumeTargets'],
             'expiresAt': datetime.now(UTC) + timedelta(seconds=args['timeoutSeconds']),
         })
         with self.sessions() as session:
@@ -121,6 +138,7 @@ class ProjectManualRuntime:
                 'kind': 'checkpoint', 'nodeId': request['nodeId'], 'nodeVisitId': request['nodeVisitId'], 'attempt': 1,
                 'occurredAt': datetime.now(UTC), 'payload': {
                     'version': 1, 'manualItemId': item['manualItemId'], 'checkpointRevision': 1,
+                    **contract,
                     'continuation': 'liveWorker', 'preparedContentId': repository.get_run(run_id=run_id).prepared_content_id,
                 },
             })
@@ -148,7 +166,7 @@ class ProjectManualRuntime:
                         self.dispatcher.resume_manual(run_id, generation)
                         operation = self.environments.environments.operation_by_key(intent.idempotency_key)
                         self.environments.environments.complete_operation(operation, {'item': resumed, 'run': {'runId': run_id, 'status': 'running'}}, None, datetime.now(UTC))
-                        return {'action': 'resume', 'inputs': {}}
+                        return {'action': 'resume', 'inputs': decision['payload'].get('inputs', {}), 'targetNodeId': decision['payload'].get('targetNodeId')}
                     self.dispatcher.resume_manual(run_id, generation)
                     return {'action': 'finish'}
                 if _aware(datetime.fromisoformat(item['expiresAt'])) <= datetime.now(UTC):

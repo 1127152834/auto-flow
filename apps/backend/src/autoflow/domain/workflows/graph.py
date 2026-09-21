@@ -183,6 +183,27 @@ class ExecutionGraph:
     def get_prev_nodes(self, node_id: str) -> list[str]:
         return list(self.reverse_adjacency.get(node_id, []))
 
+    def full_successors(self, node_id: str) -> list[str]:
+        successors = list(self.adjacency.get(node_id, []))
+        for targets in self.condition_branches.get(node_id, {}).values():
+            successors.extend(targets)
+        for targets in self.loop_branches.get(node_id, {}).values():
+            successors.extend(targets)
+        successors.extend(self.error_branches.get(node_id, []))
+        return successors
+
+    def loop_body_scope(self, loop_id: str) -> set[str]:
+        blocked = {loop_id, *self.get_loop_done_nodes(loop_id)}
+        collected: set[str] = set()
+        queue = self.get_loop_body_nodes(loop_id)
+        while queue:
+            current = queue.pop()
+            if current in blocked or current in collected:
+                continue
+            collected.add(current)
+            queue.extend(self.full_successors(current))
+        return collected
+
     def _forward_reachable(self, node_id: str) -> set[str]:
         seen: set[str] = set()
         stack = [node_id]

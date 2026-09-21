@@ -8,10 +8,10 @@
   "remaining": [
     "PM6 historical service-account live Sheets and system credential evidence exists; current PM9 packaged full-chain and desktop OAuth remain unverified. Prior run removed local credentials; current authorization availability is not established.",
     "Windows/Intel physical installer and native dialogs remain pending. ARM DMG mount/copy/launch and native Excel open/import/save/export passed; Gatekeeper, other native routes, current packaged credential lifecycle, signing/notarization and complete uninstall acceptance remain pending.",
-    "Parallel graphs containing loop/manual nodes are rejected; cross-process manual replay and undeclared jump/input are unsupported.",
+    "Parallel graphs containing loop/manual nodes are rejected; cross-process manual replay and undeclared jump/input are unsupported; S2 declared inputs and direct successors are implemented.",
     "Historical full-spec coverage remains partial; no blanket promotion of 251 entries.",
     "Windows native workflow file output and orphan cleanup without native ownership evidence remain unsupported/refused.",
-    "Frozen project subflows, declared manual inputs/targets, branch isolation and Windows enhancements are approved as S1–S5; S1 source implementation is verified, remaining slices are in progress.",
+    "Frozen project subflows, declared manual inputs/targets, branch isolation and Windows enhancements are approved as S1–S5; S1/S2 source implementations are verified; S3–S5 are in progress.",
     "Production dispatcher and worker support one active Run. Concurrent Task acceptance (FLOW-A02/DATA-E2E-06) needs the approved independent multi-Run owner/resource lease implementation; sequential ARM packaged evidence is not concurrent acceptance."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
@@ -69,8 +69,8 @@
   "remainingReport": "completion-gaps.md",
   "deliveryStatus": "input_environment_fix_local_passed_new_candidate_ci_pending",
   "developmentSlice": {
-    "id": "S1",
+    "id": "S2",
     "status": "implemented_source_verified_platform_pending",
-    "report": "subflow-follow-through.json"
+    "report": "manual-follow-through.json"
   }
 }

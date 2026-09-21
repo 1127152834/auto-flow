@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { createServer } from 'node:http'
 
 // Real Studio HTTP -> project batch -> child worker -> browser -> data/End.
-export async function checkProjectRuntime(baseUrl, token, browserVersion) {
+export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks = {}) {
   const server = createServer((request, response) => {
     if (request.url === '/login') response.setHeader('Set-Cookie', 'pm9=logged-in; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax')
     response.setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -38,10 +38,12 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
       node('login', 'open_page', { url: site + '/login' }),
       node('read', 'get_element_info', { selector: '#account', attribute: 'text', variableName: 'account' }),
       node('write', 'project_data', { operation: 'createRecord', variableName: 'saved', tableGrant: grant(target, 'createRecord'), arguments: { tableId: target.table.tableId, datasetGeneration: target.table.datasetGeneration, values: { [target.fieldId]: `{account}-{${parameter}}` } } }),
-      node('manual', 'project_manual', { reason: '核验登录后继续', timeoutSeconds: 30 }),
+      node('manual', 'project_manual', { reason: '核验登录后继续', timeoutSeconds: 60, inputSchema: [{ name: 'confirmation', title: '确认码', type: 'string', required: true }], resumeTargets: [{ nodeId: 'accepted', title: '确认后保存', requiredVariables: ['confirmation'] }, { nodeId: 'alternate', title: '其他分支' }] }),
+      node('accepted', 'set_variable', { variableName: 'humanConfirmation', variableValue: 'human-{confirmation}' }),
+      node('alternate', 'set_variable', { variableName: 'unselected', variableValue: 'must-not-run' }),
       node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: "{saved['ref']['recordKey']['value']}", recordTargets: [{ recordRef: "{saved['ref']}", expectedLinkRevision: "{saved['linkRevision']}", replaceAllowed: false }] } }),
-    ], edges: [edge('query', 'condition'), edge('condition', 'login', 'true'), edge('login', 'read'), edge('read', 'write'), edge('write', 'manual'), edge('manual', 'end')] })
-    const runPolicy = { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 600, manualDeadlineSeconds: 30 }
+    ], edges: [edge('query', 'condition'), edge('condition', 'login', 'true'), edge('login', 'read'), edge('read', 'write'), edge('write', 'manual'), edge('manual', 'accepted'), edge('manual', 'alternate'), edge('accepted', 'end'), edge('alternate', 'end')] })
+    const runPolicy = { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 600, manualDeadlineSeconds: 60 }
     async function run(workflowId, environmentPolicy, parameterSchema = [], parameters = {}, expectedStatus = 'succeeded', inputPlan = { inputs: [] }, followUp = null, options = {}) {
       const maxTasks = options.maxTasks ?? 1
       const automation = followUp ? null : options.automation ?? await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId, inputPlan, parameterSchema, environmentPolicy, runPolicy: { ...runPolicy, maxTasks } })
@@ -56,7 +58,9 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
         const manual = await api(prefix + '/manual-items')
         for (const item of manual.items.filter(item => item.status === 'waiting' && !handled.has(item.manualItemId))) {
           await options.beforeResume?.(item)
-          await api(`${prefix}/manual-items/${item.manualItemId}/resume`, { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision })
+          const body = { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision, ...(item.inputSchema?.length ? { inputs: { confirmation: 'verified' }, targetNodeId: 'accepted' } : {}) }
+          if (item.inputSchema?.length && hooks.resumeManual) await hooks.resumeManual(project.projectId, item, body)
+          else await api(`${prefix}/manual-items/${item.manualItemId}/resume`, body)
           handled.add(item.manualItemId)
         }
         const state = await api(`${prefix}/batches/${batchId}`)
@@ -77,6 +81,8 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion) {
     }
     const first = await run(workflow.id, { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }, [{ parameterId: parameter, name: '后缀', type: 'string', required: true }], { [parameter]: '中文' })
     assert.equal(first.resumedManualItems, 1)
+    assert.equal(first.outputs.find(output => output.name === 'humanConfirmation')?.value, 'human-verified')
+    assert.equal(first.attempts.some(attempt => attempt.nodeId === 'alternate'), false)
     const records = await api(`${prefix}/tables/${target.table.tableId}/records?datasetGeneration=${target.table.datasetGeneration}`)
     assert.equal(records.total, 1)
     assert.equal(records.items[0].values[0].value, '001-中文')

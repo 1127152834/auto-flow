@@ -100,16 +100,6 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
   const automaticItems = runningItems.filter(item => !manualItems.some(entry => entry.instanceId === item.instanceId))
   const openTask = (taskId: string) => onNavigate({ projectId, tab: 'runs', runView: 'tasks', taskId, taskTab: 'logs' })
   const openBatch = (batchId: string) => onNavigate({ projectId, tab: 'runs', runView: 'batches', batchId })
-  const resume = useMutation({
-    mutationFn: (item: { manualItemId: string; checkpointRevision: number; statusRevision: number }) => api.resumeManual(item.manualItemId, { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision }, crypto.randomUUID()),
-    onSuccess: () => { notify({ title: '已请求继续原任务', tone: 'success' }); void cache.invalidateQueries({ queryKey: prefix }) },
-    onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
-  })
-  const finish = useMutation({
-    mutationFn: (item: { manualItemId: string; checkpointRevision: number; statusRevision: number }) => api.finishManual(item.manualItemId, { expectedCheckpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision, outcome: 'failed', reason: '人工明确结束', retainEnvironment: { enabled: false } }, crypto.randomUUID()),
-    onSuccess: () => { notify({ title: '人工处理已结束，未自动保存环境', tone: 'success' }); void cache.invalidateQueries({ queryKey: prefix }) },
-    onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
-  })
   const openInstance = useMutation({
     mutationFn: (item: { instanceId: string; instanceUseGeneration: number }) => api.openInstance(item.instanceId, item.instanceUseGeneration, crypto.randomUUID()),
     onSuccess: () => { notify({ title: '已请求进入当前浏览器', tone: 'success' }); void cache.invalidateQueries({ queryKey: prefix }) },
@@ -173,10 +163,10 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
             items={manualItems}
             loading={manual.isLoading}
             error={manual.error ? safeProjectError(manual.error) : undefined}
-            disabled={actionsDisabled || resume.isPending || finish.isPending}
+            disabled={actionsDisabled}
             onRetry={() => void manual.refetch()}
-            onResume={item => resume.mutate(item)}
-            onFinish={item => finish.mutate(item)}
+            onResume={openManualItem}
+            onFinish={openManualItem}
             onOpen={openManualItem}
             onOpenTask={openTask}
             onOpenBatch={openBatch}

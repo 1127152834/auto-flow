@@ -88,3 +88,10 @@ XE-A23 的消耗邮箱筛选与共享人员/新账号后继已在下述新本机
 S1 接通既有 canvas gateway 与共享 WorkflowRuntime：prepare 校验依赖/调用环/32 层深度/节点归属；显式 JSON 输入与声明输出隔离；调用路径绑定独立 visit；父端核对冻结定义、父调用存活及原 Task 权限；子 End 和未隔离的并行控制仍拒绝。源 HTTP/真实 worker/browser 验证 prepare 后修改源子图不改变两 Task 结果、同一子图双调用独立写入，根 End 关联。父 Run 取消测试核对迟到写拒绝且首次写入保留。
 
 S2–S5 继续实施；当前源链不代表三平台打包和实机验收完成。覆盖状态未批量升级，releaseAccepted=false。
+
+
+## S2 声明人工输入与合法继续位置（2026-09-21）
+
+已接通 frozen inputSchema/resumeTargets、严格字段/类型/枚举、当前调用前置变量、同一 scope 直接后继和原检查点/Run/实例所有权 CAS。worker 只注入声明变量，scheduler 只执行选择分支。人工详情支持字段表单和无候选的原位置继续；环境入口统一进入同一详情。响应丢失保留原键和草稿，先查原 operation，不创建新命令。
+
+实际 Electron 表单暴露并修复 SQLite 人工日期缺时区：数据库公共映射现在将 UTC 日期带时区输出，详情/列表一致，东八区不再误判到期。122 后端、12 UI、100 脚本检查；两个三场景真实 worker 测试组和完整源码桌面运行链通过。证据见 manual-follow-through.json、manual-desktop-darwin-arm64.json。当前源码证据不代表新候选三平台或实机放行；S3 分支隔离/人工排队、S4 Windows、S5 多 Run 仍未完成。

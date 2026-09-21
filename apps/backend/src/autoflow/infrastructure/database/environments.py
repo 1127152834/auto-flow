@@ -1159,12 +1159,12 @@ def _manual(row: ProjectManualItemRow) -> dict[str, Any]:
         "checkpointRevision": row.checkpoint_revision,
         "status": row.status,
         "statusRevision": row.status_revision,
-        "expiresAt": row.expires_at,
+        "expiresAt": _aware(row.expires_at) if row.expires_at is not None else None,
         "allowedTargets": row.allowed_targets,
         "resumeStarted": row.resume_started,
         "reason": row.reason,
-        "createdAt": row.created_at,
-        "updatedAt": row.updated_at,
+        "createdAt": _aware(row.created_at),
+        "updatedAt": _aware(row.updated_at),
     }
 
 

@@ -2179,9 +2179,9 @@
           "status": "planned",
           "evidenceCount": 0,
           "plannedTestExists": false,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 2,
           "gapKinds": [
-            "implementation_missing",
+            "production_evidence_missing",
             "test_missing"
           ]
         },
@@ -2410,9 +2410,8 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 3,
           "gapKinds": [
-            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -2521,9 +2520,8 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 3,
           "gapKinds": [
-            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -2599,8 +2597,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 205,
-    "withNoLocatedAssertion": 46,
+    "withAssertions": 206,
+    "withNoLocatedAssertion": 45,
     "statuses": {
       "partially_verified": 188,
       "planned": 63

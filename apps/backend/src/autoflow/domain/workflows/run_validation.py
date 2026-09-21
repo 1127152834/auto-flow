@@ -7,6 +7,7 @@ from typing import Any
 from .canvas_subflows import CanvasSubflowGraph
 from .catalog import runnable_module_types
 from .graph import WorkflowDefinition
+from .manual_contract import validate_declaration
 from .models import WorkflowError, WorkflowIssue
 from .validation import project_document
 
@@ -62,6 +63,9 @@ def prepare_run(document: object) -> PreparedWorkflow:
         ends = [n['id'] for n in subset['nodes'] if n['data']['moduleType'] == 'project_end']
         if len(ends) > 1 or any(edge['source'] in ends for edge in subset['edges']):
             raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 必须是唯一的最终节点，不能有后续连线', 422)
+        for node in subset['nodes']:
+            if node['data']['moduleType'] == 'project_manual':
+                validate_declaration(node['data'], node['id'], subset['nodes'], subset['edges'])
         _validate_lifecycle_graph(subset['nodes'], subset['edges'], ends)
         valid, errors = WorkflowDefinition.from_raw(subset).validate()
         if not valid and (members or not scope) and not all(n["data"]["moduleType"] in _DEFAULT_CONFIGS for n in nodes):
@@ -250,7 +254,7 @@ def _validate_lifecycle_graph(nodes, edges, ends):
     # this shape only after the shared Runtime isolates branch control state.
     if owns_control and (
         sum(not value for value in incoming.values()) != 1 or any(
-            len(outgoing[n['id']]) > 1 and (
+            len(outgoing[n['id']]) > 1 and not (n['data']['moduleType'] == 'project_manual' and n['data'].get('resumeTargets')) and (
                 n['data']['moduleType'] not in {'condition', 'loop', 'foreach', 'foreach_dict'}
                 or len({edge.get('sourceHandle') for edge in edges if edge['source'] == n['id']}) != len(outgoing[n['id']])
             ) for n in nodes

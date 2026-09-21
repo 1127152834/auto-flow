@@ -18,6 +18,7 @@ class ModuleResult:
     log_level: str | None = None
     skipped: bool = False
     is_timeout: bool = False
+    target_node_id: str | None = None
 
 
 class ModuleExecutor(ABC):

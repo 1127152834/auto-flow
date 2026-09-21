@@ -25,6 +25,8 @@
 
 沿用现有 resume 请求的 `inputs` 与 `targetNodeId`；冻结节点配置新增 `inputSchema` 和 `resumeTargets`。无配置保持现有空输入/原位置行为。第一版目标只能是检查点直接后继，且必须在同一调用与分支内；不支持跳回已执行节点、跨循环/调用边界、跳到 End 或绕过 join。错误在接受命令之前返回 422，并列出字段/目标原因。
 
+S2 字段契约：`inputSchema` 是 `{name, type, required?, enum?, title?}` 数组，沿用 JSON 的 string/number/integer/boolean/array/object 类型；名称不允许隐藏系统绑定。`resumeTargets` 是 `{nodeId, title?, requiredVariables?}` 数组；requiredVariables 检查当前调用变量或本次声明输入存在。worker 只传当前变量名，不传敏感值，parent 从冻结节点保存声明和该 owning worker 的变量名快照。多候选必须选择一个目标；没有候选保持原位置继续，单候选不显式选择时仍检查前置条件。
+
 检查点事件保存 schema/targets 的冻结摘要。服务端先校验精确键、类型、必填/枚举和目标，再在已有事务中校验项目状态、checkpointRevision、statusRevision、Run 代次、TTL 和拥有的实例。失败不改检查点；resume/finish/expire/stop 只有一个有效转换。输入仅绑定声明变量，不能覆盖执行上下文、capability 或隐藏系统变量。
 
 worker 的 `_ProjectManualNode` 将服务端已校验的继续目标作为独立控制结果交给共享 `_WorkflowScheduler`，声明输入先绑定到当前调用/分支变量。显式选择时只放行选定的直接后继，其他出边按既有条件路由的未选路径处理，不执行、不产生副作用；无 targetNodeId 时维持原路由。不能仅让 API 接受目标而忽略调度消费。验收必须包含两个候选后继、仅所选节点写入的正向断言。
