@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-017-file-watcher-trigger",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -10,7 +10,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["file_watcher_trigger"],
+  "nodes": [
+    "file_watcher_trigger"
+  ],
   "implemented": [
     "保留文件或目录路径、created/modified/deleted/any类型、文件名通配符、无限或有限等待及结果变量语义",
     "保留递归目录快照、1秒检查间隔、修改时间判断和同轮最后一个匹配事件结果",
@@ -40,10 +42,19 @@
     "userDatabaseTouched": false,
     "browserStarted": false,
     "mockExecutionUsedForBackendEvidence": false,
-    "formalElectronUiTested": false
+    "formalElectronUiTested": true
   },
   "remaining": [
-    "正式Electron真实UI中选择路径、保存、关闭重开、运行并触发四种文件事件",
-    "macOS和Windows对文件修改时间精度、权限错误和大目录停止延迟分别记录实机结果"
-  ]
+    "macOS和Windows对文件修改时间精度、权限错误和大目录停止延迟分别记录实机结果",
+    "正式打包入口仍需平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-file-watcher.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-file-watcher-electron-ifbe3I/result.json",
+    "covers": "正式 Studio 真实 UI 配置临时目录和文件模式，保存后启动真实 worker，外部创建本地文件，验证事件变量、后续日志和清理",
+    "boundary": "本地临时目录且只验证created事件，无用户数据库、浏览器或正式打包入口"
+  }
 }
