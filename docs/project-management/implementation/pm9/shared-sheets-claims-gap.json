@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-21",
+  "status": "confirmed_implementation_gap",
+  "releaseAccepted": false,
+  "productionCandidate": "82c067c90f8ff177c932087b1b35627936b9f470",
+  "requirements": [
+    "DATA-ID-06",
+    "DATA-SH-13",
+    "DATA-SH-14"
+  ],
+  "diagnostic": "diagnostics/shared-sheet-lease.py",
+  "command": "cd apps/backend && PYTHONPATH=.:src uv run pytest ../../docs/project-management/implementation/pm9/diagnostics/shared-sheet-lease.py -q",
+  "result": "1 failed, 2 warnings in 2.09s",
+  "scope": "Two real HTTP bindings and pulls in one SQLite workspace; actual select_required returns ready for both with different local lease keys for the same physical Sheet A-1. No browser side effects executed.",
+  "sourceEvidence": [
+    "apps/backend/src/autoflow/domain/project_runs/input_selection.py:LeaseKey",
+    "apps/backend/src/autoflow/infrastructure/database/project_claims.py:_candidates",
+    "apps/backend/src/autoflow/infrastructure/database/project_run_models.py:ProjectRecordLeaseRow"
+  ],
+  "proposal": "docs/superpowers/specs/2026-09-21-pm9-shared-sheets-claims.md",
+  "implementationApproval": "pending; not included in earlier S1-S5 or pending R1-R5 question"
+}

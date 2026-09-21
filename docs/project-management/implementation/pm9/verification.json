@@ -7,6 +7,7 @@
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
+    "Confirmed shared Sheets Task-claim gap: identical physical rows in two projects receive different local lease keys; shared identity and ambiguous-binding admission are missing. See shared-sheets-claims-gap.json and proposed shared-sheets-claims spec; not merely missing tests.",
     "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
     "32 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",

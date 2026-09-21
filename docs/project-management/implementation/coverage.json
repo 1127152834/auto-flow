@@ -5318,8 +5318,12 @@
         "checks": [],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "当前 LeaseKey 仅 local/project/table/generation；实际两个绑定对同物理行生成不同 leaseKey。缺少 Workspace 共享来源身份及不同身份列的领取阻断；见 shared-sheets-claims-gap.json。失败探针不是通过的覆盖证据。"
+          },
+          {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：跨项目同一物理 Sheet 行共享排他，而本地业务状态独立；不据邻近测试推定覆盖"
+            "detail": "缺少实现后的通过回归和真实 worker 竞争验收；现有失败探针只定位缺陷，不构成已覆盖。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -8321,8 +8325,12 @@
         "checks": [],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "当前 LeaseKey 仅 local/project/table/generation；实际两个绑定对同物理行生成不同 leaseKey。缺少 Workspace 共享来源身份及不同身份列的领取阻断；见 shared-sheets-claims-gap.json。失败探针不是通过的覆盖证据。"
+          },
+          {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：P/Q 任务共享物理 lease，释放后按 Q 自己状态领取；不据邻近测试推定覆盖"
+            "detail": "缺少实现后的通过回归和真实 worker 竞争验收；现有失败探针只定位缺陷，不构成已覆盖。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -8362,8 +8370,12 @@
         "checks": [],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "当前 LeaseKey 仅 local/project/table/generation；实际两个绑定对同物理行生成不同 leaseKey。缺少 Workspace 共享来源身份及不同身份列的领取阻断；见 shared-sheets-claims-gap.json。失败探针不是通过的覆盖证据。"
+          },
+          {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：未证明共享身份对应时保存第二绑定但阻止相关领取；不据邻近测试推定覆盖"
+            "detail": "缺少实现后的通过回归和真实 worker 竞争验收；现有失败探针只定位缺陷，不构成已覆盖。"
           }
         ],
         "statusBeforeReview": "planned"

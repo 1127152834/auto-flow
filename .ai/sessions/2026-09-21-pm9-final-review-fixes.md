@@ -44,3 +44,8 @@ Windows 广集复验 d21197ad / 35585675170：239 passed、27 skipped、1 failed
 ## Excel 重复行补证（confirmed）
 
 复用既有 host selection token/HTTP 导入与真实工作簿，断言两行同内容身份不同、单行状态与内容修改不影响另一行、本地新建/删除后源 XLSX 字节相同。新增测试先修正了 inspection 已完成返回 200 及只提交 fieldId/value 两个现有 HTTP 契约预期；没有生产修复。导入与占用保护 18 passed, 2 warnings in 15.24s。映射 219 有断言 / 32 未定位；原生面板与打包子条件保留。
+
+
+## 共享 Sheets 数据领取缺口（confirmed）
+
+实际双项目同物理 Sheet 同业务身份列 A-1 的两个 select_required 均 ready，键含各自 project/table/generation，公共键相等断言失败（1 failed in 2.09s）。这是实现缺失，不能以已有推送协调或原 32 条缺断言描述遮蔽。失败诊断独立保存在 docs/pm9/diagnostics，不加入常规通过回归或映射 checks。C1–C4 共享身份/事务/升级/生命周期方案已完成，proposed，等待架构确认；当前用户的 R1–R5 待确认问题不包含这一新片。生产源未变，releaseAccepted=false。

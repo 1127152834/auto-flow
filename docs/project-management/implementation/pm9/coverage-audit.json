@@ -790,6 +790,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 0,
           "gapKinds": [
+            "implementation_missing",
             "test_missing"
           ]
         },
@@ -1336,6 +1337,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 0,
           "gapKinds": [
+            "implementation_missing",
             "test_missing"
           ]
         },
@@ -1346,6 +1348,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 0,
           "gapKinds": [
+            "implementation_missing",
             "test_missing"
           ]
         },
