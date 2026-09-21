@@ -106,6 +106,8 @@ def _api():
     kernel = _windows_process_api()
     kernel.OpenJobObjectW.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.LPCWSTR]
     kernel.OpenJobObjectW.restype = wintypes.HANDLE
+    kernel.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+    kernel.AssignProcessToJobObject.restype = wintypes.BOOL
     kernel.IsProcessInJob.argtypes = [
         wintypes.HANDLE,
         wintypes.HANDLE,
@@ -125,10 +127,11 @@ def _api():
     return kernel
 
 
-def _verified_process(kernel, job, pid: int, birth: int):
+def _verified_process(kernel, job, pid: int, birth: int, *, owned_launcher: bool = False):
     from ctypes import wintypes
 
-    process = kernel.OpenProcess(0x1000, False, pid)
+    access = 0x1000 | (0x0100 | 0x0001 if owned_launcher else 0)
+    process = kernel.OpenProcess(access, False, pid)
     if not process:
         raise OSError("Worker process ownership unavailable")
     try:
@@ -138,7 +141,11 @@ def _verified_process(kernel, job, pid: int, birth: int):
         if not kernel.IsProcessInJob(process, job, ctypes.byref(member)):
             raise ctypes.WinError(ctypes.get_last_error())  # type: ignore[attr-defined]
         if not member.value:
-            raise OSError("Worker process does not own this Job: not a member")
+            # Windows venv python.exe is a launcher outside its child's Job.
+            # Only the live supervisor may attach its directly owned, birth-
+            # verified launcher. Recovery never extends Job membership.
+            if not owned_launcher or not kernel.AssignProcessToJobObject(job, process):
+                raise OSError("Worker process does not own this Job: not a member")
         return process
     except BaseException:
         kernel.CloseHandle(process)
@@ -149,11 +156,11 @@ def record_worker_job(
     directory: Path, run_id: str, generation: int, name: str, pid: int, birth: int
 ) -> int:
     kernel = _api()
-    job = kernel.OpenJobObjectW(0x0004 | 0x0008, False, name)  # JOB_OBJECT_QUERY
+    job = kernel.OpenJobObjectW(0x0001 | 0x0004 | 0x0008, False, name)  # JOB_OBJECT_QUERY
     if not job:
         raise OSError("Worker Job ownership unavailable")
     try:
-        process = _verified_process(kernel, job, pid, birth)
+        process = _verified_process(kernel, job, pid, birth, owned_launcher=True)
         kernel.CloseHandle(process)
         proof = {
             "runId": run_id,

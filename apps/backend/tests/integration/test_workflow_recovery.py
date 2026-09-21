@@ -208,11 +208,13 @@ async def test_native_windows_recovery_owns_job_and_descendants(tmp_path, monkey
     name = f'Local\\AutoFlow-{run_id}-1-{uuid4().hex}'
     code = """
 import subprocess, sys, time
-from autoflow.infrastructure.process.windows_job import create_worker_job
-job = create_worker_job()
-child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
-print(child.pid, flush=True)
-time.sleep(60)
+from autoflow.bootstrap.test_browser_worker import browser_worker_main
+def run(stopped):
+    child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
+    print(child.pid, flush=True)
+    time.sleep(60)
+    return 0
+browser_worker_main(run)
 """
     async def spawn(job_name):
         return await asyncio.create_subprocess_exec(sys.executable, '-c', code, env={**os.environ, 'AUTOFLOW_WORKER_JOB_NAME': job_name}, stdout=asyncio.subprocess.PIPE)

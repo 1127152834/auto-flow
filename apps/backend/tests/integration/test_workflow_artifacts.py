@@ -1345,3 +1345,32 @@ async def test_native_windows_output_rejects_ambiguous_paths(artifacts, name):
         await writer.write_binary_output(output_path=name, content=b'value', mime_type='application/octet-stream', expected_identity='missing')
     assert invalid.value.code == 'ARTIFACT_PATH_INVALID'
     assert repository.list_artifacts('run-artifacts', cursor=0, limit=20) == ()
+
+
+@pytest.mark.asyncio
+async def test_actual_worker_publishes_new_binary_and_registers_matching_snapshot(tmp_path):
+    import base64
+    import json
+
+    root = tmp_path / 'workspace'
+    target = tmp_path / 'worker-output' / 'result.txt'
+    content = 'worker 中文'.encode()
+    command = {'runId': 'native-output', 'workflowId': 'native-output', 'profileId': 'none', 'requiresBrowser': False, 'artifactRoot': str(root), 'document': {'nodes': [{'id': 'write', 'type': 'moduleNode', 'data': {'moduleType': 'base64', 'config': {'operation': 'base64_to_file', 'inputBase64': base64.b64encode(content).decode(), 'outputPath': str(target.parent), 'fileName': target.name}}}], 'edges': []}}
+    process = await asyncio.create_subprocess_exec(sys.executable, '-m', 'autoflow', '--workflow-worker', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        process.stdin.write((json.dumps(command) + '\n').encode())
+        await process.stdin.drain()
+        events = []
+        async with asyncio.timeout(20):
+            while line := await process.stdout.readline():
+                events.append(json.loads(line))
+            await process.wait()
+        assert process.returncode == 0, (events, (await process.stderr.read()).decode())
+        assert events[-1]['type'] == 'execution:completed'
+        facts = [event for event in events if event['type'] == 'artifact:registered']
+        assert len(facts) == 1
+        assert facts[0]['sha256'] == hashlib.sha256(content).hexdigest()
+        assert target.read_bytes() == (root / facts[0]['relativePath']).read_bytes() == content
+    finally:
+        if process.returncode is None: process.kill()
+        await process.wait()
