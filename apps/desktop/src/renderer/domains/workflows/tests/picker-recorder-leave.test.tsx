@@ -92,3 +92,10 @@ it('saves deletion of all previously saved review steps before leaving',async()=
  const next=await leave();await click('保存并结束会话');expect(await next.promise).toBe(true)
  expect((await recorderApi.readReview(documentId)).data?.events).toEqual([])
 })
+it('releases the consumed review after generating nodes',async()=>{
+ await browserApi.open();render(<Editor recorder/>);await click('开始录制')
+ addMockRecordingEvent({type:'input',selector:'#name',value:'已生成'})
+ await click('停止录制');await click('保存审查');await click('生成节点')
+ expect(store.getState().nodes).toHaveLength(1)
+ expect(getDocumentLeaveResources().some(item=>item.label==='未保存录制审查')).toBe(false)
+})

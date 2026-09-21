@@ -45,6 +45,11 @@
       "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<CloakBrowser> pytest test_b7_recording_cloakbrowser_flow.py（连续3次）及录制专项回归",
       "result": "真实浏览器用例连续3次通过；录制provider/service/repository/HTTP/真实浏览器19项通过；Ruff和mypy通过",
       "covers": "中文输入、点击去重、未来标签页、iframe元数据、跨origin导航尾部、事件去重和类型边界"
+    },
+    {
+      "command": "node scripts/smoke-studio-backend-b7-recording.mjs",
+      "result": "passed on formal Electron development build (darwin-arm64)",
+      "covers": "正式UI打开CloakBrowser、受信任键盘输入与点击、停止、服务端审查保存、生成预览、整批加入画布、真实HTTP/SQLite保存、录制浏览器清理、正常窗口关闭重开、独立CloakBrowser重放及进程清理；正式UI使用ASCII输入，中文输入由真实provider用例覆盖"
     }
   ],
   "realBrowser": {
@@ -63,11 +68,10 @@
     "workspace": "pytest temporary directory",
     "userDatabaseTouched": false,
     "mockExecutionUsedForBackendEvidence": false,
-    "formalElectronUiTested": false,
+    "formalElectronUiTested": true,
     "windowsTested": false
   },
   "remaining": [
-    "正式Electron真实UI完成录制、审查、生成、保存重开和独立运行",
     "按当前正式前端合同确认暂停/恢复是否仍为产品要求；现有UI和API仅暴露开始与停止",
     "验证底层进程树清理失败重试，不提前释放互斥资源"
   ]

@@ -359,7 +359,15 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     })
     emitAssistantUiEvent('fit_view', {})
     addLog({ level: 'success', message: `已根据录制生成 ${newNodes.length} 个节点` })
+    eventsRef.current = []
     setEvents([])
+    savedReviewRef.current = ''
+    setSavedReview('')
+    reviewRevisionRef.current = null
+    setReviewRevision(null)
+    originRef.current = null
+    sessionRef.current = null
+    sequenceRef.current = 0
     onClose()
   }, [addLog, onClose, autoWait, recording, busy, editing])
 

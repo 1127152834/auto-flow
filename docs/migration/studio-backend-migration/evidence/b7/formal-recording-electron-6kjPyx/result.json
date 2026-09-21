@@ -1,0 +1,34 @@
+{
+  "evidenceId": "BE-B7-recording-formal-electron",
+  "checkedAt": "2026-09-21T12:12:25.207Z",
+  "gitHead": "0ae61c672490f16f23191fa8407f6534be55afb2",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "mHbUUSorcle1BoC4MqM1P",
+  "profileId": "70f06465-636d-4d60-8c29-a68b7d893bc0",
+  "runId": "45ff0c22-2603-4300-bf51-f40e1268c353",
+  "generatedCount": 4,
+  "clickCount": 2,
+  "clickedBodies": [
+    "formal-recording",
+    "formal-recording"
+  ],
+  "checks": [
+    "临时工作区创建主应用 CloakBrowser Profile",
+    "通过正式浏览器面板打开可见 CloakBrowser 并导航到受控页面",
+    "macOS 真实键盘输入和按钮操作由录制器采集并显示在正式审查面板",
+    "停止后通过正式 UI 保存审查并预览生成节点",
+    "录制步骤整批加入画布并经真实 HTTP/SQLite 保存",
+    "原录制浏览器通过正式 UI 关闭，进程树完成清理",
+    "正常关闭并重开 Studio 后恢复录制生成的节点、连线和配置",
+    "独立 CloakBrowser 重放保存流程，输入和点击副作用与录制一致并完成清理"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "formal Studio UI through CDP plus macOS trusted keyboard events in CloakBrowser; no Store access",
+    "windowClose": "BrowserWindow.close normal lifecycle; no destroy bypass"
+  }
+}
