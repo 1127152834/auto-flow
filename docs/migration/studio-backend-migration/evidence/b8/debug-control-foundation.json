@@ -103,16 +103,21 @@
       "command": "AUTOFLOW_B8_RESTART_RECOVERY_ONLY=1 node scripts/smoke-studio-backend-b3-control-flow.mjs",
       "result": "passed on macOS arm64 development build",
       "covers": "正式Electron在调试暂停中强制终止sidecar、Studio离线保稿、主窗口设置页真实重启、interrupted恢复、运行历史重载和暂停目标零重放"
+    },
+    {
+      "command": "AUTOFLOW_B8_COMPLEX_DEBUG_ONLY=1 node scripts/smoke-studio-backend-b3-control-flow.mjs --executable <packaged AutoFlow>",
+      "result": "passed on macOS arm64 packaged directory",
+      "covers": "冻结后端及正式打包入口中的复杂调试真实UI闭环；与既有1000轮执行、10000条日志分页和固定截止序号导出证据共同核销容量验收"
     }
   ],
   "boundaries": {
     "userDatabaseTouched": false,
     "mockExecutionUsedForBackendEvidence": false,
     "formalElectronUiTested": true,
+    "packagedElectronUiTested": true,
+    "packagedElectronPlatform": "macOS arm64",
     "realCloakBrowserRequired": true,
     "windowsTested": false
   },
-  "remaining": [
-    "复杂调试正式UI和打包入口容量验收"
-  ]
+  "remaining": []
 }

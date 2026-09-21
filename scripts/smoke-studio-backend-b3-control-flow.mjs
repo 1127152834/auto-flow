@@ -38,7 +38,6 @@ try {
   execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basename(sourceKernel))])
 
   desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`, '--inspect=0'] })
-  assert.equal(desktop.packaged, false)
   main = desktop.cdp
   native = await connectCdp(desktop.inspectorUrl)
   await native.evaluate("globalThis.qaElectron=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');true")
@@ -184,7 +183,7 @@ try {
 
     const report = {
       evidenceId: 'BE-B8-formal-restart-recovery-electron', checkedAt: new Date().toISOString(), gitHead,
-      result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+      result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build',
       workflowId: saved.id, profileId: profile.id, runId: pausedRun.runId,
       sidecar: { crashedPid: sidecarPid, previousInstance, recoveredInstance: recoveredRuntime.sidecar.instanceId },
       assertions: { status: interrupted.status, errorCode: interrupted.error.code, resultCount: resultsAfterRestart.length, recoveryEvents }, checks,
@@ -279,7 +278,7 @@ try {
 
     const report = {
       evidenceId: 'BE-B8-formal-complex-debug-electron', checkedAt: new Date().toISOString(), gitHead,
-      result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+      result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build',
       workflowId: saved.id, profileId: profile.id,
       runIds: [loopRun.runId, trueRun.runId, falseRun.runId, parallelRun.runId], checks,
       assertions: {
