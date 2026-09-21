@@ -6,9 +6,10 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock
 
+from fastapi.testclient import TestClient
+
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.workflows.browser import WorkflowWorkerSession
-from fastapi.testclient import TestClient
 
 
 def _workflow() -> dict[str, object]:
@@ -376,6 +377,27 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     ]
     assert len(exported_lines) == 1
     assert exported_lines[0]["nodeId"] == "second"
+    client.app.state.workflow_services.commands._command_receipts.clear()
+    restored_command = client.get("/api/events/commands/debug-step-1")
+    assert restored_command.status_code == 200
+    assert restored_command.json()["action"] == "step"
+    restored_variables = client.get("/api/events/commands/debug-variables-1")
+    assert restored_variables.status_code == 200
+    assert restored_variables.json()["changes"] == [
+        {"name": "count", "value": 7},
+        {"name": "manual", "value": {"ready": True}},
+    ]
+    conflicting_retry = client.post(
+        f"/api/workflows/{workflow['id']}/debug/step",
+        json={
+            "commandId": "debug-step-1",
+            "runId": "debug-http-run",
+            "pauseId": "different-pause",
+            "controlRevision": 999,
+        },
+    )
+    assert conflicting_retry.status_code == 409
+    assert conflicting_retry.json()["error"] == "commandId 已用于不同请求"
 
 
 def test_external_webhook_resumes_real_worker_without_sidecar_token(

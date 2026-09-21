@@ -95,6 +95,20 @@ class WorkflowRunRepository(Protocol):
         self, run_id: str, artifact_id: str
     ) -> WorkflowArtifact | None: ...
 
+    def save_debug_command(
+        self,
+        run_id: str,
+        command_id: str,
+        *,
+        request_hash: str,
+        receipt: dict[str, Any],
+        http_status: int,
+    ) -> tuple[str, dict[str, Any], int]: ...
+
+    def get_debug_command(
+        self, command_id: str
+    ) -> tuple[str, dict[str, Any], int] | None: ...
+
 
 def _sanitize_profile(value: Any) -> Any:
     if isinstance(value, dict):

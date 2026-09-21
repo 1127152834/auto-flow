@@ -134,6 +134,35 @@ def test_recovery_does_not_reinterpret_retired_studio_payload(tmp_path: Path) ->
     assert created.status == "starting"
 
 
+def test_debug_command_receipt_survives_repository_recreation(tmp_path: Path) -> None:
+    database = tmp_path / "debug-command.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    WorkflowRunService(repository).start(_start())
+    receipt = {
+        "commandId": "debug-step-1",
+        "runId": "run-1",
+        "action": "step",
+        "success": True,
+        "error": None,
+    }
+
+    repository.save_debug_command(
+        "run-1",
+        "debug-step-1",
+        request_hash="a" * 64,
+        receipt=receipt,
+        http_status=200,
+    )
+
+    assert SqlAlchemyWorkflowRuns(sessions).get_debug_command("debug-step-1") == (
+        "a" * 64,
+        receipt,
+        200,
+    )
+
+
 def test_node_success_and_event_roll_back_in_one_transaction(tmp_path: Path) -> None:
     database = tmp_path / "atomic.sqlite3"
     migrate_database(database)

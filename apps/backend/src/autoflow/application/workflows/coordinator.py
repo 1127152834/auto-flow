@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import hashlib
 import json
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import asdict
@@ -471,15 +472,11 @@ class WorkflowRunCoordinator:
         request: Mapping[str, Any],
     ) -> tuple[dict[str, Any], int]:
         command_id = _required_string(request, "commandId")
-        fingerprint = json.dumps(
-            {"workflowId": workflow_id, "action": action, **dict(request)},
-            ensure_ascii=False,
-            allow_nan=False,
-            sort_keys=True,
-            separators=(",", ":"),
+        fingerprint = self._debug_fingerprint(
+            {"workflowId": workflow_id, "action": action, **dict(request)}
         )
         async with self._event_command_lock:
-            previous = self._command_receipts.get(command_id)
+            previous = self._debug_command(command_id)
             if previous is not None:
                 old_fingerprint, receipt, status = previous
                 if old_fingerprint != fingerprint:
@@ -523,7 +520,9 @@ class WorkflowRunCoordinator:
                 "error": error,
             }
             if error is not None:
-                self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                self._remember_debug_command(
+                    run_id, command_id, fingerprint, receipt, 409
+                )
                 return copy.deepcopy(receipt), 409
 
             waiter = asyncio.get_running_loop().create_future()
@@ -542,16 +541,22 @@ class WorkflowRunCoordinator:
                 if worker_error is not None:
                     receipt["success"] = False
                     receipt["error"] = worker_error
-                    self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                    self._remember_debug_command(
+                        run_id, command_id, fingerprint, receipt, 409
+                    )
                     return copy.deepcopy(receipt), 409
             except (RuntimeError, TimeoutError):
                 receipt["success"] = False
                 receipt["error"] = "调试命令未被运行进程确认"
-                self._command_receipts[command_id] = (fingerprint, receipt, 503)
+                self._remember_debug_command(
+                    run_id, command_id, fingerprint, receipt, 503
+                )
                 return copy.deepcopy(receipt), 503
             finally:
                 self._command_waiters.pop(command_id, None)
-            self._command_receipts[command_id] = (fingerprint, receipt, 200)
+            self._remember_debug_command(
+                run_id, command_id, fingerprint, receipt, 200
+            )
             return copy.deepcopy(receipt), 200
 
     async def debug_breakpoints(
@@ -612,15 +617,11 @@ class WorkflowRunCoordinator:
         request: Mapping[str, Any],
     ) -> tuple[dict[str, Any], int]:
         command_id = _required_string(request, "commandId")
-        fingerprint = json.dumps(
-            {"workflowId": workflow_id, "action": "variables", **dict(request)},
-            ensure_ascii=False,
-            allow_nan=False,
-            sort_keys=True,
-            separators=(",", ":"),
+        fingerprint = self._debug_fingerprint(
+            {"workflowId": workflow_id, "action": "variables", **dict(request)}
         )
         async with self._event_command_lock:
-            previous = self._command_receipts.get(command_id)
+            previous = self._debug_command(command_id)
             if previous is not None:
                 old_fingerprint, receipt, status = previous
                 if old_fingerprint != fingerprint:
@@ -653,7 +654,9 @@ class WorkflowRunCoordinator:
                 "error": error,
             }
             if error is not None:
-                self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                self._remember_debug_command(
+                    run_id, command_id, fingerprint, receipt, 409
+                )
                 return copy.deepcopy(receipt), 409
             waiter = asyncio.get_running_loop().create_future()
             self._command_waiters[command_id] = waiter
@@ -672,16 +675,22 @@ class WorkflowRunCoordinator:
                 if worker_error is not None:
                     receipt["success"] = False
                     receipt["error"] = worker_error
-                    self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                    self._remember_debug_command(
+                        run_id, command_id, fingerprint, receipt, 409
+                    )
                     return copy.deepcopy(receipt), 409
             except (RuntimeError, TimeoutError):
                 receipt["success"] = False
                 receipt["error"] = "变量修改未被运行进程确认"
-                self._command_receipts[command_id] = (fingerprint, receipt, 503)
+                self._remember_debug_command(
+                    run_id, command_id, fingerprint, receipt, 503
+                )
                 return copy.deepcopy(receipt), 503
             finally:
                 self._command_waiters.pop(command_id, None)
-            self._command_receipts[command_id] = (fingerprint, receipt, 200)
+            self._remember_debug_command(
+                run_id, command_id, fingerprint, receipt, 200
+            )
             return copy.deepcopy(receipt), 200
 
     async def on_worker_event(self, event: dict[str, object]) -> None:
@@ -1512,11 +1521,49 @@ class WorkflowRunCoordinator:
         return copy.deepcopy(receipt), 200
 
     def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
-        record = self._command_receipts.get(command_id)
+        record = self._debug_command(command_id)
         if record is None:
             raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)
         _, receipt, status = record
         return {**copy.deepcopy(receipt), "httpStatus": status}, 200
+
+    def _debug_command(
+        self, command_id: str
+    ) -> tuple[str, dict[str, Any], int] | None:
+        record = self._command_receipts.get(command_id)
+        if record is None:
+            record = self._repository.get_debug_command(command_id)
+            if record is not None:
+                self._command_receipts[command_id] = record
+        return record
+
+    def _remember_debug_command(
+        self,
+        run_id: str,
+        command_id: str,
+        fingerprint: str,
+        receipt: dict[str, Any],
+        status: int,
+    ) -> None:
+        record = self._repository.save_debug_command(
+            run_id,
+            command_id,
+            request_hash=fingerprint,
+            receipt=receipt,
+            http_status=status,
+        )
+        self._command_receipts[command_id] = record
+
+    @staticmethod
+    def _debug_fingerprint(payload: Mapping[str, Any]) -> str:
+        encoded = json.dumps(
+            payload,
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+        return hashlib.sha256(encoded).hexdigest()
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]:
         state = self._input_prompts.get(request_id)
