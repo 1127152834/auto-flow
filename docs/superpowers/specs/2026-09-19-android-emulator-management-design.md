@@ -2,12 +2,16 @@
 
 - 日期：2026-09-19
 - 版本：1.0
-- 状态：proposed；产品方向及本次文档编写已获用户授权，详细条款供实施前评审。本文件不表示功能已经实现或真实设备验收通过。
+- 状态：active implementation baseline（2026-09-22 用户已授权 AM1–AM4 实施；本文件仍不表示真实设备验收已经通过）。
 - 仓库：`1127152834/auto-flow`
 - 代码基线：`codex/architecture-baseline@5f07e2adadfd273c6483065d43272aeaf7ed74f0`
 - 文档分支：`codex/android-management-spec-20260919`
 - 配套文件：[实施计划](../plans/2026-09-19-android-emulator-management.md)、[范围决定](../../../.ai/decisions/2026-09-19-android-management-scope.md)
-- 本次授权边界：仅编写并提交文档；不修改业务代码、不安装依赖、不运行设备、不接入工作流、不合并到默认分支。
+- 原文档编写阶段授权边界：仅编写并提交文档；当前执行阶段已由用户另行授权在隔离 worktree 实施 AM1–AM4。仍不接入退役工作流、不覆盖主工作区改动、不自动合并默认分支。
+
+## 0. 当前执行基线校准（2026-09-22）
+
+本规格最初以 `codex/architecture-baseline@5f07e2adadfd273c6483065d43272aeaf7ed74f0` 编写。实施时以当前仓库 HEAD `a92f0688f206d4339ff4468c1871f3ccdd6816dc` 和隔离分支 `codex/android-management-complete` 为准；主工作区未提交改动不纳入本任务。当前 Alembic 唯一 head 为 `0019_recording_commands`，因此 AM1 增量迁移必须从该 head 继续，原文中 `pm07_environments` 只作为历史基线记录。规格中的功能边界不变：保留现有 Mac/Lima/ReDroid 和安全护栏，不恢复退役工作流执行链；真实设备、网络、账号条件不足时记录 `blocked`。
 
 ## 1. 目标与交付方式
 

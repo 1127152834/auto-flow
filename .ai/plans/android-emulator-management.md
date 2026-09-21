@@ -1,11 +1,10 @@
 # 安卓模拟器管理完善：阶段索引
 
 - 日期：2026-09-19
-- 状态：confirmed（规格及AM1实施授权）；blocked（执行环境准备）。
-- 代码基线：codex/architecture-baseline@5f07e2adadfd273c6483065d43272aeaf7ed74f0。
-- 规划分支：codex/android-management-spec-20260919。
-- 实施分支：codex/android-management-am1-20260919，起点0f7d6e5cf7eee8dd490a1209407f7f22e73c459b。
-- 当前阶段：T01基线准备受阻；业务代码和真实设备测试尚未开始。
+- 状态：confirmed（AM1–AM4 全量实施授权）；执行中。
+- 代码基线：`codex/project-management-pm9@a92f0688f206d4339ff4468c1871f3ccdd6816dc`。
+- 实施分支：`codex/android-management-complete`，隔离 worktree。
+- 当前阶段：基线重新校准已完成；AM1 从 T01 开始，真实设备条件按证据记录。
 
 正文保存在以下文件，不维护第二份规格：
 
@@ -16,14 +15,14 @@
 
 | 批次 | 任务 | 范围 | 状态 |
 | --- | --- | --- | --- |
-| AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | 已授权；T01准备受阻，T01未完成、T02–T07未开始 |
-| AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | 未开始；不因AM1授权自动执行 |
+| AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | 执行中 |
+| AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | 待 AM1 退出门槛 |
 | AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 未开始 |
 | AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 未开始 |
 
-## 当前阻塞
+## 当前校准
 
-GitHub连接器可以读取和提交仓库，但执行容器无法解析github.com，clone及Python3.11安装均失败；现有解释器为3.13.5，不符合工程要求。尚无完整checkout和基线测试结果，不得声称任何实施任务或AM1验收已完成。详细命令结果及续接入口见最新授权记录。
+当前唯一 Alembic head 为 `0019_recording_commands`；原计划中以 `pm07_environments` 为 AM1 父节点的表述已 superseded。主工作区的未提交 Studio 改动不进入本实施 worktree。原有安卓测试、真实 Mac 条件和网络账号条件分别验证，不能相互替代。
 
 ## 验证说明
 

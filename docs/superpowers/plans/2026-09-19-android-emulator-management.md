@@ -10,9 +10,27 @@
 
 **Spec:** [安卓模拟器管理完善规格说明书](../specs/2026-09-19-android-emulator-management-design.md)
 
-**Status:** proposed。产品方向与本次文档任务已获授权；此计划中的业务实现、依赖安装、设备操作和网络登录测试尚未执行，也未因文档任务而自动获得授权。
+**Status:** active（2026-09-22 已获用户授权执行 AM1–AM4；真实设备、网络和账号验证仍按条件记录 blocked，不以 mock 替代）。
 
-**Baseline:** `codex/architecture-baseline@5f07e2adadfd273c6483065d43272aeaf7ed74f0`。规划分支：`codex/android-management-spec-20260919`。
+**Baseline:** 当前执行基线为 `codex/project-management-pm9@a92f0688f206d4339ff4468c1871f3ccdd6816dc`；实现 worktree 分支为 `codex/android-management-complete`。原 `5f07e2ad` 仅保留为规格编写时的历史基线。
+
+### 0.1 当前基线重新校准（2026-09-22）
+
+- 主工作区存在未提交 Studio 迁移修改和未跟踪证据目录；它们不属于本任务，已保留在主工作区，实施只发生在隔离 worktree。
+- 当前 Alembic 唯一 head 是 `0019_recording_commands`，因此 AM1 新迁移必须以它为 `down_revision`；原文中 `pm07_environments` 是过时规划事实，不能直接使用。
+- 当前安卓代码已具备设备生命周期、ReDroid 归属校验、预览、控制台、输入代次/序号和 APK 安装基础；AM1 需要在其上增加独立管理状态、持久操作、只读诊断、控制会话心跳和脱离工作流的管理首页，不重写 provider 安全边界。
+- 当前旧接口仍包含 workflows、allocations、runs、temporary 创建路径；它们保留兼容边界，但安卓管理首页不得再依赖这些查询，新的 temporary 请求必须明确拒绝。
+- 基线验证在当前 worktree 重新执行；任何真实 macOS/ReDroid、网络或账号验证都单独记录实际状态，缺条件标记 `blocked`。
+
+### 0.2 依赖冲突登记
+
+| 冲突 | 现状 | 处理 |
+| --- | --- | --- |
+| 规格基线与当前 HEAD 不一致 | 规格编写于 `5f07e2ad`，当前为 `a92f0688` | 以当前 HEAD 和迁移图为准，保留历史引用并在本节记录校准 |
+| 迁移父节点不一致 | 原计划写 `pm07_environments`，实际唯一 head 为 `0019_recording_commands` | 新迁移只接当前 head，不修改任何既有迁移字节 |
+| 工作流耦合 | AndroidPage/AndroidFleet 仍提供旧工作流查询和分配 | 保留兼容 API/明确拒绝边界；管理 UI 和新管理 API 不调用它们 |
+| 操作状态来源不一致 | 既有操作投影在设备 payload，执行任务/console session 部分为内存状态 | 新增独立 Operation/ControlSession 读模型，迁移历史 active 为 `needs_verification` |
+| 真实运行条件 | 本轮环境可能缺 Docker/Lima/设备/账号/网络 | 单元/契约/集成测试使用 fake IO 边界；真实链逐项记录 `blocked`，不伪造通过 |
 
 ## Global Constraints
 
