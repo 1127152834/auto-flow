@@ -14,6 +14,8 @@ from autoflow.domain.project_runs.input_selection import RecordRef
 from autoflow.domain.project_runs.worker_commands import project_command_id
 from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph
+from autoflow.domain.workflows.graph import parse_workflow
+from autoflow.domain.workflows.parallel_graph import direct_members, structured_fork
 from autoflow.infrastructure.database.project_capabilities import (
     SqlAlchemyProjectDataCapabilities,
 )
@@ -193,15 +195,26 @@ def _authorize_call_path(session: Any, plan: dict[str, Any], event: WorkflowRunE
     if not isinstance(scopes, list) or len(scopes) > 32:
         raise _denied()
     for index, scope in enumerate(scopes):
-        if not isinstance(scope, dict) or scope.get('kind') != 'subflow' or not isinstance(scope.get('callNodeId'), str) or not isinstance(scope.get('callVisitId'), str) or scope.get('callNodeId') not in members:
+        _, scope_graph = parse_workflow(graph._subset(members))
+        if not isinstance(scope, dict) or scope.get('kind') not in {'subflow', 'parallel'} or not isinstance(scope.get('callNodeId'), str) or not isinstance(scope.get('callVisitId'), str) or scope.get('callNodeId') not in direct_members(scope_graph):
             raise _denied()
         call = by_id[scope['callNodeId']]['data']
         config = call.get('config', call)
-        if call.get('moduleType') != 'subflow':
-            raise _denied()
-        definition = graph._find_definition(config.get('subflowGroupId', ''), config.get('subflowName', ''))
-        if definition is None or definition['id'] != scope.get('id'):
-            raise _denied()
+        if scope['kind'] == 'subflow':
+            if call.get('moduleType') != 'subflow':
+                raise _denied()
+            definition = graph._find_definition(config.get('subflowGroupId', ''), config.get('subflowName', ''))
+            if definition is None or definition['id'] != scope.get('id'):
+                raise _denied()
+            child_members = graph._members(definition)
+        else:
+            if 'parallel' not in config:
+                raise _denied()
+            fork = structured_fork(scope_graph, scope['callNodeId'])
+            branch = scope.get('branchNodeId')
+            if not isinstance(branch, str) or branch not in fork.branches or scope.get('id') != scope['callNodeId'] or scope.get('joinNodeId') != fork.join_id:
+                raise _denied()
+            child_members = fork.branches[branch]
         parent = session.scalar(select(WorkflowRunEventRow).where(
             WorkflowRunEventRow.run_id == event.run_id,
             WorkflowRunEventRow.execution_generation == event.execution_generation,
@@ -212,6 +225,7 @@ def _authorize_call_path(session: Any, plan: dict[str, Any], event: WorkflowRunE
         ).order_by(WorkflowRunEventRow.sequence.desc()).limit(1))
         if parent is None or parent.payload.get('status') != 'started' or parent.payload.get('executionContext', {}).get('scopes', []) != scopes[:index]:
             raise _denied()
-        members = graph._members(definition)
-    if event.node_id not in members:
+        members = child_members
+    _, scope_graph = parse_workflow(graph._subset(members))
+    if event.node_id not in direct_members(scope_graph):
         raise _denied()

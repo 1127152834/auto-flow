@@ -139,3 +139,39 @@ async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_stat
     else:
         with pytest.raises(ProjectError, match='执行能力请求'):
             await service.handle(task.run_id, 1, request)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('scope_state', ['valid', 'missing', 'wrong-branch', 'wrong-join', 'finished-call', 'cancelled-parent'])
+async def test_parallel_capability_requires_live_frozen_branch_owner(rpc, scope_state):
+    from sqlalchemy.orm.attributes import flag_modified
+
+    from autoflow.infrastructure.database.workflow_runtime_models import (
+        WorkflowRunEventRow,
+    )
+    factory, task, request, service = rpc
+    call_visit = str(uuid4())
+    with factory.begin() as session:
+        run = session.get(WorkflowRunRow, task.run_id)
+        prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
+        prepared.execution_plan['document'] = {'nodes': [
+            {'id': 'fork', 'data': {'moduleType': 'set_variable', 'parallel': {'joinNodeId': 'join', 'outputs': {}}}},
+            {'id': 'write', 'data': {'moduleType': 'project_data'}},
+            {'id': 'other', 'data': {'moduleType': 'set_variable'}},
+            {'id': 'join', 'data': {'moduleType': 'set_variable'}},
+        ], 'edges': [{'source': source, 'target': target} for source, target in [('fork', 'write'), ('fork', 'other'), ('write', 'join'), ('other', 'join')]]}
+        flag_modified(prepared, 'execution_plan')
+        scope = {'kind': 'parallel', 'id': 'fork', 'callNodeId': 'fork', 'callVisitId': call_visit, 'branchNodeId': 'other' if scope_state == 'wrong-branch' else 'write', 'joinNodeId': 'wrong' if scope_state == 'wrong-join' else 'join'}
+        event = session.scalar(select(WorkflowRunEventRow).where(WorkflowRunEventRow.node_visit_id == request['nodeVisitId']))
+        event.payload = {'status': 'started', 'executionContext': {'scopes': [] if scope_state == 'missing' else [scope]}}
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event({
+            'eventId': str(uuid4()), 'runId': task.run_id, 'executionGeneration': 1,
+            'nodeId': 'fork', 'nodeVisitId': call_visit, 'attempt': 1, 'kind': 'nodeAttempt',
+            'occurredAt': datetime.now(UTC).isoformat(), 'payload': {'status': 'succeeded' if scope_state == 'finished-call' else 'started'},
+        })
+        if scope_state == 'cancelled-parent': run.status = 'cancelled'
+    if scope_state == 'valid':
+        assert (await service.handle(task.run_id, 1, request))['values'][0]['value'] == 'created by worker'
+    else:
+        with pytest.raises(ProjectError, match='执行能力请求'):
+            await service.handle(task.run_id, 1, request)

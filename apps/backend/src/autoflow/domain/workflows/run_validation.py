@@ -6,9 +6,10 @@ from typing import Any
 
 from .canvas_subflows import CanvasSubflowGraph
 from .catalog import runnable_module_types
-from .graph import WorkflowDefinition
+from .graph import WorkflowDefinition, parse_workflow
 from .manual_contract import validate_declaration
 from .models import WorkflowError, WorkflowIssue
+from .parallel_graph import structured_fork
 from .validation import project_document
 
 _DEFAULT_CONFIGS: dict[str, dict[str, Any]] = {
@@ -239,6 +240,10 @@ def _nonnegative_number(value: object) -> bool:
 
 
 def _validate_lifecycle_graph(nodes, edges, ends):
+    _, graph = parse_workflow({'nodes': nodes, 'edges': edges})
+    forks = {identity for identity, node in graph.nodes.items() if 'parallel' in node.data.get('config', node.data)}
+    for identity in forks:
+        structured_fork(graph, identity)
     owns_control = any(n['data']['moduleType'] in {'project_manual', 'subflow', 'loop', 'foreach', 'foreach_dict'} for n in nodes)
     if not ends and not owns_control:
         return
@@ -248,13 +253,11 @@ def _validate_lifecycle_graph(nodes, edges, ends):
         if edge['source'] in outgoing and edge['target'] in incoming:
             outgoing[edge['source']].append(edge['target'])
             incoming[edge['target']].append(edge['source'])
-    # Lifecycle commands own the single browser. Exclusive conditions and loop
-    # bodies are supported; concurrent roots/fan-out must first be joined.
-    # ponytail: shared loop/control state cannot cross parallel branches; enable
-    # this shape only after the shared Runtime isolates branch control state.
+    # Only validated forks create isolated branch schedulers. Undeclared fan-out
+    # still shares control state and cannot own loops or manual checkpoints.
     if owns_control and (
         sum(not value for value in incoming.values()) != 1 or any(
-            len(outgoing[n['id']]) > 1 and not (n['data']['moduleType'] == 'project_manual' and n['data'].get('resumeTargets')) and (
+            len(outgoing[n['id']]) > 1 and n['id'] not in forks and not (n['data']['moduleType'] == 'project_manual' and n['data'].get('resumeTargets')) and (
                 n['data']['moduleType'] not in {'condition', 'loop', 'foreach', 'foreach_dict'}
                 or len({edge.get('sourceHandle') for edge in edges if edge['source'] == n['id']}) != len(outgoing[n['id']])
             ) for n in nodes

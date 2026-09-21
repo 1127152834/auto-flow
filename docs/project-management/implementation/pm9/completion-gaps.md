@@ -4,7 +4,7 @@
 
 **结论：历史 d59607f3 的 R1–R4 有界交付和三平台 CI 已完成；最新 4f392ed5 修复输入环境资源解析后已启动新三平台验收，完整 PM9 尚未完成。** PM9-A 要求全部功能/场景/契约逐项对应真实证据，现有两条代表性生产链不能代替这一要求。PM9-B 的万行、固定每分钟千条合成输入已有三平台结果；PM9-C 的三种安装包已生成且包内流程通过，实机安装和原生专项仍待补证。
 
-## 1. 真正尚未支持的能力
+## 1. 初次复核时的能力缺口（历史；当前进度以文末 S1–S3 为准）
 
 | 优先顺序 | 尚缺能力与规格 | 当前实现证据 | 完成条件 |
 | --- | --- | --- | --- |
@@ -19,7 +19,7 @@
 
 ## 2. 覆盖台账与真实场景仍未闭合
 
-后续复核：251 条已补 `testMapping`，200 条有实际断言引用，51 条明确未定位直接场景测试；73 条失效预定路径全部补了映射或缺口。原 22 条 verified 发现未闭合子条件，已逐项退回 partial，并保留 statusBeforeReview。补入本轮真实场景后，当前合计为 0 verified / 188 partially_verified / 63 planned（204 条有断言，47 条仍未定位直接场景）。详情见 [test-mapping-review.md](test-mapping-review.md)。以下表格是复核前快照，已被本段当前统计取代。
+后续复核：251 条已补 `testMapping`，200 条有实际断言引用，51 条明确未定位直接场景测试；73 条失效预定路径全部补了映射或缺口。原 22 条 verified 发现未闭合子条件，已逐项退回 partial，并保留 statusBeforeReview。补入本轮真实场景后，当前合计为 0 verified / 188 partially_verified / 63 planned（206 条有断言，45 条仍未定位直接场景）。详情见 [test-mapping-review.md](test-mapping-review.md)。以下表格是复核前快照，已被本段当前统计取代。
 
 此前 d59607f3 验收已把 DATA-LINK-05、FLOW-A16、XE-C12、XE-C18、XE-G04、XE-G05 六项直接匹配的三平台成功链补入台账，状态从 planned 改为 partially_verified；没有将一部分断言升级为整项 verified。
 
@@ -95,3 +95,12 @@ S2–S5 继续实施；当前源链不代表三平台打包和实机验收完成
 已接通 frozen inputSchema/resumeTargets、严格字段/类型/枚举、当前调用前置变量、同一 scope 直接后继和原检查点/Run/实例所有权 CAS。worker 只注入声明变量，scheduler 只执行选择分支。人工详情支持字段表单和无候选的原位置继续；环境入口统一进入同一详情。响应丢失保留原键和草稿，先查原 operation，不创建新命令。
 
 实际 Electron 表单暴露并修复 SQLite 人工日期缺时区：数据库公共映射现在将 UTC 日期带时区输出，详情/列表一致，东八区不再误判到期。122 后端、12 UI、100 脚本检查；两个三场景真实 worker 测试组和完整源码桌面运行链通过。证据见 manual-follow-through.json、manual-desktop-darwin-arm64.json。当前源码证据不代表新候选三平台或实机放行；S3 分支隔离/人工排队、S4 Windows、S5 多 Run 仍未完成。
+
+
+## S3 结构化并行控制（2026-09-21）
+
+共享 Runtime 已隔离分支变量、循环帧、调度状态和调用路径；只合并声明输出。prepare 保留未声明并行控制的拒绝，对明确 fork/join 验证分支归属、出口与汇合独占。父端验证每个并行 scope 的冻结分支和活跃 fork visit。已修复两项真实缺陷：直接取消 scheduler 时节点操作未回收；外层循环内 join 被父调度器延迟到最后一轮。
+
+人工资格在 worker 内排队，等待在途节点操作结束后才发送创建检查点请求；继续先交接下一项，finish/stop 取消队列。真实 worker 的两个不同次数循环生成 10 条记录、仅两次根 End 关联各自最后输出；失败分支保留先前 2 条已写记录；并行人工继续/终结/停止分别核对节点次数、串行建项、TTL 与无后台浏览器读取。单元另覆盖嵌套外层循环、局部 break、分支子调用、异步清理和原变量保留。见 parallel-follow-through.json。
+
+当前剩余实施为已获批的 S4 Windows 原生输出/同句柄进程终止、S5 多 Run。S1–S3 新候选仍需完整回归和三平台打包验证；历史 4f392ed5 的 Windows/ARM 成功、Intel 最后浏览器管理 smoke 的状态刷新时序失败不覆盖这些新代码。releaseAccepted=false；覆盖状态未升级。

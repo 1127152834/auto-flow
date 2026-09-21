@@ -2179,10 +2179,9 @@
           "status": "planned",
           "evidenceCount": 0,
           "plannedTestExists": false,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 3,
           "gapKinds": [
-            "production_evidence_missing",
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2410,7 +2409,7 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 3,
+          "reviewedCheckCount": 4,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2520,7 +2519,7 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 3,
+          "reviewedCheckCount": 4,
           "gapKinds": [
             "production_evidence_missing"
           ]

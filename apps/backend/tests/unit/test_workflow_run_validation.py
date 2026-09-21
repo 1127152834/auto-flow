@@ -379,3 +379,29 @@ def test_prepare_rejects_unsafe_manual_declarations_before_checkpoint(bad):
         payload['content']['nodes'].append(other)
         payload['content']['edges'].extend([{'id': 'other', 'source': 'call', 'target': 'other'}, {'id': 'other-end', 'source': 'other', 'target': 'end'}])
     with pytest.raises(WorkflowError): prepare_run(payload)
+
+
+def parallel_payload():
+    payload = workflow_payload()
+    def n(identity, kind, **data):
+        return {'id': identity, 'type': kind, 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': kind, **data}}
+    payload['content'] = {**payload['content'], 'nodes': [n('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {}}), n('left', 'project_manual', reason='left'), n('right', 'loop', count=2), n('body', 'set_variable', variableName='x', variableValue='yes'), n('join', 'set_variable', variableName='done', variableValue='yes'), n('end', 'project_end')], 'edges': [{'id': str(i), **edge} for i, edge in enumerate([{'source': 'fork', 'target': 'left'}, {'source': 'fork', 'target': 'right'}, {'source': 'left', 'target': 'join'}, {'source': 'right', 'target': 'body', 'sourceHandle': 'loop'}, {'source': 'right', 'target': 'join', 'sourceHandle': 'done'}, {'source': 'join', 'target': 'end'}])]}
+    return payload
+
+
+def test_prepare_accepts_only_declared_disjoint_parallel_control_scopes():
+    assert prepare_run(parallel_payload()).node_ids == ['fork', 'left', 'right', 'body', 'join', 'end']
+
+
+@pytest.mark.parametrize('mutation', ['collision', 'cross-edge', 'missing-join', 'branch-end', 'escape', 'wrong-fork', 'external-join'])
+def test_prepare_rejects_unsafe_structured_parallel_shapes(mutation):
+    payload = parallel_payload()
+    nodes, edges = payload['content']['nodes'], payload['content']['edges']
+    if mutation == 'collision': nodes[0]['data']['parallel']['outputs'] = {'left': {'x': 'same'}, 'right': {'y': 'same'}}
+    elif mutation == 'cross-edge': edges.append({'id': 'cross', 'source': 'left', 'target': 'body'})
+    elif mutation == 'missing-join': nodes[0]['data']['parallel']['joinNodeId'] = 'missing'
+    elif mutation == 'branch-end': nodes[1].update(type='project_end', data={'moduleType': 'project_end'})
+    elif mutation == 'external-join': edges.append({'id': 'external', 'source': 'fork', 'target': 'join'})
+    elif mutation == 'escape': edges[:] = [e for e in edges if e['source'] != 'left']
+    else: nodes[0].update(type='project_manual', data={**nodes[0]['data'], 'moduleType': 'project_manual', 'reason': 'wrong'})
+    with pytest.raises(WorkflowError): prepare_run(payload)

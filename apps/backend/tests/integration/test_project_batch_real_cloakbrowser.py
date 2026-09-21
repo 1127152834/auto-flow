@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -242,6 +242,23 @@ async def test_real_project_batch_http(
                     if edge['source'] == 'write': edge['source'] = 'second-call'
                 document['content']['edges'].extend([{'id': 'child-body', 'source': 'child', 'target': 'write'}, {'id': 'next-call', 'source': 'first-call', 'target': 'second-call'}])
                 next(n for n in nodes if n['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{secondSaved['ref']}", 'expectedLinkRevision': "{secondSaved['linkRevision']}", 'replaceAllowed': False})
+            if scenario in {'data-parallel', 'data-parallel-failure'}:
+                from copy import deepcopy
+                write = next(n for n in nodes if n['id'] == 'write')
+                other = deepcopy(write); other['id'] = 'other-write'
+                write['data']['arguments']['values'][field_id] = 'A-{index}'
+                other['data']['arguments']['values'][field_id] = 'B-{index}'
+                if scenario == 'data-parallel-failure':
+                    other.update(type='click_element', data={'moduleType': 'click_element', 'selector': '#missing-parallel', 'timeout': 1})
+                nodes.extend([other,
+                    {'id': 'fork', 'type': 'set_variable', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'set_variable', 'variableName': 'start', 'variableValue': 'yes', 'parallel': {'joinNodeId': 'end', 'outputs': {'left-loop': {'saved': 'saved'}, 'right-loop': {'saved': 'secondSaved'}}}}},
+                    *[{'id': identity, 'type': 'loop', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'loop', 'count': count, 'indexVariable': 'index'}} for identity, count in [('left-loop', 2), ('right-loop', 3)]],
+                ])
+                for edge in document['content']['edges']:
+                    if edge['target'] == 'write': edge['target'] = 'fork'
+                document['content']['edges'][:] = [e for e in document['content']['edges'] if e['source'] != 'write']
+                document['content']['edges'].extend([{'id': identity, 'source': 'fork', 'target': identity} for identity in ['left-loop', 'right-loop']] + [{'id': identity + '-body', 'source': identity, 'target': body, 'sourceHandle': 'loop'} for identity, body in [('left-loop', 'write'), ('right-loop', 'other-write')]] + [{'id': identity + '-done', 'source': identity, 'target': 'end', 'sourceHandle': 'done'} for identity in ['left-loop', 'right-loop']])
+                next(n for n in nodes if n['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{secondSaved['ref']}", 'expectedLinkRevision': "{secondSaved['linkRevision']}", 'replaceAllowed': False})
             if scenario.startswith('manual-'):
                 nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 3 if scenario == 'manual-expire-race' else 30}})
                 document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
@@ -250,6 +267,15 @@ async def test_real_project_batch_http(
                 if scenario == 'manual-double':
                     nodes.append({'id': 'second-manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 1000}, 'data': {'moduleType': 'project_manual', 'reason': '第二次确认', 'timeoutSeconds': 30}})
                     document['content']['edges'].append({'id': 'second-checkpoint', 'source': 'after-manual', 'target': 'second-manual'})
+            if scenario in {'manual-parallel', 'manual-parallel-finish', 'manual-parallel-stop'}:
+                nodes.extend([
+                    {'id': 'fork', 'type': 'set_variable', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'set_variable', 'variableName': 'start', 'variableValue': 'yes', 'parallel': {'joinNodeId': 'join', 'outputs': {}}}},
+                    {'id': 'second-manual', 'type': 'project_manual', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'project_manual', 'reason': '并行第二项', 'timeoutSeconds': 30}},
+                    {'id': 'other-normal', 'type': 'get_element_info', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'get_element_info', 'selector': '#field', 'attribute': 'value', 'variableName': 'afterOther'}},
+                    {'id': 'join', 'type': 'set_variable', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'set_variable', 'variableName': 'joined', 'variableValue': 'once'}},
+                ])
+                next(e for e in document['content']['edges'] if e['id'] == 'manual-task')['target'] = 'fork'
+                document['content']['edges'].extend([{'id': str(i) + '-parallel', 'source': a, 'target': b} for i, (a, b) in enumerate([('fork', 'manual'), ('fork', 'second-manual'), ('second-manual', 'other-normal'), ('after-manual', 'join'), ('other-normal', 'join')])])
             if scenario == 'manual-declared':
                 next(n for n in nodes if n['id'] == 'manual')['data'].update(inputSchema=[{'name': 'code', 'type': 'string', 'required': True, 'enum': ['001', '002']}, {'name': 'confirmed', 'type': 'boolean', 'required': True}], resumeTargets=[{'nodeId': 'after-manual', 'requiredVariables': ['code', 'confirmed']}, {'nodeId': 'other-manual', 'requiredVariables': ['absent']}])
                 next(n for n in nodes if n['id'] == 'after-manual')['data']['variableValue'] = 'code-{code}'
@@ -358,14 +384,14 @@ async def test_real_project_batch_http(
                     waiting = next((item for item in manual if item['status'] == 'waiting'), None)
                     if waiting:
                         late_resume = asyncio.create_task(client.post(prefix + f"/manual-items/{waiting['manualItemId']}/resume", headers={'Idempotency-Key': str(uuid4())}, json={'checkpointRevision': waiting['checkpointRevision'], 'expectedStatusRevision': waiting['statusRevision']}))
-                if scenario in {'manual-resume', 'manual-declared', 'manual-finish', 'manual-double'}:
+                if scenario in {'manual-resume', 'manual-declared', 'manual-parallel', 'manual-parallel-finish', 'manual-finish', 'manual-double'}:
                     manual = await client.get(prefix + '/manual-items')
                     assert manual.status_code == 200, manual.text
                     for item in manual.json()['items']:
                         if item['status'] != 'waiting' or item['manualItemId'] in handled_manual:
                             continue
                         manual_id = item['manualItemId']
-                        if scenario in {'manual-resume', 'manual-declared', 'manual-double'}:
+                        if scenario in {'manual-resume', 'manual-declared', 'manual-parallel', 'manual-double'}:
                             body = {'checkpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision']}
                             action = 'resume'
                         else:
@@ -387,6 +413,13 @@ async def test_real_project_batch_http(
                                 assert rejected.status_code == 409, rejected.text
                                 assert (await client.get(prefix + f'/manual-items/{manual_id}')).json() == original
                             body = valid
+                        if scenario == 'manual-parallel':
+                            await asyncio.sleep(.15)
+                            items = (await client.get(prefix + '/manual-items')).json()['items']
+                            assert [i['manualItemId'] for i in items if i['status'] == 'waiting'] == [manual_id]
+                            with app.state.session_factory() as session:
+                                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(item['runId'], after_sequence=0, limit=300)
+                            assert not any(e.kind == 'nodeAttempt' and e.node_id in {'after-manual', 'other-normal'} for e in events)
                         manual_key = str(uuid4())
                         if scenario == 'manual-double' and item['runId'] in manual_receipts:
                             previous_id, previous_key, previous_body, operation_id = manual_receipts[item['runId']]
@@ -399,7 +432,7 @@ async def test_real_project_batch_http(
                         handled_manual.add(manual_id)
                         manual_receipts[item['runId']] = (manual_id, manual_key, body, command.json()['operation']['operationId'])
 
-                if scenario in {'manual-stop', 'manual-restart', 'manual-loss'} and not manual_interrupted:
+                if scenario in {'manual-stop', 'manual-parallel-stop', 'manual-restart', 'manual-loss'} and not manual_interrupted:
                     items = (await client.get(prefix + '/manual-items')).json()['items']
                     waiting = next((item for item in items if item['status'] == 'waiting'), None)
                     if waiting:
@@ -496,25 +529,33 @@ async def test_real_project_batch_http(
                     for task in tasks:
                         attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
                         assert sum(attempt['nodeId'] == 'after-manual' for attempt in attempts) == 1
-                elif scenario in {'manual-stop', 'manual-restart', 'manual-loss'}:
+                elif scenario in {'manual-stop', 'manual-parallel-stop', 'manual-restart', 'manual-loss'}:
                     assert manual_interrupted
                     assert detail['statusCounts']['interrupted' if scenario in {'manual-restart', 'manual-loss'} else 'cancelled'] >= 1, detail
                     manual_items = (await client.get(prefix + '/manual-items')).json()['items']
                     assert all(item['status'] == 'cancelled' for item in manual_items)
                 elif scenario not in {'manual-expire', 'manual-expire-race'}:
                     assert detail['statusCounts']['succeeded'] == 2, detail
-                    assert len(handled_manual) == (4 if scenario == 'manual-double' else 2)
+                    assert len(handled_manual) == (4 if scenario in {'manual-double', 'manual-parallel'} else 2)
                     if scenario == 'manual-double':
                         assert len(replayed_manual) == 2
                     for task in tasks:
                         attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
                         assert len([a for a in attempts if a['nodeId'] == 'read-input']) == 1
+                        if scenario == 'manual-parallel':
+                            assert sum(a['nodeId'] == 'join' for a in attempts) == 1
+                            assert sum(a['nodeId'] == 'other-normal' for a in attempts) == 1
+                            items = [i for i in (await client.get(prefix + '/manual-items')).json()['items'] if i['runId'] == task['runId']]
+                            items.sort(key=lambda i: i['createdAt'])
+                            assert len(items) == 2
+                            assert datetime.fromisoformat(items[1]['createdAt']) >= datetime.fromisoformat(items[0]['updatedAt'])
+                            assert all(29.5 < (datetime.fromisoformat(i['expiresAt']) - datetime.fromisoformat(i['createdAt'])).total_seconds() <= 30 for i in items)
                         if scenario == 'manual-declared':
                             assert not any(a['nodeId'] == 'other-manual' for a in attempts)
                             outputs = (await client.get(prefix + f"/tasks/{task['taskId']}/outputs")).json()['items']
                             assert any(output['value'] == 'code-001' for output in outputs)
 
-                        assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario in {'manual-resume', 'manual-declared', 'manual-double'})
+                        assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario in {'manual-resume', 'manual-declared', 'manual-parallel', 'manual-double'})
                 else:
                     assert detail['statusCounts']['timed_out'] == 1, detail
                     if scenario == 'manual-expire-race':
@@ -524,6 +565,29 @@ async def test_real_project_batch_http(
                         assert rejected.json()['error']['code'] == 'MANUAL_TRANSITION_LOST'
                         items = (await client.get(prefix + '/manual-items')).json()['items']
                         assert len(items) == 1 and items[0]['status'] == 'expired'
+            elif scenario == 'data-parallel-failure':
+                assert detail['statusCounts']['failed'] == 1, detail
+                records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert sorted(row['values'][0]['value'] for row in records) == ['A-0', 'A-1']
+                assert all(row['currentEnvironmentId'] is None for row in records)
+                for task in tasks:
+                    attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
+                    assert not any(a['nodeId'] == 'end' for a in attempts)
+            elif scenario == 'data-parallel':
+                assert detail['statusCounts']['succeeded'] == 2, {'detail': detail, 'tasks': [(await client.get(prefix + f"/tasks/{t['taskId']}")).json() for t in tasks]}
+                records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert sorted(row['values'][0]['value'] for row in records) == sorted(['A-0', 'A-1', 'B-0', 'B-1', 'B-2'] * 2)
+                assert sum(bool(row['currentEnvironmentId']) for row in records) == 4
+                for task in tasks:
+                    with app.state.session_factory() as session:
+                        events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(task['runId'], after_sequence=0, limit=300)
+                    starts = [e for e in events if e.kind == 'nodeAttempt' and e.payload['status'] == 'started']
+                    assert sum(e.node_id == 'end' for e in starts) == 1
+                    for identity, branch, count in [('write', 'left-loop', 2), ('other-write', 'right-loop', 3)]:
+                        writes = [e for e in starts if e.node_id == identity]
+                        assert len(writes) == count
+                        assert all(e.payload['executionContext']['scopes'][0]['branchNodeId'] == branch for e in writes)
+                        assert [e.payload['executionContext']['loops'][0]['currentIndex'] for e in writes] == list(range(count))
             elif scenario == 'data-subflow-cancel':
                 assert cancelled_child_writes == ['CAPABILITY_SCOPE_DENIED']
                 assert detail['statusCounts']['cancelled'] == 1, detail

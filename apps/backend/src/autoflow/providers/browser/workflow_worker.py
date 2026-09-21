@@ -750,6 +750,7 @@ class _WorkerCanvasSubflows(CanvasSubflowGraph):
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
             cancellation=self._parent.cancellation,
+            node_boundary=self._parent.node_boundary,
             clock=self._parent.clock,
         )
         child_sink = self._sink.for_context(child)

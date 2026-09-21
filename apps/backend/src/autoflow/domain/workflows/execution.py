@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextlib import AbstractAsyncContextManager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -189,6 +190,7 @@ class ExecutionContext:
     loop_stack: list[dict[str, Any]] = field(default_factory=list)
     execution_scopes: tuple[dict[str, Any], ...] = ()
     progress: Callable[[str, str], Awaitable[None]] | None = None
+    node_boundary: Callable[[ExecutionContext, str], AbstractAsyncContextManager[None]] | None = None
     current_node_id: str | None = None
     current_execution_id: str | None = None
     should_break: bool = False

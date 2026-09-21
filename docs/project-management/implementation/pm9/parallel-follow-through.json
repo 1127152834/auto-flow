@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-21",
+  "status": "source_verified_platform_pending",
+  "releaseAccepted": false,
+  "slice": "S3 structured parallel control",
+  "checks": {
+    "targeted": "154 passed before final repeated-budget assertion; Runtime suite includes that assertion",
+    "runtime": "1103 passed including Studio shared Runtime/differential and dispatch budget",
+    "realWorker": "5 passed after final join correction: data-parallel, data-parallel-failure, manual-parallel, manual-parallel-finish, manual-parallel-stop",
+    "ruff": "passed",
+    "mypy": "400 source files passed"
+  },
+  "assertions": [
+    "Two isolated loops emit 2 and 3 committed records per Task, shared names do not leak; root End once links only declared last outputs",
+    "Failed branch leaves two committed records and never reaches End",
+    "Manual queue drains in order at safe node boundaries; only one persistent item; next TTL starts at actual creation",
+    "Manual finish or stop discards queued checkpoint; no ordinary browser node during either waiting item",
+    "Local break, outer loop iterations and subflow within branch retain independent state; each iteration joins once",
+    "Command failure and transport exception both cancel sibling node operation and await asynchronous cleanup",
+    "Two manual waits preserve consumed automatic budget, handoff running time is charged",
+    "Forged or missing branch scope, wrong join/branch, finished fork and cancelled parent denied"
+  ],
+  "limitations": [
+    "New source candidate full regression and three-platform packaged verification pending",
+    "Only declared disjoint structured forks admitted; unstructured parallel loop/manual still rejected",
+    "No cross-process manual restore; native installation, signing and current packaged OAuth/Sheets still external"
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/domain/workflows/parallel_graph.py": "491b0173a204bba838b47589ef303fd38dbf5eadd4aff7ef958a5321050ac686",
+    "apps/backend/src/autoflow/application/workflows/runtime.py": "5d8d82967559475dea70bf92a70054368fed056621a889628f90e12a177eeb02",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "6b32b74ea82c8e3eb0aa4d67ab1251215c918cef2890de5e1698de9357012ee0"
+  }
+}

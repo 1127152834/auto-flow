@@ -2,7 +2,7 @@
 
 日期：2026-09-21。状态：approved；2026-09-21 用户在收到 S1–S5 后要求“继续实现”。来源：用户 PM9 后续指令、已批准 R1–R4、当前代码审查。既有运行链验证和缺陷修复继续执行。
 
-## 当前边界
+## 设计时边界（历史；实施进度见 completion-gaps）
 
 - `application/workflows/runtime.py` 的 `_WorkflowScheduler` 共享 ExecutionContext 和 executed/pending 状态；不能只扩大 `run_validation.py` 的准入。
 - 现有 canvas subflow gateway 可以执行组，但项目 prepared content / capability 尚未支持冻结子调用身份。
@@ -38,6 +38,8 @@ worker 的 `_ProjectManualNode` 将服务端已校验的继续目标作为独立
 ## S3 分支状态隔离后开放循环/人工并行图
 
 在共享 Runtime 内按结构化 fork 建立分支执行状态：变量快照、循环帧、executed/executing/pending、局部停止、visit 路径归分支所有。Run 取消、持久事件序列和 capability ledger 仍归 Run。先要求 fork 具有可验证的单一 join；拒绝跨分支回边、循环体跨 join、没有唯一收尾的形状。
+
+S3 字段契约：沿用 `set_variable` 作为无浏览器副作用的 fork，增加 `parallel: {joinNodeId, outputs}`。至少两个普通出边；outputs 为分支入口 ID 到 `{子变量: 父变量}` 的映射，可显式为空。join 不得是分支入口，不得接收本 fork 之外的边；分支彼此不交叉，没有绕过 join 的出口，循环体末端保持既有隐式返回语义。父 scheduler 只执行 fork 和 join，分支由同一 WorkflowRuntime 的独立上下文执行；嵌套循环每轮分别汇合。持久事件 scope 保存 fork node/visit、branchNodeId 和 joinNodeId，父端从冻结图和仍执行中的 fork 验证后才允许能力请求。
 
 join 不隐式合并互相覆盖的变量；只接受显式输出映射，同名目的地冲突在 prepare 阶段拒绝。分支 break/continue 只影响本分支循环；分支失败取消其余分支并等待清理，已提交数据不回滚；唯一根 End 等全部分支汇合后执行一次。
 

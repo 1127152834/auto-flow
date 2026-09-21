@@ -12996,16 +12996,18 @@
             "symbol": "test_manual_declared_inputs_and_selected_successor_reach_same_live_context_once",
             "scope": "同上下文声明输入、仅选定分支、汇合一次",
             "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "manual-parallel/manual-parallel-finish/manual-parallel-stop：真实 worker 并行人工串行创建、无后台节点操作、第二项 TTL 从创建算、终结或停止不创建第二项",
+            "level": "automated_production_integration"
           }
         ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "缺少声明输入与合法继续位置实现后的 token/子调用栈不满足、缺必填输入、非法跳转明确反馈场景；当前仅验证一律拒绝额外输入/目标"
-          },
-          {
             "kind": "production_evidence_missing",
-            "detail": "S2 Mac 源 Electron/HTTP/真实 worker 已通过；当前新候选三平台打包和跨片并行人工仍待 S3 验收。"
+            "detail": "S2 声明输入/合法目标、S3 并行人工串行建项和 TTL 已有 Mac 源真实链；当前新候选三平台打包、原生用户验收与所有复杂前置组合尚未闭合。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -13697,11 +13699,11 @@
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：冻结全部子流程/资产依赖、编辑不能修改已准备内容；不据邻近测试推定覆盖"
+            "detail": "冻结子流程内容、调用环/深度已有断言；全部其他资产依赖、Profile/代理组合仍未逐项定位直接断言。"
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "S1 当前 Mac 源运行链证据；新候选三平台打包回归尚未完成；其他资产/Profile/代理完整冻结条件按原验收保留。"
+            "detail": "S1 Mac 源真实链通过；当前候选三平台打包和其他依赖的完整冻结验收仍缺。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -14306,16 +14308,18 @@
             "symbol": "test_manual_declared_inputs_and_selected_successor_reach_same_live_context_once",
             "scope": "同上下文声明输入、仅选定分支、汇合一次",
             "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "manual-parallel/manual-parallel-finish/manual-parallel-stop：真实 worker 并行人工串行创建、无后台节点操作、第二项 TTL 从创建算、终结或停止不创建第二项",
+            "level": "automated_production_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "持久命令的并发交错和真实 worker TTL 竞争需补；目标/声明输入当前不支持"
-          },
-          {
-            "kind": "production_evidence_missing",
-            "detail": "S2 Mac 源 Electron/HTTP/真实 worker 已通过；当前新候选三平台打包和跨片并行人工仍待 S3 验收。"
+            "detail": "S2 声明输入/合法目标、S3 并行人工串行建项和 TTL 已有 Mac 源真实链；当前新候选三平台打包、原生用户验收与所有复杂前置组合尚未闭合。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -14944,16 +14948,18 @@
             "symbol": "test_manual_declared_inputs_and_selected_successor_reach_same_live_context_once",
             "scope": "同上下文声明输入、仅选定分支、汇合一次",
             "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "manual-parallel/manual-parallel-finish/manual-parallel-stop：真实 worker 并行人工串行创建、无后台节点操作、第二项 TTL 从创建算、终结或停止不创建第二项",
+            "level": "automated_production_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "持久命令的并发交错和真实 worker TTL 竞争需补；目标/声明输入当前不支持"
-          },
-          {
-            "kind": "production_evidence_missing",
-            "detail": "S2 Mac 源 Electron/HTTP/真实 worker 已通过；当前新候选三平台打包和跨片并行人工仍待 S3 验收。"
+            "detail": "S2 声明输入/合法目标、S3 并行人工串行建项和 TTL 已有 Mac 源真实链；当前新候选三平台打包、原生用户验收与所有复杂前置组合尚未闭合。"
           }
         ],
         "statusBeforeReview": "partially_verified"

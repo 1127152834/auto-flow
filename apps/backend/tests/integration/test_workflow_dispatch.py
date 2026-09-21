@@ -815,6 +815,14 @@ async def test_live_manual_continuation_keeps_owner_and_excludes_wait_from_budge
     assert dispatcher.query_run(run.run_id).status == 'waiting_manual'
     dispatcher.resume_manual(run.run_id, 1)
     assert dispatcher.query_run(run.run_id).execution_generation == 1
+    first_remaining = dispatcher._automatic_remaining
+    await asyncio.sleep(.01)  # Running handoff time remains chargeable.
+    dispatcher.pause_manual(run.run_id, 1)
+    assert 0 < dispatcher._automatic_remaining < first_remaining
+    second_remaining = dispatcher._automatic_remaining
+    await asyncio.sleep(.15)
+    assert dispatcher._automatic_remaining == second_remaining
+    dispatcher.resume_manual(run.run_id, 1)
     release.set()
     await dispatcher.wait_idle()
     assert dispatcher.query_run(run.run_id).status == 'succeeded'
