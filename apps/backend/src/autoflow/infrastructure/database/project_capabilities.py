@@ -1742,6 +1742,10 @@ def _projected_snapshot(snapshot: dict, field_ids: tuple[str, ...]) -> dict:
     allowed = set(field_ids)
     return {
         **snapshot,
+        "validationIssues": [
+            issue for issue in snapshot.get("validationIssues", [])
+            if issue["fieldId"] in allowed
+        ],
         "values": [
             value for value in snapshot["values"] if value["fieldId"] in allowed
         ],

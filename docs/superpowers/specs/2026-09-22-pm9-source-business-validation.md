@@ -1,6 +1,6 @@
 # PM9 D1：来源业务格式错误保留与可见诊断
 
-日期：2026-09-22。状态：proposed，未包含于已批准 C1–C4/R1–R5，尚未实现。来源：data-and-state-rules.md DATA-TABLE-02、DATA-STATE-08、DATA-SH-05；当前 HTTP/SQLite/受控 Sheets 反例。
+日期：2026-09-22。状态：confirmed（用户于 2026-09-22 单独批准 D1），实施中。来源：data-and-state-rules.md DATA-TABLE-02、DATA-STATE-08、DATA-SH-05；当前 HTTP/SQLite/受控 Sheets 反例。
 
 ## 现状与范围
 

@@ -4887,6 +4887,8 @@ export type components = {
             ref: components["schemas"]["DataRecordRef"];
             /** Values */
             values: components["schemas"]["DataCellView"][];
+            /** Validationissues */
+            validationIssues?: components["schemas"]["DataValidationIssue"][];
             /** Recordslots */
             recordSlots: components["schemas"]["DataRecordSlot"][];
             /** Statusid */
@@ -5190,6 +5192,17 @@ export type components = {
              * Format: date-time
              */
             updatedAt: string;
+        };
+        /** DataValidationIssue */
+        DataValidationIssue: {
+            /** Fieldid */
+            fieldId: string;
+            /** Code */
+            code: string;
+            /** Rule */
+            rule: string;
+            /** Message */
+            message: string;
         };
         /** DefaultKernelRead */
         DefaultKernelRead: {

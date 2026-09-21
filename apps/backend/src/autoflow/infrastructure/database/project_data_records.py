@@ -14,7 +14,7 @@ from autoflow.domain.project_data.identity import (
     record_key,
     system_record_key,
 )
-from autoflow.domain.project_data.rules import validate_value
+from autoflow.domain.project_data.rules import validate_value, validation_issues
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.project_claims import active_record_lease
 from autoflow.infrastructure.database.project_data import (
@@ -498,8 +498,13 @@ class SqlAlchemyProjectDataRecords:
             "datasetGeneration": row.dataset_generation,
             "recordKey": {"type": row.key_type, "value": row.key_value},
         }
+        issue_fields = [{
+            "fieldId": field.id, "key": field.key, "name": field.name,
+            "type": field.type, "required": field.required, "validation": field.validation,
+        } for field in fields]
         return {
             "ref": ref,
+            "validationIssues": validation_issues(issue_fields, row.values_json),
             "values": [
                 {
                     "fieldId": field.id,
