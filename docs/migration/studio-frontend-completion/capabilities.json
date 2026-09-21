@@ -13152,7 +13152,7 @@
         },
         {
           "id": "BE.api_trigger.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -13160,7 +13160,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 api_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：API触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-api-trigger.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-api-trigger-electron-SFjrMI/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",

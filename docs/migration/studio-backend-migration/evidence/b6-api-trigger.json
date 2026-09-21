@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-015-api-trigger",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -10,7 +10,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["api_trigger"],
+  "nodes": [
+    "api_trigger"
+  ],
   "implemented": [
     "保留GET/POST、JSON请求头和请求体、轮询间隔、无限或有限超时及响应变量写入语义",
     "保留无条件首次响应、JSONPath取值及等于、不等于、数值大小、包含五种条件判断",
@@ -41,11 +43,19 @@
     "userDatabaseTouched": false,
     "browserStarted": false,
     "mockExecutionUsedForBackendEvidence": false,
-    "formalElectronUiTested": false
+    "formalElectronUiTested": true
   },
   "remaining": [
-    "正式Electron真实UI中配置、保存、关闭重开并运行API触发器",
     "外部用户API的可用性由用户配置决定，不作为迁入实现证据",
-    "webhook_trigger是入站回调节点，需要sidecar路由和运行归属协议，单独迁入"
-  ]
+    "Windows、macOS Intel及正式打包入口仍需平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-api-trigger.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-api-trigger-electron-SFjrMI/result.json",
+    "covers": "正式 Studio 真实 UI 添加并配置 api_trigger，保存到临时 SQLite，启动真实 worker 访问本地 loopback API，按 JSONPath 条件写入响应变量并执行后续日志节点，确认无浏览器或 worker 残留",
+    "boundary": "本地 loopback fixture，无外部用户 API、用户数据库或正式打包入口；平台差异单独记录"
+  }
 }
