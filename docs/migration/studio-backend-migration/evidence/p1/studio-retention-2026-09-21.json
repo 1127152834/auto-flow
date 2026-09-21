@@ -1,0 +1,37 @@
+{
+  "recordedAt": "2026-09-21",
+  "scope": [
+    "Studio 留存策略读取与部分更新",
+    "登记录像会话用量与清理",
+    "登记运行产物用量与清理",
+    "定时清理生命周期"
+  ],
+  "status": "implemented_pending_formal_electron",
+  "productionEvidence": {
+    "config": "工作区 studio-retention.json 原子替换；默认关闭，30 天，0 MB，24 小时",
+    "recordings": "只统计和删除 SQLite 登记的录制会话，活跃会话不参与清理",
+    "data": "只统计和删除 SQLite 登记的运行产物，活跃运行与未登记文件不参与清理",
+    "limits": "先按保留天数，再按总量从最旧记录清理；0 表示不限制",
+    "lifecycle": "随 sidecar 启停的单一后台任务按配置间隔执行；手动清理忽略 enabled 开关",
+    "safety": "越界、缺失或损坏产物路径在删除数据库记录前拒绝；损坏配置不回退到默认策略执行删除"
+  },
+  "checks": [
+    {
+      "command": "uv run pytest tests/contract/test_studio_retention.py tests/contract/test_studio_retention_api.py tests/contract/test_studio_credentials_api.py tests/integration/test_migration_heads.py -q",
+      "result": "32 passed"
+    },
+    {
+      "command": "uv run ruff check <retention files> && uv run mypy <retention source files>",
+      "result": "passed"
+    },
+    {
+      "command": "npm run openapi:check && npm run typecheck",
+      "result": "passed"
+    }
+  ],
+  "remaining": [
+    "正式 Electron 留存设置真实点击验收",
+    "长时间运行的定时触发实时时钟验收",
+    "批准范围内 WebDAV 和工作目录链"
+  ]
+}
