@@ -1,7 +1,11 @@
 import pytest
 
 from autoflow.domain.android.ports import AndroidError
-from tests.fixtures.android_management import DEVICE_ID, PROFILE_ID, MemoryDeviceRepository
+from tests.fixtures.android_management import (
+    DEVICE_ID,
+    PROFILE_ID,
+    MemoryDeviceRepository,
+)
 
 
 def test_fixture_ids_are_valid_and_distinct() -> None:

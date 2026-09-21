@@ -3897,6 +3897,40 @@ export type paths = {
         patch: operations["rename_api_v1_android_devices__device_id__patch"];
         trace?: never;
     };
+    "/api/v1/android/management/environment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Environment */
+        get: operations["environment_api_v1_android_management_environment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capabilities */
+        get: operations["capabilities_api_v1_android_management_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/profiles": {
         parameters: {
             query?: never;
@@ -7091,6 +7125,20 @@ export type components = {
             /** Port */
             port: number;
         };
+        /** EnvironmentCheckRead */
+        EnvironmentCheckRead: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unknown" | "unsupported";
+            /** Code */
+            code?: string | null;
+            /** Message */
+            message: string;
+            /** Action */
+            action?: string | null;
+        };
         /** EnvironmentDeleteRequest */
         EnvironmentDeleteRequest: {
             /** Impactrevision */
@@ -8198,6 +8246,63 @@ export type components = {
         MaintenanceStartRequest: {
             /** Expectedcontentgeneration */
             expectedContentGeneration: number;
+        };
+        /** ManagementCapabilitiesRead */
+        ManagementCapabilitiesRead: {
+            /** Management */
+            management: boolean | string;
+            /** Control */
+            control: boolean | string;
+            /** Images */
+            images: boolean | string;
+            /** Bulk */
+            bulk: boolean | string;
+            /** Backups */
+            backups: boolean | string;
+            /** Workflow */
+            workflow: boolean;
+            /** Reasons */
+            reasons: {
+                [key: string]: string;
+            };
+        };
+        /** ManagementEnvironmentRead */
+        ManagementEnvironmentRead: {
+            /** Available */
+            available: boolean;
+            /** Platformsupported */
+            platformSupported: boolean | null;
+            /** Runtimeid */
+            runtimeId: string;
+            /** Message */
+            message: string;
+            /** Images */
+            images?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Cpucount
+             * @default 0
+             */
+            cpuCount: number;
+            /**
+             * Memorymb
+             * @default 0
+             */
+            memoryMb: number;
+            /**
+             * Checkedat
+             * Format: date-time
+             */
+            checkedAt: string;
+            /** Checks */
+            checks: {
+                [key: string]: components["schemas"]["EnvironmentCheckRead"];
+            };
+            /** Capabilities */
+            capabilities: {
+                [key: string]: boolean | string;
+            };
         };
         /** ManualFinishRequest */
         ManualFinishRequest: {
@@ -25947,6 +26052,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    environment_api_v1_android_management_environment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementEnvironmentRead"];
+                };
+            };
+        };
+    };
+    capabilities_api_v1_android_management_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementCapabilitiesRead"];
                 };
             };
         };

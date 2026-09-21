@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.android import android_router
+from autoflow.adapters.http.android_management import android_management_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.image_assets import image_assets_router
@@ -19,6 +20,7 @@ from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
 from autoflow.application.android.console import AndroidConsole
+from autoflow.application.android.diagnostics import EnvironmentCheckService
 from autoflow.application.android.fleet import AndroidFleet
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
@@ -618,6 +620,7 @@ def create_app(
     app.include_router(studio_retention_router(studio_retention))
     app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
+    app.include_router(android_management_router(EnvironmentCheckService(android.runtime)))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)

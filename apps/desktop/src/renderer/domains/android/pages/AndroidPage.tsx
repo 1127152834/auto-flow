@@ -3,16 +3,19 @@ import { useQueries, useQuery } from '@tanstack/react-query'
 import { useApi } from '../../../app/ApiProvider'
 import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
 import { fleetApi, type ConsoleSession, type Profile, type DeviceRun, type AllocationRequest } from '../fleet-api'
+import { androidManagementApi } from '../management-api'
 import { ResourceBoard } from '../components/ResourceBoard'
 import { CreateInstances } from '../components/CreateInstances'
 import { DeviceConsole } from '../components/DeviceConsole'
 import { Action } from '../components/PrototypeControls'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../../shared/components/ui/dialog'
+import { RuntimeDiagnostics } from '../components/RuntimeDiagnostics'
 import '../android.css'
 
 export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const { client, instanceId } = useApi(),
     api = useMemo(() => androidApi(client), [client]),
+    managementApi = useMemo(() => androidManagementApi(client), [client]),
     fleet = useMemo(() => fleetApi(client), [client]),
     workflows = useMemo(() => ({
       list: async () => ({ items: await client.request<Array<{ id: string; name: string }>>('/api/workflows') }),
@@ -262,7 +265,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           onRefresh={refresh}
         />
       ) : (
-        <ResourceBoard
+        <div className="space-y-5"><RuntimeDiagnostics api={managementApi} /><ResourceBoard
           devices={all}
           profiles={profiles.data ?? []}
           allocations={allocations.data ?? []}
@@ -280,7 +283,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           onRuns={studio}
           onBatch={(id, action) => void perform(() => fleet.batchAction(id, action))}
           onCancelAllocation={(id) => void perform(() => fleet.cancelAllocation(id))}
-        />
+        /></div>
       )}
       <Dialog
         open={Boolean(management)}

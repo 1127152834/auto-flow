@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import FastAPI
 
 from autoflow.adapters.http.android import android_router
+from autoflow.adapters.http.android_management import android_management_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.local_workflows import local_workflows_router
@@ -69,6 +70,7 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
     )
     register_workflow_routes(app, workflows)
     app.include_router(android_router(unavailable))
+    app.include_router(android_management_router(unavailable))
     app.include_router(android_fleet_router(unavailable, unavailable))
     app.include_router(local_workflows_router(unavailable, unavailable))
     app.include_router(image_assets_router(unavailable))
