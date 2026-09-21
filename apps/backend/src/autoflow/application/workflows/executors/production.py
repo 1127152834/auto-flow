@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from .advanced_browser import ADVANCED_BROWSER_EXECUTORS
-from .allure import ALLURE_EXECUTORS
 from .ai import AIChatExecutor, AIVisionExecutor
 from .ai_media import AI_MEDIA_EXECUTORS
 from .ai_scraper import AI_SCRAPER_EXECUTORS
 from .ai_tasks import AI_TASK_EXECUTORS
 from .ai_vision_act import AIVisionActExecutor
+from .allure import ALLURE_EXECUTORS
 from .base import ModuleExecutor
 from .basic import (
     ClickElementExecutor,
@@ -47,6 +47,7 @@ from .dict_advanced import (
     DictSortExecutor,
 )
 from .external_http import EXTERNAL_HTTP_EXECUTORS
+from .file_watcher import FILE_WATCHER_EXECUTORS
 from .firecrawl import FIRECRAWL_EXECUTORS
 from .input_prompt import InputPromptExecutor
 from .js_script import JsScriptExecutor
@@ -167,6 +168,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *AI_SCRAPER_EXECUTORS,
     *FIRECRAWL_EXECUTORS,
     *EXTERNAL_HTTP_EXECUTORS,
+    *FILE_WATCHER_EXECUTORS,
     *LOG_EXECUTORS,
     *MESSAGE_EXECUTORS,
     *SSH_EXECUTORS,
