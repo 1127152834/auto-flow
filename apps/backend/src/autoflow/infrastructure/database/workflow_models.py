@@ -76,6 +76,34 @@ class WorkflowCustomModuleRequestRow(Base):
     )
 
 
+class StudioCredentialRow(Base):
+    __tablename__ = "studio_credentials"
+
+    name: Mapped[str] = mapped_column(String(120), primary_key=True)
+    description: Mapped[str] = mapped_column(String, nullable=False)
+    field_names: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class StudioCredentialStateRow(Base):
+    __tablename__ = "studio_credential_state"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class StudioCredentialCommandRow(Base):
+    __tablename__ = "studio_credential_commands"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    response: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    http_status: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class WorkflowRunRow(Base):
     __tablename__ = "workflow_runs"
 

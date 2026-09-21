@@ -8,9 +8,10 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
+
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0016_workflow_recordings"
+EXPECTED_HEAD = "0017_studio_credentials"
 
 
 def _config(path: Path) -> Config:
