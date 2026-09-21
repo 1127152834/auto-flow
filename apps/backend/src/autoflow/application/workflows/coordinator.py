@@ -8,6 +8,7 @@ from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol, cast
+from uuid import uuid4
 
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.models.service import ModelExecutionBinding
@@ -33,6 +34,15 @@ from .documents import WorkflowDocumentService
 from .modules import CustomModuleService
 from .runs import WorkflowRunRepository, WorkflowRunService
 from .runtime import WorkflowRuntime
+
+_SENSITIVE_WEBHOOK_HEADERS = {
+    "authorization",
+    "cookie",
+    "x-api-key",
+    "x-auth-token",
+    "x-csrf-token",
+    "proxy-authorization",
+}
 
 
 class WorkflowWorkers(Protocol):
@@ -106,6 +116,7 @@ class WorkflowRunCoordinator:
         self._js_requests: dict[str, dict[str, str]] = {}
         self._speech_requests: dict[str, dict[str, str]] = {}
         self._desktop_action_requests: dict[str, dict[str, str]] = {}
+        self._webhook_requests: dict[str, dict[str, Any]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
         self._command_waiters: dict[str, asyncio.Future[None]] = {}
 
@@ -392,6 +403,61 @@ class WorkflowRunCoordinator:
         run_id = _required_string(event, "runId")
         run = self._runs.get(run_id)
         event_type = _required_string(event, "type")
+        if event_type == "execution:webhook_waiting":
+            request_id = _required_string(event, "requestId")
+            webhook_id = _required_string(event, "webhookId")
+            webhook_node_id = _required_string(event, "nodeId")
+            raw_headers = event.get("validateHeaders")
+            raw_params = event.get("validateParams")
+            validate_headers = dict(raw_headers) if isinstance(raw_headers, Mapping) else {}
+            validate_params = dict(raw_params) if isinstance(raw_params, Mapping) else {}
+            raw_status = event.get("responseStatus")
+            response_status = raw_status if isinstance(raw_status, int) else 200
+            self._webhook_requests[webhook_id] = {
+                "requestId": request_id,
+                "workflowId": run.workflow_id,
+                "runId": run_id,
+                "nodeId": webhook_node_id,
+                "status": "pending",
+                "method": _required_string(event, "method"),
+                "validateHeaders": copy.deepcopy(validate_headers),
+                "validateParams": copy.deepcopy(validate_params),
+                "responseBody": copy.deepcopy(event.get("responseBody") or {}),
+                "responseStatus": response_status,
+            }
+            payload = {
+                "requestId": request_id,
+                "webhookId": webhook_id,
+                "method": event["method"],
+                "validationHeaderNames": list(validate_headers),
+                "validationParamNames": list(validate_params),
+            }
+            persisted = self._repository.append_event(
+                run_id,
+                event_type,
+                payload,
+                now=datetime_now(),
+                node_id=webhook_node_id,
+                execution_id=_optional_string(event.get("executionId")),
+                run_patch={"currentNodeId": webhook_node_id},
+            )
+            await self._events.publish(
+                event_type,
+                {
+                    **payload,
+                    "runId": run_id,
+                    "workflowId": run.workflow_id,
+                    "sequence": persisted.sequence,
+                },
+            )
+            return
+        if event_type == "execution:webhook_closed":
+            webhook_id = _required_string(event, "webhookId")
+            request_id = _required_string(event, "requestId")
+            state = self._webhook_requests.get(webhook_id)
+            if state is not None and state["requestId"] == request_id:
+                self._webhook_requests.pop(webhook_id, None)
+            return
         if event_type == "execution:command_applied":
             command_id = _required_string(event, "commandId")
             waiter = self._command_waiters.get(command_id)
@@ -781,6 +847,83 @@ class WorkflowRunCoordinator:
             self._command_receipts[command_id] = (fingerprint, receipt, 200)
             return copy.deepcopy(receipt), 200
 
+    async def trigger_webhook(
+        self,
+        webhook_id: str,
+        *,
+        method: str,
+        headers: Mapping[str, str],
+        query: Mapping[str, str],
+        body: Any,
+    ) -> tuple[Any, int]:
+        async with self._event_command_lock:
+            state = self._webhook_requests.get(webhook_id)
+            if state is None or state["status"] != "pending":
+                raise WorkflowRunError(
+                    "WEBHOOK_NOT_FOUND",
+                    "Webhook不存在、HTTP方法不匹配或已经触发",
+                    404,
+                )
+            allowed_method = str(state["method"]).upper()
+            if allowed_method != "ANY" and allowed_method != method.upper():
+                raise WorkflowRunError(
+                    "WEBHOOK_NOT_FOUND", "Webhook不存在或HTTP方法不匹配", 404
+                )
+            normalized_headers = {key.lower(): value for key, value in headers.items()}
+            expected_headers = dict(state["validateHeaders"])
+            if any(
+                normalized_headers.get(str(key).lower()) != str(value)
+                for key, value in expected_headers.items()
+            ):
+                raise WorkflowRunError(
+                    "WEBHOOK_HEADER_MISMATCH", "Webhook请求头验证失败", 403
+                )
+            expected_params = dict(state["validateParams"])
+            if any(query.get(str(key)) != str(value) for key, value in expected_params.items()):
+                raise WorkflowRunError(
+                    "WEBHOOK_PARAM_MISMATCH", "Webhook查询参数验证失败", 403
+                )
+
+            request_id = str(state["requestId"])
+            command_id = str(uuid4())
+            waiter = asyncio.get_running_loop().create_future()
+            self._command_waiters[command_id] = waiter
+            state["status"] = "delivering"
+            filtered_headers = {
+                key: value
+                for key, value in headers.items()
+                if key.lower() not in _SENSITIVE_WEBHOOK_HEADERS
+            }
+            data = {
+                "method": method.upper(),
+                "headers": filtered_headers,
+                "body": copy.deepcopy(body),
+                "query": dict(query),
+                "timestamp": datetime_now().isoformat(),
+            }
+            try:
+                await self._workers.send_command(
+                    str(state["runId"]),
+                    {
+                        "type": "webhook_result",
+                        "commandId": command_id,
+                        "requestId": request_id,
+                        "data": data,
+                    },
+                )
+                await asyncio.wait_for(waiter, timeout=10)
+            except (RuntimeError, TimeoutError) as error:
+                raise WorkflowRunError(
+                    "WEBHOOK_DELIVERY_UNCONFIRMED",
+                    "Webhook已接收，但运行进程未确认",
+                    503,
+                ) from error
+            finally:
+                self._command_waiters.pop(command_id, None)
+            return copy.deepcopy(state["responseBody"] or {"success": True}), int(
+                state["responseStatus"]
+            )
+
     def _claim_js_script(
         self, command_id: str, fingerprint: str, data: Mapping[str, Any]
     ) -> tuple[dict[str, Any], int]:
@@ -1082,6 +1225,9 @@ class WorkflowRunCoordinator:
         for state in self._desktop_action_requests.values():
             if state["runId"] == run_id and state["status"] in {"pending", "claimed"}:
                 state["status"] = "expired"
+        for webhook_id, state in tuple(self._webhook_requests.items()):
+            if state["runId"] == run_id:
+                self._webhook_requests.pop(webhook_id, None)
         if self._resources.owner_id == run_id:
             await self._resources.release(run_id)
         intent = self._terminal_intents.pop(run_id, None)

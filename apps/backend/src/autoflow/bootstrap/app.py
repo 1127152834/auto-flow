@@ -610,6 +610,7 @@ def create_app(
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
+        external_webhook = request.url.path.startswith("/api/triggers/webhook/")
         if request.url.path.startswith("/internal/"):
             supplied = request.headers.get("x-autoflow-host-token", "")
             if (
@@ -622,7 +623,7 @@ def create_app(
                     status_code=401,
                     headers={"Cache-Control": "no-store"},
                 )
-        if request.url.path.startswith("/api/") and (
+        if request.url.path.startswith("/api/") and not external_webhook and (
             settings.instance_token is None
             or request.headers.get("x-autoflow-token") != settings.instance_token
         ):

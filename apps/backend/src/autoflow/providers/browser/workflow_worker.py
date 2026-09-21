@@ -131,6 +131,7 @@ async def _run_in_session(
         context.browser_scripts = interactive
         context.speech = interactive
         context.desktop_actions = interactive
+        context.webhook_triggers = interactive
         registry = build_production_executor_registry()
         nested = _WorkerNestedWorkflows(
             command.get("workflowDependencies"),
@@ -498,6 +499,7 @@ class _WorkerNestedWorkflows:
         child.browser_scripts = interactive
         child.speech = interactive
         child.desktop_actions = interactive
+        child.webhook_triggers = interactive
         child.nested_workflows = self
         if self.custom_modules is not None:
             child.custom_modules = self.custom_modules.for_context(child, child_sink)
@@ -670,6 +672,7 @@ class _WorkerCustomModules:
         child.browser_scripts = interactive
         child.speech = interactive
         child.desktop_actions = interactive
+        child.webhook_triggers = interactive
         child.nested_workflows = self._nested_workflows
         child.custom_modules = self.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
@@ -812,6 +815,7 @@ class _WorkerCanvasSubflows:
         child.browser_scripts = interactive
         child.speech = interactive
         child.desktop_actions = interactive
+        child.webhook_triggers = interactive
         child.nested_workflows = self._nested_workflows
         if isinstance(self._parent.custom_modules, _WorkerCustomModules):
             child.custom_modules = self._parent.custom_modules.for_context(
@@ -985,6 +989,8 @@ class _WorkerCommandBus:
         self._pending_desktop_actions: dict[
             str, asyncio.Future[DesktopActionResult]
         ] = {}
+        self._pending_webhooks: dict[str, asyncio.Future[Mapping[str, Any]]] = {}
+        self._webhook_ids: set[str] = set()
 
     def for_context(self, context: ExecutionContext) -> _BoundInputPrompts:
         return _BoundInputPrompts(self, context)
@@ -1158,10 +1164,70 @@ class _WorkerCommandBus:
                 }
             )
 
+    async def wait_for_webhook(
+        self,
+        context: ExecutionContext,
+        *,
+        webhook_id: str,
+        method: str,
+        validate_headers: Mapping[str, Any],
+        validate_params: Mapping[str, Any],
+        response_body: Any,
+        response_status: int,
+        timeout_seconds: float,
+    ) -> Mapping[str, Any]:
+        if context.events is None:
+            raise RuntimeError("Webhook触发事件服务不可用")
+        if webhook_id in self._webhook_ids:
+            raise RuntimeError("Webhook ID已在当前运行中使用")
+        request_id = str(uuid4())
+        future: asyncio.Future[Mapping[str, Any]] = self._loop.create_future()
+        self._webhook_ids.add(webhook_id)
+        self._pending_webhooks[request_id] = future
+        await context.events.publish(
+            {
+                "type": "execution:webhook_waiting",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "webhookId": webhook_id,
+                "method": method,
+                "validateHeaders": dict(validate_headers),
+                "validateParams": dict(validate_params),
+                "responseBody": copy.deepcopy(response_body),
+                "responseStatus": response_status,
+            }
+        )
+        status = "expired"
+        try:
+            data = (
+                await asyncio.wait_for(future, timeout_seconds)
+                if timeout_seconds > 0
+                else await future
+            )
+            status = "triggered"
+            return data
+        finally:
+            self._pending_webhooks.pop(request_id, None)
+            self._webhook_ids.discard(webhook_id)
+            await context.events.publish(
+                {
+                    "type": "execution:webhook_closed",
+                    "requestId": request_id,
+                    "nodeId": context.current_node_id,
+                    "executionId": context.current_execution_id,
+                    "webhookId": webhook_id,
+                    "status": status,
+                }
+            )
+
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
         if command_type == "desktop_action_result":
             self._apply_desktop_action_result(command)
+            return
+        if command_type == "webhook_result":
+            self._apply_webhook_result(command)
             return
         if command_type == "tts_result":
             self._apply_speech_result(command)
@@ -1295,6 +1361,34 @@ class _WorkerCommandBus:
             },
         )
 
+    def _apply_webhook_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        data = command.get("data")
+        future = (
+            self._pending_webhooks.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if (
+            future is None
+            or future.done()
+            or not isinstance(command_id, str)
+            or not isinstance(data, Mapping)
+        ):
+            return
+        future.set_result(copy.deepcopy(dict(data)))
+        _write(
+            self._stdout,
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
     def _cancel_pending(self) -> None:
         for future in self._pending.values():
             if not future.done():
@@ -1308,6 +1402,9 @@ class _WorkerCommandBus:
         for desktop_future in self._pending_desktop_actions.values():
             if not desktop_future.done():
                 desktop_future.cancel()
+        for webhook_future in self._pending_webhooks.values():
+            if not webhook_future.done():
+                webhook_future.cancel()
 
 
 class _BoundInputPrompts:
@@ -1367,6 +1464,28 @@ class _BoundInputPrompts:
             self._context,
             action,
             payload,
+            timeout_seconds=timeout_seconds,
+        )
+
+    async def wait_for_webhook(
+        self,
+        *,
+        webhook_id: str,
+        method: str,
+        validate_headers: Mapping[str, Any],
+        validate_params: Mapping[str, Any],
+        response_body: Any,
+        response_status: int,
+        timeout_seconds: float,
+    ) -> Mapping[str, Any]:
+        return await self._bus.wait_for_webhook(
+            self._context,
+            webhook_id=webhook_id,
+            method=method,
+            validate_headers=validate_headers,
+            validate_params=validate_params,
+            response_body=response_body,
+            response_status=response_status,
             timeout_seconds=timeout_seconds,
         )
 

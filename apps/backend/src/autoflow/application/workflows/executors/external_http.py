@@ -128,7 +128,7 @@ class ApiRequestExecutor(ModuleExecutor):
             return ModuleResult(success=False, error="请求地址不能为空")
         try:
             headers = _object(config.get("requestHeaders", ""), context, strict=True)
-        except ValueError as error:
+        except (TypeError, ValueError) as error:
             return ModuleResult(success=False, error=f"请求头{error}")
         raw_body = _text(config.get("requestBody", ""), context)
         try:
@@ -165,6 +165,109 @@ class ApiRequestExecutor(ModuleExecutor):
             message=f"请求成功 ({status}): {preview}",
             data={"status_code": status, "response": response_body},
         )
+
+
+class WebhookTriggerExecutor(ModuleExecutor):
+    @property
+    def module_type(self) -> str:
+        return "webhook_trigger"
+
+    async def execute(
+        self, config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        webhook_id = _text(config.get("webhookId", ""), context)
+        method = _text(config.get("method", "ANY"), context)
+        timeout = to_int(config.get("timeout", 0), 0, context)
+        save_to_variable = str(config.get("saveToVariable", "webhook_data"))
+        param_prefix = _text(config.get("paramPrefix", "webhook_"), context)
+        if not webhook_id:
+            return ModuleResult(success=False, error="Webhook ID不能为空")
+        try:
+            validate_headers = _json_object(
+                _text(config.get("validateHeaders", ""), context),
+                "请求头验证规则格式错误，必须是有效的JSON",
+            )
+            validate_params = _json_object(
+                _text(config.get("validateParams", ""), context),
+                "查询参数验证规则格式错误，必须是有效的JSON",
+            )
+            response_body = _json_value(
+                _text(config.get("responseBody", ""), context),
+                "响应内容格式错误，必须是有效的JSON",
+                {},
+            )
+        except ValueError as error:
+            return ModuleResult(success=False, error=str(error))
+        if context.webhook_triggers is None:
+            return ModuleResult(success=False, error="Webhook触发服务不可用")
+        try:
+            webhook_data = await context.webhook_triggers.wait_for_webhook(
+                webhook_id=webhook_id,
+                method=method,
+                validate_headers=validate_headers,
+                validate_params=validate_params,
+                response_body=response_body,
+                response_status=to_int(config.get("responseStatus", 200), 200, context),
+                timeout_seconds=timeout,
+            )
+        except TimeoutError:
+            return ModuleResult(
+                success=False, error=f"Webhook等待超时（{timeout}秒）"
+            )
+        except Exception as error:  # noqa: BLE001 - gateway errors become node errors.
+            return ModuleResult(success=False, error=str(error) or "Webhook触发失败")
+
+        data = dict(webhook_data)
+        context.set_variable(save_to_variable, data)
+        if config.get("autoSetParams", True):
+            _set_webhook_variables(context, data, param_prefix)
+        return ModuleResult(
+            success=True,
+            message=f"Webhook已触发，数据已保存到变量: {save_to_variable}",
+            data=data,
+        )
+
+
+def _json_value(text: str, error: str, default: Any) -> Any:
+    if not text:
+        return default
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        raise ValueError(error) from None
+
+
+def _json_object(text: str, error: str) -> dict[str, Any]:
+    value = _json_value(text, error, {})
+    if not isinstance(value, dict):
+        raise TypeError(error)
+    return value
+
+
+def _set_webhook_variables(
+    context: ExecutionContext, data: Mapping[str, Any], prefix: str
+) -> None:
+    for source in (data.get("query"), data.get("body")):
+        if isinstance(source, Mapping):
+            for key, value in source.items():
+                context.set_variable(f"{prefix}{key}", value)
+    headers = data.get("headers")
+    if not isinstance(headers, Mapping):
+        return
+    ignored = {
+        "host",
+        "connection",
+        "user-agent",
+        "accept",
+        "accept-encoding",
+        "accept-language",
+    }
+    for key, value in headers.items():
+        normalized = str(key).lower()
+        if normalized not in ignored:
+            context.set_variable(
+                f"{prefix}header_{normalized.replace('-', '_')}", value
+            )
 
 
 class ApiTriggerExecutor(ModuleExecutor):
@@ -443,6 +546,7 @@ class NotifyWebhookExecutor(ModuleExecutor):
 
 EXTERNAL_HTTP_EXECUTORS = (
     ApiRequestExecutor,
+    WebhookTriggerExecutor,
     ApiTriggerExecutor,
     WebhookRequestExecutor,
     NotifyWebhookExecutor,

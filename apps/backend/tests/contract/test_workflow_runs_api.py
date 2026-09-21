@@ -152,6 +152,145 @@ def test_real_http_input_command_resumes_the_actual_worker(
     assert results["items"][0]["values"] == {"value": 42}
 
 
+def test_external_webhook_resumes_real_worker_without_sidecar_token(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    workflow = client.post(
+        "/api/workflows",
+        json={
+            "id": "webhook-http-flow",
+            "name": "Webhook HTTP 闭环",
+            "nodes": [
+                {
+                    "id": "hook",
+                    "type": "moduleNode",
+                    "position": {"x": 0, "y": 0},
+                    "data": {
+                        "moduleType": "webhook_trigger",
+                        "config": {
+                            "webhookId": "contract-hook",
+                            "method": "POST",
+                            "validateHeaders": '{"Authorization":"Bearer hook-secret"}',
+                            "validateParams": '{"token":"query-secret"}',
+                            "responseBody": '{"accepted":true}',
+                            "responseStatus": 202,
+                            "saveToVariable": "request",
+                            "autoSetParams": True,
+                            "paramPrefix": "hook_",
+                            "timeout": 5,
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+            "clientRequestId": "create-webhook-http",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    started = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "webhook-http-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+        },
+    )
+    assert started.status_code == 202, started.text
+
+    waiting = None
+    for _ in range(200):
+        waiting = next(
+            (
+                event
+                for event in client.app.state.workflow_services.events.replay(
+                    after_sequence=0
+                )
+                if event.event == "execution:webhook_waiting"
+            ),
+            None,
+        )
+        if waiting is not None:
+            break
+        time.sleep(0.01)
+    assert waiting is not None
+    assert "hook-secret" not in str(waiting.data)
+    assert "query-secret" not in str(waiting.data)
+
+    rejected = client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={"x-autoflow-token": "", "authorization": "wrong"},
+        json={"action": "ignored"},
+    )
+    assert rejected.status_code == 403
+
+    triggered = client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={
+            "x-autoflow-token": "",
+            "authorization": "Bearer hook-secret",
+            "x-source": "contract",
+        },
+        json={"action": "sync"},
+    )
+    assert triggered.status_code == 202, triggered.text
+    assert triggered.json() == {"accepted": True}
+
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/webhook-http-run").json()
+        if run["status"] == "completed":
+            break
+        time.sleep(0.01)
+    assert run["status"] == "completed"
+    results = client.get("/api/workflow-runs/webhook-http-run/results").json()
+    values = results["items"][0]["values"]
+    assert values["method"] == "POST"
+    assert values["query"] == {"token": "query-secret"}
+    assert values["body"] == {"action": "sync"}
+    assert "authorization" not in values["headers"]
+    assert client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={"x-autoflow-token": "", "authorization": "Bearer hook-secret"},
+        json={},
+    ).status_code == 404
+
+    restarted = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "webhook-stop-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+        },
+    )
+    assert restarted.status_code == 202, restarted.text
+    for _ in range(200):
+        active = next(
+            (
+                event
+                for event in client.app.state.workflow_services.events.replay(
+                    after_sequence=0
+                )
+                if event.event == "execution:webhook_waiting"
+                and event.data.get("runId") == "webhook-stop-run"
+            ),
+            None,
+        )
+        if active is not None:
+            break
+        time.sleep(0.01)
+    assert active is not None
+    stopped = client.post(
+        f"/api/workflows/{workflow['id']}/stop", json={"runId": "webhook-stop-run"}
+    )
+    assert stopped.status_code == 202, stopped.text
+    assert stopped.json()["status"] == "stopped"
+    assert client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={"x-autoflow-token": "", "authorization": "Bearer hook-secret"},
+        json={},
+    ).status_code == 404
+
+
 def test_real_http_run_freezes_and_executes_saved_workflow_dependency(
     client: TestClient, profile_payload: dict[str, object]
 ) -> None:

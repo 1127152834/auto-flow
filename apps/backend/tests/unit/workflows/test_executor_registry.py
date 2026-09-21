@@ -4,6 +4,7 @@ import json
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.base import (
     ModuleExecutor,
     ModuleResult,
@@ -259,6 +260,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "scheduled_task",
         "probability_trigger",
         "api_trigger",
+        "webhook_trigger",
         "run_workflow_file",
         "subflow",
         "custom_module",

@@ -5,8 +5,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Protocol
 
-from fastapi import APIRouter, Query, status
-from fastapi.responses import FileResponse, Response
+from fastapi import APIRouter, Query, Request, status
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import ConfigDict, Field
 
 from autoflow.adapters.http.schemas import ApiModel
@@ -36,6 +36,16 @@ class WorkflowRunCommands(Protocol):
     def tts_request_state(self, request_id: str) -> dict[str, str]: ...
 
     def desktop_action_state(self, request_id: str) -> dict[str, str]: ...
+
+    async def trigger_webhook(
+        self,
+        webhook_id: str,
+        *,
+        method: str,
+        headers: Mapping[str, str],
+        query: Mapping[str, str],
+        body: Any,
+    ) -> tuple[Any, int]: ...
 
 
 class WorkflowExecuteRequest(ApiModel):
@@ -91,6 +101,43 @@ def workflow_run_command_router(commands: WorkflowRunCommands) -> APIRouter:
         workflow_id: str, request: WorkflowStopRequest
     ) -> Mapping[str, Any]:
         return await commands.stop(workflow_id, request.run_id)
+
+    return router
+
+
+def workflow_trigger_router(commands: WorkflowRunCommands) -> APIRouter:
+    router = APIRouter(prefix="/api/triggers", tags=["studio-workflow-triggers"])
+
+    @router.get("/webhook/{webhook_id}")
+    @router.post("/webhook/{webhook_id}")
+    @router.put("/webhook/{webhook_id}")
+    @router.delete("/webhook/{webhook_id}")
+    async def trigger_webhook(webhook_id: str, request: Request) -> Response:
+        body: Any = dict(request.query_params)
+        if request.method in {"POST", "PUT"}:
+            chunks: list[bytes] = []
+            size = 0
+            async for chunk in request.stream():
+                size += len(chunk)
+                if size > 1024 * 1024:
+                    return JSONResponse(
+                        status_code=413,
+                        content={"detail": "Webhook请求体超过1 MiB限制"},
+                    )
+                chunks.append(chunk)
+            raw = b"".join(chunks)
+            try:
+                body = json.loads(raw) if raw else {}
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                body = {}
+        response_body, response_status = await commands.trigger_webhook(
+            webhook_id,
+            method=request.method,
+            headers=dict(request.headers),
+            query=dict(request.query_params),
+            body=body,
+        )
+        return JSONResponse(content=response_body, status_code=response_status)
 
     return router
 

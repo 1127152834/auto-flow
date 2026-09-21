@@ -20,6 +20,16 @@ class RecordingGateway:
         return self.responses.pop(0)
 
 
+class RecordingWebhookGateway:
+    def __init__(self, data: dict[str, Any]) -> None:
+        self.data = data
+        self.request: dict[str, Any] | None = None
+
+    async def wait_for_webhook(self, **request: Any) -> dict[str, Any]:
+        self.request = request
+        return self.data
+
+
 @pytest.mark.asyncio
 async def test_api_request_preserves_source_status_semantics_and_sets_response() -> (
     None
@@ -134,6 +144,74 @@ async def test_api_trigger_rejects_invalid_source_configuration(
 
     assert executor is not None
     result = await executor.execute(config, ExecutionContext())
+
+    assert result.success is False
+    assert result.error == error
+
+
+@pytest.mark.asyncio
+async def test_webhook_trigger_waits_and_sets_source_variables() -> None:
+    data = {
+        "method": "POST",
+        "query": {"user": "42"},
+        "body": {"action": "sync"},
+        "headers": {"x-source": "fixture", "user-agent": "hidden"},
+    }
+    gateway = RecordingWebhookGateway(data)
+    context = ExecutionContext(webhook_triggers=gateway)
+    executor = build_production_executor_registry().get("webhook_trigger")
+
+    assert executor is not None
+    result = await executor.execute(
+        {
+            "webhookId": "fixture-hook",
+            "method": "POST",
+            "validateHeaders": '{"Authorization":"Bearer secret"}',
+            "validateParams": '{"token":"expected"}',
+            "responseBody": '{"accepted":true}',
+            "responseStatus": 202,
+            "timeout": 5,
+            "saveToVariable": "request",
+            "autoSetParams": True,
+            "paramPrefix": "hook_",
+        },
+        context,
+    )
+
+    assert result.success is True
+    assert context.variables == {
+        "request": data,
+        "hook_user": "42",
+        "hook_action": "sync",
+        "hook_header_x_source": "fixture",
+    }
+    assert gateway.request == {
+        "webhook_id": "fixture-hook",
+        "method": "POST",
+        "validate_headers": {"Authorization": "Bearer secret"},
+        "validate_params": {"token": "expected"},
+        "response_body": {"accepted": True},
+        "response_status": 202,
+        "timeout_seconds": 5,
+    }
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("field", "error"),
+    [
+        ("validateHeaders", "请求头验证规则格式错误，必须是有效的JSON"),
+        ("validateParams", "查询参数验证规则格式错误，必须是有效的JSON"),
+        ("responseBody", "响应内容格式错误，必须是有效的JSON"),
+    ],
+)
+async def test_webhook_trigger_rejects_invalid_json(field: str, error: str) -> None:
+    executor = build_production_executor_registry().get("webhook_trigger")
+
+    assert executor is not None
+    result = await executor.execute(
+        {"webhookId": "fixture-hook", field: "{"}, ExecutionContext()
+    )
 
     assert result.success is False
     assert result.error == error

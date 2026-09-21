@@ -203,6 +203,20 @@ class DesktopActionGateway(Protocol):
     ) -> DesktopActionResult: ...
 
 
+class WebhookTriggerGateway(Protocol):
+    async def wait_for_webhook(
+        self,
+        *,
+        webhook_id: str,
+        method: str,
+        validate_headers: Mapping[str, Any],
+        validate_params: Mapping[str, Any],
+        response_body: Any,
+        response_status: int,
+        timeout_seconds: float,
+    ) -> Mapping[str, Any]: ...
+
+
 @dataclass(frozen=True, slots=True)
 class NestedWorkflowResult:
     reference: str
@@ -281,6 +295,7 @@ class ExecutionContext:
     browser_scripts: BrowserScriptGateway | None = None
     speech: SpeechGateway | None = None
     desktop_actions: DesktopActionGateway | None = None
+    webhook_triggers: WebhookTriggerGateway | None = None
     nested_workflows: NestedWorkflowGateway | None = None
     canvas_subflows: CanvasSubflowGateway | None = None
     custom_modules: CustomModuleGateway | None = None
