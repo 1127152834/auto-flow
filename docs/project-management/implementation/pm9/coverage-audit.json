@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 119,
-        "planned": 59
+        "partially_verified": 121,
+        "planned": 57
       },
       "items": [
         {
@@ -723,12 +723,13 @@
         },
         {
           "id": "DATA-E2E-06",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "external_acceptance_pending",
+            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -1655,11 +1656,11 @@
         {
           "id": "DATA-VER-01",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -1889,6 +1890,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 0,
           "gapKinds": [
+            "implementation_missing",
             "test_missing"
           ]
         },
@@ -2256,10 +2258,10 @@
         },
         {
           "id": "XE-A23",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 3,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2598,11 +2600,11 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 203,
-    "withNoLocatedAssertion": 48,
+    "withAssertions": 204,
+    "withNoLocatedAssertion": 47,
     "statuses": {
-      "partially_verified": 186,
-      "planned": 65
+      "partially_verified": 188,
+      "planned": 63
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "date": "2026-09-21",
-  "status": "local_passed_ci_pending",
+  "status": "superseded_by_input_environment_candidate",
   "releaseAccepted": false,
   "branch": "codex/project-management-pm9-runtime",
   "sourceApi": {
@@ -99,7 +99,8 @@
     "openapi": "generated and check passed",
     "coverageReferences": "251 valid mappings; no open gap marked verified",
     "cleanupFrontend": "2 files / 8 passed",
-    "retention": "30 contract/rule/store tests passed in 5.94s; typecheck/lint/OpenAPI and 100 scripts passed"
+    "retention": "30 contract/rule/store tests passed in 5.94s; typecheck/lint/OpenAPI and 100 scripts passed",
+    "localBusinessCombinations": "business-combinations-darwin-arm64.json"
   },
   "faultInjection": {
     "manualRace": "Both acceptance-after-empty-intent-read and acceptance-before-intent-read are deterministic real-worker tests, with a controlled module clock crossing TTL. No live timing performance claim. TTL-first additionally blocks the real HTTP resume handler after operation acceptance until actual expiry CAS wins; it then returns 409.",
@@ -116,7 +117,9 @@
   "newArchitecture": {
     "status": "awaiting_confirmation",
     "spec": "docs/superpowers/specs/2026-09-21-pm9-runtime-capability-completion.md",
-    "plan": "docs/superpowers/plans/2026-09-21-pm9-runtime-capabilities.md"
+    "plan": "docs/superpowers/plans/2026-09-21-pm9-runtime-capabilities.md",
+    "multiRunAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md",
+    "multiRunStatus": "separate_approval_pending"
   },
   "sourceApiFiles": {
     "apps/backend/src/autoflow/application/project_runs/manual_runtime.py": "27100f1494eefa1ff3e73d7f8a316025a9e11b41886b780565740779797cb750",
@@ -163,15 +166,22 @@
       "conclusion": "failure",
       "failure": "Frontend ProxyManagementPage.test.tsx:107 first findByText timed out at 1338 ms; 5454 other tests passed. Backend passed; later source/package gates did not run.",
       "diagnosis": "Initial fixture uses old last_synced_at and schedules an unrelated background sync; list rendering uses a zero-delay timer. Snapshot is still syncing. Same unmodified file passed 14/14 locally and full frontend passed on ARM/Windows. Scheduling/async wait budget is a hypothesis, not a confirmed production fix.",
-      "next": "One bounded rerun of failed Intel job on the same SHA after run completion; preserve the first failure and do not widen timeouts or drop assertions."
+      "next": "Intel-only attempt 2 cancelled during backend tests after new input-environment production defect required a new candidate.",
+      "report": "ci-follow-through-attempt-1-darwin-x64.json"
     }
   ],
   "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
   "ci": {
     "runId": 35560163432,
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35560163432",
-    "status": "in_progress",
-    "conclusion": null
+    "status": "cancel_requested",
+    "conclusion": null,
+    "attempt": 2,
+    "platformReports": [
+      "ci-follow-through-win32-x64.json",
+      "ci-follow-through-darwin-arm64.json"
+    ]
   },
-  "physicalInstallReport": "install-follow-through-darwin-arm64.json"
+  "physicalInstallReport": "install-follow-through-darwin-arm64.json",
+  "evidenceCommitPolicy": "This report describes 52936b6a and earlier explicitly labelled local evidence. Later input-environment production changes and packaged business runner require a fresh matrix, recorded separately in input-environment-follow-through.json."
 }

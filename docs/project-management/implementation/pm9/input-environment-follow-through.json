@@ -1,0 +1,89 @@
+{
+  "date": "2026-09-21",
+  "status": "local_passed_new_candidate_ci_pending",
+  "releaseAccepted": false,
+  "codeCandidate": "pending-commit",
+  "previousCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
+  "problem": "Input-environment automation validation passed, but batch start required an unrelated project default Profile; deferred resource resolution was never consumed by the scheduler.",
+  "fix": "Defer source Profile selection; after revalidating selected inputs inside the claim transaction, resolve the saved environment and freeze its Profile before creating Run/Task and reserving the environment. Keep effective proxy/model/budgets; reject resolution failure without Task or leases.",
+  "sourceFiles": {
+    "apps/backend/src/autoflow/application/project_runs/resources.py": "ed4046a33ee0c8e5ae47fc005de5f1d16dcfd3fa2d5a03d4b0ee3cda2279b5cc",
+    "apps/backend/src/autoflow/application/project_runs/scheduler.py": "2227a9d4e29dd28eeb951f1b9707061ceb3661e47ccdc29c9f39c2ba78677c24",
+    "apps/backend/src/autoflow/application/project_automations/resource_query.py": "47b39f59501788cec04170e339c5634e19073e29ac5fb89d8f5c91ee59dd6750",
+    "apps/backend/src/autoflow/bootstrap/app.py": "f95eda44ba1e81092e59baab32b1972e43ef34856d9869b7d75b649c1cc6f50e",
+    "apps/backend/tests/unit/test_project_run_resources.py": "c738aad8d1fb9ee68e9723c253db9410f22b9d2e37d6dde013e7e01b116030ca",
+    "apps/backend/tests/unit/test_project_automation_resources.py": "034e9a16805e578b74f28debd2b5e7a8a427a79975cbcda5076c74e8d58cd9af",
+    "apps/backend/tests/integration/test_project_data_scheduler.py": "2a1202a0f87908d894bad200b82117e8f48aaa5915b36d547292be507ecd4ee9",
+    "scripts/smoke-project-business-combinations.mjs": "033a5d4cba98cc6de0509afb18ad25a461ce5d6d006cade7b99c58438ed1c369",
+    ".github/workflows/ci.yml": "22e960bfaeca67efcfbeb27ecc8a70ce22ef63b69ae48b237224764804b2e800"
+  },
+  "checks": {
+    "red": "Original 529 ARM installer sidecar returned 422 environmentPolicy.profileId on the full XE-A23 restore; new unit reproduced the same failure.",
+    "targeted": "54 passed in 19.86s; reviewer independently reran 54 passed in 19.99s",
+    "ruff": "passed",
+    "mypy": "397 source files passed",
+    "openapi": "passed, no contract regeneration required",
+    "scripts": "100 passed",
+    "build": "PyInstaller backend build passed",
+    "review": "No actionable P1/P2 findings in resource resolution changes",
+    "businessCombinations": {
+      "status": "passed",
+      "platform": "darwin",
+      "arch": "arm64",
+      "packaged": true,
+      "startedAt": "2026-09-21T05:54:31.688Z",
+      "executableSha256": "183f0399c5440d26630905239dfd8bb38353b519f786303f1b6b4eba6cef3c3b",
+      "projectId": "49caa789-ba2b-4591-89f3-5779d6b6c5d3",
+      "sharedPersonChain": {
+        "status": "passed",
+        "checks": [
+          "P1 verified state/content/environment link and revisions unchanged across both Tasks",
+          "E1 explicitly registered and excluded from original pending selection; retry batch creates no Task/account",
+          "Exactly one new A1 and E1 link the same saved login environment",
+          "Next Task starts from A1 input environment, restores cookie, and selects P1 through personNo field equality"
+        ],
+        "taskIds": [
+          "5e4a244e-60ef-4e5f-ba59-62d94bee1368",
+          "5ba5fe03-1838-4305-8985-e5bf385f771c"
+        ],
+        "environmentId": "23e326e4-e36a-5972-8a6c-dfd62b8510c1",
+        "scope": "ARM packaged public HTTP and actual worker/browser; no full native UI flow or live Sheets claim"
+      },
+      "checks": [
+        "Second parameter batch remained blocked with its Task queued while first Task waited for manual input",
+        "After first Task resumed and finished, second Task ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status",
+        "Both sequential Tasks completed; manual node executed once"
+      ],
+      "taskIds": [
+        "23c4f942-baef-4d3d-a0ed-d8c1d2ec0e0b",
+        "ccc8bc09-a38b-47e7-aae3-470206200066"
+      ],
+      "concurrency": {
+        "status": "implementation_missing",
+        "observedBatchStatus": "blocked",
+        "observedTaskStatus": "queued",
+        "reason": "Production WorkflowRunDispatcher owns one worker and reports capacity=1. Manual waiting occupies that slot.",
+        "unsupportedScenario": "Concurrent old-contract Task across schema extension is unsupported; this run asserts queuing and subsequent sequential completion only"
+      },
+      "remaining": [
+        "Concurrent old-contract Task across compatible schema extension is NOT verified",
+        "Sheets structure/value phases require authorized live resources",
+        "Excel source byte preservation belongs to separate native import/export evidence",
+        "Conflict and partial-success combinations remain separate evidence"
+      ],
+      "cleanup": "passed"
+    }
+  },
+  "localBuildScope": "Fresh local frozen backend, not a newly generated DMG or signed installer. Native Excel/DMG evidence remains tied to 52936b6a.",
+  "ciScope": "New packaged business-combination runner added to existing three-platform workflow; full new candidate matrix required. No earlier candidate results substitute for it.",
+  "initialFailure": {
+    "status": "failed",
+    "platform": "darwin",
+    "arch": "arm64",
+    "packaged": true,
+    "startedAt": "2026-09-21T05:44:25.898Z",
+    "executableSha256": "8e525c8e2c4f85e78381763b7479d432587e62bc03f7e06b7b39a73eaa160d35",
+    "error": "AssertionError [ERR_ASSERTION]: POST /api/v1/projects/aeb68fb8-5df1-4c0a-bd77-63397b3fee38/automations/27aaed18-2224-470c-8161-c52e379fd57a/batches: 422 {\"error\":{\"code\":\"VALIDATION_ERROR\",\"message\":\"运行资源配置无效\",\"details\":{\"fields\":{\"environmentPolicy.profileId\":\"请选择浏览器配置\"},\"retryable\":false,\"domainCode\":\"validation_error\"},\"requestId\":\"22c49695-fa11-4d13-9de5-16361e4a9515\"}}\n    at api (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:19:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async start (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:47:22)\n    at async sharedPersonChain (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:110:44)\n    at async checkBusinessCombinations (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:166:24)\n    at async main (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:188:27)\n    at async file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:209:90",
+    "cleanup": "passed"
+  }
+}

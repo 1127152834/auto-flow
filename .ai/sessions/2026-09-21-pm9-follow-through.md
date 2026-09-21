@@ -23,3 +23,11 @@
 新增方案复审（confirmed）：补齐 scheduler 消费子流程输入输出/人工目标的入口与仅选后继断言；并行人工在发 capability 前排队、建项后才起人工 TTL、自动预算仅在持久 waiting_manual 暂停。复审无阻塞发现，规格仍 proposed。补核 DATA-E2E-06/XE-A23 现有直接 capability 断言，明确隔离集成与真实组合的差别，将 Sheets 外部授权缺口单列；未提升验收状态。
 
 原生 ARM UI 补证（confirmed）：使用当前 DMG 安装副本与独立 user-data-dir，经 Computer Use 实际操作 macOS open-panel/save-panel，导入并导出一条自生成 Excel 记录；UI 与 openpyxl 读回确认文本 001/中文，源文件 hash 不变，无 QA dialog override。仅关闭这一原生文件路径子条件，未证明 Google 配置面板、凭据、Gatekeeper 或其他平台实机。
+
+映射收尾（confirmed）：DATA-VER-01 补引用本轮实际 worker 人工竞争中原始 inputSnapshot 值/版本保持的断言；界面时间/版本展示仍为 gap。当前为 204 条有断言/47 条无直接场景，状态仍 186 partial/65 planned/0 verified。
+
+组合补测（confirmed）：同一 52936b6a ARM 包真实 HTTP/worker 首次并发场景中旧人工任务到期后第二任务才完成，未通过并发验收；可复现第二参数批次 blocked/Task queued。脚本修正“无 Task”的错误预期，顺序继续后验证持久 ensureField、第二表精确新增一条、查询/更新和显式状态，清理通过。DATA-E2E-06 仅据此变 partial，FLOW-A02 仍 planned；总计 187 partial/64 planned/0 verified。单 owner/worker 与资源锁是新实现缺口，新增多 Run 设计/文件级切片独立请求确认，未实施。Windows 全 CI 通过（3183/63 后端、5455 前端、7 实际 worker 故障）；Intel 同 SHA attempt 2 已接受。新增手工验收脚本不是 52936b6a CI 的测试内容，另存脚本 hash 与本机报告，不重复触发无关三平台流水线。
+
+补充复审（confirmed）：新手工验收脚本无剩余实质发现；S5 方案修正参数批次 maxTasks 连续创建语义，保持单批次同时最多一个活动实例；明确历史现场核验未完成时全局准入继续关闭。两项仅设计澄清，仍未获实施批准。
+
+2026-09-21 最新校正（confirmed，来源 input-environment-follow-through.json）：XE-A23 真实包链暴露输入环境启动仍要求默认 Profile，修复为实际领取事务冻结所选环境 Profile、忽略无关默认配置、解析失败不创建 Task/lease。54 定向、ruff/mypy/OpenAPI、100 脚本、PyInstaller 和完整真实人员/邮箱/账号恢复链通过，独立复审无 P1/P2。人员预先关联另一环境且全程关联/数据版本不变；邮箱原筛选不再创建 Task，新账号仅一条。当前 204 有断言/47 无直接场景，188 partial/63 planned/0 verified。新增生产改动需要新三平台矩阵；52936b6a Windows/ARM 成功保留，Intel attempt 2 因新候选取消。S1–S5 架构仍待确认，releaseAccepted=false。

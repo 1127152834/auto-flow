@@ -19,7 +19,7 @@
 
 ## 2. 覆盖台账与真实场景仍未闭合
 
-后续复核：251 条已补 `testMapping`，200 条有实际断言引用，51 条明确未定位直接场景测试；73 条失效预定路径全部补了映射或缺口。原 22 条 verified 发现未闭合子条件，已逐项退回 partial，并保留 statusBeforeReview。补入本轮真实场景后，当前合计为 0 verified / 186 partially_verified / 65 planned（203 条有断言，48 条仍未定位直接场景）。详情见 [test-mapping-review.md](test-mapping-review.md)。以下表格是复核前快照，已被本段当前统计取代。
+后续复核：251 条已补 `testMapping`，200 条有实际断言引用，51 条明确未定位直接场景测试；73 条失效预定路径全部补了映射或缺口。原 22 条 verified 发现未闭合子条件，已逐项退回 partial，并保留 statusBeforeReview。补入本轮真实场景后，当前合计为 0 verified / 188 partially_verified / 63 planned（204 条有断言，47 条仍未定位直接场景）。详情见 [test-mapping-review.md](test-mapping-review.md)。以下表格是复核前快照，已被本段当前统计取代。
 
 此前 d59607f3 验收已把 DATA-LINK-05、FLOW-A16、XE-C12、XE-C18、XE-G04、XE-G05 六项直接匹配的三平台成功链补入台账，状态从 planned 改为 partially_verified；没有将一部分断言升级为整项 verified。
 
@@ -41,7 +41,7 @@
 3. XE-A10/12/14/23/24/25：旧环境候选发布冲突、saved_unlinked 仅修复关联、人工继续/到期竞争、混合初始输入与新建记录的 End 关联、禁止替换其他身份、新增字段后关联新记录。
 4. DATA-E2E-04/05 与 DATA-SH/SYNC/LIFE：跨项目远端字段写入、发送未知/重启核验、重新授权/绑定和归档时未决操作。
 
-这里列的是需要补齐或核对的**生产端到端证据**，没有断言相关单元/集成测试不存在。完整逐项列表见 [coverage-audit.json](coverage-audit.json)，原文与已有报告见 [coverage.json](../coverage.json)。本轮 73 条路径映射已完成；剩余完整业务组合、UI 与外部专项按实际缺口继续补证。
+其中 DATA-E2E-06 并发部分已确认是**实现缺失**（见下），其余条目按 coverage 中分类核对生产端到端证据，没有断言相关单元/集成测试不存在。完整逐项列表见 [coverage-audit.json](coverage-audit.json)，原文与已有报告见 [coverage.json](../coverage.json)。本轮 73 条路径映射已完成；剩余完整业务组合、UI 与外部专项按实际缺口继续补证。
 
 ## 3. 外部与发行证据
 
@@ -62,12 +62,18 @@
 - 人工继续/到期两种交错均有真实 worker 失败复现，修复采用同一状态版本 CAS，本机当前共 18 个真实浏览器场景通过，包含实际 HTTP 在途继续与 TTL 先胜竞争；最后占用修正另复测旧候选真实链。
 - 生产环境操作造成通用操作列表 500 已修复；列表、ID、项目原键返回既有环境 DTO，生成客户端同步，workspace 作用域不扩大。
 - 生产 HTTP 双输入、任务连续写、人工新值保护、失败保留提交、混合关联、禁止替换、关联修复和基础旧代次拒绝均通过。关联提交边界另有实际 worker linkRevision 竞争及全组回滚断言。
-- 本轮具体运行与故障注入边界见 [follow-through.json](follow-through.json)。候选 52936b6a 的 ARM 全量/源码/打包 CI 已通过；Windows 后端及前端已通过、后续链仍运行；Intel 前端首次元素等待失败，保留记录并仅重验失败平台，不沿用旧报告。
+- 本轮具体运行与故障注入边界见 [follow-through.json](follow-through.json)。候选 52936b6a 的 ARM 全量/源码/打包 CI 已通过；Windows 全量/源码/打包 CI 亦已通过；Intel 前端首次元素等待失败，保留记录，原 SHA 仅 Intel 重跑已接受（attempt 2），不沿用旧报告。
 
 XE-A10 已增加真实 worker 关闭/候选暂存后在发布边界注入 ENOSPC、T2 发布 g2、旧 T1 冲突与另存；修复 retained_unsaved 的状态、现场额度和原子重获占用。发布结果不明仍保留占用，原生 UI/物理磁盘故障仍未证明。
 
-当前仍需补的本地完整组合包括 XE-A23 的消耗邮箱筛选与共享人员/新账号后继，以及 DATA-E2E-06 的运行中兼容字段与并发旧契约。上述基础机制有测试不代表这些整组已验收；UI 反馈亦逐项保留 gap。四项新增架构已出具体方案，等待确认。
+XE-A23 的消耗邮箱筛选与共享人员/新账号后继已在下述新本机链完成；当前仍缺 DATA-E2E-06 的并发旧契约。运行中兼容字段/新建记录/修改/状态的串行真实链已补，但并发缺少生产多 Run 能力。上述基础机制有测试不代表这些整组已验收；UI 反馈亦逐项保留 gap。四项新增架构已出具体方案，等待确认。
 
 候选校正（confirmed）：f25b3867 的三平台 CI 均在类型检查失败，未运行生产链。此前 typecheck passed 记录有误，cleanupResidue 未接纳环境操作 DTO；已修复并通过新本机类型检查，后续候选重新验证。
 
 本机安装包补证（confirmed）：已下载 52936b6a 的 ARM DMG，完成镜像校验、只读挂载、隔离复制、真实应用启动、认证 sidecar 健康和父进程退出清理；镜像已卸载。见 [install-follow-through-darwin-arm64.json](install-follow-through-darwin-arm64.json)。随后通过真实 macOS open-panel/save-panel 完成 Excel 导入与导出，读回保留文本 001/中文，源工作簿 hash 不变；未使用 QA 面板替代。这只关闭 ARM 安装包挂载/复制/启动及该 Excel 原生路径子条件，不证明 Gatekeeper、其他原生专项、凭据、签名或完整卸载验收。
+
+新增并发边界（confirmed）：52936b6a ARM 包的第二参数批次 blocked、Task queued，旧人工任务占据唯一执行槽。串行加列/新建/修改/状态成功见 [补测报告](business-combinations-darwin-arm64.json)，不能作为并发旧契约成功。FLOW-A02 与 DATA-E2E-06 新增 implementation_missing；多 Run owner/资源集合租约与单 Run 分支隔离是不同工作，详见 [独立补充方案与切片](../../../superpowers/specs/2026-09-21-pm9-multi-run-capacity.md)，尚未获批。
+
+当前 Windows 候选实测（52936b6a）：五路万条写入 1007788 ms、2 次明确 busy 重试；合成 60 秒发出/读回 1000 条，最大批次延迟 188 ms。原始指标见 ci-follow-through-win32-x64.json；不据这些数据虚构 worker 吞吐 SLO。
+
+最新候选更新（confirmed）：XE-A23 完整补测发现 inputEnvironment 在开始批次时错误要求无关默认 Profile，且 atTaskStart 未由调度器消费。已修复为领取事务重验输入后冻结所选环境 Profile；无关默认配置不参与检查，解析失败无 Task/lease。54 定向及独立复审通过，新 frozen backend 的完整人员/邮箱/账号恢复链通过，包括人员原本已有关联且未被替换；详见 input-environment-follow-through.json。该生产修改需要新三平台矩阵，52936b6a 的 Intel 重跑已因候选变更取消，旧 Windows/ARM 成功只留历史。当前 188 partial/63 planned/0 verified，新候选结果以 verification.json 为准。

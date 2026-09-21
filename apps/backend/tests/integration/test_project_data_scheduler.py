@@ -1085,3 +1085,19 @@ async def test_identical_ids_in_two_workspaces_do_not_share_stop_or_claim_gate(
             )
     finally:
         other.dispose()
+
+
+def test_deferred_environment_resolution_failure_creates_no_task_or_lease(data_services):
+    factory, project, _, _, _, _, scheduler = data_services
+    batch = start(data_services)
+    with factory() as session:
+        row = session.get(ProjectBatchRow, batch.batch_id)
+        row.frozen_request = {**row.frozen_request, "resourceRequest": {"environmentResolution": "atTaskStart"}}
+        session.commit()
+    assert scheduler._claim_data_task(project, batch.batch_id) == "configurationError"
+    with factory() as session:
+        row = session.get(ProjectBatchRow, batch.batch_id)
+        assert row.claim_gate_state == "closed"
+        assert row.selection_outcome["errorCode"] == "RESOURCE_UNAVAILABLE"
+        for model in (ProjectTaskRow, WorkflowRunRow, ProjectTaskInputSnapshotRow, ProjectRecordLeaseRow):
+            assert session.scalar(select(func.count()).select_from(model)) == 0

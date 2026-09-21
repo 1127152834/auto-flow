@@ -49,7 +49,7 @@ class ProjectAutomationResourceQuery:
         profile: Profile | None = None
         policy = automation.environment_policy
         source = policy.get("source")
-        profile_id = policy.get("profileId") or defaults.get("profileId")
+        profile_id = None if source == "inputEnvironment" else policy.get("profileId") or defaults.get("profileId")
         if source == "fixedEnvironment" and self._environments is not None:
             try:
                 profile_id = self._environments.resolve(

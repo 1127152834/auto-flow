@@ -10,8 +10,10 @@
 
 静态检查：`node --test scripts/verify-pm9-coverage.test.mjs`、`node scripts/verify-pm9-coverage.mjs`。检查 251 个唯一 id、实际文件/函数、分类与缺口；拒绝不存在函数、非法分类、带缺口的 verified。它不理解业务断言，不能据其通过宣称规格已实现。
 
-补齐真实场景后，203 条具有断言映射，48 条仍未定位直接场景断言；当前 186 partial / 65 planned / 0 verified。新增场景只将直接匹配的 planned 改为 partial，未清除尚未覆盖的原始业务组合。
+补齐真实场景后，204 条具有断言映射，47 条仍未定位直接场景断言；当前 188 partial / 63 planned / 0 verified。新增场景只将直接匹配的 planned 改为 partial，未清除尚未覆盖的原始业务组合。
 
 本轮真实场景复用 `scripts/project-runtime-smoke.mjs`，源码与打包应用调用同一入口。交付中保存对应原始 JSON；只有报告明确出现且断言通过的场景才可增加生产证据。真实 worker 的响应丢失/人工竞争使用 `test_project_batch_real_cloakbrowser.py`，明确记录故障注入边界；不将受控时钟称为实时时序性能测试。
 
 服务账号 Sheets 与系统凭据已有 PM6 历史实网证据；本轮映射中的当前生产证据缺口不撤销该事实。OAuth、当前 PM9 打包全链、签名及实机专项仍单独待验收。`releaseAccepted=false`。
+
+补测校正：DATA-E2E-06 仅对串行真实加列/增行/修改/状态断言提升为 partial；多个活跃 Run 的能力缺失另列 implementation_missing，不提升为 verified。FLOW-A02 仍 planned；单槽排队证据不是并发隔离正向证据。

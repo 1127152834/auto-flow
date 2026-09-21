@@ -250,3 +250,8 @@ def test_automation_model_none_suppresses_inheritance_and_selected_model_is_loca
         "type": "modelProvider",
         "modelProviderId": "automation-model",
     }
+
+
+def test_input_environment_does_not_validate_unrelated_default_profile():
+    query = _query({"profileId": "missing-unrelated-default", "proxy": {"mode": "sourceDefault"}, "modelProviderId": None})
+    assert query.inspect_resources(_automation({"source": "inputEnvironment", "inputId": "account-input"})) == []

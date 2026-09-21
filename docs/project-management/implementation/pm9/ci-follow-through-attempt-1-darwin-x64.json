@@ -1,0 +1,80 @@
+{
+  "date": "2026-09-21",
+  "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
+  "runId": 35560163432,
+  "runAttempt": 1,
+  "jobId": 106211419077,
+  "jobUrl": "https://github.com/1127152834/auto-flow/actions/runs/35560163432/job/106211419077",
+  "status": "failed",
+  "backend": "3217 passed, 29 skipped, 2 warnings in 1306.33s (0:21:46)",
+  "frontend": {
+    "filesPassed": 404,
+    "filesFailed": 1,
+    "testsPassed": 5454,
+    "testsFailed": 1,
+    "failedTest": "src/renderer/domains/proxies/tests/ProxyManagementPage.test.tsx:107 loads proxies, opens the detail drawer, and keeps unverified writes disabled",
+    "assertion": "expect(await screen.findByText('Dallas Verizon')).toBeInTheDocument()",
+    "observedDurationMs": 1338,
+    "error": "TestingLibraryElementError: Unable to find an element with the text: Dallas Verizon",
+    "uiState": "Initial row not yet rendered; sync button reports 同步中…",
+    "laterGates": "Build, real worker fault gate, source/packaged runtime and installer did not execute."
+  },
+  "localDiagnostic": "Same unmodified test file: 14 passed / 1 file in 6.16 s (tests 1.91 s). ARM/Windows full frontend on same candidate passed.",
+  "rootCauseStatus": "unconfirmed; scheduling/1 s async lookup budget suspected, no product fix or timeout relaxation claimed",
+  "artifact": {
+    "id": 10621958981,
+    "name": "pm9-macos-15-intel",
+    "sizeBytes": 1070,
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35560163432/artifacts/10621958981",
+    "scope": "Only HTTP preflight; preserved before rerun."
+  },
+  "httpPreflight": {
+    "status": "passed",
+    "platform": "darwin",
+    "arch": "x64",
+    "packaged": false,
+    "startedAt": "2026-09-21T04:19:30.761Z",
+    "checks": [
+      "1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses",
+      "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+      "archive blocks writes, repeat command recovers one operation, restore preserves data",
+      "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+      "restarted production sidecar retains the same project and record"
+    ],
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 1000,
+      "busyRetries": 0,
+      "table": {
+        "projectId": "26f5d073-d3be-421e-ab84-93798da7ac5c",
+        "tableId": "8fb3132d-e7c4-4fc9-8c0e-69e212f6d6c0",
+        "name": "PM9 并发写入回归",
+        "description": "",
+        "sourceKind": "local",
+        "source": {
+          "kind": "local"
+        },
+        "datasetGeneration": "7e1e75a9-a1c9-430a-ba30-70ff1501dfa9",
+        "tableRevision": 1,
+        "identity": {
+          "mode": "system"
+        },
+        "slotDefinitions": [],
+        "recordCount": 0,
+        "syncSummary": {
+          "status": "notApplicable",
+          "pendingCount": 0,
+          "unknownCount": 0
+        },
+        "createdAt": "2026-09-21T04:19:37.462739Z",
+        "updatedAt": "2026-09-21T04:19:37.462739Z"
+      }
+    },
+    "projectId": "26f5d073-d3be-421e-ab84-93798da7ac5c",
+    "tableId": "ecf07248-4101-43ff-87f4-081c59a16b51",
+    "tablePath": "/projects/26f5d073-d3be-421e-ab84-93798da7ac5c/tables/ecf07248-4101-43ff-87f4-081c59a16b51",
+    "boundary": "production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed"
+  },
+  "releaseAccepted": false
+}

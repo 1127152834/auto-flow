@@ -213,3 +213,25 @@ def test_rejects_missing_effective_profile_without_freezing():
         "environmentPolicy.profileId": "请选择浏览器配置"
     }
     assert browser.calls == []
+
+
+@pytest.mark.parametrize("defaults", [{}, {"profileId": "unrelated-default"}])
+def test_input_environment_defers_profile_until_claim_and_uses_selected_source(defaults):
+    from autoflow.domain.environments.models import (
+        EnvironmentRef,
+        ResolvedEnvironmentSource,
+    )
+
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser, object())
+    pending = resolver(automation({"source": "inputEnvironment", "inputId": "input-1", "proxyOverride": {"mode": "none"}}), defaults)
+    assert pending["environmentResolution"] == "atTaskStart"
+    assert "profileId" not in pending
+    assert browser.calls == []
+    selected = ResolvedEnvironmentSource("inputEnvironment", EnvironmentRef("project-1", "environment-1", 3, 1), "saved-profile", {"profileId": "saved-profile"})
+    request = resolver.freeze_input_environment(pending, selected)
+    assert browser.calls == [("saved-profile", {"mode": "none"}, None)]
+    assert request["browser"] == "persistent"
+    assert request["environmentRef"]["contentGeneration"] == 3
+    assert request["automaticExecutionTimeoutSeconds"] == 12.5
+    assert "environmentResolution" not in request

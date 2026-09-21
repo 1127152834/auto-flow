@@ -98,6 +98,8 @@ jobs:
           if (result.status !== 0) process.exit(result.status ?? 1)
           const project = spawnSync(process.execPath, ['scripts/smoke-project-management.mjs', '--executable', executable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
           if (project.status !== 0) process.exit(project.status ?? 1)
+          const combinations = spawnSync(process.execPath, ['scripts/smoke-project-business-combinations.mjs', '--executable', executable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
+          if (combinations.status !== 0) process.exit(combinations.status ?? 1)
           const projectDesktopExecutable = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
           const projectDesktop = spawnSync(process.execPath, ['scripts/smoke-project-management-desktop.mjs', '--executable', projectDesktopExecutable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
           if (projectDesktop.status !== 0) process.exit(projectDesktop.status ?? 1)

@@ -12,13 +12,18 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
 from autoflow.application.workflows.runtime import WorkflowRuntimeService
 from autoflow.domain.project_runs.input_selection import MAX_CANDIDATE_EVALUATIONS
 from autoflow.domain.project_runs.models import ProjectRunError, batch_to_dict
-from autoflow.domain.projects.models import ProjectOperation
-from autoflow.domain.workflows.runtime import TERMINAL_STATUSES, WorkflowRuntimeError
+from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.domain.workflows.runtime import (
+    TERMINAL_STATUSES,
+    WorkflowRuntimeError,
+    thaw_json,
+)
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_claims import (
     SqlAlchemyProjectInputGroups,
@@ -89,9 +94,11 @@ class ProjectBatchScheduler:
         core: WorkflowRunDispatcher,
         gate: QuiesceGate,
         environments: Any | None = None,
+        resource_resolver: ProjectRunResourceResolver | None = None,
     ):
         self._factory, self._core, self._gate = factory, core, gate
         self._environments = environments
+        self._resource_resolver = resource_resolver
         # One sidecar owns this database; serialize dispatch selection and stop admission.
         self._lock = asyncio.Lock()
         self._wake = asyncio.Event()
@@ -518,6 +525,7 @@ class ProjectBatchScheduler:
         *,
         core_capacity: int = 1,
         environments: Any | None = None,
+        resource_resolver: ProjectRunResourceResolver | None = None,
     ) -> str:
         """Prepare outside the write lock, then atomically commit one data Task."""
         prepared = ProjectBatchScheduler._prepare_data_claim(
@@ -552,6 +560,7 @@ class ProjectBatchScheduler:
             selection,
             core_capacity=core_capacity,
             environments=environments,
+            resource_resolver=resource_resolver,
         )
         return result
 
@@ -562,6 +571,7 @@ class ProjectBatchScheduler:
             batch_id,
             core_capacity=max(1, int(getattr(self._core, "capacity", 1))),
             environments=self._environments,
+            resource_resolver=self._resource_resolver,
         )
         if result == "ready" and self._environments is not None:
             self._attach_claimed_environment(project_id, batch_id)
@@ -588,7 +598,7 @@ class ProjectBatchScheduler:
                     if isinstance(item, dict) and item.get("inputId"):
                         inputs[item["inputId"]] = item
             frozen = batch.frozen_request or {}
-            policy = frozen.get("environmentOverride") or frozen.get("automation", {}).get(
+            policy = frozen.get("resourceRequest", {}).get("environmentPolicy") or frozen.get("environmentOverride") or frozen.get("automation", {}).get(
                 "environmentPolicy"
             )
         if not policy:
@@ -689,6 +699,7 @@ class ProjectBatchScheduler:
         *,
         core_capacity: int = 1,
         environments: Any | None = None,
+        resource_resolver: ProjectRunResourceResolver | None = None,
     ) -> str:
         with factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -827,6 +838,22 @@ class ProjectBatchScheduler:
                 if isinstance(binding, dict)
                 else []
             )
+            resource_request = prepared["resourceRequest"]
+            policy = resource_request.get("environmentPolicy") or row.frozen_request["automation"]["environmentPolicy"]
+            if resource_request.get("environmentResolution") == "atTaskStart":
+                try:
+                    if environments is None or resource_resolver is None:
+                        raise ProjectRunError("RESOURCE_UNAVAILABLE", "环境资源解析尚未接入", 409)
+                    selected_source = environments.environments.resolve_source_in_session(
+                        session, project_id, policy,
+                        {item.input_id: thaw_json(item.value) for item in selection.inputs},
+                    )
+                    resource_request = resource_resolver.freeze_input_environment(resource_request, selected_source)
+                except (ProjectError, ProjectRunError) as error:
+                    row.claim_gate_state = "closed"
+                    row.selection_outcome = {"status": "configurationError", "issueDetails": {"environmentPolicy": error.message}, "errorCode": error.code}
+                    ProjectBatchScheduler._commit(session)
+                    return "configurationError"
             run = WorkflowRuntimeService(factory).prepare_run(
                 run_request_id=request_id,
                 prepared_content_id=prepared["preparedContentId"],
@@ -837,7 +864,7 @@ class ProjectBatchScheduler:
                     "taskId": task_id,
                     "inputSnapshotId": snapshot_id,
                 },
-                resource_request=prepared["resourceRequest"],
+                resource_request=resource_request,
                 capability_bindings=capability_bindings,
                 created_at=now,
                 uow=session,
@@ -875,7 +902,6 @@ class ProjectBatchScheduler:
             )
             session.flush()
             if environments is not None:
-                policy = row.frozen_request["automation"]["environmentPolicy"]
                 environments.reserve_task_instance(
                     session, project_id, task_id, run.run_id, policy,
                     {item["inputId"]: item for item in inputs if item.get("inputId")},

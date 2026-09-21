@@ -420,19 +420,19 @@ def create_app(
         model_service,
         environment_service,
     )
+    project_resource_resolver = ProjectRunResourceResolver(
+        automation_resources, app.state.project_workflow_resources, environment_service,
+    )
     project_run_coordinator = ProjectRunCoordinator(
         session_factory,
         app.state.project_workflow_runtime,
-        resolve_resources=ProjectRunResourceResolver(
-            automation_resources,
-            app.state.project_workflow_resources,
-            environment_service,
-        ),
+        resolve_resources=project_resource_resolver,
         available_capabilities=["browser.cloakbrowser", "project.data"],
         environments=environment_service,
     )
     project_run_scheduler = ProjectBatchScheduler(
-        session_factory, project_workflow_dispatcher, quiesce_gate, environment_service
+        session_factory, project_workflow_dispatcher, quiesce_gate, environment_service,
+        resource_resolver=project_resource_resolver,
     )
     project_pending_work = SqlAlchemyProjectPendingWork(session_factory)
     app.state.project_run_coordinator = project_run_coordinator

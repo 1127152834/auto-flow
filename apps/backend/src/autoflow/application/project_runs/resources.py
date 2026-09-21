@@ -6,6 +6,7 @@ from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
 from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
+from autoflow.domain.environments.models import ResolvedEnvironmentSource
 from autoflow.domain.profiles.errors import KernelNotInstalled, ProfileNotFound
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.project_runs.models import ProjectRunError
@@ -50,6 +51,10 @@ class ProjectRunResourceResolver:
             if "modelProviderId" in policy
             else project_defaults.get("modelProviderId")
         )
+        timing = {
+            "manualDeadlineSeconds": automation.run_policy["manualDeadlineSeconds"],
+            "automaticExecutionTimeoutSeconds": automation.run_policy["automaticExecutionTimeoutSeconds"],
+        }
         profile_id = policy.get("profileId") or project_defaults.get("profileId")
         pinned = None
         if source == "fixedEnvironment":
@@ -60,27 +65,22 @@ class ProjectRunResourceResolver:
         elif source == "inputEnvironment":
             if self._environments is None:
                 raise _field_error("environmentPolicy.source", "保存环境尚未接入")
-            if inputs:
-                pinned = self._environments.resolve(
-                    automation.project_id, policy, inputs=inputs
-                )
-                profile_id = pinned.profile_id
+            if inputs is None:
+                return {
+                    "environmentResolution": "atTaskStart",
+                    "environmentPolicy": dict(policy),
+                    "proxy": proxy,
+                    "modelProviderId": model_provider_id,
+                    **timing,
+                }
+            pinned = self._environments.resolve(
+                automation.project_id, policy, inputs=inputs
+            )
+            profile_id = pinned.profile_id
         if not isinstance(profile_id, str) or not profile_id:
             raise _field_error("environmentPolicy.profileId", "请选择浏览器配置")
 
-        try:
-            request = self._browser.freeze(
-                profile_id,
-                proxy=proxy,
-                model_provider_id=model_provider_id,
-            )
-        except (ProfileNotFound, KernelNotInstalled, WorkflowRuntimeError) as error:
-            raise ProjectRunError(
-                "RESOURCE_UNAVAILABLE",
-                "运行所需资源不可用",
-                422,
-                {"retryable": False},
-            ) from error
+        request = self._freeze_profile(profile_id, proxy, model_provider_id)
         if pinned is not None:
             request = {
                 **request,
@@ -88,15 +88,33 @@ class ProjectRunResourceResolver:
                 "environmentRef": pinned.environment_ref.to_dict() if pinned.environment_ref else None,
                 "identityPackage": pinned.identity_package,
             }
-        elif source == "inputEnvironment":
-            request = {**request, "environmentResolution": "atTaskStart"}
+        return {**request, **timing}
+
+    def freeze_input_environment(
+        self, pending: dict[str, Any], selected: ResolvedEnvironmentSource,
+    ) -> dict[str, Any]:
+        """Freeze the source selected and reserved by the Task claim transaction."""
+        request = self._freeze_profile(
+            selected.profile_id, pending.get("proxy"), pending.get("modelProviderId"),
+        )
         return {
             **request,
-            "manualDeadlineSeconds": automation.run_policy["manualDeadlineSeconds"],
-            "automaticExecutionTimeoutSeconds": automation.run_policy[
-                "automaticExecutionTimeoutSeconds"
-            ],
+            "browser": "persistent",
+            "environmentRef": selected.environment_ref.to_dict() if selected.environment_ref else None,
+            "identityPackage": selected.identity_package,
+            "manualDeadlineSeconds": pending["manualDeadlineSeconds"],
+            "automaticExecutionTimeoutSeconds": pending["automaticExecutionTimeoutSeconds"],
         }
+
+    def _freeze_profile(
+        self, profile_id: str, proxy: dict[str, Any] | None, model_provider_id: str | None,
+    ) -> dict[str, Any]:
+        try:
+            return self._browser.freeze(profile_id, proxy=proxy, model_provider_id=model_provider_id)
+        except (ProfileNotFound, KernelNotInstalled, WorkflowRuntimeError) as error:
+            raise ProjectRunError(
+                "RESOURCE_UNAVAILABLE", "运行所需资源不可用", 422, {"retryable": False},
+            ) from error
 
 
 def _effective_proxy(

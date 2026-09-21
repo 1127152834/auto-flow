@@ -16,7 +16,7 @@
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
-    "status": "new_candidate_ci_pending",
+    "status": "candidate_ci_pending",
     "plan": "docs/superpowers/plans/2026-09-21-pm9-follow-through.md",
     "mappingReview": "test-mapping-review.md",
     "newProductionChanges": true,
@@ -24,45 +24,46 @@
     "report": "follow-through.json",
     "releaseAccepted": false,
     "newArchitecturePlan": "docs/superpowers/plans/2026-09-21-pm9-runtime-capabilities.md",
-    "multiRunArchitectureAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md",
-    "latestReport": "input-environment-follow-through.json"
+    "multiRunArchitectureAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md"
   },
-  "codeCandidate": "pending-commit",
+  "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
   "checks": {
-    "currentLocal": "input-environment-follow-through.json",
-    "priorFixes": "follow-through.json",
-    "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json"
+    "local": "follow-through.json#/checks",
+    "darwin-arm64": "ci-follow-through-darwin-arm64.json",
+    "nativeArmInstallAndFiles": "install-follow-through-darwin-arm64.json",
+    "localBusinessCombinations": "business-combinations-darwin-arm64.json",
+    "win32-x64": "ci-follow-through-win32-x64.json"
   },
   "platforms": {
-    "win32-x64": {
-      "status": "new-candidate-pending",
-      "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
+    "darwin-arm64": {
+      "status": "ci-passed",
+      "physicalInstaller": "partial: mount/copy/start and native Excel open/import/save/export passed; remaining native scopes pending"
     },
     "darwin-x64": {
-      "status": "new-candidate-pending",
-      "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
+      "status": "rerun_superseded",
+      "detail": "Attempt 1 frontend failure retained; attempt 2 cancelled during backend tests because the input-environment production fix requires a new candidate matrix."
     },
-    "darwin-arm64": {
-      "status": "new-candidate-pending",
-      "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
+    "win32-x64": {
+      "status": "ci-passed",
+      "physicalInstaller": "pending"
     }
   },
   "ci": {
-    "status": "not_started",
-    "conclusion": null
+    "runId": 35560163432,
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35560163432",
+    "status": "cancel_requested",
+    "conclusion": null,
+    "attempt": 2,
+    "evidenceCommitPolicy": "Production source, existing CI tests and configuration remain exactly 52936b6a. Subsequent changes include documentation and a standalone local manual acceptance script not invoked by that CI; its own file hash and ARM packaged execution are recorded separately. No CI claim is made for this new script.",
+    "attempt1IntelReport": "ci-follow-through-attempt-1-darwin-x64.json"
   },
   "historicalEvidence": [
     {
       "codeCandidate": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
       "report": "verification-d59607f3.json",
       "note": "Historical three-platform validation, not proof of new fixes."
-    },
-    {
-      "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
-      "report": "verification-52936b6a.json",
-      "note": "Windows/ARM full CI passed; Intel attempt 1 frontend failure retained and attempt 2 superseded. Does not validate the input-environment fix."
     }
   ],
   "remainingReport": "completion-gaps.md",
-  "deliveryStatus": "input_environment_fix_local_passed_new_candidate_ci_pending"
+  "deliveryStatus": "follow_through_ci_pending_release_not_accepted"
 }
