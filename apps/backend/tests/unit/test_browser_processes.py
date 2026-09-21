@@ -377,3 +377,36 @@ def test_windows_job_waits_for_member_handles_after_accounting_zero(monkeypatch,
             module.terminate_worker_job(8001, .01)
     assert calls.index('open') < calls.index('terminate') < calls.index('wait')
     assert calls[-1] == ('close', 9001)
+
+
+@pytest.mark.parametrize('side', ['worker', 'supervisor'])
+@pytest.mark.parametrize('after', ['member', 'foreign', 'unreadable'])
+def test_windows_job_rechecks_exact_membership_when_parent_and_child_join_race(monkeypatch, side, after):
+    from autoflow.infrastructure.process import windows_job as module
+    calls = []
+
+    def membership(process, job, result):
+        assert (process, job) == (9001, 8001)
+        calls.append('member')
+        result._obj.value = len(calls) > 1 and after == 'member'
+        return not (len(calls) > 1 and after == 'unreadable')
+
+    kernel = SimpleNamespace(
+        OpenJobObjectW=lambda *_: 8001, GetCurrentProcess=lambda: 9001,
+        OpenProcess=lambda *_: 9001, IsProcessInJob=membership,
+        # The other participant assigned between the first check and this call.
+        AssignProcessToJobObject=lambda *_: False,
+        CloseHandle=lambda handle: calls.append(('close', handle)),
+    )
+    monkeypatch.setattr(module, '_api', lambda: kernel)
+    monkeypatch.setattr(module, '_windows_handle_birth', lambda *_: 123)
+    monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
+    monkeypatch.setenv('AUTOFLOW_WORKER_JOB_NAME', 'Local\\AutoFlow-test')
+    invoke = module.create_worker_job if side == 'worker' else lambda: module._verified_process(kernel, 8001, 700, 123, owned_launcher=True)
+    if after == 'member':
+        assert invoke() == (8001 if side == 'worker' else 9001)
+        assert calls == ['member', 'member']
+    else:
+        with pytest.raises(OSError):
+            invoke()
+        assert calls[-1] == ('close', 8001 if side == 'worker' else 9001)

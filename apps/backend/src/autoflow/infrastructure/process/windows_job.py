@@ -111,7 +111,9 @@ def create_worker_job():
         member = wintypes.BOOL()
         if not kernel.IsProcessInJob(current, handle, ctypes.byref(member)):
             raise OSError("Worker Job membership unavailable")
-        if not member.value and not kernel.AssignProcessToJobObject(handle, current):
+        # The supervisor may have assigned this same process after our check.
+        if (not member.value and not kernel.AssignProcessToJobObject(handle, current)
+            and (not kernel.IsProcessInJob(current, handle, ctypes.byref(member)) or not member.value)):
             raise OSError("Worker could not join parent Job")
         return handle
     except BaseException:
@@ -166,8 +168,13 @@ def _verified_process(kernel, job, pid: int, birth: int, *, owned_launcher: bool
         # Windows venv python.exe is a launcher outside its child's Job.
         # Only the live supervisor may attach its directly owned, birth-
         # verified launcher. Recovery never extends Job membership.
-        if not member.value and (not owned_launcher or not kernel.AssignProcessToJobObject(job, process)):
-            raise OSError("Worker process does not own this Job: not a member")
+        if not member.value:
+            if not owned_launcher:
+                raise OSError("Worker process does not own this Job: not a member")
+            # The worker can win the same membership race in the other direction.
+            if (not kernel.AssignProcessToJobObject(job, process)
+                and (not kernel.IsProcessInJob(process, job, ctypes.byref(member)) or not member.value)):
+                raise OSError("Worker process does not own this Job: not a member")
         return process
     except BaseException:
         kernel.CloseHandle(process)
