@@ -57,6 +57,7 @@ jobs:
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
               output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
           PYTHON
+      - run: uv run --directory apps/backend pytest -q tests/integration/test_workflow_worker_process.py::test_project_worker_launch_preserves_venv_without_redirector_job
       - name: Diagnose real worker protocol without payload logging
         run: uv run --directory apps/backend pytest -vv --tb=short --maxfail=2 tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py -k "success or data-response-loss or data-schema or data-delete-field or manual-declared or shared_sheet"
         env:

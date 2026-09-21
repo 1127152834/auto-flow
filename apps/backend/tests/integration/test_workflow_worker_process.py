@@ -549,3 +549,22 @@ browser_worker_main(run)
     finally:
         if not task.done(): task.cancel()
         await asyncio.gather(task, return_exceptions=True)
+
+
+@pytest.mark.skipif(sys.platform != 'win32', reason='Windows venv redirector owns a nested Job')
+def test_project_worker_launch_preserves_venv_without_redirector_job(tmp_path):
+    import json
+    import os
+    import subprocess
+
+    from autoflow.infrastructure.process.project_workflow_worker import (
+        ProjectWorkflowWorkerManager,
+    )
+    script = 'import json,sys,autoflow,cloakbrowser; print(json.dumps([sys.prefix,sys.executable]))'
+    manager = ProjectWorkflowWorkerManager(tmp_path / 'temp', command=(sys.executable, '-c', script))
+    if sys.prefix != sys.base_prefix:
+        assert manager._command[0] == sys._base_executable
+    completed = subprocess.run(manager._command, env={**os.environ, **manager._worker_env}, capture_output=True, text=True, check=True)
+    prefix, executable = json.loads(completed.stdout)
+    assert Path(prefix).resolve() == Path(sys.prefix).resolve()
+    assert Path(executable).resolve() == Path(sys.executable).resolve()

@@ -74,7 +74,14 @@ class ProjectWorkflowWorkerManager:
         self._root = (temp_dir / "workflow-runs").resolve()
         self._artifact_root = (temp_dir.parent / "workspace" / "runs").resolve()
         self._command = command or project_workflow_worker_command()
-        self._worker_env = worker_env or {}
+        self._worker_env = dict(worker_env or {})
+        if (sys.platform == "win32" and not getattr(sys, "frozen", False)
+            and self._command[0] == sys.executable and sys.prefix != sys.base_prefix):
+            # CPython's venv redirector creates its own Job after spawning the
+            # interpreter. Start that interpreter directly so our named Job can
+            # own it before any browser children exist; retain the same venv.
+            self._command = (sys._base_executable, *self._command[1:])
+            self._worker_env["__PYVENV_LAUNCHER__"] = sys.executable
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
         self._on_capability = on_capability
