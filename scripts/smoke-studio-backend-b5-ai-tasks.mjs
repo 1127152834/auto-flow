@@ -16,7 +16,7 @@ const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const evidenceRoot = join(root, 'docs/migration/studio-backend-migration/evidence/b5')
 const evidenceDir = await mkdtemp(join(await mkdir(evidenceRoot, { recursive: true }).then(() => evidenceRoot), 'formal-ai-tasks-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b5-ai-tasks-'))
-const workflowName = 'B5 AI 数据任务正式闭环'
+const workflowName = 'B5 AI 数据任务与对话正式闭环'
 const checks = []
 const model = await startModel()
 const modules = [
@@ -28,6 +28,7 @@ const modules = [
   { type: 'ai_normalize', label: 'AI数据规整', inputs: [['textarea[placeholder^="要处理的文本"]', '2026年9月21日'], ['input[placeholder="结果变量名"]', 'normalize_result']] },
   { type: 'ai_dedup_semantic', label: 'AI语义去重', inputs: [['textarea[placeholder^="数组变量"]', '["苹果","Apple","香蕉"]'], ['input[placeholder="结果变量名"]', 'dedup_result']] },
   { type: 'ai_route', label: 'AI智能路由', inputs: [['textarea[placeholder^="要处理的文本"]', '我要退款'], ['textarea[placeholder^="每行一个"]', '退款:用户要求退钱\n咨询:用户询问信息'], ['input[placeholder="结果变量名"]', 'route_result']] },
+  { type: 'ai_chat', label: 'AI对话', inputs: [['textarea[placeholder^="设定AI的角色"]', '对话助手'], ['textarea[placeholder^="发送给AI的内容"]', '请回复验收结果'], ['input[placeholder="变量名"]', 'chat_result']] },
 ]
 let desktop, main, studio
 
@@ -79,7 +80,7 @@ try {
   }
   for (let index = 0; index < nodeIds.length - 1; index++) await connectNodes(studio, nodeIds[index], nodeIds[index + 1])
   await waitFor(studio, `document.querySelectorAll('.react-flow__edge').length === ${modules.length - 1}`, 'workflow edges')
-  checkpoint('通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务节点编排')
+  checkpoint('通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务与一个 AI 对话节点编排')
 
   await click(studio, '保存')
   await waitFor(studio, `document.body?.innerText.includes(${JSON.stringify(`工作流已保存: ${workflowName}`)})`, 'workflow save')
@@ -89,7 +90,7 @@ try {
   assert.equal(saved.edges.length, modules.length - 1)
   assert.ok(saved.nodes.every(node => node.data.modelId === modelId))
   assert.equal(JSON.stringify(saved).includes(model.baseUrl), false)
-  checkpoint('正式保存接口只写稳定 modelId，八节点和七条连线进入临时 SQLite，不保存模型地址或密钥')
+  checkpoint('正式保存接口只写稳定 modelId，九节点和八条连线进入临时 SQLite，不保存模型地址或密钥')
 
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
@@ -111,9 +112,10 @@ try {
   assert.deepEqual(byNode[nodeIds[5]], { result: '2026-09-21', type: 'date' })
   assert.deepEqual(byNode[nodeIds[6]], { result: ['苹果', '香蕉'], removed: 1 })
   assert.equal(byNode[nodeIds[7]].route, '退款')
-  assert.equal(model.requests.length, 8)
+  assert.equal(byNode[nodeIds[8]].response, '对话验收通过')
+  assert.equal(model.requests.length, 9)
   assert.ok(model.requests.every(request => request.body.model === 'ai-task-fixture'))
-  checkpoint('真实 worker 经主应用模型绑定完成八次受控 HTTP 调用，结果结构与变量语义逐项匹配')
+  checkpoint('真实 worker 经主应用模型绑定完成九次受控 HTTP 调用，AI 数据任务和对话结果结构与变量语义逐项匹配')
 
   await wait(500)
   assert.deepEqual(cloakProcesses(userData), [])
@@ -121,7 +123,7 @@ try {
 
   await capture(studio, join(evidenceDir, 'completed.png'))
   const report = {
-    evidenceId: 'BE-B5-ai-task-formal-electron', checkedAt: new Date().toISOString(),
+    evidenceId: 'BE-B5-ai-task-chat-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
     result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
     workflowId: saved.id, profileId: profile.id, modelId, runId: run.runId, checks,
@@ -160,6 +162,7 @@ async function startModel() {
     ['数据规整引擎', '"2026-09-21"'],
     ['语义去重引擎', '[0,2]'],
     ['智能路由决策器', '{"route":"退款"}'],
+    ['对话助手', '对话验收通过'],
   ])
   const server = createServer(async (request, response) => {
     const url = new URL(request.url, 'http://127.0.0.1')
@@ -236,8 +239,8 @@ async function setInput(cdp, selector, value) {
 }
 
 async function chooseFirstModel(cdp) {
-  const settingsOpen = await cdp.evaluate(`(()=>{const e=[...document.querySelectorAll('summary')].find(e=>e.textContent.includes('AI 模型设置')&&e.getClientRects().length);return Boolean(e?.parentElement?.open)})()`)
-  if (!settingsOpen) await click(cdp, 'AI 模型设置', 'summary')
+  const settingsState = await cdp.evaluate(`(()=>{const e=[...document.querySelectorAll('summary')].find(e=>e.textContent.includes('AI 模型设置')&&e.getClientRects().length);return e?(e.parentElement?.open?'open':'closed'):'missing'})()`)
+  if (settingsState === 'closed') await click(cdp, 'AI 模型设置', 'summary')
   const p = await waitFor(cdp, `(()=>{const label=[...document.querySelectorAll('label')].find(e=>e.textContent.includes('主应用模型')&&e.getClientRects().length);const e=label?.parentElement?.querySelector('[role="combobox"]');if(!e||e.dataset.disabled!==undefined)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, 'managed model select')
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...p })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', clickCount: 1 })

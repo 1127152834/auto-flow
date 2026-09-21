@@ -51,8 +51,16 @@
     "secretScanPassed": true
   },
   "remaining": [
-    "其余 9 个 AI 节点尚未迁入",
-    "流式、完整取消/超时/限流矩阵和正式 Electron 真实 UI 尚未验收",
-    "真实供应商调用属于外部等待"
-  ]
+    "流式响应、完整取消/超时/限流矩阵仍作为B5共享门槛",
+    "真实第三方模型供应商调用",
+    "其他未实测平台"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-ai-tasks.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-bJxFlb/result.json",
+    "covers": "正式Studio真实鼠标键盘配置AI对话、主应用模型选择、SQLite保存、真实worker受控HTTP调用、变量结果与无浏览器残留"
+  }
 }

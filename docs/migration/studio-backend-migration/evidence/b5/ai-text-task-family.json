@@ -55,7 +55,7 @@
     "exitCode": 0,
     "result": "passed",
     "platform": "darwin-arm64",
-    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json",
-    "covers": "正式Studio真实鼠标键盘编排八节点、主应用模型选择、SQLite保存、真实worker八次受控HTTP调用、结构化结果与无浏览器残留"
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-bJxFlb/result.json",
+    "covers": "正式Studio真实鼠标键盘编排八个AI数据任务与AI对话、主应用模型选择、SQLite保存、真实worker九次受控HTTP调用、结构化结果与无浏览器残留"
   }
 }
