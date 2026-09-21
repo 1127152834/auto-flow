@@ -7,6 +7,7 @@ from threading import Event
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.domain.project_data.excel import _uuid, normalize_import
 from autoflow.domain.project_data.identity import record_key, system_record_key
+from autoflow.domain.project_data.records import validate_record_scalar
 from autoflow.domain.project_data.rules import validate_value
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.project_excel_imports import (
@@ -82,16 +83,15 @@ class ExcelImportService:
                                 stage["fields"][field], row.values[column]
                             )
                         except ProjectError as error:
-                            raise ProjectError(
-                                error.code,
-                                "来源单元格不满足字段要求。",
-                                422,
-                                {
-                                    **error.details,
-                                    "rowNumber": row.row_number,
-                                    "columnIndex": column,
-                                },
-                            ) from error
+                            # Preserve a safe source scalar so the published record
+                            # can expose a structured issue; identity remains strict.
+                            try:
+                                values[field] = validate_record_scalar(row.values[column])
+                            except ProjectError:
+                                raise ProjectError(
+                                    error.code, "来源单元格不满足字段要求。", 422,
+                                    {**error.details, "rowNumber": row.row_number, "columnIndex": column},
+                                ) from error
                     key = (
                         system_record_key()
                         if identity_column is None

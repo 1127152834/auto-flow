@@ -751,3 +751,16 @@ def test_overlapping_project_writes_keep_historical_confirmation_and_local_value
         assert sync_operations(bounds[earlier], 'confirmed') == [confirmed]
         assert sync_operations(bounds[last_writer], 'confirmed') == [last]
         assert first.transport.changes() == writes == 2
+
+
+def test_pull_preserves_safe_business_format_error_for_status_and_diagnosis(tmp_path):
+    transport = FakeSheetsTransport({'数据': [['编号', '标题', '金额'], ['A-1', 'valid', 'not-a-number']]})
+    with open_sheets_table(tmp_path, transport, [*COLUMNS, ('amount', '金额', 'number')]) as sheets:
+        operation = pull(sheets)
+        assert operation['status'] == 'succeeded'
+        record = sheets.records()[0]
+        assert next(cell['value'] for cell in record['values'] if cell['fieldId'] == sheets.field_id('amount')) == 'not-a-number'
+        issue = next(item for item in record['validationIssues'] if item['fieldId'] == sheets.field_id('amount'))
+        assert issue['rule'] == 'type' and issue['code'] == 'INVALID_PROJECT_DATA'
+        assert record['contentRevision'] == record['statusRevision'] == record['linkRevision'] == 1
+        assert sync_operations(sheets) == [] and transport.changes() == 0

@@ -555,3 +555,26 @@ def test_duplicate_excel_rows_keep_independent_state_and_source_bytes(tmp_path):
         assert next(row for row in remaining if row["ref"] == second["ref"]) == second
         assert all(row["ref"] != first["ref"] for row in remaining)
         assert source.read_bytes() == original_bytes
+
+
+def test_import_preserves_safe_business_format_error_for_record_diagnosis(tmp_path):
+    from openpyxl import load_workbook
+
+    app = _app(tmp_path)
+    with TestClient(app, headers={"x-autoflow-token":"renderer"}) as client:
+        project, token, proof = prepare(client, tmp_path)
+        book = load_workbook(tmp_path / 'source.xlsx')
+        book.active['B1'] = '金额'; book.active['B2'] = 'not-a-number'; book.save(tmp_path / 'source.xlsx')
+        inspected_result = client.post(f'/api/v1/projects/{project}/table-imports/excel/inspect', json={'selectionToken':token}, headers=proof).json()['inspection']
+        fields = inspected_result['sheets'][0]
+        body = request_for(inspected_result)
+        body['mapping'].append({'columnIndex':1,'target':{'kind':'new','definition':{'key':'amount','name':'金额','type':'number','required':True,'validation':{}}}})
+        accepted = client.post(f'/api/v1/projects/{project}/table-imports/excel', json=body, headers={**proof,'Idempotency-Key':str(uuid4())})
+        assert accepted.status_code == 202, accepted.text
+        operation = client.get(f"/api/v1/projects/{project}/operations/by-idempotency-key/{accepted.json()['operation']['idempotencyKey']}").json()
+        assert operation['status'] == 'succeeded', operation
+        table = operation['result']['table']
+        record = client.get(f"/api/v1/projects/{project}/tables/{table['tableId']}/records", params={'datasetGeneration':table['datasetGeneration']}).json()['items'][0]
+        issue = next(item for item in record['validationIssues'] if item['rule'] == 'type')
+        assert issue['fieldId']
+        assert next(cell['value'] for cell in record['values'] if cell['fieldId'] == issue['fieldId']) == 'not-a-number'

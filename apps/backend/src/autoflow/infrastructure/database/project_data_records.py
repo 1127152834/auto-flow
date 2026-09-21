@@ -14,6 +14,7 @@ from autoflow.domain.project_data.identity import (
     record_key,
     system_record_key,
 )
+from autoflow.domain.project_data.records import validate_record_scalar
 from autoflow.domain.project_data.rules import validate_value, validation_issues
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.project_claims import active_record_lease
@@ -469,17 +470,19 @@ class SqlAlchemyProjectDataRecords:
             field = by_id[field_id]
             if origin != "source" and (not field.writable or field.formula):
                 raise ProjectError("FIELD_NOT_WRITABLE", "Field is not writable", 422)
-            result[field_id] = validate_value(
-                {
-                    "key": field.key,
-                    "name": field.name,
-                    "type": field.type,
-                    "required": field.required,
-                    "validation": field.validation,
-                },
-                value,
-            )
-        if creating:
+            definition = {
+                "key": field.key, "name": field.name, "type": field.type,
+                "required": field.required, "validation": field.validation,
+            }
+            try:
+                result[field_id] = validate_value(definition, value)
+            except ProjectError:
+                if origin != "source":
+                    raise
+                # Sources may preserve a safe business scalar for diagnosis;
+                # identity and unsafe wire values are checked before materialization.
+                result[field_id] = validate_record_scalar(value)
+        if creating and origin != "source":
             for field in fields:
                 if field.required and field.id not in result:
                     raise ProjectError(

@@ -21,6 +21,7 @@ from autoflow.domain.project_data.identity import (
     RecordKeyType,
     decode_record_key,
 )
+from autoflow.domain.project_data.rules import validate_value
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
@@ -236,6 +237,10 @@ class SheetsSyncService:
                 values[field.id] = _coerce(
                     field.type, _cell_value(source, index, position)
                 )
+            if not system:
+                identity_field = fields.get(str(by_column.get(column_letter(identity), {}).get("fieldId")))
+                if identity_field is not None:
+                    validate_value({"key": identity_field.key, "name": identity_field.name, "type": identity_field.type, "required": identity_field.required, "validation": identity_field.validation}, values.get(identity_field.id))
             key = _record_key_for(marker, system=system)
             outcome = self._ingest(project_id, table_id, generation, key, values)
             if valid:
