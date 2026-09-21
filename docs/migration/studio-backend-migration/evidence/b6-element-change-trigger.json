@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-019-element-change-trigger",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -9,7 +9,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["element_change_trigger"],
+  "nodes": [
+    "element_change_trigger"
+  ],
   "implemented": [
     "保留CSS选择器、childList/attributes/characterData观察类型、无限或有限等待及两个结果变量语义",
     "保留MutationObserver后代监听、首批变化后断开、添加/移除节点摘要、前后子元素数量和mutationCount",
@@ -39,12 +41,19 @@
     "userDatabaseTouched": false,
     "browserStarted": false,
     "mockExecutionUsedForBackendEvidence": false,
-    "formalElectronUiTested": false,
-    "realCloakBrowserTest": "skipped: AUTOFLOW_B1_CLOAK_EXECUTABLE unavailable"
+    "formalElectronUiTested": true,
+    "realCloakBrowserTest": "passed: development Electron with local CloakBrowser kernel"
   },
   "remaining": [
-    "提供CloakBrowser二进制后运行test_b6_element_change_cloakbrowser_flow.py，验证真实页面添加元素、变量结果和浏览器清理",
-    "正式Electron真实UI中配置、保存、关闭重开并执行，验证日志和结果显示",
-    "正式跨域iframe场景依赖Studio当前iframe选择状态，随B2浏览器正式回归统一验收"
-  ]
+    "跨域 iframe、Windows、macOS Intel及正式打包入口仍需浏览器平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-element-change.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-element-change-electron-M0Oa2t/result.json",
+    "covers": "正式 Studio 真实 UI 配置 open_page、element_change_trigger 和日志节点，CloakBrowser 加载本地页面并观察延迟 MutationObserver 变化，核验新元素选择器、结果日志和清理",
+    "boundary": "本地 file origin、单层主文档、开发入口；跨域 iframe 和打包平台另行验收"
+  }
 }
