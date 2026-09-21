@@ -4,7 +4,7 @@ import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react'
 import { cn } from '../lib/utils'
 import type { NodeData } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
-import { Globe, ExternalLink, Play } from 'lucide-react'
+import { Globe, ExternalLink, LocateFixed, Play } from 'lucide-react'
 import { moduleIcons, excludedModuleTypes } from './ModuleSidebar'
 import { getNodeColorClass } from './moduleColors'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
@@ -168,6 +168,18 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
         }}
       >
         <Play className="w-2.5 h-2.5" strokeWidth={3} fill="currentColor" />
+      </button>
+
+      <button
+        className="nodrag nopan absolute left-5 -top-2 w-5 h-5 flex items-center justify-center rounded-full bg-amber-500 text-white shadow ring-2 ring-white z-10 cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-amber-600 transition-all duration-150"
+        title="运行至此节点（保留前置上下文）"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation()
+          window.dispatchEvent(new CustomEvent('run-to-node', { detail: { nodeId: id } }))
+        }}
+      >
+        <LocateFixed className="w-2.5 h-2.5" strokeWidth={3} />
       </button>
 
       {isDisabled && (

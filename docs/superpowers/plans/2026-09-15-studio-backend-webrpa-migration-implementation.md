@@ -455,6 +455,7 @@
 
 - [ ] Task B8.1：实现 pausing/paused/failed_paused 状态、pauseId/controlRevision/commandId、节点前边界暂停和可中断心跳。
 - [ ] Task B8.2：实现断点、继续、一次调度单步、顶层直接起跑和嵌套运行至此；未选分支不伪造命中。
+  - 2026-09-21：运行至此已接入正式前后端合同和节点入口；正式 Electron 真实点击验证前置网页动作、目标第一次调度前暂停、继续后只命中一次及资源清理，证据见 `evidence/b8/formal-run-to-electron-N7n5iz/result.json`。条件、循环、并行和子流程路径矩阵仍待关闭。
 - [ ] Task B8.3：实现变量检查点、差量变化、大值诊断文件和暂停时原子修改；循环局部变量只读。
 - [x] Task B8.4：失败暂停保留浏览器；结束调试清理后仍记 failed，普通暂停停止记 cancelled。
   - 2026-09-21：正式 Electron 通过真实 UI 设置断点；真实 CloakBrowser 在节点失败后保留现场，结束调试携带稳定运行身份完成 worker、浏览器和占用清理，并保持 `failed` 原错误。证据见 `evidence/b8/formal-failed-pause-electron-94DFD8/result.json`。

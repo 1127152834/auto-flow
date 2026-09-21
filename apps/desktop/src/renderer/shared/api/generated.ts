@@ -11824,6 +11824,16 @@ export type components = {
             document?: {
                 [key: string]: unknown;
             } | null;
+            /** Debug */
+            debug?: boolean | null;
+            /** Stepmode */
+            stepMode?: boolean | null;
+            /** Breakpoints */
+            breakpoints?: string[] | null;
+            /** Startnodeid */
+            startNodeId?: string | null;
+            /** Runtonodeid */
+            runToNodeId?: string | null;
         } & {
             [key: string]: unknown;
         };

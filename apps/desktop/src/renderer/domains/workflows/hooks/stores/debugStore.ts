@@ -17,7 +17,7 @@ interface DebugState {
   pausedLabel: string | null
   pausedVariables: Record<string, any>
   pausedVariableMeta: Record<string,DebugVariableMeta>
-  pausedReason: 'breakpoint' | 'step' | 'failure' | null
+  pausedReason: 'breakpoint' | 'step' | 'target' | 'failure' | null
   pausedError: string | null
 
   toggleBreakpoint: (nodeId: string) => void
@@ -25,7 +25,7 @@ interface DebugState {
   hasBreakpoint: (nodeId: string) => boolean
   setStepMode: (v: boolean) => void
 
-  setPaused: (info: { runId?:string; pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,DebugVariableMeta>; reason?: 'breakpoint' | 'step' | 'failure'; error?:string }) => void
+  setPaused: (info: { runId?:string; pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,DebugVariableMeta>; reason?: 'breakpoint' | 'step' | 'target' | 'failure'; error?:string }) => void
   clearPaused: () => void
 }
 

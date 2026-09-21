@@ -9,7 +9,10 @@ from typing import Any
 import pytest
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.models.service import ModelExecutionBinding
-from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+from autoflow.application.workflows.coordinator import (
+    WorkflowRunCoordinator,
+    WorkflowRunError,
+)
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.basic import OpenPageExecutor
 from autoflow.application.workflows.executors.input_prompt import InputPromptExecutor
@@ -263,6 +266,28 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
         events=journal,
         artifact_root=tmp_path / "workspace",
     )
+
+    with pytest.raises(WorkflowRunError, match="不能同时指定"):
+        await coordinator.start(
+            "workflow-1",
+            {
+                "runId": "invalid-debug-start",
+                "documentId": "document-1",
+                "profileId": "profile-1",
+                "startNodeId": "open",
+                "runToNodeId": "open",
+            },
+        )
+    with pytest.raises(WorkflowRunError, match="运行至此目标不存在"):
+        await coordinator.start(
+            "workflow-1",
+            {
+                "runId": "missing-run-to-target",
+                "documentId": "document-1",
+                "profileId": "profile-1",
+                "runToNodeId": "missing",
+            },
+        )
 
     accepted = await coordinator.start(
         "workflow-1",

@@ -24,7 +24,8 @@
     "运行日志支持关键词、级别、节点和执行标识筛选，并按请求时事件截止序号导出JSONL",
     "暂停、恢复和节点状态写入既有运行事件表及Studio事件流；停止可立即解除暂停且不会启动待执行节点",
     "根流程、嵌套工作流、自定义模块和画布子流程共享同一个调试控制器",
-    "调试节点失败进入failed_paused并保留CloakBrowser、原错误和变量快照；结束调试后完成浏览器及worker清理，再以failed终态保留原失败节点"
+    "调试节点失败进入failed_paused并保留CloakBrowser、原错误和变量快照；结束调试后完成浏览器及worker清理，再以failed终态保留原失败节点",
+    "运行至此从真实流程入口执行前缀，在目标第一次调度前暂停；恢复后目标不重复暂停，未经过目标时记录明确警告"
   ],
   "checks": [
     {
@@ -56,6 +57,11 @@
       "command": "AUTOFLOW_B8_FAILED_PAUSE_ONLY=1 node scripts/smoke-studio-backend-b1.mjs",
       "result": "passed on macOS arm64 development build",
       "covers": "正式Electron真实点击配置断点；真实CloakBrowser失败现场保留、只读诊断、结束调试、failed终态和进程清理"
+    },
+    {
+      "command": "AUTOFLOW_B8_RUN_TO_ONLY=1 node scripts/smoke-studio-backend-b1.mjs",
+      "result": "passed on macOS arm64 development build",
+      "covers": "正式Electron通过节点悬停入口运行至此；真实CloakBrowser执行前置网页动作、目标前暂停、一次性恢复和进程清理"
     }
   ],
   "boundaries": {
@@ -66,7 +72,7 @@
     "windowsTested": false
   },
   "remaining": [
-    "运行至嵌套目标并保留真实前置上下文",
+    "条件与循环中的运行至此路径矩阵",
     "循环局部变量进入与退出的完整变化矩阵",
     "1,000轮与10,000日志容量、复杂调试正式UI和打包入口验收"
   ]

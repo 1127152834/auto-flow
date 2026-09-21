@@ -145,9 +145,25 @@ class WorkflowRunCoordinator:
         ):
             raise WorkflowRunError("RUN_REQUEST_INVALID", "startNodeId 必须是节点标识", 422)
         start_node_id = cast(str | None, raw_start_node_id)
+        raw_run_to_node_id = request.get("runToNodeId")
+        if raw_run_to_node_id is not None and (
+            not isinstance(raw_run_to_node_id, str) or not raw_run_to_node_id
+        ):
+            raise WorkflowRunError("RUN_REQUEST_INVALID", "runToNodeId 必须是节点标识", 422)
+        run_to_node_id = cast(str | None, raw_run_to_node_id)
+        if start_node_id is not None and run_to_node_id is not None:
+            raise WorkflowRunError(
+                "RUN_REQUEST_INVALID", "不能同时指定调试起点和运行至此目标", 422
+            )
         mode = (
             "debug"
-            if bool(request.get("debug") or step_mode or breakpoints or start_node_id)
+            if bool(
+                request.get("debug")
+                or step_mode
+                or breakpoints
+                or start_node_id
+                or run_to_node_id
+            )
             else "run"
         )
         headless = request.get("headless", False)
@@ -183,6 +199,10 @@ class WorkflowRunCoordinator:
                     "BREAKPOINT_NODE_NOT_FOUND",
                     "断点必须属于运行快照中的节点",
                     422,
+                )
+            if run_to_node_id is not None and run_to_node_id not in document_node_ids:
+                raise WorkflowRunError(
+                    "RUN_TO_NODE_NOT_FOUND", "运行至此目标不存在于运行快照", 422
                 )
             if start_node_id is not None:
                 start_node = next(
@@ -303,6 +323,7 @@ class WorkflowRunCoordinator:
                     "runOptions": {
                         "headless": headless,
                         "startNodeId": start_node_id,
+                        "runToNodeId": run_to_node_id,
                         "mode": mode,
                         "stepMode": step_mode,
                         "breakpoints": breakpoints,
@@ -1810,6 +1831,7 @@ def _worker_payload(
         "stepMode": bool(run_options.get("stepMode") or run_options.get("startNodeId")),
         "breakpoints": copy.deepcopy(run_options.get("breakpoints", [])),
         "startNodeId": run_options.get("startNodeId"),
+        "runToNodeId": run_options.get("runToNodeId"),
         "document": executable_document,
         "workflowDependencies": workflow_dependencies,
         "customModuleDependencies": custom_module_dependencies,

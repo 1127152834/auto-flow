@@ -97,7 +97,7 @@ let similarPicked: ObjectValue | null = null
 const speechRequests = new Map<string, components['schemas']['StudioSpeechState']>()
 const jsRequests = new Map<string, components['schemas']['StudioJsScriptState']>()
 const platformRequests = new Map<string, components['schemas']['StudioDesktopActionState']>()
-let run: { pauseId:string|null; controlRevision:number; platform?: {requestId:string;nodeId:string;variableName:string}; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; runId: string; documentId: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+let run: { pauseId:string|null; controlRevision:number; runToNodeId?:string; platform?: {requestId:string;nodeId:string;variableName:string}; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; runId: string; documentId: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 type CommandRecord = { fingerprint:string; response:ObjectValue; status:number }
 const commandResults = new Map<string, CommandRecord>()
@@ -396,13 +396,15 @@ function tick(skipBreakpoint = false) {
   const node = current.nodes[current.index]
   const nodeId = String(node.id)
   const data = node.data as ObjectValue | undefined
-  if (!skipBreakpoint && (current.step || current.breakpoints.includes(nodeId))) {
+  const reachedTarget = current.runToNodeId === nodeId
+  if (!skipBreakpoint && (current.step || current.breakpoints.includes(nodeId) || reachedTarget)) {
+    if (reachedTarget) current.runToNodeId = undefined
     current.paused = true
     current.pauseId = crypto.randomUUID()
     current.controlRevision++
     const record=db.runs[current.runId]
     if(record)persist({...db,runs:{...db.runs,[current.runId]:{...record,status:'paused'}}})
-    emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, variableMeta:currentVariableMeta(current), reason: current.step ? 'step' : 'breakpoint' })
+    emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, variableMeta:currentVariableMeta(current), reason: current.step ? 'step' : reachedTarget ? 'target' : 'breakpoint' })
     return
   }
   current.paused = false
@@ -535,6 +537,8 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         const nodeIds = sourceNodes.map(node => String(node.id))
         const breakpoints = body.breakpoints === undefined ? [] : body.breakpoints
         if (!validBreakpoints(breakpoints, nodeIds)) return failure('断点必须是运行快照中的节点标识数组', 422)
+        if (body.startNodeId && body.runToNodeId) return failure('不能同时指定调试起点和运行至此目标', 422)
+        if (body.runToNodeId && !nodeIds.includes(String(body.runToNodeId))) return failure('运行至此目标不存在于运行快照', 422)
         if (findExcludedModuleType(nodes, moduleId => {
           const children = (db.modules[moduleId]?.workflow as ObjectValue | undefined)?.nodes
           return Array.isArray(children) ? children : undefined
@@ -558,7 +562,7 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
           runLogs: { ...db.runLogs, [runId]: [] },
           runTracking:{...db.runTracking,[runId]:initialRecords},runTrackingSequence:{...db.runTrackingSequence,[runId]:initialRecords.length},
         })
-        run = { id, runId, documentId, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables }
+        run = { id, runId, documentId, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables, ...(body.runToNodeId ? {runToNodeId:String(body.runToNodeId)} : {}) }
         tracking.set(id,initialRecords)
         run.timer = setTimeout(() => {
           if (run?.id !== id || run.runId !== runId) return

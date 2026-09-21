@@ -65,6 +65,14 @@ it('does not block direct start with an invalid skipped upstream node',async()=>
  await waitFor(()=>expect(execute).toHaveBeenCalledWith(store.getState().id,expect.objectContaining({startNodeId:start.id,document:expect.objectContaining({nodes:expect.any(Array)})})))
  expect(create).not.toHaveBeenCalled()
 })
+it('runs from the real entry until a temporary target without skipping its prefix',async()=>{
+ const first=node('open_page');const target=node('wait',{duration:1})
+ store.getState().onConnect({source:first.id,target:target.id,sourceHandle:null,targetHandle:null})
+ const execute=vi.spyOn(workflowApi,'execute').mockResolvedValue({success:true})
+ render(<Toolbar/>);await act(async()=>window.dispatchEvent(new CustomEvent('run-to-node',{detail:{nodeId:target.id}})))
+ await waitFor(()=>expect(execute).toHaveBeenCalledWith(store.getState().id,expect.objectContaining({runToNodeId:target.id,document:expect.objectContaining({nodes:expect.any(Array)})})))
+ expect(execute.mock.calls[0]?.[1]).not.toHaveProperty('startNodeId')
+})
 it('checks all reachable branches and terminates on a cycle',()=>{
  const start=node('open_page');const invalid=node('wait',{duration:'bad'})
  const edges=[{id:'out',source:start.id,target:invalid.id},{id:'back',source:invalid.id,target:start.id}]

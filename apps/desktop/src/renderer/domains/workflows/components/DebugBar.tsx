@@ -122,7 +122,7 @@ export function DebugBar() {
       <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border-b border-amber-200">
         <Bug className="w-4 h-4 text-amber-600" />
         <span className="text-sm font-semibold text-amber-700">
-          {failed ? '失败暂停' : pausedReason === 'step' ? '单步暂停' : '断点暂停'}
+          {failed ? '失败暂停' : pausedReason === 'step' ? '单步暂停' : pausedReason === 'target' ? '运行至此暂停' : '断点暂停'}
         </span>
         <span className="text-xs text-[hsl(var(--muted-foreground))] truncate max-w-[180px]" title={pausedLabel || ''}>
           @ {pausedLabel}
@@ -163,7 +163,7 @@ export function DebugBar() {
         >
           <Square className="w-3.5 h-3.5 fill-current" /> {failed ? '结束调试' : '停止'}
         </button>
-        <span className="ml-auto text-[11px] text-[hsl(var(--muted-foreground))]">{busy ? '等待执行状态确认' : failed ? '失败现场只读' : pausedReason === 'step' ? '单步执行已暂停' : '命中断点已暂停'}</span>
+        <span className="ml-auto text-[11px] text-[hsl(var(--muted-foreground))]">{busy ? '等待执行状态确认' : failed ? '失败现场只读' : pausedReason === 'step' ? '单步执行已暂停' : pausedReason === 'target' ? '已到达调试目标' : '命中断点已暂停'}</span>
       </div>
 
       {!pauseContext && <div role="alert" className="px-4 pb-3 text-sm">服务未提供暂停身份，暂不能继续或单步；仍可停止运行。</div>}

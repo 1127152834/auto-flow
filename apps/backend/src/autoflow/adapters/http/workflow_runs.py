@@ -81,6 +81,11 @@ class WorkflowExecuteRequest(ApiModel):
     profile_id: str = Field(alias="profileId", min_length=1)
     headless: bool = False
     document: dict[str, Any] | None = None
+    debug: bool | None = None
+    step_mode: bool | None = Field(default=None, alias="stepMode")
+    breakpoints: list[str] | None = Field(default=None, max_length=10000)
+    start_node_id: str | None = Field(default=None, alias="startNodeId", min_length=1)
+    run_to_node_id: str | None = Field(default=None, alias="runToNodeId", min_length=1)
 
 
 class WorkflowStopRequest(ApiModel):

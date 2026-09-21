@@ -130,7 +130,7 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B8-001 | 条件、循环、并行和子流程中的断点/暂停/单步/继续 | 一次许可只调度一次，未走路径无伪成功 | 尚未验收 |
+| BE-B8-001 | 条件、循环、并行和子流程中的断点/暂停/单步/继续 | 一次许可只调度一次，未走路径无伪成功 | 部分通过：正式 Electron 通过真实 UI“运行至此”从流程入口执行前置网页动作，在目标第一次调度前暂停，继续后目标不重复暂停且完成浏览器/worker清理；后端同时覆盖单步一次许可及未到达目标警告。条件、循环、并行和子流程完整路径矩阵仍待验收。[正式 UI 证据](studio-backend-migration/evidence/b8/formal-run-to-electron-N7n5iz/result.json) |
 | BE-B8-002 | commandId、pauseId、controlRevision 重复/过期/丢响应 | 查询原命令恢复，不多走一步，迟到命令拒绝 | 部分通过：调试命令回执已持久化；清除进程内缓存后，单步与变量修改可按原 commandId 查询，同 ID 不同请求返回 409。37 项专项通过；sidecar 崩溃与正式 UI 恢复仍待验收。[证据](studio-backend-migration/evidence/b8/debug-control-foundation.json) |
 | BE-B8-003 | 暂停变量查看/修改和循环局部变量 | 值与上下文真实；只读项不变；修改有诊断事件 | 部分通过：真实 worker 已持久化流程初值、节点写入和人工原子修改，循环局部变量保持只读；支持运行/工作流查询、筛选、分页、完整值读取、导出和清空。循环局部进入/退出变化矩阵及正式 UI 仍待验收。[证据](studio-backend-migration/evidence/b8/debug-control-foundation.json) |
 | BE-B8-004 | 日志全文搜索、级别/节点/执行筛选、分页和断流 | 查询覆盖数据库全部记录，游标不丢不重 | 尚未验收 |

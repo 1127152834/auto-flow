@@ -270,6 +270,66 @@ async def test_runtime_starts_at_requested_top_level_node() -> None:
 
 
 @pytest.mark.asyncio
+async def test_run_to_target_executes_real_prefix_and_pauses_once_before_target() -> None:
+    calls: list[str] = []
+
+    class ProbeExecutor(ModuleExecutor):
+        module_type = "set_variable"
+
+        async def execute(
+            self, config: dict[str, Any], _context: ExecutionContext
+        ) -> ModuleResult:
+            calls.append(str(config["name"]))
+            return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(ProbeExecutor)
+    output = io.StringIO()
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(),
+        Event(),
+        output,
+        {
+            "runId": "run-to-target",
+            "workflowId": "workflow-run-to-target",
+            "debug": True,
+            "runToNodeId": "second",
+        },
+    )
+    sink = _Sink()
+    context = ExecutionContext(events=sink, debug=command_bus.debug)
+    document = {
+        "nodes": [
+            {"id": name, "type": "moduleNode", "data": {"moduleType": "set_variable", "config": {"name": name}}}
+            for name in ("first", "second", "third")
+        ],
+        "edges": [
+            {"id": "first-second", "source": "first", "target": "second"},
+            {"id": "second-third", "source": "second", "target": "third"},
+        ],
+    }
+
+    task = asyncio.create_task(WorkflowRuntime(registry).execute(document, context))
+    pause = await _wait_for_pauses(sink, 1)
+    assert pause["node_id"] == "second"
+    assert pause["reason"] == "target"
+    assert calls == ["first"]
+
+    command_bus.receive(
+        {
+            "type": "debug_resume",
+            "commandId": "resume-target",
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+        }
+    )
+    result = await asyncio.wait_for(task, timeout=1)
+    assert result.success is True
+    assert calls == ["first", "second", "third"]
+    assert len([event for event in sink.events if event["type"] == "execution:paused"]) == 1
+
+
+@pytest.mark.asyncio
 async def test_breakpoints_can_be_replaced_while_paused() -> None:
     class ProbeExecutor(ModuleExecutor):
         module_type = "set_variable"

@@ -189,6 +189,15 @@ async def _run_in_session(
                 ),
             )
             await nested.drain()
+            if result.success and command_bus.debug.pending_target_node_id:
+                await sink.publish(
+                    {
+                        "type": "execution:log",
+                        "level": "warning",
+                        "message": "本次执行路径未到达调试目标节点",
+                        "nodeId": command_bus.debug.pending_target_node_id,
+                    }
+                )
             if bool(command.get("debug")) and not result.success:
                 await command_bus.debug.failure_pause(
                     context,
@@ -1077,20 +1086,25 @@ class _WorkerDebugController:
         *,
         step_mode: bool,
         breakpoints: set[str],
+        run_to_node_id: str | None = None,
     ) -> None:
         self._stopped = stopped
         self._pause_next = step_mode
         self._breakpoints = breakpoints
+        self._run_to_node_id = run_to_node_id
         self._revision = 0
         self._pause: dict[str, Any] | None = None
 
     async def before_node(
         self, context: ExecutionContext, *, node_id: str, label: str
     ) -> None:
-        if not self._pause_next and node_id not in self._breakpoints:
+        reached_target = node_id == self._run_to_node_id
+        if not self._pause_next and node_id not in self._breakpoints and not reached_target:
             return
-        reason = "step" if self._pause_next else "breakpoint"
+        reason = "step" if self._pause_next else "target" if reached_target else "breakpoint"
         self._pause_next = False
+        if reached_target:
+            self._run_to_node_id = None
         self._revision += 1
         release = asyncio.Event()
         pause_id = str(uuid4())
@@ -1138,6 +1152,10 @@ class _WorkerDebugController:
                 "controlRevision": self._revision,
             }
         )
+
+    @property
+    def pending_target_node_id(self) -> str | None:
+        return self._run_to_node_id
 
     async def failure_pause(
         self,
@@ -1329,6 +1347,12 @@ class _WorkerCommandBus:
             stopped,
             step_mode=bool(command.get("stepMode")),
             breakpoints=breakpoints,
+            run_to_node_id=(
+                str(command["runToNodeId"])
+                if isinstance(command.get("runToNodeId"), str)
+                and command["runToNodeId"]
+                else None
+            ),
         )
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
