@@ -33,6 +33,7 @@ const modules = [
   { type: 'ai_generate_video', label: 'AI生成视频', inputs: [['textarea[placeholder^="一只猫咪在草地"]', '生成验收视频'], ['input[placeholder="C:/videos/output.mp4"]', 'generated/video.mp4']] },
   { type: 'open_page', label: '打开网页', model: false, inputs: [['input[placeholder="https://example.com"]', model.pageUrl]] },
   { type: 'ai_vision', label: '图像识别', selects: [['图片来源', '当前页面截图']], inputs: [['textarea[placeholder^="请描述这张图片"]', '视觉验收'], ['input[placeholder="变量名"]', 'vision_result']] },
+  { type: 'ai_vision_act', label: 'AI视觉操作', selects: [['执行动作', '单击']], inputs: [['textarea[placeholder^="用自然语言描述"]', '点击页面中央验收按钮'], ['input[placeholder^="结果变量名"]', 'vision_act_result']] },
 ]
 let desktop, main, studio
 
@@ -122,15 +123,18 @@ try {
   assert.equal(typeof byNode[nodeIds[10]].path, 'string')
   assert.equal(byNode[nodeIds[12]].response, '视觉识别通过')
   assert.equal(byNode[nodeIds[12]].image_source, 'screenshot')
+  assert.equal(byNode[nodeIds[13]].x, 600)
+  assert.equal(byNode[nodeIds[13]].y, 432)
+  assert.equal(model.clicked, 1)
   const chatRequests = model.requests.filter(request => request.path === '/v1/chat/completions')
-  assert.equal(chatRequests.length, 10)
+  assert.equal(chatRequests.length, 11)
   assert.ok(chatRequests.every(request => request.body.model === 'ai-task-fixture'))
   const visionRequest = chatRequests.find(request => JSON.stringify(request.body.messages).includes('视觉验收'))
   assert.ok(JSON.stringify(visionRequest?.body.messages).includes('data:image/png;base64,'))
   assert.equal(model.requests.filter(request => request.path === '/v1/images/generations').length, 1)
   assert.equal(model.requests.filter(request => request.path === '/v1/generations').length, 1)
   assert.equal(model.requests.filter(request => request.path === '/v1/generations/video-job').length, 1)
-  checkpoint('真实 worker 经主应用模型绑定完成十次对话和两次媒体生成，页面截图进入视觉模型且各节点结果逐项匹配')
+  checkpoint('真实 worker 经主应用模型绑定完成十次对话和两次媒体生成，页面截图与视觉坐标进入托管模型且结果逐项匹配')
 
   const artifacts = await api(runtime, `/workflow-runs/${encodeURIComponent(run.runId)}/artifacts?cursor=0&limit=20`)
   assert.equal(artifacts.items.length, 2)
@@ -143,7 +147,7 @@ try {
 
   await wait(500)
   assert.deepEqual(cloakProcesses(userData), [])
-  checkpoint('AI视觉使用主应用 Profile 启动 CloakBrowser 并截取受控页面，运行结束后浏览器和worker均已清理')
+  checkpoint('AI视觉与视觉操作使用主应用 Profile 启动 CloakBrowser，真实点击受控页面按钮，运行结束后浏览器和worker均已清理')
 
   await capture(studio, join(evidenceDir, 'completed.png'))
   const report = {
@@ -202,10 +206,11 @@ async function startModel() {
       return response.end(content)
     }
     if (request.method === 'GET' && url.pathname === '/page') {
-      const content = Buffer.from('<!doctype html><html><body><h1>AutoFlow AI视觉验收页面</h1><p>受控页面截图</p></body></html>')
+      const content = Buffer.from('<!doctype html><html><body><h1>AutoFlow AI视觉验收页面</h1><button style="position:absolute;left:550px;top:382px;width:100px;height:100px" onclick="fetch(\'/clicked\')">验收按钮</button></body></html>')
       response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-length': content.length })
       return response.end(content)
     }
+    if (request.method === 'GET' && url.pathname === '/clicked') { requests.push({ method: request.method, path: url.pathname }); server.clicked += 1; return json(response, { ok: true }) }
     let raw = ''
     for await (const chunk of request) raw += chunk
     const body = raw ? JSON.parse(raw) : {}
@@ -214,13 +219,15 @@ async function startModel() {
     if (request.method === 'POST' && url.pathname === '/v1/generations') return json(response, { id: 'video-job' })
     if (request.method !== 'POST' || url.pathname !== '/v1/chat/completions') return json(response, { error: { message: 'not found' } }, 404)
     const messages = JSON.stringify(body.messages ?? [])
-    const content = messages.includes('视觉验收') ? '视觉识别通过' : [...responses].find(([marker]) => messages.includes(marker))?.[1]
+    const content = messages.includes('目标：') ? '{"found":true,"x":500,"y":500,"reason":"验收按钮"}' : messages.includes('视觉验收') ? '视觉识别通过' : [...responses].find(([marker]) => messages.includes(marker))?.[1]
     if (!content) return json(response, { error: { message: 'unknown prompt' } }, 422)
     return json(response, { choices: [{ message: { content } }] })
   })
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve) })
+  server.clicked = 0
   return {
     baseUrl: `http://127.0.0.1:${server.address().port}/v1`, pageUrl: `http://127.0.0.1:${server.address().port}/page`, requests,
+    get clicked() { return server.clicked },
     close: () => new Promise(resolve => { server.close(resolve); server.closeAllConnections() }),
   }
 }

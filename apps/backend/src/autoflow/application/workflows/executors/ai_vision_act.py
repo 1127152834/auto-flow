@@ -78,6 +78,17 @@ class AIVisionActExecutor(ModuleExecutor):
             )
         page = context.browser.current_page()
         viewport = page.viewport_size
+        if not viewport:
+            try:
+                measured = await page.evaluate(
+                    "() => ({ width: window.innerWidth, height: window.innerHeight })"
+                )
+                if isinstance(measured, dict):
+                    width, height = measured.get("width"), measured.get("height")
+                    if type(width) is int and type(height) is int and width > 0 and height > 0:
+                        viewport = {"width": width, "height": height}
+            except Exception:  # noqa: BLE001 - viewport fallback is best effort.
+                viewport = None
         if not viewport or viewport.get("width", 0) <= 0 or viewport.get("height", 0) <= 0:
             return ModuleResult(success=False, error="无法获取当前页面视口尺寸")
         try:
