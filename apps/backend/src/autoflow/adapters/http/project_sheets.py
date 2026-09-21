@@ -8,6 +8,7 @@ from fastapi import APIRouter, Header, Query, Request, Response
 from pydantic import BeforeValidator
 
 from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.columns import SheetsColumnService
 from autoflow.application.project_sync.connections import SheetsConnectionService
 from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.domain.projects.models import ProjectError
@@ -21,6 +22,8 @@ from .project_sheets_schemas import (
     SheetsBinding,
     SheetsBindingDelete,
     SheetsBindingWrite,
+    SheetsColumnCreate,
+    SheetsColumnPreview,
     SheetsConnectionCreate,
     SheetsConnectionDelete,
     SheetsConnectionDirectory,
@@ -394,5 +397,39 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
             str(idempotency_key),
             body.model_dump(by_alias=True),
         )
+
+    return router
+
+
+def project_sheets_columns_router(service: SheetsColumnService) -> APIRouter:
+    router = APIRouter(prefix="/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns")
+
+    @router.post("/preview", response_model=SheetsImpactReport)
+    def preview(projectId: CanonicalId, tableId: CanonicalId, body: SheetsColumnPreview):
+        return service.preview(str(projectId), str(tableId), body.model_dump(by_alias=True))
+
+    @router.get("", response_model=SyncOperationPage, response_model_exclude_none=True)
+    def operations(projectId: CanonicalId, tableId: CanonicalId, page: int = Query(default=1, ge=1), pageSize: int = Query(default=50, ge=1, le=100)):
+        return service.operations(str(projectId), str(tableId), page, pageSize)
+
+    @router.post("", response_model=OperationAccepted, status_code=202)
+    def create(projectId: CanonicalId, tableId: CanonicalId, body: SheetsColumnCreate, idempotency_key: Key):
+        return service.create(str(projectId), str(tableId), str(idempotency_key), body.model_dump(by_alias=True))
+
+    @router.post("/{operationId}/preview", response_model=SheetsImpactReport)
+    def preview_original(projectId: CanonicalId, tableId: CanonicalId, operationId: CanonicalId):
+        return service.preview_original(str(projectId), str(tableId), str(operationId))
+
+    @router.post("/{operationId}/verify", response_model=OperationAccepted, status_code=202)
+    def verify(projectId: CanonicalId, tableId: CanonicalId, operationId: CanonicalId, body: SheetsIdentityVerification | None = None):
+        return service.verify(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True) if body else None)
+
+    @router.post("/{operationId}/cancel", response_model=SyncOperation, response_model_exclude_none=True)
+    def cancel(projectId: CanonicalId, tableId: CanonicalId, operationId: CanonicalId, body: SyncStatusRevisionRequest):
+        return service.cancel(str(projectId), str(tableId), str(operationId), body.expected_status_revision)
+
+    @router.post("/{operationId}/retry", response_model=OperationAccepted, status_code=202)
+    def retry(projectId: CanonicalId, tableId: CanonicalId, operationId: CanonicalId, body: SheetsIdentityVerification):
+        return service.retry(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True))
 
     return router

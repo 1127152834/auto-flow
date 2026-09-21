@@ -334,6 +334,8 @@ def field_deletion_dependencies(session: Session, project_id: str, table: DataTa
         blockers.append({"code": "ACTIVE_TASK_FIELD_DEPENDENCY", "message": "活动任务的其他节点或输入仍依赖此字段",
                          "taskId": dependency["taskId"], "runId": dependency["runId"], "referenceSources": dependency["references"]})
     for operation in session.scalars(select(SyncOperationRow).where(SyncOperationRow.table_id == table.id, SyncOperationRow.status != "confirmed")):
+        if operation.kind in {"column", "systemIdentity"} and operation.status == "failed" and (operation.attempts == 0 or (operation.error or {}).get("unsent") is True):
+            continue
         if (operation.error or {}).get("code") == "SYNC_ABANDONED":
             continue
         if _references_field(operation.request, field_id, table.current_generation):

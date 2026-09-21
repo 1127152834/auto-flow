@@ -7748,8 +7748,18 @@
       "primary_package": "PM6-C",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_sync.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "R4 显式增列、原操作未知核验/未发送重试和取消、值发送依赖、旧 Task 权限兼容；HTTP/SQLite/受控 Google transport 与组件",
+          "limitations": "当前实网和打包完整链未验收，不升级 verified",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "data-source",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -7768,16 +7778,71 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "reviewedAt": "2026-09-22",
+        "checks": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：远端新增列响应未知核验原列，字段数据保留且不重复加列；不据邻近测试推定覆盖"
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_explicit_column_keeps_generation_and_old_patch_then_pushes_new_field",
+            "scope": "单次建列与原键重放；generation/epoch/旧记录版本保持，旧修改仍有效",
+            "level": "automated_integration"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "PM6 冻结来源契约未提供受控远端增列操作，当前同步端口仍无相应命令；本地 add/ensureField 不能替代远端建列与归属核验。"
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_lost_column_response_blocks_values_and_recovers_original_mapping",
+            "scope": "写成功丢响应不发布 mapping；原命令核验后入队依赖并推新字段，改名阻断后续写",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_unsent_column_can_be_cancelled_without_deleting_local_field_or_value",
+            "scope": "确认未发送才能取消，本地字段及值保留，取消后不能重试",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_existing_task_patch_survives_column_extension_without_new_field_grant",
+            "scope": "真实冻结 Task capability 在兼容增列后可改旧字段，不能扩大到新字段",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_foreign_same_name_column_is_not_adopted",
+            "scope": "同名外部列不能接管且无云写",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_unsent_column_retry_uses_same_owner_and_confirms_only_once",
+            "scope": "原计划原 owner/列未发送重试，成功后禁止再次发送",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_unknown_column_mismatch_never_maps_or_creates_again",
+            "scope": "移动、改名、缺归属或非空列保持未知，无映射或重复创建",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_column_preview_cannot_send_after_binding_removed",
+            "scope": "预览后解绑拒绝发送，不改变远端",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/project-data/components/SheetsColumnCreation.test.tsx",
+            "testName": "recovers the same unknown column and offers no unsafe cancellation or second create",
+            "scope": "重新打开读取原结构操作；只核验原命令，不新建、不取消未知写",
+            "level": "automated_component"
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "production_evidence_missing",
+            "detail": "当前打包应用的远端增列完整链尚无直接证据。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "当前真实 Google 测试表授权与原生完整验收待外部条件，受控 transport 不代替实网。"
           }
         ],
         "statusBeforeReview": "planned"

@@ -155,7 +155,7 @@ class FakeSheetsTransport:
                     "properties": {
                         "sheetId": sheet_id,
                         "title": name,
-                        "gridProperties": {"rowCount": 1000, "columnCount": 26},
+                        "gridProperties": {"rowCount": 1000, "columnCount": max(26, max((len(row) for row in self.grids[sheet_id]), default=0))},
                     }
                 }
                 for name, sheet_id in self.ids.items()

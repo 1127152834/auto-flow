@@ -25,6 +25,7 @@ from autoflow.adapters.http.project_runs import project_runs_router
 from autoflow.adapters.http.project_sheets import (
     internal_google_authorizations_router,
     project_sheets_binding_router,
+    project_sheets_columns_router,
     project_sheets_connections_router,
     project_sync_router,
 )
@@ -48,6 +49,7 @@ from autoflow.application.project_runs.evidence import ProjectRunEvidence
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.columns import SheetsColumnService
 from autoflow.application.project_sync.connections import SheetsConnectionService
 from autoflow.application.project_sync.impacts import SheetsImpactService
 from autoflow.application.project_sync.outbound import SheetsSyncService
@@ -84,6 +86,7 @@ class ProjectHttpServices:
     environments: EnvironmentService
     sheets_connections: SheetsConnectionService
     sheets_bindings: SheetsBindingService
+    sheets_columns: SheetsColumnService
     sheets_impacts: SheetsImpactService
     sync: SheetsSyncService
 
@@ -114,4 +117,5 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(internal_google_authorizations_router(services.sheets_connections))
     app.include_router(project_sheets_connections_router(services.sheets_connections))
     app.include_router(project_sheets_binding_router(services.sheets_bindings))
+    app.include_router(project_sheets_columns_router(services.sheets_columns))
     app.include_router(project_sync_router(services.sync))

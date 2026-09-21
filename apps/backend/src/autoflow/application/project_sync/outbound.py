@@ -43,6 +43,7 @@ from autoflow.providers.data.google_sheets import (
 
 from .access import GoogleAccess
 from .bindings import _api_error, _column_index
+from .columns import COLUMN_METADATA
 from .connections import _invalid, _uuid
 from .runs import SheetsRun
 from .system_identity import canonical_uuid, owned_identity
@@ -201,6 +202,7 @@ class SheetsSyncService:
         except SheetsApiError as error:
             raise _api_error(error) from error
         header = [str(value) for value in raw[0]] if raw else []
+        self._check_source_columns(client, table_id, binding, header)
         identity = _identity_column(binding["identityStrategy"], header)
         keys: list[RecordKey] = []
         system = binding["identityStrategy"]["kind"] == "system"
@@ -413,6 +415,7 @@ class SheetsSyncService:
         spreadsheet_id = str(binding["spreadsheetId"])
         sheet_name = str(binding["sheetName"])
         header = _header(client, spreadsheet_id, sheet_name)
+        self._check_source_columns(client, table_id, binding, header)
         identity_index = _identity_column(binding["identityStrategy"], header)
         if binding["identityStrategy"]["kind"] == "system":
             plan = self._sync.system_identity_plan(project_id, table_id, int(binding["bindingEpoch"]))
@@ -714,6 +717,7 @@ class SheetsSyncService:
         key: str,
         payload: dict[str, Any],
     ) -> dict[str, Any]:
+        self._require_table(project_id, table_id)
         if set(payload) != {"expectedStatusRevision", "reason"}:
             raise _invalid("payload", "意外的字段")
         expected = _revision(payload["expectedStatusRevision"], "expectedStatusRevision")
@@ -733,7 +737,7 @@ class SheetsSyncService:
                     "statusRevision": current["statusRevision"],
                 },
             )
-        if current["status"] != "pending":
+        if current["status"] != "pending" or current["kind"] != "push" or "record" not in current:
             raise ProjectError(
                 "SYNC_NOT_ABANDONABLE",
                 "已经发送过的操作不能放弃，只能核验或保留为历史。",
@@ -748,6 +752,22 @@ class SheetsSyncService:
         )
 
     # --------------------------------------------------------------------- helpers
+
+    def _check_source_columns(self, client: SheetsClient, table: str, binding: dict[str, Any], header: list[str]) -> None:
+        with self._sessions() as session:
+            row = self._sync.binding_row(session, table)
+            if row is None or row.binding_epoch != binding["bindingEpoch"]:
+                raise ProjectError("PRECONDITION_FAILED", "来源绑定已变化。", 412)
+            plans = (row.identity_verification or {}).get("sourceColumns", {})
+        if not plans:
+            return
+        try:
+            metadata = client.developer_metadata(binding["spreadsheetId"])
+        except SheetsApiError as error:
+            raise _api_error(error) from error
+        for plan in plans.values():
+            if not owned_identity(plan, header, metadata, metadata_key=COLUMN_METADATA, name=plan["values"][0]):
+                raise ProjectError("SHEETS_COLUMN_EVIDENCE_MISMATCH", "已创建来源列的归属或位置已变化，禁止猜测同步。", 409)
 
     def _require_table(
         self, project_id: str, table_id: str, session: Session | None = None

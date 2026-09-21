@@ -7,8 +7,8 @@
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet the approved guarantees.",
-    "R4 controlled remote column creation is approved and pending implementation. M1-M3 remote row append/delete/formula templates remain outside approved scope.",
-    "23 of 251 requirements still have no located assertion; 193 partial / 58 planned / 0 verified. Located assertions do not close unproven acceptance subconditions.",
+    "C1-C4 and R1/R2/R5/R3/R4 implemented with scoped evidence; M1-M3 remote row append/delete/formula templates remain outside approved scope.",
+    "22 of 251 requirements still have no located assertion; 194 partial / 57 planned / 0 verified. Located assertions do not close unproven acceptance subconditions.",
     "Current R3/R4 candidate needs final whole C/R review, full regression and the stable three-platform matrix. Completed native runs retain their individual source scope.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
@@ -130,11 +130,14 @@
       "C3",
       "R1",
       "R2",
-      "R5"
+      "R5",
+      "C4",
+      "R3",
+      "R4"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "C4 native failures being diagnosed; R3/R4 approved and pending; release not accepted"
+    "status": "C/R slices implemented; final whole review, full regression and current native matrix pending; release not accepted"
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "R3 source hashes in shared-data-follow-through.json; native validation pending"
+  "workingCandidate": "R3/R4 source hashes in shared-data-follow-through.json; final whole review and native validation pending"
 }

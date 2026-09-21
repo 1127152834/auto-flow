@@ -22,7 +22,8 @@
     "R2",
     "R5",
     "C4",
-    "R3"
+    "R3",
+    "R4"
   ],
   "verification": {
     "scopedBackend": "158 passed, 2 warnings in 57.88s",
@@ -89,6 +90,19 @@
       "build": "passed in 34.52s",
       "releaseScope": "No current real Google or packaged system initialization proof",
       "recoveryListingFix": "Real GET /sheets/system-identity returns accepted structural commands; content-only sync queue excluded them. RED failed missing items; 23 HTTP/source + 25 UI/client checks passed. Full R3 before listing fix 90 passed remains scoped."
+    },
+    "R4": {
+      "backend": "113 passed, 2 warnings in 138.65s across columns, identity, shared claims, field deletion and HTTP contracts; before the separate generic-abandon boundary fix",
+      "dedicated": "11 controlled-transport HTTP column cases, including real frozen Task capability compatibility",
+      "frontend": "38 passed / 5 files in 8.46s",
+      "ruff": "passed",
+      "mypy": "407 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed",
+      "build": "passed in 49.78s",
+      "releaseScope": "Current real Google and packaged column creation chain pending; final whole C/R review and native candidate pending",
+      "abandonBoundaryFix": "Two HTTP counterexamples reproduced (foreign project, structural operation); shared guard fixed. Full sync suite 33 passed, 2 warnings in 37.79s including both deterministic send/abandon races."
     }
   },
   "assertionScope": [
@@ -120,18 +134,18 @@
     "公式仍由来源刷新修订，不进入普通差异列表，无出站意图",
     "重复远端身份不能把含糊值登记到原记录观察",
     "详情只读区分来源/观察时本地值及修订；切换代次旧观察不可见，无写操作入口",
-    "R3 freezes original UUID/column/row evidence before a single atomic Sheets batch; only proven-unsent plans retry. Unknown sends reconcile original ownership and UUIDs; local binding commit and operation completion are atomic. System UUID/text views share a physical lease, unresolved structure fences peer values/claims/binding/lifecycle. Explicit binding may reuse a locally proven owned system column without cloud writes."
+    "R3 freezes original UUID/column/row evidence before a single atomic Sheets batch; only proven-unsent plans retry. Unknown sends reconcile original ownership and UUIDs; local binding commit and operation completion are atomic. System UUID/text views share a physical lease, unresolved structure fences peer values/claims/binding/lifecycle. Explicit binding may reuse a locally proven owned system column without cloud writes.",
+    "R4 freezes explicit local field/target/epoch/revision and owner before one append/header/metadata batch; unknown sends verify only. Confirmed column extends the same generation/epoch and queues existing local values with original column dependency. Old Task grants stay narrow. Same-name/moved/renamed/foreign/nonempty columns fail closed; proven-unsent cancellation retains local data."
   ],
   "limits": [
     "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
-    "R1/R2/R5 implemented with scoped local evidence; R3-R4 approved, not yet implemented",
     "M1-M3 not approved",
     "Google real authorization, signing and full native platform acceptance external",
     "Local pull preserves existing readable rows and skipped blank identities; those tables remain ineligible for shared claims until identity is complete",
     "Source namespace currently uses verified column coordinate/header and exact key encoding; moved/renamed columns require explicit repair",
-    "C4 native matrix 35597323657: ARM passed, Windows real worker failed (full backend/frontend passed), Intel still pending at observation",
     "Actual worker integration uses TestClient HTTP and controlled Google transport, not packaged Google network authorization",
-    "29-case run predates the extra status assertions; the separate latest 3-case run proves those assertions on identical production source"
+    "29-case run predates the extra status assertions; the separate latest 3-case run proves those assertions on identical production source",
+    "C/R implementations have scoped assertions; final current candidate whole review, full regression and three-platform validation pending."
   ],
   "previousCandidateCI": {
     "run": 35590418456,
@@ -211,8 +225,26 @@
     "apps/desktop/src/renderer/domains/project-data/components/SheetsIdentityInitialization.tsx": "22a9df1c2f27d6bfafc85e0f52b30508236e82461ee1e681a9c3e6f8cd5370a0"
   },
   "remaining": [
-    "R4 approved controlled remote column creation remains next; final whole C/R review, full regression and current three-platform candidate pending.",
+    "Final whole C/R review, full regression and current R3/R4 three-platform candidate pending.",
     "Current packaged complete Sheets chain, OAuth, real Google system UUID tests, physical native acceptance and signing identities remain external acceptance.",
     "S4 Windows existing-file overwrite/append/read and unapproved M1-M3 remain actual capability gaps."
-  ]
+  ],
+  "R4SourceHashes": {
+    "apps/backend/src/autoflow/adapters/http/project_schemas.py": "d4c92eb57a4cce6719b8cfcababf1d5b0216793cd8f99473b589423d5bbfa01f",
+    "apps/backend/src/autoflow/adapters/http/project_sheets.py": "ad0625c7eba0abab42c3585d9c1d99becae66e0595f62c5edcaf6488a66200c0",
+    "apps/backend/src/autoflow/adapters/http/project_sheets_schemas.py": "66f0cccfb4d2cf890b22cd5a31f686974954d330f0328a9cf41d500a24eb560d",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "624c5342808bc038845f2fedddebedcc0c60bb2874dd30259352937f992a69a2",
+    "apps/backend/src/autoflow/application/project_sync/system_identity.py": "f78d4b627b028769f70d99fc189106df73b38a2967575605fae6494d135a66ae",
+    "apps/backend/src/autoflow/bootstrap/app.py": "966330cae768dfc7d6f8a8c276cf1fedb29861f3a97f9a979fa18fe82655197f",
+    "apps/backend/src/autoflow/bootstrap/project_http_routes.py": "ba85e388c5fdedc53e70973ddd721a7ee15b33da0b122cff5ca21733fb5e93ca",
+    "apps/backend/src/autoflow/infrastructure/database/project_data_impacts.py": "9420119feab2b784034106724b2d8847ace52695d85d47a90845fe6c83902417",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "ae0b4fc254903e8f17223f15e4c0e50e6fb98fcc252c4a3a3b829ff5218ffc0f",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "427396553a10fa264954fca3edf710bc585d9e2bcac3c69263169a7a6f3fca4d",
+    "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.test.tsx": "e01e3801d10ff4c2717e682e27967514203e6d34a972762e0eca59ea18365929",
+    "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx": "3e53ff6436582c4a58d57b240c5b618e7d641909ef605de36d08333c10341813",
+    "apps/desktop/src/renderer/domains/project-data/sheets-api.ts": "7ef3f0a50aea6d7f9f0494ab8825257758e30642bf3a4e94cd7a0a961c6fd868",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "c754b890f4d2963d67c2e50973718f0926767b5053fb6b78283dfebd5ddd9a21",
+    "apps/backend/src/autoflow/application/project_sync/columns.py": "e1f5fad5e56fa9f29c9e32608de9c2c1ca62d9e72d1e38419dc780cbd553aca7",
+    "apps/desktop/src/renderer/domains/project-data/components/SheetsColumnCreation.tsx": "e0f38652ace057947f3d3317bd6304c37d1ab9854db0d7e7637bab8d07b065d9"
+  }
 }

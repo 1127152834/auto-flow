@@ -691,3 +691,31 @@ def test_confirmed_push_block_survives_next_failure_and_later_edit(tmp_path, mon
         assert sync_operations(sheets, "pending") == []
         assert transport.grid("数据")[1:] == [["A-1", "A-1-v2"], ["B-2", "B-2-v3"]]
         assert transport.changes() == 3  # Two commits and the explicitly failed request.
+
+
+@pytest.mark.parametrize('scope', ['foreign-project', 'structural-operation'])
+def test_generic_abandon_is_scoped_to_owned_content_intents(tmp_path, scope):
+    from uuid import uuid4
+    from autoflow.infrastructure.database.project_sync_models import SyncOperationRow
+
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        edit_title(sheets, sheets.records()[0], 'local-owned')
+        pending, = sync_operations(sheets, 'pending')
+        url = sheets.url(f"/sync-operations/{pending['syncOperationId']}/abandon")
+        if scope == 'foreign-project':
+            url = url.replace(sheets.project, str(uuid4()))
+        else:
+            with sheets.client.app.state.session_factory() as session:
+                row = session.get(SyncOperationRow, pending['syncOperationId'])
+                row.kind = 'column'
+                session.commit()
+        response = sheets.client.post(url, headers=new_key(), json={
+            'expectedStatusRevision': pending['statusRevision'], 'reason': 'cancel',
+        })
+        assert response.status_code == (404 if scope == 'foreign-project' else 409), response.text
+        with sheets.client.app.state.session_factory() as session:
+            row = session.get(SyncOperationRow, pending['syncOperationId'])
+            assert row.status == 'pending' and row.status_revision == pending['statusRevision']
+        assert transport.changes() == 0

@@ -21,7 +21,12 @@ from sqlalchemy.orm import Session, sessionmaker
 from autoflow.domain.projects.models import ProjectError
 
 from .project_claims import source_record_leases
-from .project_data_models import DataImpactRow, DataRecordRow, DataTableRow
+from .project_data_models import (
+    DataFieldRow,
+    DataImpactRow,
+    DataRecordRow,
+    DataTableRow,
+)
 from .project_sync_models import SheetsBindingRow, SheetsConnectionRow, SyncOperationRow
 from .project_sync_sends import require_source_idle, unresolved_structure
 
@@ -352,6 +357,39 @@ class SqlAlchemySheetsImpacts:
             "identityStrategy": binding.identity_strategy,
             "sourceLeases": sorted((lease.id, lease.state, lease.lease_generation) for lease in leases),
         }
+        return report, facts
+
+    def preview_column(self, project: str, table: str, change: dict[str, Any], *, own: str | None = None) -> dict[str, Any]:
+        with self._sessions() as session:
+            report, facts = self._column_facts(session, project, table, change, own=own)
+        return self._save(project, "createSheetsColumn", _table_locator(project, table), change, report, facts)
+
+    def require_column(self, session: Session, project: str, table: str, change: dict[str, Any], revision: int, *, own: str | None = None) -> None:
+        self._require(session, project, "createSheetsColumn", _table_locator(project, table), change, revision,
+                      lambda: self._column_facts(session, project, table, change, own=own))
+
+    def _column_facts(self, session: Session, project: str, table_id: str, change: dict[str, Any], *, own: str | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
+        table = session.get(DataTableRow, table_id)
+        binding = session.get(SheetsBindingRow, table_id)
+        if table is None or not table.published or table.project_id != project or binding is None:
+            raise ProjectError("SHEETS_BINDING_NOT_FOUND", "数据表或来源绑定不存在。", 404)
+        expected = (change["connectionId"], change["spreadsheetId"], change["sheetId"], change["expectedBindingEpoch"], change["datasetGeneration"])
+        actual = (binding.connection_id, binding.spreadsheet_id, binding.sheet_id, binding.binding_epoch, table.current_generation)
+        if expected != actual:
+            raise _stale()
+        require_source_idle(session, binding.spreadsheet_id, own=own)
+        field = session.get(DataFieldRow, {"id":change["fieldId"], "dataset_generation":table.current_generation})
+        if field is None or field.table_id != table_id or field.formula or not field.writable:
+            raise ProjectError("SHEETS_COLUMN_FIELD_INVALID", "请选择当前代次中可写的普通字段。", 409)
+        if any(entry["fieldId"] == field.id for entry in binding.mapping):
+            raise ProjectError("SHEETS_COLUMN_ALREADY_MAPPED", "该字段已有来源映射，不会另建列。", 409)
+        connection = session.get(SheetsConnectionRow, binding.connection_id)
+        if connection is None or connection.revoked_at is not None or connection.state != "available" or not connection.writable:
+            raise ProjectError("SHEETS_CONNECTION_UNAVAILABLE", "来源连接当前不可写。", 409)
+        facts = {"tableRevision": table.table_revision, "fieldRevision": field.field_revision, "fieldType": field.type,
+                 "bindingEpoch": binding.binding_epoch, "datasetGeneration": table.current_generation, "mapping": binding.mapping}
+        report = {"target": _table_locator(project, table_id), "expectedRevisions": {"tableRevision":table.table_revision, "bindingEpoch":binding.binding_epoch},
+                  "impacts": [{"code":"SHEETS_COLUMN_CREATED", "resource":_table_locator(project,table_id), "message":f"新增来源列 {change['columnName']}；核验后仅扩展当前字段映射，已有数据、状态与关联保留。", "blocking":False}], "blockers":[]}
         return report, facts
 
     # ------------------------------------------------------------- persistence

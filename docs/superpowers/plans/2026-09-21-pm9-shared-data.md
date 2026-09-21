@@ -84,3 +84,11 @@
 - R3 must also connect system RecordKey UUIDs to inbound ingestion and shared source claim normalization. Do not only remove `_identity` / `_identity_column` 501 checks: the existing parser and remote-key locator currently assume column keys. Explicitly test UUID versus text views of the same physical identity so an alias cannot obtain a second lease.
 - There is no existing cross-request Spreadsheet send lock in the inspected PM9 source. Reuse the existing sync ledger's short transaction/CAS to serialize structural sends against value sends, and block binding/lifecycle changes while an uncertain structural command remains. This is required by the approved frozen-send contract, not an additional executor.
 - Keep system initialization separate from ordinary binding; a failed or unknown initialization cannot publish a half-initialized local dataset. R4 extends the current binding mapping compatibly after verified column creation; it must preserve generation, existing field identities, Task patches and local values.
+
+### R4 已批准范围内实施细化（2026-09-22）
+
+- 独立来源管理操作选择已有普通本地字段及明确列名，Google 在当前 grid 末尾 appendDimension + 字符串表头 + DOCUMENT 归属 metadata 同批创建；避免插入到已有坐标中影响其他 Task/映射。已有同名表头不接管，已被其他绑定引用的目标列不接管。
+- 使用现有 DataImpactRow 保存 createSheetsColumn 的本地字段/目标/epoch/映射事实；结构发送和未知恢复复用 R3 的 workspace 锁与持久发送围栏。绑定的 generation、epoch、旧字段身份不变；只有确认成功才原子扩展 mapping、tableRevision 和原 Operation 成功状态。
+- 已存在的新字段值在同一确认事务进入现有值意图队列，记录 columnDependencies；字段和值不回滚，值发送重验列已 confirmed。普通 addField 仍 localOnly，不暗中创建来源列。
+- 未知结果核验原列归属/表头/空列，不重复创建。仅证明未发送的原计划可以重试或取消；取消不删本地字段/记录，不删任何远端列。后续推送、拉取和核验也校验已创建列的归属位置。
+- UI 入口放在现有“来源”页的字段映射操作区；初次创建明确勾选确认，恢复查询专用结构操作列表，避免把内容意图列表误当成所有命令。实网、当前打包全链及最终稳定候选矩阵分别记录。

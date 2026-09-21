@@ -44,6 +44,7 @@ from autoflow.application.project_runs.resources import ProjectRunResourceResolv
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.project_sync.access import GoogleAccess, TransportFactory
 from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.columns import SheetsColumnService
 from autoflow.application.project_sync.connections import (
     AuthorizationRegistry,
     SheetsConnectionService,
@@ -391,6 +392,7 @@ def create_app(
         DataTableService(SqlAlchemyProjectData(session_factory)),
         sheets_repository,
     )
+    sheets_columns = SheetsColumnService(sheets_repository, sheets_access, sheets_runs)
     sheets_impacts_service = SheetsImpactService(sheets_impacts)
     sheets_sync = SheetsSyncService(
         session_factory, sheets_runs, sheets_repository, sheets_access
@@ -603,6 +605,7 @@ def create_app(
         environments=environment_service,
         sheets_connections=sheets_connections,
         sheets_bindings=sheets_bindings,
+        sheets_columns=sheets_columns,
         sheets_impacts=sheets_impacts_service,
         sync=sheets_sync,
     ))

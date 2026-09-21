@@ -312,3 +312,18 @@ class SourceRecordObservations(ApiModel):
 class SheetsIdentityVerification(ApiModel):
     expected_table_revision: int = Field(ge=1)
     impact_revision: int = Field(ge=1)
+
+
+class SheetsColumnPreview(ApiModel):
+    field_id: str
+    column_name: str = Field(min_length=1, max_length=200)
+    dataset_generation: str
+    connection_id: str
+    spreadsheet_id: str = Field(min_length=1)
+    sheet_id: int = Field(ge=0)
+    expected_binding_epoch: int = Field(ge=1)
+    expected_table_revision: int = Field(ge=1)
+
+
+class SheetsColumnCreate(SheetsColumnPreview):
+    impact_revision: int = Field(ge=1)

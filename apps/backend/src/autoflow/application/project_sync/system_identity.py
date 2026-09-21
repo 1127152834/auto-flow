@@ -54,7 +54,7 @@ def verify_identity(plan: dict[str, Any], values: list[list[Any]], metadata: lis
     return digest(_rows(original)) == plan["beforeDigest"]
 
 
-def identity_requests(plan: dict[str, Any], column_count: int) -> list[dict[str, Any]]:
+def identity_requests(plan: dict[str, Any], column_count: int, *, metadata_key: str = IDENTITY_METADATA) -> list[dict[str, Any]]:
     column, sheet = plan["columnIndex"], plan["sheetId"]
     dimension = {"sheetId": sheet, "dimension": "COLUMNS", "startIndex": column, "endIndex": column + 1}
     if column > column_count:
@@ -65,15 +65,15 @@ def identity_requests(plan: dict[str, Any], column_count: int) -> list[dict[str,
         "rows": [{"values": [{"userEnteredValue": {"stringValue": value}}]} for value in plan["values"]],
         "fields": "userEnteredValue",
     }}, {"createDeveloperMetadata": {"developerMetadata": {
-        "metadataKey": IDENTITY_METADATA, "metadataValue": plan["owner"],
+        "metadataKey": metadata_key, "metadataValue": plan["owner"],
         "visibility": "DOCUMENT", "location": {"dimensionRange": dimension},
     }}}]
 
 
-def owned_identity(plan: dict[str, Any], header: list[str], metadata: list[dict[str, Any]]) -> bool:
+def owned_identity(plan: dict[str, Any], header: list[str], metadata: list[dict[str, Any]], *, metadata_key: str = IDENTITY_METADATA, name: str = IDENTITY_HEADER) -> bool:
     column = plan["columnIndex"]
-    markers = [item for item in metadata if item.get("metadataKey") == IDENTITY_METADATA and item.get("metadataValue") == plan["owner"]]
-    return (column < len(header) and header[column] == IDENTITY_HEADER and len(markers) == 1
+    markers = [item for item in metadata if item.get("metadataKey") == metadata_key and item.get("metadataValue") == plan["owner"]]
+    return (column < len(header) and header[column] == name and len(markers) == 1
             and markers[0].get("location", {}).get("dimensionRange") == {
                 "sheetId": plan["sheetId"], "dimension": "COLUMNS", "startIndex": column, "endIndex": column + 1})
 
