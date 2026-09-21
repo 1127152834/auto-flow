@@ -24,5 +24,6 @@
 ## 阻塞项与风险
 
 - 当前验收主机没有可核实的 Docker/Lima/ReDroid 实例、ADB/scrcpy 联机设备、Google 组件网络和专用测试账号；真实创建、启动、手动窗口、应用安装/中文输入、备份恢复演练、GApps 验证全部 `blocked`，没有用 mock 结果代替。
+- 实机探测摘要：`docker info` 无法连接 `/Users/zhangtiancheng/.docker/run/docker.sock`；`limactl list` 显示 `autoflow-redroid Stopped`；`adb devices` 无设备；`scrcpy` 二进制存在但无设备可连接。
 - `npm run test:scripts` 的三个 Studio inventory/reference 失败与本模块无关，未扩大范围修复；依赖安装/Node 版本会影响其复现。
 - AM3/AM4 完整 UI 批次编排、聚合观察和备份恢复真实演练仍需后续实机验收；应用停止/卸载/清除接口已加保护，但未实机验证。
