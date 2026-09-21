@@ -57,7 +57,14 @@
     }
   ],
   "remaining": [
-    "正式 Electron 中通过真实 UI 保存、运行并查看三个节点的日志、变量和截图",
     "Windows 与 macOS Intel 实机未验收"
-  ]
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-scraper-firecrawl.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json",
+    "covers": "正式Studio真实UI配置Firecrawl单页、链接映射和全站抓取，CloakBrowser完成本地页面抓取并登记PNG产物，运行后清理完成"
+  }
 }

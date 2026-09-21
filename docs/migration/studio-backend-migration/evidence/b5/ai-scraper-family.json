@@ -4,7 +4,10 @@
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
     "path": "reference/WebRPA/backend/app/executors/ai_scraper.py",
-    "symbols": ["AISmartScraperExecutor", "AIElementSelectorExecutor"],
+    "symbols": [
+      "AISmartScraperExecutor",
+      "AIElementSelectorExecutor"
+    ],
     "license": "LICENSE.WebRPA"
   },
   "implemented": [
@@ -40,7 +43,14 @@
     }
   ],
   "remaining": [
-    "正式Electron中真实CloakBrowser页面提取和模型请求验收",
     "真实模型供应商调用"
-  ]
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-scraper-firecrawl.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json",
+    "covers": "正式Studio真实UI配置AI智能爬虫和AI元素选择器，CloakBrowser读取受控页面并经主应用模型返回提取对象和CSS选择器，运行后清理完成"
+  }
 }

@@ -36612,7 +36612,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -36680,7 +36680,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、真实worker、正式Electron真实UI及darwin-arm64受控页面验收均已通过；其他平台与真实第三方服务仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -36709,7 +36709,7 @@
         },
         {
           "id": "BE.ai_smart_scraper.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -36717,12 +36717,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_smart_scraper，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI智能爬虫模块执行器\n\n使用 ScrapeGraphAI 的能力，通过自然语言描述来提取网页数据。\n优点：适应网页结构变化，减少维护成本\n缺点：速度比传统爬虫慢，需要 LLM 支持",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
     }
   },
   {
@@ -36925,7 +36926,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -36990,7 +36991,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、真实worker、正式Electron真实UI及darwin-arm64受控页面验收均已通过；其他平台与真实第三方服务仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -37019,7 +37020,7 @@
         },
         {
           "id": "BE.ai_element_selector.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -37027,12 +37028,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_element_selector，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI智能元素选择器模块执行器\n\n使用 AI 能力，通过自然语言描述来获取元素的 Selector。\n即使网页结构变化，也能准确找到元素。",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
     }
   },
   {
@@ -37210,7 +37212,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -37275,7 +37277,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、真实worker、正式Electron真实UI及darwin-arm64受控页面验收均已通过；其他平台与真实第三方服务仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -37304,7 +37306,7 @@
         },
         {
           "id": "BE.firecrawl_scrape.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -37312,12 +37314,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 firecrawl_scrape，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：Firecrawl AI 单页数据抓取\n\n使用 Playwright + BeautifulSoup 智能提取单个网页的结构化数据。\n支持 Markdown、HTML、纯文本等多种格式。",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
     }
   },
   {
@@ -37472,7 +37475,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -37536,7 +37539,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、真实worker、正式Electron真实UI及darwin-arm64受控页面验收均已通过；其他平台与真实第三方服务仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -37565,7 +37568,7 @@
         },
         {
           "id": "BE.firecrawl_map.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -37573,12 +37576,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 firecrawl_map，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：Firecrawl AI 网站链接抓取\n\n使用 Playwright 智能发现网站的所有链接。\n可以用于构建网站地图或批量抓取。",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
     }
   },
   {
@@ -37780,7 +37784,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -37851,7 +37855,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、真实worker、正式Electron真实UI及darwin-arm64受控页面验收均已通过；其他平台与真实第三方服务仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -37880,7 +37884,7 @@
         },
         {
           "id": "BE.firecrawl_crawl.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -37888,12 +37892,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 firecrawl_crawl，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：Firecrawl AI 全站数据抓取\n\n使用 Playwright 智能爬取整个网站的数据。\n支持深度爬取、智能过滤、并发控制等高级功能。",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
     }
   },
   {
