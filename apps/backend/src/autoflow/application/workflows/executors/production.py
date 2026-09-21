@@ -116,6 +116,7 @@ from .printer import PRINTER_EXECUTORS
 from .registry import ExecutorRegistry
 from .run_command import RunCommandExecutor
 from .ssh import SSH_EXECUTORS
+from .sound_trigger import SOUND_TRIGGER_EXECUTORS
 from .statistics import (
     MedianExecutor,
     ModeExecutor,
@@ -183,6 +184,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *INPUT_TRIGGER_EXECUTORS,
     *IMAGE_TRIGGER_EXECUTORS,
     *SSH_EXECUTORS,
+    *SOUND_TRIGGER_EXECUTORS,
     *CAPTCHA_EXECUTORS,
     *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,

@@ -248,6 +248,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "python_script",
         "run_command",
         "printer_call",
+        "sound_trigger",
         "set_clipboard",
         "get_clipboard",
         "play_sound",
