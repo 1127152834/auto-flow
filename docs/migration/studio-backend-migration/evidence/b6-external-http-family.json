@@ -11,7 +11,11 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["api_request", "webhook_request", "notify_webhook"],
+  "nodes": [
+    "api_request",
+    "webhook_request",
+    "notify_webhook"
+  ],
   "implemented": [
     "保留 API 请求的变量解析、JSON/文本请求体、Cookie、任意 HTTP 状态返回和变量写回语义",
     "保留 Webhook 请求的 JSON/表单/原文分支、重定向、SSL 开关、响应正文/状态/头/Cookie 变量写回及非 2xx 失败语义",
@@ -44,8 +48,15 @@
     "environmentProxyUsed": false
   },
   "remaining": [
-    "正式 Electron 中通过真实 UI 保存、运行并查看三个节点的日志与变量",
     "HTTP 代理字段尚未进入这三个节点的冻结前端合同；后续网络族统一处理时不得新增隐藏代理回退",
     "外网目标不需要专项账号；具体用户服务的可用性由用户配置决定"
-  ]
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-http-logs.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-http-logs-electron-xWwmeY/result.json",
+    "covers": "正式Studio真实UI配置并运行 api_request、webhook_request、notify_webhook，真实本地HTTP副作用和结果变量均核验，运行后worker清理"
+  }
 }
