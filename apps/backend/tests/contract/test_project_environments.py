@@ -1107,3 +1107,78 @@ def test_end_links_only_the_selected_records(tmp_path):
         assert linked.link_revision == 2
         assert untouched.current_environment_id is None
         assert untouched.link_revision == 1
+
+
+def test_io_failure_after_publication_keeps_ownership_until_original_key_recovers(tmp_path, monkeypatch):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    initial = _closed_instance(service, project_id, b"login-v1")
+    prefix = f"/api/v1/projects/{project_id}"
+    saved = client.post(prefix + f"/tasks/{initial.active_task_id}/end", headers={"Idempotency-Key": str(uuid4())}, json=_end_body(initial)).json()["outcome"]["saved"]
+    environment_id = saved["environmentId"]
+    source = service.resolve(project_id, {"source": "fixedEnvironment", "environmentId": environment_id})
+    instance = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind="task", holder_id=str(uuid4()))
+    service.environments.set_instance_state(instance.instance_id, "closed")
+    previous_key = str(uuid4())
+    previous_body = {"instanceId": instance.instance_id, "mode": "update", "expectedUseGeneration": 1, "executionGeneration": 1, "expectedContentGeneration": 1}
+    previous = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': previous_key}, json=previous_body)
+    assert previous.status_code == 202, previous.text
+    publish = service.store.publish
+
+    def publish_then_lose_ack(*args):
+        publish(*args)
+        raise OSError("injected failure after generation publication")
+
+    monkeypatch.setattr(service.store, "publish", publish_then_lose_ack)
+    key = str(uuid4())
+    body = {**previous_body, "expectedContentGeneration": 2}
+    with pytest.raises(OSError):
+        client.post(prefix + "/environment-saves", headers={"Idempotency-Key": key}, json=body)
+    assert service.environments.get_instance(project_id, instance.instance_id).state == "saving"
+    assert service.store.generation_dir(environment_id, 3).is_dir()
+    # Replaying an earlier successful command cannot release a later unknown save.
+    replay = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': previous_key}, json=previous_body)
+    assert replay.status_code == 202
+    assert replay.json()['outcome'] == previous.json()['outcome']
+    with pytest.raises(ProjectError) as busy:
+        service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind="task", holder_id=str(uuid4()))
+    assert busy.value.code == "ENVIRONMENT_BUSY"
+    monkeypatch.setattr(service.store, "publish", publish)
+    recovered = client.post(prefix + "/environment-saves", headers={"Idempotency-Key": key}, json=body)
+    assert recovered.status_code == 202, recovered.text
+    assert recovered.json()["outcome"]["saved"]["contentGeneration"] == 3
+    repeated = client.post(prefix + "/environment-saves", headers={"Idempotency-Key": key}, json=body).json()
+    assert repeated['outcome'] == recovered.json()['outcome']
+    assert repeated['operation']['operationId'] == recovered.json()['operation']['operationId']
+    assert not service.store.generation_dir(environment_id, 4).exists()
+
+
+def test_retained_update_reacquires_source_without_displacing_live_owner(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    prefix = f"/api/v1/projects/{project_id}"
+    initial = _closed_instance(service, project_id, b"login-v1")
+    saved = client.post(prefix + f"/tasks/{initial.active_task_id}/end", headers={"Idempotency-Key": str(uuid4())}, json=_end_body(initial)).json()["outcome"]["saved"]
+    environment_id = saved['environmentId']
+    source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': environment_id})
+    t1 = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+    service.environments.set_instance_state(t1.instance_id, 'retained_unsaved')
+    assert service.environments.count_live_instances(project_id) == 0
+    t2 = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+    body = {'instanceId': t1.instance_id, 'mode': 'update', 'expectedUseGeneration': 1, 'executionGeneration': 1, 'expectedContentGeneration': 1}
+    blocked = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': str(uuid4())}, json=body)
+    assert blocked.status_code == 423, blocked.text
+    assert blocked.json()['error']['code'] == 'ENVIRONMENT_BUSY'
+    current, owner = service.environments.get_with_instance(project_id, environment_id)
+    assert owner.instance_id == t2.instance_id
+    assert current.ref.content_generation == 1
+    assert not service.store.generation_dir(environment_id, 2).exists()
+    service.environments.set_instance_state(t2.instance_id, 'closed')
+    service.close_instance(project_id, t2.instance_id, environment_id)
+    retry = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': str(uuid4())}, json=body)
+    assert retry.status_code == 202, retry.text
+    assert retry.json()['outcome']['saved']['contentGeneration'] == 2
+    _, owner = service.environments.get_with_instance(project_id, environment_id)
+    assert owner is None
+    next_source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': environment_id})
+    service.reserve(project_id, next_source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))

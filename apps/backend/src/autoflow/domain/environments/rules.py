@@ -43,7 +43,6 @@ LIVE_INSTANCE_STATES = frozenset(
         "waiting_manual",
         "closing",
         "saving",
-        "retained_unsaved",
     }
 )
 OPENABLE_INSTANCE_STATES = frozenset({"reserved", "starting", "active", "waiting_manual"})

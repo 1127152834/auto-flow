@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-link-race", "manual-resume", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-link-race", "data-old-candidate", "manual-resume", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -488,7 +488,7 @@ async def test_real_project_batch_http(
                 assert rows['total'] == 1
                 assert rows['items'][0]['ref'] == original['result']['ref']
                 assert rows['items'][0]['values'][0]['value'] == 'before-真实参数-001'
-            elif scenario == "data":
+            elif scenario in {"data", "data-old-candidate"}:
                 assert detail['statusCounts']['succeeded'] == 2, {
                     'batch': detail,
                     'tasks': [(await client.get(prefix + f"/tasks/{task['taskId']}")).json() for task in tasks],
@@ -525,6 +525,74 @@ async def test_real_project_batch_http(
                 restored_tasks = (await client.get(prefix + '/tasks', params={'batchId': restore_batch})).json()['items']
                 outputs = (await client.get(prefix + f"/tasks/{restored_tasks[0]['taskId']}/outputs")).json()['items']
                 assert [output['value'] for output in outputs] == ['signed-in']
+
+                if scenario == 'data-old-candidate':
+                    # Only publication gets an injected disk fault: preparation,
+                    # browser, staging, successor Run and recovery use production.
+                    service = app.state.environment_service
+                    publish = service.store.publish
+                    failed_save = None
+
+                    def fail_first_publish(environment_id, generation, save_id):
+                        nonlocal failed_save
+                        if failed_save is None:
+                            import errno
+                            failed_save = save_id
+                            assert (service.store.root / 'candidates' / save_id).is_dir()
+                            raise OSError(errno.ENOSPC, 'injected disk publication failure')
+                        return publish(environment_id, generation, save_id)
+
+                    update_content = restored_document['content']
+                    update_content['nodes'][-1]['data']['retainEnvironment'] = {'enabled': True, 'mode': 'update', 'expectedContentGeneration': 1}
+                    update_workflow = await client.post('/api/workflows', json={**update_content, 'id': str(uuid4()), 'clientRequestId': str(uuid4())})
+                    assert update_workflow.status_code == 201, update_workflow.text
+                    update_config = {**restore_config, 'name': '旧候选发布竞争', 'workflowId': update_workflow.json()['id']}
+                    update_automation = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json=update_config)
+                    assert update_automation.status_code == 201, update_automation.text
+                    update_automation = update_automation.json()
+
+                    async def run_update(expected):
+                        accepted = await client.post(prefix + f"/automations/{update_automation['automationId']}/batches", headers={'Idempotency-Key': str(uuid4())}, json={'expectedAutomationRevision': update_automation['managementRevision'], 'parameters': {}, 'maxTasks': 1, 'concurrency': 1})
+                        assert accepted.status_code == 202, accepted.text
+                        identity = accepted.json()['operation']['result']['batch']['batchId']
+                        for _ in range(300):
+                            batch = (await client.get(prefix + f'/batches/{identity}')).json()
+                            if batch['batch']['status'] in {'completed', 'failed', 'interrupted'}:
+                                break
+                            await asyncio.sleep(.1)
+                        assert batch['statusCounts'][expected] == 1, batch
+                        return (await client.get(prefix + '/tasks', params={'batchId': identity})).json()['items'][0]
+
+                    monkeypatch.setattr(service.store, 'publish', fail_first_publish)
+                    t1 = await run_update('failed')
+                    assert failed_save is not None
+                    instance = (await client.get(prefix + '/environment-instances', params={'taskId': t1['taskId']})).json()['items'][0]
+                    assert instance['state'] == 'retained_unsaved'
+                    candidate = service.store.root / 'candidates' / failed_save
+                    assert candidate.is_dir()
+                    assert (service.store.root / 'instances' / instance['instanceId']).is_dir()
+                    await run_update('succeeded')
+                    environment_id = records['items'][0]['currentEnvironmentId']
+                    published = (await client.get(prefix + f'/environments/{environment_id}')).json()['environment']
+                    assert published['ref']['contentGeneration'] == 2
+                    attempts_path = prefix + f"/tasks/{t1['taskId']}/node-attempts"
+                    attempts_before = (await client.get(attempts_path)).json()
+                    current_run = (await client.get(prefix + f"/tasks/{t1['taskId']}")).json()['run']
+                    body = {'taskId': t1['taskId'], 'runId': t1['runId'], 'instanceId': instance['instanceId'], 'expectedUseGeneration': instance['instanceUseGeneration'], 'executionGeneration': current_run['executionGeneration'], 'retainEnvironment': {'enabled': True, 'mode': 'update', 'expectedContentGeneration': 1}}
+                    rejected = await client.post(prefix + f"/tasks/{t1['taskId']}/end", headers={'Idempotency-Key': str(uuid4())}, json=body)
+                    assert rejected.status_code == 409, rejected.text
+                    assert rejected.json()['error']['code'] == 'SAVE_GENERATION_CONFLICT'
+                    assert (await client.get(prefix + f'/environments/{environment_id}')).json()['environment'] == published
+                    assert candidate.is_dir()
+                    body['retainEnvironment'] = {'enabled': True, 'mode': 'saveAs', 'name': '保留 T1 旧候选'}
+                    saved_as = await client.post(prefix + f"/tasks/{t1['taskId']}/end", headers={'Idempotency-Key': str(uuid4())}, json=body)
+                    assert saved_as.status_code == 202, saved_as.text
+                    alternate = saved_as.json()['outcome']['saved']
+                    assert alternate['environmentId'] != environment_id
+                    assert alternate['contentGeneration'] == 1
+                    assert (await client.get(prefix + f'/environments/{environment_id}')).json()['environment'] == published
+                    assert (await client.get(attempts_path)).json() == attempts_before
+                    assert (await client.get(prefix + f"/tasks/{t1['taskId']}")).json()['run']['status'] == 'failed'
 
             elif scenario == "stop":
                 assert scenario_stopped and detail["batch"]["status"] == "stopped"

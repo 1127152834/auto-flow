@@ -88,27 +88,30 @@
     }
   },
   "checks": {
-    "realBrowser": "16 passed in 156.72s, new TTL-first in-flight HTTP race 1 passed in 15.14s; final affected manual checks 5 passed in 51.41s",
+    "realBrowser": "18 passed in 200.73s; final retention follow-up 1 passed in 24.52s after owner-release guards",
     "fullBackend": "3214 passed / 25 skipped before final ledger/second-interleaving additions; final candidate full regression delegated to fresh CI",
     "finalTargetedBackend": "33 passed, including environment End operation list/id/key regression",
     "scripts": "100 passed",
     "ruff": "passed",
     "mypy": "397 source files passed",
-    "typecheck": "passed after regenerated API",
+    "typecheck": "f25b3867 failed locally and in Actions 35558801632; prior passed entry superseded. Cleanup helper now accepts the generated operation union; fresh typecheck passed.",
     "lint": "passed",
     "openapi": "generated and check passed",
-    "coverageReferences": "251 valid mappings; no open gap marked verified"
+    "coverageReferences": "251 valid mappings; no open gap marked verified",
+    "cleanupFrontend": "2 files / 8 passed",
+    "retention": "30 contract/rule/store tests passed in 5.94s; typecheck/lint/OpenAPI and 100 scripts passed"
   },
   "faultInjection": {
     "manualRace": "Both acceptance-after-empty-intent-read and acceptance-before-intent-read are deterministic real-worker tests, with a controlled module clock crossing TTL. No live timing performance claim. TTL-first additionally blocks the real HTTP resume handler after operation acceptance until actual expiry CAS wins; it then returns 409.",
     "lostResponse": "Actual create commits; parent reply delivery raises OSError. Run is interrupted; repeated HTTP reads by original commandId return the same successful record. No automatic worker replay or cross-process continuation claimed.",
-    "linkRace": "Actual End save completes; after binding preflight, second target linkRevision advances before the real binding transaction. Whole group remains unlinked; repair alone binds both and leaves Run failed and attempts unchanged."
+    "linkRace": "Actual End save completes; after binding preflight, second target linkRevision advances before the real binding transaction. Whole group remains unlinked; repair alone binds both and leaves Run failed and attempts unchanged.",
+    "oldCandidate": "Actual worker/browser close and candidate staging; inject one ENOSPC at publish before generation directory exists. Known failure becomes retained_unsaved; T2 publishes g2, T1 old expected generation is rejected, new saveAs preserves candidate under a new identity without rerunning nodes. A separate contract test injects after publication and proves unknown result keeps occupancy until original-key recovery."
   },
   "independentReview": {
     "status": "passed_after_fixes",
     "openP1": 0,
     "openP2": 0,
-    "scope": "Follow-through changes from 30c4a768, reviewed once; manual stale-item interleaving, End group assertions and mapping classifications corrected."
+    "scope": "Follow-through changes from 30c4a768, reviewed once; manual stale-item interleaving, End group assertions and mapping classifications corrected. Additional retention review reproduced and closed reacquisition, owner-conditional release and prior-success replay issues; two key HTTP contract regressions independently passed."
   },
   "newArchitecture": {
     "status": "awaiting_confirmation",
@@ -131,10 +134,25 @@
     "apps/backend/src/autoflow/adapters/http/project_schemas.py": "8c6e0bed8d3a1c6344c272757c52b26b4d631fa478dd98f79c898d310bd5a51e",
     "apps/backend/src/autoflow/adapters/http/project_environment_schemas.py": "61e195cf0680f92b364166654e4fe4c2baea1ec97fe5555459aa2af42c362b74",
     "scripts/project-runtime-smoke.mjs": "06de48e21e69dd05982ad7d45dce9aa2a42d5142df2d5b0f46f6c05425735ff5",
-    "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py": "0a538cec4e6c0039fe12de98900f482d317e9e6ae754cd3117e2b72a0c92f95f",
-    "apps/backend/tests/contract/test_project_environments.py": "4bd9e2c3a95f33113671f38956cfcb2d8aba97daf3c6639d47131212eadb908c",
-    ".github/workflows/ci.yml": "f6778ee46493697b15e1e0ca59eaa04c6e3fb70c05074a44e96a671b77dbad26",
-    "apps/desktop/src/renderer/shared/api/generated.ts": "232483534c53ba05632b8b987c2cc06c5a98dc5a80a660730c40b6f6ed717345"
+    "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py": "ed0f84f5ac5ff8583e4b447f6fb7deb6ab89bf90ec9568e818840a5cb16801ae",
+    "apps/backend/tests/contract/test_project_environments.py": "947e345c2e1c8adfc1b635d7d718260d046d6146d861f28bba204065114b7a38",
+    ".github/workflows/ci.yml": "02b18494671d3b40ecab72950dee0f2eb9597d7c9950d71d41f671a0a5a7bf42",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "232483534c53ba05632b8b987c2cc06c5a98dc5a80a660730c40b6f6ed717345",
+    "apps/backend/src/autoflow/application/environments/retention.py": "99f8520e524669f8b179249e9a179fae5ea3ffaf5b805f3225b1401898165966",
+    "apps/backend/src/autoflow/application/environments/service.py": "fb8cff1d61292f72fd781d683b4cc4a6532a202eaae6f012ac5edd5e0bd79bc3",
+    "apps/backend/src/autoflow/application/environments/manual.py": "d18e53676b07a23f2d00a7b064ab0deaa345126afe46c917cc3597cd27db3632",
+    "apps/backend/src/autoflow/infrastructure/database/environments.py": "f7f52a0858b2d8a4e1155640273cad5920663067822972dc8f803954c7f1bd6a",
+    "apps/backend/src/autoflow/domain/environments/rules.py": "8fb0acdf7f5b447c38509267bcd46c73a92bc6b3aac400a6aaee226ca3a4fb07",
+    "apps/desktop/src/renderer/domains/projects/cleanup-residue.ts": "22eedaafe74289c7c2cad0eba37b968c763dcde9c91262792496470a6c899826",
+    "apps/backend/src/autoflow/adapters/http/project_environments.py": "ef695b40c7bd7c86a5713e42e963411748b620ac1d996941fa1736a1da68d1dc"
   },
-  "sourceVersionNote": "sourceApi/16-case full native run preceded the added TTL-first case and cooperative-yield guard. The final five affected manual cases passed on candidateSourceFiles. Fresh CI must verify the entire final candidate."
+  "sourceVersionNote": "sourceApi/16-case full native run preceded the added TTL-first case and cooperative-yield guard. The final five affected manual cases passed on candidateSourceFiles. Fresh CI must verify the entire final candidate. Subsequent retention and cleanup DTO changes require fresh CI; sourceApi above remains the earlier local run.",
+  "ciAttempts": [
+    {
+      "commit": "f25b38675f79f1162e787f2e53cf1ebfe6cf50a6",
+      "runId": 35558801632,
+      "conclusion": "failure",
+      "failure": "TypeScript cleanupResidue still used old DTO; source/package tests did not run. Fixed locally; next candidate required."
+    }
+  ]
 }

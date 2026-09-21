@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
-from autoflow.application.environments.retention import _jsonable, end_task
+from autoflow.application.environments.retention import _jsonable
 from autoflow.domain.environments.rules import environment_error
 from autoflow.domain.projects.models import ProjectError
 
@@ -127,8 +127,7 @@ def finish_manual(service, project_id: str, key: str, manual_item_id: str, paylo
     end_outcome = None
     if retain.get("enabled") and current.get("instanceId"):
         instance = service.environments.get_instance(project_id, current["instanceId"])
-        end_outcome, _save, _replayed = end_task(
-            service,
+        end_outcome, _save, _replayed = service.end(
             project_id,
             str(uuid4()),
             {

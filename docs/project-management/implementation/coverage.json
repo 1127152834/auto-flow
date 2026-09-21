@@ -12627,12 +12627,31 @@
             "scope": "真实固定环境 End 更新 g1→g2，下一次仍用预期 g1 更新被 SAVE_GENERATION_CONFLICT 拒绝，已发布环境元数据/代次保持",
             "level": "automated_production",
             "evidence": "docs/project-management/implementation/pm9/follow-through.json"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "data-old-candidate: 实际 worker 关闭并生成 T1 候选，发布边界注入 ENOSPC；T2 发布 g2；T1 旧代次冲突保留候选，另存新身份且不重跑，g2 不变",
+            "level": "automated_production",
+            "evidence": "docs/project-management/implementation/pm9/follow-through.json"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_environments.py",
+            "symbol": "test_retained_update_reacquires_source_without_displacing_live_owner",
+            "scope": "关闭候选不占现场额度；恢复保存必须原子重获占用，T2 持有时 423 且占用保持，完成后后继可领取",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_environments.py",
+            "symbol": "test_io_failure_after_publication_keeps_ownership_until_original_key_recovers",
+            "scope": "已发布目录但返回失败时仍保有占用；重放早先成功命令不能释放新未决保存；新操作原键恢复相同代次",
+            "level": "automated_contract"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "尚缺 T1 实际磁盘保存失败后保留旧候选、T2 发布、T1 另存/放弃的完整生产链；不将基础版本冲突替代整项"
+            "detail": "原生 UI 旧候选恢复/放弃入口和故障提示尚缺完整证据；文件 I/O 失败是在真实发布边界注入，不是物理磁盘填满验收；新代码三平台候选待验证"
           }
         ],
         "statusBeforeReview": "planned"

@@ -172,7 +172,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         "/environment-saves",
         status_code=202,
         response_model=EnvironmentOperationView,
-        responses=browser_error_responses(401, 404, 409, 410, 422, 423),
+        responses=browser_error_responses(401, 404, 409, 410, 422, 423, 503),
     )
     def save_environment(
         projectId: UUID, body: EnvironmentSaveRequest, idempotency_key: Key
@@ -186,7 +186,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         "/tasks/{taskId}/end",
         status_code=202,
         response_model=EnvironmentOperationView,
-        responses=browser_error_responses(401, 404, 409, 410, 422, 423),
+        responses=browser_error_responses(401, 404, 409, 410, 422, 423, 503),
     )
     def end_task(
         projectId: UUID,

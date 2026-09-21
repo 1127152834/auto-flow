@@ -313,7 +313,7 @@ class EnvironmentService:
     def quiesce_instance(self, project_id: str, instance_id: str) -> EnvironmentInstance:
         with self._lifecycle_lock(instance_id):
             instance = self.environments.get_instance(project_id, instance_id)
-            if instance.state in {"closed", "cleaned"}:
+            if instance.state in {"closed", "cleaned", "retained_unsaved"}:
                 return instance
             if self._closer is None:
                 raise environment_error("INSTANCE_OWNERSHIP_UNKNOWN", "无法确认浏览器已关闭，请核验运行现场", 409)
@@ -490,13 +490,15 @@ class EnvironmentService:
         )
 
     def save(self, project_id: str, key: str, payload: dict[str, Any]):
-        return save_environment(self, project_id, key, payload)
+        with self._lifecycle_lock(payload['instanceId']):
+            return save_environment(self, project_id, key, payload)
 
     def repair(self, project_id: str, key: str, save_operation_id: str, payload: dict[str, Any]):
         return repair_association(self, project_id, key, save_operation_id, payload)
 
     def end(self, project_id: str, key: str, payload: dict[str, Any]):
-        return end_task(self, project_id, key, payload)
+        with self._lifecycle_lock(payload['instanceId']):
+            return end_task(self, project_id, key, payload)
 
     def open_manual(self, project_id: str, payload: dict[str, Any]):
         return open_manual(self, project_id, payload)

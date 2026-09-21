@@ -180,6 +180,8 @@
 - **错误 / 事务边界**：`instance_not_quiescent`, `save_generation_conflict`, `candidate_incomplete`, `storage_failed`, `instance_ownership_unknown`。关闭/候选文件准备在事务外；候选完整后短事务 CAS 发布当前指针；旧文件清理独立记账。
 - **查询与恢复**：`querySave(saveOperationId)` 区分接受、候选、已提交和清理。提交响应丢失先查询；冲突保留 `retained_unsaved`，可另存或明确放弃，不默认改预期重写。
 
+2026-09-21 已实现的故障边界：发布目录尚未出现的明确文件 I/O 失败返回 `STORAGE_FAILED / 503` 并保留已关闭副本；`retained_unsaved` 不占现场额度。恢复 update 在短事务重新核验代次并取得来源占用，其他持有者得到保护；保存操作完成后只释放自身占用。若发布目录已经存在而结果不明，继续保有占用并按原命令核验，旧成功命令重放不能释放后续未决保存。来源：生产旧候选回归与环境 HTTP 契约测试。
+
 ### XE-C15 · maintenance / environment CRUD / impact
 
 - **调用方 → 提供方**：环境管理 UI → 环境服务/runtime。

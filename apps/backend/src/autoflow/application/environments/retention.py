@@ -51,6 +51,8 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
     operation = service._command(key, "saveEnvironment", project_id, instance.environment_id, canonical, now)
     accepted, replayed = service.environments.accept_operation(operation)
     if replayed and accepted.result is not None:
+        if accepted.result.get('phase') in {'completed', 'saved_unlinked'} and instance.state == 'closed' and instance.environment_id:
+            service.environments.release_occupancy(instance.environment_id, instance_id)
         return accepted.result, accepted, True
     _reject_replayed_failure(accepted)
     authoritative_generation = service.execution_generation_of(instance)
@@ -64,6 +66,7 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
             else int(payload["executionGeneration"])
         )
     )
+    publication_target = None
     try:
         validate_save(
             mode=mode,
@@ -86,8 +89,17 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                     404,
                     {"domainCode": "environment_not_found"},
                 )
+            environment = service.environments.acquire_save_source(
+                project_id, instance_id, payload.get('expectedContentGeneration')
+            )
+            source = environment.ref
             metadata = {"name": environment.name, "notes": environment.notes}
         save_id = accepted.operation_id
+        if mode == 'save_as':
+            publication_target = service.store.generation_dir(str(uuid5(_SAVE_NAMESPACE, save_id)), 1)
+        else:
+            assert source is not None  # validate_save rejects update without a source.
+            publication_target = service.store.generation_dir(source.environment_id, source.content_generation + 1)
         service.environments.set_instance_state(instance_id, "saving")
         digest = service.store.stage_candidate(save_id, instance_id)
         service.environments.record_save(
@@ -184,8 +196,25 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
             outcome["instance"] = closed.to_dict()
         outcome = _jsonable(outcome)
         done = service.environments.complete_operation(accepted, outcome, None, datetime.now(UTC))
+        if instance.environment_id:
+            service.environments.release_occupancy(instance.environment_id, instance_id)
         return outcome, done, False
-    except ProjectError as error:
+    except (ProjectError, OSError) as cause:
+        if isinstance(cause, OSError):
+            # Once a generation directory exists, publication may have succeeded.
+            # Leave that operation unresolved for original-command reconciliation.
+            if publication_target is None or publication_target.exists():
+                raise
+            error = environment_error(
+                'STORAGE_FAILED', '环境文件保存失败，已保留关闭的工作副本', 503,
+                {'domainCode': 'storage_failed'},
+            )
+        else:
+            error = cause
+        if error.code in {'STORAGE_FAILED', 'SAVE_GENERATION_CONFLICT'}:
+            # validate_save proved the identity and the browser was quiescent.
+            # Keep the work copy, but release only its own source occupancy.
+            instance = service.environments.set_instance_state(instance_id, 'retained_unsaved')
         failed = {
             "phase": "failed",
             "complete": False,
@@ -210,7 +239,9 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                 "details": error.details,
             }, datetime.now(UTC)
         )
-        raise
+        if error is cause:
+            raise
+        raise error from cause
 
 
 def repair_association(service, project_id: str, key: str, save_operation_id: str, payload: dict[str, Any]):

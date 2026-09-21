@@ -10,6 +10,8 @@
 - 新增架构方案 docs/superpowers/specs/2026-09-21-pm9-runtime-capability-completion.md 为 proposed；已请求一次确认，未获答复前不实现新协议，继续独立验证修复。
 - 本次已有生产代码变更，旧 d59607f3 三平台结果只能作历史基线；新候选必须独立验证，releaseAccepted 保持 false。
 
-更新（confirmed）：独立审查发现 current 读取后才接受 intent 的另一交错；新增真实 worker RED 后通过 intent 后重读/CAS 失配重读修复。End 真实链发现通用 ProjectOperationView 不容纳环境操作导致 500，复用受限 kind 的 EnvironmentOperationSnapshot 修复列表/id/原键，生成 API 已同步。最终本机 16 real browser / 33 定向 / 100 scripts，ruff/mypy/typecheck/lint/OpenAPI 通过；全量后端在最后契约小改前 3214 passed25skipped，新候选全量由 CI 重验。报告 follow-through.json 保存 source hashes 与注入边界。独立审查 P1/P2 全关闭。当前 203 项有断言、48 项缺直接场景、186 partial65planned0verified。
+更新（confirmed）：独立审查发现 current 读取后才接受 intent 的另一交错；新增真实 worker RED 后通过 intent 后重读/CAS 失配重读修复。End 真实链发现通用 ProjectOperationView 不容纳环境操作导致 500，复用受限 kind 的 EnvironmentOperationSnapshot 修复列表/id/原键，生成 API 已同步。最终本机 16 real browser / 33 定向 / 100 scripts，ruff/mypy/lint/OpenAPI 通过；此处原 typecheck 通过记录已 superseded，实际旧本机日志与 f25b3867 CI 均失败，见后续校正；全量后端在最后契约小改前 3214 passed25skipped，新候选全量由 CI 重验。报告 follow-through.json 保存 source hashes 与注入边界。独立审查 P1/P2 全关闭。当前 203 项有断言、48 项缺直接场景、186 partial65planned0verified。
 
 补充：TTL 先胜的实际 HTTP 在途继续竞争 1 passed，增加非 waiting 分支让出事件循环，最终受影响人工 5 passed。新候选仍待三平台全量，不将此前本机全量冒充最后源树逐行验证。
+
+后续根因修复（confirmed）：补全 XE-A10 实际 worker + 发布边界 ENOSPC，复现关闭候选仍 saving/占用导致 T2 无法开始。修复明确失败转 retained_unsaved、不占现场额度，恢复更新原子重获占用和代次检查；保存/End 复用既有实例 RLock，释放按 environment_id+instance_id 条件删除，未知发布保持占用，旧成功重放不得释放新未决保存。真实旧候选链 passed；30 契约/规则/存储及 8 前端定向通过。清理提示 DTO 类型遗漏已修复并重新类型检查。三平台旧候选失败真实保留，不沿用历史成功。

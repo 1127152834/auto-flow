@@ -12,7 +12,7 @@ it('keeps only the string paths the service reported as residue', () => {
 })
 
 it('reads the newest delete operation instead of unrelated project operations', () => {
-  const page = { items: [{ kind: 'createTable' }, failed] } as unknown as ProjectOperationPage
+  const page = { items: [{ ...failed, kind: 'saveEnvironment', error: { details: { cleanup: { residue: ['unrelated'] } } } }, { kind: 'createTable' }, failed] } as unknown as ProjectOperationPage
   expect(reportedCleanupResidue(page)).toEqual(['/tmp/environments/instances/e1'])
   expect(reportedCleanupResidue({ ...page, items: [{ kind: 'createTable' }] } as unknown as ProjectOperationPage)).toEqual([])
 })

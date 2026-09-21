@@ -315,6 +315,29 @@ class SqlAlchemyEnvironments:
             environments={row.id: _environment(row) for row in environments},
         )
 
+    def acquire_save_source(self, project_id: str, instance_id: str, expected_generation: int) -> PersistentEnvironment:
+        """Closed retained copies must reacquire the source before publishing."""
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            instance = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if instance is None or instance.project_id != project_id or not instance.environment_id:
+                raise environment_error('INSTANCE_OWNERSHIP_UNKNOWN', '环境实例归属不一致', 409)
+            source = self._environment(session, project_id, instance.environment_id, writable=True)
+            if source.content_generation != expected_generation:
+                raise environment_error('SAVE_GENERATION_CONFLICT', 'Saved environment content has changed', 409,
+                                        {'expectedRevision': expected_generation, 'currentRevision': source.content_generation})
+            current = session.get(ProjectEnvironmentOccupancyRow, instance.environment_id)
+            holder_kind = current.holder_kind if current and current.instance_id == instance_id else 'task' if instance.active_task_id else 'maintenance'
+            holder_id = current.holder_id if current and current.instance_id == instance_id else instance.active_task_id or instance.maintenance_operation_id
+            if holder_id is None:
+                raise environment_error('INSTANCE_OWNERSHIP_UNKNOWN', '环境实例归属不一致', 409)
+            occupy_environment(instance.environment_id, instance_id, holder_kind, holder_id, _occupancy(current) if current else None)
+            if current is None:
+                session.add(ProjectEnvironmentOccupancyRow(environment_id=instance.environment_id, instance_id=instance_id,
+                                                          holder_kind=holder_kind, holder_id=holder_id, created_at=datetime.now(UTC)))
+            session.commit()
+            return _environment(source)
+
     def set_instance_state(self, instance_id: str, state: str) -> EnvironmentInstance:
         with self._session_factory() as session:
             row = session.get(ProjectEnvironmentInstanceRow, instance_id)
@@ -323,16 +346,21 @@ class SqlAlchemyEnvironments:
                     "NOT_FOUND", "Environment instance was not found", 404
                 )
             row.state = state
+            if state == 'retained_unsaved' and row.environment_id:
+                occupancy = session.get(ProjectEnvironmentOccupancyRow, row.environment_id)
+                if occupancy is not None and occupancy.instance_id == instance_id:
+                    session.delete(occupancy)
             row.updated_at = datetime.now(UTC)
             session.commit()
             return _instance(row)
 
     def release_occupancy(self, environment_id: str, instance_id: str) -> None:
         with self._session_factory() as session:
-            row = session.get(ProjectEnvironmentOccupancyRow, environment_id)
-            if row is not None and row.instance_id == instance_id:
-                session.delete(row)
-                session.commit()
+            session.execute(delete(ProjectEnvironmentOccupancyRow).where(
+                ProjectEnvironmentOccupancyRow.environment_id == environment_id,
+                ProjectEnvironmentOccupancyRow.instance_id == instance_id,
+            ))
+            session.commit()
 
     def list_instances(self, project_id: str, **query):
         with self._session_factory() as session:
