@@ -462,7 +462,8 @@ class WorkflowRunCoordinator:
                 )
             if run.status in {"completed", "failed", "stopped", "interrupted"}:
                 return _summary(run)
-            self._runs.request_stop(run_id)
+            if run.status != "failed_paused":
+                self._runs.request_stop(run_id)
             await self._workers.stop(run_id)
             return _summary(self._runs.get(run_id))
 
@@ -698,6 +699,43 @@ class WorkflowRunCoordinator:
         run_id = _required_string(event, "runId")
         run = self._runs.get(run_id)
         event_type = _required_string(event, "type")
+        if event_type == "execution:failed_paused":
+            pause_id = _required_string(event, "pauseId")
+            paused_node_id = _required_string(event, "node_id")
+            revision = _required_int(event, "controlRevision")
+            payload = {
+                key: copy.deepcopy(value)
+                for key, value in event.items()
+                if key not in {"type", "runId", "workflowId"}
+            }
+            error = {
+                "code": "WORKFLOW_EXECUTION_FAILED",
+                "message": str(event.get("error") or "工作流执行失败"),
+                "nodeId": paused_node_id,
+            }
+            self._debug_pauses[run_id] = {
+                "pauseId": pause_id,
+                "controlRevision": revision,
+                "nodeId": paused_node_id,
+            }
+            self._terminal_intents[run_id] = copy.deepcopy(event)
+            persisted = self._repository.append_event(
+                run_id,
+                event_type,
+                payload,
+                now=datetime_now(),
+                node_id=paused_node_id,
+                run_patch={
+                    "status": "failed_paused",
+                    "currentNodeId": paused_node_id,
+                    "error": error,
+                },
+            )
+            await self._events.publish(
+                event_type,
+                {**_event_identity(run), **payload, "sequence": persisted.sequence},
+            )
+            return
         if event_type == "execution:paused":
             pause_id = _required_string(event, "pauseId")
             paused_node_id = _required_string(event, "node_id")
@@ -1639,6 +1677,9 @@ class WorkflowRunCoordinator:
                 "code": "WORKFLOW_EXECUTION_FAILED",
                 "message": str((intent or {}).get("error") or "工作流执行失败"),
             }
+            failed_node_id = (intent or {}).get("failedNodeId") or (intent or {}).get("node_id")
+            if isinstance(failed_node_id, str) and failed_node_id:
+                error["nodeId"] = failed_node_id
         finished = self._runs.finish(
             run_id,
             status=terminal,

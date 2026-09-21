@@ -1558,5 +1558,68 @@ def test_execute_accepts_an_unsaved_document_snapshot_without_creating_a_workflo
     assert workers.payload["document"]["nodes"][0]["id"] == "open"
 
 
+def test_failed_debug_run_keeps_worker_for_inspection_until_ended(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    workflow = client.post(
+        "/api/workflows",
+        json={
+            "id": "debug-failure-http-flow",
+            "name": "调试失败现场",
+            "nodes": [
+                {"id": "fail", "type": "moduleNode", "position": {"x": 0, "y": 0}, "data": {"moduleType": "list_get", "config": {"listVariable": "items", "listIndex": "0", "variableName": "item"}}},
+                {"id": "never", "type": "moduleNode", "position": {"x": 200, "y": 0}, "data": {"moduleType": "set_variable", "config": {"variableName": "reached", "variableValue": True}}},
+            ],
+            "edges": [{"id": "edge", "source": "fail", "target": "never"}],
+            "variables": [{"name": "items", "value": []}, {"name": "reached", "value": False}],
+            "clientRequestId": "create-debug-failure-http",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    execute = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={"runId": "debug-failure-http-run", "documentId": workflow["id"], "profileId": profile["id"], "debug": True},
+    )
+    assert execute.status_code == 202, execute.text
+
+    run: dict[str, Any] = {}
+    failed_pause: dict[str, Any] | None = None
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/debug-failure-http-run").json()
+        failed_pause = next((event.data for event in client.app.state.workflow_services.events.replay(after_sequence=0) if event.event == "execution:failed_paused"), None)
+        if run.get("status") == "failed_paused" and failed_pause is not None:
+            break
+        time.sleep(0.01)
+
+    assert run["status"] == "failed_paused"
+    assert run["error"] == {"code": "WORKFLOW_EXECUTION_FAILED", "message": "列表为空", "nodeId": "fail"}
+    assert failed_pause is not None
+    assert failed_pause["node_id"] == "fail"
+    assert failed_pause["reason"] == "failure"
+    assert failed_pause["variables"] == {"items": [], "reached": False}
+    assert client.app.state.workflow_services.workers.busy() is True
+
+    for path, body in (
+        ("resume", {"commandId": "resume-failed-debug"}),
+        ("variables", {"commandId": "variables-failed-debug", "changes": [{"name": "reached", "value": True}]}),
+    ):
+        rejected = client.post(
+            f"/api/workflows/{workflow['id']}/debug/{path}",
+            json={**body, "runId": "debug-failure-http-run", "pauseId": failed_pause["pauseId"], "controlRevision": failed_pause["controlRevision"]},
+        )
+        assert rejected.status_code == 409
+        assert rejected.json()["success"] is False
+
+    stopped = client.post(f"/api/workflows/{workflow['id']}/stop", json={"runId": "debug-failure-http-run"})
+    assert stopped.status_code == 202, stopped.text
+    assert stopped.json()["status"] == "failed"
+    terminal = client.get("/api/workflow-runs/debug-failure-http-run").json()
+    assert terminal["error"] == run["error"]
+    assert client.app.state.workflow_services.workers.busy() is False
+    persisted_events = client.app.state.workflow_services.runs.events("debug-failure-http-run", after_sequence=0, limit=100)
+    assert [event.node_id for event in persisted_events if event.type == "execution:node-failed"] == ["fail"]
+    assert all(event.node_id != "never" for event in persisted_events)
+
+
 async def _no_proxy(_profile: Any, _run_id: str) -> None:
     return None

@@ -107,6 +107,7 @@ def run_summary(run: WorkflowRun) -> dict[str, Any]:
 def run_detail(run: WorkflowRun) -> dict[str, Any]:
     return {
         **run_summary(run),
+        "error": run.error,
         "documentSnapshot": run.document_snapshot,
         "layoutSnapshot": run.layout_snapshot,
         "profileSnapshot": run.profile_snapshot,

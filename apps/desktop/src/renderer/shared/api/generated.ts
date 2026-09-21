@@ -12332,7 +12332,7 @@ export type components = {
              * Status
              * @enum {string}
              */
-            status: "starting" | "running" | "paused" | "completed" | "failed" | "stopped" | "interrupted";
+            status: "starting" | "running" | "paused" | "failed_paused" | "completed" | "failed" | "stopped" | "interrupted";
             /** Startedat */
             startedAt: string;
             /**

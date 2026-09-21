@@ -7,6 +7,20 @@ import {useDebugStore} from '../hooks/stores/debugStore'
 import {configureStudioConnection} from '../api/config'
 import {startHttpStudioFixture} from './fixtures/http-studio-server'
 afterEach(()=>{cleanup();socketService.disconnect();useDebugStore.getState().clearPaused();vi.unstubAllGlobals()})
+it('consumes a failure-pause event as a read-only inspection state',async()=>{
+ vi.resetModules()
+ const mock=await import('../api/mock-server')
+ const restore=configureStudioConnection('http://autoflow-studio.mock',mock.mockRequest)
+ try{
+  render(<DebugBar/>);socketService.connect();await waitFor(()=>expect(socketService.isConnected()).toBe(true))
+  mock.emitMockEvent('execution:started',{workflowId:'failed-http',runId:'failed-run'})
+  mock.emitMockEvent('execution:failed_paused',{workflowId:'failed-http',runId:'failed-run',pauseId:'failed-pause',controlRevision:2,node_id:'failed-node',label:'真实失败节点',variables:{count:1},error:'定位失败'})
+  await screen.findByText('失败暂停')
+  expect(screen.getByText('@ 真实失败节点')).toBeTruthy()
+  expect(screen.getByRole('alert').textContent).toContain('定位失败')
+  expect(useDebugStore.getState().pausedReason).toBe('failure')
+ }finally{restore();mock.configureMock({disconnect:true})}
+})
 it.each([false,true])('controls a real HTTP fixture and rejects foreign pause events; lostResponse=%s',async lostResponse=>{
  vi.resetModules()
  const {mockRequest,configureMock,mockSnapshot,emitMockEvent}=await import('../api/mock-server')

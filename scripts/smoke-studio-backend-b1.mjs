@@ -173,24 +173,37 @@ try {
 
   await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[2])}]`)
   await setInput(studio, '[placeholder="例如: #button, .submit"]', '[')
+  await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[2])}] button[title="设置断点（运行到此暂停）"]`)
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
   const failedRun = await waitForValue(async () => {
     const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
     return page.items.find(item => item.runId !== runId) ?? null
   }, 'invalid-selector run', 20_000)
+  await waitFor(studio, "document.body?.innerText.includes('断点暂停')", 'debug breakpoint before invalid selector', 30_000)
+  await click(studio, '继续')
+  const failedPaused = await waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(failedRun.runId)}`)
+    return value.status === 'failed_paused' ? value : null
+  }, 'invalid-selector failed pause', 30_000)
+  assert.equal(failedPaused.error.nodeId, nodeIds[2])
+  await waitFor(studio, "document.body?.innerText.includes('失败暂停') && document.body.innerText.includes('失败现场只读')", 'rendered failed debug inspection', 10_000)
+  assert.ok(execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').some(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)))
+  checkpoint('真实 Debug 在无效选择器失败后保留可见 CloakBrowser、变量和失败节点，继续与单步入口不可用')
+  await capture(studio, join(evidenceDir, 'failed-paused.png'))
+  await click(studio, '结束调试')
   const failedTerminal = await waitForValue(async () => {
     const value = await api(runtime, `/workflow-runs/${encodeURIComponent(failedRun.runId)}`)
     return value.status === 'failed' ? value : null
-  }, 'invalid-selector failed terminal', 30_000)
-  assert.equal(failedTerminal.status, 'failed')
+  }, 'invalid-selector failed terminal after debug cleanup', 30_000)
+  assert.equal(failedTerminal.error.nodeId, nodeIds[2])
   await waitForValue(async () => observedEvents.find(event => event.name === 'execution:completed' && event.data?.runId === failedRun.runId && event.data?.result?.status === 'failed') ?? null, 'raw SSE failed terminal event', 10_000)
   await waitForValue(async () => {
     const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
     return processes.length === 0 ? true : null
   }, 'failed run browser cleanup', 10_000)
   await setInput(studio, '[placeholder="例如: #button, .submit"]', '.workflow-action')
-  checkpoint('无效选择器导致真实运行失败；失败事件持久化后浏览器、worker 与运行占用均已清理')
+  checkpoint('结束失败调试后保持 failed 终态和原失败节点；浏览器、worker 与运行占用完成清理')
 
   await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[0])}]`)
   await setInput(studio, '[placeholder="https://example.com"]', slowUrl)

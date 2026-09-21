@@ -9,6 +9,7 @@ RunStatus = Literal[
     "starting",
     "running",
     "paused",
+    "failed_paused",
     "completed",
     "failed",
     "stopped",

@@ -236,7 +236,7 @@ class StudioWorkflowRunSummary(ApiModel):
     workflow_id: str = Field(min_length=1, pattern=r"\S")
     document_id: str = Field(min_length=1, pattern=r"\S")
     workflow_name: str
-    status: Literal["starting", "running", "paused", "completed", "failed", "stopped", "interrupted"]
+    status: Literal["starting", "running", "paused", "failed_paused", "completed", "failed", "stopped", "interrupted"]
     started_at: str = Field(min_length=1, pattern=r"\S")
     finished_at: str | None = None
     log_count: int = Field(ge=0, le=9007199254740991)

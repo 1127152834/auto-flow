@@ -432,6 +432,10 @@ class SocketService {
       if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
       useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, variableMeta:data.variableMeta, reason: data.reason })
     })
+    this.socket.on('execution:failed_paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; error?:string }) => {
+      if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
+      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId:data.node_id, label:data.label, variables:data.variables, variableMeta:data.variableMeta, reason:'failure', error:data.error })
+    })
     // 调试：恢复
     this.socket.on('execution:resumed', (data: {workflowId: string; runId?: string; pauseId?:string}) => {
       if (!belongsToCurrentExecution(data.workflowId, data.runId)) return

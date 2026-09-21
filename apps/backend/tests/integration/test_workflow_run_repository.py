@@ -107,6 +107,27 @@ def test_recovery_interrupts_active_runs_without_replaying_actions(
     assert service.start(_start("run-2")).run_id == "run-2"
 
 
+def test_recovery_interrupts_a_failed_pause_without_replaying_actions(
+    service: WorkflowRunService,
+) -> None:
+    service.start(_start())
+    service.mark_running("run-1")
+    service._repository.append_event(
+        "run-1",
+        "execution:failed_paused",
+        {"error": "列表为空", "pauseId": "pause-1"},
+        now=datetime(2026, 9, 15, tzinfo=UTC),
+        node_id="fail",
+        run_patch={"status": "failed_paused", "currentNodeId": "fail", "error": {"code": "WORKFLOW_EXECUTION_FAILED", "message": "列表为空", "nodeId": "fail"}},
+    )
+
+    recovered = service.recover_interrupted()
+
+    assert [run.run_id for run in recovered] == ["run-1"]
+    assert service.get("run-1").status == "interrupted"
+    assert service.events("run-1", after_sequence=0, limit=20)[-1].type == "execution:interrupted"
+
+
 def test_recovery_does_not_reinterpret_retired_studio_payload(tmp_path: Path) -> None:
     database = tmp_path / "retired-run.sqlite3"
     migrate_database(database)

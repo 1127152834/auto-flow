@@ -189,6 +189,26 @@ async def _run_in_session(
                 ),
             )
             await nested.drain()
+            if bool(command.get("debug")) and not result.success:
+                await command_bus.debug.failure_pause(
+                    context,
+                    node_id=result.failed_node_id or context.current_node_id or "unknown",
+                    error=(
+                        result.node_result.error
+                        if result.node_result and result.node_result.error
+                        else "工作流执行失败"
+                    ),
+                    executed_nodes=len(result.executed_node_ids),
+                    issues=[
+                        {
+                            "nodeId": issue.node_id,
+                            "path": issue.path,
+                            "code": issue.code,
+                            "message": issue.message,
+                        }
+                        for issue in result.issues
+                    ],
+                )
         finally:
             await integrations.close()
         terminal = "execution:completed" if result.success else "execution:failed"
@@ -375,7 +395,7 @@ class _WorkerEventSink:
     async def _externalize_large_diagnostics(self, event: dict[str, Any]) -> None:
         event_type = event.get("type")
         targets: list[tuple[dict[str, Any], str]] = []
-        if event_type == "execution:paused" and isinstance(
+        if event_type in {"execution:paused", "execution:failed_paused"} and isinstance(
             event.get("variables"), dict
         ):
             targets.extend(
@@ -1119,6 +1139,40 @@ class _WorkerDebugController:
             }
         )
 
+    async def failure_pause(
+        self,
+        context: ExecutionContext,
+        *,
+        node_id: str,
+        error: str,
+        executed_nodes: int,
+        issues: list[dict[str, Any]],
+    ) -> None:
+        self._revision += 1
+        release = asyncio.Event()
+        self._pause = {
+            "pauseId": str(uuid4()),
+            "controlRevision": self._revision,
+            "release": release,
+            "action": None,
+            "context": context,
+            "nodeId": node_id,
+            "label": node_id,
+            "reason": "failure",
+            "error": error,
+            "executedNodes": executed_nodes,
+            "issues": copy.deepcopy(issues),
+        }
+        if context.events is None:
+            raise RuntimeError("调试事件服务不可用")
+        await context.events.publish(self._pause_payload(context))
+        while not release.is_set() and not self._stopped.is_set():
+            try:
+                await asyncio.wait_for(release.wait(), timeout=0.1)
+            except TimeoutError:
+                continue
+        self._pause = None
+
     def apply_variables(self, command: Mapping[str, Any]) -> str | None:
         pause = self._pause
         if (
@@ -1127,6 +1181,8 @@ class _WorkerDebugController:
             or command.get("controlRevision") != pause["controlRevision"]
         ):
             return "暂停标识或控制修订已失效"
+        if pause["reason"] == "failure":
+            return "失败现场变量只读"
         context = pause["context"]
         assert isinstance(context, ExecutionContext)
         changes = command.get("changes")
@@ -1190,8 +1246,8 @@ class _WorkerDebugController:
         pause = self._pause
         assert pause is not None
         local_names = loop_variables or self._loop_variables(context)
-        return {
-            "type": "execution:paused",
+        payload = {
+            "type": "execution:failed_paused" if pause["reason"] == "failure" else "execution:paused",
             "node_id": pause["nodeId"],
             "label": pause["label"],
             "pauseId": pause["pauseId"],
@@ -1209,6 +1265,16 @@ class _WorkerDebugController:
             },
             "reason": pause["reason"],
         }
+        if pause["reason"] == "failure":
+            payload.update(
+                {
+                    "error": pause["error"],
+                    "failedNodeId": pause["nodeId"],
+                    "executedNodes": pause["executedNodes"],
+                    "issues": copy.deepcopy(pause["issues"]),
+                }
+            )
+        return payload
 
     @staticmethod
     def _loop_variables(context: ExecutionContext) -> set[str]:
@@ -1226,6 +1292,7 @@ class _WorkerDebugController:
             or command.get("pauseId") != pause["pauseId"]
             or command.get("controlRevision") != pause["controlRevision"]
             or command.get("type") not in {"debug_resume", "debug_step"}
+            or pause["reason"] == "failure"
         ):
             return False
         pause["action"] = "step" if command["type"] == "debug_step" else "resume"

@@ -333,7 +333,7 @@ class SqlAlchemyWorkflowRuns:
             rows = [
                 row
                 for row in candidates
-                if row.payload.get("status") in {"starting", "running", "paused"}
+                if row.payload.get("status") in {"starting", "running", "paused", "failed_paused"}
                 and row.payload.get("cleanupState") == "pending"
             ]
             for run in rows:

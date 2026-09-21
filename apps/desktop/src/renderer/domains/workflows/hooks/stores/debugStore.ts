@@ -17,14 +17,15 @@ interface DebugState {
   pausedLabel: string | null
   pausedVariables: Record<string, any>
   pausedVariableMeta: Record<string,DebugVariableMeta>
-  pausedReason: 'breakpoint' | 'step' | null
+  pausedReason: 'breakpoint' | 'step' | 'failure' | null
+  pausedError: string | null
 
   toggleBreakpoint: (nodeId: string) => void
   clearBreakpoints: () => void
   hasBreakpoint: (nodeId: string) => boolean
   setStepMode: (v: boolean) => void
 
-  setPaused: (info: { runId?:string; pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,DebugVariableMeta>; reason?: 'breakpoint' | 'step' }) => void
+  setPaused: (info: { runId?:string; pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,DebugVariableMeta>; reason?: 'breakpoint' | 'step' | 'failure'; error?:string }) => void
   clearPaused: () => void
 }
 
@@ -39,6 +40,7 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   pausedVariables: {},
   pausedVariableMeta:{},
   pausedReason: null,
+  pausedError: null,
 
   toggleBreakpoint: (nodeId) => set((s) => {
     const next = new Set(s.breakpoints)
@@ -61,7 +63,8 @@ export const useDebugStore = create<DebugState>((set, get) => ({
       pausedVariables:info.variables || {},
       pausedVariableMeta:info.variableMeta || {},
       pausedReason:info.reason || 'breakpoint',
+      pausedError:info.error || null,
     }
   }),
-  clearPaused: () => set({ isPaused: false, pauseContext:null, pausedNodeId: null, pausedLabel: null, pausedVariables:{}, pausedVariableMeta:{}, pausedReason: null }),
+  clearPaused: () => set({ isPaused: false, pauseContext:null, pausedNodeId: null, pausedLabel: null, pausedVariables:{}, pausedVariableMeta:{}, pausedReason: null, pausedError:null }),
 }))
