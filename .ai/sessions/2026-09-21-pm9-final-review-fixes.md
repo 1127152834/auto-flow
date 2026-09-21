@@ -76,3 +76,8 @@ d21197ad ARM job 106288334872 success；3313 backend、5459 frontend、15 real w
 ## Sheets 行变更范围校正（confirmed）
 
 按实际调用核对：_push 缺行只失败，DataDeletion repository 只写本地 tombstone/日志，无远端新增/删除意图或模板复制路径。DATA-SH-03/10/11追加implementation_missing，原通过断言不删除、不夸大。M1–M3 独立具体契约为 proposed，不属于当前C/R确认问题；未修改生产源码，继续f580候选验证。
+
+
+## f580b1c6 本机全量及新DMG（confirmed）
+
+全后端3329 passed/60 skipped/2warnings in611.65s。当前源码backend/renderer/ARM DMG构建通过；DMG a0ff707abb65cdff7eb5eb9b2f537b899bc0d4c71ce2209235c0b37dfdf48a47 实际只读挂载、隔离复制、sidecar健康/父退出和CUA原生打开取消/选择/保存取消均通过。截图已审查仅有合成空项目，临时workspace已删除；没有绕过原生面板。报告install-read-fix-darwin-arm64.json，完整原生导入导出、凭据、Gatekeeper、签名与卸载保留。三平台35590418456仍进行中。

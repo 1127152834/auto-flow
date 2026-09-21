@@ -11,7 +11,7 @@
     "S4 subset: Windows new-file publication and native Job ownership/recovery"
   ],
   "checks": {
-    "backendFull": "Latest candidate pending. Historical fed0b4c1 local 3311 passed and d21197ad ARM 3313 passed do not include verification-read error fix.",
+    "backendFull": "3329 passed, 60 skipped, 2 warnings in 611.65s (10:11), local full regression on production source f580b1c6.",
     "realProjectWorker": "26 passed in 274.67s after all four review fixes; actual HTTP/SQLite/CloakBrowser",
     "windowsNative": {
       "runId": 35583149567,
@@ -29,7 +29,7 @@
     "ruff": "passed: full ruff check . --no-cache after parametrizing B023 fixture; prior ccef90e9 full CI failed this test-only lint check",
     "mypy": "402 source files passed",
     "mapping": "251 references valid; 222 with scoped assertions, 29 with no located assertion; 188 partial / 63 planned / 0 verified",
-    "build": "passed",
+    "build": "Latest f580b1c6 PyInstaller backend, desktop renderer and ARM DMG build passed; no publication.",
     "finalReview": {
       "findings": "4 Important, 0 Critical; all accepted and fixed; one fix pass, no second review",
       "manualAndTaint": "102 passed; prior RED 4 nested config + 2 synthetic-secret boundary cases",
@@ -57,7 +57,8 @@
       "failure": "test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-host]: GET /openapi.json ReadTimeout (5 seconds), before SSE/open shutdown timing",
       "followup": "test-only dedicated 30-second schema preparation bound; 3/8-second process-exit assertions unchanged; platform-only full follow-up to be dispatched"
     },
-    "verificationReadFailures": "50 related sync/recovery/rules passed in 40.66s plus one block-continuation case passed in 2.20s. Partial verification loss first failed with raw SheetsApiError, then passed. Failed reconcile reads and credential acquisition settle command envelopes; original unknown writes stay unchanged."
+    "verificationReadFailures": "50 related sync/recovery/rules passed in 40.66s plus one block-continuation case passed in 2.20s. Partial verification loss first failed with raw SheetsApiError, then passed. Failed reconcile reads and credential acquisition settle command envelopes; original unknown writes stay unchanged.",
+    "currentNativeInstaller": "Passed scoped current-source ARM checks in install-read-fix-darwin-arm64.json; full physical release acceptance incomplete."
   },
   "reports": [
     "subflow-follow-through.json",
@@ -76,7 +77,7 @@
     "29 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current production candidate f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34 full local and three-platform regression pending. ARM full success at d21197ad covers previous source 82c067c9; Windows/Intel follow-ups cancelled after source changed.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
-    "Windows/Intel physical installer and native dialogs remain pending. ARM native picker and installed sidecar evidence belongs to ccef90e9 (production source 82c067c9); newer verification-read fix has not been validated in that exact native package. Signing, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Windows/Intel physical installer and native dialogs remain pending. Current f580b1c6 ARM isolated DMG copy, packaged sidecar health/parent-exit and actual native open/select/save-cancel passed in install-read-fix-darwin-arm64.json; full native import/export, credentials, signing, Gatekeeper and uninstall remain incomplete.",
     "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
   ],
   "sourceHashes": {

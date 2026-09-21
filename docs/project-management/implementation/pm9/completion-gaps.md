@@ -2,7 +2,7 @@
 
 日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 f580b1c6；置信度：高（已运行断言），完整发行验收仍未满足。
 
-**本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 已修复最终审查的 4 项 Important、Windows Job 成员退出、Sheets 字段/原版本快照，以及最新写成功后核验读取失败。最新定向 Sheets 50 项加一个分块场景通过；完整本机/三平台验证正在为 f580b1c6 准备。旧源码 82c067c9 的 ARM CI 全链通过只留历史，不能覆盖新增生产修复。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。所有数字均只证明报告列出的范围。
+**本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 已修复最终审查的 4 项 Important、Windows Job 成员退出、Sheets 字段/原版本快照，以及最新写成功后核验读取失败。最新定向 Sheets 50 项加一个分块场景通过；f580b1c6 本机完整后端 3329 passed / 60 skipped，三平台仍运行中。旧源码 82c067c9 的 ARM CI 全链通过只留历史，不能覆盖新增生产修复。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。所有数字均只证明报告列出的范围。
 
 当前可执行缺口还包括已复现的 Sheets 跨项目物理行共享领取缺失（见 shared-sheets-claims-gap.json），不能再仅列缺测试。Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 29 条尚未定位直接断言（222 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
 
@@ -169,3 +169,5 @@ Windows Job active=0 仍有子进程句柄未退出的真实反例已修复：�
 2026-09-21 核验读取失败根因修复（confirmed）：实际写入已成功后，第二记录的核验 GET 超时抛出未处理 SheetsApiError，导致命令悬空。已统一转换读取异常、逐意图记录 unknown 并继续其他结果；reconcile 读取失败明确完成该只读命令为失败，原未知写不改，后续新核验不重发写入；pull/push 接受后取凭据失败亦完成原命令。相关 50 passed / 2 warnings in 40.66s，另一个分块场景通过，mypy 402 与完整无缓存 ruff 通过。该变更是新生产候选：此前 ARM d21197ad 完整成功保留历史，未结束 Windows 25c9a41b 和 Intel 7dab6b13 已取消，稳定后重跑三平台。当前台账222/29，releaseAccepted=false。
 
 2026-09-21 源码分类校正（confirmed）：DATA-SH-03 的云端新增、DATA-SH-10 删除同步、DATA-SH-11 新行公式模板复制缺实际路径，已追加 implementation_missing。tombstone 不复活与公式刷新测试继续有效，但只证明各自范围。独立 M1–M3 方案为 proposed，未包含在此前 C1–C4/R1–R5 问题中，不因网络授权可用就自动视为已实现。计数222/29不变。
+
+2026-09-21 f580b1c6 本机验证（confirmed）：完整后端3329 passed、60 skipped、2 warnings in611.65s。当前生产源码重新构建ARM DMG，hash a0ff707abb65cdff7eb5eb9b2f537b899bc0d4c71ce2209235c0b37dfdf48a47；镜像校验/只读挂载/隔离安装复制/卸载镜像、包内sidecar健康与父退出、真实原生打开取消/选择生成工作簿/保存取消通过。应用及临时数据已清理，报告install-read-fix-darwin-arm64.json；完整原生导入导出/凭据/签名/卸载仍未据此通过。

@@ -13,7 +13,7 @@
     "29 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current production candidate f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34 full local and three-platform regression pending. ARM full success at d21197ad covers previous source 82c067c9; Windows/Intel follow-ups cancelled after source changed.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
-    "Windows/Intel physical installer and native dialogs remain pending. ARM native picker and installed sidecar evidence belongs to ccef90e9 (production source 82c067c9); newer verification-read fix has not been validated in that exact native package. Signing, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Windows/Intel physical installer and native dialogs remain pending. Current f580b1c6 ARM isolated DMG copy, packaged sidecar health/parent-exit and actual native open/select/save-cancel passed in install-read-fix-darwin-arm64.json; full native import/export, credentials, signing, Gatekeeper and uninstall remain incomplete.",
     "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
@@ -49,7 +49,7 @@
     },
     "darwin-arm64": {
       "status": "new_candidate_pending",
-      "physicalInstaller": "partial current-source package evidence in install-final-candidate-darwin-arm64.json; full physical release acceptance incomplete",
+      "physicalInstaller": "partial current-source evidence: install-read-fix-darwin-arm64.json",
       "priorCiReport": "ci-capabilities-82c067c9-darwin-arm64.json"
     }
   },

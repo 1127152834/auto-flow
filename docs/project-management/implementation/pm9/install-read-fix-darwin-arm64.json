@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-21",
+  "status": "passed_scoped_checks",
+  "releaseAccepted": false,
+  "codeCandidate": "3e7504cc8cb31241e4406b0104735f4dbedb8ed2",
+  "productionCandidate": "f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34",
+  "platform": "darwin-arm64",
+  "osVersion": "26.4.1",
+  "osBuild": "25E253",
+  "installer": {
+    "name": "AutoFlow-0.1.0-arm64.dmg",
+    "sha256": "a0ff707abb65cdff7eb5eb9b2f537b899bc0d4c71ce2209235c0b37dfdf48a47",
+    "source": "local build; not downloaded from CI"
+  },
+  "installation": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm9-read-fix-install-0_mj7cqa/AutoFlow.app",
+  "checks": [
+    "DMG verification",
+    "read-only mount and isolated application copy",
+    "disk image detached",
+    "actual packaged sidecar authenticated health",
+    "owned sidecar exits after desktop termination",
+    "native open cancellation returns successful null",
+    "native workbook selection returns an opaque token and display name without a path",
+    "native save cancellation returns successful null",
+    "owned test application closed and disposable workspace removed"
+  ],
+  "nativeScreenshot": "qa-runs/2026-09-21-native-read-fix/after-native-picker.png",
+  "nativeCheckedAt": "2026-09-21T11:00:43.376Z",
+  "excluded": [
+    "full native Excel import/export publication",
+    "Google/OAuth and credential lifecycle",
+    "signed/notarized Gatekeeper acceptance",
+    "complete uninstall and residual-data acceptance",
+    "Windows and Intel physical installation"
+  ]
+}
