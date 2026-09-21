@@ -40,7 +40,20 @@
     }
   ],
   "remaining": [
-    "真实CloakBrowser元素及页面截图正式Electron验收",
-    "真实模型供应商调用"
+    "元素截图来源和真实页面拾取联动",
+    "真实第三方视觉模型调用",
+    "其他未实测平台"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-ai-tasks.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-LLZGv4/result.json",
+    "covers": "正式Studio真实UI配置打开网页与图像识别，CloakBrowser页面截图进入托管视觉模型，结果变量回写和运行后资源清理"
+  },
+  "externalWaiting": [
+    "真实第三方视觉模型调用",
+    "其他未实测平台"
   ]
 }

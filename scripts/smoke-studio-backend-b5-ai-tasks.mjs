@@ -31,6 +31,8 @@ const modules = [
   { type: 'ai_chat', label: 'AI对话', inputs: [['textarea[placeholder^="设定AI的角色"]', '对话助手'], ['textarea[placeholder^="发送给AI的内容"]', '请回复验收结果'], ['input[placeholder="变量名"]', 'chat_result']] },
   { type: 'ai_generate_image', label: 'AI生成图片', inputs: [['textarea[placeholder^="一只可爱的猫咪"]', '生成验收图片'], ['input[placeholder="C:/images/output.png"]', 'generated/image.png']] },
   { type: 'ai_generate_video', label: 'AI生成视频', inputs: [['textarea[placeholder^="一只猫咪在草地"]', '生成验收视频'], ['input[placeholder="C:/videos/output.mp4"]', 'generated/video.mp4']] },
+  { type: 'open_page', label: '打开网页', model: false, inputs: [['input[placeholder="https://example.com"]', model.pageUrl]] },
+  { type: 'ai_vision', label: '图像识别', selects: [['图片来源', '当前页面截图']], inputs: [['textarea[placeholder^="请描述这张图片"]', '视觉验收'], ['input[placeholder="变量名"]', 'vision_result']] },
 ]
 let desktop, main, studio
 
@@ -78,11 +80,12 @@ try {
     const nodeId = await addNode(studio, module.label, module.type)
     nodeIds.push(nodeId)
     for (const [selector, value] of module.inputs) await setInput(studio, selector, value)
-    await chooseFirstModel(studio)
+    for (const [label, option] of module.selects ?? []) await chooseSelectOption(studio, label, option)
+    if (module.model !== false) await chooseFirstModel(studio)
   }
   for (let index = 0; index < nodeIds.length - 1; index++) await connectNodes(studio, nodeIds[index], nodeIds[index + 1])
   await waitFor(studio, `document.querySelectorAll('.react-flow__edge').length === ${modules.length - 1}`, 'workflow edges')
-  checkpoint('通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务、对话及图片视频生成节点编排')
+  checkpoint('通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务、对话、图片视频生成及视觉节点编排')
 
   await click(studio, '保存')
   await waitFor(studio, `document.body?.innerText.includes(${JSON.stringify(`工作流已保存: ${workflowName}`)})`, 'workflow save')
@@ -90,9 +93,9 @@ try {
   assert.ok(saved)
   assert.deepEqual(saved.nodes.map(node => node.data.moduleType), modules.map(item => item.type))
   assert.equal(saved.edges.length, modules.length - 1)
-  assert.ok(saved.nodes.every(node => node.data.modelId === modelId))
+  assert.ok(saved.nodes.filter(node => node.data.moduleType !== 'open_page').every(node => node.data.modelId === modelId))
   assert.equal(JSON.stringify(saved).includes(model.baseUrl), false)
-  checkpoint('正式保存接口只写稳定 modelId，十一节点和十条连线进入临时 SQLite，不保存模型地址或密钥')
+  checkpoint('正式保存接口只写稳定 modelId，十三节点和十二条连线进入临时 SQLite，不保存模型地址或密钥')
 
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
@@ -117,13 +120,17 @@ try {
   assert.equal(byNode[nodeIds[8]].response, '对话验收通过')
   assert.equal(byNode[nodeIds[9]].paths.length, 1)
   assert.equal(typeof byNode[nodeIds[10]].path, 'string')
+  assert.equal(byNode[nodeIds[12]].response, '视觉识别通过')
+  assert.equal(byNode[nodeIds[12]].image_source, 'screenshot')
   const chatRequests = model.requests.filter(request => request.path === '/v1/chat/completions')
-  assert.equal(chatRequests.length, 9)
+  assert.equal(chatRequests.length, 10)
   assert.ok(chatRequests.every(request => request.body.model === 'ai-task-fixture'))
+  const visionRequest = chatRequests.find(request => JSON.stringify(request.body.messages).includes('视觉验收'))
+  assert.ok(JSON.stringify(visionRequest?.body.messages).includes('data:image/png;base64,'))
   assert.equal(model.requests.filter(request => request.path === '/v1/images/generations').length, 1)
   assert.equal(model.requests.filter(request => request.path === '/v1/generations').length, 1)
   assert.equal(model.requests.filter(request => request.path === '/v1/generations/video-job').length, 1)
-  checkpoint('真实 worker 经主应用模型绑定完成九次对话和两次媒体生成，AI 数据、对话、图片与视频结果逐项匹配')
+  checkpoint('真实 worker 经主应用模型绑定完成十次对话和两次媒体生成，页面截图进入视觉模型且各节点结果逐项匹配')
 
   const artifacts = await api(runtime, `/workflow-runs/${encodeURIComponent(run.runId)}/artifacts?cursor=0&limit=20`)
   assert.equal(artifacts.items.length, 2)
@@ -136,7 +143,7 @@ try {
 
   await wait(500)
   assert.deepEqual(cloakProcesses(userData), [])
-  checkpoint('AI 数据与媒体任务未启动 CloakBrowser，运行结束后无浏览器残留')
+  checkpoint('AI视觉使用主应用 Profile 启动 CloakBrowser 并截取受控页面，运行结束后浏览器和worker均已清理')
 
   await capture(studio, join(evidenceDir, 'completed.png'))
   const report = {
@@ -194,6 +201,11 @@ async function startModel() {
       response.writeHead(200, { 'content-type': 'video/mp4', 'content-length': content.length })
       return response.end(content)
     }
+    if (request.method === 'GET' && url.pathname === '/page') {
+      const content = Buffer.from('<!doctype html><html><body><h1>AutoFlow AI视觉验收页面</h1><p>受控页面截图</p></body></html>')
+      response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-length': content.length })
+      return response.end(content)
+    }
     let raw = ''
     for await (const chunk of request) raw += chunk
     const body = raw ? JSON.parse(raw) : {}
@@ -201,14 +213,14 @@ async function startModel() {
     if (request.method === 'POST' && url.pathname === '/v1/images/generations') return json(response, { data: [{ b64_json: Buffer.from('PNG').toString('base64') }] })
     if (request.method === 'POST' && url.pathname === '/v1/generations') return json(response, { id: 'video-job' })
     if (request.method !== 'POST' || url.pathname !== '/v1/chat/completions') return json(response, { error: { message: 'not found' } }, 404)
-    const system = String(body.messages?.[0]?.content ?? '')
-    const content = [...responses].find(([marker]) => system.includes(marker))?.[1]
+    const messages = JSON.stringify(body.messages ?? [])
+    const content = messages.includes('视觉验收') ? '视觉识别通过' : [...responses].find(([marker]) => messages.includes(marker))?.[1]
     if (!content) return json(response, { error: { message: 'unknown prompt' } }, 422)
     return json(response, { choices: [{ message: { content } }] })
   })
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve) })
   return {
-    baseUrl: `http://127.0.0.1:${server.address().port}/v1`, requests,
+    baseUrl: `http://127.0.0.1:${server.address().port}/v1`, pageUrl: `http://127.0.0.1:${server.address().port}/page`, requests,
     close: () => new Promise(resolve => { server.close(resolve); server.closeAllConnections() }),
   }
 }
@@ -274,18 +286,33 @@ async function setInput(cdp, selector, value) {
 }
 
 async function chooseFirstModel(cdp) {
-  const settingsState = await cdp.evaluate(`(()=>{const e=[...document.querySelectorAll('summary')].find(e=>e.textContent.includes('AI 模型设置')&&e.getClientRects().length);return e?(e.parentElement?.open?'open':'closed'):'missing'})()`)
-  if (settingsState === 'closed') await click(cdp, 'AI 模型设置', 'summary')
-  const p = await waitFor(cdp, `(()=>{const label=[...document.querySelectorAll('label')].find(e=>e.textContent.includes('主应用模型'));const e=label?.parentElement?.querySelector('[role="combobox"]');if(!e||e.dataset.disabled!==undefined)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, 'managed model select')
+  const picker = `(()=>{const e=[...document.querySelectorAll('[role="combobox"]')].find(e=>e.getClientRects().length&&e.dataset.disabled===undefined&&e.textContent.includes('请选择'));if(!e)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`
+  let p = await cdp.evaluate(picker)
+  if (!p) {
+    await click(cdp, 'AI 模型设置', 'summary')
+    p = await waitFor(cdp, picker, 'managed model select')
+  }
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...p })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', clickCount: 1 })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', clickCount: 1 })
-  await click(cdp, 'B5 AI Task Fixture', '[role="option"]')
-  await waitFor(cdp, `(()=>{const label=[...document.querySelectorAll('label')].find(e=>e.textContent.includes('主应用模型')&&e.getClientRects().length);return label?.parentElement?.querySelector('[role="combobox"]')?.textContent.includes('B5 AI Task Fixture')})()`, 'selected managed model')
+  await waitFor(cdp, `([...document.querySelectorAll('[role="combobox"]')].some(e=>e.getClientRects().length&&e.dataset.state==='open'))`, 'open managed model select')
+  const option = await waitFor(cdp, `(()=>{const e=[...document.querySelectorAll('[role="option"]')].find(e=>e.textContent.includes('B5 AI Task Fixture'));if(!e)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, 'managed model option')
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...option })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...option, button: 'left', clickCount: 1 })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...option, button: 'left', clickCount: 1 })
+  await waitFor(cdp, `([...document.querySelectorAll('[role="combobox"]')].some(e=>e.getClientRects().length&&e.textContent.includes('B5 AI Task Fixture')))`, 'selected managed model')
+}
+
+async function chooseSelectOption(cdp, labelText, optionText) {
+  const p = await waitFor(cdp, `(()=>{const label=[...document.querySelectorAll('label')].find(e=>e.textContent.includes(${JSON.stringify(labelText)}));const e=label?.parentElement?.querySelector('[role="combobox"]');if(!e||e.dataset.disabled!==undefined)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `${labelText} select`)
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...p })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', clickCount: 1 })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', clickCount: 1 })
+  await click(cdp, optionText, '[role="option"]')
 }
 
 async function addNode(cdp, label, moduleType) {
-  const pane = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__pane');if(!e)return null;const r=e.getBoundingClientRect(),nodes=[...document.querySelectorAll('.react-flow__node')];for(const yf of [.16,.37,.58,.79])for(const xf of [.14,.42,.70]){const x=r.x+r.width*xf,y=r.y+r.height*yf,clear=nodes.every(node=>{const n=node.getBoundingClientRect();return Math.abs((n.left+n.right)/2-x)>180||Math.abs((n.top+n.bottom)/2-y)>90});if(clear&&document.elementFromPoint(x,y)===e)return{x,y}}return null})()`, 'workflow canvas')
+  const pane = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__pane');if(!e)return null;const r=e.getBoundingClientRect(),nodes=[...document.querySelectorAll('.react-flow__node')];for(const yf of [.16,.37,.58,.79])for(const xf of [.10,.32,.54,.76]){const x=r.x+r.width*xf,y=r.y+r.height*yf,clear=nodes.every(node=>{const n=node.getBoundingClientRect();return Math.abs((n.left+n.right)/2-x)>170||Math.abs((n.top+n.bottom)/2-y)>90});if(clear&&document.elementFromPoint(x,y)===e)return{x,y}}return null})()`, 'workflow canvas')
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...pane, button: 'right', clickCount: 1 })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...pane, button: 'right', clickCount: 1 })
   await setInput(cdp, 'input[placeholder="搜索模块（支持拼音）"]', label)
