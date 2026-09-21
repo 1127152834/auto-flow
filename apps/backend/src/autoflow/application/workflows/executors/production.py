@@ -49,6 +49,7 @@ from .dict_advanced import (
 from .email_trigger import EMAIL_TRIGGER_EXECUTORS
 from .element_change_trigger import ELEMENT_CHANGE_TRIGGER_EXECUTORS
 from .external_http import EXTERNAL_HTTP_EXECUTORS
+from .face_trigger import FACE_TRIGGER_EXECUTORS
 from .file_watcher import FILE_WATCHER_EXECUTORS
 from .firecrawl import FIRECRAWL_EXECUTORS
 from .input_prompt import InputPromptExecutor
@@ -174,6 +175,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *EXTERNAL_HTTP_EXECUTORS,
     *EMAIL_TRIGGER_EXECUTORS,
     *ELEMENT_CHANGE_TRIGGER_EXECUTORS,
+    *FACE_TRIGGER_EXECUTORS,
     *FILE_WATCHER_EXECUTORS,
     *LOG_EXECUTORS,
     *MESSAGE_EXECUTORS,
