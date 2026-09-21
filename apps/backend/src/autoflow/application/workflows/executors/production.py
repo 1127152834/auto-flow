@@ -112,6 +112,7 @@ from .network_monitor import (
 )
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .python_script import PythonScriptExecutor
+from .printer import PRINTER_EXECUTORS
 from .registry import ExecutorRegistry
 from .run_command import RunCommandExecutor
 from .ssh import SSH_EXECUTORS
@@ -188,6 +189,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     JsScriptExecutor,
     TextToSpeechExecutor,
     PythonScriptExecutor,
+    *PRINTER_EXECUTORS,
     RunCommandExecutor,
     *DESKTOP_PLATFORM_EXECUTORS,
     *ALLURE_EXECUTORS,
