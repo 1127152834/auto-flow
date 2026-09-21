@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, cast
 from uuid import uuid4
@@ -30,6 +30,7 @@ class _BrowserState:
     picker_session_id: str | None = None
     picker_fingerprint: tuple[str | None, str] | None = None
     recorder_session_id: str | None = None
+    recorder_pending: list[dict[str, Any]] = field(default_factory=list)
 
 
 class WorkflowInspectionService:
@@ -321,6 +322,7 @@ class WorkflowInspectionService:
             repository.stop(session_id, now=datetime.now(UTC))
             raise
         state.recorder_session_id = session_id
+        state.recorder_pending.clear()
         return {"success": True, **receipt}
 
     async def recording_events(
@@ -418,23 +420,37 @@ class WorkflowInspectionService:
     async def _append_recording_events(
         self, session_id: str, raw_events: object
     ) -> None:
-        if not isinstance(raw_events, list) or not raw_events:
-            return
+        if not isinstance(raw_events, list):
+            raise WorkflowRunError(
+                "RECORDING_EVENT_INVALID", "录制浏览器返回了无效步骤", 500
+            )
         events = [dict(event) for event in raw_events if isinstance(event, dict)]
         if len(events) != len(raw_events):
             raise WorkflowRunError(
                 "RECORDING_EVENT_INVALID", "录制浏览器返回了无效步骤", 500
             )
+        state = self._require_browser()
+        events = [*state.recorder_pending, *events]
+        if not events:
+            return
         try:
             self._require_recordings().append(
                 session_id, events, now=datetime.now(UTC)
             )
         except ValueError as error:
-            state = self._require_browser()
             await self._command("recorder_stop")
             self._require_recordings().stop(session_id, now=datetime.now(UTC))
             state.recorder_session_id = None
+            state.recorder_pending.clear()
             raise WorkflowRunError("RECORDING_LIMIT_REACHED", str(error), 413) from error
+        except Exception as error:
+            state.recorder_pending = events
+            raise WorkflowRunError(
+                "RECORDING_PERSIST_FAILED",
+                "录制步骤暂未写入工作区，请重试",
+                503,
+            ) from error
+        state.recorder_pending.clear()
 
     def _require_recordings(self) -> Any:
         if self._recordings is None:

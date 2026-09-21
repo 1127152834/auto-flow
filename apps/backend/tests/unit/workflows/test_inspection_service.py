@@ -392,5 +392,61 @@ async def test_shutdown_stops_active_recording_before_browser_cleanup(tmp_path):
     factory.dispose()
 
 
+@pytest.mark.asyncio
+async def test_recording_retries_drained_events_after_transient_database_failure(
+    monkeypatch, tmp_path
+):
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    recordings = SqlAlchemyWorkflowRecordings(factory)
+    selected = profile()
+    executable = tmp_path / "cloakbrowser"
+    executable.write_text("")
+    workers = Workers()
+    service = WorkflowInspectionService(
+        profiles=Profiles(selected),
+        installed_kernels=lambda: [InstalledKernel("public", "146.0.1.1", executable, 1)],
+        resolve_proxy=lambda _profile, _session: _none(),
+        read_license=lambda: None,
+        resources=Resources(),  # type: ignore[arg-type]
+        workers=workers,  # type: ignore[arg-type]
+        recordings=recordings,
+    )
+    workers.service = service
+    await service.open(profile_id="profile-1")
+    await service.start_recording("record-disk")
+    workers.recorded.append({"type": "input", "selector": "#name", "value": "保留"})
+    append = recordings.append
+    attempts = 0
+
+    def fail_once(*args, **kwargs):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise OSError("disk full")
+        return append(*args, **kwargs)
+
+    monkeypatch.setattr(recordings, "append", fail_once)
+
+    with pytest.raises(WorkflowRunError) as failed:
+        await service.recording_events("record-disk", after_seq=0)
+    assert failed.value.code == "RECORDING_PERSIST_FAILED"
+    assert service.recording_status("record-disk")["recording"] is True
+
+    retried = await service.recording_events("record-disk", after_seq=0)
+    assert retried["data"] == [
+        {
+            "sequence": 1,
+            "type": "input",
+            "selector": "#name",
+            "value": "保留",
+        }
+    ]
+    await service.stop_recording("record-disk", after_seq=1)
+    await service.close()
+    factory.dispose()
+
+
 async def _none():
     return None

@@ -28,8 +28,8 @@
   "checks": [
     {
       "command": "pytest recording HTTP/repository/provider/inspection and migration compatibility/schema export",
-      "result": "40 passed before final shutdown case; shutdown case and full inspection suite 7 passed",
-      "covers": "接口、序号分页、幂等停止、审查冲突、容量、敏感值、崩溃恢复、迁移链、OpenAPI一致性及关闭清理"
+      "result": "41 passed at foundation checkpoint; inspection suite expanded to 8 passed for transient storage retry",
+      "covers": "接口、序号分页、幂等停止、审查冲突、容量、敏感值、崩溃恢复、瞬时磁盘失败重试、迁移链、OpenAPI一致性及关闭清理"
     },
     {
       "command": "vitest recorder session/review/recovery/source parity/picker leave suites",
@@ -64,6 +64,6 @@
     "CloakBrowser席位可用后重跑跨origin导航尾部真实用例并核销绑定增强",
     "正式Electron真实UI完成录制、审查、生成、保存重开和独立运行",
     "按当前正式前端合同确认暂停/恢复是否仍为产品要求；现有UI和API仅暴露开始与停止",
-    "验证磁盘写入失败和清理失败重试，不提前释放互斥资源"
+    "验证底层进程树清理失败重试，不提前释放互斥资源"
   ]
 }
