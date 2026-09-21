@@ -1,6 +1,8 @@
 """Opt-in CI diagnostics: protocol kinds and process exit status, never payloads."""
+import asyncio
 import logging
 import os
+import re
 
 import pytest
 
@@ -14,6 +16,31 @@ def project_worker_diagnostics(monkeypatch):
     if os.environ.get("AUTOFLOW_TEST_WORKER_DIAGNOSTICS") != "1":
         return
     logger = logging.getLogger("pm9.worker_probe")
+    spawn = asyncio.create_subprocess_exec
+
+    async def observed_spawn(*args, **kwargs):
+        if "--project-workflow-worker" not in args:
+            return await spawn(*args, **kwargs)
+        kwargs["stderr"] = asyncio.subprocess.PIPE
+        process = await spawn(*args, **kwargs)
+
+        async def drain():
+            while line := await process.stderr.readline():
+                text = line.decode("utf-8", errors="replace").strip()
+                frame = re.search(r'File "[^"\n]*[/\\]([^/\\"]+\.py)", line (\d+)', text)
+                error = re.match(r'([A-Za-z][A-Za-z0-9_.]*(?:Error|Exception)):', text)
+                if frame:
+                    logger.warning("worker frame: %s:%s", *frame.groups())
+                if error:
+                    logger.warning("worker exception: %s", error.group(1))
+                if text.startswith("Fatal Python error:"):
+                    logger.warning("worker fatal Python error")
+            logger.warning("worker stderr closed; exit=%s", await process.wait())
+
+        asyncio.create_task(drain())
+        return process
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", observed_spawn)
     read = ProjectWorkflowWorkerManager._read
     send = ProjectWorkflowWorkerManager._send
     capability = ProjectWorkflowWorkerManager._capability_while_alive
