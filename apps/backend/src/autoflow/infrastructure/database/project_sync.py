@@ -1166,7 +1166,7 @@ class SqlAlchemyProjectSync:
         keys: list[RecordKey],
         *,
         valid: bool,
-    ) -> None:
+    ) -> bool:
         """Publish a complete source scan, independently of outbound write health."""
         now = datetime.now(UTC)
         with self.sessions() as session:
@@ -1228,6 +1228,7 @@ class SqlAlchemyProjectSync:
                     mark.remote_seen_at = now
                     mark.updated_at = now
             session.commit()
+            return valid
 
     def observe_source(
         self, project: str, table: str, generation: str, epoch: int,

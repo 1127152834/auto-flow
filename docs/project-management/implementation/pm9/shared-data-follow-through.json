@@ -103,7 +103,8 @@
       "build": "passed in 49.78s",
       "releaseScope": "Current real Google and packaged column creation chain pending; final whole C/R review and native candidate pending",
       "abandonBoundaryFix": "Two HTTP counterexamples reproduced (foreign project, structural operation); shared guard fixed. Full sync suite 33 passed, 2 warnings in 37.79s including both deterministic send/abandon races."
-    }
+    },
+    "finalFrontend": "9afe3be5: 5469 passed / 409 files in 198.85s; no frontend source edits after this run"
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -225,7 +226,7 @@
     "apps/desktop/src/renderer/domains/project-data/components/SheetsIdentityInitialization.tsx": "22a9df1c2f27d6bfafc85e0f52b30508236e82461ee1e681a9c3e6f8cd5370a0"
   },
   "remaining": [
-    "Final whole C/R review, full regression and current R3/R4 three-platform candidate pending.",
+    "Three independent review findings fixed with RED counterexamples; final affected/full regression and current native matrix pending.",
     "Current packaged complete Sheets chain, OAuth, real Google system UUID tests, physical native acceptance and signing identities remain external acceptance.",
     "S4 Windows existing-file overwrite/append/read and unapproved M1-M3 remain actual capability gaps."
   ],
@@ -246,5 +247,6 @@
     "apps/desktop/src/renderer/shared/api/generated.ts": "c754b890f4d2963d67c2e50973718f0926767b5053fb6b78283dfebd5ddd9a21",
     "apps/backend/src/autoflow/application/project_sync/columns.py": "e1f5fad5e56fa9f29c9e32608de9c2c1ca62d9e72d1e38419dc780cbd553aca7",
     "apps/desktop/src/renderer/domains/project-data/components/SheetsColumnCreation.tsx": "e0f38652ace057947f3d3317bd6304c37d1ab9854db0d7e7637bab8d07b065d9"
-  }
+  },
+  "finalReview": "shared-data-final-review.json"
 }

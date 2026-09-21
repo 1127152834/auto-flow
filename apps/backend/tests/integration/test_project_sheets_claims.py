@@ -327,3 +327,56 @@ def test_legacy_active_local_sheet_lease_blocks_shared_claim(tmp_path, state):
         with factory() as session:
             selection = SqlAlchemyProjectInputGroups(session).select_required(second.project, plan_for(second))
             assert selection.status == "temporarilyBusy"
+
+
+def test_rejected_value_push_keeps_identity_claimable_and_peer_pull_independent(tmp_path):
+    from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
+    from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.integration.test_project_sheets_sync import edit_title, push, sync_operations
+
+    with shared_tables(tmp_path) as (first, second):
+        local = edit_title(first, first.records()[0], 'local survives rejection')
+        first.transport.fail_writes.append(SheetsApiError(400, 'badRequest', 'rejected value'))
+        assert push(first).status_code == 202
+        failed, = sync_operations(first, 'failed')
+        writes = first.transport.changes()
+        pull(first)
+        pull(second)
+        assert first.records()[0] == local
+        assert second.records()[0]['contentRevision'] == 1
+        assert first.transport.grid('数据')[1][1] == 'original'
+        assert sync_operations(first, 'failed') == [failed]
+        batches = [start_bound(bound) for bound in (first, second)]
+        factory = first.client.app.state.session_factory
+        assert ProjectBatchScheduler.claim_data_task(factory, first.project, batches[0].batch_id) == 'ready'
+        assert ProjectBatchScheduler.claim_data_task(factory, second.project, batches[1].batch_id) == 'temporarilyBusy'
+        with factory() as session:
+            task, = session.scalars(select(ProjectTaskRow)).all()
+            assert task.project_id == first.project
+            snapshot, = session.scalars(select(ProjectTaskInputSnapshotRow)).all()
+            assert snapshot.inputs[0]['recordRef'] == local['ref']
+            assert snapshot.inputs[0]['contentRevision'] == local['contentRevision']
+            assert any(cell['value'] == 'local survives rejection' for cell in snapshot.inputs[0]['values'])
+            lease, = session.scalars(select(ProjectRecordLeaseRow)).all()
+            assert lease.state == 'held'
+        assert first.transport.changes() == writes
+
+
+@pytest.mark.parametrize('change', ['duplicate', 'blank', 'missing', 'header'])
+def test_push_identity_observation_invalidates_stale_peer_claims(tmp_path, change):
+    from tests.integration.test_project_sheets_sync import edit_title, push
+
+    with shared_tables(tmp_path) as (first, second):
+        local = edit_title(first, first.records()[0], 'keep local')
+        grid = first.transport.grid('数据')
+        if change == 'duplicate': grid.append(list(grid[1]))
+        elif change == 'blank': grid.append(['', 'unidentified business row', 'note'])
+        elif change == 'missing': del grid[1:]
+        else: grid[0][0] = 'foreign identity'
+        writes = first.transport.changes()
+        assert push(first).status_code in {202, 409}
+        with first.client.app.state.session_factory() as session:
+            for bound in (first, second):
+                selected = SqlAlchemyProjectInputGroups(session).select_required(bound.project, plan_for(bound))
+                assert selected.status != 'ready', (change, bound.table, selected)
+        assert first.records()[0] == local and first.transport.changes() == writes

@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-22",
+  "status": "findings_fixed_scoped_regression_passed",
+  "releaseAccepted": false,
+  "reviewedRange": {
+    "base": "e71785da7353760ea8bfd567d272dd27865c0188",
+    "head": "9afe3be56c6ee7093b262c1a351abb4d8205c3d8"
+  },
+  "reviewer": "One independent fresh-context gpt-6-astra, read-only; no nested agents or repeat review",
+  "findings": [
+    {
+      "id": "CR-1",
+      "severity": "Important",
+      "issue": "UUID active lease lookup missed the public text-normalized key",
+      "fix": "Normalize UUID identically in shared active_record_lease lookup; all management status/deletion and dynamic cursor callers reuse it",
+      "red": "held/reconciling HTTP status unexpectedly succeeded; same-project UUID/text dynamic alias raised UNIQUE project_record_leases.lease_key",
+      "green": "4 passed / 14 deselected in 5.08s; same Task four writes keep one public lease and two local cursors; final combined related regression 134 passed in 132.41s",
+      "status": "fixed"
+    },
+    {
+      "id": "CR-2",
+      "severity": "Important",
+      "issue": "Unknown value reconciliation skipped owned column/system identity validation",
+      "fix": "Push and reconcile use the same full source identity observation and owned column checks; failed verification leaves original intent unknown and does not send",
+      "red": "Four real HTTP cases (column/system x name/owner) incorrectly confirmed",
+      "green": "Four cases passed within initial 45-pass scoped run; final combined suite pending; final combined related regression 134 passed in 132.41s",
+      "status": "fixed"
+    },
+    {
+      "id": "CR-3",
+      "severity": "Important",
+      "issue": "Known invalid source identity retained claimable stale peer proof after push",
+      "fix": "Reuse full pull identity observation for push/reconcile; persist current membership or invalid proof before allowing values. Only successful reads publish evidence; network/value errors do not invalidate reliable identity",
+      "red": "Four push observations duplicate/blank/missing/header left a peer ready",
+      "green": "Four cases passed within initial 45-pass scoped run; ordinary rejected-value/pull/claim positive control passed; final combined related regression 134 passed in 132.41s",
+      "status": "fixed"
+    }
+  ],
+  "deferredMinors": [],
+  "limits": [
+    "Current real Google OAuth/UUID/column acceptance remains external",
+    "Current native matrix and full regression pending; previous C4 source hashes remain separate",
+    "No new remote transactional protocol, M1-M3, cross-process human recovery or all Studio admission"
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_claims.py": "6feeb067cf081cdc204831c60aaa34c2e37a35c7e75163af01e7c62820fa433f",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "7bd0c61abc200949db1e82864d0b21fda6d637c22c9b519b0f7afbbfff1f2169",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "8befa4c2f17e03a78c2eee604bb7cf1823755e927e653fed27c0d711be38aa3d"
+  },
+  "verification": {
+    "scopedBackend": "134 passed, 2 warnings in 132.41s",
+    "frontend": "5469 passed / 409 files in 198.85s, source unchanged after 9afe3be5",
+    "mypy": "407 source files passed",
+    "ruff": "passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "passed",
+    "scripts": "101 passed",
+    "fullBackend": "final post-review run pending",
+    "nativeMatrix": "final post-review candidate pending"
+  }
+}

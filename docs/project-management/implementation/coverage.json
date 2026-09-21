@@ -4155,8 +4155,18 @@
       "primary_package": "PM4-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_claims.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "受控 Google 拒绝普通值写后，本地值/失败意图保留；双方拉取仍可执行，真实 SQLite Task 领取冻结本地新值且共享占用仍排他",
+          "limitations": "未覆盖子条件逐项保留；受控 transport 不代替实网或打包验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -4178,16 +4188,27 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-22",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_rejected_value_push_keeps_identity_claimable_and_peer_pull_independent",
+            "scope": "受控 Google 拒绝普通值写后，本地值/失败意图保留；双方拉取仍可执行，真实 SQLite Task 领取冻结本地新值且共享占用仍排他",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "未找到把 Sheets 推送失败、本地身份可靠和领取准入一起断言的测试；需组合真实本地领取与受控网络故障"
+            "detail": "来源完全读取失败时的缓存身份有效期，以及界面同时显示来源时间/同步异常仍缺联合断言。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "本组合未在真实 worker/打包完整链执行。"
           },
           {
             "kind": "external_acceptance_pending",
-            "detail": "真实 Sheets 网络/权限条件需授权资源；本地受控故障验证可先执行"
+            "detail": "实际 Sheets 网络/权限异常需要授权测试资源。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -7857,8 +7878,18 @@
       "primary_package": "PM6-C",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_sync.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "新增 AA 列后旧 RecordRef/版本仍可修改旧字段并实际推回原 B 列，原身份及数据保留，无重复建列",
+          "limitations": "未覆盖子条件逐项保留；受控 transport 不代替实网或打包验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "data-source",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -7877,12 +7908,33 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-22",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_explicit_column_keeps_generation_and_old_patch_then_pushes_new_field",
+            "scope": "新增 AA 列后旧 RecordRef/版本仍可修改旧字段并实际推回原 B 列，原身份及数据保留，无重复建列",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_columns.py",
+            "symbol": "test_existing_task_patch_survives_column_extension_without_new_field_grant",
+            "scope": "兼容远端加列后旧 Task 冻结契约可以写旧字段，不能隐式取得新字段授权",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：兼容加列后旧 Patch 仍定位原字段，删本地字段不删远端列；不据邻近测试推定覆盖"
+            "detail": "删除本地字段不删远端物理列尚缺完整直接场景；有来源映射或活动依赖时删除仍被阻断。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "兼容远端增列后的完整打包 Task/推值链仍待验收。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "实际 Google 增列与旧 Patch 联合验收需授权测试表。"
           }
         ],
         "statusBeforeReview": "planned"

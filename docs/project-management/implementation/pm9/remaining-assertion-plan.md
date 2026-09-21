@@ -2,7 +2,7 @@
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；C1–C4 和 R1–R5 设计已批准；M1–M3 仍 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 229 条有明确范围的断言，22 条尚无已定位断言；194 partially_verified / 57 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 231 条有明确范围的断言，20 条尚无已定位断言；196 partially_verified / 55 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 ## 本轮已经执行的补证
 
@@ -43,7 +43,7 @@
 
 新增分类核对：DATA-SH-03/10/11 的云端新增行、删除同步和模板复制是 implementation_missing，不是只有实网待验收；具体 M1–M3 契约/切片见 `docs/superpowers/specs/2026-09-21-pm9-sheets-row-mutations.md`。尚未实施，也不包含在 C/R 待确认问题内。
 
-## 尚无直接断言的 29 条：下一步的最小场景
+## 历史 29 条最小场景清单（当前已完成项由文末进展与 coverage.json supersede）
 
 每项先读取原规格对应行与所列既有测试/fixture；复用 HTTP、SQLite 和现有 transport/worker。断言包含业务值、稳定身份、版本、lease/操作事实及负面副作用；文件名或测试总数不构成覆盖。纯本地规则先定向运行，真实端到端只用于对应已接通能力。
 
@@ -123,3 +123,36 @@ C4 Mac @21f8bb1e 的 ARM/Intel 全部通过；Windows @07619b6d 完整流水线 
 HTTP/SQLite/受控 transport 相关回归 113 passed（138.65 秒），组件/客户端 38 passed（5 文件），ruff/mypy（407）、typecheck/lint/OpenAPI/build 通过。另发现通用放弃接口跨项目及结构命令越界，两项 HTTP 反例复现，修复范围限定共享入口的项目归属与内容意图类型。覆盖账本仅 DATA-SCHEMA-07 新增具体断言并改 partial：251 条中 229 有定位断言、22 未定位，194 partially_verified / 57 planned / 0 verified。现有历史统计按日期保留。
 
 R1/R2/R5/R3/R4 与 C1–C4 已有实现和分范围证据；最终整批独立审查、当前完整回归和三平台矩阵接续。真实 Google、当前打包完整 Sheets 链、OAuth、物理安装和签名仍未验收；S4 已存在文件安全覆盖/追加/读取与未批准 M1–M3 仍为实际缺口。releaseAccepted=false。
+
+### 2026-09-22 整批审查修复与映射复核（confirmed，回归进行中）
+
+一次独立审查发现 3 项 Important：UUID 公共 lease 查询未归一类型、未知值核验缺来源归属检查、推送明确发现坏身份后未失效旧领取证据。均已用直接 HTTP/SQLite 反例复现，按共享入口修复；推送与核验复用完整身份观察，可靠身份的普通推值失败不受牵连。新组合断言明确失败意图和本地新值保留、后续拉取正常、真实 Task 领取冻结本地值并继续公共排他。新增 R4 测试也直接证明加列后旧 Patch 推回原 B 列与旧 Task 权限兼容。
+
+DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源读取失败/界面提示、删除本地字段不删远端和生产端到端条件仍保留。当前 251 条中 231 有定位断言、20 未定位，196 partially_verified / 55 planned / 0 verified。完整前端 5469 passed / 409 文件 / 198.85 秒，前端源码之后未改；最终后端和三平台仍在验证。详见 shared-data-final-review.json。releaseAccepted=false。
+
+## 当前 20 条尚无定位断言：执行分组（2026-09-22，confirmed 现状）
+
+仅下表列出尚无直接断言的条目；已有 partial 条目的未满足子条件仍以 coverage.json 为准。每项运行前读取原始 source/source_line，先写联合断言，失败后区分实现缺失与测试缺失；不得仅用测试总数关闭。复用既有 HTTP、SQLite、worker、浏览器和恢复脚本。
+
+| 条目 | 当前最小验收场景 | 下一步与条件 |
+| --- | --- | --- |
+| DATA-LIFE-01 | 同账号重授权验证主体和目标、先核验未知操作再恢复 | 先复用 lifecycle/recovery 受控身份与网络故障；同账号实网重授权另需授权资源。 |
+| DATA-LIFE-07 | 永久失权后隔离旧未知写，并确认旧发送进程停止后才允许目标新写 | 先复用 lifecycle/recovery 受控身份与网络故障；同账号实网重授权另需授权资源。 |
+| DATA-LIFE-09 | 归档保留待推送本地数据且停止新网络写 | 先复用 lifecycle/recovery 受控身份与网络故障；同账号实网重授权另需授权资源。 |
+| DATA-SH-02 | 两项目重叠写的历史确认与最终值可解释 | 可在现有本机 fixture/真实 worker 执行；按记录、版本、队列、lease 原子性联合断言。 |
+| DATA-SH-03 | 同业务键并发新增云端只保留一行 | M1 云端新增行未批准；先等待该独立契约确认，不扩大现有 addRecord。 |
+| DATA-STATE-08 | 格式错误记录仍可人工设状态，占用或未知则明确阻断 | 可在现有本机 fixture/真实 worker 执行；按记录、版本、队列、lease 原子性联合断言。 |
+| DATA-SYNC-09 | 推送失败仍能拉取且不阻断不相关本地运行 | 可在现有本机 fixture/真实 worker 执行；按记录、版本、队列、lease 原子性联合断言。 |
+| DATA-TABLE-08 | 系统状态不能被字段节点改型/删除/映射，业务 status 字段可共存 | 可在现有本机 fixture/真实 worker 执行；按记录、版本、队列、lease 原子性联合断言。 |
+| DATA-WRITE-12 | 两个任务反向请求对方记录时不永久等待或半组写 | 可在现有本机 fixture/真实 worker 执行；按记录、版本、队列、lease 原子性联合断言。 |
+| DATA-WRITE-13 | 真实循环前两行成功第三行失败，前两行效果与队列保留 | 可在现有本机 fixture/真实 worker 执行；按记录、版本、队列、lease 原子性联合断言。 |
+| FLOW-A01 | 两次真实参数任务的变量隔离 | 复用现有生产 worker/浏览器与 Studio 契约；逐项运行对应最小实际链，保留未接通边界。 |
+| FLOW-A05 | 可选输入从有到无不读到上一任务记录 | 复用现有生产 worker/浏览器与 Studio 契约；逐项运行对应最小实际链，保留未接通边界。 |
+| FLOW-A10 | 结果列存在但无项目写节点时表无变化 | 复用现有生产 worker/浏览器与 Studio 契约；逐项运行对应最小实际链，保留未接通边界。 |
+| XE-A01 | 参数网页真实读取、无 lease、资源回收的同一场景联合断言 | 复用现有生产 worker/浏览器与 Studio 契约；逐项运行对应最小实际链，保留未接通边界。 |
+| XE-A17 | 活动 Run/已接受保存/未知 Sheets 推送同时归档的收尾 | 复用 lifecycle + worker + sync recovery；不扩展为跨进程人工继续。 |
+| XE-A19 | 无 Project 的 Studio 通用运行与项目写回文档明确缺能力 | 复用现有生产 worker/浏览器与 Studio 契约；逐项运行对应最小实际链，保留未接通边界。 |
+| XE-C07 | 断线后快照/序号/attempt/产物恢复无重跑无重复追加 | 复用现有生产 worker/浏览器与 Studio 契约；逐项运行对应最小实际链，保留未接通边界。 |
+| XE-G02 | 固定参数真实运行的幂等、取消、退出核验整组门禁 | 复用现有生产 worker/浏览器与 Studio 契约；逐项运行对应最小实际链，保留未接通边界。 |
+| XE-G06 | 真实同步/保存/清理 blocker 与归档恢复删除/Workspace 切换闭环 | 复用 lifecycle + worker + sync recovery；不扩展为跨进程人工继续。 |
+| XE-G07 | 尚未将完整 Studio 窗口/平台门禁各子条件映射到单独断言；不能用项目 smoke 一个总通过替代 | 分平台原生窗口/安装/面板/凭据分别取证；缺物理环境明确待验收。 |

@@ -221,3 +221,31 @@ def test_column_preview_cannot_send_after_binding_removed(tmp_path):
         response=sheets.client.post(sheets.url('/sheets/columns'),headers=new_key(),json={**body,'impactRevision':preview['impactRevision']})
         assert response.status_code in {404,412},response.text
         assert transport.changes()==0
+
+
+@pytest.mark.parametrize('changed', ['name', 'owner'])
+def test_value_reconcile_refuses_changed_owned_column(tmp_path, monkeypatch, changed):
+    from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.integration.test_project_sheets_sync import sync_operations
+
+    transport = FakeSheetsTransport({'数据':[['编号','标题'],['A-1','original']]})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        field = new_field(sheets.client, sheets.project, sheets.table, 'note', '备注', expectedTableRevision=sheets.table_revision())
+        assert start_column(sheets, field)['status'] == 'succeeded'
+        local = edit_note(sheets, field, sheets.records()[0], 'sent once')
+        original = transport.send
+        def lost(method, url, **kwargs):
+            response = original(method, url, **kwargs)
+            if url.endswith('/values:batchUpdate'): raise SheetsApiError(0, 'lost', 'response lost')
+            return response
+        monkeypatch.setattr(transport, 'send', lost)
+        assert push(sheets).status_code == 202
+        unknown, = sync_operations(sheets, 'unknown')
+        writes = transport.changes()
+        if changed == 'name': transport.grid('数据')[0][26] = 'foreign'
+        else: transport.developer_metadata.clear()
+        response = sheets.client.post(sheets.url('/sync-operations/'+unknown['syncOperationId']+'/reconcile'), headers=new_key(), json={'expectedStatusRevision':unknown['statusRevision']})
+        assert response.status_code == 409 and response.json()['error']['code'] == 'SHEETS_COLUMN_EVIDENCE_MISMATCH', response.text
+        assert sync_operations(sheets, 'unknown') == [unknown]
+        assert sheets.records()[0] == local and transport.changes() == writes

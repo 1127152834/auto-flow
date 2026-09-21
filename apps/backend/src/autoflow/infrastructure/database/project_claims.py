@@ -844,7 +844,7 @@ def active_record_lease(
     if binding is not None and binding.project_id == project_id:
         for lease in source_record_leases(session, binding.spreadsheet_id, binding.sheet_id):
             source = json.loads(lease.lease_key)
-            if source["source"] == "local" or source.get("recordKey") == {"type": record_key.type, "value": record_key.value}:
+            if source["source"] == "local" or source.get("recordKey") == {"type": "text" if record_key.type == "uuid" else record_key.type, "value": record_key.value}:
                 return lease
         return None
     value = ProjectRecordLeaseRow.record_ref["recordKey"]["value"]

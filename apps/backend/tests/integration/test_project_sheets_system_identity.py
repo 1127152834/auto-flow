@@ -129,7 +129,8 @@ def test_identity_unknown_mismatch_never_publishes_or_resends(tmp_path, monkeypa
         assert transport.changes() == 1
 
 
-def test_system_uuid_and_text_binding_share_one_physical_lease_and_push_by_uuid(tmp_path):
+@pytest.mark.parametrize('same_project', [False, True])
+def test_system_uuid_and_text_binding_share_one_physical_lease_and_push_by_uuid(tmp_path, same_project):
     from autoflow.infrastructure.database.project_claims import (
         _parse_record_ref,
         resolve_record_lease,
@@ -146,9 +147,9 @@ def test_system_uuid_and_text_binding_share_one_physical_lease_and_push_by_uuid(
     with client:
         operation = initialize(client, project, connection, table, identity, title)
         first = SheetsTable(client, transport, project, table['tableId'], connection['connectionId'], {'code':identity, 'title':title}, operation['result'])
-        other_project = new_project(client, 'other')
+        other_project = project if same_project else new_project(client, 'other')
         other_connection = connect(client, other_project, new_key())['result']
-        other_table = new_table(client, other_project)
+        other_table = new_table(client, other_project, 'T2')
         other_id = new_field(client, other_project, other_table['tableId'], 'id', '身份', expectedTableRevision=1)
         other_title = new_field(client, other_project, other_table['tableId'], 'title', '标题', expectedTableRevision=2)
         body = {**inspection_body(other_connection, other_id, other_title), 'identityStrategy': {'kind':'column','columnId':'C'}, 'expectedTableRevision':3}
@@ -166,6 +167,22 @@ def test_system_uuid_and_text_binding_share_one_physical_lease_and_push_by_uuid(
         assert result.status_code == 202, result.text
         assert transport.grid('数据')[1][1] == 'local UUID edit'
         assert transport.grid('数据')[1][2] == a['ref']['recordKey']['value']
+        if same_project:
+            from sqlalchemy import select
+            from autoflow.domain.project_data.capabilities import QueryProjectRecordsRequest, UpdateProjectRecordCommand
+            from autoflow.infrastructure.database.project_run_models import ProjectRecordLeaseRow, ProjectTaskRecordCursorRow
+            from tests.integration.test_project_sheets_claim_paths import query_task
+            from tests.integration.test_project_run_data_start import uid
+            scope, service = query_task(first, (second,))
+            for bound, value in ((first, 'P1'), (second, 'Q1'), (first, 'P2'), (second, 'Q2')):
+                row = service.query_records(scope, QueryProjectRecordsRequest(1, bound.project, bound.table, bound.dataset_generation(), [bound.field_id('title')], 'workflow', None, [], None, 10))['items'][0]
+                result, replayed = service.update_record(scope, UpdateProjectRecordCommand(uid(), 1, _parse_record_ref(row['ref']), {bound.field_id('title'):value}, row['contentRevision']))
+                assert not replayed and result['contentRevision'] == row['contentRevision'] + 1
+            with client.app.state.session_factory() as session:
+                leases = session.scalars(select(ProjectRecordLeaseRow)).all()
+                cursors = session.scalars(select(ProjectTaskRecordCursorRow)).all()
+                assert len(leases) == 1 and len(cursors) == 2
+                assert {cursor.lease_id for cursor in cursors} == {leases[0].id}
 
 
 def test_unknown_identity_recovers_with_fresh_local_confirmation_after_table_edit(tmp_path, monkeypatch):
@@ -290,3 +307,63 @@ def test_explicit_rebind_reuses_owned_system_column_without_rewriting_uuids(tmp_
         refused = client.put(base(client, project, table) + '/sheets/binding', json=binding_impact(client, project, table['tableId'], body), headers=new_key())
         assert refused.status_code == 409 and refused.json()['error']['code'] == 'SHEETS_IDENTITY_UNVERIFIED'
         assert transport.changes() == 1
+
+
+@pytest.mark.parametrize('lease_state', ['held', 'reconciling'])
+def test_system_uuid_active_lease_blocks_manual_status(tmp_path, lease_state):
+    from sqlalchemy import select
+    from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
+    from autoflow.domain.project_data.identity import RecordKey, encode_record_key
+    from autoflow.infrastructure.database.project_run_models import ProjectRecordLeaseRow
+    from tests.fixtures.sheets import SheetsTable
+    from tests.integration.test_project_sheets_claims import start_bound
+    from tests.integration.test_project_sheets_sync import pull
+
+    client, transport, project, connection, table, identity, title = prepared(tmp_path)
+    with client:
+        operation = initialize(client, project, connection, table, identity, title)
+        bound = SheetsTable(client, transport, project, table['tableId'], connection['connectionId'], {'code':identity,'title':title}, operation['result'])
+        pull(bound)
+        record = bound.records()[0]
+        batch = start_bound(bound)
+        factory = client.app.state.session_factory
+        assert ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id) == 'ready'
+        with factory.begin() as session:
+            lease, = session.scalars(select(ProjectRecordLeaseRow)).all()
+            lease.state = lease_state
+        encoded = encode_record_key(RecordKey(**record['ref']['recordKey']))
+        response = client.put(bound.url('/records/'+encoded+'/status'), headers=new_key(), json={
+            'datasetGeneration':bound.dataset_generation(), 'recordKeyType':'uuid',
+            'statusId':None, 'expectedStatusRevision':record['statusRevision'],
+        })
+        assert response.status_code == 409 and response.json()['error']['code'] == 'RECORD_IN_USE', response.text
+        assert bound.records()[0] == record
+
+
+@pytest.mark.parametrize('changed', ['name', 'owner'])
+def test_value_reconcile_refuses_changed_system_identity_owner(tmp_path, monkeypatch, changed):
+    from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.fixtures.sheets import SheetsTable
+    from tests.integration.test_project_sheets_sync import edit_title, pull, push, sync_operations
+
+    client, transport, project, connection, table, identity, title = prepared(tmp_path)
+    with client:
+        operation = initialize(client, project, connection, table, identity, title)
+        bound = SheetsTable(client, transport, project, table['tableId'], connection['connectionId'], {'code':identity,'title':title}, operation['result'])
+        pull(bound)
+        local = edit_title(bound, bound.records()[0], 'sent once')
+        original = transport.send
+        def lost(method, url, **kwargs):
+            response = original(method, url, **kwargs)
+            if url.endswith('/values:batchUpdate'): raise SheetsApiError(0, 'lost', 'response lost')
+            return response
+        monkeypatch.setattr(transport, 'send', lost)
+        assert push(bound).status_code == 202
+        unknown, = sync_operations(bound, 'unknown')
+        writes = transport.changes()
+        if changed == 'name': transport.grid('数据')[0][2] = 'foreign'
+        else: transport.developer_metadata.clear()
+        response = client.post(bound.url('/sync-operations/'+unknown['syncOperationId']+'/reconcile'), headers=new_key(), json={'expectedStatusRevision':unknown['statusRevision']})
+        assert response.status_code == 409 and response.json()['error']['code'] == 'SHEETS_IDENTITY_UNVERIFIED', response.text
+        assert sync_operations(bound, 'unknown') == [unknown]
+        assert bound.records()[0] == local and transport.changes() == writes

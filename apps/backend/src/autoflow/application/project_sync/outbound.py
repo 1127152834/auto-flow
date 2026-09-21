@@ -202,28 +202,10 @@ class SheetsSyncService:
         except SheetsApiError as error:
             raise _api_error(error) from error
         header = [str(value) for value in raw[0]] if raw else []
-        self._check_source_columns(client, table_id, binding, header)
         identity = _identity_column(binding["identityStrategy"], header)
-        keys: list[RecordKey] = []
         system = binding["identityStrategy"]["kind"] == "system"
-        valid = identity < len(header) and bool(header[identity])
-        if system:
-            plan = self._sync.system_identity_plan(project_id, table_id, int(binding["bindingEpoch"]))
-            valid = valid and owned_identity(plan, header, client.developer_metadata(spreadsheet_id))
-        for remote in raw[1:]:
-            if not any(value is not None and str(value) != "" for value in remote):
-                continue
-            marker = remote[identity] if identity < len(remote) else None
-            if marker is None or marker == "" or isinstance(marker, bool) or (isinstance(marker, str) and marker.startswith("=")):
-                valid = False
-                continue
-            if system and not canonical_uuid(marker):
-                valid = False
-                continue
-            keys.append(_record_key_for(marker, system=system))
-        valid = valid and len(set(keys)) == len(keys)
-        namespace = json.dumps({"columnId": column_letter(identity), "header": header[identity] if identity < len(header) else "", "encoding": "typed-record-key-v1"}, sort_keys=True, ensure_ascii=False)
-        self._sync.verify_source_identity(project_id, table_id, generation, int(binding["bindingEpoch"]), namespace, keys, valid=valid)
+        _, valid = self._observe_identity(client, project_id, table_id, generation, binding, raw)
+        self._check_source_columns(client, table_id, binding, header)
         if system and not valid:
             raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "系统身份列归属或 UUID 不完整，请修复来源后重试。", 409)
         by_column = {
@@ -414,14 +396,7 @@ class SheetsSyncService:
             return {"confirmed": 0, "failed": 0, "unknown": 0, "targets": []}
         spreadsheet_id = str(binding["spreadsheetId"])
         sheet_name = str(binding["sheetName"])
-        header = _header(client, spreadsheet_id, sheet_name)
-        self._check_source_columns(client, table_id, binding, header)
-        identity_index = _identity_column(binding["identityStrategy"], header)
-        if binding["identityStrategy"]["kind"] == "system":
-            plan = self._sync.system_identity_plan(project_id, table_id, int(binding["bindingEpoch"]))
-            if not owned_identity(plan, header, client.developer_metadata(spreadsheet_id)):
-                raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "系统身份列归属已变化，禁止写入。", 409)
-        remote = _remote_keys(client, spreadsheet_id, sheet_name, identity_index, system=binding["identityStrategy"]["kind"] == "system")
+        remote = self._verified_source(client, project_id, table_id, binding)
         confirmed = failed = unknown = 0
         writes: list[dict[str, Any]] = []
         planned: list[tuple[Any, dict[str, Any], int]] = []
@@ -670,10 +645,7 @@ class SheetsSyncService:
                 client = self._access.client(project_id, str(binding["connectionId"]))
                 spreadsheet_id = str(binding["spreadsheetId"])
                 sheet_name = str(binding["sheetName"])
-                header = _header(client, spreadsheet_id, sheet_name)
-                remote = _remote_keys(
-                    client, spreadsheet_id, sheet_name, _identity_column(binding["identityStrategy"], header), system=binding["identityStrategy"]["kind"] == "system"
-                )
+                remote = self._verified_source(client, project_id, table_id, binding)
                 row_index = remote.get(_marker(record_key))
                 outcome = "notMatched"
                 if row_index is not None and cells:
@@ -752,6 +724,55 @@ class SheetsSyncService:
         )
 
     # --------------------------------------------------------------------- helpers
+
+    def _observe_identity(
+        self, client: SheetsClient, project: str, table: str, generation: str,
+        binding: dict[str, Any], raw: list[list[Any]],
+    ) -> tuple[dict[str, int], bool]:
+        """Every complete identity read replaces stale claim evidence, even on failure."""
+        header = [str(value) for value in raw[0]] if raw else []
+        identity = _identity_column(binding["identityStrategy"], header)
+        system = binding["identityStrategy"]["kind"] == "system"
+        valid = identity < len(header) and bool(header[identity])
+        if system:
+            plan = self._sync.system_identity_plan(project, table, int(binding["bindingEpoch"]))
+            try:
+                metadata = client.developer_metadata(str(binding["spreadsheetId"]))
+            except SheetsApiError as error:
+                raise _api_error(error) from error
+            valid = valid and owned_identity(plan, header, metadata)
+        keys: list[RecordKey] = []
+        remote: dict[str, int] = {}
+        for index, row in enumerate(raw[1:], start=2):
+            if not any(value is not None and str(value) != "" for value in row):
+                continue
+            marker = row[identity] if identity < len(row) else None
+            if (marker is None or marker == "" or isinstance(marker, bool)
+                    or (isinstance(marker, str) and marker.startswith("="))
+                    or (system and not canonical_uuid(marker))):
+                valid = False
+                continue
+            key = _record_key_for(marker, system=system)
+            keys.append(key)
+            token = _marker(key)
+            if token in remote:
+                valid = False
+            remote[token] = index
+        namespace = json.dumps({"columnId": column_letter(identity), "header": header[identity] if identity < len(header) else "", "encoding": "typed-record-key-v1"}, sort_keys=True, ensure_ascii=False)
+        valid = self._sync.verify_source_identity(project, table, generation, int(binding["bindingEpoch"]), namespace, keys, valid=valid)
+        return remote, valid
+
+    def _verified_source(self, client: SheetsClient, project: str, table: str, binding: dict[str, Any]) -> dict[str, int]:
+        generation = self._require_table(project, table).current_generation
+        try:
+            raw = client.values(str(binding["spreadsheetId"]), f"{quoted(str(binding['sheetName']))}!{WHOLE_SHEET}", "FORMULA")
+        except SheetsApiError as error:
+            raise _api_error(error) from error
+        remote, valid = self._observe_identity(client, project, table, generation, binding, raw)
+        if not valid:
+            raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "来源身份或归属已变化，请修复后重新拉取。", 409)
+        self._check_source_columns(client, table, binding, [str(value) for value in raw[0]] if raw else [])
+        return remote
 
     def _check_source_columns(self, client: SheetsClient, table: str, binding: dict[str, Any], header: list[str]) -> None:
         with self._sessions() as session:
@@ -919,36 +940,6 @@ def _key_type(value: str | None) -> RecordKeyType:
 
 def _marker(key: RecordKey) -> str:
     return f"{'text' if key.type == 'uuid' else key.type}:{key.value}"
-
-
-def _remote_keys(
-    client: SheetsClient, spreadsheet_id: str, sheet_name: str, index: int, *, system: bool = False
-) -> dict[str, int]:
-    letters = column_letter(index)
-    try:
-        values = client.values(
-            spreadsheet_id, f"{quoted(sheet_name)}!{letters}2:{letters}", "FORMULA"
-        )
-    except SheetsApiError as error:
-        raise _api_error(error) from error
-    keys: dict[str, int] = {}
-    for offset, row in enumerate(values):
-        value = row[0] if row else ""
-        if value is None or value == "":
-            continue
-        token = _marker(_record_key_for(value))
-        if (system and not canonical_uuid(value)) or token in keys:
-            raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "来源存在无效或重复身份，禁止按首行猜测写入。", 409)
-        keys[token] = offset + 2
-    return keys
-
-
-def _header(client: SheetsClient, spreadsheet_id: str, sheet_name: str) -> list[str]:
-    try:
-        values = client.values(spreadsheet_id, f"{quoted(sheet_name)}!1:1", "FORMULA")
-    except SheetsApiError as error:
-        raise _api_error(error) from error
-    return [str(value) for value in (values[0] if values else [])]
 
 
 def _record_operation(
