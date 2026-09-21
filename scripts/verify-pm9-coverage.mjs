@@ -21,6 +21,14 @@ export function verifyCoverage(coverage, read = path => readFileSync(resolve(roo
     }
     for (const check of mapping.checks ?? []) {
       if (!check.scope?.trim() || !check.level?.startsWith('automated_')) fail('missing assertion scope or level')
+      if (check.testName !== undefined) {
+        if (!/\.test\.[jt]sx?$/.test(check.file ?? '') || typeof check.testName !== 'string' || !/^[^'"\\\r\n]+$/.test(check.testName) || check.symbol !== undefined) { fail('invalid named test case'); continue }
+        const name = check.testName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        try {
+          if (!new RegExp(`^\\s*(?:it|test)\\(\\s*['"]${name}['"]\\s*,`, 'm').test(read(check.file))) fail(`missing test case ${check.file}::${check.testName}`)
+        } catch { fail(`unreadable test ${check.file}`) }
+        continue
+      }
       const python = check.file?.endsWith('.py')
       if (!(python ? /^test_\w+$/ : /^\w+$/).test(check.symbol)) { fail('invalid test symbol'); continue }
       try {

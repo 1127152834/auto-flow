@@ -108,7 +108,7 @@ class SqlAlchemyProjectDataRecords:
                 session.flush()
                 session.add(_change(done, None, snapshot))
                 if origin == "local":
-                    enqueue_intent(session, table, key, row.content_revision)
+                    enqueue_intent(session, table, key, row.content_revision, canonical)
                 session.commit()
                 return snapshot, done, False
             except IntegrityError as error:
@@ -288,7 +288,8 @@ class SqlAlchemyProjectDataRecords:
                 )
             canonical = self._validate(fields, values, False, origin)
             before = self._snapshot(row, fields)
-            merged = {**row.values_json, **canonical}
+            old_values = row.values_json
+            merged = {**old_values, **canonical}
             changed = merged != row.values_json
             if changed:
                 row.values_json = merged
@@ -299,7 +300,10 @@ class SqlAlchemyProjectDataRecords:
             session.add(_operation_row(done))
             session.flush()
             if changed and origin == "local":
-                enqueue_intent(session, table, key, row.content_revision)
+                enqueue_intent(session, table, key, row.content_revision, {
+                    field_id: value for field_id, value in canonical.items()
+                    if field_id not in old_values or old_values[field_id] != value
+                })
             if changed:
                 session.add(_change(done, before, snapshot))
             session.commit()

@@ -860,7 +860,7 @@ class SqlAlchemyProjectSync:
                     SyncOperationRow.kind == "push",
                     SyncOperationRow.operation_id.is_(None),
                     SyncOperationRow.binding_epoch == binding.binding_epoch,
-                    SyncOperationRow.status.in_(("pending", "sending", "verifying")),
+                    SyncOperationRow.status == "pending",
                 )
                 .order_by(SyncOperationRow.created_at, SyncOperationRow.id)
                 .limit(limit)
@@ -1015,7 +1015,8 @@ def _record_ref(row: SyncOperationRow) -> dict[str, Any] | None:
 
 
 def enqueue_intent(
-    session: Session, table: DataTableRow, key: RecordKey, revision: int
+    session: Session, table: DataTableRow, key: RecordKey, revision: int,
+    values: dict[str, object],
 ) -> None:
     """Register one local content change as a pending outbound intent.
 
@@ -1040,6 +1041,7 @@ def enqueue_intent(
     request = {
         "datasetGeneration": table.current_generation,
         "contentRevision": revision,
+        "values": values,
     }
     open_row = session.scalar(
         select(SyncOperationRow).where(
@@ -1052,8 +1054,10 @@ def enqueue_intent(
             SyncOperationRow.status.in_(("pending", "paused")),
         )
     )
-    if open_row is not None:
+    if open_row is not None and isinstance(open_row.request.get("values"), dict):
+        request["values"] = {**open_row.request["values"], **values}
         open_row.target_content_revision = revision
+        open_row.status_revision += 1
         open_row.request = request
         open_row.target = target
         open_row.dedupe_key = f"{binding.binding_epoch}:{key.type}:{key.value}:{revision}"

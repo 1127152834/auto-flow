@@ -294,3 +294,16 @@ def test_snapshot_freezes_parameters_and_pm4_data_inputs():
     )
     raw_inputs[0]["values"][0]["value"] = "changed"
     assert data_snapshot.inputs[0]["values"][0]["value"] == "one"
+
+
+@pytest.mark.parametrize('required', [None, False, True])
+def test_unlimited_start_requires_a_required_data_input(required):
+    inputs = [] if required is None else [{'inputId': 'input', 'required': required}]
+    selected = automation(inputs=inputs)
+    if required is True:
+        assert validate_batch_start(selected, request(maxTasks=None), allow_data_inputs=True).max_tasks is None
+    else:
+        with pytest.raises(ProjectRunError) as error:
+            validate_batch_start(selected, request(maxTasks=None), allow_data_inputs=True)
+        assert error.value.code == 'VALIDATION_ERROR'
+        assert 'maxTasks' in error.value.details['fields']

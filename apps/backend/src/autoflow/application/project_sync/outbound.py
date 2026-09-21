@@ -27,6 +27,7 @@ from autoflow.infrastructure.database.project_data_records import (
     SqlAlchemyProjectDataRecords,
 )
 from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
+from autoflow.infrastructure.database.project_sync_models import SyncOperationRow
 from autoflow.providers.data.google_sheets import (
     SheetsApiError,
     SheetsClient,
@@ -414,7 +415,14 @@ class SheetsSyncService:
                     failed += 1
                     continue
                 record = session.get(DataRecordRow, (generation, key.type, key.value))
-                cells = _write_cells(record, fields, binding)
+                if not isinstance(intent.request.get("values"), dict):
+                    self._sync.transition(intent.id, status="failed", error={
+                        "code": "SYNC_SNAPSHOT_MISSING",
+                        "message": "旧同步操作缺少原字段快照，禁止猜测写入；请核查后重新发起修改。",
+                    })
+                    failed += 1
+                    continue
+                cells = {} if record is None or record.deleted else _write_cells(intent.request["values"], fields, binding)
                 if not cells:
                     self._sync.transition(
                         intent.id,
@@ -427,6 +435,15 @@ class SheetsSyncService:
                     )
                     failed += 1
                     continue
+                try:
+                    self._sync.transition(
+                        intent.id, status="sending", attempt=True,
+                        expected_status_revision=intent.status_revision,
+                    )
+                except ProjectError as error:
+                    if error.code == "PRECONDITION_FAILED":
+                        continue  # An edit/cancel/other sender won; never send stale facts.
+                    raise
                 for column, value in cells.items():
                     writes.append(
                         {
@@ -449,7 +466,7 @@ class SheetsSyncService:
             status = "unknown" if error.uncertain else "failed"
             for intent, _, _ in planned:
                 self._sync.transition(
-                    intent.id, status=status, attempt=True, error=payload
+                    intent.id, status=status, error=payload
                 )
             return {
                 "confirmed": confirmed,
@@ -470,7 +487,7 @@ class SheetsSyncService:
             }
             if matched:
                 self._sync.transition(
-                    intent.id, status="confirmed", attempt=True, evidence=evidence
+                    intent.id, status="confirmed", evidence=evidence
                 )
                 self._sync.mark(
                     table_id,
@@ -484,7 +501,6 @@ class SheetsSyncService:
                 self._sync.transition(
                     intent.id,
                     status="failed",
-                    attempt=True,
                     evidence=evidence,
                     error={
                         "code": "SYNC_VERIFY_MISMATCH",
@@ -573,7 +589,10 @@ class SheetsSyncService:
                 field.id: field
                 for field in _fields(session, _require_table(session, project_id, table_id))
             }
-            cells = _write_cells(row, fields, binding)
+            intent = session.get(SyncOperationRow, sync_operation_id)
+            if intent is None or not isinstance(intent.request.get("values"), dict):
+                raise ProjectError("SYNC_SNAPSHOT_MISSING", "原字段快照不可用，不能用当前记录推定历史结果。", 409)
+            cells = _write_cells(intent.request["values"], fields, binding)
         view, existing = self._runs.accept(
             project=project_id,
             table=table_id,
@@ -706,12 +725,10 @@ def _fields(session: Session, table: DataTableRow) -> list[DataFieldRow]:
 
 
 def _write_cells(
-    row: DataRecordRow | None,
+    values: dict[str, Any],
     fields: dict[str, DataFieldRow],
     binding: dict[str, Any],
 ) -> dict[str, Any]:
-    if row is None or row.deleted:
-        return {}
     cells: dict[str, Any] = {}
     for entry in binding["mapping"]:
         if entry["direction"] == "read":
@@ -719,10 +736,8 @@ def _write_cells(
         field = fields.get(str(entry["fieldId"]))
         if field is None or not field.writable or field.formula:
             continue
-        value = row.values_json.get(field.id)
-        if value is None:
-            continue
-        cells[str(entry["columnId"]).upper()] = value
+        if field.id in values:
+            cells[str(entry["columnId"]).upper()] = "" if values[field.id] is None else values[field.id]
     return cells
 
 

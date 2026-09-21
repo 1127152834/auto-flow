@@ -247,3 +247,171 @@ def test_sync_state_and_pause_resume_are_readable(tmp_path):
             headers=new_key(),
         )
         assert sheets.client.get(sheets.url("/sync")).json()["binding"]["syncPaused"] is False
+
+
+def test_remote_plain_value_change_preserves_local_content_and_revisions(tmp_path):
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        edit_title(sheets, sheets.records()[0], 'local-owned')
+        before = sheets.records()[0]
+        transport.grid('数据')[1][1] = 'remote-edited'
+        pull(sheets)
+        after = sheets.records()[0]
+        for field in ['ref', 'values', 'statusId', 'contentRevision', 'statusRevision']:
+            assert after[field] == before[field], field
+        assert transport.grid('数据')[1][1] == 'remote-edited'
+
+
+def test_push_relocates_stable_identity_after_remote_sort_and_insert(tmp_path):
+    transport = FakeSheetsTransport({'数据': [['编号', '标题'], ['A-1', 'first'], ['B-2', 'second']]})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        original = {row['ref']['recordKey']['value']: row for row in sheets.records()}
+        edit_title(sheets, original['A-1'], 'local-A')
+        edit_title(sheets, original['B-2'], 'local-B')
+        transport.grid('数据')[1:] = [['X-0', 'untouched'], ['B-2', 'second'], ['A-1', 'first']]
+        pull(sheets)
+        assert {row['ref']['recordKey']['value'] for row in sheets.records()} == {'A-1', 'B-2', 'X-0'}
+        response = push(sheets)
+        assert response.status_code == 202, response.text
+        assert response.json()['operation']['result']['summary']['unknownCount'] == 0
+        assert transport.grid('数据')[1:] == [['X-0', 'untouched'], ['B-2', 'local-B'], ['A-1', 'local-A']]
+        assert len(sync_operations(sheets, 'confirmed')) == 2
+
+
+def test_two_projects_push_disjoint_fields_without_replacing_each_other(tmp_path):
+    from tests.fixtures.sheets import (
+        SheetsTable,
+        binding_impact,
+        connect,
+        new_field,
+        new_project,
+        new_table,
+    )
+    columns = [*COLUMNS, ('note', '备注', 'string')]
+    transport = FakeSheetsTransport({'数据': [['编号', '标题', '备注'], ['A-1', 'original', 'old-note']]})
+    with open_sheets_table(tmp_path, transport, columns) as first:
+        client = first.client
+        project = new_project(client, 'Q')
+        connection = connect(client, project, new_key())['result']['connectionId']
+        table = new_table(client, project)['tableId']
+        fields = {key: new_field(client, project, table, key, name, type=kind, expectedTableRevision=index + 1)
+                  for index, (key, name, kind) in enumerate(columns)}
+        body = {
+            'connectionId': connection, 'spreadsheetId': transport.spreadsheet_id, 'sheetId': 1000,
+            'identityStrategy': {'kind': 'column', 'columnId': 'A'},
+            'mapping': [{'fieldId': fields[key]['ref']['fieldId'], 'columnId': chr(65 + i), 'direction': 'both', 'formula': False}
+                        for i, (key, _, _) in enumerate(columns)],
+            'expectedTableRevision': 4,
+        }
+        accepted = client.put(f'/api/v1/projects/{project}/tables/{table}/sheets/binding',
+                              json=binding_impact(client, project, table, body), headers=new_key())
+        assert accepted.status_code == 202, accepted.text
+        second = SheetsTable(client, transport, project, table, connection, fields, accepted.json()['operation']['result'])
+        pull(first)
+        pull(second)
+        edit_title(first, first.records()[0], 'P-title')
+        record = second.records()[0]
+        changed = client.patch(second.url('/records/QS0x'), headers=new_key(), json={
+            'datasetGeneration': record['ref']['datasetGeneration'],
+            'recordKeyType': record['ref']['recordKey']['type'],
+            'expectedContentRevision': record['contentRevision'],
+            'values': [{'fieldId': second.field_id('note'), 'value': 'Q-note'}],
+        })
+        assert changed.status_code == 200, changed.text
+        assert push(first).status_code == 202
+        assert push(second).status_code == 202
+        assert transport.grid('数据')[1] == ['A-1', 'P-title', 'Q-note']
+        assert len(sync_operations(first, 'confirmed')) == len(sync_operations(second, 'confirmed')) == 1
+        assert first.records()[0]['contentRevision'] == second.records()[0]['contentRevision'] == 2
+
+
+def test_unknown_send_reconciles_original_values_after_a_new_local_edit(tmp_path):
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        edit_title(sheets, sheets.records()[0], 'version-2')
+        transport.fail_writes.append(SheetsApiError(0, 'timeout', 'response lost'))
+        assert push(sheets).status_code == 202
+        original, = sync_operations(sheets, 'unknown')
+        transport.grid('数据')[1][1] = 'version-2'  # Original send reached the server.
+        edit_title(sheets, sheets.records()[0], 'version-3')
+        writes = transport.changes()
+        response = sheets.client.post(sheets.url(f"/sync-operations/{original['syncOperationId']}/reconcile"),
+            headers=new_key(), json={'expectedStatusRevision': original['statusRevision']})
+        assert response.status_code == 202, response.text
+        assert response.json()['operation']['result']['evidence']['outcome'] == 'matched'
+        confirmed, = sync_operations(sheets, 'confirmed')
+        pending, = sync_operations(sheets, 'pending')
+        assert confirmed['targetContentRevision'] == 2 and pending['targetContentRevision'] == 3
+        assert transport.changes() == writes and transport.grid('数据')[1][1] == 'version-2'
+        assert sheets.records()[0]['contentRevision'] == 3
+        assert push(sheets).status_code == 202
+        assert transport.grid('数据')[1][1] == 'version-3'
+        assert len(sync_operations(sheets, 'confirmed')) == 2
+
+
+def test_edit_during_send_keeps_new_revision_pending(tmp_path):
+    class EditDuringSend(FakeSheetsTransport):
+        edit = None
+        def send(self, method, url, **kwargs):
+            if url.endswith('/values:batchUpdate') and self.edit:
+                edit, self.edit = self.edit, None
+                edit()
+            return super().send(method, url, **kwargs)
+    transport = EditDuringSend(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        edit_title(sheets, sheets.records()[0], 'version-2')
+        transport.edit = lambda: edit_title(sheets, sheets.records()[0], 'version-3')
+        assert push(sheets).status_code == 202
+        confirmed, = sync_operations(sheets, 'confirmed')
+        pending, = sync_operations(sheets, 'pending')
+        assert confirmed['targetContentRevision'] == 2 and pending['targetContentRevision'] == 3
+        assert transport.grid('数据')[1][1] == 'version-2'
+        assert push(sheets).status_code == 202
+        assert transport.grid('数据')[1][1] == 'version-3'
+
+
+def test_unsent_merge_preserves_field_mask_and_explicit_clear(tmp_path):
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        edit_title(sheets, sheets.records()[0], 'temporary')
+        before, = sync_operations(sheets, 'pending')
+        edit_title(sheets, sheets.records()[0], None)
+        after, = sync_operations(sheets, 'pending')
+        assert after['syncOperationId'] == before['syncOperationId']
+        assert after['statusRevision'] == before['statusRevision'] + 1
+        assert after['targetContentRevision'] == 3
+        assert push(sheets).status_code == 202
+        assert transport.grid('数据')[1] == ['A-1', '']
+        confirmed, = sync_operations(sheets, 'confirmed')
+        assert confirmed['evidence']['fields'] == ['B']
+
+
+def test_legacy_intent_without_field_snapshot_never_guesses_a_write(tmp_path):
+    from autoflow.infrastructure.database.project_sync_models import SyncOperationRow
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        edit_title(sheets, sheets.records()[0], 'local')
+        pending, = sync_operations(sheets, 'pending')
+        with sheets.client.app.state.session_factory() as session:
+            row = session.get(SyncOperationRow, pending['syncOperationId'])
+            row.request = {key: value for key, value in row.request.items() if key != 'values'}
+            session.commit()
+        writes = transport.changes()
+        assert push(sheets).status_code == 202
+        failed, = sync_operations(sheets, 'failed')
+        assert failed['error']['code'] == 'SYNC_SNAPSHOT_MISSING'
+        assert transport.changes() == writes and transport.grid('数据')[1][1] == '第一行'
+        with sheets.client.app.state.session_factory() as session:
+            row = session.get(SyncOperationRow, pending['syncOperationId'])
+            row.status = 'unknown'
+            session.commit()
+        response = sheets.client.post(sheets.url(f"/sync-operations/{pending['syncOperationId']}/reconcile"),
+            headers=new_key(), json={'expectedStatusRevision': failed['statusRevision']})
+        assert response.status_code == 409 and response.json()['error']['code'] == 'SYNC_SNAPSHOT_MISSING'
+        assert transport.changes() == writes

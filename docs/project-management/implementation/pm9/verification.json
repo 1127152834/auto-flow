@@ -1,16 +1,17 @@
 {
   "date": "2026-09-21",
-  "status": "in_progress",
+  "status": "candidate_regression_in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
-    "44 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md.",
+    "37 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
-    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM DMG mount/copy/launch and native Excel open/import/save/export passed; current physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; latest Sheets fix is newer than that package. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
     "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
@@ -26,24 +27,25 @@
     "multiRunArchitectureAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md",
     "latestReport": "runtime-capabilities-follow-through.json"
   },
-  "codeCandidate": "0102c047f59ff1a8eb485cd4a9aaa45b20fad755",
+  "codeCandidate": "pending_commit",
   "checks": {
     "currentLocal": "runtime-capabilities-follow-through.json",
     "priorFixes": "follow-through.json",
-    "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json"
+    "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json",
+    "capabilityNativeArmInstall": "install-capabilities-darwin-arm64.json"
   },
   "platforms": {
     "win32-x64": {
       "status": "capability-candidate-pending",
-      "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
+      "physicalInstaller": "pending native physical machine acceptance"
     },
     "darwin-x64": {
       "status": "capability-candidate-pending",
-      "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
+      "physicalInstaller": "pending native physical machine acceptance"
     },
     "darwin-arm64": {
       "status": "capability-candidate-pending",
-      "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
+      "physicalInstaller": "partial capability-package evidence in install-capabilities-darwin-arm64.json; latest Sheets fix requires rebuilt package"
     }
   },
   "ci": {

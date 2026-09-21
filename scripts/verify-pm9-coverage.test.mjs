@@ -30,3 +30,13 @@ test('rejects broken references, invalid classifications and unsupported promoti
 test('all current references resolve without upgrading acceptance', () => {
   assert.deepEqual(verifyCoverage(coverage), [])
 })
+
+test('resolves literal named UI assertions and rejects missing or skipped cases', () => {
+  const fixture = structuredClone(coverage)
+  fixture.features[0].testMapping.checks = [{ file: 'component.test.tsx', testName: 'renders empty status', scope: 'empty directory has a create action', level: 'automated_component' }]
+  const read = path => path === 'component.test.tsx' ? "it('renders empty status', () => {})" : readFileSync(new URL('../' + path, import.meta.url), 'utf8')
+  assert.deepEqual(verifyCoverage(fixture, read), [])
+  assert.ok(verifyCoverage(fixture, path => path === 'component.test.tsx' ? "it.skip('renders empty status', () => {})" : read(path)).some(error => error.includes('missing test case')))
+  fixture.features[0].testMapping.checks[0].testName = 'missing case'
+  assert.ok(verifyCoverage(fixture, read).some(error => error.includes('missing test case')))
+})
