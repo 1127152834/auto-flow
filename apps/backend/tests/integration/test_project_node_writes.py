@@ -215,6 +215,22 @@ def test_fake_capability_changes_email_status_and_creates_account_once(tmp_path)
         {account_field["ref"]["fieldId"]: "ACCOUNT-001"},
     )
     created, first_replay = service.create_record(scope, create_command)
+    created_key = RecordKey(**created["ref"]["recordKey"])
+    with pytest.raises(ProjectError) as initialization_denied:
+        service.set_record_status(
+            scope,
+            SetRecordStatusCommand(
+                uid(), 1,
+                RecordRef(project_id, account["tableId"], account["datasetGeneration"], created_key),
+                status["statusId"], created["statusRevision"],
+            ),
+        )
+    assert initialization_denied.value.code == "CAPABILITY_SCOPE_DENIED"
+    preserved = DataRecordService(SqlAlchemyProjectDataRecords(factory)).get(
+        project_id, account["tableId"], account["datasetGeneration"],
+        encode_record_key(created_key), created_key.type,
+    )
+    assert preserved == created and preserved["statusId"] is None
     replay, second_replay = service.create_record(scope, create_command)
     foreign_scope = replace(scope, task_id=uid())
     with pytest.raises(ProjectError) as foreign_replay:

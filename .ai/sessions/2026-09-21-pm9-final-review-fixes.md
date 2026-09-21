@@ -54,3 +54,8 @@ Windows 广集复验 d21197ad / 35585675170：239 passed、27 skipped、1 failed
 ## 当前 ARM CI 与插行状态补证（confirmed）
 
 d21197ad ARM job 106288334872 success；3313 backend、5459 frontend、15 real worker 及源码/打包/安装产物通过。下载日志核对六份实际业务报告均 passed，已保存 artifact digest/期限；不把 CI DMG 当实机安装。已有状态用例增加远端 B-2 插在 A-1 前，6 passed in 7.74s，原状态身份不迁移。台账 220/31，未升级整体验收。
+
+
+## Intel 完整回归失败与定向修正（confirmed）
+
+35585675170 Intel 3312 passed / 60 skipped / 1 failed in 1875.04s。失败明确在 shutdown test GET /openapi.json read timeout（5s），未进入 SSE/关停阶段；不将其说成关停失败，也不推断硬件根因。测试为 schema 准备请求单独设 30s，生产码和 3/8s 退出/SSE/worker 清理断言不变；shutdown+node writes 8 passed in 26.58s，完整无缓存 ruff passed。创建后状态权限拒绝仍保留完整 null 新记录的断言补入 DATA-STATE-10，台账221/30，worker证据缺口保留。只派发Intel全链，不重复ARM/Windows。

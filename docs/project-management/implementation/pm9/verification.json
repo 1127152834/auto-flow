@@ -9,7 +9,7 @@
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
     "Confirmed shared Sheets Task-claim gap: identical physical rows in two projects receive different local lease keys; shared identity and ambiguous-binding admission are missing. See shared-sheets-claims-gap.json and proposed shared-sheets-claims spec; not merely missing tests.",
     "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
-    "31 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "30 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
     "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; current ccef90e9 package includes the latest Sheets fixes. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
@@ -43,7 +43,7 @@
       "physicalInstaller": "pending native physical machine acceptance"
     },
     "darwin-x64": {
-      "status": "capability-candidate-pending",
+      "status": "full_backend_failed_followup_prepared",
       "physicalInstaller": "pending native physical machine acceptance"
     },
     "darwin-arm64": {
@@ -53,12 +53,12 @@
     }
   },
   "ci": {
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "runId": 35585675170,
     "headSha": "d21197ad995090611b178b24e6f671513eca3f60",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35585675170",
-    "scope": "Current production source 82c067c9: Mac jobs at d21197ad, Windows follow-up at 25c9a41b; test-only differences. ARM passed, Intel and Windows still running. The original d211 Windows job failed; not counted as passed.",
+    "scope": "d21197ad ARM full chain passed; Intel schema preparation timed out before shutdown measurement; original Windows callback wait failed. Windows 25c9a41b full follow-up remains running; Intel test-only follow-up prepared. Aggregate acceptance incomplete.",
     "windowsFollowup": {
       "runId": 35586541932,
       "headSha": "25c9a41ba3026a954d5999e4ada3988adc0fcaec",

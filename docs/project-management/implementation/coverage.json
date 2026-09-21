@@ -8980,11 +8980,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_node_writes.py",
+            "symbol": "test_fake_capability_changes_email_status_and_creates_account_once",
+            "scope": "创建账号记录成功后，下一状态 capability 因权限拒绝；真实 SQLite 读回完整创建快照且 statusId=null，重放原创建返回同一结果。此 fixture 直接驱动 capability，不是真实浏览器节点链。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：创建后设置状态失败保留 null 新记录；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "该错误边界已有数据库断言，仍缺真实 worker 创建后状态节点失败的整条生产/UI 验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"

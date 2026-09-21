@@ -87,7 +87,11 @@ def ensure_binary(**kwargs):
                     "x-autoflow-host-token": "shutdown-host-token", "origin": "null",
                 }):
                     assert client.post("/internal/lifecycle/shutdown", headers=bad_headers).status_code == 401
-                assert "/internal/lifecycle/shutdown" not in client.get("/openapi.json").json()["paths"]
+                # Schema generation happens before the timed shutdown/SSE phase.
+                # Give preparation its own bound without changing shutdown deadlines.
+                schema = client.get("/openapi.json", timeout=30)
+                assert schema.status_code == 200, schema.text
+                assert "/internal/lifecycle/shutdown" not in schema.json()["paths"]
                 operation = None
                 if active_worker:
                     response = client.post("/api/v1/kernels/download", headers=headers, json={
