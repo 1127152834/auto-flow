@@ -338,3 +338,29 @@ async def test_parallel_local_break_inside_outer_loop_and_subflow_stays_in_its_b
     assert sum(n == 'done' for n, _ in starts) == 1
     assert all([scope['kind'] for scope in c['scopes']] == ['parallel', 'subflow'] for n, c in starts if n == 'child-value')
     assert 'local' not in executor.context.variables and 'index' not in executor.context.variables
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('boundary', ['subflow', 'parallel'])
+async def test_sensitive_values_keep_taint_across_explicit_outputs(boundary):
+    import json
+    secret = 'synthetic-review-secret'
+    events = []
+    async def emit(*event): events.append(event)
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    if boundary == 'subflow':
+        class Credentials:
+            def get_field(self, _name, _field): return secret
+        executor.context.credentials = Credentials()
+        nodes = [node('call', 'subflow', subflowGroupId='child', inputs={'input': '{{cred:test}}'}, outputs={'answer': 'merged'}), node('child', 'subflow_header'), node('write', 'set_variable', variableName='answer', variableValue='{input}'), node('after', 'set_variable', variableName='copy', variableValue='{merged}')]
+        edges = [{'source': 'child', 'target': 'write'}, {'source': 'call', 'target': 'after'}]
+    else:
+        executor.context.variables['secret'] = secret
+        executor.context.sensitive_variables.add('secret')
+        nodes = [node('fork', 'set_variable', variableName='start', variableValue='ok', parallel={'joinNodeId': 'after', 'outputs': {'left': {'secret': 'merged'}}}), node('left', 'set_variable', variableName='left', variableValue='ok'), node('right', 'set_variable', variableName='right', variableValue='ok'), node('after', 'set_variable', variableName='copy', variableValue='{merged}')]
+        edges = [{'source': 'fork', 'target': 'left'}, {'source': 'fork', 'target': 'right'}, {'source': 'left', 'target': 'after'}, {'source': 'right', 'target': 'after'}]
+    assert (await executor.run({'document': {'nodes': nodes, 'edges': edges}}))['status'] == 'succeeded'
+    assert executor.context.variables['merged'] == secret
+    assert executor.context.variables['copy'] == secret
+    assert {'merged', 'copy'} <= executor.context.sensitive_variables
+    assert secret not in json.dumps(events)

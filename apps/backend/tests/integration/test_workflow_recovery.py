@@ -216,7 +216,9 @@ def run(stopped):
     return 0
 browser_worker_main(run)
 """
+    supervisor_handles = []
     async def spawn(job_name):
+        supervisor_handles.append(windows_job.create_run_job(job_name))
         return await asyncio.create_subprocess_exec(sys.executable, '-c', code, env={**os.environ, 'AUTOFLOW_WORKER_JOB_NAME': job_name}, stdout=asyncio.subprocess.PIPE)
 
     root = await spawn(name)
@@ -227,6 +229,7 @@ browser_worker_main(run)
         child_birth, root_birth = process_birth(child_pid), process_birth(root.pid)
         assert child_birth is not None and root_birth is not None
         handle = windows_job.record_worker_job(directory, run_id, 1, name, root.pid, root_birth)
+        windows_job.close_worker_job(supervisor_handles.pop(0))
         windows_job.close_worker_job(handle)
         handle = None  # Simulate the original supervisor losing its retained handle.
         proof_path = directory / 'worker-job.json'
@@ -272,6 +275,8 @@ browser_worker_main(run)
         if foreign:
             assert foreign.returncode is None
     finally:
+        for supervisor_handle in supervisor_handles:
+            windows_job.close_worker_job(supervisor_handle)
         if handle:
             windows_job.close_worker_job(handle)
         for process in [root, foreign]:

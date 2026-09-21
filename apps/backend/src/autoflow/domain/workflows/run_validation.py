@@ -66,7 +66,7 @@ def prepare_run(document: object) -> PreparedWorkflow:
             raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 必须是唯一的最终节点，不能有后续连线', 422)
         for node in subset['nodes']:
             if node['data']['moduleType'] == 'project_manual':
-                validate_declaration(node['data'], node['id'], subset['nodes'], subset['edges'])
+                validate_declaration(node['data'].get('config', node['data']), node['id'], subset['nodes'], subset['edges'])
         _validate_lifecycle_graph(subset['nodes'], subset['edges'], ends)
         valid, errors = WorkflowDefinition.from_raw(subset).validate()
         if not valid and (members or not scope) and not all(n["data"]["moduleType"] in _DEFAULT_CONFIGS for n in nodes):

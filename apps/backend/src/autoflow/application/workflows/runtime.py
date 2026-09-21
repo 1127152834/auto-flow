@@ -360,7 +360,7 @@ class _WorkflowScheduler:
             missing_outputs = set(outputs) - nested_subflow.variables.keys()
             if nested_subflow.success and not missing_outputs and not self.context.stop_workflow:
                 for source, target in outputs.items():
-                    self.context.set_variable(target, copy.deepcopy(nested_subflow.variables[source]))
+                    self.context.set_variable(target, copy.deepcopy(nested_subflow.variables[source]), sensitive=source in nested_subflow.sensitive_outputs)
             result = ModuleResult(
                 success=nested_subflow.success and not missing_outputs,
                 message=(
@@ -437,9 +437,9 @@ class _WorkflowScheduler:
                 for source, destination in mapping.items():
                     if source not in children[root].variables:
                         return ModuleResult(False, error='PARALLEL_OUTPUT_MISSING')
-                    values[destination] = copy.deepcopy(children[root].variables[source])
-            for name, value in values.items():
-                self.context.set_variable(name, value)
+                    values[destination] = (copy.deepcopy(children[root].variables[source]), source in children[root].sensitive_variables)
+            for name, (value, sensitive) in values.items():
+                self.context.set_variable(name, value, sensitive=sensitive)
             return ModuleResult(True)
         finally:
             for task in tasks:
@@ -707,7 +707,16 @@ async def _execute_with_cancellation(
     token = context.cancellation
     if token is None:
         return await operation
-    operation_task = asyncio.create_task(operation)
+    sensitive = False
+
+    async def tracked() -> ModuleResult:
+        nonlocal sensitive
+        try:
+            return await operation
+        finally:
+            sensitive = context.node_uses_sensitive_values
+
+    operation_task = asyncio.create_task(tracked())
     cancellation_task = asyncio.create_task(_wait_until_cancelled(context))
     try:
         done, _ = await asyncio.wait(
@@ -724,6 +733,8 @@ async def _execute_with_cancellation(
             operation_task.cancel()
         cancellation_task.cancel()
         await asyncio.gather(operation_task, cancellation_task, return_exceptions=True)
+        if sensitive:
+            context.mark_sensitive_use()
 
 
 async def _wait_until_cancelled(context: ExecutionContext) -> None:

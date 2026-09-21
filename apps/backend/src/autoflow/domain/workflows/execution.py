@@ -113,6 +113,7 @@ class NestedWorkflowResult:
     failed_nodes: int
     error: str | None = None
     waited: bool = True
+    sensitive_outputs: frozenset[str] = frozenset()
 
 
 class NestedWorkflowGateway(Protocol):

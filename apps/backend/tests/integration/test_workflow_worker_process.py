@@ -440,3 +440,74 @@ async def test_two_actual_workers_keep_ack_cancellation_and_cleanup_owned_by_run
             if not task.done(): task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
         await instance.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_windows_ownership_precedes_start_command(tmp_path, monkeypatch):
+    from autoflow.infrastructure.process import project_workflow_worker as module
+    from autoflow.infrastructure.process import windows_job
+    instance, executable = manager(tmp_path)
+    calls = []
+    monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
+    monkeypatch.setattr(module.subprocess, 'CREATE_NEW_PROCESS_GROUP', 0, raising=False)
+    monkeypatch.setattr(windows_job, 'create_run_job', lambda name: calls.append('create') or 10, raising=False)
+    monkeypatch.setattr(windows_job, 'record_worker_job', lambda *args: calls.append('attach') or 11)
+    monkeypatch.setattr(windows_job, 'terminate_worker_job', lambda *args: calls.append('terminate'))
+    monkeypatch.setattr(windows_job, 'close_worker_job', lambda *args: None)
+    send = instance._send
+    async def checked_send(worker, message):
+        if message['type'] == 'start':
+            assert calls == ['create', 'attach']
+            assert worker.job == 11
+        await send(worker, message)
+    monkeypatch.setattr(instance, '_send', checked_send)
+    async def on_event(_event): pass
+    outcome = await instance.run(run_id='a088a638-5afb-4b4b-8d83-45410a3cab42', execution_generation=1, execution_plan={'nodes': []}, parameters={}, variables={}, browser={}, executable=executable, on_event=on_event)
+    assert outcome.cleanup_confirmed and calls[-1] == 'terminate'
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows Job accounting')
+@pytest.mark.parametrize('stop', ['cancel', 'timeout'])
+async def test_native_windows_pre_ready_cleanup_confirms_all_descendants(tmp_path, stop):
+    import json
+
+    from autoflow.infrastructure.process.browser_processes import (
+        process_birth,
+        process_identity_is_alive,
+    )
+    instance, executable = manager(tmp_path)
+    instance._termination_timeout = 3
+    instance._start_timeout = 2 if stop == 'timeout' else 20
+    instance._command = (sys.executable, '-c', r'''
+import json, os, subprocess, sys, time
+from autoflow.bootstrap.test_browser_worker import browser_worker_main
+def run(stopped):
+    json.loads(sys.stdin.readline())
+    child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
+    with open(os.environ['PROOF'], 'w') as output: json.dump(child.pid, output)
+    time.sleep(60)
+    return 0
+browser_worker_main(run)
+''')
+    async def on_event(_event): raise AssertionError('not ready')
+    run_id = 'a088a638-5afb-4b4b-8d83-45410a3cab42'
+    task = asyncio.create_task(instance.run(run_id=run_id, execution_generation=1, execution_plan={'nodes': []}, parameters={}, variables={}, browser={}, executable=executable, on_event=on_event))
+    try:
+        async with asyncio.timeout(10):
+            while not (tmp_path / 'proof').exists():
+                if task.done(): task.result()
+                await asyncio.sleep(.01)
+        child_pid = json.loads((tmp_path / 'proof').read_text())
+        birth = process_birth(child_pid)
+        assert birth is not None
+        worker = instance._workers[run_id]
+        assert worker.job is not None and not worker.ready
+        if stop == 'cancel': task.cancel()
+        with pytest.raises(asyncio.CancelledError if stop == 'cancel' else TimeoutError):
+            await task
+        assert not process_identity_is_alive(child_pid, birth)
+        assert not worker.directory.exists() and not instance.busy()
+    finally:
+        if not task.done(): task.cancel()
+        await asyncio.gather(task, return_exceptions=True)

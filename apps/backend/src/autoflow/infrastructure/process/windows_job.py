@@ -18,7 +18,7 @@ from .browser_processes import (
 )
 
 
-def create_worker_job():
+def create_run_job(name: str | None):
     if sys.platform != "win32":
         return None
     import ctypes
@@ -77,7 +77,7 @@ def create_worker_job():
     kernel.CloseHandle.argtypes = [wintypes.HANDLE]
     kernel.CloseHandle.restype = wintypes.BOOL
     ctypes.set_last_error(0)
-    handle = kernel.CreateJobObjectW(None, os.environ.get("AUTOFLOW_WORKER_JOB_NAME"))
+    handle = kernel.CreateJobObjectW(None, name)
     if handle and ctypes.get_last_error() == 183:
         kernel.CloseHandle(handle)
         raise OSError("Worker Job identity already exists")
@@ -93,17 +93,38 @@ def create_worker_job():
         error = ctypes.get_last_error()
         kernel.CloseHandle(handle)
         raise ctypes.WinError(error)
-    if not kernel.AssignProcessToJobObject(handle, kernel.GetCurrentProcess()):
-        error = ctypes.get_last_error()
-        kernel.CloseHandle(handle)
-        raise ctypes.WinError(error)
     return handle
+
+
+def create_worker_job():
+    if sys.platform != "win32":
+        return None
+    from ctypes import wintypes
+
+    kernel = _api()
+    name = os.environ.get("AUTOFLOW_WORKER_JOB_NAME")
+    handle = kernel.OpenJobObjectW(0x0001 | 0x0004, False, name) if name else create_run_job(None)
+    if not handle:
+        raise OSError("Parent worker Job unavailable")
+    try:
+        current = kernel.GetCurrentProcess()
+        member = wintypes.BOOL()
+        if not kernel.IsProcessInJob(current, handle, ctypes.byref(member)):
+            raise OSError("Worker Job membership unavailable")
+        if not member.value and not kernel.AssignProcessToJobObject(handle, current):
+            raise OSError("Worker could not join parent Job")
+        return handle
+    except BaseException:
+        kernel.CloseHandle(handle)
+        raise
 
 
 def _api():
     from ctypes import wintypes
 
     kernel = _windows_process_api()
+    kernel.GetCurrentProcess.argtypes = []
+    kernel.GetCurrentProcess.restype = wintypes.HANDLE
     kernel.OpenJobObjectW.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.LPCWSTR]
     kernel.OpenJobObjectW.restype = wintypes.HANDLE
     kernel.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]

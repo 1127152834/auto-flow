@@ -364,7 +364,8 @@ def test_prepare_limits_nested_call_depth_with_call_path():
 
 
 @pytest.mark.parametrize('bad', ['reserved-input', 'wrong-type', 'end-target', 'past-target', 'missing-target-declaration'])
-def test_prepare_rejects_unsafe_manual_declarations_before_checkpoint(bad):
+@pytest.mark.parametrize('nested', [False, True])
+def test_prepare_rejects_unsafe_manual_declarations_before_checkpoint(bad, nested):
     payload = subflow_payload()
     payload['content']['nodes'] = [n for n in payload['content']['nodes'] if n['id'] in {'call', 'end'}]
     manual = payload['content']['nodes'][0]
@@ -378,6 +379,8 @@ def test_prepare_rejects_unsafe_manual_declarations_before_checkpoint(bad):
         other = deepcopy(manual); other.update(id='other', type='set_variable', data={'moduleType': 'set_variable', 'variableName': 'x', 'variableValue': 1})
         payload['content']['nodes'].append(other)
         payload['content']['edges'].extend([{'id': 'other', 'source': 'call', 'target': 'other'}, {'id': 'other-end', 'source': 'other', 'target': 'end'}])
+    if nested:
+        manual['data'] = {'moduleType': 'project_manual', 'reason': 'outer', 'config': {key: value for key, value in manual['data'].items() if key != 'moduleType'}}
     with pytest.raises(WorkflowError): prepare_run(payload)
 
 

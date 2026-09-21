@@ -732,14 +732,15 @@ class _WorkerCanvasSubflows(CanvasSubflowGraph):
                 f"子流程嵌套层数过深(>32): {' -> '.join(stack)}",
             )
         members = self._members(definition)
+        sensitive_inputs = (set(inputs) if inputs is not None and (self._parent.sensitive_variables or self._parent.node_uses_sensitive_values) else set(self._parent.sensitive_variables))
         if not members:
             return NestedWorkflowResult(
-                identity, display_name, True, copy.deepcopy(dict(inputs)) if inputs is not None else self._parent.variables, 0, 0
+                identity, display_name, True, copy.deepcopy(dict(inputs)) if inputs is not None else self._parent.variables, 0, 0, sensitive_outputs=frozenset(sensitive_inputs)
             )
         token = self._stack.set((*stack, identity))
         child = ExecutionContext(
             variables=copy.deepcopy(dict(inputs)) if inputs is not None else self._parent.variables,
-            sensitive_variables=set(inputs) if inputs is not None and self._parent.sensitive_variables else set(self._parent.sensitive_variables),
+            sensitive_variables=sensitive_inputs,
             execution_scopes=(
                 *self._parent.execution_scopes,
                 {"kind": "subflow", "id": identity, "name": display_name, "callNodeId": self._parent.current_node_id, "callVisitId": self._parent.current_execution_id},
@@ -777,6 +778,7 @@ class _WorkerCanvasSubflows(CanvasSubflowGraph):
                 len(result.executed_node_ids),
                 0 if result.success else 1,
                 result.node_result.error if result.node_result else None,
+                sensitive_outputs=frozenset(child.sensitive_variables),
             )
         finally:
             self._stack.reset(token)

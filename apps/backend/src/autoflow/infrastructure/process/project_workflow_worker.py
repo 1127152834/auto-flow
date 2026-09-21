@@ -49,6 +49,7 @@ class _Worker:
     process: asyncio.subprocess.Process | None = None
     birth: int | None = None
     job: int | None = None
+    job_attached: bool = False
     stop_requested: bool = False
     cleanup: asyncio.Task[None] | None = None
     created_directory: bool = False
@@ -128,7 +129,9 @@ class ProjectWorkflowWorkerManager:
             })
             job_name = f"Local\\AutoFlow-{run_id}-{execution_generation}-{uuid4().hex}"
             if sys.platform == "win32":
+                from .windows_job import create_run_job
                 env["AUTOFLOW_WORKER_JOB_NAME"] = job_name
+                worker.job = create_run_job(job_name)
             group: dict[str, Any] = (
                 {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}  # type: ignore[attr-defined]
                 if sys.platform == "win32" else {"start_new_session": True}
@@ -143,8 +146,10 @@ class ProjectWorkflowWorkerManager:
             except asyncio.CancelledError:
                 worker.process = await wait_for_cleanup(spawn)
                 self._capture_birth(worker)
+                await wait_for_cleanup(asyncio.create_task(self._attach_job(worker, job_name)))
                 raise
             self._capture_birth(worker)
+            await self._attach_job(worker, job_name)
             await self._send(worker, {
                 "type": "start", "protocolVersion": 1, "runId": run_id,
                 "executionGeneration": execution_generation,
@@ -154,16 +159,6 @@ class ProjectWorkflowWorkerManager:
             message = await asyncio.wait_for(self._read(worker), self._start_timeout)
             if message.get("type") != "ready":
                 raise _protocol_error()
-            if sys.platform == "win32":
-                from .windows_job import record_worker_job
-                if worker.birth is None:
-                    raise WorkflowWorkerError('WORKFLOW_CLEANUP_FAILED', '执行进程身份尚未确认')
-                ownership = asyncio.create_task(asyncio.to_thread(record_worker_job, worker.directory, run_id, execution_generation, job_name, worker.process.pid, worker.birth))
-                try:
-                    worker.job = await asyncio.shield(ownership)
-                except asyncio.CancelledError:
-                    worker.job = await wait_for_cleanup(ownership)
-                    raise
             worker.ready = True
             if worker.stop_requested:
                 await self._send_stop(worker)
@@ -178,6 +173,26 @@ class ProjectWorkflowWorkerManager:
         finally:
             # Cancellation and callback failure still have to finish owned cleanup.
             await self._cleanup(worker)
+
+    async def _attach_job(self, worker: _Worker, name: str) -> None:
+        if sys.platform != "win32":
+            return
+        from .windows_job import close_worker_job, record_worker_job
+        assert worker.process is not None
+        if worker.birth is None:
+            raise WorkflowWorkerError('WORKFLOW_CLEANUP_FAILED', '执行进程身份尚未确认')
+        ownership = asyncio.create_task(asyncio.to_thread(record_worker_job, worker.directory, worker.run_id, worker.generation, name, worker.process.pid, worker.birth))
+        previous = worker.job
+        try:
+            worker.job = await asyncio.shield(ownership)
+        except asyncio.CancelledError:
+            worker.job = await wait_for_cleanup(ownership)
+            raise
+        finally:
+            if ownership.done() and not ownership.cancelled() and ownership.exception() is None:
+                worker.job_attached = True
+                if previous is not None:
+                    close_worker_job(previous)
 
     def _capture_birth(self, worker: _Worker) -> None:
         assert worker.process is not None
@@ -339,28 +354,31 @@ class ProjectWorkflowWorkerManager:
 
     async def _cleanup_owned(self, worker: _Worker) -> None:
         process = worker.process
-        if process is not None:
-            if sys.platform == "win32":
-                # Once ready, the durable Job proof includes all descendants.
-                if worker.job is not None:
-                    from .windows_job import close_worker_job, terminate_worker_job
-                    await asyncio.to_thread(terminate_worker_job, worker.job, self._termination_timeout)
-                    close_worker_job(worker.job)
-                    worker.job = None
+        if sys.platform == "win32":
+            if worker.job is not None:
+                from .windows_job import close_worker_job, terminate_worker_job
+                await asyncio.to_thread(terminate_worker_job, worker.job, self._termination_timeout)
+            if process is not None:
                 if process.returncode is None:
                     try:
                         process.kill()
                     except (PermissionError, ProcessLookupError):
-                        # Windows may deny TerminateProcess after exit, before
-                        # asyncio has observed it. Confirm exit before release.
+                        # TerminateProcess may race an already exiting process.
                         await asyncio.wait_for(process.wait(), self._termination_timeout)
                 await process.wait()
-            else:
-                await force_process_tree(
-                    process, self._termination_timeout,
-                    worker.directory, worker.executable, worker.birth,
-                    strict_ownership=True,
-                )
+                if worker.job is not None and not worker.job_attached:
+                    # An unconfirmed launcher must not release its directory or
+                    # capacity merely because the known Job became empty.
+                    raise WorkflowWorkerError('WORKFLOW_CLEANUP_FAILED', '执行进程树所有权尚未确认')
+            if worker.job is not None:
+                close_worker_job(worker.job)
+                worker.job = None
+        elif process is not None:
+            await force_process_tree(
+                process, self._termination_timeout,
+                worker.directory, worker.executable, worker.birth,
+                strict_ownership=True,
+            )
         if worker.created_directory:
             try:
                 shutil.rmtree(worker.directory)

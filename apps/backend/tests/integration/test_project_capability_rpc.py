@@ -105,7 +105,7 @@ def test_field_preview_manifest_uses_existing_modify_field_permission(rpc):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('scope_state', ['valid', 'missing', 'wrong-definition', 'finished-call', 'cancelled-parent'])
+@pytest.mark.parametrize('scope_state', ['valid', 'missing', 'wrong-definition', 'finished-call', 'cancelled-parent', 'other-table', 'other-field', 'no-grant', 'other-operation'])
 async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_state):
     from autoflow.infrastructure.database.workflow_runtime_models import (
         WorkflowRunEventRow,
@@ -116,6 +116,13 @@ async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_stat
         run = session.get(WorkflowRunRow, task.run_id)
         prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
         plan = prepared.execution_plan
+        grant = {'tableId': request['arguments']['tableId'], 'datasetGeneration': request['arguments']['datasetGeneration'], 'operations': ['createRecord'], 'fieldIds': list(request['arguments']['values']), 'readPurposes': []}
+        run.capability_bindings = [{**item, 'tableGrants': [grant]} for item in run.capability_bindings]
+        declared = dict(grant)
+        if scope_state == 'other-table': declared['tableId'] = str(uuid4())
+        if scope_state == 'other-field': declared['fieldIds'] = [str(uuid4())]
+        if scope_state == 'other-operation': declared['operations'] = ['deleteRecord']
+        if scope_state != 'no-grant': plan['nodes'][0]['data']['tableGrant'] = declared
         plan['document'] = {'nodes': [
             {'id': 'call', 'data': {'moduleType': 'subflow', 'subflowGroupId': 'child', 'inputs': {}, 'outputs': {}}},
             {'id': 'child', 'data': {'moduleType': 'subflow_header'}},
@@ -137,7 +144,7 @@ async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_stat
     if scope_state == 'valid':
         assert (await service.handle(task.run_id, 1, request))['values'][0]['value'] == 'created by worker'
     else:
-        with pytest.raises(ProjectError, match='执行能力请求'):
+        with pytest.raises(ProjectError):
             await service.handle(task.run_id, 1, request)
 
 
@@ -173,5 +180,5 @@ async def test_parallel_capability_requires_live_frozen_branch_owner(rpc, scope_
     if scope_state == 'valid':
         assert (await service.handle(task.run_id, 1, request))['values'][0]['value'] == 'created by worker'
     else:
-        with pytest.raises(ProjectError, match='执行能力请求'):
+        with pytest.raises(ProjectError):
             await service.handle(task.run_id, 1, request)

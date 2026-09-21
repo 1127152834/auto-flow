@@ -1,7 +1,7 @@
 """Route worker requests through authoritative Task/Run capability facts."""
 from __future__ import annotations
 
-from dataclasses import fields
+from dataclasses import fields, replace
 from datetime import datetime
 from typing import Any
 
@@ -106,6 +106,7 @@ class ProjectWorkerCapabilities:
             if event is None or event.payload.get('status') != 'started':
                 raise _denied()
             _authorize_call_path(session, prepared.execution_plan, event)
+            in_subflow = any(item.get("kind") == "subflow" for item in event.payload.get("executionContext", {}).get("scopes", []))
             project_id, task_id = task.project_id, task.id
             manual_limit = min(config.get('timeoutSeconds', 1800), run.resource_request.get('manualDeadlineSeconds', 1800)) if expected_operation == 'manual' else None
             if request['operation'] == 'inputs':
@@ -149,6 +150,21 @@ class ProjectWorkerCapabilities:
         except (TypeError, KeyError, ValueError) as error:
             raise ProjectError('CAPABILITY_REQUEST_INVALID', '执行能力参数无效', 422) from error
         scope = self.data.scope(project_id, task_id, run_id)
+        if in_subflow:
+            # Task grants are an upper bound; a child may use only its frozen
+            # node declaration. Keep input-record grants, never legacy table-wide
+            # create targets, which would bypass the declared field restriction.
+            declared = config.get('tableGrant') or {}
+            grants = frozenset(
+                replace(grant,
+                    operations=grant.operations & frozenset(declared.get('operations', [])),
+                    field_ids=grant.field_ids & frozenset(declared.get('fieldIds', [])),
+                    read_purposes=grant.read_purposes & frozenset(declared.get('readPurposes', [])))
+                for grant in scope.table_grants
+                if (grant.table_id, grant.dataset_generation) == (declared.get('tableId'), declared.get('datasetGeneration'))
+                and grant.operations & frozenset(declared.get('operations', []))
+            )
+            scope = replace(scope, table_grants=grants, create_record_targets=frozenset())
         result = getattr(self.data, method)(scope, command)
         # Mutations return (original result, replayed); the wire result is stable on replay.
         return json_value(result[0] if isinstance(result, tuple) else result)
