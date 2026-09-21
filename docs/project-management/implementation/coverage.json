@@ -11167,11 +11167,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/contract/test_pm2_excel_imports.py",
+            "symbol": "test_duplicate_excel_rows_keep_independent_state_and_source_bytes",
+            "scope": "真实工作簿同内容两行采用不同系统身份；单行状态/内容修改不影响另一行，本地新建/删除后另一行快照不变，源 XLSX 字节完全相同。HTTP/SQLite，文件选择由受控 host token fixture 提供。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：同内容重复行状态独立、本地 CRUD 不改原文件字节；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "本例未执行原生选择框或当前三平台打包 UI；只证明所列身份/状态/源文件子条件。"
           }
         ],
         "statusBeforeReview": "partially_verified"

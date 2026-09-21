@@ -39,3 +39,8 @@ Windows 广集复验 d21197ad / 35585675170：239 passed、27 skipped、1 failed
 ## 既有 Sheets 状态与删除补证（confirmed）
 
 通过真实 HTTP/SQLite 和现有受控 Google transport 补齐普通/公式列拉取不复活 tombstone，以及显式 null/非空状态在确认/失败/未知后的稳定身份、业务状态版本和本地值。新增 8 项通过，相关 sync/recovery/rules 45 passed, 2 warnings in 33.90s；ruff 与 251 映射校验通过。只增加测试与局部断言映射，生产源码仍 82c067c9，218 有断言 / 33 未定位，未提升验收状态。当前 Mac d21197ad 与 Windows 25c9a41b 全链继续；不因测试追加重复跑矩阵。
+
+
+## Excel 重复行补证（confirmed）
+
+复用既有 host selection token/HTTP 导入与真实工作簿，断言两行同内容身份不同、单行状态与内容修改不影响另一行、本地新建/删除后源 XLSX 字节相同。新增测试先修正了 inspection 已完成返回 200 及只提交 fieldId/value 两个现有 HTTP 契约预期；没有生产修复。导入与占用保护 18 passed, 2 warnings in 15.24s。映射 219 有断言 / 32 未定位；原生面板与打包子条件保留。

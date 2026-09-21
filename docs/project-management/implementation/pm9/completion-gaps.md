@@ -4,7 +4,7 @@
 
 **本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 最终独立审查的 4 项 Important 已修复，26 个真实项目 worker 场景复跑通过；完整后端 3297 和前端 5459 通过的版本边界见报告。后续补证又修复 Windows Job 成员退出和 Sheets 字段/原版本快照，原生 92 项与 Sheets 相关 46 项定向通过，fed0b4c1 完整三平台验证运行中。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。这些数字不代表整项规格或实机安装包已经验收。
 
-当前可执行缺口：Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 33 条尚未定位直接断言（218 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
+当前可执行缺口：Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 32 条尚未定位直接断言（219 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
 
 下列初次复核、旧候选和阶段段落保留时间顺序，关于“未获批”“单槽”“S1–S5 未实现”的旧结论已由本轮与文末各片记录取代，不是当前阻塞。
 
@@ -157,3 +157,5 @@ Windows Job active=0 仍有子进程句柄未退出的真实反例已修复：�
 
 
 2026-09-21 追加既有能力补证（confirmed）：DATA-SH-10 的普通/公式列 tombstone 防复活及 DATA-STATE-12 的 null/非空状态 × confirmed/failed/unknown 共 8 场景通过；相关 Sheets 同步/恢复/规则共 45 passed。生产源码无变化，台账 218 有断言 / 33 未定位；状态仍 188 partial / 63 planned / 0 verified。
+
+2026-09-21 Excel 追加补证（confirmed）：DATA-XLS-03 已增加真实同内容工作簿两行系统身份/独立状态/本地 CRUD 后源字节不变断言；导入和占用保护 18 passed。当前 219 有断言 / 32 未定位，未提升整体验收状态。

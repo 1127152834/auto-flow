@@ -469,3 +469,89 @@ def test_header_only_workbook_publishes_a_real_empty_dataset_and_allows_new_reco
         assert created.status_code == 201, created.text
         assert created.json()["statusId"] is None
         assert client.get(base).json()["recordCount"] == 1
+
+
+def test_duplicate_excel_rows_keep_independent_state_and_source_bytes(tmp_path):
+    from openpyxl import load_workbook
+
+    from autoflow.domain.project_data.identity import RecordKey, encode_record_key
+
+    app = _app(tmp_path)
+    with TestClient(app, headers={"x-autoflow-token": "renderer"}) as client:
+        project, token, proof = prepare(client, tmp_path)
+        source = tmp_path / "source.xlsx"
+        book = load_workbook(source)
+        book.active.append(["001"])
+        book.save(source)
+        book.close()
+        original_bytes = source.read_bytes()
+        inspected_response = client.post(
+            f"/api/v1/projects/{project}/table-imports/excel/inspect",
+            json={"selectionToken": token}, headers=proof,
+        )
+        assert inspected_response.status_code == 200, inspected_response.text
+        inspection = inspected_response.json()["inspection"]
+        body = {**request_for(inspection), "identity": {"mode": "system"}}
+        identity = {**proof, "Idempotency-Key": str(uuid4())}
+        accepted = client.post(
+            f"/api/v1/projects/{project}/table-imports/excel", json=body, headers=identity,
+        )
+        assert accepted.status_code == 202, accepted.text
+        operation = client.get(
+            f"/api/v1/projects/{project}/operations/by-idempotency-key/{identity['Idempotency-Key']}"
+        ).json()
+        assert operation["status"] == "succeeded", operation
+        table = operation["result"]["table"]
+        base = f"/api/v1/projects/{project}/tables/{table['tableId']}"
+        params = {"datasetGeneration": table["datasetGeneration"]}
+        rows = client.get(base + "/records", params=params).json()["items"]
+        assert len(rows) == 2 and rows[0]["values"] == rows[1]["values"]
+        assert rows[0]["ref"]["recordKey"] != rows[1]["ref"]["recordKey"]
+        first, second = rows
+        url = base + "/records/" + encode_record_key(RecordKey(**first["ref"]["recordKey"]))
+        status = client.post(
+            base + "/statuses", headers={"Idempotency-Key": str(uuid4())},
+            json={"name": "已登记", "color": "#875739", "order": 0,
+                  "expectedTableRevision": table["tableRevision"]},
+        )
+        assert status.status_code == 201, status.text
+        changed = client.put(
+            url + "/status", headers={"Idempotency-Key": str(uuid4())},
+            json={**params, "recordKeyType": "uuid", "statusId": status.json()["statusId"],
+                  "expectedFromStatusId": None, "expectedStatusRevision": first["statusRevision"]},
+        )
+        assert changed.status_code == 200, changed.text
+        edited = client.patch(
+            url, headers={"Idempotency-Key": str(uuid4())},
+            json={**params, "recordKeyType": "uuid", "expectedContentRevision": first["contentRevision"],
+                  "values": [{"fieldId": first["values"][0]["fieldId"], "value": "本地新值"}]},
+        )
+        assert edited.status_code == 200, edited.text
+        rows = client.get(base + "/records", params=params).json()["items"]
+        assert next(row for row in rows if row["ref"] == second["ref"]) == second
+        first = edited.json()
+        assert first["statusId"] == status.json()["statusId"]
+        created = client.post(
+            base + "/records", headers={"Idempotency-Key": str(uuid4())},
+            json={**params, "values": [{"fieldId": v["fieldId"], "value": v["value"]} for v in second["values"]]},
+        )
+        assert created.status_code == 201, created.text
+        assert created.json()["statusId"] is None
+        assert created.json()["ref"] not in [first["ref"], second["ref"]]
+        impact = client.post(
+            f"/api/v1/projects/{project}/mutation-impact",
+            json={"action": "deleteRecord", "target": {"type": "record", "recordRef": first["ref"]}},
+        )
+        assert impact.status_code == 200, impact.text
+        deleted = client.request(
+            "DELETE", url, headers={"Idempotency-Key": str(uuid4())},
+            json={**params, "recordKeyType": "uuid", "expectedContentRevision": first["contentRevision"],
+                  "expectedStatusRevision": first["statusRevision"], "expectedLinkRevision": first["linkRevision"],
+                  "impactRevision": impact.json()["impactRevision"]},
+        )
+        assert deleted.status_code == 202, deleted.text
+        remaining = client.get(base + "/records", params=params).json()["items"]
+        assert len(remaining) == 2
+        assert next(row for row in remaining if row["ref"] == second["ref"]) == second
+        assert all(row["ref"] != first["ref"] for row in remaining)
+        assert source.read_bytes() == original_bytes
