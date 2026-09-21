@@ -80,7 +80,7 @@
     {
       "command": "AUTOFLOW_B8_COMPLEX_DEBUG_ONLY=1 node scripts/smoke-studio-backend-b3-control-flow.mjs",
       "result": "passed on macOS arm64 development build",
-      "covers": "正式Electron真实创建、保存、正常关窗重开复杂流程；运行至循环体首轮前暂停并展示轮次，继续后三轮完成且目标不重复暂停"
+      "covers": "正式Electron真实创建、保存、正常关窗重开复杂流程；循环体首轮、条件真假实际路径及两个并行起点逐次断点暂停，未选分支与暂停前均无副作用"
     },
     {
       "command": "Vitest Studio SSE generation reset, sequence gap, truncated frame, log replay and persisted history suites; TypeScript; ESLint",
@@ -106,7 +106,6 @@
     "windowsTested": false
   },
   "remaining": [
-    "条件与并行路径的正式UI调试矩阵",
     "复杂调试正式UI和打包入口容量验收",
     "sidecar崩溃与重启后的正式Electron恢复组合验收"
   ]

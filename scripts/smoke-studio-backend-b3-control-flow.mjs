@@ -163,11 +163,86 @@ try {
     assert.equal(observedEvents.filter(event => event.name === 'execution:paused' && event.data?.runId === loopRun.runId && event.data?.reason === 'target').length, 1)
     checkpoint('正式 UI 运行至循环体首轮前暂停，显示轮次上下文；继续后三轮完成且目标不重复暂停')
 
+    await waitForRunReady(studio)
+    const branchNodes = byType('set_variable').filter(node => ['passed', 'failed'].includes(node.data.variableValue))
+    const trueId = branchNodes.find(node => node.data.variableValue === 'passed').id
+    const falseId = branchNodes.find(node => node.data.variableValue === 'failed').id
+    const trueRun = await runToCanvasNode(studio, runtime, saved.id, trueId)
+    await capture(studio, join(evidenceDir, 'condition-true-paused.png'))
+    await click(studio, '继续')
+    assert.equal((await waitForTerminal(runtime, trueRun.runId)).status, 'completed')
+    const trueResults = await readRunResults(runtime, trueRun.runId)
+    assert.equal(trueResults.filter(item => item.nodeId === trueId).length, 1)
+    assert.equal(trueResults.filter(item => item.nodeId === falseId).length, 0)
+    checkpoint('正式 UI 在条件真分支目标前暂停；继续后仅真分支执行，假分支无结果和副作用')
+
+    await waitForRunReady(studio)
+    const falseWorkflowName = 'B8 条件假分支调试闭环'
+    await newWorkflow(studio, falseWorkflowName)
+    await click(studio, '模块条')
+    await addBlock(studio, '添加模块', '设置变量')
+    await setInput(studio, '[placeholder="变量名"]', 'flag')
+    await setInput(studio, '[placeholder="变量的值"]', 'no')
+    await addBlock(studio, '添加模块', '条件判断')
+    await setInputAt(studio, '[placeholder="输入变量 {变量名} 或字面量"]', 0, '{flag}')
+    await setInputAt(studio, '[placeholder="输入变量 {变量名} 或字面量"]', 1, 'yes')
+    const falseTrueId = await addBlock(studio, '添加「是」分支步骤', '设置变量')
+    await setInput(studio, '[placeholder="变量名"]', 'path')
+    await setInput(studio, '[placeholder="变量的值"]', 'true')
+    const falseTargetId = await addBlock(studio, '添加「否」分支步骤', '设置变量')
+    await setInput(studio, '[placeholder="变量名"]', 'path')
+    await setInput(studio, '[placeholder="变量的值"]', 'false')
+    const falseWorkflow = await saveWorkflow(studio, runtime, falseWorkflowName)
+    const falseRun = await runToCanvasNode(studio, runtime, falseWorkflow.id, falseTargetId)
+    await capture(studio, join(evidenceDir, 'condition-false-paused.png'))
+    await click(studio, '继续')
+    assert.equal((await waitForTerminal(runtime, falseRun.runId)).status, 'completed')
+    const falseResults = await readRunResults(runtime, falseRun.runId)
+    assert.equal(falseResults.filter(item => item.nodeId === falseTargetId).length, 1)
+    assert.equal(falseResults.filter(item => item.nodeId === falseTrueId).length, 0)
+    checkpoint('正式 UI 在条件假分支目标前暂停；继续后仅假分支执行，真分支无结果和副作用')
+
+    await waitForRunReady(studio)
+    const parallelWorkflowName = 'B8 并行断点调试闭环'
+    await newWorkflow(studio, parallelWorkflowName)
+    await click(studio, '流程图')
+    const parallelA = await addCanvasNode(studio, '设置变量', { xRatio: 0.25, yRatio: 0.2 })
+    await setInput(studio, '[placeholder="变量名"]', 'parallel_a')
+    await setInput(studio, '[placeholder="变量的值"]', '1')
+    const parallelB = await addCanvasNode(studio, '设置变量', { xRatio: 0.75, yRatio: 0.2 })
+    await setInput(studio, '[placeholder="变量名"]', 'parallel_b')
+    await setInput(studio, '[placeholder="变量的值"]', '1')
+    const parallelWorkflow = await saveWorkflow(studio, runtime, parallelWorkflowName)
+    await toggleBreakpoint(studio, parallelA)
+    await toggleBreakpoint(studio, parallelB)
+    const parallelRun = await startWorkflow(studio, runtime, parallelWorkflow.id)
+    const firstPause = await waitForPauseEvent(observedEvents, parallelRun.runId, 1)
+    assert.ok([parallelA, parallelB].includes(firstPause.node_id))
+    assert.deepEqual(await readRunResults(runtime, parallelRun.runId), [])
+    await capture(studio, join(evidenceDir, 'parallel-first-paused.png'))
+    await click(studio, '继续')
+    const secondPause = await waitForPauseEvent(observedEvents, parallelRun.runId, 2)
+    assert.notEqual(secondPause.pauseId, firstPause.pauseId)
+    assert.notEqual(secondPause.node_id, firstPause.node_id)
+    const betweenPauseResults = await readRunResults(runtime, parallelRun.runId)
+    assert.deepEqual(betweenPauseResults.map(item => item.nodeId), [firstPause.node_id])
+    await click(studio, '继续')
+    assert.equal((await waitForTerminal(runtime, parallelRun.runId)).status, 'completed')
+    const parallelResults = await readRunResults(runtime, parallelRun.runId)
+    assert.deepEqual(new Set(parallelResults.map(item => item.nodeId)), new Set([parallelA, parallelB]))
+    checkpoint('正式 UI 的两个并行起点均设置断点；首个暂停时零节点已执行，继续后仅首节点完成且第二节点暂停，再继续后两节点完成')
+
     const report = {
       evidenceId: 'BE-B8-formal-complex-debug-electron', checkedAt: new Date().toISOString(), gitHead,
       result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
-      workflowId: saved.id, profileId: profile.id, runIds: [loopRun.runId], checks,
-      assertions: { loopTarget: incrementId, loopIterations: [1, 2, 3] },
+      workflowId: saved.id, profileId: profile.id,
+      runIds: [loopRun.runId, trueRun.runId, falseRun.runId, parallelRun.runId], checks,
+      assertions: {
+        loopTarget: incrementId, loopIterations: [1, 2, 3],
+        conditionTrue: { target: trueId, skipped: falseId },
+        conditionFalse: { target: falseTargetId, skipped: falseTrueId },
+        parallel: { nodes: [parallelA, parallelB], pauseOrder: [firstPause.node_id, secondPause.node_id] },
+      },
       boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none (pure data)', interaction: 'formal Studio UI through CDP mouse and keyboard plus macOS Cmd+W; no Store access' },
     }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
@@ -659,6 +734,27 @@ async function runToCanvasNode(cdp, runtime, documentId, nodeId) {
   }, `run-to ${nodeId}`, 20_000)
   await waitForValue(async () => (await api(runtime, `/workflow-runs/${encodeURIComponent(run.runId)}`)).status === 'paused' ? run : null, `pause at ${nodeId}`, 30_000)
   return run
+}
+
+async function toggleBreakpoint(cdp, nodeId) {
+  await click(cdp, '流程图')
+  const nodePoint = await point(cdp, `.react-flow__node[data-id=${JSON.stringify(nodeId)}]`)
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...nodePoint })
+  const button = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}] button[data-tip="设置断点（运行到此暂停）"]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.right-2,y:r.y+r.height/2}})()`, `breakpoint button ${nodeId}`)
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...button, button: 'left', clickCount: 1 })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...button, button: 'left', clickCount: 1 })
+  await waitFor(cdp, `Boolean(document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}] button[data-tip="移除断点"]'))`, `breakpoint enabled ${nodeId}`)
+}
+
+async function waitForPauseEvent(events, runId, count) {
+  return waitForValue(() => {
+    const pauses = events.filter(event => event.name === 'execution:paused' && event.data?.runId === runId)
+    return pauses.length >= count ? pauses[count - 1].data : null
+  }, `pause ${count} for ${runId}`, 30_000)
+}
+
+async function waitForRunReady(cdp) {
+  await waitFor(cdp, "Boolean(document.querySelector('[aria-label=\"运行 (F5)\"]')?.getClientRects().length)", 'Studio run controls ready', 15_000)
 }
 
 async function waitForTerminal(runtime, runId) {
