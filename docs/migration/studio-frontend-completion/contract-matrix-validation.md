@@ -21,7 +21,7 @@
 | `localWorkflowApi`、`workflowBundleApi`、`customModulesApi` | 本地文档、导入导出、自定义模块 | F2 文档保存、七种导出、模块列表与依赖链证据；失败回执不会伪造保存或导出成功 |
 | `aiAssistantApi` | 会话、模型配置、连接测试和助手请求 | F5.3 模型设置、AI 权限、取消及连接成功/失败证据；真实模型服务单列后端交接 |
 | `scheduledTaskApi` | 计划任务配置与日志消费 | 已有计划任务前端与 fixture 合同证据；真实调度服务单列后端交接 |
-| `featurePackApi`、`pluginApi`、`executorApi`、`sponsorApi` | 冻结源码中的共享或零消费者候选 | 操作仍逐项登记，静态消费者为零不授权删除；未接入当前 227 节点 UI 的候选不冒充已实现后端能力 |
+| `featurePackApi`、`pluginApi`、`executorApi`、`sponsorApi` | 冻结源码中的共享或零消费者候选 | 操作仍逐项登记，静态消费者为零不授权删除；未接入当前 213 节点 UI 的候选不冒充已实现后端能力 |
 
 ## 共享合同
 

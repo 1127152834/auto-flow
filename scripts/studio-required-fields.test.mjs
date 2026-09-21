@@ -11,7 +11,7 @@ test('coverage accounts for every retained node and excludes removed nodes',()=>
  const read=path=>JSON.parse(fs.readFileSync(new URL(path,root),'utf8'))
  const coverage=read('docs/migration/studio-frontend-completion/required-field-source-coverage.json')
  const retained=read('docs/migration/studio-frontend-completion/capabilities.json').map(x=>x.type)
- assert.equal(coverage.approvedCount,227);assert.equal(coverage.coveredCount,69);assert.equal(coverage.uncovered.length,158)
+ assert.equal(coverage.approvedCount,213);assert.equal(coverage.coveredCount,69);assert.equal(coverage.uncovered.length,144)
  assert.deepEqual([...coverage.covered,...coverage.uncovered].sort(),retained.sort())
  const data=read('apps/desktop/src/renderer/domains/workflows/development/module-required-fields.json')
  for(const map of [data.requiredFields,data.conditionalRequired,data.fieldLabels])assert.ok(Object.keys(map).every(key=>coverage.covered.includes(key)))

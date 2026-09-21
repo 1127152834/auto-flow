@@ -43,7 +43,7 @@ try {
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 2560, height: 1600, deviceScaleFactor: 1, mobile: false })
   await studio.command('Page.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads })
-  await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('227')", 'formal Studio', 30_000)
+  await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
 
   await openSettings(studio)
   await click(studio, '凭据库', 'nav button')

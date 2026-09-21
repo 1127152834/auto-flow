@@ -222,14 +222,20 @@ AI 关闭等待保存/放弃/取消结果，未确认不报成功；补齐确认
 
 ## F6 正式 Electron 主链（2026-09-15）
 
-正式 Electron 使用独立临时数据目录完成真实 UI 验收：主窗口打开独立 Studio、227 节点范围显示、右键快捷添加 `open_page`、填写 URL、`Cmd+S` 保存、`Cmd+C/Cmd+V` 复制粘贴、原生保存面板导出 JSON、关闭重开并从列表恢复 2 个节点，以及关闭主窗口后 Studio 和共享 sidecar 继续可用。导出文件经独立 JSON 解析确认名称和节点数。逐步证据见 `evidence/f6-formal-delivery/native-ui.md`。
+正式 Electron 使用独立临时数据目录完成真实 UI 验收：主窗口打开独立 Studio、当时有效的 227 节点范围显示、右键快捷添加 `open_page`、填写 URL、`Cmd+S` 保存、`Cmd+C/Cmd+V` 复制粘贴、原生保存面板导出 JSON、关闭重开并从列表恢复 2 个节点，以及关闭主窗口后 Studio 和共享 sidecar 继续可用。导出文件经独立 JSON 解析确认名称和节点数。逐步证据见 `evidence/f6-formal-delivery/native-ui.md`。该截图形成于 2026-09-22 通知节点范围调整之前，只证明其余宿主链路；新的 213 节点范围另行通过当前目录测试和正式 UI 证据核销。
 
 当前正式用户数据目录包含本分支不存在的数据库修订 `0010_android_fleet`，直接启动会被 Alembic 拒绝；验收没有删除或降级用户数据。macOS Intel 与 Windows 无实机，不标通过。Studio 顶部明确标识 Mock，本结果证明前端、Electron 宿主与服务消费链路，不证明真实网页执行。正式后端实现边界见 `backend-handoff.md`。
 
 ## 前端迁入关闭结论（2026-09-15）
 
-当前批准的 227 节点范围内，F1 服务合同、F2 节点/工具/文档编辑、F3 运行/Debug/日志结果消费、F4 拾取/定位/录制、F5 配套配置/AI/生命周期和 F6 正式窗口/打包交接均已按既有证据核销。前端剩余功能块数量为 0；共享规则集中证据和逐入口接入证据均已回填 `capabilities.json` 与 `verified-cases.json`。正式 Electron 截图中的“227”与当前范围一致。
+当前批准的 213 节点范围内，F1 服务合同、F2 节点/工具/文档编辑、F3 运行/Debug/日志结果消费、F4 拾取/定位/录制、F5 配套配置/AI/生命周期和 F6 正式窗口/打包交接的既有证据继续适用于保留节点。前端剩余功能块数量为 0；共享规则集中证据和逐入口接入证据均已回填 `capabilities.json` 与 `verified-cases.json`。原正式 Electron 截图中的“227”是范围变更前历史证据，不作为当前 213 节点目录数量证明。
 
 最终工程结果为前端 330 文件/4,979 项、工程脚本 50/50、后端合同 503 项、前端类型/lint/OpenAPI/构建、后端 mypy/冻结、macOS arm64 目录包及开发/打包 Studio smoke 通过。完整命令结果与已知限制见 `evidence/f6-formal-delivery/engineering-checks.md`。
 
 真实自动化后端仍未交付；其工作是按已冻结合同实现 CloakBrowser 执行、调试 worker、拾取/录制采集、持久化与秘密存储。它不再包含待补的 Studio 页面、表单或 Store 业务。macOS Intel、Windows、签名发布和正式用户数据库向后兼容继续作为外部集成/发布事项保留。
+
+## 2026-09-22 通知节点范围修正
+
+用户明确删除 14 个通知节点后，有效范围由 227 调整为 213。目录、搜索、收藏、常用、自定义模块分类、前端清单和后端执行白名单使用同一排除边界；旧工作流中的这些类型保留可识别的“不支持”错误，不会静默转换或执行。Telegram 与通用 Webhook 继续保留。
+
+专项验证通过：后端范围与源码映射 77 项、前端范围与配色 10 项、清单/教学/必填字段脚本 7 项、TypeScript、ESLint、OpenAPI 一致性和 renderer/main/preload 构建。正式 Electron 通过主窗口真实点击进入 Studio，动作库显示 213，并完成 9 节点纯数据流程的配置、连线、SQLite 保存、真实运行、日志与结果持久化；证据见 `../studio-backend-migration/evidence/b4/formal-utility-electron-3qBVei/result.json`。旧的 227 节点截图只作为调整前历史证据保留。

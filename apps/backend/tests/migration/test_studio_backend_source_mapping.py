@@ -17,8 +17,8 @@ PROVENANCE = (
     REPOSITORY_ROOT / "docs/migration/studio-backend-migration/source-provenance.json"
 )
 FROZEN_COMMIT = "5ccb900e8dcf1530aae66f676d87593c416c7ebb"
-EXPECTED_MILESTONES = {"B1": 5, "B2": 30, "B3": 21, "B4": 88, "B5": 22, "B6": 61}
-EXPECTED_CLASSIFICATIONS = {"原版直接迁入": 110, "AutoFlow必要适配": 117}
+EXPECTED_MILESTONES = {"B1": 5, "B2": 30, "B3": 21, "B4": 88, "B5": 22, "B6": 47}
+EXPECTED_CLASSIFICATIONS = {"原版直接迁入": 110, "AutoFlow必要适配": 103}
 ACCEPTANCE_STATUSES = {
     "已实现且已验收",
     "已实现待验收",
@@ -86,7 +86,7 @@ def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() ->
     support_rows = _load(SUPPORT)["sharedCapabilities"]
     support_ids = {row["id"] for row in support_rows}
 
-    assert len(rows) == 227
+    assert len(rows) == 213
     assert len(support_rows) == 13
     assert "BE.SUPPORT.assistant-langgraph" in support_ids
 
@@ -158,8 +158,8 @@ def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() ->
 
     assert milestones == EXPECTED_MILESTONES
     assert classifications == EXPECTED_CLASSIFICATIONS
-    assert registrations == {"decorator": 226, "registry.register": 1}
-    assert len(case_ids) == 681
+    assert registrations == {"decorator": 212, "registry.register": 1}
+    assert len(case_ids) == 639
 
 
 def test_shared_capabilities_only_reference_existing_sources_and_contracts() -> None:

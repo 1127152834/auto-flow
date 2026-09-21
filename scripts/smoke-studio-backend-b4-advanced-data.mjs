@@ -297,7 +297,7 @@ checkpoint(`生产执行器注册表对 ${modules.length} 节点文档计算 req
 
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 3840, height: 2400, deviceScaleFactor: 1, mobile: false })
-  await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('227')", 'formal Studio', 30_000)
+  await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   checkpoint('主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数')
