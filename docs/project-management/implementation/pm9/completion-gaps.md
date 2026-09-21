@@ -1,8 +1,8 @@
 # PM9 剩余工作复核
 
-日期：2026-09-21；状态：confirmed（缺口与证据核对），PM9 仍 in_progress。来源：当前代码 d59607f3、同提交三平台 Actions 35531206432、总体规格与覆盖台账。核对置信度：高；未逐项复核的实现状态：未知。
+日期：2026-09-21；状态：confirmed（缺口与证据核对），PM9 仍 in_progress。来源：当前候选 52936b6a、本机后续验证、运行中的 Actions 35560163432、历史 d59607f3/Actions 35531206432、总体规格与覆盖台账。核对置信度：高；未逐项复核的实现状态：未知。
 
-**结论：R1–R4 的有界工程交付和三平台 CI 已完成，完整 PM9 尚未完成。** PM9-A 要求全部功能/场景/契约逐项对应真实证据，现有两条代表性生产链不能代替这一要求。PM9-B 的万行、固定每分钟千条合成输入已有三平台结果；PM9-C 的三种安装包已生成且包内流程通过，实机安装和原生专项仍待补证。
+**结论：历史 d59607f3 的 R1–R4 有界交付和三平台 CI 已完成；本轮 52936b6a 的三平台验收仍在收口，完整 PM9 尚未完成。** PM9-A 要求全部功能/场景/契约逐项对应真实证据，现有两条代表性生产链不能代替这一要求。PM9-B 的万行、固定每分钟千条合成输入已有三平台结果；PM9-C 的三种安装包已生成且包内流程通过，实机安装和原生专项仍待补证。
 
 ## 1. 真正尚未支持的能力
 
@@ -21,7 +21,7 @@
 
 后续复核：251 条已补 `testMapping`，200 条有实际断言引用，51 条明确未定位直接场景测试；73 条失效预定路径全部补了映射或缺口。原 22 条 verified 发现未闭合子条件，已逐项退回 partial，并保留 statusBeforeReview。补入本轮真实场景后，当前合计为 0 verified / 186 partially_verified / 65 planned（203 条有断言，48 条仍未定位直接场景）。详情见 [test-mapping-review.md](test-mapping-review.md)。以下表格是复核前快照，已被本段当前统计取代。
 
-本轮已把 DATA-LINK-05、FLOW-A16、XE-C12、XE-C18、XE-G04、XE-G05 六项直接匹配的三平台成功链补入台账，状态从 planned 改为 partially_verified；没有将一部分断言升级为整项 verified。
+此前 d59607f3 验收已把 DATA-LINK-05、FLOW-A16、XE-C12、XE-C18、XE-G04、XE-G05 六项直接匹配的三平台成功链补入台账，状态从 planned 改为 partially_verified；没有将一部分断言升级为整项 verified。
 
 | 类别 | 总数 | verified | partially_verified | planned |
 | --- | ---: | ---: | ---: | ---: |
@@ -30,7 +30,7 @@
 | 执行契约与门禁 | 25 | 1 | 18 | 6 |
 | 合计 | 251 | 22 | 153 | 76 |
 
-以上是**证据台账状态，不是功能完成百分比**。229 项尚未完整闭合，不等于 229 项没写代码。特别是多数历史阶段使用隔离执行器，只有直接覆盖的场景才能换成生产证据。
+以上是**旧证据台账快照，不是功能完成百分比**。旧快照 229 项未闭合；本轮逐项复核后全部 251 项仍各有未闭合子条件，不等于 251 项没写代码。特别是多数历史阶段使用隔离执行器，只有直接覆盖的场景才能换成生产证据。
 
 73 条登记指向 5 个不存在的预定文件：test_project_excel.py、test_project_environment_retention.py、test_project_claims.py、test_project_full_scenarios.py、test_project_manual_actions.py。已有测试分散在 Excel services/exports、environment persist/restore/real browser、project input groups/data scheduler、project batch real browser 等文件；必须逐条核对断言，不能仅凭近似文件名自动改为通过。
 
@@ -41,7 +41,7 @@
 3. XE-A10/12/14/23/24/25：旧环境候选发布冲突、saved_unlinked 仅修复关联、人工继续/到期竞争、混合初始输入与新建记录的 End 关联、禁止替换其他身份、新增字段后关联新记录。
 4. DATA-E2E-04/05 与 DATA-SH/SYNC/LIFE：跨项目远端字段写入、发送未知/重启核验、重新授权/绑定和归档时未决操作。
 
-这里列的是需要补齐或核对的**生产端到端证据**，没有断言相关单元/集成测试不存在。完整逐项列表见 [coverage-audit.json](coverage-audit.json)，原文与已有报告见 [coverage.json](../coverage.json)。下一包应先完成这 73 条路径映射和上述非外部依赖场景的断言核对，再按实际缺口补测试或修复。
+这里列的是需要补齐或核对的**生产端到端证据**，没有断言相关单元/集成测试不存在。完整逐项列表见 [coverage-audit.json](coverage-audit.json)，原文与已有报告见 [coverage.json](../coverage.json)。本轮 73 条路径映射已完成；剩余完整业务组合、UI 与外部专项按实际缺口继续补证。
 
 ## 3. 外部与发行证据
 
@@ -52,20 +52,22 @@
 
 ## 4. 性能数据不另造阻塞
 
-Windows 五路万条准备 725733 ms，真实 worker 537 日志/分钟；两个 Mac 对应 104904/85377 ms 和 1642/1539 日志/分钟。各平台固定每分钟 1000 条**合成输入**均读回通过。PM9 原始规格要求的是这一合成负载，并未给 worker 吞吐或万条创建耗时 SLO，因此 Windows 性能是已量化的优化项，不能虚构成“未达到原规定千条 worker 吞吐”的失败。
+历史 d59607f3 中，Windows 五路万条准备 725733 ms，真实 worker 537 日志/分钟；两个 Mac 对应 104904/85377 ms 和 1642/1539 日志/分钟。各平台固定每分钟 1000 条**合成输入**均读回通过。PM9 原始规格要求的是这一合成负载，并未给 worker 吞吐或万条创建耗时 SLO，因此 Windows 性能是已量化的优化项，不能虚构成“未达到原规定千条 worker 吞吐”的失败。
 
 后续工作已开始修改生产代码：人工到期与已接受继续命令的竞争已复现并修复，扩展真实场景见 follow-through 计划。d59607f3 报告仅保留为历史基线，新候选需要重新验证。完成证据闭合与实际功能缺口前，releaseAccepted 继续为 false。
 
 ## 5. 本轮新增完成项
 
 - 251 条规格已逐条给出实际断言范围或明确缺口；引用校验通过。
-- 人工继续/到期两种交错均有真实 worker 失败复现，修复采用同一状态版本 CAS，16 个真实浏览器场景全部通过，另加实际 HTTP 在途继续与 TTL 先胜竞争也通过。
+- 人工继续/到期两种交错均有真实 worker 失败复现，修复采用同一状态版本 CAS，本机当前共 18 个真实浏览器场景通过，包含实际 HTTP 在途继续与 TTL 先胜竞争；最后占用修正另复测旧候选真实链。
 - 生产环境操作造成通用操作列表 500 已修复；列表、ID、项目原键返回既有环境 DTO，生成客户端同步，workspace 作用域不扩大。
 - 生产 HTTP 双输入、任务连续写、人工新值保护、失败保留提交、混合关联、禁止替换、关联修复和基础旧代次拒绝均通过。关联提交边界另有实际 worker linkRevision 竞争及全组回滚断言。
-- 本轮具体运行与故障注入边界见 [follow-through.json](follow-through.json)。候选全量三平台 CI 尚待新运行，不沿用旧报告。
+- 本轮具体运行与故障注入边界见 [follow-through.json](follow-through.json)。候选 52936b6a 的 ARM 全量/源码/打包 CI 已通过；Windows 后端及前端已通过、后续链仍运行；Intel 前端首次元素等待失败，保留记录并仅重验失败平台，不沿用旧报告。
 
 XE-A10 已增加真实 worker 关闭/候选暂存后在发布边界注入 ENOSPC、T2 发布 g2、旧 T1 冲突与另存；修复 retained_unsaved 的状态、现场额度和原子重获占用。发布结果不明仍保留占用，原生 UI/物理磁盘故障仍未证明。
 
 当前仍需补的本地完整组合包括 XE-A23 的消耗邮箱筛选与共享人员/新账号后继，以及 DATA-E2E-06 的运行中兼容字段与并发旧契约。上述基础机制有测试不代表这些整组已验收；UI 反馈亦逐项保留 gap。四项新增架构已出具体方案，等待确认。
 
 候选校正（confirmed）：f25b3867 的三平台 CI 均在类型检查失败，未运行生产链。此前 typecheck passed 记录有误，cleanupResidue 未接纳环境操作 DTO；已修复并通过新本机类型检查，后续候选重新验证。
+
+本机安装包补证（confirmed）：已下载 52936b6a 的 ARM DMG，完成镜像校验、只读挂载、隔离复制、真实应用启动、认证 sidecar 健康和父进程退出清理；镜像已卸载。见 [install-follow-through-darwin-arm64.json](install-follow-through-darwin-arm64.json)。随后通过真实 macOS open-panel/save-panel 完成 Excel 导入与导出，读回保留文本 001/中文，源工作簿 hash 不变；未使用 QA 面板替代。这只关闭 ARM 安装包挂载/复制/启动及该 Excel 原生路径子条件，不证明 Gatekeeper、其他原生专项、凭据、签名或完整卸载验收。

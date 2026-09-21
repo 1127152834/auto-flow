@@ -323,10 +323,11 @@
         {
           "id": "DT-07",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
+            "external_acceptance_pending",
             "production_evidence_missing"
           ]
         },
@@ -383,7 +384,7 @@
         {
           "id": "DT-13",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
@@ -727,6 +728,7 @@
           "plannedTestExists": false,
           "reviewedCheckCount": 1,
           "gapKinds": [
+            "external_acceptance_pending",
             "production_evidence_missing"
           ]
         },
@@ -2125,7 +2127,7 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 5,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2257,7 +2259,7 @@
           "status": "planned",
           "evidenceCount": 0,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]

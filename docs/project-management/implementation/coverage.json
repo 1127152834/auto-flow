@@ -2464,6 +2464,14 @@
           "platform": "macOS arm64",
           "user_acceptance": "pending",
           "real_application": "docs/migration/pm2-detail-qa/run-Z9O6af/result.json"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "real_application",
+          "report": "docs/project-management/implementation/pm9/install-follow-through-darwin-arm64.json",
+          "scope": "ARM 原生 open-panel、工作表预览、映射、真实导入与文本001/中文回显",
+          "platform": "macOS arm64 packaged 52936b6a",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM2-B",
@@ -2497,7 +2505,11 @@
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "原生文件选择和全部 Excel 异常的安装包真实入口待验收"
+            "detail": "安装包全部 Excel 异常、重新导入及相关入口组合待补；本轮 ARM 基本原生导入链已通过"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "Windows/Intel 原生文件选择的实机验收仍待补"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -2849,6 +2861,14 @@
           "limitations": "PM8 在归档只读态复核了导出（人员.xlsx 4859 字节，PK 容器）；筛选/选列/状态导出的完整矩阵未在 PM8 重跑。",
           "platform": "darwin/arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "real_application",
+          "report": "docs/project-management/implementation/pm9/install-follow-through-darwin-arm64.json",
+          "scope": "ARM 原生 save-panel、新 XLSX 读回文本001/中文、原始工作簿hash不变",
+          "platform": "macOS arm64 packaged 52936b6a",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM2-C",
@@ -2883,7 +2903,7 @@
         "gaps": [
           {
             "kind": "external_acceptance_pending",
-            "detail": "三平台原生保存面板、取消与授权窗口边界待验收"
+            "detail": "Windows/Intel 原生保存面板，以及未覆盖的取消/授权窗口边界待验收；ARM 基本原生保存链已通过"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -4937,14 +4957,18 @@
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
             "symbol": "test_query_then_dynamic_write_advances_task_cursor_and_stale_write_conflicts",
-            "scope": "查询后动态领取、更新游标、字段授权与冲突规则",
+            "scope": "直接 capability 集成：查询后动态领取/版本冲突、第二表新建与修改、add/ensureField 原命令恢复；不是并发真实 worker 整组验收",
             "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "两个真实 Task 并发旧结构/新增字段及 Sheets 结构分阶段验证待补"
+            "detail": "两个真实 Task 并发旧结构/运行中确保新增字段、第二表记录、更新及状态的整组待补；原 Excel 不改断言仍需组合验收"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "当前 PM9 打包链的 Sheets 新列/值分阶段核验需真实授权与测试表；历史 PM6 服务账号实网证据保留"
           }
         ],
         "statusBeforeReview": "planned"
@@ -13325,12 +13349,18 @@
             "symbol": "test_real_project_batch_http",
             "scope": "data 场景生产数据节点创建账号、End 关联并在第二流程读到登录",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_node_writes.py",
+            "symbol": "test_fake_capability_changes_email_status_and_creates_account_once",
+            "scope": "直接 capability 集成：人员状态越权拒绝、邮箱显式改态、账号原命令仅新增一次；手工激活 Run，不能当作真实 worker 完整链",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "共享人员/消耗邮箱/新账号混合目标及运行时新建字段组合待补"
+            "detail": "共享人员状态/原环境不变、已消耗邮箱不再匹配、邮箱/新账号混合关联，以及下一流程按账号环境启动并通过 personNo 关联人员的整组真实链待补"
           }
         ],
         "statusBeforeReview": "planned"

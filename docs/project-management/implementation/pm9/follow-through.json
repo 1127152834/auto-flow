@@ -115,7 +115,8 @@
   },
   "newArchitecture": {
     "status": "awaiting_confirmation",
-    "spec": "docs/superpowers/specs/2026-09-21-pm9-runtime-capability-completion.md"
+    "spec": "docs/superpowers/specs/2026-09-21-pm9-runtime-capability-completion.md",
+    "plan": "docs/superpowers/plans/2026-09-21-pm9-runtime-capabilities.md"
   },
   "sourceApiFiles": {
     "apps/backend/src/autoflow/application/project_runs/manual_runtime.py": "27100f1494eefa1ff3e73d7f8a316025a9e11b41886b780565740779797cb750",
@@ -153,6 +154,24 @@
       "runId": 35558801632,
       "conclusion": "failure",
       "failure": "TypeScript cleanupResidue still used old DTO; source/package tests did not run. Fixed locally; next candidate required."
+    },
+    {
+      "commit": "52936b6a6c3613a2a9a03563f337abed70dc3301",
+      "runId": 35560163432,
+      "attempt": 1,
+      "platform": "darwin-x64",
+      "conclusion": "failure",
+      "failure": "Frontend ProxyManagementPage.test.tsx:107 first findByText timed out at 1338 ms; 5454 other tests passed. Backend passed; later source/package gates did not run.",
+      "diagnosis": "Initial fixture uses old last_synced_at and schedules an unrelated background sync; list rendering uses a zero-delay timer. Snapshot is still syncing. Same unmodified file passed 14/14 locally and full frontend passed on ARM/Windows. Scheduling/async wait budget is a hypothesis, not a confirmed production fix.",
+      "next": "One bounded rerun of failed Intel job on the same SHA after run completion; preserve the first failure and do not widen timeouts or drop assertions."
     }
-  ]
+  ],
+  "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
+  "ci": {
+    "runId": 35560163432,
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35560163432",
+    "status": "in_progress",
+    "conclusion": null
+  },
+  "physicalInstallReport": "install-follow-through-darwin-arm64.json"
 }
