@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from autoflow.application.workflows.executors.production import (
@@ -7,6 +9,14 @@ from autoflow.application.workflows.executors.production import (
 )
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ExecutionContext
+
+
+class _EventSink:
+    def __init__(self) -> None:
+        self.events: list[dict[str, Any]] = []
+
+    async def publish(self, event: dict[str, Any]) -> None:
+        self.events.append(event)
 
 
 def _node(
@@ -89,6 +99,33 @@ async def test_production_registry_runs_variable_loop_and_condition_as_one_graph
         "passed",
     )
     assert context.variables == {"total": 3, "index": 3, "outcome": "passed"}
+
+
+@pytest.mark.asyncio
+async def test_production_runtime_completes_one_thousand_iterations_with_distinct_contexts() -> None:
+    document = {
+        "nodes": [
+            _node("repeat", "loop", {"loopCount": 1_000, "indexVariable": "index"}),
+            _node("body", "set_variable", {"variableName": "value", "variableValue": "{index}"}),
+            _node("done", "set_variable", {"variableName": "completed", "variableValue": "完成"}),
+        ],
+        "edges": [
+            _edge("repeat-body", "repeat", "body", "loop"),
+            _edge("repeat-done", "repeat", "done", "done"),
+        ],
+        "variables": [],
+    }
+    sink = _EventSink()
+    context = ExecutionContext(events=sink)
+
+    result = await WorkflowRuntime(build_production_executor_registry()).execute(document, context)
+
+    starts = [event for event in sink.events if event["type"] == "execution:node_start" and event["nodeId"] == "body"]
+    assert result.success is True
+    assert len(starts) == 1_000
+    assert len({event["executionId"] for event in starts}) == 1_000
+    assert [starts[0]["executionContext"]["loops"][0]["iteration"], starts[-1]["executionContext"]["loops"][0]["iteration"]] == [1, 1_000]
+    assert context.variables == {"index": 1_000, "value": 999, "completed": "完成"}
 
 
 @pytest.mark.asyncio

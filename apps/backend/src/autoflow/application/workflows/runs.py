@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from typing import Any, Protocol
 
@@ -233,50 +233,86 @@ class WorkflowRunService:
         execution_id: str | None = None,
         through_sequence: int | None = None,
     ) -> list[dict[str, Any]]:
+        return list(
+            self.iter_logs(
+                run_id,
+                query=query,
+                levels=levels,
+                node_id=node_id,
+                execution_id=execution_id,
+                through_sequence=through_sequence,
+            )
+        )
+
+    def iter_logs(
+        self,
+        run_id: str,
+        *,
+        query: str | None,
+        levels: tuple[str, ...],
+        node_id: str | None,
+        execution_id: str | None = None,
+        through_sequence: int | None = None,
+    ) -> Iterator[dict[str, Any]]:
         allowed = {"debug", "info", "success", "warning", "error"}
         if any(level not in allowed for level in levels):
             raise WorkflowRunError("RUN_LOG_FILTER_INVALID", "日志级别无效", 422)
         self.get(run_id)
-        events = self._repository.list_events(run_id, 0, 1_000_000)
         needle = query.casefold() if query else None
-        rows: list[dict[str, Any]] = []
-        for event in events:
-            if event.type != "execution:log":
-                continue
-            if through_sequence is not None and event.sequence > through_sequence:
-                continue
-            payload = event.payload
-            level = str(payload.get("level", "info"))
-            message = str(payload.get("message", ""))
-            event_node_id = event.node_id or payload.get("nodeId")
-            if levels and level not in levels:
-                continue
-            if node_id and event_node_id != node_id:
-                continue
-            if execution_id and event.execution_id != execution_id:
-                continue
-            if needle and needle not in message.casefold():
-                continue
-            rows.append(
-                {
-                    "sequence": event.sequence,
-                    "id": str(payload.get("id") or f"{run_id}-{event.sequence}"),
-                    "timestamp": event.occurred_at.isoformat(),
-                    "level": level,
-                    "message": message,
-                    "nodeId": event_node_id,
-                    "executionId": event.execution_id,
-                    "executionContext": copy.deepcopy(payload.get("executionContext")),
-                    "duration": payload.get("duration"),
-                    "details": copy.deepcopy(payload.get("details")),
-                }
-            )
-        return rows
+
+        def rows() -> Iterator[dict[str, Any]]:
+            after_sequence = 0
+            while True:
+                events = self._repository.list_events(run_id, after_sequence, 1000)
+                if not events:
+                    return
+                for event in events:
+                    if through_sequence is not None and event.sequence > through_sequence:
+                        return
+                    if event.type != "execution:log":
+                        continue
+                    payload = event.payload
+                    level = str(payload.get("level", "info"))
+                    message = str(payload.get("message", ""))
+                    event_node_id = event.node_id or payload.get("nodeId")
+                    if levels and level not in levels:
+                        continue
+                    if node_id and event_node_id != node_id:
+                        continue
+                    if execution_id and event.execution_id != execution_id:
+                        continue
+                    if needle and needle not in message.casefold():
+                        continue
+                    yield {
+                        "sequence": event.sequence,
+                        "id": str(payload.get("id") or f"{run_id}-{event.sequence}"),
+                        "timestamp": event.occurred_at.isoformat(),
+                        "level": level,
+                        "message": message,
+                        "nodeId": event_node_id,
+                        "executionId": event.execution_id,
+                        "executionContext": copy.deepcopy(payload.get("executionContext")),
+                        "duration": payload.get("duration"),
+                        "details": copy.deepcopy(payload.get("details")),
+                    }
+                after_sequence = events[-1].sequence
+                if (
+                    through_sequence is not None and after_sequence >= through_sequence
+                ) or len(events) < 1000:
+                    return
+
+        return rows()
 
     def event_cutoff(self, run_id: str) -> int:
         self.get(run_id)
-        events = self._repository.list_events(run_id, 0, 1_000_000)
-        return events[-1].sequence if events else 0
+        after_sequence = 0
+        while True:
+            events = self._repository.list_events(run_id, after_sequence, 1000)
+            if not events:
+                return after_sequence
+            after_sequence = events[-1].sequence
+            if len(events) < 1000:
+                return after_sequence
 
     def variable_tracking(
         self,

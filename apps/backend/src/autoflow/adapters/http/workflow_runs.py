@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -665,30 +665,35 @@ def workflow_runs_router(
             "nextCursor": next_cursor,
         }
 
-    @router.get("/{run_id}/logs/export", response_class=Response)
+    @router.get("/{run_id}/logs/export", response_class=StreamingResponse)
     def export_logs(
         run_id: str,
         query: str | None = None,
         levels: str | None = None,
         node_id: str | None = Query(default=None, alias="nodeId"),
         execution_id: str | None = Query(default=None, alias="executionId"),
-    ) -> Response:
+    ) -> StreamingResponse:
         through_sequence = service.event_cutoff(run_id)
-        rows = service.all_logs(
-            run_id,
-            query=query,
-            levels=tuple(levels.split(",")) if levels else (),
-            node_id=node_id,
-            execution_id=execution_id,
-            through_sequence=through_sequence,
-        )
-        content = "".join(
-            json.dumps({"runId": run_id, **row}, ensure_ascii=False, separators=(",", ":"))
-            + "\n"
-            for row in rows
-        )
-        return Response(
-            content.encode(),
+        def content() -> Iterator[bytes]:
+            for row in service.iter_logs(
+                run_id,
+                query=query,
+                levels=tuple(levels.split(",")) if levels else (),
+                node_id=node_id,
+                execution_id=execution_id,
+                through_sequence=through_sequence,
+            ):
+                yield (
+                    json.dumps(
+                        {"runId": run_id, **row},
+                        ensure_ascii=False,
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                ).encode()
+
+        return StreamingResponse(
+            content(),
             media_type="application/x-ndjson",
             headers={
                 "Content-Disposition": f'attachment; filename="logs-{run_id}.jsonl"',

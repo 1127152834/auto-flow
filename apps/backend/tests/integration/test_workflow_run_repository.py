@@ -6,6 +6,7 @@ from itertools import count
 from pathlib import Path
 
 import pytest
+from sqlalchemy import insert
 from sqlalchemy.exc import DatabaseError
 
 from autoflow.application.workflows.runs import WorkflowRunService
@@ -13,6 +14,10 @@ from autoflow.domain.workflows.runs import WorkflowRunError, WorkflowRunStart
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
+)
+from autoflow.infrastructure.database.workflow_models import (
+    WorkflowRunEventRow,
+    WorkflowRunRow,
 )
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 
@@ -240,6 +245,50 @@ def test_variable_tracking_pages_large_values_and_clears_finished_run(
     assert cleared == []
     assert cleared_total == 0
     assert cleared_through == through
+
+
+def test_ten_thousand_persisted_logs_page_and_stream_at_a_fixed_cutoff(tmp_path: Path) -> None:
+    database = tmp_path / "large-log-history.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    service = WorkflowRunService(repository, clock=lambda: datetime(2026, 9, 15, tzinfo=UTC))
+    service.start(_start())
+    with sessions() as session:
+        for offset in range(0, 10_000, 1_000):
+            session.execute(insert(WorkflowRunEventRow), [{
+                "run_id": "run-1", "seq": index + 1,
+                "payload": {
+                    "type": "execution:log", "occurredAt": "2026-09-15T00:00:00+00:00",
+                    "payload": {"id": f"log-{index + 1}", "level": "info", "message": f"调度-{index + 1:05d}"},
+                    "nodeId": "body", "executionId": f"execution-{index + 1}",
+                },
+            } for index in range(offset, offset + 1_000)])
+        run = session.get(WorkflowRunRow, "run-1")
+        assert run is not None
+        run.payload = {**run.payload, "eventCount": 10_000, "logCount": 10_000}
+        session.commit()
+
+    latest, total, next_cursor = service.logs("run-1", cursor=0, limit=100, query=None, levels=(), node_id=None)
+    earliest, _, final_cursor = service.logs("run-1", cursor=9_900, limit=100, query=None, levels=(), node_id=None)
+    cutoff = service.event_cutoff("run-1")
+    repository.append_event(
+        "run-1", "execution:log", {"id": "late", "level": "info", "message": "截止后日志"},
+        now=datetime(2026, 9, 15, tzinfo=UTC), node_id="body", execution_id="execution-late",
+    )
+    streamed = list(service.iter_logs(
+        "run-1", query=None, levels=(), node_id=None, through_sequence=cutoff,
+    ))
+
+    assert total == 10_000 and next_cursor == 100 and final_cursor is None
+    assert [row["sequence"] for row in latest] == list(range(9_901, 10_001))
+    assert [row["sequence"] for row in earliest] == list(range(1, 101))
+    assert cutoff == 10_000 and service.event_cutoff("run-1") == 10_001
+    assert len(streamed) == 10_000
+    assert streamed[0]["id"] == "log-1" and streamed[-1]["id"] == "log-10000"
+    with pytest.raises(WorkflowRunError) as invalid_filter:
+        service.iter_logs("run-1", query=None, levels=("verbose",), node_id=None)
+    assert invalid_filter.value.code == "RUN_LOG_FILTER_INVALID"
 
 
 def test_node_success_and_event_roll_back_in_one_transaction(tmp_path: Path) -> None:
