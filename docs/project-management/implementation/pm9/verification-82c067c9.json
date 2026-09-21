@@ -49,7 +49,7 @@
     "darwin-arm64": {
       "status": "ci_passed_physical_partial",
       "physicalInstaller": "partial current-source package evidence in install-final-candidate-darwin-arm64.json; full physical release acceptance incomplete",
-      "report": "ci-capabilities-darwin-arm64.json"
+      "report": "ci-capabilities-82c067c9-darwin-arm64.json"
     }
   },
   "ci": {

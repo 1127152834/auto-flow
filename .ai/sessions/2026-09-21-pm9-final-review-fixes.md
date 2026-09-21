@@ -66,3 +66,8 @@ d21197ad ARM job 106288334872 success；3313 backend、5459 frontend、15 real w
 部分核验第二个 GET 超时实际 RED：原 SheetsApiError 泄漏，推送操作未完成。复用同一 `_verify` 错误转换、每条原意图 unknown、现有 `_runs.fail`，修复推送/只读核验/接受后取凭据三个关联路径；无新存储/协议/执行器。原 push 重放没有额外网络写，v2 原核验不吞掉 v3；reconcile header/cell 失败后原未知写不变、原只读命令明确失败且可新核验。50 相关测试通过，分块上限1的首块确认/次块失败/后续新值单项通过；mypy402/no-cache ruff通过。
 
 旧 Windows35586541932 与 Intel35589713895因生产候选变更取消，非通过。ARM d21197ad 完整成功只覆盖82源码。将冻结本片并进行新完整本机/三平台，不把旧 native DMG 自动称为新完整包。新增DATA-SYNC-08局部映射，222有断言/29未定位，状态不提升。
+
+
+## 新候选验证派发（confirmed）
+
+生产 f580b1c6、验证提交0303924d，完整三平台35590418456已派发，本机pytest全量并行运行。旧ARM成功已另存ci-capabilities-82c067c9-darwin-arm64.json，避免后续新候选结果覆盖旧报告引用。R1–R5与新共享领取C1–C4已合成一个待确认问题（先C，再R1/R2/R5/R3/R4），替代旧仅R1–R5的问题；未有回复不视为批准。

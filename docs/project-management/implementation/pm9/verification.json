@@ -1,6 +1,6 @@
 {
   "date": "2026-09-21",
-  "status": "new_candidate_regression_preparing",
+  "status": "candidate_regression_in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -17,7 +17,7 @@
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
-    "status": "new_candidate_regression_preparing",
+    "status": "candidate_regression_in_progress",
     "plan": "docs/superpowers/plans/2026-09-21-pm9-follow-through.md",
     "mappingReview": "test-mapping-review.md",
     "newProductionChanges": true,
@@ -49,12 +49,16 @@
     "darwin-arm64": {
       "status": "new_candidate_pending",
       "physicalInstaller": "partial current-source package evidence in install-final-candidate-darwin-arm64.json; full physical release acceptance incomplete",
-      "report": "ci-capabilities-darwin-arm64.json"
+      "priorCiReport": "ci-capabilities-82c067c9-darwin-arm64.json"
     }
   },
   "ci": {
-    "status": "preparing",
-    "scope": "New full three-platform candidate includes verification-read failure repair; no old platform result reused as full candidate acceptance."
+    "status": "in_progress",
+    "conclusion": null,
+    "runId": 35590418456,
+    "headSha": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35590418456",
+    "scope": "Full three-platform candidate for production source f580b1c6; no earlier platform result substitutes for this source."
   },
   "historicalEvidence": [
     {
@@ -89,6 +93,6 @@
       "S4-new-files-and-job-subset"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "targeted_verified_full_regression_pending"
+    "status": "targeted_verified_full_regression_in_progress"
   }
 }

@@ -1,6 +1,6 @@
 {
   "date": "2026-09-21",
-  "status": "new_candidate_regression_preparing",
+  "status": "candidate_regression_in_progress",
   "releaseAccepted": false,
   "codeCandidate": "f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34",
   "scope": [
@@ -48,7 +48,7 @@
     "sheetsStatusAndTombstone": "8 new cases passed; related sync/recovery/rules regression 45 passed, 2 warnings in 33.90s on production source 82c067c9. HTTP/SQLite with controlled Google transport; no live-network claim.",
     "excelDuplicateIdentity": "18 passed, 2 warnings in 15.24s: import/lease suite including independent identical rows and source-byte preservation. No production source change.",
     "sheetsReorderedState": "6 passed, 19 deselected in 7.74s: existing explicit-status scenarios extended with remote row insertion; source 82c067c9 unchanged.",
-    "armFullCandidate": "3313 backend passed, 60 skipped; 5459 frontend passed; 15 selected real worker cases passed; all source/packaged/installer steps passed at d21197ad, production source equivalent to 82c067c9. See ci-capabilities-darwin-arm64.json.",
+    "armFullCandidate": "3313 backend passed, 60 skipped; 5459 frontend passed; 15 selected real worker cases passed; all source/packaged/installer steps passed at d21197ad, production source equivalent to 82c067c9. See ci-capabilities-82c067c9-darwin-arm64.json.",
     "schemaPreflightAndCreateFailure": "8 passed in 26.58s; separate OpenAPI preparation request bound, unchanged shutdown/SSE/worker-cleanup deadlines, and created-record null preservation after denied initialization. Full no-cache ruff passed.",
     "intelFailedAttempt": {
       "runId": 35585675170,
