@@ -17,7 +17,8 @@
   "completedSlices": [
     "C1",
     "C2",
-    "C3"
+    "C3",
+    "R1"
   ],
   "verification": {
     "scopedBackend": "158 passed, 2 warnings in 57.88s",
@@ -37,7 +38,18 @@
     "fullBackend": "4 failed, 3345 passed, 63 skipped, 2 warnings in 738.51s; exactly four historical Android migration-head assertions. Corrected pm08→pm10; all 4 then passed in 1.09s, C3 gate 14 passed. No other failures. This combined evidence is not a single green full-suite invocation; native full-suite confirmation follows.",
     "build": "passed",
     "C3Migration": "Four historical paths upgraded to pm10 preserving devices, runs, artifacts and foreign keys: 4 passed in 1.09s; stale pm08 assertion RED→GREEN",
-    "C3Gate": "14 passed, 2 warnings in 12.46s"
+    "C3Gate": "14 passed, 2 warnings in 12.46s",
+    "R1": {
+      "backend": "91 passed in 16.83s across capabilities, RPC and field impacts; latest schema-specific suite 14 passed in 5.63s",
+      "realWorker": "data-schema: 1 passed / 26 deselected in 18.33s; two project Tasks read schema then perform existing allowed writes, End save and login restore",
+      "frontend": "4 passed / 1 file in 1.33s",
+      "ruff": "passed",
+      "mypy": "404 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed",
+      "build": "passed"
+    }
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -55,11 +67,14 @@
     "Different identity columns may be bound and read locally, but cannot claim without identity equivalence proof",
     "Capacity-two actual workers: P manual continuation, cancellation and exact-owned-child loss each release the public key only after confirmed owner cleanup; Q busy has no Task",
     "P nonempty business status and Q null remain independent; Q later freezes its own null/revision 1; stale P manual continuation rejected; two page visits, two final Tasks, zero active leases and zero Google writes",
-    "Existing shared-source UI renders local input alias and repair reason without rendering foreign project identity/link"
+    "Existing shared-source UI renders local input alias and repair reason without rendering foreign project identity/link",
+    "R1 explicit nonempty selected field IDs, current metadata/table revision and source-column projection; schema read adds no lease/read evidence/operation or data revisions",
+    "R1 stale grant/generation, inactive project, finished Run, revoked execution, missing field and ungranted targets refuse; source schema read cannot authorize a write",
+    "R1 child query uses frozen node intersection with parent Task grants and requires a live parent call; explicit schema selection/result variable UI tested"
   ],
   "limits": [
     "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
-    "R1-R2-R5-R3-R4 approved, not yet implemented",
+    "R1 implemented with scoped local evidence; R2-R5-R3-R4 approved, not yet implemented",
     "M1-M3 not approved",
     "Google real authorization, signing and full native platform acceptance external",
     "Local pull preserves existing readable rows and skipped blank identities; those tables remain ineligible for shared claims until identity is complete",
@@ -85,5 +100,17 @@
     "apps/backend/src/autoflow/infrastructure/database/project_sync_models.py": "eb2845b6060a92823630ddc9b71badeffe491ae70e3475a1170f0b2f6f6c85bb"
   },
   "productionCandidate": "376b8a59",
-  "testCandidate": "85bb8c7c"
+  "testCandidate": "85bb8c7c",
+  "nativeSharedCandidate": {
+    "run": 35597323657,
+    "head": "21f8bb1e645e596c360cbcc8ce8f64e9fd51a237",
+    "status": "in_progress",
+    "scope": "C1-C3 source, excludes R1"
+  },
+  "R1SourceHashes": {
+    "apps/backend/src/autoflow/domain/project_data/capabilities.py": "10d08f1c442c13d225c029f171ad50001cc557c30ccd1e403ae885a37551b312",
+    "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py": "0008737ceff1a8c4df6571ca92c900b7a12bfb943a3f662e0ed49fd68b2b881c",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "4d8f6851bcd5f7e57bbce07ae0cbe300ac44a9e5421d637e8a6e5769e4eba454",
+    "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx": "101e92b93a7dcb79d1f240883cb92bb593249c872469029bac040cd8f71a1bbd"
+  }
 }

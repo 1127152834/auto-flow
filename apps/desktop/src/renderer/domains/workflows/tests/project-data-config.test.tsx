@@ -36,3 +36,14 @@ it('binds field preview to the existing modifyField permission', async () => {
   fireEvent.keyDown(await screen.findByRole('option', { name: '来源' }), { key: 'Enter' })
   expect(change).toHaveBeenCalledWith('tableGrant', expect.objectContaining({ operations: ['modifyField'] }))
 })
+
+it('selects explicit schema fields and keeps the query free of write authority', async () => {
+  const { apiRequest } = await import('../api')
+  vi.mocked(apiRequest).mockImplementation(async path => ({ success: true, data: { items: path.endsWith('/fields') ? [{ ref: { fieldId: 'field' }, name: '当前字段' }] : [], total: 0 } }) as never)
+  const change = vi.fn()
+  render(<ProjectDataConfig data={{ moduleType: 'project_data', operation: 'queryTableSchema', bindingProjectId: 'project', tableGrant: { tableId: 'table', datasetGeneration: 'generation', operations: ['queryTableSchema'], fieldIds: [], readPurposes: [] }, arguments: { tableId: 'table', datasetGeneration: 'generation', fieldIds: [] }, variableName: 'schema' } as unknown as NodeData} onChange={change} />)
+  fireEvent.click(await screen.findByRole('checkbox', { name: /当前字段/ }))
+  expect(change).toHaveBeenCalledWith('arguments', { tableId: 'table', datasetGeneration: 'generation', fieldIds: ['field'] })
+  expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'table', datasetGeneration: 'generation', operations: ['queryTableSchema'], fieldIds: ['field'], readPurposes: [] })
+  expect((screen.getByLabelText('结果变量') as HTMLInputElement).value).toBe('schema')
+})

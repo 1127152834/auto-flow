@@ -210,7 +210,7 @@ def _config_issues(node: dict[str, Any], index: int) -> list[WorkflowIssue]:
             "必须是非空字符串",
         )
     elif module_type == 'project_data':
-        field('operation', isinstance(data.get('operation'), str) and data.get('operation') in {'inputs', 'readRecord', 'queryRecords', 'createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus', 'addField', 'ensureField', 'modifyField', 'previewFieldChange'}, '不受支持')
+        field('operation', isinstance(data.get('operation'), str) and data.get('operation') in {'inputs', 'readRecord', 'queryRecords', 'queryTableSchema', 'createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus', 'addField', 'ensureField', 'modifyField', 'previewFieldChange'}, '不受支持')
         field('arguments', isinstance(data.get('arguments'), dict) and data.get('argumentsValid', True) is True, '必须是有效对象')
         field('variableName', _nonempty_string(data.get('variableName')), '必须是非空字符串')
     elif module_type == 'project_manual':

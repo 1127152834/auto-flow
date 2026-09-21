@@ -33,6 +33,7 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
 DATA_COMMANDS = {
     'readRecord': ('read_record', commands.ReadProjectRecordRequest),
     'queryRecords': ('query_records', commands.QueryProjectRecordsRequest),
+    'queryTableSchema': ('query_table_schema', commands.QueryProjectTableSchemaRequest),
     'createRecord': ('create_record', commands.CreateProjectRecordCommand),
     'updateRecord': ('update_record', commands.UpdateProjectRecordCommand),
     'deleteRecord': ('delete_record', commands.DeleteProjectRecordCommand),

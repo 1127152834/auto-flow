@@ -1116,12 +1116,11 @@
         {
           "id": "DATA-SCHEMA-01",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 6,
           "gapKinds": [
-            "implementation_missing",
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2606,8 +2605,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 225,
-    "withNoLocatedAssertion": 26,
+    "withAssertions": 226,
+    "withNoLocatedAssertion": 25,
     "statuses": {
       "partially_verified": 191,
       "planned": 60

@@ -8,6 +8,7 @@ from autoflow.domain.project_data.capabilities import (
     ModifyProjectFieldCommand,
     PreviewProjectFieldChangeRequest,
     QueryProjectRecordsRequest,
+    QueryProjectTableSchemaRequest,
     ReadProjectRecordRequest,
     SetRecordStatusCommand,
     TaskCapabilityScope,
@@ -38,6 +39,9 @@ class ProjectDataCapabilityService:
         self, scope: TaskCapabilityScope, request: ReadProjectRecordRequest
     ):
         return self.repository.read_record(scope, request)
+
+    def query_table_schema(self, scope: TaskCapabilityScope, request: QueryProjectTableSchemaRequest):
+        return self.repository.query_table_schema(scope, request)
 
     def query_records(
         self, scope: TaskCapabilityScope, request: QueryProjectRecordsRequest

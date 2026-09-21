@@ -106,7 +106,8 @@ def test_field_preview_manifest_uses_existing_modify_field_permission(rpc):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('scope_state', ['valid', 'missing', 'wrong-definition', 'finished-call', 'cancelled-parent', 'other-table', 'other-field', 'no-grant', 'other-operation'])
-async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_state):
+@pytest.mark.parametrize('operation', ['createRecord', 'queryTableSchema'])
+async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_state, operation):
     from autoflow.infrastructure.database.workflow_runtime_models import (
         WorkflowRunEventRow,
     )
@@ -116,7 +117,12 @@ async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_stat
         run = session.get(WorkflowRunRow, task.run_id)
         prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
         plan = prepared.execution_plan
-        grant = {'tableId': request['arguments']['tableId'], 'datasetGeneration': request['arguments']['datasetGeneration'], 'operations': ['createRecord'], 'fieldIds': list(request['arguments']['values']), 'readPurposes': []}
+        field_ids = list(request['arguments']['values'])
+        grant = {'tableId': request['arguments']['tableId'], 'datasetGeneration': request['arguments']['datasetGeneration'], 'operations': [operation], 'fieldIds': field_ids, 'readPurposes': []}
+        if operation == 'queryTableSchema':
+            request['operation'] = operation
+            request['arguments'] = {'tableId': grant['tableId'], 'datasetGeneration': grant['datasetGeneration'], 'fieldIds': field_ids}
+            plan['nodes'][0]['data']['operation'] = operation
         run.capability_bindings = [{**item, 'tableGrants': [grant]} for item in run.capability_bindings]
         declared = dict(grant)
         if scope_state == 'other-table': declared['tableId'] = str(uuid4())
@@ -142,7 +148,11 @@ async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_stat
         })
         if scope_state == 'cancelled-parent': run.status = 'cancelled'
     if scope_state == 'valid':
-        assert (await service.handle(task.run_id, 1, request))['values'][0]['value'] == 'created by worker'
+        result = await service.handle(task.run_id, 1, request)
+        if operation == 'queryTableSchema':
+            assert [field['fieldId'] for field in result['fields']] == field_ids
+        else:
+            assert result['values'][0]['value'] == 'created by worker'
     else:
         with pytest.raises(ProjectError):
             await service.handle(task.run_id, 1, request)

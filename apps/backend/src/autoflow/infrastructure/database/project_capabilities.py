@@ -19,6 +19,7 @@ from autoflow.domain.project_data.capabilities import (
     ModifyProjectFieldCommand,
     PreviewProjectFieldChangeRequest,
     QueryProjectRecordsRequest,
+    QueryProjectTableSchemaRequest,
     ReadProjectRecordRequest,
     RecordReadGrant,
     RecordWriteGrant,
@@ -86,6 +87,7 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectTaskRecordReadRow,
     ProjectTaskRow,
 )
+from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 
 MAX_QUERY_SNAPSHOT_RECORDS = MAX_CANDIDATE_EVALUATIONS
@@ -264,6 +266,34 @@ class SqlAlchemyProjectDataCapabilities:
             self._record_read(session, scope, request.read_purpose, field_ids, value)
             self._commit(session)
             return value
+
+    def query_table_schema(self, scope: TaskCapabilityScope, request: QueryProjectTableSchemaRequest) -> dict:
+        with self._factory() as session:
+            # A short transaction keeps Run, table and field facts consistent;
+            # no read evidence, lease or operation is created by a schema query.
+            session.execute(text("BEGIN IMMEDIATE"))
+            _task, run, _snapshot = self._facts(session, scope.project_id, scope.task_id, scope.run_id)
+            scope.authorize_query_table_schema(request, current_execution_generation=run.execution_generation)
+            table = SqlAlchemyProjectDataRecords._table(
+                session, scope.project_id, request.table_id, request.dataset_generation, True
+            )
+            fields = {row.id: row for row in SqlAlchemyProjectDataRecords._fields(session, table)}
+            if not set(request.field_ids) <= fields.keys():
+                raise ProjectError("FIELD_NOT_FOUND", "Selected schema field no longer exists", 404)
+            binding = session.get(SheetsBindingRow, table.id) if table.source_kind == "sheets" else None
+            columns = {item["fieldId"]: {"columnId": item["columnId"], "direction": item["direction"]}
+                       for item in binding.mapping} if binding else {}
+            result_fields = []
+            for field_id in request.field_ids:
+                row = fields[field_id]
+                metadata = _catalog_field(row)
+                result_fields.append({"fieldId": field_id,
+                    **{key: metadata[key] for key in ("key", "name", "type", "required", "writable", "formula")},
+                    "sourceColumn": columns.get(field_id)})
+            return {"projectId": scope.project_id, "tableId": table.id,
+                    "datasetGeneration": table.current_generation, "tableRevision": table.table_revision,
+                    "fields": result_fields,
+                    "systemProperties": {"statusId": {"type": "status", "nullable": True, "writable": False}}}
 
     def query_records(
         self, scope: TaskCapabilityScope, request: QueryProjectRecordsRequest

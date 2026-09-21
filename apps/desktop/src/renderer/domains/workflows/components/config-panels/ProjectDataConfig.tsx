@@ -7,7 +7,7 @@ import { SelectNative as Select } from '../controls/select-native'
 import { Label } from '../controls/label'
 
 type Schema = components['schemas']
-const operations = { inputs: '读取本次任务输入', readRecord: '读取记录', queryRecords: '查询记录', createRecord: '创建记录', updateRecord: '更新记录', deleteRecord: '删除记录', setRecordStatus: '设置记录状态', addField: '添加字段', ensureField: '确保字段存在', modifyField: '修改字段', previewFieldChange: '预览字段变更' }
+const operations = { inputs: '读取本次任务输入', readRecord: '读取记录', queryRecords: '查询记录', queryTableSchema: '查询表结构', createRecord: '创建记录', updateRecord: '更新记录', deleteRecord: '删除记录', setRecordStatus: '设置记录状态', addField: '添加字段', ensureField: '确保字段存在', modifyField: '修改字段', previewFieldChange: '预览字段变更' }
 
 export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange(key: string, value: unknown): void }) {
   const operation = String(data.operation ?? 'inputs')
@@ -52,7 +52,7 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     return () => controller.abort()
   }, [projectId, tableId, revision, projectPage, tablePage])
   function bind(table: Schema['DataTableView'], op = operation) {
-    onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [op === 'previewFieldChange' ? 'modifyField' : op], fieldIds: [], readPurposes: ['condition', 'derivedWrite'] })
+    onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [op === 'previewFieldChange' ? 'modifyField' : op], fieldIds: [], readPurposes: op === 'queryTableSchema' ? [] : ['condition', 'derivedWrite'] })
     onChange('argumentsValid', true)
     onChange('arguments', initialArguments(op, table))
   }
@@ -77,8 +77,8 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
       {fields.length > 0 && <fieldset><legend>允许访问的字段</legend>{fields.map(field => <label className="flex gap-2" key={field.ref.fieldId}>
         <input type="checkbox" checked={grant?.fieldIds.includes(field.ref.fieldId) ?? false} onChange={event => {
           const fieldIds = event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : (grant?.fieldIds ?? []).filter(id => id !== field.ref.fieldId)
-          onChange('tableGrant', { ...grant, operations: [operation], readPurposes: ['condition', 'derivedWrite'], fieldIds })
-          if (operation === 'readRecord' || operation === 'queryRecords') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })
+          onChange('tableGrant', { ...grant, operations: [operation], readPurposes: operation === 'queryTableSchema' ? [] : ['condition', 'derivedWrite'], fieldIds })
+          if (operation === 'readRecord' || operation === 'queryRecords' || operation === 'queryTableSchema') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })
         }} />{field.name} <code className="break-all text-xs">{field.ref.fieldId}</code>
       </label>)}</fieldset>}
       <Arguments key={JSON.stringify(data.arguments)} value={data.arguments} onChange={value => { onChange('argumentsValid', true); onChange('arguments', value) }} onInvalid={() => onChange('argumentsValid', false)} />
@@ -110,6 +110,7 @@ function initialArguments(operation: string, table: Schema['DataTableView']): Re
   const expectedContentRevision = "{record['contentRevision']}"
   switch (operation) {
     case 'createRecord': return { ...identity, values: {} }
+    case 'queryTableSchema': return { ...identity, fieldIds: [] }
     case 'queryRecords': return { ...identity, fieldIds: [], readPurpose: 'condition', filter: null, orderBy: [], cursor: null, limit: 100 }
     case 'readRecord': return { recordRef, fieldIds: [], readPurpose: 'condition' }
     case 'updateRecord': return { recordRef, changes: {}, expectedContentRevision }

@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-schema", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -229,6 +229,20 @@ async def test_real_project_batch_http(
                     document['content']['edges'][-1]['target'] = 'second-write'
                     document['content']['edges'].append({'id': 'second-end', 'source': 'second-write', 'target': 'end'})
                     next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{second_saved['ref']}", 'expectedLinkRevision': "{second_saved['linkRevision']}", 'replaceAllowed': False})
+            if scenario == 'data-schema':
+                nodes.extend([
+                    {'id': 'schema', 'type': 'project_data', 'position': {'x': 100, 'y': 650}, 'data': {
+                        'moduleType': 'project_data', 'operation': 'queryTableSchema', 'variableName': 'schema',
+                        'arguments': {'tableId': source_table['tableId'], 'datasetGeneration': source_table['datasetGeneration'], 'fieldIds': [source_field]},
+                        'tableGrant': {'tableId': source_table['tableId'], 'datasetGeneration': source_table['datasetGeneration'], 'operations': ['queryTableSchema'], 'fieldIds': [source_field], 'readPurposes': []},
+                    }},
+                    {'id': 'schema-check', 'type': 'condition', 'position': {'x': 100, 'y': 670}, 'data': {'moduleType': 'condition', 'leftValue': "{schema['fields'][0]['key']}", 'rightValue': 'code'}},
+                ])
+                next(edge for edge in document['content']['edges'] if edge['id'] == 'query-data')['target'] = 'schema'
+                document['content']['edges'].extend([
+                    {'id': 'schema-check', 'source': 'schema', 'target': 'schema-check'},
+                    {'id': 'schema-query', 'source': 'schema-check', 'target': 'query', 'sourceHandle': 'true'},
+                ])
             if scenario in {'data-subflow', 'data-subflow-cancel'}:
                 write = next(n for n in nodes if n['id'] == 'write')
                 write['data']['arguments']['values'][field_id] = '{value}'
@@ -644,7 +658,7 @@ async def test_real_project_batch_http(
                 assert rows['total'] == 1
                 assert rows['items'][0]['ref'] == original['result']['ref']
                 assert rows['items'][0]['values'][0]['value'] == 'before-真实参数-001'
-            elif scenario in {"data", "data-old-candidate"}:
+            elif scenario in {"data", "data-schema", "data-old-candidate"}:
                 assert detail['statusCounts']['succeeded'] == 2, {
                     'batch': detail,
                     'tasks': [(await client.get(prefix + f"/tasks/{task['taskId']}")).json() for task in tasks],

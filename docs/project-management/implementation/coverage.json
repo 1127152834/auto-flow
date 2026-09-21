@@ -7242,6 +7242,15 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "R1 queryTableSchema 的显式字段、权限、版本和真实 worker 子范围",
+          "limitations": "保持 partially_verified，当前候选三平台打包/完整原生链待验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -7266,15 +7275,48 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "checks": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：节点返回当前稳定字段和结构修订，读取不增加写权限；不据邻近测试推定覆盖"
+            "file": "apps/backend/tests/integration/test_project_table_schema_capability.py",
+            "symbol": "test_schema_query_is_explicit_current_and_read_only",
+            "scope": "当前稳定字段属性/修订、系统状态只读；重复查询不增加占用、读证据或数据修订",
+            "level": "automated_integration"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "当前生产 ProjectWorkerCapabilities.DATA_COMMANDS 无查询表/字段结构操作；queryRecords 返回记录不是字段/结构能力端口。管理端字段列表已存在，工作流受控查询尚未接通。"
+            "file": "apps/backend/tests/integration/test_project_table_schema_capability.py",
+            "symbol": "test_schema_query_rejects_invalid_or_ungranted_target_without_effects",
+            "scope": "空/重复字段、越权表/项目/字段、旧代次、已删除字段、撤权/结束 Run 和非活动项目全部无副作用拒绝",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_table_schema_capability.py",
+            "symbol": "test_schema_query_returns_only_selected_source_metadata_and_no_write_grant",
+            "scope": "所选 Sheets 列 B/direction 显式投影；不能用结构查询权限修改记录，零 Google 写入",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_capability_rpc.py",
+            "symbol": "test_child_capability_requires_live_frozen_parent_call",
+            "scope": "schema 命令受父 Task 与冻结子节点字段/操作交集限制、父调用必须存活",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "data-schema 参数场景，真实 worker 使用结构结果条件分支后执行已有合法写入与 End 保存。仅此参数范围。",
+            "level": "automated_real_worker"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/workflows/tests/project-data-config.test.tsx",
+            "testName": "selects explicit schema fields and keeps the query free of write authority",
+            "scope": "显式字段同步请求与只读 grant，结果变量保留",
+            "level": "automated_component"
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "production_evidence_missing",
+            "detail": "R1 当前本机实际 worker 与受控来源通过；新三平台打包与原生完整交互链待验收，C 候选矩阵不包含 R1。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -16270,5 +16312,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-21: 当前 225 条有范围断言 / 26 条尚无直接断言，191 partially_verified / 60 planned / 0 verified。历史 73 条失效预定路径保留，实际映射逐条记录。S1–S5 和 C1–C3 已补实现及局部证据；C4 回归/新三平台、R1–R5 已批准实施仍推进；历史三平台通过不代表新候选或完整 PM9 完成。releaseAccepted=false。"
+  "pm9_note": "2026-09-21: 当前 226 条有范围断言 / 25 条尚无直接断言，191 partially_verified / 60 planned / 0 verified。历史 73 条失效预定路径保留，实际映射逐条记录。S1–S5 和 C1–C3 已补实现及局部证据；C4 回归/新三平台、R1 已实现并补本机真实 worker，R2→R5→R3→R4 继续；历史三平台通过不代表新候选或完整 PM9 完成。releaseAccepted=false。"
 }

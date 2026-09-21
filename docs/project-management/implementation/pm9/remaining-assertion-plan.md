@@ -2,7 +2,7 @@
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；C1–C4 和 R1–R5 设计已批准；M1–M3 仍 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 225 条有明确范围的断言，26 条尚无已定位断言；191 partially_verified / 60 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 226 条有明确范围的断言，25 条尚无已定位断言；191 partially_verified / 60 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 ## 本轮已经执行的补证
 
@@ -90,3 +90,7 @@
 ## 2026-09-21 共享领取更新
 
 第 6 项原共享领取实现缺失已由 C1–C3 修复和通过断言 supersede。DATA-ID-06、DATA-SH-13、DATA-SH-14 分别补公共键/独立游标、真实 worker 三类交接及身份列冲突拒绝；只升为 partially_verified。后端 20 项共享集成和 UI 22 项、真实 worker 最新状态分支 3 项通过；C4 全量/新三平台继续。Google 实网与具体身份列错误在真实页面展示仍保留待验收。R1→R2→R5→R3→R4 已获批准，不能再写成等待架构决定。
+
+## R1 更新（2026-09-21）
+
+第 1 项工作流表结构查询实现缺失已 superseded：queryTableSchema 在 domain/service/repository/RPC/prepare/节点配置接通，显式 fieldIds 与冻结 scope，当前结构只读投影，原系统状态只读。14 项专属拒绝/无副作用/来源元数据断言、子流程交集、真实 worker data-schema 通过。226 有断言/25 未定位；状态仍 191 partial/60 planned/0 verified。新候选三平台和完整 UI 原生链不由现有 C 矩阵替代。

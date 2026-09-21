@@ -873,5 +873,7 @@ def _workflow_data_manifest(session: Session, automation: AutomationRecord) -> d
             required = 'modifyField' if operation == 'previewFieldChange' else operation
             if not isinstance(grant, dict) or grant.get('operations') != [required]:
                 raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点授权必须与节点操作一致', 422)
+            if required == 'queryTableSchema' and not grant.get('fieldIds'):
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '查询表结构必须明确选择字段', 422)
             grants.append(grant)
     return {'tableGrants': grants}

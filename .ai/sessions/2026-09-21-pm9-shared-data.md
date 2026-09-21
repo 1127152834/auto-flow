@@ -19,3 +19,7 @@ f580 本机真实 public145 内核 26 passed / 279.99s，早前错误 Pro 路径
 ## C3 恢复和原因展示（confirmed，2026-09-21）
 
 生产 376b8a59：真实 worker 29 项通过；最新共享身份 3 项进一步断言 P 非空状态/Q 空状态与 owner busy=false，通过。人工继续、停止、精确所属进程失联后仅清理完成才可重领；旧人工命令拒绝，最终零活动占用。Google transport 受控，不计实网。UI 22 项及完整前端 5460/406、typecheck/lint/OpenAPI、scripts 101 通过。全后端仍运行，4 个 Android 历史升级用例硬编码 pm08，已复现新 head pm10 不符并修正测试，未改迁移实现。C4 新三平台及全量待收齐。覆盖仅 3 条 planned→partial，合计 225 有断言/26 无，191 partial/60 planned/0 verified。
+
+## R1 表结构查询（confirmed，2026-09-21）
+
+复用 Task scope、catalog 元数据、绑定映射和现有数据节点 RPC；显式非空字段、当前结构和只读状态属性，不创建占用或读证据。节点字段选择与输出变量接通，子流程按父权限和冻结声明交集。91 项相关回归、最新专属 14 项、UI 4 项、真实 worker data-schema 1 项（两 Task 加环境保存/恢复）通过；ruff/mypy404/typecheck/lint/OpenAPI 通过。覆盖只新增 DATA-SCHEMA-01 的具体断言，226有/25无、191partial/60planned/0verified。C候选21f8bb1e矩阵35597323657仍独立运行、不含R1；R1后续新平台验收待定。R2→R5→R3→R4 继续，不增加 M1–M3。
