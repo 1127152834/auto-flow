@@ -1,0 +1,69 @@
+{
+  "evidenceId": "BE-B6-026-network-sharing",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准增强",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/advanced.py#ShareFileExecutor",
+      "reference/WebRPA/backend/app/executors/advanced.py#ShareFolderExecutor",
+      "reference/WebRPA/backend/app/executors/advanced.py#StopShareExecutor",
+      "reference/WebRPA/backend/app/executors/screen_share.py",
+      "reference/WebRPA/backend/app/services/file_share.py",
+      "reference/WebRPA/backend/app/services/file_share_page.py",
+      "reference/WebRPA/backend/app/services/screen_share.py"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "share_file",
+    "share_folder",
+    "stop_share",
+    "start_screen_share",
+    "stop_screen_share"
+  ],
+  "implemented": [
+    "保留文件、可读写文件夹和MJPEG屏幕共享的字段、返回值、变量写回及提示语义",
+    "共享服务由sidecar级宿主持有，启动节点所属worker退出后仍可访问，后续独立运行可按端口停止",
+    "文件夹接口支持列表、新建目录、multipart上传、下载和删除；进程退出统一关闭全部服务",
+    "屏幕共享保留帧率、JPEG质量、缩放、实时帧及状态接口"
+  ],
+  "adaptations": [
+    "复用现有DesktopActionGateway作为worker与sidecar的内部命令通道，不把共享服务暴露为前端动作",
+    "修复冻结源码HTTP处理器类级配置导致多个端口互相串资源的问题，每个服务实例使用独立处理器子类",
+    "停止时显式关闭HTTP服务器并等待线程结束，资源锁在服务真正关闭后释放",
+    "移除冻结页面中与产品无关的提示注入文字，保留原共享页面交互"
+  ],
+  "checks": [
+    {
+      "command": "pytest network sharing unit, actual HTTP host, frozen-source differential, cross-run worker and shared coordinator regression",
+      "result": "69 passed",
+      "covers": "五节点字段与变量、两端口隔离、文件夹读写、worker退出后服务持续、跨运行停止、worker协议及协调器"
+    },
+    {
+      "command": "native mss capture and actual screen-share /frame probe on macOS arm64",
+      "result": "passed",
+      "covers": "1800x1169真实屏幕捕获、真实JPEG帧、状态接口及宿主关闭"
+    },
+    {
+      "command": "Ruff, mypy and git diff check",
+      "result": "passed",
+      "covers": "迁入执行器、服务宿主、生产注册、共享生命周期和差分工具"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest temporary directory and ephemeral localhost ports",
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "nativeMacScreenCaptureTested": true,
+    "formalElectronUiTested": false,
+    "secondLanDeviceTested": false,
+    "windowsTested": false
+  },
+  "remaining": [
+    "正式Electron中通过真实UI配置、保存、重开、启动和停止共享",
+    "macOS正式包验证屏幕录制权限提示、拒绝和授予后的行为",
+    "第二台局域网设备验证访问地址及写入权限",
+    "Windows正式包验证MSS捕获、端口占用、系统防火墙提示和退出清理"
+  ]
+}

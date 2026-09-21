@@ -105,6 +105,7 @@ from .math_list_ops import (
 from .media_recognition import MEDIA_RECOGNITION_EXECUTORS
 from .messaging import MESSAGE_EXECUTORS
 from .network_capture import NetworkCaptureExecutor
+from .network_sharing import NETWORK_SHARING_EXECUTORS
 from .network_monitor import (
     NetworkMonitorStartExecutor,
     NetworkMonitorStopExecutor,
@@ -181,6 +182,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *FILE_WATCHER_EXECUTORS,
     *LOG_EXECUTORS,
     *MESSAGE_EXECUTORS,
+    *NETWORK_SHARING_EXECUTORS,
     *INPUT_TRIGGER_EXECUTORS,
     *IMAGE_TRIGGER_EXECUTORS,
     *SSH_EXECUTORS,

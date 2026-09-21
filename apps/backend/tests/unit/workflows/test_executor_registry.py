@@ -4,7 +4,6 @@ import json
 from typing import Any
 
 import pytest
-
 from autoflow.application.workflows.executors.base import (
     ModuleExecutor,
     ModuleResult,
@@ -249,6 +248,11 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "run_command",
         "printer_call",
         "sound_trigger",
+        "share_file",
+        "share_folder",
+        "stop_share",
+        "start_screen_share",
+        "stop_screen_share",
         "set_clipboard",
         "get_clipboard",
         "play_sound",

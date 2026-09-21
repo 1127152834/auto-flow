@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from fastapi import FastAPI
 
@@ -46,6 +47,7 @@ from autoflow.infrastructure.process.workflow_worker import (
     WorkflowResourceCoordinator,
     WorkflowWorkerManager,
 )
+from autoflow.infrastructure.sharing import NetworkShareHost
 
 
 class PendingWorkflowRunCommands:
@@ -156,6 +158,7 @@ class WorkflowServices:
     inspection: WorkflowInspectionService | Any | None = None
     assistant: WorkflowAssistantService | Any | None = None
     mcp: WorkflowMcpService | Any | None = None
+    shares: NetworkShareHost | None = None
     event_commands: Any | None = None
 
     async def shutdown(self) -> None:
@@ -168,6 +171,8 @@ class WorkflowServices:
             tasks.append(self.assistant.shutdown())
         if self.mcp is not None:
             tasks.append(self.mcp.shutdown())
+        if self.shares is not None:
+            tasks.append(self.shares.shutdown())
         if tasks:
             import asyncio
 
@@ -181,6 +186,8 @@ class WorkflowServices:
             return ["workflow_process_active"]
         if self.inspection is not None and self.inspection.busy():
             return ["workflow_inspection_active"]
+        if self.shares is not None and self.shares.busy():
+            return ["workflow_share_active"]
         return []
 
 
@@ -258,8 +265,28 @@ def build_workflow_services(
 
     holder: dict[str, WorkflowRunCoordinator] = {}
     inspection_holder: dict[str, WorkflowInspectionService] = {}
+    shares = NetworkShareHost()
 
     async def on_event(event: dict[str, object]) -> None:
+        if event.get("type") == "execution:desktop_action" and shares.supports(
+            event.get("action")
+        ):
+            payload = event.get("payload")
+            result = await shares.perform(
+                str(event["action"]), payload if isinstance(payload, Mapping) else {}
+            )
+            await workers.send_command(
+                str(event["runId"]),
+                {
+                    "type": "desktop_action_result",
+                    "commandId": str(uuid4()),
+                    "requestId": event["requestId"],
+                    "success": result.success,
+                    "value": result.value,
+                    "error": result.error,
+                },
+            )
+            return
         await holder["coordinator"].on_worker_event(event)
 
     async def on_exit(run_id: str, return_code: int) -> None:
@@ -321,6 +348,7 @@ def build_workflow_services(
         inspection=inspection,
         assistant=assistant,
         mcp=mcp,
+        shares=shares,
         event_commands=StudioEventCommandMux(coordinator, assistant) if assistant else None,
     )
 
