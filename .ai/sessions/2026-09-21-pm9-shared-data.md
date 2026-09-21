@@ -36,3 +36,5 @@ f580 本机真实 public145 内核 26 passed / 279.99s，早前错误 Pro 路径
 59 项后端、18 项组件/客户端检查通过；ruff/mypy(404)、typecheck/lint/OpenAPI/build 通过。DATA-SH-06 移除对应 implementation_missing，仍 partially_verified；251 条、227 有定位断言、24 无定位断言、192 partially_verified/59 planned/0 verified 均不变。早期 PM6 记录对“远端差异可查看”的范围已明确纠正，不否定其既有服务账号实网及系统凭据证据。
 
 C4 35597323657 @21f8bb1e：ARM 已通过；Windows 全量后端 3338 passed/74 skipped、前端 5460 passed/406 files，但真实 worker 13 failed/5 passed/11 deselected，进程失联原因待诊断；Intel 当时仍在运行。以上 C 候选不含 R1/R2/R5；不得算当前候选三平台通过。R3/R4 仍按批准顺序待实施，releaseAccepted=false。
+
+Windows C4 诊断（confirmed）：仅失联错误码不足以定位原因。现有 CI 加显式 pm9WorkerProbe 开关，只运行选定真实 worker 场景；测试诊断仅记录协议类型/事件类型/能力操作名、异常类/稳定码和退出码，不记录请求/结果载荷。默认全量任务不启用诊断；不改变生产行为或安全边界。probe 不作为完整三平台验收。
