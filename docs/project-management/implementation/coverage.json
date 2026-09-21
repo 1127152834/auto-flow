@@ -8269,6 +8269,10 @@
           {
             "kind": "production_evidence_missing",
             "detail": "PM9 当前打包 Sheets 全链待授权验收；拉取提交并发仍需测试"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "Sheets 新行普通 number 字段为文本时，当前 pull 返回 422 INVALID_PROJECT_DATA，未保留坏业务值供人工标记。Excel 同类严格失败已读代码、未实测；D1 来源保留与诊断契约 proposed，尚未批准/实现。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -9290,12 +9294,23 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-22",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_invalid_business_value_can_be_marked_but_active_owner_blocks_status",
+            "scope": "显式已有坏业务值 fixture，真实 HTTP 可标状态；held/reconciling 阻断且不改记录，模拟确认释放后可清空，原值/内容版本不变、无同步意图和云写。来源导入保留未验证，实际 Sheets 反例仍失败。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：格式错误记录仍可人工设状态，占用或未知则明确阻断；不据邻近测试推定覆盖"
+            "detail": "真实界面占用任务定位/处理入口和真实 worker 释放后重试的同一场景尚未闭合。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "当前打包完整来源格式错误→人工状态链未验证；本测试明确预置已有坏业务值。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -10242,6 +10257,10 @@
           {
             "kind": "production_evidence_missing",
             "detail": "导入不合格值保留、编辑只验证 Patch 和仍可人工改状态的组合场景待补"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "Sheets 新行普通 number 字段为文本时，当前 pull 返回 422 INVALID_PROJECT_DATA，未保留坏业务值供人工标记。Excel 同类严格失败已读代码、未实测；D1 来源保留与诊断契约 proposed，尚未批准/实现。"
           }
         ],
         "statusBeforeReview": "verified"

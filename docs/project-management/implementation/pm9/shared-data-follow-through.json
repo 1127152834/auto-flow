@@ -1,6 +1,6 @@
 {
   "date": "2026-09-22",
-  "status": "implementing",
+  "status": "implemented_review_fixes_complete_native_follow_up_pending",
   "releaseAccepted": false,
   "approvedOrder": [
     "C1",
@@ -114,7 +114,8 @@
         "DATA-LIFE-09",
         "DATA-SCHEMA-08"
       ]
-    }
+    },
+    "postReviewStatus": "17 passed in 19.73s; includes two held/reconciling cases with explicit preexisting invalid-value fixture. Local supplemental checks after frozen CI candidate."
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -238,7 +239,8 @@
   "remaining": [
     "Three independent review findings fixed with RED counterexamples; final affected/full regression and current native matrix pending.",
     "Current packaged complete Sheets chain, OAuth, real Google system UUID tests, physical native acceptance and signing identities remain external acceptance.",
-    "S4 Windows existing-file overwrite/append/read and unapproved M1-M3 remain actual capability gaps."
+    "S4 Windows existing-file overwrite/append/read and unapproved M1-M3 remain actual capability gaps.",
+    "D1 source ordinary business format errors: Sheets 422 reproduced; Excel strict failure code inspected only. Proposed contract awaits separate confirmation."
   ],
   "R4SourceHashes": {
     "apps/backend/src/autoflow/adapters/http/project_schemas.py": "d4c92eb57a4cce6719b8cfcababf1d5b0216793cd8f99473b589423d5bbfa01f",
@@ -302,6 +304,22 @@
         "localVerification": "Controlled delayed HTTP counterexample: original 1 failed/1 passed; corrected 4 passed in 3.66s including normal and delayed copies. Temporary copy removed; committed browser command/lifecycle files 20 passed in 2.09s."
       }
     ],
-    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged."
+    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged.",
+    "followUpRuns": [
+      {
+        "platform": "win32-x64",
+        "runId": 35633602923,
+        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633602923",
+        "status": "in_progress"
+      },
+      {
+        "platform": "darwin-arm64",
+        "runId": 35633607909,
+        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633607909",
+        "status": "in_progress"
+      }
+    ]
   }
 }

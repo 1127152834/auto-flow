@@ -210,3 +210,5 @@ DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源�
 新增两项直接业务场景，生产源码未变：DATA-LIFE-09 在真实 HTTP 归档收尾后保留未发送本地值及原意图，新推送 409、远端无写；DATA-SCHEMA-08 先由未决意图阻断本地字段删除，明确放弃后删除本地字段而同名远端列/值保持，状态与关联修订不变。两个相关完整文件 21 passed（17.71 秒），全目录 Ruff 通过。这两项为当前 Mac 本地追加证据，不混入 d75297fb 冻结 CI 的测试总数。
 
 当前 251 条中 232 有定位断言、19 未定位；197 partially_verified / 54 planned / 0 verified。LIFE-09 的活动 worker/保存/未知写联合链、完整打包和实网条件仍保留，releaseAccepted=false。
+
+2026-09-22 最新补证：已有坏业务值 fixture 的 HTTP 状态设置/占用 held 与 reconciling 拒绝/模拟释放后清空通过；17 项共享领取回归。实际从 Sheets 引入 number 映射文本时 422，属于实现缺失，D1 来源保留与诊断规格 proposed，不能称作只差实网。当前机器统计 251/233 有断言/18 未定位，196 partial/55 planned/0 verified；前文 197/54 为 LIFE-09 原本已 partial 却重复计入升级的手工误差，本节 supersede。未改变任何条目状态。当前补跑固定 0d7524d9，后补的状态场景单独保留本机范围。

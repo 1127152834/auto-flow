@@ -327,8 +327,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "external_acceptance_pending",
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -587,9 +587,9 @@
           "plannedTestExists": false,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "external_acceptance_pending",
+            "test_missing",
             "production_evidence_missing",
-            "test_missing"
+            "external_acceptance_pending"
           ]
         },
         {
@@ -780,8 +780,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 10,
           "gapKinds": [
-            "external_acceptance_pending",
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1001,8 +1001,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "external_acceptance_pending",
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1182,8 +1182,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 9,
           "gapKinds": [
-            "external_acceptance_pending",
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1193,8 +1193,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 3,
           "gapKinds": [
-            "external_acceptance_pending",
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1214,8 +1214,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "external_acceptance_pending",
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1256,7 +1256,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "implementation_missing"
           ]
         },
         {
@@ -1427,9 +1428,10 @@
           "status": "partially_verified",
           "evidenceCount": 2,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "test_missing",
+            "production_evidence_missing"
           ]
         },
         {
@@ -1549,8 +1551,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 3,
           "gapKinds": [
-            "external_acceptance_pending",
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1600,7 +1602,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "implementation_missing"
           ]
         },
         {
@@ -2319,8 +2322,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 3,
           "gapKinds": [
-            "production_evidence_missing",
-            "test_missing"
+            "test_missing",
+            "production_evidence_missing"
           ]
         },
         {
@@ -2605,8 +2608,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 232,
-    "withNoLocatedAssertion": 19,
+    "withAssertions": 233,
+    "withNoLocatedAssertion": 18,
     "statuses": {
       "partially_verified": 196,
       "planned": 55

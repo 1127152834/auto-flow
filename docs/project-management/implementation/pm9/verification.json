@@ -184,6 +184,22 @@
         "localVerification": "Controlled delayed HTTP counterexample: original 1 failed/1 passed; corrected 4 passed in 3.66s including normal and delayed copies. Temporary copy removed; committed browser command/lifecycle files 20 passed in 2.09s."
       }
     ],
-    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged."
+    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged.",
+    "followUpRuns": [
+      {
+        "platform": "win32-x64",
+        "runId": 35633602923,
+        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633602923",
+        "status": "in_progress"
+      },
+      {
+        "platform": "darwin-arm64",
+        "runId": 35633607909,
+        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633607909",
+        "status": "in_progress"
+      }
+    ]
   }
 }

@@ -78,3 +78,5 @@ DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源�
 当前 251 条中 232 有定位断言、19 未定位；197 partially_verified / 54 planned / 0 verified。LIFE-09 的活动 worker/保存/未知写联合链、完整打包和实网条件仍保留，releaseAccepted=false。
 
 2026-09-22 当前 CI 两个失败均保留：Windows 调度终结测试一秒总预算、ARM 真实 HTTP 控件默认一秒等待。按实际通知/HTTP 完成修正测试，生产源码不变；运行与反例见 final-review 知识记录。不得把旧矩阵或本机通过说成当前三平台全通过。
+
+2026-09-22 后续：17 项共享领取文件通过，增加已有坏业务值的状态边界断言。Sheets 坏普通值无法物化的新缺口已复现，D1 具体规格/契约/切片已记录 proposed 并单独询问；C/R 不受阻。机器重算修正手工统计错误为 233 有断言/18 未定位/196 partial/55 planned/0 verified（此前 LIFE-09 已 partial，不能重复算升级）。

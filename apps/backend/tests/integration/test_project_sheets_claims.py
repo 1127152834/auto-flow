@@ -384,3 +384,61 @@ def test_push_identity_observation_invalidates_stale_peer_claims(tmp_path, chang
                 selected = SqlAlchemyProjectInputGroups(session).select_required(bound.project, plan_for(bound))
                 assert selected.status != 'ready', (change, bound.table, selected)
         assert first.records()[0] == local and first.transport.changes() == writes
+
+
+@pytest.mark.parametrize('lease_state', ['held', 'reconciling'])
+def test_invalid_business_value_can_be_marked_but_active_owner_blocks_status(tmp_path, lease_state):
+    from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
+    from autoflow.domain.project_data.identity import RecordKey, encode_record_key
+    from autoflow.domain.project_data.rules import validate_value
+    from autoflow.domain.projects.models import ProjectError
+    from autoflow.infrastructure.database.project_data_models import DataRecordRow
+    from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+    from tests.integration.test_project_sheets_sync import COLUMNS, sync_operations
+
+    transport = FakeSheetsTransport({'数据': [['编号', '标题', '金额'], ['A-1', 'valid task input', 1]]})
+    with open_sheets_table(tmp_path, transport, [*COLUMNS, ('amount', '金额', 'number')]) as bound:
+        pull(bound)
+        # Represent an already materialized import/legacy business-format error.
+        # Current Sheets ingestion rejects this raw value; that separate gap remains open.
+        with bound.client.app.state.session_factory.begin() as session:
+            row, = session.scalars(select(DataRecordRow)).all()
+            row.values_json = {**row.values_json, bound.field_id('amount'):'not-a-number'}
+        before = bound.records()[0]
+        amount = next(cell['value'] for cell in before['values'] if cell['fieldId'] == bound.field_id('amount'))
+        assert amount == 'not-a-number'
+        with pytest.raises(ProjectError):
+            validate_value({key:bound.fields['amount'][key] for key in ('key','name','type','required','validation')}, amount)
+        created = bound.client.post(bound.url('/statuses'), headers=new_key(), json={
+            'name':'报废', 'color':'#123456', 'order':0, 'expectedTableRevision':bound.table_revision(),
+        })
+        assert created.status_code == 201, created.text
+        status = created.json()['statusId']
+        encoded = encode_record_key(RecordKey(**before['ref']['recordKey']))
+        url = bound.url('/records/'+encoded+'/status')
+        payload = {'datasetGeneration':bound.dataset_generation(), 'recordKeyType':'text', 'statusId':status, 'expectedStatusRevision':before['statusRevision']}
+        marked = bound.client.put(url, headers=new_key(), json=payload)
+        assert marked.status_code == 200, marked.text
+        marked = marked.json()
+        assert marked['statusId'] == status and marked['statusRevision'] == before['statusRevision'] + 1
+        assert marked['values'] == before['values'] and marked['contentRevision'] == before['contentRevision']
+        batch = start_bound(bound)
+        factory = bound.client.app.state.session_factory
+        assert ProjectBatchScheduler.claim_data_task(factory, bound.project, batch.batch_id) == 'ready'
+        with factory.begin() as session:
+            lease, = session.scalars(select(ProjectRecordLeaseRow)).all()
+            lease.state = lease_state
+        payload.update(statusId=None, expectedStatusRevision=marked['statusRevision'])
+        blocked = bound.client.put(url, headers=new_key(), json=payload)
+        assert blocked.status_code == 409 and blocked.json()['error']['code'] == 'RECORD_IN_USE', blocked.text
+        assert bound.records()[0] == marked
+        with factory.begin() as session:
+            lease, = session.scalars(select(ProjectRecordLeaseRow)).all()
+            lease.state = 'released'  # Fixture represents confirmed owner termination; real cleanup is C4 evidence.
+            session.get(WorkflowRunRow, lease.run_id).status = 'succeeded'
+        cleared = bound.client.put(url, headers=new_key(), json=payload)
+        assert cleared.status_code == 200, cleared.text
+        cleared = cleared.json()
+        assert cleared['statusId'] is None and cleared['statusRevision'] == marked['statusRevision'] + 1
+        assert cleared['values'] == before['values'] and cleared['contentRevision'] == before['contentRevision']
+        assert sync_operations(bound) == [] and transport.changes() == 0
