@@ -24,3 +24,7 @@ Sheets 补证发现并修复已有契约内根因（confirmed targeted；full re
 Sheets 空值协议补证：Google ValueRange 对读取结果省略末尾空行/列，写 null 会跳过、写空字符串才清空（来源 https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values#ValueRange）。将清空用例的受控读取改为实际协议的空列表后先失败；核验单元格提取时将未返回的格视为空字符串，严格 typed _same 比较不变。fed0b4c1 矩阵因该生产修正被替代；等本机定向/全量完成后仅启动一个最终候选矩阵。
 
 发送/放弃交错补证（confirmed）：放弃操作在事务外核对旧状态，却没有给已有 transition 传 expected_status_revision，可能把已确认操作改成放弃。确定性 HTTP 交错先复现失败，再用一行事务 CAS 参数修复；同时覆盖放弃先胜，后续推送不发送，并且拉取仍保留本地值与内容修订。DATA-SYNC-01/06 增加直接映射，216 有断言 / 35 未定位，188 partial / 63 planned / 0 verified 未变。
+
+新增数据能力方案（proposed）：docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md 明确 R1 只读结构请求、R2 删除影响事务、R3 系统 UUID 原计划核验、R4 来源增列依赖和 R5 只读观察的契约/拒绝/切片/测试；按 AGENTS.md 架构改动规则，尚未实现这五个新增端口，等待确认。已批准修复和回归不依赖此决定。
+
+本机完整回归（confirmed）：fed0b4c1 全后端 3311 passed、60 skipped、2 warnings，587.44 秒；后续空 ValueRange 与放弃 CAS 修改由 60 项相关用例、ruff/mypy 通过，源码候选 82c067c9。此前 95508bfc/fed0b4c1 两个未完成矩阵均只作被替代记录，最终矩阵在本机稳定后启动。

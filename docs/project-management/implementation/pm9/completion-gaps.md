@@ -1,6 +1,6 @@
 # PM9 剩余工作复核
 
-日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 fed0b4c1；置信度：高（已运行断言），完整发行验收仍未满足。
+日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 82c067c9；置信度：高（已运行断言），完整发行验收仍未满足。
 
 **本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 最终独立审查的 4 项 Important 已修复，26 个真实项目 worker 场景复跑通过；完整后端 3297 和前端 5459 通过的版本边界见报告。后续补证又修复 Windows Job 成员退出和 Sheets 字段/原版本快照，原生 92 项与 Sheets 相关 46 项定向通过，fed0b4c1 完整三平台验证运行中。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。这些数字不代表整项规格或实机安装包已经验收。
 
@@ -152,3 +152,5 @@ Windows Job active=0 仍有子进程句柄未退出的真实反例已修复：�
 双项目 Sheets 不同字段相互覆盖、未知原操作错误核验新值、发送中编辑被旧响应确认，三个反例 RED→GREEN。复用现有 request JSON 冻结字段和值、未发送合并推进版本、事务 CAS 登记发送；旧无快照意图拒绝猜测。相关 46 passed；受控传输不称为 Google 实网。该修复影响各平台，旧 18435502 矩阵被后续候选替代，新候选需完整三平台回归。
 
 本机新 ARM 能力包完整性、隔离安装启动/退出、真实原生打开选择/取消和保存取消通过（见 install-capabilities-darwin-arm64.json）；包早于本次 Sheets 修复，不能当作其打包验证。完整退出条件未满足，releaseAccepted=false。
+
+最终本机回归：fed0b4c1 完整后端 3311 passed / 60 skipped / 2 warnings，587.44 秒。其后空格响应提取和放弃 CAS 两个有界修复在 60 项相关回归、ruff/mypy 中通过；82c067c9 新完整三平台矩阵承接最终源码验证。当前 216 有断言 / 35 未定位，状态不升级。新增数据能力的具体契约/切片已写入待确认附录 docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md。

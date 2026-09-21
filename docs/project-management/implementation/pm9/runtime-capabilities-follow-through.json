@@ -2,7 +2,7 @@
   "date": "2026-09-21",
   "status": "candidate_regression_in_progress",
   "releaseAccepted": false,
-  "codeCandidate": "fed0b4c17ddf142fdeff4d7efeece718ce925bf8",
+  "codeCandidate": "82c067c9",
   "scope": [
     "S1 frozen scoped canvas subflows",
     "S2 declared manual contract and shared UI entry",
@@ -11,7 +11,7 @@
     "S4 subset: Windows new-file publication and native Job ownership/recovery"
   ],
   "checks": {
-    "backendFull": "3297 passed, 60 skipped, 2 warnings in 578.08s after all production review fixes; later test-only refinements covered by 149 targeted cases and Windows matrix",
+    "backendFull": "3311 passed, 60 skipped, 2 warnings in 587.44s on fed0b4c1; final empty-cell extraction and abandon-CAS follow-ups covered by 60 related tests; final three-platform matrix will run full candidate.",
     "realProjectWorker": "26 passed in 274.67s after all four review fixes; actual HTTP/SQLite/CloakBrowser",
     "windowsNative": {
       "runId": 35583149567,
@@ -44,7 +44,7 @@
         "failure": "Portable ordering test stubbed Job handles but child opened the real Job; fixture corrected, final matrix will verify."
       }
     },
-    "sheetsConsistency": "46 related tests passed, 2 warnings in 23.37s. Three data-loss/version cases first failed; HTTP/SQLite and controlled transport only. Full regression pending."
+    "sheetsConsistency": "60 related tests passed, 2 warnings in 26.59s after field snapshots, sending CAS, original reconciliation, explicit empty-cell extraction and abandon CAS. HTTP/SQLite and controlled transport, not Google live."
   },
   "reports": [
     "subflow-follow-through.json",
@@ -74,7 +74,7 @@
     "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "bddefc270f6feba9388d7e15ea20758e71ff38181b9738fe48423313a8e54be4",
     "apps/backend/src/autoflow/domain/workflows/run_validation.py": "2e8018e4e65dbeafe5a39157a3cafaad04c4bef7b9714423139f0832c8ecd080",
     "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "a0c8b1117c843f8d835df4337303c41680d22345babb0e424016be4704679dd1",
-    "apps/backend/src/autoflow/application/project_sync/outbound.py": "6914b043eb92446d06ef22d01f3dd36744a9ed8d80b36afb2257ac8e975425df",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "9962b267348c194f718d76d76062fa3f6bf8a2bf89738ed163d25cde8052dca1",
     "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "b6502a9bfa89374b0beb48d57a6361e98b4e789d918569418c160dc1fbf3e9e1",
     "apps/backend/src/autoflow/infrastructure/database/project_data_records.py": "e3e6ab14465d5f24987cc3bd4fd256b2929e5032fa4f499e6b520b3563659efb"
   }

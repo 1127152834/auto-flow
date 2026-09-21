@@ -25,9 +25,10 @@
     "releaseAccepted": false,
     "newArchitecturePlan": "docs/superpowers/plans/2026-09-21-pm9-runtime-capabilities.md",
     "multiRunArchitectureAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md",
-    "latestReport": "runtime-capabilities-follow-through.json"
+    "latestReport": "runtime-capabilities-follow-through.json",
+    "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "fed0b4c17ddf142fdeff4d7efeece718ce925bf8",
+  "codeCandidate": "82c067c9",
   "checks": {
     "currentLocal": "runtime-capabilities-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -49,12 +50,10 @@
     }
   },
   "ci": {
-    "status": "in_progress",
-    "runId": 35584034884,
-    "headSha": "fed0b4c17ddf142fdeff4d7efeece718ce925bf8",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35584034884",
+    "status": "ready_for_dispatch",
+    "headSha": "82c067c9",
     "conclusion": null,
-    "scope": "Full three-platform candidate after Windows member-handle exit and Sheets field-snapshot/send-CAS fixes; supersedes incomplete 18435502 matrix 35580548930."
+    "scope": "Final three-platform candidate after targeted/full local regression. 35584034884 superseded by empty-cell and abandon-CAS fixes."
   },
   "historicalEvidence": [
     {
