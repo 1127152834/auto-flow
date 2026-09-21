@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { components } from '../../../../shared/api/generated'
 import { apiRequest } from '../../api'
 import type { NodeData } from '../../editor-store'
 import { VariableInput } from '../controls/variable-input'
 import { SelectNative as Select } from '../controls/select-native'
 import { Label } from '../controls/label'
+import { SchemaImpactDrawer } from '../../../project-data/components/SchemaImpactDrawer'
 
 type Schema = components['schemas']
-const operations = { inputs: '读取本次任务输入', readRecord: '读取记录', queryRecords: '查询记录', queryTableSchema: '查询表结构', createRecord: '创建记录', updateRecord: '更新记录', deleteRecord: '删除记录', setRecordStatus: '设置记录状态', addField: '添加字段', ensureField: '确保字段存在', modifyField: '修改字段', previewFieldChange: '预览字段变更' }
+const operations = { inputs: '读取本次任务输入', readRecord: '读取记录', queryRecords: '查询记录', queryTableSchema: '查询表结构', createRecord: '创建记录', updateRecord: '更新记录', deleteRecord: '删除记录', setRecordStatus: '设置记录状态', addField: '添加字段', ensureField: '确保字段存在', modifyField: '修改字段', previewFieldChange: '预览字段变更', previewFieldDeletion: '预览字段删除', deleteField: '删除字段' }
+
+const grantOperation = (operation: string) => ({ previewFieldChange: 'modifyField', previewFieldDeletion: 'deleteField' })[operation] ?? operation
+const readPurposes = (operation: string) => ['queryTableSchema', 'deleteField', 'previewFieldDeletion'].includes(operation) ? [] : ['condition', 'derivedWrite']
 
 export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange(key: string, value: unknown): void }) {
   const operation = String(data.operation ?? 'inputs')
@@ -23,6 +27,33 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
   const [tableTotal, setTableTotal] = useState(0)
   const [error, setError] = useState('')
   const [revision, refresh] = useState(0)
+  const [deletionImpact, setDeletionImpact] = useState<Schema['DataSchemaImpact'] | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewBusy, setPreviewBusy] = useState(false)
+  const previewRequest = useRef<AbortController | null>(null)
+  const argumentsValue = data.arguments as Record<string, unknown> | undefined
+  const fieldId = String(argumentsValue?.fieldId ?? '')
+  const deleting = operation === 'deleteField' || operation === 'previewFieldDeletion'
+  const selectedField = fields.find(field => field.ref.fieldId === fieldId)
+  useEffect(() => {
+    previewRequest.current?.abort(); setPreviewOpen(false); setDeletionImpact(null); setPreviewBusy(false)
+    return () => previewRequest.current?.abort()
+  }, [projectId, tableId, fieldId, operation, revision])
+  async function previewDeletion() {
+    const table = tables.find(item => item.tableId === tableId)
+    if (!table || !selectedField) return
+    previewRequest.current?.abort()
+    const controller = new AbortController(); previewRequest.current = controller
+    setPreviewBusy(true); setError('')
+    const candidate: Schema['DataSchemaCandidate'] = { datasetGeneration: table.datasetGeneration, expectedTableRevision: table.tableRevision,
+      removedFieldIds: [fieldId], fields: fields.filter(field => field.ref.fieldId !== fieldId).map(field => ({ kind: 'existing', fieldId: field.ref.fieldId, expectedFieldRevision: field.fieldRevision,
+        definition: { key: field.key, name: field.name, type: field.type, required: field.required, validation: field.validation } })) }
+    const result = await apiRequest<Schema['DataSchemaImpact']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/schema/preview`, { method: 'POST', body: JSON.stringify(candidate), signal: controller.signal })
+    if (controller.signal.aborted) return
+    setPreviewBusy(false)
+    if (!result.success || !result.data) { setError('删除影响读取失败，请刷新后重试'); return }
+    setDeletionImpact(result.data); setPreviewOpen(true)
+  }
   useEffect(() => {
     const reload = () => { setProjects([]); setTables([]); setFields([]); refresh(value => value + 1) }
     window.addEventListener('studio:transport-changed', reload)
@@ -52,7 +83,7 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     return () => controller.abort()
   }, [projectId, tableId, revision, projectPage, tablePage])
   function bind(table: Schema['DataTableView'], op = operation) {
-    onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [op === 'previewFieldChange' ? 'modifyField' : op], fieldIds: [], readPurposes: op === 'queryTableSchema' ? [] : ['condition', 'derivedWrite'] })
+    onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [grantOperation(op)], fieldIds: [], readPurposes: readPurposes(op) })
     onChange('argumentsValid', true)
     onChange('arguments', initialArguments(op, table))
   }
@@ -61,7 +92,7 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     <Label htmlFor="project-data-operation">操作</Label>
     <Select id="project-data-operation" value={operation} onChange={event => {
       const next = event.target.value
-      onChange('operation', next); onChange('argumentsValid', true); onChange('arguments', {}); onChange('tableGrant', undefined)
+      onChange('operation', next); if (next === 'previewFieldDeletion') onChange('variableName', 'field_deletion_preview'); onChange('argumentsValid', true); onChange('arguments', {}); onChange('tableGrant', undefined)
     }}>{Object.entries(operations).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select>
     {operation !== 'inputs' && <>
       <Label htmlFor="project-data-project">所属项目</Label>
@@ -74,13 +105,28 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
         <option value="">选择数据表</option>{tables.map(table => <option key={table.tableId} value={table.tableId}>{table.name}</option>)}
       </Select>
       <div className="flex gap-2"><button type="button" disabled={tablePage === 1} onClick={() => setTablePage(value => value - 1)}>上一页数据表</button><span>第 {tablePage} 页</span><button type="button" disabled={tablePage * 100 >= tableTotal} onClick={() => setTablePage(value => value + 1)}>下一页数据表</button></div>
-      {fields.length > 0 && <fieldset><legend>允许访问的字段</legend>{fields.map(field => <label className="flex gap-2" key={field.ref.fieldId}>
+      {!deleting && fields.length > 0 && <fieldset><legend>允许访问的字段</legend>{fields.map(field => <label className="flex gap-2" key={field.ref.fieldId}>
         <input type="checkbox" checked={grant?.fieldIds.includes(field.ref.fieldId) ?? false} onChange={event => {
           const fieldIds = event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : (grant?.fieldIds ?? []).filter(id => id !== field.ref.fieldId)
-          onChange('tableGrant', { ...grant, operations: [operation], readPurposes: operation === 'queryTableSchema' ? [] : ['condition', 'derivedWrite'], fieldIds })
+          onChange('tableGrant', { ...grant, operations: [grantOperation(operation)], readPurposes: readPurposes(operation), fieldIds })
           if (operation === 'readRecord' || operation === 'queryRecords' || operation === 'queryTableSchema') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })
         }} />{field.name} <code className="break-all text-xs">{field.ref.fieldId}</code>
       </label>)}</fieldset>}
+      {deleting && <>
+        <Label htmlFor="project-data-delete-field">删除字段</Label>
+        <Select id="project-data-delete-field" value={fieldId} onChange={event => {
+          onChange('arguments', { ...argumentsValue, fieldId: event.target.value })
+          onChange('tableGrant', { ...grant, operations: ['deleteField'], fieldIds: operation === 'previewFieldDeletion' ? [event.target.value] : [], readPurposes: [] })
+        }}><option value="">选择字段</option>{fields.map(field => <option key={field.ref.fieldId} value={field.ref.fieldId}>{field.name}</option>)}</Select>
+        <p className="text-sm text-muted-foreground">仅删除本地字段及对应值。运行时使用“预览字段删除”的结果，提交前再次检查引用。</p>
+        <button type="button" disabled={previewBusy || !selectedField || !tables.some(table => table.tableId === tableId)} onClick={() => void previewDeletion()}>{previewBusy ? '正在检查…' : '预览删除影响'}</button>
+        <SchemaImpactDrawer open={previewOpen} tableName={tables.find(table => table.tableId === tableId)?.name ?? '数据表'} sourceLabel="不删除远端来源列" confirmLabel="确认删除目标"
+          changes={selectedField ? [{ id: fieldId, name: selectedField.name, key: selectedField.key, summary: '删除本地字段及对应值' }] : []}
+          impact={deletionImpact} onOpenChange={setPreviewOpen} onConfirm={() => {
+            onChange('tableGrant', { ...grant, operations: ['deleteField'], fieldIds: [fieldId], readPurposes: [] })
+            setPreviewOpen(false)
+          }} />
+      </>}
       <Arguments key={JSON.stringify(data.arguments)} value={data.arguments} onChange={value => { onChange('argumentsValid', true); onChange('arguments', value) }} onInvalid={() => onChange('argumentsValid', false)} />
     </>}
     {error && <p role="alert">{error} <button type="button" onClick={() => refresh(value => value + 1)}>重试</button></p>}
@@ -110,6 +156,8 @@ function initialArguments(operation: string, table: Schema['DataTableView']): Re
   const expectedContentRevision = "{record['contentRevision']}"
   switch (operation) {
     case 'createRecord': return { ...identity, values: {} }
+    case 'previewFieldDeletion': return { ...identity, fieldId: '' }
+    case 'deleteField': return { ...identity, fieldId: '', expectedTableRevision: "{field_deletion_preview['tableRevision']}", impactRevision: "{field_deletion_preview['impactRevision']}" }
     case 'queryTableSchema': return { ...identity, fieldIds: [] }
     case 'queryRecords': return { ...identity, fieldIds: [], readPurpose: 'condition', filter: null, orderBy: [], cursor: null, limit: 100 }
     case 'readRecord': return { recordRef, fieldIds: [], readPurpose: 'condition' }

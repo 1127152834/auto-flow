@@ -26,3 +26,5 @@
 DATA-ID-06 新增精确公共键、本地身份和游标分离断言；DATA-SH-13 新增容量 2 的实际 worker 人工继续/取消/进程失联后按 Q 独立业务状态再领；DATA-SH-14 新增不同身份列允许保存和读取但拒绝领取的具体原因。UI 只证明已有共享原因展示及隐私，不替代该故障实际页面链。当前 225 有范围断言 / 26 未定位，191 partial / 60 planned / 0 verified；历史 73 失效预定路径不改写。C4 完整回归、新三平台及当前打包 Google 专项仍待闭合。
 
 2026-09-21 R1：DATA-SCHEMA-01 的无断言/实现缺失已由明确结构查询测试替代，逐项指向范围见 coverage.json；当前 226 有断言 / 25 未定位，状态仍 191 partial / 60 planned / 0 verified。
+
+2026-09-21 R2：DATA-SCHEMA-06 按字段删除具体断言从 planned→partial；DATA-SCHEMA-09 只补第二 Task 依赖保护，不冒充同键异型/新字段写回组合验证。当前 227 有断言/24 未定位，192 partial/59 planned/0 verified。

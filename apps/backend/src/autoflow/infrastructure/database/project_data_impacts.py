@@ -253,6 +253,7 @@ def active_task_field_dependencies(
     project_id: str,
     table: DataTableRow,
     field_id: str,
+    *, deleting_task_id: str | None = None,
 ) -> list[dict[str, Any]]:
     dependencies: list[dict[str, Any]] = []
     rows = session.execute(
@@ -291,6 +292,7 @@ def active_task_field_dependencies(
                 and grant.get("tableId") == table.id
                 and grant.get("datasetGeneration") == table.current_generation
                 and field_id in grant.get("fieldIds", [])
+                and not (task.id == deleting_task_id and grant.get("operations") == ["deleteField"])
                 for grant in binding.get("tableGrants", [])
             ):
                 references.add("capability.tableGrants")
@@ -310,6 +312,45 @@ def active_task_field_dependencies(
                 }
             )
     return dependencies
+
+
+
+def field_deletion_dependencies(session: Session, project_id: str, table: DataTableRow, field_id: str,
+                                *, deleting_task_id: str | None = None) -> list[dict[str, Any]]:
+    from .project_automation_models import ProjectAutomationRow
+    from .project_sync_models import SheetsBindingRow, SyncOperationRow
+
+    blockers: list[dict[str, Any]] = []
+    if table.identity.get("fieldId") == field_id:
+        blockers.append({"code": "IDENTITY_FIELD_PROTECTED", "message": "身份字段不能删除"})
+    binding = session.get(SheetsBindingRow, table.id)
+    if binding and any(item.get("fieldId") == field_id for item in binding.mapping):
+        blockers.append({"code": "SOURCE_FIELD_MAPPING", "message": "字段仍有来源列映射，请先处理映射"})
+    for automation in session.scalars(select(ProjectAutomationRow).where(ProjectAutomationRow.project_id == project_id)):
+        if _references_field(automation.input_plan, field_id, table.current_generation):
+            blockers.append({"code": "AUTOMATION_FIELD_DEPENDENCY", "message": "自动化输入或关联条件仍引用此字段"})
+            break
+    for dependency in active_task_field_dependencies(session, project_id, table, field_id, deleting_task_id=deleting_task_id):
+        blockers.append({"code": "ACTIVE_TASK_FIELD_DEPENDENCY", "message": "活动任务的其他节点或输入仍依赖此字段",
+                         "taskId": dependency["taskId"], "runId": dependency["runId"], "referenceSources": dependency["references"]})
+    for operation in session.scalars(select(SyncOperationRow).where(SyncOperationRow.table_id == table.id, SyncOperationRow.status != "confirmed")):
+        if (operation.error or {}).get("code") == "SYNC_ABANDONED":
+            continue
+        if _references_field(operation.request, field_id, table.current_generation):
+            blockers.append({"code": "PENDING_SYNC_FIELD_DEPENDENCY", "message": "未决同步操作仍引用此字段"})
+            break
+    return blockers
+
+
+def _references_field(value: Any, field_id: str, generation: str) -> bool:
+    if isinstance(value, dict):
+        if value.get("datasetGeneration", generation) != generation:
+            return False
+        return any(key == field_id or (key in {"fieldId", "sourceFieldId", "targetFieldId"} and item == field_id)
+                   or _references_field(item, field_id, generation) for key, item in value.items())
+    if isinstance(value, list):
+        return any(_references_field(item, field_id, generation) for item in value)
+    return False
 
 
 def _input_targets_table(item: Any, table: DataTableRow) -> bool:

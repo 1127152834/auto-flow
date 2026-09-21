@@ -68,7 +68,7 @@ def validate_candidate(
     A missing snapshot performs structural validation only. An empty snapshot means
     the table has no existing fields. Generation/table CAS remains the caller's job.
     """
-    if not isinstance(candidate, dict) or set(candidate) != {
+    if not isinstance(candidate, dict) or set(candidate) - {"removedFieldIds"} != {
         "datasetGeneration",
         "expectedTableRevision",
         "fields",
@@ -80,6 +80,10 @@ def validate_candidate(
     revision = _revision(candidate["expectedTableRevision"], "expectedTableRevision")
     if not isinstance(candidate["fields"], list):
         raise _invalid("fields", "must be an array")
+    removed = candidate.get("removedFieldIds", [])
+    if not isinstance(removed, list) or len(removed) > 1:
+        raise _invalid("removedFieldIds", "must explicitly remove at most one field")
+    removed = [_uuid(value, "removedFieldIds") for value in removed]
     snapshot = {field["ref"]["fieldId"]: field for field in current_fields or []}
     existing_ids: set[str] = set()
     client_ids: set[str] = set()
@@ -160,13 +164,17 @@ def validate_candidate(
                     definition, item["existingRecordDefault"]
                 )
         fields.append(normalized)
-    if current_fields is not None and existing_ids != set(snapshot):
+    if existing_ids & set(removed):
+        raise _invalid("fields", "removed fields cannot also be retained")
+    if current_fields is not None and existing_ids | set(removed) != set(snapshot):
         raise _invalid("fields", "must contain every current field exactly once")
     result = {
         "datasetGeneration": generation,
         "expectedTableRevision": revision,
         "fields": fields,
     }
+    if removed:
+        result["removedFieldIds"] = removed
     try:
         canonical_bytes(result)
     except (ValueError, TypeError, UnicodeError) as error:

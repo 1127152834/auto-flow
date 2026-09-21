@@ -3,10 +3,12 @@ from __future__ import annotations
 from autoflow.domain.project_data.capabilities import (
     AddProjectFieldCommand,
     CreateProjectRecordCommand,
+    DeleteProjectFieldCommand,
     DeleteProjectRecordCommand,
     EnsureProjectFieldCommand,
     ModifyProjectFieldCommand,
     PreviewProjectFieldChangeRequest,
+    PreviewProjectFieldDeletionRequest,
     QueryProjectRecordsRequest,
     QueryProjectTableSchemaRequest,
     ReadProjectRecordRequest,
@@ -70,6 +72,12 @@ class ProjectDataCapabilityService:
         self, scope: TaskCapabilityScope, command: EnsureProjectFieldCommand
     ):
         return self.repository.ensure_field(scope, command)
+
+    def preview_field_deletion(self, scope: TaskCapabilityScope, request: PreviewProjectFieldDeletionRequest):
+        return self.repository.preview_field_deletion(scope, request)
+
+    def delete_field(self, scope: TaskCapabilityScope, command: DeleteProjectFieldCommand):
+        return self.repository.delete_field(scope, command)
 
     def modify_field(
         self, scope: TaskCapabilityScope, command: ModifyProjectFieldCommand

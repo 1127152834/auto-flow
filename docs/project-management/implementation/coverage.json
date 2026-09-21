@@ -7575,8 +7575,18 @@
       "primary_package": "PM4-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_node_writes.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "R2 本地字段删除与真实 worker 成功/冲突子范围；不删除 Google 列",
+          "limitations": "保持 partially_verified；新平台/原生完整链未闭合",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -7599,15 +7609,60 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "checks": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：工作流删字段不能绕过身份、关联、其他任务、未决同步依赖；不据邻近测试推定覆盖"
+            "file": "apps/backend/tests/integration/test_project_field_deletion_capability.py",
+            "symbol": "test_delete_field_keeps_original_command_and_other_record_facts",
+            "scope": "显式完整草稿删字段及对应值，内容/表版本推进；状态和关联不变；原命令重放无第二次删除，变参原键拒绝",
+            "level": "automated_integration"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "当前生产 DATA_COMMANDS 与 ProjectDataCapabilityService 无 deleteField 操作；不能用管理端删除能力和行 lease 代替节点结构授权。"
+            "file": "apps/backend/tests/integration/test_project_field_deletion_capability.py",
+            "symbol": "test_delete_field_rechecks_dependencies_after_preview",
+            "scope": "预览后身份、同 Task 其他读节点、独立第二 Task、自动化输入引用均以对应依赖码阻断；表/代次变更及取消也拒绝，原字段和记录值保留",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_field_deletion_capability.py",
+            "symbol": "test_deleted_field_identity_cannot_be_created_again",
+            "scope": "删除审计阻止以已退休 fieldId 再次 addField",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_field_deletion_capability.py",
+            "symbol": "test_source_mapping_and_unsent_intent_block_field_deletion",
+            "scope": "来源映射与未决出站意图各有 blocker；零 Google 写入",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_field_deletion_capability.py",
+            "symbol": "test_field_deletion_advances_only_a_current_owned_record_cursor",
+            "scope": "本 Task 当前游标随合法字段删除推进；已落后于人工新值的游标不更新，后续旧任务写仍冲突",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "data-delete-field / data-delete-field-conflict 两参数：实际 worker 预览/删除成功；预览后实际 HTTP 新增字段导致提交拒绝，此前 createRecord 保留、未重复保存 End。任务详情包含已确认删除事实。",
+            "level": "automated_real_worker"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/workflows/tests/project-data-config.test.tsx",
+            "testName": "previews a field removal and grants that target only after confirmation",
+            "scope": "明确目标、完整候选预览、确认后仅授权所选字段；配置预览不删除数据",
+            "level": "automated_component"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/workflows/tests/project-data-config.test.tsx",
+            "testName": "blocks field deletion confirmation while source mapping remains",
+            "scope": "来源映射 blocker 展示具体原因并禁用确认，不授予删除字段权限",
+            "level": "automated_component"
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "production_evidence_missing",
+            "detail": "当前源码本机真实 worker 和 UI 组件通过；R2 新三平台打包完整链及原生操作待验收。C 候选矩阵不包含 R1/R2。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -7747,16 +7802,18 @@
             "symbol": "checkBusinessCombinations",
             "scope": "T2 旧契约处于真实 waiting_manual 时，独立 T1 确保字段、写记录/状态并完成；T2 保持原 Run 后续可按旧字段契约写入。S5 Mac 源报告通过，当前打包结果见 CI；不证明新字段写回/异型冲突/删字段保护全部条件。",
             "level": "automated_production_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_field_deletion_capability.py",
+            "symbol": "test_delete_field_rechecks_dependencies_after_preview",
+            "scope": "预览后身份、同 Task 其他读节点、独立第二 Task、自动化输入引用均以对应依赖码阻断；表/代次变更及取消也拒绝，原字段和记录值保留",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "仍缺同场景把返回新 fieldId 写回该字段、同键异型竞争、另一任务依赖删除保护的完整直接断言。"
-          },
-          {
-            "kind": "implementation_missing",
-            "detail": "当前 DATA_COMMANDS 尚无 deleteField 节点端口；管理端删除规则不等于工作流已接通。"
+            "detail": "同键异型竞争、同一组合场景的新 fieldId 后续写回仍缺完整直接断言；独立第二 Task 删除保护已有 R2 专属集成，不能将其扩写为所有组合条件完成。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -16312,5 +16369,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-21: 当前 226 条有范围断言 / 25 条尚无直接断言，191 partially_verified / 60 planned / 0 verified。历史 73 条失效预定路径保留，实际映射逐条记录。S1–S5 和 C1–C3 已补实现及局部证据；C4 回归/新三平台、R1 已实现并补本机真实 worker，R2→R5→R3→R4 继续；历史三平台通过不代表新候选或完整 PM9 完成。releaseAccepted=false。"
+  "pm9_note": "2026-09-21: 当前 227 条有范围断言 / 24 条尚无直接断言，192 partially_verified / 59 planned / 0 verified。历史 73 条失效预定路径保留，实际映射逐条记录。S1–S5 和 C1–C3 已补实现及局部证据；C4 回归/新三平台、R1/R2 已实现并补本机真实 worker，R5→R3→R4 继续；历史三平台通过不代表新候选或完整 PM9 完成。releaseAccepted=false。"
 }

@@ -23,3 +23,7 @@ f580 本机真实 public145 内核 26 passed / 279.99s，早前错误 Pro 路径
 ## R1 表结构查询（confirmed，2026-09-21）
 
 复用 Task scope、catalog 元数据、绑定映射和现有数据节点 RPC；显式非空字段、当前结构和只读状态属性，不创建占用或读证据。节点字段选择与输出变量接通，子流程按父权限和冻结声明交集。91 项相关回归、最新专属 14 项、UI 4 项、真实 worker data-schema 1 项（两 Task 加环境保存/恢复）通过；ruff/mypy404/typecheck/lint/OpenAPI 通过。覆盖只新增 DATA-SCHEMA-01 的具体断言，226有/25无、191partial/60planned/0verified。C候选21f8bb1e矩阵35597323657仍独立运行、不含R1；R1后续新平台验收待定。R2→R5→R3→R4 继续，不增加 M1–M3。
+
+## R2 本地字段删除（confirmed，2026-09-21）
+
+原 DataSchemaService 没有删除路径，现以单个显式 removedFieldIds 扩展完整草稿，抽出同 Session 提交供管理/Task 复用；修正预览末次快照与影响持久化原先不在同事务的问题。Task 自身纯删除声明排除，其他节点/Task、身份、来源映射、自动化输入引用与未决同步继续阻断。字段 ID 删除后不能复用，Task 只有当前本地 cursor 可随自己删除推进，人工新值导致的落后 cursor 不推进。节点配置使用既有 SchemaImpactDrawer 做目标预览确认，运行时 previewFieldDeletion→deleteField 仍需原影响版本。仅本地定义/值删除，不删 Google 列。180 后端定向、18 UI、真实 worker 成功/冲突 2 项、类型/lint/OpenAPI/脚本101/build通过；覆盖227有/24无，192partial/59planned/0verified。C4三平台不包含本片，R5→R3→R4继续。

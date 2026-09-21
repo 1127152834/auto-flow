@@ -18,7 +18,8 @@
     "C1",
     "C2",
     "C3",
-    "R1"
+    "R1",
+    "R2"
   ],
   "verification": {
     "scopedBackend": "158 passed, 2 warnings in 57.88s",
@@ -49,6 +50,19 @@
       "lint": "passed",
       "openapi": "passed",
       "build": "passed"
+    },
+    "R2": {
+      "backend": "180 passed, 2 warnings in 66.72s across schema, capability, RPC, shared claims and impact tests",
+      "ownershipAndDependencies": "12 passed, 2 warnings in 6.38s",
+      "realWorker": "Final R1/R2 combined: 3 passed / 26 deselected in 36.84s; includes R2 success/conflict and latest prepare guard",
+      "frontend": "18 passed / 3 files in 5.40s",
+      "ruff": "passed",
+      "mypy": "404 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed and generated type updated",
+      "scripts": "101 passed",
+      "build": "passed in 32.78s"
     }
   },
   "assertionScope": [
@@ -70,11 +84,15 @@
     "Existing shared-source UI renders local input alias and repair reason without rendering foreign project identity/link",
     "R1 explicit nonempty selected field IDs, current metadata/table revision and source-column projection; schema read adds no lease/read evidence/operation or data revisions",
     "R1 stale grant/generation, inactive project, finished Run, revoked execution, missing field and ungranted targets refuse; source schema read cannot authorize a write",
-    "R1 child query uses frozen node intersection with parent Task grants and requires a live parent call; explicit schema selection/result variable UI tested"
+    "R1 child query uses frozen node intersection with parent Task grants and requires a live parent call; explicit schema selection/result variable UI tested",
+    "R2 extends the existing full schema candidate with one explicit removedFieldIds target; rechecks dependency and impact fences inside the Task-owned transaction",
+    "R2 own delete/preview declarations do not self-block; own other node, separate Task, identity, automation reference, source mapping and pending sync references block",
+    "R2 deletion removes local definition/current values, retains status/link facts and immutable Task snapshots; original operation replay, retired field IDs and current-own-cursor versus human-new-value fencing tested",
+    "R2 configuration previews complete candidate and requires target confirmation before granting the deletion field; blocked source mapping cannot confirm; no cloud write"
   ],
   "limits": [
     "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
-    "R1 implemented with scoped local evidence; R2-R5-R3-R4 approved, not yet implemented",
+    "R1/R2 implemented with scoped local evidence; R5-R3-R4 approved, not yet implemented",
     "M1-M3 not approved",
     "Google real authorization, signing and full native platform acceptance external",
     "Local pull preserves existing readable rows and skipped blank identities; those tables remain ineligible for shared claims until identity is complete",
@@ -112,5 +130,14 @@
     "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py": "0008737ceff1a8c4df6571ca92c900b7a12bfb943a3f662e0ed49fd68b2b881c",
     "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "4d8f6851bcd5f7e57bbce07ae0cbe300ac44a9e5421d637e8a6e5769e4eba454",
     "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx": "101e92b93a7dcb79d1f240883cb92bb593249c872469029bac040cd8f71a1bbd"
+  },
+  "R2SourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py": "c8fa4aba990f9ac68242aa40ceca9a45f6739436cf5d3a8e69926acf553b386e",
+    "apps/backend/src/autoflow/infrastructure/database/project_data_impacts.py": "da70581264156398ec66772265cb367c7e431b8c64562886a9b7b6fdcd998b91",
+    "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py": "bab042ef9245aeac7b97e876eec4fcbe3e4bacb7f0373bb33c714f6c4b9b6b57",
+    "apps/backend/src/autoflow/application/project_runs/coordinator.py": "2f6466b378e45c63d1bfe26cc61689b348914b46c4ff1b789061914772598121",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "5b88061fcdbb3a228d5390799028cb90d08d4b02ba959cc889017f5e1f07a32f",
+    "apps/backend/src/autoflow/domain/project_data/schema.py": "7cd989246be50f7894a8b8d935fe4713ab0d488301c8cc09a9e9b8c8ce478e57",
+    "apps/backend/src/autoflow/domain/project_data/capabilities.py": "490af0fe9d05f521c2a254e5b6fcd18dfb511b00052944b69195dcc47fb62ea7"
   }
 }

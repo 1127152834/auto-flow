@@ -4729,6 +4729,8 @@ export type components = {
             datasetGeneration: string;
             /** Expectedtablerevision */
             expectedTableRevision: number;
+            /** Removedfieldids */
+            removedFieldIds?: string[];
             /** Fields */
             fields: (components["schemas"]["DataSchemaExisting"] | components["schemas"]["DataSchemaNew"])[];
         };
@@ -4810,14 +4812,14 @@ export type components = {
         DataSchemaReferenceAvailability: {
             /**
              * Automations
-             * @constant
+             * @enum {string}
              */
-            automations: "notImplemented";
+            automations: "notImplemented" | "available";
             /**
              * Sync
-             * @constant
+             * @enum {string}
              */
-            sync: "notImplemented";
+            sync: "notImplemented" | "available";
         };
         /** DataSchemaResult */
         DataSchemaResult: {

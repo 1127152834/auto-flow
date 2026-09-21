@@ -40,6 +40,8 @@ DATA_COMMANDS = {
     'setRecordStatus': ('set_record_status', commands.SetRecordStatusCommand),
     'addField': ('add_field', commands.AddProjectFieldCommand),
     'ensureField': ('ensure_field', commands.EnsureProjectFieldCommand),
+    'deleteField': ('delete_field', commands.DeleteProjectFieldCommand),
+    'previewFieldDeletion': ('preview_field_deletion', commands.PreviewProjectFieldDeletionRequest),
     'modifyField': ('modify_field', commands.ModifyProjectFieldCommand),
     'previewFieldChange': ('preview_field_change', commands.PreviewProjectFieldChangeRequest),
 }

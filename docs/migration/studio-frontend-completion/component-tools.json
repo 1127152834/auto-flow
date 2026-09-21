@@ -34271,7 +34271,7 @@
   {
     "component": "ProjectDataConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-    "line": 12,
+    "line": 16,
     "fields": [
       "arguments",
       "bindingProjectId",
@@ -34282,142 +34282,187 @@
     "tools": [
       "Arguments",
       "Label",
+      "SchemaImpactDrawer",
       "Select",
       "VariableInput"
     ],
     "conditions": [
       {
-        "line": 37,
+        "line": 44,
+        "expression": "!table || !selectedField"
+      },
+      {
+        "line": 52,
         "expression": "controller.signal.aborted"
       },
       {
-        "line": 38,
+        "line": 54,
         "expression": "!result.success || !result.data"
       },
       {
-        "line": 40,
+        "line": 68,
+        "expression": "controller.signal.aborted"
+      },
+      {
+        "line": 69,
+        "expression": "!result.success || !result.data"
+      },
+      {
+        "line": 71,
         "expression": "!projectId"
       },
       {
-        "line": 42,
+        "line": 73,
         "expression": "controller.signal.aborted"
       },
       {
-        "line": 43,
+        "line": 74,
         "expression": "!tableResult.success || !tableResult.data"
       },
       {
-        "line": 45,
+        "line": 76,
         "expression": "!tableId"
       },
       {
-        "line": 47,
+        "line": 78,
         "expression": "controller.signal.aborted"
       },
       {
-        "line": 48,
+        "line": 79,
         "expression": "!fieldResult.success || !fieldResult.data"
       },
       {
-        "line": 55,
-        "expression": "op === 'previewFieldChange'"
+        "line": 95,
+        "expression": "next === 'previewFieldDeletion'"
       },
       {
-        "line": 73,
+        "line": 104,
         "expression": "table"
       },
       {
-        "line": 79,
+        "line": 110,
         "expression": "event.target.checked"
       },
       {
-        "line": 81,
-        "expression": "operation === 'readRecord' || operation === 'queryRecords'"
+        "line": 112,
+        "expression": "operation === 'readRecord' || operation === 'queryRecords' || operation === 'queryTableSchema'"
+      },
+      {
+        "line": 119,
+        "expression": "operation === 'previewFieldDeletion'"
+      },
+      {
+        "line": 122,
+        "expression": "previewBusy"
+      },
+      {
+        "line": 124,
+        "expression": "selectedField"
       }
     ],
     "bindings": [
       {
-        "line": 62,
+        "line": 93,
         "attribute": "value",
         "expression": "{operation}"
       },
       {
-        "line": 62,
+        "line": 93,
         "attribute": "onChange",
-        "expression": "{event => {\n      const next = event.target.value\n      onChange('operation', next); onChange('argumentsValid', true); onChange('arguments', {}); onChange('tableGrant', undefined)\n    }}"
+        "expression": "{event => {\n      const next = event.target.value\n      onChange('operation', next); if (next === 'previewFieldDeletion') onChange('variableName', 'field_deletion_preview'); onChange('argumentsValid', true); onChange('arguments', {}); onChange('tableGrant', undefined)\n    }}"
       },
       {
-        "line": 65,
+        "line": 96,
         "attribute": "value",
         "expression": "{value}"
       },
       {
-        "line": 68,
+        "line": 99,
         "attribute": "value",
         "expression": "{projectId}"
       },
       {
-        "line": 68,
+        "line": 99,
         "attribute": "onChange",
         "expression": "{event => { setTablePage(1); onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}"
       },
       {
-        "line": 69,
+        "line": 100,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 69,
+        "line": 100,
         "attribute": "value",
         "expression": "{project.projectId}"
       },
       {
-        "line": 73,
+        "line": 104,
         "attribute": "value",
         "expression": "{tableId}"
       },
       {
-        "line": 73,
+        "line": 104,
         "attribute": "onChange",
         "expression": "{event => { const table = tables.find(item => item.tableId === event.target.value); if (table) bind(table) }}"
       },
       {
-        "line": 74,
+        "line": 105,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 74,
+        "line": 105,
         "attribute": "value",
         "expression": "{table.tableId}"
       },
       {
-        "line": 78,
+        "line": 109,
         "attribute": "checked",
         "expression": "{grant?.fieldIds.includes(field.ref.fieldId) ?? false}"
       },
       {
-        "line": 78,
+        "line": 109,
         "attribute": "onChange",
-        "expression": "{event => {\n          const fieldIds = event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : (grant?.fieldIds ?? []).filter(id => id !== field.ref.fieldId)\n          onChange('tableGrant', { ...grant, operations: [operation], readPurposes: ['condition', 'derivedWrite'], fieldIds })\n          if (operation === 'readRecord' || operation === 'queryRecords') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })\n        }}"
+        "expression": "{event => {\n          const fieldIds = event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : (grant?.fieldIds ?? []).filter(id => id !== field.ref.fieldId)\n          onChange('tableGrant', { ...grant, operations: [grantOperation(operation)], readPurposes: readPurposes(operation), fieldIds })\n          if (operation === 'readRecord' || operation === 'queryRecords' || operation === 'queryTableSchema') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })\n        }}"
       },
       {
-        "line": 84,
+        "line": 117,
+        "attribute": "value",
+        "expression": "{fieldId}"
+      },
+      {
+        "line": 117,
+        "attribute": "onChange",
+        "expression": "{event => {\n          onChange('arguments', { ...argumentsValue, fieldId: event.target.value })\n          onChange('tableGrant', { ...grant, operations: ['deleteField'], fieldIds: operation === 'previewFieldDeletion' ? [event.target.value] : [], readPurposes: [] })\n        }}"
+      },
+      {
+        "line": 120,
+        "attribute": "value",
+        "expression": "\"\""
+      },
+      {
+        "line": 120,
+        "attribute": "value",
+        "expression": "{field.ref.fieldId}"
+      },
+      {
+        "line": 130,
         "attribute": "value",
         "expression": "{data.arguments}"
       },
       {
-        "line": 84,
+        "line": 130,
         "attribute": "onChange",
         "expression": "{value => { onChange('argumentsValid', true); onChange('arguments', value) }}"
       },
       {
-        "line": 88,
+        "line": 134,
         "attribute": "value",
         "expression": "{String(data.variableName ?? '')}"
       },
       {
-        "line": 88,
+        "line": 134,
         "attribute": "onChange",
         "expression": "{value => onChange('variableName', value)}"
       }
@@ -34427,29 +34472,29 @@
   {
     "component": "Arguments",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-    "line": 92,
+    "line": 138,
     "fields": [],
     "tools": [
       "Label"
     ],
     "conditions": [
       {
-        "line": 99,
+        "line": 145,
         "expression": "!parsed || typeof parsed !== 'object' || Array.isArray(parsed)"
       },
       {
-        "line": 100,
+        "line": 146,
         "expression": "['projectId', 'operationId', 'executionGeneration'].some(key => key in parsed)"
       }
     ],
     "bindings": [
       {
-        "line": 96,
+        "line": 142,
         "attribute": "value",
         "expression": "{text}"
       },
       {
-        "line": 96,
+        "line": 142,
         "attribute": "onChange",
         "expression": "{event => setText(event.target.value)}"
       }

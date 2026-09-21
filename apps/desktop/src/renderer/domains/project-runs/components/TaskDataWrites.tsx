@@ -43,6 +43,7 @@ const kindLabels: Record<string, string> = {
   fieldAdded: '新增字段',
   fieldEnsured: '确保字段',
   fieldModified: '修改字段',
+  fieldDeleted: '删除字段',
 }
 
 const compactRecordReference = (value: string) => value.replace(

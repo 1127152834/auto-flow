@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-schema", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -202,7 +202,11 @@ async def test_real_project_batch_http(
                 source_path = prefix + f"/tables/{source_table['tableId']}"
                 source_field_response = await client.post(source_path + '/fields', headers={'Idempotency-Key': str(uuid4())}, json={'definition': {'key': 'code', 'name': '代码', 'type': 'string', 'required': False, 'validation': {}}, 'sourceColumnPolicy': 'localOnly', 'expectedTableRevision': source_table['tableRevision']})
                 source_field = source_field_response.json()['field']['ref']['fieldId']
-                source_record = await client.post(source_path + '/records', headers={'Idempotency-Key': str(uuid4())}, json={'datasetGeneration': source_table['datasetGeneration'], 'values': [{'fieldId': source_field, 'value': '001'}]})
+                if scenario.startswith('data-delete-field'):
+                    old_field = await client.post(source_path + '/fields', headers={'Idempotency-Key': str(uuid4())}, json={'definition': {'key': 'obsolete', 'name': '旧字段', 'type': 'string', 'required': False, 'validation': {}}, 'sourceColumnPolicy': 'localOnly', 'expectedTableRevision': 2})
+                    assert old_field.status_code == 200, old_field.text
+                    removed_field = old_field.json()['field']['ref']['fieldId']
+                source_record = await client.post(source_path + '/records', headers={'Idempotency-Key': str(uuid4())}, json={'datasetGeneration': source_table['datasetGeneration'], 'values': [{'fieldId': source_field, 'value': '001'}, *([{'fieldId': removed_field, 'value': 'obsolete'}] if scenario.startswith('data-delete-field') else [])]})
                 assert source_record.status_code == 201, source_record.text
                 nodes.extend([
                     {'id': 'query', 'type': 'project_data', 'position': {'x': 100, 'y': 700}, 'data': {
@@ -229,6 +233,26 @@ async def test_real_project_batch_http(
                     document['content']['edges'][-1]['target'] = 'second-write'
                     document['content']['edges'].append({'id': 'second-end', 'source': 'second-write', 'target': 'end'})
                     next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{second_saved['ref']}", 'expectedLinkRevision': "{second_saved['linkRevision']}", 'replaceAllowed': False})
+            if scenario.startswith('data-delete-field'):
+                for identity, operation in [('preview-deletion', 'previewFieldDeletion'), ('delete-field', 'deleteField')]:
+                    nodes.append({'id': identity, 'type': 'project_data', 'position': {'x': 100, 'y': 880}, 'data': {
+                        'moduleType': 'project_data', 'operation': operation, 'variableName': 'field_deletion_preview' if operation == 'previewFieldDeletion' else 'removed',
+                        'arguments': {'tableId': source_table['tableId'], 'datasetGeneration': source_table['datasetGeneration'], 'fieldId': removed_field,
+                                      **({'expectedTableRevision': "{field_deletion_preview['tableRevision']}", 'impactRevision': "{field_deletion_preview['impactRevision']}"} if operation == 'deleteField' else {})},
+                        'tableGrant': {'tableId': source_table['tableId'], 'datasetGeneration': source_table['datasetGeneration'], 'operations': ['deleteField'], 'fieldIds': [removed_field], 'readPurposes': []},
+                    }})
+                next(edge for edge in document['content']['edges'] if edge['id'] == 'end-task')['target'] = 'preview-deletion'
+                document['content']['edges'].extend([{'id': 'commit-deletion', 'source': 'preview-deletion', 'target': 'delete-field'}, {'id': 'deletion-end', 'source': 'delete-field', 'target': 'end'}])
+                if scenario.endswith('conflict'):
+                    manager = app.state.project_workflow_worker_manager
+                    original_capability = manager._on_capability
+                    async def change_schema_after_preview(run_id, generation, request):
+                        if request.get('operation') == 'deleteField':
+                            current = (await client.get(source_path)).json()
+                            changed = await client.post(source_path + '/fields', headers={'Idempotency-Key': str(uuid4())}, json={'definition': {'key': 'concurrent', 'name': '人工新字段', 'type': 'string', 'required': False, 'validation': {}}, 'sourceColumnPolicy': 'localOnly', 'expectedTableRevision': current['tableRevision']})
+                            assert changed.status_code == 200, changed.text
+                        return await original_capability(run_id, generation, request)
+                    monkeypatch.setattr(manager, '_on_capability', change_schema_after_preview)
             if scenario == 'data-schema':
                 nodes.extend([
                     {'id': 'schema', 'type': 'project_data', 'position': {'x': 100, 'y': 650}, 'data': {
@@ -321,7 +345,7 @@ async def test_real_project_batch_http(
                         "modelProviderId": None,
                     },
                     "runPolicy": {
-                        "maxTasks": 1 if scenario == "data-subflow-cancel" else 2,
+                        "maxTasks": 1 if scenario in {"data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                         "concurrency": 1,
                         "maxLiveInstances": 1,
                         "continueAfterFailure": False,
@@ -374,7 +398,7 @@ async def test_real_project_batch_http(
             payload = {
                 "expectedAutomationRevision": automation["managementRevision"],
                 "parameters": {parameter_id: "-真实参数"},
-                "maxTasks": 1 if scenario == "data-subflow-cancel" else 2,
+                "maxTasks": 1 if scenario in {"data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                 "concurrency": 1,
             }
             response = await client.post(
@@ -493,7 +517,7 @@ async def test_real_project_batch_http(
             tasks = (
                 await client.get(prefix + "/tasks", params={"batchId": batch_id})
             ).json()["items"]
-            assert len(tasks) == (1 if scenario == "data-subflow-cancel" else 2)
+            assert len(tasks) == (1 if scenario in {"data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2)
             for task in tasks:
                 viewed = await client.get(prefix + f"/tasks/{task['taskId']}")
                 assert viewed.status_code == 200, viewed.text
@@ -646,6 +670,20 @@ async def test_real_project_batch_http(
                 assert {row['currentEnvironmentId'] for row in linked} == {saved['result']['saved']['environmentId']}
                 assert (await client.get(attempts_path)).json() == attempts
                 assert (await client.get(prefix + f"/tasks/{failed['taskId']}")).json()['run']['status'] == 'failed'
+            elif scenario.startswith('data-delete-field'):
+                succeeded = not scenario.endswith('conflict')
+                assert detail['statusCounts'].get('succeeded' if succeeded else 'failed') == 1, detail
+                fields_after = (await client.get(source_path + '/fields')).json()['items']
+                assert (removed_field not in {field['ref']['fieldId'] for field in fields_after}) == succeeded
+                source_rows = (await client.get(source_path + '/records', params={'datasetGeneration': source_table['datasetGeneration']})).json()['items']
+                values = {value['fieldId']: value['value'] for value in source_rows[0]['values']}
+                assert values[source_field] == '001'
+                assert (removed_field not in values) == succeeded
+                written = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert [row['values'][0]['value'] for row in written] == ['before-真实参数-001']
+                assert bool(written[0]['currentEnvironmentId']) == succeeded
+                evidence = (await client.get(prefix + f"/tasks/{tasks[0]['taskId']}")).json()
+                assert any(write['kind'] == 'fieldDeleted' for write in evidence['dataWrites']) == succeeded
             elif scenario == 'data-response-loss':
                 assert lost_command is not None
                 assert detail['statusCounts']['interrupted'] == 1, detail

@@ -362,6 +362,46 @@ class EnsureProjectFieldCommand:
 
 
 @dataclass(frozen=True)
+class PreviewProjectFieldDeletionRequest:
+    execution_generation: int
+    project_id: str
+    table_id: str
+    dataset_generation: str
+    field_id: str
+
+    def __post_init__(self) -> None:
+        _generation(self.execution_generation)
+        _table_identity(self.project_id, self.table_id, self.dataset_generation)
+        _uuid(self.field_id, "fieldId")
+
+
+@dataclass(frozen=True)
+class DeleteProjectFieldCommand:
+    operation_id: str
+    execution_generation: int
+    project_id: str
+    table_id: str
+    dataset_generation: str
+    field_id: str
+    expected_table_revision: int
+    impact_revision: int
+
+    def __post_init__(self) -> None:
+        _uuid(self.operation_id, "operationId")
+        _generation(self.execution_generation)
+        _table_identity(self.project_id, self.table_id, self.dataset_generation)
+        _uuid(self.field_id, "fieldId")
+        _positive_integer(self.expected_table_revision, "expectedTableRevision")
+        _positive_integer(self.impact_revision, "impactRevision")
+
+    @property
+    def request_digest(self) -> str:
+        return _payload_digest({"kind": "deleteField", "executionGeneration": self.execution_generation,
+            "projectId": self.project_id, "tableId": self.table_id, "datasetGeneration": self.dataset_generation,
+            "fieldId": self.field_id, "expectedTableRevision": self.expected_table_revision, "impactRevision": self.impact_revision})
+
+
+@dataclass(frozen=True)
 class ModifyProjectFieldCommand:
     operation_id: str
     execution_generation: int
@@ -448,6 +488,7 @@ _CAPABILITY_OPERATIONS = frozenset(
         "addField",
         "ensureField",
         "modifyField",
+        "deleteField",
     }
 )
 _RECORD_WRITE_OPERATIONS = frozenset(
@@ -736,6 +777,14 @@ class TaskCapabilityScope:
         self._authorize_field_command(
             command, "ensureField", current_execution_generation
         )
+
+    def authorize_delete_field(self, request: DeleteProjectFieldCommand | PreviewProjectFieldDeletionRequest,
+                               *, current_execution_generation: int) -> None:
+        self._authorize_generation(request.execution_generation, current_execution_generation)
+        if request.project_id != self.project_id or not self._has_table_grant(
+            request.table_id, request.dataset_generation, "deleteField", frozenset({request.field_id})
+        ):
+            raise _scope_denied("fieldRef")
 
     def authorize_modify_field(
         self,

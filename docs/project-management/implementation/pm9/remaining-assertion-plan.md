@@ -2,7 +2,7 @@
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；C1–C4 和 R1–R5 设计已批准；M1–M3 仍 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 226 条有明确范围的断言，25 条尚无已定位断言；191 partially_verified / 60 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 227 条有明确范围的断言，24 条尚无已定位断言；192 partially_verified / 59 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 ## 本轮已经执行的补证
 
@@ -94,3 +94,7 @@
 ## R1 更新（2026-09-21）
 
 第 1 项工作流表结构查询实现缺失已 superseded：queryTableSchema 在 domain/service/repository/RPC/prepare/节点配置接通，显式 fieldIds 与冻结 scope，当前结构只读投影，原系统状态只读。14 项专属拒绝/无副作用/来源元数据断言、子流程交集、真实 worker data-schema 通过。226 有断言/25 未定位；状态仍 191 partial/60 planned/0 verified。新候选三平台和完整 UI 原生链不由现有 C 矩阵替代。
+
+## R2 更新（2026-09-21）
+
+第 2 项工作流删字段实现缺失已 superseded。复用完整草稿增加单个显式 removedFieldIds、同事务依赖重验；Task 自身纯删除声明可排除，自身其他读写节点和第二 Task 不排除。身份、来源映射、自动化输入引用及未决同步分别保护。成功/冲突两条真实 worker、180 后端定向、18 UI 组件、原键恢复/已退休字段 ID/人工新值保护通过。只删除本地定义和值，不删 Google 列。DATA-SCHEMA-06 升为 partial；09 仅追加独立第二 Task 的删除保护断言。当前 227 有断言/24 无，192 partial/59 planned/0 verified。R5→R3→R4 继续，平台/原生完整链仍待验收。

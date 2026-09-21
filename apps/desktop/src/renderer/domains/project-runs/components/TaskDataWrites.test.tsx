@@ -27,13 +27,14 @@ it('shows every supported project data operation with before and after evidence'
     { kind: 'recordUpdated', tableDisplay: '邮箱表', recordDisplay: 'mail-001', referenceDisplay: '邮箱记录 mail-001', beforeSummary: '备注：未验证', afterSummary: '备注：已验证', outcome: 'succeeded' },
     { kind: 'recordDeleted', tableDisplay: '邮箱表', recordDisplay: 'mail-002', referenceDisplay: '邮箱记录 mail-002', beforeSummary: '状态：已停用', outcome: 'succeeded' },
     { kind: 'recordCreated', tableDisplay: '账号表', recordDisplay: 'account-001', referenceDisplay: '账号记录 account-001', afterSummary: '用户名：greenhouse', outcome: 'succeeded' },
+    { kind: 'fieldDeleted', tableDisplay: '账号表', recordDisplay: '旧标记', referenceDisplay: '字段 旧标记', beforeSummary: '可选文本', afterSummary: '字段已删除', outcome: 'succeeded' },
     { kind: 'fieldAdded', tableDisplay: '账号表', recordDisplay: '登录结果', referenceDisplay: '字段 登录结果', afterSummary: '文本 · 可选', outcome: 'succeeded' },
     { kind: 'fieldEnsured', tableDisplay: '账号表', recordDisplay: '邮箱', referenceDisplay: '字段 邮箱', detail: '字段已存在，无需变更', outcome: 'succeeded' },
     { kind: 'fieldModified', tableDisplay: '账号表', recordDisplay: '备注', referenceDisplay: '字段 备注', beforeSummary: '可选文本', afterSummary: '必填文本 · 默认值：待补充', outcome: 'succeeded' },
   ]} />)
 
   const table = screen.getByRole('table', { name: '项目数据操作结果' })
-  for (const label of ['查询记录', '读取记录', '编辑记录', '删除记录', '新增记录', '新增字段', '确保字段', '修改字段']) {
+  for (const label of ['查询记录', '读取记录', '编辑记录', '删除记录', '新增记录', '新增字段', '确保字段', '修改字段', '删除字段']) {
     expect(within(table).getByText(label)).toBeVisible()
   }
   expect(within(table).getByText('备注：未验证 → 备注：已验证')).toBeVisible()

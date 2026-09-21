@@ -47,3 +47,30 @@ it('selects explicit schema fields and keeps the query free of write authority',
   expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'table', datasetGeneration: 'generation', operations: ['queryTableSchema'], fieldIds: ['field'], readPurposes: [] })
   expect((screen.getByLabelText('结果变量') as HTMLInputElement).value).toBe('schema')
 })
+
+async function checkFieldDeletionPreview(blocked: boolean) {
+  const { apiRequest } = await import('../api')
+  vi.mocked(apiRequest).mockClear()
+  const field = { ref: { fieldId: 'old-field' }, key: 'old', name: '旧字段', type: 'string', required: false, validation: {}, fieldRevision: 1 }
+  vi.mocked(apiRequest).mockImplementation(async path => ({ success: true, data: path.endsWith('/schema/preview') ? { impactRevision: 7, calculatedAt: '', expiresAt: '', affectedRecords: 1, backfillBytes: 2, blockers: blocked ? [{ code: 'SOURCE_FIELD_MAPPING', fieldId: 'old-field', clientId: null, message: '字段仍有来源列映射', affectedRecords: null }] : [], warnings: [], referenceAvailability: { automations: 'available', sync: 'available' } } : { items: path.endsWith('/fields') ? [field] : path.includes('/tables?') ? [{ tableId: 'table', datasetGeneration: 'generation', name: '来源', tableRevision: 2 }] : [], total: 1 } }) as never)
+  const change = vi.fn()
+  render(<ProjectDataConfig data={{ moduleType: 'project_data', operation: 'deleteField', bindingProjectId: 'project', tableGrant: { tableId: 'table', datasetGeneration: 'generation', operations: ['deleteField'], fieldIds: [], readPurposes: [] }, arguments: { tableId: 'table', datasetGeneration: 'generation', fieldId: 'old-field', impactRevision: "{field_deletion_preview['impactRevision']}" } } as unknown as NodeData} onChange={change} />)
+  await waitFor(() => expect((screen.getByRole('button', { name: '预览删除影响' }) as HTMLButtonElement).disabled).toBe(false))
+  fireEvent.click(screen.getByRole('button', { name: '预览删除影响' }))
+  const confirm = await screen.findByRole('button', { name: '确认删除目标' }) as HTMLButtonElement
+  expect(confirm.disabled).toBe(blocked)
+  if (blocked) {
+    expect((await screen.findByRole('alert')).textContent).toContain('字段仍有来源列映射')
+    expect(change).not.toHaveBeenCalled()
+  } else {
+    fireEvent.click(confirm)
+    expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'table', datasetGeneration: 'generation', operations: ['deleteField'], fieldIds: ['old-field'], readPurposes: [] })
+  }
+  const calls = vi.mocked(apiRequest).mock.calls.filter(([path]) => path.endsWith('/schema/preview'))
+  expect(calls).toHaveLength(1)
+  expect(JSON.parse(String(calls[0][1]?.body))).toEqual({ datasetGeneration: 'generation', expectedTableRevision: 2, removedFieldIds: ['old-field'], fields: [] })
+  expect(vi.mocked(apiRequest).mock.calls.some(([path, options]) => options?.method === 'DELETE' || path.endsWith('/schema'))).toBe(false)
+}
+
+it('previews a field removal and grants that target only after confirmation', () => checkFieldDeletionPreview(false))
+it('blocks field deletion confirmation while source mapping remains', () => checkFieldDeletionPreview(true))

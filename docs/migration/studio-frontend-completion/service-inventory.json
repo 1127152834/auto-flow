@@ -6248,7 +6248,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-          "line": 29,
+          "line": 60,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -6377,7 +6377,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-          "line": 28,
+          "line": 59,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -7704,12 +7704,22 @@
       "call": "studioFetch(`${getBackendUrl()}/api/system/pick-mouse-position`, {\n        method: 'POST',\n      })"
     },
     {
+      "endpoint": "`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/schema/preview`",
+      "method": "POST",
+      "body": "body: JSON.stringify(candidate)",
+      "responseType": "Schema['DataSchemaImpact']",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+      "line": 51,
+      "source": null,
+      "call": "apiRequest<Schema['DataSchemaImpact']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/schema/preview`, { method: 'POST', body: JSON.stringify(candidate), signal: controller.signal })"
+    },
+    {
       "endpoint": "`/v1/projects?pageSize=100&lifecycleState=active&page=${projectPage}`",
       "method": "GET",
       "body": null,
       "responseType": "Schema['ProjectPage']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 36,
+      "line": 67,
       "source": null,
       "call": "apiRequest<Schema['ProjectPage']>(`/v1/projects?pageSize=100&lifecycleState=active&page=${projectPage}`, { signal: controller.signal })"
     },
@@ -7719,7 +7729,7 @@
       "body": null,
       "responseType": "Schema['DataTablePage']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 41,
+      "line": 72,
       "source": null,
       "call": "apiRequest<Schema['DataTablePage']>(`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100&page=${tablePage}`, { signal: controller.signal })"
     },
@@ -7729,7 +7739,7 @@
       "body": null,
       "responseType": "Schema['DataFieldDirectory']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 46,
+      "line": 77,
       "source": null,
       "call": "apiRequest<Schema['DataFieldDirectory']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/fields`, { signal: controller.signal })"
     },

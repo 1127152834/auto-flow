@@ -870,10 +870,12 @@ def _workflow_data_manifest(session: Session, automation: AutomationRecord) -> d
         if data['moduleType'] == 'project_data' and 'tableGrant' in config:
             grant = config['tableGrant']
             operation = config.get('operation')
-            required = 'modifyField' if operation == 'previewFieldChange' else operation
+            if not isinstance(operation, str):
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点操作必须是明确名称', 422)
+            required = {'previewFieldChange': 'modifyField', 'previewFieldDeletion': 'deleteField'}.get(operation, operation)
             if not isinstance(grant, dict) or grant.get('operations') != [required]:
                 raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点授权必须与节点操作一致', 422)
-            if required == 'queryTableSchema' and not grant.get('fieldIds'):
-                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '查询表结构必须明确选择字段', 422)
+            if required in {'queryTableSchema', 'deleteField'} and not grant.get('fieldIds'):
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '结构操作必须明确选择字段', 422)
             grants.append(grant)
     return {'tableGrants': grants}

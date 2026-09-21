@@ -34,20 +34,24 @@ from .project_data_catalog import (
     _field,
     _record_resource,
 )
-from .project_data_impacts import active_task_field_dependencies
+from .project_data_impacts import (
+    active_task_field_dependencies,
+    field_deletion_dependencies,
+)
 from .project_data_models import (
     DataFieldRow,
     DataImpactRow,
     DataRecordRow,
     DataTableRow,
 )
+from .project_run_models import ProjectTaskRecordCursorRow
 
 
 class SqlAlchemyProjectDataSchema:
     def __init__(self, session_factory: sessionmaker[Session]):
         self._session_factory = session_factory
 
-    def preview(self, project_id: str, table_id: str, candidate: dict) -> dict:
+    def preview(self, project_id: str, table_id: str, candidate: dict, *, deleting_task_id: str | None = None) -> dict:
         candidate = validate_candidate(candidate)
         with SpooledTemporaryFile(
             mode="w+t", max_size=2 * 1024 * 1024, encoding="utf-8"
@@ -65,7 +69,7 @@ class SqlAlchemyProjectDataSchema:
                         DataRecordRow.project_id == project_id,
                         DataRecordRow.table_id == table_id,
                         DataRecordRow.dataset_generation == table.current_generation,
-                        DataRecordRow.deleted.is_(False),
+                        DataRecordRow.deleted.is_(False) | bool(candidate.get("removedFieldIds")),
                     )
                     .order_by(DataRecordRow.key_type, DataRecordRow.key_value)
                     .execution_options(yield_per=200)
@@ -92,31 +96,31 @@ class SqlAlchemyProjectDataSchema:
                     raise _stale()
                 report["blockers"].extend(
                     _active_task_field_blockers(
-                        session, project_id, table, fields, candidate
+                        session, project_id, table, fields, candidate, deleting_task_id=deleting_task_id
                     )
                 )
                 now = datetime.now(UTC)
-            expires = now + timedelta(minutes=10)
-            saved = DataImpactRow(
-                project_id=project_id,
-                action="saveTableSchema",
-                target=_target(project_id, table_id, candidate),
-                change_digest=_digest(candidate),
-                expected_revisions=expected,
-                facts_digest=_digest(expected),
-                report={},
-                expires_at=expires,
-            )
-            session.add(saved)
-            session.flush()
-            report.update(
-                impactRevision=saved.id,
-                calculatedAt=now.isoformat(),
-                expiresAt=expires.isoformat(),
-            )
-            saved.report = {"public": report, "prepared": prepared}
-            session.commit()
-            return report
+                expires = now + timedelta(minutes=10)
+                saved = DataImpactRow(
+                    project_id=project_id,
+                    action="saveTableSchema",
+                    target=_target(project_id, table_id, candidate, deleting_task_id),
+                    change_digest=_digest(candidate),
+                    expected_revisions=expected,
+                    facts_digest=_digest(expected),
+                    report={},
+                    expires_at=expires,
+                )
+                session.add(saved)
+                session.flush()
+                report.update(
+                    impactRevision=saved.id,
+                    calculatedAt=now.isoformat(),
+                    expiresAt=expires.isoformat(),
+                )
+                saved.report = {"public": report, "prepared": prepared}
+                session.commit()
+                return report
 
     def commit(
         self,
@@ -126,124 +130,154 @@ class SqlAlchemyProjectDataSchema:
         impact_revision: int,
         operation: ProjectOperation,
     ) -> tuple[dict, ProjectOperation, bool]:
-        candidate = validate_candidate(candidate)
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
-            SqlAlchemyProjectData._guard_project_read(session, project_id)
-            existing = SqlAlchemyProjectDataCatalog._existing(session, operation)
-            if existing is not None:
-                session.rollback()
-                return _operation_result(existing), _operation(existing), True
-            table, fields = _snapshot(session, project_id, table_id, candidate)
-            saved = session.get(DataImpactRow, impact_revision)
+            result = self.commit_in_session(session, project_id, table_id, candidate, impact_revision, operation)
+            session.commit()
+            return result
+
+    def commit_in_session(self, session: Session, project_id: str, table_id: str, candidate: dict,
+                          impact_revision: int, operation: ProjectOperation, *, deleting_task_id: str | None = None
+                          ) -> tuple[dict, ProjectOperation, bool]:
+        """Reuse the schema transaction when a Task capability owns the commit."""
+        candidate = validate_candidate(candidate)
+        SqlAlchemyProjectData._guard_project_read(session, project_id)
+        existing = SqlAlchemyProjectDataCatalog._existing(session, operation)
+        if existing is not None:
+            return _operation_result(existing), _operation(existing), True
+        table, fields = _snapshot(session, project_id, table_id, candidate)
+        saved = session.get(DataImpactRow, impact_revision)
+        if (
+            saved is None
+            or saved.project_id != project_id
+            or saved.action != "saveTableSchema"
+            or saved.target != _target(project_id, table_id, candidate, deleting_task_id)
+            or saved.change_digest != _digest(candidate)
+            or saved.expires_at.replace(tzinfo=UTC) <= datetime.now(UTC)
+            or saved.expected_revisions != _revisions(table, fields)
+        ):
+            raise _stale()
+        saved_blockers = saved.report["public"]["blockers"]
+        if saved_blockers:
+            raise _stale(saved_blockers)
+        _validate_snapshot(candidate, fields, table)
+        active_task_blockers = _active_task_field_blockers(
+            session, project_id, table, fields, candidate, deleting_task_id=deleting_task_id
+        )
+        if active_task_blockers:
+            raise _stale(active_task_blockers)
+        prepared = saved.report["prepared"]
+        backfill_budget([entry["values"] for entry in prepared["records"]])
+        current = {field.id: field for field in fields}
+        changes: list[tuple[dict | None, dict, dict]] = []
+        now = datetime.now(UTC)
+        position = max((field.position for field in fields), default=-1) + 1
+        for item in candidate["fields"]:
+            definition = item["definition"]
+            if item["kind"] == "existing":
+                field = current[item["fieldId"]]
+                if _definition(field) == definition:
+                    continue
+                before = _field(field)
+                for key, value in definition.items():
+                    setattr(field, key, value)
+                field.field_revision += 1
+            else:
+                before = None
+                field = DataFieldRow(
+                    id=prepared["createdFieldIds"][item["clientId"]],
+                    project_id=project_id,
+                    table_id=table_id,
+                    dataset_generation=table.current_generation,
+                    **definition,
+                    writable=True,
+                    formula=False,
+                    field_revision=1,
+                    position=position,
+                )
+                position += 1
+                current[field.id] = field
+                session.add(field)
+            after = _field(field)
+            changes.append(
+                (before, after, {"type": "field", "fieldRef": after["ref"]})
+            )
+        for field_id in candidate.get("removedFieldIds", []):
+            field = current.pop(field_id)
+            before = _field(field)
+            changes.append((before, {"ref": before["ref"], "deleted": True}, {"type": "field", "fieldRef": before["ref"]}))
+            session.delete(field)
+        for entry in prepared["records"]:
+            row = session.get(
+                DataRecordRow,
+                (table.current_generation, entry["keyType"], entry["keyValue"]),
+            )
             if (
-                saved is None
-                or saved.project_id != project_id
-                or saved.action != "saveTableSchema"
-                or saved.target != _target(project_id, table_id, candidate)
-                or saved.change_digest != _digest(candidate)
-                or saved.expires_at.replace(tzinfo=UTC) <= datetime.now(UTC)
-                or saved.expected_revisions != _revisions(table, fields)
+                row is None
+                or row.project_id != project_id
+                or row.table_id != table_id
+                or (row.deleted and not candidate.get("removedFieldIds"))
+                or row.content_revision != entry["contentRevision"]
             ):
                 raise _stale()
-            saved_blockers = saved.report["public"]["blockers"]
-            if saved_blockers:
-                raise _stale(saved_blockers)
-            _validate_snapshot(candidate, fields, table)
-            active_task_blockers = _active_task_field_blockers(
-                session, project_id, table, fields, candidate
-            )
-            if active_task_blockers:
-                raise _stale(active_task_blockers)
-            prepared = saved.report["prepared"]
-            backfill_budget([entry["values"] for entry in prepared["records"]])
-            current = {field.id: field for field in fields}
-            changes: list[tuple[dict | None, dict, dict]] = []
-            now = datetime.now(UTC)
-            position = max((field.position for field in fields), default=-1) + 1
-            for item in candidate["fields"]:
-                definition = item["definition"]
-                if item["kind"] == "existing":
-                    field = current[item["fieldId"]]
-                    if _definition(field) == definition:
-                        continue
-                    before = _field(field)
-                    for key, value in definition.items():
-                        setattr(field, key, value)
-                    field.field_revision += 1
-                else:
-                    before = None
-                    field = DataFieldRow(
-                        id=prepared["createdFieldIds"][item["clientId"]],
-                        project_id=project_id,
-                        table_id=table_id,
-                        dataset_generation=table.current_generation,
-                        **definition,
-                        writable=True,
-                        formula=False,
-                        field_revision=1,
-                        position=position,
-                    )
-                    position += 1
-                    current[field.id] = field
-                    session.add(field)
-                after = _field(field)
-                changes.append(
-                    (before, after, {"type": "field", "fieldRef": after["ref"]})
-                )
-            for entry in prepared["records"]:
-                row = session.get(
-                    DataRecordRow,
-                    (table.current_generation, entry["keyType"], entry["keyValue"]),
-                )
-                if (
-                    row is None
-                    or row.project_id != project_id
-                    or row.table_id != table_id
-                    or row.deleted
-                    or row.content_revision != entry["contentRevision"]
-                ):
-                    raise _stale()
-                before = {
-                    "values": row.values_json,
-                    "contentRevision": row.content_revision,
-                }
-                row.values_json = entry["values"]
-                row.content_revision += 1
-                row.updated_at = now
-                changes.append(
-                    (
-                        before,
-                        {
-                            "values": row.values_json,
-                            "contentRevision": row.content_revision,
-                        },
-                        _record_resource(project_id, table_id, row),
-                    )
-                )
-            if changes:
-                table.table_revision += 1
-                table.updated_at = now
-            result = {
-                "action": "saveSchema",
-                "datasetGeneration": table.current_generation,
-                "tableRevision": table.table_revision,
-                "fields": [
-                    _field(field)
-                    for field in sorted(
-                        current.values(), key=lambda field: field.position
-                    )
-                ],
-                "createdFieldIds": prepared["createdFieldIds"],
-                "backfilledRecords": len(prepared["records"]),
+            before = {
+                "values": row.values_json,
+                "contentRevision": row.content_revision,
             }
-            done = _completed(operation, result)
-            session.add(_operation_row(done))
-            session.flush()
-            for sequence, (before, after, resource) in enumerate(changes, 1):
-                session.add(_change(done, sequence, before, after, resource))
-            session.commit()
-            return result, done, False
+            if deleting_task_id:
+                ref = {"projectId": project_id, "tableId": table_id, "datasetGeneration": table.current_generation,
+                       "recordKey": {"type": row.key_type, "value": row.key_value}}
+                cursor = session.scalar(select(ProjectTaskRecordCursorRow).where(
+                    ProjectTaskRecordCursorRow.task_id == deleting_task_id,
+                    ProjectTaskRecordCursorRow.record_ref == ref,
+                    ProjectTaskRecordCursorRow.content_revision == row.content_revision,
+                ))
+                if cursor:
+                    cursor.content_revision += 1
+                    cursor.updated_at = now
+            row.values_json = entry["values"]
+            row.content_revision += 1
+            row.updated_at = now
+            changes.append(
+                (
+                    before,
+                    {
+                        "values": row.values_json,
+                        "contentRevision": row.content_revision,
+                    },
+                    _record_resource(project_id, table_id, row),
+                )
+            )
+        if changes:
+            table.table_revision += 1
+            table.updated_at = now
+        result = {
+            "action": "saveSchema",
+            "datasetGeneration": table.current_generation,
+            "tableRevision": table.table_revision,
+            "fields": [
+                _field(field)
+                for field in sorted(
+                    current.values(), key=lambda field: field.position
+                )
+            ],
+            "createdFieldIds": prepared["createdFieldIds"],
+            "backfilledRecords": len(prepared["records"]),
+        }
+        if operation.kind == "deleteField":
+            result = {"action": "delete", "deleted": True,
+                      "fieldRef": {"projectId": project_id, "tableId": table_id,
+                                   "datasetGeneration": table.current_generation, "fieldId": candidate["removedFieldIds"][0]},
+                      "tableRevision": table.table_revision, "affectedRecords": len(prepared["records"])}
+        done = _completed(operation, result)
+        session.add(_operation_row(done))
+        session.flush()
+        for sequence, (before, after, resource) in enumerate(changes, 1):
+            change = _change(done, sequence, before, after, resource)
+            if deleting_task_id:
+                change.origin = "workflow"
+            session.add(change)
+        return result, done, False
 
 
 def _snapshot(session: Session, project_id: str, table_id: str, candidate: dict):
@@ -306,8 +340,9 @@ def _revisions(table: DataTableRow, fields) -> dict:
     }
 
 
-def _target(project_id: str, table_id: str, candidate: dict) -> dict:
+def _target(project_id: str, table_id: str, candidate: dict, deleting_task_id: str | None = None) -> dict:
     return {
+        **({"deletingTaskId": deleting_task_id} if deleting_task_id else {}),
         "type": "table",
         "projectId": project_id,
         "tableId": table_id,
@@ -350,9 +385,14 @@ def _active_task_field_blockers(
     table: DataTableRow,
     fields: list[DataFieldRow],
     candidate: dict,
+    *, deleting_task_id: str | None = None,
 ) -> list[dict]:
     current = {field.id: field for field in fields}
     blockers = []
+    for field_id in candidate.get("removedFieldIds", []):
+        for dependency in field_deletion_dependencies(session, project_id, table, field_id, deleting_task_id=deleting_task_id):
+            blockers.append({**_issue(dependency["code"], {"fieldId": field_id}, dependency["message"], None),
+                             **{key: value for key, value in dependency.items() if key in {"taskId", "runId", "referenceSources"}}})
     for item in candidate["fields"]:
         if item["kind"] != "existing":
             continue
@@ -445,8 +485,8 @@ def _validate_rows(
                 invalid[item["fieldId"]] += 1
             finally:
                 check_deadline()
-        if defaults:
-            values = {**row["values"], **defaults}
+        values = {key: value for key, value in {**row["values"], **defaults}.items() if key not in candidate.get("removedFieldIds", [])}
+        if values != row["values"]:
             write_count += 1
             try:
                 byte_count += len(canonical_bytes(values))
@@ -492,13 +532,13 @@ def _validate_rows(
         )
     return (
         {
-            "affectedRecords": count if changed or defaults else 0,
+            "affectedRecords": count if changed or defaults else write_count,
             "backfillBytes": byte_count,
             "blockers": blockers,
             "warnings": warnings,
             "referenceAvailability": {
-                "automations": "notImplemented",
-                "sync": "notImplemented",
+                "automations": "available" if candidate.get("removedFieldIds") else "notImplemented",
+                "sync": "available" if candidate.get("removedFieldIds") else "notImplemented",
             },
         },
         {"createdFieldIds": created, "records": records},

@@ -809,6 +809,12 @@ def _data_writes(
                     },
                 )
             )
+        elif operation.kind == "deleteField":
+            result.append((operation.created_at, {
+                **common, "kind": "fieldDeleted", "recordDisplay": str(before.get("name", "字段")),
+                "referenceDisplay": f"字段 {before.get('name', '')}",
+                "beforeSummary": _field_summary(before), "afterSummary": "字段已删除",
+            }))
         elif operation.kind in {
             "addField",
             "ensureField",

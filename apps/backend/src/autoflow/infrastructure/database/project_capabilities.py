@@ -14,10 +14,12 @@ from sqlalchemy.orm import Session, sessionmaker
 from autoflow.domain.project_data.capabilities import (
     AddProjectFieldCommand,
     CreateProjectRecordCommand,
+    DeleteProjectFieldCommand,
     DeleteProjectRecordCommand,
     EnsureProjectFieldCommand,
     ModifyProjectFieldCommand,
     PreviewProjectFieldChangeRequest,
+    PreviewProjectFieldDeletionRequest,
     QueryProjectRecordsRequest,
     QueryProjectTableSchemaRequest,
     ReadProjectRecordRequest,
@@ -913,6 +915,13 @@ class SqlAlchemyProjectDataCapabilities:
                     "DATASET_GENERATION_GONE", "Dataset was replaced", 410
                 )
             catalog._cas(table.table_revision, command.expected_table_revision)
+            if session.scalar(select(DataChangeRow.id).where(
+                DataChangeRow.project_id == command.project_id,
+                DataChangeRow.resource["fieldRef"]["datasetGeneration"].as_string() == command.dataset_generation,
+                DataChangeRow.resource["fieldRef"]["fieldId"].as_string() == command.field_id,
+                DataChangeRow.after["deleted"].as_boolean().is_(True),
+            ).limit(1)):
+                raise ProjectError("FIELD_ID_RETIRED", "Deleted field identity cannot be reused", 409)
             definition = command.request_payload["definition"]
             matching = session.scalar(
                 select(DataFieldRow).where(
@@ -1088,6 +1097,47 @@ class SqlAlchemyProjectDataCapabilities:
                     "FIELD_KEY_CONFLICT", "Field key is already in use", 409
                 ) from error
             return result, False
+
+    def preview_field_deletion(self, scope: TaskCapabilityScope, request: PreviewProjectFieldDeletionRequest) -> dict:
+        from .project_data_schema import SqlAlchemyProjectDataSchema
+        with self._factory() as session:
+            _task, run, _snapshot = self._facts(session, scope.project_id, scope.task_id, scope.run_id)
+            scope.authorize_delete_field(request, current_execution_generation=run.execution_generation)
+            candidate = self._field_deletion_candidate(session, request)
+        report = SqlAlchemyProjectDataSchema(self._factory).preview(
+            scope.project_id, request.table_id, candidate, deleting_task_id=scope.task_id
+        )
+        return {**report, "tableRevision": candidate["expectedTableRevision"]}
+
+    def delete_field(self, scope: TaskCapabilityScope, command: DeleteProjectFieldCommand) -> tuple[dict, bool]:
+        from .project_data_schema import SqlAlchemyProjectDataSchema
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            _task, run, _snapshot = self._facts(session, scope.project_id, scope.task_id, scope.run_id)
+            existing = self._existing(session, scope, "deleteField", command.operation_id, command.request_digest)
+            if existing is not None:
+                return _operation_result(existing), True
+            scope.authorize_delete_field(command, current_execution_generation=run.execution_generation)
+            candidate = self._field_deletion_candidate(session, command)
+            SqlAlchemyProjectDataCatalog._cas(candidate["expectedTableRevision"], command.expected_table_revision)
+            operation = _completed_operation(scope, command.operation_id, "deleteField", command.request_digest, {})
+            result, _done, replayed = SqlAlchemyProjectDataSchema(self._factory).commit_in_session(
+                session, scope.project_id, command.table_id, candidate, command.impact_revision, operation, deleting_task_id=scope.task_id
+            )
+            self._commit(session)
+            return result, replayed
+
+    @staticmethod
+    def _field_deletion_candidate(session: Session, request: DeleteProjectFieldCommand | PreviewProjectFieldDeletionRequest) -> dict:
+        table = SqlAlchemyProjectDataRecords._table(session, request.project_id, request.table_id, request.dataset_generation, True)
+        fields = SqlAlchemyProjectDataRecords._fields(session, table)
+        if not any(row.id == request.field_id for row in fields):
+            raise ProjectError("FIELD_NOT_FOUND", "Field was not found", 404)
+        return {"datasetGeneration": table.current_generation, "expectedTableRevision": table.table_revision,
+                "removedFieldIds": [request.field_id], "fields": [
+                    {"kind": "existing", "fieldId": row.id, "expectedFieldRevision": row.field_revision,
+                     "definition": {key: getattr(row, key) for key in ("key", "name", "type", "required", "validation")}}
+                    for row in fields if row.id != request.field_id]}
 
     def modify_field(
         self, scope: TaskCapabilityScope, command: ModifyProjectFieldCommand
