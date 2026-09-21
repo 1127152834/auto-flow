@@ -7822,6 +7822,10 @@
         "checks": [],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "当前 _push 遇到来源缺行只记录 SYNC_REMOTE_ROW_MISSING，无云端新增行/同键追加协调路径；本地新增不等于已接通远端新增。 待确认方案见 2026-09-21-pm9-sheets-row-mutations.md。"
+          },
+          {
             "kind": "test_missing",
             "detail": "本轮审查未定位完整场景的直接断言：同业务键并发新增云端只保留一行；不据邻近测试推定覆盖"
           }
@@ -8195,6 +8199,10 @@
         ],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "本地 delete_record 仅提交 tombstone、操作和本地变更，无删除同步意图；未接通删除同步状态与远端整行删除。现有测试只证明拉取不复活。 待确认方案见 2026-09-21-pm9-sheets-row-mutations.md。"
+          },
+          {
             "kind": "production_evidence_missing",
             "detail": "上述边界已有本地直接断言；当前 PM9 打包完整 Google 链及所有相邻验收子条件未据此推定通过。"
           }
@@ -8242,6 +8250,10 @@
           }
         ],
         "gaps": [
+          {
+            "kind": "implementation_missing",
+            "detail": "现有公式只读刷新不实现新增记录时的模板复制；无模板选择/冻结和新增-公式分阶段确认路径。 待确认方案见 2026-09-21-pm9-sheets-row-mutations.md。"
+          },
           {
             "kind": "production_evidence_missing",
             "detail": "未证明真实公式计算/模板复制子步骤/业务状态/旧输入；当前 PM9 Google 链待专项授权"

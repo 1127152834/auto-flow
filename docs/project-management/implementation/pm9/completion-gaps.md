@@ -167,3 +167,5 @@ Windows Job active=0 仍有子进程句柄未退出的真实反例已修复：�
 2026-09-21 Intel d21197ad 失败保留（confirmed）：3312 passed / 60 skipped / 1 failed，失败为 SSE 关停测试准备阶段 GET /openapi.json 的 5 秒 ReadTimeout，尚未进入关停计时。仅为 schema 准备设独立 30 秒界限，实际 3/8 秒退出和 worker/SSE 断言未变；定向 shutdown/node writes 8 passed。DATA-STATE-10 同时补入创建后状态命令权限失败、原 null 记录保留的服务集成断言，真实节点链仍待验收。台账当前 221/30。
 
 2026-09-21 核验读取失败根因修复（confirmed）：实际写入已成功后，第二记录的核验 GET 超时抛出未处理 SheetsApiError，导致命令悬空。已统一转换读取异常、逐意图记录 unknown 并继续其他结果；reconcile 读取失败明确完成该只读命令为失败，原未知写不改，后续新核验不重发写入；pull/push 接受后取凭据失败亦完成原命令。相关 50 passed / 2 warnings in 40.66s，另一个分块场景通过，mypy 402 与完整无缓存 ruff 通过。该变更是新生产候选：此前 ARM d21197ad 完整成功保留历史，未结束 Windows 25c9a41b 和 Intel 7dab6b13 已取消，稳定后重跑三平台。当前台账222/29，releaseAccepted=false。
+
+2026-09-21 源码分类校正（confirmed）：DATA-SH-03 的云端新增、DATA-SH-10 删除同步、DATA-SH-11 新行公式模板复制缺实际路径，已追加 implementation_missing。tombstone 不复活与公式刷新测试继续有效，但只证明各自范围。独立 M1–M3 方案为 proposed，未包含在此前 C1–C4/R1–R5 问题中，不因网络授权可用就自动视为已实现。计数222/29不变。
