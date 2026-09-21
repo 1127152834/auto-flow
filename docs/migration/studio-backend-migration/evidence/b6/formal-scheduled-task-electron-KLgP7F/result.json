@@ -1,0 +1,41 @@
+{
+  "evidenceId": "BE-B6-scheduled-task-formal-electron",
+  "checkedAt": "2026-09-21T19:47:04.458Z",
+  "gitHead": "3e1c82825e157a0f56ee818a533f372e745498df",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "q0t9Pkd--_reZ5h_ipfwa",
+  "profileId": "05d2ff96-eb39-400e-a8df-48f8af3db441",
+  "runId": "ecfb0618-a617-4d53-8fc4-60363949a341",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 添加并配置 过期日期定时任务和后续日志节点",
+    "正式保存接口把定时节点、日志节点和字段配置写入临时 SQLite",
+    "真实 worker 识别过期目标时间并继续执行，定时日志和后续节点结果均核验",
+    "纯系统工具流程未启动 CloakBrowser，运行结束后无子进程或浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "scheduled_task",
+      "nodeId": "wGHpzJYqekFp2-bEYUe2E"
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "VT45MJNn2Q8L1LioVpEdX",
+      "result": {
+        "level": "info",
+        "message": "定时任务已完成"
+      }
+    }
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "schedule": "fixed past local date/time in an ephemeral workflow; no external scheduler",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "long-delay cancellation and host sleep/timezone behavior remain separately verified by backend tests/platform runs"
+  }
+}

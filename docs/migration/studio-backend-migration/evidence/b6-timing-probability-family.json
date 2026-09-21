@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-014-timing-probability-family",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -10,7 +10,10 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["scheduled_task", "probability_trigger"],
+  "nodes": [
+    "scheduled_task",
+    "probability_trigger"
+  ],
   "implemented": [
     "保留指定日期时间、延迟小时/分钟/秒、过期立即执行、格式校验及中文时长消息",
     "定时等待使用可取消的asyncio调度，停止真实worker后不执行后继节点",
@@ -41,7 +44,16 @@
     "formalElectronUiTested": false
   },
   "remaining": [
-    "正式Electron真实UI中验证概率两条分支及运行中停止长定时任务",
-    "系统休眠或跨时区变化期间的本地日期时间等待需分别记录平台实机结果"
-  ]
+    "系统休眠或跨时区变化期间的本地日期时间等待需分别记录平台实机结果",
+    "正式 Electron 概率触发器两条分支仍待真实 UI 验收；长定时停止和平台时钟场景继续按专项记录"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-scheduled-task.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scheduled-task-electron-KLgP7F/result.json",
+    "covers": "正式 Studio 真实 UI 编排 scheduled_task 与后续日志，保存到临时 SQLite，使用过期本地日期时间验证立即继续及日志结果，运行后清理完成",
+    "boundary": "本次验证不等待真实长延迟；停止、休眠和时区变化由后端测试与平台专项覆盖，未触碰用户数据库"
+  }
 }

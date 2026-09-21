@@ -10851,7 +10851,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B6",
       "source": {
@@ -10911,7 +10911,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码、定时等待/过期处理、停止清理及正式 Electron macOS arm64 UI 真实执行已通过；长延迟取消和 Windows/休眠时钟差异仍待专项实测。",
       "risk": "必须保留原图解析、变量解析、并行/循环/子流程和必要几何语义，禁止换成历史配对块或简化顺序执行。",
       "acceptanceCases": [
         {
@@ -10940,7 +10940,7 @@
         },
         {
           "id": "BE.scheduled_task.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -10948,12 +10948,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 scheduled_task，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：定时执行模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-timing-probability-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scheduled-task-electron-KLgP7F/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：原版日期/延迟字段、可取消等待、真实 worker 和 macOS arm64 正式 UI 已通过；平台时钟差异不推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-timing-probability-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-timing-probability-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scheduled-task-electron-KLgP7F/result.json"
     }
   },
   {
