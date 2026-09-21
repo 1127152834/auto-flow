@@ -10,6 +10,7 @@ type Dependencies = {
   writeImage(path: string): boolean
   beep(): void
   notify(request: Extract<StudioPlatformAction, {action:'notification'}>): void
+  openPath(path: string): Promise<string>
 }
 
 const failure = (code:string,message:string):DesktopResult<StudioPlatformActionResult> => ({ok:false,error:{code,message}})
@@ -41,6 +42,11 @@ export function createStudioPlatformActionHandler(dependencies:Dependencies) {
         if(typeof request.title!=='string'||!request.title||typeof request.message!=='string'||!request.message||typeof request.duration!=='number'||!Number.isFinite(request.duration)||request.duration<=0||request.duration>3600||typeof request.playSound!=='boolean')return failure('INVALID_PLATFORM_ACTION','系统通知参数无效。')
         dependencies.notify(request as Extract<StudioPlatformAction,{action:'notification'}>)
         return {ok:true,value:{}}
+      }
+      if(action==='open_path'){
+        if(typeof request.path!=='string'||!isAbsolute(request.path))return failure('INVALID_PLATFORM_ACTION','打开路径无效。')
+        const error=await dependencies.openPath(request.path)
+        return error?failure('PLATFORM_ACTION_FAILED',error):{ok:true,value:{}}
       }
       return failure('INVALID_PLATFORM_ACTION','不支持的平台操作。')
     }catch{return failure('PLATFORM_ACTION_FAILED','系统未能完成平台操作。')}

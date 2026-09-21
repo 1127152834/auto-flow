@@ -10085,7 +10085,7 @@ export type components = {
              * Action
              * @enum {string}
              */
-            action: "clipboard_write_text" | "clipboard_write_image" | "clipboard_read_text" | "beep" | "notification";
+            action: "clipboard_write_text" | "clipboard_write_image" | "clipboard_read_text" | "beep" | "notification" | "open_path";
             /** Payload */
             payload: {
                 [key: string]: components["schemas"]["JsonValue"];

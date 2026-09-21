@@ -6,6 +6,7 @@ export type StudioPlatformAction =
   | { action: 'clipboard_read_text' }
   | { action: 'beep'; count: number; interval: number }
   | { action: 'notification'; title: string; message: string; duration: number; playSound: boolean }
+  | { action: 'open_path'; path: string }
 
 export type StudioPlatformActionResult = { value?: string }
 

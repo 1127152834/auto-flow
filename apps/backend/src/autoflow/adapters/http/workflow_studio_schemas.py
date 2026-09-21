@@ -584,6 +584,7 @@ class StudioDesktopActionRequest(ApiModel):
         "clipboard_read_text",
         "beep",
         "notification",
+        "open_path",
     ]
     payload: dict[str, JsonValue]
 

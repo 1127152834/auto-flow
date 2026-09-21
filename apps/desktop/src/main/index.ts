@@ -126,6 +126,7 @@ async function createWindow(): Promise<void> {
     writeImage:path=>{const image=nativeImage.createFromPath(path);if(image.isEmpty())return false;clipboard.writeImage(image);return true},
     beep:()=>shell.beep(),
     notify:request=>{const notification=new Notification({title:request.title,body:request.message,silent:!request.playSound});notification.show();setTimeout(()=>notification.close(),request.duration*1000)},
+    openPath:path=>shell.openPath(path),
   }))
   const actions: Record<string, (...args: unknown[]) => Promise<unknown>> = {
     'get': () => settings!.snapshot(),

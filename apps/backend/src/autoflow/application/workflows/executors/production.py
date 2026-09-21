@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .advanced_browser import ADVANCED_BROWSER_EXECUTORS
+from .allure import ALLURE_EXECUTORS
 from .ai import AIChatExecutor, AIVisionExecutor
 from .ai_media import AI_MEDIA_EXECUTORS
 from .ai_scraper import AI_SCRAPER_EXECUTORS
@@ -176,6 +177,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     PythonScriptExecutor,
     RunCommandExecutor,
     *DESKTOP_PLATFORM_EXECUTORS,
+    *ALLURE_EXECUTORS,
     RunWorkflowFileExecutor,
     SubflowExecutor,
     WaitPageLoadExecutor,
