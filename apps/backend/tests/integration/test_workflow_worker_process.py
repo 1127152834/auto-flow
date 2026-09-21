@@ -14,6 +14,8 @@ from autoflow.infrastructure.process.project_workflow_worker import (
 
 CHILD = r'''
 import json, os, sys
+from autoflow.bootstrap.test_browser_worker import _windows_kill_on_exit_job
+job = _windows_kill_on_exit_job()
 c=json.loads(sys.stdin.readline())
 def send(type, **data):
  value=dict(type=type, protocolVersion=1, runId=c['runId'], executionGeneration=c['executionGeneration'], **data)
@@ -399,7 +401,7 @@ async def test_windows_cleanup_confirms_exit_after_kill_access_denied(tmp_path, 
             nonlocal exited
             exited = True
             return 0
-    worker = SimpleNamespace(run_id='test-run', process=Process(), created_directory=False)
+    worker = SimpleNamespace(run_id='test-run', process=Process(), created_directory=False, ready=False, job=None)
     instance._workers[worker.run_id] = worker
     monkeypatch.setattr(module.sys, 'platform', 'win32')
     await instance._cleanup_owned(worker)

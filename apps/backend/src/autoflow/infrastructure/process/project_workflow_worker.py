@@ -10,10 +10,10 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from autoflow.domain.projects.models import ProjectError
-from autoflow.infrastructure.process.project_browser_processes import process_birth
+from autoflow.infrastructure.process.browser_processes import process_birth
 from autoflow.infrastructure.process.project_test_browser_worker import (
     force_process_tree,
     wait_for_cleanup,
@@ -48,6 +48,7 @@ class _Worker:
     task: asyncio.Task[Any]
     process: asyncio.subprocess.Process | None = None
     birth: int | None = None
+    job: int | None = None
     stop_requested: bool = False
     cleanup: asyncio.Task[None] | None = None
     created_directory: bool = False
@@ -125,6 +126,9 @@ class ProjectWorkflowWorkerManager:
                 "TMPDIR": str(worker.directory), "TMP": str(worker.directory),
                 "TEMP": str(worker.directory),
             })
+            job_name = f"Local\\AutoFlow-{run_id}-{execution_generation}-{uuid4().hex}"
+            if sys.platform == "win32":
+                env["AUTOFLOW_WORKER_JOB_NAME"] = job_name
             group: dict[str, Any] = (
                 {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}  # type: ignore[attr-defined]
                 if sys.platform == "win32" else {"start_new_session": True}
@@ -150,6 +154,16 @@ class ProjectWorkflowWorkerManager:
             message = await asyncio.wait_for(self._read(worker), self._start_timeout)
             if message.get("type") != "ready":
                 raise _protocol_error()
+            if sys.platform == "win32":
+                from .windows_job import record_worker_job
+                if worker.birth is None:
+                    raise WorkflowWorkerError('WORKFLOW_CLEANUP_FAILED', '执行进程身份尚未确认')
+                ownership = asyncio.create_task(asyncio.to_thread(record_worker_job, worker.directory, run_id, execution_generation, job_name, worker.process.pid, worker.birth))
+                try:
+                    worker.job = await asyncio.shield(ownership)
+                except asyncio.CancelledError:
+                    worker.job = await wait_for_cleanup(ownership)
+                    raise
             worker.ready = True
             if worker.stop_requested:
                 await self._send_stop(worker)
@@ -167,7 +181,7 @@ class ProjectWorkflowWorkerManager:
 
     def _capture_birth(self, worker: _Worker) -> None:
         assert worker.process is not None
-        worker.birth = process_birth(worker.process.pid) if sys.platform != "win32" else None
+        worker.birth = process_birth(worker.process.pid)
 
     async def _exchange(
         self, worker: _Worker,
@@ -327,8 +341,12 @@ class ProjectWorkflowWorkerManager:
         process = worker.process
         if process is not None:
             if sys.platform == "win32":
-                # Terminate through the retained process handle, never a recycled PID.
-                # The bootstrap's kill-on-close Job owns the descendants.
+                # Once ready, the durable Job proof includes all descendants.
+                if worker.job is not None:
+                    from .windows_job import close_worker_job, terminate_worker_job
+                    await asyncio.to_thread(terminate_worker_job, worker.job, self._termination_timeout)
+                    close_worker_job(worker.job)
+                    worker.job = None
                 if process.returncode is None:
                     try:
                         process.kill()

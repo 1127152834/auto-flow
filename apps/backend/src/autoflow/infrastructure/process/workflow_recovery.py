@@ -33,13 +33,12 @@ async def recover_worker_directories(
             or str(int(suffix)) != suffix or int(suffix) < 1
             or directory.is_symlink() or not directory.is_dir()):
             raise RuntimeError("Workflow cleanup generation path is invalid")
-    if sys.platform == "win32":
-        if not directories:
-            return
-        # Never infer process death from an absent old parent. Until native restart
-        # ownership is available, retain reconciling instead of reporting success.
-        raise RuntimeError("Windows workflow restart cleanup needs native ownership verification")
     for directory in directories:
+        if sys.platform == 'win32':
+            from .windows_job import cleanup_worker_job
+            await asyncio.to_thread(cleanup_worker_job, directory, run_id, int(directory.name.removeprefix('generation-')), timeout)
+            await asyncio.to_thread(shutil.rmtree, directory)
+            continue
         owned = await asyncio.to_thread(capture_processes, 0, None, directory, executable, strict_ownership=True)
         await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
         deadline = asyncio.get_running_loop().time() + timeout

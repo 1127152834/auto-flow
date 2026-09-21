@@ -188,3 +188,92 @@ async def test_windows_restart_keeps_directory_without_native_ownership(tmp_path
     with pytest.raises(RuntimeError, match='Windows workflow restart cleanup needs native ownership'):
         await recover_worker_directories(tmp_path, run_id, tmp_path / 'CloakBrowser')
     assert directory.exists()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows Job ownership')
+@pytest.mark.parametrize('mode', ['live', 'root-exit', 'wrong-birth', 'foreign-job', 'denied'])
+async def test_native_windows_recovery_owns_job_and_descendants(tmp_path, monkeypatch, mode):
+    import json
+
+    from autoflow.infrastructure.process import windows_job
+    from autoflow.infrastructure.process.browser_processes import (
+        process_birth,
+        process_identity_is_alive,
+    )
+
+    run_id = str(uuid4())
+    directory = tmp_path / 'workflow-runs' / run_id / 'generation-1'
+    directory.mkdir(parents=True)
+    name = f'Local\\AutoFlow-{run_id}-1-{uuid4().hex}'
+    code = """
+import subprocess, sys, time
+from autoflow.infrastructure.process.windows_job import create_worker_job
+job = create_worker_job()
+child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
+print(child.pid, flush=True)
+time.sleep(60)
+"""
+    async def spawn(job_name):
+        return await asyncio.create_subprocess_exec(sys.executable, '-c', code, env={**os.environ, 'AUTOFLOW_WORKER_JOB_NAME': job_name}, stdout=asyncio.subprocess.PIPE)
+
+    root = await spawn(name)
+    foreign = None
+    handle = None
+    try:
+        child_pid = int(await asyncio.wait_for(root.stdout.readline(), 10))
+        child_birth, root_birth = process_birth(child_pid), process_birth(root.pid)
+        assert child_birth is not None and root_birth is not None
+        handle = windows_job.record_worker_job(directory, run_id, 1, name, root.pid, root_birth)
+        windows_job.close_worker_job(handle)
+        handle = None  # Simulate the original supervisor losing its retained handle.
+        proof_path = directory / 'worker-job.json'
+        original = proof_path.read_text()
+        if mode in {'wrong-birth', 'foreign-job'}:
+            proof = json.loads(original)
+            if mode == 'wrong-birth':
+                proof['birth'] += 1
+            else:
+                proof['name'] = f'Local\\AutoFlow-{run_id}-1-{uuid4().hex}'
+                foreign = await spawn(proof['name'])
+                assert int(await asyncio.wait_for(foreign.stdout.readline(), 10)) > 0
+            proof_path.write_text(json.dumps(proof))
+            with pytest.raises(OSError, match='does not own'):
+                await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel')
+            assert root.returncode is None and process_identity_is_alive(child_pid, child_birth)
+            assert directory.exists()
+            if foreign:
+                assert foreign.returncode is None
+            proof_path.write_text(original)
+        elif mode == 'denied':
+            api = windows_job._api
+            class Denied:
+                def __getattr__(self, name):
+                    return getattr(api(), name)
+                def TerminateJobObject(self, *_args):
+                    return False
+            with monkeypatch.context() as scoped:
+                scoped.setattr(windows_job, '_api', Denied)
+                with pytest.raises(OSError, match='termination denied'):
+                    await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel')
+            assert directory.exists() and process_identity_is_alive(child_pid, child_birth)
+        elif mode == 'root-exit':
+            root.kill()
+            await root.wait()
+            async with asyncio.timeout(5):
+                while process_identity_is_alive(child_pid, child_birth):
+                    await asyncio.sleep(.02)
+        await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel', timeout=3)
+        await asyncio.wait_for(root.wait(), 5)
+        assert not directory.exists()
+        assert not process_identity_is_alive(child_pid, child_birth)
+        if foreign:
+            assert foreign.returncode is None
+    finally:
+        if handle:
+            windows_job.close_worker_job(handle)
+        for process in [root, foreign]:
+            if process is not None:
+                if process.returncode is None:
+                    process.kill()
+                await process.wait()
