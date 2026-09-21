@@ -50,44 +50,65 @@ def process_birth(pid: int) -> int | None:
         return None
 
 
-def _windows_process_birth(pid: int) -> int | None:
-    """Return the kernel creation FILETIME for a Windows process."""
-
+def _windows_process_api():
     from ctypes import wintypes
 
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined]
-    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-    kernel32.OpenProcess.restype = wintypes.HANDLE
-    kernel32.GetProcessTimes.argtypes = [
-        wintypes.HANDLE,
-        ctypes.POINTER(wintypes.FILETIME),
-        ctypes.POINTER(wintypes.FILETIME),
-        ctypes.POINTER(wintypes.FILETIME),
-        ctypes.POINTER(wintypes.FILETIME),
-    ]
-    kernel32.GetProcessTimes.restype = wintypes.BOOL
-    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
-    kernel32.CloseHandle.restype = wintypes.BOOL
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined]
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.GetProcessTimes.argtypes = [wintypes.HANDLE, *[ctypes.POINTER(wintypes.FILETIME)] * 4]
+    kernel.GetProcessTimes.restype = wintypes.BOOL
+    kernel.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    kernel.TerminateProcess.restype = wintypes.BOOL
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.CloseHandle.restype = wintypes.BOOL
+    return kernel
 
-    handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+
+def _windows_handle_birth(kernel, handle) -> int | None:
+    from ctypes import wintypes
+
+    times = [wintypes.FILETIME() for _ in range(4)]
+    if not kernel.GetProcessTimes(handle, *(ctypes.byref(time) for time in times)):
+        return None
+    return (int(times[0].dwHighDateTime) << 32) | int(times[0].dwLowDateTime)
+
+
+def _windows_process_birth(pid: int) -> int | None:
+    kernel = _windows_process_api()
+    handle = kernel.OpenProcess(0x1000, False, pid)
     if not handle:
         return None
-    creation = wintypes.FILETIME()
-    exit_time = wintypes.FILETIME()
-    kernel_time = wintypes.FILETIME()
-    user_time = wintypes.FILETIME()
     try:
-        if not kernel32.GetProcessTimes(
-            handle,
-            ctypes.byref(creation),
-            ctypes.byref(exit_time),
-            ctypes.byref(kernel_time),
-            ctypes.byref(user_time),
-        ):
-            return None
-        return (int(creation.dwHighDateTime) << 32) | int(creation.dwLowDateTime)
+        return _windows_handle_birth(kernel, handle)
     finally:
-        kernel32.CloseHandle(handle)
+        kernel.CloseHandle(handle)
+
+
+def terminate_verified_windows_process(pid: int, birth: int, timeout: float) -> None:
+    """Check identity, terminate, and confirm exit on one kernel handle."""
+    if type(pid) is not int or pid <= 0 or type(birth) is not int or birth <= 0:
+        raise ValueError('Verified process identity required')
+    kernel = _windows_process_api()
+    handle = kernel.OpenProcess(0x1000 | 0x0001 | 0x00100000, False, pid)
+    if not handle:
+        if ctypes.get_last_error() == 87:  # type: ignore[attr-defined]
+            return  # Invalid PID proves this original process has exited.
+        raise OSError('Process ownership is unavailable')
+    try:
+        current = _windows_handle_birth(kernel, handle)
+        if current is None:
+            raise OSError('Process birth identity is unavailable')
+        if current != birth:
+            return  # PID recycled: never terminate the replacement process.
+        if kernel.WaitForSingleObject(handle, 0) != 0 and not kernel.TerminateProcess(handle, 1) and kernel.WaitForSingleObject(handle, 0) != 0:
+            raise OSError('Owned process termination was denied')
+        if kernel.WaitForSingleObject(handle, max(0, int(timeout * 1000))) != 0:
+            raise TimeoutError('Owned process exit was not confirmed')
+    finally:
+        kernel.CloseHandle(handle)
 
 
 def process_identity_is_alive(pid: int, birth: int | None) -> bool:

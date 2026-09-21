@@ -4,9 +4,32 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      pm9NativeProbe:
+        description: Run only the bounded PM9 Windows native feasibility checks
+        type: boolean
+        default: false
 
 jobs:
+  pm9-native-probe:
+    if: github.event_name == 'workflow_dispatch' && inputs.pm9NativeProbe
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked
+      - run: uv run --directory apps/backend pytest -vv --tb=short tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_recovery.py
+      - run: python scripts/pm9-windows-native-probe.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pm9-windows-native-probe
+          path: pm9-native-probe.json
   checks:
+    if: github.event_name != 'workflow_dispatch' || !inputs.pm9NativeProbe
     strategy:
       fail-fast: false
       matrix:

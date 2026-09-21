@@ -1,6 +1,5 @@
 import os
 import signal
-import subprocess
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -32,12 +31,9 @@ def browser_worker_main(runner: Callable[[Event], int]) -> int:
 
     def parent_exited() -> None:
         if sys.platform == "win32":
-            subprocess.Popen(
-                ["taskkill", "/pid", str(os.getpid()), "/t", "/f"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NO_WINDOW,
-            )
+            # The current worker owns the kill-on-close Job. Closing this
+            # process terminates its descendants without reopening any PID.
+            os._exit(1)
         else:
             directory = os.environ.get("CLOAKBROWSER_CACHE_DIR")
             executable = os.environ.get("CLOAKBROWSER_BINARY_PATH")
