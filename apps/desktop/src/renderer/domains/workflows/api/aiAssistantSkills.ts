@@ -1371,7 +1371,7 @@ export async function executeClientAction(
         const id = payload.id as string
         if (!id) return { success: false, error: '缺少 id' }
         try {
-          await scheduledTaskApi.execute(id)
+          await scheduledTaskApi.execute(id, crypto.randomUUID())
           return { success: true, message: `已立即执行计划任务 ${id}` }
         } catch (e: any) {
           return { success: false, error: e?.message || String(e) }

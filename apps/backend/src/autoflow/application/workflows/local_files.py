@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from threading import RLock
@@ -15,11 +16,15 @@ from .webdav import WebDavWorkflowService
 
 class LocalWorkflowFiles:
     def __init__(
-        self, workspace: Path, remote: WebDavWorkflowService | None = None
+        self,
+        workspace: Path,
+        remote: WebDavWorkflowService | None = None,
+        ensure_unreferenced: Callable[[str], None] | None = None,
     ) -> None:
         self._default = (workspace / "local-workflows").resolve()
         self._settings = workspace / "local-workflows.json"
         self._remote = remote
+        self._ensure_unreferenced = ensure_unreferenced
         self._lock = RLock()
 
     @property
@@ -108,6 +113,8 @@ class LocalWorkflowFiles:
         return path.is_file(), path.name
 
     def delete(self, filename: str, folder: str | None = None) -> None:
+        if self._ensure_unreferenced is not None:
+            self._ensure_unreferenced(filename)
         if remote := self._active_remote():
             remote.delete(filename)
             return

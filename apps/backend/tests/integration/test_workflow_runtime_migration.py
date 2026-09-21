@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0017_studio_credentials"
+EXPECTED_HEAD = "0018_scheduled_tasks"
 
 
 def _config(path: Path) -> Config:

@@ -25,3 +25,10 @@ it('shows execution errors and retains the task instead of falsely reporting run
   expect(screen.getByRole('heading', { name: 'missing workflow' })).toBeDefined()
   expect(screen.queryByRole('button', { name: '停止' })).toBeNull()
 })
+it('documents the required AutoFlow token for webhook triggers', async () => {
+  render(<ScheduledTasksDialog open onClose={() => {}} />)
+  fireEvent.click(await screen.findByRole('button', { name: '创建任务' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Webhook' }))
+  expect(screen.getByText(/必须携带 x-autoflow-token 请求头/)).toBeDefined()
+  expect(screen.getByText(/x-autoflow-token: <AutoFlow 运行令牌>/)).toBeDefined()
+})

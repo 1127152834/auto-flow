@@ -12,7 +12,7 @@ export function finishScheduledFixture(id: string, status: string, executed: num
   if (log) {
     log.status = status === 'completed' ? 'success' : status === 'failed' ? 'failed' : 'stopped'
     log.end_time = new Date().toISOString()
-    log.duration = (Date.now() - Date.parse(log.start_time)) / 1000
+    log.duration = (Date.now() - Date.parse(log.start_time ?? log.end_time)) / 1000
     log.executed_nodes = executed
     task.total_executions++
     if (log.status === 'success') task.success_executions++
@@ -75,7 +75,11 @@ export async function mockScheduledRequest(path: string, method: string, query: 
   }
   if (action === 'toggle' && method === 'POST') {
     if (typeof body.enabled !== 'boolean') return fail('enabled must be boolean', 422)
-    task.enabled = body.enabled; save(data); return json({ success: true, enabled: task.enabled })
+    task.enabled = body.enabled
+    task.next_execution_time = body.enabled ? task.next_execution_time : null
+    task.updated_at = new Date().toISOString()
+    save(data)
+    return json(task)
   }
   if (action === 'execute' && method === 'POST') {
     if (task.is_running) return fail('Task is already running', 409)

@@ -17,6 +17,7 @@ from autoflow.adapters.http.studio_credentials import studio_credentials_router
 from autoflow.adapters.http.studio_retention import studio_retention_router
 from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
+from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
 from autoflow.application.android.console import AndroidConsole
 from autoflow.application.android.fleet import AndroidFleet
 from autoflow.application.environments.service import EnvironmentService
@@ -69,6 +70,8 @@ from autoflow.application.workflows.credentials import StudioCredentialService
 from autoflow.application.workflows.image_assets import ImageAssetStore
 from autoflow.application.workflows.local_files import LocalWorkflowFiles
 from autoflow.application.workflows.retention import StudioRetentionService
+from autoflow.application.workflows.schedules import WorkflowScheduleService
+from autoflow.application.workflows.schedule_notifications import WorkflowScheduleNotifier
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.application.workflows.webdav import WebDavWorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
@@ -164,6 +167,9 @@ from autoflow.infrastructure.database.studio_credentials import (
     SqlAlchemyStudioCredentials,
 )
 from autoflow.infrastructure.database.studio_retention import SqlAlchemyStudioRetention
+from autoflow.infrastructure.database.workflow_schedules import (
+    SqlAlchemyWorkflowSchedules,
+)
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
@@ -341,7 +347,12 @@ def create_app(
     workflow_services.runs.recover_interrupted()
     webdav_workflows = WebDavWorkflowService(paths.workspace, active_credentials)
     app.state.webdav_workflows = webdav_workflows
-    local_workflows = LocalWorkflowFiles(paths.workspace, webdav_workflows)
+    schedule_repository = SqlAlchemyWorkflowSchedules(session_factory)
+    local_workflows = LocalWorkflowFiles(
+        paths.workspace,
+        webdav_workflows,
+        schedule_repository.ensure_workflow_unreferenced,
+    )
     app.state.local_workflows = local_workflows
     image_assets = ImageAssetStore(paths.workspace)
     app.state.image_assets = image_assets
@@ -355,7 +366,17 @@ def create_app(
         SqlAlchemyStudioRetention(session_factory), paths.workspace
     )
     app.state.studio_retention = studio_retention
+    workflow_schedules = WorkflowScheduleService(
+        schedule_repository,
+        local_workflows,
+        workflow_services.commands,
+        workflow_services.runs,
+        gate=quiesce_gate,
+        notifier=WorkflowScheduleNotifier(studio_credentials),
+    )
+    app.state.workflow_schedules = workflow_schedules
     app.router.add_event_handler("startup", studio_retention.startup)
+    app.router.add_event_handler("startup", workflow_schedules.startup)
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
     android_runs = CurrentAndroidRunBoundary()
@@ -508,6 +529,7 @@ def create_app(
             ),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
             *workflow_services.blockers(),
+            *workflow_schedules.blockers(),
             *(["android_management_active"] if android.management.busy() else []),
             *(["android_console_active"] if android_console.busy() else []),
         ],
@@ -537,6 +559,7 @@ def create_app(
             project_excel.shutdown()
             status_batch_coordinator.shutdown()
             await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
+            await workflow_schedules.shutdown()
 
             async def close_project_workflows() -> None:
                 try:
@@ -593,6 +616,7 @@ def create_app(
     app.include_router(workflow_bundles_router(workflow_bundles))
     app.include_router(studio_credentials_router(studio_credentials))
     app.include_router(studio_retention_router(studio_retention))
+    app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(

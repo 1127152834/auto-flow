@@ -51,6 +51,7 @@ export interface ScheduledTask {
   description?: string
   workflow_id: string
   workflow_name?: string
+  profile_id?: string
   trigger: ScheduledTaskTrigger
   enabled: boolean
 
@@ -59,9 +60,9 @@ export interface ScheduledTask {
   success_executions: number
   failed_executions: number
   last_execution_time?: string
-  last_execution_status?: 'success' | 'failed'
+  last_execution_status?: 'success' | 'failed' | 'stopped'
   last_execution_error?: string
-  next_execution_time?: string
+  next_execution_time?: string | null
 
   // 时间戳
   created_at: string
@@ -80,6 +81,8 @@ export interface ScheduledTask {
   notify_on_success?: boolean
   notify_channels?: NotifyChannel[]
 }
+
+const pendingExecutionCommands = new Map<string, string>()
 
 export interface NotifyChannel {
   type: 'email' | 'wecom' | 'dingtalk' | 'serverchan' | 'webhook'
@@ -108,12 +111,12 @@ export interface ScheduledTaskExecutionLog {
   task_name: string
   workflow_id: string
   workflow_name: string
-  start_time: string
+  start_time?: string
   end_time?: string
   duration?: number
-  status: 'running' | 'success' | 'failed' | 'stopped'
+  status: 'queued' | 'running' | 'success' | 'failed' | 'stopped'
   error?: string
-  trigger_type: 'time' | 'hotkey' | 'startup' | 'manual' | 'webhook'
+  trigger_type: 'time' | 'hotkey' | 'startup' | 'manual' | 'webhook' | 'repeat'
   trigger_time: string
   executed_nodes: number
   failed_nodes: number
@@ -224,9 +227,9 @@ export const useScheduledTaskStore = create<ScheduledTaskStore>((set) => ({
 
   toggleTask: async (id, enabled) => {
     try {
-      requireResponse(await scheduledTaskApi.toggle(id, enabled))
+      const response = requireResponse(await scheduledTaskApi.toggle(id, enabled))
       set(state => ({
-        tasks: state.tasks.map(t => t.id === id ? { ...t, enabled } : t)
+        tasks: state.tasks.map(t => t.id === id ? response.data : t)
       }))
     } catch (error: any) {
       set({ error: error.message })
@@ -235,13 +238,26 @@ export const useScheduledTaskStore = create<ScheduledTaskStore>((set) => ({
   },
 
   executeTask: async (id) => {
+    const commandId = pendingExecutionCommands.get(id) || crypto.randomUUID()
+    pendingExecutionCommands.set(id, commandId)
     try {
-      requireResponse(await scheduledTaskApi.execute(id))
+      requireResponse(await scheduledTaskApi.execute(id, commandId))
+      pendingExecutionCommands.delete(id)
       // 标记任务为执行中
       set(state => ({
         tasks: state.tasks.map(t => t.id === id ? { ...t, is_running: true } : t)
       }))
     } catch (error: any) {
+      try {
+        requireResponse(await scheduledTaskApi.getCommand(commandId))
+        pendingExecutionCommands.delete(id)
+        set(state => ({
+          tasks: state.tasks.map(t => t.id === id ? { ...t, is_running: true } : t)
+        }))
+        return
+      } catch {
+        // Keep the stable command id so a later retry cannot start a duplicate run.
+      }
       set({ error: error.message })
       throw error
     }

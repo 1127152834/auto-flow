@@ -401,8 +401,10 @@ export const scheduledTaskApi = {
     apiRequest(`/scheduled-tasks/${id}`, { method: 'DELETE' }),
   toggle: (id: string, enabled: boolean) =>
     apiRequest(`/scheduled-tasks/${id}/toggle`, { method: 'POST', body: JSON.stringify({ enabled }) }),
-  execute: (id: string) =>
-    apiRequest(`/scheduled-tasks/${id}/execute`, { method: 'POST' }),
+  execute: (id: string, commandId: string) =>
+    apiRequest(`/scheduled-tasks/${id}/execute`, { method: 'POST', body: JSON.stringify({ commandId }) }),
+  getCommand: (commandId: string) =>
+    apiRequest(`/scheduled-tasks/commands/${encodeURIComponent(commandId)}`),
   stop: (id: string) =>
     apiRequest(`/scheduled-tasks/${id}/stop`, { method: 'POST' }),
   getTaskLogs: (id: string, limit: number = 100) => 

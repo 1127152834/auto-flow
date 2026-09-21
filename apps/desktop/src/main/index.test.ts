@@ -48,7 +48,7 @@ beforeEach(async () => {
     app.emit('before-quit', event)
     if (!event.preventDefault.mock.calls.length) for (const window of FakeWindow.instances) if (!window.destroyed) window.close()
   })
-  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openExternal: vi.fn(async () => {}), openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn(), showMessageBoxSync: vi.fn(()=>1) } }))
+  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, globalShortcut: { register: vi.fn(() => true), unregister: vi.fn() }, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openExternal: vi.fn(async () => {}), openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn(), showMessageBoxSync: vi.fn(()=>1) } }))
   vi.doMock('./settings/controller', () => ({ SettingsController: class {
     constructor(private options: SettingsControllerOptions) {}
     start = async () => {}

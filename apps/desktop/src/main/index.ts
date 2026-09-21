@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { realpathSync } from 'node:fs'
-import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeImage, Notification, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, globalShortcut, ipcMain, nativeImage, Notification, shell } from 'electron'
 import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
@@ -17,9 +17,11 @@ import { DesktopSettingsStore, SettingsError } from './settings/store'
 import { ProjectFilesController } from './project-files/controller'
 import { SettingsController } from './settings/controller'
 import type { UiPreferences } from '../shared/settings'
+import { ScheduledHotkeyController } from './scheduled-hotkeys'
 
 let mainWindow: BrowserWindow | undefined
 let settings: SettingsController | undefined
+let scheduledHotkeys: ScheduledHotkeyController | undefined
 
 function runSystemCommand(file:string,args:string[]):Promise<string>{
   return new Promise(resolve=>execFile(file,args,{windowsHide:true},error=>resolve(error?.message??'')))
@@ -208,6 +210,11 @@ app.whenReady().then(async () => {
     applyPreferences,
   })
   void settings.start().catch(() => undefined)
+  scheduledHotkeys = new ScheduledHotkeyController({
+    shortcuts: globalShortcut,
+    getSidecarStatus: () => settings?.getPublicStatus() ?? { state: 'stopped' },
+  })
+  scheduledHotkeys.start()
 
   ipcMain.handle('autoflow:open-automation-studio', event => studio.open(event))
   ipcMain.handle('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
@@ -232,11 +239,13 @@ app.on('before-quit', event => {
   void (async () => {
     try {
       if (!await studio.closeForQuit()) { isQuitting = false; return }
+      scheduledHotkeys?.stop()
       await settings?.shutdown()
       stoppedForQuit = true
       app.quit()
     } catch {
       isQuitting = false
+      scheduledHotkeys?.start()
       dialog.showErrorBox('暂未退出 AutoFlow', '本地服务未能停止，请重试退出。')
     }
   })()

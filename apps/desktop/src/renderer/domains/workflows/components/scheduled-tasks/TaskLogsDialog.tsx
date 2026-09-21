@@ -74,6 +74,8 @@ export function TaskLogsDialog({ task, open, onClose }: TaskLogsDialogProps) {
       case 'hotkey': return '热键触发'
       case 'startup': return '启动触发'
       case 'manual': return '手动执行'
+      case 'webhook': return 'Webhook触发'
+      case 'repeat': return '重复执行'
       default: return type
     }
   }
@@ -101,6 +103,15 @@ export function TaskLogsDialog({ task, open, onClose }: TaskLogsDialogProps) {
             执行中
           </span>
         )
+      case 'queued':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-medium">
+            <Clock className="w-3 h-3" />
+            等待执行
+          </span>
+        )
+      case 'stopped':
+        return <span className="text-gray-500 text-xs">已停止</span>
       default:
         return <span className="text-gray-500 text-xs">{status}</span>
     }
@@ -171,9 +182,11 @@ export function TaskLogsDialog({ task, open, onClose }: TaskLogsDialogProps) {
                           {getTriggerTypeLabel(log.trigger_type)}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        开始时间: {formatDateTime(log.start_time)}
-                      </div>
+                      {log.start_time && (
+                        <div className="text-sm text-gray-600">
+                          开始时间: {formatDateTime(log.start_time)}
+                        </div>
+                      )}
                       {log.end_time && (
                         <div className="text-sm text-gray-600">
                           结束时间: {formatDateTime(log.end_time)}

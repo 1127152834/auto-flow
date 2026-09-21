@@ -2,7 +2,7 @@
 /**
  * 计划任务失败/成功通知配置编辑器（复用于创建/编辑对话框）
  * 支持邮件 / 企业微信 / 钉钉 / Server酱 / 自定义 Webhook 多渠道。
- * 敏感字段可填明文，也可用 {{cred:名称.字段}} 引用本地加密凭据库。
+ * 敏感字段只接受 {{cred:名称.字段}}，实际值由系统凭据库在发送时解析。
  */
 import { Plus, Trash2, Bell } from 'lucide-react'
 import { Label } from '../controls/label'
@@ -73,7 +73,7 @@ export function NotificationConfigEditor({ notifyOnFailure, notifyOnSuccess, cha
       {(notifyOnFailure || notifyOnSuccess) && (
         <div className="space-y-2">
           {list.length === 0 && (
-            <p className="text-xs text-gray-400">还没有通知渠道，点下方按钮添加。敏感字段可用 {'{{cred:名称.字段}}'} 引用凭据库。</p>
+            <p className="text-xs text-gray-400">还没有通知渠道，点下方按钮添加。密码、令牌和地址必须使用 {'{{cred:名称.字段}}'} 引用凭据库。</p>
           )}
           {list.map((c, idx) => (
             <div key={idx} className="p-2.5 rounded-lg border border-gray-200 bg-gray-50 space-y-2">
@@ -92,7 +92,7 @@ export function NotificationConfigEditor({ notifyOnFailure, notifyOnSuccess, cha
                   {field(idx, 'smtp_server', 'SMTP服务器', 'smtp.qq.com')}
                   {field(idx, 'smtp_port', '端口', '465', 'number')}
                   {field(idx, 'username', '账号', 'you@example.com')}
-                  {field(idx, 'password', '口令/授权码', '可填 {{cred:邮箱.password}}', 'password')}
+                  {field(idx, 'password', '口令/授权码', '{{cred:邮箱.password}}', 'password')}
                   {field(idx, 'to', '收件人', '多个用逗号分隔')}
                 </div>
               )}

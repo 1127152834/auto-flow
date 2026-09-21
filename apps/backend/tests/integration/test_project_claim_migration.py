@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0015_workflow_mcp"
+EXPECTED_HEAD = "0018_scheduled_tasks"
 
 
 def config_for(database: Path) -> Config:

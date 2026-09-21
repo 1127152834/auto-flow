@@ -234,3 +234,38 @@ class WorkflowRecordingReviewRow(Base):
     auto_wait: Mapped[bool] = mapped_column(nullable=False)
     events: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ScheduledTaskRow(Base):
+    __tablename__ = "workflow_scheduled_tasks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    workflow_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    enabled: Mapped[bool] = mapped_column(nullable=False)
+    is_running: Mapped[bool] = mapped_column(nullable=False)
+    next_execution_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ScheduledTaskExecutionRow(Base):
+    __tablename__ = "workflow_scheduled_task_executions"
+    __table_args__ = (
+        UniqueConstraint("task_id", "occurrence_key", name="uq_scheduled_task_occurrence"),
+        Index("ix_scheduled_task_execution_queue", "status", "due_at", "created_at"),
+        Index("ix_scheduled_task_execution_started", "task_id", "started_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    task_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("workflow_scheduled_tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    occurrence_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
