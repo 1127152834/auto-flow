@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 129,
-        "planned": 49
+        "partially_verified": 131,
+        "planned": 47
       },
       "items": [
         {
@@ -1220,12 +1220,13 @@
         },
         {
           "id": "DATA-SH-02",
-          "status": "planned",
+          "status": "partially_verified",
           "evidenceCount": 0,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1567,12 +1568,13 @@
         },
         {
           "id": "DATA-SYNC-09",
-          "status": "planned",
+          "status": "partially_verified",
           "evidenceCount": 0,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -2608,11 +2610,11 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 233,
-    "withNoLocatedAssertion": 18,
+    "withAssertions": 235,
+    "withNoLocatedAssertion": 16,
     "statuses": {
-      "partially_verified": 196,
-      "planned": 55
+      "partially_verified": 198,
+      "planned": 53
     }
   }
 }

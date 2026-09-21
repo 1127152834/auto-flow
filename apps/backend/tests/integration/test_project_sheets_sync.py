@@ -720,3 +720,34 @@ def test_generic_abandon_is_scoped_to_owned_content_intents(tmp_path, scope):
             row = session.get(SyncOperationRow, pending['syncOperationId'])
             assert row.status == 'pending' and row.status_revision == pending['statusRevision']
         assert transport.changes() == 0
+
+
+@pytest.mark.parametrize('last_writer', ['P', 'Q'])
+def test_overlapping_project_writes_keep_historical_confirmation_and_local_values(tmp_path, last_writer):
+    from tests.integration.test_project_sheets_claims import shared_tables
+    from tests.integration.test_project_sheets_observations import observations
+
+    with shared_tables(tmp_path) as (first, second):
+        bounds = {'P':first, 'Q':second}
+        local = {name:edit_title(bound, bound.records()[0], name+'-value') for name, bound in bounds.items()}
+        earlier = 'Q' if last_writer == 'P' else 'P'
+        assert push(bounds[earlier]).status_code == 202
+        confirmed, = sync_operations(bounds[earlier], 'confirmed')
+        assert confirmed['evidence']['outcome'] == 'matched'
+        assert first.transport.grid('数据')[1][1] == earlier+'-value'
+        assert push(bounds[last_writer]).status_code == 202
+        last, = sync_operations(bounds[last_writer], 'confirmed')
+        assert last['evidence']['outcome'] == 'matched'
+        assert last['syncOperationId'] != confirmed['syncOperationId']
+        assert first.transport.grid('数据')[1][1] == last_writer+'-value'
+        writes = first.transport.changes()
+        for name, bound in bounds.items():
+            pull(bound)
+            assert bound.records()[0] == local[name]
+            observed = next(item for item in observations(bound, local[name]).json()['items'] if item['fieldId'] == bound.field_id('title'))
+            assert observed['remoteValue'] == last_writer+'-value'
+            assert observed['localValue'] == name+'-value'
+            assert observed['differs'] is (name != last_writer)
+        assert sync_operations(bounds[earlier], 'confirmed') == [confirmed]
+        assert sync_operations(bounds[last_writer], 'confirmed') == [last]
+        assert first.transport.changes() == writes == 2

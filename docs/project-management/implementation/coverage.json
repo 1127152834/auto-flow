@@ -8090,7 +8090,7 @@
       "primary_package": "PM6-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_identity.py",
       "release_regression": "PM9",
-      "status": "planned",
+      "status": "partially_verified",
       "evidence": [],
       "owner": "data-source",
       "acceptance_methods": [
@@ -8111,12 +8111,23 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-22",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_overlapping_project_writes_keep_historical_confirmation_and_local_values",
+            "scope": "P→Q 和 Q→P 两种顺序均逐次确认同一远端字段，历史 confirmed 原样保留；最后远端值与只读来源观察一致，各项目本地原值/版本保持，拉取无额外写。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：两项目重叠写的历史确认与最终值可解释；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "当前打包实际 worker 与同步 UI 历史展示的联合链仍未验收。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "受控 Google transport 的顺序写入不证明 Google 实网或外部客户端请求间原子性。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -10049,7 +10060,7 @@
       "primary_package": "PM6-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_sync.py",
       "release_regression": "PM9",
-      "status": "planned",
+      "status": "partially_verified",
       "evidence": [],
       "owner": "data-source",
       "acceptance_methods": [
@@ -10070,12 +10081,23 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-22",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_rejected_value_push_keeps_identity_claimable_and_peer_pull_independent",
+            "scope": "真实 HTTP 推送拒绝后原失败意图/本地值保留；P/Q 均可继续拉取，P 能冻结本地新值创建 Task 并持有效 lease，Q 仅因共享占用暂时忙。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：推送失败仍能拉取且不阻断不相关本地运行；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "现有检查止于实际 Task 领取；当前打包真实 worker 完整执行及 UI 错误状态/重试联合链仍需验证。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "Google 实网故障需要授权环境，受控拒绝不代替网络证据。"
           }
         ],
         "statusBeforeReview": "planned"
