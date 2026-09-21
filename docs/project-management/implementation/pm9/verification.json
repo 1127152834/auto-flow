@@ -279,7 +279,7 @@
       }
     ],
     "conclusion": "success",
-    "evidenceCommitPolicy": "Subsequent evidence/audit commits change documentation and screenshots only with [skip ci]. Source hashes match tested d59607f3; no later production/test/config changes."
+    "evidenceCommitPolicy": "Historical evidence for d59607f3 only; the current follow-through changes production code, tests and CI and must not inherit this acceptance."
   },
   "remaining": [
     "PM6 historical service-account live Sheets and system credential evidence exists; current PM9 packaged full-chain and desktop OAuth remain unverified. Prior run removed local credentials; current authorization availability is not established.",
@@ -312,6 +312,15 @@
   },
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "databaseContention": "windows-contention.json",
-  "deliveryStatus": "implemented_and_ci_verified; physical/live-service/full-spec acceptance remains pending",
-  "remainingReport": "completion-gaps.md"
+  "deliveryStatus": "follow_through_in_progress; release_not_accepted",
+  "remainingReport": "completion-gaps.md",
+  "followThrough": {
+    "status": "local_passed_ci_pending",
+    "plan": "docs/superpowers/plans/2026-09-21-pm9-follow-through.md",
+    "mappingReview": "test-mapping-review.md",
+    "newProductionChanges": true,
+    "baselineEvidenceOnly": "The existing d59607f3 checks/source hashes describe the historical candidate. The new manual expiry CAS fix and expanded smoke require fresh candidate verification.",
+    "report": "follow-through.json",
+    "releaseAccepted": false
+  }
 }

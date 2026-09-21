@@ -245,7 +245,11 @@ class EnvironmentOperationSnapshot(ApiModel):
     operation_id: str
     project_id: str | None
     idempotency_key: str
-    kind: str
+    kind: Literal[
+        "deleteEnvironment", "updateEnvironment", "openInstance",
+        "startMaintenance", "discardEnvironment", "resumeManual",
+        "finishManual", "saveEnvironment", "repairEndAssociation",
+    ]
     status: str
     status_revision: int
     resource: dict[str, Any]

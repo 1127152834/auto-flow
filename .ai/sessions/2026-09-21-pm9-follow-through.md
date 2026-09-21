@@ -1,0 +1,15 @@
+# PM9 follow-through
+
+日期：2026-09-21。状态：in_progress。来源：用户后续任务、当前独立 PM9 工作区与可执行验证。
+
+- 分支 codex/project-management-pm9-runtime，起点 30c4a768，PR #1 草稿；未触碰 Studio 主工作区、未重新归并历史分支。
+- 完成 251 条 assertion/gap 映射，保留 73 条原预定缺失路径的历史意图。原 verified 条目发现未闭合条件的回退为 partial，记录旧状态；未批量升级。
+- 真实 worker 竞争测试复现：继续 intent 在空读取之后提交，随后 TTL 判断仍返回 expired，Run 错判 timed_out。RED：1 failed / 1 passed。修复为到期先 CAS 相同检查点状态版本；输方重读已提交继续命令。GREEN：9 个实际浏览器人工/丢响应场景通过。
+- 写成功响应丢失在 parent→worker delivery 边界注入，Run 安全中断；HTTP 按原 commandId 取回唯一新增记录和成功操作结果。不宣称跨进程恢复网页执行。
+- 生产 HTTP smoke 扩展双输入、重复领取、两次连续写入、人工新值冲突和后续浏览器失败保留效果；End 混合关联、saved_unlinked 修复及旧代次保护继续验证中。
+- 新增架构方案 docs/superpowers/specs/2026-09-21-pm9-runtime-capability-completion.md 为 proposed；已请求一次确认，未获答复前不实现新协议，继续独立验证修复。
+- 本次已有生产代码变更，旧 d59607f3 三平台结果只能作历史基线；新候选必须独立验证，releaseAccepted 保持 false。
+
+更新（confirmed）：独立审查发现 current 读取后才接受 intent 的另一交错；新增真实 worker RED 后通过 intent 后重读/CAS 失配重读修复。End 真实链发现通用 ProjectOperationView 不容纳环境操作导致 500，复用受限 kind 的 EnvironmentOperationSnapshot 修复列表/id/原键，生成 API 已同步。最终本机 16 real browser / 33 定向 / 100 scripts，ruff/mypy/typecheck/lint/OpenAPI 通过；全量后端在最后契约小改前 3214 passed25skipped，新候选全量由 CI 重验。报告 follow-through.json 保存 source hashes 与注入边界。独立审查 P1/P2 全关闭。当前 203 项有断言、48 项缺直接场景、186 partial65planned0verified。
+
+补充：TTL 先胜的实际 HTTP 在途继续竞争 1 passed，增加非 waiting 分支让出事件循环，最终受影响人工 5 passed。新候选仍待三平台全量，不将此前本机全量冒充最后源树逐行验证。

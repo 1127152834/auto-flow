@@ -1,0 +1,54 @@
+# PM9 remaining runtime capabilities — proposed
+
+日期：2026-09-21。状态：proposed，等待本轮新增架构确认。来源：用户 PM9 后续指令、已批准 R1–R4、当前代码审查。既有运行链验证和缺陷修复继续执行。
+
+## 当前边界
+
+- `application/workflows/runtime.py` 的 `_WorkflowScheduler` 共享 ExecutionContext 和 executed/pending 状态；不能只扩大 `run_validation.py` 的准入。
+- 现有 canvas subflow gateway 可以执行组，但项目 prepared content / capability 尚未支持冻结子调用身份。
+- `project_runs/manual_runtime.py` 明确拒绝 targetNodeId 与非空 inputs；目前仅同一存活 worker 的原检查点继续。
+- Windows 已有 GetProcessTimes birth identity，并非完全缺进程识别；未知归属仍不能杀进程。任意输出路径的部分操作仍 501；受控产物与项目 Excel 导出已可用。
+
+## S1 项目子流程
+
+在现有 prepared execution plan 内增加可选 `dependencies`，按内容摘要保存每个实际引用的子图，不在执行时重读 Studio 文档。沿用现有 subflow 节点和 gateway；不创建第二 Run 或第二执行器。旧计划没有此字段时保持原解释。
+
+准备时递归解析依赖、校验节点能力、检测调用环；深度上限先固定为 16，超限给出调用路径。`subflow` 节点显式声明 `inputs`（名称到表达式）、`outputs`（子结果到父变量名称）。输入在调用时复制 JSON 值；子变量、循环栈、临时输出独立，只有声明输出在成功返回时提交父变量。失败保留此前真实数据效果，不提交未完成的父变量输出。
+
+父 Run/Task/执行代次/取消令牌保持不变。每个调用有稳定 invocation path；nodeVisitId 包含调用身份，避免重复节点 ID 的事件和命令串用。parent 端从冻结依赖定位真实节点；子权限为父声明权限与子所需权限的交集，不能因子引用扩大项目/表权限。父撤销后迟到调用被既有代次检查拒绝。先拒绝子流程内 End；唯一根 End 负责关闭/保存。人工仍限制为单一活跃检查点。
+
+验收：准备后编辑子文档不改变本次结果；两个调用同名变量不串值；未声明输出不泄漏；环/深度/缺依赖拒绝；父取消后子数据写拒绝；重试同一 visit 不重复新增。单元 + 父子真实 worker HTTP 链共同通过后开放项目 subflow。
+
+## S2 人工声明输入与合法继续位置
+
+沿用现有 resume 请求的 `inputs` 与 `targetNodeId`；冻结节点配置新增 `inputSchema` 和 `resumeTargets`。无配置保持现有空输入/原位置行为。第一版目标只能是检查点直接后继，且必须在同一调用与分支内；不支持跳回已执行节点、跨循环/调用边界、跳到 End 或绕过 join。错误在接受命令之前返回 422，并列出字段/目标原因。
+
+检查点事件保存 schema/targets 的冻结摘要。服务端先校验精确键、类型、必填/枚举和目标，再在已有事务中校验项目状态、checkpointRevision、statusRevision、Run 代次、TTL 和拥有的实例。失败不改检查点；resume/finish/expire/stop 只有一个有效转换。输入仅绑定声明变量，不能覆盖执行上下文、capability 或隐藏系统变量。
+
+在现有人工详情组件中先增加字段控件与错误状态，再接运行/环境页面。缺输入保留草稿；过期/已处理变只读；响应丢失查询原 operation。继续仍依赖存活 worker，重启/worker 丢失后只能收尾，不能恢复浏览器步骤。
+
+验收：必填/类型/未声明键、非法目标、检查点旧版本、双击和到期并发；同一真实 worker 收到声明值且已执行节点不重跑；两入口展示相同处理状态。
+
+## S3 分支状态隔离后开放循环/人工并行图
+
+在共享 Runtime 内按结构化 fork 建立分支执行状态：变量快照、循环帧、executed/executing/pending、局部停止、visit 路径归分支所有。Run 取消、持久事件序列和 capability ledger 仍归 Run。先要求 fork 具有可验证的单一 join；拒绝跨分支回边、循环体跨 join、没有唯一收尾的形状。
+
+join 不隐式合并互相覆盖的变量；只接受显式输出映射，同名目的地冲突在 prepare 阶段拒绝。分支 break/continue 只影响本分支循环；分支失败取消其余分支并等待清理，已提交数据不回滚；唯一根 End 等全部分支汇合后执行一次。
+
+单浏览器上下文仍是共享资源。人工暂停必须先使其他分支到安全节点边界并确认没有在途浏览器命令，再交给人工；允许一个活跃人工检查点，其他检查点排队且预算规则明确。不同分支的数据命令保留各自 visit，但共用 Task 权限与数据库版本检查。未完成这些约束前继续拒绝并行人工/循环。
+
+验收：两个循环计数/变量隔离、只退出本分支、乱序汇合 End 一次、人工窗口无后台浏览器操作、父取消清理全部分支、失败后数据效果保留。沿用 Runtime 差分测试，并补项目真实 worker 图；不复制 scheduler。
+
+## S4 Windows 文件与进程边界
+
+复用 `workflow_artifacts` 的登记/取消/摘要与 `new_file` 发布逻辑；只增加 Windows 原生路径适配。先打开目录/目标句柄并核验最终路径、卷与文件身份，拒绝重解析点、设备/UNC 不支持形状、路径替换和未授权覆盖；同卷临时文件写完 flush 后原子发布，不按字符串检查一次后再次盲开。现有文件写必须匹配 expected identity；失败清理仅属于本操作的临时文件。原生 API 的最小组合在 Windows CI 验证可行后固定，不能用模拟 sys.platform 证明安全。
+
+进程使用现有 kernel birth identity，并使终止操作在同一已验证句柄上完成，避免检查后 PID 复用；直接拥有的 worker/browser 子树才可终止。重启发现未知进程保持 quarantine，权限不足保持 blocker，不以命令行相似推断归属。不要为通过清理测试取消保护。
+
+验收：Windows 原生重解析点/目录替换/覆盖冲突/取消清理、PID 复用与权限拒绝、父结束后子进程回收；安装包实机仍独立保留待验收。
+
+## 实施切片与放行
+
+顺序 S1 → S2 → S3 → S4；每片先契约/失败测试、实现、组件与真实链（如涉及 UI）、文档和 `.ai`，定向检查后再提交。S3 共用状态改动必须补既有 Studio Runtime 回归。每片未通过全部自身准入前不开放对应节点/图形。
+
+确认范围仅以上四片，不含跨进程人工恢复、全部 Studio 节点、第二执行器、自动发布或合并。发布级退出仍由 coverage/verification 的逐项证据决定，releaseAccepted 保持 false。

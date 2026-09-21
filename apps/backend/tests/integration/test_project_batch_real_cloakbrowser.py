@@ -2,6 +2,8 @@
 
 import asyncio
 import shutil
+import threading
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 import httpx
@@ -22,9 +24,9 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "manual-resume", "manual-finish", "manual-expire", "manual-stop", "manual-restart", "manual-loss", "manual-double"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-link-race", "manual-resume", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
-    tmp_path, valid_profile_values, real_cloak_page, scenario
+    tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
     executable, url, requests = real_cloak_page
     source = next(
@@ -43,6 +45,90 @@ async def test_real_project_batch_http(
         instance_token="isolated-test-token",
     )
     app = create_app(settings)
+    lost_command = None
+    link_race_injected = False
+    race_commands = []
+    late_resume = None
+    if scenario == 'manual-expire-race':
+        repository = app.state.environment_service.environments
+        accept, transition = repository.accept_operation, repository.transition_manual
+        expired = threading.Event()
+
+        def pending_resume_until_expiry(operation):
+            result = accept(operation)
+            if operation.kind == 'resumeManual':
+                assert expired.wait(8), 'expiry must win while the HTTP command is in flight'
+            return result
+
+        def mark_expiry(*args, **kwargs):
+            result = transition(*args, **kwargs)
+            if result['status'] == 'expired':
+                expired.set()
+            return result
+
+        monkeypatch.setattr(repository, 'accept_operation', pending_resume_until_expiry)
+        monkeypatch.setattr(repository, 'transition_manual', mark_expiry)
+    if scenario == 'data-link-race':
+        repository = app.state.environment_service.environments
+        original_bind = repository.bind_records
+
+        def advance_link_after_preflight(project_id, environment_id, results):
+            nonlocal link_race_injected
+            if not link_race_injected:
+                from autoflow.infrastructure.database.project_data_models import (
+                    DataRecordRow,
+                )
+                ref = results[1].record_ref
+                with app.state.session_factory.begin() as session:
+                    row = session.get(DataRecordRow, (ref['datasetGeneration'], ref['recordKey']['type'], ref['recordKey']['value']))
+                    row.link_revision += 1
+                link_race_injected = True
+            return original_bind(project_id, environment_id, results)
+
+        monkeypatch.setattr(repository, 'bind_records', advance_link_after_preflight)
+    if scenario == 'data-response-loss':
+        manager = app.state.project_workflow_worker_manager
+        original_send = manager._send
+
+        async def drop_committed_reply(worker, message):
+            nonlocal lost_command
+            if message.get('type') == 'capability_result' and isinstance(message.get('result'), dict) and 'ref' in message['result']:
+                lost_command = message['commandId']
+                raise OSError('injected loss after committed create')
+            await original_send(worker, message)
+
+        monkeypatch.setattr(manager, '_send', drop_committed_reply)
+    if scenario in {'manual-race', 'manual-race-intent'}:
+        import autoflow.application.project_runs.manual_runtime as manual_module
+
+        class Clock(datetime):
+            shift = timedelta()
+
+            @classmethod
+            def now(cls, tz=None):
+                return datetime.now(tz) + cls.shift
+
+        runtime = app.state.environment_service.manual_runtime
+        original_intent = runtime._intent
+
+        def accept_after_empty_intent_read(identity):
+            result = original_intent(identity)
+            if result is None and identity not in race_commands:
+                Clock.shift = timedelta()
+                with runtime.sessions() as session:
+                    from autoflow.infrastructure.database.environment_models import (
+                        ProjectManualItemRow,
+                    )
+                    row = session.get(ProjectManualItemRow, identity)
+                    project = row.project_id
+                item = runtime.environments.get_manual(project, identity)
+                runtime.command(project, str(uuid4()), item, {'checkpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision']}, 'resume')
+                race_commands.append(identity)
+                Clock.shift = timedelta(seconds=31)
+            return original_intent(identity) if scenario == 'manual-race-intent' else result
+
+        monkeypatch.setattr(manual_module, 'datetime', Clock)
+        monkeypatch.setattr(runtime, '_intent', accept_after_empty_intent_read)
     try:
         # Fixture preparation only. Project, automation and batch are created through real HTTP.
         profile = app.state.profile_service.create(
@@ -57,7 +143,7 @@ async def test_real_project_batch_http(
         parameter_id = str(uuid4())
         document = workflow_payload(str(uuid4()))
         nodes = document["content"]["nodes"]
-        nodes[0]["data"]["url"] = url.replace("/fixture", "/login") if scenario == "data" else url
+        nodes[0]["data"]["url"] = url.replace("/fixture", "/login") if scenario.startswith("data") else url
         nodes[1]["data"].update(
             selector="#field", text="{" + parameter_id + "}", clearBefore=False
         )
@@ -96,7 +182,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario == "data":
+            if scenario.startswith("data"):
                 table_response = await client.post(prefix + "/tables", headers={"Idempotency-Key": str(uuid4())}, json={"name": "真实写入", "sourceKind": "local"})
                 assert table_response.status_code == 201, table_response.text
                 table = table_response.json()
@@ -132,8 +218,17 @@ async def test_real_project_batch_http(
                 ])
                 nodes.append({'id': 'end', 'type': 'project_end', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': True, 'mode': 'saveAs',  'name': "{saved['ref']['recordKey']['value']}", 'recordTargets': [{'recordRef': "{saved['ref']}", 'expectedLinkRevision': "{saved['linkRevision']}", 'replaceAllowed': False}]}}})
                 document['content']['edges'].append({'id': 'end-task', 'source': 'write', 'target': 'end'})
+                if scenario == 'data-link-race':
+                    from copy import deepcopy
+                    second = deepcopy(next(node for node in nodes if node['id'] == 'write'))
+                    second['id'] = 'second-write'
+                    second['data']['variableName'] = 'second_saved'
+                    nodes.append(second)
+                    document['content']['edges'][-1]['target'] = 'second-write'
+                    document['content']['edges'].append({'id': 'second-end', 'source': 'second-write', 'target': 'end'})
+                    next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{second_saved['ref']}", 'expectedLinkRevision': "{second_saved['linkRevision']}", 'replaceAllowed': False})
             if scenario.startswith('manual-'):
-                nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 30}})
+                nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 3 if scenario == 'manual-expire-race' else 30}})
                 document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
                 nodes.append({'id': 'after-manual', 'type': 'set_variable', 'position': {'x': 100, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'continued', 'variableValue': 'once'}})
                 document['content']['edges'].append({'id': 'continue-task', 'source': 'manual', 'target': 'after-manual'})
@@ -205,6 +300,11 @@ async def test_real_project_batch_http(
             replayed_manual = set()
             manual_interrupted = False
             for _ in range(300):
+                if scenario == 'manual-expire-race' and late_resume is None:
+                    manual = (await client.get(prefix + '/manual-items')).json()['items']
+                    waiting = next((item for item in manual if item['status'] == 'waiting'), None)
+                    if waiting:
+                        late_resume = asyncio.create_task(client.post(prefix + f"/manual-items/{waiting['manualItemId']}/resume", headers={'Idempotency-Key': str(uuid4())}, json={'checkpointRevision': waiting['checkpointRevision'], 'expectedStatusRevision': waiting['statusRevision']}))
                 if scenario in {'manual-resume', 'manual-finish', 'manual-double'}:
                     manual = await client.get(prefix + '/manual-items')
                     assert manual.status_code == 200, manual.text
@@ -321,12 +421,18 @@ async def test_real_project_batch_http(
                         range(1, len(events) + 1)
                     )
             elif scenario.startswith('manual-'):
-                if scenario in {'manual-stop', 'manual-restart', 'manual-loss'}:
+                if scenario in {'manual-race', 'manual-race-intent'}:
+                    assert detail['statusCounts']['succeeded'] == 2, detail
+                    assert len(race_commands) == 2
+                    for task in tasks:
+                        attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
+                        assert sum(attempt['nodeId'] == 'after-manual' for attempt in attempts) == 1
+                elif scenario in {'manual-stop', 'manual-restart', 'manual-loss'}:
                     assert manual_interrupted
                     assert detail['statusCounts']['interrupted' if scenario in {'manual-restart', 'manual-loss'} else 'cancelled'] >= 1, detail
                     manual_items = (await client.get(prefix + '/manual-items')).json()['items']
                     assert all(item['status'] == 'cancelled' for item in manual_items)
-                elif scenario != 'manual-expire':
+                elif scenario not in {'manual-expire', 'manual-expire-race'}:
                     assert detail['statusCounts']['succeeded'] == 2, detail
                     assert len(handled_manual) == (4 if scenario == 'manual-double' else 2)
                     if scenario == 'manual-double':
@@ -337,6 +443,51 @@ async def test_real_project_batch_http(
                         assert any(a['nodeId'] == 'after-manual' for a in attempts) == (scenario in {'manual-resume', 'manual-double'})
                 else:
                     assert detail['statusCounts']['timed_out'] == 1, detail
+                    if scenario == 'manual-expire-race':
+                        assert late_resume is not None
+                        rejected = await late_resume
+                        assert rejected.status_code == 409, rejected.text
+                        assert rejected.json()['error']['code'] == 'MANUAL_TRANSITION_LOST'
+                        items = (await client.get(prefix + '/manual-items')).json()['items']
+                        assert len(items) == 1 and items[0]['status'] == 'expired'
+            elif scenario == 'data-link-race':
+                assert link_race_injected
+                assert detail['statusCounts']['failed'] == 1, detail
+                failed = next(task for task in tasks if task['status'] == 'failed')
+                rows = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert len(rows) == 2
+                assert all(row['currentEnvironmentId'] is None for row in rows), 'the complete association group must roll back'
+                assert sorted(row['linkRevision'] for row in rows) == [1, 2]
+                operations = (await client.get(prefix + '/operations', params={'pageSize': 200})).json()['items']
+                saved = next(operation for operation in operations if operation['idempotencyKey'].startswith('end-save:'))
+                assert saved['result']['phase'] == 'saved_unlinked'
+                assert saved['result']['conflicts'][0]['currentLinkRevision'] == 2
+                environments = (await client.get(prefix + '/environments')).json()
+                assert environments['total'] == 1
+                attempts_path = prefix + f"/tasks/{failed['taskId']}/node-attempts"
+                attempts = (await client.get(attempts_path)).json()
+                repaired = await client.post(prefix + f"/environment-operations/{saved['operationId']}/repair", headers={'Idempotency-Key': str(uuid4())}, json={'recordTargets': [{'recordRef': row['ref'], 'expectedLinkRevision': row['linkRevision'], 'replaceAllowed': False} for row in rows]})
+                assert repaired.status_code == 202, repaired.text
+                assert repaired.json()['outcome']['phase'] == 'completed'
+                after_repair = (await client.get(prefix + '/environments')).json()
+                assert after_repair['total'] == 1
+                assert after_repair['items'][0]['ref'] == environments['items'][0]['ref']
+                linked = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert {row['currentEnvironmentId'] for row in linked} == {saved['result']['saved']['environmentId']}
+                assert (await client.get(attempts_path)).json() == attempts
+                assert (await client.get(prefix + f"/tasks/{failed['taskId']}")).json()['run']['status'] == 'failed'
+            elif scenario == 'data-response-loss':
+                assert lost_command is not None
+                assert detail['statusCounts']['interrupted'] == 1, detail
+                operation = await client.get(prefix + f'/operations/by-idempotency-key/{lost_command}')
+                assert operation.status_code == 200, operation.text
+                assert operation.json()['status'] == 'succeeded'
+                original = operation.json()
+                assert (await client.get(prefix + f'/operations/by-idempotency-key/{lost_command}')).json() == original
+                rows = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()
+                assert rows['total'] == 1
+                assert rows['items'][0]['ref'] == original['result']['ref']
+                assert rows['items'][0]['values'][0]['value'] == 'before-真实参数-001'
             elif scenario == "data":
                 assert detail['statusCounts']['succeeded'] == 2, {
                     'batch': detail,

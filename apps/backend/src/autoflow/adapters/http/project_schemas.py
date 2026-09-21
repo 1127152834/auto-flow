@@ -22,6 +22,7 @@ from .project_data_status_batch_schemas import (
     CancelRecordStatusesResult,
     RecordStatusBatchOutcome,
 )
+from .project_environment_schemas import EnvironmentOperationSnapshot
 from .project_excel_schemas import (
     ExcelExportResult,
     ExcelImportResult,
@@ -362,7 +363,7 @@ class ProjectOperationView(ApiModel):
 
 
 class ProjectOperationPage(ApiModel):
-    items: list[ProjectOperationView]
+    items: list[ProjectOperationView | EnvironmentOperationSnapshot]
     page: int
     page_size: int
     total: int

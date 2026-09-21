@@ -13,11 +13,13 @@
 | 3 | 含循环或人工节点的并行图 | [run_validation.py](../../../../apps/backend/src/autoflow/domain/workflows/run_validation.py) 的 _validate_lifecycle_graph 明确拒绝并行根/同路由扇出；R4 Ruling 已记录共享状态限制 | 共享 Runtime 隔离分支控制状态后再开放；核对分支变量、循环与副作用次数、唯一 End 汇合。不能删除准入检查冒充实现。 |
 | 4 | Windows 任意路径工作流文件输出，以及缺少原生所有权证据的孤儿进程清理 | [workflow_artifacts.py](../../../../apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py) 的 _open_output_parent 等分支返回 ARTIFACT_PLATFORM_UNSUPPORTED / 501；[原生进程边界](../../../../apps/backend/src/autoflow/infrastructure/process/browser_processes.py) 保守保留未知归属 | 实现原生安全路径/句柄和所有权验证后，在 Windows CI 验证取消、原子提交、重启与危险路径拒绝。项目 XLSX 导出和受控运行产物已支持，不能混为一项。 |
 
-这几项包含共享运行时或原生安全边界改动；应先把具体设计、规格与实施切片补齐，再实施。既有安全拒绝保持有效。跨进程人工恢复是当前明确不支持的范围，不因本表而擅自扩大成新的必做功能；原同 Run/存活现场继续与重启中断规则已有证据。
+这几项包含共享运行时或原生安全边界改动；具体设计、契约与实施切片已在 [新增能力方案](../../../superpowers/specs/2026-09-21-pm9-runtime-capability-completion.md) 补齐，新增架构确认前不开放能力。既有安全拒绝保持有效。跨进程人工恢复是当前明确不支持的范围，不因本表而擅自扩大成新的必做功能；原同 Run/存活现场继续与重启中断规则已有证据。
 
 规格依据：[数据流与契约 FLOW-08](../../design/data-flow-and-contracts.md)、[执行与环境 §6、XE-C12/XE-A15](../../design/execution-and-environment.md)、[PM9 总计划](../../../superpowers/plans/2026-09-13-project-management-milestones.md)。当前 14 种项目节点也不等于全部 Studio 节点均可用于项目；其他节点应按已确认业务场景逐个接入，不以目录数量确定完成范围。
 
 ## 2. 覆盖台账与真实场景仍未闭合
+
+后续复核：251 条已补 `testMapping`，200 条有实际断言引用，51 条明确未定位直接场景测试；73 条失效预定路径全部补了映射或缺口。原 22 条 verified 发现未闭合子条件，已逐项退回 partial，并保留 statusBeforeReview。补入本轮真实场景后，当前合计为 0 verified / 186 partially_verified / 65 planned（203 条有断言，48 条仍未定位直接场景）。详情见 [test-mapping-review.md](test-mapping-review.md)。以下表格是复核前快照，已被本段当前统计取代。
 
 本轮已把 DATA-LINK-05、FLOW-A16、XE-C12、XE-C18、XE-G04、XE-G05 六项直接匹配的三平台成功链补入台账，状态从 planned 改为 partially_verified；没有将一部分断言升级为整项 verified。
 
@@ -52,4 +54,14 @@
 
 Windows 五路万条准备 725733 ms，真实 worker 537 日志/分钟；两个 Mac 对应 104904/85377 ms 和 1642/1539 日志/分钟。各平台固定每分钟 1000 条**合成输入**均读回通过。PM9 原始规格要求的是这一合成负载，并未给 worker 吞吐或万条创建耗时 SLO，因此 Windows 性能是已量化的优化项，不能虚构成“未达到原规定千条 worker 吞吐”的失败。
 
-本轮只修正文档和直接证据对应，不改变已通过 CI 的生产代码，不重跑整套三平台流水线。完成证据闭合与实际功能缺口前，releaseAccepted 继续为 false。
+后续工作已开始修改生产代码：人工到期与已接受继续命令的竞争已复现并修复，扩展真实场景见 follow-through 计划。d59607f3 报告仅保留为历史基线，新候选需要重新验证。完成证据闭合与实际功能缺口前，releaseAccepted 继续为 false。
+
+## 5. 本轮新增完成项
+
+- 251 条规格已逐条给出实际断言范围或明确缺口；引用校验通过。
+- 人工继续/到期两种交错均有真实 worker 失败复现，修复采用同一状态版本 CAS，16 个真实浏览器场景全部通过，另加实际 HTTP 在途继续与 TTL 先胜竞争也通过。
+- 生产环境操作造成通用操作列表 500 已修复；列表、ID、项目原键返回既有环境 DTO，生成客户端同步，workspace 作用域不扩大。
+- 生产 HTTP 双输入、任务连续写、人工新值保护、失败保留提交、混合关联、禁止替换、关联修复和基础旧代次拒绝均通过。关联提交边界另有实际 worker linkRevision 竞争及全组回滚断言。
+- 本轮具体运行与故障注入边界见 [follow-through.json](follow-through.json)。候选全量三平台 CI 尚待新运行，不沿用旧报告。
+
+当前仍需补的本地完整组合包括 XE-A10 的真实磁盘失败旧候选/T2 发布/另存处置、XE-A23 的消耗邮箱筛选与共享人员/新账号后继，以及 DATA-E2E-06 的运行中兼容字段与并发旧契约。上述基础机制有测试不代表这些整组已验收；UI 反馈亦逐项保留 gap。四项新增架构已出具体方案，等待确认。

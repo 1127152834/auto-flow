@@ -793,6 +793,34 @@ def _end_body(instance, *, name="登录环境"):
     }
 
 
+def test_production_environment_operations_are_readable_in_project_ledger(tmp_path):
+    from autoflow.adapters.http.projects import projects_router
+    from autoflow.application.projects.overview import ProjectOverviewService
+
+    client, projects, service = make(tmp_path)
+    client.app.include_router(projects_router(
+        projects, ProjectOverviewService(service.environments._session_factory)
+    ))
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b"ledger")
+    key = str(uuid4())
+    response = client.post(
+        f"/api/v1/projects/{project_id}/tasks/{instance.active_task_id}/end",
+        headers={"Idempotency-Key": key}, json=_end_body(instance),
+    )
+    assert response.status_code == 202, response.text
+    operation = response.json()['operation']
+    for suffix in ('', f"/{operation['operationId']}", f'/by-idempotency-key/{key}'):
+        result = client.get(f'/api/v1/projects/{project_id}/operations{suffix}')
+        assert result.status_code == 200, result.text
+        if suffix:
+            assert result.json() == operation
+        else:
+            saved = [item for item in result.json()['items'] if item['kind'] == 'saveEnvironment']
+            assert len(saved) == 2  # End and its durable save operation.
+            assert operation in saved
+
+
 def test_end_retry_after_lost_response_resumes_without_second_environment(
     tmp_path, monkeypatch
 ):

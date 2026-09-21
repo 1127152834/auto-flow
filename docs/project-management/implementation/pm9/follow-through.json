@@ -1,0 +1,140 @@
+{
+  "date": "2026-09-21",
+  "status": "local_passed_ci_pending",
+  "releaseAccepted": false,
+  "branch": "codex/project-management-pm9-runtime",
+  "sourceApi": {
+    "status": "passed",
+    "platform": "darwin",
+    "arch": "arm64",
+    "packaged": false,
+    "startedAt": "2026-09-21T03:40:53.054Z",
+    "checks": [
+      "1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses",
+      "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+      "archive blocks writes, repeat command recovers one operation, restore preserves data",
+      "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+      "restarted production sidecar retains the same project and record"
+    ],
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 1000,
+      "busyRetries": 0,
+      "table": {
+        "projectId": "952870a0-dc92-4d1f-acac-f55b526434a2",
+        "tableId": "f6ff9f8a-ea17-4b39-923d-823107c8923c",
+        "name": "PM9 并发写入回归",
+        "description": "",
+        "sourceKind": "local",
+        "source": {
+          "kind": "local"
+        },
+        "datasetGeneration": "0000577e-4250-4b37-94b2-bd1c968728ab",
+        "tableRevision": 1,
+        "identity": {
+          "mode": "system"
+        },
+        "slotDefinitions": [],
+        "recordCount": 0,
+        "syncSummary": {
+          "status": "notApplicable",
+          "pendingCount": 0,
+          "unknownCount": 0
+        },
+        "createdAt": "2026-09-21T03:40:55.397062Z",
+        "updatedAt": "2026-09-21T03:40:55.397062Z"
+      }
+    },
+    "projectId": "952870a0-dc92-4d1f-acac-f55b526434a2",
+    "tableId": "de05865c-8905-4e00-ba59-f888953eb42e",
+    "tablePath": "/projects/952870a0-dc92-4d1f-acac-f55b526434a2/tables/de05865c-8905-4e00-ba59-f888953eb42e",
+    "boundary": "production management and real browser runtime chains; live Sheets and physical installer acceptance remain pending",
+    "runtime": {
+      "projectId": "05fffa9a-6053-4d0d-9283-8a81e5e69df4",
+      "environmentId": "e895747d-d286-5a6e-b184-efe5be6c6191",
+      "logLoad": {
+        "logCount": 1004,
+        "logPages": 6,
+        "elapsedMs": 31719,
+        "logsPerMinute": 1899,
+        "scope": "real worker throughput and server pagination; no renderer memory claim"
+      },
+      "taskIds": [
+        "1e167d01-67d0-4ee2-a6ad-2751ff879cd5",
+        "407ed077-d74d-47d1-b2bf-4360ea88c4c9",
+        "727e8740-f634-4e9f-9cf3-06430a22498d"
+      ],
+      "checks": [
+        "Studio HTTP saved graph",
+        "real browser and UUID parameters",
+        "cross-table query/condition/create",
+        "manual checkpoint continues without replay",
+        "End closes, saves and links",
+        "second automation restores login",
+        "1000 worker logs and paginated retrieval",
+        "real browser timeout and original-input follow-up succeeds",
+        "two inputs are frozen and reclaimed after release",
+        "task writes advance their own cursor",
+        "human newer content defeats stale worker write",
+        "later browser failure preserves committed content and status",
+        "End links initial and newly created records",
+        "unauthorized replacement preserves prior environment",
+        "saved_unlinked repair does not save or run again",
+        "stale save generation cannot replace published content",
+        "statistics drilldown reaches real task",
+        "archive and restore preserve executed project"
+      ]
+    }
+  },
+  "checks": {
+    "realBrowser": "16 passed in 156.72s, new TTL-first in-flight HTTP race 1 passed in 15.14s; final affected manual checks 5 passed in 51.41s",
+    "fullBackend": "3214 passed / 25 skipped before final ledger/second-interleaving additions; final candidate full regression delegated to fresh CI",
+    "finalTargetedBackend": "33 passed, including environment End operation list/id/key regression",
+    "scripts": "100 passed",
+    "ruff": "passed",
+    "mypy": "397 source files passed",
+    "typecheck": "passed after regenerated API",
+    "lint": "passed",
+    "openapi": "generated and check passed",
+    "coverageReferences": "251 valid mappings; no open gap marked verified"
+  },
+  "faultInjection": {
+    "manualRace": "Both acceptance-after-empty-intent-read and acceptance-before-intent-read are deterministic real-worker tests, with a controlled module clock crossing TTL. No live timing performance claim. TTL-first additionally blocks the real HTTP resume handler after operation acceptance until actual expiry CAS wins; it then returns 409.",
+    "lostResponse": "Actual create commits; parent reply delivery raises OSError. Run is interrupted; repeated HTTP reads by original commandId return the same successful record. No automatic worker replay or cross-process continuation claimed.",
+    "linkRace": "Actual End save completes; after binding preflight, second target linkRevision advances before the real binding transaction. Whole group remains unlinked; repair alone binds both and leaves Run failed and attempts unchanged."
+  },
+  "independentReview": {
+    "status": "passed_after_fixes",
+    "openP1": 0,
+    "openP2": 0,
+    "scope": "Follow-through changes from 30c4a768, reviewed once; manual stale-item interleaving, End group assertions and mapping classifications corrected."
+  },
+  "newArchitecture": {
+    "status": "awaiting_confirmation",
+    "spec": "docs/superpowers/specs/2026-09-21-pm9-runtime-capability-completion.md"
+  },
+  "sourceApiFiles": {
+    "apps/backend/src/autoflow/application/project_runs/manual_runtime.py": "27100f1494eefa1ff3e73d7f8a316025a9e11b41886b780565740779797cb750",
+    "apps/backend/src/autoflow/adapters/http/projects.py": "82b994f3e33dd3e642e05e9865fd50e596500e0ddbb0cbde614c5ad9c35a05e9",
+    "apps/backend/src/autoflow/adapters/http/project_schemas.py": "8c6e0bed8d3a1c6344c272757c52b26b4d631fa478dd98f79c898d310bd5a51e",
+    "apps/backend/src/autoflow/adapters/http/project_environment_schemas.py": "61e195cf0680f92b364166654e4fe4c2baea1ec97fe5555459aa2af42c362b74",
+    "scripts/project-runtime-smoke.mjs": "06de48e21e69dd05982ad7d45dce9aa2a42d5142df2d5b0f46f6c05425735ff5",
+    "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py": "f70d36a9688369f7a4d7a3cc45e83a277ee5a0867636c34fc0f1ded23a4f0c4b",
+    "apps/backend/tests/contract/test_project_environments.py": "4bd9e2c3a95f33113671f38956cfcb2d8aba97daf3c6639d47131212eadb908c",
+    ".github/workflows/ci.yml": "f6778ee46493697b15e1e0ca59eaa04c6e3fb70c05074a44e96a671b77dbad26",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "232483534c53ba05632b8b987c2cc06c5a98dc5a80a660730c40b6f6ed717345"
+  },
+  "candidateSourceFiles": {
+    "apps/backend/src/autoflow/application/project_runs/manual_runtime.py": "5730698773440ee1ad21f4025cd502b127eb9ea36844d90a8f0741a03ab137aa",
+    "apps/backend/src/autoflow/adapters/http/projects.py": "82b994f3e33dd3e642e05e9865fd50e596500e0ddbb0cbde614c5ad9c35a05e9",
+    "apps/backend/src/autoflow/adapters/http/project_schemas.py": "8c6e0bed8d3a1c6344c272757c52b26b4d631fa478dd98f79c898d310bd5a51e",
+    "apps/backend/src/autoflow/adapters/http/project_environment_schemas.py": "61e195cf0680f92b364166654e4fe4c2baea1ec97fe5555459aa2af42c362b74",
+    "scripts/project-runtime-smoke.mjs": "06de48e21e69dd05982ad7d45dce9aa2a42d5142df2d5b0f46f6c05425735ff5",
+    "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py": "0a538cec4e6c0039fe12de98900f482d317e9e6ae754cd3117e2b72a0c92f95f",
+    "apps/backend/tests/contract/test_project_environments.py": "4bd9e2c3a95f33113671f38956cfcb2d8aba97daf3c6639d47131212eadb908c",
+    ".github/workflows/ci.yml": "f6778ee46493697b15e1e0ca59eaa04c6e3fb70c05074a44e96a671b77dbad26",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "232483534c53ba05632b8b987c2cc06c5a98dc5a80a660730c40b6f6ed717345"
+  },
+  "sourceVersionNote": "sourceApi/16-case full native run preceded the added TTL-first case and cooperative-yield guard. The final five affected manual cases passed on candidateSourceFiles. Fresh CI must verify the entire final candidate."
+}

@@ -9,6 +9,7 @@ from autoflow.application.projects.service import AVAILABILITY, ProjectService
 from autoflow.domain.projects.models import project_to_dict
 
 from .errors import browser_error_responses
+from .project_environment_schemas import EnvironmentOperationSnapshot
 from .project_schemas import (
     ArchiveProjectRequest,
     DeleteProjectRequest,
@@ -193,7 +194,7 @@ def projects_router(
 
     @router.get(
         "/projects/{projectId}/operations/{operationId}",
-        response_model=ProjectOperationView,
+        response_model=ProjectOperationView | EnvironmentOperationSnapshot,
         response_model_exclude_unset=True,
         responses=browser_error_responses(401, 404, 422),
     )
@@ -204,7 +205,7 @@ def projects_router(
 
     @router.get(
         "/projects/{projectId}/operations/by-idempotency-key/{key}",
-        response_model=ProjectOperationView,
+        response_model=ProjectOperationView | EnvironmentOperationSnapshot,
         response_model_exclude_unset=True,
         responses=browser_error_responses(401, 404, 422),
     )

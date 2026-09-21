@@ -5207,8 +5207,11 @@ export type components = {
             projectId: string | null;
             /** Idempotencykey */
             idempotencyKey: string;
-            /** Kind */
-            kind: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "deleteEnvironment" | "updateEnvironment" | "openInstance" | "startMaintenance" | "discardEnvironment" | "resumeManual" | "finishManual" | "saveEnvironment" | "repairEndAssociation";
             /** Status */
             status: string;
             /** Statusrevision */
@@ -6927,7 +6930,7 @@ export type components = {
         /** ProjectOperationPage */
         ProjectOperationPage: {
             /** Items */
-            items: components["schemas"]["ProjectOperationView"][];
+            items: (components["schemas"]["ProjectOperationView"] | components["schemas"]["EnvironmentOperationSnapshot"])[];
             /** Page */
             page: number;
             /** Pagesize */
@@ -14604,7 +14607,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectOperationView"];
+                    "application/json": components["schemas"]["ProjectOperationView"] | components["schemas"]["EnvironmentOperationSnapshot"];
                 };
             };
             /** @description Unauthorized */
@@ -14663,7 +14666,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectOperationView"];
+                    "application/json": components["schemas"]["ProjectOperationView"] | components["schemas"]["EnvironmentOperationSnapshot"];
                 };
             };
             /** @description Unauthorized */

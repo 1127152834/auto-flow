@@ -134,9 +134,17 @@ class ProjectManualRuntime:
                 current = self.environments.get_manual(project_id, item['manualItemId'])
                 intent = self._intent(item['manualItemId'])
                 if intent is not None:
+                    # The HTTP handler may have accepted the intent after the
+                    # preceding item read. Use its committed row revision.
+                    current = self.environments.get_manual(project_id, item['manualItemId'])
                     decision = intent.result['runtimeManual']
                     if decision['action'] == 'resume':
-                        resumed = self.environments.begin_resume(project_id, current['manualItemId'], current['statusRevision'])
+                        try:
+                            resumed = self.environments.begin_resume(project_id, current['manualItemId'], current['statusRevision'])
+                        except ProjectError as error:
+                            if error.code == 'MANUAL_TRANSITION_LOST':
+                                continue
+                            raise
                         self.dispatcher.resume_manual(run_id, generation)
                         operation = self.environments.environments.operation_by_key(intent.idempotency_key)
                         self.environments.environments.complete_operation(operation, {'item': resumed, 'run': {'runId': run_id, 'status': 'running'}}, None, datetime.now(UTC))
@@ -144,6 +152,21 @@ class ProjectManualRuntime:
                     self.dispatcher.resume_manual(run_id, generation)
                     return {'action': 'finish'}
                 if _aware(datetime.fromisoformat(item['expiresAt'])) <= datetime.now(UTC):
+                    if current['status'] != 'waiting':
+                        await asyncio.sleep(.05)
+                        continue
+                    # A resume may commit after the intent read above. Claim
+                    # expiry with the same row revision before releasing the
+                    # worker; the losing decision must re-read the winner.
+                    try:
+                        self.environments.environments.transition_manual(
+                            project_id, item['manualItemId'], 'expired',
+                            expected_status_revision=current['statusRevision'],
+                        )
+                    except ProjectError as error:
+                        if error.code == 'MANUAL_TRANSITION_LOST':
+                            continue
+                        raise
                     self.dispatcher.resume_manual(run_id, generation)
                     return {'action': 'expired'}
                 await asyncio.sleep(.05)
@@ -172,10 +195,11 @@ class ProjectManualRuntime:
             if intent:
                 operation = self.environments.environments.operation_by_key(intent.idempotency_key)
                 self.environments.environments.complete_operation(operation, None, {'code': error.code, 'message': error.message}, datetime.now(UTC))
-            self.environments.cancel_manual(project_id, item['manualItemId'], item['statusRevision'])
+            if item['status'] != 'expired':
+                self.environments.cancel_manual(project_id, item['manualItemId'], item['statusRevision'])
             return {'action': 'finish', 'outcome': 'failed', 'complete': False}
         status = 'resolved' if intent else 'expired'
-        resolved = self.environments.environments.transition_manual(project_id, item['manualItemId'], status, expected_status_revision=item['statusRevision'])
+        resolved = item if item['status'] == status else self.environments.environments.transition_manual(project_id, item['manualItemId'], status, expected_status_revision=item['statusRevision'])
         outcome = payload.get('outcome', 'timed_out') if result.get('complete') else 'failed'
         if intent:
             operation = self.environments.environments.operation_by_key(intent.idempotency_key)
