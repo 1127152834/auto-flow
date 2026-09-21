@@ -52,6 +52,7 @@ from .external_http import EXTERNAL_HTTP_EXECUTORS
 from .file_watcher import FILE_WATCHER_EXECUTORS
 from .firecrawl import FIRECRAWL_EXECUTORS
 from .input_prompt import InputPromptExecutor
+from .input_triggers import INPUT_TRIGGER_EXECUTORS
 from .js_script import JsScriptExecutor
 from .list_advanced import (
     ListCartesianProductExecutor,
@@ -175,6 +176,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *FILE_WATCHER_EXECUTORS,
     *LOG_EXECUTORS,
     *MESSAGE_EXECUTORS,
+    *INPUT_TRIGGER_EXECUTORS,
     *SSH_EXECUTORS,
     *CAPTCHA_EXECUTORS,
     *MEDIA_RECOGNITION_EXECUTORS,

@@ -264,6 +264,8 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "file_watcher_trigger",
         "email_trigger",
         "element_change_trigger",
+        "hotkey_trigger",
+        "mouse_trigger",
         "run_workflow_file",
         "subflow",
         "custom_module",
