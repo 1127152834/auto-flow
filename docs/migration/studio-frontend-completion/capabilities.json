@@ -35940,7 +35940,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -36009,7 +36009,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "真实执行器、生产注册、受控模型HTTP和worker产物链已完成；正式Electron和第三方真实供应商待验收。",
+      "gap": "冻结源码差分、生产注册、worker受控媒体协议及darwin-arm64正式Electron真实UI和产物读取均已通过；真实第三方媒体供应商和其他平台仍单独验收。",
       "risk": "主应用模型ID、系统秘密和64 MiB产物边界已接入；第三方供应商配额、限流和正式UI仍须真实服务验证。",
       "acceptanceCases": [
         {
@@ -36038,7 +36038,7 @@
         },
         {
           "id": "BE.ai_generate_image.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -36046,12 +36046,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_generate_image，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI生图执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-dP2md6/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控媒体调用，以及darwin-arm64正式Electron的模型选择、保存、PNG/MP4结果、产物读取和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-dP2md6/result.json"
     }
   },
   {
@@ -36290,7 +36291,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -36354,7 +36355,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "真实执行器、生产注册、受控模型HTTP和worker产物链已完成；正式Electron和第三方真实供应商待验收。",
+      "gap": "冻结源码差分、生产注册、worker受控媒体协议及darwin-arm64正式Electron真实UI和产物读取均已通过；真实第三方媒体供应商和其他平台仍单独验收。",
       "risk": "主应用模型ID、系统秘密和64 MiB产物边界已接入；第三方供应商配额、限流和正式UI仍须真实服务验证。",
       "acceptanceCases": [
         {
@@ -36383,7 +36384,7 @@
         },
         {
           "id": "BE.ai_generate_video.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -36391,12 +36392,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_generate_video，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI生视频执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-dP2md6/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控媒体调用，以及darwin-arm64正式Electron的模型选择、保存、PNG/MP4结果、产物读取和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-dP2md6/result.json"
     }
   },
   {

@@ -54,12 +54,17 @@
       "result": "OpenAPI current; Electron main, preload and renderer built"
     }
   ],
-  "knownUnrelatedFailure": {
-    "command": "npm --workspace apps/desktop test -- --run src/renderer/domains/workflows/tests/catalog-field-contract.test.ts",
-    "result": "14 个已排除通知节点仍残留于并行范围清理的字段用例；不属于 AI 媒体实现，待范围清理工作线同步删除"
-  },
   "externalWaiting": [
-    "正式 Electron 真实 UI 保存、运行、停止和产物查看验收",
-    "真实 OpenAI、Stability、Runway 或自定义媒体供应商调用"
-  ]
+    "真实第三方 OpenAI、Stability、Runway 或自定义媒体供应商调用",
+    "其他未实测平台"
+  ],
+  "resolvedScopeIssue": "14个已排除通知节点已由bf45d776从前后端范围和字段用例删除。",
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-ai-tasks.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-dP2md6/result.json",
+    "covers": "正式Studio真实鼠标键盘配置图片与视频生成、主应用模型选择、SQLite保存、真实worker媒体协议、PNG/MP4产物登记读取及无浏览器残留"
+  }
 }

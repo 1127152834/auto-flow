@@ -1,0 +1,146 @@
+{
+  "evidenceId": "BE-B5-ai-task-chat-media-formal-electron",
+  "checkedAt": "2026-09-21T18:00:54.397Z",
+  "gitHead": "1afb934dbf80319356170c2c472fd2de9df70f59",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "W56tlYutLaMt8cQaXOhUW",
+  "profileId": "4a299534-ebe3-4df5-a183-bcff8df0c3ad",
+  "modelId": "117fb7e7-bd5e-418e-9502-5f8a142d2d77",
+  "runId": "326ca49d-65c3-4319-bf16-1e099087ccb7",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置和模型均来自主应用",
+    "通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务、对话及图片视频生成节点编排",
+    "正式保存接口只写稳定 modelId，十一节点和十条连线进入临时 SQLite，不保存模型地址或密钥",
+    "真实 worker 经主应用模型绑定完成九次对话和两次媒体生成，AI 数据、对话、图片与视频结果逐项匹配",
+    "图片和视频均通过工作区产物边界落盘、登记并可由正式产物接口读取",
+    "AI 数据与媒体任务未启动 CloakBrowser，运行结束后无浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "ai_extract",
+      "nodeId": "DQF3L7UFT_Lc3tr2j2heT",
+      "result": {
+        "result": {
+          "姓名": "张三"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_classify",
+      "nodeId": "Dm9MTNtfAO8HsLETo6eCp",
+      "result": {
+        "category": "退款",
+        "detail": {
+          "category": "退款"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_summarize",
+      "nodeId": "fDCmdB0JNOiMzCfFoUZZ2",
+      "result": {
+        "summary": "简短摘要"
+      }
+    },
+    {
+      "moduleType": "ai_translate",
+      "nodeId": "KiwsMdCcA0brEXJtFtK5_",
+      "result": {
+        "translation": "Hello",
+        "targetLang": "英文"
+      }
+    },
+    {
+      "moduleType": "ai_sentiment",
+      "nodeId": "dW9VSahoHjBkyfuCHsaaM",
+      "result": {
+        "sentiment": "正面",
+        "detail": {
+          "sentiment": "正面"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_normalize",
+      "nodeId": "ANp2VjnhtaTJLtHVBQDAz",
+      "result": {
+        "result": "2026-09-21",
+        "type": "date"
+      }
+    },
+    {
+      "moduleType": "ai_dedup_semantic",
+      "nodeId": "hkr3VmyBJna0q_DgW9xoK",
+      "result": {
+        "result": [
+          "苹果",
+          "香蕉"
+        ],
+        "removed": 1
+      }
+    },
+    {
+      "moduleType": "ai_route",
+      "nodeId": "Vr0ObZk66XXL7zmwhYpIb",
+      "result": {
+        "route": "退款",
+        "detail": {
+          "route": "退款"
+        },
+        "routes": [
+          "退款",
+          "咨询"
+        ]
+      }
+    },
+    {
+      "moduleType": "ai_chat",
+      "nodeId": "GcENEQpzKPy3w5JC2n_AB",
+      "result": {
+        "response": "对话验收通过",
+        "reasoning": null,
+        "model": "ai-task-fixture",
+        "modelId": "117fb7e7-bd5e-418e-9502-5f8a142d2d77",
+        "usage": {}
+      }
+    },
+    {
+      "moduleType": "ai_generate_image",
+      "nodeId": "3WAmVaNC7BUrKv0RsCzwi",
+      "result": {
+        "urls": [],
+        "paths": [
+          "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b5-ai-tasks-bfbHuQ/workspace/runs/326ca49d-65c3-4319-bf16-1e099087ccb7/outputs/generated/image.png"
+        ],
+        "model": "ai-task-fixture",
+        "modelId": "117fb7e7-bd5e-418e-9502-5f8a142d2d77"
+      }
+    },
+    {
+      "moduleType": "ai_generate_video",
+      "nodeId": "LTJIv2ehZfKPbvr44nh7l",
+      "result": {
+        "url": "http://127.0.0.1:50293/media.mp4",
+        "model": "ai-task-fixture",
+        "modelId": "117fb7e7-bd5e-418e-9502-5f8a142d2d77",
+        "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b5-ai-tasks-bfbHuQ/workspace/runs/326ca49d-65c3-4319-bf16-1e099087ccb7/outputs/generated/video.mp4"
+      }
+    }
+  ],
+  "providerRequestCount": 13,
+  "artifactIds": [
+    "0094df6f-d259-43a7-b21a-eee70779772d",
+    "48f1a09e-780b-4bed-bdfc-66616efa9389"
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "model": "local controlled OpenAI-compatible HTTP fixture configured through main application model management",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "externalWaiting": "third-party production model providers remain separately unverified"
+  }
+}

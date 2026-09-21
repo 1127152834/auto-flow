@@ -29,6 +29,8 @@ const modules = [
   { type: 'ai_dedup_semantic', label: 'AI语义去重', inputs: [['textarea[placeholder^="数组变量"]', '["苹果","Apple","香蕉"]'], ['input[placeholder="结果变量名"]', 'dedup_result']] },
   { type: 'ai_route', label: 'AI智能路由', inputs: [['textarea[placeholder^="要处理的文本"]', '我要退款'], ['textarea[placeholder^="每行一个"]', '退款:用户要求退钱\n咨询:用户询问信息'], ['input[placeholder="结果变量名"]', 'route_result']] },
   { type: 'ai_chat', label: 'AI对话', inputs: [['textarea[placeholder^="设定AI的角色"]', '对话助手'], ['textarea[placeholder^="发送给AI的内容"]', '请回复验收结果'], ['input[placeholder="变量名"]', 'chat_result']] },
+  { type: 'ai_generate_image', label: 'AI生成图片', inputs: [['textarea[placeholder^="一只可爱的猫咪"]', '生成验收图片'], ['input[placeholder="C:/images/output.png"]', 'generated/image.png']] },
+  { type: 'ai_generate_video', label: 'AI生成视频', inputs: [['textarea[placeholder^="一只猫咪在草地"]', '生成验收视频'], ['input[placeholder="C:/videos/output.mp4"]', 'generated/video.mp4']] },
 ]
 let desktop, main, studio
 
@@ -80,7 +82,7 @@ try {
   }
   for (let index = 0; index < nodeIds.length - 1; index++) await connectNodes(studio, nodeIds[index], nodeIds[index + 1])
   await waitFor(studio, `document.querySelectorAll('.react-flow__edge').length === ${modules.length - 1}`, 'workflow edges')
-  checkpoint('通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务与一个 AI 对话节点编排')
+  checkpoint('通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务、对话及图片视频生成节点编排')
 
   await click(studio, '保存')
   await waitFor(studio, `document.body?.innerText.includes(${JSON.stringify(`工作流已保存: ${workflowName}`)})`, 'workflow save')
@@ -90,7 +92,7 @@ try {
   assert.equal(saved.edges.length, modules.length - 1)
   assert.ok(saved.nodes.every(node => node.data.modelId === modelId))
   assert.equal(JSON.stringify(saved).includes(model.baseUrl), false)
-  checkpoint('正式保存接口只写稳定 modelId，九节点和八条连线进入临时 SQLite，不保存模型地址或密钥')
+  checkpoint('正式保存接口只写稳定 modelId，十一节点和十条连线进入临时 SQLite，不保存模型地址或密钥')
 
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
@@ -113,22 +115,37 @@ try {
   assert.deepEqual(byNode[nodeIds[6]], { result: ['苹果', '香蕉'], removed: 1 })
   assert.equal(byNode[nodeIds[7]].route, '退款')
   assert.equal(byNode[nodeIds[8]].response, '对话验收通过')
-  assert.equal(model.requests.length, 9)
-  assert.ok(model.requests.every(request => request.body.model === 'ai-task-fixture'))
-  checkpoint('真实 worker 经主应用模型绑定完成九次受控 HTTP 调用，AI 数据任务和对话结果结构与变量语义逐项匹配')
+  assert.equal(byNode[nodeIds[9]].paths.length, 1)
+  assert.equal(typeof byNode[nodeIds[10]].path, 'string')
+  const chatRequests = model.requests.filter(request => request.path === '/v1/chat/completions')
+  assert.equal(chatRequests.length, 9)
+  assert.ok(chatRequests.every(request => request.body.model === 'ai-task-fixture'))
+  assert.equal(model.requests.filter(request => request.path === '/v1/images/generations').length, 1)
+  assert.equal(model.requests.filter(request => request.path === '/v1/generations').length, 1)
+  assert.equal(model.requests.filter(request => request.path === '/v1/generations/video-job').length, 1)
+  checkpoint('真实 worker 经主应用模型绑定完成九次对话和两次媒体生成，AI 数据、对话、图片与视频结果逐项匹配')
+
+  const artifacts = await api(runtime, `/workflow-runs/${encodeURIComponent(run.runId)}/artifacts?cursor=0&limit=20`)
+  assert.equal(artifacts.items.length, 2)
+  const imageArtifact = artifacts.items.find(item => item.nodeId === nodeIds[9])
+  const videoArtifact = artifacts.items.find(item => item.nodeId === nodeIds[10])
+  assert.ok(imageArtifact && videoArtifact)
+  assert.deepEqual(await artifactBytes(runtime, run.runId, imageArtifact.artifactId), Buffer.from('PNG'))
+  assert.deepEqual(await artifactBytes(runtime, run.runId, videoArtifact.artifactId), Buffer.from('MP4'))
+  checkpoint('图片和视频均通过工作区产物边界落盘、登记并可由正式产物接口读取')
 
   await wait(500)
   assert.deepEqual(cloakProcesses(userData), [])
-  checkpoint('纯 AI 数据任务未启动 CloakBrowser，运行结束后无浏览器残留')
+  checkpoint('AI 数据与媒体任务未启动 CloakBrowser，运行结束后无浏览器残留')
 
   await capture(studio, join(evidenceDir, 'completed.png'))
   const report = {
-    evidenceId: 'BE-B5-ai-task-chat-formal-electron', checkedAt: new Date().toISOString(),
+    evidenceId: 'BE-B5-ai-task-chat-media-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
     result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
     workflowId: saved.id, profileId: profile.id, modelId, runId: run.runId, checks,
     nodes: modules.map((module, index) => ({ moduleType: module.type, nodeId: nodeIds[index], result: byNode[nodeIds[index]] })),
-    providerRequestCount: model.requests.length,
+    providerRequestCount: model.requests.length, artifactIds: [imageArtifact.artifactId, videoArtifact.artifactId],
     buildSha256: await buildHash(),
     boundaries: {
       workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none',
@@ -167,10 +184,22 @@ async function startModel() {
   const server = createServer(async (request, response) => {
     const url = new URL(request.url, 'http://127.0.0.1')
     if (request.method === 'GET' && url.pathname === '/v1/models') return json(response, { data: [{ id: 'ai-task-fixture', context_length: 32768 }] })
+    if (request.method === 'GET' && url.pathname === '/v1/generations/video-job') {
+      requests.push({ method: request.method, path: url.pathname })
+      return json(response, { status: 'completed', url: `http://127.0.0.1:${server.address().port}/media.mp4` })
+    }
+    if (request.method === 'GET' && url.pathname === '/media.mp4') {
+      requests.push({ method: request.method, path: url.pathname })
+      const content = Buffer.from('MP4')
+      response.writeHead(200, { 'content-type': 'video/mp4', 'content-length': content.length })
+      return response.end(content)
+    }
     let raw = ''
     for await (const chunk of request) raw += chunk
     const body = raw ? JSON.parse(raw) : {}
     requests.push({ method: request.method, path: url.pathname, body })
+    if (request.method === 'POST' && url.pathname === '/v1/images/generations') return json(response, { data: [{ b64_json: Buffer.from('PNG').toString('base64') }] })
+    if (request.method === 'POST' && url.pathname === '/v1/generations') return json(response, { id: 'video-job' })
     if (request.method !== 'POST' || url.pathname !== '/v1/chat/completions') return json(response, { error: { message: 'not found' } }, 404)
     const system = String(body.messages?.[0]?.content ?? '')
     const content = [...responses].find(([marker]) => system.includes(marker))?.[1]
@@ -198,6 +227,12 @@ async function api(runtime, path, options = {}) {
   })
   if (!response.ok) throw new Error(`${options.method ?? 'GET'} /api${path}: ${response.status} ${await response.text()}`)
   return response.status === 204 ? undefined : response.json()
+}
+
+async function artifactBytes(runtime, runId, artifactId) {
+  const response = await fetch(`${runtime.sidecar.baseUrl}/api/workflow-runs/${encodeURIComponent(runId)}/artifacts/${encodeURIComponent(artifactId)}`, { headers: { 'x-autoflow-token': runtime.sidecar.token } })
+  if (!response.ok) throw new Error(`artifact read: ${response.status} ${await response.text()}`)
+  return Buffer.from(await response.arrayBuffer())
 }
 
 async function openStudioFromMain(cdp, origin) {
@@ -241,7 +276,7 @@ async function setInput(cdp, selector, value) {
 async function chooseFirstModel(cdp) {
   const settingsState = await cdp.evaluate(`(()=>{const e=[...document.querySelectorAll('summary')].find(e=>e.textContent.includes('AI 模型设置')&&e.getClientRects().length);return e?(e.parentElement?.open?'open':'closed'):'missing'})()`)
   if (settingsState === 'closed') await click(cdp, 'AI 模型设置', 'summary')
-  const p = await waitFor(cdp, `(()=>{const label=[...document.querySelectorAll('label')].find(e=>e.textContent.includes('主应用模型')&&e.getClientRects().length);const e=label?.parentElement?.querySelector('[role="combobox"]');if(!e||e.dataset.disabled!==undefined)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, 'managed model select')
+  const p = await waitFor(cdp, `(()=>{const label=[...document.querySelectorAll('label')].find(e=>e.textContent.includes('主应用模型'));const e=label?.parentElement?.querySelector('[role="combobox"]');if(!e||e.dataset.disabled!==undefined)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, 'managed model select')
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...p })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...p, button: 'left', clickCount: 1 })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...p, button: 'left', clickCount: 1 })
