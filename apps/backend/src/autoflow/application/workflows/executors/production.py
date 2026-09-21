@@ -136,6 +136,7 @@ from .table import (
 )
 from .table_extract import ExtractTableDataExecutor
 from .text_to_speech import TextToSpeechExecutor
+from .timing_probability import TIMING_PROBABILITY_EXECUTORS
 from .utility_tools import (
     HEXToCMYKExecutor,
     MD5EncryptExecutor,
@@ -178,6 +179,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     RunCommandExecutor,
     *DESKTOP_PLATFORM_EXECUTORS,
     *ALLURE_EXECUTORS,
+    *TIMING_PROBABILITY_EXECUTORS,
     RunWorkflowFileExecutor,
     SubflowExecutor,
     WaitPageLoadExecutor,

@@ -256,6 +256,8 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "allure_add_attachment",
         "allure_stop_test",
         "allure_generate_report",
+        "scheduled_task",
+        "probability_trigger",
         "run_workflow_file",
         "subflow",
         "custom_module",
