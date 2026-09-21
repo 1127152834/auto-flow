@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-010-python-script",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -9,7 +9,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["python_script"],
+  "nodes": [
+    "python_script"
+  ],
   "implemented": [
     "保留内容脚本和文件脚本、变量代理、参数、工作目录、输出捕获、返回值及变量回写语义",
     "脚本stdout和stderr继续逐行进入运行进度，并可分别写入工作流变量",
@@ -57,11 +59,20 @@
     "sensitiveValuesPersisted": false
   },
   "remaining": [
-    "正式Electron中通过真实UI添加、编辑、保存、运行并查看脚本输出及后续节点",
     "冻结PyInstaller包内的默认解释器路径和子进程启动需在B6集中打包验收中核销",
-    "Windows平台的自定义解释器路径和进程树停止需实机记录"
+    "Windows平台的自定义解释器路径和进程树停止需实机记录",
+    "冻结 PyInstaller 包内默认解释器路径、Windows 自定义解释器和进程树停止仍需平台实机记录"
   ],
   "nonBlockingFindings": [
     "catalog-field-contract.test.ts在并行更新的能力台账中遇到缺失能力ID并于用例收集阶段失败；其余五个Python前端专项506项通过，该台账问题不由本节点实现引入"
-  ]
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-scripts.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scripts-electron-Ig5LHP/result.json",
+    "covers": "正式 Studio 真实 UI 打开代码编辑器、保存脚本、配置结果变量、关闭重开并运行；真实 worker 的脚本结果、变量/输出和后续日志均核验；临时工作区清理完成",
+    "boundary": "未触碰用户数据库；Windows 打包解释器和平台差异仍单独记录为未实测"
+  }
 }

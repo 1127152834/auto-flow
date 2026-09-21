@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-008-js-script",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -10,7 +10,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["js_script"],
+  "nodes": [
+    "js_script"
+  ],
   "implemented": [
     "保留浏览器端JavaScript执行、现有变量同步、返回值变量和失败即停止语义",
     "真实worker发布execution:js_script并等待结果；Studio按requestId领取后才执行，结果以稳定commandId确认",
@@ -53,8 +55,17 @@
     "sensitiveValuesSentToRenderer": false
   },
   "remaining": [
-    "正式Electron中通过真实UI添加、保存、运行并观察脚本变量和后续节点",
     "正式UI断流恢复和窗口退出仍需在B6集中Electron验收中核销",
-    "大于64 KiB返回值的真实后端产物和变量诊断读取随B6结果诊断集中验收"
-  ]
+    "大于64 KiB返回值的真实后端产物和变量诊断读取随B6结果诊断集中验收",
+    "正式 UI 断流恢复和窗口退出仍需在 B6 集中 Electron 验收中核销"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-scripts.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scripts-electron-Ig5LHP/result.json",
+    "covers": "正式 Studio 真实 UI 打开代码编辑器、保存脚本、配置结果变量、关闭重开并运行；真实 worker 的脚本结果、变量/输出和后续日志均核验；临时工作区清理完成",
+    "boundary": "未触碰用户数据库；Windows 打包解释器和平台差异仍单独记录为未实测"
+  }
 }
