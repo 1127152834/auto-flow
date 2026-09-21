@@ -107,11 +107,11 @@ def test_spreadsheet_and_sheet_identifiers_are_checked():
         assert code(failure.value) == "INVALID_PROJECT_DATA"
 
 
-def test_system_identity_is_refused_instead_of_guessed():
+def test_system_identity_requires_an_explicit_column_instead_of_guessing():
     with pytest.raises(ProjectError) as failure:
         bindings._identity({"kind": "system"})
-    assert code(failure.value) == "SYNC_NOT_IMPLEMENTED"
-    assert failure.value.details["capability"] == "sheets.systemIdentity"
+    assert code(failure.value) == "INVALID_PROJECT_DATA"
+    assert bindings._identity({"kind": "system", "columnId": "C"}) == {"kind": "system", "columnId": "C"}
 
     with pytest.raises(ProjectError) as missing:
         bindings._identity({"kind": "column"})
@@ -357,9 +357,10 @@ def test_verification_keeps_the_written_type_and_value():
     assert not outbound._same(True, 1)
 
 
-def test_outbound_identity_column_refuses_a_system_strategy():
+def test_outbound_identity_column_requires_explicit_system_coordinate():
     with pytest.raises(ProjectError) as failure:
         outbound._identity_column({"kind": "system"}, ["A"])
     assert code(failure.value) == "SYNC_NOT_IMPLEMENTED"
 
     assert outbound._identity_column({"kind": "column", "columnId": "B"}, ["A", "B"]) == 1
+    assert outbound._identity_column({"kind": "system", "columnId": "C"}, ["A", "B", "_autoflow_id"]) == 2

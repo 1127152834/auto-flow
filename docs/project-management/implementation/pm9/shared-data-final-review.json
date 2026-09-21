@@ -57,6 +57,8 @@
     "openapi": "passed",
     "scripts": "101 passed",
     "fullBackend": "final post-review run pending",
-    "nativeMatrix": "final post-review candidate pending"
+    "nativeMatrix": "final post-review candidate pending",
+    "preFixFullBackend": "9afe3be5: 1 failed, 3427 passed, 67 skipped in 740.91s; old system identity rule expected notImplemented, superseded by approved R3 explicit-column contract. No other failures.",
+    "legacyIdentityRule": "Pure boundary test now rejects missing column and accepts explicit system coordinate; source unchanged."
   }
 }
