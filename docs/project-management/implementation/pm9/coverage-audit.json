@@ -1255,10 +1255,9 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
-            "production_evidence_missing",
-            "implementation_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -1431,7 +1430,6 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing",
             "production_evidence_missing"
           ]
         },
@@ -1602,10 +1600,9 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
-            "production_evidence_missing",
-            "implementation_missing"
+            "production_evidence_missing"
           ]
         },
         {

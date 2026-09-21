@@ -566,7 +566,6 @@ def test_import_preserves_safe_business_format_error_for_record_diagnosis(tmp_pa
         book = load_workbook(tmp_path / 'source.xlsx')
         book.active['B1'] = '金额'; book.active['B2'] = 'not-a-number'; book.save(tmp_path / 'source.xlsx')
         inspected_result = client.post(f'/api/v1/projects/{project}/table-imports/excel/inspect', json={'selectionToken':token}, headers=proof).json()['inspection']
-        fields = inspected_result['sheets'][0]
         body = request_for(inspected_result)
         body['mapping'].append({'columnIndex':1,'target':{'kind':'new','definition':{'key':'amount','name':'金额','type':'number','required':True,'validation':{}}}})
         accepted = client.post(f'/api/v1/projects/{project}/table-imports/excel', json=body, headers={**proof,'Idempotency-Key':str(uuid4())})

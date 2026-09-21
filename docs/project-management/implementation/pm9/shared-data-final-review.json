@@ -1,6 +1,6 @@
 {
   "date": "2026-09-22",
-  "status": "findings_fixed_scoped_regression_passed",
+  "status": "findings_fixed_scoped_regression_D1_local_pass_native_follow_up_pending",
   "releaseAccepted": false,
   "reviewedRange": {
     "base": "e71785da7353760ea8bfd567d272dd27865c0188",
@@ -61,7 +61,8 @@
     "preFixFullBackend": "9afe3be5: 1 failed, 3427 passed, 67 skipped in 740.91s; old system identity rule expected notImplemented, superseded by approved R3 explicit-column contract. No other failures.",
     "legacyIdentityRule": "Pure boundary test now rejects missing column and accepts explicit system coordinate; source unchanged.",
     "build": "Passed in 34.38s",
-    "win32Mypy": "407 source files passed"
+    "win32Mypy": "407 source files passed",
+    "d1": "86 record/capability, 65 Sheets/Excel/records, 7 UI; mypy407/OpenAPI/Ruff pass. D1 source/packaged/worker full candidate pending."
   },
   "finalCICandidate": {
     "status": "failed_platforms_diagnosed_intel_pending",

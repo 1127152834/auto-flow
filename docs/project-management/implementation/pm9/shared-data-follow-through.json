@@ -1,6 +1,6 @@
 {
   "date": "2026-09-22",
-  "status": "implemented_review_fixes_complete_native_follow_up_pending",
+  "status": "D1_implemented_local_scoped_native_follow_up_pending",
   "releaseAccepted": false,
   "approvedOrder": [
     "C1",
@@ -177,7 +177,7 @@
     "apps/backend/src/autoflow/infrastructure/database/project_sync_models.py": "eb2845b6060a92823630ddc9b71badeffe491ae70e3475a1170f0b2f6f6c85bb"
   },
   "productionCandidate": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
-  "testCandidate": "0d7524d9c5a4981227e402fb711415097f190617",
+  "testCandidate": "f85de2c3",
   "nativeSharedCandidate": {
     "status": "completed_per_platform",
     "scope": "C4 native evidence uses Mac @21f8bb1e and Windows @07619b6d; does not replace final current R3/R4 matrix",
@@ -241,7 +241,8 @@
     "One whole C/R review complete; three Important findings fixed. Local affected/full regression passed; current native follow-ups pending.",
     "Current packaged complete Sheets chain, OAuth, real Google system UUID tests, physical native acceptance and signing identities remain external acceptance.",
     "S4 Windows existing-file overwrite/append/read and unapproved M1-M3 remain actual capability gaps.",
-    "D1 source ordinary business format errors: Sheets 422 reproduced; Excel strict failure code inspected only. Proposed contract awaits separate confirmation."
+    "D1 source ordinary business format errors: Sheets 422 reproduced; Excel strict failure code inspected only. Proposed contract awaits separate confirmation.",
+    "D1 is locally implemented for safe source business-format diagnostics; current packaged/real-worker UI and external Google evidence remain pending."
   ],
   "R4SourceHashes": {
     "apps/backend/src/autoflow/adapters/http/project_schemas.py": "d4c92eb57a4cce6719b8cfcababf1d5b0216793cd8f99473b589423d5bbfa01f",
