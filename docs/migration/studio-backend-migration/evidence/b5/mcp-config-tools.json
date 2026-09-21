@@ -23,7 +23,7 @@
     {
       "command": "uv run pytest tests/contract/test_studio_mcp.py tests/integration/test_workflow_mcp_http.py tests/integration/test_workflow_assistant_service.py tests/integration/test_workflow_assistant_http.py tests/unit/workflows/test_assistant_langgraph.py -q",
       "exitCode": 0,
-      "result": "54 passed",
+      "result": "57 passed, 1 warning",
       "covers": "配置合同、CAS与幂等、秘密隔离、真实stdio发现与调用、并发重试不重复副作用、未注册工具拒绝、LangGraph权限暂停和恢复"
     },
     {
@@ -54,11 +54,17 @@
       "exitCode": 0,
       "result": "AUTOFLOW_READY, revision 0, empty status and clean exit 0",
       "covers": "冻结入口加载MCP模块、迁移临时数据库并完成生命周期清理"
+    },
+    {
+      "command": "node scripts/smoke-studio-backend-b5-assistant.mjs --executable apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow",
+      "exitCode": 0,
+      "result": "packaged Electron formal UI passed",
+      "covers": "正式界面保存配置、真实stdio重连与工具发现、SQLite秘密扫描、可见权限批准、真实工具调用、LangGraph结果恢复、正常关窗历史恢复",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json"
     }
   ],
   "externalWaiting": [
-    "正式Electron真实UI保存、重载、批准、拒绝、断线恢复和历史验收归B5.8",
-    "真实远程SSE与streamable HTTP MCP服务器互通；当前真实连接和工具调用使用本地stdio服务",
+    "真实远程SSE与streamable HTTP MCP服务器互通；本机正式验收已覆盖真实本地stdio服务",
     "Windows与macOS Intel冻结包实机验证"
   ]
 }

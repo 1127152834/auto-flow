@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { createServer } from 'node:http'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -15,6 +15,9 @@ await mkdir(evidenceRoot, { recursive: true })
 const evidenceDir = await mkdtemp(join(evidenceRoot, 'formal-assistant-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b5-assistant-'))
 const workflowName = 'B5 小助手正式闭环'
+const mcpSecret = `B5-mcp-${randomUUID()}`
+const executableIndex = process.argv.indexOf('--executable')
+const packagedExecutable = executableIndex === -1 ? null : process.argv[executableIndex + 1]
 const checks = []
 const model = await startAssistantModel()
 let desktop, main, studio, native
@@ -48,6 +51,22 @@ try {
   await click(studio, '小助手主应用模型', 'button')
   await click(studio, 'B5 Assistant Fixture（B5 本地受控模型）', '[role="option"]')
   await click(studio, '逐项确认', 'button')
+
+  await click(studio, 'MCP', 'nav button')
+  await waitFor(studio, "document.body.innerText.includes('还没有配置 MCP 服务器')", 'empty MCP settings')
+  await click(studio, '添加')
+  await setInput(studio, 'input[placeholder="例如 filesystem / weather / github"]', 'fixture')
+  await setInput(studio, 'input[placeholder="例如 npx / node / python"]', join(root, 'apps/backend/.venv/bin/python'))
+  await setInput(studio, 'textarea[placeholder^="-y"]', join(root, 'apps/backend/tests/fixtures/mcp_stdio_server.py'))
+  await setInput(studio, 'textarea[aria-label="环境变量"]', `B5_MCP_SECRET=${mcpSecret}`)
+  await click(studio, '保存', '[role="dialog"] button')
+  await waitFor(studio, "document.body.innerText.includes('fixture') && document.body.innerText.includes('未连接')", 'saved MCP configuration')
+  await click(studio, '重新连接')
+  await waitFor(studio, "document.body.innerText.includes('已连接 · 1 个工具')", 'real MCP stdio connection', 30_000)
+  const mcpStatus = await api(runtime, '/ai-assistant/mcp/status')
+  assert.equal(mcpStatus.servers[0].tools[0].name, 'echo')
+  assert.equal((await readFile(join(runtime.workspaceKey, 'data/autoflow.sqlite3'))).includes(Buffer.from(mcpSecret)), false)
+  checkpoint('通过正式 MCP 配置界面保存并重连真实 stdio 服务，发现 echo 工具且秘密不进 SQLite')
   await click(studio, '', 'button[aria-label="关闭全局配置"]')
   await click(studio, 'AI 小助手', 'button')
   await waitFor(studio, `!document.querySelector('textarea[placeholder^="告诉我你想做什么"]')?.disabled`, 'configured assistant panel')
@@ -81,6 +100,12 @@ try {
   assert.equal(await studio.evaluate("document.body.innerText.includes('小助手请求授权：添加节点')"), false)
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__node').length"), 1)
   checkpoint('已排除节点在后端 LangGraph 校验边界拒绝，未进入权限请求且未改变画布')
+
+  await sendMessage(studio, 'MCP 调用回显工具')
+  await waitFor(studio, "document.body?.innerText.includes('小助手请求授权：MCP 工具：fixture / echo')", 'MCP tool approval')
+  await click(studio, '允许执行')
+  await waitFor(studio, "document.body?.innerText.includes('MCP 工具已执行：echo:B5 正式验收')", 'confirmed MCP tool response')
+  checkpoint('MCP 工具即使已连接仍先显示授权；批准后后端真实调用 stdio 工具并将结果送回 LangGraph')
 
   await sendMessage(studio, 'SLOW 启动可取消回答')
   await waitFor(studio, "document.querySelector('button[aria-label=\"停止小助手\"]') !== null", 'assistant stop control')
@@ -127,7 +152,7 @@ try {
   assert.ok(session.messages.some(item => item.content === '节点已添加并确认'))
   assert.ok(session.messages.some(item => item.content === '删除被拒绝，节点保持不变'))
   const toolCalls = session.messages.flatMap(item => item.tool_calls ?? [])
-  assert.deepEqual(toolCalls.map(item => item.id), ['b5-add', 'b5-modify', 'b5-delete'])
+  assert.deepEqual(toolCalls.map(item => item.id), ['b5-add', 'b5-modify', 'b5-delete', 'b5-mcp'])
   const rejectedDelete = toolCalls.find(item => item.id === 'b5-delete')
   assert.equal(rejectedDelete.status, 'failed')
   assert.match(rejectedDelete.error, /拒绝/)
@@ -135,7 +160,9 @@ try {
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify({
     evidenceId: 'BE-B5-assistant-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-    result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+    result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build',
+    smokeScriptSha256: createHash('sha256').update(await readFile(new URL(import.meta.url))).digest('hex'),
+    ...(packagedExecutable ? { executableSha256: createHash('sha256').update(await readFile(packagedExecutable)).digest('hex') } : {}),
     workflowId: saved.id, modelId, assistantSessionId: sessionBeforeClose.id,
     checks, providerRequestCount: commandEvents.length,
     boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, model: 'local controlled OpenAI-compatible HTTP fixture', interaction: 'formal Electron through CDP mouse/keyboard plus BrowserWindow normal close; public API only for fixture setup and evidence reads; no Store or page-internal business function access' },
@@ -149,6 +176,7 @@ try {
   studio?.close(); main?.close(); native?.close(); await stop(desktop?.child)
   await model.close(); await rm(userData, { recursive: true, force: true })
 }
+process.exit(0)
 
 function checkpoint(message) { checks.push(message); console.log(message) }
 
@@ -171,11 +199,16 @@ async function startAssistantModel() {
       if (prompt.startsWith('ADD')) return streamText(response, '节点已添加并确认')
       if (prompt.startsWith('MODIFY')) return streamText(response, '节点配置已修改并确认')
       if (prompt.startsWith('DELETE')) return streamText(response, '删除被拒绝，节点保持不变')
+      if (prompt.startsWith('MCP')) {
+        const result = JSON.parse(last.content)
+        return streamText(response, `MCP 工具已执行：${result.data.content}`)
+      }
     }
     if (prompt.startsWith('ADD')) return streamTool(response, 'b5-add', 'add_nodes', { nodes: [{ id: 'assistant-open', type: 'open_page', position: { x: 240, y: 220 }, data: { moduleType: 'open_page', url: 'about:blank' } }] })
     if (prompt.startsWith('MODIFY')) return streamTool(response, 'b5-modify', 'update_node_config', { node_id: 'assistant-open', config: { url: 'https://example.test' } })
     if (prompt.startsWith('DELETE')) return streamTool(response, 'b5-delete', 'delete_node', { node_id: 'assistant-open' })
     if (prompt.startsWith('EXCLUDED')) return streamTool(response, 'b5-excluded', 'add_nodes', { nodes: [{ id: 'excluded', type: 'excel_write', position: { x: 0, y: 0 }, data: { moduleType: 'excel_write' } }] })
+    if (prompt.startsWith('MCP')) return streamTool(response, 'b5-mcp', 'mcp__fixture__echo', { text: 'B5 正式验收' }, false)
     if (prompt.startsWith('SLOW')) {
       response.writeHead(200, { 'content-type': 'text/event-stream' })
       response.write(`data: ${JSON.stringify({ choices: [{ delta: { content: '慢响应已开始' } }] })}\n\n`)
@@ -198,9 +231,9 @@ function streamText(response, text, headers = true) {
   if (headers) response.writeHead(200, { 'content-type': 'text/event-stream' })
   response.end(`data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\ndata: [DONE]\n\n`)
 }
-function streamTool(response, id, action, payload) {
+function streamTool(response, id, action, payload, clientAction = true) {
   response.writeHead(200, { 'content-type': 'text/event-stream' })
-  response.end(`data: ${JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, id, function: { name: 'client_action', arguments: JSON.stringify({ action, payload }) } }] } }] })}\n\ndata: [DONE]\n\n`)
+  response.end(`data: ${JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, id, function: { name: clientAction ? 'client_action' : action, arguments: JSON.stringify(clientAction ? { action, payload } : payload) } }] } }] })}\n\ndata: [DONE]\n\n`)
 }
 
 async function api(runtime, path, options = {}) {

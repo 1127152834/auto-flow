@@ -22,9 +22,10 @@
       "apps/backend/tests/unit/workflows/test_model_gateway.py",
       "apps/backend/tests/unit/workflows/test_browser_session_contract.py"
     ],
-    "assistantFormalElectron": "docs/migration/studio-backend-migration/evidence/b5/formal-assistant-electron-CC2bU8/result.json",
+    "assistantFormalElectron": "docs/migration/studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json",
     "assistantRedaction": "docs/migration/studio-backend-migration/evidence/b5/assistant-artifacts-redaction.json",
-    "mcp": "docs/migration/studio-backend-migration/evidence/b5/mcp-config-tools.json"
+    "mcp": "docs/migration/studio-backend-migration/evidence/b5/mcp-config-tools.json",
+    "assistantAndMcpPackagedBoundary": "darwin-arm64目录包通过正式UI完成模型选择、MCP配置/调用、权限、取消、保存和正常关窗恢复；不替代22个节点级正式UI执行"
   },
   "nodes": [
     {
@@ -293,10 +294,10 @@
     }
   ],
   "releaseBoundary": [
-    "本地 fixture 只核销请求、响应、错误、取消和产物合同，不核销真实商业供应商。",
-    "15 个依赖模型或媒体供应商的节点保持 external_waiting，获得用户提供的真实模型/媒体凭据后逐供应商执行。",
-    "22 个节点的正式 Electron 节点级运行仍待完成；已通过的小助手正式 UI 不替代节点级运行。",
-    "darwin-arm64 以外平台未测，不标记通过。"
+    "本地fixture只核销请求、响应、错误、取消和产物合同，不核销真实商业供应商。",
+    "15个依赖模型或媒体供应商的节点保持external_waiting，获得用户提供的真实模型/媒体凭据后逐供应商执行。",
+    "小助手与真实stdio MCP的darwin-arm64目录包正式UI已通过；22个节点的节点级正式Electron运行仍待完成。",
+    "darwin-arm64以外平台未测，不标记通过。"
   ],
   "verification": {
     "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/test_model_provider.py apps/backend/tests/unit/workflows/test_model_gateway.py apps/backend/tests/unit/workflows/test_ai_executors.py apps/backend/tests/unit/workflows/test_ai_task_executors.py apps/backend/tests/unit/workflows/test_ai_media_executors.py apps/backend/tests/unit/workflows/test_browser_session_contract.py -k 'rate or timeout or cancel or large or secret or fallback or provider or artifact'",
