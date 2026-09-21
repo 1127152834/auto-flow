@@ -1,0 +1,47 @@
+{
+  "evidenceId": "BE-B8-debug-control-foundation",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/frontend/src/components/workflow/DebugBar.tsx",
+      "reference/WebRPA/frontend/src/stores/debugStore.ts"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "运行时在节点调度开始、参数解析和节点超时计时之前进入调试边界",
+    "stepMode在首节点前暂停；单步只放行一次节点调度并在下一节点前再次暂停；继续恢复正常调度",
+    "暂停事件包含稳定pauseId、controlRevision、节点、变量快照和循环局部变量只读元数据",
+    "resume和step使用稳定commandId，worker实际应用后才确认；重复同内容返回原结果，过期暂停上下文返回409",
+    "暂停、恢复和节点状态写入既有运行事件表及Studio事件流；停止可立即解除暂停且不会启动待执行节点",
+    "根流程、嵌套工作流、自定义模块和画布子流程共享同一个调试控制器"
+  ],
+  "checks": [
+    {
+      "command": "pytest debug runtime, control-flow runtime, coordinator, worker protocol, debug contract and workflow HTTP suites",
+      "result": "70 passed",
+      "covers": "节点前暂停、单步、继续、停止、真实worker HTTP闭环、状态持久化、命令幂等及原有运行回归"
+    },
+    {
+      "command": "Ruff, mypy and OpenAPI generation consistency",
+      "result": "passed",
+      "covers": "格式、类型、正式HTTP合同和生成类型"
+    }
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "realCloakBrowserRequired": false,
+    "windowsTested": false
+  },
+  "remaining": [
+    "动态断点更新、从指定位置起跑和运行至嵌套目标",
+    "暂停变量原子修改、变量检查点与变化记录",
+    "失败暂停保留浏览器及结束调试后的失败终态",
+    "日志筛选、固定截止导出和正式Electron真实UI验收",
+    "调试命令记录由内存升级为重启后可查询的数据库记录"
+  ]
+}

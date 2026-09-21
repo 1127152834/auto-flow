@@ -2641,6 +2641,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workflows/{workflow_id}/debug/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Workflow */
+        post: operations["resume_workflow_api_workflows__workflow_id__debug_resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/{workflow_id}/debug/step": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Step Workflow */
+        post: operations["step_workflow_api_workflows__workflow_id__debug_step_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/browser/status": {
         parameters: {
             query?: never;
@@ -9248,6 +9282,41 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioDebugControlReceipt */
+        StudioDebugControlReceipt: {
+            /** Runid */
+            runId: string;
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+            /** Workflowid */
+            workflowId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "resume" | "step";
+            /** Success */
+            success: boolean;
+            /** Error */
+            error: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioDebugControlRequest */
+        StudioDebugControlRequest: {
+            /** Runid */
+            runId: string;
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+        };
         /** StudioDesktopActionState */
         StudioDesktopActionState: {
             /** Requestid */
@@ -10527,41 +10596,6 @@ export type components = {
             httpStatus: number;
         } & {
             [key: string]: unknown;
-        };
-        /** StudioDebugControlReceipt */
-        StudioDebugControlReceipt: {
-            /** Runid */
-            runId: string;
-            /** Pauseid */
-            pauseId: string;
-            /** Controlrevision */
-            controlRevision: number;
-            /** Commandid */
-            commandId: string;
-            /** Workflowid */
-            workflowId: string;
-            /**
-             * Action
-             * @enum {string}
-             */
-            action: "resume" | "step";
-            /** Success */
-            success: boolean;
-            /** Error */
-            error: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioDebugControlRequest */
-        StudioDebugControlRequest: {
-            /** Runid */
-            runId: string;
-            /** Pauseid */
-            pauseId: string;
-            /** Controlrevision */
-            controlRevision: number;
-            /** Commandid */
-            commandId: string;
         };
         /** StudioDebugPauseContext */
         StudioDebugPauseContext: {
@@ -21950,6 +21984,76 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_workflow_api_workflows__workflow_id__debug_resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioDebugControlRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioDebugControlReceipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    step_workflow_api_workflows__workflow_id__debug_step_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioDebugControlRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioDebugControlReceipt"];
                 };
             };
             /** @description Validation Error */

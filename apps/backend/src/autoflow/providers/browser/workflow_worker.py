@@ -116,6 +116,7 @@ async def _run_in_session(
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
             models=WorkflowModelGateway(_model_bindings(command)),
             external_integrations=integrations,
+            debug=command_bus.debug,
         )
         sink = _WorkerEventSink(
             stdout,
@@ -490,6 +491,7 @@ class _WorkerNestedWorkflows:
             external_integrations=self._parent.external_integrations,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            debug=self._parent.debug,
             clock=self._parent.clock,
         )
         child_sink = self._sink.for_context(child)
@@ -663,6 +665,7 @@ class _WorkerCustomModules:
             external_integrations=self._parent.external_integrations,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            debug=self._parent.debug,
             clock=self._parent.clock,
         )
         child_sink = self._sink.for_context(child)
@@ -806,6 +809,7 @@ class _WorkerCanvasSubflows:
             external_integrations=self._parent.external_integrations,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            debug=self._parent.debug,
             clock=self._parent.clock,
         )
         child_sink = self._sink.for_context(child)
@@ -969,6 +973,108 @@ def _read_command(stdin: TextIO) -> dict[str, Any]:
     return value
 
 
+class _WorkerDebugController:
+    def __init__(
+        self,
+        stopped: Event,
+        *,
+        step_mode: bool,
+        breakpoints: set[str],
+    ) -> None:
+        self._stopped = stopped
+        self._pause_next = step_mode
+        self._breakpoints = breakpoints
+        self._revision = 0
+        self._pause: dict[str, Any] | None = None
+
+    async def before_node(
+        self, context: ExecutionContext, *, node_id: str, label: str
+    ) -> None:
+        if not self._pause_next and node_id not in self._breakpoints:
+            return
+        reason = "step" if self._pause_next else "breakpoint"
+        self._pause_next = False
+        self._revision += 1
+        release = asyncio.Event()
+        pause_id = str(uuid4())
+        self._pause = {
+            "pauseId": pause_id,
+            "controlRevision": self._revision,
+            "release": release,
+            "action": None,
+        }
+        if context.events is None:
+            raise RuntimeError("调试事件服务不可用")
+        loop_variables = {
+            str(name)
+            for frame in context.loop_stack
+            for key in ("index_variable", "item_variable", "key_variable", "value_variable")
+            if isinstance((name := frame.get(key)), str) and name
+        }
+        await context.events.publish(
+            {
+                "type": "execution:paused",
+                "node_id": node_id,
+                "label": label,
+                "pauseId": pause_id,
+                "controlRevision": self._revision,
+                "variables": {
+                    name: "***" if name in context.sensitive_variables else copy.deepcopy(value)
+                    for name, value in context.variables.items()
+                },
+                "variableMeta": {
+                    name: {
+                        "scope": "loop" if name in loop_variables else "workflow",
+                        "readOnly": name in loop_variables,
+                    }
+                    for name in context.variables
+                },
+                "reason": reason,
+            }
+        )
+        while not release.is_set():
+            if self._stopped.is_set():
+                raise asyncio.CancelledError
+            try:
+                await asyncio.wait_for(release.wait(), timeout=0.1)
+            except TimeoutError:
+                continue
+        if self._stopped.is_set():
+            self._pause = None
+            raise asyncio.CancelledError
+        pause = self._pause
+        if pause is None or pause["pauseId"] != pause_id:
+            raise asyncio.CancelledError
+        action = pause["action"]
+        self._pause = None
+        self._pause_next = action == "step"
+        await context.events.publish(
+            {
+                "type": "execution:resumed",
+                "pauseId": pause_id,
+                "controlRevision": self._revision,
+            }
+        )
+
+    def apply(self, command: Mapping[str, Any]) -> bool:
+        pause = self._pause
+        if (
+            pause is None
+            or command.get("pauseId") != pause["pauseId"]
+            or command.get("controlRevision") != pause["controlRevision"]
+            or command.get("type") not in {"debug_resume", "debug_step"}
+        ):
+            return False
+        pause["action"] = "step" if command["type"] == "debug_step" else "resume"
+        pause["release"].set()
+        return True
+
+    def close(self) -> None:
+        pause = self._pause
+        if pause is not None:
+            pause["release"].set()
+
+
 class _WorkerCommandBus:
     def __init__(
         self,
@@ -983,6 +1089,21 @@ class _WorkerCommandBus:
         self._run_id = _required_string(command, "runId")
         workflow_id = command.get("workflowId")
         self._workflow_id = workflow_id if isinstance(workflow_id, str) else ""
+        raw_breakpoints = command.get("breakpoints", [])
+        breakpoints = (
+            {item for item in raw_breakpoints if isinstance(item, str) and item}
+            if isinstance(raw_breakpoints, list)
+            else set()
+        )
+        self.debug = (
+            _WorkerDebugController(
+                stopped,
+                step_mode=bool(command.get("stepMode")),
+                breakpoints=breakpoints,
+            )
+            if bool(command.get("debug") or command.get("stepMode") or breakpoints)
+            else None
+        )
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
         self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
@@ -1223,6 +1344,24 @@ class _WorkerCommandBus:
 
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type in {"debug_resume", "debug_step"}:
+            command_id = command.get("commandId")
+            if (
+                self.debug is not None
+                and isinstance(command_id, str)
+                and command_id
+                and self.debug.apply(command)
+            ):
+                _write(
+                    self._stdout,
+                    {
+                        "type": "execution:command_applied",
+                        "runId": self._run_id,
+                        "workflowId": self._workflow_id,
+                        "commandId": command_id,
+                    },
+                )
+            return
         if command_type == "desktop_action_result":
             self._apply_desktop_action_result(command)
             return
@@ -1390,6 +1529,8 @@ class _WorkerCommandBus:
         )
 
     def _cancel_pending(self) -> None:
+        if self.debug is not None:
+            self.debug.close()
         for future in self._pending.values():
             if not future.done():
                 future.cancel()

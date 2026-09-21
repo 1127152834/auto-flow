@@ -1,0 +1,158 @@
+from __future__ import annotations
+
+import asyncio
+import io
+from threading import Event
+from typing import Any
+
+import pytest
+from autoflow.application.workflows.executors.base import ModuleExecutor, ModuleResult
+from autoflow.application.workflows.executors.registry import ExecutorRegistry
+from autoflow.application.workflows.runtime import WorkflowRuntime
+from autoflow.domain.workflows.execution import ExecutionContext
+from autoflow.providers.browser.workflow_worker import _WorkerCommandBus
+
+
+class _Sink:
+    def __init__(self) -> None:
+        self.events: list[dict[str, Any]] = []
+
+    async def publish(self, event: dict[str, Any]) -> None:
+        self.events.append(event)
+
+
+async def _wait_for_pauses(sink: _Sink, count: int) -> dict[str, Any]:
+    async with asyncio.timeout(1):
+        while True:
+            pauses = [event for event in sink.events if event["type"] == "execution:paused"]
+            if len(pauses) >= count:
+                return pauses[-1]
+            await asyncio.sleep(0)
+
+
+@pytest.mark.asyncio
+async def test_step_releases_one_dispatch_then_pauses_before_next_node() -> None:
+    calls: list[str] = []
+
+    class ProbeExecutor(ModuleExecutor):
+        module_type = "set_variable"
+
+        async def execute(
+            self, config: dict[str, Any], _context: ExecutionContext
+        ) -> ModuleResult:
+            calls.append(str(config["name"]))
+            return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(ProbeExecutor)
+    output = io.StringIO()
+    stopped = Event()
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(),
+        stopped,
+        output,
+        {
+            "runId": "run-debug",
+            "workflowId": "workflow-debug",
+            "debug": True,
+            "stepMode": True,
+        },
+    )
+    sink = _Sink()
+    context = ExecutionContext(events=sink, debug=command_bus.debug)
+    document = {
+        "nodes": [
+            {
+                "id": "first",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {"name": "first"}},
+            },
+            {
+                "id": "second",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {"name": "second"}},
+            },
+        ],
+        "edges": [{"id": "edge", "source": "first", "target": "second"}],
+    }
+
+    task = asyncio.create_task(WorkflowRuntime(registry).execute(document, context))
+    first_pause = await _wait_for_pauses(sink, 1)
+    assert first_pause["node_id"] == "first"
+    assert calls == []
+
+    command_bus.receive(
+        {
+            "type": "debug_step",
+            "commandId": "step-1",
+            "pauseId": first_pause["pauseId"],
+            "controlRevision": first_pause["controlRevision"],
+        }
+    )
+    second_pause = await _wait_for_pauses(sink, 2)
+    assert second_pause["node_id"] == "second"
+    assert calls == ["first"]
+
+    command_bus.receive(
+        {
+            "type": "debug_resume",
+            "commandId": "resume-1",
+            "pauseId": second_pause["pauseId"],
+            "controlRevision": second_pause["controlRevision"],
+        }
+    )
+    result = await asyncio.wait_for(task, timeout=1)
+
+    assert result.success is True
+    assert calls == ["first", "second"]
+    assert output.getvalue().count('"type":"execution:command_applied"') == 2
+
+
+@pytest.mark.asyncio
+async def test_stop_while_paused_does_not_start_the_pending_node() -> None:
+    calls: list[str] = []
+
+    class ProbeExecutor(ModuleExecutor):
+        module_type = "set_variable"
+
+        async def execute(
+            self, _config: dict[str, Any], _context: ExecutionContext
+        ) -> ModuleResult:
+            calls.append("started")
+            return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(ProbeExecutor)
+    stopped = Event()
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(),
+        stopped,
+        io.StringIO(),
+        {
+            "runId": "run-stop",
+            "workflowId": "workflow-stop",
+            "debug": True,
+            "stepMode": True,
+        },
+    )
+    sink = _Sink()
+    context = ExecutionContext(events=sink, debug=command_bus.debug)
+    document = {
+        "nodes": [
+            {
+                "id": "pending",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {}},
+            }
+        ],
+        "edges": [],
+    }
+    task = asyncio.create_task(WorkflowRuntime(registry).execute(document, context))
+    await _wait_for_pauses(sink, 1)
+
+    stopped.set()
+    command_bus.close()
+
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert calls == []

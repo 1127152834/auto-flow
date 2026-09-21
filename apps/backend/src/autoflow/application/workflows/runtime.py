@@ -208,6 +208,13 @@ class _WorkflowScheduler:
             self._remember_failure(node.id, result)
             return result
 
+        if self.context.debug is not None:
+            await self.context.debug.before_node(
+                self.context,
+                node_id=node.id,
+                label=str(node.data.get("label") or node.type),
+            )
+
         execution_id = str(uuid4())
         execution_context = _execution_context(self.context)
         async with self.event_binding_lock:

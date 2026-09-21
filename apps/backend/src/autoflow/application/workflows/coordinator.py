@@ -117,6 +117,7 @@ class WorkflowRunCoordinator:
         self._speech_requests: dict[str, dict[str, str]] = {}
         self._desktop_action_requests: dict[str, dict[str, str]] = {}
         self._webhook_requests: dict[str, dict[str, Any]] = {}
+        self._debug_pauses: dict[str, dict[str, Any]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
         self._command_waiters: dict[str, asyncio.Future[None]] = {}
 
@@ -126,8 +127,19 @@ class WorkflowRunCoordinator:
         run_id = _required_string(request, "runId")
         document_id = _required_string(request, "documentId")
         profile_id = _required_string(request, "profileId")
+        step_mode = request.get("stepMode", False)
+        if not isinstance(step_mode, bool):
+            raise WorkflowRunError("RUN_REQUEST_INVALID", "stepMode 必须是布尔值", 422)
+        raw_breakpoints = request.get("breakpoints", [])
+        if not isinstance(raw_breakpoints, list) or not all(
+            isinstance(item, str) and item for item in raw_breakpoints
+        ):
+            raise WorkflowRunError("RUN_REQUEST_INVALID", "breakpoints 必须是节点标识数组", 422)
+        breakpoints = list(dict.fromkeys(raw_breakpoints))
         mode = (
-            "debug" if bool(request.get("debug") or request.get("stepMode")) else "run"
+            "debug"
+            if bool(request.get("debug") or step_mode or breakpoints)
+            else "run"
         )
         headless = request.get("headless", False)
         if not isinstance(headless, bool):
@@ -240,6 +252,8 @@ class WorkflowRunCoordinator:
                         "headless": headless,
                         "startNodeId": request.get("startNodeId"),
                         "mode": mode,
+                        "stepMode": step_mode,
+                        "breakpoints": breakpoints,
                     },
                 },
                 mode=cast(Any, mode),
@@ -399,10 +413,144 @@ class WorkflowRunCoordinator:
             await self._workers.stop(run_id)
             return _summary(self._runs.get(run_id))
 
+    async def debug_control(
+        self,
+        workflow_id: str,
+        action: str,
+        request: Mapping[str, Any],
+    ) -> tuple[dict[str, Any], int]:
+        command_id = _required_string(request, "commandId")
+        fingerprint = json.dumps(
+            {"workflowId": workflow_id, "action": action, **dict(request)},
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        async with self._event_command_lock:
+            previous = self._command_receipts.get(command_id)
+            if previous is not None:
+                old_fingerprint, receipt, status = previous
+                if old_fingerprint != fingerprint:
+                    return {
+                        "commandId": command_id,
+                        "runId": str(request.get("runId") or ""),
+                        "pauseId": str(request.get("pauseId") or ""),
+                        "controlRevision": int(request.get("controlRevision") or 0),
+                        "workflowId": workflow_id,
+                        "action": action,
+                        "success": False,
+                        "error": "commandId 已用于不同请求",
+                    }, 409
+                return copy.deepcopy(receipt), status
+
+            run_id = _required_string(request, "runId")
+            pause_id = _required_string(request, "pauseId")
+            revision = request.get("controlRevision")
+            run = self._runs.get(run_id)
+            pause = self._debug_pauses.get(run_id)
+            error = None
+            if run.workflow_id != workflow_id:
+                error = "运行不属于指定工作流"
+            elif action not in {"resume", "step"}:
+                error = "调试命令无效"
+            elif (
+                run.status != "paused"
+                or pause is None
+                or pause.get("pauseId") != pause_id
+                or pause.get("controlRevision") != revision
+            ):
+                error = "暂停标识或控制修订已失效"
+            receipt = {
+                "commandId": command_id,
+                "runId": run_id,
+                "pauseId": pause_id,
+                "controlRevision": revision,
+                "workflowId": workflow_id,
+                "action": action,
+                "success": error is None,
+                "error": error,
+            }
+            if error is not None:
+                self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                return copy.deepcopy(receipt), 409
+
+            waiter = asyncio.get_running_loop().create_future()
+            self._command_waiters[command_id] = waiter
+            try:
+                await self._workers.send_command(
+                    run_id,
+                    {
+                        "type": f"debug_{action}",
+                        "commandId": command_id,
+                        "pauseId": pause_id,
+                        "controlRevision": revision,
+                    },
+                )
+                await asyncio.wait_for(waiter, timeout=10)
+            except (RuntimeError, TimeoutError):
+                receipt["success"] = False
+                receipt["error"] = "调试命令未被运行进程确认"
+                self._command_receipts[command_id] = (fingerprint, receipt, 503)
+                return copy.deepcopy(receipt), 503
+            finally:
+                self._command_waiters.pop(command_id, None)
+            self._command_receipts[command_id] = (fingerprint, receipt, 200)
+            return copy.deepcopy(receipt), 200
+
     async def on_worker_event(self, event: dict[str, object]) -> None:
         run_id = _required_string(event, "runId")
         run = self._runs.get(run_id)
         event_type = _required_string(event, "type")
+        if event_type == "execution:paused":
+            pause_id = _required_string(event, "pauseId")
+            paused_node_id = _required_string(event, "node_id")
+            revision = _required_int(event, "controlRevision")
+            payload = {
+                key: copy.deepcopy(value)
+                for key, value in event.items()
+                if key not in {"type", "runId", "workflowId"}
+            }
+            self._debug_pauses[run_id] = {
+                "pauseId": pause_id,
+                "controlRevision": revision,
+                "nodeId": paused_node_id,
+            }
+            persisted = self._repository.append_event(
+                run_id,
+                event_type,
+                payload,
+                now=datetime_now(),
+                node_id=paused_node_id,
+                run_patch={"status": "paused", "currentNodeId": paused_node_id},
+            )
+            await self._events.publish(
+                event_type,
+                {**_event_identity(run), **payload, "sequence": persisted.sequence},
+            )
+            return
+        if event_type == "execution:resumed":
+            pause_id = _required_string(event, "pauseId")
+            pause = self._debug_pauses.get(run_id)
+            if pause is not None and pause.get("pauseId") == pause_id:
+                self._debug_pauses.pop(run_id, None)
+            payload = {
+                key: copy.deepcopy(value)
+                for key, value in event.items()
+                if key not in {"type", "runId", "workflowId"}
+            }
+            persisted = self._repository.append_event(
+                run_id,
+                event_type,
+                payload,
+                now=datetime_now(),
+                run_patch={"status": "running"},
+            )
+            await self._events.publish(
+                event_type,
+                {**_event_identity(run), **payload, "sequence": persisted.sequence},
+            )
+            return
         if event_type == "execution:webhook_waiting":
             request_id = _required_string(event, "requestId")
             webhook_id = _required_string(event, "webhookId")
@@ -1213,6 +1361,7 @@ class WorkflowRunCoordinator:
         # WorkflowWorkerManager invokes this only after the process tree and its
         # private directory are gone. Resource release is the final cleanup step.
         run = self._runs.get(run_id)
+        self._debug_pauses.pop(run_id, None)
         for state in self._input_prompts.values():
             if state["runId"] == run_id and state["status"] == "pending":
                 state["status"] = "expired"
@@ -1332,6 +1481,9 @@ def _worker_payload(
     model_bindings: Sequence[ModelExecutionBinding],
 ) -> dict[str, Any]:
     spec = profile.spec
+    run_options = start.profile_snapshot.get("runOptions", {})
+    if not isinstance(run_options, Mapping):
+        run_options = {}
     executable_document = WorkflowDraft(
         start.document_id,
         start.workflow_name,
@@ -1368,6 +1520,9 @@ def _worker_payload(
         "headless": headless,
         "artifactRoot": str(artifact_root),
         "requiresBrowser": requires_browser,
+        "debug": start.mode == "debug",
+        "stepMode": bool(run_options.get("stepMode")),
+        "breakpoints": copy.deepcopy(run_options.get("breakpoints", [])),
         "document": executable_document,
         "workflowDependencies": workflow_dependencies,
         "customModuleDependencies": custom_module_dependencies,

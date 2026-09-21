@@ -275,6 +275,12 @@ class CancellationToken(Protocol):
     def raise_if_cancelled(self) -> None: ...
 
 
+class DebugControlPort(Protocol):
+    async def before_node(
+        self, context: ExecutionContext, *, node_id: str, label: str
+    ) -> None: ...
+
+
 @dataclass(frozen=True, slots=True)
 class WorkflowClock:
     now: Callable[[], datetime] = lambda: datetime.now(UTC)
@@ -300,6 +306,7 @@ class ExecutionContext:
     canvas_subflows: CanvasSubflowGateway | None = None
     custom_modules: CustomModuleGateway | None = None
     cancellation: CancellationToken | None = None
+    debug: DebugControlPort | None = None
     clock: WorkflowClock = field(default_factory=WorkflowClock)
     data_rows: list[dict[str, Any]] = field(default_factory=list)
     log_records: list[dict[str, Any]] = field(default_factory=list)

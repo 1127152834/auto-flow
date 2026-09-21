@@ -13,7 +13,12 @@ from autoflow.adapters.http.schemas import ApiModel
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.workflows.runs import WorkflowRun
 
-from .workflow_studio_schemas import StudioRunResultPage, StudioRunResultValue
+from .workflow_studio_schemas import (
+    StudioDebugControlReceipt,
+    StudioDebugControlRequest,
+    StudioRunResultPage,
+    StudioRunResultValue,
+)
 
 
 class WorkflowRunCommands(Protocol):
@@ -22,6 +27,10 @@ class WorkflowRunCommands(Protocol):
     ) -> Mapping[str, Any]: ...
 
     async def stop(self, workflow_id: str, run_id: str) -> Mapping[str, Any]: ...
+
+    async def debug_control(
+        self, workflow_id: str, action: str, request: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]: ...
 
     async def submit_event_command(
         self, command_id: str, event: str, data: Mapping[str, Any]
@@ -101,6 +110,32 @@ def workflow_run_command_router(commands: WorkflowRunCommands) -> APIRouter:
         workflow_id: str, request: WorkflowStopRequest
     ) -> Mapping[str, Any]:
         return await commands.stop(workflow_id, request.run_id)
+
+    async def apply_debug_control(
+        workflow_id: str, action: str, request: StudioDebugControlRequest
+    ) -> JSONResponse:
+        body, http_status = await commands.debug_control(
+            workflow_id,
+            action,
+            request.model_dump(by_alias=True),
+        )
+        return JSONResponse(body, status_code=http_status)
+
+    @router.post(
+        "/{workflow_id}/debug/resume", response_model=StudioDebugControlReceipt
+    )
+    async def resume_workflow(
+        workflow_id: str, request: StudioDebugControlRequest
+    ) -> JSONResponse:
+        return await apply_debug_control(workflow_id, "resume", request)
+
+    @router.post(
+        "/{workflow_id}/debug/step", response_model=StudioDebugControlReceipt
+    )
+    async def step_workflow(
+        workflow_id: str, request: StudioDebugControlRequest
+    ) -> JSONResponse:
+        return await apply_debug_control(workflow_id, "step", request)
 
     return router
 

@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock
 
-from fastapi.testclient import TestClient
-
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.workflows.browser import WorkflowWorkerSession
+from fastapi.testclient import TestClient
 
 
 def _workflow() -> dict[str, object]:
@@ -150,6 +149,134 @@ def test_real_http_input_command_resumes_the_actual_worker(
     ).json()["status"] == "answered"
     results = client.get("/api/workflow-runs/input-http-run/results").json()
     assert results["items"][0]["values"] == {"value": 42}
+
+
+def test_real_http_debug_step_and_resume_control_the_actual_worker(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    workflow = client.post(
+        "/api/workflows",
+        json={
+            "id": "debug-http-flow",
+            "name": "调试 HTTP 闭环",
+            "nodes": [
+                {
+                    "id": "first",
+                    "type": "moduleNode",
+                    "position": {"x": 0, "y": 0},
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "count", "variableValue": "1"},
+                    },
+                },
+                {
+                    "id": "second",
+                    "type": "moduleNode",
+                    "position": {"x": 200, "y": 0},
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "count", "variableValue": "2"},
+                    },
+                },
+            ],
+            "edges": [{"id": "edge", "source": "first", "target": "second"}],
+            "variables": [{"name": "count", "value": 0}],
+            "clientRequestId": "create-debug-http",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    execute = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "debug-http-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+            "stepMode": True,
+        },
+    )
+    assert execute.status_code == 202, execute.text
+
+    def pause_events() -> list[dict[str, Any]]:
+        return [
+            event.data
+            for event in client.app.state.workflow_services.events.replay(
+                after_sequence=0
+            )
+            if event.event == "execution:paused"
+        ]
+
+    pauses: list[dict[str, Any]] = []
+    for _ in range(200):
+        pauses = pause_events()
+        if pauses:
+            break
+        time.sleep(0.01)
+    assert pauses[-1]["node_id"] == "first"
+    assert client.get("/api/workflow-runs/debug-http-run").json()["status"] == "paused"
+
+    first = pauses[-1]
+    stepped = client.post(
+        f"/api/workflows/{workflow['id']}/debug/step",
+        json={
+            "commandId": "debug-step-1",
+            "runId": "debug-http-run",
+            "pauseId": first["pauseId"],
+            "controlRevision": first["controlRevision"],
+        },
+    )
+    assert stepped.status_code == 200, stepped.text
+    assert stepped.json()["success"] is True
+    repeated_step = client.post(
+        f"/api/workflows/{workflow['id']}/debug/step",
+        json={
+            "commandId": "debug-step-1",
+            "runId": "debug-http-run",
+            "pauseId": first["pauseId"],
+            "controlRevision": first["controlRevision"],
+        },
+    )
+    assert repeated_step.status_code == 200
+    assert repeated_step.json() == stepped.json()
+
+    for _ in range(200):
+        pauses = pause_events()
+        if len(pauses) == 2:
+            break
+        time.sleep(0.01)
+    assert [pause["node_id"] for pause in pauses] == ["first", "second"]
+    assert pauses[-1]["variables"]["count"] == 1
+
+    stale = client.post(
+        f"/api/workflows/{workflow['id']}/debug/resume",
+        json={
+            "commandId": "debug-stale-1",
+            "runId": "debug-http-run",
+            "pauseId": first["pauseId"],
+            "controlRevision": first["controlRevision"],
+        },
+    )
+    assert stale.status_code == 409
+    assert stale.json()["success"] is False
+
+    second = pauses[-1]
+    resumed = client.post(
+        f"/api/workflows/{workflow['id']}/debug/resume",
+        json={
+            "commandId": "debug-resume-1",
+            "runId": "debug-http-run",
+            "pauseId": second["pauseId"],
+            "controlRevision": second["controlRevision"],
+        },
+    )
+    assert resumed.status_code == 200, resumed.text
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/debug-http-run").json()
+        if run["status"] == "completed":
+            break
+        time.sleep(0.01)
+    assert run["status"] == "completed"
+    assert client.get("/api/events/commands/debug-step-1").json()["action"] == "step"
+    assert client.get("/api/events/commands/debug-resume-1").json()["action"] == "resume"
 
 
 def test_external_webhook_resumes_real_worker_without_sidecar_token(
