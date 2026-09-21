@@ -14,6 +14,7 @@ _, torchvision_path = get_package_paths('torchvision')
 torchvision_binaries = (
     collect_dynamic_libs('torchvision')
     + collect_dynamic_libs('ctranslate2')
+    + collect_dynamic_libs('mediapipe')
     + [
     (str(path), 'torchvision')
     for path in Path(torchvision_path).glob('*_stable.so')
@@ -30,6 +31,8 @@ datas = [
     *collect_data_files('easyocr'),
     *collect_data_files('face_recognition_models'),
     *collect_data_files('faster_whisper'),
+    *collect_data_files('mediapipe'),
+    ('src/autoflow/resources/mediapipe/hand_landmarker.task', 'autoflow/resources/mediapipe'),
     ('../../reference/WebRPA/backend/models/ocr/easyocr/*.pth', 'autoflow/resources/easyocr'),
     *copy_metadata('tzdata'),
     *copy_metadata('cloakbrowser'),
@@ -43,6 +46,7 @@ datas = [
     *copy_metadata('face-recognition'),
     *copy_metadata('face-recognition-models'),
     *copy_metadata('faster-whisper'),
+    *copy_metadata('mediapipe'),
     *copy_metadata('ctranslate2'),
     *copy_metadata('huggingface-hub'),
     *copy_metadata('tokenizers'),
@@ -65,6 +69,7 @@ hiddenimports = [
     *collect_submodules('easyocr'),
     *collect_submodules('face_recognition'),
     *collect_submodules('faster_whisper'),
+    *collect_submodules('mediapipe'),
 ]
 
 

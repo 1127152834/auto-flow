@@ -14,6 +14,7 @@ from autoflow.adapters.events.workflows import (
 )
 from autoflow.adapters.http.custom_modules import custom_modules_router
 from autoflow.adapters.http.workflow_ai import workflow_ai_router
+from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
 from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
 from autoflow.adapters.http.workflow_mcp import workflow_mcp_router
 from autoflow.adapters.http.workflow_runs import (
@@ -42,6 +43,10 @@ from autoflow.infrastructure.database.workflow_mcp import SqlAlchemyWorkflowMcp
 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
+from autoflow.infrastructure.gesture import (
+    GestureRecognitionService,
+    gesture_model_path,
+)
 from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowResourceCoordinator,
@@ -159,6 +164,7 @@ class WorkflowServices:
     assistant: WorkflowAssistantService | Any | None = None
     mcp: WorkflowMcpService | Any | None = None
     shares: NetworkShareHost | None = None
+    gestures: GestureRecognitionService | Any | None = None
     event_commands: Any | None = None
 
     async def shutdown(self) -> None:
@@ -266,6 +272,9 @@ def build_workflow_services(
     holder: dict[str, WorkflowRunCoordinator] = {}
     inspection_holder: dict[str, WorkflowInspectionService] = {}
     shares = NetworkShareHost()
+    gestures = GestureRecognitionService(
+        artifact_root / "gestures" / "custom_gestures.json", gesture_model_path()
+    )
 
     async def on_event(event: dict[str, object]) -> None:
         if event.get("type") == "execution:desktop_action" and shares.supports(
@@ -300,6 +309,12 @@ def build_workflow_services(
 
     workers = WorkflowWorkerManager(
         temp_root,
+        worker_env={
+            "AUTOFLOW_GESTURE_DATA_FILE": str(
+                artifact_root / "gestures" / "custom_gestures.json"
+            ),
+            "AUTOFLOW_GESTURE_MODEL_PATH": str(gesture_model_path()),
+        },
         on_event=on_event,
         on_exit=on_exit,
     )
@@ -349,6 +364,7 @@ def build_workflow_services(
         assistant=assistant,
         mcp=mcp,
         shares=shares,
+        gestures=gestures,
         event_commands=StudioEventCommandMux(coordinator, assistant) if assistant else None,
     )
 
@@ -356,6 +372,8 @@ def build_workflow_services(
 def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     # Static workflow commands must be registered before the dynamic document ID.
     app.include_router(workflow_trigger_router(services.commands))
+    if services.gestures is not None:
+        app.include_router(workflow_gesture_router(services.gestures))
     app.include_router(workflow_run_command_router(services.commands))
     if services.inspection is not None:
         app.include_router(workflow_inspection_router(services.inspection))

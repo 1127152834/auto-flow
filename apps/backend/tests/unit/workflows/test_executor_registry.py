@@ -248,6 +248,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "run_command",
         "printer_call",
         "sound_trigger",
+        "gesture_trigger",
         "share_file",
         "share_folder",
         "stop_share",

@@ -51,6 +51,7 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
         events=unavailable,
         inspection=unavailable,
         assistant=unavailable,
+        gestures=unavailable,
         event_commands=unavailable,
     )
     register_workflow_routes(app, workflows)

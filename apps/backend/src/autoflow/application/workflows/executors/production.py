@@ -46,15 +46,16 @@ from .dict_advanced import (
     DictMergeExecutor,
     DictSortExecutor,
 )
-from .email_trigger import EMAIL_TRIGGER_EXECUTORS
 from .element_change_trigger import ELEMENT_CHANGE_TRIGGER_EXECUTORS
+from .email_trigger import EMAIL_TRIGGER_EXECUTORS
 from .external_http import EXTERNAL_HTTP_EXECUTORS
 from .face_trigger import FACE_TRIGGER_EXECUTORS
 from .file_watcher import FILE_WATCHER_EXECUTORS
 from .firecrawl import FIRECRAWL_EXECUTORS
+from .gesture_trigger import GESTURE_TRIGGER_EXECUTORS
+from .image_trigger import IMAGE_TRIGGER_EXECUTORS
 from .input_prompt import InputPromptExecutor
 from .input_triggers import INPUT_TRIGGER_EXECUTORS
-from .image_trigger import IMAGE_TRIGGER_EXECUTORS
 from .js_script import JsScriptExecutor
 from .list_advanced import (
     ListCartesianProductExecutor,
@@ -105,19 +106,19 @@ from .math_list_ops import (
 from .media_recognition import MEDIA_RECOGNITION_EXECUTORS
 from .messaging import MESSAGE_EXECUTORS
 from .network_capture import NetworkCaptureExecutor
-from .network_sharing import NETWORK_SHARING_EXECUTORS
 from .network_monitor import (
     NetworkMonitorStartExecutor,
     NetworkMonitorStopExecutor,
     NetworkMonitorWaitExecutor,
 )
+from .network_sharing import NETWORK_SHARING_EXECUTORS
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
-from .python_script import PythonScriptExecutor
 from .printer import PRINTER_EXECUTORS
+from .python_script import PythonScriptExecutor
 from .registry import ExecutorRegistry
 from .run_command import RunCommandExecutor
-from .ssh import SSH_EXECUTORS
 from .sound_trigger import SOUND_TRIGGER_EXECUTORS
+from .ssh import SSH_EXECUTORS
 from .statistics import (
     MedianExecutor,
     ModeExecutor,
@@ -179,6 +180,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *EMAIL_TRIGGER_EXECUTORS,
     *ELEMENT_CHANGE_TRIGGER_EXECUTORS,
     *FACE_TRIGGER_EXECUTORS,
+    *GESTURE_TRIGGER_EXECUTORS,
     *FILE_WATCHER_EXECUTORS,
     *LOG_EXECUTORS,
     *MESSAGE_EXECUTORS,
