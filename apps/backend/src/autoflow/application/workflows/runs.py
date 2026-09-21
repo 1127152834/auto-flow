@@ -192,12 +192,40 @@ class WorkflowRunService:
         allowed = {"debug", "info", "success", "warning", "error"}
         if any(level not in allowed for level in levels):
             raise WorkflowRunError("RUN_LOG_FILTER_INVALID", "日志级别无效", 422)
+        rows = self.all_logs(
+            run_id,
+            query=query,
+            levels=levels,
+            node_id=node_id,
+        )
+        total = len(rows)
+        end = max(0, total - cursor)
+        start = max(0, end - limit)
+        page = rows[start:end]
+        next_cursor = cursor + len(page) if start > 0 else None
+        return page, total, next_cursor
+
+    def all_logs(
+        self,
+        run_id: str,
+        *,
+        query: str | None,
+        levels: tuple[str, ...],
+        node_id: str | None,
+        execution_id: str | None = None,
+        through_sequence: int | None = None,
+    ) -> list[dict[str, Any]]:
+        allowed = {"debug", "info", "success", "warning", "error"}
+        if any(level not in allowed for level in levels):
+            raise WorkflowRunError("RUN_LOG_FILTER_INVALID", "日志级别无效", 422)
         self.get(run_id)
         events = self._repository.list_events(run_id, 0, 1_000_000)
-        rows: list[dict[str, Any]] = []
         needle = query.casefold() if query else None
+        rows: list[dict[str, Any]] = []
         for event in events:
             if event.type != "execution:log":
+                continue
+            if through_sequence is not None and event.sequence > through_sequence:
                 continue
             payload = event.payload
             level = str(payload.get("level", "info"))
@@ -207,27 +235,30 @@ class WorkflowRunService:
                 continue
             if node_id and event_node_id != node_id:
                 continue
+            if execution_id and event.execution_id != execution_id:
+                continue
             if needle and needle not in message.casefold():
                 continue
-            row: dict[str, Any] = {
-                "sequence": event.sequence,
-                "id": str(payload.get("id") or f"{run_id}-{event.sequence}"),
-                "timestamp": event.occurred_at.isoformat(),
-                "level": level,
-                "message": message,
-                "nodeId": event_node_id,
-                "executionId": event.execution_id,
-                "executionContext": copy.deepcopy(payload.get("executionContext")),
-                "duration": payload.get("duration"),
-                "details": copy.deepcopy(payload.get("details")),
-            }
-            rows.append(row)
-        total = len(rows)
-        end = max(0, total - cursor)
-        start = max(0, end - limit)
-        page = rows[start:end]
-        next_cursor = cursor + len(page) if start > 0 else None
-        return page, total, next_cursor
+            rows.append(
+                {
+                    "sequence": event.sequence,
+                    "id": str(payload.get("id") or f"{run_id}-{event.sequence}"),
+                    "timestamp": event.occurred_at.isoformat(),
+                    "level": level,
+                    "message": message,
+                    "nodeId": event_node_id,
+                    "executionId": event.execution_id,
+                    "executionContext": copy.deepcopy(payload.get("executionContext")),
+                    "duration": payload.get("duration"),
+                    "details": copy.deepcopy(payload.get("details")),
+                }
+            )
+        return rows
+
+    def event_cutoff(self, run_id: str) -> int:
+        self.get(run_id)
+        events = self._repository.list_events(run_id, 0, 1_000_000)
+        return events[-1].sequence if events else 0
 
     def results(self, run_id: str) -> list[dict[str, Any]]:
         self.get(run_id)

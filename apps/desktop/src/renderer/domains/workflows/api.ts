@@ -54,6 +54,7 @@ export interface ExecutionLogQuery {
   query?: string
   levels?: string[]
   nodeId?: string
+  executionId?: string
 }
 
 function executionLogSearch(query: ExecutionLogQuery = {}): string {
@@ -63,6 +64,7 @@ function executionLogSearch(query: ExecutionLogQuery = {}): string {
   if (query.query?.trim()) params.set('query', query.query.trim())
   if (query.levels?.length) params.set('levels', query.levels.join(','))
   if (query.nodeId?.trim()) params.set('nodeId', query.nodeId.trim())
+  if (query.executionId?.trim()) params.set('executionId', query.executionId.trim())
   const encoded = params.toString()
   return encoded ? `?${encoded}` : ''
 }

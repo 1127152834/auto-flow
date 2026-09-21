@@ -3553,6 +3553,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workflow-runs/{run_id}/logs/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Logs */
+        get: operations["export_logs_api_workflow_runs__run_id__logs_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/events/stream": {
         parameters: {
             query?: never;
@@ -24019,6 +24036,7 @@ export interface operations {
                 query?: string | null;
                 levels?: string | null;
                 nodeId?: string | null;
+                executionId?: string | null;
             };
             header?: never;
             path: {
@@ -24038,6 +24056,40 @@ export interface operations {
                         [key: string]: unknown;
                     };
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_logs_api_workflow_runs__run_id__logs_export_get: {
+        parameters: {
+            query?: {
+                query?: string | null;
+                levels?: string | null;
+                nodeId?: string | null;
+                executionId?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

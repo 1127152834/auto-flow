@@ -370,15 +370,30 @@ def workflow_runs_router(
         query: str | None = None,
         levels: str | None = None,
         node_id: str | None = Query(default=None, alias="nodeId"),
+        execution_id: str | None = Query(default=None, alias="executionId"),
     ) -> dict[str, Any]:
-        items, total, next_cursor = service.logs(
-            run_id,
-            cursor=cursor,
-            limit=limit,
-            query=query,
-            levels=tuple(levels.split(",")) if levels else (),
-            node_id=node_id,
-        )
+        if execution_id is None:
+            items, total, next_cursor = service.logs(
+                run_id,
+                cursor=cursor,
+                limit=limit,
+                query=query,
+                levels=tuple(levels.split(",")) if levels else (),
+                node_id=node_id,
+            )
+        else:
+            rows = service.all_logs(
+                run_id,
+                query=query,
+                levels=tuple(levels.split(",")) if levels else (),
+                node_id=node_id,
+                execution_id=execution_id,
+            )
+            total = len(rows)
+            end = max(0, total - cursor)
+            start = max(0, end - limit)
+            items = rows[start:end]
+            next_cursor = cursor + len(items) if start > 0 else None
         run = service.get(run_id)
         return {
             "runId": run_id,
@@ -387,5 +402,36 @@ def workflow_runs_router(
             "total": total,
             "nextCursor": next_cursor,
         }
+
+    @router.get("/{run_id}/logs/export", response_class=Response)
+    def export_logs(
+        run_id: str,
+        query: str | None = None,
+        levels: str | None = None,
+        node_id: str | None = Query(default=None, alias="nodeId"),
+        execution_id: str | None = Query(default=None, alias="executionId"),
+    ) -> Response:
+        through_sequence = service.event_cutoff(run_id)
+        rows = service.all_logs(
+            run_id,
+            query=query,
+            levels=tuple(levels.split(",")) if levels else (),
+            node_id=node_id,
+            execution_id=execution_id,
+            through_sequence=through_sequence,
+        )
+        content = "".join(
+            json.dumps({"runId": run_id, **row}, ensure_ascii=False, separators=(",", ":"))
+            + "\n"
+            for row in rows
+        )
+        return Response(
+            content.encode(),
+            media_type="application/x-ndjson",
+            headers={
+                "Content-Disposition": f'attachment; filename="logs-{run_id}.jsonl"',
+                "X-Through-Sequence": str(through_sequence),
+            },
+        )
 
     return router

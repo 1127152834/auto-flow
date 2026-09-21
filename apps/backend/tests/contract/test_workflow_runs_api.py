@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import time
 from pathlib import Path
 from typing import Any
@@ -364,6 +365,17 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     ).json()
     assert start_results["total"] == 1
     assert start_results["items"][0]["nodeId"] == "second"
+    exported_logs = client.get(
+        "/api/workflow-runs/debug-start-node-run/logs/export?levels=success&nodeId=second"
+    )
+    assert exported_logs.status_code == 200
+    assert exported_logs.headers["content-type"].startswith("application/x-ndjson")
+    assert int(exported_logs.headers["x-through-sequence"]) > 0
+    exported_lines = [
+        json.loads(line) for line in exported_logs.text.splitlines() if line
+    ]
+    assert len(exported_lines) == 1
+    assert exported_lines[0]["nodeId"] == "second"
 
 
 def test_external_webhook_resumes_real_worker_without_sidecar_token(
