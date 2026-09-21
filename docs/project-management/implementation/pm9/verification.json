@@ -120,7 +120,7 @@
     }
   ],
   "remainingReport": "completion-gaps.md",
-  "deliveryStatus": "D1_implemented_local_scoped_validation; native_follow_up_pending_release_acceptance_incomplete",
+  "deliveryStatus": "D1_implemented_scoped_native_follow_up_pending_release_acceptance_incomplete",
   "developmentSlice": {
     "slices": [
       "S1",
@@ -205,6 +205,15 @@
     ]
   },
   "codeCandidateScope": "Final production change; later d75297fb/0d7524d9/705cea16 modify only tests, documentation and evidence. Current native runs are scoped individually in finalCICandidate.",
-  "testCandidate": "f85de2c3",
-  "d1": "D1 source safe business-format preservation: Sheets and XLSX direct cases pass; original values and validationIssues are derived without new error ledger; unsafe values and identity remain strict. Production packaged/real-Google/worker acceptance pending."
+  "testCandidate": "b44cf86d71624dc931ba304309adc2af363cccef",
+  "d1": "D1 source safe business-format preservation: Sheets and XLSX direct cases pass; original values and validationIssues are derived without new error ledger; unsafe values and identity remain strict. Production packaged/real-Google/worker acceptance pending.",
+  "d1Verification": {
+    "backend": "134 passed, 2 warnings in 55.78s for D1 records/sheets/excel/capability scope",
+    "frontend": "11 passed in 3.32s for RecordFieldsView and RecordDetailPage",
+    "typecheck": "passed",
+    "openapi": "passed",
+    "mypy": "407 source files passed",
+    "ruff": "passed",
+    "realWorker": "0 selected tests; existing real-browser filter had 29 deselected, no worker evidence claimed"
+  }
 }

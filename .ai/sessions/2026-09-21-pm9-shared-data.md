@@ -82,3 +82,5 @@ DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源�
 2026-09-22 后续：17 项共享领取文件通过，增加已有坏业务值的状态边界断言。Sheets 坏普通值无法物化的新缺口已复现，D1 具体规格/契约/切片已记录 proposed 并单独询问；C/R 不受阻。机器重算修正手工统计错误为 233 有断言/18 未定位/196 partial/55 planned/0 verified（此前 LIFE-09 已 partial，不能重复算升级）。
 
 2026-09-22 继续核对：SH-02 两个顺序共享写直接断言，完整同步文件 35 passed/39.99 秒；SYNC-09 复核既有失败推值后双拉取和真实 Task 领取。仅这两项 planned→partial，最新机器统计 235/16/198 partial/53 planned/0 verified。所有后补均为测试/记录，生产源码仍 3c02b51f。
+
+2026-09-22 D1 已获批准并实施：原值旁展示结构化格式诊断，Sheets/XLSX 安全业务 Scalar 保留；身份和非法 wire Scalar 仍拒绝。134 后端/11 UI 通过；真实 worker 过滤无命中，保持未验收。生产新候选为 b44cf86d，releaseAccepted=false。

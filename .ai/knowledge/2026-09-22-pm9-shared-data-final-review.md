@@ -35,3 +35,5 @@ Final: Ruling: generated and historical evidence text relies on source contract,
 2026-09-22 原生跟进（confirmed，来源 Actions 35629585683）：Windows 全后端 1 failed/3429 passed/77 skipped，唯一旧测试将 SQLite 准备、执行与终结唤醒合计限制为 1 秒。改为先证明调度器等待，再证明真实 Core 终结通知和批次完成，30 秒兜底不改；34 passed/20.23 秒。临时副本禁用 subscribe_idle 后准确失败于 terminal notification 断言，不计作产品失败。ARM 全后端通过、全前端 1 failed/5468 passed；HTTP 状态仍在读取时 findByRole 默认 1 秒超时。受控 1100ms 状态延迟重现同一失败，按真实 HTTP 阶段等待控件，保留 starts=1/closes=0 和服务端最终 picking 状态断言。修正仅在 PM9 工作区测试文件，生产 Studio 源码与主工作区均未改。Intel 旧候选继续运行，失败平台在测试提交后重跑。
 
 HTTP 延迟反例由 1 failed/1 passed 变为 4 passed/3.66 秒（原文件与临时延迟副本），临时副本已移除；正式命令/生命周期两文件 20 passed/2.09 秒。所有互斥、最终状态和错误恢复断言保留。
+
+D1（已批准）在当前候选 b44cf86d：安全来源业务 Scalar 的 Sheets/XLSX 物化保留原值，记录快照派生 validationIssues，工作流投影按授权字段过滤；身份/unsafe Scalar/人工写入严格。134 项相关后端、11 项 UI、mypy407、Ruff、OpenAPI、typecheck 通过。真实浏览器过滤命中 0 项，未声称 worker 证据；打包/实网/三平台 D1 仍待新候选。
