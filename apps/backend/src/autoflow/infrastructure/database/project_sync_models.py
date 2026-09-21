@@ -43,7 +43,9 @@ class SheetsConnectionRow(Base):
 class SheetsBindingRow(Base):
     __tablename__ = "project_sheets_bindings"
     __table_args__ = (
-        sa.CheckConstraint("binding_epoch >= 1", name="ck_project_sheets_binding_epoch"),
+        sa.CheckConstraint(
+            "binding_epoch >= 1", name="ck_project_sheets_binding_epoch"
+        ),
         sa.CheckConstraint("sheet_id >= 0", name="ck_project_sheets_binding_sheet_id"),
         sa.Index("ix_project_sheets_bindings_source", "spreadsheet_id", "sheet_id"),
         sa.Index("ix_project_sheets_bindings_project", "project_id", "updated_at"),
@@ -67,6 +69,7 @@ class SheetsBindingRow(Base):
     sheet_name: Mapped[str] = mapped_column(sa.Text, nullable=False)
     binding_epoch: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     identity_strategy: Mapped[dict] = mapped_column(sa.JSON, nullable=False)
+    identity_verification: Mapped[dict | None] = mapped_column(sa.JSON)
     mapping: Mapped[list[dict]] = mapped_column(sa.JSON, nullable=False)
     sync_paused: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
     created_at: Mapped[datetime] = mapped_column(

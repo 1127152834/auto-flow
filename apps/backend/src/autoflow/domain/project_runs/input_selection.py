@@ -38,6 +38,17 @@ class LeaseKey:
 
 
 @dataclass(frozen=True)
+class SheetsLeaseKey:
+    spreadsheet_id: str
+    sheet_id: int
+    identity_namespace: str
+    record_key: RecordKey
+
+
+SourceLeaseKey = LeaseKey | SheetsLeaseKey
+
+
+@dataclass(frozen=True)
 class RecordSlotRelation:
     source_input_id: str
     slot_id: str
@@ -61,7 +72,7 @@ InputRelation = RecordSlotRelation | FieldEqualsRelation | SameRecordRelation
 @dataclass(frozen=True)
 class Candidate:
     record_ref: RecordRef
-    lease_key: LeaseKey
+    lease_key: SourceLeaseKey
     value: Mapping[str, Any]
     available: bool = True
     field_values: Mapping[str, Any] = field(default_factory=dict)
@@ -92,7 +103,7 @@ class InputCandidates:
 class SelectedInput:
     input_id: str
     record_ref: RecordRef
-    lease_key: LeaseKey
+    lease_key: SourceLeaseKey
     value: Mapping[str, Any]
 
     def __post_init__(self) -> None:
@@ -109,7 +120,7 @@ class UnavailableInput:
 class InputSelection:
     status: SelectionStatus
     inputs: tuple[SelectedInput, ...] = ()
-    lease_keys: tuple[LeaseKey, ...] = ()
+    lease_keys: tuple[SourceLeaseKey, ...] = ()
     unavailable_inputs: tuple[UnavailableInput, ...] = ()
     evaluated_candidate_bindings: int = 0
     issue_input_ids: tuple[str, ...] = ()

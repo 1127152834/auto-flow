@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-21 共享数据续作：两份方案已获批准，按 C1–C4→R1→R2→R5→R3→R4 实施。C1 公共键、身份验证、初始原子领取与旧锁阻断在 158 项定向回归通过；完整共享能力仍缺 C2–C4，详情见 `shared-data-follow-through.json`。下文 f580 及更早证据保留为对应候选历史，不代表新增 C1 源码完成全部验证。
+
 日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 f580b1c6；置信度：高（已运行断言），完整发行验收仍未满足。
 
 **本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 已修复最终审查的 4 项 Important、Windows Job 成员退出、Sheets 字段/原版本快照，以及最新写成功后核验读取失败。最新定向 Sheets 50 项加一个分块场景通过；f580b1c6 本机完整后端 3329 passed / 60 skipped，三平台仍运行中。旧源码 82c067c9 的 ARM CI 全链通过只留历史，不能覆盖新增生产修复。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。所有数字均只证明报告列出的范围。

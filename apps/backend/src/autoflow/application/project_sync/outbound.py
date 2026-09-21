@@ -185,10 +185,23 @@ class SheetsSyncService:
             )
         except SheetsApiError as error:
             raise _api_error(error) from error
-        if not raw:
-            return {"created": 0, "refreshed": 0, "conflicts": 0, "rows": 0}
-        header = [str(value) for value in raw[0]]
+        header = [str(value) for value in raw[0]] if raw else []
         identity = _identity_column(binding["identityStrategy"], header)
+        keys: list[RecordKey] = []
+        valid = identity < len(header) and bool(header[identity])
+        for remote in raw[1:]:
+            if not any(value is not None and str(value) != "" for value in remote):
+                continue
+            marker = remote[identity] if identity < len(remote) else None
+            if marker is None or marker == "" or isinstance(marker, bool) or (isinstance(marker, str) and marker.startswith("=")):
+                valid = False
+                continue
+            keys.append(_record_key_for(marker))
+        valid = valid and len(set(keys)) == len(keys)
+        namespace = json.dumps({"columnId": column_letter(identity), "header": header[identity] if identity < len(header) else "", "encoding": "typed-record-key-v1"}, sort_keys=True, ensure_ascii=False)
+        self._sync.verify_source_identity(project_id, table_id, generation, int(binding["bindingEpoch"]), namespace, keys, valid=valid)
+        if not valid:
+            raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "来源身份有缺失、重复或不稳定值，请修复后重新拉取。", 409)
         by_column = {
             str(entry["columnId"]).upper(): entry for entry in binding["mapping"]
         }

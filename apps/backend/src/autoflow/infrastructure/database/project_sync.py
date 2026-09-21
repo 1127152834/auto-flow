@@ -68,12 +68,16 @@ def content_rows():
 
 def digest(value: Any) -> str:
     return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+        json.dumps(
+            value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode()
     ).hexdigest()
 
 
 def precondition(code: str, message: str, **details: Any) -> ProjectError:
-    return ProjectError("PRECONDITION_FAILED", message, 412, {"reason": code, **details})
+    return ProjectError(
+        "PRECONDITION_FAILED", message, 412, {"reason": code, **details}
+    )
 
 
 def _aware(value: datetime | None) -> datetime | None:
@@ -120,7 +124,9 @@ def binding_view(row: SheetsBindingRow) -> dict[str, Any]:
     }
 
 
-def sync_view(row: SyncOperationRow, record_ref: dict[str, Any] | None) -> dict[str, Any]:
+def sync_view(
+    row: SyncOperationRow, record_ref: dict[str, Any] | None
+) -> dict[str, Any]:
     view: dict[str, Any] = {
         "syncOperationId": row.id,
         "projectId": row.project_id,
@@ -145,7 +151,9 @@ def sync_view(row: SyncOperationRow, record_ref: dict[str, Any] | None) -> dict[
     return view
 
 
-def _request_digest(project: str, table: str, kind: str, request: dict[str, Any]) -> str:
+def _request_digest(
+    project: str, table: str, kind: str, request: dict[str, Any]
+) -> str:
     return digest(
         {"projectId": project, "tableId": table, "kind": kind, "request": request}
     )
@@ -387,7 +395,11 @@ class SqlAlchemyProjectSync:
                         "mode": "field" if identity_field_id else "system",
                         "fieldId": identity_field_id,
                     },
-                    source={"kind": "sheets", "spreadsheetId": spreadsheet_id, **source},
+                    source={
+                        "kind": "sheets",
+                        "spreadsheetId": spreadsheet_id,
+                        **source,
+                    },
                     created_at=now,
                 )
             )
@@ -425,6 +437,7 @@ class SqlAlchemyProjectSync:
             row.sheet_name = sheet_name
             row.binding_epoch = epoch
             row.identity_strategy = identity_strategy
+            row.identity_verification = None
             row.mapping = mapping
             row.updated_at = now
             session.add(row)
@@ -486,7 +499,9 @@ class SqlAlchemyProjectSync:
                 )
             row = session.get(SheetsBindingRow, table_id)
             if row is None or row.project_id != project:
-                raise ProjectError("SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404)
+                raise ProjectError(
+                    "SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404
+                )
             session.delete(row)
             table.source_kind = "unconfigured"
             table.table_revision += 1
@@ -621,9 +636,7 @@ class SqlAlchemyProjectSync:
         with self.sessions() as session:
             row = session.get(SyncOperationRow, sync_operation_id)
             if row is None or row.table_id != table:
-                raise ProjectError(
-                    "SYNC_OPERATION_NOT_FOUND", "同步操作不存在。", 404
-                )
+                raise ProjectError("SYNC_OPERATION_NOT_FOUND", "同步操作不存在。", 404)
             return sync_view(row, _record_ref(row))
 
     def sync_operation_by_id(self, sync_operation_id: str) -> dict[str, Any]:
@@ -637,7 +650,9 @@ class SqlAlchemyProjectSync:
         with self.sessions() as session:
             binding = session.get(SheetsBindingRow, table)
             if binding is None or binding.project_id != project:
-                raise ProjectError("SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404)
+                raise ProjectError(
+                    "SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404
+                )
             return self.summary(session, table)
 
     def sync_operations(
@@ -735,7 +750,9 @@ class SqlAlchemyProjectSync:
         resource: dict[str, Any],
     ) -> tuple[dict[str, Any], bool]:
         """Project scoped operation that has no table and no sync row."""
-        request_digest = digest({"projectId": project, "kind": kind, "request": request})
+        request_digest = digest(
+            {"projectId": project, "kind": kind, "request": request}
+        )
         now = datetime.now(UTC)
         with self.sessions() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -834,7 +851,9 @@ class SqlAlchemyProjectSync:
         """Read back either half of the pair; project scoped commands have no sync row."""
         with self.sessions() as session:
             sync = session.get(SyncOperationRow, operation_id)
-            project_id = sync.operation_id or sync.id if sync is not None else operation_id
+            project_id = (
+                sync.operation_id or sync.id if sync is not None else operation_id
+            )
             operation = session.get(ProjectOperationRow, project_id)
             if operation is None:
                 raise ProjectError("SYNC_OPERATION_NOT_FOUND", "同步操作不存在。", 404)
@@ -894,7 +913,9 @@ class SqlAlchemyProjectSync:
             )
         )
         pending = sum(counts.get(state, 0) for state in ("pending", "paused"))
-        unknown = sum(counts.get(state, 0) for state in ("sending", "verifying", "unknown"))
+        unknown = sum(
+            counts.get(state, 0) for state in ("sending", "verifying", "unknown")
+        )
         summary: dict[str, Any] = {
             "status": _summary_status(binding, counts),
             "pendingCount": pending,
@@ -904,12 +925,16 @@ class SqlAlchemyProjectSync:
             summary["lastConfirmedAt"] = instant(_aware(last) or datetime.now(UTC))
         return summary
 
-    def set_paused(self, project: str, table: str, paused: bool, expected_epoch: int) -> dict:
+    def set_paused(
+        self, project: str, table: str, paused: bool, expected_epoch: int
+    ) -> dict:
         with self.sessions() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             row = session.get(SheetsBindingRow, table)
             if row is None or row.project_id != project:
-                raise ProjectError("SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404)
+                raise ProjectError(
+                    "SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404
+                )
             if row.binding_epoch != expected_epoch:
                 raise precondition(
                     "bindingEpoch",
@@ -936,6 +961,73 @@ class SqlAlchemyProjectSync:
             return binding_view(row)
 
     # ----------------------------------------------------------------------- marks
+
+    def verify_source_identity(
+        self,
+        project: str,
+        table: str,
+        generation: str,
+        epoch: int,
+        namespace: str,
+        keys: list[RecordKey],
+        *,
+        valid: bool,
+    ) -> None:
+        """Publish a complete source scan, independently of outbound write health."""
+        now = datetime.now(UTC)
+        with self.sessions() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            binding = session.get(SheetsBindingRow, table)
+            local = session.get(DataTableRow, table)
+            if (
+                binding is None
+                or local is None
+                or binding.project_id != project
+                or binding.binding_epoch != epoch
+                or local.current_generation != generation
+            ):
+                raise ProjectError(
+                    "PRECONDITION_FAILED",
+                    "Sheets binding changed during identity verification",
+                    412,
+                )
+            previous = binding.identity_verification or {}
+            # A coordinate now naming another column is not evidence of ownership.
+            if previous.get("namespace", namespace) != namespace:
+                valid = False
+                namespace = previous["namespace"]
+            pairs = sorted({(key.type, key.value) for key in keys})
+            revision = hashlib.sha256(
+                json.dumps([namespace, pairs], ensure_ascii=False).encode()
+            ).hexdigest()
+            binding.identity_verification = {
+                "namespace": namespace,
+                "revision": revision,
+                "bindingEpoch": epoch,
+                "datasetGeneration": generation,
+                "valid": valid,
+                "observedAt": now.isoformat(),
+            }
+            if valid:
+                for kind, value in pairs:
+                    mark = session.get(SyncRecordMarkRow, (table, kind, value))
+                    if mark is None:
+                        mark = SyncRecordMarkRow(
+                            table_id=table, record_key_type=kind, record_key=value
+                        )
+                        session.add(mark)
+                    mark.observed = {
+                        **(mark.observed or {}),
+                        "identity": {
+                            "revision": revision,
+                            "bindingEpoch": epoch,
+                            "datasetGeneration": generation,
+                        },
+                    }
+                    mark.remote_missing = False
+                    mark.remote_seen_at = now
+                    mark.updated_at = now
+            session.commit()
 
     def marks(self, table: str) -> dict[tuple[str, str], SyncRecordMarkRow]:
         with self.sessions() as session:
@@ -971,7 +1063,7 @@ class SqlAlchemyProjectSync:
                 )
             else:
                 row.remote_missing = remote_missing
-                row.observed = observed
+                row.observed = {**(row.observed or {}), **(observed or {})}
                 row.remote_seen_at = None if remote_missing else now
                 row.updated_at = now
             session.add(row)
@@ -1015,7 +1107,10 @@ def _record_ref(row: SyncOperationRow) -> dict[str, Any] | None:
 
 
 def enqueue_intent(
-    session: Session, table: DataTableRow, key: RecordKey, revision: int,
+    session: Session,
+    table: DataTableRow,
+    key: RecordKey,
+    revision: int,
     values: dict[str, object],
 ) -> None:
     """Register one local content change as a pending outbound intent.
@@ -1060,7 +1155,9 @@ def enqueue_intent(
         open_row.status_revision += 1
         open_row.request = request
         open_row.target = target
-        open_row.dedupe_key = f"{binding.binding_epoch}:{key.type}:{key.value}:{revision}"
+        open_row.dedupe_key = (
+            f"{binding.binding_epoch}:{key.type}:{key.value}:{revision}"
+        )
         open_row.updated_at = now
         return
     dedupe = f"{binding.binding_epoch}:{key.type}:{key.value}:{revision}"

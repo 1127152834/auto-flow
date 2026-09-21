@@ -35,11 +35,14 @@ from autoflow.domain.project_runs.input_selection import (
     RecordSlotRelation,
     SameRecordRelation,
     SelectedInput,
+    SheetsLeaseKey,
+    SourceLeaseKey,
     select_required_inputs,
 )
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
+    DataGenerationRow,
     DataRecordRow,
     DataStatusRow,
     DataTableRow,
@@ -47,6 +50,10 @@ from autoflow.infrastructure.database.project_data_models import (
 from autoflow.infrastructure.database.project_run_models import (
     ProjectRecordLeaseRow,
     ProjectTaskRecordCursorRow,
+)
+from autoflow.infrastructure.database.project_sync_models import (
+    SheetsBindingRow,
+    SyncRecordMarkRow,
 )
 
 
@@ -105,7 +112,7 @@ class SqlAlchemyProjectInputGroups:
         if selection.status != "ready":
             raise ValueError("only a ready input group can be held")
         by_key = {selected.lease_key: selected for selected in selection.inputs}
-        lease_rows: dict[LeaseKey, ProjectRecordLeaseRow] = {}
+        lease_rows: dict[SourceLeaseKey, ProjectRecordLeaseRow] = {}
         for lease_key in selection.lease_keys:
             selected = by_key[lease_key]
             record_ref = _record_ref(selected.record_ref)
@@ -212,12 +219,14 @@ class SqlAlchemyProjectInputGroups:
             item.input_id
             for item in current.inputs
             if item.input_id not in prepared_by_id
+            or item.lease_key != prepared_by_id[item.input_id].lease_key
             or any(
                 item.value.get(name) != prepared_by_id[item.input_id].value.get(name)
                 for name in (
                     "contentRevision",
                     "statusRevision",
                     "linkRevision",
+                    "sourceIdentity",
                 )
             )
         )
@@ -243,9 +252,7 @@ class SqlAlchemyProjectInputGroups:
             return selection
         definitions: dict[str, dict[str, Any]] = {}
         for raw_item in input_plan.get("inputs", []):
-            if isinstance(raw_item, dict) and isinstance(
-                raw_item.get("inputId"), str
-            ):
+            if isinstance(raw_item, dict) and isinstance(raw_item.get("inputId"), str):
                 definitions[raw_item["inputId"]] = raw_item
         selected = {item.input_id: item for item in selection.inputs}
         for input_id, item in definitions.items():
@@ -313,9 +320,7 @@ class SqlAlchemyProjectInputGroups:
                 )
 
             try:
-                raw.create_function(
-                    "autoflow_claim_relation_match", 2, relation_match
-                )
+                raw.create_function("autoflow_claim_relation_match", 2, relation_match)
                 matching = list(
                     self.session.scalars(
                         select(DataRecordRow)
@@ -337,9 +342,7 @@ class SqlAlchemyProjectInputGroups:
             finally:
                 raw.create_function("autoflow_claim_relation_match", 2, None)
             if len(matching) > 1:
-                shown = ", ".join(
-                    f"{row.key_type}:{row.key_value}" for row in matching
-                )
+                shown = ", ".join(f"{row.key_type}:{row.key_value}" for row in matching)
                 return InputSelection(
                     "ambiguous",
                     issue_input_ids=(input_id,),
@@ -495,14 +498,7 @@ class SqlAlchemyProjectInputGroups:
         active = set(
             self.session.scalars(
                 select(ProjectRecordLeaseRow.lease_key).where(
-                    ProjectRecordLeaseRow.project_id == project_id,
                     ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
-                    ProjectRecordLeaseRow.record_ref["tableId"].as_string()
-                    == table_id,
-                    ProjectRecordLeaseRow.record_ref[
-                        "datasetGeneration"
-                    ].as_string()
-                    == generation,
                 )
             )
         )
@@ -517,7 +513,12 @@ class SqlAlchemyProjectInputGroups:
                     cast(str, row.key_value),
                 ),
             )
-            lease = LeaseKey("local", project_id, table_id, generation, ref.record_key)
+            try:
+                lease, source_identity = resolve_record_lease(self.session, ref)
+            except ProjectError as error:
+                return InputCandidates(
+                    input_id, (), str(error), required=required, mode=mode, **definition
+                )
             value = {
                 "alias": item.get("alias", input_id),
                 "tableDisplay": table.name,
@@ -536,6 +537,7 @@ class SqlAlchemyProjectInputGroups:
                 "recordSlots": _mutable(row.record_slots),
                 "currentEnvironmentId": row.current_environment_id,
                 "sourceSummary": {"kind": table.source_kind, "name": table.name},
+                **({"sourceIdentity": source_identity} if source_identity else {}),
                 "contentRevision": row.content_revision,
                 "statusRevision": row.status_revision,
                 "linkRevision": row.link_revision,
@@ -564,7 +566,10 @@ class SqlAlchemyProjectInputGroups:
                     ref,
                     lease,
                     value,
-                    _lease_key(lease) not in active,
+                    _lease_key(lease) not in active and (
+                        not isinstance(lease, SheetsLeaseKey)
+                        or active_record_lease(self.session, project_id, table_id, generation, ref.record_key) is None
+                    ),
                     row.values_json,
                     record_slots,
                 )
@@ -730,6 +735,104 @@ def _snapshot_input(
     }
 
 
+def resolve_record_lease(
+    session: Session, ref: RecordRef
+) -> tuple[SourceLeaseKey, dict[str, Any]]:
+    """Keep local permissions/cursors separate from physical source exclusion."""
+    table = session.get(DataTableRow, ref.table_id)
+    if (
+        table is None
+        or table.project_id != ref.project_id
+        or table.current_generation != ref.dataset_generation
+    ):
+        raise ProjectError("DATASET_GENERATION_GONE", "Dataset identity changed", 410)
+    if table.source_kind != "sheets":
+        return LeaseKey(
+            "local",
+            ref.project_id,
+            ref.table_id,
+            ref.dataset_generation,
+            ref.record_key,
+        ), {}
+    binding = session.get(SheetsBindingRow, ref.table_id)
+    proof = binding.identity_verification if binding is not None else None
+    if (
+        binding is None
+        or not proof
+        or not proof.get("valid")
+        or proof.get("bindingEpoch") != binding.binding_epoch
+        or proof.get("datasetGeneration") != ref.dataset_generation
+    ):
+        raise ProjectError(
+            "SHEETS_IDENTITY_UNVERIFIED",
+            "来源身份尚未完整验证，请修复后重新拉取。",
+            409,
+        )
+    peers = session.scalars(
+        select(SheetsBindingRow).where(
+            SheetsBindingRow.spreadsheet_id == binding.spreadsheet_id,
+            SheetsBindingRow.sheet_id == binding.sheet_id,
+        )
+    ).all()
+    for peer in peers:
+        if peer.identity_strategy != binding.identity_strategy or (
+            peer.identity_verification
+            and (
+                not peer.identity_verification.get("valid")
+                or peer.identity_verification.get("namespace") != proof["namespace"]
+                or peer.identity_verification.get("revision") != proof["revision"]
+            )
+        ):
+            raise ProjectError(
+                "SHEETS_IDENTITY_UNVERIFIED",
+                "同一来源存在未经证明相同的身份列，请修复绑定。",
+                409,
+            )
+    mark = session.get(
+        SyncRecordMarkRow, (ref.table_id, ref.record_key.type, ref.record_key.value)
+    )
+    evidence = (mark.observed or {}).get("identity", {}) if mark else {}
+    if (
+        mark is None
+        or mark.remote_missing
+        or evidence.get("revision") != proof["revision"]
+        or evidence.get("bindingEpoch") != binding.binding_epoch
+        or evidence.get("datasetGeneration") != ref.dataset_generation
+    ):
+        raise ProjectError(
+            "SHEETS_IDENTITY_UNVERIFIED",
+            "该记录不在最近完整验证的来源中，请修复后重新拉取。",
+            409,
+        )
+    key = SheetsLeaseKey(
+        binding.spreadsheet_id, binding.sheet_id, proof["namespace"], ref.record_key
+    )
+    return key, {
+        "bindingEpoch": binding.binding_epoch,
+        "verificationRevision": proof["revision"],
+        "leaseKey": _lease_key(key),
+    }
+
+
+def source_record_leases(session: Session, spreadsheet_id: str, sheet_id: int) -> list[ProjectRecordLeaseRow]:
+    """Public locks plus conservative legacy locks whose source identity is incomplete."""
+    key = ProjectRecordLeaseRow.lease_key
+    return list(session.scalars(select(ProjectRecordLeaseRow).outerjoin(
+        DataGenerationRow,
+        DataGenerationRow.id == ProjectRecordLeaseRow.record_ref["datasetGeneration"].as_string(),
+    ).where(
+        ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
+        or_(
+            and_(func.json_extract(key, "$.source") == "sheets",
+                 func.json_extract(key, "$.spreadsheetId") == spreadsheet_id,
+                 func.json_extract(key, "$.sheetId") == sheet_id),
+            and_(func.json_extract(key, "$.source") == "local",
+                 DataGenerationRow.source["kind"].as_string() == "sheets",
+                 DataGenerationRow.source["spreadsheetId"].as_string() == spreadsheet_id),
+        ),
+    )))
+
+
 def active_record_lease(
     session: Session,
     project_id: str,
@@ -737,6 +840,13 @@ def active_record_lease(
     dataset_generation: str,
     record_key: RecordKey,
 ) -> ProjectRecordLeaseRow | None:
+    binding = session.get(SheetsBindingRow, table_id)
+    if binding is not None and binding.project_id == project_id:
+        for lease in source_record_leases(session, binding.spreadsheet_id, binding.sheet_id):
+            source = json.loads(lease.lease_key)
+            if source["source"] == "local" or source.get("recordKey") == {"type": record_key.type, "value": record_key.value}:
+                return lease
+        return None
     value = ProjectRecordLeaseRow.record_ref["recordKey"]["value"]
     key_condition = (
         value.as_integer() == record_key.value
@@ -802,7 +912,23 @@ def _record_ref(value: RecordRef) -> dict[str, Any]:
     }
 
 
-def _lease_key(value: LeaseKey) -> str:
+def _lease_key(value: SourceLeaseKey) -> str:
+    if isinstance(value, SheetsLeaseKey):
+        return json.dumps(
+            {
+                "source": "sheets",
+                "spreadsheetId": value.spreadsheet_id,
+                "sheetId": value.sheet_id,
+                "identityNamespace": value.identity_namespace,
+                "recordKey": {
+                    "type": value.record_key.type,
+                    "value": value.record_key.value,
+                },
+            },
+            sort_keys=True,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
     return json.dumps(
         {
             "source": value.source,
@@ -986,9 +1112,7 @@ def _claim_collation(
                         right[2 if target == "createdAt" else 3],
                     )
                 else:
-                    result = _record_key_compare(
-                        left[4], left[5], right[4], right[5]
-                    )
+                    result = _record_key_compare(left[4], left[5], right[4], right[5])
             if result:
                 return result if item["direction"] == "asc" else -result
         return _record_key_compare(left[4], left[5], right[4], right[5])

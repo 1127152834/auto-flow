@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-21",
+  "status": "implementing",
+  "releaseAccepted": false,
+  "approvedOrder": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "R1",
+    "R2",
+    "R5",
+    "R3",
+    "R4"
+  ],
+  "baseline": "e71785da7353760ea8bfd567d272dd27865c0188",
+  "completedSlices": [
+    "C1"
+  ],
+  "verification": {
+    "scopedBackend": "158 passed, 2 warnings in 57.88s",
+    "mypy": "403 source files passed",
+    "ruff": "passed",
+    "realWorkerOnPreviousF580": "26 passed in 279.99s; no C1 production code was edited until this run finished"
+  },
+  "assertionScope": [
+    "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
+    "Busy second claim leaves no extra Task/input snapshot/lease",
+    "After simulated confirmed owner termination, Q claims using its own content revision and local value",
+    "Epoch, column identity, missing row, duplicates and changed header reject prepared claims",
+    "Peer invalid identity observation blocks stale proof",
+    "Legacy local Sheets held/reconciling leases block public claims"
+  ],
+  "limits": [
+    "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
+    "C2 dynamic query writes and binding lifecycle remain failing probes until the next slice",
+    "C3 complete recovery/UI and C4 real workers pending",
+    "R1-R2-R5-R3-R4 approved, not yet implemented",
+    "M1-M3 not approved",
+    "Google real authorization, signing and full native platform acceptance external"
+  ],
+  "previousCandidateCI": {
+    "run": 35590418456,
+    "head": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
+    "windows": "failed: 3317 passed / 71 skipped / 1 failed (live manual test 100ms automatic budget expired before second pause)",
+    "macos": "still running; no current C1 CI claim"
+  }
+}

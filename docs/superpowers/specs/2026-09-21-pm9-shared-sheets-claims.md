@@ -1,6 +1,6 @@
-# PM9 共享 Sheets 任务领取：待确认补充切片
+# PM9 共享 Sheets 任务领取：已批准补充切片
 
-日期：2026-09-21。状态：proposed；缺口已由实际绑定与候选选择复现，实施尚未确认。来源：data-and-state-rules.md §6.3/§10.1、当前生产源码 82c067c9、`implementation/pm9/diagnostics/shared-sheet-lease.py`。
+日期：2026-09-21。状态：confirmed；用户明确批准两份方案，按 C1–C4→R1→R2→R5→R3→R4 实施。来源：data-and-state-rules.md §6.3/§10.1、当前生产源码 82c067c9、`implementation/pm9/diagnostics/shared-sheet-lease.py`。
 
 ## 已确认问题与边界
 
@@ -32,3 +32,5 @@ DATA-ID-06、DATA-SH-13、DATA-SH-14 应记为 implementation_missing，不能�
 - C4：真实 HTTP/SQLite 两项目与真实 worker 竞争，输出唯一活动公共 lease/完整 Task/源操作次数；定向规则/集成/组件检查后完整本机及三平台打包回归。Google 授权专项单列待验收。
 
 这是共享数据身份/持久占用协议的架构补充，依 AGENTS.md 完成规格后等待确认。此前 R1–R5 数据端口附录的待确认问题不自动包含本片；现有 S1–S5 修复与验证继续。releaseAccepted=false。
+
+2026-09-21 确认更新：用户已批准上述范围及顺序；本文此前等待确认表述已 superseded。批准记录见 `.ai/decisions/2026-09-21-pm9-shared-claims-data-approved.md`；M1–M3 不在本次授权范围。

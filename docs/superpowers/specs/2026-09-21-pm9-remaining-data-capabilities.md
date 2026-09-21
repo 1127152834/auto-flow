@@ -1,6 +1,6 @@
-# PM9 剩余数据能力：待确认契约与实施切片
+# PM9 剩余数据能力：已批准契约与实施切片
 
-日期：2026-09-21。状态：proposed，尚未获实现确认。来源：原始 data-and-state-rules.md、coverage 逐条审查、82c067c9 的现有实现。本文不修改发行退出条件。
+日期：2026-09-21。状态：confirmed；用户明确批准两份方案，按 C1–C4→R1→R2→R5→R3→R4 实施。来源：原始 data-and-state-rules.md、coverage 逐条审查、82c067c9 的现有实现。本文不修改发行退出条件。
 
 ## 范围与复用
 
@@ -63,3 +63,5 @@ Task scope 的 tableGrant 必须明确允许 queryTableSchema 和对应 fieldIds
 5. 覆盖只登记具体断言；当前 216 有断言 / 35 未定位不是完成率。各条仍未完整退出，releaseAccepted=false；继续现有 PM9 草稿 PR，不合并发布。
 
 阻塞决定：是否批准上述五个新增数据能力的契约与实施顺序。其余已批准运行时/证据收尾继续，不依赖此决定。
+
+2026-09-21 确认更新：用户已批准上述范围及顺序；本文此前等待确认表述已 superseded。批准记录见 `.ai/decisions/2026-09-21-pm9-shared-claims-data-approved.md`；M1–M3 不在本次授权范围。

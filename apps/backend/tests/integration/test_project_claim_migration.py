@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "pm08_project_sync"
+EXPECTED_HEAD = "pm09_shared_sheet_identity"
 
 
 def config_for(database: Path) -> Config:
