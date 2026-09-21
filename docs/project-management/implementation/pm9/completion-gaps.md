@@ -1,8 +1,8 @@
 # PM9 剩余工作复核
 
-日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 82c067c9；置信度：高（已运行断言），完整发行验收仍未满足。
+日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 f580b1c6；置信度：高（已运行断言），完整发行验收仍未满足。
 
-**本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 最终独立审查的 4 项 Important 已修复，26 个真实项目 worker 场景复跑通过；完整后端 3297 和前端 5459 通过的版本边界见报告。后续补证又修复 Windows Job 成员退出和 Sheets 字段/原版本快照，原生 92 项与 Sheets 相关 46 项定向通过，fed0b4c1 完整三平台验证运行中。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。这些数字不代表整项规格或实机安装包已经验收。
+**本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 已修复最终审查的 4 项 Important、Windows Job 成员退出、Sheets 字段/原版本快照，以及最新写成功后核验读取失败。最新定向 Sheets 50 项加一个分块场景通过；完整本机/三平台验证正在为 f580b1c6 准备。旧源码 82c067c9 的 ARM CI 全链通过只留历史，不能覆盖新增生产修复。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。所有数字均只证明报告列出的范围。
 
 当前可执行缺口还包括已复现的 Sheets 跨项目物理行共享领取缺失（见 shared-sheets-claims-gap.json），不能再仅列缺测试。Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 29 条尚未定位直接断言（222 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
 

@@ -1,8 +1,8 @@
 {
   "date": "2026-09-21",
-  "status": "candidate_regression_in_progress",
+  "status": "new_candidate_regression_preparing",
   "releaseAccepted": false,
-  "codeCandidate": "82c067c90f8ff177c932087b1b35627936b9f470",
+  "codeCandidate": "f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34",
   "scope": [
     "S1 frozen scoped canvas subflows",
     "S2 declared manual contract and shared UI entry",
@@ -11,7 +11,7 @@
     "S4 subset: Windows new-file publication and native Job ownership/recovery"
   ],
   "checks": {
-    "backendFull": "3311 passed, 60 skipped, 2 warnings in 587.44s on fed0b4c1; final empty-cell extraction and abandon-CAS follow-ups covered by 60 related tests; final three-platform matrix will run full candidate.",
+    "backendFull": "Latest candidate pending. Historical fed0b4c1 local 3311 passed and d21197ad ARM 3313 passed do not include verification-read error fix.",
     "realProjectWorker": "26 passed in 274.67s after all four review fixes; actual HTTP/SQLite/CloakBrowser",
     "windowsNative": {
       "runId": 35583149567,
@@ -28,7 +28,7 @@
     "scripts": "101 passed including literal named UI-test references (post-candidate evidence tooling only)",
     "ruff": "passed: full ruff check . --no-cache after parametrizing B023 fixture; prior ccef90e9 full CI failed this test-only lint check",
     "mypy": "402 source files passed",
-    "mapping": "251 references valid; 221 with scoped assertions, 30 with no located assertion; 188 partial / 63 planned / 0 verified",
+    "mapping": "251 references valid; 222 with scoped assertions, 29 with no located assertion; 188 partial / 63 planned / 0 verified",
     "build": "passed",
     "finalReview": {
       "findings": "4 Important, 0 Critical; all accepted and fixed; one fix pass, no second review",
@@ -56,7 +56,8 @@
       "result": "1 failed, 3312 passed, 60 skipped in 1875.04s",
       "failure": "test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-host]: GET /openapi.json ReadTimeout (5 seconds), before SSE/open shutdown timing",
       "followup": "test-only dedicated 30-second schema preparation bound; 3/8-second process-exit assertions unchanged; platform-only full follow-up to be dispatched"
-    }
+    },
+    "verificationReadFailures": "50 related sync/recovery/rules passed in 40.66s plus one block-continuation case passed in 2.20s. Partial verification loss first failed with raw SheetsApiError, then passed. Failed reconcile reads and credential acquisition settle command envelopes; original unknown writes stay unchanged."
   },
   "reports": [
     "subflow-follow-through.json",
@@ -71,10 +72,10 @@
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
     "Confirmed shared Sheets Task-claim gap: identical physical rows in two projects receive different local lease keys; shared identity and ambiguous-binding admission are missing. See shared-sheets-claims-gap.json and proposed shared-sheets-claims spec; not merely missing tests.",
     "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
-    "30 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
-    "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
+    "29 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "Current production candidate f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34 full local and three-platform regression pending. ARM full success at d21197ad covers previous source 82c067c9; Windows/Intel follow-ups cancelled after source changed.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
-    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; current ccef90e9 package includes the latest Sheets fixes. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Windows/Intel physical installer and native dialogs remain pending. ARM native picker and installed sidecar evidence belongs to ccef90e9 (production source 82c067c9); newer verification-read fix has not been validated in that exact native package. Signing, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
     "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
   ],
   "sourceHashes": {
@@ -88,7 +89,7 @@
     "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "bddefc270f6feba9388d7e15ea20758e71ff38181b9738fe48423313a8e54be4",
     "apps/backend/src/autoflow/domain/workflows/run_validation.py": "2e8018e4e65dbeafe5a39157a3cafaad04c4bef7b9714423139f0832c8ecd080",
     "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "a0c8b1117c843f8d835df4337303c41680d22345babb0e424016be4704679dd1",
-    "apps/backend/src/autoflow/application/project_sync/outbound.py": "9962b267348c194f718d76d76062fa3f6bf8a2bf89738ed163d25cde8052dca1",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "777f23fb1438368393e0bc4cf8df5091811652bea4c2e87eee227dc11b565b59",
     "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "b6502a9bfa89374b0beb48d57a6361e98b4e789d918569418c160dc1fbf3e9e1",
     "apps/backend/src/autoflow/infrastructure/database/project_data_records.py": "e3e6ab14465d5f24987cc3bd4fd256b2929e5032fa4f499e6b520b3563659efb"
   }
