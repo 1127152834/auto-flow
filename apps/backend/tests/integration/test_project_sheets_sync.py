@@ -457,3 +457,84 @@ def test_abandon_and_send_compete_for_the_same_revision(tmp_path, monkeypatch, w
             assert sheets.records()[0]['contentRevision'] == 2
             assert {cell['fieldId']: cell['value'] for cell in sheets.records()[0]['values']}[sheets.field_id('title')] == 'local-owned'
             assert transport.changes() == writes
+
+
+@pytest.mark.parametrize("formula", [False, True])
+def test_pull_never_revives_a_locally_deleted_remote_record(tmp_path, formula):
+    transport = FakeSheetsTransport(
+        GRID, formulas={"数据": [["编号", "标题"], ["A-1", "=1+1"]]} if formula else None
+    )
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        record = sheets.records()[0]
+        preview = sheets.client.post(
+            f"/api/v1/projects/{sheets.project}/mutation-impact",
+            json={"action": "deleteRecord", "target": {"type": "record", "recordRef": record["ref"]}},
+        )
+        assert preview.status_code == 200, preview.text
+        deleted = sheets.client.request(
+            "DELETE", sheets.url("/records/QS0x"), headers=new_key(),
+            json={
+                "datasetGeneration": record["ref"]["datasetGeneration"],
+                "recordKeyType": "text",
+                "expectedContentRevision": record["contentRevision"],
+                "expectedStatusRevision": record["statusRevision"],
+                "expectedLinkRevision": record["linkRevision"],
+                "impactRevision": preview.json()["impactRevision"],
+            },
+        )
+        assert deleted.status_code == 202, deleted.text
+        assert sheets.records() == []
+        writes = transport.changes()
+        transport.grids[1000].insert(1, ["B-2", "新记录"])
+        if formula:
+            transport.formulas[1000] = [["编号", "标题"], ["B-2", "=3+3"], ["A-1", "=2+2"]]
+        pull(sheets)
+        pull(sheets)
+        assert [item["ref"]["recordKey"]["value"] for item in sheets.records()] == ["B-2"]
+        assert transport.grid("数据")[2] == ["A-1", "第一行"]
+        assert transport.changes() == writes
+        assert sync_operations(sheets) == []
+
+
+@pytest.mark.parametrize("outcome", ["confirmed", "failed", "unknown"])
+@pytest.mark.parametrize("assigned", [False, True])
+def test_sync_outcomes_preserve_explicit_business_status(tmp_path, outcome, assigned):
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        record = sheets.records()[0]
+        status_id = None
+        if assigned:
+            status = sheets.client.post(
+                sheets.url("/statuses"), headers=new_key(),
+                json={"name": "可用", "color": "#abcdef", "order": 0,
+                      "expectedTableRevision": sheets.table_revision()},
+            )
+            assert status.status_code == 201, status.text
+            status_id = status.json()["statusId"]
+        changed = sheets.client.put(
+            sheets.url("/records/QS0x/status"), headers=new_key(),
+            json={"datasetGeneration": record["ref"]["datasetGeneration"],
+                  "recordKeyType": "text", "statusId": status_id,
+                  "expectedFromStatusId": None, "expectedStatusRevision": record["statusRevision"]},
+        )
+        assert changed.status_code == 200, changed.text
+        status_revision = changed.json()["statusRevision"]
+        edit_title(sheets, changed.json(), "本地修改")
+        assert sync_operations(sheets)[0]["status"] == "pending"
+        if outcome != "confirmed":
+            transport.fail_writes.append(SheetsApiError(
+                0 if outcome == "unknown" else 403,
+                "timeout" if outcome == "unknown" else "forbidden", "受控网络失败",
+            ))
+        accepted = push(sheets)
+        assert accepted.status_code == 202, accepted.text
+        assert sync_operations(sheets)[0]["status"] == outcome
+        pull(sheets)
+        after = sheets.records()[0]
+        assert after["ref"] == record["ref"]
+        assert after["statusId"] == status_id
+        assert after["statusRevision"] == status_revision
+        assert after["contentRevision"] == 2
+        assert {v["fieldId"]: v["value"] for v in after["values"]}[sheets.field_id("title")] == "本地修改"

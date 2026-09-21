@@ -34,3 +34,8 @@ CI 纠正（confirmed）：ccef90e9 的 35584940782 三平台均在 ruff B023 �
 当前 ccef90e9 ARM 包（production = 82c067c9）：新 DMG SHA256 1f6aa64deac3bfe95b5cfaa601f62bf9bf3c5bc22fdaec823f6ac86ea685573f。校验、只读挂载、隔离复制、认证侧车启动/退出均通过；真实 native open 取消/选择和 save 取消通过，未注入面板结果。报告 install-final-candidate-darwin-arm64.json，截图只显示合成项目。旧 ARM 证据保留，不虚称此包已验证完整 save/export、OAuth、签名、公证或卸载。
 
 Windows 广集复验 d21197ad / 35585675170：239 passed、27 skipped、1 failed，失败是 durable callback 测试在等待事件的 3 秒外层期限超时（尚未记录该次启动实际阶段）。Job/所有权原生用例均通过。确定性增加 3.2 秒 spawn 延迟可使原测试在任何平台失败，worker 尚未创建，证明该夹具把启动耗时混成 ACK 持久化语义。测试新增该延迟参数、15 秒有界事件等待，并在 worker 提前结束时立即抛其真实异常；finally 回收等待任务/所属 worker。只该正常提交顺序用例使用 10 秒启动期限，生产 90 秒启动/3 秒清理、专门超时/取消用例不变。严格保留提交前无 proof、提交后成功/proof/清理检查。64 passed、8 native skipped（8.89s）；全无缓存 ruff 和映射校验通过。原 Windows 超时具体原因仍未证实，不写成性能要求不达标；Windows 全链复验，Mac 保留当前运行。
+
+
+## 既有 Sheets 状态与删除补证（confirmed）
+
+通过真实 HTTP/SQLite 和现有受控 Google transport 补齐普通/公式列拉取不复活 tombstone，以及显式 null/非空状态在确认/失败/未知后的稳定身份、业务状态版本和本地值。新增 8 项通过，相关 sync/recovery/rules 45 passed, 2 warnings in 33.90s；ruff 与 251 映射校验通过。只增加测试与局部断言映射，生产源码仍 82c067c9，218 有断言 / 33 未定位，未提升验收状态。当前 Mac d21197ad 与 Windows 25c9a41b 全链继续；不因测试追加重复跑矩阵。

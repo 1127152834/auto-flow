@@ -8174,11 +8174,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_pull_never_revives_a_locally_deleted_remote_record",
+            "scope": "真实 HTTP 删除后保留 tombstone；来源插行并连续拉取，普通/公式两种列均只新增 B-2，不复活 A-1，不产生出站意图或远端写。 Google 网络为受控 transport。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：拉取不复活本地 tombstone；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "上述边界已有本地直接断言；当前 PM9 打包完整 Google 链及所有相邻验收子条件未据此推定通过。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -9055,11 +9062,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_sync_outcomes_preserve_explicit_business_status",
+            "scope": "显式 null/非空业务状态与 pending 后 confirmed/failed/unknown 六种组合：再次拉取保持稳定身份、statusId/statusRevision 和本地新值。 Google 网络为受控 transport。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：Sheets 同步各状态不改变本地业务状态；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "上述边界已有本地直接断言；当前 PM9 打包完整 Google 链及所有相邻验收子条件未据此推定通过。"
           }
         ],
         "statusBeforeReview": "partially_verified"
