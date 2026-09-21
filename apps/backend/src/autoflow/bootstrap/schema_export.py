@@ -7,8 +7,14 @@ from fastapi import FastAPI
 
 from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
+from autoflow.adapters.http.image_assets import image_assets_router
+from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.studio_credentials import studio_credentials_router
+from autoflow.adapters.http.studio_retention import studio_retention_router
+from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
+from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
 from autoflow.bootstrap.http_routes import (
     ManagementHttpServices,
     ProxyHttpServices,
@@ -64,6 +70,12 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
     register_workflow_routes(app, workflows)
     app.include_router(android_router(unavailable))
     app.include_router(android_fleet_router(unavailable, unavailable))
+    app.include_router(local_workflows_router(unavailable, unavailable))
+    app.include_router(image_assets_router(unavailable))
+    app.include_router(workflow_bundles_router(unavailable))
+    app.include_router(studio_credentials_router(unavailable))
+    app.include_router(studio_retention_router(unavailable))
+    app.include_router(workflow_schedules_router(unavailable))
     return app.openapi()
 
 
