@@ -531,8 +531,13 @@ def test_sync_outcomes_preserve_explicit_business_status(tmp_path, outcome, assi
         accepted = push(sheets)
         assert accepted.status_code == 202, accepted.text
         assert sync_operations(sheets)[0]["status"] == outcome
+        transport.grids[1000].insert(1, ["B-2", "插在前面的新行"])
         pull(sheets)
-        after = sheets.records()[0]
+        current = {item["ref"]["recordKey"]["value"]: item for item in sheets.records()}
+        assert set(current) == {"A-1", "B-2"}
+        assert current["B-2"]["statusId"] is None
+        assert current["B-2"]["statusRevision"] == 1
+        after = current["A-1"]
         assert after["ref"] == record["ref"]
         assert after["statusId"] == status_id
         assert after["statusRevision"] == status_revision

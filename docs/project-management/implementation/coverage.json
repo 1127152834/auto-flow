@@ -5175,11 +5175,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_sync_outcomes_preserve_explicit_business_status",
+            "scope": "远端在 A-1 前插入 B-2 后重新拉取：A-1 保留原 RecordRef、业务 statusId/statusRevision，B-2 为 null/revision 1；六种同步结果/显式状态组合。受控 Google transport。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "当前核对未找到排序/插行后业务状态跟随稳定身份的直接断言；保留历史 verified 来源，不能据文件存在重新认证"
+            "kind": "production_evidence_missing",
+            "detail": "当前打包 Google 实网与所有排序/过滤/重复身份子条件未据此宣称完成。"
           }
         ],
         "statusBeforeReview": "verified"

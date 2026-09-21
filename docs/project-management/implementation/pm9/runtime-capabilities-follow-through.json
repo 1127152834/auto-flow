@@ -28,7 +28,7 @@
     "scripts": "101 passed including literal named UI-test references (post-candidate evidence tooling only)",
     "ruff": "passed: full ruff check . --no-cache after parametrizing B023 fixture; prior ccef90e9 full CI failed this test-only lint check",
     "mypy": "402 source files passed",
-    "mapping": "251 references valid; 219 with scoped assertions, 32 with no located assertion; 188 partial / 63 planned / 0 verified",
+    "mapping": "251 references valid; 220 with scoped assertions, 31 with no located assertion; 188 partial / 63 planned / 0 verified",
     "build": "passed",
     "finalReview": {
       "findings": "4 Important, 0 Critical; all accepted and fixed; one fix pass, no second review",
@@ -46,7 +46,9 @@
     },
     "sheetsConsistency": "61 passed, 2 warnings in 26.24s; same two send/abandon orderings split into pytest parameters to satisfy B023. Actual HTTP/SQLite, controlled transport, no Google live claim.",
     "sheetsStatusAndTombstone": "8 new cases passed; related sync/recovery/rules regression 45 passed, 2 warnings in 33.90s on production source 82c067c9. HTTP/SQLite with controlled Google transport; no live-network claim.",
-    "excelDuplicateIdentity": "18 passed, 2 warnings in 15.24s: import/lease suite including independent identical rows and source-byte preservation. No production source change."
+    "excelDuplicateIdentity": "18 passed, 2 warnings in 15.24s: import/lease suite including independent identical rows and source-byte preservation. No production source change.",
+    "sheetsReorderedState": "6 passed, 19 deselected in 7.74s: existing explicit-status scenarios extended with remote row insertion; source 82c067c9 unchanged.",
+    "armFullCandidate": "3313 backend passed, 60 skipped; 5459 frontend passed; 15 selected real worker cases passed; all source/packaged/installer steps passed at d21197ad, production source equivalent to 82c067c9. See ci-capabilities-darwin-arm64.json."
   },
   "reports": [
     "subflow-follow-through.json",
@@ -61,7 +63,7 @@
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
     "Confirmed shared Sheets Task-claim gap: identical physical rows in two projects receive different local lease keys; shared identity and ambiguous-binding admission are missing. See shared-sheets-claims-gap.json and proposed shared-sheets-claims spec; not merely missing tests.",
     "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
-    "32 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "31 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
     "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; current ccef90e9 package includes the latest Sheets fixes. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",

@@ -49,3 +49,8 @@ Windows 广集复验 d21197ad / 35585675170：239 passed、27 skipped、1 failed
 ## 共享 Sheets 数据领取缺口（confirmed）
 
 实际双项目同物理 Sheet 同业务身份列 A-1 的两个 select_required 均 ready，键含各自 project/table/generation，公共键相等断言失败（1 failed in 2.09s）。这是实现缺失，不能以已有推送协调或原 32 条缺断言描述遮蔽。失败诊断独立保存在 docs/pm9/diagnostics，不加入常规通过回归或映射 checks。C1–C4 共享身份/事务/升级/生命周期方案已完成，proposed，等待架构确认；当前用户的 R1–R5 待确认问题不包含这一新片。生产源未变，releaseAccepted=false。
+
+
+## 当前 ARM CI 与插行状态补证（confirmed）
+
+d21197ad ARM job 106288334872 success；3313 backend、5459 frontend、15 real worker 及源码/打包/安装产物通过。下载日志核对六份实际业务报告均 passed，已保存 artifact digest/期限；不把 CI DMG 当实机安装。已有状态用例增加远端 B-2 插在 A-1 前，6 passed in 7.74s，原状态身份不迁移。台账 220/31，未升级整体验收。

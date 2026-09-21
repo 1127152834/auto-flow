@@ -2,7 +2,7 @@
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；新增能力端口的实施设计为 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 219 条有明确范围的断言，32 条尚无已定位断言；188 partially_verified / 63 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 220 条有明确范围的断言，31 条尚无已定位断言；188 partially_verified / 63 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 ## 本轮已经执行的补证
 
@@ -21,6 +21,8 @@
 
 - DATA-XLS-03：真实重复行 XLSX 的系统身份、独立状态和本地 CRUD 不改源字节新增用例通过；相关导入与占用保护 18 passed。
 
+- DATA-ID-03：扩展状态用例，在原行前插入新远端行后直接核对业务状态跟随稳定身份，新行 null/revision 1；6 passed。
+
 ## 先分清能力端口与测试缺口
 
 以下不是“已有实现只差测试”，也不能靠新增白名单解决：
@@ -35,14 +37,13 @@
 
 1–5 涉及新增冻结能力/持久协议，不属于已批准 S1–S5 的自动扩展；进入实现前按 AGENTS.md 完成具体 OpenAPI/命令规格、事务约束和垂直切片并确认。已有实现的补测试和缺陷修复继续按当前授权推进。S4 的安全要求已批准，具体 API 组合仍须实验成立，不能降级验收。
 
-## 尚无直接断言的 32 条：下一步的最小场景
+## 尚无直接断言的 31 条：下一步的最小场景
 
 每项先读取原规格对应行与所列既有测试/fixture；复用 HTTP、SQLite 和现有 transport/worker。断言包含业务值、稳定身份、版本、lease/操作事实及负面副作用；文件名或测试总数不构成覆盖。纯本地规则先定向运行，真实端到端只用于对应已接通能力。
 
 | ID | 必须增加的直接场景 | 优先复用入口 |
 | --- | --- | --- |
 | DATA-CLAIM-09 | 未找到把 Sheets 推送失败、本地身份可靠和领取准入一起断言的测试；需组合真实本地领取与受控网络故障 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
-| DATA-ID-03 | 排序/插行后业务状态跟随稳定身份的直接断言；保留历史 verified 来源，不能据文件存在重新认证 | tests/contract/test_pm2_excel_imports.py + tests/integration/test_project_excel_exports.py |
 | DATA-ID-05 | 系统 UUID 初始化响应丢失后核验同一批 UUID，且拒绝覆盖归属不明同名列 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
 | DATA-ID-06 | 跨项目同一物理 Sheet 行共享排他，而本地业务状态独立 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
 | DATA-LIFE-01 | 同账号重授权验证主体和目标、先核验未知操作再恢复 | test_project_lifecycle.py + test_project_sheets_recovery.py |

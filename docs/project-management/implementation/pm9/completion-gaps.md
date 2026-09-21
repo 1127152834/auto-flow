@@ -4,7 +4,7 @@
 
 **本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 最终独立审查的 4 项 Important 已修复，26 个真实项目 worker 场景复跑通过；完整后端 3297 和前端 5459 通过的版本边界见报告。后续补证又修复 Windows Job 成员退出和 Sheets 字段/原版本快照，原生 92 项与 Sheets 相关 46 项定向通过，fed0b4c1 完整三平台验证运行中。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。这些数字不代表整项规格或实机安装包已经验收。
 
-当前可执行缺口还包括已复现的 Sheets 跨项目物理行共享领取缺失（见 shared-sheets-claims-gap.json），不能再仅列缺测试。Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 32 条尚未定位直接断言（219 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
+当前可执行缺口还包括已复现的 Sheets 跨项目物理行共享领取缺失（见 shared-sheets-claims-gap.json），不能再仅列缺测试。Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 31 条尚未定位直接断言（220 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
 
 下列初次复核、旧候选和阶段段落保留时间顺序，关于“未获批”“单槽”“S1–S5 未实现”的旧结论已由本轮与文末各片记录取代，不是当前阻塞。
 
@@ -161,3 +161,5 @@ Windows Job active=0 仍有子进程句柄未退出的真实反例已修复：�
 2026-09-21 Excel 追加补证（confirmed）：DATA-XLS-03 已增加真实同内容工作簿两行系统身份/独立状态/本地 CRUD 后源字节不变断言；导入和占用保护 18 passed。当前 219 有断言 / 32 未定位，未提升整体验收状态。
 
 2026-09-21 共享 Sheets 领取复核（confirmed）：两个项目实际绑定和拉取同物理行后，select_required 生成不同 local leaseKey，公共键应相等的探针失败。已将 DATA-ID-06/SH-13/SH-14 改列 implementation_missing；待确认补充方案明确共享身份、全调用点、旧占用升级及验证切片。该失败不是通过的覆盖，既有出站字段隔离通过证据不受影响。
+
+2026-09-21 当前 ARM CI 完整通过（confirmed）：d21197ad 的后端 3313 passed / 60 skipped，前端 5459 passed，选定真实 worker 15 passed，源码/打包/安装产物全链成功。五路万条写入 48091 ms；合成 60 秒发出/读回 1000，最大批次延迟 168 ms。报告 ci-capabilities-darwin-arm64.json；该 CI DMG 本身尚未实机安装，独立本机构建原生检查另有报告。DATA-ID-03 扩展 6 个原行前插行场景通过；当前台账 220 有断言 / 31 未定位。
