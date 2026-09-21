@@ -6,14 +6,17 @@ License and adaptation record: LICENSE.WebRPA.
 
 from __future__ import annotations
 
+import asyncio
 import json
+import time
 from collections.abc import Mapping
 from typing import Any
 
 from autoflow.domain.workflows.execution import ExecutionContext
 
 from .base import ModuleExecutor, ModuleResult
-from .type_utils import to_float
+from .control_variable import _parse_json_path
+from .type_utils import to_float, to_int
 
 
 def _text(value: Any, context: ExecutionContext) -> str:
@@ -164,6 +167,158 @@ class ApiRequestExecutor(ModuleExecutor):
         )
 
 
+class ApiTriggerExecutor(ModuleExecutor):
+    @property
+    def module_type(self) -> str:
+        return "api_trigger"
+
+    async def execute(
+        self, config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        api_url = _text(config.get("apiUrl", ""), context)
+        method = _text(config.get("method", "GET"), context)
+        headers_text = _text(config.get("headers", "{}"), context)
+        body_text = _text(config.get("body", "{}"), context)
+        condition_path = _text(config.get("conditionPath", ""), context)
+        condition_value = _text(config.get("conditionValue", ""), context)
+        condition_operator = _text(
+            config.get("conditionOperator", "=="), context
+        )
+        check_interval = to_int(config.get("checkInterval", 10), 10, context)
+        timeout = to_int(config.get("timeout", 0), 0, context)
+        save_to_variable = str(config.get("saveToVariable", "api_request"))
+
+        if not api_url:
+            return ModuleResult(success=False, error="API地址不能为空")
+        try:
+            headers = json.loads(headers_text) if headers_text else {}
+        except json.JSONDecodeError:
+            return ModuleResult(
+                success=False, error="请求头格式错误，必须是有效的JSON"
+            )
+        try:
+            body = json.loads(body_text) if body_text and method == "POST" else None
+        except json.JSONDecodeError:
+            return ModuleResult(
+                success=False, error="请求体格式错误，必须是有效的JSON"
+            )
+
+        await _trigger_progress(context, "🌐 API轮询已启动")
+        if not context.node_uses_sensitive_values:
+            await _trigger_progress(context, f"📍 API地址: {api_url}")
+            await _trigger_progress(context, f"🔧 HTTP方法: {method}")
+            if condition_path:
+                await _trigger_progress(
+                    context,
+                    f"🔍 条件: {condition_path} {condition_operator} {condition_value}",
+                )
+
+        started_at = time.monotonic()
+        check_count = 0
+        while True:
+            check_count += 1
+            try:
+                response = await _request(
+                    context,
+                    _payload(
+                        url=api_url,
+                        method=method,
+                        headers=headers,
+                        cookies={},
+                        body_type="json",
+                        body=body,
+                        timeout=30,
+                        follow_redirects=False,
+                        verify_ssl=True,
+                    ),
+                )
+                status = int(response.get("statusCode", 0))
+                if not 200 <= status < 300:
+                    raise RuntimeError(f"HTTP {status}")
+                response_data = response.get("body")
+
+                if not condition_path:
+                    context.set_variable(save_to_variable, response_data)
+                    return ModuleResult(
+                        success=True,
+                        message=f"API请求成功（第{check_count}次检查）",
+                        data=response_data,
+                    )
+
+                actual_value = _parse_json_path(response_data, condition_path)
+                if _trigger_condition_matches(
+                    actual_value, condition_value, condition_operator
+                ):
+                    context.set_variable(save_to_variable, response_data)
+                    return ModuleResult(
+                        success=True,
+                        message=(
+                            f"API条件满足（第{check_count}次检查）: "
+                            f"{condition_path} = {actual_value}"
+                        ),
+                        data=response_data,
+                    )
+                if actual_value is None:
+                    await _trigger_progress(
+                        context,
+                        (
+                            f"⚠️ 第{check_count}次检查，JSONPath未找到值: "
+                            f"{condition_path}"
+                        ),
+                        level="warning",
+                    )
+                await _trigger_progress(
+                    context,
+                    f"⏳ 第{check_count}次检查，条件未满足，{check_interval}秒后重试...",
+                )
+            except Exception as error:  # noqa: BLE001 - polling continues by design.
+                await _trigger_progress(
+                    context,
+                    f"⚠️ 第{check_count}次检查失败: {error}",
+                    level="warning",
+                )
+
+            if timeout > 0 and time.monotonic() - started_at >= timeout:
+                return ModuleResult(
+                    success=False,
+                    error=f"API轮询超时（{timeout}秒，共检查{check_count}次）",
+                )
+            await asyncio.sleep(check_interval)
+
+
+def _trigger_condition_matches(actual: Any, expected: str, operator: str) -> bool:
+    if actual is None:
+        return False
+    if operator == "==":
+        return str(actual) == str(expected)
+    if operator == "!=":
+        return str(actual) != str(expected)
+    if operator == "contains":
+        return str(expected) in str(actual)
+    if operator in {">", "<"}:
+        try:
+            left, right = float(actual), float(expected)
+        except (TypeError, ValueError):
+            return False
+        return left > right if operator == ">" else left < right
+    return False
+
+
+async def _trigger_progress(
+    context: ExecutionContext, message: str, *, level: str = "info"
+) -> None:
+    context.log_records.append(
+        {
+            "timestamp": context.clock.now().isoformat(),
+            "level": level,
+            "message": message,
+            "duration": 0,
+            "nodeId": context.current_node_id or "",
+        }
+    )
+    await context.send_progress(message, level)
+
+
 class WebhookRequestExecutor(ModuleExecutor):
     @property
     def module_type(self) -> str:
@@ -288,6 +443,7 @@ class NotifyWebhookExecutor(ModuleExecutor):
 
 EXTERNAL_HTTP_EXECUTORS = (
     ApiRequestExecutor,
+    ApiTriggerExecutor,
     WebhookRequestExecutor,
     NotifyWebhookExecutor,
 )

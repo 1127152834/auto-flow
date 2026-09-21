@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
@@ -66,6 +67,76 @@ async def test_api_request_preserves_source_status_semantics_and_sets_response()
             },
         )
     ]
+
+
+@pytest.mark.asyncio
+async def test_api_trigger_polls_until_json_path_condition_matches() -> None:
+    gateway = RecordingGateway(
+        [
+            {
+                "statusCode": 200,
+                "body": {"data": {"status": "pending"}},
+                "headers": {},
+                "cookies": {},
+            },
+            {
+                "statusCode": 200,
+                "body": {"data": {"status": "ready"}},
+                "headers": {},
+                "cookies": {},
+            },
+        ]
+    )
+    context = ExecutionContext(external_integrations=gateway)
+    executor = build_production_executor_registry().get("api_trigger")
+
+    assert executor is not None
+    result = await executor.execute(
+        {
+            "apiUrl": "http://127.0.0.1/status",
+            "method": "GET",
+            "headers": "{}",
+            "conditionPath": "$.data.status",
+            "conditionValue": "ready",
+            "conditionOperator": "==",
+            "checkInterval": 0,
+            "timeout": 1,
+            "saveToVariable": "api_result",
+        },
+        context,
+    )
+
+    assert result.success is True
+    assert result.message == "API条件满足（第2次检查）: $.data.status = ready"
+    assert context.variables["api_result"] == {"data": {"status": "ready"}}
+    assert [call[1]["method"] for call in gateway.calls] == ["GET", "GET"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("config", "error"),
+    [
+        ({}, "API地址不能为空"),
+        (
+            {"apiUrl": "http://127.0.0.1", "headers": "{"},
+            "请求头格式错误，必须是有效的JSON",
+        ),
+        (
+            {"apiUrl": "http://127.0.0.1", "method": "POST", "body": "{"},
+            "请求体格式错误，必须是有效的JSON",
+        ),
+    ],
+)
+async def test_api_trigger_rejects_invalid_source_configuration(
+    config: dict[str, Any], error: str
+) -> None:
+    executor = build_production_executor_registry().get("api_trigger")
+
+    assert executor is not None
+    result = await executor.execute(config, ExecutionContext())
+
+    assert result.success is False
+    assert result.error == error
 
 
 @pytest.mark.asyncio

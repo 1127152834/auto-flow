@@ -8,6 +8,7 @@ from pathlib import Path
 from threading import Event, Thread
 
 import pytest
+
 from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
 
 
@@ -18,6 +19,16 @@ async def test_real_worker_runs_external_http_family_against_local_service(
     requests: list[dict[str, object]] = []
 
     class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            requests.append({"path": self.path})
+            status = "ready" if len(requests) >= 2 else "pending"
+            encoded = json.dumps({"data": {"status": status}}).encode()
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("content-length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
         def do_POST(self) -> None:
             raw = self.rfile.read(int(self.headers.get("content-length", "0")))
             body = json.loads(raw) if raw else None
@@ -53,6 +64,20 @@ async def test_real_worker_runs_external_http_family_against_local_service(
     )
     origin = f"http://127.0.0.1:{server.server_port}"
     nodes = [
+        {
+            "id": "trigger",
+            "type": "moduleNode",
+            "data": {
+                "moduleType": "api_trigger",
+                "config": {
+                    "apiUrl": f"{origin}/poll",
+                    "conditionPath": "$.data.status",
+                    "conditionValue": "ready",
+                    "checkInterval": 0,
+                    "timeout": 2,
+                },
+            },
+        },
         {
             "id": "api",
             "type": "moduleNode",
@@ -111,6 +136,7 @@ async def test_real_worker_runs_external_http_family_against_local_service(
                 "document": {
                     "nodes": nodes,
                     "edges": [
+                        {"id": "trigger-api", "source": "trigger", "target": "api"},
                         {"id": "api-hook", "source": "api", "target": "webhook"},
                         {"id": "hook-notify", "source": "webhook", "target": "notify"},
                     ],
@@ -127,10 +153,16 @@ async def test_real_worker_runs_external_http_family_against_local_service(
             event for event in events if event.get("type") == "execution:node_complete"
         ]
         assert manager.busy() is False
-        assert [item["path"] for item in requests] == ["/api", "/hook", "/notify"]
-        assert requests[0]["authorization"] == "Bearer worker-secret"
-        assert requests[0]["cookie"] == "session=cookie-secret"
-        assert len(completed) == 3
+        assert [item["path"] for item in requests] == [
+            "/poll",
+            "/poll",
+            "/api",
+            "/hook",
+            "/notify",
+        ]
+        assert requests[2]["authorization"] == "Bearer worker-secret"
+        assert requests[2]["cookie"] == "session=cookie-secret"
+        assert len(completed) == 4
         assert all(event.get("success") is True for event in completed)
         assert any(event.get("type") == "execution:completed" for event in events)
         serialized = json.dumps(events, ensure_ascii=False)

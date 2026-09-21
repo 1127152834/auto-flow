@@ -1,0 +1,51 @@
+{
+  "evidenceId": "BE-B6-015-api-trigger",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#ApiTriggerExecutor",
+      "reference/WebRPA/backend/app/utils/jsonpath_parser.py#parse_jsonpath"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["api_trigger"],
+  "implemented": [
+    "保留GET/POST、JSON请求头和请求体、轮询间隔、无限或有限超时及响应变量写入语义",
+    "保留无条件首次响应、JSONPath取值及等于、不等于、数值大小、包含五种条件判断",
+    "复用AutoFlow现有异步HTTP provider、8 MiB响应上限、取消机制及生产worker，不引入第二套网络客户端",
+    "轮询状态写入运行日志和进度事件；敏感变量参与配置时不记录解析后的地址或条件值",
+    "非2xx、连接失败和条件未满足继续轮询，停止命令可取消请求或等待且不执行后继节点"
+  ],
+  "adaptations": [
+    "原版直接调用httpx改为AutoFlow WorkflowIntegrationGateway，以服从统一网络、错误和进程边界",
+    "超时计时使用monotonic clock，避免主机系统时间变化影响轮询期限",
+    "复用已迁入的原版JSONPath解析器实现"
+  ],
+  "checks": [
+    {
+      "command": "pytest api trigger differential, external HTTP unit, real worker, registry, worker protocol and scope preflight",
+      "result": "122 passed",
+      "covers": "冻结源码输入校验和真实成功差分、本地真实HTTP两次轮询、变量写回、进度日志、生产注册、worker停止与批准范围"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、差分工具、真实worker测试和生产注册"
+    }
+  ],
+  "boundaries": {
+    "service": "local ThreadingHTTPServer over real loopback network",
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false
+  },
+  "remaining": [
+    "正式Electron真实UI中配置、保存、关闭重开并运行API触发器",
+    "外部用户API的可用性由用户配置决定，不作为迁入实现证据",
+    "webhook_trigger是入站回调节点，需要sidecar路由和运行归属协议，单独迁入"
+  ]
+}
