@@ -57,13 +57,19 @@ async def test_real_cloakbrowser_records_chinese_form_and_future_page(
         page = browser.current_page()._raw
         await page.goto(fixture.as_uri(), wait_until="domcontentloaded")
         await controller.execute({"command": "recorder_start"})
+        await page.locator("#workflow-input").fill("暂停前")
+        paused = await controller.execute({"command": "recorder_pause"})
+        await page.locator("#workflow-input").fill("暂停期间")
+        extra = await page.context.new_page()
+        await extra.goto(future_fixture.as_uri(), wait_until="domcontentloaded")
+        await extra.locator("#future").click()
+        while_paused = await controller.execute({"command": "recorder_events"})
+        resumed = await controller.execute({"command": "recorder_resume"})
         await page.locator("#workflow-input").fill("中文输入")
         await page.locator("#workflow-submit").click()
         frame = page.frame_locator("#workflow-frame")
         await frame.locator("#frame-value").click()
 
-        extra = await page.context.new_page()
-        await extra.goto(future_fixture.as_uri(), wait_until="domcontentloaded")
         await extra.locator("#future").click()
         drained = await controller.execute({"command": "recorder_events"})
         with _cross_origin_navigation_site() as (start_url, end_url):
@@ -75,6 +81,11 @@ async def test_real_cloakbrowser_records_chinese_form_and_future_page(
         stopped = await controller.execute({"command": "recorder_stop"})
 
     events = [*drained["events"], *tail["events"], *stopped["events"]]
+    assert paused["paused"] is True
+    assert any(event.get("value") == "暂停前" for event in paused["events"])
+    assert while_paused == {"recording": True, "paused": True, "events": []}
+    assert resumed == {"recording": True, "paused": False, "events": []}
+    assert not any(event.get("value") == "暂停期间" for event in events)
     assert any(
         event["type"] == "input"
         and event["selector"] == "#workflow-input"
@@ -95,6 +106,10 @@ async def test_real_cloakbrowser_records_chinese_form_and_future_page(
         event["type"] == "click" and event["selector"] == "#future"
         for event in events
     )
+    assert sum(
+        event["type"] == "click" and event["selector"] == "#future"
+        for event in events
+    ) == 1
     assert any(
         event["type"] == "click"
         and event["selector"] == "#frame-value"

@@ -16,7 +16,7 @@ describe.each(['memory','http'] as const)('recorder ownership over %s',mode=>{
  })
  afterEach(async()=>{await browserApi.close();await server?.close();restore()})
  it('reports empty, active and stopped states with the same session and confirmed tail',async()=>{
-  expect(await recorderApi.status()).toMatchObject({success:true,data:{sessionId:null,recording:false,nextSeq:0}})
+  expect(await recorderApi.status()).toMatchObject({success:true,data:{sessionId:null,recording:false,paused:false,nextSeq:0}})
   await browserApi.open();await recorderApi.start('record')
   mock.addMockRecordingEvent({type:'input',selector:'#name',value:'中文'})
   expect(await recorderApi.status('record')).toMatchObject({success:true,data:{sessionId:'record',recording:true,nextSeq:1}})
@@ -41,6 +41,20 @@ describe.each(['memory','http'] as const)('recorder ownership over %s',mode=>{
  })
 })
 
+it('pauses and resumes the same recording without capturing paused operations',async()=>{
+ vi.resetModules();const mock=await import('../api/mock-server');const restore=configureStudioConnection('http://autoflow-studio.mock',mock.mockRequest)
+ try{
+  await browserApi.open();await recorderApi.start('pause-recording')
+  mock.addMockRecordingEvent({type:'input',selector:'#name',value:'暂停前'})
+  expect(await recorderApi.pause('pause-recording')).toMatchObject({success:true,data:{recording:true,paused:true,data:{events:[{value:'暂停前'}]}}})
+  expect(()=>mock.addMockRecordingEvent({type:'click',selector:'#ignored'})).toThrow('录制已暂停')
+  expect(await recorderApi.status('pause-recording')).toMatchObject({success:true,data:{paused:true}})
+  expect(await recorderApi.resume('pause-recording',1)).toMatchObject({success:true,data:{recording:true,paused:false}})
+  mock.addMockRecordingEvent({type:'click',selector:'#captured'})
+  expect(await recorderApi.stop('pause-recording',1)).toMatchObject({success:true,data:{data:{events:[{selector:'#captured'}]}}})
+ }finally{await browserApi.close();restore()}
+})
+
 it.each(['start','stop'] as const)('recovers a lost recorder %s HTTP response without replaying the command',async action=>{
  vi.resetModules();const mock=await import('../api/mock-server')
  const paths:string[]=[]
@@ -58,6 +72,22 @@ it.each(['start','stop'] as const)('recovers a lost recorder %s HTTP response wi
  }finally{await browserApi.close();await server.close();restore()}
 })
 
+it.each(['pause','resume'] as const)('recovers a lost recorder %s HTTP response without replaying the command',async action=>{
+ vi.resetModules();const mock=await import('../api/mock-server')
+ const paths:string[]=[]
+ const server=await startHttpStudioFixture(async(input,init)=>{paths.push(new URL(input instanceof Request?input.url:String(input)).pathname);return mock.mockRequest(input,init)})
+ const restore=configureStudioConnection(server.origin,fetch)
+ try{
+  await browserApi.open();await recorderApi.start('record')
+  if(action==='resume')await recorderApi.pause('record')
+  paths.length=0;server.dropNextResponse(`/api/recorder/${action}`)
+  const result=await recorderApi[action]('record')
+  expect(result).toMatchObject({success:true,data:{recording:true,paused:action==='pause'}})
+  expect(paths.filter(path=>path===`/api/recorder/${action}`)).toHaveLength(1)
+  expect(paths).toContain('/api/recorder/status')
+ }finally{await browserApi.close();await server.close();restore()}
+})
+
 it.each([
  {success:true,sessionId:null,recording:true,nextSeq:0},
  {success:true,sessionId:'',recording:false,nextSeq:0},
@@ -65,6 +95,8 @@ it.each([
  {success:true,sessionId:'record',recording:false,nextSeq:-1},
  {success:true,sessionId:'record',recording:false,nextSeq:0.5},
  {success:true,sessionId:'record',recording:false,nextSeq:'1'},
+ {success:true,sessionId:'record',recording:true,paused:'false',nextSeq:1},
+ {success:true,sessionId:'record',recording:false,paused:true,nextSeq:1},
 ])('rejects malformed recorder status %j',async value=>{
  const restore=configureStudioConnection('http://recorder-invalid.test',async()=>Response.json(value))
  try{expect(await recorderApi.status()).toMatchObject({success:false,error:'录制状态身份或结构错误'})}finally{restore()}

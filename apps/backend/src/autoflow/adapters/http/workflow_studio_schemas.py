@@ -1031,6 +1031,7 @@ class StudioRecorderStarted(ApiModel):
     success: bool
     session_id: str = Field(min_length=1, pattern=r"\S")
     recording: bool
+    paused: bool = False
     next_seq: int = Field(ge=0, le=9007199254740991)
 
 
@@ -1040,12 +1041,15 @@ class StudioRecorderStatus(ApiModel):
     success: Literal[True]
     session_id: str | None = Field(default=None, min_length=1, pattern=r"\S")
     recording: bool
+    paused: bool = False
     next_seq: int = Field(ge=0, le=9007199254740991)
 
     @model_validator(mode="after")
     def validate_session(self) -> Self:
         if (self.recording or self.next_seq > 0) and self.session_id is None:
             raise ValueError("录制状态和已确认步骤必须归属明确会话")
+        if self.paused and not self.recording:
+            raise ValueError("已暂停状态必须属于活跃录制")
         return self
 
 
@@ -1074,6 +1078,16 @@ class StudioRecorderStopped(ApiModel):
     success: bool
     session_id: str = Field(min_length=1, pattern=r"\S")
     next_seq: int = Field(ge=0, le=9007199254740991)
+    data: StudioRecorderTail
+
+    @model_validator(mode="after")
+    def validate_sequence(self) -> Self:
+        validate_recorder_tail(self.data.events, self.next_seq)
+        return self
+
+
+class StudioRecorderControl(StudioRecorderStatus):
+    has_more: bool = False
     data: StudioRecorderTail
 
     @model_validator(mode="after")

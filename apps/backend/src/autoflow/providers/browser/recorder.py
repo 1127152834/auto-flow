@@ -30,6 +30,7 @@ class RecorderController:
     def __init__(self, browser: Any) -> None:
         self.browser = browser
         self.active = False
+        self.paused = False
         self._registered = False
         self._binding_registered = False
         self._cdp_registered = False
@@ -63,32 +64,63 @@ class RecorderController:
                         "try { sessionStorage.setItem('__webrpa_rec','[]'); } catch(e){} }"
                     )
         self.active = True
+        self.paused = False
         for page in context.pages:
             for frame in _frames(page):
                 with suppress(Exception):
                     await frame.evaluate(RECORDER_SCRIPT)
-        return {"recording": True, "events": []}
+        return {"recording": True, "paused": False, "events": []}
 
     async def events(self) -> dict[str, Any]:
         return {
             "recording": self.active,
-            "events": await self._drain() if self.active else [],
+            "paused": self.paused,
+            "events": await self._drain() if self.active and not self.paused else [],
         }
+
+    async def pause(self) -> dict[str, Any]:
+        if not self.active:
+            raise ValueError("recorder is not active")
+        if self.paused:
+            return {"recording": True, "paused": True, "events": []}
+        self.paused = True
+        await self._set_disabled(True)
+        return {"recording": True, "paused": True, "events": await self._drain()}
+
+    async def resume(self) -> dict[str, Any]:
+        if not self.active:
+            raise ValueError("recorder is not active")
+        if not self.paused:
+            return {"recording": True, "paused": False, "events": []}
+        # A page created while paused can run the context init script before the
+        # worker can mark its frame disabled. Discard that local fallback tail
+        # before enabling every live frame again.
+        await self._drain()
+        await self._set_disabled(False)
+        self.paused = False
+        return {"recording": True, "paused": False, "events": []}
 
     async def stop(self) -> dict[str, Any]:
         events = await self._drain() if self.active else []
+        if self.paused:
+            events = []
+        await self._set_disabled(True)
+        self.active = False
+        self.paused = False
+        return {"recording": False, "paused": False, "events": events}
+
+    async def _set_disabled(self, disabled: bool) -> None:
         context = self.browser._context
+        value = "true" if disabled else "false"
         for page in context.pages:
             for frame in _frames(page):
                 with suppress(Exception):
                     await frame.evaluate(
-                        "() => { window.__webrpaRecorderDisabled = true; "
-                        "var b=document.getElementById('__webrpa_rec_badge'); if(b)b.remove(); }"
+                        f"() => {{ window.__webrpaRecorderDisabled = {value}; "
+                        "var b=document.getElementById('__webrpa_rec_badge'); if(b)b.remove(); }}"
                     )
-        with suppress(Exception):
-            await context.add_init_script("window.__webrpaRecorderDisabled = true;")
-        self.active = False
-        return {"recording": False, "events": events}
+                    if not disabled:
+                        await frame.evaluate(RECORDER_SCRIPT)
 
     def _schedule_cdp_page(self, page: Any) -> None:
         task = asyncio.create_task(self._register_cdp_page(page))
@@ -146,7 +178,7 @@ class RecorderController:
         task.add_done_callback(self._cdp_tasks.discard)
 
     def _capture_cdp_event(self, page: Any, message: dict[str, Any]) -> None:
-        if not self.active:
+        if not self.active or self.paused:
             return
         if message.get("name") != "__autoflowRecordCdp":
             return
@@ -202,7 +234,7 @@ class RecorderController:
     async def _capture_bound_event(
         self, source: dict[str, Any], event: object
     ) -> None:
-        if not self.active or not isinstance(event, dict):
+        if not self.active or self.paused or not isinstance(event, dict):
             return
         page = source.get("page")
         frame = source.get("frame")

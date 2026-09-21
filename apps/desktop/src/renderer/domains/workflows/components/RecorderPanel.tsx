@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import { nanoid } from 'nanoid'
 import { RecorderStepEditor } from './RecorderStepEditor'
 import { buildRecordedNodes, type RecEvent } from '../lib/recordingGeneration'
-import { Circle, Square, X, MousePointerClick, Type, ChevronDown, CheckSquare, Globe, Wand2, Trash2, ArrowUp, ArrowDown, Clock, Keyboard, Move, Upload, MoveVertical } from 'lucide-react'
+import { Circle, Square, Pause, Play, X, MousePointerClick, Type, ChevronDown, CheckSquare, Globe, Wand2, Trash2, ArrowUp, ArrowDown, Clock, Keyboard, Move, Upload, MoveVertical } from 'lucide-react'
 import { recorderApi, browserApi } from '../api'
 import { registerDocumentLeaveResource,requestSessionTransition } from '../lib/documentLeave'
 import {getStudioTransportRevision} from '../api/transport'
@@ -35,6 +35,7 @@ const EVENT_META: Record<string, { icon: any; label: string; color: string }> = 
 
 export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const [recording, setRecording] = useState(false)
+  const [paused, setPaused] = useState(false)
   const [events, setEvents] = useState<RecEvent[]>([])
   const [editing, setEditing] = useState<{index:number;event:RecEvent}|null>(null)
   const [preview, setPreview] = useState<ReturnType<typeof buildRecordedNodes>|null>(null)
@@ -200,6 +201,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
           sequenceRef.current=0
           setEvents([])
           setRecording(true)
+          setPaused(false)
           setError('录制启动尚未确认，请停止录制以确认尾部和释放占用')
           return
         }
@@ -219,6 +221,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       sequenceRef.current = 0
       setEvents([])
       setRecording(true)
+      setPaused(false)
       if(!current()){setError(`录制属于「${owner.name}」，请先停止；步骤不会加入当前流程`);return}
       addLog({ level: 'success', message: '已开始录制，请在浏览器中操作（点击/输入/选择）' })
       stopPolling()
@@ -257,6 +260,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       acceptBatch(sessionId, response, true)
       stopPolling()
       setRecording(false)
+      setPaused(false)
       activeSessionRef.current=null
       pendingStartRef.current=null
       addLog({ level: 'info', message: '录制已停止' })
@@ -267,6 +271,21 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       return false
     } finally { commandBusyRef.current=false;setBusy(false) }
   }, [addLog, acceptBatch, stopPolling])
+
+  const togglePause = useCallback(async () => {
+    const sessionId=sessionRef.current
+    if(!sessionId||commandBusyRef.current||originRef.current?.connection!==getStudioTransportRevision())return
+    commandBusyRef.current=true;setBusy(true);setError('')
+    try{
+      const response=paused?await recorderApi.resume(sessionId,sequenceRef.current):await recorderApi.pause(sessionId,sequenceRef.current)
+      const body=response.data
+      if(!response.success||!body||body.recording!==true||body.paused===paused||!Array.isArray(body.data?.events))throw Error(response.error||'录制暂停状态未确认')
+      acceptBatch(sessionId,{...response,data:{...body,data:body.data.events}})
+      setPaused(body.paused)
+      addLog({level:'info',message:body.paused?'录制已暂停':'录制已恢复'})
+    }catch(cause){setError(cause instanceof Error?cause.message:String(cause))}
+    finally{commandBusyRef.current=false;setBusy(false)}
+  },[acceptBatch,addLog,paused])
 
   useEffect(() => registerDocumentLeaveResource(() => {
     const sessionId=activeSessionRef.current || (commandBusyRef.current?pendingStartRef.current:null)
@@ -381,7 +400,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     if (busy) return
     if(originRef.current&&originRef.current.connection!==getStudioTransportRevision()){
       if((recording||eventsRef.current.length)&&!await confirm('原工作区连接已切换。关闭将丢弃尚未生成的本地录制步骤，是否关闭？',{title:'关闭旧录制',confirmText:'丢弃并关闭'}))return
-      stopPolling();setRecording(false);activeSessionRef.current=null;sessionRef.current=null;pendingStartRef.current=null;originRef.current=null;setEvents([]);setError('');onClose();return
+      stopPolling();setRecording(false);setPaused(false);activeSessionRef.current=null;sessionRef.current=null;pendingStartRef.current=null;originRef.current=null;setEvents([]);setError('');onClose();return
     }
     if (recording && !await stopRecording()) return
     onClose()
@@ -396,7 +415,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--brand-50))]">
         <Wand2 className="w-4 h-4 text-[hsl(var(--brand-600))]" />
         <span className="font-semibold text-sm">智能录制器</span>
-        {recording && <span className="ml-1 flex items-center gap-1 text-xs text-red-500"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />录制中</span>}
+        {recording && <span className={`ml-1 flex items-center gap-1 text-xs ${paused?'text-amber-600':'text-red-500'}`}><span className={`w-2 h-2 rounded-full ${paused?'bg-amber-500':'bg-red-500 animate-pulse'}`} />{paused?'已暂停':'录制中'}</span>}
         <button className="ml-auto p-1 rounded hover:bg-[hsl(var(--muted))]" aria-label="关闭录制器" disabled={busy} onClick={closePanel}><X className="w-4 h-4" /></button>
       </div>
 
@@ -408,9 +427,14 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
             <Circle className="w-3.5 h-3.5 fill-current" /> 开始录制
           </button>
         ) : (
-          <button disabled={busy} onClick={stopRecording} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-700 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50">
-            <Square className="w-3.5 h-3.5 fill-current" /> 停止录制
-          </button>
+          <>
+            <button disabled={busy} onClick={togglePause} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 disabled:opacity-50">
+              {paused?<Play className="w-3.5 h-3.5 fill-current"/>:<Pause className="w-3.5 h-3.5 fill-current"/>} {paused?'恢复录制':'暂停录制'}
+            </button>
+            <button disabled={busy} onClick={stopRecording} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-700 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50">
+              <Square className="w-3.5 h-3.5 fill-current" /> 停止录制
+            </button>
+          </>
         )}
         <button disabled={recording || busy || !!editing || !events.length || originChanged} onClick={generateNodes} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-white text-sm font-medium disabled:opacity-50">
           <Wand2 className="w-3.5 h-3.5" /> 生成节点

@@ -91,6 +91,11 @@ try {
   await waitFor(studio, "document.body?.innerText.includes('智能录制器')", 'recorder panel')
   await click(studio, '开始录制')
   await waitFor(studio, "document.body?.innerText.includes('录制中')", 'recording start', 15_000)
+  await click(studio, '暂停录制')
+  await waitFor(studio, "document.body?.innerText.includes('已暂停') && document.body?.innerText.includes('恢复录制')", 'recording pause')
+  await click(studio, '恢复录制')
+  await waitFor(studio, "document.body?.innerText.includes('录制中') && document.body?.innerText.includes('暂停录制')", 'recording resume')
+  checkpoint('通过正式录制面板暂停并恢复同一录制会话')
 
   await openBrowserDialog(studio)
   await click(studio, '聚焦目标页')
@@ -226,10 +231,11 @@ function enterRecordingThroughOs(workspacePath, evidencePath) {
   const bounds = JSON.parse(execFileSync('osascript', ['-l', 'JavaScript', '-e', `
     const se=Application('System Events');
     const p=se.applicationProcesses.whose({unixId:${browserPid}})()[0];
-    p.frontmost=true; delay(0.3);
+    p.frontmost=true; try{p.windows[0].actions.byName('AXRaise').perform()}catch{}; delay(0.5);
     JSON.stringify({position:p.windows[0].position(),size:p.windows[0].size()});
   `], { encoding: 'utf8' }))
   console.log(`CloakBrowser window ${JSON.stringify(bounds)}`)
+  clickScreenPoint(bounds.position[0] + 300, bounds.position[1] + 336)
   execFileSync('screencapture', ['-x', join(evidencePath, 'browser-focused.png')])
   execFileSync('osascript', [
     '-e', 'set the clipboard to "formal-recording"',
@@ -242,16 +248,20 @@ function enterRecordingThroughOs(workspacePath, evidencePath) {
     '-e', 'end tell',
   ])
   const buttonPoint = [bounds.position[0] + 300, bounds.position[1] + 456]
+  clickScreenPoint(...buttonPoint)
+  execFileSync('screencapture', ['-x', join(evidencePath, 'browser-after-input.png')])
+}
+
+function clickScreenPoint(x, y) {
   execFileSync('/usr/bin/swift', ['-e', `
     import CoreGraphics
     import Foundation
-    let point = CGPoint(x: ${buttonPoint[0]}, y: ${buttonPoint[1]})
+    let point = CGPoint(x: ${x}, y: ${y})
     CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left)?.post(tap: .cghidEventTap)
     CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: point, mouseButton: .left)?.post(tap: .cghidEventTap)
     usleep(100000)
     CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: point, mouseButton: .left)?.post(tap: .cghidEventTap)
   `])
-  execFileSync('screencapture', ['-x', join(evidencePath, 'browser-after-input.png')])
 }
 
 async function focusStudio(nativeCdp) {

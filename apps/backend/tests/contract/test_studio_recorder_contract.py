@@ -1,13 +1,13 @@
 import pytest
-from pydantic import ValidationError
-
 from autoflow.adapters.http.workflow_studio_schemas import (
     StudioRecorderBatch,
+    StudioRecorderControl,
     StudioRecorderReadRequest,
     StudioRecorderStartRequest,
     StudioRecorderStatus,
     StudioRecorderStopped,
 )
+from pydantic import ValidationError
 
 
 def test_stable_session_and_cursor():
@@ -16,9 +16,9 @@ def test_stable_session_and_cursor():
 
 
 @pytest.mark.parametrize('value', [
-    {'success': True, 'sessionId': None, 'recording': False, 'nextSeq': 0},
-    {'success': True, 'sessionId': 'session', 'recording': True, 'nextSeq': 3},
-    {'success': True, 'sessionId': 'session', 'recording': False, 'nextSeq': 3},
+    {'success': True, 'sessionId': None, 'recording': False, 'paused': False, 'nextSeq': 0},
+    {'success': True, 'sessionId': 'session', 'recording': True, 'paused': True, 'nextSeq': 3},
+    {'success': True, 'sessionId': 'session', 'recording': False, 'paused': False, 'nextSeq': 3},
 ])
 def test_recorder_status_roundtrip(value):
     assert StudioRecorderStatus.model_validate(value).model_dump(by_alias=True) == value
@@ -51,6 +51,13 @@ def test_batch_roundtrip(stopped):
     value = {'success': True, 'sessionId': 's', 'nextSeq': 1, 'data': {'events': events} if stopped else events}
     model = StudioRecorderStopped if stopped else StudioRecorderBatch
     assert model.model_validate(value).model_dump(by_alias=True, exclude_unset=True) == value
+
+
+def test_pause_control_requires_an_active_recording_and_keeps_tail():
+    value = {'success': True, 'sessionId': 's', 'recording': True, 'paused': True, 'nextSeq': 1, 'data': {'events': [{'sequence': 1, 'type': 'click'}]}}
+    assert StudioRecorderControl.model_validate(value).model_dump(by_alias=True, exclude_unset=True) == value
+    with pytest.raises(ValidationError):
+        StudioRecorderControl.model_validate({**value, 'recording': False})
 
 
 @pytest.mark.parametrize('events,next_seq', [

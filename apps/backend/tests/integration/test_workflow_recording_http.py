@@ -50,6 +50,7 @@ async def test_recording_review_http_persists_and_checks_revision(tmp_path) -> N
         "success": True,
         "sessionId": None,
         "recording": False,
+        "paused": False,
         "nextSeq": 0,
     }
     assert unavailable.status_code == 409

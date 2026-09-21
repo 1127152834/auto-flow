@@ -2982,6 +2982,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/recorder/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recorder Pause */
+        post: operations["recorder_pause_api_recorder_pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recorder/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recorder Resume */
+        post: operations["recorder_resume_api_recorder_resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/recorder/status": {
         parameters: {
             query?: never;
@@ -10888,6 +10922,33 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioRecorderControl */
+        StudioRecorderControl: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Sessionid */
+            sessionId?: string | null;
+            /** Recording */
+            recording: boolean;
+            /**
+             * Paused
+             * @default false
+             */
+            paused: boolean;
+            /** Nextseq */
+            nextSeq: number;
+            /**
+             * Hasmore
+             * @default false
+             */
+            hasMore: boolean;
+            data: components["schemas"]["StudioRecorderTail"];
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioRecorderEvent */
         StudioRecorderEvent: {
             /** Sequence */
@@ -10923,6 +10984,11 @@ export type components = {
             sessionId: string;
             /** Recording */
             recording: boolean;
+            /**
+             * Paused
+             * @default false
+             */
+            paused: boolean;
             /** Nextseq */
             nextSeq: number;
         } & {
@@ -10939,6 +11005,11 @@ export type components = {
             sessionId?: string | null;
             /** Recording */
             recording: boolean;
+            /**
+             * Paused
+             * @default false
+             */
+            paused: boolean;
             /** Nextseq */
             nextSeq: number;
         } & {
@@ -23706,6 +23777,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudioRecorderStopped"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recorder_pause_api_recorder_pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioRecorderReadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecorderControl"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recorder_resume_api_recorder_resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioRecorderReadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecorderControl"];
                 };
             };
             /** @description Validation Error */

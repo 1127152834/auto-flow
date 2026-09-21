@@ -67,10 +67,12 @@ class Workers:
             "picker_result": {"selected": True, "value": {"selector": "#target", "tagName": "BUTTON"}},
             "test_selector": {"success": True, "matched": True, "count": 1, "tried": []},
             "recorder_start": {"recording": True, "events": []},
+            "recorder_resume": {"recording": True, "paused": False, "events": []},
         }.get(action, {"success": True})
-        if action in {"recorder_events", "recorder_stop"}:
+        if action in {"recorder_events", "recorder_pause", "recorder_stop"}:
             data = {
                 "recording": action == "recorder_events",
+                "paused": action == "recorder_pause",
                 "events": self._drain_recorded(),
             }
         assert self.service is not None
@@ -249,6 +251,7 @@ async def test_recording_uses_the_open_browser_and_persists_non_destructive_even
         "success": True,
         "sessionId": "record-1",
         "recording": True,
+        "paused": False,
         "nextSeq": 0,
     }
     workers.recorded.append(
@@ -278,6 +281,46 @@ async def test_recording_uses_the_open_browser_and_persists_non_destructive_even
     assert stopped["data"]["events"] == first["data"]
     assert await service.stop_recording("record-1", after_seq=0) == stopped
     await service.close(opened["sessionId"])
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_recording_pause_resume_preserves_confirmed_tail_and_is_idempotent(tmp_path):
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    workers = Workers()
+    service = WorkflowInspectionService(
+        profiles=Profiles(profile()),
+        installed_kernels=lambda: [InstalledKernel("public", "146.0.1.1", tmp_path / "cloakbrowser", 1)],
+        resolve_proxy=lambda _profile, _session: _none(),
+        read_license=lambda: None,
+        resources=Resources(),  # type: ignore[arg-type]
+        workers=workers,  # type: ignore[arg-type]
+        recordings=SqlAlchemyWorkflowRecordings(factory),
+    )
+    workers.service = service
+    await service.open(profile_id="profile-1")
+    await service.start_recording("record-pause")
+    workers.recorded.append({"type": "input", "selector": "#name", "value": "暂停前"})
+
+    paused = await service.pause_recording("record-pause", after_seq=0)
+    assert paused["paused"] is True
+    assert paused["data"]["events"][0]["value"] == "暂停前"
+    assert service.recording_status("record-pause")["paused"] is True
+    assert await service.pause_recording("record-pause", after_seq=1) == {
+        "success": True, "sessionId": "record-pause", "recording": True,
+        "paused": True, "nextSeq": 1, "hasMore": False, "data": {"events": []},
+    }
+
+    resumed = await service.resume_recording("record-pause", after_seq=1)
+    assert resumed["paused"] is False
+    assert service.recording_status("record-pause")["paused"] is False
+    await service.resume_recording("record-pause", after_seq=1)
+    assert [item["command"] for item in workers.commands].count("recorder_pause") == 1
+    assert [item["command"] for item in workers.commands].count("recorder_resume") == 1
+    await service.stop_recording("record-pause", after_seq=1)
+    await service.close()
     factory.dispose()
 
 

@@ -127,6 +127,10 @@ class InspectionController:
             return await self.recorder.start()
         if action == "recorder_events":
             return await self.recorder.events()
+        if action == "recorder_pause":
+            return await self.recorder.pause()
+        if action == "recorder_resume":
+            return await self.recorder.resume()
         if action == "recorder_stop":
             return await self.recorder.stop()
         raise ValueError("unknown inspection command")

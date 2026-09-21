@@ -48,7 +48,7 @@ async def test_recording_controller_injects_current_and_future_documents_and_dra
     controller = InspectionController(browser)  # type: ignore[arg-type]
 
     started = await controller.execute({"command": "recorder_start"})
-    assert started == {"recording": True, "events": []}
+    assert started == {"recording": True, "paused": False, "events": []}
     assert any("__webrpa_rec" in script for script in browser._context.init_scripts)
     assert any("__webrpa_rec" in script for script in browser.page.main_frame.scripts)
 
@@ -102,6 +102,7 @@ async def test_recording_controller_injects_current_and_future_documents_and_dra
     second = await controller.execute({"command": "recorder_events"})
     assert first == {
         "recording": True,
+        "paused": False,
         "events": [
             {
                 "type": "input",
@@ -118,9 +119,10 @@ async def test_recording_controller_injects_current_and_future_documents_and_dra
             },
         ],
     }
-    assert second == {"recording": True, "events": []}
+    assert second == {"recording": True, "paused": False, "events": []}
     assert await controller.execute({"command": "recorder_stop"}) == {
         "recording": False,
+        "paused": False,
         "events": [],
     }
 
@@ -162,3 +164,22 @@ async def test_recording_controller_accepts_cdp_events_and_ignores_invalid_paylo
             "_frame": {"main": True},
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_recording_controller_pauses_without_losing_tail_and_resumes_capture():
+    browser = Browser()
+    controller = InspectionController(browser)  # type: ignore[arg-type]
+    await controller.execute({"command": "recorder_start"})
+    browser.page.main_frame.events = [{"type": "input", "selector": "#name", "value": "暂停前"}]
+
+    paused = await controller.execute({"command": "recorder_pause"})
+    assert paused == {"recording": True, "paused": True, "events": [{"type": "input", "selector": "#name", "value": "暂停前", "_frame": {"main": True}}]}
+    assert await controller.execute({"command": "recorder_pause"}) == {"recording": True, "paused": True, "events": []}
+    browser.page.main_frame.events = [{"type": "click", "selector": "#ignored"}]
+    assert (await controller.execute({"command": "recorder_events"}))["events"] == []
+
+    assert await controller.execute({"command": "recorder_resume"}) == {"recording": True, "paused": False, "events": []}
+    assert await controller.execute({"command": "recorder_resume"}) == {"recording": True, "paused": False, "events": []}
+    browser.page.main_frame.events = [{"type": "click", "selector": "#captured"}]
+    assert (await controller.execute({"command": "recorder_events"}))["events"][0]["selector"] == "#captured"

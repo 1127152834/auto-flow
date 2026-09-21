@@ -725,6 +725,38 @@ async function completeRecorderTail(sessionId:string, first:ApiResponse<componen
   return {...first,data:{...body,nextSeq:cursor,hasMore:false,data:{events}}}
 }
 
+async function completeRecorderControl(sessionId:string, first:ApiResponse<components['schemas']['StudioRecorderControl']>):Promise<ApiResponse<components['schemas']['StudioRecorderControl']>> {
+  if(!first.success || !first.data?.hasMore)return first
+  const body=first.data
+  if(!Array.isArray(body.data?.events) || !Number.isSafeInteger(body.nextSeq) || body.nextSeq<0)return {success:false,error:'录制控制响应结构无效，请重试'}
+  const events=[...body.data.events]
+  let cursor=body.nextSeq,more=body.hasMore
+  while(more){
+    const next=await recorderApi.events(sessionId,cursor)
+    if(!next.success)return {...next,data:undefined}
+    const page=next.data
+    if(!page||!Array.isArray(page.data)||!Number.isSafeInteger(page.nextSeq)||page.nextSeq<=cursor||page.data.length!==page.nextSeq-cursor||page.data.some((event,index)=>event.sequence!==cursor+index+1))return {success:false,error:'录制控制分页不连续，请重试'}
+    events.push(...page.data);cursor=page.nextSeq;more=Boolean(page.hasMore)
+  }
+  return {...first,data:{...body,nextSeq:cursor,hasMore:false,data:{events}}}
+}
+
+async function controlRecorder(sessionId:string,action:'pause'|'resume',afterSeq=0):Promise<ApiResponse<components['schemas']['StudioRecorderControl']>>{
+  if(!validRecorderRequest(sessionId,afterSeq))return invalidRecorderRequest()
+  const revision=getStudioTransportRevision()
+  const result=await recorderRequest<components['schemas']['StudioRecorderControl']>(`/recorder/${action}`,sessionId,{method:'POST',body:JSON.stringify({sessionId,afterSeq})})
+  if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success))return result
+  if(result.success)return completeRecorderControl(sessionId,result)
+  const status=await recorderApi.status(sessionId)
+  if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
+  const expectedPaused=action==='pause'
+  if(status.success&&status.data?.recording&&status.data.paused===expectedPaused){
+    const tail=await recorderApi.events(sessionId,afterSeq)
+    if(tail.success&&tail.data)return completeRecorderControl(sessionId,{success:true,data:{success:true,sessionId,recording:true,paused:expectedPaused,nextSeq:tail.data.nextSeq,hasMore:tail.data.hasMore,data:{events:tail.data.data}}})
+  }
+  return result
+}
+
 export const recorderApi = {
   readReview: (documentId:string) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`),
   saveReview: (documentId:string,body:components['schemas']['StudioRecordingReviewWrite']) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`,{method:'PUT',body:JSON.stringify(body)}),
@@ -760,6 +792,8 @@ export const recorderApi = {
     }
     return result
   },
+  pause: (sessionId:string,afterSeq=0) => controlRecorder(sessionId,'pause',afterSeq),
+  resume: (sessionId:string,afterSeq=0) => controlRecorder(sessionId,'resume',afterSeq),
   events: (sessionId: string, afterSeq = 0, signal?: AbortSignal) => validRecorderRequest(sessionId, afterSeq)
     ? recorderRequest<components['schemas']['StudioRecorderBatch']>(`/recorder/events?afterSeq=${afterSeq}&sessionId=${encodeURIComponent(sessionId)}`,sessionId,{signal})
     : invalidRecorderRequest(),
@@ -770,9 +804,9 @@ export const recorderApi = {
     if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
     if(!result.success)return result
     const data=result.data
-    if(!data||data.success!==true||typeof data.recording!=='boolean'||!Number.isSafeInteger(data.nextSeq)||data.nextSeq<0||
+    if(!data||data.success!==true||typeof data.recording!=='boolean'||typeof data.paused!=='boolean'||!Number.isSafeInteger(data.nextSeq)||data.nextSeq<0||
       (data.sessionId!==null&&(typeof data.sessionId!=='string'||!data.sessionId.trim()))||
-      ((data.recording||data.nextSeq>0)&&!data.sessionId)||(sessionId&&data.sessionId!==sessionId))return {success:false,error:'录制状态身份或结构错误'}
+      (data.paused&&!data.recording)||((data.recording||data.nextSeq>0)&&!data.sessionId)||(sessionId&&data.sessionId!==sessionId))return {success:false,error:'录制状态身份或结构错误'}
     return result
   },
 }

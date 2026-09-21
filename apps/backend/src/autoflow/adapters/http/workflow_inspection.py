@@ -16,6 +16,7 @@ from .workflow_studio_schemas import (
     StudioPickerSessionStartRequest,
     StudioPickerSessionState,
     StudioRecorderBatch,
+    StudioRecorderControl,
     StudioRecorderReadRequest,
     StudioRecorderStarted,
     StudioRecorderStartRequest,
@@ -153,6 +154,18 @@ def workflow_inspection_router(service: WorkflowInspectionService) -> APIRouter:
     @router.post("/api/recorder/stop", response_model=StudioRecorderStopped)
     async def recorder_stop(request: StudioRecorderReadRequest) -> dict[str, Any]:
         return await service.stop_recording(
+            request.session_id, after_seq=request.after_seq
+        )
+
+    @router.post("/api/recorder/pause", response_model=StudioRecorderControl)
+    async def recorder_pause(request: StudioRecorderReadRequest) -> dict[str, Any]:
+        return await service.pause_recording(
+            request.session_id, after_seq=request.after_seq
+        )
+
+    @router.post("/api/recorder/resume", response_model=StudioRecorderControl)
+    async def recorder_resume(request: StudioRecorderReadRequest) -> dict[str, Any]:
+        return await service.resume_recording(
             request.session_id, after_seq=request.after_seq
         )
 

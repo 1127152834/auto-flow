@@ -31,6 +31,7 @@ STUDIO_SCHEMAS = (
     schemas.StudioRecorderStatus,
     schemas.StudioRecorderBatch,
     schemas.StudioRecorderStopped,
+    schemas.StudioRecorderControl,
     schemas.StudioFolderSelectRequest,
     schemas.StudioFileSelectRequest,
     schemas.StudioPathSelectionResult,

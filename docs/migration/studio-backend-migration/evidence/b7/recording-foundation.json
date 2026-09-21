@@ -18,7 +18,8 @@
     "敏感输入原值在数据库边界清除并标记待补值；页面对象、Cookie、登录态和注入句柄不持久化",
     "容量限制为单值1MiB、单录制10000步和64MiB；整批越界不写入并停止采集，浏览器保留供审查",
     "worker异常退出将会话标记为interrupted并保留已确认步骤；正常sidecar关闭先确认尾部再清理浏览器和资源",
-    "现有start、events、stop、status和reviews接口接入真实工作区数据库，OpenAPI生成类型已同步"
+    "现有start、events、stop、status和reviews接口接入真实工作区数据库，OpenAPI生成类型已同步",
+    "录制会话支持开始、暂停、恢复和停止；暂停确认已采集尾部，暂停期间忽略页面操作，恢复继续复用同一浏览器会话"
   ],
   "adaptations": [
     "不启动WebRPA全局浏览器管理器，录制控制器挂入AutoFlow既有inspection worker",
@@ -50,6 +51,16 @@
       "command": "node scripts/smoke-studio-backend-b7-recording.mjs",
       "result": "passed on formal Electron development build (darwin-arm64)",
       "covers": "正式UI打开CloakBrowser、受信任键盘输入与点击、停止、服务端审查保存、生成预览、整批加入画布、真实HTTP/SQLite保存、录制浏览器清理、正常窗口关闭重开、独立CloakBrowser重放及进程清理；正式UI使用ASCII输入，中文输入由真实provider用例覆盖"
+    },
+    {
+      "command": "pytest recording provider/service/HTTP/contract + real CloakBrowser pause/resume; vitest recorder protocol/UI; typecheck/lint/OpenAPI/build",
+      "result": "后端录制专项50项通过，真实CloakBrowser暂停/恢复1项通过，前端协议与UI 29项通过；静态检查、生成合同和正式构建通过",
+      "covers": "暂停前尾部确认、暂停期间真实操作不采集、恢复后继续采集、控制响应丢失恢复、同会话幂等及正式UI状态"
+    },
+    {
+      "command": "node scripts/smoke-studio-backend-b7-recording.mjs",
+      "result": "passed on formal Electron development build (darwin-arm64), evidence formal-recording-electron-HmTUKs",
+      "covers": "正式UI暂停/恢复、真实CloakBrowser输入点击、审查生成、SQLite保存、正常关窗重开、独立重放和两次浏览器进程清理"
     }
   ],
   "realBrowser": {
@@ -72,7 +83,7 @@
     "windowsTested": false
   },
   "remaining": [
-    "按当前正式前端合同确认暂停/恢复是否仍为产品要求；现有UI和API仅暴露开始与停止",
+    "补齐录制控制稳定 commandId 的持久回查合同；当前仅以 sessionId 和状态回查恢复响应丢失",
     "验证底层进程树清理失败重试，不提前释放互斥资源"
   ]
 }

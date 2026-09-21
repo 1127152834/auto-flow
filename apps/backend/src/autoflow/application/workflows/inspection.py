@@ -30,6 +30,7 @@ class _BrowserState:
     picker_session_id: str | None = None
     picker_fingerprint: tuple[str | None, str] | None = None
     recorder_session_id: str | None = None
+    recorder_paused: bool = False
     recorder_pending: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -311,7 +312,11 @@ class WorkflowInspectionService:
         if state.recorder_session_id is not None:
             if state.recorder_session_id != session_id:
                 raise _conflict("当前已有活跃录制会话")
-            return {"success": True, **repository.status(session_id)}
+            return {
+                "success": True,
+                **repository.status(session_id),
+                "paused": state.recorder_paused,
+            }
         try:
             receipt = repository.start(session_id, now=datetime.now(UTC))
         except ValueError as error:
@@ -322,8 +327,9 @@ class WorkflowInspectionService:
             repository.stop(session_id, now=datetime.now(UTC))
             raise
         state.recorder_session_id = session_id
+        state.recorder_paused = False
         state.recorder_pending.clear()
-        return {"success": True, **receipt}
+        return {"success": True, **receipt, "paused": False}
 
     async def recording_events(
         self, session_id: str, *, after_seq: int
@@ -355,6 +361,7 @@ class WorkflowInspectionService:
             await self._append_recording_events(session_id, response.get("events"))
             repository.stop(session_id, now=datetime.now(UTC))
             state.recorder_session_id = None
+            state.recorder_paused = False
         elif current["recording"]:
             raise _conflict("录制会话浏览器已失效")
         batch = repository.events(session_id, after_seq=after_seq)
@@ -362,6 +369,7 @@ class WorkflowInspectionService:
             "success": True,
             "sessionId": session_id,
             "recording": False,
+            "paused": False,
             "nextSeq": batch["nextSeq"],
             "hasMore": batch["hasMore"],
             "data": {"events": batch["data"]},
@@ -387,7 +395,54 @@ class WorkflowInspectionService:
             and state is not None
             and state.recorder_session_id == current["sessionId"]
         )
-        return {"success": True, **current, "recording": recording}
+        paused = bool(recording and state and state.recorder_paused)
+        return {"success": True, **current, "recording": recording, "paused": paused}
+
+    async def pause_recording(
+        self, session_id: str, *, after_seq: int
+    ) -> dict[str, Any]:
+        state = self._require_recording(session_id)
+        if not state.recorder_paused:
+            response = await self._command("recorder_pause")
+            await self._append_recording_events(session_id, response.get("events"))
+            state.recorder_paused = True
+        return self._recording_control(session_id, after_seq=after_seq, paused=True)
+
+    async def resume_recording(
+        self, session_id: str, *, after_seq: int
+    ) -> dict[str, Any]:
+        state = self._require_recording(session_id)
+        if state.recorder_paused:
+            await self._command("recorder_resume")
+            state.recorder_paused = False
+        return self._recording_control(session_id, after_seq=after_seq, paused=False)
+
+    def _require_recording(self, session_id: str) -> _BrowserState:
+        current = self._require_recordings().current()
+        state = self._state
+        if (
+            current is None
+            or current["sessionId"] != session_id
+            or not current["recording"]
+            or state is None
+            or state.recorder_session_id != session_id
+        ):
+            raise _conflict("录制会话不存在或已过期")
+        return state
+
+    def _recording_control(
+        self, session_id: str, *, after_seq: int, paused: bool
+    ) -> dict[str, Any]:
+        batch = self._require_recordings().events(session_id, after_seq=after_seq)
+        return {
+            "success": True,
+            "sessionId": session_id,
+            "recording": True,
+            "paused": paused,
+            "nextSeq": batch["nextSeq"],
+            "hasMore": batch["hasMore"],
+            "data": {"events": batch["data"]},
+        }
 
     def read_recording_review(self, document_id: str) -> dict[str, Any]:
         review = self._require_recordings().read_review(document_id)
@@ -441,6 +496,7 @@ class WorkflowInspectionService:
             await self._command("recorder_stop")
             self._require_recordings().stop(session_id, now=datetime.now(UTC))
             state.recorder_session_id = None
+            state.recorder_paused = False
             state.recorder_pending.clear()
             raise WorkflowRunError("RECORDING_LIMIT_REACHED", str(error), 413) from error
         except Exception as error:
