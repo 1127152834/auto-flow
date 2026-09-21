@@ -375,7 +375,11 @@ def test_edit_during_send_keeps_new_revision_pending(tmp_path):
 
 
 def test_unsent_merge_preserves_field_mask_and_explicit_clear(tmp_path):
-    transport = FakeSheetsTransport(GRID)
+    class TrimEmptyRead(FakeSheetsTransport):
+        def _read(self, text, render):
+            rows = super()._read(text, render)
+            return [] if rows == [['']] else rows  # Google omits trailing empty cells.
+    transport = TrimEmptyRead(GRID)
     with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
         pull(sheets)
         edit_title(sheets, sheets.records()[0], 'temporary')

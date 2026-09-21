@@ -527,7 +527,7 @@ class SheetsSyncService:
             read = client.values(
                 spreadsheet_id, cell(sheet_name, _column_index(column), row), "FORMULA"
             )
-            actual = read[0][0] if read and read[0] else None
+            actual = read[0][0] if read and read[0] else ""  # ValueRange omits empty trailing cells.
             if not _same(actual, value):
                 return False
         return True

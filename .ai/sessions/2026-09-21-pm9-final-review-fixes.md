@@ -20,3 +20,5 @@ Windows 单平台 35581391812：236 passed、27 skipped、1 failed（foreign-job
 本机 ARM 新构建 DMG（9001b0a6 生产等价，Windows/Sheets 后续修复不在包内）校验、只读挂载、隔离安装、打包侧车认证和退出通过。真实原生打开取消、选择新生成 workbook 的 opaque token、保存取消通过，结果在 install-capabilities-darwin-arm64.json。未注入 dialog 返回值；第一次操作超时没有计为通过。
 
 Sheets 补证发现并修复已有契约内根因（confirmed targeted；full regression pending）：出站从整行实时取值导致两个项目改不同列相互覆盖；原响应核验也误用更新后的行。复用 SyncOperationRow.request JSON 保存字段和值，未发送合并同时推进 statusRevision；发送前用既有事务 CAS 登记 sending，使新编辑生成新意图；重启/手动 allPending 不重发 sending/verifying。明确 null 写入空单元格。旧操作无快照时停止并报告 SYNC_SNAPSHOT_MISSING，不推断历史内容。三个真实 HTTP/SQLite + FakeSheetsTransport 反例先失败再通过；补原意图合并/清空和旧无快照保护后相关 46 passed。没有引入新执行器、数据库表、Google 网络授权或新冻结能力端口。
+
+Sheets 空值协议补证：Google ValueRange 对读取结果省略末尾空行/列，写 null 会跳过、写空字符串才清空（来源 https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values#ValueRange）。将清空用例的受控读取改为实际协议的空列表后先失败；核验单元格提取时将未返回的格视为空字符串，严格 typed _same 比较不变。fed0b4c1 矩阵因该生产修正被替代；等本机定向/全量完成后仅启动一个最终候选矩阵。
