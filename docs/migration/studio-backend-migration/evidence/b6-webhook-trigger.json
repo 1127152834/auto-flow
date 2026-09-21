@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-016-webhook-trigger",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准安全增强",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -11,7 +11,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["webhook_trigger"],
+  "nodes": [
+    "webhook_trigger"
+  ],
   "implemented": [
     "保留GET、POST、PUT、DELETE和ANY方法、无限或有限等待、请求数据变量及参数自动展开语义",
     "保留请求头和查询参数验证、自定义JSON响应正文与状态码、完成和超时注销语义",
@@ -53,8 +55,17 @@
     "unauthenticatedSurface": "/api/triggers/webhook/{webhookId} only; quiesce gate remains active"
   },
   "remaining": [
-    "正式Electron真实UI中复制URL、保存、关闭重开、运行并由外部客户端触发",
     "OpenAPI正式应用与schema-only导出仍有既存MCP路由装配差异，需由MCP功能块负责人核销",
-    "平台外部网络可达性按正式打包和防火墙环境分别实测"
-  ]
+    "平台外部网络可达性按正式打包和防火墙环境分别实测",
+    "正式打包入口和外部防火墙可达性仍需平台专项；Webhook 认证/验证错误继续由后端合同测试覆盖"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-webhook-trigger.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-webhook-trigger-electron-Su8cY3/result.json",
+    "covers": "正式 Studio 真实 UI 生成并保存 webhookId，运行后由本地 loopback HTTP 客户端 POST /api/triggers/webhook/{id}，响应 200，worker 继续后续日志并清理",
+    "boundary": "无外部网络和用户数据库；正式打包入口与外部防火墙可达性单独记录"
+  }
 }

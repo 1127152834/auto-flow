@@ -11945,7 +11945,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -12019,7 +12019,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码、入站路由、worker 确认投递、幂等与正式 Electron macOS arm64 UI loopback 触发已通过；正式打包入口和外部网络可达性仍待专项实测。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -12048,7 +12048,7 @@
         },
         {
           "id": "BE.webhook_trigger.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -12056,12 +12056,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 webhook_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：Webhook触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-webhook-trigger.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-webhook-trigger-electron-Su8cY3/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：原版验证/响应语义、AutoFlow 入站路由、真实 worker 和 macOS arm64 正式 UI 已通过；外部网络环境不推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-webhook-trigger.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-webhook-trigger.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-webhook-trigger-electron-Su8cY3/result.json"
     }
   },
   {

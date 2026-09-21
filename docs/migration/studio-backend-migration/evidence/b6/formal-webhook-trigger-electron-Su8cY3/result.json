@@ -1,0 +1,42 @@
+{
+  "evidenceId": "BE-B6-webhook-trigger-formal-electron",
+  "checkedAt": "2026-09-21T19:58:01.562Z",
+  "gitHead": "f7d09447a7271ab187f50e02af2c329f0c08f8db",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "XOLDqNegSPdiLWnYd4yU6",
+  "profileId": "e1b9ae8c-c590-43e8-b3f8-079262a35c38",
+  "runId": "2d6b54dd-0b62-429a-b3dd-2632ba981e8f",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 添加 Webhook 触发器、读取生成 ID 并连接后续日志节点",
+    "正式保存接口把 Webhook ID、后续日志节点和连线写入临时 SQLite",
+    "外部本地 HTTP 客户端真实 POST Webhook，返回 200，worker 收到后继续日志节点并完成",
+    "纯系统工具流程未启动 CloakBrowser，运行结束后无子进程或浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "webhook_trigger",
+      "nodeId": "T1vZztjycg3YIEh83Qxx3",
+      "webhookId": "webhook_1790020673688_ttg3syshz"
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "Nt-0CK9jmVE7L5M1oDhvw",
+      "result": {
+        "level": "info",
+        "message": "Webhook已触发"
+      }
+    }
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "webhook": "local loopback POST with a fixed marker; no external network",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "external firewall and packaged-entry reachability remain separately unverified"
+  }
+}
