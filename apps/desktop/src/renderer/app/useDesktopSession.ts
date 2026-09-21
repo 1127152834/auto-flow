@@ -72,7 +72,10 @@ export function useDesktopSession() {
       setSession({ workspaceKey: runtime.workspaceKey, instanceId: health.instanceId, apiVersion: health.apiVersion, baseUrl: sidecar.baseUrl, token: sidecar.token, client: authenticatedClient })
       setStatus('connected')
     } catch (error) {
-      if (epoch === connectionEpoch.current) { setStatus('offline'); setMessage(error instanceof Error ? error.message : '无法连接到本地服务') }
+      if (epoch === connectionEpoch.current) {
+        setStatus('offline'); setMessage(error instanceof Error ? error.message : '无法连接到本地服务')
+        window.dispatchEvent(new CustomEvent('studio:connection-error'))
+      }
     } finally { if (epoch === connectionEpoch.current) connecting.current = false }
   }, [])
 
@@ -96,10 +99,14 @@ export function useDesktopSession() {
             connectionKey.current = null
             setStatus('offline')
             setMessage(runtime.sidecar.state === 'starting' ? '本地服务正在重新连接' : '本地服务已停止，可在设置中恢复')
+            window.dispatchEvent(new CustomEvent('studio:connection-error'))
           }
         }
       } catch {
-        if (!disposed && !connecting.current && epoch === connectionEpoch.current) { connectionKey.current = null; setStatus('offline'); setMessage('无法读取本地服务状态，请重新连接') }
+        if (!disposed && !connecting.current && epoch === connectionEpoch.current) {
+          connectionKey.current = null; setStatus('offline'); setMessage('无法读取本地服务状态，请重新连接')
+          window.dispatchEvent(new CustomEvent('studio:connection-error'))
+        }
       }
       if (!disposed) timer = window.setTimeout(poll, 1000)
     }

@@ -34,7 +34,9 @@
     "日志导出在固定事件截止序号下按1000条持久事件分页扫描并流式输出，不在内存拼接整次运行",
     "生产控制流完成1000轮纯变量循环，每轮具有独立executionId和准确循环轮次；10000条SQLite日志按100条有界窗口读取",
     "循环首次写入、每轮index/item推进和退出作用域均写入变量诊断；退出时删除新建局部值或恢复进入循环前的同名值，局部值不泄漏到后续节点",
-    "变量追踪合同和正式面板支持scope_exit筛选、旧值、新值及退出类型展示"
+    "变量追踪合同和正式面板支持scope_exit筛选、旧值、新值及退出类型展示",
+    "sidecar异常退出时Studio保留草稿并显示离线状态；仅服务已死亡时允许从主窗口设置页恢复，健康服务上的活跃会话仍阻止显式重启",
+    "服务连接代次切换后，Studio按稳定runId核对持久终态；interrupted运行解除本地暂停与占用、刷新历史且不重放节点"
   ],
   "checks": [
     {
@@ -96,6 +98,11 @@
       "command": "pytest control-flow differential, production control flow, debug runtime, workflow run repository and variable diagnostic contract suites; Vitest variable tracking suites; Ruff; mypy; TypeScript; ESLint; OpenAPI consistency",
       "result": "103 backend tests and 10 frontend tests passed; all static and contract checks passed",
       "covers": "计数、范围、条件、列表、字典及无限循环的局部变量进入、逐轮更新、退出删除或外层恢复；scope_exit持久筛选、生成类型及面板展示"
+    },
+    {
+      "command": "AUTOFLOW_B8_RESTART_RECOVERY_ONLY=1 node scripts/smoke-studio-backend-b3-control-flow.mjs",
+      "result": "passed on macOS arm64 development build",
+      "covers": "正式Electron在调试暂停中强制终止sidecar、Studio离线保稿、主窗口设置页真实重启、interrupted恢复、运行历史重载和暂停目标零重放"
     }
   ],
   "boundaries": {
@@ -106,7 +113,6 @@
     "windowsTested": false
   },
   "remaining": [
-    "复杂调试正式UI和打包入口容量验收",
-    "sidecar崩溃与重启后的正式Electron恢复组合验收"
+    "复杂调试正式UI和打包入口容量验收"
   ]
 }

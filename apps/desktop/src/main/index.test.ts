@@ -56,6 +56,7 @@ beforeEach(async () => {
     confirmWorkspace = settings.confirmWorkspace
     restart = settings.restart
     getRuntimeContext = () => context
+    getStatus = () => context.sidecar
     getPublicStatus = () => context.sidecar
     getPreferences = () => context.preferences
     getHostStatus = () => ({ state: 'stopped' })
@@ -98,6 +99,12 @@ it('allows registered Studio runtime reads while protecting mutations and gating
   await expect(invoke('autoflow:sidecar-restart', main)).resolves.toEqual(context.sidecar)
   expect(settings.restart).toHaveBeenCalledOnce()
   expect(JSON.stringify(invoke('autoflow:runtime-context', main))).not.toContain('hostToken')
+
+  context = { ...context, sidecar: { state: 'failed', message: 'sidecar exited with code unknown' } }
+  studio.webContents.send.mockClear()
+  await expect(invoke('autoflow:sidecar-restart', main)).resolves.toEqual(context.sidecar)
+  expect(settings.restart).toHaveBeenCalledTimes(2)
+  expect(studio.webContents.send).not.toHaveBeenCalledWith('autoflow:studio-prepare-leave', expect.anything())
 })
 
 it('switches workspace only after Studio acknowledgement and recreates its isolated window', async () => {

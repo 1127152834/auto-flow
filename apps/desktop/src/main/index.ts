@@ -166,7 +166,9 @@ async function createWindow(): Promise<void> {
   ipcMain.removeHandler('autoflow:sidecar-restart')
   ipcMain.handle('autoflow:sidecar-restart', async event => {
     requireRuntimeSender(event)
-    if(!await studio.prepareLeave('restart'))throw new Error('请先结束工作台的活跃会话，再重启服务')
+    // A dead sidecar cannot release the stale renderer resource. The new
+    // sidecar reconciles persisted active runs as interrupted during startup.
+    if(settings!.getStatus().state==='ready'&&!await studio.prepareLeave('restart'))throw new Error('请先结束工作台的活跃会话，再重启服务')
     try { return await settings!.restart() } catch (error) { throw new Error(error instanceof SettingsError ? error.message : '本地服务重启失败，请重试') } finally { publishRuntimeContext() }
   })
   mainWindow.webContents.on('did-finish-load', () => { if (settings) applyPreferences(settings.getPreferences()) })

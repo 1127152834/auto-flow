@@ -14,9 +14,11 @@ const sourceKernel = process.env.AUTOFLOW_B1_KERNEL_DIR
   ?? '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2'
 const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const complexDebugOnly = process.env.AUTOFLOW_B8_COMPLEX_DEBUG_ONLY === '1'
-const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${complexDebugOnly ? 'b8' : 'b3'}`)
+const restartRecoveryOnly = process.env.AUTOFLOW_B8_RESTART_RECOVERY_ONLY === '1'
+const focusedB8 = complexDebugOnly || restartRecoveryOnly
+const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -149,6 +151,49 @@ try {
   await waitFor(studio, `document.querySelector('input[placeholder="工作流名称"]')?.value === ${JSON.stringify(workflowName)} && document.querySelectorAll('.react-flow__node').length === ${savedNodeCount}`, 'persisted workflow reopen')
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__edge').length"), savedEdgeCount)
   checkpoint('macOS Cmd+W 正常关闭后从主窗口重开，节点、结构和配置全部恢复')
+
+  if (restartRecoveryOnly) {
+    const incrementId = byType('increment_decrement')[0].id
+    const pausedRun = await runToCanvasNode(studio, runtime, saved.id, incrementId)
+    const resultsBeforeCrash = await readRunResults(runtime, pausedRun.runId)
+    const previousInstance = runtime.sidecar.instanceId
+    const sidecarPid = listeningPid(runtime.sidecar.baseUrl)
+    process.kill(sidecarPid, 'SIGKILL')
+    await waitFor(main, `(async()=>{const r=await window.autoflow.getRuntimeContext();return r.sidecar.state==='failed'})()`, 'sidecar crash observed', 15_000)
+    await waitFor(studio, "document.body.innerText.includes('服务连接不可用，当前草稿仍保留')", 'Studio offline state', 15_000)
+    await capture(studio, join(evidenceDir, 'sidecar-crashed.png'))
+    checkpoint('调试暂停期间强制终止 sidecar；Studio 保留当前文档并明确进入离线状态')
+
+    await click(main, '设置')
+    await waitFor(main, "document.body.innerText.includes('启动失败')", 'failed sidecar settings')
+    await click(main, '重启服务')
+    const recoveredRuntime = await waitFor(main, `(async()=>{const r=await window.autoflow.getRuntimeContext();return r.sidecar.state==='ready'&&r.sidecar.instanceId!==${JSON.stringify(previousInstance)}?r:null})()`, 'restarted sidecar', 30_000)
+    await waitFor(studio, "document.body.innerText.includes('模块库')", 'Studio reconnect', 30_000)
+    const interrupted = await api(recoveredRuntime, `/workflow-runs/${encodeURIComponent(pausedRun.runId)}`)
+    assert.equal(interrupted.status, 'interrupted')
+    assert.equal(interrupted.error.code, 'RUN_INTERRUPTED')
+    const resultsAfterRestart = await readRunResults(recoveredRuntime, pausedRun.runId)
+    assert.deepEqual(resultsAfterRestart, resultsBeforeCrash)
+    assert.equal(resultsAfterRestart.some(item => item.nodeId === incrementId), false)
+    await waitFor(studio, `String(document.querySelector('[aria-label="运行日志记录"]')?.textContent||'').includes('interrupted')`, 'interrupted run history', 15_000)
+    await waitForRunReady(studio)
+    await capture(studio, join(evidenceDir, 'interrupted-run-restored.png'))
+    const recoveryEvents = sqliteRows(join(userData, 'data', 'autoflow.sqlite3'), `SELECT seq,json_extract(payload,'$.type') AS type,json_extract(payload,'$.payload.reason') AS reason FROM workflow_run_events WHERE run_id=${sqlLiteral(pausedRun.runId)} AND json_extract(payload,'$.type')='execution:interrupted'`)
+    assert.deepEqual(recoveryEvents.map(item => item.reason), ['service-restarted'])
+    checkpoint('通过主窗口设置真实重启 sidecar；旧运行恢复为 interrupted，历史和日志可读，暂停节点未重放')
+
+    const report = {
+      evidenceId: 'BE-B8-formal-restart-recovery-electron', checkedAt: new Date().toISOString(), gitHead,
+      result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+      workflowId: saved.id, profileId: profile.id, runId: pausedRun.runId,
+      sidecar: { crashedPid: sidecarPid, previousInstance, recoveredInstance: recoveredRuntime.sidecar.instanceId },
+      assertions: { status: interrupted.status, errorCode: interrupted.error.code, resultCount: resultsAfterRestart.length, recoveryEvents }, checks,
+      boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none (pure data)', interaction: 'formal main and Studio UI through CDP mouse and keyboard; SIGKILL only injects the sidecar crash; no Store access' },
+    }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
 
   if (complexDebugOnly) {
     const loopId = byType('loop')[0].id
@@ -925,5 +970,12 @@ function sqliteRows(database, query) {
   return output ? JSON.parse(output) : []
 }
 function sqlLiteral(value) { return `'${String(value).replaceAll("'", "''")}'` }
+function listeningPid(baseUrl) {
+  const port = new URL(baseUrl).port
+  const output = execFileSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], { encoding: 'utf8' }).trim()
+  const pid = Number(output.split(/\s+/)[0])
+  assert.ok(Number.isSafeInteger(pid) && pid > 0, `sidecar listener not found on ${port}`)
+  return pid
+}
 function cloakProcesses(workspace) { return execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(workspace) && /Chromium|CloakBrowser/.test(line)) }
 async function capture(cdp, path) { await cdp.evaluate('document.fonts.ready.then(()=>true)'); const { data } = await cdp.command('Page.captureScreenshot', { format: 'png' }); await writeFile(path, data, 'base64') }

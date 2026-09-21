@@ -154,6 +154,33 @@ export function Toolbar() {
 
   const isRunning = executionStatus === 'running'
 
+  useEffect(() => {
+    let request = 0
+    const reconcileRun = async () => {
+      const sequence = ++request
+      const revision = getStudioTransportRevision()
+      const state = useWorkflowStore.getState()
+      if (state.executionStatus !== 'running' || !state.currentExecutionRunId) return
+      const runId = state.currentExecutionRunId
+      const result = await workflowApi.getRun(runId)
+      if (sequence !== request || revision !== getStudioTransportRevision() || useWorkflowStore.getState().currentExecutionRunId !== runId) return
+      const status = result.data?.status
+      if (!result.success || !status || !['completed', 'failed', 'stopped', 'interrupted'].includes(status)) return
+      useDebugStore.getState().clearPaused()
+      state.setExecutionStatus(status === 'completed' ? 'completed' : status === 'stopped' ? 'stopped' : 'failed')
+      if (status === 'interrupted') state.addLog({ level: 'error', message: '本地服务已重启，本次运行已中断且不会自动重放' })
+      window.dispatchEvent(new CustomEvent('studio:run-history-changed', { detail: { runId, status } }))
+    }
+    void reconcileRun()
+    window.addEventListener('studio:transport-changed', reconcileRun)
+    window.addEventListener('studio:connection-restored', reconcileRun)
+    return () => {
+      request++
+      window.removeEventListener('studio:transport-changed', reconcileRun)
+      window.removeEventListener('studio:connection-restored', reconcileRun)
+    }
+  }, [])
+
   // 处理名称输入框聚焦 - 记录初始名称
   const handleNameFocus = useCallback(() => {
     nameOnFocusRef.current = name

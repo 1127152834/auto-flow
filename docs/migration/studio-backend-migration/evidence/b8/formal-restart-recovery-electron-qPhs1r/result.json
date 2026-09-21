@@ -1,0 +1,43 @@
+{
+  "evidenceId": "BE-B8-formal-restart-recovery-electron",
+  "checkedAt": "2026-09-21T16:41:30.838Z",
+  "gitHead": "944ddb7427ace8ea97d8b22377e5955092bddc99",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "6-6ApeJ5ZrgFUwbqvs6he",
+  "profileId": "cca3efdb-4edb-4ab6-94aa-6effcd177fb8",
+  "runId": "73a566d1-48ee-4264-a631-18a1753da073",
+  "sidecar": {
+    "crashedPid": 79945,
+    "previousInstance": "79940-1790008872819",
+    "recoveredInstance": "79940-1790008887941"
+  },
+  "assertions": {
+    "status": "interrupted",
+    "errorCode": "RUN_INTERRUPTED",
+    "resultCount": 4,
+    "recoveryEvents": [
+      {
+        "seq": 19,
+        "type": "execution:interrupted",
+        "reason": "service-restarted"
+      }
+    ]
+  },
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "通过流程图真实右键入口创建子流程分组、组内步骤和独立调用；调用按稳定节点 ID 绑定",
+    "真实 HTTP/SQLite 文档包含条件双分支、循环双出口、子流程定义与独立调用",
+    "macOS Cmd+W 正常关闭后从主窗口重开，节点、结构和配置全部恢复",
+    "调试暂停期间强制终止 sidecar；Studio 保留当前文档并明确进入离线状态",
+    "通过主窗口设置真实重启 sidecar；旧运行恢复为 interrupted，历史和日志可读，暂停节点未重放"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "formal main and Studio UI through CDP mouse and keyboard; SIGKILL only injects the sidecar crash; no Store access"
+  }
+}
