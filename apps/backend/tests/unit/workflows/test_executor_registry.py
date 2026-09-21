@@ -262,6 +262,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "api_trigger",
         "webhook_trigger",
         "file_watcher_trigger",
+        "email_trigger",
         "run_workflow_file",
         "subflow",
         "custom_module",

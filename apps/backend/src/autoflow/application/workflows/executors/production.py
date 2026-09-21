@@ -47,6 +47,7 @@ from .dict_advanced import (
     DictSortExecutor,
 )
 from .external_http import EXTERNAL_HTTP_EXECUTORS
+from .email_trigger import EMAIL_TRIGGER_EXECUTORS
 from .file_watcher import FILE_WATCHER_EXECUTORS
 from .firecrawl import FIRECRAWL_EXECUTORS
 from .input_prompt import InputPromptExecutor
@@ -168,6 +169,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *AI_SCRAPER_EXECUTORS,
     *FIRECRAWL_EXECUTORS,
     *EXTERNAL_HTTP_EXECUTORS,
+    *EMAIL_TRIGGER_EXECUTORS,
     *FILE_WATCHER_EXECUTORS,
     *LOG_EXECUTORS,
     *MESSAGE_EXECUTORS,
