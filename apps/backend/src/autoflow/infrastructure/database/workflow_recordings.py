@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from .workflow_models import (
+    WorkflowRecordingCommandRow,
     WorkflowRecordingEventRow,
     WorkflowRecordingReviewRow,
     WorkflowRecordingSessionRow,
@@ -66,6 +67,65 @@ class SqlAlchemyWorkflowRecordings:
                 raise ValueError("当前已有活跃录制会话") from error
             return _status(row)
 
+    def begin_command(
+        self,
+        command_id: str,
+        *,
+        session_id: str,
+        action: str,
+        request_hash: str,
+        now: datetime,
+    ) -> dict[str, Any] | None:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(WorkflowRecordingCommandRow, command_id)
+            if row is not None:
+                result = _command(row)
+                session.rollback()
+                return result
+            session.add(
+                WorkflowRecordingCommandRow(
+                    id=command_id,
+                    session_id=session_id,
+                    action=action,
+                    request_hash=request_hash,
+                    status="pending",
+                    payload={},
+                    http_status=202,
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+            session.commit()
+            return None
+
+    def finish_command(
+        self,
+        command_id: str,
+        *,
+        status: str,
+        payload: dict[str, Any],
+        http_status: int,
+        now: datetime,
+    ) -> dict[str, Any]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(WorkflowRecordingCommandRow, command_id)
+            if row is None:
+                session.rollback()
+                raise ValueError("录制命令不存在")
+            row.status = status
+            row.payload = copy.deepcopy(payload)
+            row.http_status = http_status
+            row.updated_at = now
+            session.commit()
+            return _command(row)
+
+    def command(self, command_id: str) -> dict[str, Any] | None:
+        with self._session_factory() as session:
+            row = session.get(WorkflowRecordingCommandRow, command_id)
+            return _command(row) if row is not None else None
+
     def recover_active(self, *, now: datetime) -> int:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -78,6 +138,20 @@ class SqlAlchemyWorkflowRecordings:
                 row.status = "interrupted"
                 row.active_slot = None
                 row.updated_at = now
+            commands = session.scalars(
+                select(WorkflowRecordingCommandRow).where(
+                    WorkflowRecordingCommandRow.status == "pending"
+                )
+            ).all()
+            for command in commands:
+                command.status = "failed"
+                command.payload = {
+                    "code": "RECORDING_COMMAND_INTERRUPTED",
+                    "message": "录制服务中断，命令结果未确认且不会自动重放",
+                    "details": {},
+                }
+                command.http_status = 503
+                command.updated_at = now
             session.commit()
             return len(rows)
 
@@ -260,6 +334,18 @@ def _status(row: WorkflowRecordingSessionRow) -> dict[str, Any]:
         "sessionId": row.id,
         "recording": row.status == "recording",
         "nextSeq": row.last_sequence,
+    }
+
+
+def _command(row: WorkflowRecordingCommandRow) -> dict[str, Any]:
+    return {
+        "commandId": row.id,
+        "sessionId": row.session_id,
+        "action": row.action,
+        "requestHash": row.request_hash,
+        "status": row.status,
+        "payload": copy.deepcopy(row.payload),
+        "httpStatus": row.http_status,
     }
 
 

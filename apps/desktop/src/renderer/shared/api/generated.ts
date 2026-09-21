@@ -3016,6 +3016,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/recorder/commands/{command_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recorder Command */
+        get: operations["recorder_command_api_recorder_commands__command_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/recorder/status": {
         parameters: {
             query?: never;
@@ -10922,6 +10939,38 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioRecorderCommandState */
+        StudioRecorderCommandState: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Commandid */
+            commandId: string;
+            /** Sessionid */
+            sessionId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "start" | "pause" | "resume" | "stop";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "completed" | "failed";
+            /** Result */
+            result?: {
+                [key: string]: unknown;
+            } | null;
+            /** Error */
+            error?: string | null;
+            /** Errorcode */
+            errorCode?: string | null;
+            /** Httpstatus */
+            httpStatus: number;
+        };
         /** StudioRecorderControl */
         StudioRecorderControl: {
             /**
@@ -10940,6 +10989,8 @@ export type components = {
             paused: boolean;
             /** Nextseq */
             nextSeq: number;
+            /** Commandid */
+            commandId: string;
             /**
              * Hasmore
              * @default false
@@ -10965,6 +11016,8 @@ export type components = {
         StudioRecorderReadRequest: {
             /** Sessionid */
             sessionId: string;
+            /** Commandid */
+            commandId: string;
             /**
              * Afterseq
              * @default 0
@@ -10975,11 +11028,15 @@ export type components = {
         StudioRecorderStartRequest: {
             /** Sessionid */
             sessionId: string;
+            /** Commandid */
+            commandId: string;
         };
         /** StudioRecorderStarted */
         StudioRecorderStarted: {
             /** Success */
             success: boolean;
+            /** Commandid */
+            commandId: string;
             /** Sessionid */
             sessionId: string;
             /** Recording */
@@ -11024,6 +11081,8 @@ export type components = {
             hasMore: boolean;
             /** Success */
             success: boolean;
+            /** Commandid */
+            commandId: string;
             /** Sessionid */
             sessionId: string;
             /** Nextseq */
@@ -23843,6 +23902,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudioRecorderControl"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recorder_command_api_recorder_commands__command_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                command_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecorderCommandState"];
                 };
             };
             /** @description Validation Error */

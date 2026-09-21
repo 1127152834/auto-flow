@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import sqlite3
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
+from alembic import command
+from alembic.config import Config
+from autoflow.infrastructure.database import session as database_session
 from autoflow.infrastructure.database import workflow_recordings
 from autoflow.infrastructure.database.session import (
     create_session_factory,
@@ -60,6 +65,32 @@ def test_recording_events_are_durable_ordered_and_non_destructive(tmp_path) -> N
     second.dispose()
 
 
+def test_recording_command_migration_preserves_existing_sessions(tmp_path) -> None:
+    database = tmp_path / "recording-command-upgrade.db"
+    config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+    config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+    command.upgrade(config, "0018_scheduled_tasks")
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "INSERT INTO workflow_recording_sessions VALUES (?, ?, ?, ?, ?, ?, ?)",
+            ("kept", "stopped", None, 0, 0, "2026-09-21", "2026-09-21"),
+        )
+    migrate_database(database)
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone() == ("0019_recording_commands",)
+        assert connection.execute(
+            "SELECT id, status FROM workflow_recording_sessions"
+        ).fetchone() == ("kept", "stopped")
+        assert "workflow_recording_commands" in {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+        }
+
+
 def test_recording_session_and_review_revisions_reject_conflicts(tmp_path) -> None:
     database = tmp_path / "workspace.db"
     migrate_database(database)
@@ -106,11 +137,61 @@ def test_recording_recovery_marks_orphan_active_session_interrupted(tmp_path) ->
     recordings = SqlAlchemyWorkflowRecordings(factory)
     now = datetime.now(UTC)
     recordings.start("orphan", now=now)
+    recordings.begin_command(
+        "pending-command",
+        session_id="orphan",
+        action="pause",
+        request_hash="b" * 64,
+        now=now,
+    )
 
     assert recordings.recover_active(now=now) == 1
     assert recordings.status("orphan")["recording"] is False
     assert recordings.start("next", now=now)["recording"] is True
+    interrupted = recordings.command("pending-command")
+    assert interrupted is not None
+    assert interrupted["status"] == "failed"
+    assert interrupted["payload"]["code"] == "RECORDING_COMMAND_INTERRUPTED"
     factory.dispose()
+
+
+def test_recording_command_claim_and_result_survive_restart(tmp_path) -> None:
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    first = create_session_factory(database)
+    recordings = SqlAlchemyWorkflowRecordings(first)
+    now = datetime.now(UTC)
+    assert recordings.begin_command(
+        "command-1",
+        session_id="record-1",
+        action="start",
+        request_hash="a" * 64,
+        now=now,
+    ) is None
+    pending = recordings.command("command-1")
+    assert pending is not None and pending["status"] == "pending"
+    recordings.finish_command(
+        "command-1",
+        status="completed",
+        payload={"success": True, "commandId": "command-1"},
+        http_status=200,
+        now=now,
+    )
+    first.dispose()
+
+    second = create_session_factory(database)
+    restored = SqlAlchemyWorkflowRecordings(second)
+    command = restored.command("command-1")
+    assert command is not None
+    assert command["payload"] == {"success": True, "commandId": "command-1"}
+    assert restored.begin_command(
+        "command-1",
+        session_id="record-1",
+        action="start",
+        request_hash="a" * 64,
+        now=now,
+    ) == command
+    second.dispose()
 
 
 def test_recording_worker_exit_marks_session_interrupted(tmp_path) -> None:

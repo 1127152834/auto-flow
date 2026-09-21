@@ -22,7 +22,14 @@ async def test_recording_review_http_persists_and_checks_revision(tmp_path) -> N
     ) as client:
         initial_status = await client.get("/api/recorder/status")
         unavailable = await client.post(
-            "/api/recorder/start", json={"sessionId": "record-without-browser"}
+            "/api/recorder/start",
+            json={
+                "sessionId": "record-without-browser",
+                "commandId": "start-without-browser",
+            },
+        )
+        failed_command = await client.get(
+            "/api/recorder/commands/start-without-browser"
         )
         missing = await client.get("/api/recorder/reviews/document-1")
         saved = await client.put(
@@ -55,6 +62,17 @@ async def test_recording_review_http_persists_and_checks_revision(tmp_path) -> N
     }
     assert unavailable.status_code == 409
     assert unavailable.json()["error"]["code"] == "INSPECTION_BROWSER_CLOSED"
+    assert failed_command.json() == {
+        "success": True,
+        "commandId": "start-without-browser",
+        "sessionId": "record-without-browser",
+        "action": "start",
+        "status": "failed",
+        "result": None,
+        "error": "浏览器未打开，请先启动浏览器",
+        "errorCode": "INSPECTION_BROWSER_CLOSED",
+        "httpStatus": 409,
+    }
     assert missing.status_code == 404
     assert saved.status_code == 200
     assert saved.json() == restored.json() == {

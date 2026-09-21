@@ -301,25 +301,39 @@ async def test_recording_pause_resume_preserves_confirmed_tail_and_is_idempotent
     )
     workers.service = service
     await service.open(profile_id="profile-1")
-    await service.start_recording("record-pause")
+    started = await service.recording_command(
+        "start-command", action="start", session_id="record-pause"
+    )
+    assert await service.recording_command(
+        "start-command", action="start", session_id="record-pause"
+    ) == started
+    with pytest.raises(WorkflowRunError, match="commandId 已用于不同"):
+        await service.recording_command(
+            "start-command", action="pause", session_id="record-pause"
+        )
     workers.recorded.append({"type": "input", "selector": "#name", "value": "暂停前"})
 
-    paused = await service.pause_recording("record-pause", after_seq=0)
+    paused = await service.recording_command(
+        "pause-command", action="pause", session_id="record-pause", after_seq=0
+    )
     assert paused["paused"] is True
     assert paused["data"]["events"][0]["value"] == "暂停前"
     assert service.recording_status("record-pause")["paused"] is True
-    assert await service.pause_recording("record-pause", after_seq=1) == {
-        "success": True, "sessionId": "record-pause", "recording": True,
-        "paused": True, "nextSeq": 1, "hasMore": False, "data": {"events": []},
-    }
+    assert await service.recording_command(
+        "pause-command", action="pause", session_id="record-pause", after_seq=0
+    ) == paused
 
-    resumed = await service.resume_recording("record-pause", after_seq=1)
+    resumed = await service.recording_command(
+        "resume-command", action="resume", session_id="record-pause", after_seq=1
+    )
     assert resumed["paused"] is False
     assert service.recording_status("record-pause")["paused"] is False
-    await service.resume_recording("record-pause", after_seq=1)
+    assert service.recording_command_status("resume-command")["result"] == resumed
     assert [item["command"] for item in workers.commands].count("recorder_pause") == 1
     assert [item["command"] for item in workers.commands].count("recorder_resume") == 1
-    await service.stop_recording("record-pause", after_seq=1)
+    await service.recording_command(
+        "stop-command", action="stop", session_id="record-pause", after_seq=1
+    )
     await service.close()
     factory.dispose()
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -60,6 +62,7 @@ class WorkflowInspectionService:
         self._waiters: dict[str, asyncio.Future[dict[str, Any]]] = {}
         self._lock = asyncio.Lock()
         self._picker_lock = asyncio.Lock()
+        self._recording_command_lock = asyncio.Lock()
 
     def busy(self) -> bool:
         return self._state is not None or self._workers.busy()
@@ -330,6 +333,104 @@ class WorkflowInspectionService:
         state.recorder_paused = False
         state.recorder_pending.clear()
         return {"success": True, **receipt, "paused": False}
+
+    async def recording_command(
+        self,
+        command_id: str,
+        *,
+        action: str,
+        session_id: str,
+        after_seq: int = 0,
+    ) -> dict[str, Any]:
+        if action not in {"start", "pause", "resume", "stop"}:
+            raise WorkflowRunError("RECORDING_COMMAND_INVALID", "录制命令无效", 422)
+        repository = self._require_recordings()
+        fingerprint = hashlib.sha256(
+            json.dumps(
+                {"action": action, "sessionId": session_id, "afterSeq": after_seq},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
+        async with self._recording_command_lock:
+            previous = repository.begin_command(
+                command_id,
+                session_id=session_id,
+                action=action,
+                request_hash=fingerprint,
+                now=datetime.now(UTC),
+            )
+            if previous is not None:
+                if previous["requestHash"] != fingerprint:
+                    raise _conflict("commandId 已用于不同录制命令")
+                return self._recording_command_result(previous)
+            try:
+                if action == "start":
+                    result = await self.start_recording(session_id)
+                elif action == "pause":
+                    result = await self.pause_recording(session_id, after_seq=after_seq)
+                elif action == "resume":
+                    result = await self.resume_recording(session_id, after_seq=after_seq)
+                else:
+                    result = await self.stop_recording(session_id, after_seq=after_seq)
+            except WorkflowRunError as error:
+                repository.finish_command(
+                    command_id,
+                    status="failed",
+                    payload={
+                        "code": error.code,
+                        "message": error.message,
+                        "details": error.details,
+                    },
+                    http_status=error.status,
+                    now=datetime.now(UTC),
+                )
+                raise
+            result = {**result, "commandId": command_id}
+            repository.finish_command(
+                command_id,
+                status="completed",
+                payload=result,
+                http_status=200,
+                now=datetime.now(UTC),
+            )
+            return result
+
+    def recording_command_status(self, command_id: str) -> dict[str, Any]:
+        command = self._require_recordings().command(command_id)
+        if command is None:
+            raise WorkflowRunError(
+                "RECORDING_COMMAND_NOT_FOUND", "录制命令不存在", 404
+            )
+        payload = command["payload"]
+        failed = command["status"] == "failed"
+        return {
+            "success": True,
+            "commandId": command["commandId"],
+            "sessionId": command["sessionId"],
+            "action": command["action"],
+            "status": command["status"],
+            "result": payload if command["status"] == "completed" else None,
+            "error": payload.get("message") if failed else None,
+            "errorCode": payload.get("code") if failed else None,
+            "httpStatus": command["httpStatus"],
+        }
+
+    @staticmethod
+    def _recording_command_result(command: Mapping[str, Any]) -> dict[str, Any]:
+        if command["status"] == "completed":
+            return dict(command["payload"])
+        if command["status"] == "failed":
+            payload = command["payload"]
+            raise WorkflowRunError(
+                str(payload.get("code") or "RECORDING_COMMAND_FAILED"),
+                str(payload.get("message") or "录制命令失败"),
+                int(command["httpStatus"]),
+                dict(payload.get("details") or {}),
+            )
+        raise WorkflowRunError(
+            "RECORDING_COMMAND_PENDING", "录制命令尚未确认，请查询原 commandId", 503
+        )
 
     async def recording_events(
         self, session_id: str, *, after_seq: int

@@ -19,7 +19,8 @@
     "容量限制为单值1MiB、单录制10000步和64MiB；整批越界不写入并停止采集，浏览器保留供审查",
     "worker异常退出将会话标记为interrupted并保留已确认步骤；正常sidecar关闭先确认尾部再清理浏览器和资源",
     "现有start、events、stop、status和reviews接口接入真实工作区数据库，OpenAPI生成类型已同步",
-    "录制会话支持开始、暂停、恢复和停止；暂停确认已采集尾部，暂停期间忽略页面操作，恢复继续复用同一浏览器会话"
+    "录制会话支持开始、暂停、恢复和停止；暂停确认已采集尾部，暂停期间忽略页面操作，恢复继续复用同一浏览器会话",
+    "开始、暂停、恢复和停止均使用稳定commandId；服务在SQLite中保存请求指纹和终态，重复请求返回原结果，响应丢失按原commandId回查，崩溃后的待确认命令标记失败且不重放"
   ],
   "adaptations": [
     "不启动WebRPA全局浏览器管理器，录制控制器挂入AutoFlow既有inspection worker",
@@ -61,6 +62,11 @@
       "command": "node scripts/smoke-studio-backend-b7-recording.mjs",
       "result": "passed on formal Electron development build (darwin-arm64), evidence formal-recording-electron-HmTUKs",
       "covers": "正式UI暂停/恢复、真实CloakBrowser输入点击、审查生成、SQLite保存、正常关窗重开、独立重放和两次浏览器进程清理"
+    },
+    {
+      "command": "pytest recording command contract/repository/HTTP/service and full migration-head compatibility; vitest recorder HTTP recovery/parity; formal Electron smoke",
+      "result": "录制及命令专项56项、迁移兼容74项、前端相关80项通过；正式Electron darwin-arm64通过，evidence formal-recording-electron-72nI0V",
+      "covers": "commandId同请求幂等、异请求冲突、成功/失败/待确认查询、响应丢失回查、重启持久化、崩溃不重放、0018到0019增量升级及正式UI全链路"
     }
   ],
   "realBrowser": {
@@ -83,7 +89,6 @@
     "windowsTested": false
   },
   "remaining": [
-    "补齐录制控制稳定 commandId 的持久回查合同；当前仅以 sessionId 和状态回查恢复响应丢失",
     "验证底层进程树清理失败重试，不提前释放互斥资源"
   ]
 }

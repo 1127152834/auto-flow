@@ -1013,6 +1013,7 @@ class StudioPathSelectionResult(ApiModel):
 class StudioRecorderStartRequest(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     session_id: str = Field(min_length=1, pattern=r"\S")
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
 
 
 class StudioRecorderReadRequest(StudioRecorderStartRequest):
@@ -1029,6 +1030,7 @@ class StudioRecorderEvent(ApiModel):
 class StudioRecorderStarted(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
     success: bool
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
     session_id: str = Field(min_length=1, pattern=r"\S")
     recording: bool
     paused: bool = False
@@ -1076,6 +1078,7 @@ class StudioRecorderStopped(ApiModel):
     has_more: bool = False
     model_config = ConfigDict(extra="allow", strict=True)
     success: bool
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
     session_id: str = Field(min_length=1, pattern=r"\S")
     next_seq: int = Field(ge=0, le=9007199254740991)
     data: StudioRecorderTail
@@ -1087,12 +1090,36 @@ class StudioRecorderStopped(ApiModel):
 
 
 class StudioRecorderControl(StudioRecorderStatus):
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
     has_more: bool = False
     data: StudioRecorderTail
 
     @model_validator(mode="after")
     def validate_sequence(self) -> Self:
         validate_recorder_tail(self.data.events, self.next_seq)
+        return self
+
+
+class StudioRecorderCommandState(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    success: Literal[True]
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    session_id: str = Field(min_length=1, pattern=r"\S")
+    action: Literal["start", "pause", "resume", "stop"]
+    status: Literal["pending", "completed", "failed"]
+    result: dict[str, Any] | None = None
+    error: str | None = None
+    error_code: str | None = None
+    http_status: int = Field(ge=100, le=599)
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> Self:
+        if self.status == "completed" and self.result is None:
+            raise ValueError("已完成录制命令必须包含结果")
+        if self.status == "failed" and not self.error:
+            raise ValueError("失败录制命令必须包含错误")
+        if self.status == "pending" and (self.result is not None or self.error):
+            raise ValueError("待确认录制命令不能包含终态结果")
         return self
 
 

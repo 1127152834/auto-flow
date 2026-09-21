@@ -16,6 +16,7 @@ from .workflow_studio_schemas import (
     StudioPickerSessionStartRequest,
     StudioPickerSessionState,
     StudioRecorderBatch,
+    StudioRecorderCommandState,
     StudioRecorderControl,
     StudioRecorderReadRequest,
     StudioRecorderStarted,
@@ -142,7 +143,9 @@ def workflow_inspection_router(service: WorkflowInspectionService) -> APIRouter:
 
     @router.post("/api/recorder/start", response_model=StudioRecorderStarted)
     async def recorder_start(request: StudioRecorderStartRequest) -> dict[str, Any]:
-        return await service.start_recording(request.session_id)
+        return await service.recording_command(
+            request.command_id, action="start", session_id=request.session_id
+        )
 
     @router.get("/api/recorder/events", response_model=StudioRecorderBatch)
     async def recorder_events(
@@ -153,21 +156,37 @@ def workflow_inspection_router(service: WorkflowInspectionService) -> APIRouter:
 
     @router.post("/api/recorder/stop", response_model=StudioRecorderStopped)
     async def recorder_stop(request: StudioRecorderReadRequest) -> dict[str, Any]:
-        return await service.stop_recording(
-            request.session_id, after_seq=request.after_seq
+        return await service.recording_command(
+            request.command_id,
+            action="stop",
+            session_id=request.session_id,
+            after_seq=request.after_seq,
         )
 
     @router.post("/api/recorder/pause", response_model=StudioRecorderControl)
     async def recorder_pause(request: StudioRecorderReadRequest) -> dict[str, Any]:
-        return await service.pause_recording(
-            request.session_id, after_seq=request.after_seq
+        return await service.recording_command(
+            request.command_id,
+            action="pause",
+            session_id=request.session_id,
+            after_seq=request.after_seq,
         )
 
     @router.post("/api/recorder/resume", response_model=StudioRecorderControl)
     async def recorder_resume(request: StudioRecorderReadRequest) -> dict[str, Any]:
-        return await service.resume_recording(
-            request.session_id, after_seq=request.after_seq
+        return await service.recording_command(
+            request.command_id,
+            action="resume",
+            session_id=request.session_id,
+            after_seq=request.after_seq,
         )
+
+    @router.get(
+        "/api/recorder/commands/{command_id}",
+        response_model=StudioRecorderCommandState,
+    )
+    def recorder_command(command_id: str) -> dict[str, Any]:
+        return service.recording_command_status(command_id)
 
     @router.get("/api/recorder/status", response_model=StudioRecorderStatus)
     def recorder_status(

@@ -30,7 +30,7 @@ describe.each(['memory','http'] as const)('recorder ownership over %s',mode=>{
   for(const path of ['/recorder/start','/recorder/stop'])expect((await raw(path,{})).status).toBe(422)
   expect((await raw('/recorder/events')).status).toBe(422)
   for(const path of ['/recorder/events?sessionId=other','/recorder/status?sessionId=other'])expect((await raw(path)).status).toBe(409)
-  expect((await raw('/recorder/stop',{sessionId:'other'})).status).toBe(409)
+  expect((await raw('/recorder/stop',{sessionId:'other',commandId:'stop-other'})).status).toBe(409)
   expect(mock.mockSnapshot().recording).toBe(true)
  })
  it('does not let an old stopped session stop a newer recording',async()=>{
@@ -67,7 +67,7 @@ it.each(['start','stop'] as const)('recovers a lost recorder %s HTTP response wi
   const result=await recorderApi[action]('record')
   expect(result.success).toBe(true)
   expect(paths.filter(path=>path===`/api/recorder/${action}`)).toHaveLength(1)
-  expect(paths).toContain('/api/recorder/status')
+  expect(paths.some(path=>path.startsWith('/api/recorder/commands/'))).toBe(true)
   if(action==='stop')expect(result).toMatchObject({data:{nextSeq:1,data:{events:[{value:'确认尾部'}]}}})
  }finally{await browserApi.close();await server.close();restore()}
 })
@@ -84,7 +84,7 @@ it.each(['pause','resume'] as const)('recovers a lost recorder %s HTTP response 
   const result=await recorderApi[action]('record')
   expect(result).toMatchObject({success:true,data:{recording:true,paused:action==='pause'}})
   expect(paths.filter(path=>path===`/api/recorder/${action}`)).toHaveLength(1)
-  expect(paths).toContain('/api/recorder/status')
+  expect(paths.some(path=>path.startsWith('/api/recorder/commands/'))).toBe(true)
  }finally{await browserApi.close();await server.close();restore()}
 })
 

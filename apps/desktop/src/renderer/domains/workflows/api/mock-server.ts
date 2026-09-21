@@ -89,6 +89,7 @@ let recordingPaused = false
 let recorded: ObjectValue[] = []
 let recordingSessionId: string | null = null
 const retiredRecordings = new Set<string>()
+const recordingCommands = new Map<string,{fingerprint:string;state:ObjectValue;result:ObjectValue}>()
 let picking = false
 let pickerSessionId: string | null = null
 let pickerRequestFingerprint: string | null = null
@@ -184,6 +185,18 @@ export function addMockRecordingEvent(event: ObjectValue) {
   if (!recording) throw new Error('请先在录制面板开始录制')
   if (recordingPaused) throw new Error('录制已暂停')
   recorded.push({ ...event, ts: Date.now(), sequence: recorded.length + 1 })
+}
+function recorderCommand(body:ObjectValue,action:string,result?:ObjectValue){
+  const commandId=typeof body.commandId==='string'&&body.commandId.trim()?body.commandId:null
+  const sessionId=typeof body.sessionId==='string'&&body.sessionId.trim()?body.sessionId:null
+  if(!commandId||!sessionId)return {error:failure('录制命令标识无效',422)}
+  const fingerprint=JSON.stringify({action,sessionId,afterSeq:Number(body.afterSeq||0)})
+  const previous=recordingCommands.get(commandId)
+  if(previous)return previous.fingerprint===fingerprint?{result:previous.result}:{error:failure('commandId 已用于不同录制命令',409)}
+  if(!result)return {commandId,sessionId,fingerprint}
+  const confirmed={...result,commandId}
+  recordingCommands.set(commandId,{fingerprint,state:{success:true,commandId,sessionId,action,status:'completed',result:confirmed,error:null,errorCode:null,httpStatus:200},result:confirmed})
+  return {result:confirmed}
 }
 /** Explicit result fixture; does not derive or execute automation actions. */
 export function seedMockRunResults(runId:string, rows:components['schemas']['StudioRunResultRow'][]) {
@@ -957,19 +970,28 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       persist({...db,recordingReviews:{...db.recordingReviews,[id]:saved}})
       return response(saved)
     }
+    const recordingCommand = path.match(/^\/recorder\/commands\/([^/]+)$/)
+    if(recordingCommand){
+      if(method!=='GET')return failure('录制命令查询仅支持 GET',405)
+      const value=recordingCommands.get(decodeURIComponent(recordingCommand[1]))
+      return value?response(value.state):failure('录制命令不存在',404)
+    }
     if (path === '/recorder/start') {
       if(method!=='POST')return failure('启动录制仅支持 POST',405)
       const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim() ? body.sessionId : null
-      if(!sessionId||Object.keys(body).some(key=>key!=='sessionId'))return failure('录制启动参数无效',422)
+      const command=recorderCommand(body,'start');if(command.error)return command.error;if(command.result)return response(command.result)
+      if(!sessionId||Object.keys(body).some(key=>!['sessionId','commandId'].includes(key)))return failure('录制启动参数无效',422)
       if (retiredRecordings.has(sessionId)) return failure('Recording session expired', 409)
-      if (sessionId === recordingSessionId) return response({ success: true, sessionId, recording, paused:recordingPaused, nextSeq: recorded.length })
+      if (sessionId === recordingSessionId) return response(recorderCommand(body,'start',{ success: true, sessionId, recording, paused:recordingPaused, nextSeq: recorded.length }).result)
       if (!browser || run || picking || recording || mockScriptTestBusy()) return failure('请先打开空闲的 Mock 浏览器', 409)
       if (recordingSessionId) retiredRecordings.add(recordingSessionId)
       recordingSessionId = sessionId; recording = true; recordingPaused = false; recorded = []
-      return response({ success: true, sessionId, recording: true, paused:false, nextSeq: 0 })
+      return response(recorderCommand(body,'start',{ success: true, sessionId, recording: true, paused:false, nextSeq: 0 }).result)
     }
     if (path === '/recorder/pause' || path === '/recorder/resume') {
       if(method!=='POST')return failure('录制暂停与恢复仅支持 POST',405)
+      const action=path==='/recorder/pause'?'pause':'resume'
+      const command=recorderCommand(body,action);if(command.error)return command.error;if(command.result)return response(command.result)
       const sessionId=typeof body.sessionId==='string'&&body.sessionId.trim()?body.sessionId:null
       const afterSeq=Number(body.afterSeq||0)
       if(!sessionId||sessionId!==recordingSessionId||!recording)return failure('录制会话不存在或已过期',409)
@@ -977,11 +999,13 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       recordingPaused=path==='/recorder/pause'
       const data=recorded.filter(event=>Number(event.sequence)>afterSeq).slice(0,200)
       const nextSeq=data.length?Number(data.at(-1)?.sequence):afterSeq
-      return response({success:true,sessionId,recording:true,paused:recordingPaused,nextSeq,hasMore:nextSeq<recorded.length,data:{events:data}})
+      return response(recorderCommand(body,action,{success:true,sessionId,recording:true,paused:recordingPaused,nextSeq,hasMore:nextSeq<recorded.length,data:{events:data}}).result)
     }
     if (path === '/recorder/events' || path === '/recorder/stop') {
       if(method!==(path==='/recorder/events'?'GET':'POST'))return failure('录制操作 HTTP 方法错误',405)
       const requestedSession = method === 'POST' ? body.sessionId : target.searchParams.get('sessionId')
+      const command=method==='POST'?recorderCommand(body,'stop'):null
+      if(command?.error)return command.error;if(command?.result)return response(command.result)
       if(typeof requestedSession!=='string'||!requestedSession.trim())return failure('缺少录制会话标识',422)
       if (requestedSession !== recordingSessionId) return failure('Recording session expired', 409)
       const afterSeq = Number(method === 'POST' ? body.afterSeq || 0 : target.searchParams.get('afterSeq') || 0)
@@ -991,7 +1015,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const data = recorded.filter(event => Number(event.sequence) > afterSeq).slice(0,limit)
       const nextSeq=data.length?Number(data.at(-1)?.sequence):afterSeq
       const hasMore=nextSeq<recorded.length
-      if (path === '/recorder/stop') { recording = false; recordingPaused = false; return response({ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data: { events: data } }) }
+      if (path === '/recorder/stop') { recording = false; recordingPaused = false; return response(recorderCommand(body,'stop',{ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data: { events: data } }).result) }
       return response({ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data })
     }
     if (path === '/recorder/status') {

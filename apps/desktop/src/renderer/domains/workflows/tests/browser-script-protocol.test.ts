@@ -36,7 +36,7 @@ describe.each(['memory','http'] as const)('browser script tests over %s',mode=>{
  it('cancels idempotently and releases the mutually exclusive browser slot',async()=>{
   const target=await context();mock.configureMock({scriptTest:{hold:true}});await request(prefix,body(target))
   await request('/workflows',{id:'other',nodes:[{id:'page',type:'open_page'}]})
-  for(const path of ['/workflows/other/execute','/recorder/start','/element-picker/start'])expect((await request(path,path.endsWith('/start')?{sessionId:'blocked-session'}:{})).status).toBe(409)
+  for(const path of ['/workflows/other/execute','/recorder/start','/element-picker/start'])expect((await request(path,path.endsWith('/recorder/start')?{sessionId:'blocked-session',commandId:'blocked-command'}:path.endsWith('/start')?{sessionId:'blocked-session'}:{})).status).toBe(409)
   for(let i=0;i<2;i++)expect(await(await request(`${prefix}/test/cancel`,{})).json()).toMatchObject({status:'cancelled'})
   expect(await(await request(`${prefix}/context`)).json()).toMatchObject({activeRequestId:null})
   expect((await request(prefix,body(target,'next'))).status).toBe(200)
