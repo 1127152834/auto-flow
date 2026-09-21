@@ -105,6 +105,7 @@ from .network_monitor import (
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .python_script import PythonScriptExecutor
 from .registry import ExecutorRegistry
+from .run_command import RunCommandExecutor
 from .ssh import SSH_EXECUTORS
 from .statistics import (
     MedianExecutor,
@@ -172,6 +173,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     JsScriptExecutor,
     TextToSpeechExecutor,
     PythonScriptExecutor,
+    RunCommandExecutor,
     RunWorkflowFileExecutor,
     SubflowExecutor,
     WaitPageLoadExecutor,
