@@ -781,14 +781,6 @@ async def test_workflow_worker_exports_list_and_emits_registered_artifact(
     result = await _run(command, Event(), output)
 
     events = [json.loads(line) for line in output.getvalue().splitlines()]
-    if sys.platform == "win32":
-        assert result == 2
-        assert events[-1]["type"] == "execution:failed"
-        assert events[-1]["failedNodeId"] == "export"
-        assert "Windows 安全文件输出" in events[-1]["error"]
-        assert not any(event["type"] == "artifact:registered" for event in events)
-        assert not list(artifact_root.rglob("result.*"))
-        return
     assert result == 0, output.getvalue()
     assert [event["type"] for event in events] == [
         "ready",

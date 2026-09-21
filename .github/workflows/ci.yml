@@ -9,6 +9,11 @@ on:
         description: Run only the bounded PM9 Windows native feasibility checks
         type: boolean
         default: false
+      pm9Platform:
+        description: Full validation platform (all by default; select one for a platform-specific follow-up)
+        type: choice
+        default: all
+        options: [all, windows-2022, macos-15-intel, macos-15]
 
 jobs:
   pm9-native-probe:
@@ -33,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-15-intel, macos-15]
+        os: ${{ fromJSON(inputs.pm9Platform && inputs.pm9Platform != 'all' && format('["{0}"]', inputs.pm9Platform) || '["windows-2022", "macos-15-intel", "macos-15"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - run: git config --global core.autocrlf false
