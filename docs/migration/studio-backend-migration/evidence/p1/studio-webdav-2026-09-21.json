@@ -6,7 +6,7 @@
     "远程工作流列举、读取、保存、存在检查、删除和自愈",
     "本地工作目录与 WebDAV 单一文件服务路由"
   ],
-  "status": "implemented_pending_formal_electron",
+  "status": "implemented_formal_and_packaged_darwin_arm64",
   "productionEvidence": {
     "config": "工作区仅原子保存 enabled、url、username、remoteDir；password 写入 AutoFlow CredentialStore，读取配置固定返回空密码",
     "transport": "httpx 直接发送 PROPFIND、MKCOL、GET、HEAD、PUT、DELETE；禁用环境代理继承和自动重定向，真实 localhost HTTP PROPFIND 已验证",
@@ -29,8 +29,12 @@
     }
   ],
   "remaining": [
-    "正式 Electron 对真实本地 WebDAV 受控服务的保存、重开、删除 UI 验收",
-    "第三方 NAS、Nextcloud、坚果云服务器兼容性实测",
-    "正式打包入口验收"
-  ]
+    "正式 UI 删除远程工作流验收",
+    "第三方 NAS、Nextcloud、坚果云兼容性实测",
+    "macOS Intel 与 Windows 实测"
+  ],
+  "formalEvidence": {
+    "development": "formal-platform-electron-FuIpPp/result.json",
+    "packagedDarwinArm64": "formal-platform-electron-vvjkc2/result.json"
+  }
 }

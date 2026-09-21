@@ -6,7 +6,7 @@
     "工作流依赖整包导入导出",
     "Electron 宿主打开本地目录"
   ],
-  "status": "implemented_pending_formal_electron",
+  "status": "implemented_formal_and_packaged_darwin_arm64",
   "productionEvidence": {
     "localWorkflows": "真实工作区文件、原子替换、活动目录持久化、自愈设置保留、导入导出和路径防穿越",
     "imageAssets": "真实图片字节、持久索引、目录树、移动、改名、递归删除、受控文件读取和工作区边界校验",
@@ -32,9 +32,11 @@
     }
   ],
   "remaining": [
-    "正式 Electron 真实点击打开目录及整包导入导出验收",
-    "Studio 凭据真实系统凭据库服务",
-    "留存策略和清理服务",
-    "批准范围内 WebDAV 和工作目录链"
-  ]
+    "正式 Electron 本地模式“打开位置”宿主动作验收",
+    "macOS Intel 与 Windows 实测"
+  ],
+  "formalEvidence": {
+    "development": "formal-platform-electron-FuIpPp/result.json",
+    "packagedDarwinArm64": "formal-platform-electron-vvjkc2/result.json"
+  }
 }

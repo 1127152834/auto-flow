@@ -6,7 +6,7 @@
     "登记运行产物用量与清理",
     "定时清理生命周期"
   ],
-  "status": "implemented_pending_formal_electron",
+  "status": "implemented_formal_and_packaged_darwin_arm64",
   "productionEvidence": {
     "config": "工作区 studio-retention.json 原子替换；默认关闭，30 天，0 MB，24 小时",
     "recordings": "只统计和删除 SQLite 登记的录制会话，活跃会话不参与清理",
@@ -30,8 +30,11 @@
     }
   ],
   "remaining": [
-    "正式 Electron 留存设置真实点击验收",
     "长时间运行的定时触发实时时钟验收",
-    "批准范围内 WebDAV 和工作目录链"
-  ]
+    "macOS Intel 与 Windows 实测"
+  ],
+  "formalEvidence": {
+    "development": "formal-platform-electron-FuIpPp/result.json",
+    "packagedDarwinArm64": "formal-platform-electron-vvjkc2/result.json"
+  }
 }

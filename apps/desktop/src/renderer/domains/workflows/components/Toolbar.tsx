@@ -33,6 +33,7 @@ import { RecorderPanel } from './RecorderPanel'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { ScheduledTasksDialog } from './scheduled-tasks/ScheduledTasksDialog'
 import { WorkflowOpenDialog } from './WorkflowOpenDialog'
+import { LocalWorkflowDialog } from './LocalWorkflowDialog'
 import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
@@ -109,6 +110,7 @@ export function Toolbar() {
   const [showAutoBrowser, setShowAutoBrowser] = useState(false)
   const [showScheduledTasks, setShowScheduledTasks] = useState(false)
   const [showLocalWorkflow, setShowLocalWorkflow] = useState(false)
+  const [showLocalFiles, setShowLocalFiles] = useState(false)
   const [showVariableTracking, setShowVariableTracking] = useState(false)
   const [showScreenshotNameDialog, setShowScreenshotNameDialog] = useState(false)
   const [screenshotAsset, setScreenshotAsset] = useState<any>(null)
@@ -682,8 +684,8 @@ export function Toolbar() {
     offs.push(onAssistantUiEvent('close_global_config', () => { void requestSettingsClose() }))
     offs.push(onAssistantUiEvent('open_scheduled_tasks', () => setShowScheduledTasks(true)))
     offs.push(onAssistantUiEvent('close_scheduled_tasks', () => setShowScheduledTasks(false)))
-    offs.push(onAssistantUiEvent('open_local_workflow', () => setShowLocalWorkflow(true)))
-    offs.push(onAssistantUiEvent('close_local_workflow', () => setShowLocalWorkflow(false)))
+    offs.push(onAssistantUiEvent('open_local_workflow', () => setShowLocalFiles(true)))
+    offs.push(onAssistantUiEvent('close_local_workflow', () => setShowLocalFiles(false)))
     offs.push(onAssistantUiEvent('open_documentation', () => setShowDocumentation(true)))
     offs.push(onAssistantUiEvent('close_documentation', () => setShowDocumentation(false)))
     offs.push(onAssistantUiEvent('open_auto_browser', () => setShowAutoBrowser(true)))
@@ -1563,6 +1565,10 @@ export function Toolbar() {
               <Activity className="w-4 h-4 mr-2 text-[hsl(var(--info-500))]" />
               变量追踪
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowLocalFiles(true)}>
+              <FolderOpen className="w-4 h-4 mr-2 text-[hsl(var(--warning-500))]" />
+              本地/远程工作流
+            </DropdownMenuItem>
             
             
             
@@ -1642,6 +1648,13 @@ export function Toolbar() {
         isOpen={showLocalWorkflow}
         onClose={() => setShowLocalWorkflow(false)}
         onOpened={setWorkflowId}
+        onLog={(level, message) => addLog({ level, message })}
+      />
+
+      <LocalWorkflowDialog
+        beforeReplace={confirmLeave}
+        isOpen={showLocalFiles}
+        onClose={() => setShowLocalFiles(false)}
         onLog={(level, message) => addLog({ level, message })}
       />
       
