@@ -19,7 +19,7 @@ it('keeps stop available while a step request is pending',async()=>{
  render(<DebugBar />);fireEvent.click(screen.getByRole('button',{name:'单步'}))
  expect((screen.getByRole('button',{name:'停止'}) as HTMLButtonElement).disabled).toBe(false)
  fireEvent.click(screen.getByRole('button',{name:'停止'}))
- await waitFor(()=>expect(workflowApi.stop).toHaveBeenCalledWith('debug-ui'))
+ await waitFor(()=>expect(workflowApi.stop).toHaveBeenCalledWith('debug-ui','run-ui'))
 })
 it('does not unlock another step merely because HTTP accepted the first request',async()=>{
  vi.spyOn(workflowApi,'debugStep').mockResolvedValue({success:true})
@@ -144,5 +144,5 @@ it('keeps a failed pause read-only and ends it without changing the failure into
  fireEvent.click(screen.getByRole('button',{name:/变量 1/}))
  expect(screen.queryByRole('button',{name:'编辑暂停变量'})).toBeNull()
  fireEvent.click(screen.getByRole('button',{name:'结束调试'}))
- await waitFor(()=>expect(workflowApi.stop).toHaveBeenCalledWith('debug-ui'))
+ await waitFor(()=>expect(workflowApi.stop).toHaveBeenCalledWith('debug-ui','run-ui'))
 })

@@ -23,7 +23,8 @@
     "运行中的断点集合可通过正式接口替换并由worker确认；从指定顶层节点起跑会跳过前置节点并在目标执行前暂停",
     "运行日志支持关键词、级别、节点和执行标识筛选，并按请求时事件截止序号导出JSONL",
     "暂停、恢复和节点状态写入既有运行事件表及Studio事件流；停止可立即解除暂停且不会启动待执行节点",
-    "根流程、嵌套工作流、自定义模块和画布子流程共享同一个调试控制器"
+    "根流程、嵌套工作流、自定义模块和画布子流程共享同一个调试控制器",
+    "调试节点失败进入failed_paused并保留CloakBrowser、原错误和变量快照；结束调试后完成浏览器及worker清理，再以failed终态保留原失败节点"
   ],
   "checks": [
     {
@@ -50,19 +51,23 @@
       "command": "Vitest variable tracking and debug command suites; TypeScript; ESLint; Ruff; mypy; OpenAPI consistency",
       "result": "40 passed; all static and contract checks passed",
       "covers": "前端真实合同消费、运行面板、分页、筛选、完整值读取、导出和生成类型"
+    },
+    {
+      "command": "AUTOFLOW_B8_FAILED_PAUSE_ONLY=1 node scripts/smoke-studio-backend-b1.mjs",
+      "result": "passed on macOS arm64 development build",
+      "covers": "正式Electron真实点击配置断点；真实CloakBrowser失败现场保留、只读诊断、结束调试、failed终态和进程清理"
     }
   ],
   "boundaries": {
     "userDatabaseTouched": false,
     "mockExecutionUsedForBackendEvidence": false,
-    "formalElectronUiTested": false,
-    "realCloakBrowserRequired": false,
+    "formalElectronUiTested": true,
+    "realCloakBrowserRequired": true,
     "windowsTested": false
   },
   "remaining": [
     "运行至嵌套目标并保留真实前置上下文",
     "循环局部变量进入与退出的完整变化矩阵",
-    "失败暂停保留浏览器及结束调试后的失败终态",
-    "1,000轮与10,000日志容量、正式Electron真实UI和打包入口验收"
+    "1,000轮与10,000日志容量、复杂调试正式UI和打包入口验收"
   ]
 }

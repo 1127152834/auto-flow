@@ -40,15 +40,15 @@ export function DebugBar() {
   if (!isPaused) return null
   const failed = pausedReason === 'failure'
 
-  const call = async (fn: ((id: string, context:DebugControlRequest) => Promise<ApiResponse>) | ((id:string)=>Promise<ApiResponse>), kind: Exclude<Pending, null> = 'control') => {
-    if (!wfId || (kind==='control' && (!pauseContext || !runId || pauseContext.runId !== runId)) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
+  const call = async (fn: ((id: string, context:DebugControlRequest) => Promise<ApiResponse>) | typeof workflowApi.stop, kind: Exclude<Pending, null> = 'control') => {
+    if (!wfId || !runId || (kind==='control' && (!pauseContext || pauseContext.runId !== runId)) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
     const sequence = ++requestSequence.current
     const isCurrent = () => sequence === requestSequence.current && useDebugStore.getState().isPaused && useDebugStore.getState().pauseRevision === pauseRevision && useWorkflowStore.getState().currentExecutionWorkflowId === wfId && useWorkflowStore.getState().currentExecutionRunId === runId
     busyRef.current = kind; setBusy(kind); setError('')
     try {
       const result = kind==='stop'
-        ? await (fn as typeof workflowApi.stop)(wfId)
-        : await fn(wfId,{...pauseContext!,commandId:crypto.randomUUID()})
+        ? await (fn as typeof workflowApi.stop)(wfId,runId)
+        : await (fn as (id: string, context: DebugControlRequest) => Promise<ApiResponse>)(wfId,{...pauseContext!,commandId:crypto.randomUUID()})
       if (!isCurrent()) return
       if (!result.success) {
         if (!result.httpStatus && kind === 'control') {
@@ -157,7 +157,7 @@ export function DebugBar() {
           <StepForward className="w-3.5 h-3.5" /> 单步
         </button>}
         <button
-          disabled={!wfId || busy === 'stop'}
+          disabled={!wfId || !runId || busy === 'stop'}
           onClick={() => call(workflowApi.stop, 'stop')}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-600 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50"
         >
