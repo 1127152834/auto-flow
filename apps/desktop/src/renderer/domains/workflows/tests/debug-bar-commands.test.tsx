@@ -133,6 +133,11 @@ it('shows loop-local variables as read-only and excludes them from the batch',as
  fireEvent.change(screen.getByRole('textbox',{name:'变量 count 的 JSON 值'}),{target:{value:'2'}});fireEvent.click(screen.getByRole('button',{name:/应用变量/}))
  await waitFor(()=>expect(workflowApi.debugVariables).toHaveBeenCalledWith('debug-ui',expect.objectContaining({changes:[{name:'count',value:2}]})))
 })
+it('shows the nested scope and loop iteration of the pending node',()=>{
+ useDebugStore.getState().setPaused({runId:'run-ui',pauseId:'context-pause',controlRevision:2,nodeId:'inner',executionContext:{scopes:[{kind:'subflow',id:'login',name:'登录'}],loops:[{nodeId:'retry',type:'count',currentIndex:1,iteration:2}]}})
+ render(<DebugBar/>)
+ expect(screen.getByLabelText('调试执行上下文').textContent).toBe('登录 / retry 第 2 轮')
+})
 it('keeps a failed pause read-only and ends it without changing the failure into a cancel',async()=>{
  useDebugStore.getState().setPaused({runId:'run-ui',pauseId:'failed-pause',controlRevision:4,nodeId:'fail',label:'失败节点',variables:{count:1},reason:'failure',error:'列表为空'})
  vi.spyOn(workflowApi,'stop').mockResolvedValue({success:true})

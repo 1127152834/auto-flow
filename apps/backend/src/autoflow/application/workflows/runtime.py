@@ -234,7 +234,7 @@ class _WorkflowScheduler:
 
         execution_id = str(uuid4())
         node_label = str(node.data.get("label") or node.type)
-        execution_context = _execution_context(self.context)
+        execution_context = execution_context_snapshot(self.context)
         async with self.event_binding_lock:
             self.context.current_node_id = node.id
             self.context.current_execution_id = execution_id
@@ -580,7 +580,7 @@ def _reported_result(result: ModuleResult, context: ExecutionContext) -> ModuleR
     )
 
 
-def _execution_context(context: ExecutionContext) -> dict[str, Any]:
+def execution_context_snapshot(context: ExecutionContext) -> dict[str, Any]:
     loops: list[dict[str, Any]] = []
     for state in context.loop_stack:
         current = _integer(state.get("current_index"))

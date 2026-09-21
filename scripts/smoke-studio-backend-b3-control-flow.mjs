@@ -13,9 +13,10 @@ const gitHead = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding
 const sourceKernel = process.env.AUTOFLOW_B1_KERNEL_DIR
   ?? '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2'
 const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
-const evidenceRoot = join(root, 'docs/migration/studio-backend-migration/evidence/b3')
+const complexDebugOnly = process.env.AUTOFLOW_B8_COMPLEX_DEBUG_ONLY === '1'
+const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${complexDebugOnly ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -25,6 +26,7 @@ let main
 let native
 let studio
 let eventAbort
+class EvidenceComplete extends Error {}
 
 try {
   assert.equal(process.platform, 'darwin', 'formal evidence requires macOS')
@@ -147,6 +149,31 @@ try {
   await waitFor(studio, `document.querySelector('input[placeholder="工作流名称"]')?.value === ${JSON.stringify(workflowName)} && document.querySelectorAll('.react-flow__node').length === ${savedNodeCount}`, 'persisted workflow reopen')
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__edge').length"), savedEdgeCount)
   checkpoint('macOS Cmd+W 正常关闭后从主窗口重开，节点、结构和配置全部恢复')
+
+  if (complexDebugOnly) {
+    const loopId = byType('loop')[0].id
+    const incrementId = byType('increment_decrement')[0].id
+    const loopRun = await runToCanvasNode(studio, runtime, saved.id, incrementId)
+    await waitFor(studio, `document.querySelector('[aria-label="调试执行上下文"]')?.textContent.includes(${JSON.stringify(`${loopId} 第 1 轮`)})`, 'loop debug context', 10_000)
+    await capture(studio, join(evidenceDir, 'loop-target-paused.png'))
+    await click(studio, '继续')
+    assert.equal((await waitForTerminal(runtime, loopRun.runId)).status, 'completed')
+    const loopResults = await readRunResults(runtime, loopRun.runId)
+    assert.deepEqual(loopResults.filter(item => item.nodeId === incrementId).map(item => item.executionContext.loops[0].iteration), [1, 2, 3])
+    assert.equal(observedEvents.filter(event => event.name === 'execution:paused' && event.data?.runId === loopRun.runId && event.data?.reason === 'target').length, 1)
+    checkpoint('正式 UI 运行至循环体首轮前暂停，显示轮次上下文；继续后三轮完成且目标不重复暂停')
+
+    const report = {
+      evidenceId: 'BE-B8-formal-complex-debug-electron', checkedAt: new Date().toISOString(), gitHead,
+      result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+      workflowId: saved.id, profileId: profile.id, runIds: [loopRun.runId], checks,
+      assertions: { loopTarget: incrementId, loopIterations: [1, 2, 3] },
+      boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none (pure data)', interaction: 'formal Studio UI through CDP mouse and keyboard plus macOS Cmd+W; no Store access' },
+    }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
 
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
@@ -516,8 +543,12 @@ try {
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
 } catch (error) {
+  if (error instanceof EvidenceComplete) {
+    // The focused evidence mode completed before the broader B3 matrix.
+  } else {
   await writeFile(join(evidenceDir, 'blocked.json'), JSON.stringify({ checkedAt: new Date().toISOString(), gitHead, checks, observedEvents, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
   throw error
+  }
 } finally {
   eventAbort?.abort(); studio?.close(); main?.close(); native?.close(); await stop(desktop?.child)
   await rm(userData, { recursive: true, force: true })
@@ -610,6 +641,24 @@ async function startWorkflow(cdp, runtime, documentId) {
     const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(documentId)}&cursor=0&limit=20`)
     return page.items[0] ?? null
   }, `run ${documentId}`, 20_000)
+}
+
+async function runToCanvasNode(cdp, runtime, documentId, nodeId) {
+  await click(cdp, '流程图')
+  const existing = new Set((await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(documentId)}&cursor=0&limit=20`)).items.map(item => item.runId))
+  const nodePoint = await point(cdp, `.react-flow__node[data-id=${JSON.stringify(nodeId)}]`)
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...nodePoint })
+  await wait(150)
+  const button = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}] button[data-tip="运行至此节点（保留前置上下文）"]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, `run-to button ${nodeId}`)
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...button })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...button, button: 'left', clickCount: 1 })
+  await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...button, button: 'left', clickCount: 1 })
+  const run = await waitForValue(async () => {
+    const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(documentId)}&cursor=0&limit=20`)
+    return page.items.find(item => !existing.has(item.runId)) ?? null
+  }, `run-to ${nodeId}`, 20_000)
+  await waitForValue(async () => (await api(runtime, `/workflow-runs/${encodeURIComponent(run.runId)}`)).status === 'paused' ? run : null, `pause at ${nodeId}`, 30_000)
+  return run
 }
 
 async function waitForTerminal(runtime, runId) {

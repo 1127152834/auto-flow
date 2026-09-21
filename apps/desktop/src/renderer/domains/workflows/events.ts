@@ -428,13 +428,13 @@ class SocketService {
     })
 
     // 调试：命中断点/单步 → 暂停
-    this.socket.on('execution:paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; reason?: 'breakpoint' | 'step' | 'target' }) => {
+    this.socket.on('execution:paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; executionContext?:{scopes:Array<{kind:string;id:string;name:string}>;loops:Array<{nodeId:string;type:string;currentIndex:number;iteration:number}>}; reason?: 'breakpoint' | 'step' | 'target' }) => {
       if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
-      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, variableMeta:data.variableMeta, reason: data.reason })
+      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, variableMeta:data.variableMeta, executionContext:data.executionContext, reason: data.reason })
     })
-    this.socket.on('execution:failed_paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; error?:string }) => {
+    this.socket.on('execution:failed_paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; executionContext?:{scopes:Array<{kind:string;id:string;name:string}>;loops:Array<{nodeId:string;type:string;currentIndex:number;iteration:number}>}; error?:string }) => {
       if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
-      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId:data.node_id, label:data.label, variables:data.variables, variableMeta:data.variableMeta, reason:'failure', error:data.error })
+      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId:data.node_id, label:data.label, variables:data.variables, variableMeta:data.variableMeta, executionContext:data.executionContext, reason:'failure', error:data.error })
     })
     // 调试：恢复
     this.socket.on('execution:resumed', (data: {workflowId: string; runId?: string; pauseId?:string}) => {

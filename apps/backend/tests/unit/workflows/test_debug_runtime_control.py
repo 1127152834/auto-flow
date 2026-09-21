@@ -24,7 +24,9 @@ class _Sink:
 async def _wait_for_pauses(sink: _Sink, count: int) -> dict[str, Any]:
     async with asyncio.timeout(1):
         while True:
-            pauses = [event for event in sink.events if event["type"] == "execution:paused"]
+            pauses = [
+                event for event in sink.events if event["type"] == "execution:paused"
+            ]
             if len(pauses) >= count:
                 return pauses[-1]
             await asyncio.sleep(0)
@@ -270,7 +272,9 @@ async def test_runtime_starts_at_requested_top_level_node() -> None:
 
 
 @pytest.mark.asyncio
-async def test_run_to_target_executes_real_prefix_and_pauses_once_before_target() -> None:
+async def test_run_to_target_executes_real_prefix_and_pauses_once_before_target() -> (
+    None
+):
     calls: list[str] = []
 
     class ProbeExecutor(ModuleExecutor):
@@ -300,7 +304,11 @@ async def test_run_to_target_executes_real_prefix_and_pauses_once_before_target(
     context = ExecutionContext(events=sink, debug=command_bus.debug)
     document = {
         "nodes": [
-            {"id": name, "type": "moduleNode", "data": {"moduleType": "set_variable", "config": {"name": name}}}
+            {
+                "id": name,
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {"name": name}},
+            }
             for name in ("first", "second", "third")
         ],
         "edges": [
@@ -326,7 +334,287 @@ async def test_run_to_target_executes_real_prefix_and_pauses_once_before_target(
     result = await asyncio.wait_for(task, timeout=1)
     assert result.success is True
     assert calls == ["first", "second", "third"]
-    assert len([event for event in sink.events if event["type"] == "execution:paused"]) == 1
+    assert (
+        len([event for event in sink.events if event["type"] == "execution:paused"])
+        == 1
+    )
+
+
+@pytest.mark.asyncio
+async def test_run_to_target_follows_the_selected_condition_branch() -> None:
+    calls: list[str] = []
+
+    async def condition(
+        _self: ModuleExecutor, _config: dict[str, Any], _context: ExecutionContext
+    ) -> ModuleResult:
+        calls.append("condition")
+        return ModuleResult(success=True, branch="true")
+
+    async def probe(
+        _self: ModuleExecutor, config: dict[str, Any], _context: ExecutionContext
+    ) -> ModuleResult:
+        calls.append(str(config["name"]))
+        return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(
+        type(
+            "ConditionExecutor",
+            (ModuleExecutor,),
+            {"module_type": property(lambda _self: "condition"), "execute": condition},
+        )
+    )
+    registry.register(
+        type(
+            "ProbeExecutor",
+            (ModuleExecutor,),
+            {"module_type": property(lambda _self: "set_variable"), "execute": probe},
+        )
+    )
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(),
+        Event(),
+        io.StringIO(),
+        {
+            "runId": "run-condition-target",
+            "workflowId": "workflow-condition-target",
+            "debug": True,
+            "runToNodeId": "selected",
+        },
+    )
+    sink = _Sink()
+    document = {
+        "nodes": [
+            {
+                "id": "condition",
+                "type": "moduleNode",
+                "data": {"moduleType": "condition", "config": {}},
+            },
+            {
+                "id": "selected",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {"name": "selected"}},
+            },
+            {
+                "id": "skipped",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {"name": "skipped"}},
+            },
+            {
+                "id": "join",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {"name": "join"}},
+            },
+        ],
+        "edges": [
+            {
+                "id": "true",
+                "source": "condition",
+                "target": "selected",
+                "sourceHandle": "true",
+            },
+            {
+                "id": "false",
+                "source": "condition",
+                "target": "skipped",
+                "sourceHandle": "false",
+            },
+            {"id": "selected-join", "source": "selected", "target": "join"},
+            {"id": "skipped-join", "source": "skipped", "target": "join"},
+        ],
+    }
+    task = asyncio.create_task(
+        WorkflowRuntime(registry).execute(
+            document, ExecutionContext(events=sink, debug=command_bus.debug)
+        )
+    )
+
+    pause = await _wait_for_pauses(sink, 1)
+    assert pause["node_id"] == "selected"
+    assert calls == ["condition"]
+    command_bus.receive(
+        {
+            "type": "debug_resume",
+            "commandId": "resume-condition-target",
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+        }
+    )
+
+    assert (await asyncio.wait_for(task, timeout=1)).success is True
+    assert calls == ["condition", "selected", "join"]
+
+
+@pytest.mark.asyncio
+async def test_run_to_loop_body_pauses_only_on_the_first_iteration() -> None:
+    calls: list[int] = []
+
+    async def loop(
+        _self: ModuleExecutor, _config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        state = {
+            "type": "count",
+            "count": 3,
+            "current_index": 0,
+            "index_variable": "index",
+        }
+        context.loop_stack.append(state)
+        context.set_variable("index", 0)
+        return ModuleResult(success=True, data=state)
+
+    async def body(
+        _self: ModuleExecutor, _config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        calls.append(int(context.variables["index"]))
+        return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(
+        type(
+            "LoopExecutor",
+            (ModuleExecutor,),
+            {"module_type": property(lambda _self: "loop"), "execute": loop},
+        )
+    )
+    registry.register(
+        type(
+            "BodyExecutor",
+            (ModuleExecutor,),
+            {"module_type": property(lambda _self: "set_variable"), "execute": body},
+        )
+    )
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(),
+        Event(),
+        io.StringIO(),
+        {
+            "runId": "run-loop-target",
+            "workflowId": "workflow-loop-target",
+            "debug": True,
+            "runToNodeId": "body",
+        },
+    )
+    sink = _Sink()
+    document = {
+        "nodes": [
+            {
+                "id": "loop",
+                "type": "moduleNode",
+                "data": {"moduleType": "loop", "config": {}},
+            },
+            {
+                "id": "body",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {}},
+            },
+        ],
+        "edges": [
+            {"id": "body", "source": "loop", "target": "body", "sourceHandle": "loop"}
+        ],
+    }
+    task = asyncio.create_task(
+        WorkflowRuntime(registry).execute(
+            document, ExecutionContext(events=sink, debug=command_bus.debug)
+        )
+    )
+
+    pause = await _wait_for_pauses(sink, 1)
+    assert pause["node_id"] == "body"
+    assert pause["variables"]["index"] == 0
+    assert pause["variableMeta"]["index"] == {"scope": "loop", "readOnly": True}
+    assert pause["executionContext"] == {
+        "scopes": [],
+        "loops": [
+            {
+                "nodeId": "loop",
+                "type": "count",
+                "currentIndex": 0,
+                "iteration": 1,
+            }
+        ],
+    }
+    command_bus.receive(
+        {
+            "type": "debug_resume",
+            "commandId": "resume-loop-target",
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+        }
+    )
+
+    assert (await asyncio.wait_for(task, timeout=1)).success is True
+    assert calls == [0, 1, 2]
+    assert (
+        len([event for event in sink.events if event["type"] == "execution:paused"])
+        == 1
+    )
+
+
+@pytest.mark.asyncio
+async def test_parallel_branch_cannot_dispatch_more_nodes_while_target_is_paused() -> (
+    None
+):
+    calls: list[str] = []
+
+    class ProbeExecutor(ModuleExecutor):
+        module_type = "set_variable"
+
+        async def execute(
+            self, config: dict[str, Any], _context: ExecutionContext
+        ) -> ModuleResult:
+            calls.append(str(config["name"]))
+            return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(ProbeExecutor)
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(),
+        Event(),
+        io.StringIO(),
+        {
+            "runId": "run-parallel-target",
+            "workflowId": "workflow-parallel-target",
+            "debug": True,
+            "runToNodeId": "left",
+        },
+    )
+    sink = _Sink()
+    document = {
+        "nodes": [
+            {
+                "id": name,
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {"name": name}},
+            }
+            for name in ("start", "left", "right", "right-tail")
+        ],
+        "edges": [
+            {"id": "left", "source": "start", "target": "left"},
+            {"id": "right", "source": "start", "target": "right"},
+            {"id": "right-tail", "source": "right", "target": "right-tail"},
+        ],
+    }
+    task = asyncio.create_task(
+        WorkflowRuntime(registry).execute(
+            document, ExecutionContext(events=sink, debug=command_bus.debug)
+        )
+    )
+
+    pause = await _wait_for_pauses(sink, 1)
+    await asyncio.sleep(0)
+    assert pause["node_id"] == "left"
+    assert calls == ["start"]
+    command_bus.receive(
+        {
+            "type": "debug_resume",
+            "commandId": "resume-parallel-target",
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+        }
+    )
+
+    assert (await asyncio.wait_for(task, timeout=1)).success is True
+    assert set(calls) == {"start", "left", "right", "right-tail"}
 
 
 @pytest.mark.asyncio
@@ -357,8 +645,16 @@ async def test_breakpoints_can_be_replaced_while_paused() -> None:
     context = ExecutionContext(events=sink, debug=command_bus.debug)
     document = {
         "nodes": [
-            {"id": "first", "type": "moduleNode", "data": {"moduleType": "set_variable", "config": {}}},
-            {"id": "second", "type": "moduleNode", "data": {"moduleType": "set_variable", "config": {}}},
+            {
+                "id": "first",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {}},
+            },
+            {
+                "id": "second",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {}},
+            },
         ],
         "edges": [{"id": "edge", "source": "first", "target": "second"}],
     }

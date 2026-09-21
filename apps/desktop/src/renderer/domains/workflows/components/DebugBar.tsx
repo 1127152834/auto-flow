@@ -18,6 +18,7 @@ export function DebugBar() {
   const pausedError = useDebugStore((s) => s.pausedError)
   const pausedVariables = useDebugStore((s) => s.pausedVariables)
   const pausedVariableMeta = useDebugStore((s) => s.pausedVariableMeta)
+  const pausedExecutionContext = useDebugStore((s) => s.pausedExecutionContext)
   const wfId = useWorkflowStore((s) => s.currentExecutionWorkflowId)
   const runId = useWorkflowStore((s) => s.currentExecutionRunId)
   const [showVars, setShowVars] = useState(false)
@@ -39,6 +40,10 @@ export function DebugBar() {
 
   if (!isPaused) return null
   const failed = pausedReason === 'failure'
+  const contextLabels = [
+    ...pausedExecutionContext.scopes.map(scope=>scope.name||scope.id),
+    ...pausedExecutionContext.loops.map(loop=>`${loop.nodeId} 第 ${loop.iteration} 轮`),
+  ].filter(Boolean)
 
   const call = async (fn: ((id: string, context:DebugControlRequest) => Promise<ApiResponse>) | typeof workflowApi.stop, kind: Exclude<Pending, null> = 'control') => {
     if (!wfId || !runId || (kind==='control' && (!pauseContext || pauseContext.runId !== runId)) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
@@ -140,6 +145,8 @@ export function DebugBar() {
           </button>
         )}
       </div>
+
+      {contextLabels.length>0&&<div aria-label="调试执行上下文" className="border-b border-amber-200 bg-amber-50/60 px-4 py-1.5 text-[11px] text-amber-800">{contextLabels.join(' / ')}</div>}
 
       <div className="flex items-center gap-2 px-4 py-2.5">
         {!failed && <button

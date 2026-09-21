@@ -495,6 +495,98 @@ async def test_real_worker_runs_canvas_subflow_without_running_definition_at_top
 
 
 @pytest.mark.asyncio
+async def test_real_worker_runs_to_node_inside_canvas_subflow_with_scope(
+    tmp_path: Path,
+) -> None:
+    events: list[dict[str, object]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path,
+        termination_timeout=0.5,
+        on_event=lambda event: events.append(event),
+    )
+    payload = {
+        "runId": "canvas-subflow-debug",
+        "workflowId": "canvas-debug-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "debug": True,
+        "runToNodeId": "inner",
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "workflowDependencies": {},
+        "document": {
+            "nodes": [
+                {
+                    "id": "definition",
+                    "type": "groupNode",
+                    "position": {"x": 0, "y": 0},
+                    "width": 400,
+                    "height": 300,
+                    "data": {
+                        "moduleType": "group",
+                        "isSubflow": True,
+                        "subflowName": "登录",
+                    },
+                },
+                {
+                    "id": "inner",
+                    "type": "moduleNode",
+                    "position": {"x": 50, "y": 50},
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "inside", "variableValue": "1"},
+                    },
+                },
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "position": {"x": 500, "y": 50},
+                    "data": {
+                        "moduleType": "subflow",
+                        "config": {"subflowName": "登录"},
+                    },
+                },
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    await manager.start("canvas-subflow-debug", "profile-1", None, payload)
+    for _ in range(300):
+        if any(event.get("type") == "execution:paused" for event in events):
+            break
+        await asyncio.sleep(0.01)
+    pause = next(event for event in events if event.get("type") == "execution:paused")
+
+    assert pause["node_id"] == "inner"
+    assert pause["reason"] == "target"
+    assert pause["executionContext"] == {
+        "scopes": [{"kind": "subflow", "id": "definition", "name": "登录"}],
+        "loops": [],
+    }
+    await manager.send_command(
+        "canvas-subflow-debug",
+        {
+            "type": "debug_resume",
+            "commandId": "resume-inner",
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+        },
+    )
+    for _ in range(300):
+        if not manager.busy():
+            break
+        await asyncio.sleep(0.01)
+
+    assert not manager.busy()
+    assert any(
+        event.get("type") == "execution:node_complete"
+        and event.get("nodeId") == "inner"
+        for event in events
+    )
+    assert any(event.get("type") == "execution:completed" for event in events)
+
+
+@pytest.mark.asyncio
 async def test_real_worker_resolves_subflow_header_reachable_graph_by_id(
     tmp_path: Path,
 ) -> None:
@@ -577,7 +669,11 @@ async def test_real_worker_stops_recursive_canvas_subflow_with_clear_error(
                     "position": {"x": 0, "y": 0},
                     "width": 400,
                     "height": 300,
-                    "data": {"moduleType": "group", "isSubflow": True, "subflowName": "递归"},
+                    "data": {
+                        "moduleType": "group",
+                        "isSubflow": True,
+                        "subflowName": "递归",
+                    },
                 },
                 {
                     "id": "recursive-call",
@@ -742,9 +838,7 @@ async def test_real_worker_runs_frozen_custom_module_with_isolated_outputs(
                 "name": "formatter",
                 "display_name": "格式化器",
                 "revision": 3,
-                "parameters": [
-                    {"name": "incoming", "default_value": "fallback"}
-                ],
+                "parameters": [{"name": "incoming", "default_value": "fallback"}],
                 "outputs": [{"name": "answer"}],
                 "workflow": {
                     "nodes": [
@@ -985,7 +1079,9 @@ async def test_real_worker_stops_during_long_pure_variable_loop(tmp_path: Path) 
 
 
 @pytest.mark.asyncio
-async def test_worker_start_rejects_bad_handshake_and_releases_slot(tmp_path: Path) -> None:
+async def test_worker_start_rejects_bad_handshake_and_releases_slot(
+    tmp_path: Path,
+) -> None:
     script = tmp_path / "bad-worker.py"
     script.write_text("print('not-json', flush=True)\n", encoding="utf-8")
     executable = tmp_path / "CloakBrowser"
@@ -1010,7 +1106,9 @@ async def test_worker_start_rejects_bad_handshake_and_releases_slot(tmp_path: Pa
 
 
 @pytest.mark.asyncio
-async def test_stop_during_start_interrupts_handshake_and_cleans_slot(tmp_path: Path) -> None:
+async def test_stop_during_start_interrupts_handshake_and_cleans_slot(
+    tmp_path: Path,
+) -> None:
     script = tmp_path / "silent-worker.py"
     script.write_text(
         "import sys, time\nsys.stdin.readline()\ntime.sleep(300)\n",
@@ -1046,7 +1144,9 @@ async def test_stop_during_start_interrupts_handshake_and_cleans_slot(tmp_path: 
 
 
 @pytest.mark.asyncio
-async def test_shutdown_also_stops_a_worker_that_is_still_starting(tmp_path: Path) -> None:
+async def test_shutdown_also_stops_a_worker_that_is_still_starting(
+    tmp_path: Path,
+) -> None:
     script = tmp_path / "silent-shutdown-worker.py"
     script.write_text(
         "import sys, time\nsys.stdin.readline()\ntime.sleep(300)\n",
@@ -1089,7 +1189,9 @@ async def test_shutdown_reaps_worker_spawned_before_start_receives_process(
     release_spawn = asyncio.Event()
     processes: list[asyncio.subprocess.Process] = []
 
-    async def delayed_spawn(*args: object, **kwargs: object) -> asyncio.subprocess.Process:
+    async def delayed_spawn(
+        *args: object, **kwargs: object
+    ) -> asyncio.subprocess.Process:
         process = await real_spawn(*args, **kwargs)
         processes.append(process)
         spawned.set()
@@ -1195,7 +1297,10 @@ async def test_worker_exit_callback_runs_after_process_and_temp_cleanup(
         on_exit=on_exit,
     )
     await manager.start(
-        "run-exit", "profile-1", executable, {"runId": "run-exit", "profileId": "profile-1"}
+        "run-exit",
+        "profile-1",
+        executable,
+        {"runId": "run-exit", "profileId": "profile-1"},
     )
 
     await manager.stop("run-exit")
@@ -1248,8 +1353,10 @@ async def test_worker_crash_cleans_descendants_before_reporting_nonzero_exit(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('internal_secret', [False, True])
-async def test_custom_module_preserves_sensitive_parameters_and_outputs(internal_secret):
+@pytest.mark.parametrize("internal_secret", [False, True])
+async def test_custom_module_preserves_sensitive_parameters_and_outputs(
+    internal_secret,
+):
     import json
 
     from autoflow.application.workflows.executors.production import (
@@ -1262,8 +1369,10 @@ async def test_custom_module_preserves_sensitive_parameters_and_outputs(internal
     class Sink:
         def __init__(self):
             self.events = []
+
         def for_context(self, context):
             return self
+
         async def publish(self, event):
             self.events.append(event)
 
@@ -1273,16 +1382,64 @@ async def test_custom_module_preserves_sensitive_parameters_and_outputs(internal
 
     class Credentials:
         def get_field(self, name, field):
-            return 'fake-sensitive-marker'
+            return "fake-sensitive-marker"
 
     sink = Sink()
-    context = ExecutionContext(variables={'secret': 'fake-sensitive-marker'}, sensitive_variables={'secret'}, events=sink, credentials=Credentials())
+    context = ExecutionContext(
+        variables={"secret": "fake-sensitive-marker"},
+        sensitive_variables={"secret"},
+        events=sink,
+        credentials=Credentials(),
+    )
     registry = build_production_executor_registry()
-    value = '{{cred:test.password}}' if internal_secret else '{incoming}'
-    definition = {'name': 'm', 'parameters': [{'name': 'incoming'}], 'outputs': [{'name': 'answer'}], 'workflow': {'nodes': [{'id': 'set', 'type': 'moduleNode', 'data': {'moduleType': 'set_variable', 'variableName': 'answer', 'variableValue': value}}], 'edges': []}}
-    context.custom_modules = _WorkerCustomModules({'m': definition}, registry=registry, parent=context, sink=sink, command_bus=Bus(), nested_workflows=None)
-    result = await WorkflowRuntime(registry).execute({'nodes': [{'id': 'call', 'type': 'moduleNode', 'data': {'moduleType': 'custom_module', 'customModuleId': 'm', 'parameterValues': {'incoming': 'public' if internal_secret else '{secret}'}}}], 'edges': []}, context)
+    value = "{{cred:test.password}}" if internal_secret else "{incoming}"
+    definition = {
+        "name": "m",
+        "parameters": [{"name": "incoming"}],
+        "outputs": [{"name": "answer"}],
+        "workflow": {
+            "nodes": [
+                {
+                    "id": "set",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "set_variable",
+                        "variableName": "answer",
+                        "variableValue": value,
+                    },
+                }
+            ],
+            "edges": [],
+        },
+    }
+    context.custom_modules = _WorkerCustomModules(
+        {"m": definition},
+        registry=registry,
+        parent=context,
+        sink=sink,
+        command_bus=Bus(),
+        nested_workflows=None,
+    )
+    result = await WorkflowRuntime(registry).execute(
+        {
+            "nodes": [
+                {
+                    "id": "call",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "custom_module",
+                        "customModuleId": "m",
+                        "parameterValues": {
+                            "incoming": "public" if internal_secret else "{secret}"
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+        },
+        context,
+    )
     assert result.success
-    assert context.variables['answer'] == 'fake-sensitive-marker'
-    assert 'answer' in context.sensitive_variables
-    assert 'fake-sensitive-marker' not in json.dumps(sink.events)
+    assert context.variables["answer"] == "fake-sensitive-marker"
+    assert "answer" in context.sensitive_variables
+    assert "fake-sensitive-marker" not in json.dumps(sink.events)

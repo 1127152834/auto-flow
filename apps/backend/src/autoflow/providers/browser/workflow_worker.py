@@ -15,7 +15,10 @@ from uuid import uuid4
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
-from autoflow.application.workflows.runtime import WorkflowRuntime
+from autoflow.application.workflows.runtime import (
+    WorkflowRuntime,
+    execution_context_snapshot,
+)
 from autoflow.domain.workflows.execution import (
     CustomModuleResult,
     DesktopActionResult,
@@ -1094,8 +1097,15 @@ class _WorkerDebugController:
         self._run_to_node_id = run_to_node_id
         self._revision = 0
         self._pause: dict[str, Any] | None = None
+        self._boundary_lock = asyncio.Lock()
 
     async def before_node(
+        self, context: ExecutionContext, *, node_id: str, label: str
+    ) -> None:
+        async with self._boundary_lock:
+            await self._before_node(context, node_id=node_id, label=label)
+
+    async def _before_node(
         self, context: ExecutionContext, *, node_id: str, label: str
     ) -> None:
         reached_target = node_id == self._run_to_node_id
@@ -1282,6 +1292,7 @@ class _WorkerDebugController:
                 for name in context.variables
             },
             "reason": pause["reason"],
+            "executionContext": execution_context_snapshot(context),
         }
         if pause["reason"] == "failure":
             payload.update(
