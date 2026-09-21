@@ -1,13 +1,13 @@
 {
   "date": "2026-09-21",
-  "codeCandidate": "d21197ad995090611b178b24e6f671513eca3f60",
+  "codeCandidate": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
   "runner": "macos-15",
   "platform": "darwin-arm64",
   "status": "passed",
-  "jobUrl": "https://github.com/1127152834/auto-flow/actions/runs/35585675170/job/106288334872",
-  "backend": "3313 passed, 60 skipped, 2 warnings in 682.10s (0:11:22)",
+  "jobUrl": "https://github.com/1127152834/auto-flow/actions/runs/35590418456/job/106303307272",
+  "backend": "3329 passed, 60 skipped, 2 warnings in 760.33s (0:12:40)",
   "realWorkerRegression": [
-    "15 passed, 11 deselected in 185.12s (0:03:05)"
+    "15 passed, 11 deselected in 228.60s (0:03:48)"
   ],
   "frontendEvidence": [
     "Test Files  406 passed (406)",
@@ -15,11 +15,11 @@
   ],
   "installer": "AutoFlow-0.1.0-arm64.dmg",
   "artifact": {
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35585675170/artifacts/10633557569",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35590418456/artifacts/10635357805",
     "name": "pm9-macos-15",
-    "digest": "sha256:0377ccc33bb51e334d8bf3c99304a386221463f8e777fa1b3cb72fea39044d2f",
-    "sizeBytes": 265633794,
-    "expiresAt": "2026-12-20T09:52:27Z"
+    "digest": "sha256:ff76ba1e5a27eaeaeaf0c68d0048f616e91d7d098f70affc1b3576dd44a42c91",
+    "sizeBytes": 265624411,
+    "expiresAt": "2026-12-20T10:45:17Z"
   },
   "physicalInstallation": "pending",
   "reports": {
@@ -28,7 +28,7 @@
       "platform": "darwin",
       "arch": "arm64",
       "packaged": false,
-      "startedAt": "2026-09-21T09:55:10.082Z",
+      "startedAt": "2026-09-21T10:48:08.290Z",
       "checks": [
         "1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses",
         "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
@@ -42,15 +42,15 @@
         "records": 1000,
         "busyRetries": 0,
         "table": {
-          "projectId": "0f173be2-bb2c-4dfc-bf41-a9c116d5aeaa",
-          "tableId": "9ee4ae8a-7855-4a8c-9ba6-d95a5f832bec",
+          "projectId": "33badacf-83e2-4833-9311-604c7017e3d8",
+          "tableId": "e69835dc-a22f-46e5-ae61-e637b0d92aed",
           "name": "PM9 并发写入回归",
           "description": "",
           "sourceKind": "local",
           "source": {
             "kind": "local"
           },
-          "datasetGeneration": "7ce718ae-90fd-4779-a67d-6b2418a2c805",
+          "datasetGeneration": "5335b3fb-87f7-4090-9455-e4d13b870f60",
           "tableRevision": 1,
           "identity": {
             "mode": "system"
@@ -62,13 +62,13 @@
             "pendingCount": 0,
             "unknownCount": 0
           },
-          "createdAt": "2026-09-21T09:55:12.629122Z",
-          "updatedAt": "2026-09-21T09:55:12.629122Z"
+          "createdAt": "2026-09-21T10:48:10.800202Z",
+          "updatedAt": "2026-09-21T10:48:10.800202Z"
         }
       },
-      "projectId": "0f173be2-bb2c-4dfc-bf41-a9c116d5aeaa",
-      "tableId": "c318bc2c-1c44-49e9-ac0f-2fc0bdc2c615",
-      "tablePath": "/projects/0f173be2-bb2c-4dfc-bf41-a9c116d5aeaa/tables/c318bc2c-1c44-49e9-ac0f-2fc0bdc2c615",
+      "projectId": "33badacf-83e2-4833-9311-604c7017e3d8",
+      "tableId": "11800400-4ea6-4204-a9bd-184559eeb3be",
+      "tablePath": "/projects/33badacf-83e2-4833-9311-604c7017e3d8/tables/11800400-4ea6-4204-a9bd-184559eeb3be",
       "boundary": "production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed"
     },
     "sourceApi": {
@@ -76,7 +76,7 @@
       "platform": "darwin",
       "arch": "arm64",
       "packaged": false,
-      "startedAt": "2026-09-21T10:18:09.101Z",
+      "startedAt": "2026-09-21T11:13:04.743Z",
       "checks": [
         "1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses",
         "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
@@ -90,15 +90,15 @@
         "records": 1000,
         "busyRetries": 0,
         "table": {
-          "projectId": "4df0e8ac-d9b9-48a0-936e-7a2c3e2a058a",
-          "tableId": "1c60e945-f00f-497c-a600-92691f8901e8",
+          "projectId": "40857dc9-4319-4942-8f0f-cb397be9887d",
+          "tableId": "52a339ee-802d-4000-964a-233c059a084e",
           "name": "PM9 并发写入回归",
           "description": "",
           "sourceKind": "local",
           "source": {
             "kind": "local"
           },
-          "datasetGeneration": "22fd93c1-d4d4-4b39-9c72-4e7d7652f64f",
+          "datasetGeneration": "3768097f-3889-457c-b43f-bc25dd5f4efe",
           "tableRevision": 1,
           "identity": {
             "mode": "system"
@@ -110,28 +110,28 @@
             "pendingCount": 0,
             "unknownCount": 0
           },
-          "createdAt": "2026-09-21T10:18:11.678559Z",
-          "updatedAt": "2026-09-21T10:18:11.678559Z"
+          "createdAt": "2026-09-21T11:13:08.873823Z",
+          "updatedAt": "2026-09-21T11:13:08.873823Z"
         }
       },
-      "projectId": "4df0e8ac-d9b9-48a0-936e-7a2c3e2a058a",
-      "tableId": "867f2b36-c13d-4689-a5ac-f3e28a0d1133",
-      "tablePath": "/projects/4df0e8ac-d9b9-48a0-936e-7a2c3e2a058a/tables/867f2b36-c13d-4689-a5ac-f3e28a0d1133",
+      "projectId": "40857dc9-4319-4942-8f0f-cb397be9887d",
+      "tableId": "6736cbf4-a2c1-42a1-893b-c27818c74455",
+      "tablePath": "/projects/40857dc9-4319-4942-8f0f-cb397be9887d/tables/6736cbf4-a2c1-42a1-893b-c27818c74455",
       "boundary": "production management and real browser runtime chains; live Sheets and physical installer acceptance remain pending",
       "runtime": {
-        "projectId": "7608a0fd-000c-4d8f-a9c3-5127644bfaa4",
-        "environmentId": "d0e6a5c7-3b73-559e-a916-12157f8bc0f0",
+        "projectId": "5b0e7aff-f038-466d-b3c7-5a4a9f1fc9a3",
+        "environmentId": "4ee03c47-2da7-5eeb-bf15-1b46283157b7",
         "logLoad": {
           "logCount": 1004,
           "logPages": 6,
-          "elapsedMs": 37627,
-          "logsPerMinute": 1601,
+          "elapsedMs": 38155,
+          "logsPerMinute": 1579,
           "scope": "real worker throughput and server pagination; no renderer memory claim"
         },
         "taskIds": [
-          "cef6c70a-c9ef-4af8-9c94-46440106b7c5",
-          "781f9d52-f0f1-4d0a-94da-e8132d5e30a9",
-          "acfe0611-61c0-4645-aac5-a4b6752ce04d"
+          "a0875c97-e5db-4d1f-9f04-d67aed626056",
+          "2de4b97b-8e51-4a15-b12d-3d70e7434cc5",
+          "601e6adc-6379-4331-ac94-d7484d76bbed"
         ],
         "checks": [
           "Studio HTTP saved graph",
@@ -160,7 +160,7 @@
       "platform": "darwin",
       "arch": "arm64",
       "packaged": false,
-      "startedAt": "2026-09-21T10:19:37.523Z",
+      "startedAt": "2026-09-21T11:14:55.265Z",
       "checks": [
         "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
         "archive blocks writes, repeat command recovers one operation, restore preserves data",
@@ -180,9 +180,9 @@
         "project-zoom-200.png",
         "project-restarted.png"
       ],
-      "projectId": "3a280c83-e3b3-498e-84b3-d188492178fd",
-      "tableId": "96e80a0c-45e3-48e1-853c-1f2858f11fb7",
-      "tablePath": "/projects/3a280c83-e3b3-498e-84b3-d188492178fd/tables/96e80a0c-45e3-48e1-853c-1f2858f11fb7",
+      "projectId": "fc19f502-e8df-4bed-8423-534d9bb48754",
+      "tableId": "5970a48a-560d-472b-b2cf-a147339bc322",
+      "tablePath": "/projects/fc19f502-e8df-4bed-8423-534d9bb48754/tables/5970a48a-560d-472b-b2cf-a147339bc322",
       "boundary": "production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed"
     },
     "packagedApi": {
@@ -190,7 +190,7 @@
       "platform": "darwin",
       "arch": "arm64",
       "packaged": true,
-      "startedAt": "2026-09-21T10:21:16.719Z",
+      "startedAt": "2026-09-21T11:17:06.618Z",
       "checks": [
         "1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses",
         "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
@@ -204,15 +204,15 @@
         "records": 1000,
         "busyRetries": 0,
         "table": {
-          "projectId": "fc0c45e9-baa4-4955-bd5a-bb9ddaa9ea32",
-          "tableId": "486dcc84-b0a1-40cf-8644-32f802217659",
+          "projectId": "2e0d5c98-27d5-4c32-83cc-1fe5fe08e228",
+          "tableId": "3c86534b-ace8-4c36-bde6-dde7ba6f3476",
           "name": "PM9 并发写入回归",
           "description": "",
           "sourceKind": "local",
           "source": {
             "kind": "local"
           },
-          "datasetGeneration": "52d1d190-8c3a-4a1e-a25d-ea5fbf246856",
+          "datasetGeneration": "8fda92ef-8e01-4a5f-af52-42d0790218bb",
           "tableRevision": 1,
           "identity": {
             "mode": "system"
@@ -224,28 +224,28 @@
             "pendingCount": 0,
             "unknownCount": 0
           },
-          "createdAt": "2026-09-21T10:21:20.258304Z",
-          "updatedAt": "2026-09-21T10:21:20.258304Z"
+          "createdAt": "2026-09-21T11:17:10.693655Z",
+          "updatedAt": "2026-09-21T11:17:10.693655Z"
         }
       },
-      "projectId": "fc0c45e9-baa4-4955-bd5a-bb9ddaa9ea32",
-      "tableId": "b67ec86a-19b6-4412-a716-f955b526fed1",
-      "tablePath": "/projects/fc0c45e9-baa4-4955-bd5a-bb9ddaa9ea32/tables/b67ec86a-19b6-4412-a716-f955b526fed1",
+      "projectId": "2e0d5c98-27d5-4c32-83cc-1fe5fe08e228",
+      "tableId": "f558ef27-04c5-45ca-a26b-da50cfa35c48",
+      "tablePath": "/projects/2e0d5c98-27d5-4c32-83cc-1fe5fe08e228/tables/f558ef27-04c5-45ca-a26b-da50cfa35c48",
       "boundary": "production management and real browser runtime chains; live Sheets and physical installer acceptance remain pending",
       "runtime": {
-        "projectId": "ddbb6727-76e8-4f10-96af-4105e33b7fa2",
-        "environmentId": "67083956-0ebb-5d2a-bace-73d596da8e36",
+        "projectId": "1a4a7b34-9816-4c88-8eb3-01e6544bc35c",
+        "environmentId": "9d2eee02-20d0-57cc-ab5c-42a4e9d56ede",
         "logLoad": {
           "logCount": 1004,
           "logPages": 6,
-          "elapsedMs": 38457,
-          "logsPerMinute": 1566,
+          "elapsedMs": 38840,
+          "logsPerMinute": 1551,
           "scope": "real worker throughput and server pagination; no renderer memory claim"
         },
         "taskIds": [
-          "79799dd7-31f2-4bc4-bfa3-4a7369dd288c",
-          "2318949a-4ed2-4482-88ba-726fc9658ec0",
-          "2dc0e12c-a89a-40bf-b0ea-efdb848f0478"
+          "32b42abc-868e-4b33-8fea-5fbafc59471e",
+          "4b91dde1-4041-43b0-8daf-f1f06b303281",
+          "c0158dfa-24db-43bc-97c2-c28d3a53b6d8"
         ],
         "checks": [
           "Studio HTTP saved graph",
@@ -274,9 +274,9 @@
       "platform": "darwin",
       "arch": "arm64",
       "packaged": true,
-      "startedAt": "2026-09-21T10:23:07.217Z",
-      "executableSha256": "1699cdea9e144054712862ab7a82f6cf675671e20b1233390822556d8fdf1ec5",
-      "projectId": "a2851bf4-3024-41a6-aab5-3cbe97b681b2",
+      "startedAt": "2026-09-21T11:19:01.987Z",
+      "executableSha256": "b0425ab9a69dfffa6e1e7d106a0618b8d71a462c49ff9c1e36eba3c81b2f9fde",
+      "projectId": "39334558-9ff4-4f24-ab2c-f027d9bb420e",
       "sharedPersonChain": {
         "status": "passed",
         "checks": [
@@ -286,17 +286,17 @@
           "Next Task starts from A1 input environment, restores cookie, and selects P1 through personNo field equality"
         ],
         "taskIds": [
-          "71b03bd7-3c8c-406b-9b7a-a3e169caf943",
-          "0ed06907-1a25-47f3-b3e5-1ed753644705"
+          "ac8d00d5-88c8-4d40-9039-01307ea7fd99",
+          "132f4aa0-af71-4dd1-8981-b90f8dcdb52a"
         ],
-        "environmentId": "150827c3-4190-5b3a-b45b-427edbd3442b",
+        "environmentId": "a8aa0bf4-d478-5387-a891-cc5309a7ec7b",
         "scope": "ARM packaged public HTTP and actual worker/browser; no full native UI flow or live Sheets claim"
       },
       "concurrentRecordClaims": {
         "status": "passed",
         "taskIds": [
-          "d2ad8eea-7079-490c-b610-32769f033f76",
-          "a706584f-23a4-4334-904d-c73643117176"
+          "b4bdb631-38dd-4c86-b53d-7dfaf2cfc902",
+          "7a6e7fe9-d633-4109-bbf9-708a0536b215"
         ],
         "checks": [
           "One data batch reaches two simultaneous manual checkpoints with distinct leased records",
@@ -311,15 +311,15 @@
         "T2 then queried and wrote using its prepared old field contract; manual node executed once"
       ],
       "taskIds": [
-        "acc4f334-25de-4908-9229-809c568d3414",
-        "abdda7db-beeb-4fc8-96d5-45b1a76b35af"
+        "b03d5b1f-0bce-411c-a60e-c26ab7e16b24",
+        "ccda210a-616d-4f2b-83ce-914d95b5ed83"
       ],
       "concurrency": {
         "status": "passed",
-        "overlapStartedAt": "2026-09-21T10:23:17.432Z",
-        "t1CompletedAt": "2026-09-21T10:23:20.315Z",
-        "waitingRunId": "5af20b1b-b247-4124-bedb-824c030301a9",
-        "completedRunId": "f364c92a-ff46-4389-a105-9a834c1ae2da",
+        "overlapStartedAt": "2026-09-21T11:19:16.570Z",
+        "t1CompletedAt": "2026-09-21T11:19:21.448Z",
+        "waitingRunId": "7a42a98c-ce01-4a75-aaa0-08bd0300ab27",
+        "completedRunId": "45cf53f6-7a13-4c76-96d7-a681c7a544f1",
         "waitingStateBefore": "waiting_manual",
         "waitingStateAfter": "waiting_manual"
       },
@@ -335,7 +335,7 @@
       "platform": "darwin",
       "arch": "arm64",
       "packaged": true,
-      "startedAt": "2026-09-21T10:23:36.814Z",
+      "startedAt": "2026-09-21T11:19:45.724Z",
       "checks": [
         "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
         "archive blocks writes, repeat command recovers one operation, restore preserves data",
@@ -358,24 +358,24 @@
         "project-zoom-200.png",
         "project-restarted.png"
       ],
-      "projectId": "0cf54d75-b669-43cc-a028-e04a46692439",
-      "tableId": "0a0a1aec-4e4d-42f8-8656-17cb6a188b69",
-      "tablePath": "/projects/0cf54d75-b669-43cc-a028-e04a46692439/tables/0a0a1aec-4e4d-42f8-8656-17cb6a188b69",
+      "projectId": "fe749c11-66cd-42d0-bf78-b2ce0a131b49",
+      "tableId": "3f0fbf5a-347e-4aa7-b018-978d38e03d91",
+      "tablePath": "/projects/fe749c11-66cd-42d0-bf78-b2ce0a131b49/tables/3f0fbf5a-347e-4aa7-b018-978d38e03d91",
       "boundary": "production management, real runtime and renderer volume; live Sheets and physical installation remain pending",
       "runtime": {
-        "projectId": "cdc55fd3-2c7c-4d47-b351-c7d18ad70074",
-        "environmentId": "88949357-9a1e-5954-9cf3-c88f52382517",
+        "projectId": "967cb8b7-7969-4187-a934-ca9c9836c606",
+        "environmentId": "5a396fcf-cb64-55fc-88d6-f246b817f0a1",
         "logLoad": {
           "logCount": 1004,
           "logPages": 6,
-          "elapsedMs": 39115,
-          "logsPerMinute": 1540,
+          "elapsedMs": 39379,
+          "logsPerMinute": 1530,
           "scope": "real worker throughput and server pagination; no renderer memory claim"
         },
         "taskIds": [
-          "4f456a49-31ad-42c2-aa62-c7c4b392466b",
-          "7b85f520-67b9-47b8-8a3b-03522b6076ad",
-          "fa395e54-b10d-47d6-a42c-5989bc6cdad0"
+          "ecf0d64a-2231-4988-8f0a-40e90141a9dc",
+          "0ccc94a6-eb02-47ce-9348-81df8ee2441c",
+          "164fbbbd-200b-4e0b-96c0-5f4241eb8ba4"
         ],
         "checks": [
           "Studio HTTP saved graph",
@@ -402,64 +402,64 @@
         "synthetic": {
           "samples": [
             {
-              "received": 83,
-              "logReadMs": 9,
-              "pageMs": 114,
-              "heapBytes": 10849372
+              "received": 66,
+              "logReadMs": 21,
+              "pageMs": 188,
+              "heapBytes": 10843876
             },
             {
               "received": 183,
-              "logReadMs": 11,
-              "pageMs": 121,
-              "heapBytes": 10908560
+              "logReadMs": 20,
+              "pageMs": 159,
+              "heapBytes": 10874376
             },
             {
               "received": 283,
-              "logReadMs": 9,
-              "pageMs": 136,
-              "heapBytes": 10930408
+              "logReadMs": 33,
+              "pageMs": 240,
+              "heapBytes": 10916204
             },
             {
               "received": 383,
-              "logReadMs": 9,
-              "pageMs": 115,
-              "heapBytes": 10964048
+              "logReadMs": 50,
+              "pageMs": 255,
+              "heapBytes": 10951256
             },
             {
               "received": 483,
-              "logReadMs": 7,
-              "pageMs": 123,
-              "heapBytes": 10991560
+              "logReadMs": 23,
+              "pageMs": 187,
+              "heapBytes": 10977816
             },
             {
               "received": 600,
-              "logReadMs": 10,
-              "pageMs": 117,
-              "heapBytes": 11030120
+              "logReadMs": 13,
+              "pageMs": 146,
+              "heapBytes": 11016500
             },
             {
               "received": 700,
-              "logReadMs": 7,
-              "pageMs": 118,
-              "heapBytes": 11070728
+              "logReadMs": 28,
+              "pageMs": 177,
+              "heapBytes": 11057060
             },
             {
               "received": 800,
-              "logReadMs": 8,
-              "pageMs": 124,
-              "heapBytes": 11106212
+              "logReadMs": 36,
+              "pageMs": 152,
+              "heapBytes": 11092644
             },
             {
               "received": 900,
-              "logReadMs": 6,
-              "pageMs": 127,
-              "heapBytes": 11131040
+              "logReadMs": 48,
+              "pageMs": 219,
+              "heapBytes": 11117872
             },
             {
               "received": 1000,
-              "logReadMs": 11,
-              "pageMs": 127,
-              "heapBytes": 11165500
+              "logReadMs": 24,
+              "pageMs": 159,
+              "heapBytes": 11147008
             }
           ],
           "received": 1000,
@@ -468,8 +468,8 @@
             "targetLogsPerMinute": 1000,
             "seconds": 60,
             "emitted": 1000,
-            "elapsedMs": 60038,
-            "maxBatchLagMs": 168
+            "elapsedMs": 60180,
+            "maxBatchLagMs": 193
           }
         },
         "concurrentWrites": {
@@ -482,36 +482,36 @@
         "seedMode": "five concurrent single-record HTTP writers",
         "renderedRecordRows": 50,
         "logRows": 1004,
-        "seedMs": 48091,
+        "seedMs": 81059,
         "logPageMs": [
-          177,
-          127,
-          126,
-          118,
-          112
+          237,
+          148,
+          203,
+          189,
+          166
         ],
         "recordPageMs": [
-          126,
+          154,
+          133,
+          135,
+          118,
+          133,
+          127,
+          130,
+          137,
           121,
-          111,
-          119,
-          119,
-          127,
-          115,
-          117,
-          127,
-          121
+          120
         ],
-        "twoFramesMs": 30,
+        "twoFramesMs": 12,
         "heapBytes": {
-          "before": 7400580,
-          "withLogs": 12413632,
+          "before": 7370068,
+          "withLogs": 12391112,
           "recordPageSamples": [
-            9958972,
-            10543692,
-            10820220
+            9951764,
+            10493740,
+            10807028
           ],
-          "recordPageGrowth": 861248
+          "recordPageGrowth": 855264
         },
         "scope": "one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim"
       }

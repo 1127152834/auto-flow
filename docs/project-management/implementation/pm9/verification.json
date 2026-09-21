@@ -54,12 +54,17 @@
     }
   },
   "ci": {
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "runId": 35590418456,
     "headSha": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35590418456",
-    "scope": "Full three-platform candidate for production source f580b1c6; no earlier platform result substitutes for this source."
+    "scope": "Historical f580b1c6 source matrix. C1/C2 source changes require a separate stable candidate; these results do not verify shared claims.",
+    "platformResults": {
+      "darwin-arm64": "success; ci-capabilities-darwin-arm64.json @0303924d / production f580b1c6",
+      "win32-x64": "3317 passed, 71 skipped, 1 failed: synthetic 100ms budget expired before second manual pause",
+      "darwin-x64": "backend passed; frontend 5458 passed / 1 failed: proxy first-load assertion before queued filter response"
+    }
   },
   "historicalEvidence": [
     {
@@ -94,6 +99,7 @@
       "S4-new-files-and-job-subset"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "targeted_verified_full_regression_in_progress"
-  }
+    "status": "S1-S5 implementation retained; f580 CI failures recorded; approved C1-C4/R1-R5 development continues"
+  },
+  "sharedDataFollowThrough": "shared-data-follow-through.json"
 }

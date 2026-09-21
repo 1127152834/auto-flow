@@ -803,7 +803,9 @@ async def test_live_manual_continuation_keeps_owner_and_excludes_wait_from_budge
     run, _ = create_queued_run(runtime)
     with runtime.begin() as session:
         row = session.get(WorkflowRunRow, run.run_id)
-        row.resource_request = {**row.resource_request, 'automaticExecutionTimeoutSeconds': .1}
+        row.resource_request = {**row.resource_request, 'automaticExecutionTimeoutSeconds': 2}
+    # Real SQLite transitions on Windows can exceed 100 ms. Test excluded
+    # manual time with a larger budget, while both waits still exceed it.
     release = asyncio.Event()
     worker = SyntheticWorker(blocked=release)
     dispatcher = make_dispatcher(runtime, worker, SyntheticResources())
@@ -811,7 +813,7 @@ async def test_live_manual_continuation_keeps_owner_and_excludes_wait_from_budge
     while not worker.calls:
         await asyncio.sleep(.001)
     dispatcher.pause_manual(run.run_id, 1)
-    await asyncio.sleep(.15)
+    await asyncio.sleep(2.1)
     assert dispatcher.query_run(run.run_id).status == 'waiting_manual'
     dispatcher.resume_manual(run.run_id, 1)
     assert dispatcher.query_run(run.run_id).execution_generation == 1
@@ -820,7 +822,7 @@ async def test_live_manual_continuation_keeps_owner_and_excludes_wait_from_budge
     dispatcher.pause_manual(run.run_id, 1)
     assert 0 < dispatcher._owners[run.run_id].automatic_remaining < first_remaining
     second_remaining = dispatcher._owners[run.run_id].automatic_remaining
-    await asyncio.sleep(.15)
+    await asyncio.sleep(2.1)
     assert dispatcher._owners[run.run_id].automatic_remaining == second_remaining
     dispatcher.resume_manual(run.run_id, 1)
     release.set()

@@ -102,7 +102,9 @@ it('shows a connection empty state without fabricated proxy metrics', async () =
 
 it('loads proxies, opens the detail drawer, and keeps unverified writes disabled', async () => {
   const user = userEvent.setup()
-  render(<ProxyManagementPage api={connectedClient()} />)
+  await act(async () => { render(<ProxyManagementPage api={connectedClient()} />) })
+  // Flush the initial zero-delay filter request before timing a UI assertion.
+  await act(async () => { await new Promise<void>((resolve) => window.setTimeout(resolve, 0)) })
 
   expect(await screen.findByText('Dallas Verizon')).toBeInTheDocument()
   expect(screen.getByText('当前页健康')).toBeInTheDocument()
