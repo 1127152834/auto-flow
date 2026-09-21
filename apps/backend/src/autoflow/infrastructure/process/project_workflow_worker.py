@@ -80,7 +80,7 @@ class ProjectWorkflowWorkerManager:
             # CPython's venv redirector creates its own Job after spawning the
             # interpreter. Start that interpreter directly so our named Job can
             # own it before any browser children exist; retain the same venv.
-            self._command = (sys._base_executable, *self._command[1:])
+            self._command = (vars(sys)["_base_executable"], *self._command[1:])
             self._worker_env["__PYVENV_LAUNCHER__"] = sys.executable
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
