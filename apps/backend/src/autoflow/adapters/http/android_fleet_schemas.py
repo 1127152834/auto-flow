@@ -42,8 +42,8 @@ class BatchCreate(AndroidRename):
     batch_id: UUID
     profile_id: UUID
     profile_revision: int = Field(ge=1, strict=True)
-    quantity: int = Field(default=3, ge=1, le=20, strict=True)
-    instance_type: Literal["persistent", "temporary"] = "persistent"
+    quantity: int = Field(default=1, ge=1, le=20, strict=True)
+    instance_type: Literal["persistent"] = "persistent"
     start: bool = True
     width: int = Field(default=720, ge=320, le=1920, strict=True)
     height: int = Field(default=1280, ge=320, le=2560, strict=True)
@@ -105,6 +105,7 @@ class SessionCreate(ApiModel):
     request_id: UUID
     device_id: UUID
     access: Literal["manual", "readonly"] = "manual"
+    client_session_id: str | None = Field(default=None, min_length=1, max_length=128)
 
 
 class SessionRead(ApiModel):
@@ -117,6 +118,12 @@ class SessionRead(ApiModel):
     width: int
     height: int
     latest_operation: str | None = None
+    client_session_id: str | None = None
+
+
+class SessionHeartbeat(ApiModel):
+    client_session_id: str = Field(min_length=1, max_length=128)
+    generation: int = Field(ge=0, strict=True)
 
 
 class ControlCommand(ApiModel):
@@ -151,6 +158,12 @@ class AppLaunch(ApiModel):
     package_name: str = Field(
         pattern=r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$", max_length=240
     )
+
+
+class AppAction(ApiModel):
+    generation: int = Field(ge=0, strict=True)
+    package_name: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$", max_length=240)
+    action: Literal["stop", "uninstall", "clearData"]
 
 
 class BatchAction(ApiModel):

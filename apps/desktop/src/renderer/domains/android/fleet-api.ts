@@ -25,10 +25,12 @@ export const fleetApi = (client: StreamingApiClient) => ({
   session: (deviceId: string, access: 'manual' | 'readonly', requestId: string) =>
     client.request<ConsoleSession>(`${base}/sessions`, {
       method: 'POST',
-      body: { deviceId, access, requestId },
+      body: { deviceId, access, requestId, clientSessionId: requestId },
       timeoutMs: 60000,
     }),
   readSession: (id: string) => client.request<ConsoleSession>(`${base}/sessions/${id}`),
+  heartbeat: (session: ConsoleSession, clientSessionId: string) =>
+    client.request<ConsoleSession>(`${base}/sessions/${session.id}/heartbeat`, { method: 'POST', body: { clientSessionId, generation: session.generation } }),
   action: (session: ConsoleSession, action: SessionAction, requestId = crypto.randomUUID()) =>
     client.request<ConsoleSession>(`${base}/sessions/${session.id}/actions`, {
       method: 'POST',
@@ -45,6 +47,8 @@ export const fleetApi = (client: StreamingApiClient) => ({
       body: { generation: s.generation, packageName },
       timeoutMs: 40000,
     }),
+  appAction: (s: ConsoleSession, action: 'stop' | 'uninstall' | 'clearData', packageName: string) =>
+    client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/actions`, { method: 'POST', body: { generation: s.generation, action, packageName }, timeoutMs: 40000 }),
   install: (s: ConsoleSession, file: File) => {
     const body = new FormData()
     body.append('file', file)

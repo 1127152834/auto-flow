@@ -53,3 +53,66 @@ class ManagementCapabilitiesRead(ApiModel):
     backups: bool | str
     workflow: bool
     reasons: dict[str, str]
+
+
+class OperationRead(ApiModel):
+    operation_id: str
+    request_id: str
+    target_id: str
+    action: str
+    state: str
+    stage_code: str
+    stage_label: str
+    attempt: int
+    retry_of: str | None = None
+    created_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    result_code: str | None = None
+    message: str | None = None
+    allowed_actions: list[str] = Field(default_factory=list)
+
+
+class EnvironmentCheckCommand(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+
+
+class OperationVerifyCommand(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+
+
+class ImageRead(ApiModel):
+    id: str
+    image_id: str
+    name: str
+    reference: str
+    revision: int
+    state: str
+    verification: dict[str, Any]
+    created_at: datetime
+
+
+class ImageRegister(ApiModel):
+    id: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    name: str = Field(min_length=1, max_length=120)
+    reference: str = Field(min_length=1, max_length=255)
+
+
+class ImageDelete(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    delete_content: bool = False
+
+
+class BackupRead(ApiModel):
+    id: str
+    device_id: str
+    image_id: str
+    format_version: int
+    sha256: str
+    bytes: int
+    created_at: datetime
+    state: str
+
+
+class BackupCreate(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)

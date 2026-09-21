@@ -85,7 +85,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   })
   const sessionStatus = useQuery({
     queryKey: ['android', instanceId, 'session', session?.id],
-    queryFn: () => fleet.readSession(session!.id),
+    queryFn: () => fleet.heartbeat(session!, session!.clientSessionId ?? session!.id),
     enabled: Boolean(connected && session && session.state !== 'closed'),
     refetchInterval: 5000,
   })

@@ -8,8 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.android import android_router
-from autoflow.adapters.http.android_management import android_management_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
+from autoflow.adapters.http.android_management import android_management_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.local_workflows import local_workflows_router
@@ -19,9 +19,11 @@ from autoflow.adapters.http.studio_retention import studio_retention_router
 from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
+from autoflow.application.android.backups import AndroidBackupService
 from autoflow.application.android.console import AndroidConsole
 from autoflow.application.android.diagnostics import EnvironmentCheckService
 from autoflow.application.android.fleet import AndroidFleet
+from autoflow.application.android.images import AndroidImageService
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
@@ -72,8 +74,10 @@ from autoflow.application.workflows.credentials import StudioCredentialService
 from autoflow.application.workflows.image_assets import ImageAssetStore
 from autoflow.application.workflows.local_files import LocalWorkflowFiles
 from autoflow.application.workflows.retention import StudioRetentionService
+from autoflow.application.workflows.schedule_notifications import (
+    WorkflowScheduleNotifier,
+)
 from autoflow.application.workflows.schedules import WorkflowScheduleService
-from autoflow.application.workflows.schedule_notifications import WorkflowScheduleNotifier
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.application.workflows.webdav import WebDavWorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
@@ -103,6 +107,9 @@ from autoflow.domain.profiles.ports import (
     ProfileUsageGuard,
 )
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
+from autoflow.infrastructure.database.android_operations import (
+    SqlAlchemyAndroidOperationRepository,
+)
 from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.database.kernel_operations import (
@@ -381,6 +388,11 @@ def create_app(
     app.router.add_event_handler("startup", workflow_schedules.startup)
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
+    android_operations = SqlAlchemyAndroidOperationRepository(session_factory)
+    android_images = AndroidImageService(android_resources, android.repository)
+    android_backups = AndroidBackupService(android_resources, paths.workspace)
+    android.management.operations = android_operations
+    android.management.workspace_identity = str(paths.workspace.resolve())
     android_runs = CurrentAndroidRunBoundary()
     android_fleet = AndroidFleet(android, android_resources, None, android_runs)
     android_console = AndroidConsole(
@@ -389,6 +401,7 @@ def create_app(
     app.state.android_service = android
     app.state.android_fleet = android_fleet
     app.state.android_console = android_console
+    app.state.android_operations = android_operations
     app.router.add_event_handler("startup", android.recover)
     app.router.add_event_handler("startup", android_fleet.start)
     app.router.add_event_handler("startup", android_console.start)
@@ -620,7 +633,7 @@ def create_app(
     app.include_router(studio_retention_router(studio_retention))
     app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
-    app.include_router(android_management_router(EnvironmentCheckService(android.runtime)))
+    app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)

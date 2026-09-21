@@ -12,6 +12,7 @@ from autoflow.domain.android.ports import AndroidError
 from .android_fleet_schemas import (
     AllocationCreate,
     AllocationRead,
+    AppAction,
     AppInfo,
     AppLaunch,
     BatchAction,
@@ -22,6 +23,7 @@ from .android_fleet_schemas import (
     EnvironmentProfile,
     SessionAction,
     SessionCreate,
+    SessionHeartbeat,
     SessionRead,
 )
 
@@ -145,6 +147,10 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
     async def read_session(identifier: UUID) -> Any:
         return console.get(str(identifier))["view"]
 
+    @router.post("/sessions/{identifier}/heartbeat", response_model=SessionRead)
+    async def heartbeat(identifier: UUID, body: SessionHeartbeat) -> Any:
+        return await console.heartbeat(str(identifier), body.client_session_id, body.generation)
+
     @router.post("/sessions/{identifier}/actions", response_model=SessionRead)
     async def action(identifier: UUID, body: SessionAction) -> Any:
         return await console.action(
@@ -180,6 +186,10 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
         return await console.app_operation(
             str(identifier), body.generation, "launch", body.package_name
         )
+
+    @router.post("/sessions/{identifier}/apps/actions", response_model=SessionRead)
+    async def app_action(identifier: UUID, body: AppAction) -> Any:
+        return await console.app_operation(str(identifier), body.generation, body.action, body.package_name)
 
     @router.post(
         "/sessions/{identifier}/apps/install",

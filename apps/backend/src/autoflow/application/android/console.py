@@ -59,7 +59,6 @@ class AndroidConsole:
             raise AndroidError(
                 "ANDROID_SESSION_EXPIRED", "控制会话已结束，请重新打开设备", 410
             )
-        session["seen"] = monotonic()
         if (
             session["view"]["endpoint"] == "native"
             and session["view"]["state"] == "connected"
@@ -67,6 +66,15 @@ class AndroidConsole:
         ):
             session["view"]["state"] = "native_closed"
         return session
+
+    async def heartbeat(self, identifier: str, client_session_id: str, generation: int) -> dict[str, Any]:
+        session = self.sessions.get(identifier)
+        if session is None or session["view"]["state"] == "closed":
+            raise AndroidError("ANDROID_SESSION_EXPIRED", "控制会话已结束，请重新打开设备", 410)
+        if session.get("clientSessionId") != client_session_id or session["view"]["generation"] != generation:
+            raise AndroidError("ANDROID_SESSION_STALE", "控制会话身份已变化，请刷新会话", 409)
+        session["seen"] = monotonic()
+        return session["view"]
 
     async def create(self, request: dict[str, Any]) -> dict[str, Any]:
         async with self.lock:
@@ -136,7 +144,9 @@ class AndroidConsole:
                 "keys": set(),
                 "touch": None,
                 "seen": monotonic(),
+                "clientSessionId": request.get("clientSessionId") or identifier,
             }
+            view["clientSessionId"] = session["clientSessionId"]
             self.resources.save(
                 "session",
                 {"id": identifier, "deviceId": request["deviceId"], "request": request},
@@ -384,11 +394,12 @@ class AndroidConsole:
             if operation == "install":
                 await context.runtime.install_apk(value)
             else:
-                await context.runtime.command(
-                    "android_launch_app", {"packageName": value}, 30
-                )
+                command = {"launch": "android_launch_app", "stop": "android_stop_app", "uninstall": "android_uninstall_app", "clearData": "android_clear_app_data"}[operation]
+                if operation in {"uninstall", "clearData"} and str(value).startswith(("com.android.", "com.google.android.")):
+                    raise AndroidError("ANDROID_PROTECTED_APP", "系统应用不能作为普通应用移除或清除", 409)
+                await context.runtime.command(command, {"packageName": value}, 30)
             session["view"]["latestOperation"] = (
-                "APK 已安装" if operation == "install" else "应用已启动"
+                "APK 已安装" if operation == "install" else {"launch": "应用已启动", "stop": "应用已停止", "uninstall": "应用已卸载", "clearData": "应用数据已清除"}[operation]
             )
             return session["view"]
 

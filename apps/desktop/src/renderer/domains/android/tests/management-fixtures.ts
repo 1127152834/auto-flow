@@ -57,6 +57,6 @@ export function makeApi(): StreamingApiClient {
       throw new Error(`unsupported fixture request: ${path}`)
     },
     stream: async () => new Response(new Blob()),
-    health: async () => ({ status: 'ok' }),
+    health: async () => ({ status: 'ok', apiVersion: 'v1', instanceId: 'fixture' }),
   }
 }

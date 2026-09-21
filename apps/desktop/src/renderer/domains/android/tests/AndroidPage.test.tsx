@@ -33,14 +33,14 @@ it('preserves the six-card three-column board and both waiting tasks', () => {
   expect(screen.getByText('登录回归')).toBeVisible()
   expect(screen.getByText('指定测试设备 06')).toBeVisible()
 })
-it('defaults to three independent persistent instances and preserves the batch id after an unknown response', async () => {
+it('defaults to one persistent instance and preserves the batch id after an unknown response', async () => {
   const submit = vi.fn().mockRejectedValue(new Error('连接中断'))
   render(<CreateInstances profiles={[profile]} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
-  expect(screen.getByRole('spinbutton', { name: '数量' })).toHaveValue(3)
+  expect(screen.getByRole('spinbutton', { name: '数量' })).toHaveValue(1)
   await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
   await userEvent.click(await screen.findByRole('button', { name: '按原编号核实创建' }))
   expect(submit.mock.calls[0][0]).toEqual(submit.mock.calls[1][0])
-  expect(submit.mock.calls[0][0]).toMatchObject({ quantity: 3, instanceType: 'persistent' })
+  expect(submit.mock.calls[0][0]).toMatchObject({ quantity: 1, instanceType: 'persistent' })
 })
 it('readonly console never enables navigation or installation during workflow ownership', async () => {
   render(<DeviceConsole device={devices[2]} session={fixtureSession(false)} run={runs[devices[2].deviceId]} image={images[devices[2].deviceId]} onBack={noop} onSession={noop} onOpen={noop} onManage={noop} onAllocate={noop} onRefresh={noop} />)

@@ -3,11 +3,10 @@ import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { expect, it, vi } from 'vitest'
 import { RuntimeDiagnostics } from '../components/RuntimeDiagnostics'
-import type { AndroidManagementApi } from '../management-api'
+import type { AndroidManagementApi, ManagementEnvironment } from '../management-api'
 
 it('shows explicit unknown checks and disabled capability reasons', async () => {
-  const api: AndroidManagementApi = {
-    environment: vi.fn(async () => ({
+  const environment: ManagementEnvironment = {
       available: false,
       platformSupported: false,
       runtimeId: 'redroid',
@@ -21,7 +20,9 @@ it('shows explicit unknown checks and disabled capability reasons', async () => 
         adb: { status: 'unknown', code: 'ANDROID_CHECK_UNAVAILABLE', message: '运行环境不可访问', action: null },
       },
       capabilities: { management: false, control: false, images: 'unknown', workflow: false },
-    })),
+    }
+  const api: AndroidManagementApi = {
+    environment: vi.fn(async () => environment),
     capabilities: vi.fn(async () => ({ management: false, control: false, images: 'unknown', bulk: false, backups: false, workflow: false, reasons: { workflow: '安卓管理不通过工作流执行入口' } })),
   }
 

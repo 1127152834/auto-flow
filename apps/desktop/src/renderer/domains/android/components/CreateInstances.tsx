@@ -21,12 +21,11 @@ export function CreateInstances({
   onSubmit(value: BatchRequest): Promise<void>
 }) {
   const [name, setName] = useState(source ? `${source.name} 副本` : '测试设备'),
-    [quantity, setQuantity] = useState(3)
+    [quantity, setQuantity] = useState(1)
   const [profileId, setProfileId] = useState(source?.profileId ?? profiles[0]?.id ?? '')
   const profile = profiles.find((p) => p.id === profileId)
   const [resolution, setResolution] = useState(`${source?.width ?? 720}x${source?.height ?? 1280}`)
-  const [temporary, setTemporary] = useState(false),
-    [start, setStart] = useState(true),
+  const [start, setStart] = useState(true),
     [advanced, setAdvanced] = useState(false)
   const [locale, setLocale] = useState(source?.locale ?? 'zh-CN'),
     [timezone, setTimezone] = useState(source?.timezone ?? 'Asia/Shanghai')
@@ -47,12 +46,12 @@ export function CreateInstances({
       width,
       height,
       start,
-      instanceType: temporary ? 'temporary' : 'persistent',
+      instanceType: 'persistent',
       locale,
       timezone,
     }
     try {
-      await onSubmit(pending.current)
+      await onSubmit(pending.current!)
     } catch (e) {
       if (e instanceof ApiClientError && e.status >= 400 && e.status < 500) pending.current = null
       setError(e instanceof Error ? e.message : '创建结果尚未确认，请按原编号重试')
@@ -176,20 +175,7 @@ export function CreateInstances({
               <div className="ad-form-row">
                 <label>实例类型</label>
                 <div className="ad-instance-types">
-                  {[false, true].map((t) => (
-                    <label key={String(t)} className={!temporary === !t ? 'selected' : ''}>
-                      <input
-                        type="radio"
-                        name="instance-type"
-                        checked={temporary === t}
-                        onChange={() => setTemporary(t)}
-                      />
-                      <div>
-                        <strong>{t ? '临时实例' : '持久实例'}</strong>
-                        <p>{t ? '供工作流使用，按运行清理策略回收' : '保留应用和数据，适合重复调试'}</p>
-                      </div>
-                    </label>
-                  ))}
+                  <div className="selected"><strong>持久实例</strong><p>保留应用和数据，适合重复调试</p></div>
                 </div>
               </div>
               <div className="ad-form-row ad-start-row">
@@ -226,7 +212,7 @@ export function CreateInstances({
               </div>
               <div>
                 <dt>数据</dt>
-                <dd>{temporary ? '运行后按策略回收' : '独立持久保存'}</dd>
+                <dd>独立持久保存</dd>
               </div>
             </dl>
           </div>
@@ -257,7 +243,7 @@ export function CreateInstances({
         </Action>
         <p>创建进度可在资源看板逐台查看。</p>
         <span>
-          将创建 <strong>{quantity}</strong> 台{temporary ? '临时' : '持久'}实例
+          将创建 <strong>{quantity}</strong> 台持久实例
         </span>
         <Action
           primary

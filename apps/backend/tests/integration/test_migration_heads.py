@@ -15,7 +15,10 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["0019_recording_commands"]
+    assert scripts.get_heads() == ["am01_management_operations"]
+    assert scripts.get_revision("am01_management_operations").down_revision == (
+        "0019_recording_commands"
+    )
     assert scripts.get_revision("0019_recording_commands").down_revision == (
         "0018_scheduled_tasks"
     )
