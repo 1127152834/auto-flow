@@ -377,15 +377,16 @@
 - [x] Task B5.1：定义 Model/MCP 窄端口，复用主应用 model ID 和系统秘密存储；不迁入第二套 provider 配置。
   - 2026-09-21：复用 `ExecutionContext.models`，父进程按稳定 `modelId` 从主应用 ModelService/系统 CredentialStore 解析临时绑定，经既有 stdin 通道交给 worker；运行快照、事件和结果不含密钥。首个 `ai_chat` 已通过真实 worker + 本地受控模型 HTTP 服务，见 `evidence/b5/model-boundary-ai-chat.json`。MCP 窄端口的具体服务接入仍归 B5.6，不在此任务虚构实现。
 - [x] Task B5.2：建立 `tests/compatibility/test_langgraph_runtime.py`，验证候选 LangGraph 版本在 Python 3.11 下的图中断、检查点恢复、取消、无默认外部遥测和 PyInstaller 收集；通过后才修改 `apps/backend/pyproject.toml` 与锁文件。
-  - 2026-09-21：锁定 LangGraph 1.2.11 与 SQLite checkpoint 3.1.1；Python 3.11 的持久化中断恢复、异步取消、核心路径无网络连接、PyInstaller 收集、隔离冻结构建及 sidecar 启停均通过。生产助手图的冻结暂停/恢复仍归 B5.3–B5.4 验收，见 `evidence/b5/langgraph-runtime-compatibility.json`。
-- [ ] Task B5.3：实现小助手图：上下文→模型→结构化工具校验→权限中断→工具结果→后续模型；`assistantSessionId` 映射受工作区隔离的 thread/checkpoint，恢复查询原 commandId，不重放副作用。
-- [ ] Task B5.4：把模型文本、工具请求、权限状态、结果、错误和结束投影到现有 SSE/查询合同；服务端重复检查 227 范围、工具开关、参数和批准修订。
+  - 2026-09-21：锁定 LangGraph 1.2.11 与 SQLite checkpoint 3.1.1；Python 3.11 的持久化中断恢复、异步取消、核心路径无网络连接、PyInstaller 收集、隔离冻结构建及 sidecar 启停均通过。生产助手图的冻结暂停/恢复已随 B5.3–B5.4 关闭，兼容性证据见 `evidence/b5/langgraph-runtime-compatibility.json`。
+- [x] Task B5.3：实现小助手图：上下文→模型→结构化工具校验→权限中断→工具结果→后续模型；`assistantSessionId` 映射受工作区隔离的 thread/checkpoint，恢复查询原 commandId，不重放副作用。
+- [x] Task B5.4：把模型文本、工具请求、权限状态、结果、错误和结束投影到现有 SSE/查询合同；服务端重复检查 227 范围、工具开关、参数和批准修订。
 - [ ] Task B5.5：用本地可控 HTTP/MCP fixture 迁入 22 节点，验证请求形状、流式分块、取消、超时、限流和错误映射。
   - 2026-09-21：22 个节点已全部进入生产注册表；最后两个 `image_ocr`、`face_recognition` 保留冻结源码结果结构并复用 AutoFlow 文件边界，EasyOCR、人脸模型及 torchvision 原生库随冻结后端提供。冻结源码差分、真实 worker、macOS arm64 冻结 worker 通过，见 `evidence/b5/media-recognition-family.json`。本任务仍需集中完成流式/限流错误矩阵、正式 UI 和真实供应商核销。
-- [ ] Task B5.6：实现现有 MCP 保存、测试、重载和调用合同，写操作带 revision/commandId，MCP 工具不能绕过小助手权限。
-- [ ] Task B5.7：大图像/视频/文本经 artifact 引用传输；日志、SSE、诊断、LangGraph 检查点和导出扫描不得出现 API key、代理密码或 License。
   - 2026-09-21：`ai_generate_image`、`ai_generate_video` 已按冻结源码迁入 OpenAI、Stability、Runway 和自定义接口分支；节点只引用主应用 `modelId`，协议选择仍保留，密钥与地址由系统模型绑定提供。差分输出、真实 worker、产物落盘、轮询取消及秘密扫描通过；第三方真实供应商与正式 Electron 验收仍为外部等待，见 `evidence/b5/ai-media-family.json`。
-- [ ] Task B5.8：正式 UI 验证小助手多轮添加/修改节点、批准/拒绝/取消、断线重连及历史；排除节点请求必须拒绝，页面确认前不得宣称草稿已修改。
+- [x] Task B5.6：实现现有 MCP 保存、测试、重载和调用合同，写操作带 revision/commandId，MCP 工具不能绕过小助手权限。
+- [x] Task B5.7：大图像/视频/文本经 artifact 引用传输；日志、SSE、诊断、LangGraph 检查点和导出扫描不得出现 API key、代理密码或 License。
+- [x] Task B5.8：正式 UI 验证小助手多轮添加/修改节点、批准/拒绝/取消、断线重连及历史；排除节点请求必须拒绝，页面确认前不得宣称草稿已修改。
+  - 2026-09-21：LangGraph 多轮工具、稳定命令恢复、流式 SSE、附件/语音、大值产物、递归秘密脱敏和真实 stdio MCP 均已进入生产链路。macOS arm64 冻结目录包通过正式 UI 完成模型选择、MCP 保存/重连、逐项批准/拒绝、排除节点拒绝、流式取消、工作流保存及正常关窗历史恢复，证据见 `evidence/b5/formal-assistant-electron-uelQUT/result.json`、`assistant-streaming-events.json`、`mcp-config-tools.json` 与 `assistant-artifacts-redaction.json`。真实商业模型、远程 MCP 及另外两平台继续单列外部等待。
 - [ ] Task B5.9：核销本地合同和真实供应商证据；没有凭据的供应商保持“外部等待”，不能用 fixture 核销 real-execution。
 
 **B5 退出门槛：** 66 条节点用例和 `BE-B5-001` 至 `005` 有证据；小助手确实通过 LangGraph 完成多轮工具与权限闭环，重启/重连不重复副作用，正式包可加载图和检查点；真实供应商未测项明确列出并阻止对应节点最终完成，不阻止其它已独立验收节点进入 B6。
