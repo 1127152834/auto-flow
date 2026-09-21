@@ -34,9 +34,10 @@
     "lint": "passed",
     "openapi": "passed",
     "scripts": "101 passed",
-    "fullBackend": "running; four stale migration-head assertions reproduced, fix under verification",
+    "fullBackend": "4 failed, 3345 passed, 63 skipped, 2 warnings in 738.51s; exactly four historical Android migration-head assertions. Corrected pm08→pm10; all 4 then passed in 1.09s, C3 gate 14 passed. No other failures. This combined evidence is not a single green full-suite invocation; native full-suite confirmation follows.",
     "build": "passed",
-    "C3Migration": "Four historical paths upgraded to pm10 preserving devices, runs, artifacts and foreign keys: 4 passed in 1.09s; stale pm08 assertion RED→GREEN"
+    "C3Migration": "Four historical paths upgraded to pm10 preserving devices, runs, artifacts and foreign keys: 4 passed in 1.09s; stale pm08 assertion RED→GREEN",
+    "C3Gate": "14 passed, 2 warnings in 12.46s"
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -82,5 +83,7 @@
     "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "ca5be9fbcf33665748066c46f237f01cc124f35355fc2cb258b8cb80d5189493",
     "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "2cc413cbf1645b65344e78819a6a4d016f6271a49ddbf74e955498db472bba16",
     "apps/backend/src/autoflow/infrastructure/database/project_sync_models.py": "eb2845b6060a92823630ddc9b71badeffe491ae70e3475a1170f0b2f6f6c85bb"
-  }
+  },
+  "productionCandidate": "376b8a59",
+  "testCandidate": "85bb8c7c"
 }
