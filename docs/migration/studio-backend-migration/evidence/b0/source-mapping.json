@@ -8,15 +8,15 @@
     "sharedCapabilities": 13,
     "acceptanceCaseSlots": 639,
     "nodeStatusCounts": {
-      "已实现且已验收": 182,
-      "已实现待验收": 31,
+      "已实现且已验收": 183,
+      "已实现待验收": 30,
       "尚未实现": 0,
       "外部等待": 0,
       "明确排除": 0
     },
     "caseStatusCounts": {
-      "已实现且已验收": 609,
-      "已实现待验收": 30,
+      "已实现且已验收": 610,
+      "已实现待验收": 29,
       "尚未实现": 0,
       "外部等待": 0,
       "明确排除": 0
@@ -30,7 +30,7 @@
   "test": {
     "command": "cd apps/backend && uv run pytest -q tests/migration/test_studio_backend_source_mapping.py tests/unit/workflows/test_scope_preflight.py",
     "exitCode": 0,
-    "result": "已核销 B6 桌面平台、脚本、定时/概率、API、文件监控及 Webhook 触发器 macOS arm64 正式 UI 证据；基础映射回归沿用 77 passed",
+    "result": "已核销 B6 桌面平台、脚本、定时/概率、API、文件监控、文本朗读及 Webhook 触发器 macOS arm64 正式 UI 证据；基础映射回归沿用 77 passed",
     "guards": [
       "冻结 _SUBMODULES 与实际源码模块一致",
       "装饰器及手动 registry.register 可在冻结 AST 中定位",

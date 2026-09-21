@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-009-text-to-speech",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -10,7 +10,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["text_to_speech"],
+  "nodes": [
+    "text_to_speech"
+  ],
   "implemented": [
     "保留文本、语言、语速、音调、音量默认值及变量解析语义",
     "真实worker发布execution:tts_request并等待Studio领取、朗读和结果确认，确认成功后才调度后续节点",
@@ -53,11 +55,19 @@
     "userDatabaseTouched": false,
     "browserStarted": false,
     "mockExecutionUsedForBackendEvidence": false,
-    "sensitiveValuesSentToRenderer": false
+    "sensitiveValuesSentToRenderer": false,
+    "formalElectronUiTested": true
   },
   "remaining": [
-    "正式Electron中通过真实UI添加、保存、运行并确认可听语音及后续节点",
-    "macOS和Windows可用系统语音及权限分别记录实机结果",
-    "正式UI断流恢复和窗口退出在B6集中Electron验收中核销"
-  ]
+    "Windows、macOS Intel及正式打包入口的系统语音能力和权限仍需平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-text-to-speech.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-text-to-speech-electron-G1Umes/result.json",
+    "covers": "正式 Studio 真实 UI 配置中文文本，保存后由真实 worker 发布语音请求，renderer Web Speech API 返回成功并执行后续日志节点",
+    "boundary": "开发入口、本地 renderer 语音合成，无用户数据库、浏览器或外部网络"
+  }
 }
