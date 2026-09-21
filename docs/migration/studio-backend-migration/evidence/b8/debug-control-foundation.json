@@ -61,7 +61,7 @@
     {
       "command": "AUTOFLOW_B8_RUN_TO_ONLY=1 node scripts/smoke-studio-backend-b1.mjs",
       "result": "passed on macOS arm64 development build",
-      "covers": "正式Electron通过节点悬停入口运行至此；真实CloakBrowser执行前置网页动作、目标前暂停、一次性恢复和进程清理"
+      "covers": "正式Electron通过节点悬停入口运行至此；真实CloakBrowser执行前置网页动作、目标前暂停、一次性恢复和进程清理；Studio按executionId查询完整持久化日志并与服务端结果一致"
     }
   ],
   "boundaries": {
@@ -74,6 +74,7 @@
   "remaining": [
     "条件与循环中的运行至此路径矩阵",
     "循环局部变量进入与退出的完整变化矩阵",
+    "SSE断流后的日志补读去重",
     "1,000轮与10,000日志容量、复杂调试正式UI和打包入口验收"
   ]
 }

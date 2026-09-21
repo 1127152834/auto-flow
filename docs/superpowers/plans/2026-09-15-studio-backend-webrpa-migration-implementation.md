@@ -460,6 +460,7 @@
 - [x] Task B8.4：失败暂停保留浏览器；结束调试清理后仍记 failed，普通暂停停止记 cancelled。
   - 2026-09-21：正式 Electron 通过真实 UI 设置断点；真实 CloakBrowser 在节点失败后保留现场，结束调试携带稳定运行身份完成 worker、浏览器和占用清理，并保持 `failed` 原错误。证据见 `evidence/b8/formal-failed-pause-electron-94DFD8/result.json`。
 - [ ] Task B8.5：实现日志全文搜索、级别/节点/executionId 筛选、游标分页、SSE 补读和固定截止序号导出。
+  - 2026-09-21：关键词、级别、节点、`executionId`、分页及固定截止序号导出已完成生产合同和前端接入；正式 Electron 已按真实运行的 `executionId` 查询完整持久化日志并与服务端结果核对。SSE 断流后的日志补读去重仍待组合验收，证据见 `evidence/b8/formal-run-to-electron-HqPaNk/result.json`。
 - [ ] Task B8.6：验证 1,000 轮、10,000 日志、64 KiB 以上变量、响应丢失、迟到命令、停止竞争、sidecar 崩溃与重连。
 - [ ] Task B8.7：正式 UI 完成复杂调试闭环并重开历史，关闭 `BE-B8-001` 至 `007`。
 

@@ -327,6 +327,16 @@ async function verifyRunToTarget({ studio, runtime, saved, nodeIds, userData, ev
   assert.equal(terminal.status, 'completed')
   const targetPauses = observedEvents.filter(event => event.name === 'execution:paused' && event.data?.runId === started.runId && event.data?.reason === 'target')
   assert.equal(targetPauses.length, 1)
+  const allLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(started.runId)}/logs?cursor=0&limit=500`)
+  const targetLog = allLogs.items.find(item => item.nodeId === targetId && item.executionId)
+  assert.ok(targetLog?.executionId)
+  const filteredLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(started.runId)}/logs?cursor=0&limit=500&executionId=${encodeURIComponent(targetLog.executionId)}`)
+  assert.ok(filteredLogs.total > 0)
+  assert.equal(filteredLogs.items.every(item => item.executionId === targetLog.executionId), true)
+  await setInput(studio, '[aria-label="按执行标识筛选日志"]', targetLog.executionId)
+  await waitFor(studio, `(()=>{const value=document.querySelector('[aria-label="按执行标识筛选日志"]')?.value;return value===${JSON.stringify(targetLog.executionId)}&&document.body.innerText.includes(${JSON.stringify(`${filteredLogs.total}/${filteredLogs.total}`)})})()`, 'execution identity log filter')
+  checkpoint('正式日志面板按 executionId 查询完整持久化记录，并与服务端筛选结果一致')
+  await capture(studio, join(evidenceDir, 'execution-log-filter.png'))
   await waitForValue(async () => {
     const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
     return processes.length === 0 ? true : null

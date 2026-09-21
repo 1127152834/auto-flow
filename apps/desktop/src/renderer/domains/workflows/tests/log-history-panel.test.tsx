@@ -73,7 +73,19 @@ it('applies keyword, level and node filters to the service query', async () => {
   expect(screen.getByText('故障-00601')).toBeDefined()
   fireEvent.click(screen.getByRole('combobox', { name: '按节点筛选日志' }))
   fireEvent.click(await screen.findByRole('option', { name: '点击元素' }))
-  await waitFor(() => expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ query: '故障-00601', nodeId: 'node-b' })))
+  fireEvent.change(screen.getByRole('textbox', { name: '按执行标识筛选日志' }), { target: { value: 'execution-601' } })
+  await waitFor(() => expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ query: '故障-00601', nodeId: 'node-b', executionId: 'execution-601' })))
+})
+
+it('exports the same execution identity filter used by the history query', async () => {
+  const exported = vi.spyOn(workflowApi, 'exportRunLogs').mockResolvedValue({success:true,data:new Blob(['{}\n'])})
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:execution')
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  render(<LogPanel />)
+  await screen.findByText('100/650')
+  fireEvent.change(screen.getByRole('textbox', { name: '按执行标识筛选日志' }), { target: { value: ' execution-601 ' } })
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '下载' })))
+  await waitFor(() => expect(exported).toHaveBeenCalledWith('run-history', expect.objectContaining({executionId:'execution-601'})))
 })
 
 it('downloads the server export instead of the retained UI window', async () => {
