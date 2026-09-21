@@ -150,8 +150,8 @@ class SheetsSyncService:
         if existing:
             return {"operation": view}
         operation_id = view["operationId"]
-        client = self._access.client(project_id, str(binding["connectionId"]))
         try:
+            client = self._access.client(project_id, str(binding["connectionId"]))
             self._pull(client, project_id, table_id, generation, fields, binding)
         except ProjectError as error:
             self._runs.fail(operation_id, error)
@@ -338,8 +338,8 @@ class SheetsSyncService:
         if existing:
             return {"operation": view}
         operation_id = view["operationId"]
-        client = self._access.client(project_id, str(binding["connectionId"]))
         try:
+            client = self._access.client(project_id, str(binding["connectionId"]))
             self._push(client, project_id, table_id, binding, mode)
         except ProjectError as error:
             self._runs.fail(operation_id, error)
@@ -476,9 +476,20 @@ class SheetsSyncService:
                 "error": payload,
             }
         for intent, cells, row_index in planned:
-            matched = self._verify(
-                client, spreadsheet_id, sheet_name, row_index, cells
-            )
+            try:
+                matched = self._verify(
+                    client, spreadsheet_id, sheet_name, row_index, cells
+                )
+            except ProjectError as error:
+                # The write already succeeded. A failed read is no evidence that
+                # it did not apply; preserve the original intent for reconciliation.
+                self._sync.transition(intent.id, status="unknown", error={
+                    "code": "SYNC_VERIFY_UNAVAILABLE",
+                    "message": error.message,
+                    "details": error.details,
+                })
+                unknown += 1
+                continue
             evidence = {
                 "checkedAt": datetime.now(UTC).isoformat(),
                 "target": f"{sheet_name}!{row_index}",
@@ -524,9 +535,12 @@ class SheetsSyncService:
         cells: dict[str, Any],
     ) -> bool:
         for column, value in cells.items():
-            read = client.values(
-                spreadsheet_id, cell(sheet_name, _column_index(column), row), "FORMULA"
-            )
+            try:
+                read = client.values(
+                    spreadsheet_id, cell(sheet_name, _column_index(column), row), "FORMULA"
+                )
+            except SheetsApiError as error:
+                raise _api_error(error) from error
             actual = read[0][0] if read and read[0] else ""  # ValueRange omits empty trailing cells.
             if not _same(actual, value):
                 return False
@@ -606,21 +620,26 @@ class SheetsSyncService:
         if existing:
             return {"operation": view}
         operation_id = view["operationId"]
-        client = self._access.client(project_id, str(binding["connectionId"]))
-        spreadsheet_id = str(binding["spreadsheetId"])
-        sheet_name = str(binding["sheetName"])
-        header = _header(client, spreadsheet_id, sheet_name)
-        remote = _remote_keys(
-            client, spreadsheet_id, sheet_name, _identity_column(binding["identityStrategy"], header)
-        )
-        row_index = remote.get(_marker(record_key))
-        outcome = "notMatched"
-        if row_index is not None and cells:
-            outcome = (
-                "matched"
-                if self._verify(client, spreadsheet_id, sheet_name, row_index, cells)
-                else "notMatched"
+        try:
+            client = self._access.client(project_id, str(binding["connectionId"]))
+            spreadsheet_id = str(binding["spreadsheetId"])
+            sheet_name = str(binding["sheetName"])
+            header = _header(client, spreadsheet_id, sheet_name)
+            remote = _remote_keys(
+                client, spreadsheet_id, sheet_name, _identity_column(binding["identityStrategy"], header)
             )
+            row_index = remote.get(_marker(record_key))
+            outcome = "notMatched"
+            if row_index is not None and cells:
+                outcome = (
+                    "matched"
+                    if self._verify(client, spreadsheet_id, sheet_name, row_index, cells)
+                    else "notMatched"
+                )
+        except ProjectError as error:
+            # Only this read command failed; the original write stays reconcilable.
+            self._runs.fail(operation_id, error)
+            raise
         evidence = {
             "checkedAt": datetime.now(UTC).isoformat(),
             "target": f"{sheet_name}!{row_index or 0}",

@@ -543,3 +543,151 @@ def test_sync_outcomes_preserve_explicit_business_status(tmp_path, outcome, assi
         assert after["statusRevision"] == status_revision
         assert after["contentRevision"] == 2
         assert {v["fieldId"]: v["value"] for v in after["values"]}[sheets.field_id("title")] == "本地修改"
+
+
+def test_partial_verification_read_loss_preserves_original_commands(tmp_path):
+    class LoseSecondVerification(FakeSheetsTransport):
+        verifying = False
+        reads = 0
+
+        def send(self, method, url, **kwargs):
+            if self.verifying and method == "GET":
+                self.reads += 1
+                if self.reads == 2:
+                    raise SheetsApiError(0, "timeout", "核验读取响应丢失")
+            result = super().send(method, url, **kwargs)
+            if url.endswith("/values:batchUpdate"):
+                self.verifying = True
+            return result
+
+    transport = LoseSecondVerification({"数据": [["编号", "标题"], ["A-1", "a"], ["B-2", "b"]]})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        for record in sheets.records():
+            edit_title(sheets, record, record["ref"]["recordKey"]["value"] + "-v2")
+        identity = new_key()
+        body = {"mode": "due", "expectedBindingEpoch": sheets.binding["bindingEpoch"]}
+        response = sheets.client.post(sheets.url("/sync/push"), headers=identity, json=body)
+        assert response.status_code == 202, response.text
+        assert len(sync_operations(sheets, "confirmed")) == 1
+        unknown, = sync_operations(sheets, "unknown")
+        assert unknown["record"]["recordKey"]["value"] == "B-2"
+        writes = transport.changes()
+        assert transport.grid("数据")[1:] == [["A-1", "A-1-v2"], ["B-2", "B-2-v2"]]
+        replay = sheets.client.post(sheets.url("/sync/push"), headers=identity, json=body)
+        assert replay.status_code == 202 and replay.json() == response.json()
+        assert transport.changes() == writes
+        current = next(r for r in sheets.records() if r["ref"]["recordKey"]["value"] == "B-2")
+        edit_title(sheets, current, "B-2-v3")
+        recovered = sheets.client.post(
+            sheets.url(f"/sync-operations/{unknown['syncOperationId']}/reconcile"),
+            headers=new_key(), json={"expectedStatusRevision": unknown["statusRevision"]},
+        )
+        assert recovered.status_code == 202, recovered.text
+        assert recovered.json()["operation"]["result"]["targetContentRevision"] == 2
+        assert len(sync_operations(sheets, "confirmed")) == 2
+        pending, = sync_operations(sheets, "pending")
+        assert pending["targetContentRevision"] == 3
+        assert transport.changes() == writes
+
+
+@pytest.mark.parametrize("fail_cell_read", [False, True])
+def test_failed_reconciliation_settles_read_command_and_preserves_unknown_write(tmp_path, fail_cell_read):
+    class LoseReconcileRead(FakeSheetsTransport):
+        fail_read = False
+
+        def send(self, method, url, **kwargs):
+            if self.fail_read and method == "GET" and (not fail_cell_read or url.endswith("$B$2")):
+                self.fail_read = False
+                raise SheetsApiError(0, "timeout", "原操作核验读取失败")
+            return super().send(method, url, **kwargs)
+
+    transport = LoseReconcileRead(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        edit_title(sheets, sheets.records()[0], "原写入")
+        transport.fail_writes.append(SheetsApiError(0, "timeout", "发送响应丢失"))
+        assert push(sheets).status_code == 202
+        unknown, = sync_operations(sheets, "unknown")
+        transport.grids[1000][1][1] = "原写入"  # The remote write may have succeeded.
+        writes = transport.changes()
+        path = sheets.url(f"/sync-operations/{unknown['syncOperationId']}/reconcile")
+        body = {"expectedStatusRevision": unknown["statusRevision"]}
+        identity = new_key()
+        transport.fail_read = True
+        response = sheets.client.post(path, headers=identity, json=body)
+        assert response.status_code == 502, response.text
+        operation = sheets.client.get(
+            f"/api/v1/projects/{sheets.project}/operations/by-idempotency-key/{identity['Idempotency-Key']}"
+        )
+        assert operation.status_code == 200, operation.text
+        assert operation.json()["status"] == "failed"
+        assert operation.json()["error"]["code"] == "SHEETS_API_FAILED"
+        assert sync_operations(sheets, "unknown") == [unknown]
+        calls = len(transport.calls)
+        replay = sheets.client.post(path, headers=identity, json=body)
+        assert replay.status_code == 202 and replay.json()["operation"] == operation.json()
+        assert len(transport.calls) == calls
+        recovered = sheets.client.post(path, headers=new_key(), json=body)
+        assert recovered.status_code == 202, recovered.text
+        assert recovered.json()["operation"]["result"]["status"] == "confirmed"
+        assert transport.changes() == writes
+
+
+@pytest.mark.parametrize("action", ["pull", "push"])
+def test_access_failure_after_accept_settles_the_sync_command(tmp_path, monkeypatch, action):
+    from autoflow.domain.projects.models import ProjectError
+
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        record = sheets.records()[0]
+        edit_title(sheets, record, "仍在本地")
+        pending = sync_operations(sheets, "pending")
+        identity = new_key()
+        body = ({"expectedTableRevision": sheets.table_revision()} if action == "pull" else
+                {"mode": "due", "expectedBindingEpoch": sheets.binding["bindingEpoch"]})
+        calls = len(transport.calls)
+
+        def unavailable(*_args):
+            raise ProjectError("CREDENTIAL_NOT_AVAILABLE", "受控凭据不可用", 422)
+
+        monkeypatch.setattr(sheets.client.app.state.sheets_sync._access, "client", unavailable)
+        response = sheets.client.post(sheets.url(f"/sync/{action}"), headers=identity, json=body)
+        assert response.status_code == 422, response.text
+        operation = sheets.client.get(
+            f"/api/v1/projects/{sheets.project}/operations/by-idempotency-key/{identity['Idempotency-Key']}"
+        ).json()
+        assert operation["status"] == "failed"
+        assert operation["error"]["code"] == "CREDENTIAL_NOT_AVAILABLE"
+        assert sync_operations(sheets, "pending") == pending
+        assert len(transport.calls) == calls
+
+
+def test_confirmed_push_block_survives_next_failure_and_later_edit(tmp_path, monkeypatch):
+    from autoflow.application.project_sync import outbound
+
+    monkeypatch.setattr(outbound, "MAX_PUSH_RECORDS", 1)
+    transport = FakeSheetsTransport({"数据": [["编号", "标题"], ["A-1", "a"], ["B-2", "b"]]})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        for record in sheets.records():
+            edit_title(sheets, record, record["ref"]["recordKey"]["value"] + "-v2")
+        assert push(sheets).status_code == 202
+        confirmed, = sync_operations(sheets, "confirmed")
+        assert confirmed["record"]["recordKey"]["value"] == "A-1"
+        assert len(sync_operations(sheets, "pending")) == 1
+        transport.fail_writes.append(SheetsApiError(403, "forbidden", "第二块发送失败"))
+        assert push(sheets).status_code == 202
+        failed, = sync_operations(sheets, "failed")
+        assert failed["record"]["recordKey"]["value"] == "B-2"
+        assert sync_operations(sheets, "confirmed") == [confirmed]
+        record = next(r for r in sheets.records() if r["ref"]["recordKey"]["value"] == "B-2")
+        assert record["contentRevision"] == 2
+        edit_title(sheets, record, "B-2-v3")
+        assert push(sheets).status_code == 202
+        assert sync_operations(sheets, "failed") == [failed]
+        assert len(sync_operations(sheets, "confirmed")) == 2
+        assert sync_operations(sheets, "pending") == []
+        assert transport.grid("数据")[1:] == [["A-1", "A-1-v2"], ["B-2", "B-2-v3"]]
+        assert transport.changes() == 3  # Two commits and the explicitly failed request.

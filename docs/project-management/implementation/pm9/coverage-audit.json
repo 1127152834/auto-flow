@@ -1547,7 +1547,7 @@
           "status": "planned",
           "evidenceCount": 0,
           "plannedTestExists": true,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 3,
           "gapKinds": [
             "external_acceptance_pending",
             "production_evidence_missing"
@@ -1558,9 +1558,9 @@
           "status": "planned",
           "evidenceCount": 0,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2605,8 +2605,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 221,
-    "withNoLocatedAssertion": 30,
+    "withAssertions": 222,
+    "withNoLocatedAssertion": 29,
     "statuses": {
       "partially_verified": 188,
       "planned": 63

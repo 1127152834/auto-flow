@@ -9530,6 +9530,12 @@
             "symbol": "test_edit_during_send_keeps_new_revision_pending",
             "scope": "生产 HTTP/SQLite + 受控 Sheets transport：发送回调真实插入本地新编辑，旧响应只确认旧版本；下一次发送新值。",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_partial_verification_read_loss_preserves_original_commands",
+            "scope": "同一次远端写成功后部分核验读取丢失：首条 confirmed、第二条 unknown，推送原命令重放不写；本地新版本3不影响原版本2核验，版本3仍 pending。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
@@ -9576,11 +9582,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_confirmed_push_block_survives_next_failure_and_later_edit",
+            "scope": "将既有每次发送记录上限缩为 1：第一块确认、第二块明确失败、后续新版本发送确认；首个确认与旧失败历史不变，两条本地修改不丢。HTTP/SQLite/受控网络，非默认 200 行容量验收。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：部分包确认后下一包失败，后续唤醒不丢新变化；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "默认 200 行边界、后台多次唤醒及真实 Google 打包完整链未在本例验证。"
           }
         ],
         "statusBeforeReview": "planned"

@@ -59,3 +59,10 @@ d21197ad ARM job 106288334872 success；3313 backend、5459 frontend、15 real w
 ## Intel 完整回归失败与定向修正（confirmed）
 
 35585675170 Intel 3312 passed / 60 skipped / 1 failed in 1875.04s。失败明确在 shutdown test GET /openapi.json read timeout（5s），未进入 SSE/关停阶段；不将其说成关停失败，也不推断硬件根因。测试为 schema 准备请求单独设 30s，生产码和 3/8s 退出/SSE/worker 清理断言不变；shutdown+node writes 8 passed in 26.58s，完整无缓存 ruff passed。创建后状态权限拒绝仍保留完整 null 新记录的断言补入 DATA-STATE-10，台账221/30，worker证据缺口保留。只派发Intel全链，不重复ARM/Windows。
+
+
+## 写入后核验读取失败（confirmed，新生产修复）
+
+部分核验第二个 GET 超时实际 RED：原 SheetsApiError 泄漏，推送操作未完成。复用同一 `_verify` 错误转换、每条原意图 unknown、现有 `_runs.fail`，修复推送/只读核验/接受后取凭据三个关联路径；无新存储/协议/执行器。原 push 重放没有额外网络写，v2 原核验不吞掉 v3；reconcile header/cell 失败后原未知写不变、原只读命令明确失败且可新核验。50 相关测试通过，分块上限1的首块确认/次块失败/后续新值单项通过；mypy402/no-cache ruff通过。
+
+旧 Windows35586541932 与 Intel35589713895因生产候选变更取消，非通过。ARM d21197ad 完整成功只覆盖82源码。将冻结本片并进行新完整本机/三平台，不把旧 native DMG 自动称为新完整包。新增DATA-SYNC-08局部映射，222有断言/29未定位，状态不提升。
