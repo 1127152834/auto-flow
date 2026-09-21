@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-21",
+  "date": "2026-09-22",
   "status": "mapping_reviewed_acceptance_incomplete",
   "source": "docs/project-management/implementation/coverage.json",
   "scope": "All 251 requirement IDs have assertion scopes or explicit gaps. Reference validation is not release acceptance.",
@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 125,
-        "planned": 53
+        "partially_verified": 129,
+        "planned": 49
       },
       "items": [
         {
@@ -582,12 +582,13 @@
         },
         {
           "id": "DATA-CLAIM-09",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
             "external_acceptance_pending",
+            "production_evidence_missing",
             "test_missing"
           ]
         },
@@ -774,13 +775,13 @@
         },
         {
           "id": "DATA-ID-05",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 10,
           "gapKinds": [
-            "implementation_missing",
-            "test_missing"
+            "external_acceptance_pending",
+            "production_evidence_missing"
           ]
         },
         {
@@ -996,11 +997,12 @@
         {
           "id": "DATA-LIFE-09",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "external_acceptance_pending",
+            "production_evidence_missing"
           ]
         },
         {
@@ -1175,23 +1177,24 @@
         },
         {
           "id": "DATA-SCHEMA-07",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 9,
           "gapKinds": [
-            "implementation_missing",
-            "test_missing"
+            "external_acceptance_pending",
+            "production_evidence_missing"
           ]
         },
         {
           "id": "DATA-SCHEMA-08",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 3,
           "gapKinds": [
-            "test_missing"
+            "external_acceptance_pending",
+            "production_evidence_missing"
           ]
         },
         {
@@ -2602,11 +2605,11 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 227,
-    "withNoLocatedAssertion": 24,
+    "withAssertions": 232,
+    "withNoLocatedAssertion": 19,
     "statuses": {
-      "partially_verified": 192,
-      "planned": 59
+      "partially_verified": 196,
+      "planned": 55
     }
   }
 }

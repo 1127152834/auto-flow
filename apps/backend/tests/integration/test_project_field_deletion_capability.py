@@ -186,3 +186,49 @@ def test_field_deletion_advances_only_a_current_owned_record_cursor(capability_c
         assert current['values'][0]['value'] == 'human value'
     else:
         assert service.update_record(scope, command)[0]['values'][0]['value'] == 'next task value'
+
+
+def test_delete_local_only_field_keeps_same_named_remote_column(tmp_path):
+    from copy import deepcopy
+
+    from tests.fixtures.sheets import (
+        FakeSheetsTransport,
+        new_field,
+        new_key,
+        open_sheets_table,
+    )
+    from tests.integration.test_project_sheets_claim_paths import query_task
+    from tests.integration.test_project_sheets_columns import edit_note
+    from tests.integration.test_project_sheets_sync import (
+        COLUMNS,
+        pull,
+        sync_operations,
+    )
+
+    transport = FakeSheetsTransport({'数据':[['编号','标题','备注'],['A-1','original','source-owned']]})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        field = new_field(sheets.client, sheets.project, sheets.table, 'note', '备注', expectedTableRevision=sheets.table_revision())
+        before = edit_note(sheets, field, sheets.records()[0], 'local-only')
+        remote = deepcopy(transport.grid('数据'))
+        scope, service = query_task(sheets)
+        field_id = field['ref']['fieldId']
+        grant = {'tableId':sheets.table, 'datasetGeneration':sheets.dataset_generation(), 'operations':['deleteField'], 'fieldIds':[field_id], 'readPurposes':[]}
+        with sheets.client.app.state.session_factory.begin() as session:
+            run = session.get(WorkflowRunRow, scope.run_id)
+            run.capability_bindings = [{**binding, 'tableGrants':[grant]} for binding in run.capability_bindings]
+        scope = replace(scope, table_grants=frozenset({commands.TableCapabilityGrant(sheets.table, sheets.dataset_generation(), frozenset({'deleteField'}), frozenset({field_id}))}))
+        request = commands.PreviewProjectFieldDeletionRequest(1,sheets.project,sheets.table,sheets.dataset_generation(),field_id)
+        impact = service.preview_field_deletion(scope, request)
+        assert 'PENDING_SYNC_FIELD_DEPENDENCY' in {item['code'] for item in impact['blockers']}
+        pending, = sync_operations(sheets, 'pending')
+        abandoned = sheets.client.post(sheets.url('/sync-operations/'+pending['syncOperationId']+'/abandon'), headers=new_key(), json={'expectedStatusRevision':pending['statusRevision'], 'reason':'keep source column, remove only local field'})
+        assert abandoned.status_code == 200, abandoned.text
+        impact = service.preview_field_deletion(scope, request)
+        assert impact['blockers'] == []
+        result, replayed = service.delete_field(scope, deletion_command(request, impact, expected_table_revision=sheets.table_revision()))
+        assert result['deleted'] and not replayed
+        after = sheets.records()[0]
+        assert all(cell['fieldId'] != field_id for cell in after['values'])
+        assert after['statusRevision'] == before['statusRevision'] and after['linkRevision'] == before['linkRevision']
+        assert transport.grid('数据') == remote and transport.changes() == 0

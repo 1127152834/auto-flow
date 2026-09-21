@@ -555,20 +555,42 @@ async def test_true_no_match_finishes_without_task_facts(data_services):
 
 
 @pytest.mark.asyncio
-async def test_core_terminal_event_wakes_scheduler_without_fast_polling(data_services):
-    """The 30-second reconciliation fallback must not delay normal progression."""
+async def test_core_terminal_event_wakes_scheduler_without_fast_polling(data_services, monkeypatch):
+    """Prove the idle notification wakes a parked scheduler, not a disk-speed SLO."""
     _, project, _, coordinator, worker, core, scheduler = data_services
+    worker.wait = asyncio.Event()
+    parked, notified = asyncio.Event(), asyncio.Event()
+    original_wait, original_wake = scheduler._wake.wait, scheduler.wake
+
+    async def wait_for_notification():
+        parked.set()
+        await original_wait()
+
+    def notified_wake():
+        notified.set()
+        original_wake()
+
+    monkeypatch.setattr(scheduler._wake, "wait", wait_for_notification)
+    monkeypatch.setattr(scheduler, "wake", notified_wake)
     batch = start(data_services)
     await scheduler.startup()
     try:
+        # Initial SQLite setup/dispatch is outside the event assertion. Keep the
+        # worker alive until the scheduler is waiting on the real event.
+        await asyncio.wait_for(parked.wait(), timeout=10)
+        worker.wait.set()
+        await asyncio.wait_for(core.wait_idle(), timeout=10)
+        assert notified.is_set(), "terminal core event must notify the scheduler"
 
         async def completed():
             while coordinator.get_batch(project, batch.batch_id).status != "completed":
                 await asyncio.sleep(0.01)
 
-        await asyncio.wait_for(completed(), timeout=1)
+        # A safety bound below the unchanged 30-second reconciliation fallback.
+        await asyncio.wait_for(completed(), timeout=10)
         assert len(worker.calls) == 1
     finally:
+        worker.wait.set()
         await scheduler.shutdown()
         await core.wait_idle()
 

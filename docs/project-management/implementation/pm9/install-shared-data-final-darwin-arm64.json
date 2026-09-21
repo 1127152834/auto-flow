@@ -1,0 +1,30 @@
+{
+  "date": "2026-09-22",
+  "checkedAt": "2026-09-21T17:13:48.487799+00:00",
+  "status": "passed_scoped_checks",
+  "releaseAccepted": false,
+  "codeCandidate": "d75297fb0274c60fe9390181c75b0137e2e5b401",
+  "platform": "darwin-arm64",
+  "osVersion": "26.4.1",
+  "osBuild": "25E253",
+  "installer": {
+    "name": "AutoFlow-0.1.0-arm64.dmg",
+    "sha256": "eeb378b40c41ea8dbaeef87c914176bd552cb5b95ff5035e276b1ba3665afc45",
+    "source": "local current-source build, not downloaded from CI"
+  },
+  "checks": [
+    "DMG integrity verification",
+    "read-only mount and isolated application copy",
+    "image detached",
+    "real installed desktop authenticated packaged sidecar health",
+    "owned sidecar exits after desktop host termination",
+    "disposable workspace and isolated application copy removed"
+  ],
+  "excluded": [
+    "native file panel input and full import/export on this candidate",
+    "Google/OAuth/system credential lifecycle",
+    "signed/notarized Gatekeeper acceptance",
+    "complete uninstall and residual-data acceptance",
+    "Windows and Intel physical installation"
+  ]
+}

@@ -6656,6 +6656,15 @@
           "limitations": "归档不借核验重发写入在本地路径验证；未推送本地数据与 Sheets 停止新发送没有真实同步证据。",
           "platform": "darwin/arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "当前原生 CI 等待期间增加 HTTP/SQLite/受控 Sheets 归档联合断言；生产源码不变",
+          "limitations": "不代表活动 worker/未知写/保存的完整联合场景或真实 Google",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "integration",
@@ -6680,12 +6689,23 @@
       ],
       "pm8_note": "归档不借核验重发写入在本地路径验证；未推送本地数据与 Sheets 停止新发送没有真实同步证据。",
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-22",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_recovery.py",
+            "symbol": "test_archive_preserves_unsent_local_data_and_refuses_new_source_writes",
+            "scope": "真实 HTTP 影响确认与归档收尾后，待推送本地值及原意图完整保留；新推送返回 409，远端零新增写入",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：归档保留待推送本地数据且停止新网络写；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "归档包含活动 worker/已接受保存/未知写的联合场景及当前打包完整 Sheets 归档链仍待验证。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "真实 Sheets 归档时网络行为需要授权资源，受控 transport 不代替实网。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -7921,13 +7941,15 @@
             "symbol": "test_existing_task_patch_survives_column_extension_without_new_field_grant",
             "scope": "兼容远端加列后旧 Task 冻结契约可以写旧字段，不能隐式取得新字段授权",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_field_deletion_capability.py",
+            "symbol": "test_delete_local_only_field_keeps_same_named_remote_column",
+            "scope": "待发送字段引用阻断删除；明确放弃未发送意图后删除本地字段，远端同名列/值不变且零云写，业务状态/关联版本保留",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
-          {
-            "kind": "test_missing",
-            "detail": "删除本地字段不删远端物理列尚缺完整直接场景；有来源映射或活动依赖时删除仍被阻断。"
-          },
           {
             "kind": "production_evidence_missing",
             "detail": "兼容远端增列后的完整打包 Task/推值链仍待验收。"

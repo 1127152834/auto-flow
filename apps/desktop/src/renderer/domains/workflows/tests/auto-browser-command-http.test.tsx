@@ -43,12 +43,13 @@ it('does not interleave close with picker startup through the real HTTP adapter'
  try{
   await fetch(`${server.origin}/api/browser/open`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
   render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={vi.fn()}/>)
-  const start=await screen.findByRole('button',{name:'启动选择器'})
+  // Initial loopback HTTP discovery is setup, not the command exclusion assertion.
+  const start=await screen.findByRole('button',{name:'启动选择器'},{timeout:5000})
   fireEvent.click(start);fireEvent.click(start);fireEvent.click(screen.getByRole('button',{name:'关闭浏览器'}))
-  await waitFor(()=>expect(starts).toBe(1));expect(closes).toBe(0)
-  release();await screen.findByRole('button',{name:'停止选择'})
+  await waitFor(()=>expect(starts).toBe(1),{timeout:5000});expect(closes).toBe(0)
+  release();await screen.findByRole('button',{name:'停止选择'},{timeout:5000})
   expect(mock.mockSnapshot()).toMatchObject({browser:true,picking:true})
   fireEvent.click(screen.getByRole('button',{name:'停止选择'}))
-  await screen.findByRole('button',{name:'启动选择器'});expect(mock.mockSnapshot().picking).toBe(false)
+  await screen.findByRole('button',{name:'启动选择器'},{timeout:5000});expect(mock.mockSnapshot().picking).toBe(false)
  }finally{release();cleanup();mock.configureMock({disconnect:true});await server.close();restore()}
 })

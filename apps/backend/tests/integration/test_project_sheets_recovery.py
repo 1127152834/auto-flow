@@ -607,3 +607,43 @@ def test_a_stale_impact_confirmation_is_refused_after_the_table_moves(tmp_path):
             headers=new_key(),
         )
         assert retargeted.status_code == 412, retargeted.text
+
+
+def test_archive_preserves_unsent_local_data_and_refuses_new_source_writes(tmp_path):
+    from tests.integration.test_project_sheets_sync import (
+        edit_title as edit_local_title,
+    )
+    from tests.integration.test_project_sheets_sync import (
+        pull as pull_table,
+    )
+    from tests.integration.test_project_sheets_sync import (
+        push as push_table,
+    )
+    from tests.integration.test_project_sheets_sync import (
+        sync_operations,
+    )
+
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull_table(sheets)
+        local = edit_local_title(sheets, sheets.records()[0], 'preserved after archive')
+        pending, = sync_operations(sheets, 'pending')
+        base = f'/api/v1/projects/{sheets.project}'
+        project = sheets.client.get(base).json()
+        preview = sheets.client.get(base+'/lifecycle-impact', params={'action':'archive'})
+        assert preview.status_code == 200 and preview.json()['unsyncedCount'] == 1
+        assert preview.json()['blockers'] == []
+        response = sheets.client.post(base+'/archive', headers=new_key(), json={
+            'expectedManagementRevision':project['managementRevision'],
+            'impactRevision':preview.json()['impactRevision'],
+        })
+        assert response.status_code in {200, 202}, response.text
+        sheets.client.app.state.project_lifecycle.repository.advance(sheets.project)
+        assert sheets.client.get(base).json()['lifecycleState'] == 'archived'
+        writes = transport.changes()
+        refused = push_table(sheets)
+        assert refused.status_code == 409, refused.text
+        assert sheets.records()[0] == local
+        assert sync_operations(sheets, 'pending') == [pending]
+        assert transport.changes() == writes
+        assert transport.grid('数据')[1] == ['A-1', '第一行']

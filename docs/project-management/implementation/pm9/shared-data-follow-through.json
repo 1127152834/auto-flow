@@ -104,7 +104,17 @@
       "releaseScope": "Current real Google and packaged column creation chain pending; final whole C/R review and native candidate pending",
       "abandonBoundaryFix": "Two HTTP counterexamples reproduced (foreign project, structural operation); shared guard fixed. Full sync suite 33 passed, 2 warnings in 37.79s including both deterministic send/abandon races."
     },
-    "finalFrontend": "9afe3be5: 5469 passed / 409 files in 198.85s; no frontend source edits after this run"
+    "finalFrontend": "9afe3be5: 5469 passed / 409 files in 198.85s; no frontend source edits after this run",
+    "finalBackend": "3440 passed / 67 skipped / 772.39s; final production source, test import layout-only follow-up separately checked by full-directory Ruff",
+    "postReviewScenarios": {
+      "backend": "21 passed, 2 warnings in 17.71s across field deletion capabilities and Sheets recovery",
+      "ruff": "full-directory check passed",
+      "sourceScope": "Tests only, production source identical to d75297fb native candidate; these two new cases are local supplemental evidence, not included in that frozen CI test count",
+      "requirements": [
+        "DATA-LIFE-09",
+        "DATA-SCHEMA-08"
+      ]
+    }
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -250,21 +260,48 @@
   },
   "finalReview": "shared-data-final-review.json",
   "finalCICandidate": {
-    "status": "superseded_test_import_lint",
-    "runId": 35628831527,
-    "headSha": "a8adc43adb172ef799d50b918fda61824d3751e3",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35628831527",
-    "platforms": [
-      "win32-x64",
-      "darwin-x64",
-      "darwin-arm64"
+    "status": "failed_platforms_diagnosed_intel_pending",
+    "runId": 35629585683,
+    "headSha": "d75297fb0274c60fe9390181c75b0137e2e5b401",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35629585683",
+    "supersededRuns": [
+      {
+        "status": "superseded_test_import_lint",
+        "runId": 35628831527,
+        "headSha": "a8adc43adb172ef799d50b918fda61824d3751e3",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35628831527",
+        "platforms": [
+          "win32-x64",
+          "darwin-x64",
+          "darwin-arm64"
+        ],
+        "supersededDispatch": {
+          "runId": 35628776939,
+          "headSha": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
+          "conclusion": "cancelled",
+          "reason": "Branch push had not completed; detected old commit and canceled. This is not validation evidence."
+        },
+        "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
+      }
     ],
-    "supersededDispatch": {
-      "runId": 35628776939,
-      "headSha": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
-      "conclusion": "cancelled",
-      "reason": "Branch push had not completed; detected old commit and canceled. This is not validation evidence."
-    },
-    "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
+    "productionSource": "unchanged since 3c02b51f; later commits update rules/import layout and reports",
+    "platformFailures": [
+      {
+        "platform": "win32-x64",
+        "jobId": 106432247096,
+        "stage": "full backend",
+        "result": "1 failed, 3429 passed, 77 skipped, 2 warnings in 1244.13s",
+        "cause": "Scheduler test bounded SQLite setup plus execution plus event wake to one second. Now observes parked scheduler and real terminal notification directly; 34 passed in 20.23s. Suppressing subscribe_idle in a temporary counterexample fails exactly the notification assertion."
+      },
+      {
+        "platform": "darwin-arm64",
+        "jobId": 106432247480,
+        "stage": "full frontend",
+        "result": "1 failed, 5468 passed / 409 files in 387.05s",
+        "cause": "Real HTTP UI test used default one-second findByRole while browser status and profiles were still loading. Controlled 1100ms status delay reproduced same failure. Await actual HTTP-driven controls with bounded five-second waits; command exclusion assertions and production code unchanged.",
+        "localVerification": "Controlled delayed HTTP counterexample: original 1 failed/1 passed; corrected 4 passed in 3.66s including normal and delayed copies. Temporary copy removed; committed browser command/lifecycle files 20 passed in 2.09s."
+      }
+    ],
+    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged."
   }
 }

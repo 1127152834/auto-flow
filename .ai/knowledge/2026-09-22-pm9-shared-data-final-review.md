@@ -29,3 +29,9 @@ Final: Ruling: generated and historical evidence text relies on source contract,
 9afe3be5 首次全量后端为 1 failed / 3427 passed / 67 skipped / 740.91 秒。唯一失败是旧规则仍期望系统身份 notImplemented；按 R3 已批准契约改为显式列必须存在，缺列拒绝，普通列/未知策略拒绝不变。当前生产源码不因旧断言改变；新完整回归接续。
 
 35628831527 在两台 Mac 的 ruff check . 阶段失败，5 项测试导入格式 I001；本机先前仅检查 src，范围不足。改为完全相同门禁并修正导入布局，ruff check . 通过，非 import AST 无变化。取消余下旧矩阵，新候选重跑原三平台；不冒充原生功能失败或通过。
+
+最终本机后端 3440 passed / 67 skipped / 2 warnings / 772.39 秒，覆盖三项审查修复。d75297fb 仅整理测试导入，生产源码与该完整运行一致；全目录 ruff 及 Windows 平台 mypy(407) 通过。当前原生矩阵 35629585683 固定 d75297fb。
+
+2026-09-22 原生跟进（confirmed，来源 Actions 35629585683）：Windows 全后端 1 failed/3429 passed/77 skipped，唯一旧测试将 SQLite 准备、执行与终结唤醒合计限制为 1 秒。改为先证明调度器等待，再证明真实 Core 终结通知和批次完成，30 秒兜底不改；34 passed/20.23 秒。临时副本禁用 subscribe_idle 后准确失败于 terminal notification 断言，不计作产品失败。ARM 全后端通过、全前端 1 failed/5468 passed；HTTP 状态仍在读取时 findByRole 默认 1 秒超时。受控 1100ms 状态延迟重现同一失败，按真实 HTTP 阶段等待控件，保留 starts=1/closes=0 和服务端最终 picking 状态断言。修正仅在 PM9 工作区测试文件，生产 Studio 源码与主工作区均未改。Intel 旧候选继续运行，失败平台在测试提交后重跑。
+
+HTTP 延迟反例由 1 failed/1 passed 变为 4 passed/3.66 秒（原文件与临时延迟副本），临时副本已移除；正式命令/生命周期两文件 20 passed/2.09 秒。所有互斥、最终状态和错误恢复断言保留。
