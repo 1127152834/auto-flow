@@ -213,6 +213,12 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
         time.sleep(0.01)
     assert pauses[-1]["node_id"] == "first"
     assert client.get("/api/workflow-runs/debug-http-run").json()["status"] == "paused"
+    breakpoints = client.post(
+        f"/api/workflows/{workflow['id']}/debug/breakpoints",
+        json={"breakpoints": ["second"]},
+    )
+    assert breakpoints.status_code == 200, breakpoints.text
+    assert breakpoints.json()["breakpoints"] == ["second"]
 
     first = pauses[-1]
     stepped = client.post(
@@ -308,6 +314,56 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     assert run["status"] == "completed"
     assert client.get("/api/events/commands/debug-step-1").json()["action"] == "step"
     assert client.get("/api/events/commands/debug-resume-1").json()["action"] == "resume"
+
+    started_at_second = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "debug-start-node-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+            "startNodeId": "second",
+        },
+    )
+    assert started_at_second.status_code == 202, started_at_second.text
+    start_pause: dict[str, Any] | None = None
+    for _ in range(200):
+        start_pause = next(
+            (
+                event.data
+                for event in client.app.state.workflow_services.events.replay(
+                    after_sequence=0
+                )
+                if event.event == "execution:paused"
+                and event.data.get("runId") == "debug-start-node-run"
+            ),
+            None,
+        )
+        if start_pause is not None:
+            break
+        time.sleep(0.01)
+    assert start_pause is not None
+    assert start_pause["node_id"] == "second"
+    finish_from_second = client.post(
+        f"/api/workflows/{workflow['id']}/debug/resume",
+        json={
+            "commandId": "debug-start-node-resume",
+            "runId": "debug-start-node-run",
+            "pauseId": start_pause["pauseId"],
+            "controlRevision": start_pause["controlRevision"],
+        },
+    )
+    assert finish_from_second.status_code == 200, finish_from_second.text
+    for _ in range(200):
+        start_run = client.get("/api/workflow-runs/debug-start-node-run").json()
+        if start_run["status"] == "completed":
+            break
+        time.sleep(0.01)
+    assert start_run["status"] == "completed"
+    start_results = client.get(
+        "/api/workflow-runs/debug-start-node-run/results"
+    ).json()
+    assert start_results["total"] == 1
+    assert start_results["items"][0]["nodeId"] == "second"
 
 
 def test_external_webhook_resumes_real_worker_without_sidecar_token(

@@ -79,13 +79,28 @@ class WorkflowRuntime:
         return False
 
     async def execute(
-        self, document: Mapping[str, Any], context: ExecutionContext
+        self,
+        document: Mapping[str, Any],
+        context: ExecutionContext,
+        *,
+        start_node_id: str | None = None,
     ) -> WorkflowRuntimeResult:
         issues = self.preflight(document)
         if issues:
             return WorkflowRuntimeResult(False, (), issues)
         _, graph = parse_workflow(document)
-        return await _WorkflowScheduler(self._registry, graph, context).run()
+        if start_node_id is not None and graph.get_node(start_node_id) is None:
+            issue = WorkflowScopeIssue(
+                start_node_id,
+                "startNodeId",
+                "START_NODE_NOT_FOUND",
+                "调试起点不存在于运行快照",
+                "",
+            )
+            return WorkflowRuntimeResult(False, (), (issue,))
+        return await _WorkflowScheduler(self._registry, graph, context).run(
+            [start_node_id] if start_node_id is not None else None
+        )
 
 
 @dataclass(slots=True)
@@ -104,8 +119,10 @@ class _WorkflowScheduler:
     failed_node_id: str | None = None
     failed_result: ModuleResult | None = None
 
-    async def run(self) -> WorkflowRuntimeResult:
-        await self._execute_parallel(self.graph.get_start_nodes())
+    async def run(self, start_nodes: list[str] | None = None) -> WorkflowRuntimeResult:
+        await self._execute_parallel(
+            self.graph.get_start_nodes() if start_nodes is None else start_nodes
+        )
         return WorkflowRuntimeResult(
             success=self.failed_result is None,
             executed_node_ids=tuple(self.executed_order),

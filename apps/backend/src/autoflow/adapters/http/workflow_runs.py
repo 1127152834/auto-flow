@@ -38,6 +38,10 @@ class WorkflowRunCommands(Protocol):
         self, workflow_id: str, request: Mapping[str, Any]
     ) -> tuple[dict[str, Any], int]: ...
 
+    async def debug_breakpoints(
+        self, workflow_id: str, breakpoints: list[str]
+    ) -> Mapping[str, Any]: ...
+
     async def submit_event_command(
         self, command_id: str, event: str, data: Mapping[str, Any]
     ) -> tuple[dict[str, Any], int]: ...
@@ -75,6 +79,10 @@ class WorkflowExecuteRequest(ApiModel):
 
 class WorkflowStopRequest(ApiModel):
     run_id: str = Field(alias="runId", min_length=1, max_length=128)
+
+
+class WorkflowDebugBreakpointsRequest(ApiModel):
+    breakpoints: list[str] = Field(max_length=10000)
 
 
 def run_summary(run: WorkflowRun) -> dict[str, Any]:
@@ -154,6 +162,12 @@ def workflow_run_command_router(commands: WorkflowRunCommands) -> APIRouter:
             request.model_dump(by_alias=True),
         )
         return JSONResponse(body, status_code=http_status)
+
+    @router.post("/{workflow_id}/debug/breakpoints")
+    async def update_debug_breakpoints(
+        workflow_id: str, request: WorkflowDebugBreakpointsRequest
+    ) -> Mapping[str, Any]:
+        return await commands.debug_breakpoints(workflow_id, request.breakpoints)
 
     return router
 

@@ -2692,6 +2692,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workflows/{workflow_id}/debug/breakpoints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Debug Breakpoints */
+        post: operations["update_debug_breakpoints_api_workflows__workflow_id__debug_breakpoints_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/browser/status": {
         parameters: {
             query?: never;
@@ -10358,6 +10375,11 @@ export type components = {
             runnable: boolean;
             /** Issues */
             issues: components["schemas"]["WorkflowCatalogIssue"][];
+        };
+        /** WorkflowDebugBreakpointsRequest */
+        WorkflowDebugBreakpointsRequest: {
+            /** Breakpoints */
+            breakpoints: string[];
         };
         /** WorkflowExecuteRequest */
         WorkflowExecuteRequest: {
@@ -22106,6 +22128,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudioDebugVariablesReceipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_debug_breakpoints_api_workflows__workflow_id__debug_breakpoints_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkflowDebugBreakpointsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

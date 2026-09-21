@@ -163,7 +163,14 @@ async def _run_in_session(
         context.canvas_subflows = canvas_subflows
         try:
             result = await WorkflowRuntime(registry).execute(
-                canvas_subflows.top_level_document(), context
+                canvas_subflows.top_level_document(),
+                context,
+                start_node_id=(
+                    str(command["startNodeId"])
+                    if isinstance(command.get("startNodeId"), str)
+                    and command["startNodeId"]
+                    else None
+                ),
             )
             await nested.drain()
         finally:
@@ -1076,6 +1083,14 @@ class _WorkerDebugController:
         pause["controlRevision"] = self._revision
         return None
 
+    def replace_breakpoints(self, values: Any) -> bool:
+        if not isinstance(values, list) or not all(
+            isinstance(item, str) and item for item in values
+        ):
+            return False
+        self._breakpoints = set(values)
+        return True
+
     async def republish_pause(self) -> None:
         pause = self._pause
         if pause is None:
@@ -1163,14 +1178,10 @@ class _WorkerCommandBus:
             if isinstance(raw_breakpoints, list)
             else set()
         )
-        self.debug = (
-            _WorkerDebugController(
-                stopped,
-                step_mode=bool(command.get("stepMode")),
-                breakpoints=breakpoints,
-            )
-            if bool(command.get("debug") or command.get("stepMode") or breakpoints)
-            else None
+        self.debug = _WorkerDebugController(
+            stopped,
+            step_mode=bool(command.get("stepMode")),
+            breakpoints=breakpoints,
         )
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
@@ -1412,6 +1423,16 @@ class _WorkerCommandBus:
 
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type == "debug_breakpoints":
+            command_id = command.get("commandId")
+            if (
+                self.debug is not None
+                and isinstance(command_id, str)
+                and command_id
+                and self.debug.replace_breakpoints(command.get("breakpoints"))
+            ):
+                self._write_debug_result(command_id)
+            return
         if command_type == "debug_variables":
             command_id = command.get("commandId")
             if self.debug is None or not isinstance(command_id, str) or not command_id:

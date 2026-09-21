@@ -118,6 +118,7 @@ class WorkflowRunCoordinator:
         self._desktop_action_requests: dict[str, dict[str, str]] = {}
         self._webhook_requests: dict[str, dict[str, Any]] = {}
         self._debug_pauses: dict[str, dict[str, Any]] = {}
+        self._active_runs_by_workflow: dict[str, set[str]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
         self._command_waiters: dict[str, asyncio.Future[str | None]] = {}
 
@@ -136,9 +137,15 @@ class WorkflowRunCoordinator:
         ):
             raise WorkflowRunError("RUN_REQUEST_INVALID", "breakpoints 必须是节点标识数组", 422)
         breakpoints = list(dict.fromkeys(raw_breakpoints))
+        raw_start_node_id = request.get("startNodeId")
+        if raw_start_node_id is not None and (
+            not isinstance(raw_start_node_id, str) or not raw_start_node_id
+        ):
+            raise WorkflowRunError("RUN_REQUEST_INVALID", "startNodeId 必须是节点标识", 422)
+        start_node_id = cast(str | None, raw_start_node_id)
         mode = (
             "debug"
-            if bool(request.get("debug") or step_mode or breakpoints)
+            if bool(request.get("debug") or step_mode or breakpoints or start_node_id)
             else "run"
         )
         headless = request.get("headless", False)
@@ -162,6 +169,49 @@ class WorkflowRunCoordinator:
                     "RUN_REQUEST_INVALID", "document 必须是工作流对象", 422
                 )
             document = draft.to_payload()
+            document_node_ids = {
+                str(node["id"])
+                for node in document.get("nodes", [])
+                if isinstance(node, Mapping)
+                and isinstance(node.get("id"), str)
+                and node["id"]
+            }
+            if not set(breakpoints).issubset(document_node_ids):
+                raise WorkflowRunError(
+                    "BREAKPOINT_NODE_NOT_FOUND",
+                    "断点必须属于运行快照中的节点",
+                    422,
+                )
+            if start_node_id is not None:
+                start_node = next(
+                    (
+                        node
+                        for node in document.get("nodes", [])
+                        if isinstance(node, Mapping) and node.get("id") == start_node_id
+                    ),
+                    None,
+                )
+                if start_node is None:
+                    raise WorkflowRunError(
+                        "START_NODE_NOT_FOUND", "调试起点不存在于运行快照", 422
+                    )
+                start_data = start_node.get("data")
+                start_type = (
+                    start_data.get("moduleType")
+                    if isinstance(start_data, Mapping)
+                    else start_node.get("type")
+                )
+                if start_node.get("parentId") or start_type in {
+                    "condition_end",
+                    "loop_end",
+                    "break_loop",
+                    "continue_loop",
+                }:
+                    raise WorkflowRunError(
+                        "START_NODE_INVALID",
+                        "只能从顶层普通节点、条件起点或循环起点开始调试",
+                        422,
+                    )
             issues = self._runtime.preflight(document)
             if issues:
                 raise WorkflowRunError(
@@ -250,7 +300,7 @@ class WorkflowRunCoordinator:
                     **_profile_snapshot(profile),
                     "runOptions": {
                         "headless": headless,
-                        "startNodeId": request.get("startNodeId"),
+                        "startNodeId": start_node_id,
                         "mode": mode,
                         "stepMode": step_mode,
                         "breakpoints": breakpoints,
@@ -306,6 +356,7 @@ class WorkflowRunCoordinator:
                     payload,
                 )
                 self._runs.mark_running(run_id)
+                self._active_runs_by_workflow.setdefault(workflow_id, set()).add(run_id)
                 running = self._runs.get(run_id)
                 await self._events.publish(
                     "execution:started",
@@ -502,6 +553,58 @@ class WorkflowRunCoordinator:
                 self._command_waiters.pop(command_id, None)
             self._command_receipts[command_id] = (fingerprint, receipt, 200)
             return copy.deepcopy(receipt), 200
+
+    async def debug_breakpoints(
+        self, workflow_id: str, breakpoints: list[str]
+    ) -> Mapping[str, Any]:
+        active = {
+            run_id
+            for run_id in self._active_runs_by_workflow.get(workflow_id, set())
+            if self._runs.get(run_id).status in {"starting", "running", "paused"}
+        }
+        if len(active) != 1:
+            raise WorkflowRunError(
+                "DEBUG_RUN_NOT_FOUND", "指定工作流没有唯一的活跃运行", 409
+            )
+        run_id = next(iter(active))
+        run = self._runs.get(run_id)
+        node_ids = {
+            str(node["id"])
+            for node in run.document_snapshot.get("nodes", [])
+            if isinstance(node, Mapping)
+            and isinstance(node.get("id"), str)
+            and node["id"]
+        }
+        if not set(breakpoints).issubset(node_ids):
+            raise WorkflowRunError(
+                "BREAKPOINT_NODE_NOT_FOUND",
+                "断点必须属于运行快照中的节点",
+                422,
+            )
+        command_id = str(uuid4())
+        waiter = asyncio.get_running_loop().create_future()
+        self._command_waiters[command_id] = waiter
+        try:
+            await self._workers.send_command(
+                run_id,
+                {
+                    "type": "debug_breakpoints",
+                    "commandId": command_id,
+                    "breakpoints": list(dict.fromkeys(breakpoints)),
+                },
+            )
+            worker_error = await asyncio.wait_for(waiter, timeout=10)
+            if worker_error is not None:
+                raise WorkflowRunError("BREAKPOINT_UPDATE_REJECTED", worker_error, 409)
+        except (RuntimeError, TimeoutError) as error:
+            raise WorkflowRunError(
+                "BREAKPOINT_UPDATE_UNCONFIRMED",
+                "断点更新未被运行进程确认",
+                503,
+            ) from error
+        finally:
+            self._command_waiters.pop(command_id, None)
+        return {"success": True, "runId": run_id, "breakpoints": breakpoints}
 
     async def debug_variables(
         self,
@@ -1451,6 +1554,11 @@ class WorkflowRunCoordinator:
         # private directory are gone. Resource release is the final cleanup step.
         run = self._runs.get(run_id)
         self._debug_pauses.pop(run_id, None)
+        active = self._active_runs_by_workflow.get(run.workflow_id)
+        if active is not None:
+            active.discard(run_id)
+            if not active:
+                self._active_runs_by_workflow.pop(run.workflow_id, None)
         for state in self._input_prompts.values():
             if state["runId"] == run_id and state["status"] == "pending":
                 state["status"] = "expired"
@@ -1610,8 +1718,9 @@ def _worker_payload(
         "artifactRoot": str(artifact_root),
         "requiresBrowser": requires_browser,
         "debug": start.mode == "debug",
-        "stepMode": bool(run_options.get("stepMode")),
+        "stepMode": bool(run_options.get("stepMode") or run_options.get("startNodeId")),
         "breakpoints": copy.deepcopy(run_options.get("breakpoints", [])),
+        "startNodeId": run_options.get("startNodeId"),
         "document": executable_document,
         "workflowDependencies": workflow_dependencies,
         "customModuleDependencies": custom_module_dependencies,
