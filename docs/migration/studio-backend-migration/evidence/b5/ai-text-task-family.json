@@ -48,7 +48,14 @@
     }
   ],
   "externalWaiting": [
-    "正式 Electron 真实 UI 运行验收",
-    "真实模型供应商调用"
-  ]
+    "真实第三方模型供应商调用"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-ai-tasks.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json",
+    "covers": "正式Studio真实鼠标键盘编排八节点、主应用模型选择、SQLite保存、真实worker八次受控HTTP调用、结构化结果与无浏览器残留"
+  }
 }

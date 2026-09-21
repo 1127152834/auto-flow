@@ -33371,7 +33371,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -33426,7 +33426,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -33455,7 +33455,7 @@
         },
         {
           "id": "BE.ai_extract.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -33463,12 +33463,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_extract，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 结构化抽取：从任意文本中按指定字段抽取为 JSON 对象",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {
@@ -33680,7 +33681,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -33735,7 +33736,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -33764,7 +33765,7 @@
         },
         {
           "id": "BE.ai_classify.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -33772,12 +33773,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_classify，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 文本分类：把文本归入给定类别之一",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {
@@ -33991,7 +33993,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -34048,7 +34050,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -34077,7 +34079,7 @@
         },
         {
           "id": "BE.ai_summarize.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -34085,12 +34087,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_summarize，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 文本摘要：把长文本压缩成摘要（可指定字数与风格）",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {
@@ -34301,7 +34304,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -34356,7 +34359,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -34385,7 +34388,7 @@
         },
         {
           "id": "BE.ai_translate.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -34393,12 +34396,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_translate，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 翻译：把文本翻译成目标语言",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {
@@ -34584,7 +34588,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -34638,7 +34642,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -34667,7 +34671,7 @@
         },
         {
           "id": "BE.ai_sentiment.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -34675,12 +34679,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_sentiment，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 情感分析：判断文本情感倾向（正面/负面/中性）",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {
@@ -34911,7 +34916,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -34967,7 +34972,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -34996,7 +35001,7 @@
         },
         {
           "id": "BE.ai_normalize.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -35004,12 +35009,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_normalize，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 数据规整：把杂乱的日期/金额/电话/数值/地址等统一成标准格式",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {
@@ -35222,7 +35228,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -35277,7 +35283,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -35306,7 +35312,7 @@
         },
         {
           "id": "BE.ai_dedup_semantic.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -35314,12 +35320,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_dedup_semantic，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 语义去重：对列表做语义层面的去重（合并表达不同但含义相同的项）",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {
@@ -35576,7 +35583,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B5",
       "source": {
@@ -35632,7 +35639,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、生产注册、worker受控HTTP执行及darwin-arm64正式Electron逐节点UI均已通过；真实第三方模型供应商与其他平台仍单独验收。",
       "risk": "需映射主应用模型ID和秘密引用；供应商、MCP、取消、配额及大结果行为必须使用真实服务验证。",
       "acceptanceCases": [
         {
@@ -35661,7 +35668,7 @@
         },
         {
           "id": "BE.ai_route.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -35669,12 +35676,13 @@
           ],
           "operation": "经Studio真实UI添加和配置 ai_route，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：AI 智能路由：根据输入内容从给定分支中选择最合适的一个，输出分支名（配合条件分支使用）",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker受控HTTP调用，以及darwin-arm64正式Electron的模型选择、保存、八节点结构化结果和资源清理均有证据；第三方供应商和未实测平台未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json",
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-BBdx9Z/result.json"
     }
   },
   {

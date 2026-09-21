@@ -1,0 +1,108 @@
+{
+  "evidenceId": "BE-B5-ai-task-formal-electron",
+  "checkedAt": "2026-09-21T17:47:02.775Z",
+  "gitHead": "eea7ddf0fdc37a6d3ebde0d92c17e323e5d47cc7",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "Dqa2u7S4lmeuxOVSohFaB",
+  "profileId": "77280975-0b33-4d18-8a3f-7d41dfe27084",
+  "modelId": "678eb81f-5206-4519-8caa-ee40358e7403",
+  "runId": "af5d3c85-a664-4378-a6c9-5dafdcf30530",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置和模型均来自主应用",
+    "通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务节点编排",
+    "正式保存接口只写稳定 modelId，八节点和七条连线进入临时 SQLite，不保存模型地址或密钥",
+    "真实 worker 经主应用模型绑定完成八次受控 HTTP 调用，结果结构与变量语义逐项匹配",
+    "纯 AI 数据任务未启动 CloakBrowser，运行结束后无浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "ai_extract",
+      "nodeId": "eDfxGhjWqjN84BoGduiWv",
+      "result": {
+        "result": {
+          "姓名": "张三"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_classify",
+      "nodeId": "jSMn6GeHFoS3go8gK8NNG",
+      "result": {
+        "category": "退款",
+        "detail": {
+          "category": "退款"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_summarize",
+      "nodeId": "91MR_Tt0Z-9OLmi6czA8I",
+      "result": {
+        "summary": "简短摘要"
+      }
+    },
+    {
+      "moduleType": "ai_translate",
+      "nodeId": "XaVLmtdV8k1rEoMXAXujI",
+      "result": {
+        "translation": "Hello",
+        "targetLang": "英文"
+      }
+    },
+    {
+      "moduleType": "ai_sentiment",
+      "nodeId": "ONV7qrpOexNqflDJGgMCT",
+      "result": {
+        "sentiment": "正面",
+        "detail": {
+          "sentiment": "正面"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_normalize",
+      "nodeId": "lqb-XZZCQVS9TLLWj5ydx",
+      "result": {
+        "result": "2026-09-21",
+        "type": "date"
+      }
+    },
+    {
+      "moduleType": "ai_dedup_semantic",
+      "nodeId": "HHiEVZ_YDeCGkI9PNqPYG",
+      "result": {
+        "result": [
+          "苹果",
+          "香蕉"
+        ],
+        "removed": 1
+      }
+    },
+    {
+      "moduleType": "ai_route",
+      "nodeId": "6iV53qfNZ2miypGa97JiB",
+      "result": {
+        "route": "退款",
+        "detail": {
+          "route": "退款"
+        },
+        "routes": [
+          "退款",
+          "咨询"
+        ]
+      }
+    }
+  ],
+  "providerRequestCount": 8,
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "model": "local controlled OpenAI-compatible HTTP fixture configured through main application model management",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "externalWaiting": "third-party production model providers remain separately unverified"
+  }
+}
