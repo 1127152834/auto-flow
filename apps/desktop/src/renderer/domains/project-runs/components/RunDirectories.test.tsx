@@ -220,3 +220,13 @@ it.each([
   expect(screen.getByRole('status')).toHaveTextContent(message)
   expect(screen.getByText('结束原因').parentElement).toHaveTextContent('尚未结束')
 })
+
+it('shows shared-source busy and repair reasons without exposing another project', () => {
+  const base = { statusCounts: {}, taskCount: 0, reusedInputGroupCount: 0, unchangedInputStreak: 0, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: { automation: { inputPlan: { inputs: [{ inputId: 'mail', alias: '邮箱' }] } } } }
+  const { rerender } = render(<BatchDetail detail={{ ...base, batch: { ...batch, status: 'blocked', completedAt: null, selectionOutcome: { status: 'temporarilyBusy', foreignProject: 'private-other-project' } } }} onBack={vi.fn()}/>)
+  expect(screen.getByRole('status')).toHaveTextContent('符合条件的数据正在被其他任务使用，释放后将继续领取。')
+  expect(screen.queryByText(/private-other-project/)).not.toBeInTheDocument()
+  rerender(<BatchDetail detail={{ ...base, batch: { ...batch, status: 'failed', selectionOutcome: { status: 'configurationError', issueInputIds: ['mail'], issueDetails: { mail: '共享来源绑定已变化，请重新拉取后领取。' } } } }} onBack={vi.fn()}/>)
+  expect(screen.getByText('结束原因').parentElement).toHaveTextContent('邮箱：共享来源绑定已变化，请重新拉取后领取。')
+  expect(screen.queryByRole('link', { name: /其他项目/ })).not.toBeInTheDocument()
+})

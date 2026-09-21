@@ -16,7 +16,8 @@
   "baseline": "e71785da7353760ea8bfd567d272dd27865c0188",
   "completedSlices": [
     "C1",
-    "C2"
+    "C2",
+    "C3"
   ],
   "verification": {
     "scopedBackend": "158 passed, 2 warnings in 57.88s",
@@ -24,7 +25,18 @@
     "ruff": "passed",
     "realWorkerOnPreviousF580": "26 passed in 279.99s; no C1 production code was edited until this run finished",
     "C2Backend": "147 passed, 2 warnings in 95.58s",
-    "C2Downgrade": "Shared cursor downgrade refused without deleting either cursor; 1 passed"
+    "C2Downgrade": "Shared cursor downgrade refused without deleting either cursor; 1 passed",
+    "C3RealWorker": "29 passed, 2 warnings in 376.37s; 26 existing plus 3 new owner handoff cases",
+    "C3IndependentStatuses": "Latest 3 shared-source cases with distinct P/Q statuses and explicit owner-cleanup assertion: 3 passed, 2 warnings in 76.38s",
+    "frontend": "5460 passed / 406 files in 238.86s",
+    "C3UI": "22 passed / 1 file",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "passed",
+    "scripts": "101 passed",
+    "fullBackend": "running; four stale migration-head assertions reproduced, fix under verification",
+    "build": "passed",
+    "C3Migration": "Four historical paths upgraded to pm10 preserving devices, runs, artifacts and foreign keys: 4 passed in 1.09s; stale pm08 assertion RED→GREEN"
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -39,16 +51,21 @@
     "Rebind/unbind/archive include shared source occupancy; blockers disclose only current local table",
     "Latest valid compatible source scan can serve other existing bindings; newer missing identity blocks stale local rows",
     "Removing a peer invalidates the old binding-set proof instead of erasing a known bad source observation",
-    "Different identity columns may be bound and read locally, but cannot claim without identity equivalence proof"
+    "Different identity columns may be bound and read locally, but cannot claim without identity equivalence proof",
+    "Capacity-two actual workers: P manual continuation, cancellation and exact-owned-child loss each release the public key only after confirmed owner cleanup; Q busy has no Task",
+    "P nonempty business status and Q null remain independent; Q later freezes its own null/revision 1; stale P manual continuation rejected; two page visits, two final Tasks, zero active leases and zero Google writes",
+    "Existing shared-source UI renders local input alias and repair reason without rendering foreign project identity/link"
   ],
   "limits": [
     "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
-    "C3 complete recovery/UI and C4 real workers pending",
     "R1-R2-R5-R3-R4 approved, not yet implemented",
     "M1-M3 not approved",
     "Google real authorization, signing and full native platform acceptance external",
     "Local pull preserves existing readable rows and skipped blank identities; those tables remain ineligible for shared claims until identity is complete",
-    "Source namespace currently uses verified column coordinate/header and exact key encoding; moved/renamed columns require explicit repair"
+    "Source namespace currently uses verified column coordinate/header and exact key encoding; moved/renamed columns require explicit repair",
+    "C4 full backend regression and new three-platform packaged matrix pending",
+    "Actual worker integration uses TestClient HTTP and controlled Google transport, not packaged Google network authorization",
+    "29-case run predates the extra status assertions; the separate latest 3-case run proves those assertions on identical production source"
   ],
   "previousCandidateCI": {
     "run": 35590418456,

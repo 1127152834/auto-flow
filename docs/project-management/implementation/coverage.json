@@ -5301,8 +5301,18 @@
       "primary_package": "PM6-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_identity.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "C1–C3 公共身份、占用入口和本地隔离；真实 worker 三类 owner 交接。以 testMapping 的逐断言范围为准。",
+          "limitations": "Google transport 受控；C4 完整回归和新三平台尚未闭合，不升级 verified。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "data-source",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -5322,15 +5332,30 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "checks": [
           {
-            "kind": "implementation_missing",
-            "detail": "当前 LeaseKey 仅 local/project/table/generation；实际两个绑定对同物理行生成不同 leaseKey。缺少 Workspace 共享来源身份及不同身份列的领取阻断；见 shared-sheets-claims-gap.json。失败探针不是通过的覆盖证据。"
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_shared_sheet_lease_keys",
+            "scope": "同物理来源生成相同公共键、本地 RecordRef 不同，公共键不含本地项目/表/代次；本地来源保持独立键。",
+            "level": "automated_integration"
           },
           {
-            "kind": "test_missing",
-            "detail": "缺少实现后的通过回归和真实 worker 竞争验收；现有失败探针只定位缺陷，不构成已覆盖。"
+            "file": "apps/backend/tests/integration/test_project_sheets_claim_paths.py",
+            "symbol": "test_same_task_shared_row_keeps_separate_local_write_cursors",
+            "scope": "同 Task 两本地绑定四次写入：一个共享租约、两个本地游标独立推进至修订 3。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_shared_sheet_owner_handoff",
+            "scope": "三个真实 worker 场景：P 非空状态与 Q 空状态独立筛选；容量 2 下同源只有一租约，Q 忙时零 Task；P 人工继续/停止/精确进程失联并完成清理后 Q 再领自己的快照；拒绝旧人工继续，最终零活动占用。Google transport 受控。",
+            "level": "automated_real_worker_controlled_source"
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "当前 PM9 打包完整 Sheets 授权实网链及跨平台原生操作仍待验收；受控 Google transport 不代表实网。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -8319,8 +8344,18 @@
       "primary_package": "PM6-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_identity.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "C1–C3 公共身份、占用入口和本地隔离；真实 worker 三类 owner 交接。以 testMapping 的逐断言范围为准。",
+          "limitations": "Google transport 受控；C4 完整回归和新三平台尚未闭合，不升级 verified。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "data-source",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -8341,15 +8376,30 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "checks": [
           {
-            "kind": "implementation_missing",
-            "detail": "当前 LeaseKey 仅 local/project/table/generation；实际两个绑定对同物理行生成不同 leaseKey。缺少 Workspace 共享来源身份及不同身份列的领取阻断；见 shared-sheets-claims-gap.json。失败探针不是通过的覆盖证据。"
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_shared_claim_busy_rolls_back_and_release_allows_other_local_snapshot",
+            "scope": "真实领取事务竞争，一胜一忙无半 Task；模拟已确认终结后 Q 按本地内容和修订再领。",
+            "level": "automated_integration"
           },
           {
-            "kind": "test_missing",
-            "detail": "缺少实现后的通过回归和真实 worker 竞争验收；现有失败探针只定位缺陷，不构成已覆盖。"
+            "file": "apps/backend/tests/integration/test_project_sheets_claim_paths.py",
+            "symbol": "test_dynamic_query_write_cannot_bypass_other_project_source_lease",
+            "scope": "动态查询后的写入不能绕过另一项目共享占用，不提交值或操作。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_shared_sheet_owner_handoff",
+            "scope": "三个真实 worker 场景：P 非空状态与 Q 空状态独立筛选；容量 2 下同源只有一租约，Q 忙时零 Task；P 人工继续/停止/精确进程失联并完成清理后 Q 再领自己的快照；拒绝旧人工继续，最终零活动占用。Google transport 受控。",
+            "level": "automated_real_worker_controlled_source"
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "当前 PM9 打包完整 Sheets 授权实网链及跨平台原生操作仍待验收；受控 Google transport 不代表实网。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -8364,8 +8414,18 @@
       "primary_package": "PM6-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_identity.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "C1–C3 公共身份、占用入口和本地隔离；真实 worker 三类 owner 交接。以 testMapping 的逐断言范围为准。",
+          "limitations": "Google transport 受控；C4 完整回归和新三平台尚未闭合，不升级 verified。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "data-source",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -8386,15 +8446,28 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "checks": [
           {
-            "kind": "implementation_missing",
-            "detail": "当前 LeaseKey 仅 local/project/table/generation；实际两个绑定对同物理行生成不同 leaseKey。缺少 Workspace 共享来源身份及不同身份列的领取阻断；见 shared-sheets-claims-gap.json。失败探针不是通过的覆盖证据。"
+            "file": "apps/backend/tests/integration/test_project_sheets_claim_paths.py",
+            "symbol": "test_different_identity_columns_allow_binding_and_local_reads_but_not_claims",
+            "scope": "第二绑定保存和本地读成功；两个身份列无公共对应证明时两边领取 configurationError，具体原因包含身份列，零租约。",
+            "level": "automated_integration"
           },
           {
-            "kind": "test_missing",
-            "detail": "缺少实现后的通过回归和真实 worker 竞争验收；现有失败探针只定位缺陷，不构成已覆盖。"
+            "file": "apps/desktop/src/renderer/domains/project-runs/components/RunDirectories.test.tsx",
+            "testName": "shows shared-source busy and repair reasons without exposing another project",
+            "scope": "共享占用与绑定变化修复原因展示当前输入别名；不展示其他项目身份或链接。具体不同身份列端到端页面仍待验收。",
+            "level": "automated_component"
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "当前 PM9 打包完整 Sheets 授权实网链及跨平台原生操作仍待验收；受控 Google transport 不代表实网。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "不同身份列的具体修复原因已有服务断言，尚缺真实应用页面从该实际故障展示原因的完整链。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -16197,5 +16270,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-20：已按用户确认接通共享图、父进程项目数据 RPC、End 和人工存活 worker 延续；正式 Studio HTTP 与真实 CloakBrowser/打包产物通过多表、参数、登录复用、人工、失败后续、统计和生命周期链。万行/千条日志的打包 UI 测量已完成。三平台 CI 及缺少实机/Sheets 证据见 pm9/verification.json；历史阶段 note 保留，仅其“生产核心未接入”结论由本条取代。并行循环与跨进程人工恢复明确不支持。 2026-09-21：同一候选三平台 CI 已全部成功。将 6 条直接匹配实际运行的 planned 项补为 partially_verified；未将子集测试升级为完整规格通过。余项分类与历史 Sheets 证据纠正见 pm9/completion-gaps.md。"
+  "pm9_note": "2026-09-21: 当前 225 条有范围断言 / 26 条尚无直接断言，191 partially_verified / 60 planned / 0 verified。历史 73 条失效预定路径保留，实际映射逐条记录。S1–S5 和 C1–C3 已补实现及局部证据；C4 回归/新三平台、R1–R5 已批准实施仍推进；历史三平台通过不代表新候选或完整 PM9 完成。releaseAccepted=false。"
 }

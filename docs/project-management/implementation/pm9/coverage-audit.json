@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 121,
-        "planned": 57
+        "partially_verified": 124,
+        "planned": 54
       },
       "items": [
         {
@@ -785,13 +785,12 @@
         },
         {
           "id": "DATA-ID-06",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 3,
           "gapKinds": [
-            "implementation_missing",
-            "test_missing"
+            "external_acceptance_pending"
           ]
         },
         {
@@ -1335,24 +1334,23 @@
         },
         {
           "id": "DATA-SH-13",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 3,
           "gapKinds": [
-            "implementation_missing",
-            "test_missing"
+            "external_acceptance_pending"
           ]
         },
         {
           "id": "DATA-SH-14",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 2,
           "gapKinds": [
-            "implementation_missing",
-            "test_missing"
+            "external_acceptance_pending",
+            "production_evidence_missing"
           ]
         },
         {
@@ -2608,11 +2606,11 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 222,
-    "withNoLocatedAssertion": 29,
+    "withAssertions": 225,
+    "withNoLocatedAssertion": 26,
     "statuses": {
-      "partially_verified": 188,
-      "planned": 63
+      "partially_verified": 191,
+      "planned": 60
     }
   }
 }

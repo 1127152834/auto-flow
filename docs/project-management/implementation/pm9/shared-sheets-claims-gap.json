@@ -19,5 +19,6 @@
   ],
   "proposal": "docs/superpowers/specs/2026-09-21-pm9-shared-sheets-claims.md",
   "implementationApproval": "approved 2026-09-21: C1-C4 then R1-R2-R5-R3-R4",
-  "currentFollowThrough": "shared-data-follow-through.json"
+  "currentFollowThrough": "shared-data-follow-through.json",
+  "currentStatus": "historical gap fixed in scoped C1-C3 evidence; C4 full regression and native matrix pending"
 }
