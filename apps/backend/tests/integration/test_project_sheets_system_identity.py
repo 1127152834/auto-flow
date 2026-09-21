@@ -56,6 +56,8 @@ def test_lost_identity_response_recovers_one_original_plan_and_blocks_new_sends(
     with client:
         operation = initialize(client, project, connection, table, identity, title)
         assert operation['status'] == 'reconciling'
+        listed = client.get(base(client, project, table) + '/sheets/system-identity').json()
+        assert listed['items'][0]['syncOperationId'] == operation['operationId']
         url = base(client, project, table) + '/sheets/system-identity/' + operation['operationId']
         uuid = transport.grid('数据')[1][2]
         assert client.get(base(client, project, table) + '/sheets/binding').json() is None

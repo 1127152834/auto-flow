@@ -744,16 +744,16 @@ class SqlAlchemyProjectSync:
             return self.summary(session, table)
 
     def sync_operations(
-        self, table: str, status: str | None, page: int, page_size: int
+        self, table: str, status: str | None, page: int, page_size: int, *, kind: str | None = None
     ) -> dict[str, Any]:
         with self.sessions() as session:
             scope = (
                 SyncOperationRow.table_id == table,
-                SyncOperationRow.kind.in_(CONTENT_KINDS),
+                SyncOperationRow.kind == kind if kind else SyncOperationRow.kind.in_(CONTENT_KINDS),
                 # Only the queued local changes are listed here. A pull or
                 # reconcile row *is* its command, and a push command owns the
                 # queue it drains; both are readable as project operations.
-                SyncOperationRow.operation_id.is_(None),
+                SyncOperationRow.operation_id.is_not(None) if kind else SyncOperationRow.operation_id.is_(None),
             )
             query = select(SyncOperationRow).where(*scope)
             count = select(func.count()).select_from(SyncOperationRow).where(*scope)

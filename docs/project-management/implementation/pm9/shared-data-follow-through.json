@@ -87,7 +87,8 @@
       "lint": "passed",
       "openapi": "passed",
       "build": "passed in 34.52s",
-      "releaseScope": "No current real Google or packaged system initialization proof"
+      "releaseScope": "No current real Google or packaged system initialization proof",
+      "recoveryListingFix": "Real GET /sheets/system-identity returns accepted structural commands; content-only sync queue excluded them. RED failed missing items; 23 HTTP/source + 25 UI/client checks passed. Full R3 before listing fix 90 passed remains scoped."
     }
   },
   "assertionScope": [
@@ -190,24 +191,24 @@
   },
   "R3SourceHashes": {
     "apps/backend/src/autoflow/adapters/http/project_schemas.py": "64254ee53fef0312959c40d802d1fc1b881114dff3f96ac0c739df1b825cf53e",
-    "apps/backend/src/autoflow/adapters/http/project_sheets.py": "649edb727ae0e1f3675cb82943dbf6830c7ceecde4cf4b2ecedde6b763e9af26",
+    "apps/backend/src/autoflow/adapters/http/project_sheets.py": "ee466966224ae4e45e54fe51f95556d25b616a0a11c2575259f0f2d4fb69c34a",
     "apps/backend/src/autoflow/adapters/http/project_sheets_schemas.py": "18b5c3fdf54e743dd6945b5ba3c8ecce9662ab9887ad9ec52caf78f19b4ee86c",
     "apps/backend/src/autoflow/application/project_sync/access.py": "5a78b6cfd3730b673aa0c563431892c4dad240f50668e1b947a54f17f0e528e2",
-    "apps/backend/src/autoflow/application/project_sync/bindings.py": "e3de2f46b0858b5f5cf054b3bb7311b5f2ee7c73f2a8c6f071efdcbfda2fd9dc",
+    "apps/backend/src/autoflow/application/project_sync/bindings.py": "cc6ac49d4a4ad05faa121dab717e0cd0e529455bc63382850d698c936c742c09",
     "apps/backend/src/autoflow/application/project_sync/outbound.py": "f88549555f3f799299bf75593882f79efe87ad25b2497cf6e7228edaaf7f2409",
     "apps/backend/src/autoflow/bootstrap/app.py": "55e49493b9b376b4d1faece94700ba51403a25e713b85830c38021afc4240439",
     "apps/backend/src/autoflow/infrastructure/database/project_claims.py": "e45d1840cb655145349cf1852a152379caebe289bb507a6d02f013ed44a07616",
     "apps/backend/src/autoflow/infrastructure/database/project_lifecycle.py": "112aea091cbae4d638b553604a5951fa40c9f2028d0747f5ffd314103f469139",
-    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "86225ad1ac9f4fa8c0782708d8b223308ca453e3d85ba42ef3453caa2e1013fa",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "9f695c966476178532ca6ae5b33e8d90743674e949e9964980459dc5e88330fc",
     "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "07c224391b6ee100ee7570e1bac97812a3db224927cf296e2340c1ce296ba393",
     "apps/backend/src/autoflow/providers/data/google_sheets.py": "056e0ae2a724343c0582d5cb948ab101c39fd8dff8b44b9949a7400a08ee4ee4",
     "apps/desktop/src/renderer/domains/project-data/components/SheetsBindingWizard.tsx": "e348cff28192681b0222757f2aebd28d1f9addb142ef997c729f42e9cd8f6d24",
-    "apps/desktop/src/renderer/domains/project-data/components/SheetsSync.test.tsx": "615b040a7633c75307b894c42f5d72f715ee13ce9a4fa054f453fdbd7d0f7e49",
-    "apps/desktop/src/renderer/domains/project-data/sheets-api.ts": "ec2cb51d31409dbc0456ff815ac0a616e26da813d44703602038ffc473c1ff2a",
-    "apps/desktop/src/renderer/shared/api/generated.ts": "f635af29c6ba3e0e0749ce692ca2100cca821be360a49da588cce053da76b582",
+    "apps/desktop/src/renderer/domains/project-data/components/SheetsSync.test.tsx": "d26c075275b3f889f015ffe09930cb000c2dfa2ae5c3500efc7ab90c8a7b71bf",
+    "apps/desktop/src/renderer/domains/project-data/sheets-api.ts": "27bedbc183a7e9464e6cc0877f41bd27f1e0769dc4aafac6c0fa9b7e9160c65c",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "2d4a37f64d33bbd976cc6eafffb7b0bf7a8f970576f57e5822cb441443ec25cd",
     "apps/backend/src/autoflow/application/project_sync/system_identity.py": "5f41d3b2a6979c688accdf75f6aeed73087ae559cce4712f9c24129b36c56e09",
     "apps/backend/src/autoflow/infrastructure/database/project_sync_sends.py": "5b405920446a433c74e25e3022da76fc2d0f81ff406a5f608f43116113b491ed",
-    "apps/desktop/src/renderer/domains/project-data/components/SheetsIdentityInitialization.tsx": "466717071d294ecb05ddd055f53bbe69369806d21a1c54bfeba14692eeec1fcb"
+    "apps/desktop/src/renderer/domains/project-data/components/SheetsIdentityInitialization.tsx": "22a9df1c2f27d6bfafc85e0f52b30508236e82461ee1e681a9c3e6f8cd5370a0"
   },
   "remaining": [
     "R4 approved controlled remote column creation remains next; final whole C/R review, full regression and current three-platform candidate pending.",

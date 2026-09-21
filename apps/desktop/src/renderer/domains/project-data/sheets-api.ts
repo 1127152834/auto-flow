@@ -90,6 +90,8 @@ export function createSheetsApi(client: StreamingApiClient, desktop: Partial<Goo
       // The binding resource is replaced, not posted to: the frozen contract and
       // the route both answer PUT, and a POST is a 405, not a retryable failure.
       (await command.submit(`${table(tableId)}/sheets/binding`, body, key, 'changeSheetsBinding', current, 'PUT')),
+    identityOperations: (tableId: string, page: number, signal?: AbortSignal) =>
+      client.request<SyncOperationPage>(`${table(tableId)}/sheets/system-identity?page=${page}&pageSize=100`, signal ? { signal } : undefined),
     initializeIdentity: (tableId: string, body: SheetsBindingWrite, key: string, current: () => boolean) =>
       command.submit(`${table(tableId)}/sheets/system-identity`, body, key, 'initializeSheetsIdentity', current),
     previewIdentity: (tableId: string, operationId: string) => client.request<SheetsImpactReport>(`${table(tableId)}/sheets/system-identity/${encodeURIComponent(operationId)}/preview`, { method: 'POST' }),

@@ -161,6 +161,10 @@ def project_sheets_binding_router(service: SheetsBindingService) -> APIRouter:
             body.model_dump(by_alias=True),
         )
 
+    @router.get("/sheets/system-identity", response_model=SyncOperationPage, response_model_exclude_none=True)
+    def identity_operations(projectId: CanonicalId, tableId: CanonicalId, page: int = Query(default=1, ge=1), pageSize: int = Query(default=50, ge=1, le=100)):
+        return service.identity_operations(str(projectId), str(tableId), page, pageSize)
+
     @router.post("/sheets/system-identity", status_code=202, response_model=OperationAccepted,
                  responses=browser_error_responses(401, 404, 409, 412, 422))
     def initialize_identity(projectId: CanonicalId, tableId: CanonicalId, body: SheetsBindingWrite, idempotency_key: Key):

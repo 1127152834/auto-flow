@@ -22,6 +22,7 @@ const apiWith = (overrides: Partial<Record<keyof SheetsApi, unknown>> = {}) => (
   previewBinding: vi.fn().mockResolvedValue(report()), previewUnbind: vi.fn().mockResolvedValue(report()), previewDisconnect: vi.fn().mockResolvedValue(report()),
   disconnect: vi.fn(), removeBinding: vi.fn(),
   readBinding: vi.fn().mockResolvedValue(null), inspect: vi.fn(), putBinding: vi.fn(), state: vi.fn(),
+  identityOperations: vi.fn().mockResolvedValue({ items: [], pageSize: 100, total: 0 }),
   operations: vi.fn().mockResolvedValue({ items: [], pageSize: 100, total: 0 }), pause: vi.fn(), resume: vi.fn(), push: vi.fn(), pull: vi.fn(), reconcile: vi.fn(), abandon: vi.fn(),
   ...overrides,
 }) as unknown as SheetsApi

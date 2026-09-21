@@ -2373,7 +2373,8 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Identity Operations */
+        get: operations["identity_operations_api_v1_projects__projectId__tables__tableId__sheets_system_identity_get"];
         put?: never;
         /** Initialize Identity */
         post: operations["initialize_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity_post"];
@@ -20937,6 +20938,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    identity_operations_api_v1_projects__projectId__tables__tableId__sheets_system_identity_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOperationPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

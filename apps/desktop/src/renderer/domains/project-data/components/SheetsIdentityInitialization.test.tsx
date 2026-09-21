@@ -10,7 +10,7 @@ afterEach(cleanup)
 const request = { connectionId: 'c', spreadsheetId: 's', sheetId: 1000, expectedTableRevision: 3, identityStrategy: { kind: 'system' as const, columnId: 'C' }, mapping: [] }
 const report = { impactRevision: 12, expectedRevisions: { tableRevision: 3 }, impacts: [], blockers: [] }
 const setup = (items: object[] = []) => ({
-  operations: vi.fn().mockResolvedValue({ items, pageSize: 100, total: items.length }),
+  identityOperations: vi.fn().mockResolvedValue({ items, pageSize: 100, total: items.length }),
   previewBinding: vi.fn().mockResolvedValue(report), previewIdentity: vi.fn().mockResolvedValue(report),
   initializeIdentity: vi.fn().mockResolvedValue({ status: 'reconciling' }),
   verifyIdentity: vi.fn().mockResolvedValue({ status: 'succeeded', result: { spreadsheetId: 's' } }), retryIdentity: vi.fn(),

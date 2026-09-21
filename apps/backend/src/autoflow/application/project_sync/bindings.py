@@ -150,6 +150,11 @@ class SheetsBindingService:
             self._runs.complete(operation_id, binding)
             return {"operation": self._runs.operation_view(operation_id)}
 
+    def identity_operations(self, project: str, table: str, page: int, page_size: int) -> dict[str, Any]:
+        with self._sessions() as session:
+            _table(session, project, table)
+        return self._sync.sync_operations(table, None, page, page_size, kind="systemIdentity")
+
     def initialize_identity(self, project_id: str, table_id: str, key: str, payload: dict[str, Any]) -> dict[str, Any]:
         with self._access.send_lock:
             request = _binding_request(payload)

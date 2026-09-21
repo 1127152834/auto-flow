@@ -22,7 +22,7 @@ export function SheetsIdentityInitialization({ api, scopeKey, tableId, disabled,
   const pending = useQuery({ queryKey: ['sheets-identity', scopeKey, tableId], queryFn: async ({ signal }) => {
     const items: SyncOperation[] = []
     for (let page = 1; ; page++) {
-      const result = await api.operations(tableId, { page, pageSize: 100 }, signal)
+      const result = await api.identityOperations(tableId, page, signal)
       items.push(...result.items.filter(item => item.kind === 'systemIdentity' && item.status !== 'confirmed'))
       if (page * result.pageSize >= result.total) return items
     }
