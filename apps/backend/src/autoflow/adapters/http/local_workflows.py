@@ -8,6 +8,7 @@ from pydantic import ConfigDict, Field
 
 from autoflow.adapters.http.schemas import ApiModel
 from autoflow.application.workflows.local_files import LocalWorkflowFiles
+from autoflow.application.workflows.webdav import WebDavWorkflowService
 
 
 class FolderRequest(ApiModel):
@@ -33,7 +34,19 @@ class SelfHealWrite(LocalWorkflowExists):
     enabled: bool
 
 
-def local_workflows_router(service: LocalWorkflowFiles) -> APIRouter:
+class WebDavConfig(ApiModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    enabled: bool = False
+    url: str = ""
+    username: str = ""
+    password: str = ""
+    remote_dir: str = Field(default="", alias="remoteDir")
+
+
+def local_workflows_router(
+    service: LocalWorkflowFiles, webdav: WebDavWorkflowService
+) -> APIRouter:
     router = APIRouter(prefix="/api/local-workflows", tags=["studio-local-workflows"])
 
     @router.get("/default-folder")
@@ -51,6 +64,19 @@ def local_workflows_router(service: LocalWorkflowFiles) -> APIRouter:
     @router.post("/active-folder")
     def set_active_folder(request: ActiveFolder) -> dict[str, Any]:
         return {"success": True, "folder": str(service.set_active_folder(request.folder))}
+
+    @router.get("/webdav-config")
+    def get_webdav_config() -> dict[str, Any]:
+        return {"success": True, "config": webdav.config()}
+
+    @router.post("/webdav-config")
+    def save_webdav_config(request: WebDavConfig) -> dict[str, Any]:
+        config = webdav.save_config(request.model_dump(by_alias=True))
+        return {"success": True, "config": config}
+
+    @router.post("/webdav-test")
+    def test_webdav(request: WebDavConfig) -> dict[str, bool]:
+        return webdav.test(request.model_dump(by_alias=True))
 
     @router.post("/list")
     def list_workflows(request: FolderRequest) -> dict[str, Any]:

@@ -70,6 +70,7 @@ from autoflow.application.workflows.image_assets import ImageAssetStore
 from autoflow.application.workflows.local_files import LocalWorkflowFiles
 from autoflow.application.workflows.retention import StudioRetentionService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.application.workflows.webdav import WebDavWorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.http_routes import (
@@ -338,7 +339,9 @@ def create_app(
         credential_store=active_credentials,
     )
     workflow_services.runs.recover_interrupted()
-    local_workflows = LocalWorkflowFiles(paths.workspace)
+    webdav_workflows = WebDavWorkflowService(paths.workspace, active_credentials)
+    app.state.webdav_workflows = webdav_workflows
+    local_workflows = LocalWorkflowFiles(paths.workspace, webdav_workflows)
     app.state.local_workflows = local_workflows
     image_assets = ImageAssetStore(paths.workspace)
     app.state.image_assets = image_assets
@@ -585,7 +588,7 @@ def create_app(
         instance_id=settings.instance_id,
     )
     register_workflow_routes(app, workflow_services)
-    app.include_router(local_workflows_router(local_workflows))
+    app.include_router(local_workflows_router(local_workflows, webdav_workflows))
     app.include_router(image_assets_router(image_assets))
     app.include_router(workflow_bundles_router(workflow_bundles))
     app.include_router(studio_credentials_router(studio_credentials))

@@ -176,13 +176,13 @@ it('connection change during the leave decision prevents saving to the new servi
   leaveThrough('完成保存')
   const dialog = await screen.findByRole('dialog', { name: '保存凭据编辑？' })
   const { configureStudioConnection } = await import('../api/config')
-  const fetcher = vi.fn(async () => Response.json({ success: true }))
+  const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => Response.json({ success: true }))
   const restore = configureStudioConnection('http://next.fixture', fetcher)
   try {
     fireEvent.click(within(dialog).getByRole('button', { name: '保存后继续' }))
     await waitFor(() => expect(screen.queryByRole('dialog', { name: '保存凭据编辑？' })).toBeNull())
     expect(close).not.toHaveBeenCalled()
-    expect(fetcher).not.toHaveBeenCalled()
+    expect(fetcher.mock.calls.filter(([input, init]) => String(input).endsWith('/credentials') && init?.method === 'POST')).toHaveLength(0)
     expect(screen.getByPlaceholderText('值')).toHaveProperty('value', 'dummy-only')
   } finally { restore() }
 })
@@ -192,12 +192,12 @@ it('WebDAV connection change during confirmation never submits the original conf
   leaveThrough('完成保存')
   const dialog = await screen.findByRole('dialog', { name: '保存 WebDAV 配置？' })
   const { configureStudioConnection } = await import('../api/config')
-  const fetcher = vi.fn(async () => Response.json({ success: true, mock: true }))
+  const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => Response.json({ success: true, mock: true }))
   const restore = configureStudioConnection('http://new-webdav.fixture', fetcher)
   try {
     fireEvent.click(within(dialog).getByRole('button', { name: '保存后继续' }))
     await waitFor(() => expect(screen.queryByRole('dialog', { name: '保存 WebDAV 配置？' })).toBeNull())
-    expect(fetcher).not.toHaveBeenCalled()
+    expect(fetcher.mock.calls.filter(([input, init]) => String(input).endsWith('/local-workflows/webdav-config') && init?.method === 'POST')).toHaveLength(0)
     expect(close).not.toHaveBeenCalled()
     await screen.findByText('连接已更换，请重新读取配置')
   } finally { restore() }

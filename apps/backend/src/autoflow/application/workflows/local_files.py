@@ -10,16 +10,21 @@ from typing import Any
 
 from autoflow.domain.workflows.models import WorkflowError
 
+from .webdav import WebDavWorkflowService
+
 
 class LocalWorkflowFiles:
-    def __init__(self, workspace: Path) -> None:
+    def __init__(
+        self, workspace: Path, remote: WebDavWorkflowService | None = None
+    ) -> None:
         self._default = (workspace / "local-workflows").resolve()
         self._settings = workspace / "local-workflows.json"
+        self._remote = remote
         self._lock = RLock()
 
     @property
-    def default_folder(self) -> Path:
-        return self._default
+    def default_folder(self) -> Path | str:
+        return "WebDAV" if self._active_remote() else self._default
 
     def active_folder(self) -> Path:
         try:
@@ -36,6 +41,8 @@ class LocalWorkflowFiles:
         return folder
 
     def list(self, folder: str | None = None) -> list[dict[str, Any]]:
+        if remote := self._active_remote():
+            return remote.list_workflows()
         root = self._folder(folder)
         root.mkdir(parents=True, exist_ok=True)
         rows: list[dict[str, Any]] = []
@@ -67,6 +74,8 @@ class LocalWorkflowFiles:
                 422,
                 details={"path": ["content", "nodes"]},
             )
+        if remote := self._active_remote():
+            return remote.save(filename, content)
         path = self._path(filename, folder)
         path.parent.mkdir(parents=True, exist_ok=True)
         with self._lock:
@@ -78,6 +87,11 @@ class LocalWorkflowFiles:
         return path.name
 
     def load(self, filename: str, folder: str | None = None) -> dict[str, Any]:
+        if remote := self._active_remote():
+            value = remote.read(filename)
+            if value is None:
+                raise self._not_found(filename)
+            return value
         path = self._existing_path(filename, folder)
         try:
             return self._read(path)
@@ -87,10 +101,16 @@ class LocalWorkflowFiles:
             ) from error
 
     def exists(self, filename: str, folder: str | None = None) -> tuple[bool, str]:
+        if remote := self._active_remote():
+            value = filename if filename.lower().endswith(".json") else f"{filename}.json"
+            return remote.exists(value), value
         path = self._path(filename, folder)
         return path.is_file(), path.name
 
     def delete(self, filename: str, folder: str | None = None) -> None:
+        if remote := self._active_remote():
+            remote.delete(filename)
+            return
         path = self._existing_path(filename, folder)
         with self._lock:
             try:
@@ -105,6 +125,13 @@ class LocalWorkflowFiles:
         *,
         enabled: bool | None = None,
     ) -> dict[str, Any]:
+        if remote := self._active_remote():
+            content = self.load(filename, folder)
+            value = dict(content.get("selfHeal") or {})
+            if enabled is not None:
+                value["enabled"] = enabled
+                remote.save(filename, {**content, "selfHeal": value})
+            return value
         path = self._existing_path(filename, folder)
         with self._lock:
             content = self._read(path)
@@ -115,9 +142,18 @@ class LocalWorkflowFiles:
         return value
 
     def resolve_folder(self, folder: str | None = None) -> Path:
+        if self._active_remote():
+            raise WorkflowError(
+                "WEB_DAV_FOLDER_REMOTE",
+                "当前工作流存储在 WebDAV 远程目录，无法打开本地文件夹",
+                409,
+            )
         root = self._folder(folder)
         root.mkdir(parents=True, exist_ok=True)
         return root
+
+    def _active_remote(self) -> WebDavWorkflowService | None:
+        return self._remote if self._remote is not None and self._remote.enabled() else None
 
     def _folder(self, value: str | None) -> Path:
         if value is None or not value.strip():
