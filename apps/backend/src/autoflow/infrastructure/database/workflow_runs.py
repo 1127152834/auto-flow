@@ -487,6 +487,31 @@ class SqlAlchemyWorkflowRuns:
             )
             return self._debug_command(row) if row is not None else None
 
+    def clear_variable_tracking(
+        self, run_id: str, *, now: datetime
+    ) -> WorkflowRunEvent:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            run = self._require_run(session, run_id)
+            sequence = self._next_sequence(session, run_id)
+            row = WorkflowRunEventRow(
+                run_id=run_id,
+                seq=sequence,
+                payload={
+                    "type": "execution:variables_cleared",
+                    "occurredAt": _iso(now),
+                    "payload": {},
+                    "nodeId": None,
+                    "executionId": None,
+                },
+            )
+            session.add(row)
+            value = copy.deepcopy(run.payload)
+            value["eventCount"] = sequence
+            run.payload = value
+            session.commit()
+            return _event(row)
+
     @staticmethod
     def _debug_command(
         row: WorkflowDebugCommandRow,

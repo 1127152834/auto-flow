@@ -16,6 +16,9 @@
     "暂停事件包含稳定pauseId、controlRevision、节点、变量快照和循环局部变量只读元数据",
     "resume和step使用稳定commandId，worker实际应用后才确认；重复同内容返回原结果，过期暂停上下文返回409",
     "调试命令回执写入既有workflow_debug_commands表；进程内缓存丢失后仍可查询单步和变量修改结果，冲突重试仍返回409",
+    "调试变量初值、节点写入和人工原子修改按executionId写入既有运行事件表，支持关键词、变量、操作和类型筛选及固定截止序号分页",
+    "超过64KiB的变量值写入purpose=diagnostic的校验产物；事件和命令回执只保存摘要，完整值按运行与事件位置读取并可流式导出JSONL",
+    "变量诊断可按运行或工作流读取和清空；清空使用追加事件保留审计序号，不改写历史运行事件",
     "暂停变量支持一次提交多个JSON值并原子应用；循环局部变量只读，修改后沿用pauseId提升controlRevision并发布新快照",
     "运行中的断点集合可通过正式接口替换并由worker确认；从指定顶层节点起跑会跳过前置节点并在目标执行前暂停",
     "运行日志支持关键词、级别、节点和执行标识筛选，并按请求时事件截止序号导出JSONL",
@@ -37,6 +40,16 @@
       "command": "pytest workflow run repository, real debug HTTP, coordinator, debug runtime and debug contract suites",
       "result": "37 passed",
       "covers": "命令数据库往返、缓存丢失恢复、变量修改回执恢复、冲突重试、单步不重复执行"
+    },
+    {
+      "command": "pytest workflow run HTTP, repository, debug runtime and worker protocol suites",
+      "result": "49 passed",
+      "covers": "真实worker变量事件、分页筛选、固定截止序号、大值诊断产物、完整值读取、流式导出、清空与重启后命令摘要"
+    },
+    {
+      "command": "Vitest variable tracking and debug command suites; TypeScript; ESLint; Ruff; mypy; OpenAPI consistency",
+      "result": "40 passed; all static and contract checks passed",
+      "covers": "前端真实合同消费、运行面板、分页、筛选、完整值读取、导出和生成类型"
     }
   ],
   "boundaries": {
@@ -48,8 +61,8 @@
   },
   "remaining": [
     "运行至嵌套目标并保留真实前置上下文",
-    "变量检查点、变化记录及大值诊断文件",
+    "循环局部变量进入与退出的完整变化矩阵",
     "失败暂停保留浏览器及结束调试后的失败终态",
-    "大规模日志导出分块读取和正式Electron真实UI验收"
+    "1,000轮与10,000日志容量、正式Electron真实UI和打包入口验收"
   ]
 }

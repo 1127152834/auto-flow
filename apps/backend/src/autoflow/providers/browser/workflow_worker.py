@@ -117,6 +117,7 @@ async def _run_in_session(
             models=WorkflowModelGateway(_model_bindings(command)),
             external_integrations=integrations,
             debug=command_bus.debug,
+            variable_tracking_enabled=bool(command.get("debug")),
         )
         sink = _WorkerEventSink(
             stdout,
@@ -127,6 +128,21 @@ async def _run_in_session(
             artifact_root=artifact_root,
         )
         context.events = sink
+        if context.variable_tracking_enabled:
+            for name, value in context.variables.items():
+                await sink.publish(
+                    {
+                        "type": "execution:variable_changed",
+                        "nodeId": "__start__",
+                        "executionId": f"{run_id}:initial",
+                        "variable_name": name,
+                        "old_value": None,
+                        "new_value": copy.deepcopy(value),
+                        "node_name": "流程初值",
+                        "operation": "create",
+                        "value_type": _variable_value_type(value),
+                    }
+                )
         interactive = command_bus.for_context(context)
         context.input_prompts = interactive
         context.browser_scripts = interactive
@@ -228,6 +244,7 @@ class _WorkerArtifactRepository:
         self._lock = Lock()
         self._ordinal = 0
         self._by_execution: dict[str, list[str]] = {}
+        self._by_path: dict[str, WorkflowArtifact] = {}
 
     def register_artifact(
         self,
@@ -244,7 +261,7 @@ class _WorkerArtifactRepository:
     ) -> WorkflowArtifact:
         with self._lock:
             self._ordinal += 1
-            if execution_id:
+            if execution_id and purpose == "result":
                 self._by_execution.setdefault(execution_id, []).append(artifact_id)
             _write(
                 self._stdout,
@@ -261,7 +278,7 @@ class _WorkerArtifactRepository:
                     "purpose": purpose,
                 },
             )
-            return WorkflowArtifact(
+            artifact = WorkflowArtifact(
                 run_id=run_id,
                 artifact_id=artifact_id,
                 ordinal=self._ordinal,
@@ -274,10 +291,15 @@ class _WorkerArtifactRepository:
                 purpose=purpose,
                 event_sequence=0,
             )
+            self._by_path[relative_path] = artifact
+            return artifact
 
     def take(self, execution_id: str) -> tuple[str, ...]:
         with self._lock:
             return tuple(self._by_execution.pop(execution_id, ()))
+
+    def by_path(self, relative_path: str) -> WorkflowArtifact:
+        return self._by_path[relative_path]
 
 
 class _WorkerEventSink:
@@ -297,6 +319,7 @@ class _WorkerEventSink:
         self._context = context
         self._artifacts = artifacts
         self._artifact_root = artifact_root
+        self._artifact_store = WorkflowArtifactStore(artifact_root, artifacts)
 
     def for_context(self, context: ExecutionContext) -> _WorkerEventSink:
         return _WorkerEventSink(
@@ -310,16 +333,14 @@ class _WorkerEventSink:
 
     async def publish(self, event: Mapping[str, Any]) -> None:
         event = dict(event)
+        await self._externalize_large_diagnostics(event)
         node_id = event.get("nodeId")
         execution_id = event.get("executionId")
         if isinstance(node_id, str) and isinstance(execution_id, str):
             self._context.current_node_id = node_id
             self._context.current_execution_id = execution_id
             if event.get("type") == "execution:node_start":
-                self._context.artifacts = WorkflowArtifactStore(
-                    self._artifact_root,
-                    self._artifacts,
-                ).writer(
+                self._context.artifacts = self._artifact_store.writer(
                     run_id=self._run_id,
                     node_id=node_id,
                     execution_id=execution_id,
@@ -350,6 +371,55 @@ class _WorkerEventSink:
                 "workflowId": self._workflow_id,
             },
         )
+
+    async def _externalize_large_diagnostics(self, event: dict[str, Any]) -> None:
+        event_type = event.get("type")
+        targets: list[tuple[dict[str, Any], str]] = []
+        if event_type == "execution:paused" and isinstance(
+            event.get("variables"), dict
+        ):
+            targets.extend(
+                (event["variables"], str(name)) for name in event["variables"]
+            )
+        elif event_type == "execution:variable_changed":
+            targets.extend((event, key) for key in ("old_value", "new_value"))
+        if not targets:
+            return
+        node_id = str(event.get("nodeId") or event.get("node_id") or "__debug__")
+        execution_id = str(event.get("executionId") or f"debug:{uuid4()}")
+        writer = self._artifact_store.writer(
+            run_id=self._run_id,
+            node_id=node_id,
+            execution_id=execution_id,
+            purpose="diagnostic",
+            cancellation=self._context.cancellation,
+        )
+        for container, key in targets:
+            value = container.get(key)
+            encoded = json.dumps(
+                value, ensure_ascii=False, allow_nan=False, separators=(",", ":")
+            ).encode()
+            if len(encoded) <= _MAX_INLINE_RESULT_BYTES:
+                continue
+            target = await writer.write_bytes(
+                name=f"diagnostics/{uuid4().hex}.json",
+                content=encoded,
+                mime_type="application/json",
+            )
+            relative_path = Path(target).resolve().relative_to(
+                self._artifact_root.resolve()
+            ).as_posix()
+            artifact = self._artifacts.by_path(relative_path)
+            preview = encoded[:90].decode(errors="replace")
+            if len(encoded) > 180:
+                preview += "…" + encoded[-90:].decode(errors="replace")
+            container[key] = {
+                "externalized": True,
+                "artifactId": artifact.artifact_id,
+                "size": artifact.size,
+                "sha256": artifact.sha256,
+                "preview": preview,
+            }
 
     async def _externalize_large_result(
         self, event: dict[str, Any], execution_id: str
@@ -1072,6 +1142,11 @@ class _WorkerDebugController:
             return "循环局部变量只读"
         if self._stopped.is_set():
             return "运行正在停止"
+        tracking_token = context.begin_variable_tracking(
+            node_id=str(pause["nodeId"]),
+            node_name=str(pause["label"]),
+            execution_id=f"debug:{pause['pauseId']}",
+        )
         for change in changes:
             name = str(change["name"])
             context.set_variable(
@@ -1079,6 +1154,7 @@ class _WorkerDebugController:
                 copy.deepcopy(change.get("value")),
                 sensitive=name in context.sensitive_variables,
             )
+        pause["variableChanges"] = context.end_variable_tracking(tracking_token)
         self._revision += 1
         pause["controlRevision"] = self._revision
         return None
@@ -1099,6 +1175,10 @@ class _WorkerDebugController:
         assert isinstance(context, ExecutionContext)
         if context.events is None:
             raise RuntimeError("调试事件服务不可用")
+        for change in pause.pop("variableChanges", []):
+            await context.events.publish(
+                {"type": "execution:variable_changed", **change}
+            )
         await context.events.publish(self._pause_payload(context))
 
     def _pause_payload(
@@ -1497,8 +1577,8 @@ class _WorkerCommandBus:
 
     async def _confirm_debug_variables(self, command_id: str) -> None:
         assert self.debug is not None
-        await self.debug.republish_pause()
         self._write_debug_result(command_id)
+        await self.debug.republish_pause()
 
     def _write_debug_result(self, command_id: str, *, error: str | None = None) -> None:
         _write(
@@ -1809,6 +1889,20 @@ def _required_environment(key: str) -> str:
     if not value:
         raise TypeError(f"{key} must be a string")
     return value
+
+
+def _variable_value_type(value: Any) -> str:
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, list):
+        return "array"
+    if isinstance(value, dict):
+        return "object"
+    return "string"
 
 
 def _write(stdout: TextIO, event: dict[str, object]) -> None:

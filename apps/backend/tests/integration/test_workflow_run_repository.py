@@ -163,6 +163,64 @@ def test_debug_command_receipt_survives_repository_recreation(tmp_path: Path) ->
     )
 
 
+def test_variable_tracking_pages_large_values_and_clears_finished_run(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "variable-tracking.sqlite3"
+    migrate_database(database)
+    repository = SqlAlchemyWorkflowRuns(create_session_factory(database))
+    clock = datetime(2026, 9, 15, tzinfo=UTC)
+    service = WorkflowRunService(repository, clock=lambda: clock)
+    service.start(_start())
+    large = "起" + "中" * 70_000 + "末尾可检索"
+    for index in range(501):
+        repository.append_event(
+            "run-1",
+            "execution:variable_changed",
+            {
+                "variable_name": "large" if index == 0 else "count",
+                "old_value": None,
+                "new_value": large if index == 0 else index,
+                "node_name": "设置变量",
+                "operation": "create" if index == 0 else "update",
+                "value_type": "string" if index == 0 else "number",
+            },
+            now=clock,
+            node_id="set",
+            execution_id=f"execution-{index}",
+        )
+
+    first, total, next_cursor, through = service.variable_tracking(
+        "run-1", limit=500
+    )
+    assert len(first) == 500
+    assert total == 501
+    assert next_cursor == 500
+    assert through == 501
+    second, _, final_cursor, _ = service.variable_tracking(
+        "run-1", cursor=next_cursor, limit=500, through_sequence=through
+    )
+    assert len(second) == 1
+    assert final_cursor is None
+    filtered, filtered_total, _, _ = service.variable_tracking(
+        "run-1", query="末尾可检索"
+    )
+    assert filtered_total == 1
+    assert filtered[0]["new_value"] == large
+    assert service.variable_tracking_value(
+        "run-1", sequence=1, side="new_value"
+    ) == large
+
+    service.finish("run-1", status="completed", cleanup_completed=True)
+    service.clear_variable_tracking("run-1")
+    cleared, cleared_total, _, cleared_through = service.variable_tracking(
+        "run-1", through_sequence=through
+    )
+    assert cleared == []
+    assert cleared_total == 0
+    assert cleared_through == through
+
+
 def test_node_success_and_event_roll_back_in_one_transaction(tmp_path: Path) -> None:
     database = tmp_path / "atomic.sqlite3"
     migrate_database(database)

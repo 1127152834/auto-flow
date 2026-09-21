@@ -267,6 +267,7 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     assert stale.json()["success"] is False
 
     second = pauses[-1]
+    large_debug_value = "起" + "中" * 70_000 + "末尾可检索"
     changed = client.post(
         f"/api/workflows/{workflow['id']}/debug/variables",
         json={
@@ -277,6 +278,7 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
             "changes": [
                 {"name": "count", "value": 7},
                 {"name": "manual", "value": {"ready": True}},
+                {"name": "large", "value": large_debug_value},
             ],
         },
     )
@@ -290,12 +292,32 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     second = pauses[-1]
     assert second["node_id"] == "second"
     assert second["controlRevision"] == 3
-    assert second["variables"] == {"count": 7, "manual": {"ready": True}}
+    assert second["variables"]["count"] == 7
+    assert second["variables"]["manual"] == {"ready": True}
+    assert second["variables"]["large"]["externalized"] is True
+    assert second["variables"]["large"]["size"] == len(
+        json.dumps(large_debug_value, ensure_ascii=False, separators=(",", ":")).encode()
+    )
+    assert second["variables"]["large"]["artifactId"]
+    assert second["variables"]["large"]["sha256"]
+    assert "末尾可检索" in second["variables"]["large"]["preview"]
+    large_debug_size = len(
+        json.dumps(large_debug_value, ensure_ascii=False, separators=(",", ":")).encode()
+    )
+    summarized_large_change = {
+        "name": "large",
+        "value": {
+            "externalized": True,
+            "size": large_debug_size,
+            "preview": second["variables"]["large"]["preview"],
+        },
+    }
     variable_lookup = client.get("/api/events/commands/debug-variables-1")
     assert variable_lookup.status_code == 200
     assert variable_lookup.json()["changes"] == [
         {"name": "count", "value": 7},
         {"name": "manual", "value": {"ready": True}},
+        summarized_large_change,
     ]
 
     resumed = client.post(
@@ -316,6 +338,67 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     assert run["status"] == "completed"
     assert client.get("/api/events/commands/debug-step-1").json()["action"] == "step"
     assert client.get("/api/events/commands/debug-resume-1").json()["action"] == "resume"
+    tracking = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking?variable=count"
+    )
+    assert tracking.status_code == 200, tracking.text
+    tracking_body = tracking.json()
+    assert [row["new_value"] for row in tracking_body["tracking"]] == [0, 1, 7, 2]
+    assert [row["operation"] for row in tracking_body["tracking"]] == [
+        "create",
+        "update",
+        "update",
+        "update",
+    ]
+    tracked_sequence = tracking_body["tracking"][2]["sequence"]
+    tracked_value = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking/values",
+        params={"sequence": tracked_sequence, "side": "new_value"},
+    )
+    assert tracked_value.json() == {
+        "runId": "debug-http-run",
+        "sequence": tracked_sequence,
+        "key": "new_value",
+        "value": 7,
+    }
+    exported_tracking = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking/export",
+        params={"throughSequence": tracking_body["throughSequence"]},
+    )
+    assert exported_tracking.status_code == 200
+    exported_tracking_rows = [
+        json.loads(line) for line in exported_tracking.text.splitlines() if line
+    ]
+    assert len(exported_tracking_rows) == 6
+    assert next(
+        row["new_value"]
+        for row in exported_tracking_rows
+        if row["variable_name"] == "large"
+    ) == large_debug_value
+    large_tracking = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking?variable=large"
+    ).json()["tracking"][0]
+    assert large_tracking["new_value"] is None
+    assert "new_value" in large_tracking["largeValues"]
+    assert client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking/values",
+        params={"sequence": large_tracking["sequence"], "side": "new_value"},
+    ).json()["value"] == large_debug_value
+    diagnostic_artifacts = [
+        artifact
+        for artifact in client.get(
+            "/api/workflow-runs/debug-http-run/artifacts"
+        ).json()["items"]
+        if artifact["purpose"] == "diagnostic"
+    ]
+    assert len(diagnostic_artifacts) >= 2
+    assert all(artifact["size"] == large_debug_size for artifact in diagnostic_artifacts)
+    assert all(artifact["sha256"] for artifact in diagnostic_artifacts)
+    workflow_tracking = client.get(
+        f"/api/workflows/{workflow['id']}/variable-tracking"
+    )
+    assert workflow_tracking.status_code == 200
+    assert workflow_tracking.json()["count"] == 6
 
     started_at_second = client.post(
         f"/api/workflows/{workflow['id']}/execute",
@@ -386,6 +469,7 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     assert restored_variables.json()["changes"] == [
         {"name": "count", "value": 7},
         {"name": "manual", "value": {"ready": True}},
+        summarized_large_change,
     ]
     conflicting_retry = client.post(
         f"/api/workflows/{workflow['id']}/debug/step",
@@ -398,6 +482,21 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     )
     assert conflicting_retry.status_code == 409
     assert conflicting_retry.json()["error"] == "commandId 已用于不同请求"
+    cleared_tracking = client.delete(
+        "/api/workflow-runs/debug-http-run/variable-tracking"
+    )
+    assert cleared_tracking.json()["runId"] == "debug-http-run"
+    assert client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking",
+        params={"throughSequence": tracking_body["throughSequence"]},
+    ).json()["tracking"] == []
+    workflow_clear = client.delete(
+        f"/api/workflows/{workflow['id']}/variable-tracking"
+    )
+    assert workflow_clear.json()["message"] == "变量追踪记录已清空"
+    assert client.get(f"/api/workflows/{workflow['id']}/variable-tracking").json()[
+        "tracking"
+    ] == []
 
 
 def test_external_webhook_resumes_real_worker_without_sidecar_token(

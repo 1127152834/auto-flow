@@ -109,6 +109,10 @@ class WorkflowRunRepository(Protocol):
         self, command_id: str
     ) -> tuple[str, dict[str, Any], int] | None: ...
 
+    def clear_variable_tracking(
+        self, run_id: str, *, now: datetime
+    ) -> WorkflowRunEvent: ...
+
 
 def _sanitize_profile(value: Any) -> Any:
     if isinstance(value, dict):
@@ -273,6 +277,111 @@ class WorkflowRunService:
         self.get(run_id)
         events = self._repository.list_events(run_id, 0, 1_000_000)
         return events[-1].sequence if events else 0
+
+    def variable_tracking(
+        self,
+        run_id: str,
+        *,
+        cursor: int = 0,
+        limit: int = 100,
+        through_sequence: int | None = None,
+        query: str | None = None,
+        variable: str | None = None,
+        operation: str | None = None,
+        value_type: str | None = None,
+    ) -> tuple[list[dict[str, Any]], int, int | None, int]:
+        if cursor < 0 or limit < 1 or limit > 500:
+            raise WorkflowRunError(
+                "RUN_VARIABLE_PAGE_INVALID", "变量诊断分页参数无效", 422
+            )
+        if operation not in {None, "create", "update"}:
+            raise WorkflowRunError(
+                "RUN_VARIABLE_FILTER_INVALID", "变量诊断操作筛选无效", 422
+            )
+        rows, maximum = self._variable_tracking_rows(run_id)
+        through = maximum if through_sequence is None else through_sequence
+        if through < 0 or through > maximum:
+            raise WorkflowRunError(
+                "RUN_VARIABLE_CURSOR_INVALID", "变量诊断截止位置无效", 422
+            )
+        needle = query.casefold() if query else None
+        filtered = [
+            row
+            for row in rows
+            if row["sequence"] <= through
+            and (variable is None or row["variable_name"] == variable)
+            and (operation is None or row["operation"] == operation)
+            and (value_type is None or row["value_type"] == value_type)
+            and (
+                needle is None
+                or needle
+                in json.dumps(row, ensure_ascii=False, separators=(",", ":")).casefold()
+            )
+        ]
+        page = filtered[cursor : cursor + limit]
+        next_cursor = cursor + len(page) if cursor + len(page) < len(filtered) else None
+        return copy.deepcopy(page), len(filtered), next_cursor, through
+
+    def variable_tracking_value(
+        self, run_id: str, *, sequence: int, side: str
+    ) -> Any:
+        if side not in {"old_value", "new_value"}:
+            raise WorkflowRunError(
+                "RUN_VARIABLE_VALUE_INVALID", "变量诊断值方向无效", 422
+            )
+        rows, _ = self._variable_tracking_rows(run_id)
+        row = next((item for item in rows if item["sequence"] == sequence), None)
+        if row is None:
+            raise WorkflowRunError(
+                "RUN_VARIABLE_NOT_FOUND", "变量诊断记录不存在", 404
+            )
+        return copy.deepcopy(row[side])
+
+    def clear_variable_tracking(self, run_id: str) -> None:
+        self.get(run_id)
+        self._repository.clear_variable_tracking(run_id, now=self._clock())
+
+    def _variable_tracking_rows(
+        self, run_id: str
+    ) -> tuple[list[dict[str, Any]], int]:
+        self.get(run_id)
+        events = self._repository.list_events(run_id, 0, 1_000_000)
+        relevant = [
+            event
+            for event in events
+            if event.type
+            in {"execution:variable_changed", "execution:variables_cleared"}
+        ]
+        maximum = relevant[-1].sequence if relevant else 0
+        cleared_after = max(
+            (
+                event.sequence
+                for event in relevant
+                if event.type == "execution:variables_cleared"
+            ),
+            default=0,
+        )
+        rows: list[dict[str, Any]] = []
+        for event in relevant:
+            if event.type != "execution:variable_changed" or event.sequence <= cleared_after:
+                continue
+            payload = event.payload
+            rows.append(
+                {
+                    "sequence": event.sequence,
+                    "executionId": event.execution_id
+                    or str(payload.get("executionId") or f"{run_id}-{event.sequence}"),
+                    "timestamp": event.occurred_at.isoformat(),
+                    "variable_name": str(payload.get("variable_name") or ""),
+                    "old_value": copy.deepcopy(payload.get("old_value")),
+                    "new_value": copy.deepcopy(payload.get("new_value")),
+                    "node_id": event.node_id or str(payload.get("node_id") or ""),
+                    "node_name": str(payload.get("node_name") or ""),
+                    "operation": str(payload.get("operation") or "update"),
+                    "value_type": str(payload.get("value_type") or "unknown"),
+                }
+            )
+        return rows, maximum
 
     def results(self, run_id: str) -> list[dict[str, Any]]:
         self.get(run_id)

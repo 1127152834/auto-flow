@@ -44,6 +44,7 @@ _SENSITIVE_WEBHOOK_HEADERS = {
     "x-csrf-token",
     "proxy-authorization",
 }
+_MAX_INLINE_DIAGNOSTIC_BYTES = 64 * 1024
 
 
 class WorkflowWorkers(Protocol):
@@ -648,7 +649,7 @@ class WorkflowRunCoordinator:
             ):
                 error = "暂停标识或控制修订已失效"
             receipt = {
-                **dict(request),
+                **_debug_receipt_request(request),
                 "workflowId": workflow_id,
                 "success": error is None,
                 "error": error,
@@ -1993,6 +1994,33 @@ def _required_string(values: Mapping[str, Any], key: str) -> str:
     if not isinstance(value, str) or not value:
         raise WorkflowRunError("RUN_REQUEST_INVALID", f"{key} 不能为空", 422)
     return value
+
+
+def _debug_receipt_request(request: Mapping[str, Any]) -> dict[str, Any]:
+    receipt = copy.deepcopy(dict(request))
+    changes = receipt.get("changes")
+    if not isinstance(changes, list):
+        return receipt
+    for change in changes:
+        if not isinstance(change, dict) or "value" not in change:
+            continue
+        encoded = json.dumps(
+            change["value"],
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+        ).encode()
+        if len(encoded) <= _MAX_INLINE_DIAGNOSTIC_BYTES:
+            continue
+        preview = encoded[:90].decode(errors="replace")
+        if len(encoded) > 180:
+            preview += "…" + encoded[-90:].decode(errors="replace")
+        change["value"] = {
+            "externalized": True,
+            "size": len(encoded),
+            "preview": preview,
+        }
+    return receipt
 
 
 def _required_int(values: Mapping[str, Any], key: str) -> int:

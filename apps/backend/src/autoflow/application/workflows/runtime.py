@@ -233,6 +233,7 @@ class _WorkflowScheduler:
             )
 
         execution_id = str(uuid4())
+        node_label = str(node.data.get("label") or node.type)
         execution_context = _execution_context(self.context)
         async with self.event_binding_lock:
             self.context.current_node_id = node.id
@@ -247,6 +248,11 @@ class _WorkflowScheduler:
                 },
             )
             self.context.bind_node_artifacts()
+        tracking_token = self.context.begin_variable_tracking(
+            node_id=node.id,
+            node_name=node_label,
+            execution_id=execution_id,
+        )
         raw_config = node.data.get("config")
         config = (
             dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
@@ -319,6 +325,16 @@ class _WorkflowScheduler:
             )
         if not _is_json_value(result.data):
             result = ModuleResult(success=False, error="节点结果包含无法序列化的数据")
+        for change in self.context.end_variable_tracking(tracking_token):
+            await _publish(
+                self.context,
+                {
+                    "type": "execution:variable_changed",
+                    "nodeId": node.id,
+                    "executionId": execution_id,
+                    **change,
+                },
+            )
         reported_result = _reported_result(result, self.context)
         await _publish(
             self.context,

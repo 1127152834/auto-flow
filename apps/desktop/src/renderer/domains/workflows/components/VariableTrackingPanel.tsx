@@ -115,7 +115,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
       setLoading(false)
       if (result.success && result.data?.runId === runId) {
         setTrackingRecords(result.data.tracking); setTotal(result.data.total)
-        setNextCursor(result.data.nextCursor); cutoff.current = result.data.throughSequence
+        setNextCursor(result.data.nextCursor ?? null); cutoff.current = result.data.throughSequence
         setReadError('')
         if (changed) {
           confirmedFilter.current = filterKey

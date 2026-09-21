@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
@@ -322,6 +323,7 @@ class ExecutionContext:
     should_continue: bool = False
     stop_workflow: bool = False
     stop_reason: str = ""
+    variable_tracking_enabled: bool = False
     _node_uses_sensitive_values: bool = field(default=False, repr=False)
     _node_sensitive_context: ContextVar[bool] = field(
         default_factory=lambda: ContextVar("workflow_node_sensitive", default=False),
@@ -331,6 +333,10 @@ class ExecutionContext:
         default_factory=lambda: ContextVar(
             "workflow_node_artifacts", default=(False, None)
         ),
+        repr=False,
+    )
+    _variable_tracking_context: ContextVar[dict[str, Any] | None] = field(
+        default_factory=lambda: ContextVar("workflow_variable_tracking", default=None),
         repr=False,
     )
 
@@ -374,6 +380,14 @@ class ExecutionContext:
     ) -> None:
         if self.cancellation is not None:
             self.cancellation.raise_if_cancelled()
+        tracking = self._variable_tracking_context.get()
+        previous_values = tracking["values"] if tracking is not None else None
+        existed = isinstance(previous_values, dict) and name in previous_values
+        old_value = (
+            copy.deepcopy(previous_values.get(name))
+            if isinstance(previous_values, dict)
+            else None
+        )
         self.variables[name] = value
         effective_sensitive = (
             self.node_uses_sensitive_values if sensitive is None else sensitive
@@ -382,6 +396,53 @@ class ExecutionContext:
             self.sensitive_variables.add(name)
         else:
             self.sensitive_variables.discard(name)
+        if tracking is not None and isinstance(previous_values, dict):
+            old_sensitive = name in tracking["sensitive"]
+            new_sensitive = name in self.sensitive_variables
+            if not existed or old_value != value or old_sensitive != new_sensitive:
+                tracking["changes"].append(
+                    {
+                        "variable_name": name,
+                        "old_value": "***" if old_sensitive else old_value,
+                        "new_value": "***" if new_sensitive else copy.deepcopy(value),
+                        "node_id": tracking["nodeId"],
+                        "node_name": tracking["nodeName"],
+                        "executionId": tracking["executionId"],
+                        "operation": "update" if existed else "create",
+                        "value_type": _variable_value_type(value),
+                    }
+                )
+            previous_values[name] = copy.deepcopy(value)
+            if new_sensitive:
+                tracking["sensitive"].add(name)
+            else:
+                tracking["sensitive"].discard(name)
+
+    def begin_variable_tracking(
+        self, *, node_id: str, node_name: str, execution_id: str
+    ) -> Token[dict[str, Any] | None] | None:
+        if not self.variable_tracking_enabled:
+            return None
+        return self._variable_tracking_context.set(
+            {
+                "nodeId": node_id,
+                "nodeName": node_name,
+                "executionId": execution_id,
+                "values": copy.deepcopy(self.variables),
+                "sensitive": set(self.sensitive_variables),
+                "changes": [],
+            }
+        )
+
+    def end_variable_tracking(
+        self, token: Token[dict[str, Any] | None] | None
+    ) -> list[dict[str, Any]]:
+        if token is None:
+            return []
+        tracking = self._variable_tracking_context.get()
+        changes = copy.deepcopy(tracking["changes"]) if tracking is not None else []
+        self._variable_tracking_context.reset(token)
+        return changes
 
     @property
     def node_uses_sensitive_values(self) -> bool:
@@ -415,3 +476,17 @@ class ExecutionContext:
     async def send_progress(self, message: str, level: str = "info") -> None:
         if self.progress is not None:
             await self.progress(message, level)
+
+
+def _variable_value_type(value: Any) -> str:
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, list):
+        return "array"
+    if isinstance(value, dict):
+        return "object"
+    return "string"

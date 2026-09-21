@@ -23,6 +23,7 @@ from autoflow.adapters.http.workflow_runs import (
     workflow_run_command_router,
     workflow_runs_router,
     workflow_trigger_router,
+    workflow_variable_tracking_router,
 )
 from autoflow.adapters.http.workflows import workflows_router
 from autoflow.application.workflows.assistant import WorkflowAssistantService
@@ -414,6 +415,9 @@ def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
         app.include_router(workflow_mcp_router(services.mcp))
         app.router.add_event_handler("startup", services.mcp.startup)
     app.include_router(custom_modules_router(services.modules))
+    app.include_router(
+        workflow_variable_tracking_router(services.runs, services.artifact_root)
+    )
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))
     app.include_router(
