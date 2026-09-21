@@ -27,7 +27,7 @@
     "multiRunArchitectureAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md",
     "latestReport": "input-environment-follow-through.json"
   },
-  "codeCandidate": "pending-commit",
+  "codeCandidate": "4f392ed595fc42ca6310aad47106003283c615fd",
   "checks": {
     "currentLocal": "input-environment-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -48,8 +48,11 @@
     }
   },
   "ci": {
-    "status": "not_started",
-    "conclusion": null
+    "runId": 35566462369,
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35566462369",
+    "status": "queued",
+    "conclusion": null,
+    "scope": "Full regression and source/packaged checks for all three platforms, including the added packaged business-combination runner."
   },
   "historicalEvidence": [
     {

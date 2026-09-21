@@ -174,8 +174,8 @@
   "ci": {
     "runId": 35560163432,
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35560163432",
-    "status": "cancel_requested",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "cancelled",
     "attempt": 2,
     "platformReports": [
       "ci-follow-through-win32-x64.json",

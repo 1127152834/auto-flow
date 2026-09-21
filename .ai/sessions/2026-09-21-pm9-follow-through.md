@@ -31,3 +31,5 @@
 补充复审（confirmed）：新手工验收脚本无剩余实质发现；S5 方案修正参数批次 maxTasks 连续创建语义，保持单批次同时最多一个活动实例；明确历史现场核验未完成时全局准入继续关闭。两项仅设计澄清，仍未获实施批准。
 
 2026-09-21 最新校正（confirmed，来源 input-environment-follow-through.json）：XE-A23 真实包链暴露输入环境启动仍要求默认 Profile，修复为实际领取事务冻结所选环境 Profile、忽略无关默认配置、解析失败不创建 Task/lease。54 定向、ruff/mypy/OpenAPI、100 脚本、PyInstaller 和完整真实人员/邮箱/账号恢复链通过，独立复审无 P1/P2。人员预先关联另一环境且全程关联/数据版本不变；邮箱原筛选不再创建 Task，新账号仅一条。当前 204 有断言/47 无直接场景，188 partial/63 planned/0 verified。新增生产改动需要新三平台矩阵；52936b6a Windows/ARM 成功保留，Intel attempt 2 因新候选取消。S1–S5 架构仍待确认，releaseAccepted=false。
+
+交付：4f392ed595fc42ca6310aad47106003283c615fd 已推送原 PM9 分支，新三平台运行 35566462369。后续报告只更新 docs/.ai，并保留源码 hash；不得把运行中当作通过。

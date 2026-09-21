@@ -2,7 +2,7 @@
   "date": "2026-09-21",
   "status": "local_passed_new_candidate_ci_pending",
   "releaseAccepted": false,
-  "codeCandidate": "pending-commit",
+  "codeCandidate": "4f392ed595fc42ca6310aad47106003283c615fd",
   "previousCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
   "problem": "Input-environment automation validation passed, but batch start required an unrelated project default Profile; deferred resource resolution was never consumed by the scheduler.",
   "fix": "Defer source Profile selection; after revalidating selected inputs inside the claim transaction, resolve the saved environment and freeze its Profile before creating Run/Task and reserving the environment. Keep effective proxy/model/budgets; reject resolution failure without Task or leases.",
@@ -85,5 +85,12 @@
     "executableSha256": "8e525c8e2c4f85e78381763b7479d432587e62bc03f7e06b7b39a73eaa160d35",
     "error": "AssertionError [ERR_ASSERTION]: POST /api/v1/projects/aeb68fb8-5df1-4c0a-bd77-63397b3fee38/automations/27aaed18-2224-470c-8161-c52e379fd57a/batches: 422 {\"error\":{\"code\":\"VALIDATION_ERROR\",\"message\":\"运行资源配置无效\",\"details\":{\"fields\":{\"environmentPolicy.profileId\":\"请选择浏览器配置\"},\"retryable\":false,\"domainCode\":\"validation_error\"},\"requestId\":\"22c49695-fa11-4d13-9de5-16361e4a9515\"}}\n    at api (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:19:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async start (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:47:22)\n    at async sharedPersonChain (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:110:44)\n    at async checkBusinessCombinations (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:166:24)\n    at async main (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:188:27)\n    at async file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:209:90",
     "cleanup": "passed"
+  },
+  "ci": {
+    "runId": 35566462369,
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35566462369",
+    "status": "queued",
+    "conclusion": null,
+    "scope": "Full regression and source/packaged checks for all three platforms, including the added packaged business-combination runner."
   }
 }

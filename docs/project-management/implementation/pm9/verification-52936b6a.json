@@ -51,8 +51,8 @@
   "ci": {
     "runId": 35560163432,
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35560163432",
-    "status": "cancel_requested",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "cancelled",
     "attempt": 2,
     "evidenceCommitPolicy": "Production source, existing CI tests and configuration remain exactly 52936b6a. Subsequent changes include documentation and a standalone local manual acceptance script not invoked by that CI; its own file hash and ARM packaged execution are recorded separately. No CI claim is made for this new script.",
     "attempt1IntelReport": "ci-follow-through-attempt-1-darwin-x64.json"
