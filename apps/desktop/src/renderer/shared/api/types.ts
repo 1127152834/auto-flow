@@ -5,6 +5,7 @@ import type { ProjectFileBridge } from '../../../shared/project-files'
 import type { SettingsBridge } from '../../../shared/settings'
 import type { AutomationStudioBridge } from '../../../shared/automation-studio'
 import type { RuntimeBridge, SidecarStatus } from '../../../shared/runtime'
+import type { StudioPlatformBridge } from '../../../shared/studio-platform'
 
 export type { SidecarStatus } from '../../../shared/runtime'
 
@@ -34,7 +35,7 @@ export type KernelOperation = components['schemas']['KernelOperationRead']
 export type KernelOperationList = components['schemas']['KernelOperationList']
 export type KernelRef = components['schemas']['KernelRefRead']
 
-export type AutoflowBridge = Partial<SettingsBridge & AutomationStudioBridge & ProjectFileBridge & GoogleSheetsBridge & ExternalLinkBridge> & RuntimeBridge & {
+export type AutoflowBridge = Partial<SettingsBridge & AutomationStudioBridge & ProjectFileBridge & GoogleSheetsBridge & ExternalLinkBridge & StudioPlatformBridge> & RuntimeBridge & {
   getSidecarStatus: () => Promise<SidecarStatus>
   restartSidecar: () => Promise<SidecarStatus>
   copyProxyCredentials?: (request: { proxyId: string; protocol: 'http' | 'socks5'; format: 'username' | 'password' | 'url' }) => Promise<{ copied: true }>

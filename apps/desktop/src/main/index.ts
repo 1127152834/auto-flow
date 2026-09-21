@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto'
 import { realpathSync } from 'node:fs'
-import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeImage, Notification, shell } from 'electron'
 import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
@@ -8,6 +8,7 @@ import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
 import { createOpenExternalLinkHandler } from './ipc/external-links'
 import { createConnectGoogleSheetsHandler } from './google-desktop'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
+import { createStudioPlatformActionHandler } from './ipc/studio-platform'
 import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
 import { DesktopSettingsStore, SettingsError } from './settings/store'
@@ -116,6 +117,15 @@ async function createWindow(): Promise<void> {
     getSidecarStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
     request: fetch,
     showItemInFolder: path => shell.showItemInFolder(path),
+  }))
+  ipcMain.removeHandler('autoflow:studio-platform-action')
+  ipcMain.handle('autoflow:studio-platform-action',createStudioPlatformActionHandler({
+    allowed:event=>studio.isStudioSender(event),
+    writeText:value=>clipboard.writeText(value),
+    readText:()=>clipboard.readText(),
+    writeImage:path=>{const image=nativeImage.createFromPath(path);if(image.isEmpty())return false;clipboard.writeImage(image);return true},
+    beep:()=>shell.beep(),
+    notify:request=>{const notification=new Notification({title:request.title,body:request.message,silent:!request.playSound});notification.show();setTimeout(()=>notification.close(),request.duration*1000)},
   }))
   const actions: Record<string, (...args: unknown[]) => Promise<unknown>> = {
     'get': () => settings!.snapshot(),

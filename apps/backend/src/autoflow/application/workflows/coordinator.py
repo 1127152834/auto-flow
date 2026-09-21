@@ -105,6 +105,7 @@ class WorkflowRunCoordinator:
         self._input_prompts: dict[str, dict[str, str]] = {}
         self._js_requests: dict[str, dict[str, str]] = {}
         self._speech_requests: dict[str, dict[str, str]] = {}
+        self._desktop_action_requests: dict[str, dict[str, str]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
         self._command_waiters: dict[str, asyncio.Future[None]] = {}
 
@@ -520,6 +521,47 @@ class WorkflowRunCoordinator:
             if state is not None and status in {"completed", "failed", "expired"}:
                 state["status"] = status
             return
+        if event_type == "execution:desktop_action":
+            request_id = _required_string(event, "requestId")
+            action_node_id = _required_string(event, "nodeId")
+            payload = {
+                key: copy.deepcopy(value)
+                for key, value in event.items()
+                if key not in {"type", "runId"}
+            }
+            self._desktop_action_requests[request_id] = {
+                "requestId": request_id,
+                "workflowId": run.workflow_id,
+                "runId": run_id,
+                "nodeId": action_node_id,
+                "status": "pending",
+            }
+            persisted = self._repository.append_event(
+                run_id,
+                event_type,
+                payload,
+                now=datetime_now(),
+                node_id=action_node_id,
+                execution_id=_optional_string(event.get("executionId")),
+                run_patch={"currentNodeId": action_node_id},
+            )
+            await self._events.publish(
+                event_type,
+                {
+                    **payload,
+                    "runId": run_id,
+                    "workflowId": run.workflow_id,
+                    "sequence": persisted.sequence,
+                },
+            )
+            return
+        if event_type == "execution:desktop_action_closed":
+            request_id = _required_string(event, "requestId")
+            state = self._desktop_action_requests.get(request_id)
+            status = _required_string(event, "status")
+            if state is not None and status in {"completed", "failed", "expired"}:
+                state["status"] = status
+            return
         if event_type == "artifact:registered":
             self._repository.register_artifact(
                 run_id=run_id,
@@ -675,6 +717,10 @@ class WorkflowRunCoordinator:
                 return self._claim_tts(command_id, fingerprint, data)
             if event == "tts_result":
                 return await self._complete_tts(command_id, fingerprint, data)
+            if event == "desktop_action_claim":
+                return self._claim_desktop_action(command_id, fingerprint, data)
+            if event == "desktop_action_result":
+                return await self._complete_desktop_action(command_id, fingerprint, data)
             if event != "input_prompt_result":
                 receipt = {
                     "commandId": command_id,
@@ -904,6 +950,84 @@ class WorkflowRunCoordinator:
         self._command_receipts[command_id] = (fingerprint, receipt, 200)
         return copy.deepcopy(receipt), 200
 
+    def _claim_desktop_action(
+        self, command_id: str, fingerprint: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        request_id = data.get("requestId")
+        claim_id = data.get("claimId")
+        if (
+            not isinstance(request_id, str)
+            or not request_id
+            or not isinstance(claim_id, str)
+            or not claim_id
+            or set(data) != {"requestId", "claimId"}
+        ):
+            return self._remember_command(
+                command_id, fingerprint, "平台操作请求及领取标识无效", 422
+            )
+        state = self._desktop_action_requests.get(request_id)
+        if state is None or state["status"] not in {"pending", "claimed"}:
+            return self._remember_command(
+                command_id, fingerprint, "平台操作请求不存在或已结束", 409
+            )
+        if state["status"] == "claimed" and state.get("claimId") != claim_id:
+            return self._remember_command(
+                command_id, fingerprint, "平台操作已由其它客户端领取", 409
+            )
+        state["status"] = "claimed"
+        state["claimId"] = claim_id
+        receipt = {"commandId": command_id, "success": True, "requestId": request_id}
+        self._command_receipts[command_id] = (fingerprint, receipt, 200)
+        return copy.deepcopy(receipt), 200
+
+    async def _complete_desktop_action(
+        self, command_id: str, fingerprint: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        request_id = data.get("requestId")
+        claim_id = data.get("claimId")
+        success = data.get("success")
+        error = data.get("error")
+        allowed = {"requestId", "claimId", "success", "value", "error"}
+        if (
+            not isinstance(request_id, str)
+            or not request_id
+            or not isinstance(claim_id, str)
+            or not claim_id
+            or not isinstance(success, bool)
+            or not set(data).issubset(allowed)
+            or (not success and (not isinstance(error, str) or not error.strip()))
+        ):
+            return self._remember_command(
+                command_id, fingerprint, "平台操作结果格式无效", 422
+            )
+        state = self._desktop_action_requests.get(request_id)
+        if (
+            state is None
+            or state["status"] != "claimed"
+            or state.get("claimId") != claim_id
+        ):
+            return self._remember_command(
+                command_id, fingerprint, "平台操作结果不属于当前领取者", 409
+            )
+        waiter = asyncio.get_running_loop().create_future()
+        self._command_waiters[command_id] = waiter
+        try:
+            await self._workers.send_command(
+                state["runId"],
+                {"type": "desktop_action_result", "commandId": command_id, **dict(data)},
+            )
+            await asyncio.wait_for(waiter, timeout=10)
+        except (RuntimeError, TimeoutError):
+            return self._remember_command(
+                command_id, fingerprint, "平台操作结果未被运行进程确认", 503
+            )
+        finally:
+            self._command_waiters.pop(command_id, None)
+        state["status"] = "completed" if success else "failed"
+        receipt = {"commandId": command_id, "success": True, "requestId": request_id}
+        self._command_receipts[command_id] = (fingerprint, receipt, 200)
+        return copy.deepcopy(receipt), 200
+
     def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
         record = self._command_receipts.get(command_id)
         if record is None:
@@ -933,6 +1057,15 @@ class WorkflowRunCoordinator:
         keys = ("requestId", "workflowId", "nodeId", "status", "claimId")
         return {key: state[key] for key in keys if key in state}
 
+    def desktop_action_state(self, request_id: str) -> dict[str, str]:
+        state = self._desktop_action_requests.get(request_id)
+        if state is None:
+            raise WorkflowRunError(
+                "DESKTOP_ACTION_NOT_FOUND", "平台操作请求不存在", 404
+            )
+        keys = ("requestId", "workflowId", "nodeId", "status", "claimId")
+        return {key: state[key] for key in keys if key in state}
+
     async def on_worker_exit(self, run_id: str, return_code: int) -> None:
         # WorkflowWorkerManager invokes this only after the process tree and its
         # private directory are gone. Resource release is the final cleanup step.
@@ -944,6 +1077,9 @@ class WorkflowRunCoordinator:
             if state["runId"] == run_id and state["status"] in {"pending", "claimed"}:
                 state["status"] = "expired"
         for state in self._speech_requests.values():
+            if state["runId"] == run_id and state["status"] in {"pending", "claimed"}:
+                state["status"] = "expired"
+        for state in self._desktop_action_requests.values():
             if state["runId"] == run_id and state["status"] in {"pending", "claimed"}:
                 state["status"] = "expired"
         if self._resources.owner_id == run_id:

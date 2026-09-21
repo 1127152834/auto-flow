@@ -49,6 +49,14 @@ class FakeCommands:
             "status": "pending",
         }
 
+    def desktop_action_state(self, request_id: str) -> dict[str, str]:
+        return {
+            "requestId": request_id,
+            "workflowId": "flow",
+            "nodeId": "clipboard",
+            "status": "pending",
+        }
+
 
 def test_input_command_http_contract_uses_camel_case_and_queryable_receipts() -> None:
     commands = FakeCommands()
@@ -96,6 +104,13 @@ def test_input_command_http_contract_uses_camel_case_and_queryable_receipts() ->
         "requestId": "speech-1",
         "workflowId": "flow",
         "nodeId": "voice",
+        "status": "pending",
+        "claimId": None,
+    }
+    assert client.get("/api/events/desktop-actions/platform-1").json() == {
+        "requestId": "platform-1",
+        "workflowId": "flow",
+        "nodeId": "clipboard",
         "status": "pending",
         "claimId": None,
     }

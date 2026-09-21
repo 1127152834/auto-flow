@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from autoflow.adapters.http.workflow_studio_schemas import (
     StudioCommandLookup,
     StudioCommandReceipt,
+    StudioDesktopActionState,
     StudioEventCommandRequest,
     StudioInputPromptState,
     StudioJsScriptState,
@@ -100,6 +101,8 @@ class StudioEventCommands(Protocol):
 
     def tts_request_state(self, request_id: str) -> dict[str, str]: ...
 
+    def desktop_action_state(self, request_id: str) -> dict[str, str]: ...
+
 
 def workflow_events_router(
     journal: StudioEventJournal, commands: StudioEventCommands | None = None
@@ -160,5 +163,12 @@ def workflow_events_router(
         )
         def get_tts_request(request_id: str) -> dict[str, str]:
             return commands.tts_request_state(request_id)
+
+        @router.get(
+            "/desktop-actions/{request_id}",
+            response_model=StudioDesktopActionState,
+        )
+        def get_desktop_action(request_id: str) -> dict[str, str]:
+            return commands.desktop_action_state(request_id)
 
     return router

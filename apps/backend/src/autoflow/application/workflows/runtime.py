@@ -588,14 +588,21 @@ async def _execute_with_cancellation(
     token = context.cancellation
     if token is None:
         return await operation
-    operation_task = asyncio.create_task(operation)
+    async def run_operation() -> tuple[ModuleResult, bool]:
+        result = await operation
+        return result, context.node_uses_sensitive_values
+
+    operation_task = asyncio.create_task(run_operation())
     cancellation_task = asyncio.create_task(_wait_until_cancelled(context))
     try:
         done, _ = await asyncio.wait(
             {operation_task, cancellation_task}, return_when=asyncio.FIRST_COMPLETED
         )
         if operation_task in done:
-            return operation_task.result()
+            result, used_sensitive_values = operation_task.result()
+            if used_sensitive_values:
+                context.mark_sensitive_use()
+            return result
         operation_task.cancel()
         await asyncio.gather(operation_task, return_exceptions=True)
         token.raise_if_cancelled()

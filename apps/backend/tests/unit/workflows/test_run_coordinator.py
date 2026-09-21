@@ -771,6 +771,58 @@ async def test_js_script_claim_and_result_are_owned_idempotent_commands(
 
     await coordinator.on_worker_event(
         {
+            "type": "execution:desktop_action",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-platform",
+            "requestId": "platform-1",
+            "action": "clipboard_read_text",
+            "payload": {},
+        }
+    )
+    platform_claim = {"requestId": "platform-1", "claimId": "studio-1"}
+    assert (await coordinator.submit_event_command(
+        "platform-claim", "desktop_action_claim", platform_claim
+    ))[1] == 200
+    platform_result = {**platform_claim, "success": True, "value": "原文"}
+    completing_platform = asyncio.create_task(
+        coordinator.submit_event_command(
+            "platform-result", "desktop_action_result", platform_result
+        )
+    )
+    for _ in range(100):
+        if len(workers.commands) == 3:
+            break
+        await asyncio.sleep(0)
+    assert workers.commands[-1] == (
+        "js-run",
+        {
+            "type": "desktop_action_result",
+            "commandId": "platform-result",
+            **platform_result,
+        },
+    )
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:command_applied",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "commandId": "platform-result",
+            "requestId": "platform-1",
+        }
+    )
+    assert (await completing_platform)[1] == 200
+    assert coordinator.desktop_action_state("platform-1") == {
+        "requestId": "platform-1",
+        "workflowId": "js-flow",
+        "nodeId": "script",
+        "status": "completed",
+        "claimId": "studio-1",
+    }
+
+    await coordinator.on_worker_event(
+        {
             "type": "execution:js_script",
             "runId": "js-run",
             "workflowId": "js-flow",

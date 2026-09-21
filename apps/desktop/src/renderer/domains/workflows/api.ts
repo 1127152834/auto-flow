@@ -1086,6 +1086,9 @@ export const jsScriptApi = {
 export const speechApi = {
   getState: (requestId: string) => getClaimedRequestState('/events/tts-requests',requestId,'语音'),
 }
+export const desktopActionApi = {
+  getState: (requestId: string) => getClaimedRequestState('/events/desktop-actions', requestId, '平台操作'),
+}
 
 
 export type VariableTrackingRecord = components['schemas']['StudioVariableTrackingRecord']

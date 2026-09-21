@@ -18,6 +18,7 @@ from autoflow.application.workflows.executors.production import (
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import (
     CustomModuleResult,
+    DesktopActionResult,
     ExecutionContext,
     InputPromptRequest,
     JsScriptResult,
@@ -129,6 +130,7 @@ async def _run_in_session(
         context.input_prompts = interactive
         context.browser_scripts = interactive
         context.speech = interactive
+        context.desktop_actions = interactive
         registry = build_production_executor_registry()
         nested = _WorkerNestedWorkflows(
             command.get("workflowDependencies"),
@@ -495,6 +497,7 @@ class _WorkerNestedWorkflows:
         child.input_prompts = interactive
         child.browser_scripts = interactive
         child.speech = interactive
+        child.desktop_actions = interactive
         child.nested_workflows = self
         if self.custom_modules is not None:
             child.custom_modules = self.custom_modules.for_context(child, child_sink)
@@ -666,6 +669,7 @@ class _WorkerCustomModules:
         child.input_prompts = interactive
         child.browser_scripts = interactive
         child.speech = interactive
+        child.desktop_actions = interactive
         child.nested_workflows = self._nested_workflows
         child.custom_modules = self.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
@@ -807,6 +811,7 @@ class _WorkerCanvasSubflows:
         child.input_prompts = interactive
         child.browser_scripts = interactive
         child.speech = interactive
+        child.desktop_actions = interactive
         child.nested_workflows = self._nested_workflows
         if isinstance(self._parent.custom_modules, _WorkerCustomModules):
             child.custom_modules = self._parent.custom_modules.for_context(
@@ -977,6 +982,9 @@ class _WorkerCommandBus:
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
         self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
+        self._pending_desktop_actions: dict[
+            str, asyncio.Future[DesktopActionResult]
+        ] = {}
 
     def for_context(self, context: ExecutionContext) -> _BoundInputPrompts:
         return _BoundInputPrompts(self, context)
@@ -1110,8 +1118,51 @@ class _WorkerCommandBus:
                     }
                 )
 
+    async def request_desktop_action(
+        self,
+        context: ExecutionContext,
+        action: str,
+        payload: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> DesktopActionResult:
+        if context.events is None:
+            raise RuntimeError("平台操作事件服务不可用")
+        request_id = str(uuid4())
+        future: asyncio.Future[DesktopActionResult] = self._loop.create_future()
+        self._pending_desktop_actions[request_id] = future
+        await context.events.publish(
+            {
+                "type": "execution:desktop_action",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "action": action,
+                "payload": dict(payload),
+            }
+        )
+        status = "expired"
+        try:
+            result = await asyncio.wait_for(future, timeout_seconds)
+            status = "completed" if result.success else "failed"
+            return result
+        finally:
+            self._pending_desktop_actions.pop(request_id, None)
+            await context.events.publish(
+                {
+                    "type": "execution:desktop_action_closed",
+                    "requestId": request_id,
+                    "nodeId": context.current_node_id,
+                    "executionId": context.current_execution_id,
+                    "status": status,
+                }
+            )
+
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type == "desktop_action_result":
+            self._apply_desktop_action_result(command)
+            return
         if command_type == "tts_result":
             self._apply_speech_result(command)
             return
@@ -1158,6 +1209,40 @@ class _WorkerCommandBus:
             return
         future.set_result(
             SpeechResult(success, error if isinstance(error, str) else None)
+        )
+        _write(
+            self._stdout,
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
+    def _apply_desktop_action_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        future = (
+            self._pending_desktop_actions.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if future is None or future.done() or not isinstance(command_id, str):
+            return
+        success = command.get("success")
+        error = command.get("error")
+        if not isinstance(success, bool):
+            return
+        if not success and (not isinstance(error, str) or not error.strip()):
+            return
+        future.set_result(
+            DesktopActionResult(
+                success=success,
+                value=command.get("value"),
+                error=error if isinstance(error, str) else None,
+            )
         )
         _write(
             self._stdout,
@@ -1220,6 +1305,9 @@ class _WorkerCommandBus:
         for speech_future in self._pending_speech.values():
             if not speech_future.done():
                 speech_future.cancel()
+        for desktop_future in self._pending_desktop_actions.values():
+            if not desktop_future.done():
+                desktop_future.cancel()
 
 
 class _BoundInputPrompts:
@@ -1265,6 +1353,20 @@ class _BoundInputPrompts:
             rate=rate,
             pitch=pitch,
             volume=volume,
+            timeout_seconds=timeout_seconds,
+        )
+
+    async def perform(
+        self,
+        action: str,
+        payload: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> DesktopActionResult:
+        return await self._bus.request_desktop_action(
+            self._context,
+            action,
+            payload,
             timeout_seconds=timeout_seconds,
         )
 

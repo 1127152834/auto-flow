@@ -3344,6 +3344,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/events/desktop-actions/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Desktop Action */
+        get: operations["get_desktop_action_api_events_desktop_actions__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/environment": {
         parameters: {
             query?: never;
@@ -8978,6 +8995,22 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioDesktopActionState */
+        StudioDesktopActionState: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "claimed" | "completed" | "failed" | "expired";
+            /** Claimid */
+            claimId?: string | null;
+        };
         /** StudioEventCommandRequest */
         StudioEventCommandRequest: {
             /** Commandid */
@@ -10039,6 +10072,40 @@ export type components = {
             commandId: string;
             /** Changes */
             changes: components["schemas"]["StudioDebugVariableChange"][];
+        };
+        /** StudioDesktopActionRequest */
+        StudioDesktopActionRequest: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "clipboard_write_text" | "clipboard_write_image" | "clipboard_read_text" | "beep" | "notification";
+            /** Payload */
+            payload: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** StudioDesktopActionResult */
+        StudioDesktopActionResult: {
+            /** Requestid */
+            requestId: string;
+            /** Claimid */
+            claimId: string;
+            /** Success */
+            success: boolean;
+            /** @default null */
+            value: components["schemas"]["JsonValue"];
+            /**
+             * Error
+             * @default null
+             */
+            error: string | null;
         };
         /** StudioExecutionLogEntry */
         StudioExecutionLogEntry: {
@@ -23152,6 +23219,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudioSpeechState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_desktop_action_api_events_desktop_actions__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioDesktopActionState"];
                 };
             };
             /** @description Validation Error */

@@ -34,6 +34,7 @@ from .data_structure import (
     StringSubstringExecutor,
     StringTrimExecutor,
 )
+from .desktop_platform import DESKTOP_PLATFORM_EXECUTORS
 from .dict_advanced import (
     DictDeepCopyExecutor,
     DictFilterExecutor,
@@ -174,6 +175,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     TextToSpeechExecutor,
     PythonScriptExecutor,
     RunCommandExecutor,
+    *DESKTOP_PLATFORM_EXECUTORS,
     RunWorkflowFileExecutor,
     SubflowExecutor,
     WaitPageLoadExecutor,

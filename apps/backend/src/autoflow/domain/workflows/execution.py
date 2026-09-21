@@ -187,6 +187,23 @@ class SpeechGateway(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class DesktopActionResult:
+    success: bool
+    value: Any = None
+    error: str | None = None
+
+
+class DesktopActionGateway(Protocol):
+    async def perform(
+        self,
+        action: str,
+        payload: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> DesktopActionResult: ...
+
+
+@dataclass(frozen=True, slots=True)
 class NestedWorkflowResult:
     reference: str
     name: str
@@ -263,6 +280,7 @@ class ExecutionContext:
     input_prompts: InputPromptGateway | None = None
     browser_scripts: BrowserScriptGateway | None = None
     speech: SpeechGateway | None = None
+    desktop_actions: DesktopActionGateway | None = None
     nested_workflows: NestedWorkflowGateway | None = None
     canvas_subflows: CanvasSubflowGateway | None = None
     custom_modules: CustomModuleGateway | None = None

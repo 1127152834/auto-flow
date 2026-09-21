@@ -96,7 +96,8 @@ let picked: ObjectValue | null = null
 let similarPicked: ObjectValue | null = null
 const speechRequests = new Map<string, components['schemas']['StudioSpeechState']>()
 const jsRequests = new Map<string, components['schemas']['StudioJsScriptState']>()
-let run: { pauseId:string|null; controlRevision:number; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; runId: string; documentId: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+const platformRequests = new Map<string, components['schemas']['StudioDesktopActionState']>()
+let run: { pauseId:string|null; controlRevision:number; platform?: {requestId:string;nodeId:string;variableName:string}; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; runId: string; documentId: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 type CommandRecord = { fingerprint:string; response:ObjectValue; status:number }
 const commandResults = new Map<string, CommandRecord>()
@@ -221,6 +222,7 @@ function finish(status: string) {
   if (run.input) { const request = inputRequests.get(run.input.requestId); if (request) request.status = 'expired' }
   if (run.js) { const request = jsRequests.get(run.js.requestId); if (request && ['pending', 'claimed'].includes(request.status)) request.status = 'expired' }
   if (run.tts) { const request = speechRequests.get(run.tts.requestId); if (request && ['pending','claimed'].includes(request.status)) request.status = 'expired' }
+  if (run.platform) { const request = platformRequests.get(run.platform.requestId); if (request && ['pending','claimed'].includes(request.status)) request.status = 'expired' }
   const terminalStatus = status === 'completed' ? 'completed' : status === 'failed' ? 'failed' : 'stopped'
   const record = db.runs[run.runId]
   if (record) persist({ ...db, runs: { ...db.runs, [run.runId]: { ...record, status: terminalStatus, finishedAt: new Date().toISOString() } } })
@@ -351,9 +353,27 @@ function submitSpeech(event: string, data: Json | undefined): Response {
   else finish('failed')
   return response({success:true,requestId:data.requestId})
 }
+function submitPlatform(event:string,data:Json|undefined):Response {
+  if(!data||typeof data!=='object'||Array.isArray(data)||typeof data.requestId!=='string'||typeof data.claimId!=='string'||!data.claimId.trim())return failure('平台操作请求及领取标识无效',422)
+  const pending=run?.platform,state=platformRequests.get(data.requestId)
+  if(!run||!pending||pending.requestId!==data.requestId||!state)return failure('平台操作请求不存在或已结束',409)
+  if(event==='desktop_action_claim'){
+    if(state.status==='claimed'&&state.claimId===data.claimId)return response({success:true,requestId:data.requestId})
+    if(state.status!=='pending')return failure('平台操作已由其它客户端领取',409)
+    state.status='claimed';state.claimId=data.claimId;return response({success:true,requestId:data.requestId})
+  }
+  if(state.status!=='claimed'||state.claimId!==data.claimId)return failure('平台操作结果不属于当前领取者',409)
+  if(typeof data.success!=='boolean'||(!data.success&&(typeof data.error!=='string'||!data.error.trim())))return failure('平台操作结果格式无效',422)
+  clearTimeout(run.timer);state.status=data.success?'completed':'failed'
+  emitMockEvent('execution:node_complete',{workflowId:run.id,runId:run.runId,nodeId:pending.nodeId,success:data.success})
+  if(!data.success){finish('failed');return response({success:true,requestId:data.requestId})}
+  if(pending.variableName)writeRunVariable(pending.variableName,data.value??'',pending.nodeId,'[Mock] 平台操作结果')
+  run.platform=undefined;run.index++;tick();return response({success:true,requestId:data.requestId})
+}
 function applyCommand(event: string, data: Json | undefined): Response {
   if (event === 'tts_claim' || event === 'tts_result') return submitSpeech(event,data)
   if (event === 'js_script_claim' || event === 'js_script_result') return submitJs(event, data)
+  if(event==='desktop_action_claim'||event==='desktop_action_result')return submitPlatform(event,data)
   if (event === 'input_prompt_result') return submitInput(data)
   const payload = data && typeof data === 'object' && !Array.isArray(data) ? data : {}
   if (event === 'execution_stop') return stopRun(payload.workflowId,payload.runId)
@@ -423,6 +443,20 @@ function tick(skipBreakpoint = false) {
         emitRunLog(current, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待语音结果超过60秒',isSystemLog:true})
         finish('failed')
       },60000)
+      return
+    }
+    if (['set_clipboard','get_clipboard','play_sound','system_notification'].includes(String(node.type))) {
+      const requestId=crypto.randomUUID(),moduleType=String(node.type)
+      const action=moduleType==='set_clipboard'?(data?.contentType==='image'?'clipboard_write_image':'clipboard_write_text')
+        :moduleType==='get_clipboard'?'clipboard_read_text':moduleType==='play_sound'?'beep':'notification'
+      const payload:ObjectValue=action==='clipboard_write_image'?{path:data?.imagePath??''}
+        :action==='clipboard_write_text'?{text:data?.textContent??''}
+          :action==='beep'?{count:data?.beepCount??1,interval:data?.beepInterval??0.3}
+            :{title:data?.notifyTitle??'WebRPA通知',message:data?.notifyMessage??'',duration:data?.duration??5,playSound:data?.playSound??true}
+      current.platform={requestId,nodeId,variableName:moduleType==='get_clipboard'&&typeof data?.variableName==='string'?data.variableName:''}
+      platformRequests.set(requestId,{requestId,workflowId:current.id,nodeId,status:'pending',claimId:null})
+      emitMockEvent('execution:desktop_action',{requestId,workflowId:current.id,nodeId,action,payload})
+      current.timer=setTimeout(()=>{if(run!==current||current.platform?.requestId!==requestId)return;finish('failed')},60000)
       return
     }
     if (String(node.type) === 'input_prompt') {
@@ -595,6 +629,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (method !== 'GET') return failure('脚本状态查询只接受 GET', 405)
       const state = jsRequests.get(decodeURIComponent(jsQuery[1]))
       return state ? response(state) : failure('脚本请求不存在', 404)
+    }
+    const platformQuery = path.match(/^\/events\/desktop-actions\/([^/]+)$/)
+    if (platformQuery) {
+      if (method !== 'GET') return failure('平台操作状态查询只接受 GET', 405)
+      const state = platformRequests.get(decodeURIComponent(platformQuery[1]))
+      return state ? response(state) : failure('平台操作请求不存在', 404)
     }
     const inputQuery = path.match(/^\/events\/input-prompts\/([^/]+)$/)
     if (inputQuery) {

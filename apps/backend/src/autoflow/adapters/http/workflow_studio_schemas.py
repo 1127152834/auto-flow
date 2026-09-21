@@ -568,6 +568,38 @@ class StudioSpeechResult(StudioRequestClaim):
         return self
 
 
+class StudioDesktopActionState(StudioClaimedRequestState):
+    pass
+
+
+class StudioDesktopActionRequest(ApiModel):
+    model_config = ConfigDict(strict=True, allow_inf_nan=False)
+
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    node_id: str = Field(min_length=1, pattern=r"\S")
+    action: Literal[
+        "clipboard_write_text",
+        "clipboard_write_image",
+        "clipboard_read_text",
+        "beep",
+        "notification",
+    ]
+    payload: dict[str, JsonValue]
+
+
+class StudioDesktopActionResult(StudioRequestClaim):
+    success: bool = Field(strict=True)
+    value: JsonValue = None
+    error: str | None = None
+
+    @model_validator(mode="after")
+    def validate_error(self) -> Self:
+        if not self.success and not (self.error and self.error.strip()):
+            raise ValueError("失败结果必须包含错误")
+        return self
+
+
 class StudioJsScriptResult(StudioJsScriptClaim):
     success: bool = Field(strict=True)
     result: JsonValue = None
