@@ -10,7 +10,10 @@ from fastapi.responses import JSONResponse
 from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
+from autoflow.adapters.http.image_assets import image_assets_router
+from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.application.android.console import AndroidConsole
 from autoflow.application.android.fleet import AndroidFleet
@@ -59,6 +62,9 @@ from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
+from autoflow.application.workflows.bundles import WorkflowBundleService
+from autoflow.application.workflows.image_assets import ImageAssetStore
+from autoflow.application.workflows.local_files import LocalWorkflowFiles
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
 from autoflow.bootstrap.config import Settings
@@ -324,6 +330,12 @@ def create_app(
         credential_store=active_credentials,
     )
     workflow_services.runs.recover_interrupted()
+    local_workflows = LocalWorkflowFiles(paths.workspace)
+    app.state.local_workflows = local_workflows
+    image_assets = ImageAssetStore(paths.workspace)
+    app.state.image_assets = image_assets
+    workflow_bundles = WorkflowBundleService(workflow_services.modules, image_assets)
+    app.state.workflow_bundles = workflow_bundles
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
     android_runs = CurrentAndroidRunBoundary()
@@ -555,6 +567,9 @@ def create_app(
         instance_id=settings.instance_id,
     )
     register_workflow_routes(app, workflow_services)
+    app.include_router(local_workflows_router(local_workflows))
+    app.include_router(image_assets_router(image_assets))
+    app.include_router(workflow_bundles_router(workflow_bundles))
     app.include_router(android_router(android))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(

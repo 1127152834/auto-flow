@@ -110,3 +110,19 @@ it('does not delete from another connection after a pending confirmation', async
   await waitFor(() => expect(screen.queryByRole('dialog', { name: '删除工作流' })).toBeNull())
   expect(next.mock.calls.some(([input]) => String(input).includes('/delete'))).toBe(false)
 })
+it('opens the resolved workflow folder through the desktop host', async () => {
+  const runStudioPlatformAction = vi.fn(async () => ({ ok: true as const, value: {} }))
+  window.autoflow = { ...window.autoflow, runStudioPlatformAction }
+  setStudioTransport(async input => {
+    const path = new URL(String(input)).pathname
+    if (path.endsWith('/default-folder')) return Response.json({ folder: '/tmp/workflows' })
+    if (path.endsWith('/list')) return Response.json({ workflows: [] })
+    if (path.endsWith('/open-folder')) return Response.json({ success: true, folder: '/tmp/workflows' })
+    throw new Error(`Unexpected request ${path}`)
+  })
+  const onLog = vi.fn()
+  render(<LocalWorkflowDialog isOpen onClose={vi.fn()} onLog={onLog} beforeReplace={vi.fn(async () => true)} />)
+  fireEvent.click(await screen.findByRole('button', { name: '打开位置' }))
+  await waitFor(() => expect(runStudioPlatformAction).toHaveBeenCalledWith({ action: 'open_path', path: '/tmp/workflows' }))
+  expect(onLog).toHaveBeenCalledWith('success', expect.stringContaining('/tmp/workflows'))
+})

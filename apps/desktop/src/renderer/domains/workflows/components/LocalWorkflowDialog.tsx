@@ -166,11 +166,12 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: L
         body: JSON.stringify({ folder })
       })
       const data = await response.json()
-      if (data.success) {
-        onLog('success', `已打开工作流保存位置：${data.folder || folder}`)
-      } else {
-        onLog('error', `打开文件夹失败：${data.error || '未知错误'}`)
-      }
+      if (!response.ok || data.success !== true || typeof data.folder !== 'string') throw new Error(data.error || '目录解析失败')
+      const openPath = window.autoflow?.runStudioPlatformAction
+      if (!openPath) throw new Error('当前环境无法打开本地目录')
+      const opened = await openPath({ action: 'open_path', path: data.folder })
+      if (!opened.ok) throw new Error(opened.error.message)
+      onLog('success', `已打开工作流保存位置：${data.folder}`)
     } catch (e) {
       onLog('error', `打开文件夹出错：${e}`)
     }
