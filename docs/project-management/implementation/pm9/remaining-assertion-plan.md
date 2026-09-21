@@ -2,7 +2,7 @@
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；新增能力端口的实施设计为 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 214 条有明确范围的断言，37 条尚无已定位断言；188 partially_verified / 63 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 216 条有明确范围的断言，35 条尚无已定位断言；188 partially_verified / 63 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 ## 本轮已经执行的补证
 
@@ -14,6 +14,8 @@
 - 后三组同既有相关回归共 34 passed；没有改生产实现，没有把受控网络称作 Google 实网。
 
 - DATA-SH-01 / DATA-SYNC-07：补证复现整行推送覆盖和旧响应确认新版本。已修复为原字段快照、发送登记 CAS 与原快照核验；两项目、发送中编辑和未知后新编辑三个反例 RED→GREEN；相关回归 46 passed。
+
+- DATA-SYNC-01 / DATA-SYNC-06：放弃与发送登记在两个确定性交错下竞争；晚放弃被事务 CAS 拒绝；放弃先胜后再拉取仍保留本地覆盖值。
 
 ## 先分清能力端口与测试缺口
 
@@ -28,7 +30,7 @@
 
 1–5 涉及新增冻结能力/持久协议，不属于已批准 S1–S5 的自动扩展；进入实现前按 AGENTS.md 完成具体 OpenAPI/命令规格、事务约束和垂直切片并确认。已有实现的补测试和缺陷修复继续按当前授权推进。S4 的安全要求已批准，具体 API 组合仍须实验成立，不能降级验收。
 
-## 尚无直接断言的 37 条：下一步的最小场景
+## 尚无直接断言的 35 条：下一步的最小场景
 
 每项先读取原规格对应行与所列既有测试/fixture；复用 HTTP、SQLite 和现有 transport/worker。断言包含业务值、稳定身份、版本、lease/操作事实及负面副作用；文件名或测试总数不构成覆盖。纯本地规则先定向运行，真实端到端只用于对应已接通能力。
 
@@ -53,8 +55,6 @@
 | DATA-STATE-08 | 格式错误记录仍可人工设状态，占用或未知则明确阻断 | test_project_capability_fencing.py + test_project_data_catalog.py / node_writes.py |
 | DATA-STATE-10 | 创建后设置状态失败保留 null 新记录 | test_project_capability_fencing.py + test_project_data_catalog.py / node_writes.py |
 | DATA-STATE-12 | Sheets 同步各状态不改变本地业务状态 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
-| DATA-SYNC-01 | 取消/合并未发意图与发送登记真实竞争唯一发送权 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
-| DATA-SYNC-06 | 放弃未发意图保留本地覆盖层且拉取不冲掉 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
 | DATA-SYNC-08 | 部分包确认后下一包失败，后续唤醒不丢新变化 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
 | DATA-SYNC-09 | 推送失败仍能拉取且不阻断不相关本地运行 | tests/fixtures/sheets.py + test_project_sheets_sync.py / recovery.py |
 | DATA-TABLE-08 | 系统状态不能被字段节点改型/删除/映射，业务 status 字段可共存 | test_project_capability_fencing.py + test_project_data_catalog.py / node_writes.py |

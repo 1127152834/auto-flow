@@ -419,3 +419,39 @@ def test_legacy_intent_without_field_snapshot_never_guesses_a_write(tmp_path):
             headers=new_key(), json={'expectedStatusRevision': failed['statusRevision']})
         assert response.status_code == 409 and response.json()['error']['code'] == 'SYNC_SNAPSHOT_MISSING'
         assert transport.changes() == writes
+
+
+def test_abandon_and_send_compete_for_the_same_revision(tmp_path, monkeypatch):
+    from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
+    for winner in ['send', 'abandon']:
+        transport = FakeSheetsTransport(GRID)
+        with open_sheets_table(tmp_path / winner, transport, COLUMNS) as sheets:
+            pull(sheets)
+            edit_title(sheets, sheets.records()[0], 'local-owned')
+            pending, = sync_operations(sheets, 'pending')
+            def abandon():
+                return sheets.client.post(sheets.url(f"/sync-operations/{pending['syncOperationId']}/abandon"),
+                    headers=new_key(), json={'expectedStatusRevision': pending['statusRevision'], 'reason': 'keep local'})
+            original = SqlAlchemyProjectSync.transition
+            competing = []
+            def transition(repository, operation_id, **kwargs):
+                intercept = 'failed' if winner == 'send' else 'sending'
+                if operation_id == pending['syncOperationId'] and kwargs['status'] == intercept and not competing:
+                    competing.append(True)
+                    response = push(sheets) if winner == 'send' else abandon()
+                    assert response.status_code in {200, 202}, response.text
+                return original(repository, operation_id, **kwargs)
+            with monkeypatch.context() as scoped:
+                scoped.setattr(SqlAlchemyProjectSync, 'transition', transition)
+                response = abandon() if winner == 'send' else push(sheets)
+            assert response.status_code == (412 if winner == 'send' else 202), response.text
+            operation, = sync_operations(sheets)
+            assert operation['status'] == ('confirmed' if winner == 'send' else 'failed')
+            assert transport.grid('数据')[1][1] == ('local-owned' if winner == 'send' else '第一行')
+            if winner == 'abandon':
+                assert operation['error']['code'] == 'SYNC_ABANDONED'
+                writes = transport.changes()
+                pull(sheets)
+                assert sheets.records()[0]['contentRevision'] == 2
+                assert {cell['fieldId']: cell['value'] for cell in sheets.records()[0]['values']}[sheets.field_id('title')] == 'local-owned'
+                assert transport.changes() == writes

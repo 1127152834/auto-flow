@@ -2,7 +2,7 @@
   "date": "2026-09-21",
   "status": "candidate_regression_in_progress",
   "releaseAccepted": false,
-  "codeCandidate": "pending_commit",
+  "codeCandidate": "fed0b4c17ddf142fdeff4d7efeece718ce925bf8",
   "scope": [
     "S1 frozen scoped canvas subflows",
     "S2 declared manual contract and shared UI entry",
@@ -28,7 +28,7 @@
     "scripts": "101 passed including literal named UI-test references (post-candidate evidence tooling only)",
     "ruff": "passed",
     "mypy": "402 source files passed",
-    "mapping": "251 references valid; 214 with scoped assertions, 37 with no located assertion; 188 partial / 63 planned / 0 verified",
+    "mapping": "251 references valid; 216 with scoped assertions, 35 with no located assertion; 188 partial / 63 planned / 0 verified",
     "build": "passed",
     "finalReview": {
       "findings": "4 Important, 0 Critical; all accepted and fixed; one fix pass, no second review",
@@ -56,8 +56,8 @@
   ],
   "remaining": [
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
-    "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md.",
-    "37 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
+    "35 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
     "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; latest Sheets fix is newer than that package. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",

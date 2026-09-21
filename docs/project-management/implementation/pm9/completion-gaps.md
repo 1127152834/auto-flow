@@ -1,10 +1,10 @@
 # PM9 剩余工作复核
 
-日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 0102c047；置信度：高（已运行断言），完整发行验收仍未满足。
+日期：2026-09-21；状态：confirmed（本轮能力与证据核对），PM9 仍 in_progress。当前生产源码候选 fed0b4c1；置信度：高（已运行断言），完整发行验收仍未满足。
 
-**本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 26 个真实项目 worker 场景、本机完整后端 3284 通过；Windows 定向 35577767754 原生 83 通过。完整前端重跑 5459 通过；一次独立审查的 4 项 Important 已修复，26 个真实 worker 场景复跑通过；三平台最终候选结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。这些数字不代表整项规格或安装包实机已验收。
+**本轮已接通 S1 子流程、S2 声明人工输入/目标、S3 结构化并行和 S5 两个独立 Run；S4 接通 Windows 安全新文件发布及有证明的 Job 清理。** 最终独立审查的 4 项 Important 已修复，26 个真实项目 worker 场景复跑通过；完整后端 3297 和前端 5459 通过的版本边界见报告。后续补证又修复 Windows Job 成员退出和 Sheets 字段/原版本快照，原生 92 项与 Sheets 相关 46 项定向通过，fed0b4c1 完整三平台验证运行中。最新结果见 [本轮报告](runtime-capabilities-follow-through.json) / [verification.json](verification.json)。这些数字不代表整项规格或实机安装包已经验收。
 
-当前可执行缺口：Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 37 条尚未定位直接断言（214 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
+当前可执行缺口：Windows 已有文件覆盖/追加/安全读取仍拒绝；251 条中 35 条尚未定位直接断言（216 条具备已明确范围的断言），其余也须逐项闭合生产/UI 子条件。外部条件：当前打包 Sheets/OAuth 授权、签名公证身份及三平台完整实机/原生专项。历史 PM6 Sheets 实网与凭据证据、ARM 安装和 Excel 原生子条件继续有效。releaseAccepted=false，草稿 PR 不合并、不发布。
 
 下列初次复核、旧候选和阶段段落保留时间顺序，关于“未获批”“单槽”“S1–S5 未实现”的旧结论已由本轮与文末各片记录取代，不是当前阻塞。
 

@@ -9157,11 +9157,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_abandon_and_send_compete_for_the_same_revision",
+            "scope": "HTTP/SQLite 实际发送/放弃竞争两个交错，先胜方持有同一状态修订发送权；发送先胜时晚放弃返回 412，不改确认结果。受控 Sheets transport。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：取消/合并未发意图与发送登记真实竞争唯一发送权；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "完整打包 ProjectRun→Google Sheets 和真实远端交错仍未验收；上述可控事务边界与本地覆盖层已有直接证据。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -9423,11 +9430,18 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_abandon_and_send_compete_for_the_same_revision",
+            "scope": "放弃未发送意图后拉取：原本地新值、内容版本 2 保留，不新增远端写，操作为 SYNC_ABANDONED。受控 Sheets transport。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：放弃未发意图保留本地覆盖层且拉取不冲掉；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "完整打包 ProjectRun→Google Sheets 和真实远端交错仍未验收；上述可控事务边界与本地覆盖层已有直接证据。"
           }
         ],
         "statusBeforeReview": "partially_verified"

@@ -7,8 +7,8 @@
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
-    "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md.",
-    "37 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
+    "35 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
     "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; latest Sheets fix is newer than that package. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
@@ -16,7 +16,7 @@
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
-    "status": "review_fixes_verified_final_matrix_pending",
+    "status": "candidate_regression_in_progress",
     "plan": "docs/superpowers/plans/2026-09-21-pm9-follow-through.md",
     "mappingReview": "test-mapping-review.md",
     "newProductionChanges": true,
@@ -27,7 +27,7 @@
     "multiRunArchitectureAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md",
     "latestReport": "runtime-capabilities-follow-through.json"
   },
-  "codeCandidate": "pending_commit",
+  "codeCandidate": "fed0b4c17ddf142fdeff4d7efeece718ce925bf8",
   "checks": {
     "currentLocal": "runtime-capabilities-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -49,9 +49,12 @@
     }
   },
   "ci": {
-    "status": "pending",
+    "status": "in_progress",
+    "runId": 35584034884,
+    "headSha": "fed0b4c17ddf142fdeff4d7efeece718ce925bf8",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35584034884",
     "conclusion": null,
-    "scope": "Final capability candidate full three-platform regression and source/packaged checks; dispatch after final review."
+    "scope": "Full three-platform candidate after Windows member-handle exit and Sheets field-snapshot/send-CAS fixes; supersedes incomplete 18435502 matrix 35580548930."
   },
   "historicalEvidence": [
     {
@@ -81,6 +84,6 @@
       "S4-new-files-and-job-subset"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "source_verified_final_matrix_pending"
+    "status": "targeted_verified_full_regression_in_progress"
   }
 }

@@ -682,6 +682,7 @@ class SheetsSyncService:
             sync_operation_id,
             status="failed",
             error={"code": "SYNC_ABANDONED", "message": reason.strip()},
+            expected_status_revision=expected,
         )
 
     # --------------------------------------------------------------------- helpers

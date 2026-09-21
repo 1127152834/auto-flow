@@ -1484,9 +1484,9 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -1534,9 +1534,9 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2602,8 +2602,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 214,
-    "withNoLocatedAssertion": 37,
+    "withAssertions": 216,
+    "withNoLocatedAssertion": 35,
     "statuses": {
       "partially_verified": 188,
       "planned": 63
