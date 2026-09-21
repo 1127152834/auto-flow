@@ -51,9 +51,12 @@
     }
   },
   "ci": {
-    "status": "ready_for_dispatch",
+    "status": "in_progress",
     "conclusion": null,
-    "scope": "ccef90e9 matrix 35584940782 failed only at B023 test-fixture lint on all three platforms; parameterized fixture and full no-cache lint passed. Production source remains 82c067c9."
+    "runId": 35585675170,
+    "headSha": "d21197ad995090611b178b24e6f671513eca3f60",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35585675170",
+    "scope": "Full three-platform regression of production source 82c067c9 with corrected parameterized test fixture; ccef90e9 B023 failure retained as superseded."
   },
   "historicalEvidence": [
     {

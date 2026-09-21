@@ -96,9 +96,19 @@ def start(instance, executable, on_event):
 
 
 @pytest.mark.asyncio
-async def test_worker_waits_for_durable_callback_before_ack_and_completion(tmp_path):
+@pytest.mark.parametrize("spawn_delay", [0, 3.2])
+async def test_worker_waits_for_durable_callback_before_ack_and_completion(tmp_path, monkeypatch, spawn_delay):
     instance, executable = manager(tmp_path)
+    # This checks commit ordering, not a three-second cold-start performance target.
+    instance._start_timeout = 10
     arrived, committed = asyncio.Event(), asyncio.Event()
+    spawn = asyncio.create_subprocess_exec
+
+    async def delayed_spawn(*args, **kwargs):
+        await asyncio.sleep(spawn_delay)
+        return await spawn(*args, **kwargs)
+
+    monkeypatch.setattr(asyncio, 'create_subprocess_exec', delayed_spawn)
 
     async def persist(event):
         assert event['nodeId'] == 'open'
@@ -106,15 +116,25 @@ async def test_worker_waits_for_durable_callback_before_ack_and_completion(tmp_p
         await committed.wait()
 
     task = asyncio.create_task(start(instance, executable, persist))
-    await asyncio.wait_for(arrived.wait(), 3)
-    assert instance.busy()
-    assert not (tmp_path / 'proof').exists()
-    committed.set()
-    result = await asyncio.wait_for(task, 5)
-    assert result.status == 'succeeded'
-    assert result.cleanup_confirmed
-    assert (tmp_path / 'proof').read_text() == 'after-ack'
-    assert not instance.busy()
+    waiting = asyncio.create_task(arrived.wait())
+    try:
+        done, _ = await asyncio.wait({task, waiting}, timeout=15, return_when=asyncio.FIRST_COMPLETED)
+        if task in done:
+            await task  # Report the actual startup/ownership/protocol failure.
+        assert waiting in done, f"event missing; worker states: {[(w.ready, w.process is not None) for w in instance._workers.values()]}"
+        assert instance.busy()
+        assert not (tmp_path / 'proof').exists()
+        committed.set()
+        result = await asyncio.wait_for(task, 5)
+        assert result.status == 'succeeded'
+        assert result.cleanup_confirmed
+        assert (tmp_path / 'proof').read_text() == 'after-ack'
+        assert not instance.busy()
+    finally:
+        waiting.cancel()
+        if not task.done():
+            task.cancel()
+        await asyncio.gather(waiting, task, return_exceptions=True)
 
 
 @pytest.mark.asyncio
