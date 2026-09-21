@@ -89,7 +89,7 @@
   "ci": {
     "runId": 35566462369,
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35566462369",
-    "status": "queued",
+    "status": "in_progress",
     "conclusion": null,
     "scope": "Full regression and source/packaged checks for all three platforms, including the added packaged business-combination runner."
   }
