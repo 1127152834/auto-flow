@@ -1337,7 +1337,7 @@ async def test_native_windows_new_output_preserves_handle_boundaries(artifacts, 
 
 @pytest.mark.asyncio
 @pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows path parsing')
-@pytest.mark.parametrize('name', ['../escape.txt', 'file.txt:secret', 'CON.txt', 'name. ', r'\\server\share\result.txt', r'C:relative.txt', r'\device.txt'])
+@pytest.mark.parametrize('name', ['../escape.txt', 'file.txt:secret', 'CON.txt', 'CONIN$', 'CONOUT$', 'name. ', r'\\server\share\result.txt', r'C:relative.txt', r'\device.txt'])
 async def test_native_windows_output_rejects_ambiguous_paths(artifacts, name):
     store, repository = artifacts
     writer = store.writer(run_id='run-artifacts', node_id='export', execution_id='native', purpose='result')

@@ -58,10 +58,6 @@ def _windows_process_api():
     kernel.OpenProcess.restype = wintypes.HANDLE
     kernel.GetProcessTimes.argtypes = [wintypes.HANDLE, *[ctypes.POINTER(wintypes.FILETIME)] * 4]
     kernel.GetProcessTimes.restype = wintypes.BOOL
-    kernel.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
-    kernel.TerminateProcess.restype = wintypes.BOOL
-    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
-    kernel.WaitForSingleObject.restype = wintypes.DWORD
     kernel.CloseHandle.argtypes = [wintypes.HANDLE]
     kernel.CloseHandle.restype = wintypes.BOOL
     return kernel
@@ -83,30 +79,6 @@ def _windows_process_birth(pid: int) -> int | None:
         return None
     try:
         return _windows_handle_birth(kernel, handle)
-    finally:
-        kernel.CloseHandle(handle)
-
-
-def terminate_verified_windows_process(pid: int, birth: int, timeout: float) -> None:
-    """Check identity, terminate, and confirm exit on one kernel handle."""
-    if type(pid) is not int or pid <= 0 or type(birth) is not int or birth <= 0:
-        raise ValueError('Verified process identity required')
-    kernel = _windows_process_api()
-    handle = kernel.OpenProcess(0x1000 | 0x0001 | 0x00100000, False, pid)
-    if not handle:
-        if ctypes.get_last_error() == 87:  # type: ignore[attr-defined]
-            return  # Invalid PID proves this original process has exited.
-        raise OSError('Process ownership is unavailable')
-    try:
-        current = _windows_handle_birth(kernel, handle)
-        if current is None:
-            raise OSError('Process birth identity is unavailable')
-        if current != birth:
-            return  # PID recycled: never terminate the replacement process.
-        if kernel.WaitForSingleObject(handle, 0) != 0 and not kernel.TerminateProcess(handle, 1) and kernel.WaitForSingleObject(handle, 0) != 0:
-            raise OSError('Owned process termination was denied')
-        if kernel.WaitForSingleObject(handle, max(0, int(timeout * 1000))) != 0:
-            raise TimeoutError('Owned process exit was not confirmed')
     finally:
         kernel.CloseHandle(handle)
 

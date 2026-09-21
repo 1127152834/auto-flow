@@ -140,12 +140,11 @@ def _verified_process(kernel, job, pid: int, birth: int, *, owned_launcher: bool
             raise OSError("Worker process does not own this Job: birth mismatch")
         if not kernel.IsProcessInJob(process, job, ctypes.byref(member)):
             raise ctypes.WinError(ctypes.get_last_error())  # type: ignore[attr-defined]
-        if not member.value:
-            # Windows venv python.exe is a launcher outside its child's Job.
-            # Only the live supervisor may attach its directly owned, birth-
-            # verified launcher. Recovery never extends Job membership.
-            if not owned_launcher or not kernel.AssignProcessToJobObject(job, process):
-                raise OSError("Worker process does not own this Job: not a member")
+        # Windows venv python.exe is a launcher outside its child's Job.
+        # Only the live supervisor may attach its directly owned, birth-
+        # verified launcher. Recovery never extends Job membership.
+        if not member.value and (not owned_launcher or not kernel.AssignProcessToJobObject(job, process)):
+            raise OSError("Worker process does not own this Job: not a member")
         return process
     except BaseException:
         kernel.CloseHandle(process)

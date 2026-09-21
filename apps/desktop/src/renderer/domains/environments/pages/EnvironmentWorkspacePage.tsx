@@ -38,7 +38,7 @@ const sections: Record<View, { title: string; note: string }> = {
   // 当前现场 composes the manual and automatic partitions the way the approved
   // artboard does, so its heading and subtitle are built from live counts below.
   running: { title: '当前现场', note: '' },
-  manual: { title: '等待人工现场', note: '保留浏览器、输入和租约；执行槽已释放。' },
+  manual: { title: '等待人工现场', note: '保留浏览器、输入和租约；现场保留期间仍占用运行容量。' },
   saved: { title: '持久环境', note: '工作流结束节点明确保存的记录，不是正在运行的会话。' },
   defaults: { title: '项目默认资源', note: '用于未单独指定对应资源的方案。' },
 }

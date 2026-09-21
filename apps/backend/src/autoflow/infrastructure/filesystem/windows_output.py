@@ -10,7 +10,7 @@ import ctypes
 import os
 import re
 from contextlib import contextmanager
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from uuid import uuid4
 
 from autoflow.domain.workflows.runs import WorkflowRunError
@@ -80,11 +80,7 @@ def output_target(root: Path, output_path: str) -> Path:
             or part in {".", ".."}
             or part[-1] in " ."
             or any(ord(char) < 32 or char in '<>:"|?*' for char in part)
-            or re.fullmatch(
-                r"(CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³])(?:\..*)?",
-                part,
-                re.IGNORECASE,
-            )
+            or PureWindowsPath(part).is_reserved()
         ):
             raise _invalid()
     target = raw if raw.is_absolute() else root / raw

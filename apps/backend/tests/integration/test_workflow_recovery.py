@@ -279,3 +279,19 @@ browser_worker_main(run)
                 if process.returncode is None:
                     process.kill()
                 await process.wait()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows junctions')
+async def test_native_windows_recovery_rejects_junction_before_reading_ownership(tmp_path):
+    import subprocess
+    run_id = str(uuid4())
+    run = tmp_path / 'workflow-runs' / run_id
+    run.parent.mkdir()
+    outside = tmp_path / 'outside'
+    outside.mkdir()
+    (outside / 'keep').write_text('foreign')
+    await asyncio.to_thread(subprocess.run, ['cmd', '/c', 'mklink', '/J', str(run), str(outside)], capture_output=True, check=True)
+    with pytest.raises(RuntimeError, match='ownership path'):
+        await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel')
+    assert (outside / 'keep').read_text() == 'foreign'

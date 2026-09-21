@@ -321,44 +321,27 @@ async def test_exit_race_never_releases_a_process_without_confirming_exit(monkey
         assert process.returncode == 0
 
 
-@pytest.mark.parametrize('birth,can_read,can_terminate,waits,error', [(123, True, True, [258, 0], None), (456, True, True, [], None), (123, False, True, [], OSError), (123, True, False, [258, 258], OSError), (123, True, True, [258, 258], TimeoutError)])
-def test_windows_termination_binds_identity_and_signal_to_same_handle(monkeypatch, birth, can_read, can_terminate, waits, error):
-    from autoflow.infrastructure.process import browser_processes as module
+@pytest.mark.parametrize('birth,member,owned,allowed', [(123, True, False, True), (123, False, False, False), (123, False, True, True), (456, True, True, False), (None, True, True, False)])
+def test_windows_job_verifies_same_process_handle_and_only_live_owner_assigns(monkeypatch, birth, member, owned, allowed):
+    from autoflow.infrastructure.process import windows_job as module
     calls = []
-    replies = iter(waits)
-    def read_times(handle, creation, *_args):
-        calls.append(('birth', handle))
-        creation._obj.dwLowDateTime = birth
-        return can_read
-    def terminate(handle, _code):
-        calls.append(('terminate', handle)); return can_terminate
-    def close(handle): calls.append(('close', handle))
-    kernel = SimpleNamespace(OpenProcess=lambda *_: 9001, GetProcessTimes=read_times, TerminateProcess=terminate, WaitForSingleObject=lambda *_: next(replies), CloseHandle=close)
-    monkeypatch.setattr(module.ctypes, 'WinDLL', lambda *_args, **_kwargs: kernel, raising=False)
-    if error:
-        with pytest.raises(error): module.terminate_verified_windows_process(700, 123, .01)
-    else: module.terminate_verified_windows_process(700, 123, .01)
+    def membership(process, job, result):
+        calls.append(('member', process, job))
+        result._obj.value = member
+        return True
+    def assign(job, process):
+        calls.append(('assign', process, job))
+        return True
+    kernel = SimpleNamespace(OpenProcess=lambda *_: 9001, IsProcessInJob=membership, AssignProcessToJobObject=assign, CloseHandle=lambda value: calls.append(('close', value)))
+    def read(_kernel, process):
+        calls.append(('birth', process))
+        return birth
+    monkeypatch.setattr(module, '_windows_handle_birth', read)
+    if allowed:
+        assert module._verified_process(kernel, 8001, 700, 123, owned_launcher=owned) == 9001
+        kernel.CloseHandle(9001)
+    else:
+        with pytest.raises(OSError):
+            module._verified_process(kernel, 8001, 700, 123, owned_launcher=owned)
     assert calls[0] == ('birth', 9001) and calls[-1] == ('close', 9001)
-    assert (('terminate', 9001) in calls) == (can_read and birth == 123)
-
-
-@pytest.mark.asyncio
-@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows handles')
-async def test_native_windows_wrong_birth_is_preserved_and_verified_handle_terminates():
-    from autoflow.infrastructure.process.browser_processes import (
-        process_birth,
-        terminate_verified_windows_process,
-    )
-    process = await asyncio.create_subprocess_exec(sys.executable, '-c', 'import time; time.sleep(30)')
-    try:
-        birth = process_birth(process.pid)
-        assert birth is not None
-        await asyncio.to_thread(terminate_verified_windows_process, process.pid, birth + 1, 1)
-        await asyncio.sleep(.05)
-        assert process.returncode is None
-        await asyncio.to_thread(terminate_verified_windows_process, process.pid, birth, 1)
-        await asyncio.wait_for(process.wait(), 2)
-        assert process.returncode is not None
-    finally:
-        if process.returncode is None: process.kill()
-        await process.wait()
+    assert (('assign', 9001, 8001) in calls) == (birth == 123 and not member and owned)

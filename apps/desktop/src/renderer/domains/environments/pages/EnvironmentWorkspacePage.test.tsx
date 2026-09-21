@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import type { StreamingApiClient } from '../../../shared/api/client'
 import type { ProjectView } from '../../projects/types'
@@ -95,10 +96,13 @@ it('opens on the current scene, keeps the two overview shortcuts, and lists live
   // 人工处理在运行记录里只有一份详情，环境页不再自己开一份浏览器
   enter.click()
   expect(onNavigate).toHaveBeenCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
+  await userEvent.click(screen.getByRole('tab', { name: '等待人工 1' }))
+  expect(screen.getByText('保留浏览器、输入和租约；现场保留期间仍占用运行容量。')).toBeVisible()
   screen.getByRole('button', { name: '继续原任务' }).click()
   expect(onNavigate).toHaveBeenLastCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
   screen.getByRole('button', { name: '明确结束' }).click()
   expect(onNavigate).toHaveBeenLastCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
+  await userEvent.click(screen.getByRole('tab', { name: '运行环境 1' }))
   // 任务与批次入口是可点击的真实跳转，不是编造的编号
   screen.getAllByRole('button', { name: '查看任务' })[0].click()
   expect(onNavigate).toHaveBeenCalledWith({ projectId, tab: 'runs', runView: 'tasks', taskId: manualItem.taskId, taskTab: 'logs' })
