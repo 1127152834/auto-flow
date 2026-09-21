@@ -11,7 +11,7 @@
     "35 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
-    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; latest Sheets fix is newer than that package. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; current ccef90e9 package includes the latest Sheets fixes. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
     "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
@@ -28,12 +28,13 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "82c067c9",
+  "codeCandidate": "82c067c90f8ff177c932087b1b35627936b9f470",
   "checks": {
     "currentLocal": "runtime-capabilities-follow-through.json",
     "priorFixes": "follow-through.json",
     "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json",
-    "capabilityNativeArmInstall": "install-capabilities-darwin-arm64.json"
+    "capabilityNativeArmInstall": "install-capabilities-darwin-arm64.json",
+    "currentNativeArmInstall": "install-final-candidate-darwin-arm64.json"
   },
   "platforms": {
     "win32-x64": {
@@ -46,14 +47,13 @@
     },
     "darwin-arm64": {
       "status": "capability-candidate-pending",
-      "physicalInstaller": "partial capability-package evidence in install-capabilities-darwin-arm64.json; latest Sheets fix requires rebuilt package"
+      "physicalInstaller": "partial current-source package evidence in install-final-candidate-darwin-arm64.json; full physical release acceptance incomplete"
     }
   },
   "ci": {
     "status": "ready_for_dispatch",
-    "headSha": "82c067c9",
     "conclusion": null,
-    "scope": "Final three-platform candidate after targeted/full local regression. 35584034884 superseded by empty-cell and abandon-CAS fixes."
+    "scope": "ccef90e9 matrix 35584940782 failed only at B023 test-fixture lint on all three platforms; parameterized fixture and full no-cache lint passed. Production source remains 82c067c9."
   },
   "historicalEvidence": [
     {

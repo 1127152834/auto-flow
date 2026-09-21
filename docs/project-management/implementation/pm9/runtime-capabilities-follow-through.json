@@ -2,7 +2,7 @@
   "date": "2026-09-21",
   "status": "candidate_regression_in_progress",
   "releaseAccepted": false,
-  "codeCandidate": "82c067c9",
+  "codeCandidate": "82c067c90f8ff177c932087b1b35627936b9f470",
   "scope": [
     "S1 frozen scoped canvas subflows",
     "S2 declared manual contract and shared UI entry",
@@ -26,7 +26,7 @@
     "lint": "passed",
     "openapi": "passed",
     "scripts": "101 passed including literal named UI-test references (post-candidate evidence tooling only)",
-    "ruff": "passed",
+    "ruff": "passed: full ruff check . --no-cache after parametrizing B023 fixture; prior ccef90e9 full CI failed this test-only lint check",
     "mypy": "402 source files passed",
     "mapping": "251 references valid; 216 with scoped assertions, 35 with no located assertion; 188 partial / 63 planned / 0 verified",
     "build": "passed",
@@ -44,7 +44,7 @@
         "failure": "Portable ordering test stubbed Job handles but child opened the real Job; fixture corrected, final matrix will verify."
       }
     },
-    "sheetsConsistency": "60 related tests passed, 2 warnings in 26.59s after field snapshots, sending CAS, original reconciliation, explicit empty-cell extraction and abandon CAS. HTTP/SQLite and controlled transport, not Google live."
+    "sheetsConsistency": "61 passed, 2 warnings in 26.24s; same two send/abandon orderings split into pytest parameters to satisfy B023. Actual HTTP/SQLite, controlled transport, no Google live claim."
   },
   "reports": [
     "subflow-follow-through.json",
@@ -52,7 +52,8 @@
     "parallel-follow-through.json",
     "multi-run-follow-through.json",
     "multi-run-business-darwin-arm64.json",
-    "install-capabilities-darwin-arm64.json"
+    "install-capabilities-darwin-arm64.json",
+    "install-final-candidate-darwin-arm64.json"
   ],
   "remaining": [
     "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
@@ -60,7 +61,7 @@
     "35 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
     "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
     "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
-    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; latest Sheets fix is newer than that package. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM import/export and current capability-package mount/copy/launch/open and cancel checks passed; current ccef90e9 package includes the latest Sheets fixes. Full physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
     "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
   ],
   "sourceHashes": {

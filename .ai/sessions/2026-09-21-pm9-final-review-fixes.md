@@ -28,3 +28,7 @@ Sheets 空值协议补证：Google ValueRange 对读取结果省略末尾空行/
 新增数据能力方案（proposed）：docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md 明确 R1 只读结构请求、R2 删除影响事务、R3 系统 UUID 原计划核验、R4 来源增列依赖和 R5 只读观察的契约/拒绝/切片/测试；按 AGENTS.md 架构改动规则，尚未实现这五个新增端口，等待确认。已批准修复和回归不依赖此决定。
 
 本机完整回归（confirmed）：fed0b4c1 全后端 3311 passed、60 skipped、2 warnings，587.44 秒；后续空 ValueRange 与放弃 CAS 修改由 60 项相关用例、ruff/mypy 通过，源码候选 82c067c9。此前 95508bfc/fed0b4c1 两个未完成矩阵均只作被替代记录，最终矩阵在本机稳定后启动。
+
+CI 纠正（confirmed）：ccef90e9 的 35584940782 三平台均在 ruff B023 停止；之前“ruff 通过”不能覆盖最后新增的循环闭包夹具，此结论 superseded。没有修改生产逻辑或忽略规则：将两种竞争顺序改成 pytest 参数，完整 ruff check . --no-cache 通过；相关 61 passed、2 warnings（26.24s），mypy 402 文件通过。后续组合命令使用失败即停止并检查各步结果，不能以末项 mypy 的成功推断前项 lint 成功。
+
+当前 ccef90e9 ARM 包（production = 82c067c9）：新 DMG SHA256 1f6aa64deac3bfe95b5cfaa601f62bf9bf3c5bc22fdaec823f6ac86ea685573f。校验、只读挂载、隔离复制、认证侧车启动/退出均通过；真实 native open 取消/选择和 save 取消通过，未注入面板结果。报告 install-final-candidate-darwin-arm64.json，截图只显示合成项目。旧 ARM 证据保留，不虚称此包已验证完整 save/export、OAuth、签名、公证或卸载。
