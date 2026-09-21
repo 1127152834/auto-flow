@@ -1,0 +1,63 @@
+{
+  "evidenceId": "BE-B5-recognition-captcha-formal-electron",
+  "checkedAt": "2026-09-21T18:48:10.452Z",
+  "gitHead": "8720704c45ae9c63241d1fa89f75bfb017008da2",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "L8KJ4SWhEFjvyFQVtJpCE",
+  "profileId": "1ddf38e4-1482-4cdf-8cb5-f8167723cd9e",
+  "runId": "5dbad39e-ed2a-474f-8fe5-321b03042030",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行 Profile 来自主应用",
+    "通过正式画布和属性面板配置人脸识别、图片OCR、OCR验证码、滑块验证码",
+    "正式保存接口写入五节点、四条顺序连线及脱敏路径配置",
+    "真实 worker 完成人脸匹配、EasyOCR 文字识别、验证码识别填充并自动提交",
+    "CloakBrowser 真实页面确认验证码提交值为 1234、滑块位移为 35px",
+    "运行结束后 CloakBrowser 与 worker 均已清理，Profile 锁已释放"
+  ],
+  "nodes": [
+    {
+      "moduleType": "face_recognition",
+      "nodeId": "j2w16C-3Yk1I6zxHiXaic",
+      "result": {
+        "matched": true,
+        "confidence": 100,
+        "source_faces": 2,
+        "target_faces": 2,
+        "best_distance": 0
+      }
+    },
+    {
+      "moduleType": "image_ocr",
+      "nodeId": "EkIkT09c89r-BMhKEKKtn",
+      "result": {
+        "text": "AUTOFLOW\n123",
+        "length": 12
+      }
+    },
+    {
+      "moduleType": "open_page",
+      "nodeId": "Bd1FZYcbQ_tkvvdhqVgJ6"
+    },
+    {
+      "moduleType": "ocr_captcha",
+      "nodeId": "ZG9SbG2xJ97SItCFc4sED",
+      "result": {
+        "value": "1234"
+      }
+    },
+    {
+      "moduleType": "slider_captcha",
+      "nodeId": "Ux1GeAKDxyw03x00l5P0U"
+    }
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "CloakBrowser via selected main-application Profile for open_page and captcha nodes",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "externalWaiting": "screen-region OCR permission and Windows/macOS Intel remain separately unverified"
+  }
+}

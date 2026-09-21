@@ -55,11 +55,19 @@
   "observations": {
     "frozenPackageSize": "1.3 GiB",
     "reason": "EasyOCR requires torch/torchvision plus two frozen recognition models",
-    "coldStart": "macOS arm64 frozen worker first OCR run completed within 49.50 seconds"
+    "coldStart": "macOS arm64 frozen worker first OCR run completed within 49.50 seconds",
+    "formalElectron": "darwin-arm64 正式 Electron 工作流完成人脸匹配、EasyOCR 识别和后续浏览器动作"
   },
   "remaining": [
-    "正式 Electron 中通过真实 UI 保存、运行并查看两个节点的日志和结果",
     "屏幕区域 OCR 的 macOS 截屏权限与 Windows 实机验收",
     "macOS Intel 与 Windows 冻结包未验收"
-  ]
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-recognition.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-recognition-electron-hlK4ce/result.json",
+    "covers": "正式Studio真实UI配置人脸识别和图片OCR，真实worker完成匹配与EasyOCR文本读取；同一正式工作流继续执行CloakBrowser验证码链路并完成清理"
+  }
 }

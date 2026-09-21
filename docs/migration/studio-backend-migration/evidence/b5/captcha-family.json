@@ -56,7 +56,14 @@
     }
   ],
   "remaining": [
-    "正式 Electron 中通过真实 UI 保存、运行并查看两个节点的日志和结果",
     "Windows 与 macOS Intel 实机未验收"
-  ]
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-recognition.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-recognition-electron-hlK4ce/result.json",
+    "covers": "正式Studio真实UI配置OCR验证码和滑块验证码，CloakBrowser真实页面确认验证码填充、提交和35px滑动，并验证运行后清理"
+  }
 }
