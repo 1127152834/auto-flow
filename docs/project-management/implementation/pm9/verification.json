@@ -69,8 +69,8 @@
   "remainingReport": "completion-gaps.md",
   "deliveryStatus": "input_environment_fix_local_passed_new_candidate_ci_pending",
   "developmentSlice": {
-    "slice": "S3",
-    "report": "parallel-follow-through.json",
+    "slice": "S5",
+    "report": "multi-run-follow-through.json",
     "status": "source_verified_platform_pending"
   }
 }

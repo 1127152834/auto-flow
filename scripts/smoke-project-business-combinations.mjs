@@ -11,7 +11,7 @@ import { assertOutsideHistory } from './project-smoke-output.mjs'
 import { stop, waitForReady } from './smoke-sidecar.mjs'
 
 // Packaged business combinations using production HTTP and real workers.
-// Passed assertions do not imply concurrent Task, Sheets or native UI acceptance.
+// Passed assertions cover the declared concurrent scenario, not Sheets or native UI acceptance.
 export async function checkBusinessCombinations(baseUrl, token, browserVersion) {
   async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
     const response = await fetch(baseUrl + path, { method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': randomUUID() }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(60_000) })
@@ -39,12 +39,12 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
     return api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name, variables: [], nodes, edges: nodes.slice(1).map((n, i) => ({ id: randomUUID(), source: nodes[i].id, target: n.id })) })
   }
   const automations = new Map()
-  async function start(flow, inputPlan = { inputs: [] }, environmentPolicy = environment) {
-    const automation = automations.get(flow.id) ?? await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId: flow.id, inputPlan, parameterSchema: [], environmentPolicy, runPolicy })
+  async function start(flow, inputPlan = { inputs: [] }, environmentPolicy = environment, policy = runPolicy) {
+    const automation = automations.get(flow.id) ?? await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId: flow.id, inputPlan, parameterSchema: [], environmentPolicy, runPolicy: policy })
     automations.set(flow.id, automation)
     const validation = await api(`${prefix}/automations/${automation.automationId}/validation`)
     assert.equal(validation.runnable, true, JSON.stringify(validation))
-    const accepted = await api(`${prefix}/automations/${automation.automationId}/batches`, { expectedAutomationRevision: automation.managementRevision, parameters: {}, maxTasks: 1, concurrency: 1 })
+    const accepted = await api(`${prefix}/automations/${automation.automationId}/batches`, { expectedAutomationRevision: automation.managementRevision, parameters: {}, maxTasks: policy.maxTasks, concurrency: policy.concurrency })
     return accepted.operation.result.batch.batchId
   }
   async function wait(check, label) {
@@ -125,6 +125,48 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
       await new Promise((resolveClose, reject) => server.close(error => error ? reject(error) : resolveClose()))
     }
   }
+  async function concurrentRecordClaims() {
+    const server = createServer((request, response) => {
+      if (request.url.startsWith('/set/')) response.setHeader('Set-Cookie', `owner=${request.url.slice(5)}; Path=/; HttpOnly`)
+      response.setHeader('Content-Type', 'text/html; charset=utf-8')
+      response.end(`<output id="owner">${request.headers.cookie ?? 'missing'}</output>`)
+    })
+    await new Promise(resolveListen => server.listen(0, '127.0.0.1', resolveListen))
+    const site = `http://127.0.0.1:${server.address().port}`
+    try {
+      const source = await table('同批次并发来源')
+      await create(source, 'first'); await create(source, 'second')
+      const inputPlan = { inputs: [{ inputId: randomUUID(), alias: 'owner', tableId: source.tableId, datasetGeneration: source.datasetGeneration, mode: 'independent', required: true, fieldBindings: [{ inputFieldId: randomUUID(), inputFieldAlias: 'owner', fieldRef: { projectId: project.projectId, tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: source.fieldId } }], filter: { type: 'all', items: [] }, orderBy: [{ systemField: 'recordKey', direction: 'asc' }] }] }
+      const flow = await workflow('同来源 Profile 的两个隔离浏览器', [node('inputs', 'project_data', { operation: 'inputs', variableName: 'frozen', arguments: {} }), node('open', 'open_page', { url: site + "/set/{frozen[0]['values'][0]['value']}" }), node('manual', 'project_manual', { reason: '确认两个现场均已启动', timeoutSeconds: 120 }), node('check', 'open_page', { url: site + '/check' }), node('cookie', 'get_element_info', { selector: '#owner', attribute: 'text', variableName: 'ownedCookie' }), end()])
+      const batch = await start(flow, inputPlan, environment, { ...runPolicy, maxTasks: 2, concurrency: 2, maxLiveInstances: 2 })
+      const waiting = await wait(async () => {
+        const tasks = (await api(`${prefix}/tasks?batchId=${batch}`)).items
+        const items = (await api(prefix + '/manual-items')).items.filter(item => item.status === 'waiting' && tasks.some(task => task.taskId === item.taskId))
+        return items.length === 2 && { tasks, items }
+      }, 'two real data Tasks concurrently waiting')
+      assert.equal(waiting.tasks.length, 2)
+      const details = await Promise.all(waiting.tasks.map(task => api(`${prefix}/tasks/${task.taskId}`)))
+      assert.equal(new Set(details.map(detail => detail.inputSnapshot.inputs[0].recordRef.recordKey.value)).size, 2, 'concurrent claims must not lease the same record')
+      assert.equal(new Set(details.map(detail => detail.run.runId)).size, 2)
+      for (const [index, item] of waiting.items.entries()) {
+        await api(`${prefix}/manual-items/${item.manualItemId}/resume`, { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision })
+        await wait(async () => (await api(`${prefix}/tasks/${item.taskId}`)).task.status === 'succeeded', 'one data Task completed')
+        if (index === 0) assert.equal((await api(`${prefix}/tasks/${waiting.items[1].taskId}`)).run.status, 'waiting_manual')
+      }
+      const final = await wait(async () => {
+        const value = await api(`${prefix}/batches/${batch}`)
+        return value.batch.status === 'completed' && value
+      }, 'concurrent data batch complete')
+      assert.equal(final.statusCounts.succeeded, 2)
+      assert.equal((await api(`${prefix}/tasks?batchId=${batch}`)).items.length, 2, 'maxTasks must prevent a third claim')
+      for (const detail of details) {
+        const outputs = (await api(`${prefix}/tasks/${detail.task.taskId}/outputs`)).items
+        const expected = detail.inputSnapshot.inputs[0].values[0].value
+        assert.equal(outputs.find(output => output.name === 'ownedCookie')?.value, `owner=${expected}`)
+      }
+      return { status: 'passed', taskIds: waiting.tasks.map(task => task.taskId), checks: ['One data batch reaches two simultaneous manual checkpoints with distinct leased records', 'Same source Profile produces isolated cookie stores', 'Completing the first Task keeps the second live; both finish once and no third Task is claimed'] }
+    } finally { await new Promise((resolveClose, reject) => server.close(error => error ? reject(error) : resolveClose())) }
+  }
   const source = await table('旧契约数据'), target = await table('运行中新建记录')
   const first = await create(source, 'row-1'), second = await create(source, 'row-2')
   const status = await api(`${prefix}/tables/${source.tableId}/statuses`, { name: '已提交', color: '#123456', order: 0, expectedTableRevision: 2 })
@@ -136,6 +178,17 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
     const items = (await api(prefix + '/manual-items')).items
     return items.find(item => item.status === 'waiting' && tasks.some(task => task.taskId === item.taskId))
   }, 'old prepared task checkpoint')
+  const cancelledBatch = await start(await workflow('取消一个 Run 不停止另一个人工现场', [node('open', 'open_page', { url: 'about:blank' }), node('manual', 'project_manual', { reason: '将取消此 Run', timeoutSeconds: 120 }), data('unexpected-write', target, 'createRecord', { tableId: target.tableId, datasetGeneration: target.datasetGeneration, values: { [target.fieldId]: 'must-not-execute' } }), end()]))
+  const cancelledManual = await wait(async () => {
+    const tasks = (await api(`${prefix}/tasks?batchId=${cancelledBatch}`)).items
+    return (await api(prefix + '/manual-items')).items.find(item => item.status === 'waiting' && tasks.some(task => task.taskId === item.taskId))
+  }, 'second independent manual owner before cancellation')
+  const beforeStop = await api(`${prefix}/batches/${cancelledBatch}`)
+  await api(`${prefix}/batches/${cancelledBatch}/stop`, { expectedStatusRevision: beforeStop.batch.statusRevision, reason: '核对 Run 取消隔离' })
+  await wait(async () => (await api(`${prefix}/batches/${cancelledBatch}`)).batch.status === 'stopped', 'owned cancellation cleanup')
+  assert.equal((await api(`${prefix}/manual-items/${cancelledManual.manualItemId}`)).status, 'cancelled')
+  assert.equal((await api(`${prefix}/tasks/${checkpoint.taskId}`)).run.status, 'waiting_manual')
+  assert.equal((await records(target)).total, 0, 'cancelled Run must not execute later write')
   const addedFieldId = randomUUID()
   const newer = await start(await workflow('T1 运行中加列增行并写状态', [
     node('open', 'open_page', { url: 'about:blank' }),
@@ -144,17 +197,17 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
     query('row-1'), update('new-task-written'),
     data('status', source, 'setRecordStatus', { recordRef: "{query['items'][0]['ref']}", statusId: status.statusId, expectedStatusRevision: "{query['items'][0]['statusRevision']}", expectedContentRevisionWhenDerived: "{update['contentRevision']}" }), end(),
   ]))
-  const blocked = await wait(async () => {
-    const value = await api(`${prefix}/batches/${newer}`)
-    return value.batch.status === 'blocked' && value
-  }, 'single-capacity boundary')
-  const queued = (await api(`${prefix}/tasks?batchId=${newer}`)).items
-  assert.equal(queued.length, 1)
-  assert.equal(queued[0].status, 'queued', 'second parameter Task must remain queued while the core slot is occupied')
-  assert.equal((await api(`${prefix}/tasks/${checkpoint.taskId}`)).run.status, 'waiting_manual')
+  const t2WaitingBefore = await api(`${prefix}/tasks/${checkpoint.taskId}`)
+  assert.equal(t2WaitingBefore.run.status, 'waiting_manual')
+  const overlapStartedAt = new Date().toISOString()
+  const t1 = await completed(newer)
+  const t1CompletedAt = new Date().toISOString()
+  const t2WaitingAfter = await api(`${prefix}/tasks/${checkpoint.taskId}`)
+  assert.equal(t2WaitingAfter.run.status, 'waiting_manual', 'T1 must finish while old-contract T2 is still suspended')
+  assert.equal((await api(`${prefix}/manual-items/${checkpoint.manualItemId}`)).status, 'waiting')
+  assert.notEqual(t1.task.runId, t2WaitingAfter.run.runId)
   await api(`${prefix}/manual-items/${checkpoint.manualItemId}/resume`, { checkpointRevision: checkpoint.checkpointRevision, expectedStatusRevision: checkpoint.statusRevision })
   const t2 = await completed(old)
-  const t1 = await completed(newer)
   const fields = await api(`${prefix}/tables/${source.tableId}/fields`)
   assert.ok(fields.items.some(field => field.ref.fieldId === addedFieldId && field.key === 'receipt'))
   const created = await records(target)
@@ -170,10 +223,11 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
   return {
     projectId: project.projectId,
     sharedPersonChain: await sharedPersonChain(),
-    checks: ['Second parameter batch remained blocked with its Task queued while first Task waited for manual input', 'After first Task resumed and finished, second Task ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status', 'Both sequential Tasks completed; manual node executed once'],
+    concurrentRecordClaims: await concurrentRecordClaims(),
+    checks: ['Cancelling a second live Run preserves T2 checkpoint/browser and executes no cancelled write', 'T1 started and completed while old-contract T2 remained waiting_manual in its original Run', 'T1 ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status before T2 resumed', 'T2 then queried and wrote using its prepared old field contract; manual node executed once'],
     taskIds: [t1.task.taskId, t2.task.taskId],
-    concurrency: { status: 'implementation_missing', observedBatchStatus: blocked.batch.status, observedTaskStatus: queued[0].status, reason: 'Production WorkflowRunDispatcher owns one worker and reports capacity=1. Manual waiting occupies that slot.', unsupportedScenario: 'Concurrent old-contract Task across schema extension is unsupported; this run asserts queuing and subsequent sequential completion only' },
-    remaining: ['Concurrent old-contract Task across compatible schema extension is NOT verified', 'Sheets structure/value phases require authorized live resources', 'Excel source byte preservation belongs to separate native import/export evidence', 'Conflict and partial-success combinations remain separate evidence'],
+    concurrency: { status: 'passed', overlapStartedAt, t1CompletedAt, waitingRunId: t2WaitingAfter.run.runId, completedRunId: t1.task.runId, waitingStateBefore: t2WaitingBefore.run.status, waitingStateAfter: t2WaitingAfter.run.status },
+    remaining: ['Sheets structure/value phases require authorized live resources', 'Excel source byte preservation belongs to separate native import/export evidence', 'Conflict and partial-success combinations remain separate evidence'],
   }
 }
 

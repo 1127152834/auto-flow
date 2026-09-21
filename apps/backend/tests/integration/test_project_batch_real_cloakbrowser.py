@@ -438,7 +438,7 @@ async def test_real_project_batch_http(
                     if waiting:
                         manual_interrupted = True
                         if scenario == 'manual-loss':
-                            app.state.project_workflow_worker_manager._worker.process.kill()
+                            app.state.project_workflow_worker_manager._workers[waiting['runId']].process.kill()
                         elif scenario == 'manual-restart':
                             await app.router.on_shutdown[-1]()
                             app = create_app(settings)

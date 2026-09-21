@@ -61,12 +61,12 @@ def project_workflow_worker_command() -> tuple[str, ...]:
 
 
 class ProjectWorkflowWorkerManager:
-    """One owned browser worker; a commit callback gates every event ACK."""
+    """Run-owned browser workers; a commit callback gates every event ACK."""
 
     def __init__(
         self, temp_dir: Path, *, command: tuple[str, ...] | None = None,
         worker_env: dict[str, str] | None = None, start_timeout: float = 90,
-        termination_timeout: float = 3,
+        termination_timeout: float = 3, capacity: int = 1,
         on_capability: Callable[[str, int, dict[str, Any]], Awaitable[Any]] | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-runs").resolve()
@@ -76,12 +76,15 @@ class ProjectWorkflowWorkerManager:
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
         self._on_capability = on_capability
-        self._worker: _Worker | None = None
+        if type(capacity) is not int or capacity not in {1, 2}:
+            raise ValueError("Supported worker capacity is 1 or 2")
+        self._capacity = capacity
+        self._workers: dict[str, _Worker] = {}
         self._closed = False
         self._lock = asyncio.Lock()
 
-    def busy(self) -> bool:
-        return self._worker is not None
+    def busy(self, run_id: str | None = None) -> bool:
+        return bool(self._workers) if run_id is None else run_id in self._workers
 
     async def run(
         self, *, run_id: str, execution_generation: int,
@@ -96,7 +99,7 @@ class ProjectWorkflowWorkerManager:
         async with self._lock:
             if self._closed:
                 raise WorkflowWorkerError("WORKFLOW_WORKER_UNAVAILABLE", "运行服务正在关闭")
-            if self._worker is not None:
+            if run_id in self._workers or len(self._workers) >= self._capacity:
                 raise WorkflowWorkerError("WORKFLOW_WORKER_BUSY", "当前已有浏览器运行或清理尚未完成")
             worker = _Worker(
                 run_id, execution_generation,
@@ -105,7 +108,7 @@ class ProjectWorkflowWorkerManager:
                 f"runs/{run_id}/generation-{execution_generation}",
                 executable.resolve(strict=True), current,
             )
-            self._worker = worker
+            self._workers[run_id] = worker
         try:
             worker.directory.mkdir(parents=True, exist_ok=False)
             worker.created_directory = True
@@ -264,7 +267,7 @@ class ProjectWorkflowWorkerManager:
         await self._send(worker, {"type": "stop", "executionGeneration": worker.generation})
 
     async def stop(self, run_id: str) -> None:
-        worker = self._worker
+        worker = self._workers.get(run_id)
         if worker is None or worker.run_id != run_id:
             return
         worker.stop_requested = True
@@ -273,13 +276,13 @@ class ProjectWorkflowWorkerManager:
 
     async def force_stop(self, run_id: str) -> None:
         # The caller must commit generation revocation before invoking this method.
-        worker = self._worker
+        worker = self._workers.get(run_id)
         if worker is not None and worker.run_id == run_id:
             if worker.process is None:
                 if worker.task is not asyncio.current_task():
                     worker.task.cancel()
                     await asyncio.gather(worker.task, return_exceptions=True)
-                if self._worker is worker:
+                if self._workers.get(worker.run_id) is worker:
                     try:
                         await self._cleanup(worker)
                     except Exception:  # noqa: BLE001 -- preserve a retryable cleanup boundary.
@@ -297,7 +300,7 @@ class ProjectWorkflowWorkerManager:
         relative_path: str,
     ) -> None:
         """Remove one worker-owned artifact only after the caller proved no DB fact exists."""
-        worker = self._worker
+        worker = self._workers.get(run_id)
         if (
             worker is None
             or worker.run_id != run_id
@@ -346,14 +349,15 @@ class ProjectWorkflowWorkerManager:
             except FileNotFoundError:
                 pass
         async with self._lock:
-            if self._worker is worker:
-                self._worker = None
+            if self._workers.get(worker.run_id) is worker:
+                self._workers.pop(worker.run_id)
 
     async def shutdown(self) -> None:
         self._closed = True
-        worker = self._worker
-        if worker is not None:
-            await self.force_stop(worker.run_id)
+        results = await asyncio.gather(*(self.force_stop(identity) for identity in tuple(self._workers)), return_exceptions=True)
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
 
 
 def _protocol_error() -> WorkflowWorkerError:

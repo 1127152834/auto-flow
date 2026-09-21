@@ -24,7 +24,7 @@ class Worker:
         self.running = False
         self.discarded = []
 
-    def busy(self):
+    def busy(self, run_id=None):
         return self.running
 
     async def run(self, **values):

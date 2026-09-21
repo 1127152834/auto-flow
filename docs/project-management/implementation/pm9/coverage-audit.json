@@ -729,7 +729,6 @@
           "reviewedCheckCount": 2,
           "gapKinds": [
             "external_acceptance_pending",
-            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -1888,10 +1887,9 @@
           "status": "planned",
           "evidenceCount": 0,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "implementation_missing",
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2159,7 +2157,7 @@
           "status": "planned",
           "evidenceCount": 0,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2596,8 +2594,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 206,
-    "withNoLocatedAssertion": 45,
+    "withAssertions": 207,
+    "withNoLocatedAssertion": 44,
     "statuses": {
       "partially_verified": 188,
       "planned": 63

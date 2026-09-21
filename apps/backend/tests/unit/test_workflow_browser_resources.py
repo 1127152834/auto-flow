@@ -121,3 +121,71 @@ async def test_worker_payload_cannot_mutate_request_snapshot(tmp_path, valid_pro
         assert request['frozenConfiguration']['profileSpec']['extension_paths'] == []
     finally:
         lease.release()
+
+
+@pytest.mark.asyncio
+async def test_shared_source_guards_last_until_last_independent_work_copy(tmp_path, valid_profile_values):
+    import subprocess
+    import sys
+
+    from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
+    service, _state, original = resources(tmp_path, valid_profile_values)
+    held = []
+    @contextmanager
+    def exclusive(key):
+        lock = ExclusiveFileLock(tmp_path / (key + '.lock'))
+        assert lock.acquire(), key
+        held.append(key)
+        try: yield
+        finally: lock.release(); held.remove(key)
+    service._group_guard = lambda: exclusive('workspace')
+    service._kernel_guard = lambda _kernel: exclusive('kernel')
+    service._usage_guard = SimpleNamespace(guard=lambda _profile: exclusive('profile'))
+    service._environment_directory = lambda identity: tmp_path / identity
+    def outsider(key):
+        script = 'import sys; from pathlib import Path; from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock; lock=ExclusiveFileLock(Path(sys.argv[1])); sys.exit(0 if lock.acquire() else 1)'
+        return subprocess.run([sys.executable, '-c', script, str(tmp_path / (key + '.lock'))], check=False).returncode
+    first = await service.acquire(service.freeze(original.id), 'run-a')
+    second = None
+    try:
+        second = await service.acquire(service.freeze(original.id), 'run-b')
+        assert sorted(held) == ['kernel', 'profile', 'workspace']
+        assert first.browser['userDataDir'] != second.browser['userDataDir']
+        assert all(outsider(key) == 1 for key in held)
+        first.release()
+        assert sorted(held) == ['kernel', 'profile', 'workspace']
+        assert all(outsider(key) == 1 for key in held)
+        async def unavailable(*_args): raise RuntimeError('second resolve failed')
+        service._resolve_proxy = unavailable
+        with pytest.raises(RuntimeError, match='second resolve failed'):
+            await service.acquire(service.freeze(original.id), 'run-c')
+        assert sorted(held) == ['kernel', 'profile', 'workspace']
+        second.release()
+        assert held == [] and all(outsider(key) == 0 for key in ['workspace', 'kernel', 'profile'])
+    finally:
+        first.release()
+        if second: second.release()
+
+
+@pytest.mark.asyncio
+async def test_unknown_native_guard_cleanup_pins_workspace_and_cannot_be_hidden_by_retry(tmp_path, valid_profile_values):
+    service, _state, original = resources(tmp_path, valid_profile_values)
+    workspace_closed = []
+    @contextmanager
+    def workspace():
+        try: yield
+        finally: workspace_closed.append(True)
+    @contextmanager
+    def uncertain(_identity):
+        yield
+        raise RuntimeError('native lock release unknown')
+    service._group_guard = workspace
+    service._usage_guard = SimpleNamespace(guard=uncertain)
+    lease = await service.acquire(service.freeze(original.id), 'run-a')
+    for _ in range(2):
+        with pytest.raises(RuntimeError, match='native lock release unknown'): lease.release()
+        assert not workspace_closed
+    from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+    with pytest.raises(WorkflowRuntimeError, match='资源锁清理'):
+        await service.acquire(service.freeze(original.id), 'run-b')
+    assert not workspace_closed

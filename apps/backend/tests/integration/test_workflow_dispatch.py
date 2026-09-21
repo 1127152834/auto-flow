@@ -33,7 +33,7 @@ class SyntheticWorker:
         self.running = False
         self.shutdown_calls = 0
 
-    def busy(self):
+    def busy(self, run_id=None):
         return self.running
 
     async def run(self, **values):
@@ -497,7 +497,7 @@ async def test_acquire_cleanup_error_stays_reconciling_until_recovery(runtime):
         expected_status_revision=stopping.status_revision,
         execution_generation=stopping.execution_generation,
     )
-    assert forced.status == "reconciling" and dispatcher._run_id == run.run_id
+    assert forced.status == "reconciling" and run.run_id in dispatcher._owners
     reconciled = await dispatcher.reconcile(run.run_id)
     assert reconciled.status == "interrupted" and recovered == [run.run_id]
 
@@ -543,7 +543,7 @@ async def test_failed_guard_recovery_remains_owned_across_reconcile_retries(runt
     assert (await dispatcher.reconcile(run.run_id)).status == "reconciling"
     assert attempts == [run.run_id, run.run_id]
     assert (
-        dispatcher._run_id == run.run_id
+        run.run_id in dispatcher._owners
         and "workflow_worker_busy" in dispatcher.blockers()
     )
 
@@ -573,7 +573,7 @@ async def test_acquire_error_requires_recovery_to_prove_hidden_guards_released(r
     uncertain = dispatcher._get_run(run.run_id)
     assert uncertain.status == "reconciling"
     assert uncertain.error is None
-    assert dispatcher._task is not None and dispatcher._task.done()
+    assert dispatcher._owners[run.run_id].task is not None and dispatcher._owners[run.run_id].task.done()
     assert "workflow_worker_busy" in dispatcher.blockers()
 
     guard_released = True
@@ -674,9 +674,9 @@ async def test_quiesce_blockers_and_shutdown_preserve_cleanup_failure(runtime):
         "workflow_runs_active",
         "workflow_worker_busy",
     }
-    with pytest.raises(RuntimeError, match="shutdown cleanup unknown"):
+    with pytest.raises(RuntimeError, match="cleanup unknown"):
         await dispatcher.shutdown()
-    assert dispatcher._task is not None and dispatcher._task.done()
+    assert dispatcher._owners[run.run_id].task is not None and dispatcher._owners[run.run_id].task.done()
     current = dispatcher._get_run(run.run_id)
     assert current.status == "reconciling"
     assert current.execution_generation > running.execution_generation
@@ -707,16 +707,16 @@ async def test_shutdown_retries_unknown_guard_cleanup_and_retains_failed_owner(r
     with pytest.raises(RuntimeError, match="guard ownership unknown"):
         await dispatcher.shutdown()
     assert attempts == [run.run_id, run.run_id]
-    assert dispatcher._owner_cleanup_unknown
-    assert dispatcher._run_id == run.run_id
+    assert dispatcher._owners[run.run_id].cleanup_unknown
+    assert run.run_id in dispatcher._owners
     assert "workflow_worker_busy" in dispatcher.blockers()
     assert dispatcher._get_run(run.run_id).status == "reconciling"
 
     released = True
     await dispatcher.shutdown()
     assert attempts == [run.run_id] * 3
-    assert not dispatcher._owner_cleanup_unknown
-    assert dispatcher._run_id is None
+    assert run.run_id not in dispatcher._owners
+    assert not dispatcher._owners
     assert "workflow_worker_busy" not in dispatcher.blockers()
     assert dispatcher._get_run(run.run_id).status == "reconciling"
 
@@ -739,7 +739,7 @@ async def test_shutdown_recovery_resolves_failed_acquire_cancellation(runtime):
     await asyncio.sleep(0)
     await dispatcher.shutdown()
     assert attempts == [run.run_id]
-    assert dispatcher._run_id is None
+    assert not dispatcher._owners
     assert "workflow_worker_busy" not in dispatcher.blockers()
     assert dispatcher._get_run(run.run_id).status == "reconciling"
     await dispatcher.shutdown()
@@ -815,14 +815,143 @@ async def test_live_manual_continuation_keeps_owner_and_excludes_wait_from_budge
     assert dispatcher.query_run(run.run_id).status == 'waiting_manual'
     dispatcher.resume_manual(run.run_id, 1)
     assert dispatcher.query_run(run.run_id).execution_generation == 1
-    first_remaining = dispatcher._automatic_remaining
+    first_remaining = dispatcher._owners[run.run_id].automatic_remaining
     await asyncio.sleep(.01)  # Running handoff time remains chargeable.
     dispatcher.pause_manual(run.run_id, 1)
-    assert 0 < dispatcher._automatic_remaining < first_remaining
-    second_remaining = dispatcher._automatic_remaining
+    assert 0 < dispatcher._owners[run.run_id].automatic_remaining < first_remaining
+    second_remaining = dispatcher._owners[run.run_id].automatic_remaining
     await asyncio.sleep(.15)
-    assert dispatcher._automatic_remaining == second_remaining
+    assert dispatcher._owners[run.run_id].automatic_remaining == second_remaining
     dispatcher.resume_manual(run.run_id, 1)
     release.set()
     await dispatcher.wait_idle()
     assert dispatcher.query_run(run.run_id).status == 'succeeded'
+
+
+class ConcurrentWorkers:
+    def __init__(self): self.active = {}; self.calls = []; self.cleanup_fail = set()
+    def busy(self, run_id=None): return bool(self.active) if run_id is None else run_id in self.active
+    async def run(self, **values):
+        identity = values['run_id']; event = asyncio.Event(); self.active[identity] = event; self.calls.append(identity)
+        try:
+            await event.wait()
+            return WorkerOutcome('succeeded', None, True)
+        finally:
+            if identity not in self.cleanup_fail: self.active.pop(identity, None)
+    async def stop(self, run_id): self.active[run_id].set()
+    async def force_stop(self, run_id):
+        if run_id in self.cleanup_fail: raise RuntimeError('owned cleanup unknown')
+        if run_id in self.active: self.active.pop(run_id).set()
+    async def shutdown(self):
+        for event in self.active.values(): event.set()
+class ConcurrentResources:
+    def __init__(self): self.leases = {}
+    async def acquire(self, request, identity):
+        from tests.fixtures.workflow_runs import SyntheticLease
+        lease = SyntheticLease(); self.leases[identity] = lease; return lease
+
+@pytest.mark.asyncio
+async def test_two_run_owners_keep_manual_budget_cancellation_and_leases_independent(runtime):
+    first, _ = create_queued_run(runtime, resource_request={'automaticExecutionTimeoutSeconds': 1})
+    second, _ = create_queued_run(runtime, resource_request={'automaticExecutionTimeoutSeconds': 1})
+    third, _ = create_queued_run(runtime)
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2)
+    try:
+        await dispatcher.dispatch(first.run_id, expected_status_revision=1, execution_generation=0)
+        await dispatcher.dispatch(second.run_id, expected_status_revision=1, execution_generation=0)
+        while len(workers.calls) != 2: await asyncio.sleep(.001)
+        dispatcher.pause_manual(first.run_id, 1)
+        with pytest.raises(WorkflowRuntimeError, match='容量'): await dispatcher.dispatch(third.run_id, expected_status_revision=1, execution_generation=0)
+        with pytest.raises(WorkflowRuntimeError): dispatcher.resume_manual(first.run_id, 2)
+        assert dispatcher.query_run(second.run_id).status == 'running'
+        first_run = dispatcher.query_run(first.run_id)
+        await dispatcher.cancel(first.run_id, expected_status_revision=first_run.status_revision, execution_generation=1)
+        while workers.busy(first.run_id): await asyncio.sleep(.001)
+        while not resources.leases[first.run_request_id].released: await asyncio.sleep(.001)
+        assert workers.busy(second.run_id)
+        assert not resources.leases[second.run_request_id].released
+        assert dispatcher.query_run(second.run_id).status == 'running'
+        await workers.stop(second.run_id)
+        await dispatcher.wait_idle()
+        assert dispatcher.query_run(first.run_id).status == 'cancelled'
+        assert dispatcher.query_run(second.run_id).status == 'succeeded'
+        assert resources.leases[second.run_request_id].released
+    finally: await dispatcher.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_waiting_owner_never_pauses_other_runs_budget_or_releases_its_lease(runtime):
+    first, _ = create_queued_run(runtime, resource_request={'automaticExecutionTimeoutSeconds': .1})
+    second, _ = create_queued_run(runtime, resource_request={'automaticExecutionTimeoutSeconds': .1})
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2)
+    try:
+        for run in [first, second]: await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+        while len(workers.calls) < 2: await asyncio.sleep(.001)
+        dispatcher.pause_manual(first.run_id, 1)
+        async with asyncio.timeout(2):
+            while not dispatcher.query_run(second.run_id).terminal: await asyncio.sleep(.01)
+        assert dispatcher.query_run(second.run_id).status == 'timed_out'
+        assert dispatcher.query_run(first.run_id).status == 'waiting_manual'
+        assert resources.leases[second.run_request_id].released
+        assert not resources.leases[first.run_request_id].released and workers.busy(first.run_id)
+        dispatcher.resume_manual(first.run_id, 1)
+        await workers.stop(first.run_id)
+        await dispatcher.wait_idle()
+        assert dispatcher.query_run(first.run_id).status == 'succeeded'
+    finally: await dispatcher.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_startup_gate_stays_closed_while_any_historical_owner_is_unconfirmed(runtime):
+    historical, _ = create_queued_run(runtime)
+    queued, _ = create_queued_run(runtime)
+    with runtime.begin() as session:
+        SqlAlchemyWorkflowRuntimeRepository(session).transition_run(historical.run_id, target_status='running', expected_status_revision=1, expected_execution_generation=0, now=NOW)
+    entered, release = asyncio.Event(), asyncio.Event()
+    unknown = True
+    async def recover(_run):
+        entered.set(); await release.wait()
+        if unknown: raise RuntimeError('orphan not confirmed')
+    dispatcher = make_dispatcher(runtime, ConcurrentWorkers(), ConcurrentResources(), recover, capacity=2)
+    startup = asyncio.create_task(dispatcher.startup())
+    await entered.wait()
+    with pytest.raises(WorkflowRuntimeError, match='容量'): await dispatcher.dispatch(queued.run_id, expected_status_revision=1, execution_generation=0)
+    release.set(); await startup
+    with pytest.raises(WorkflowRuntimeError, match='容量'): await dispatcher.dispatch(queued.run_id, expected_status_revision=1, execution_generation=0)
+    unknown = False
+    assert (await dispatcher.reconcile(historical.run_id)).status == 'interrupted'
+    await dispatcher.dispatch(queued.run_id, expected_status_revision=1, execution_generation=0)
+    await dispatcher.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_unknown_cleanup_keeps_its_slot_without_stopping_another_owner(runtime):
+    first, _ = create_queued_run(runtime, resource_request={'automaticExecutionTimeoutSeconds': .05})
+    second, _ = create_queued_run(runtime)
+    third, _ = create_queued_run(runtime)
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    workers.cleanup_fail.add(first.run_id)
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2)
+    try:
+        for run in [first, second]: await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+        async with asyncio.timeout(2):
+            while dispatcher.query_run(first.run_id).status != 'reconciling': await asyncio.sleep(.01)
+        assert workers.busy(second.run_id) and not resources.leases[first.run_request_id].released
+        with pytest.raises(WorkflowRuntimeError, match='容量'): await dispatcher.dispatch(third.run_id, expected_status_revision=1, execution_generation=0)
+        await workers.stop(second.run_id)
+        await dispatcher._owners[second.run_id].task
+        assert dispatcher.query_run(second.run_id).status == 'succeeded'
+        await dispatcher.dispatch(third.run_id, expected_status_revision=1, execution_generation=0)
+        async with asyncio.timeout(2):
+            while not workers.busy(third.run_id): await asyncio.sleep(.001)
+        workers.cleanup_fail.clear()
+        assert (await dispatcher.reconcile(first.run_id)).status == 'interrupted'
+        assert resources.leases[first.run_request_id].released
+        assert workers.busy(third.run_id) and not resources.leases[third.run_request_id].released
+        await workers.stop(third.run_id)
+        await dispatcher.wait_idle()
+    finally:
+        workers.cleanup_fail.clear()
+        await dispatcher.shutdown()

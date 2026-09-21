@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Mapping, Sequence
-from contextlib import AbstractContextManager, ExitStack
+from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
+from contextlib import AbstractContextManager, ExitStack, contextmanager, nullcontext
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -25,9 +25,23 @@ class BrowserLease:
     executable: Path
     browser: dict[str, Any] = field(repr=False)
     _guards: ExitStack = field(repr=False)
+    _release_error: BaseException | None = field(default=None, repr=False)
 
     def release(self) -> None:
-        self._guards.close()
+        if self._release_error is not None:
+            raise self._release_error
+        try:
+            self._guards.close()
+        except BaseException as error:
+            self._release_error = error
+            raise
+
+
+@dataclass
+class _SharedGuard:
+    context: AbstractContextManager[None]
+    users: int = 0
+    failed: bool = False
 
 
 class WorkflowBrowserResources:
@@ -40,6 +54,8 @@ class WorkflowBrowserResources:
         read_license: Callable[[], str | None], usage_guard: ProfileUsageGuard,
         kernel_guard: Callable[[KernelRef], AbstractContextManager[None]],
         environment_directory: Callable[[str], Path | None] | None = None,
+        group_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
+        license_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
     ) -> None:
         self._profiles = profiles
         self._installed = installed_kernels
@@ -48,6 +64,44 @@ class WorkflowBrowserResources:
         self._usage_guard = usage_guard
         self._kernel_guard = kernel_guard
         self._environment_directory = environment_directory
+        self._group_guard = group_guard
+        self._license_guard = license_guard
+        self._shared: dict[tuple[str, str], _SharedGuard] = {}
+
+    @contextmanager
+    def _share(self, key: tuple[str, str], create: Callable[[], AbstractContextManager[None]]) -> Iterator[None]:
+        # All guard operations are synchronous on the dispatcher's event loop;
+        # reference sharing is internal, the original OS exclusion stays held.
+        guard = self._shared.get(key)
+        if guard is None:
+            guard = _SharedGuard(create())
+            guard.context.__enter__()
+            self._shared[key] = guard
+        if guard.failed:
+            raise WorkflowRuntimeError('WORKFLOW_CLEANUP_FAILED', '资源锁清理尚未确认')
+        guard.users += 1
+        try:
+            yield
+        finally:
+            guard.users -= 1
+            # An unknown native lock pins the workspace even if its owner is
+            # the final user; other confirmed Run leases can still finish.
+            pinned = key == ('workspace', '') and any(value.failed for identity, value in self._shared.items() if identity != key)
+            if not guard.users and not pinned:
+                guard.failed = True
+                guard.context.__exit__(None, None, None)
+                self._shared.pop(key)
+
+
+    @contextmanager
+    def guard(self, profile_id: str, kernel: KernelRef) -> Iterator[None]:
+        with ExitStack() as guards:
+            guards.enter_context(self._share(('workspace', ''), self._group_guard))
+            guards.enter_context(self._share(('profile', profile_id), lambda: self._usage_guard.guard(profile_id)))
+            guards.enter_context(self._share(('kernel', f'{kernel.edition}:{kernel.version}'), lambda: self._kernel_guard(kernel)))
+            if kernel.edition == 'licensed':
+                guards.enter_context(self._share(('license', ''), self._license_guard))
+            yield
 
     def freeze(
         self, profile_id: str, *, proxy: dict[str, Any] | None = None,
@@ -105,11 +159,9 @@ class WorkflowBrowserResources:
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器内核快照不一致", 422)
         guards = ExitStack()
         try:
-            guards.enter_context(self._usage_guard.guard(profile_id))
+            kernel = KernelRef(cast(KernelEdition, profile.spec.browser_edition), profile.spec.browser_version)
+            guards.enter_context(self.guard(profile_id, kernel))
             self._profiles.get(profile_id)  # The frozen source must still exist.
-            guards.enter_context(self._kernel_guard(KernelRef(
-                cast(KernelEdition, profile.spec.browser_edition), profile.spec.browser_version,
-            )))
             executable = self._kernel(profile.spec).executable_path
             proxy = await self._resolve_proxy(profile, run_request_id)
             license_key = self._read_license() if profile.spec.browser_edition == 'licensed' else None

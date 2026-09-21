@@ -223,35 +223,36 @@ def configure_project_workflow_runtime(
     )
 
     @contextmanager
-    def guard(kernel: KernelRef):
-        workspace_lock = ExclusiveFileLock(
-            installations.root / ".studio-browser-session.lock"
-        )
-        if not workspace_lock.acquire():
+    def group_guard():
+        lock = ExclusiveFileLock(installations.root / ".studio-browser-session.lock")
+        if not lock.acquire():
             raise KernelBusy()
-        lock = kernel_target_lock(installations.root, kernel.edition, kernel.version)
         try:
-            if not lock.acquire():
-                raise KernelBusy()
-            if kernel.edition == "licensed":
-                with installations.license_guard():
-                    yield
-            else:
-                yield
+            yield
         finally:
             lock.release()
-            workspace_lock.release()
+
+    @contextmanager
+    def guard(kernel: KernelRef):
+        lock = kernel_target_lock(installations.root, kernel.edition, kernel.version)
+        if not lock.acquire():
+            raise KernelBusy()
+        try:
+            yield
+        finally:
+            lock.release()
 
     resources = WorkflowBrowserResources(
         profiles, installed, resolve_proxy, read_license, usage_guard, guard,
-        environment_directory=environment_directory,
+        environment_directory=environment_directory, group_guard=group_guard,
+        license_guard=installations.license_guard,
     )
     from autoflow.application.project_runs.worker_capabilities import (
         ProjectWorkerCapabilities,
     )
 
     capabilities = ProjectWorkerCapabilities(session_factory, environments)
-    worker = ProjectWorkflowWorkerManager(temp_dir, on_capability=capabilities.handle)
+    worker = ProjectWorkflowWorkerManager(temp_dir, on_capability=capabilities.handle, capacity=2)
 
     async def recover(run: Any) -> None:
         if capabilities.manual is not None:
@@ -260,8 +261,8 @@ def configure_project_workflow_runtime(
             if f"{kernel.edition}:{kernel.version}" == run.resource_request.get(
                 "kernelId"
             ):
-                with usage_guard.guard(str(run.resource_request["profileId"])), guard(
-                    KernelRef(kernel.edition, kernel.version)
+                with resources.guard(
+                    str(run.resource_request["profileId"]), KernelRef(kernel.edition, kernel.version)
                 ):
                     await recover_worker_directories(
                         temp_dir, run.run_id, kernel.executable_path
@@ -270,7 +271,7 @@ def configure_project_workflow_runtime(
         raise KernelNotFound()
 
     dispatcher = WorkflowRunDispatcher(
-        session_factory, worker, resources, gate, recover,
+        session_factory, worker, resources, gate, recover, capacity=2,
         on_fenced=capabilities.manual.cancel_run if capabilities.manual else lambda _run_id: None,
     )
     if capabilities.manual is not None:

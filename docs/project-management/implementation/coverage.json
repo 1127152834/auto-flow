@@ -4981,22 +4981,19 @@
           {
             "file": "scripts/smoke-project-business-combinations.mjs",
             "symbol": "checkBusinessCombinations",
-            "scope": "52936b6a ARM 包真实 HTTP/worker：第二参数 Task 排队边界；顺序完成 ensureField、精确新增一条第二表记录、query/update/status 和人工节点一次。不是 T1/T2 并发旧契约验收。",
-            "level": "automated_production_smoke"
+            "scope": "当前源码构建 PyInstaller backend：T2 始终 waiting_manual 时 T1 完成 ensureField/create/query/update/status，T2 按旧契约继续；取消另一 Run 不干扰 T2；同批次两个实际 worker 领取不同记录，同来源 Profile 的 cookie/同名变量隔离。",
+            "level": "automated_production_smoke",
+            "evidence": "docs/project-management/implementation/pm9/multi-run-business-darwin-arm64.json"
           }
         ],
         "gaps": [
-          {
-            "kind": "production_evidence_missing",
-            "detail": "当前串行生产链已补；并发旧契约依赖多 Run 能力，原 Excel 不改和冲突/部分成功的完整业务组合仍未闭合。"
-          },
           {
             "kind": "external_acceptance_pending",
             "detail": "当前 PM9 打包链的 Sheets 新列/值分阶段核验需真实授权与测试表；历史 PM6 服务账号实网证据保留"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "生产 dispatcher/worker 均仅一个 owner，capacity=1；人工等待占槽，第二参数批次 blocked/Task queued。多 Run 并发尚未实现，不能以串行成功代替；补充架构方案 2026-09-21-pm9-multi-run-capacity.md 已批准，S5 待实施。"
+            "kind": "production_evidence_missing",
+            "detail": "S5 Mac 源构建真实并发链已通过；当前候选三平台桌面包/原生 UI 未补。原规格其余 Excel/冲突/部分成功组合不由此代表。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -11353,15 +11350,19 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "scripts/smoke-project-business-combinations.mjs",
+            "symbol": "checkBusinessCombinations",
+            "scope": "当前源码构建 PyInstaller backend：T2 始终 waiting_manual 时 T1 完成 ensureField/create/query/update/status，T2 按旧契约继续；取消另一 Run 不干扰 T2；同批次两个实际 worker 领取不同记录，同来源 Profile 的 cookie/同名变量隔离。",
+            "level": "automated_production_smoke",
+            "evidence": "docs/project-management/implementation/pm9/multi-run-business-darwin-arm64.json"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：两个并发任务同名变量、写回目标和浏览器隔离；不据邻近测试推定覆盖"
-          },
-          {
-            "kind": "implementation_missing",
-            "detail": "生产 dispatcher/worker 均仅一个 owner，capacity=1；人工等待占槽，第二参数批次 blocked/Task queued。多 Run 并发尚未实现，不能以串行成功代替；补充架构方案 2026-09-21-pm9-multi-run-capacity.md 已批准，S5 待实施。"
+            "kind": "production_evidence_missing",
+            "detail": "S5 Mac 源构建真实并发链已通过；当前候选三平台桌面包/原生 UI 未补。原规格其余 Excel/冲突/部分成功组合不由此代表。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -12883,12 +12884,18 @@
             "symbol": "test_max_live_instances_and_core_capacity_apply_across_batches",
             "scope": "现场与核心容量跨批次生效，超额批次 blocked",
             "level": "automated_integration"
+          },
+          {
+            "file": "scripts/smoke-project-business-combinations.mjs",
+            "symbol": "checkBusinessCombinations",
+            "scope": "同数据批次两个真实人工现场同时等待、不同领取记录，先完成一项不打断另一项，maxTasks=2 不产生第三 Task。",
+            "level": "automated_production_smoke"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "两个真实人工等待使自动计数归零、H=2 且不创建第三现场需补"
+            "detail": "两个实际等待现场和总任务数边界已有断言；完整 H=2 / 自动计数 UI 及因现场额度阻止第三实例的独立生产断言仍待补。"
           }
         ],
         "statusBeforeReview": "planned"

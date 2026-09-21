@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Mapping
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Protocol
@@ -27,7 +28,7 @@ from autoflow.infrastructure.process.project_workflow_worker import WorkerOutcom
 
 
 class WorkerPort(Protocol):
-    def busy(self) -> bool: ...
+    def busy(self, run_id: str | None = None) -> bool: ...
 
     async def run(
         self,
@@ -74,8 +75,20 @@ UNKNOWN_RESULT_ERROR = {
 }
 
 
+@dataclass
+class _RunOwner:
+    run_id: str
+    generation: int
+    task: asyncio.Task[None] | None = None
+    lease: LeasePort | None = None
+    automatic_timeout: asyncio.Timeout | None = None
+    automatic_remaining: float | None = None
+    cleanup_unknown: bool = False
+    control: asyncio.Lock = field(default_factory=asyncio.Lock)
+
+
 class WorkflowRunDispatcher:
-    """Single-capacity owner for explicitly dispatched, frozen workflow runs."""
+    """Bounded owners for explicitly dispatched, frozen workflow runs."""
 
     def __init__(
         self,
@@ -86,6 +99,7 @@ class WorkflowRunDispatcher:
         recover_orphan: Recovery,
         *,
         on_fenced: Callable[[str], None] = lambda _run_id: None,
+        capacity: int = 1,
         force_stop_grace: timedelta = timedelta(seconds=30),
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
@@ -97,12 +111,11 @@ class WorkflowRunDispatcher:
         self._on_fenced = on_fenced
         self._force_stop_grace = force_stop_grace
         self._now = now
-        self._automatic_timeout: asyncio.Timeout | None = None
-        self._automatic_remaining: float | None = None
-        self._task: asyncio.Task[None] | None = None
-        self._lease: LeasePort | None = None
-        self._run_id: str | None = None
-        self._owner_cleanup_unknown = False
+        if type(capacity) is not int or capacity not in {1, 2}:
+            raise ValueError('Supported Run capacity is 1 or 2')
+        self._capacity = capacity
+        self._owners: dict[str, _RunOwner] = {}
+        self._recovering = False
         self._closed = False
         self._lock = asyncio.Lock()
         self._control = asyncio.Lock()
@@ -111,7 +124,7 @@ class WorkflowRunDispatcher:
     @property
     def capacity(self) -> int:
         """Maximum simultaneous runs supported by this concrete core owner."""
-        return 1
+        return self._capacity
 
     def subscribe_idle(self, listener: Callable[[], None]) -> Callable[[], None]:
         self._idle_listeners.add(listener)
@@ -123,24 +136,28 @@ class WorkflowRunDispatcher:
 
     async def startup(self) -> None:
         """Fence and reconcile old active runs; queued runs remain caller-owned."""
-        for run in self._nonterminal_runs():
-            if run.status == "queued":
-                continue
-            fenced = (
-                self._transition(run, "reconciling")
-                if run.status != "reconciling"
-                else run
-            )
-            try:
-                await self._recover_orphan(fenced)
-            except Exception:  # noqa: BLE001,S112 - failure is durable state
-                continue
-            self._transition_current(
-                fenced.run_id,
-                fenced.execution_generation,
-                "interrupted",
-                error=UNKNOWN_RESULT_ERROR,
-            )
+        self._recovering = True
+        try:
+            for run in self._nonterminal_runs():
+                if run.status == "queued":
+                    continue
+                fenced = (
+                    self._transition(run, "reconciling")
+                    if run.status != "reconciling"
+                    else run
+                )
+                try:
+                    await self._recover_orphan(fenced)
+                except Exception:  # noqa: BLE001,S112 - failure is durable state
+                    continue
+                self._transition_current(
+                    fenced.run_id,
+                    fenced.execution_generation,
+                    "interrupted",
+                    error=UNKNOWN_RESULT_ERROR,
+                )
+        finally:
+            self._recovering = False
 
     async def dispatch(
         self,
@@ -162,9 +179,10 @@ class WorkflowRunDispatcher:
                 run for run in self._nonterminal_runs() if run.run_id != run_id
             ]
             if (
-                self._task is not None
-                or self._worker.busy()
-                or any(run.status != "queued" for run in other_runs)
+                self._recovering
+                or len(self._owners) >= self.capacity
+                or any(run.status != "queued" and run.run_id not in self._owners for run in other_runs)
+                or (not self._owners and self._worker.busy())
             ):
                 raise WorkflowRuntimeError("WORKFLOW_CAPACITY_FULL", "当前运行容量已满")
             with self._gate.mutation() as admitted:
@@ -175,29 +193,32 @@ class WorkflowRunDispatcher:
                 run = self._transition_identity(
                     run_id, "running", expected_status_revision, execution_generation
                 )
-            self._run_id = run_id
-            self._task = asyncio.create_task(self._execute(run))
+            owner = _RunOwner(run_id, run.execution_generation)
+            self._owners[run_id] = owner
+            owner.task = asyncio.create_task(self._execute(run, owner))
             return run
 
     def pause_manual(self, run_id: str, generation: int) -> None:
         run = self._get_run(run_id)
-        if run_id != self._run_id or run.status != 'running' or run.execution_generation != generation:
+        owner = self._owners.get(run_id)
+        if owner is None or owner.generation != generation or run.status != 'running' or run.execution_generation != generation:
             raise WorkflowRuntimeError('EXECUTION_GENERATION_REVOKED', '执行代次已失效')
         self._transition(run, 'waiting_manual')
-        if self._automatic_timeout is not None:
-            deadline = self._automatic_timeout.when()
-            self._automatic_remaining = max(0, deadline - asyncio.get_running_loop().time()) if deadline is not None else None
-            self._automatic_timeout.reschedule(None)
+        if owner.automatic_timeout is not None:
+            deadline = owner.automatic_timeout.when()
+            owner.automatic_remaining = max(0, deadline - asyncio.get_running_loop().time()) if deadline is not None else None
+            owner.automatic_timeout.reschedule(None)
 
     def resume_manual(self, run_id: str, generation: int) -> None:
         run = self._get_run(run_id)
-        if run_id != self._run_id or run.status != 'waiting_manual' or run.execution_generation != generation:
+        owner = self._owners.get(run_id)
+        if owner is None or owner.generation != generation or run.status != 'waiting_manual' or run.execution_generation != generation:
             raise WorkflowRuntimeError('EXECUTION_GENERATION_REVOKED', '执行代次已失效')
         # Same live owner continues; resume_queued -> running is reserved for
         # dispatching a new owner and deliberately increments the generation.
         self._transition(run, 'running')
-        if self._automatic_timeout is not None and self._automatic_remaining is not None:
-            self._automatic_timeout.reschedule(asyncio.get_running_loop().time() + self._automatic_remaining)
+        if owner.automatic_timeout is not None and owner.automatic_remaining is not None:
+            owner.automatic_timeout.reschedule(asyncio.get_running_loop().time() + owner.automatic_remaining)
 
     async def cancel(
         self,
@@ -221,7 +242,7 @@ class WorkflowRunDispatcher:
         expected_status_revision: int,
         execution_generation: int,
     ) -> CoreRun:
-        async with self._control:
+        async with self._owner_control(run_id):
             return await self._force_stop(
                 run_id, expected_status_revision, execution_generation
             )
@@ -229,6 +250,7 @@ class WorkflowRunDispatcher:
     async def _force_stop(
         self, run_id: str, expected_status_revision: int, execution_generation: int
     ) -> CoreRun:
+        owner = self._owners.get(run_id)
         run = self.validate_force_stop(
             run_id, expected_status_revision, execution_generation
         )
@@ -239,43 +261,43 @@ class WorkflowRunDispatcher:
             if run.status != "reconciling"
             else run
         )
-        owner_task = self._task if self._run_id == run_id else None
-        if owner_task is not None:
-            cleanup_was_unknown = self._owner_cleanup_unknown
+        owner_task = owner.task if owner is not None else None
+        if owner is not None and owner_task is not None:
+            cleanup_was_unknown = owner.cleanup_unknown
             owner_task.cancel()
-            if not await self._task_cleanup_confirmed(owner_task):
+            if not await self._task_cleanup_confirmed(owner_task, owner):
                 if not cleanup_was_unknown:
                     return self._get_run(run_id)
                 try:
                     await self._recover_orphan(fenced)
                 except Exception:  # noqa: BLE001 - retain unknown ownership
                     return self._get_run(run_id)
-                self._owner_cleanup_unknown = False
+                owner.cleanup_unknown = False
             elif cleanup_was_unknown:
                 try:
                     await self._recover_orphan(fenced)
                 except Exception:  # noqa: BLE001 - retain unknown ownership
                     return self._get_run(run_id)
-                self._owner_cleanup_unknown = False
+                owner.cleanup_unknown = False
         try:
-            if self._run_id == run_id:
+            if owner is not None:
                 await self._worker.force_stop(run_id)
             else:
                 await self._recover_orphan(fenced)
         except Exception:  # noqa: BLE001 - cleanup ownership remains unknown
             return self._get_run(run_id)
-        if self._worker.busy():
+        if self._worker.busy(run_id):
             return self._get_run(run_id)
-        if self._run_id == run_id:
-            self._release_lease()
+        if owner is not None:
+            self._release_lease(owner)
         result = self._transition_current(
             run_id,
             fenced.execution_generation,
             "interrupted",
             error=UNKNOWN_RESULT_ERROR,
         )
-        if self._run_id == run_id:
-            self._clear_owner()
+        if owner is not None:
+            self._clear_owner(owner)
         return result
 
     def query_run(self, run_id: str) -> CoreRun:
@@ -307,48 +329,49 @@ class WorkflowRunDispatcher:
         return self._now() >= available_at, available_at
 
     async def reconcile(self, run_id: str) -> CoreRun:
-        async with self._control:
+        async with self._owner_control(run_id):
             return await self._reconcile(run_id)
 
     async def _reconcile(self, run_id: str) -> CoreRun:
+        owner = self._owners.get(run_id)
         run = self._get_run(run_id)
         if run.status != "reconciling":
             raise WorkflowRuntimeError("RUN_NOT_RECONCILING", "运行不在核验状态")
         try:
-            owner_task = self._task if self._run_id == run_id else None
-            if owner_task is not None:
+            owner_task = owner.task if owner is not None else None
+            if owner is not None and owner_task is not None:
                 owner_task.cancel()
                 if (
-                    not await self._task_cleanup_confirmed(owner_task)
-                    or self._owner_cleanup_unknown
+                    not await self._task_cleanup_confirmed(owner_task, owner)
+                    or owner.cleanup_unknown
                 ):
                     await self._recover_orphan(run)
-                    self._owner_cleanup_unknown = False
-            if self._run_id == run_id:
+                    owner.cleanup_unknown = False
+            if owner is not None:
                 await self._worker.force_stop(run_id)
             else:
                 await self._recover_orphan(run)
         except Exception:  # noqa: BLE001 - recovery adapters define their failures
             return self._get_run(run_id)
-        if self._worker.busy():
+        if self._worker.busy(run_id):
             return self._get_run(run_id)
-        if self._run_id == run_id:
-            self._release_lease()
+        if owner is not None:
+            self._release_lease(owner)
         result = self._transition_current(
             run_id,
             run.execution_generation,
             "interrupted",
             error=UNKNOWN_RESULT_ERROR,
         )
-        if self._run_id == run_id:
-            self._clear_owner()
+        if owner is not None:
+            self._clear_owner(owner)
         return result
 
     def blockers(self) -> list[str]:
         blockers: list[str] = []
         if self._nonterminal_runs():
             blockers.append("workflow_runs_active")
-        if self._worker.busy() or self._task is not None:
+        if self._worker.busy() or self._owners:
             blockers.append("workflow_worker_busy")
         return blockers
 
@@ -358,49 +381,46 @@ class WorkflowRunDispatcher:
 
     async def _shutdown(self) -> None:
         self._closed = True
-        task = self._task
-        run_id = self._run_id
-        if run_id is not None:
-            run = self._get_run(run_id)
+        owners = list(self._owners.values())
+        for owner in owners:
+            run = self._get_run(owner.run_id)
             if not run.terminal and run.status != "reconciling":
-                run = self._transition(run, "reconciling")
-            if task is not None:
-                task.cancel()
-        error: Exception | None = None
-        task_error: Exception | None = None
-        if task is not None and not await self._task_cleanup_confirmed(task):
-            task_error = WorkflowRuntimeError(
-                "WORKFLOW_CLEANUP_FAILED", "运行任务清理尚未确认"
-            )
+                self._transition(run, "reconciling")
+            if owner.task is not None:
+                owner.task.cancel()
+        errors: list[Exception] = []
+        for owner in owners:
+            async with owner.control:
+                if owner.task is not None:
+                    await self._task_cleanup_confirmed(owner.task, owner)
+                try:
+                    await self._worker.force_stop(owner.run_id)
+                    if owner.cleanup_unknown:
+                        await self._recover_orphan(self._get_run(owner.run_id))
+                        owner.cleanup_unknown = False
+                    if self._worker.busy(owner.run_id):
+                        raise WorkflowRuntimeError('WORKFLOW_CLEANUP_FAILED', '执行进程清理尚未确认')
+                    self._release_lease(owner)
+                    self._clear_owner(owner)
+                except Exception as error:  # noqa: BLE001 - keep this owner's lease
+                    errors.append(error)
         try:
             await self._worker.shutdown()
-        except Exception as caught:  # noqa: BLE001 - shutdown must retain cleanup fact
-            error = caught
-        if error is None and self._owner_cleanup_unknown and run_id is not None:
-            try:
-                await self._recover_orphan(self._get_run(run_id))
-                self._owner_cleanup_unknown = False
-                task_error = None
-            except Exception as caught:  # noqa: BLE001 - retain unconfirmed ownership
-                error = caught
-        if error is None:
-            error = task_error
-        if not self._worker.busy() and error is None:
-            self._release_lease()
-            self._clear_owner()
-        elif self._worker.busy() and error is None:
-            error = WorkflowRuntimeError(
-                "WORKFLOW_CLEANUP_FAILED", "执行进程清理尚未确认"
-            )
-        if error is not None:
-            raise error
+        except Exception as error:  # noqa: BLE001 - keep unknown owners
+            errors.append(error)
+        if errors:
+            raise errors[0]
 
     async def wait_idle(self) -> None:
-        task = self._task
-        if task is not None:
-            await asyncio.shield(task)
+        tasks = [owner.task for owner in self._owners.values() if owner.task is not None]
+        if tasks:
+            await asyncio.gather(*(asyncio.shield(task) for task in tasks))
 
-    async def _execute(self, dispatched: CoreRun) -> None:
+    def _owner_control(self, run_id: str) -> asyncio.Lock:
+        owner = self._owners.get(run_id)
+        return owner.control if owner is not None else self._control
+
+    async def _execute(self, dispatched: CoreRun, owner: _RunOwner) -> None:
         lease: LeasePort | None = None
         cancelled = False
         unhandled = False
@@ -414,14 +434,14 @@ class WorkflowRunDispatcher:
                 lease = await self._resources.acquire(
                     dispatched.resource_request, dispatched.run_request_id
                 )
-                self._lease = lease
+                owner.lease = lease
                 current = self._get_run(dispatched.run_id)
                 if (
                     current.status != "running"
                     or current.execution_generation != dispatched.execution_generation
                 ):
                     lease.release()
-                    self._lease = None
+                    owner.lease = None
                     if current.status == "stopping":
                         self._transition_current(
                             current.run_id, current.execution_generation, "cancelled"
@@ -431,7 +451,7 @@ class WorkflowRunDispatcher:
                     "automaticExecutionTimeoutSeconds", 0
                 )
                 timeout = asyncio.timeout(budget or None)
-                self._automatic_timeout = timeout
+                owner.automatic_timeout = timeout
                 try:
                     async with timeout:
                         outcome = await self._worker.run(
@@ -457,12 +477,12 @@ class WorkflowRunDispatcher:
                             "code": "AUTOMATIC_EXECUTION_TIMEOUT",
                             "message": "自动执行超时",
                         },
-                        not self._worker.busy(),
+                        not self._worker.busy(dispatched.run_id),
                     )
-            if self._worker.busy() or not outcome.cleanup_confirmed:
+            if self._worker.busy(dispatched.run_id) or not outcome.cleanup_confirmed:
                 raise RuntimeError("worker cleanup unconfirmed")
             lease.release()
-            self._lease = None
+            owner.lease = None
             current = self._get_run(dispatched.run_id)
             if (
                 current.execution_generation != dispatched.execution_generation
@@ -500,14 +520,14 @@ class WorkflowRunDispatcher:
                 else:
                     await self._worker.force_stop(current.run_id)
             except Exception:  # noqa: BLE001 - retain lease while cleanup is unknown
-                self._owner_cleanup_unknown = True
+                owner.cleanup_unknown = True
                 unhandled = True
                 return
-            if self._worker.busy():
+            if self._worker.busy(dispatched.run_id):
                 return
             if lease is not None:
                 lease.release()
-                self._lease = None
+                owner.lease = None
             self._transition_current(
                 fenced.run_id,
                 fenced.execution_generation,
@@ -515,19 +535,19 @@ class WorkflowRunDispatcher:
                 error=UNKNOWN_RESULT_ERROR,
             )
         finally:
-            self._automatic_timeout = None
-            self._automatic_remaining = None
+            owner.automatic_timeout = None
+            owner.automatic_remaining = None
             async with self._lock:
-                if self._task is asyncio.current_task():
+                if owner.task is asyncio.current_task():
                     if not cancelled and not unhandled:
-                        self._task = None
+                        owner.task = None
                     if (
                         not cancelled
                         and not unhandled
-                        and self._lease is None
-                        and not self._worker.busy()
+                        and owner.lease is None
+                        and not self._worker.busy(dispatched.run_id)
                     ):
-                        self._run_id = None
+                        self._clear_owner(owner)
             for listener in tuple(self._idle_listeners):
                 listener()
 
@@ -665,25 +685,20 @@ class WorkflowRunDispatcher:
             repository = SqlAlchemyWorkflowRuntimeRepository(session)
             return [run for run_id in ids if (run := repository.get_run(run_id=run_id))]
 
-    def _release_lease(self) -> None:
-        lease = self._lease
-        if lease is not None:
-            lease.release()
-            self._lease = None
+    def _release_lease(self, owner: _RunOwner) -> None:
+        if owner.lease is not None:
+            owner.lease.release()
+            owner.lease = None
 
-    def _clear_owner(self) -> None:
-        self._task = None
-        self._run_id = None
-        self._owner_cleanup_unknown = False
+    def _clear_owner(self, owner: _RunOwner) -> None:
+        if self._owners.get(owner.run_id) is owner:
+            self._owners.pop(owner.run_id)
 
-    async def _task_cleanup_confirmed(self, task: asyncio.Task[None]) -> bool:
+    async def _task_cleanup_confirmed(self, task: asyncio.Task[None], owner: _RunOwner) -> bool:
         results = await asyncio.gather(task, return_exceptions=True)
-        confirmed = all(
-            result is None or isinstance(result, asyncio.CancelledError)
-            for result in results
-        )
+        confirmed = all(result is None or isinstance(result, asyncio.CancelledError) for result in results)
         if not confirmed:
-            self._owner_cleanup_unknown = True
+            owner.cleanup_unknown = True
         return confirmed
 
     def _status_event(self, run: CoreRun) -> dict[str, Any]:

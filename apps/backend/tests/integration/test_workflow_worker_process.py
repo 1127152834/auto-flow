@@ -60,7 +60,7 @@ def test_discard_uncommitted_artifact_only_removes_the_exact_owned_file(tmp_path
     directory.mkdir(parents=True)
     artifact = directory / f"{artifact_id}.png"
     artifact.write_bytes(b"png")
-    instance._worker = SimpleNamespace(  # type: ignore[assignment]
+    instance._workers[run_id] = SimpleNamespace(  # type: ignore[assignment]
         run_id=run_id,
         generation=1,
         artifact_directory=directory,
@@ -399,8 +399,42 @@ async def test_windows_cleanup_confirms_exit_after_kill_access_denied(tmp_path, 
             nonlocal exited
             exited = True
             return 0
-    worker = SimpleNamespace(process=Process(), created_directory=False)
-    instance._worker = worker
+    worker = SimpleNamespace(run_id='test-run', process=Process(), created_directory=False)
+    instance._workers[worker.run_id] = worker
     monkeypatch.setattr(module.sys, 'platform', 'win32')
     await instance._cleanup_owned(worker)
     assert exited and not instance.busy()
+
+
+@pytest.mark.asyncio
+async def test_two_actual_workers_keep_ack_cancellation_and_cleanup_owned_by_run(tmp_path):
+    from uuid import uuid4
+    instance, executable = manager(tmp_path)
+    instance._capacity = 2
+    identities = [str(uuid4()), str(uuid4())]
+    gates = {identity: asyncio.Event() for identity in identities}
+    arrived = set()
+    async def on_event(event):
+        arrived.add(event['runId'])
+        await gates[event['runId']].wait()
+    tasks = [asyncio.create_task(instance.run(run_id=identity, execution_generation=1, execution_plan={'orderedNodeIds': ['open'], 'nodes': []}, parameters={}, variables={}, browser={}, executable=executable, on_event=on_event)) for identity in identities]
+    try:
+        async with asyncio.timeout(3):
+            while len(arrived) != 2:
+                for task in tasks:
+                    if task.done(): task.result()
+                await asyncio.sleep(.01)
+        assert len({worker.process.pid for worker in instance._workers.values()}) == 2
+        tasks[0].cancel()
+        with pytest.raises(asyncio.CancelledError): await tasks[0]
+        assert not instance.busy(identities[0]) and instance.busy(identities[1])
+        assert not (instance._root / identities[0] / 'generation-1').exists()
+        assert (instance._root / identities[1] / 'generation-1').exists()
+        gates[identities[1]].set()
+        assert (await tasks[1]).status == 'succeeded'
+        assert not instance.busy()
+    finally:
+        for task in tasks:
+            if not task.done(): task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        await instance.shutdown()
