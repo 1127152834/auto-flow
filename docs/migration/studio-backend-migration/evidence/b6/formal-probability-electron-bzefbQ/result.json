@@ -1,0 +1,44 @@
+{
+  "evidenceId": "BE-B6-probability-formal-electron",
+  "checkedAt": "2026-09-21T19:53:51.999Z",
+  "gitHead": "587d88d3679178e6bc09e7f01de82727bc451ebc",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "LKOMZlCbnrZSKUHzF-9sQ",
+  "profileId": "e0fb5146-6343-4322-8e50-f1d31ee7f402",
+  "runIds": [
+    "6cfb7c43-8fbf-48c4-b9fb-a3408af97d15",
+    "e69b072e-adb4-49df-b5c9-954e67f100bb"
+  ],
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 添加概率触发器、两条路径及分支连线",
+    "正式保存接口把概率触发器、两条路径和字段配置写入临时 SQLite",
+    "真实 worker 分别以 100% 和 0% 配置运行，未选分支无副作用，两个运行均完成",
+    "纯系统工具流程未启动 CloakBrowser，运行结束后无子进程或浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "probability_trigger",
+      "nodeId": "mR8PDyezQSqZFTet3oWCG"
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "n_YuVR7Gt02Q9Efd8xfmk"
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "6FEoszlQ9RzjTWvxv7Qtc"
+    }
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "probability": "two real runs at 100% and 0%; no external data",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "random 50% distribution and long-running cancellation remain covered by backend tests"
+  }
+}
