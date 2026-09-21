@@ -194,7 +194,9 @@ async def test_windows_restart_keeps_directory_without_native_ownership(tmp_path
 @pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows Job ownership')
 @pytest.mark.parametrize('mode', ['live', 'root-exit', 'wrong-birth', 'foreign-job', 'denied'])
 async def test_native_windows_recovery_owns_job_and_descendants(tmp_path, monkeypatch, mode):
+    import ctypes
     import json
+    from ctypes import wintypes
 
     from autoflow.infrastructure.process import windows_job
     from autoflow.infrastructure.process.browser_processes import (
@@ -224,10 +226,18 @@ browser_worker_main(run)
     root = await spawn(name)
     foreign = None
     handle = None
+    child_handle = None
+    kernel = windows_job._api()
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
     try:
         child_pid = int(await asyncio.wait_for(root.stdout.readline(), 10))
         child_birth, root_birth = process_birth(child_pid), process_birth(root.pid)
         assert child_birth is not None and root_birth is not None
+        child_handle = kernel.OpenProcess(0x00100000 | 0x1000, False, child_pid)
+        assert child_handle and windows_job._windows_handle_birth(kernel, child_handle) == child_birth
+        member = wintypes.BOOL()
+        assert kernel.IsProcessInJob(child_handle, supervisor_handles[0], ctypes.byref(member)) and member.value
         handle = windows_job.record_worker_job(directory, run_id, 1, name, root.pid, root_birth)
         windows_job.close_worker_job(supervisor_handles.pop(0))
         windows_job.close_worker_job(handle)
@@ -265,16 +275,19 @@ browser_worker_main(run)
         elif mode == 'root-exit':
             root.kill()
             await root.wait()
-            async with asyncio.timeout(5):
-                while process_identity_is_alive(child_pid, child_birth):
-                    await asyncio.sleep(.02)
+            assert await asyncio.to_thread(kernel.WaitForSingleObject, child_handle, 5000) == 0
         await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel', timeout=3)
         await asyncio.wait_for(root.wait(), 5)
         assert not directory.exists()
-        assert not process_identity_is_alive(child_pid, child_birth)
+        # Keep the native handle from before termination: reopening a PID may
+        # conservatively report an inaccessible rundown object as still alive.
+        # No extra grace period after recovery may hide premature release.
+        assert kernel.WaitForSingleObject(child_handle, 0) == 0
         if foreign:
             assert foreign.returncode is None
     finally:
+        if child_handle:
+            kernel.CloseHandle(child_handle)
         for supervisor_handle in supervisor_handles:
             windows_job.close_worker_job(supervisor_handle)
         if handle:
