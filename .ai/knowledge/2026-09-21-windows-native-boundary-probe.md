@@ -10,3 +10,13 @@
 - `terminate_verified_windows_process` 独立实验 helper 已删除，生产只保留现有 Job 路径，不维护第二终止实现。实验脚本保留为显式手动可行性探针，不作为日常完整矩阵的额外实现。
 
 参考：[文件重命名契约](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/4217551b-d2c0-42cb-9dc1-69a716cf6d0c)、[SetFileInformationByHandle](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfileinformationbyhandle)、[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)。
+
+### 2026-09-21 原生进程句柄复验与修复（confirmed / native fix pending）
+
+35582165961 @6f1390a1：87 passed、27 skipped、2 failed。wrong-birth/denied 负向保护之后的合法恢复已删目录，但终止前持有的子进程句柄 WaitForSingleObject(0) 返回 WAIT_TIMEOUT (258)。这推翻了“可能只是重新打开 PID 的保守探测”的推断，证实 Job active=0 不能单独证明进程对象已退出。
+
+共享 terminate_worker_job 在 TerminateJobObject 前取得并验证 Job 成员句柄；保留原 accounting 归零检查，并在同一个清理期限内等待每个持有句柄报告 WAIT_OBJECT_0。拒绝访问、身份不明、等待失败和超时仍抛错，调用方保留目录/容量。查询名单按原生 NumberOfAssignedProcesses 扩容，PID 重用到其他 Job 不获得操作权限。没有按 PID 杀进程、固定 sleep 或放宽测试断言。
+
+最小反例 3 种等待结果 RED→GREEN；相关进程/恢复测试 63 passed、8 native-only skipped，ruff/mypy passed。Windows 原生回归待新 Actions，不把本机模拟检查写成原生成功。
+
+来源：[TerminateJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-terminatejobobject)、[Job process ID list](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_basic_process_id_list)。

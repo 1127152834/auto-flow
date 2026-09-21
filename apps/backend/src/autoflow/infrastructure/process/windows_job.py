@@ -137,6 +137,8 @@ def _api():
     kernel.IsProcessInJob.restype = wintypes.BOOL
     kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
     kernel.TerminateJobObject.restype = wintypes.BOOL
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
     kernel.QueryInformationJobObject.argtypes = [
         wintypes.HANDLE,
         ctypes.c_int,
@@ -253,35 +255,86 @@ def cleanup_worker_job(
         kernel.CloseHandle(job)
 
 
+def _job_member_handles(kernel, job: int, deadline: float) -> list[int]:
+    """Pin Job members before termination can remove them from accounting."""
+    from ctypes import wintypes
+
+    capacity = 16
+    while True:
+        class ProcessIds(ctypes.Structure):
+            _fields_ = [("assigned", wintypes.DWORD), ("count", wintypes.DWORD),
+                        ("pids", ctypes.c_size_t * capacity)]
+        info = ProcessIds()
+        ok = kernel.QueryInformationJobObject(job, 3, ctypes.byref(info), ctypes.sizeof(info), None)
+        if not ok and ctypes.get_last_error() != 234:  # type: ignore[attr-defined]
+            raise OSError("Owned Job process list unavailable")
+        if ok and info.count == info.assigned and info.count <= capacity:
+            break
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Owned Job member snapshot unconfirmed")
+        capacity = max(capacity * 2, info.assigned)
+    handles = []
+    try:
+        for pid in info.pids[:info.count]:
+            process = kernel.OpenProcess(0x00100000 | 0x1000, False, pid)  # SYNCHRONIZE | QUERY_LIMITED
+            if not process:
+                if ctypes.get_last_error() == 87:  # type: ignore[attr-defined]
+                    continue  # Process exited before OpenProcess.
+                raise OSError("Owned Job member exit unavailable")
+            member = wintypes.BOOL()
+            if not kernel.IsProcessInJob(process, job, ctypes.byref(member)):
+                kernel.CloseHandle(process)
+                raise OSError("Owned Job member identity unavailable")
+            if member.value:
+                handles.append(process)
+            else:
+                kernel.CloseHandle(process)  # PID was reused outside this Job.
+        return handles
+    except BaseException:
+        for process in handles:
+            kernel.CloseHandle(process)
+        raise
+
+
 def terminate_worker_job(job: int, timeout: float) -> None:
-    """Use the retained verified Job handle, even after its root has exited."""
+    """Wait for native process exit, not just the earlier accounting decrement."""
     from ctypes import wintypes
 
     kernel = _api()
-    if not kernel.TerminateJobObject(job, 1):
-        raise OSError("Owned Job termination denied")
-
-    class Accounting(ctypes.Structure):
-        _fields_ = [
-            (name, ctypes.c_int64)
-            for name in ["user", "kernel", "period_user", "period_kernel"]
-        ] + [
-            (name, wintypes.DWORD)
-            for name in ["faults", "total", "active", "terminated"]
-        ]
-
     deadline = time.monotonic() + timeout
-    while True:
-        info = Accounting()
-        if not kernel.QueryInformationJobObject(
-            job, 1, ctypes.byref(info), ctypes.sizeof(info), None
-        ):
-            raise OSError("Owned Job accounting unavailable")
-        if not info.active:
-            return
-        if time.monotonic() >= deadline:
-            raise TimeoutError("Owned Job cleanup unconfirmed")
-        time.sleep(0.02)
+    handles = _job_member_handles(kernel, job, deadline)
+    try:
+        if not kernel.TerminateJobObject(job, 1):
+            raise OSError("Owned Job termination denied")
+        class Accounting(ctypes.Structure):
+            _fields_ = [
+                (name, ctypes.c_int64)
+                for name in ["user", "kernel", "period_user", "period_kernel"]
+            ] + [
+                (name, wintypes.DWORD)
+                for name in ["faults", "total", "active", "terminated"]
+            ]
+        while True:
+            info = Accounting()
+            if not kernel.QueryInformationJobObject(
+                job, 1, ctypes.byref(info), ctypes.sizeof(info), None
+            ):
+                raise OSError("Owned Job accounting unavailable")
+            if not info.active:
+                break
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Owned Job cleanup unconfirmed")
+            time.sleep(0.02)
+        for process in handles:
+            remaining_ms = max(0, int((deadline - time.monotonic()) * 1000))
+            result = kernel.WaitForSingleObject(process, remaining_ms)
+            if result == 258:
+                raise TimeoutError("Owned Job member exit unconfirmed")
+            if result != 0:
+                raise OSError("Owned Job member exit unavailable")
+    finally:
+        for process in handles:
+            kernel.CloseHandle(process)
 
 
 def close_worker_job(job: int) -> None:

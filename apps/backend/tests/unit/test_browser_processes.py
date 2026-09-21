@@ -345,3 +345,35 @@ def test_windows_job_verifies_same_process_handle_and_only_live_owner_assigns(mo
             module._verified_process(kernel, 8001, 700, 123, owned_launcher=owned)
     assert calls[0] == ('birth', 9001) and calls[-1] == ('close', 9001)
     assert (('assign', 9001, 8001) in calls) == (birth == 123 and not member and owned)
+
+
+@pytest.mark.parametrize('wait_result', [0, 258, 0xFFFFFFFF])
+def test_windows_job_waits_for_member_handles_after_accounting_zero(monkeypatch, wait_result):
+    from autoflow.infrastructure.process import windows_job as module
+    calls = []
+    def query(_job, kind, result, *_):
+        if kind == 3:
+            result._obj.assigned = result._obj.count = 1
+            result._obj.pids[0] = 700
+        else:
+            result._obj.active = 0
+        return True
+    def membership(_process, _job, result):
+        result._obj.value = True
+        return True
+    kernel = SimpleNamespace(
+        QueryInformationJobObject=query,
+        OpenProcess=lambda *_: calls.append('open') or 9001,
+        IsProcessInJob=membership,
+        TerminateJobObject=lambda *_: calls.append('terminate') or True,
+        WaitForSingleObject=lambda *_: calls.append('wait') or wait_result,
+        CloseHandle=lambda h: calls.append(('close', h)),
+    )
+    monkeypatch.setattr(module, '_api', lambda: kernel)
+    if wait_result == 0:
+        module.terminate_worker_job(8001, .01)
+    else:
+        with pytest.raises(OSError, match='exit|cleanup'):
+            module.terminate_worker_job(8001, .01)
+    assert calls.index('open') < calls.index('terminate') < calls.index('wait')
+    assert calls[-1] == ('close', 9001)
