@@ -119,7 +119,7 @@ class WorkflowRunCoordinator:
         self._webhook_requests: dict[str, dict[str, Any]] = {}
         self._debug_pauses: dict[str, dict[str, Any]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
-        self._command_waiters: dict[str, asyncio.Future[None]] = {}
+        self._command_waiters: dict[str, asyncio.Future[str | None]] = {}
 
     async def start(
         self, workflow_id: str, request: Mapping[str, Any]
@@ -487,10 +487,93 @@ class WorkflowRunCoordinator:
                         "controlRevision": revision,
                     },
                 )
-                await asyncio.wait_for(waiter, timeout=10)
+                worker_error = await asyncio.wait_for(waiter, timeout=10)
+                if worker_error is not None:
+                    receipt["success"] = False
+                    receipt["error"] = worker_error
+                    self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                    return copy.deepcopy(receipt), 409
             except (RuntimeError, TimeoutError):
                 receipt["success"] = False
                 receipt["error"] = "调试命令未被运行进程确认"
+                self._command_receipts[command_id] = (fingerprint, receipt, 503)
+                return copy.deepcopy(receipt), 503
+            finally:
+                self._command_waiters.pop(command_id, None)
+            self._command_receipts[command_id] = (fingerprint, receipt, 200)
+            return copy.deepcopy(receipt), 200
+
+    async def debug_variables(
+        self,
+        workflow_id: str,
+        request: Mapping[str, Any],
+    ) -> tuple[dict[str, Any], int]:
+        command_id = _required_string(request, "commandId")
+        fingerprint = json.dumps(
+            {"workflowId": workflow_id, "action": "variables", **dict(request)},
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        async with self._event_command_lock:
+            previous = self._command_receipts.get(command_id)
+            if previous is not None:
+                old_fingerprint, receipt, status = previous
+                if old_fingerprint != fingerprint:
+                    return {
+                        **dict(request),
+                        "workflowId": workflow_id,
+                        "success": False,
+                        "error": "commandId 已用于不同请求",
+                    }, 409
+                return copy.deepcopy(receipt), status
+            run_id = _required_string(request, "runId")
+            pause_id = _required_string(request, "pauseId")
+            revision = request.get("controlRevision")
+            run = self._runs.get(run_id)
+            pause = self._debug_pauses.get(run_id)
+            error = None
+            if run.workflow_id != workflow_id:
+                error = "运行不属于指定工作流"
+            elif (
+                run.status != "paused"
+                or pause is None
+                or pause.get("pauseId") != pause_id
+                or pause.get("controlRevision") != revision
+            ):
+                error = "暂停标识或控制修订已失效"
+            receipt = {
+                **dict(request),
+                "workflowId": workflow_id,
+                "success": error is None,
+                "error": error,
+            }
+            if error is not None:
+                self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                return copy.deepcopy(receipt), 409
+            waiter = asyncio.get_running_loop().create_future()
+            self._command_waiters[command_id] = waiter
+            try:
+                await self._workers.send_command(
+                    run_id,
+                    {
+                        "type": "debug_variables",
+                        "commandId": command_id,
+                        "pauseId": pause_id,
+                        "controlRevision": revision,
+                        "changes": copy.deepcopy(request.get("changes")),
+                    },
+                )
+                worker_error = await asyncio.wait_for(waiter, timeout=10)
+                if worker_error is not None:
+                    receipt["success"] = False
+                    receipt["error"] = worker_error
+                    self._command_receipts[command_id] = (fingerprint, receipt, 409)
+                    return copy.deepcopy(receipt), 409
+            except (RuntimeError, TimeoutError):
+                receipt["success"] = False
+                receipt["error"] = "变量修改未被运行进程确认"
                 self._command_receipts[command_id] = (fingerprint, receipt, 503)
                 return copy.deepcopy(receipt), 503
             finally:
@@ -611,6 +694,12 @@ class WorkflowRunCoordinator:
             waiter = self._command_waiters.get(command_id)
             if waiter is not None and not waiter.done():
                 waiter.set_result(None)
+            return
+        if event_type == "execution:command_rejected":
+            command_id = _required_string(event, "commandId")
+            waiter = self._command_waiters.get(command_id)
+            if waiter is not None and not waiter.done():
+                waiter.set_result(_required_string(event, "error"))
             return
         if event_type == "execution:input_prompt":
             request_id = _required_string(event, "requestId")

@@ -80,6 +80,14 @@ class PendingWorkflowRunCommands:
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
 
+    async def debug_variables(
+        self, workflow_id: str, request: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        del workflow_id, request
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
     async def submit_event_command(
         self, command_id: str, event: str, data: Mapping[str, Any]
     ) -> tuple[dict[str, Any], int]:

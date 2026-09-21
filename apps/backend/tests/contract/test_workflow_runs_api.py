@@ -259,6 +259,37 @@ def test_real_http_debug_step_and_resume_control_the_actual_worker(
     assert stale.json()["success"] is False
 
     second = pauses[-1]
+    changed = client.post(
+        f"/api/workflows/{workflow['id']}/debug/variables",
+        json={
+            "commandId": "debug-variables-1",
+            "runId": "debug-http-run",
+            "pauseId": second["pauseId"],
+            "controlRevision": second["controlRevision"],
+            "changes": [
+                {"name": "count", "value": 7},
+                {"name": "manual", "value": {"ready": True}},
+            ],
+        },
+    )
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["success"] is True
+    for _ in range(200):
+        pauses = pause_events()
+        if len(pauses) == 3:
+            break
+        time.sleep(0.01)
+    second = pauses[-1]
+    assert second["node_id"] == "second"
+    assert second["controlRevision"] == 3
+    assert second["variables"] == {"count": 7, "manual": {"ready": True}}
+    variable_lookup = client.get("/api/events/commands/debug-variables-1")
+    assert variable_lookup.status_code == 200
+    assert variable_lookup.json()["changes"] == [
+        {"name": "count", "value": 7},
+        {"name": "manual", "value": {"ready": True}},
+    ]
+
     resumed = client.post(
         f"/api/workflows/{workflow['id']}/debug/resume",
         json={

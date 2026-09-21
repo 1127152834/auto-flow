@@ -16,6 +16,8 @@ from autoflow.domain.workflows.runs import WorkflowRun
 from .workflow_studio_schemas import (
     StudioDebugControlReceipt,
     StudioDebugControlRequest,
+    StudioDebugVariablesReceipt,
+    StudioDebugVariablesRequest,
     StudioRunResultPage,
     StudioRunResultValue,
 )
@@ -30,6 +32,10 @@ class WorkflowRunCommands(Protocol):
 
     async def debug_control(
         self, workflow_id: str, action: str, request: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]: ...
+
+    async def debug_variables(
+        self, workflow_id: str, request: Mapping[str, Any]
     ) -> tuple[dict[str, Any], int]: ...
 
     async def submit_event_command(
@@ -136,6 +142,18 @@ def workflow_run_command_router(commands: WorkflowRunCommands) -> APIRouter:
         workflow_id: str, request: StudioDebugControlRequest
     ) -> JSONResponse:
         return await apply_debug_control(workflow_id, "step", request)
+
+    @router.post(
+        "/{workflow_id}/debug/variables", response_model=StudioDebugVariablesReceipt
+    )
+    async def update_debug_variables(
+        workflow_id: str, request: StudioDebugVariablesRequest
+    ) -> JSONResponse:
+        body, http_status = await commands.debug_variables(
+            workflow_id,
+            request.model_dump(by_alias=True),
+        )
+        return JSONResponse(body, status_code=http_status)
 
     return router
 

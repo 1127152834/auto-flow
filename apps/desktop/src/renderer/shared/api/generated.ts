@@ -2675,6 +2675,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workflows/{workflow_id}/debug/variables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Debug Variables */
+        post: operations["update_debug_variables_api_workflows__workflow_id__debug_variables_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/browser/status": {
         parameters: {
             query?: never;
@@ -9317,6 +9334,46 @@ export type components = {
             /** Commandid */
             commandId: string;
         };
+        /** StudioDebugVariableChange */
+        StudioDebugVariableChange: {
+            /** Name */
+            name: string;
+            value: components["schemas"]["JsonValue"];
+        };
+        /** StudioDebugVariablesReceipt */
+        StudioDebugVariablesReceipt: {
+            /** Runid */
+            runId: string;
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+            /** Changes */
+            changes: components["schemas"]["StudioDebugVariableChange"][];
+            /** Workflowid */
+            workflowId: string;
+            /** Success */
+            success: boolean;
+            /** Error */
+            error: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioDebugVariablesRequest */
+        StudioDebugVariablesRequest: {
+            /** Runid */
+            runId: string;
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+            /** Changes */
+            changes: components["schemas"]["StudioDebugVariableChange"][];
+        };
         /** StudioDesktopActionState */
         StudioDesktopActionState: {
             /** Requestid */
@@ -10605,46 +10662,6 @@ export type components = {
             pauseId: string;
             /** Controlrevision */
             controlRevision: number;
-        };
-        /** StudioDebugVariableChange */
-        StudioDebugVariableChange: {
-            /** Name */
-            name: string;
-            value: components["schemas"]["JsonValue"];
-        };
-        /** StudioDebugVariablesReceipt */
-        StudioDebugVariablesReceipt: {
-            /** Runid */
-            runId: string;
-            /** Pauseid */
-            pauseId: string;
-            /** Controlrevision */
-            controlRevision: number;
-            /** Commandid */
-            commandId: string;
-            /** Changes */
-            changes: components["schemas"]["StudioDebugVariableChange"][];
-            /** Workflowid */
-            workflowId: string;
-            /** Success */
-            success: boolean;
-            /** Error */
-            error: string | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioDebugVariablesRequest */
-        StudioDebugVariablesRequest: {
-            /** Runid */
-            runId: string;
-            /** Pauseid */
-            pauseId: string;
-            /** Controlrevision */
-            controlRevision: number;
-            /** Commandid */
-            commandId: string;
-            /** Changes */
-            changes: components["schemas"]["StudioDebugVariableChange"][];
         };
         /** StudioDesktopActionRequest */
         StudioDesktopActionRequest: {
@@ -22054,6 +22071,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudioDebugControlReceipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_debug_variables_api_workflows__workflow_id__debug_variables_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflow_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioDebugVariablesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioDebugVariablesReceipt"];
                 };
             };
             /** @description Validation Error */

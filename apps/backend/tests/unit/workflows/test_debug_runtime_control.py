@@ -156,3 +156,75 @@ async def test_stop_while_paused_does_not_start_the_pending_node() -> None:
     with pytest.raises(asyncio.CancelledError):
         await task
     assert calls == []
+
+
+@pytest.mark.asyncio
+async def test_variable_batch_rejects_loop_local_without_partial_changes() -> None:
+    class ProbeExecutor(ModuleExecutor):
+        module_type = "set_variable"
+
+        async def execute(
+            self, _config: dict[str, Any], _context: ExecutionContext
+        ) -> ModuleResult:
+            return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(ProbeExecutor)
+    output = io.StringIO()
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(),
+        Event(),
+        output,
+        {
+            "runId": "run-loop",
+            "workflowId": "workflow-loop",
+            "debug": True,
+            "stepMode": True,
+        },
+    )
+    sink = _Sink()
+    context = ExecutionContext(
+        variables={"count": 1, "index": 0},
+        loop_stack=[{"index_variable": "index"}],
+        events=sink,
+        debug=command_bus.debug,
+    )
+    document = {
+        "nodes": [
+            {
+                "id": "pending",
+                "type": "moduleNode",
+                "data": {"moduleType": "set_variable", "config": {}},
+            }
+        ],
+        "edges": [],
+    }
+    task = asyncio.create_task(WorkflowRuntime(registry).execute(document, context))
+    pause = await _wait_for_pauses(sink, 1)
+
+    command_bus.receive(
+        {
+            "type": "debug_variables",
+            "commandId": "variables-1",
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+            "changes": [
+                {"name": "count", "value": 9},
+                {"name": "index", "value": 2},
+            ],
+        }
+    )
+    async with asyncio.timeout(1):
+        while "execution:command_rejected" not in output.getvalue():
+            await asyncio.sleep(0)
+    assert context.variables == {"count": 1, "index": 0}
+
+    command_bus.receive(
+        {
+            "type": "debug_resume",
+            "commandId": "resume-loop",
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+        }
+    )
+    assert (await task).success is True

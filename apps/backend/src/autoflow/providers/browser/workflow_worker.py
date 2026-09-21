@@ -1002,6 +1002,10 @@ class _WorkerDebugController:
             "controlRevision": self._revision,
             "release": release,
             "action": None,
+            "context": context,
+            "nodeId": node_id,
+            "label": label,
+            "reason": reason,
         }
         if context.events is None:
             raise RuntimeError("调试事件服务不可用")
@@ -1012,25 +1016,7 @@ class _WorkerDebugController:
             if isinstance((name := frame.get(key)), str) and name
         }
         await context.events.publish(
-            {
-                "type": "execution:paused",
-                "node_id": node_id,
-                "label": label,
-                "pauseId": pause_id,
-                "controlRevision": self._revision,
-                "variables": {
-                    name: "***" if name in context.sensitive_variables else copy.deepcopy(value)
-                    for name, value in context.variables.items()
-                },
-                "variableMeta": {
-                    name: {
-                        "scope": "loop" if name in loop_variables else "workflow",
-                        "readOnly": name in loop_variables,
-                    }
-                    for name in context.variables
-                },
-                "reason": reason,
-            }
+            self._pause_payload(context, loop_variables=loop_variables)
         )
         while not release.is_set():
             if self._stopped.is_set():
@@ -1055,6 +1041,88 @@ class _WorkerDebugController:
                 "controlRevision": self._revision,
             }
         )
+
+    def apply_variables(self, command: Mapping[str, Any]) -> str | None:
+        pause = self._pause
+        if (
+            pause is None
+            or command.get("pauseId") != pause["pauseId"]
+            or command.get("controlRevision") != pause["controlRevision"]
+        ):
+            return "暂停标识或控制修订已失效"
+        context = pause["context"]
+        assert isinstance(context, ExecutionContext)
+        changes = command.get("changes")
+        if not isinstance(changes, list):
+            return "变量修改内容无效"
+        loop_variables = self._loop_variables(context)
+        if any(
+            not isinstance(change, Mapping)
+            or not isinstance(change.get("name"), str)
+            or change["name"] in loop_variables
+            for change in changes
+        ):
+            return "循环局部变量只读"
+        if self._stopped.is_set():
+            return "运行正在停止"
+        for change in changes:
+            name = str(change["name"])
+            context.set_variable(
+                name,
+                copy.deepcopy(change.get("value")),
+                sensitive=name in context.sensitive_variables,
+            )
+        self._revision += 1
+        pause["controlRevision"] = self._revision
+        return None
+
+    async def republish_pause(self) -> None:
+        pause = self._pause
+        if pause is None:
+            return
+        context = pause["context"]
+        assert isinstance(context, ExecutionContext)
+        if context.events is None:
+            raise RuntimeError("调试事件服务不可用")
+        await context.events.publish(self._pause_payload(context))
+
+    def _pause_payload(
+        self,
+        context: ExecutionContext,
+        *,
+        loop_variables: set[str] | None = None,
+    ) -> dict[str, Any]:
+        pause = self._pause
+        assert pause is not None
+        local_names = loop_variables or self._loop_variables(context)
+        return {
+            "type": "execution:paused",
+            "node_id": pause["nodeId"],
+            "label": pause["label"],
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+            "variables": {
+                name: "***" if name in context.sensitive_variables else copy.deepcopy(value)
+                for name, value in context.variables.items()
+            },
+            "variableMeta": {
+                name: {
+                    "scope": "loop" if name in local_names else "workflow",
+                    "readOnly": name in local_names,
+                }
+                for name in context.variables
+            },
+            "reason": pause["reason"],
+        }
+
+    @staticmethod
+    def _loop_variables(context: ExecutionContext) -> set[str]:
+        return {
+            str(name)
+            for frame in context.loop_stack
+            for key in ("index_variable", "item_variable", "key_variable", "value_variable")
+            if isinstance((name := frame.get(key)), str) and name
+        }
 
     def apply(self, command: Mapping[str, Any]) -> bool:
         pause = self._pause
@@ -1344,6 +1412,16 @@ class _WorkerCommandBus:
 
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type == "debug_variables":
+            command_id = command.get("commandId")
+            if self.debug is None or not isinstance(command_id, str) or not command_id:
+                return
+            error = self.debug.apply_variables(command)
+            if error is not None:
+                self._write_debug_result(command_id, error=error)
+                return
+            self._loop.create_task(self._confirm_debug_variables(command_id))
+            return
         if command_type in {"debug_resume", "debug_step"}:
             command_id = command.get("commandId")
             if (
@@ -1393,6 +1471,27 @@ class _WorkerCommandBus:
                 "workflowId": self._workflow_id,
                 "commandId": command_id,
                 "requestId": request_id,
+            },
+        )
+
+    async def _confirm_debug_variables(self, command_id: str) -> None:
+        assert self.debug is not None
+        await self.debug.republish_pause()
+        self._write_debug_result(command_id)
+
+    def _write_debug_result(self, command_id: str, *, error: str | None = None) -> None:
+        _write(
+            self._stdout,
+            {
+                "type": (
+                    "execution:command_rejected"
+                    if error is not None
+                    else "execution:command_applied"
+                ),
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                **({"error": error} if error is not None else {}),
             },
         )
 

@@ -15,13 +15,14 @@
     "stepMode在首节点前暂停；单步只放行一次节点调度并在下一节点前再次暂停；继续恢复正常调度",
     "暂停事件包含稳定pauseId、controlRevision、节点、变量快照和循环局部变量只读元数据",
     "resume和step使用稳定commandId，worker实际应用后才确认；重复同内容返回原结果，过期暂停上下文返回409",
+    "暂停变量支持一次提交多个JSON值并原子应用；循环局部变量只读，修改后沿用pauseId提升controlRevision并发布新快照",
     "暂停、恢复和节点状态写入既有运行事件表及Studio事件流；停止可立即解除暂停且不会启动待执行节点",
     "根流程、嵌套工作流、自定义模块和画布子流程共享同一个调试控制器"
   ],
   "checks": [
     {
       "command": "pytest debug runtime, control-flow runtime, coordinator, worker protocol, debug contract and workflow HTTP suites",
-      "result": "70 passed",
+      "result": "74 passed",
       "covers": "节点前暂停、单步、继续、停止、真实worker HTTP闭环、状态持久化、命令幂等及原有运行回归"
     },
     {
@@ -39,7 +40,7 @@
   },
   "remaining": [
     "动态断点更新、从指定位置起跑和运行至嵌套目标",
-    "暂停变量原子修改、变量检查点与变化记录",
+    "变量检查点、变化记录及大值诊断文件",
     "失败暂停保留浏览器及结束调试后的失败终态",
     "日志筛选、固定截止导出和正式Electron真实UI验收",
     "调试命令记录由内存升级为重启后可查询的数据库记录"
