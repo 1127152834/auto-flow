@@ -2383,6 +2383,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/tables/{tableId}/records/{recordKey}/source-observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source Observations */
+        get: operations["source_observations_api_v1_projects__projectId__tables__tableId__records__recordKey__source_observations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/tables/{tableId}/sync/pull": {
         parameters: {
             query?: never;
@@ -8169,6 +8186,34 @@ export type components = {
              * @enum {string}
              */
             mode: "sourceDefault";
+        };
+        /** SourceFieldObservation */
+        SourceFieldObservation: {
+            /** Fieldid */
+            fieldId: string;
+            /** Remotevalue */
+            remoteValue: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+            /** Localvalue */
+            localValue: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+            /** Localpresent */
+            localPresent: boolean;
+            /** Localcontentrevision */
+            localContentRevision: number;
+            /**
+             * Observedat
+             * Format: date-time
+             */
+            observedAt: string;
+            /** Differs */
+            differs: boolean;
+        };
+        /** SourceRecordObservations */
+        SourceRecordObservations: {
+            record: components["schemas"]["DataRecordRef"];
+            /** Bindingepoch */
+            bindingEpoch: number | null;
+            /** Items */
+            items: components["schemas"]["SourceFieldObservation"][];
         };
         /** StatisticsBucket */
         StatisticsBucket: {
@@ -20853,6 +20898,78 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    source_observations_api_v1_projects__projectId__tables__tableId__records__recordKey__source_observations_get: {
+        parameters: {
+            query: {
+                datasetGeneration: string;
+                recordKeyType: "text" | "integer" | "uuid";
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                recordKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceRecordObservations"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -8080,10 +8080,16 @@
           "kind": "automated_and_real_application",
           "report": "docs/project-management/implementation/pm6/verification.json",
           "real_application": "docs/project-management/implementation/pm6/qa-runs/2026-09-18/ui-result.json",
-          "scope": "拉取不覆盖本地已编辑的普通字段；远端变化保留为可查看证据。",
+          "scope": "拉取不覆盖本地已编辑的普通字段；原报告对远端变化可查看的声明已被 2026-09-21 审查否定，该子能力于 R5 实现，以当前专项证据为准。",
           "limitations": "管理侧与本地契约已验证：真实界面点击、FastAPI、SQLite、受控 Sheets REST 替身；实网 Google OAuth 与真实 Spreadsheet 未执行，Windows、其他架构、打包与用户手测未执行。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_integration_and_component",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "R5 只读来源观察，精确范围见 testMapping，不升级 verified。"
         }
       ],
       "owner": "data-source",
@@ -8112,16 +8118,42 @@
             "symbol": "test_remote_plain_value_change_preserves_local_content_and_revisions",
             "scope": "真实 HTTP/SQLite、受控 Sheets transport：远端普通值改变后拉取，本地 ref/values/statusId/contentRevision/statusRevision 均保持；远端值也未被拉取改写",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_observations.py",
+            "symbol": "test_source_observation_keeps_local_values_revisions_and_pending_intent",
+            "scope": "来源普通值变化持久记录，保留本地整条记录和原 pending 意图；push 核验与观察并存，下一拉取更新为无差异且仅最近每字段一条",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_observations.py",
+            "symbol": "test_observations_hide_old_generation_epoch_unbound_and_deleted_records",
+            "scope": "旧代次 410、旧 epoch 及解绑不可见、迟到观察不能覆盖当前、删除记录 404",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_observations.py",
+            "symbol": "test_formula_refresh_remains_separate_from_ordinary_observations",
+            "scope": "公式仍由来源刷新修订，不进入普通差异列表，无出站意图",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_observations.py",
+            "symbol": "test_ambiguous_source_identity_does_not_replace_trusted_observation",
+            "scope": "重复远端身份不能把含糊值登记到原记录观察",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/project-data/components/RecordSourceObservations.test.tsx",
+            "scope": "详情只读区分来源/观察时本地值及修订；切换代次旧观察不可见，无写操作入口",
+            "level": "automated_component",
+            "testName": "shows source and observed local values separately using only a cancellable read"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "未验证真实 Google 专项和非空业务状态；远端变化的持久记录/查看能力另记实现缺口。"
-          },
-          {
-            "kind": "implementation_missing",
-            "detail": "project_sync/outbound.py::_ingest 对非公式既有值直接返回 seen；当前没有把普通远端差异持久记录并暴露查看的分支。保留本地值已验证，不等于差异查看已实现。"
+            "detail": "来源观察的当前 PM9 打包详情实机、Google 专项及非空状态组合尚未验收；本地 HTTP/SQLite/受控 transport 与组件断言通过。"
           }
         ],
         "statusBeforeReview": "partially_verified"

@@ -27,3 +27,12 @@ f580 本机真实 public145 内核 26 passed / 279.99s，早前错误 Pro 路径
 ## R2 本地字段删除（confirmed，2026-09-21）
 
 原 DataSchemaService 没有删除路径，现以单个显式 removedFieldIds 扩展完整草稿，抽出同 Session 提交供管理/Task 复用；修正预览末次快照与影响持久化原先不在同事务的问题。Task 自身纯删除声明排除，其他节点/Task、身份、来源映射、自动化输入引用与未决同步继续阻断。字段 ID 删除后不能复用，Task 只有当前本地 cursor 可随自己删除推进，人工新值导致的落后 cursor 不推进。节点配置使用既有 SchemaImpactDrawer 做目标预览确认，运行时 previewFieldDeletion→deleteField 仍需原影响版本。仅本地定义/值删除，不删 Google 列。180 后端定向、18 UI、真实 worker 成功/冲突 2 项、类型/lint/OpenAPI/脚本101/build通过；覆盖227有/24无，192partial/59planned/0verified。C4三平台不包含本片，R5→R3→R4继续。
+
+
+### 2026-09-21 R5 来源观察（confirmed，局部证据）
+
+普通远端值通过现有 SyncRecordMarkRow.inboundObservation 保存最近每字段观察；与 identity/outbound 证据合并。当前 generation/epoch、字段/映射与记录存在性约束后，只读 HTTP/详情显示来源值、观察时本地值和修订。普通值、状态/关联、内容修订和待发送意图不改；公式保留既有刷新。重复身份不更新观察。无采纳/回滚/云写入口。
+
+59 项后端、18 项组件/客户端检查通过；ruff/mypy(404)、typecheck/lint/OpenAPI/build 通过。DATA-SH-06 移除对应 implementation_missing，仍 partially_verified；251 条、227 有定位断言、24 无定位断言、192 partially_verified/59 planned/0 verified 均不变。早期 PM6 记录对“远端差异可查看”的范围已明确纠正，不否定其既有服务账号实网及系统凭据证据。
+
+C4 35597323657 @21f8bb1e：ARM 已通过；Windows 全量后端 3338 passed/74 skipped、前端 5460 passed/406 files，但真实 worker 13 failed/5 passed/11 deselected，进程失联原因待诊断；Intel 当时仍在运行。以上 C 候选不含 R1/R2/R5；不得算当前候选三平台通过。R3/R4 仍按批准顺序待实施，releaseAccepted=false。

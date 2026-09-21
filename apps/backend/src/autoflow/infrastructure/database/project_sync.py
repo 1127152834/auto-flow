@@ -22,6 +22,7 @@ from .models import ProjectOperationRow
 from .project_data_models import (
     DataFieldRow,
     DataGenerationRow,
+    DataRecordRow,
     DataTableRow,
 )
 from .project_excel_common import instant, operation_view
@@ -1033,6 +1034,78 @@ class SqlAlchemyProjectSync:
                     mark.remote_seen_at = now
                     mark.updated_at = now
             session.commit()
+
+    def observe_source(
+        self, project: str, table: str, generation: str, epoch: int,
+        key: RecordKey, values: dict[str, Any],
+    ) -> None:
+        """Keep one ordinary-cell observation per field without creating an intent."""
+        now = datetime.now(UTC)
+        with self.sessions() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            current = _required_table(session, project, table)
+            binding = session.get(SheetsBindingRow, table)
+            if current.current_generation != generation or binding is None or binding.binding_epoch != epoch:
+                return  # An old network response cannot become a new binding's observation.
+            record = session.get(DataRecordRow, (generation, key.type, key.value))
+            if record is None or record.deleted:
+                return
+            readable = {item["fieldId"] for item in binding.mapping if item["direction"] != "write"}
+            fields = session.scalars(select(DataFieldRow).where(
+                DataFieldRow.table_id == table, DataFieldRow.dataset_generation == generation,
+            )).all()
+            items = []
+            for field in fields:
+                if field.formula or field.id not in readable or field.id not in values:
+                    continue
+                local = record.values_json.get(field.id)
+                present = field.id in record.values_json
+                items.append({
+                    "fieldId": field.id, "remoteValue": values[field.id],
+                    "localValue": local, "localPresent": present,
+                    "localContentRevision": record.content_revision,
+                    "observedAt": instant(now),
+                    "differs": not present or digest(local) != digest(values[field.id]),
+                })
+            mark = session.get(SyncRecordMarkRow, (table, key.type, key.value))
+            if mark is None:
+                mark = SyncRecordMarkRow(table_id=table, record_key_type=key.type, record_key=key.value, remote_missing=False)
+                session.add(mark)
+            mark.observed = {**(mark.observed or {}), "inboundObservation": {
+                "datasetGeneration": generation, "bindingEpoch": epoch, "items": items,
+            }}
+            mark.updated_at = now
+            session.commit()
+
+    def source_observations(
+        self, project: str, table: str, generation: str, key: RecordKey,
+    ) -> dict[str, Any]:
+        with self.sessions() as session:
+            session.execute(text("BEGIN"))
+            current = _required_table(session, project, table)
+            if current.current_generation != generation:
+                raise ProjectError("DATASET_GENERATION_GONE", "这条记录属于已替换的数据。", 410)
+            record = session.get(DataRecordRow, (generation, key.type, key.value))
+            if record is None or record.deleted:
+                raise ProjectError("RECORD_NOT_FOUND", "Record was not found", 404)
+            result: dict[str, Any] = {"record": {"projectId": project, "tableId": table, "datasetGeneration": generation,
+                                 "recordKey": {"type": key.type, "value": key.value}},
+                      "bindingEpoch": None, "items": []}
+            binding = session.get(SheetsBindingRow, table)
+            mark = session.get(SyncRecordMarkRow, (table, key.type, key.value))
+            if binding is None:
+                return result
+            result["bindingEpoch"] = binding.binding_epoch
+            observed = (mark.observed or {}).get("inboundObservation", {}) if mark else {}
+            if observed.get("datasetGeneration") != generation or observed.get("bindingEpoch") != binding.binding_epoch:
+                return result
+            readable = {item["fieldId"] for item in binding.mapping if item["direction"] != "write"}
+            current_ids = set(session.scalars(select(DataFieldRow.id).where(
+                DataFieldRow.table_id == table, DataFieldRow.dataset_generation == generation,
+                DataFieldRow.formula.is_(False),
+            )))
+            result["items"] = [item for item in observed.get("items", []) if item["fieldId"] in readable & current_ids]
+            return result
 
     def marks(self, table: str) -> dict[tuple[str, str], SyncRecordMarkRow]:
         with self.sessions() as session:

@@ -19,7 +19,8 @@
     "C2",
     "C3",
     "R1",
-    "R2"
+    "R2",
+    "R5"
   ],
   "verification": {
     "scopedBackend": "158 passed, 2 warnings in 57.88s",
@@ -63,6 +64,16 @@
       "openapi": "passed and generated type updated",
       "scripts": "101 passed",
       "build": "passed in 32.78s"
+    },
+    "R5": {
+      "backend": "59 passed / 2 warnings in 60.40s (observations, sync, identity, shared claims and HTTP contract)",
+      "frontend": "18 passed / 3 files in 2.89s (source observations, record fields and Sheets API)",
+      "ruff": "passed",
+      "mypy": "404 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed; read-only DTO and client regenerated",
+      "build": "passed in 32.79s"
     }
   },
   "assertionScope": [
@@ -88,16 +99,21 @@
     "R2 extends the existing full schema candidate with one explicit removedFieldIds target; rechecks dependency and impact fences inside the Task-owned transaction",
     "R2 own delete/preview declarations do not self-block; own other node, separate Task, identity, automation reference, source mapping and pending sync references block",
     "R2 deletion removes local definition/current values, retains status/link facts and immutable Task snapshots; original operation replay, retired field IDs and current-own-cursor versus human-new-value fencing tested",
-    "R2 configuration previews complete candidate and requires target confirmation before granting the deletion field; blocked source mapping cannot confirm; no cloud write"
+    "R2 configuration previews complete candidate and requires target confirmation before granting the deletion field; blocked source mapping cannot confirm; no cloud write",
+    "来源普通值变化持久记录，保留本地整条记录和原 pending 意图；push 核验与观察并存，下一拉取更新为无差异且仅最近每字段一条",
+    "旧代次 410、旧 epoch 及解绑不可见、迟到观察不能覆盖当前、删除记录 404",
+    "公式仍由来源刷新修订，不进入普通差异列表，无出站意图",
+    "重复远端身份不能把含糊值登记到原记录观察",
+    "详情只读区分来源/观察时本地值及修订；切换代次旧观察不可见，无写操作入口"
   ],
   "limits": [
     "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
-    "R1/R2 implemented with scoped local evidence; R5-R3-R4 approved, not yet implemented",
+    "R1/R2/R5 implemented with scoped local evidence; R3-R4 approved, not yet implemented",
     "M1-M3 not approved",
     "Google real authorization, signing and full native platform acceptance external",
     "Local pull preserves existing readable rows and skipped blank identities; those tables remain ineligible for shared claims until identity is complete",
     "Source namespace currently uses verified column coordinate/header and exact key encoding; moved/renamed columns require explicit repair",
-    "C4 full backend regression and new three-platform packaged matrix pending",
+    "C4 native matrix 35597323657: ARM passed, Windows real worker failed (full backend/frontend passed), Intel still pending at observation",
     "Actual worker integration uses TestClient HTTP and controlled Google transport, not packaged Google network authorization",
     "29-case run predates the extra status assertions; the separate latest 3-case run proves those assertions on identical production source"
   ],
@@ -139,5 +155,14 @@
     "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "5b88061fcdbb3a228d5390799028cb90d08d4b02ba959cc889017f5e1f07a32f",
     "apps/backend/src/autoflow/domain/project_data/schema.py": "7cd989246be50f7894a8b8d935fe4713ab0d488301c8cc09a9e9b8c8ce478e57",
     "apps/backend/src/autoflow/domain/project_data/capabilities.py": "490af0fe9d05f521c2a254e5b6fcd18dfb511b00052944b69195dcc47fb62ea7"
+  },
+  "R5SourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "c2c26ebaf62f527e7a9ed0d5083b6b7db83d702d32cd1cab5ce4fa4a75298b25",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "398bfe4590c57db6d8be4ba70cef601650c54c3201210ebfa7970b5c53512cd0",
+    "apps/backend/src/autoflow/adapters/http/project_sheets.py": "55cfe34917d6af46778401ca1283cf09c84b82b55e13ec0f55a406c194076532",
+    "apps/backend/src/autoflow/adapters/http/project_sheets_schemas.py": "c0c32465b5661b9701c4be86ba4b690f8ffa0d74603216b3a809ed861d6803be",
+    "apps/desktop/src/renderer/domains/project-data/components/RecordSourceObservations.tsx": "42d781a26f1e66f4d7aca96dbc9311b4b19efe1ee2fb3bfb47e6fe12daa2e69d",
+    "apps/desktop/src/renderer/domains/project-data/sheets-api.ts": "8a4db638969c3082f395519deeeff47279d2de7d8620a7698e62b08f7edf044d",
+    "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx": "03a8e55b3a7684808e4679c59b99896ee58263f5d3f00b097df55edb6b40e079"
   }
 }

@@ -5,6 +5,7 @@ from typing import Any, Literal
 
 from pydantic import Field
 
+from .project_data_catalog_schemas import Scalar
 from .project_data_record_schemas import DataRecordRef
 from .project_data_schemas import DataTableView
 from .schemas import ApiModel
@@ -290,3 +291,19 @@ class SyncStatusRevisionRequest(ApiModel):
 class SyncAbandonRequest(ApiModel):
     expected_status_revision: int
     reason: str
+
+
+class SourceFieldObservation(ApiModel):
+    field_id: str
+    remote_value: Scalar
+    local_value: Scalar
+    local_present: bool
+    local_content_revision: int
+    observed_at: datetime
+    differs: bool
+
+
+class SourceRecordObservations(ApiModel):
+    record: DataRecordRef
+    binding_epoch: int | None
+    items: list[SourceFieldObservation]

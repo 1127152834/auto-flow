@@ -16,7 +16,11 @@ from uuid import NAMESPACE_URL, uuid5
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
-from autoflow.domain.project_data.identity import RecordKey, RecordKeyType
+from autoflow.domain.project_data.identity import (
+    RecordKey,
+    RecordKeyType,
+    decode_record_key,
+)
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
@@ -73,6 +77,14 @@ class SheetsSyncService:
                 }
             }
         return {"summary": self._runs.summary(project_id, table_id), "binding": binding}
+
+    def source_observations(
+        self, project: str, table: str, generation: str, encoded: str, key_type: str,
+    ) -> dict[str, Any]:
+        _uuid(project, "projectId")
+        _uuid(table, "tableId")
+        _uuid(generation, "datasetGeneration")
+        return self._sync.source_observations(project, table, generation, decode_record_key(encoded, key_type))
 
     def pause(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
@@ -230,6 +242,8 @@ class SheetsSyncService:
                 )
             key = _record_key_for(marker)
             outcome = self._ingest(project_id, table_id, generation, key, values)
+            if valid:
+                self._sync.observe_source(project_id, table_id, generation, int(binding["bindingEpoch"]), key, values)
             if outcome == "created":
                 created += 1
             elif outcome == "refreshed":

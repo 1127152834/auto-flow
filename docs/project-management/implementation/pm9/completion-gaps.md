@@ -173,3 +173,12 @@ Windows Job active=0 仍有子进程句柄未退出的真实反例已修复：�
 2026-09-21 源码分类校正（confirmed）：DATA-SH-03 的云端新增、DATA-SH-10 删除同步、DATA-SH-11 新行公式模板复制缺实际路径，已追加 implementation_missing。tombstone 不复活与公式刷新测试继续有效，但只证明各自范围。独立 M1–M3 方案为 proposed，未包含在此前 C1–C4/R1–R5 问题中，不因网络授权可用就自动视为已实现。计数222/29不变。
 
 2026-09-21 f580b1c6 本机验证（confirmed）：完整后端3329 passed、60 skipped、2 warnings in611.65s。当前生产源码重新构建ARM DMG，hash a0ff707abb65cdff7eb5eb9b2f537b899bc0d4c71ce2209235c0b37dfdf48a47；镜像校验/只读挂载/隔离安装复制/卸载镜像、包内sidecar健康与父退出、真实原生打开取消/选择生成工作簿/保存取消通过。应用及临时数据已清理，报告install-read-fix-darwin-arm64.json；完整原生导入导出/凭据/签名/卸载仍未据此通过。
+
+
+### 2026-09-21 R5 来源观察（confirmed，局部证据）
+
+普通远端值通过现有 SyncRecordMarkRow.inboundObservation 保存最近每字段观察；与 identity/outbound 证据合并。当前 generation/epoch、字段/映射与记录存在性约束后，只读 HTTP/详情显示来源值、观察时本地值和修订。普通值、状态/关联、内容修订和待发送意图不改；公式保留既有刷新。重复身份不更新观察。无采纳/回滚/云写入口。
+
+59 项后端、18 项组件/客户端检查通过；ruff/mypy(404)、typecheck/lint/OpenAPI/build 通过。DATA-SH-06 移除对应 implementation_missing，仍 partially_verified；251 条、227 有定位断言、24 无定位断言、192 partially_verified/59 planned/0 verified 均不变。早期 PM6 记录对“远端差异可查看”的范围已明确纠正，不否定其既有服务账号实网及系统凭据证据。
+
+C4 35597323657 @21f8bb1e：ARM 已通过；Windows 全量后端 3338 passed/74 skipped、前端 5460 passed/406 files，但真实 worker 13 failed/5 passed/11 deselected，进程失联原因待诊断；Intel 当时仍在运行。以上 C 候选不含 R1/R2/R5；不得算当前候选三平台通过。R3/R4 仍按批准顺序待实施，releaseAccepted=false。

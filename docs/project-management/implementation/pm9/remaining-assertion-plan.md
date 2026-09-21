@@ -98,3 +98,12 @@
 ## R2 更新（2026-09-21）
 
 第 2 项工作流删字段实现缺失已 superseded。复用完整草稿增加单个显式 removedFieldIds、同事务依赖重验；Task 自身纯删除声明可排除，自身其他读写节点和第二 Task 不排除。身份、来源映射、自动化输入引用及未决同步分别保护。成功/冲突两条真实 worker、180 后端定向、18 UI 组件、原键恢复/已退休字段 ID/人工新值保护通过。只删除本地定义和值，不删 Google 列。DATA-SCHEMA-06 升为 partial；09 仅追加独立第二 Task 的删除保护断言。当前 227 有断言/24 无，192 partial/59 planned/0 verified。R5→R3→R4 继续，平台/原生完整链仍待验收。
+
+
+### 2026-09-21 R5 来源观察（confirmed，局部证据）
+
+普通远端值通过现有 SyncRecordMarkRow.inboundObservation 保存最近每字段观察；与 identity/outbound 证据合并。当前 generation/epoch、字段/映射与记录存在性约束后，只读 HTTP/详情显示来源值、观察时本地值和修订。普通值、状态/关联、内容修订和待发送意图不改；公式保留既有刷新。重复身份不更新观察。无采纳/回滚/云写入口。
+
+59 项后端、18 项组件/客户端检查通过；ruff/mypy(404)、typecheck/lint/OpenAPI/build 通过。DATA-SH-06 移除对应 implementation_missing，仍 partially_verified；251 条、227 有定位断言、24 无定位断言、192 partially_verified/59 planned/0 verified 均不变。早期 PM6 记录对“远端差异可查看”的范围已明确纠正，不否定其既有服务账号实网及系统凭据证据。
+
+C4 35597323657 @21f8bb1e：ARM 已通过；Windows 全量后端 3338 passed/74 skipped、前端 5460 passed/406 files，但真实 worker 13 failed/5 passed/11 deselected，进程失联原因待诊断；Intel 当时仍在运行。以上 C 候选不含 R1/R2/R5；不得算当前候选三平台通过。R3/R4 仍按批准顺序待实施，releaseAccepted=false。

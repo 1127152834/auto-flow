@@ -25,6 +25,7 @@ from .project_sheets_schemas import (
     SheetsConnectionDirectory,
     SheetsInspectionCreate,
     SheetsInspectionResult,
+    SourceRecordObservations,
     SyncAbandonRequest,
     SyncOperation,
     SyncOperationPage,
@@ -200,6 +201,18 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
     )
     def sync_state(projectId: CanonicalId, tableId: CanonicalId):
         return service.state(str(projectId), str(tableId))
+
+    @router.get(
+        "/records/{recordKey}/source-observations",
+        response_model=SourceRecordObservations,
+        responses=browser_error_responses(401, 404, 410, 422),
+    )
+    def source_observations(
+        projectId: CanonicalId, tableId: CanonicalId, recordKey: str,
+        dataset_generation: Annotated[CanonicalId, Query(alias="datasetGeneration")],
+        record_key_type: Annotated[Literal["text", "integer", "uuid"], Query(alias="recordKeyType")],
+    ):
+        return service.source_observations(str(projectId), str(tableId), str(dataset_generation), recordKey, record_key_type)
 
     @router.post(
         "/sync/pull",
