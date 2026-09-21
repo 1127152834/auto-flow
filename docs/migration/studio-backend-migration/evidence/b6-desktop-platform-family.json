@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-012-desktop-platform-family",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -56,8 +56,16 @@
     "sensitiveValuesPersisted": false
   },
   "remaining": [
-    "正式Electron中通过真实UI添加、保存并运行四节点，核验系统剪贴板、可听提示音和可见通知",
-    "macOS与Windows的系统权限、通知展示时长和提示音分别记录实机结果",
-    "Allure报告自动打开若仍在批准范围，后续复用同一受控平台边界，不扩展通用桌面RPC"
-  ]
+    "Windows 原生剪贴板、通知展示和提示音仍需 Windows 实机验收；本次 macOS arm64 证据不跨平台推定通过",
+    "Allure 报告自动打开若仍在批准范围，后续复用同一受控平台边界，不扩展通用桌面 RPC"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-desktop-platform.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-Tj2qOw/result.json",
+    "covers": "正式 Studio 真实 UI 添加、配置、保存并运行 set_clipboard、get_clipboard、play_sound、system_notification；原生剪贴板回读、提示音和系统通知均核验；敏感值未进入结果/日志；运行后无 CloakBrowser 或 worker 残留",
+    "boundary": "未触碰用户数据库；Windows 平台仍单独记录为未实测"
+  }
 }

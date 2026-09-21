@@ -1,0 +1,57 @@
+{
+  "evidenceId": "BE-B6-desktop-platform-formal-electron",
+  "checkedAt": "2026-09-21T19:35:39.555Z",
+  "gitHead": "d118224487b8e6d0b139359f12208fdd8cb263ed",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "VnC_cucjJAY8079hV1zQK",
+  "profileId": "3c1f849e-d5c7-4333-a95e-14534ee45544",
+  "runId": "f63086d6-2bcf-4af4-9f1c-3f89f1323afa",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 添加并配置剪贴板、日志、提示音和系统通知节点",
+    "正式保存接口把五个桌面节点、四条连线和字段配置写入临时 SQLite",
+    "真实 worker 通过 Electron 平台桥写入并读取系统剪贴板，播放提示音并显示系统通知；变量和日志均核验",
+    "纯系统工具流程未启动 CloakBrowser，运行结束后无子进程或浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "set_clipboard",
+      "nodeId": "88pTVZRLJByN315is7jB1"
+    },
+    {
+      "moduleType": "get_clipboard",
+      "nodeId": "wYkju0lp9cAy52EEqga10"
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "l0uq9fLqLWs35G5FPut_f"
+    },
+    {
+      "moduleType": "play_sound",
+      "nodeId": "N4b2lVXMgcJtSbSrI1YOY",
+      "result": {
+        "count": 1
+      }
+    },
+    {
+      "moduleType": "system_notification",
+      "nodeId": "cWXDEsCm5OvBIM2yitBkS",
+      "result": {
+        "title": "AutoFlow 验收",
+        "message": "平台节点已完成",
+        "duration": 5
+      }
+    }
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "clipboard": "random marker written and read through native Electron clipboard; no user data",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows native clipboard/notification and prompt sound remain separately unverified"
+  }
+}
