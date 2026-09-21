@@ -7,6 +7,8 @@ export type StudioPlatformAction =
   | { action: 'beep'; count: number; interval: number }
   | { action: 'notification'; title: string; message: string; duration: number; playSound: boolean }
   | { action: 'open_path'; path: string }
+  | { action: 'system_control'; operation: 'shutdown' | 'restart' | 'logout' | 'hibernate' | 'sleep'; delay: number; force: boolean }
+  | { action: 'lock_screen' }
 
 export type StudioPlatformActionResult = { value?: string }
 

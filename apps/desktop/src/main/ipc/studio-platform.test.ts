@@ -6,9 +6,9 @@ const event={sender:{id:7,mainFrame:{}},senderFrame:{}}
 event.senderFrame=event.sender.mainFrame
 
 function setup(allowed=true){
- const writeText=vi.fn(),writeImage=vi.fn(()=>true),beep=vi.fn(),notify=vi.fn(),readText=vi.fn(()=> 'copied'),openPath=vi.fn(async()=> '')
- const handler=createStudioPlatformActionHandler({allowed:()=>allowed,writeText,writeImage,beep,notify,readText,openPath})
- return {handler,writeText,writeImage,beep,notify,readText,openPath}
+ const writeText=vi.fn(),writeImage=vi.fn(()=>true),beep=vi.fn(),notify=vi.fn(),readText=vi.fn(()=> 'copied'),openPath=vi.fn(async()=> ''),systemControl=vi.fn(async()=> ''),lockScreen=vi.fn(async()=> '')
+ const handler=createStudioPlatformActionHandler({allowed:()=>allowed,writeText,writeImage,beep,notify,readText,openPath,systemControl,lockScreen})
+ return {handler,writeText,writeImage,beep,notify,readText,openPath,systemControl,lockScreen}
 }
 
 it('limits platform actions to the registered Studio main frame',async()=>{
@@ -41,9 +41,17 @@ it('opens only absolute report paths and returns the native failure',async()=>{
  await expect(api.handler(event,{action:'open_path',path:'report.html'})).resolves.toMatchObject({ok:false,error:{code:'INVALID_PLATFORM_ACTION'}})
 })
 
+it('dispatches validated Windows system actions through injected adapters',async()=>{
+ const api=setup()
+ await expect(api.handler(event,{action:'system_control',operation:'restart',delay:15,force:true})).resolves.toEqual({ok:true,value:{}})
+ await expect(api.handler(event,{action:'lock_screen'})).resolves.toEqual({ok:true,value:{}})
+ expect(api.systemControl).toHaveBeenCalledWith({action:'system_control',operation:'restart',delay:15,force:true})
+ expect(api.lockScreen).toHaveBeenCalledOnce()
+})
+
 it('rejects malformed and unsupported actions before adapters run',async()=>{
  const api=setup()
- for(const request of [null,{action:'clipboard_write_text',text:''},{action:'clipboard_write_image',path:'relative.png'},{action:'beep',count:101,interval:0},{action:'notification',title:'',message:'x',duration:1,playSound:true},{action:'other'}]){
+ for(const request of [null,{action:'clipboard_write_text',text:''},{action:'clipboard_write_image',path:'relative.png'},{action:'beep',count:101,interval:0},{action:'notification',title:'',message:'x',duration:1,playSound:true},{action:'system_control',operation:'erase',delay:0,force:false},{action:'other'}]){
   await expect(api.handler(event,request)).resolves.toMatchObject({ok:false,error:{code:'INVALID_PLATFORM_ACTION'}})
  }
  expect(api.writeText).not.toHaveBeenCalled();expect(api.beep).not.toHaveBeenCalled()

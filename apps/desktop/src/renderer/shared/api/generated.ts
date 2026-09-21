@@ -2519,6 +2519,26 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/triggers/webhook/{webhook_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Trigger Webhook */
+        get: operations["trigger_webhook_api_triggers_webhook__webhook_id__get"];
+        /** Trigger Webhook */
+        put: operations["trigger_webhook_api_triggers_webhook__webhook_id__put"];
+        /** Trigger Webhook */
+        post: operations["trigger_webhook_api_triggers_webhook__webhook_id__post"];
+        /** Trigger Webhook */
+        delete: operations["trigger_webhook_api_triggers_webhook__webhook_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflows/{workflow_id}/execute": {
         parameters: {
             query?: never;
@@ -10085,7 +10105,7 @@ export type components = {
              * Action
              * @enum {string}
              */
-            action: "clipboard_write_text" | "clipboard_write_image" | "clipboard_read_text" | "beep" | "notification" | "open_path";
+            action: "clipboard_write_text" | "clipboard_write_image" | "clipboard_read_text" | "beep" | "notification" | "open_path" | "system_control" | "lock_screen";
             /** Payload */
             payload: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -21426,6 +21446,130 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    trigger_webhook_api_triggers_webhook__webhook_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                webhook_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    trigger_webhook_api_triggers_webhook__webhook_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                webhook_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    trigger_webhook_api_triggers_webhook__webhook_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                webhook_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    trigger_webhook_api_triggers_webhook__webhook_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                webhook_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

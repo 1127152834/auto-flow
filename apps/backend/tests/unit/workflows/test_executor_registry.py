@@ -251,6 +251,8 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "get_clipboard",
         "play_sound",
         "system_notification",
+        "shutdown_system",
+        "lock_screen",
         "allure_init",
         "allure_start_test",
         "allure_add_step",

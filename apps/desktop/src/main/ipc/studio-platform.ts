@@ -11,6 +11,8 @@ type Dependencies = {
   beep(): void
   notify(request: Extract<StudioPlatformAction, {action:'notification'}>): void
   openPath(path: string): Promise<string>
+  systemControl(request: Extract<StudioPlatformAction, {action:'system_control'}>): Promise<string>
+  lockScreen(): Promise<string>
 }
 
 const failure = (code:string,message:string):DesktopResult<StudioPlatformActionResult> => ({ok:false,error:{code,message}})
@@ -46,6 +48,15 @@ export function createStudioPlatformActionHandler(dependencies:Dependencies) {
       if(action==='open_path'){
         if(typeof request.path!=='string'||!isAbsolute(request.path))return failure('INVALID_PLATFORM_ACTION','打开路径无效。')
         const error=await dependencies.openPath(request.path)
+        return error?failure('PLATFORM_ACTION_FAILED',error):{ok:true,value:{}}
+      }
+      if(action==='system_control'){
+        if(!['shutdown','restart','logout','hibernate','sleep'].includes(String(request.operation))||!Number.isSafeInteger(request.delay)||Number(request.delay)<0||typeof request.force!=='boolean')return failure('INVALID_PLATFORM_ACTION','系统控制参数无效。')
+        const error=await dependencies.systemControl(request as Extract<StudioPlatformAction,{action:'system_control'}>)
+        return error?failure('PLATFORM_ACTION_FAILED',error):{ok:true,value:{}}
+      }
+      if(action==='lock_screen'){
+        const error=await dependencies.lockScreen()
         return error?failure('PLATFORM_ACTION_FAILED',error):{ok:true,value:{}}
       }
       return failure('INVALID_PLATFORM_ACTION','不支持的平台操作。')

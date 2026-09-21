@@ -5,6 +5,7 @@ from typing import Any
 from autoflow.domain.workflows.execution import ExecutionContext
 
 from .base import ModuleExecutor, ModuleResult
+from .type_utils import to_int
 
 
 async def _perform(
@@ -163,9 +164,63 @@ class SystemNotificationExecutor(ModuleExecutor):
         )
 
 
+class ShutdownSystemExecutor(ModuleExecutor):
+    @property
+    def module_type(self) -> str:
+        return "shutdown_system"
+
+    async def execute(
+        self, config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        action = str(context.resolve_value(config.get("action", "shutdown")))
+        labels = {
+            "shutdown": "关机",
+            "restart": "重启",
+            "logout": "注销",
+            "hibernate": "休眠",
+            "sleep": "睡眠",
+        }
+        if action not in labels:
+            return ModuleResult(success=False, error=f"未知操作类型: {action}")
+        delay = to_int(config.get("delay", 0), 0, context)
+        raw_force = config.get("force", False)
+        if isinstance(raw_force, str):
+            raw_force = context.resolve_value(raw_force)
+        force = raw_force in (True, "true", "True", "1", 1)
+        failure = await _perform(
+            context,
+            "system_control",
+            {"operation": action, "delay": delay, "force": force},
+        )
+        if failure:
+            return failure
+        label = labels[action]
+        return ModuleResult(
+            success=True,
+            message=f"系统将在 {delay} 秒后{label}"
+            if delay > 0
+            else f"正在执行{label}...",
+        )
+
+
+class LockScreenExecutor(ModuleExecutor):
+    @property
+    def module_type(self) -> str:
+        return "lock_screen"
+
+    async def execute(
+        self, config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        del config
+        failure = await _perform(context, "lock_screen", {})
+        return failure or ModuleResult(success=True, message="屏幕已锁定")
+
+
 DESKTOP_PLATFORM_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     SetClipboardExecutor,
     GetClipboardExecutor,
     PlaySoundExecutor,
     SystemNotificationExecutor,
+    ShutdownSystemExecutor,
+    LockScreenExecutor,
 )

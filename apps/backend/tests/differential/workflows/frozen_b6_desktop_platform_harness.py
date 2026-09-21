@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import asyncio
+import ctypes
 import json
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -11,9 +13,17 @@ sys.modules["winsound"] = SimpleNamespace(
     Beep=lambda frequency, duration: beeps.append((frequency, duration))
 )
 
-from app.executors.advanced import GetClipboardExecutor, SetClipboardExecutor
-from app.executors.base import ExecutionContext
-from app.executors.basic import PlaySoundExecutor, SystemNotificationExecutor
+from app.executors.advanced import (  # noqa: E402
+    GetClipboardExecutor,
+    LockScreenExecutor,
+    SetClipboardExecutor,
+    ShutdownSystemExecutor,
+)
+from app.executors.base import ExecutionContext  # noqa: E402
+from app.executors.basic import (  # noqa: E402
+    PlaySoundExecutor,
+    SystemNotificationExecutor,
+)
 
 
 def _result(value):
@@ -26,17 +36,26 @@ def _result(value):
 
 
 async def _run(payload):
+    commands = []
+    subprocess.run = lambda command, **_options: (
+        commands.append(command) or SimpleNamespace(returncode=0, stderr="")
+    )
+    ctypes.windll = SimpleNamespace(
+        user32=SimpleNamespace(LockWorkStation=lambda: commands.append("lock_screen"))
+    )
     executors = {
         "set_clipboard": SetClipboardExecutor,
         "get_clipboard": GetClipboardExecutor,
         "play_sound": PlaySoundExecutor,
         "system_notification": SystemNotificationExecutor,
+        "shutdown_system": ShutdownSystemExecutor,
+        "lock_screen": LockScreenExecutor,
     }
     context = ExecutionContext(variables=payload.get("variables", {}))
     result = await executors[payload["moduleType"]]().execute(
         payload.get("config", {}), context
     )
-    return {"result": _result(result), "variables": context.variables, "beeps": beeps}
+    return {"result": _result(result), "variables": context.variables, "beeps": beeps, "commands": commands}
 
 
 payload = json.loads(sys.stdin.read())

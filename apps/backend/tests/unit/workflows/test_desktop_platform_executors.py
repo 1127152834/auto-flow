@@ -105,3 +105,39 @@ async def test_platform_failure_is_a_node_failure() -> None:
     )
     assert result.success is False
     assert result.error == "系统拒绝"
+
+
+@pytest.mark.asyncio
+async def test_system_control_nodes_use_platform_bridge() -> None:
+    actions = DesktopActions()
+    context = ExecutionContext(
+        variables={"delay": 12, "force": "true"}, desktop_actions=actions
+    )
+    registry = build_production_executor_registry()
+
+    shutdown = await registry.get("shutdown_system").execute(
+        {"action": "restart", "delay": "{delay}", "force": "{force}"}, context
+    )
+    locked = await registry.get("lock_screen").execute({}, context)
+
+    assert shutdown.success is True
+    assert shutdown.message == "系统将在 12 秒后重启"
+    assert locked.message == "屏幕已锁定"
+    assert actions.requests == [
+        (
+            "system_control",
+            {"operation": "restart", "delay": 12, "force": True},
+            60,
+        ),
+        ("lock_screen", {}, 60),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_system_control_rejects_unknown_action_before_platform_request() -> None:
+    actions = DesktopActions()
+    result = await build_production_executor_registry().get("shutdown_system").execute(
+        {"action": "erase"}, ExecutionContext(desktop_actions=actions)
+    )
+    assert result.error == "未知操作类型: erase"
+    assert actions.requests == []

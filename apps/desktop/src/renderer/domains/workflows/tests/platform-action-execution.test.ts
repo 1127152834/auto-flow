@@ -63,4 +63,15 @@ describe('Studio platform action execution', () => {
     expect(window.autoflow.runStudioPlatformAction).toHaveBeenCalledTimes(1)
     vi.useRealTimers()
   })
+
+  it('passes validated system control requests to Electron', async () => {
+    vi.mocked(window.autoflow!.runStudioPlatformAction!).mockResolvedValueOnce({ ok: true, value: {} })
+    await expect(runPlatformAction(
+      { ...request, action: 'system_control', payload: { operation: 'sleep', delay: 0, force: false } },
+      new AbortController().signal,
+    )).resolves.toEqual({ success: true, value: null, error: null })
+    expect(window.autoflow.runStudioPlatformAction).toHaveBeenCalledWith({
+      action: 'system_control', operation: 'sleep', delay: 0, force: false,
+    })
+  })
 })

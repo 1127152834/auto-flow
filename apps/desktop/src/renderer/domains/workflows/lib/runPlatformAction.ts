@@ -10,7 +10,7 @@ export function isPlatformActionRequest(value: unknown): value is Request {
   return typeof request.requestId === 'string' && !!request.requestId.trim()
     && typeof request.workflowId === 'string' && !!request.workflowId.trim()
     && typeof request.nodeId === 'string' && !!request.nodeId.trim()
-    && ['clipboard_write_text', 'clipboard_write_image', 'clipboard_read_text', 'beep', 'notification', 'open_path'].includes(String(request.action))
+    && ['clipboard_write_text', 'clipboard_write_image', 'clipboard_read_text', 'beep', 'notification', 'open_path', 'system_control', 'lock_screen'].includes(String(request.action))
     && !!request.payload && typeof request.payload === 'object' && !Array.isArray(request.payload)
 }
 
@@ -27,6 +27,13 @@ function actionFrom(request: Request): StudioPlatformAction | null {
     return { action: request.action, title: payload.title, message: payload.message, duration: payload.duration, playSound: payload.playSound }
   }
   if (request.action === 'open_path' && typeof payload.path === 'string') return { action: request.action, path: payload.path }
+  if (request.action === 'system_control'
+    && ['shutdown', 'restart', 'logout', 'hibernate', 'sleep'].includes(String(payload.operation))
+    && Number.isSafeInteger(payload.delay) && Number(payload.delay) >= 0
+    && typeof payload.force === 'boolean') {
+    return { action: request.action, operation: payload.operation as Extract<StudioPlatformAction, {action:'system_control'}>['operation'], delay: Number(payload.delay), force: payload.force }
+  }
+  if (request.action === 'lock_screen') return { action: request.action }
   return null
 }
 

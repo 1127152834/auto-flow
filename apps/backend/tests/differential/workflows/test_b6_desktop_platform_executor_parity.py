@@ -34,6 +34,9 @@ def _source(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 class Actions:
+    def __init__(self) -> None:
+        self.requests: list[tuple[str, Mapping[str, Any], float]] = []
+
     async def perform(
         self,
         action: str,
@@ -41,7 +44,7 @@ class Actions:
         *,
         timeout_seconds: float,
     ) -> DesktopActionResult:
-        del action, payload, timeout_seconds
+        self.requests.append((action, payload, timeout_seconds))
         return DesktopActionResult(True)
 
 
@@ -89,3 +92,39 @@ async def test_sound_defaults_and_result_match_frozen_source(
         "data": target.data,
         "error": target.error,
     } == source["result"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("module_type", "config", "expected_action"),
+    [
+        (
+            "shutdown_system",
+            {"action": "restart", "delay": 9, "force": True},
+            (
+                "system_control",
+                {"operation": "restart", "delay": 9, "force": True},
+                60,
+            ),
+        ),
+        ("lock_screen", {}, ("lock_screen", {}, 60)),
+    ],
+)
+async def test_system_control_results_match_frozen_source(
+    module_type: str,
+    config: dict[str, Any],
+    expected_action: tuple[str, Mapping[str, Any], float],
+) -> None:
+    source = _source({"moduleType": module_type, "config": config})
+    actions = Actions()
+    target = await build_production_executor_registry().get(module_type).execute(
+        config, ExecutionContext(desktop_actions=actions)
+    )
+    assert {
+        "success": target.success,
+        "message": target.message,
+        "data": target.data,
+        "error": target.error,
+    } == source["result"]
+    assert actions.requests == [expected_action]
+    assert source["commands"]

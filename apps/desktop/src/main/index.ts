@@ -1,4 +1,5 @@
 import {createHash} from 'node:crypto'
+import { execFile } from 'node:child_process'
 import { realpathSync } from 'node:fs'
 import { app, BrowserWindow, clipboard, dialog, ipcMain, nativeImage, Notification, shell } from 'electron'
 import { join } from 'node:path'
@@ -9,6 +10,7 @@ import { createOpenExternalLinkHandler } from './ipc/external-links'
 import { createConnectGoogleSheetsHandler } from './google-desktop'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
 import { createStudioPlatformActionHandler } from './ipc/studio-platform'
+import { createSystemControlActions } from './platform/system-control'
 import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
 import { DesktopSettingsStore, SettingsError } from './settings/store'
@@ -18,6 +20,12 @@ import type { UiPreferences } from '../shared/settings'
 
 let mainWindow: BrowserWindow | undefined
 let settings: SettingsController | undefined
+
+function runSystemCommand(file:string,args:string[]):Promise<string>{
+  return new Promise(resolve=>execFile(file,args,{windowsHide:true},error=>resolve(error?.message??'')))
+}
+
+const systemControl=createSystemControlActions(process.platform,runSystemCommand)
 /**
  * Development-only: the exact config file an automated run hands to the Google
  * authorization handler instead of a native picker. A packaged build always
@@ -127,6 +135,8 @@ async function createWindow(): Promise<void> {
     beep:()=>shell.beep(),
     notify:request=>{const notification=new Notification({title:request.title,body:request.message,silent:!request.playSound});notification.show();setTimeout(()=>notification.close(),request.duration*1000)},
     openPath:path=>shell.openPath(path),
+    systemControl:request=>systemControl.execute(request),
+    lockScreen:()=>systemControl.lock(),
   }))
   const actions: Record<string, (...args: unknown[]) => Promise<unknown>> = {
     'get': () => settings!.snapshot(),

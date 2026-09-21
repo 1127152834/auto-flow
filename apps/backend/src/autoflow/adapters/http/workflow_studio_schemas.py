@@ -585,6 +585,8 @@ class StudioDesktopActionRequest(ApiModel):
         "beep",
         "notification",
         "open_path",
+        "system_control",
+        "lock_screen",
     ]
     payload: dict[str, JsonValue]
 
