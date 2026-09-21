@@ -4,6 +4,7 @@ import math
 from dataclasses import dataclass
 from typing import Any
 
+from .canvas_subflows import CanvasSubflowGraph
 from .catalog import runnable_module_types
 from .graph import WorkflowDefinition
 from .models import WorkflowError, WorkflowIssue
@@ -35,12 +36,14 @@ class PreparedWorkflow:
 def prepare_run(document: object) -> PreparedWorkflow:
     projected = project_document(document)
     nodes = projected["content"]["nodes"]
+    graph = CanvasSubflowGraph(projected["content"])
+    scopes = graph.project_scopes()
     supported = runnable_module_types()
     issues = []
     for index, node in enumerate(nodes):
         node_id = node["id"]
         module_type = node["data"]["moduleType"]
-        if module_type not in supported:
+        if module_type not in supported and not graph._is_definition(node):
             issues.append(
                 WorkflowIssue(
                     node_id,
@@ -54,10 +57,15 @@ def prepare_run(document: object) -> PreparedWorkflow:
             "WORKFLOW_NOT_RUNNABLE", "工作流包含尚不可执行的节点", 422, issues
         )
     by_id = {node["id"]: node for node in nodes}
-    ends = [node['id'] for node in nodes if node['data']['moduleType'] == 'project_end']
-    if len(ends) > 1 or any(edge['source'] in ends for edge in projected['content']['edges']):
-        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 必须是唯一的最终节点，不能有后续连线', 422)
-    _validate_lifecycle_graph(nodes, projected['content']['edges'], ends)
+    for scope, members in scopes.items():
+        subset = graph._subset(members)
+        ends = [n['id'] for n in subset['nodes'] if n['data']['moduleType'] == 'project_end']
+        if len(ends) > 1 or any(edge['source'] in ends for edge in subset['edges']):
+            raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 必须是唯一的最终节点，不能有后续连线', 422)
+        _validate_lifecycle_graph(subset['nodes'], subset['edges'], ends)
+        valid, errors = WorkflowDefinition.from_raw(subset).validate()
+        if not valid and (members or not scope) and not all(n["data"]["moduleType"] in _DEFAULT_CONFIGS for n in nodes):
+            raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '；'.join(errors), 422)
     for node in nodes:
         for key, value in _DEFAULT_CONFIGS.get(node["data"]["moduleType"], {}).items():
             node["data"].setdefault(key, value)
@@ -76,9 +84,6 @@ def prepare_run(document: object) -> PreparedWorkflow:
     if all(node['data']['moduleType'] in _DEFAULT_CONFIGS for node in nodes):
         node_ids = _ordered_chain(nodes, projected["content"]["edges"])
     else:
-        valid, errors = WorkflowDefinition.from_raw(projected['content']).validate()
-        if not valid:
-            raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '；'.join(errors), 422)
         node_ids = list(by_id)
     return PreparedWorkflow(
         projected,
@@ -230,7 +235,7 @@ def _nonnegative_number(value: object) -> bool:
 
 
 def _validate_lifecycle_graph(nodes, edges, ends):
-    owns_control = any(n['data']['moduleType'] in {'project_manual', 'loop', 'foreach', 'foreach_dict'} for n in nodes)
+    owns_control = any(n['data']['moduleType'] in {'project_manual', 'subflow', 'loop', 'foreach', 'foreach_dict'} for n in nodes)
     if not ends and not owns_control:
         return
     outgoing = {node['id']: [] for node in nodes}

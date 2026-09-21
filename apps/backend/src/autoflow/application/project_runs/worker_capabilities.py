@@ -13,6 +13,7 @@ from autoflow.domain.project_data.identity import RecordKey
 from autoflow.domain.project_runs.input_selection import RecordRef
 from autoflow.domain.project_runs.worker_commands import project_command_id
 from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph
 from autoflow.infrastructure.database.project_capabilities import (
     SqlAlchemyProjectDataCapabilities,
 )
@@ -102,6 +103,7 @@ class ProjectWorkerCapabilities:
             ).order_by(WorkflowRunEventRow.sequence.desc()).limit(1))
             if event is None or event.payload.get('status') != 'started':
                 raise _denied()
+            _authorize_call_path(session, prepared.execution_plan, event)
             project_id, task_id = task.project_id, task.id
             manual_limit = min(config.get('timeoutSeconds', 1800), run.resource_request.get('manualDeadlineSeconds', 1800)) if expected_operation == 'manual' else None
             if request['operation'] == 'inputs':
@@ -175,3 +177,41 @@ class ProjectWorkerCapabilities:
             'executionGeneration': generation, 'retainEnvironment': retain,
         })
         return json_value(result)
+
+
+def _authorize_call_path(session: Any, plan: dict[str, Any], event: WorkflowRunEventRow) -> None:
+    document = plan.get('document')
+    if not isinstance(document, dict):
+        return  # Legacy chain plans cannot contain child calls.
+    graph = CanvasSubflowGraph(document)
+    members = {node['id'] for node in graph.top_level_document()['nodes']}
+    by_id = {node['id']: node for node in document['nodes']}
+    context = event.payload.get('executionContext', {})
+    if not isinstance(context, dict):
+        raise _denied()
+    scopes = context.get('scopes', [])
+    if not isinstance(scopes, list) or len(scopes) > 32:
+        raise _denied()
+    for index, scope in enumerate(scopes):
+        if not isinstance(scope, dict) or scope.get('kind') != 'subflow' or not isinstance(scope.get('callNodeId'), str) or not isinstance(scope.get('callVisitId'), str) or scope.get('callNodeId') not in members:
+            raise _denied()
+        call = by_id[scope['callNodeId']]['data']
+        config = call.get('config', call)
+        if call.get('moduleType') != 'subflow':
+            raise _denied()
+        definition = graph._find_definition(config.get('subflowGroupId', ''), config.get('subflowName', ''))
+        if definition is None or definition['id'] != scope.get('id'):
+            raise _denied()
+        parent = session.scalar(select(WorkflowRunEventRow).where(
+            WorkflowRunEventRow.run_id == event.run_id,
+            WorkflowRunEventRow.execution_generation == event.execution_generation,
+            WorkflowRunEventRow.node_id == scope['callNodeId'],
+            WorkflowRunEventRow.node_visit_id == scope.get('callVisitId'),
+            WorkflowRunEventRow.attempt == 1,
+            WorkflowRunEventRow.kind == 'nodeAttempt',
+        ).order_by(WorkflowRunEventRow.sequence.desc()).limit(1))
+        if parent is None or parent.payload.get('status') != 'started' or parent.payload.get('executionContext', {}).get('scopes', []) != scopes[:index]:
+            raise _denied()
+        members = graph._members(definition)
+    if event.node_id not in members:
+        raise _denied()

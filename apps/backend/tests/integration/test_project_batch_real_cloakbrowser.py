@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-link-race", "data-old-candidate", "manual-resume", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-link-race", "data-old-candidate", "manual-resume", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -49,6 +49,8 @@ async def test_real_project_batch_http(
     link_race_injected = False
     race_commands = []
     late_resume = None
+    subflow_source_edited = False
+    cancelled_child_writes = []
     if scenario == 'manual-expire-race':
         repository = app.state.environment_service.environments
         accept, transition = repository.accept_operation, repository.transition_manual
@@ -227,6 +229,19 @@ async def test_real_project_batch_http(
                     document['content']['edges'][-1]['target'] = 'second-write'
                     document['content']['edges'].append({'id': 'second-end', 'source': 'second-write', 'target': 'end'})
                     next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{second_saved['ref']}", 'expectedLinkRevision': "{second_saved['linkRevision']}", 'replaceAllowed': False})
+            if scenario in {'data-subflow', 'data-subflow-cancel'}:
+                write = next(n for n in nodes if n['id'] == 'write')
+                write['data']['arguments']['values'][field_id] = '{value}'
+                nodes.extend([
+                    {'id': 'child', 'type': 'subflow_header', 'position': {'x': 800, 'y': 0}, 'data': {'moduleType': 'subflow_header', 'subflowName': '冻结写入'}},
+                    {'id': 'first-call', 'type': 'subflow', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'subflow', 'subflowGroupId': 'child', 'inputs': {'value': '{实际输入}-first'}, 'outputs': {'saved': 'saved'}}},
+                    {'id': 'second-call', 'type': 'subflow', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'subflow', 'subflowGroupId': 'child', 'inputs': {'value': '{实际输入}-second'}, 'outputs': {'saved': 'secondSaved'}}},
+                ])
+                for edge in document['content']['edges']:
+                    if edge['target'] == 'write': edge['target'] = 'first-call'
+                    if edge['source'] == 'write': edge['source'] = 'second-call'
+                document['content']['edges'].extend([{'id': 'child-body', 'source': 'child', 'target': 'write'}, {'id': 'next-call', 'source': 'first-call', 'target': 'second-call'}])
+                next(n for n in nodes if n['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{secondSaved['ref']}", 'expectedLinkRevision': "{secondSaved['linkRevision']}", 'replaceAllowed': False})
             if scenario.startswith('manual-'):
                 nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 3 if scenario == 'manual-expire-race' else 30}})
                 document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
@@ -261,7 +276,7 @@ async def test_real_project_batch_http(
                         "modelProviderId": None,
                     },
                     "runPolicy": {
-                        "maxTasks": 2,
+                        "maxTasks": 1 if scenario == "data-subflow-cancel" else 2,
                         "concurrency": 1,
                         "maxLiveInstances": 1,
                         "continueAfterFailure": False,
@@ -277,11 +292,44 @@ async def test_real_project_batch_http(
             validation = await client.get(prefix + f"/automations/{automation['automationId']}/validation")
             assert validation.status_code == 200, validation.text
             assert validation.json()["runnable"] is True, validation.json()
+            if scenario in {'data-subflow', 'data-subflow-cancel'}:
+                original_run = app.state.project_workflow_worker_manager.run
+                async def edit_child_after_prepare(**kwargs):
+                    nonlocal subflow_source_edited
+                    if not subflow_source_edited:
+                        from copy import deepcopy
+                        changed = deepcopy(saved_workflow.json())
+                        next(n for n in changed['nodes'] if n['id'] == 'write')['data']['arguments']['values'][field_id] = 'edited after prepare'
+                        updated = await client.put('/api/workflows/' + workflow_id, json={**changed, 'expectedRevision': changed['revision'], 'clientRequestId': str(uuid4())})
+                        assert updated.status_code == 200, updated.text
+                        subflow_source_edited = True
+                    return await original_run(**kwargs)
+                monkeypatch.setattr(app.state.project_workflow_worker_manager, 'run', edit_child_after_prepare)
+                if scenario == 'data-subflow-cancel':
+                    manager = app.state.project_workflow_worker_manager
+                    original_capability = manager._on_capability
+                    child_requests = []
+                    async def cancel_before_second_child_write(run_id, generation, request):
+                        if request.get('nodeId') == 'write':
+                            child_requests.append(request)
+                            if len(child_requests) == 2:
+                                dispatcher = app.state.project_workflow_dispatcher
+                                run = dispatcher.query_run(run_id)
+                                await dispatcher.cancel(run_id, expected_status_revision=run.status_revision, execution_generation=generation)
+                                from autoflow.domain.projects.models import ProjectError
+                                try:
+                                    return await original_capability(run_id, generation, request)
+                                except ProjectError as error:
+                                    cancelled_child_writes.append(error.code)
+                                    raise
+                        return await original_capability(run_id, generation, request)
+                    monkeypatch.setattr(manager, '_on_capability', cancel_before_second_child_write)
+
             key = str(uuid4())
             payload = {
                 "expectedAutomationRevision": automation["managementRevision"],
                 "parameters": {parameter_id: "-真实参数"},
-                "maxTasks": 2,
+                "maxTasks": 1 if scenario == "data-subflow-cancel" else 2,
                 "concurrency": 1,
             }
             response = await client.post(
@@ -377,7 +425,7 @@ async def test_real_project_batch_http(
             tasks = (
                 await client.get(prefix + "/tasks", params={"batchId": batch_id})
             ).json()["items"]
-            assert len(tasks) == 2
+            assert len(tasks) == (1 if scenario == "data-subflow-cancel" else 2)
             for task in tasks:
                 viewed = await client.get(prefix + f"/tasks/{task['taskId']}")
                 assert viewed.status_code == 200, viewed.text
@@ -450,6 +498,24 @@ async def test_real_project_batch_http(
                         assert rejected.json()['error']['code'] == 'MANUAL_TRANSITION_LOST'
                         items = (await client.get(prefix + '/manual-items')).json()['items']
                         assert len(items) == 1 and items[0]['status'] == 'expired'
+            elif scenario == 'data-subflow-cancel':
+                assert cancelled_child_writes == ['CAPABILITY_SCOPE_DENIED']
+                assert detail['statusCounts']['cancelled'] == 1, detail
+                records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert [row['values'][0]['value'] for row in records] == ['before-真实参数-first']
+                assert records[0]['currentEnvironmentId'] is None
+            elif scenario == 'data-subflow':
+                assert subflow_source_edited
+                assert detail['statusCounts']['succeeded'] == 2, {'detail': detail, 'tasks': [(await client.get(prefix + f"/tasks/{t['taskId']}")).json() for t in tasks]}
+                records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert sorted(row['values'][0]['value'] for row in records) == ['before-真实参数-first'] * 2 + ['before-真实参数-second'] * 2
+                assert all(row['currentEnvironmentId'] for row in records)
+                for task in tasks:
+                    with app.state.session_factory() as session:
+                        events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(task['runId'], after_sequence=0, limit=300)
+                    writes = [e for e in events if e.kind == 'nodeAttempt' and e.node_id == 'write' and e.payload['status'] == 'started']
+                    assert len(writes) == 2 and writes[0].node_visit_id != writes[1].node_visit_id
+                    assert [e.payload['executionContext']['scopes'][0]['callNodeId'] for e in writes] == ['first-call', 'second-call']
             elif scenario == 'data-link-race':
                 assert link_race_injected
                 assert detail['statusCounts']['failed'] == 1, detail

@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-21",
+  "status": "source_verified_platform_pending",
+  "releaseAccepted": false,
+  "slice": "S1 frozen project subflows",
+  "checks": {
+    "targeted": "100 passed",
+    "sharedRuntimeStudioAndContracts": "175 passed",
+    "realHttpWorkerBrowser": "2 passed (data-subflow, data-subflow-cancel)",
+    "ruff": "passed",
+    "mypy": "398 source files passed",
+    "coverageReferences": "251 valid; assertion coverage is not full acceptance"
+  },
+  "assertions": [
+    "After prepare, edit the source child; both Tasks still use frozen content",
+    "Two calls export only declared variables and create different records once each",
+    "Root End associates both new records",
+    "Cancel parent Run before second child write: CAPABILITY_SCOPE_DENIED; first committed record remains",
+    "Missing/cyclic/deep/overlapping/cross-boundary dependencies rejected",
+    "Child request requires frozen call path and live parent visit"
+  ],
+  "limitations": [
+    "Current local macOS source chain; new candidate three-platform/packaged evidence pending",
+    "Shared Runtime parallel control shapes remain rejected until S3",
+    "External acceptance requirements unchanged"
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/domain/workflows/canvas_subflows.py": "edc2b592bd5f504f1d07482cac585a5f9b2279f123b181604fdd816e9fa382d1",
+    "apps/backend/src/autoflow/domain/workflows/run_validation.py": "218ead6763fb6ddc6d18b86a0a993eff1abef738b26c5115e26eab72bdfcf91a",
+    "apps/backend/src/autoflow/providers/browser/project_graph.py": "d81ea95f031360bcfa85d67b5275e5b7fabcaa7018aab784ef8c5c92089dbeff",
+    "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "e210c80d0b00e56779c5b97341d2857ebe333e479a4d437887c705971bcf84ff",
+    "apps/backend/src/autoflow/application/workflows/runtime.py": "2ab9d9eaa5ec56bcf88533a2f8bebf52cd4600330d04141475aed6ab6fd9cf60",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "2755d43888a9dbe950feee8c7507b920fcb0bcbeb0588dfeca0f616919170130"
+  }
+}

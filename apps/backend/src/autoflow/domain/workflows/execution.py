@@ -126,7 +126,7 @@ class NestedWorkflowGateway(Protocol):
 
 class CanvasSubflowGateway(Protocol):
     async def run_subflow(
-        self, *, group_id: str, name: str
+        self, *, group_id: str, name: str, inputs: Mapping[str, Any] | None = None
     ) -> NestedWorkflowResult: ...
 
 

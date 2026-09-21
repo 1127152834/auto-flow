@@ -15,7 +15,7 @@ def test_runnable_catalog_includes_project_graph_and_data_nodes():
         "click_element",
         "get_element_info",
         "condition", "loop", "foreach", "foreach_dict", "break_loop",
-        "continue_loop", "set_variable", "project_data", "project_end", "project_manual",
+        "continue_loop", "set_variable", "subflow", "project_data", "project_end", "project_manual",
     }
 
 
@@ -311,3 +311,53 @@ def test_parallel_loop_graph_is_rejected_before_side_effects(with_end):
         payload['content']['edges'] = [{'id': identity, 'source': identity, 'target': 'end', 'sourceHandle': 'done'} for identity in ('left', 'right')]
     with pytest.raises(WorkflowError, match='并行'):
         prepare_run(payload)
+
+
+def subflow_payload():
+    payload = workflow_payload()
+    def n(identity, kind, **data):
+        return {'id': identity, 'type': kind, 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': kind, **data}}
+    payload['content']['nodes'] = [n('call', 'subflow', subflowGroupId='child', inputs={'value': 'frozen'}, outputs={'answer': 'result'}), n('child', 'subflow_header', subflowName='child'), n('write', 'set_variable', variableName='answer', variableValue='{value}'), n('end', 'project_end')]
+    payload['content']['edges'] = [{'id': 'root', 'source': 'call', 'target': 'end'}, {'id': 'body', 'source': 'child', 'target': 'write'}]
+    return payload
+
+
+def test_prepare_freezes_dependency_body_and_rejects_missing_cycle_and_child_end():
+    payload = subflow_payload()
+    prepared = prepare_run(payload)
+    payload['content']['nodes'][2]['data']['variableValue'] = 'changed'
+    assert prepared.document['content']['nodes'][2]['data']['variableValue'] == '{value}'
+    for mutation, message in [('missing', '找不到'), ('cycle', '循环引用'), ('end', '子流程')]:
+        payload = subflow_payload()
+        if mutation == 'missing': payload['content']['nodes'][0]['data']['subflowGroupId'] = 'missing'
+        elif mutation == 'cycle': payload['content']['nodes'][2].update(type='subflow', data={'moduleType': 'subflow', 'subflowGroupId': 'child', 'inputs': {}, 'outputs': {}})
+        else: payload['content']['nodes'][2].update(type='project_end', data={'moduleType': 'project_end'})
+        with pytest.raises(WorkflowError, match=message): prepare_run(payload)
+
+
+@pytest.mark.parametrize('change', ['undeclared', 'duplicate-output', 'overlap', 'cross-edge'])
+def test_prepare_rejects_ambiguous_or_undeclared_subflow_boundaries(change):
+    payload = subflow_payload()
+    if change == 'undeclared': del payload['content']['nodes'][0]['data']['inputs']
+    elif change == 'duplicate-output': payload['content']['nodes'][0]['data']['outputs'] = {'one': 'same', 'two': 'same'}
+    elif change == 'cross-edge': payload['content']['edges'].append({'id': 'escape', 'source': 'call', 'target': 'write'})
+    else:
+        header = deepcopy(payload['content']['nodes'][1]); header['id'] = 'other'; header['data']['subflowName'] = 'other'
+        payload['content']['nodes'].append(header)
+        payload['content']['edges'].append({'id': 'other', 'source': 'other', 'target': 'write'})
+    with pytest.raises(WorkflowError): prepare_run(payload)
+
+
+def test_prepare_limits_nested_call_depth_with_call_path():
+    payload = subflow_payload()
+    prototype = payload['content']['nodes'][0]
+    nodes = [deepcopy(prototype)]
+    nodes[0]['data']['subflowGroupId'] = 'child-0'
+    edges = []
+    for index in range(33):
+        header = deepcopy(payload['content']['nodes'][1]); header['id'] = f'child-{index}'; header['data']['subflowName'] = str(index)
+        body = deepcopy(prototype if index < 32 else payload['content']['nodes'][2]); body['id'] = f'body-{index}'
+        if index < 32: body['data']['subflowGroupId'] = f'child-{index + 1}'
+        nodes.extend([header, body]); edges.append({'id': str(index), 'source': header['id'], 'target': body['id']})
+    payload['content'].update(nodes=nodes, edges=edges)
+    with pytest.raises(WorkflowError, match='嵌套层数过深.*call.*child-32'): prepare_run(payload)

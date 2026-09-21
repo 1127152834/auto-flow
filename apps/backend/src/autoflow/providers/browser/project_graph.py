@@ -18,6 +18,7 @@ from autoflow.domain.workflows.execution import ExecutionContext
 
 from .workflow_executor import WorkflowExecutor, _scalar_text
 from .workflow_session import CloakBrowserWorkflowSession
+from .workflow_worker import _WorkerCanvasSubflows
 
 _visit: ContextVar[tuple[str, str]] = ContextVar('project_node_visit')
 
@@ -188,19 +189,25 @@ class ProjectGraphExecutor:
                 'edges': [{'id': f'edge-{index}', 'source': source, 'target': target} for index, (source, target) in enumerate(pairwise(identities))],
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
-        result = await WorkflowRuntime(_ProjectRegistry(self.legacy, self.capability)).execute(document, self.context)
+        registry = _ProjectRegistry(self.legacy, self.capability)
+        subflows = _WorkerCanvasSubflows(document, registry=registry, parent=self.context, sink=self)
+        self.context.canvas_subflows = subflows
+        result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
         if result.success and not self.context.stop_workflow and any(node.get('moduleType') == 'project_end' for node in self.nodes.values()) and not self.end_completed:
             return {'status': 'failed', 'error': {'code': 'WORKFLOW_END_NOT_REACHED', 'message': '执行分支未到达 End，环境收尾未完成'}}
         if not result.success and self.error is None:
             self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
         return {'status': self.manual_outcome or ('succeeded' if result.success else 'failed'), 'error': self.error}
 
+    def for_context(self, _context: ExecutionContext) -> ProjectGraphExecutor:
+        return self
+
     async def publish(self, event: Mapping[str, Any]) -> None:
         node_id, visit = event['nodeId'], event['executionId']
         if event['type'] == 'execution:node_start':
             _visit.set((node_id, visit))
             self.started[visit] = monotonic()
-            await self.emit('nodeAttempt', node_id, visit, {'status': 'started'})
+            await self.emit('nodeAttempt', node_id, visit, {'status': 'started', 'executionContext': event.get('executionContext', {})})
             self.cancellation.raise_if_cancelled()
             await self.emit('log', node_id, visit, {'level': 'info', 'message': '开始执行节点'})
             self.cancellation.raise_if_cancelled()

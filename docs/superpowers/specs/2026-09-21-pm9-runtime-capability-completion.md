@@ -1,6 +1,6 @@
-# PM9 remaining runtime capabilities — proposed
+# PM9 remaining runtime capabilities — approved
 
-日期：2026-09-21。状态：proposed，等待本轮新增架构确认。来源：用户 PM9 后续指令、已批准 R1–R4、当前代码审查。既有运行链验证和缺陷修复继续执行。
+日期：2026-09-21。状态：approved；2026-09-21 用户在收到 S1–S5 后要求“继续实现”。来源：用户 PM9 后续指令、已批准 R1–R4、当前代码审查。既有运行链验证和缺陷修复继续执行。
 
 ## 当前边界
 
@@ -57,4 +57,4 @@ join 不隐式合并互相覆盖的变量；只接受显式输出映射，同名
 
 确认范围仅以上四片，不含跨进程人工恢复、全部 Studio 节点、第二执行器、自动发布或合并。发布级退出仍由 coverage/verification 的逐项证据决定，releaseAccepted 保持 false。
 
-文件级实施顺序、失败断言与验证命令见 [新增能力实施计划](../plans/2026-09-21-pm9-runtime-capabilities.md)，同为 proposed，不表示已获批准。
+文件级实施顺序、失败断言与验证命令见 [新增能力实施计划](../plans/2026-09-21-pm9-runtime-capabilities.md)，已由本轮继续实现指令批准。

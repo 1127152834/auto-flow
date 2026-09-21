@@ -153,3 +153,44 @@ async def test_browser_action_resolves_nested_reference_exactly_once():
     result = await executor.run({'document': {'nodes': [node('input', 'input_text', selector='#name', text="{record['name']}", clearBefore=True)], 'edges': []}})
     assert result['status'] == 'succeeded'
     locator.fill.assert_awaited_once_with('001-{literal}')
+
+
+@pytest.mark.asyncio
+async def test_frozen_subflow_twice_isolates_inputs_and_exports_only_declared_outputs():
+    events = []
+    async def emit(*event): events.append(event)
+    document = {'nodes': [
+        node('first', 'subflow', subflowGroupId='child', inputs={'value': 'first'}, outputs={'answer': 'firstAnswer'}),
+        node('second', 'subflow', subflowGroupId='child', inputs={'value': 'second'}, outputs={'answer': 'secondAnswer'}),
+        node('child', 'subflow_header', subflowName='child'),
+        node('write', 'set_variable', variableName='answer', variableValue='{value}'),
+        node('private', 'set_variable', variableName='private', variableValue='child only'),
+    ], 'edges': [{'source': 'first', 'target': 'second'}, {'source': 'child', 'target': 'write'}, {'source': 'write', 'target': 'private'}]}
+    executor = ProjectGraphExecutor(None, {'answer': 'parent', 'private': 'parent'}, emit, lambda: False)
+    assert (await executor.run({'document': document}))['status'] == 'succeeded'
+    assert executor.context.variables == {'answer': 'parent', 'private': 'parent', 'firstAnswer': 'first', 'secondAnswer': 'second'}
+    starts = [e for e in events if e[0] == 'nodeAttempt' and e[3]['status'] == 'started']
+    writes = [e for e in starts if e[1] == 'write']
+    assert len(writes) == 2 and writes[0][2] != writes[1][2]
+    assert [e[3]['executionContext']['scopes'][0]['callNodeId'] for e in writes] == ['first', 'second']
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('failure', ['node', 'missing-output', 'cancel'])
+async def test_subflow_failure_or_cancel_never_exports_partial_variables(failure):
+    stopped = False
+    async def emit(kind, node_id, _visit, payload):
+        nonlocal stopped
+        if failure == 'cancel' and node_id == 'write' and kind == 'nodeAttempt' and payload['status'] == 'started':
+            stopped = True
+    executor = ProjectGraphExecutor(None, {'answer': 'unchanged'}, emit, lambda: stopped)
+    nodes = [node('call', 'subflow', subflowGroupId='child', inputs={}, outputs={'missing' if failure == 'missing-output' else 'value': 'answer'}), node('child', 'subflow_header'), node('write', 'set_variable', variableName='value', variableValue='partial')]
+    edges = [{'source': 'child', 'target': 'write'}]
+    if failure == 'node':
+        nodes.append(node('fail', 'subflow', subflowGroupId='absent', inputs={}, outputs={}))
+        edges.append({'source': 'write', 'target': 'fail'})
+    if failure == 'cancel':
+        with pytest.raises(asyncio.CancelledError): await executor.run({'document': {'nodes': nodes, 'edges': edges}})
+    else:
+        assert (await executor.run({'document': {'nodes': nodes, 'edges': edges}}))['status'] == 'failed'
+    assert executor.context.variables == {'answer': 'unchanged'}

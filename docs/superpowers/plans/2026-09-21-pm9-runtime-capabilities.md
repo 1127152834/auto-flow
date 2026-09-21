@@ -1,6 +1,6 @@
 # PM9 新增运行能力实施计划
 
-> 执行技能：superpowers:executing-plans。状态：proposed，尚未取得本轮新增架构批准，不执行下面的代码步骤。
+> 执行技能：superpowers:executing-plans。状态：approved；2026-09-21 用户在已提交 S1–S5 规格后明确要求“继续实现”。
 
 日期：2026-09-21。来源：用户后续任务、[新增能力规格](../specs/2026-09-21-pm9-runtime-capability-completion.md)、当前 PM9 工作区代码。已有修复的交付不依赖本计划获批。
 
@@ -8,7 +8,7 @@
 
 工作区固定为 `/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow`，分支 `codex/project-management-pm9-runtime`。以下路径均相对此工作区。不得修改并行 Studio 工作区、复制执行器、增加跨进程人工恢复或开放未验收节点。
 
-## S1：项目子流程
+## Task 1: S1：项目子流程
 
 ### S1.1 冻结依赖及准入
 
@@ -29,7 +29,7 @@
 4. 在 `tests/integration/test_project_batch_real_cloakbrowser.py` 增加准备后编辑、双调用隔离、父取消后的迟到写拒绝。查询账本验证失败前已提交数据仍保留。
 5. 定向后端、真实 worker、相关 Runtime 差分回归均通过才修改 `domain/workflows/catalog.py` 的项目准入；提交实现、文档和 evidence。
 
-## S2：人工声明输入与继续位置
+## Task 2: S2：人工声明输入与继续位置
 
 ### S2.1 冻结契约与服务端校验
 
@@ -51,7 +51,7 @@
 3. 用生产 HTTP/真实 worker/browser 从页面提交值，验证节点不重跑、值真实进入声明变量，响应丢失仍用原命令身份查回。
 4. 通过该页面 Vitest、typecheck/lint/OpenAPI 和源应用验收后提交；其他界面设计不在此片顺带改造。
 
-## S3：分支状态隔离与准入
+## Task 3: S3：分支状态隔离与准入
 
 文件：`apps/backend/src/autoflow/application/workflows/runtime.py`、`domain/workflows/execution.py`、`domain/workflows/run_validation.py`、`providers/browser/project_graph.py`；测试复用 `tests/unit/workflows/test_runtime_control_flow_core.py`、`tests/differential/workflows/test_b3_control_flow_runtime_contract.py` 及真实批次测试。
 
@@ -62,7 +62,7 @@
 5. 人工节点先请求其他分支停在安全节点边界，确认没有在途浏览器操作，再开放页面。worker 在人工 capability 请求前排队取得唯一资格，安全边界确认后才建持久检查点，避免向 waiting_manual Run 发第二请求。成功 resume 且 parent 已为 running 后先交接下一排队项，再释放普通分支；finish/expire/stop 取消队列。人工 TTL 从每项持久创建起算，队列不重置截止时间；自动预算仅在持久 waiting_manual 时暂停，静默屏障前及交接中的 running 继续计时。补双分支同时到达、串行建项、无提前 TTL、预算不被清零及取消排队项的断言。
 6. 两循环互不串值、局部 break、乱序 join、人工期间无后台浏览器操作及父取消真实链全部通过，既有 Studio Runtime/差分回归无退化，才移除对应形状的准入拒绝。其他形状继续拒绝。
 
-## S4：Windows 原生边界
+## Task 4: S4：Windows 原生边界
 
 ### S4.1 安全文件输出
 
@@ -80,6 +80,10 @@
 1. 确认已有 birth identity/拥有的子进程树事实，测试 PID 复用、句柄失效、权限拒绝和孤儿进程。
 2. 身份核验与终止作用于同一已验证句柄；未知归属继续 quarantine，拒绝后保持可见 blocker，不按相似命令行猜测。
 3. Windows 实际 worker 普通停止、强停、父退出与重启清理通过；无法证明的实机/权限条件单独保留。
+
+## Task 5: S5：独立多 Run 容量
+
+依照 [多 Run 规格](../specs/2026-09-21-pm9-multi-run-capacity.md) 的实施顺序：先在容量 1 下隔离 Run/generation 所有者，再实现集合/kernel/profile 引用租约与全局启动恢复门，最后开放容量 2。单参数批次顺序生成，不改变 maxTasks 语义；验证两个批次真实重叠、取消互不影响及未知清理持续占槽。
 
 ## 每片验证与交付
 

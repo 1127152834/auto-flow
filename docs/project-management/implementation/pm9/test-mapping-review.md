@@ -17,3 +17,6 @@
 服务账号 Sheets 与系统凭据已有 PM6 历史实网证据；本轮映射中的当前生产证据缺口不撤销该事实。OAuth、当前 PM9 打包全链、签名及实机专项仍单独待验收。`releaseAccepted=false`。
 
 补测校正：DATA-E2E-06 仅对串行真实加列/增行/修改/状态断言提升为 partial；多个活跃 Run 的能力缺失另列 implementation_missing，不提升为 verified。FLOW-A02 仍 planned；单槽排队证据不是并发隔离正向证据。
+
+
+2026-09-21 S1 更新：增加冻结子图、显式 IO、两次调用和父撤销的直接断言，XE-C02 不再是零定位断言；当前 205 条有定位断言、46 条未定位完整直接断言。188 partially_verified / 63 planned / 0 verified 不变；局部断言不替代全部资产和三平台验收。

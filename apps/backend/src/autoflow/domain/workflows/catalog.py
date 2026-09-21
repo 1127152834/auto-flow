@@ -15,6 +15,7 @@ _RUNNABLE_MODULES = (
     ("break_loop", "跳出循环"),
     ("continue_loop", "继续循环"),
     ("set_variable", "设置变量"),
+    ("subflow", "项目子流程"),
     ("project_data", "项目数据"),
     ("project_manual", "人工处理"),
     ("project_end", "结束并保留环境"),

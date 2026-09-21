@@ -102,3 +102,40 @@ def test_field_preview_manifest_uses_existing_modify_field_permission(rpc):
         manifest = _workflow_data_manifest(session, SimpleNamespace(workflow_id=row.id))
     assert manifest == {'tableGrants': [grant]}
     TableCapabilityGrant(table_id, generation, frozenset(grant['operations']), frozenset(), frozenset())
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('scope_state', ['valid', 'missing', 'wrong-definition', 'finished-call', 'cancelled-parent'])
+async def test_child_capability_requires_live_frozen_parent_call(rpc, scope_state):
+    from autoflow.infrastructure.database.workflow_runtime_models import (
+        WorkflowRunEventRow,
+    )
+    factory, task, request, service = rpc
+    call_visit = str(uuid4())
+    with factory.begin() as session:
+        run = session.get(WorkflowRunRow, task.run_id)
+        prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
+        plan = prepared.execution_plan
+        plan['document'] = {'nodes': [
+            {'id': 'call', 'data': {'moduleType': 'subflow', 'subflowGroupId': 'child', 'inputs': {}, 'outputs': {}}},
+            {'id': 'child', 'data': {'moduleType': 'subflow_header'}},
+            {'id': 'write', 'data': {'moduleType': 'project_data'}},
+        ], 'edges': [{'source': 'child', 'target': 'write'}]}
+        prepared.execution_plan = dict(plan)
+        # JSON mutation tracking needs an explicit dirty mark in this fixture.
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(prepared, 'execution_plan')
+        scopes = [{'kind': 'subflow', 'id': 'wrong' if scope_state == 'wrong-definition' else 'child', 'callNodeId': 'call', 'callVisitId': call_visit}]
+        event = session.scalar(select(WorkflowRunEventRow).where(WorkflowRunEventRow.node_visit_id == request['nodeVisitId']))
+        event.payload = {'status': 'started', 'executionContext': {'scopes': [] if scope_state == 'missing' else scopes}}
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event({
+            'eventId': str(uuid4()), 'runId': task.run_id, 'executionGeneration': 1,
+            'nodeId': 'call', 'nodeVisitId': call_visit, 'attempt': 1, 'kind': 'nodeAttempt',
+            'occurredAt': datetime.now(UTC).isoformat(), 'payload': {'status': 'succeeded' if scope_state == 'finished-call' else 'started'},
+        })
+        if scope_state == 'cancelled-parent': run.status = 'cancelled'
+    if scope_state == 'valid':
+        assert (await service.handle(task.run_id, 1, request))['values'][0]['value'] == 'created by worker'
+    else:
+        with pytest.raises(ProjectError, match='执行能力请求'):
+            await service.handle(task.run_id, 1, request)

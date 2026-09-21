@@ -3320,12 +3320,28 @@
             "symbol": "test_fixed_and_input_sources_pin_current_generation",
             "scope": "固定环境和记录来源解析使用当前内容代次",
             "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "[data-subflow] 真实 HTTP/worker/browser：prepare 后编辑子图，两个 Task 均调用同一冻结子图两次，输出隔离、各创建一次、根 End 关联",
+            "level": "automated_production_integration"
+          },
+          {
+            "file": "apps/backend/tests/unit/test_project_graph_executor.py",
+            "symbol": "test_frozen_subflow_twice_isolates_inputs_and_exports_only_declared_outputs",
+            "scope": "声明输入、父子变量隔离、仅声明输出、独立 visit 与调用路径",
+            "level": "automated_unit"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
             "detail": "完整 Profile/代理/子流程冻结后第二 Task 的真实行为尚未全部覆盖"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "S1 当前 Mac 源运行链证据；新候选三平台打包回归尚未完成；其他资产/Profile/代理完整冻结条件按原验收保留。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -11812,12 +11828,24 @@
             "symbol": "test_old_execution_generation_is_rejected_before_any_write",
             "scope": "旧执行代次写入 LEASE_REVOKED，无数据效果",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_capability_rpc.py",
+            "symbol": "test_child_capability_requires_live_frozen_parent_call",
+            "scope": "父 Run 撤销/父调用已结束/错误调用路径均拒绝，合法子调用允许",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "[data-subflow-cancel] 真实 worker 第二次子写入前撤销父 Run，拒绝迟到写入，首次已提交记录保持",
+            "level": "automated_production_integration"
           }
         ],
         "gaps": [
           {
-            "kind": "implementation_missing",
-            "detail": "项目子流程尚未接入；父取消的子调用传播待新设计"
+            "kind": "production_evidence_missing",
+            "detail": "S1 当前 Mac 真实 worker 已补，三平台新候选及打包撤销链仍待验收；不升级为 verified。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -13203,6 +13231,18 @@
             "symbol": "test_fixed_and_input_sources_pin_current_generation",
             "scope": "固定环境和记录来源解析使用当前内容代次",
             "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "[data-subflow] 真实 HTTP/worker/browser：prepare 后编辑子图，两个 Task 均调用同一冻结子图两次，输出隔离、各创建一次、根 End 关联",
+            "level": "automated_production_integration"
+          },
+          {
+            "file": "apps/backend/tests/unit/test_project_graph_executor.py",
+            "symbol": "test_frozen_subflow_twice_isolates_inputs_and_exports_only_declared_outputs",
+            "scope": "声明输入、父子变量隔离、仅声明输出、独立 visit 与调用路径",
+            "level": "automated_unit"
           }
         ],
         "gaps": [
@@ -13211,8 +13251,8 @@
             "detail": "完整 Profile/代理/子流程冻结后第二 Task 的真实行为尚未全部覆盖"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "项目 prepared content/capability 尚未冻结子流程依赖和子调用身份，目录未开放 subflow；新增架构方案待批准"
+            "kind": "production_evidence_missing",
+            "detail": "S1 当前 Mac 源运行链证据；新候选三平台打包回归尚未完成；其他资产/Profile/代理完整冻结条件按原验收保留。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -13627,15 +13667,28 @@
       ],
       "testMapping": {
         "reviewedAt": "2026-09-21",
-        "checks": [],
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "[data-subflow] 真实 HTTP/worker/browser：prepare 后编辑子图，两个 Task 均调用同一冻结子图两次，输出隔离、各创建一次、根 End 关联",
+            "level": "automated_production_integration"
+          },
+          {
+            "file": "apps/backend/tests/unit/test_project_graph_executor.py",
+            "symbol": "test_frozen_subflow_twice_isolates_inputs_and_exports_only_declared_outputs",
+            "scope": "声明输入、父子变量隔离、仅声明输出、独立 visit 与调用路径",
+            "level": "automated_unit"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
             "detail": "本轮审查未定位完整场景的直接断言：冻结全部子流程/资产依赖、编辑不能修改已准备内容；不据邻近测试推定覆盖"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "项目 prepared content/capability 尚未冻结子流程依赖和子调用身份，目录未开放 subflow；新增架构方案待批准"
+            "kind": "production_evidence_missing",
+            "detail": "S1 当前 Mac 源运行链证据；新候选三平台打包回归尚未完成；其他资产/Profile/代理完整冻结条件按原验收保留。"
           }
         ],
         "statusBeforeReview": "partially_verified"

@@ -79,3 +79,12 @@ XE-A23 的消耗邮箱筛选与共享人员/新账号后继已在下述新本机
 最新候选更新（confirmed）：XE-A23 完整补测发现 inputEnvironment 在开始批次时错误要求无关默认 Profile，且 atTaskStart 未由调度器消费。已修复为领取事务重验输入后冻结所选环境 Profile；无关默认配置不参与检查，解析失败无 Task/lease。54 定向及独立复审通过，新 frozen backend 的完整人员/邮箱/账号恢复链通过，包括人员原本已有关联且未被替换；详见 input-environment-follow-through.json。该生产修改需要新三平台矩阵，52936b6a 的 Intel 重跑已因候选变更取消，旧 Windows/ARM 成功只留历史。当前 188 partial/63 planned/0 verified，新候选结果以 verification.json 为准。
 
 交付候选：4f392ed595fc42ca6310aad47106003283c615fd 已推送，新的三平台 Actions 为 [35566462369](https://github.com/1127152834/auto-flow/actions/runs/35566462369)。下文/历史段落中的 52936b6a 结果不覆盖新增修复。
+
+
+## S1 冻结项目子流程（2026-09-21）
+
+本轮“继续实现”已批准 S1–S5，见 `.ai/decisions/2026-09-21-pm9-runtime-capabilities-approved.md`。此前“新增架构待批准”为历史状态，不再阻塞实施。
+
+S1 接通既有 canvas gateway 与共享 WorkflowRuntime：prepare 校验依赖/调用环/32 层深度/节点归属；显式 JSON 输入与声明输出隔离；调用路径绑定独立 visit；父端核对冻结定义、父调用存活及原 Task 权限；子 End 和未隔离的并行控制仍拒绝。源 HTTP/真实 worker/browser 验证 prepare 后修改源子图不改变两 Task 结果、同一子图双调用独立写入，根 End 关联。父 Run 取消测试核对迟到写拒绝且首次写入保留。
+
+S2–S5 继续实施；当前源链不代表三平台打包和实机验收完成。覆盖状态未批量升级，releaseAccepted=false。

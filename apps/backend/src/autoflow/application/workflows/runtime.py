@@ -267,12 +267,21 @@ class _WorkflowScheduler:
             and self.context.canvas_subflows is not None
             and isinstance(result.data, Mapping)
         ):
+            subflow_arguments = {}
+            if "inputs" in config:
+                subflow_arguments["inputs"] = copy.deepcopy(self.context.resolve_value(config["inputs"], preserve_types=True))
             nested_subflow = await self.context.canvas_subflows.run_subflow(
                 group_id=str(result.data.get("subflow_group_id") or ""),
                 name=str(result.data.get("subflow_name") or ""),
+                **subflow_arguments,
             )
+            outputs = config.get("outputs", {})
+            missing_outputs = set(outputs) - nested_subflow.variables.keys()
+            if nested_subflow.success and not missing_outputs and not self.context.stop_workflow:
+                for source, target in outputs.items():
+                    self.context.set_variable(target, copy.deepcopy(nested_subflow.variables[source]))
             result = ModuleResult(
-                success=nested_subflow.success,
+                success=nested_subflow.success and not missing_outputs,
                 message=(
                     (
                         f"子流程 [{nested_subflow.name}] 为空"
@@ -282,7 +291,7 @@ class _WorkflowScheduler:
                     if nested_subflow.success
                     else ""
                 ),
-                error=nested_subflow.error,
+                error=nested_subflow.error or ("SUBFLOW_OUTPUT_MISSING" if missing_outputs else None),
                 data={
                     "subflow": nested_subflow.name,
                     "executed_nodes": nested_subflow.executed_nodes,

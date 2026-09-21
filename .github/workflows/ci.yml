@@ -63,7 +63,7 @@ jobs:
               output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
           PYTHON
       - name: Verify real worker delivery loss and manual expiry race
-        run: uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py -k "data-response-loss or data-link-race or data-old-candidate or manual-race or manual-expire"
+        run: uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py -k "data-subflow or data-response-loss or data-link-race or data-old-candidate or manual-race or manual-expire"
         env:
           AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
       - run: node scripts/smoke-project-management.mjs --runtime-kernel "${{ env.PM9_BROWSER_EXECUTABLE }}" --output-dir artifacts/pm9/source
