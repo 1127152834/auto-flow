@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-log-family",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -10,7 +10,10 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["print_log", "export_log"],
+  "nodes": [
+    "print_log",
+    "export_log"
+  ],
   "implemented": [
     "打印日志保留变量解析、空日志、级别、消息、数据和 log_level 语义",
     "已确认节点完成事件在 worker 内形成有界于本次运行生命周期的日志记录，敏感节点使用既有脱敏结果",
@@ -36,8 +39,21 @@
     "browserStarted": false,
     "filesystem": "WorkflowArtifactStore only"
   },
-  "remaining": [
-    "正式 Electron 中通过真实 UI 打印、筛选、导出并查看已登记文件",
-    "B8 的数据库全量日志筛选与固定事件序号导出仍按其独立合同实现；本节点只导出执行到当前节点前的本次运行记录"
+  "remaining": [],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-command-log.mjs",
+    "result": "passed on macOS arm64 development build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json",
+    "covers": [
+      "Studio真实点击与键盘",
+      "正式SQLite保存",
+      "真实worker执行",
+      "变量传递",
+      "日志和产物持久化",
+      "进程清理"
+    ]
+  },
+  "nonBlockingFindings": [
+    "macOS Intel 与 Windows 未实测，按最终平台矩阵记录；不影响日志节点在已测平台的业务闭环。"
   ]
 }

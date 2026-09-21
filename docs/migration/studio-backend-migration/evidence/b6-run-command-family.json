@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-011-run-command",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -9,7 +9,9 @@
     ],
     "license": "LICENSE.WebRPA"
   },
-  "nodes": ["run_command"],
+  "nodes": [
+    "run_command"
+  ],
   "implemented": [
     "保留命令、shell、超时、输出变量、退出码、输出摘要及失败语义",
     "Windows继续使用cmd /c或powershell -Command；POSIX将CMD入口映射为/bin/sh -c，PowerShell要求已安装pwsh",
@@ -51,11 +53,20 @@
     "sensitiveValuesPersisted": false
   },
   "remaining": [
-    "正式Electron中通过真实UI添加、保存、运行并核对命令输出和停止清理",
-    "Windows实机核对cmd、PowerShell、非UTF-8输出和进程树停止",
-    "macOS或Linux安装pwsh后的PowerShell分支仍需对应环境验收"
+    "Windows 实机核对 CMD、PowerShell、非 UTF-8 输出和进程树停止",
+    "macOS 或 Linux 安装 pwsh 后核对 PowerShell 分支"
   ],
-  "nonBlockingFindings": [
-    "未筛选的shared-control-entry-wiring当前有16个已从有效范围移除的AI/通知节点仍在并行台账中并失败；run_command专项目标3项通过"
-  ]
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-command-log.mjs",
+    "result": "passed on macOS arm64 development build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json",
+    "covers": [
+      "Studio真实点击与键盘",
+      "正式SQLite保存",
+      "真实worker执行",
+      "变量传递",
+      "日志和产物持久化",
+      "进程清理"
+    ]
+  }
 }
