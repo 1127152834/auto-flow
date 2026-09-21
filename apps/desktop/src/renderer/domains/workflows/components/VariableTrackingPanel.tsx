@@ -16,7 +16,7 @@ interface VariableStats {
   count: number
   firstValue: any
   lastValue: any
-  operations: { create: number; update: number }
+  operations: Record<VariableTrackingRecord['operation'], number>
   value_type: string
 }
 
@@ -277,7 +277,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
           count: 0,
           firstValue: record.new_value,
           lastValue: record.new_value,
-          operations: { create: 0, update: 0 },
+          operations: { create: 0, update: 0, scope_exit: 0 },
           value_type: record.value_type
         })
       }
@@ -442,6 +442,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">变量名</label>
                 <SelectNative
+                  aria-label="变量名"
                   value={selectedVariable || ''}
                   onChange={(e) => setSelectedVariable(e.target.value || null)}
                 >
@@ -458,12 +459,14 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">操作类型</label>
                 <SelectNative
+                  aria-label="操作类型"
                   value={selectedOperation}
                   onChange={(e) => setSelectedOperation(e.target.value)}
                 >
                   <option value="all">全部操作</option>
                   <option value="create">创建</option>
                   <option value="update">更新</option>
+                  <option value="scope_exit">退出作用域</option>
                 </SelectNative>
               </div>
 
@@ -471,6 +474,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">值类型</label>
                 <SelectNative
+                  aria-label="值类型"
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
                 >
@@ -565,7 +569,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className={`w-2 h-2 rounded-full ${
-                              record.operation === 'create' ? 'bg-green-500' : 'bg-blue-500'
+                              record.operation === 'create' ? 'bg-green-500' : record.operation === 'scope_exit' ? 'bg-gray-500' : 'bg-blue-500'
                             }`} />
                             <div>
                               <div className="flex items-center gap-2">
@@ -573,11 +577,13 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
                                   {record.variable_name}
                                 </span>
                                 <span className={`text-xs px-2 py-0.5 rounded-control font-medium ${
-                                  record.operation === 'create' 
+                                  record.operation === 'create'
                                     ? 'bg-green-100 text-green-700' 
-                                    : 'bg-blue-100 text-blue-700'
+                                    : record.operation === 'scope_exit'
+                                      ? 'bg-gray-100 text-gray-700'
+                                      : 'bg-blue-100 text-blue-700'
                                 }`}>
-                                  {record.operation === 'create' ? '创建' : '更新'}
+                                  {record.operation === 'create' ? '创建' : record.operation === 'scope_exit' ? '退出作用域' : '更新'}
                                 </span>
                                 <span className="text-xs px-2 py-0.5 rounded-control bg-gray-100 text-gray-600">
                                   {record.value_type}
@@ -609,7 +615,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelecto
 
                         {/* 值变化 */}
                         <div className="space-y-2">
-                          {record.operation === 'update' && (
+                          {record.operation !== 'create' && (
                             <div className="bg-red-50 rounded-lg p-3 border border-red-100">
                               <div className="text-xs font-medium text-red-700 mb-1">旧值</div>
                               <pre className={`text-sm text-red-800 font-mono whitespace-pre-wrap break-all ${

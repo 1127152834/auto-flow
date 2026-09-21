@@ -330,7 +330,7 @@ class WorkflowRunService:
             raise WorkflowRunError(
                 "RUN_VARIABLE_PAGE_INVALID", "变量诊断分页参数无效", 422
             )
-        if operation not in {None, "create", "update"}:
+        if operation not in {None, "create", "update", "scope_exit"}:
             raise WorkflowRunError(
                 "RUN_VARIABLE_FILTER_INVALID", "变量诊断操作筛选无效", 422
             )

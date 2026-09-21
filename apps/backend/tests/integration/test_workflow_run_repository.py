@@ -236,6 +236,26 @@ def test_variable_tracking_pages_large_values_and_clears_finished_run(
     assert service.variable_tracking_value(
         "run-1", sequence=1, side="new_value"
     ) == large
+    repository.append_event(
+        "run-1",
+        "execution:variable_changed",
+        {
+            "variable_name": "item",
+            "old_value": "乙",
+            "new_value": None,
+            "node_name": "遍历列表",
+            "operation": "scope_exit",
+            "value_type": "null",
+        },
+        now=clock,
+        node_id="repeat",
+        execution_id="loop-exit",
+    )
+    scope_exits, scope_exit_total, _, _ = service.variable_tracking(
+        "run-1", operation="scope_exit"
+    )
+    assert scope_exit_total == 1
+    assert scope_exits[0]["executionId"] == "loop-exit"
 
     service.finish("run-1", status="completed", cleanup_completed=True)
     service.clear_variable_tracking("run-1")

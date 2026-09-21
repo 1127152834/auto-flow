@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, Protocol, SupportsIndex
+from typing import Any, Literal, Protocol, SupportsIndex
 
 from .browser import BrowserRequestWatchPort, BrowserSessionPort
 from .variables import CredentialReader, references_sensitive_value, resolve_value
@@ -376,7 +376,12 @@ class ExecutionContext:
         return self.resolve_value(value), sensitive
 
     def set_variable(
-        self, name: str, value: Any, *, sensitive: bool | None = None
+        self,
+        name: str,
+        value: Any,
+        *,
+        sensitive: bool | None = None,
+        operation: Literal["create", "update", "scope_exit"] | None = None,
     ) -> None:
         if self.cancellation is not None:
             self.cancellation.raise_if_cancelled()
@@ -399,7 +404,12 @@ class ExecutionContext:
         if tracking is not None and isinstance(previous_values, dict):
             old_sensitive = name in tracking["sensitive"]
             new_sensitive = name in self.sensitive_variables
-            if not existed or old_value != value or old_sensitive != new_sensitive:
+            if (
+                operation == "scope_exit"
+                or not existed
+                or old_value != value
+                or old_sensitive != new_sensitive
+            ):
                 tracking["changes"].append(
                     {
                         "variable_name": name,
@@ -408,7 +418,7 @@ class ExecutionContext:
                         "node_id": tracking["nodeId"],
                         "node_name": tracking["nodeName"],
                         "executionId": tracking["executionId"],
-                        "operation": "update" if existed else "create",
+                        "operation": operation or ("update" if existed else "create"),
                         "value_type": _variable_value_type(value),
                     }
                 )
@@ -417,6 +427,39 @@ class ExecutionContext:
                 tracking["sensitive"].add(name)
             else:
                 tracking["sensitive"].discard(name)
+
+    def delete_variable(
+        self,
+        name: str,
+        *,
+        operation: Literal["update", "scope_exit"] = "update",
+    ) -> None:
+        tracking = self._variable_tracking_context.get()
+        previous_values = tracking["values"] if tracking is not None else None
+        existed = isinstance(previous_values, dict) and name in previous_values
+        old_value = (
+            copy.deepcopy(previous_values.get(name))
+            if isinstance(previous_values, dict)
+            else None
+        )
+        old_sensitive = bool(tracking is not None and name in tracking["sensitive"])
+        self.variables.pop(name, None)
+        self.sensitive_variables.discard(name)
+        if tracking is not None and isinstance(previous_values, dict) and existed:
+            tracking["changes"].append(
+                {
+                    "variable_name": name,
+                    "old_value": "***" if old_sensitive else old_value,
+                    "new_value": None,
+                    "node_id": tracking["nodeId"],
+                    "node_name": tracking["nodeName"],
+                    "executionId": tracking["executionId"],
+                    "operation": operation,
+                    "value_type": "null",
+                }
+            )
+            previous_values.pop(name, None)
+            tracking["sensitive"].discard(name)
 
     def begin_variable_tracking(
         self, *, node_id: str, node_name: str, execution_id: str

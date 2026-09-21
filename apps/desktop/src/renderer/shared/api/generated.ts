@@ -11295,7 +11295,7 @@ export type components = {
              * Operation
              * @enum {string}
              */
-            operation: "create" | "update";
+            operation: "create" | "update" | "scope_exit";
             /** Value Type */
             value_type: string;
             /** Sequence */
@@ -11397,7 +11397,7 @@ export type components = {
              * Operation
              * @enum {string}
              */
-            operation: "create" | "update";
+            operation: "create" | "update" | "scope_exit";
             /** Value Type */
             value_type: string;
         };

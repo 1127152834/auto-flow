@@ -98,7 +98,7 @@ async def test_production_registry_runs_variable_loop_and_condition_as_one_graph
         "condition",
         "passed",
     )
-    assert context.variables == {"total": 3, "index": 3, "outcome": "passed"}
+    assert context.variables == {"total": 3, "outcome": "passed"}
 
 
 @pytest.mark.asyncio
@@ -125,7 +125,147 @@ async def test_production_runtime_completes_one_thousand_iterations_with_distinc
     assert len(starts) == 1_000
     assert len({event["executionId"] for event in starts}) == 1_000
     assert [starts[0]["executionContext"]["loops"][0]["iteration"], starts[-1]["executionContext"]["loops"][0]["iteration"]] == [1, 1_000]
-    assert context.variables == {"index": 1_000, "value": 999, "completed": "完成"}
+    assert context.variables == {"value": 999, "completed": "完成"}
+
+
+@pytest.mark.asyncio
+async def test_debug_tracking_records_loop_local_entry_updates_and_scope_exit() -> None:
+    document = {
+        "nodes": [
+            _node(
+                "repeat",
+                "foreach",
+                {
+                    "dataSource": "items",
+                    "itemVariable": "item",
+                    "indexVariable": "index",
+                },
+            ),
+            _node(
+                "body",
+                "set_variable",
+                {"variableName": "seen", "variableValue": "{item}"},
+            ),
+        ],
+        "edges": [_edge("repeat-body", "repeat", "body", "loop")],
+        "variables": [],
+    }
+    sink = _EventSink()
+    context = ExecutionContext(
+        variables={"items": ["甲", "乙"], "index": 99},
+        events=sink,
+        variable_tracking_enabled=True,
+    )
+
+    result = await WorkflowRuntime(build_production_executor_registry()).execute(
+        document, context
+    )
+
+    changes = [
+        event
+        for event in sink.events
+        if event["type"] == "execution:variable_changed"
+        and event["nodeId"] == "repeat"
+    ]
+    index_changes = [event for event in changes if event["variable_name"] == "index"]
+    item_changes = [event for event in changes if event["variable_name"] == "item"]
+    assert result.success is True
+    assert context.variables == {"items": ["甲", "乙"], "index": 99, "seen": "乙"}
+    assert [(event["operation"], event["new_value"]) for event in index_changes] == [
+        ("update", 0),
+        ("update", 1),
+        ("update", 2),
+        ("scope_exit", 99),
+    ]
+    assert [(event["operation"], event["new_value"]) for event in item_changes] == [
+        ("create", "甲"),
+        ("update", "乙"),
+        ("scope_exit", None),
+    ]
+    assert index_changes[1]["executionId"] == item_changes[1]["executionId"]
+    assert index_changes[-1]["executionId"] == item_changes[-1]["executionId"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("module_type", "config", "variables", "local_names"),
+    [
+        ("loop", {"loopCount": 0, "indexVariable": "slot"}, {}, {"slot"}),
+        (
+            "loop",
+            {
+                "loopType": "range",
+                "startValue": 2,
+                "endValue": 1,
+                "stepValue": 1,
+                "indexVariable": "slot",
+            },
+            {},
+            {"slot"},
+        ),
+        (
+            "loop",
+            {"loopType": "while", "condition": "false", "indexVariable": "slot"},
+            {},
+            {"slot"},
+        ),
+        (
+            "foreach",
+            {
+                "dataSource": "items",
+                "itemVariable": "item",
+                "indexVariable": "slot",
+            },
+            {"items": ["甲"]},
+            {"slot", "item"},
+        ),
+        (
+            "foreach_dict",
+            {
+                "dictVariable": "mapping",
+                "keyVariable": "key",
+                "valueVariable": "value",
+                "indexVariable": "slot",
+            },
+            {"mapping": {"甲": 1}},
+            {"slot", "key", "value"},
+        ),
+        ("infinite_loop", {"indexVariable": "slot"}, {}, {"slot"}),
+    ],
+)
+async def test_each_loop_family_restores_outer_local_values(
+    module_type: str,
+    config: dict[str, object],
+    variables: dict[str, object],
+    local_names: set[str],
+) -> None:
+    initial = {**variables, **{name: f"outer-{name}" for name in local_names}}
+    nodes = [_node("repeat", module_type, config)]
+    edges: list[dict[str, object]] = []
+    if module_type == "infinite_loop":
+        nodes.append(_node("break", "break_loop", {}))
+        edges.append(_edge("repeat-break", "repeat", "break", "loop"))
+    sink = _EventSink()
+    context = ExecutionContext(
+        variables=initial.copy(), events=sink, variable_tracking_enabled=True
+    )
+
+    result = await WorkflowRuntime(build_production_executor_registry()).execute(
+        {"nodes": nodes, "edges": edges, "variables": []}, context
+    )
+
+    exits = [
+        event
+        for event in sink.events
+        if event["type"] == "execution:variable_changed"
+        and event["operation"] == "scope_exit"
+    ]
+    assert result.success is True
+    assert context.variables == initial
+    assert {event["variable_name"] for event in exits} == local_names
+    assert {event["new_value"] for event in exits} == {
+        f"outer-{name}" for name in local_names
+    }
 
 
 @pytest.mark.asyncio
@@ -203,6 +343,7 @@ async def test_production_while_loop_re_evaluates_the_resolved_expression() -> N
     assert result.executed_node_ids.count("increment") == 3
     assert context.variables["total"] == 3
     assert context.variables["done"] == 1
+    assert "index" not in context.variables
 
 
 @pytest.mark.parametrize(

@@ -628,7 +628,7 @@ class StudioVariableTrackingRecord(ApiModel):
     new_value: JsonValue
     node_id: str
     node_name: str
-    operation: Literal["create", "update"]
+    operation: Literal["create", "update", "scope_exit"]
     value_type: str
 
 

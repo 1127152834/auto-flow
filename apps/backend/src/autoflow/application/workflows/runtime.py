@@ -118,6 +118,9 @@ class _WorkflowScheduler:
     halted: bool = False
     failed_node_id: str | None = None
     failed_result: ModuleResult | None = None
+    loop_local_restores: dict[int, dict[str, tuple[bool, Any, bool]]] = field(
+        default_factory=dict
+    )
 
     async def run(self, start_nodes: list[str] | None = None) -> WorkflowRuntimeResult:
         await self._execute_parallel(
@@ -235,6 +238,16 @@ class _WorkflowScheduler:
         execution_id = str(uuid4())
         node_label = str(node.data.get("label") or node.type)
         execution_context = execution_context_snapshot(self.context)
+        variables_before_loop = (
+            dict(self.context.variables)
+            if node.type in _LOOP_NODE_TYPES
+            else None
+        )
+        sensitive_before_loop = (
+            set(self.context.sensitive_variables)
+            if node.type in _LOOP_NODE_TYPES
+            else set()
+        )
         async with self.event_binding_lock:
             self.context.current_node_id = node.id
             self.context.current_execution_id = execution_id
@@ -261,6 +274,20 @@ class _WorkflowScheduler:
         result = await _execute_with_cancellation(
             executor.execute(config, self.context), self.context
         )
+        if (
+            result.success
+            and node.type in _LOOP_NODE_TYPES
+            and isinstance(result.data, dict)
+            and variables_before_loop is not None
+        ):
+            self.loop_local_restores[id(result.data)] = {
+                name: (
+                    name in variables_before_loop,
+                    copy.deepcopy(variables_before_loop.get(name)),
+                    name in sensitive_before_loop,
+                )
+                for name in _active_loop_variable_names(result.data)
+            }
         if (
             node.type == "custom_module"
             and result.success
@@ -373,11 +400,12 @@ class _WorkflowScheduler:
                 self.context.should_break = False
                 break
             self.context.should_continue = False
-            self._advance_loop(loop_state)
+            await self._advance_loop(loop_node, loop_state)
             await asyncio.sleep(0)
 
         if self.context.loop_stack and self.context.loop_stack[-1] is loop_state:
             self.context.loop_stack.pop()
+        await self._exit_loop_scope(loop_node, loop_state)
         if done_nodes and not self.halted:
             await self._notify_successors(done_nodes, loop_node.id)
 
@@ -409,7 +437,15 @@ class _WorkflowScheduler:
             return bool(resolved)
         return False
 
-    def _advance_loop(self, state: dict[str, Any]) -> None:
+    async def _advance_loop(
+        self, loop_node: WorkflowNode, state: dict[str, Any]
+    ) -> None:
+        execution_id = str(uuid4())
+        tracking_token = self.context.begin_variable_tracking(
+            node_id=loop_node.id,
+            node_name=str(loop_node.data.get("label") or loop_node.type),
+            execution_id=execution_id,
+        )
         loop_type = state.get("type")
         step = state.get("step_value", 1) if loop_type == "range" else 1
         state["current_index"] = state.get("current_index", 0) + step
@@ -430,6 +466,43 @@ class _WorkflowScheduler:
                 self.context.set_variable(key_variable, key)
             if isinstance(value_variable, str) and value_variable:
                 self.context.set_variable(value_variable, value)
+        await self._publish_variable_changes(tracking_token)
+
+    async def _exit_loop_scope(
+        self, loop_node: WorkflowNode, state: dict[str, Any]
+    ) -> None:
+        restore = self.loop_local_restores.pop(id(state), {})
+        if not restore:
+            return
+        execution_id = str(uuid4())
+        tracking_token = self.context.begin_variable_tracking(
+            node_id=loop_node.id,
+            node_name=str(loop_node.data.get("label") or loop_node.type),
+            execution_id=execution_id,
+        )
+        for name, (existed, value, sensitive) in restore.items():
+            if existed:
+                self.context.set_variable(
+                    name,
+                    copy.deepcopy(value),
+                    sensitive=sensitive,
+                    operation="scope_exit",
+                )
+            else:
+                self.context.delete_variable(name, operation="scope_exit")
+        await self._publish_variable_changes(tracking_token)
+
+    async def _publish_variable_changes(self, tracking_token: Any) -> None:
+        for change in self.context.end_variable_tracking(tracking_token):
+            await _publish(
+                self.context,
+                {
+                    "type": "execution:variable_changed",
+                    "nodeId": change["node_id"],
+                    "executionId": change["executionId"],
+                    **change,
+                },
+            )
 
     def _collect_loop_body_nodes(
         self, loop_id: str, roots: list[str], done_nodes: list[str]
@@ -620,6 +693,23 @@ def _is_json_value(value: Any) -> bool:
 async def _publish(context: ExecutionContext, event: dict[str, Any]) -> None:
     if context.events is not None:
         await context.events.publish(event)
+
+
+def _active_loop_variable_names(state: Mapping[str, Any]) -> tuple[str, ...]:
+    if state.get("type") in {"foreach", "foreach_dict"} and not state.get("data"):
+        return ()
+    return tuple(
+        dict.fromkeys(
+            name
+            for key in (
+                "index_variable",
+                "item_variable",
+                "key_variable",
+                "value_variable",
+            )
+            if isinstance((name := state.get(key)), str) and name
+        )
+    )
 
 
 async def _execute_with_cancellation(
