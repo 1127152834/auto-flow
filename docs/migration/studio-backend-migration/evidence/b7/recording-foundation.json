@@ -1,0 +1,69 @@
+{
+  "evidenceId": "BE-B7-recording-foundation",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准增强",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/services/recorder.py",
+      "reference/WebRPA/backend/app/api/recorder.py",
+      "reference/WebRPA/frontend/src/components/workflow/RecorderPanel.tsx"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "冻结WebRPA录制脚本注入当前页面、未来页面和可访问框架，保留输入、点击、双击、选择、勾选、按键、拖拽、上传占位和滚动采集语义",
+    "录制复用正式可见CloakBrowser检查会话、主应用Profile、worker进程监护及资源锁；与元素拾取互斥",
+    "确认步骤按单调序号持久化并支持非破坏分页补读；审查草稿使用revision并发校验",
+    "敏感输入原值在数据库边界清除并标记待补值；页面对象、Cookie、登录态和注入句柄不持久化",
+    "容量限制为单值1MiB、单录制10000步和64MiB；整批越界不写入并停止采集，浏览器保留供审查",
+    "worker异常退出将会话标记为interrupted并保留已确认步骤；正常sidecar关闭先确认尾部再清理浏览器和资源",
+    "现有start、events、stop、status和reviews接口接入真实工作区数据库，OpenAPI生成类型已同步"
+  ],
+  "adaptations": [
+    "不启动WebRPA全局浏览器管理器，录制控制器挂入AutoFlow既有inspection worker",
+    "在冻结sessionStorage缓冲之外增加Playwright binding镜像，用事件内部标识去重，以保留跨origin导航前的尾部操作",
+    "录制事件和审查使用Alembic 0016增量迁移，不修改历史迁移或用户数据库"
+  ],
+  "checks": [
+    {
+      "command": "pytest recording HTTP/repository/provider/inspection and migration compatibility/schema export",
+      "result": "40 passed before final shutdown case; shutdown case and full inspection suite 7 passed",
+      "covers": "接口、序号分页、幂等停止、审查冲突、容量、敏感值、崩溃恢复、迁移链、OpenAPI一致性及关闭清理"
+    },
+    {
+      "command": "vitest recorder session/review/recovery/source parity/picker leave suites",
+      "result": "72 passed",
+      "covers": "前端请求恢复、审查编辑生成、迟到响应、离开保护及冻结源码行为"
+    },
+    {
+      "command": "Ruff, mypy, TypeScript, ESLint, OpenAPI generation check and Electron renderer/main/preload build",
+      "result": "passed",
+      "covers": "格式、类型、生成合同和正式构建入口"
+    }
+  ],
+  "realBrowser": {
+    "previouslyConfirmed": [
+      "当前文档和未来标签页注入",
+      "中文输入",
+      "点击去重",
+      "iframe元数据"
+    ],
+    "currentAttempt": "blocked externally",
+    "reason": "CloakBrowser Pro returned session limit reached for your plan during the cross-origin navigation tail test",
+    "businessAssertionReached": false
+  },
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "windowsTested": false
+  },
+  "remaining": [
+    "CloakBrowser席位可用后重跑跨origin导航尾部真实用例并核销绑定增强",
+    "正式Electron真实UI完成录制、审查、生成、保存重开和独立运行",
+    "按当前正式前端合同确认暂停/恢复是否仍为产品要求；现有UI和API仅暴露开始与停止",
+    "验证磁盘写入失败和清理失败重试，不提前释放互斥资源"
+  ]
+}

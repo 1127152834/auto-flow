@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any, cast
 from uuid import uuid4
 
@@ -28,6 +29,7 @@ class _BrowserState:
     profile_id: str
     picker_session_id: str | None = None
     picker_fingerprint: tuple[str | None, str] | None = None
+    recorder_session_id: str | None = None
 
 
 class WorkflowInspectionService:
@@ -42,6 +44,7 @@ class WorkflowInspectionService:
         read_license: Callable[[], str | None],
         resources: WorkflowResourceCoordinator,
         workers: WorkflowWorkerManager,
+        recordings: Any | None = None,
     ) -> None:
         self._profiles = profiles
         self._installed = installed_kernels
@@ -49,6 +52,7 @@ class WorkflowInspectionService:
         self._read_license = read_license
         self._resources = resources
         self._workers = workers
+        self._recordings = recordings
         self._state: _BrowserState | None = None
         self._retired_pickers: set[str] = set()
         self._waiters: dict[str, asyncio.Future[dict[str, Any]]] = {}
@@ -125,6 +129,8 @@ class WorkflowInspectionService:
                 return {"success": True}
             if session_id is not None and session_id != state.session_id:
                 raise _conflict("浏览器会话已变化")
+            if state.recorder_session_id is not None:
+                raise _conflict("请先停止录制，再关闭浏览器")
             await self._workers.stop(state.session_id)
             if self._workers.busy():
                 raise WorkflowRunError(
@@ -138,10 +144,20 @@ class WorkflowInspectionService:
             return {"success": True}
 
     async def shutdown(self) -> None:
-        state = self._state
-        if state is not None:
-            await self.close(state.session_id)
-        await self._workers.shutdown()
+        try:
+            state = self._state
+            if state is not None and state.recorder_session_id is not None:
+                await self.stop_recording(
+                    state.recorder_session_id, after_seq=0
+                )
+            state = self._state
+            if state is not None:
+                await self.close(state.session_id)
+        finally:
+            await self._workers.shutdown()
+            state = self._state
+            if state is not None:
+                await self.on_worker_exit(state.session_id, -1)
 
     async def status(self) -> dict[str, Any]:
         state = self._state
@@ -200,6 +216,8 @@ class WorkflowInspectionService:
             raise _conflict("拾取会话已结束")
         if state and state.picker_session_id:
             raise _conflict("当前已有活跃拾取会话")
+        if state and state.recorder_session_id:
+            raise _conflict("录制期间不能启动元素拾取")
         if state is None:
             await self.open(profile_id=profile_id, url=url)
             state = self._require_browser()
@@ -284,6 +302,147 @@ class WorkflowInspectionService:
             highlight=request.get("highlight", True),
         )
 
+    async def start_recording(self, session_id: str) -> dict[str, Any]:
+        state = self._require_browser()
+        repository = self._require_recordings()
+        if state.picker_session_id is not None:
+            raise _conflict("元素拾取期间不能开始录制")
+        if state.recorder_session_id is not None:
+            if state.recorder_session_id != session_id:
+                raise _conflict("当前已有活跃录制会话")
+            return {"success": True, **repository.status(session_id)}
+        try:
+            receipt = repository.start(session_id, now=datetime.now(UTC))
+        except ValueError as error:
+            raise _conflict(str(error)) from error
+        try:
+            await self._command("recorder_start")
+        except BaseException:
+            repository.stop(session_id, now=datetime.now(UTC))
+            raise
+        state.recorder_session_id = session_id
+        return {"success": True, **receipt}
+
+    async def recording_events(
+        self, session_id: str, *, after_seq: int
+    ) -> dict[str, Any]:
+        repository = self._require_recordings()
+        state = self._state
+        if state is not None and state.recorder_session_id == session_id:
+            response = await self._command("recorder_events")
+            await self._append_recording_events(session_id, response.get("events"))
+        else:
+            current = repository.current()
+            if current is None or current["sessionId"] != session_id:
+                raise _conflict("录制会话不存在或已过期")
+        try:
+            return {"success": True, **repository.events(session_id, after_seq=after_seq)}
+        except ValueError as error:
+            raise _conflict(str(error)) from error
+
+    async def stop_recording(
+        self, session_id: str, *, after_seq: int
+    ) -> dict[str, Any]:
+        repository = self._require_recordings()
+        state = self._state
+        current = repository.current()
+        if current is None or current["sessionId"] != session_id:
+            raise _conflict("录制会话不存在或已过期")
+        if state is not None and state.recorder_session_id == session_id:
+            response = await self._command("recorder_stop")
+            await self._append_recording_events(session_id, response.get("events"))
+            repository.stop(session_id, now=datetime.now(UTC))
+            state.recorder_session_id = None
+        elif current["recording"]:
+            raise _conflict("录制会话浏览器已失效")
+        batch = repository.events(session_id, after_seq=after_seq)
+        return {
+            "success": True,
+            "sessionId": session_id,
+            "recording": False,
+            "nextSeq": batch["nextSeq"],
+            "hasMore": batch["hasMore"],
+            "data": {"events": batch["data"]},
+        }
+
+    def recording_status(self, session_id: str | None) -> dict[str, Any]:
+        repository = self._require_recordings()
+        current = repository.current()
+        if current is None:
+            if session_id is not None:
+                raise _conflict("录制会话不存在或已过期")
+            return {
+                "success": True,
+                "sessionId": None,
+                "recording": False,
+                "nextSeq": 0,
+            }
+        if session_id is not None and current["sessionId"] != session_id:
+            raise _conflict("录制会话不存在或已过期")
+        state = self._state
+        recording = bool(
+            current["recording"]
+            and state is not None
+            and state.recorder_session_id == current["sessionId"]
+        )
+        return {"success": True, **current, "recording": recording}
+
+    def read_recording_review(self, document_id: str) -> dict[str, Any]:
+        review = self._require_recordings().read_review(document_id)
+        if review is None:
+            raise WorkflowRunError(
+                "RECORDING_REVIEW_NOT_FOUND", "录制审查不存在", 404
+            )
+        return review
+
+    def save_recording_review(
+        self, document_id: str, request: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        try:
+            return self._require_recordings().save_review(
+                document_id,
+                expected_revision=int(request["expectedRevision"]),
+                auto_wait=bool(request["autoWait"]),
+                events=[dict(event) for event in request["events"]],
+                now=datetime.now(UTC),
+            )
+        except ValueError as error:
+            code = (
+                "RECORDING_REVIEW_CONFLICT"
+                if "已修改" in str(error)
+                else "RECORDING_REVIEW_INVALID"
+            )
+            status = 409 if code.endswith("CONFLICT") else 413
+            raise WorkflowRunError(code, str(error), status) from error
+
+    async def _append_recording_events(
+        self, session_id: str, raw_events: object
+    ) -> None:
+        if not isinstance(raw_events, list) or not raw_events:
+            return
+        events = [dict(event) for event in raw_events if isinstance(event, dict)]
+        if len(events) != len(raw_events):
+            raise WorkflowRunError(
+                "RECORDING_EVENT_INVALID", "录制浏览器返回了无效步骤", 500
+            )
+        try:
+            self._require_recordings().append(
+                session_id, events, now=datetime.now(UTC)
+            )
+        except ValueError as error:
+            state = self._require_browser()
+            await self._command("recorder_stop")
+            self._require_recordings().stop(session_id, now=datetime.now(UTC))
+            state.recorder_session_id = None
+            raise WorkflowRunError("RECORDING_LIMIT_REACHED", str(error), 413) from error
+
+    def _require_recordings(self) -> Any:
+        if self._recordings is None:
+            raise WorkflowRunError(
+                "RECORDING_NOT_READY", "录制持久化服务尚未装配", 503
+            )
+        return self._recordings
+
     async def on_worker_event(self, event: dict[str, object]) -> None:
         if event.get("type") != "inspection:response":
             return
@@ -306,6 +465,10 @@ class WorkflowInspectionService:
             await self._resources.release(session_id)
         if state.picker_session_id:
             self._retired_pickers.add(state.picker_session_id)
+        if state.recorder_session_id and self._recordings is not None:
+            self._recordings.interrupt(
+                state.recorder_session_id, now=datetime.now(UTC)
+            )
         self._state = None
 
     async def _command(self, command: str, **values: Any) -> dict[str, Any]:

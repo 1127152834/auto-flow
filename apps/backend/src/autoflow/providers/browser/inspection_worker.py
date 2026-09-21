@@ -15,6 +15,7 @@ from autoflow.providers.browser.workflow_session import (
 )
 
 from .element_picker_script import PICKER_SCRIPT
+from .recorder import RecorderController
 
 _OVERLAY_JS = """
 (boxes) => {
@@ -100,6 +101,7 @@ class InspectionController:
         self.picker_active = False
         self.revision = 0
         self._page_signature: tuple[tuple[str, str], ...] = ()
+        self.recorder = RecorderController(browser)
 
     async def execute(self, command: dict[str, Any]) -> dict[str, Any]:
         action = command.get("command")
@@ -121,6 +123,12 @@ class InspectionController:
             return await self.picker_result(_required(command, "key"))
         if action == "test_selector":
             return await self.test_selector(command)
+        if action == "recorder_start":
+            return await self.recorder.start()
+        if action == "recorder_events":
+            return await self.recorder.events()
+        if action == "recorder_stop":
+            return await self.recorder.stop()
         raise ValueError("unknown inspection command")
 
     async def pages(self) -> dict[str, Any]:

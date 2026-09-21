@@ -171,3 +171,38 @@ class WorkflowMcpCommandRow(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     http_status: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowRecordingSessionRow(Base):
+    __tablename__ = "workflow_recording_sessions"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    active_slot: Mapped[int | None] = mapped_column(Integer, unique=True)
+    last_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    byte_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowRecordingEventRow(Base):
+    __tablename__ = "workflow_recording_events"
+
+    session_id: Mapped[str] = mapped_column(
+        String(128),
+        ForeignKey("workflow_recording_sessions.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    sequence: Mapped[int] = mapped_column(Integer, primary_key=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class WorkflowRecordingReviewRow(Base):
+    __tablename__ = "workflow_recording_reviews"
+
+    document_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    auto_wait: Mapped[bool] = mapped_column(nullable=False)
+    events: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

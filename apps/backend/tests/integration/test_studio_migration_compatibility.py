@@ -7,10 +7,9 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.util.exc import CommandError
+from autoflow.infrastructure.database import session as database_session
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-
-from autoflow.infrastructure.database import session as database_session
 
 
 def _config(database: Path) -> Config:
@@ -79,13 +78,16 @@ def test_all_supported_histories_upgrade_without_losing_existing_rows(
         tables = _tables(connection)
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("0015_workflow_mcp",)]
+        ).fetchall() == [("0016_workflow_recordings",)]
         assert {
             "workflow_documents",
             "workflow_runs",
             "workflow_run_events",
             "workflow_run_artifacts",
             "workflow_debug_commands",
+            "workflow_recording_sessions",
+            "workflow_recording_events",
+            "workflow_recording_reviews",
             "android_devices",
             "android_resources",
             "projects",
@@ -177,6 +179,6 @@ def test_interrupted_branch_merge_rolls_back_and_can_restart(tmp_path: Path) -> 
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("0015_workflow_mcp",)]
+        ).fetchall() == [("0016_workflow_recordings",)]
         assert {"android_devices", "android_resources"} <= _tables(connection)
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

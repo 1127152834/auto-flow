@@ -2539,6 +2539,74 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/triggers/gesture/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_triggers_gesture_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/triggers/gesture/custom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Custom Gestures */
+        get: operations["custom_gestures_api_triggers_gesture_custom_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/triggers/gesture/record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record */
+        post: operations["record_api_triggers_gesture_record_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/triggers/gesture/custom/{gesture_name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete */
+        delete: operations["delete_api_triggers_gesture_custom__gesture_name__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflows/{workflow_id}/execute": {
         parameters: {
             query?: never;
@@ -2795,6 +2863,92 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/recorder/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recorder Start */
+        post: operations["recorder_start_api_recorder_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recorder/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recorder Events */
+        get: operations["recorder_events_api_recorder_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recorder/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recorder Stop */
+        post: operations["recorder_stop_api_recorder_stop_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recorder/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recorder Status */
+        get: operations["recorder_status_api_recorder_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recorder/reviews/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recording Review */
+        get: operations["recording_review_api_recorder_reviews__document_id__get"];
+        /** Save Recording Review */
+        put: operations["save_recording_review_api_recorder_reviews__document_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai-assistant/sessions": {
         parameters: {
             query?: never;
@@ -2961,6 +3115,75 @@ export type paths = {
         put?: never;
         /** Transcribe */
         post: operations["transcribe_api_ai_assistant_transcribe_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/mcp/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Config */
+        get: operations["config_api_ai_assistant_mcp_config_get"];
+        /** Save */
+        put: operations["save_api_ai_assistant_mcp_config_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/mcp/reload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reload */
+        post: operations["reload_api_ai_assistant_mcp_reload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/mcp/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_ai_assistant_mcp_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai-assistant/mcp/commands/{command_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Command */
+        get: operations["command_api_ai_assistant_mcp_commands__command_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -8041,6 +8264,16 @@ export type components = {
              */
             deleted: true;
         };
+        /** RecordGestureRequest */
+        RecordGestureRequest: {
+            /** Gesture Name */
+            gesture_name: string;
+            /**
+             * Timeout
+             * @default 30
+             */
+            timeout: number;
+        };
         /** RecordResourceLocator */
         RecordResourceLocator: {
             /**
@@ -9072,6 +9305,174 @@ export type components = {
             /** Claimid */
             claimId?: string | null;
         };
+        /** StudioMcpCommandLookup */
+        StudioMcpCommandLookup: {
+            /** Commandid */
+            commandId: string;
+            /** Httpstatus */
+            httpStatus: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpConfig */
+        StudioMcpConfig: {
+            /** Mcpservers */
+            mcpServers: {
+                [key: string]: components["schemas"]["StudioMcpServerConfig"];
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpConfigResponse */
+        StudioMcpConfigResponse: {
+            /** Mcpservers */
+            mcpServers: {
+                [key: string]: components["schemas"]["StudioMcpServerConfig"];
+            };
+            /** Revision */
+            revision: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpConnected */
+        StudioMcpConnected: {
+            /** Name */
+            name: string;
+            /** Tool Count */
+            tool_count: number;
+            /** Transport */
+            transport: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpFailed */
+        StudioMcpFailed: {
+            /** Name */
+            name: string;
+            /** Error */
+            error: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpReloadRequest */
+        StudioMcpReloadRequest: {
+            /** Commandid */
+            commandId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+        };
+        /** StudioMcpReloaded */
+        StudioMcpReloaded: {
+            /** Connected */
+            connected: components["schemas"]["StudioMcpConnected"][];
+            /** Failed */
+            failed: components["schemas"]["StudioMcpFailed"][];
+            /** Disabled */
+            disabled: string[];
+            /** Total Servers */
+            total_servers: number;
+            /** Commandid */
+            commandId: string;
+            /** Revision */
+            revision: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpSaveRequest */
+        StudioMcpSaveRequest: {
+            /** Commandid */
+            commandId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            config: components["schemas"]["StudioMcpConfig"];
+        };
+        /** StudioMcpSaved */
+        StudioMcpSaved: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /**
+             * Saved
+             * @constant
+             */
+            saved: true;
+            /** Commandid */
+            commandId: string;
+            /** Revision */
+            revision: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpServerConfig */
+        StudioMcpServerConfig: {
+            /** Transport */
+            transport?: string | null;
+            /** Command */
+            command?: string | null;
+            /** Args */
+            args?: string[] | null;
+            /** Env */
+            env?: {
+                [key: string]: string;
+            } | null;
+            /** Cwd */
+            cwd?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Headers */
+            headers?: {
+                [key: string]: string;
+            } | null;
+            /** Disabled */
+            disabled?: boolean | null;
+            /** Autoapprove */
+            autoApprove?: string[] | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpServerStatus */
+        StudioMcpServerStatus: {
+            /** Name */
+            name: string;
+            /** Transport */
+            transport: string;
+            /** Disabled */
+            disabled: boolean;
+            /** Connected */
+            connected: boolean;
+            /** Tool Count */
+            tool_count: number;
+            /** Tools */
+            tools: components["schemas"]["StudioMcpTool"][];
+            /** Last Error */
+            last_error: string | null;
+            /** Connected At */
+            connected_at: string | null;
+            /** Auto Approve */
+            auto_approve: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpStatus */
+        StudioMcpStatus: {
+            /** Servers */
+            servers: components["schemas"]["StudioMcpServerStatus"][];
+            /** Total Tools Injected */
+            total_tools_injected: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpTool */
+        StudioMcpTool: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioPickerSessionRequest */
         StudioPickerSessionRequest: {
             /** Sessionid */
@@ -9104,6 +9505,124 @@ export type components = {
             selected: boolean;
         } & {
             [key: string]: unknown;
+        };
+        /** StudioRecorderBatch */
+        StudioRecorderBatch: {
+            /**
+             * Hasmore
+             * @default false
+             */
+            hasMore: boolean;
+            /** Success */
+            success: boolean;
+            /** Sessionid */
+            sessionId: string;
+            /** Nextseq */
+            nextSeq: number;
+            /** Data */
+            data: components["schemas"]["StudioRecorderEvent"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderEvent */
+        StudioRecorderEvent: {
+            /** Sequence */
+            sequence: number;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "navigate" | "click" | "dblclick" | "input" | "select" | "check" | "keypress" | "drag" | "upload" | "scroll";
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderReadRequest */
+        StudioRecorderReadRequest: {
+            /** Sessionid */
+            sessionId: string;
+            /**
+             * Afterseq
+             * @default 0
+             */
+            afterSeq: number;
+        };
+        /** StudioRecorderStartRequest */
+        StudioRecorderStartRequest: {
+            /** Sessionid */
+            sessionId: string;
+        };
+        /** StudioRecorderStarted */
+        StudioRecorderStarted: {
+            /** Success */
+            success: boolean;
+            /** Sessionid */
+            sessionId: string;
+            /** Recording */
+            recording: boolean;
+            /** Nextseq */
+            nextSeq: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderStatus */
+        StudioRecorderStatus: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Sessionid */
+            sessionId?: string | null;
+            /** Recording */
+            recording: boolean;
+            /** Nextseq */
+            nextSeq: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderStopped */
+        StudioRecorderStopped: {
+            /**
+             * Hasmore
+             * @default false
+             */
+            hasMore: boolean;
+            /** Success */
+            success: boolean;
+            /** Sessionid */
+            sessionId: string;
+            /** Nextseq */
+            nextSeq: number;
+            data: components["schemas"]["StudioRecorderTail"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderTail */
+        StudioRecorderTail: {
+            /** Events */
+            events: components["schemas"]["StudioRecorderEvent"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecordingReview */
+        StudioRecordingReview: {
+            /** Documentid */
+            documentId: string;
+            /** Revision */
+            revision: number;
+            /** Autowait */
+            autoWait: boolean;
+            /** Events */
+            events: components["schemas"]["StudioRecorderEvent"][];
+        };
+        /** StudioRecordingReviewWrite */
+        StudioRecordingReviewWrite: {
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Autowait */
+            autoWait: boolean;
+            /** Events */
+            events: components["schemas"]["StudioRecorderEvent"][];
         };
         /** StudioRunResultPage */
         StudioRunResultPage: {
@@ -10383,201 +10902,6 @@ export type components = {
              */
             error: string | null;
         };
-        /** StudioMcpCommandLookup */
-        StudioMcpCommandLookup: {
-            /** Commandid */
-            commandId: string;
-            /** Httpstatus */
-            httpStatus: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpConfig */
-        StudioMcpConfig: {
-            /** Mcpservers */
-            mcpServers: {
-                [key: string]: components["schemas"]["StudioMcpServerConfig"];
-            };
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpConfigResponse */
-        StudioMcpConfigResponse: {
-            /** Mcpservers */
-            mcpServers: {
-                [key: string]: components["schemas"]["StudioMcpServerConfig"];
-            };
-            /** Revision */
-            revision: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpConnected */
-        StudioMcpConnected: {
-            /** Name */
-            name: string;
-            /** Tool Count */
-            tool_count: number;
-            /** Transport */
-            transport: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpFailed */
-        StudioMcpFailed: {
-            /** Name */
-            name: string;
-            /** Error */
-            error: string;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpReloadRequest */
-        StudioMcpReloadRequest: {
-            /** Commandid */
-            commandId: string;
-            /** Expectedrevision */
-            expectedRevision: number;
-        };
-        /** StudioMcpReloaded */
-        StudioMcpReloaded: {
-            /** Connected */
-            connected: components["schemas"]["StudioMcpConnected"][];
-            /** Failed */
-            failed: components["schemas"]["StudioMcpFailed"][];
-            /** Disabled */
-            disabled: string[];
-            /** Total Servers */
-            total_servers: number;
-            /** Commandid */
-            commandId: string;
-            /** Revision */
-            revision: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpSaveRequest */
-        StudioMcpSaveRequest: {
-            /** Commandid */
-            commandId: string;
-            /** Expectedrevision */
-            expectedRevision: number;
-            config: components["schemas"]["StudioMcpConfig"];
-        };
-        /** StudioMcpSaved */
-        StudioMcpSaved: {
-            /**
-             * Success
-             * @constant
-             */
-            success: true;
-            /**
-             * Saved
-             * @constant
-             */
-            saved: true;
-            /** Commandid */
-            commandId: string;
-            /** Revision */
-            revision: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpServerConfig */
-        StudioMcpServerConfig: {
-            /**
-             * Transport
-             * @default null
-             */
-            transport: string | null;
-            /**
-             * Command
-             * @default null
-             */
-            command: string | null;
-            /**
-             * Args
-             * @default null
-             */
-            args: string[] | null;
-            /**
-             * Env
-             * @default null
-             */
-            env: {
-                [key: string]: string;
-            } | null;
-            /**
-             * Cwd
-             * @default null
-             */
-            cwd: string | null;
-            /**
-             * Url
-             * @default null
-             */
-            url: string | null;
-            /**
-             * Headers
-             * @default null
-             */
-            headers: {
-                [key: string]: string;
-            } | null;
-            /**
-             * Disabled
-             * @default null
-             */
-            disabled: boolean | null;
-            /**
-             * Autoapprove
-             * @default null
-             */
-            autoApprove: string[] | null;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpServerStatus */
-        StudioMcpServerStatus: {
-            /** Name */
-            name: string;
-            /** Transport */
-            transport: string;
-            /** Disabled */
-            disabled: boolean;
-            /** Connected */
-            connected: boolean;
-            /** Tool Count */
-            tool_count: number;
-            /** Tools */
-            tools: components["schemas"]["StudioMcpTool"][];
-            /** Last Error */
-            last_error: string | null;
-            /** Connected At */
-            connected_at: string | null;
-            /** Auto Approve */
-            auto_approve: string[];
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpStatus */
-        StudioMcpStatus: {
-            /** Servers */
-            servers: components["schemas"]["StudioMcpServerStatus"][];
-            /** Total Tools Injected */
-            total_tools_injected: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioMcpTool */
-        StudioMcpTool: {
-            /** Name */
-            name: string;
-            /** Description */
-            description: string;
-        } & {
-            [key: string]: unknown;
-        };
         /** StudioModuleRequiredFields */
         StudioModuleRequiredFields: {
             /** Schemarevision */
@@ -10617,127 +10941,6 @@ export type components = {
             error: string | null;
         } & {
             [key: string]: unknown;
-        };
-        /** StudioRecorderBatch */
-        StudioRecorderBatch: {
-            /**
-             * Hasmore
-             * @default false
-             */
-            hasMore: boolean;
-            /** Success */
-            success: boolean;
-            /** Sessionid */
-            sessionId: string;
-            /** Nextseq */
-            nextSeq: number;
-            /** Data */
-            data: components["schemas"]["StudioRecorderEvent"][];
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioRecorderEvent */
-        StudioRecorderEvent: {
-            /** Sequence */
-            sequence: number;
-            /**
-             * Type
-             * @enum {string}
-             */
-            type: "navigate" | "click" | "dblclick" | "input" | "select" | "check" | "keypress" | "drag" | "upload" | "scroll";
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioRecorderReadRequest */
-        StudioRecorderReadRequest: {
-            /** Sessionid */
-            sessionId: string;
-            /**
-             * Afterseq
-             * @default 0
-             */
-            afterSeq: number;
-        };
-        /** StudioRecorderStartRequest */
-        StudioRecorderStartRequest: {
-            /** Sessionid */
-            sessionId: string;
-        };
-        /** StudioRecorderStarted */
-        StudioRecorderStarted: {
-            /** Success */
-            success: boolean;
-            /** Sessionid */
-            sessionId: string;
-            /** Recording */
-            recording: boolean;
-            /** Nextseq */
-            nextSeq: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioRecorderStatus */
-        StudioRecorderStatus: {
-            /**
-             * Success
-             * @constant
-             */
-            success: true;
-            /**
-             * Sessionid
-             * @default null
-             */
-            sessionId: string | null;
-            /** Recording */
-            recording: boolean;
-            /** Nextseq */
-            nextSeq: number;
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioRecorderStopped */
-        StudioRecorderStopped: {
-            /**
-             * Hasmore
-             * @default false
-             */
-            hasMore: boolean;
-            /** Success */
-            success: boolean;
-            /** Sessionid */
-            sessionId: string;
-            /** Nextseq */
-            nextSeq: number;
-            data: components["schemas"]["StudioRecorderTail"];
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioRecorderTail */
-        StudioRecorderTail: {
-            /** Events */
-            events: components["schemas"]["StudioRecorderEvent"][];
-        } & {
-            [key: string]: unknown;
-        };
-        /** StudioRecordingReview */
-        StudioRecordingReview: {
-            /** Documentid */
-            documentId: string;
-            /** Revision */
-            revision: number;
-            /** Autowait */
-            autoWait: boolean;
-            /** Events */
-            events: components["schemas"]["StudioRecorderEvent"][];
-        };
-        /** StudioRecordingReviewWrite */
-        StudioRecordingReviewWrite: {
-            /** Expectedrevision */
-            expectedRevision: number;
-            /** Autowait */
-            autoWait: boolean;
-            /** Events */
-            events: components["schemas"]["StudioRecorderEvent"][];
         };
         /** StudioRequestClaim */
         StudioRequestClaim: {
@@ -21574,6 +21777,118 @@ export interface operations {
             };
         };
     };
+    status_api_triggers_gesture_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    custom_gestures_api_triggers_gesture_custom_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    record_api_triggers_gesture_record_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordGestureRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_api_triggers_gesture_custom__gesture_name__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gesture_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     execute_workflow_api_workflows__workflow_id__execute_post: {
         parameters: {
             query?: never;
@@ -22075,6 +22390,201 @@ export interface operations {
             };
         };
     };
+    recorder_start_api_recorder_start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioRecorderStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecorderStarted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recorder_events_api_recorder_events_get: {
+        parameters: {
+            query: {
+                sessionId: string;
+                afterSeq?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecorderBatch"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recorder_stop_api_recorder_stop_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioRecorderReadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecorderStopped"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recorder_status_api_recorder_status_get: {
+        parameters: {
+            query?: {
+                sessionId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecorderStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recording_review_api_recorder_reviews__document_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecordingReview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_recording_review_api_recorder_reviews__document_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioRecordingReviewWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRecordingReview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     sessions_api_ai_assistant_sessions_get: {
         parameters: {
             query?: never;
@@ -22440,6 +22950,143 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AssistantTranscription"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    config_api_ai_assistant_mcp_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioMcpConfigResponse"];
+                };
+            };
+        };
+    };
+    save_api_ai_assistant_mcp_config_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioMcpSaveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioMcpSaved"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reload_api_ai_assistant_mcp_reload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudioMcpReloadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioMcpReloaded"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_ai_assistant_mcp_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioMcpStatus"];
+                };
+            };
+        };
+    };
+    command_api_ai_assistant_mcp_commands__command_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                command_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioMcpCommandLookup"];
                 };
             };
             /** @description Validation Error */

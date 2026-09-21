@@ -15,6 +15,14 @@ from .workflow_studio_schemas import (
     StudioPickerSessionRequest,
     StudioPickerSessionStartRequest,
     StudioPickerSessionState,
+    StudioRecorderBatch,
+    StudioRecorderReadRequest,
+    StudioRecorderStarted,
+    StudioRecorderStartRequest,
+    StudioRecorderStatus,
+    StudioRecorderStopped,
+    StudioRecordingReview,
+    StudioRecordingReviewWrite,
     StudioSelectorTestRequest,
     StudioSelectorTestResult,
 )
@@ -130,5 +138,44 @@ def workflow_inspection_router(service: WorkflowInspectionService) -> APIRouter:
     )
     async def test_selector(request: StudioSelectorTestRequest) -> dict[str, Any]:
         return await service.test_selector(request.model_dump(by_alias=True))
+
+    @router.post("/api/recorder/start", response_model=StudioRecorderStarted)
+    async def recorder_start(request: StudioRecorderStartRequest) -> dict[str, Any]:
+        return await service.start_recording(request.session_id)
+
+    @router.get("/api/recorder/events", response_model=StudioRecorderBatch)
+    async def recorder_events(
+        session_id: str = Query(alias="sessionId"),
+        after_seq: int = Query(default=0, alias="afterSeq", ge=0),
+    ) -> dict[str, Any]:
+        return await service.recording_events(session_id, after_seq=after_seq)
+
+    @router.post("/api/recorder/stop", response_model=StudioRecorderStopped)
+    async def recorder_stop(request: StudioRecorderReadRequest) -> dict[str, Any]:
+        return await service.stop_recording(
+            request.session_id, after_seq=request.after_seq
+        )
+
+    @router.get("/api/recorder/status", response_model=StudioRecorderStatus)
+    def recorder_status(
+        session_id: str | None = Query(default=None, alias="sessionId"),
+    ) -> dict[str, Any]:
+        return service.recording_status(session_id)
+
+    @router.get(
+        "/api/recorder/reviews/{document_id}", response_model=StudioRecordingReview
+    )
+    def recording_review(document_id: str) -> dict[str, Any]:
+        return service.read_recording_review(document_id)
+
+    @router.put(
+        "/api/recorder/reviews/{document_id}", response_model=StudioRecordingReview
+    )
+    def save_recording_review(
+        document_id: str, request: StudioRecordingReviewWrite
+    ) -> dict[str, Any]:
+        return service.save_recording_review(
+            document_id, request.model_dump(by_alias=True)
+        )
 
     return router

@@ -6,7 +6,6 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-
 from autoflow.infrastructure.database import session as database_session
 
 
@@ -22,7 +21,9 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
 ):
     database = tmp_path / "workflow-commands.sqlite3"
     config = config_for(database)
-    assert ScriptDirectory.from_config(config).get_heads() == ["0015_workflow_mcp"]
+    assert ScriptDirectory.from_config(config).get_heads() == [
+        "0016_workflow_recordings"
+    ]
     preserved: tuple | None = None
     if existing:
         command.upgrade(config, "0009_merge_project_data")
@@ -48,7 +49,7 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("0015_workflow_mcp",)]
+        ).fetchall() == [("0016_workflow_recordings",)]
         columns = {
             row[1]: row[2]
             for row in connection.execute(

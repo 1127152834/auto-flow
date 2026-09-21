@@ -8,6 +8,15 @@ from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 from autoflow.domain.workflows.browser import WorkflowBrowserBusy
 from autoflow.domain.workflows.runs import WorkflowRunError
+from autoflow.infrastructure.database import workflow_recordings
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
+from autoflow.infrastructure.database.workflow_models import WorkflowRecordingSessionRow
+from autoflow.infrastructure.database.workflow_recordings import (
+    SqlAlchemyWorkflowRecordings,
+)
 
 
 class Profiles:
@@ -38,6 +47,7 @@ class Workers:
         self.service: WorkflowInspectionService | None = None
         self.session_id = ""
         self.commands: list[dict] = []
+        self.recorded: list[dict] = []
 
     async def start(self, session_id, _profile_id, _executable, _payload) -> None:
         self.running = True
@@ -56,7 +66,13 @@ class Workers:
             "stop_picker": {"active": False},
             "picker_result": {"selected": True, "value": {"selector": "#target", "tagName": "BUTTON"}},
             "test_selector": {"success": True, "matched": True, "count": 1, "tried": []},
+            "recorder_start": {"recording": True, "events": []},
         }.get(action, {"success": True})
+        if action in {"recorder_events", "recorder_stop"}:
+            data = {
+                "recording": action == "recorder_events",
+                "events": self._drain_recorded(),
+            }
         assert self.service is not None
         await self.service.on_worker_event(
             {
@@ -78,6 +94,10 @@ class Workers:
 
     def busy(self) -> bool:
         return self.running
+
+    def _drain_recorded(self) -> list[dict]:
+        events, self.recorded = self.recorded, []
+        return events
 
 
 def profile() -> Profile:
@@ -202,6 +222,174 @@ async def test_inspection_rejects_an_existing_run_without_releasing_its_lock(tmp
     assert busy.value.code == "INSPECTION_SESSION_CONFLICT"
     assert resources.owner_id == "active-workflow-run"
     assert workers.running is False
+
+
+@pytest.mark.asyncio
+async def test_recording_uses_the_open_browser_and_persists_non_destructive_events(tmp_path):
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    selected = profile()
+    executable = tmp_path / "cloakbrowser"
+    executable.write_text("")
+    workers = Workers()
+    service = WorkflowInspectionService(
+        profiles=Profiles(selected),
+        installed_kernels=lambda: [InstalledKernel("public", "146.0.1.1", executable, 1)],
+        resolve_proxy=lambda _profile, _session: _none(),
+        read_license=lambda: None,
+        resources=Resources(),  # type: ignore[arg-type]
+        workers=workers,  # type: ignore[arg-type]
+        recordings=SqlAlchemyWorkflowRecordings(factory),
+    )
+    workers.service = service
+    opened = await service.open(profile_id="profile-1")
+
+    assert await service.start_recording("record-1") == {
+        "success": True,
+        "sessionId": "record-1",
+        "recording": True,
+        "nextSeq": 0,
+    }
+    workers.recorded.append(
+        {"type": "input", "selector": "#name", "value": "中文"}
+    )
+    first = await service.recording_events("record-1", after_seq=0)
+    second = await service.recording_events("record-1", after_seq=0)
+    assert first == second == {
+        "success": True,
+        "sessionId": "record-1",
+        "nextSeq": 1,
+        "hasMore": False,
+        "data": [
+            {
+                "sequence": 1,
+                "type": "input",
+                "selector": "#name",
+                "value": "中文",
+            }
+        ],
+    }
+
+    with pytest.raises(WorkflowRunError, match="请先停止录制"):
+        await service.close(opened["sessionId"])
+    stopped = await service.stop_recording("record-1", after_seq=0)
+    assert stopped["recording"] is False
+    assert stopped["data"]["events"] == first["data"]
+    assert await service.stop_recording("record-1", after_seq=0) == stopped
+    await service.close(opened["sessionId"])
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_recording_limit_stops_capture_without_releasing_browser_early(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setattr(workflow_recordings, "MAX_RECORDING_VALUE_BYTES", 4)
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    selected = profile()
+    executable = tmp_path / "cloakbrowser"
+    executable.write_text("")
+    workers = Workers()
+    service = WorkflowInspectionService(
+        profiles=Profiles(selected),
+        installed_kernels=lambda: [InstalledKernel("public", "146.0.1.1", executable, 1)],
+        resolve_proxy=lambda _profile, _session: _none(),
+        read_license=lambda: None,
+        resources=Resources(),  # type: ignore[arg-type]
+        workers=workers,  # type: ignore[arg-type]
+        recordings=SqlAlchemyWorkflowRecordings(factory),
+    )
+    workers.service = service
+    opened = await service.open(profile_id="profile-1")
+    await service.start_recording("record-limit")
+    workers.recorded.append({"type": "input", "value": "超过上限"})
+
+    with pytest.raises(WorkflowRunError) as limited:
+        await service.recording_events("record-limit", after_seq=0)
+    assert limited.value.code == "RECORDING_LIMIT_REACHED"
+    assert [item["command"] for item in workers.commands][-1] == "recorder_stop"
+    assert service.recording_status("record-limit")["recording"] is False
+    assert (await service.status())["isOpen"] is True
+    await service.close(opened["sessionId"])
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_recording_worker_exit_preserves_events_and_marks_interrupted(tmp_path):
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    recordings = SqlAlchemyWorkflowRecordings(factory)
+    selected = profile()
+    executable = tmp_path / "cloakbrowser"
+    executable.write_text("")
+    resources = Resources()
+    workers = Workers()
+    service = WorkflowInspectionService(
+        profiles=Profiles(selected),
+        installed_kernels=lambda: [InstalledKernel("public", "146.0.1.1", executable, 1)],
+        resolve_proxy=lambda _profile, _session: _none(),
+        read_license=lambda: None,
+        resources=resources,  # type: ignore[arg-type]
+        workers=workers,  # type: ignore[arg-type]
+        recordings=recordings,
+    )
+    workers.service = service
+    opened = await service.open(profile_id="profile-1")
+    await service.start_recording("record-crash")
+    recordings.append(
+        "record-crash",
+        [{"type": "click", "selector": "#kept"}],
+        now=datetime.now(UTC),
+    )
+
+    await service.on_worker_exit(opened["sessionId"], 7)
+
+    with factory() as session:
+        row = session.get(WorkflowRecordingSessionRow, "record-crash")
+        assert row is not None
+        assert row.status == "interrupted"
+        assert row.active_slot is None
+    assert recordings.events("record-crash", after_seq=0)["data"][0]["selector"] == "#kept"
+    assert resources.owner_id is None
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_shutdown_stops_active_recording_before_browser_cleanup(tmp_path):
+    database = tmp_path / "workspace.db"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    recordings = SqlAlchemyWorkflowRecordings(factory)
+    selected = profile()
+    executable = tmp_path / "cloakbrowser"
+    executable.write_text("")
+    resources = Resources()
+    workers = Workers()
+    service = WorkflowInspectionService(
+        profiles=Profiles(selected),
+        installed_kernels=lambda: [InstalledKernel("public", "146.0.1.1", executable, 1)],
+        resolve_proxy=lambda _profile, _session: _none(),
+        read_license=lambda: None,
+        resources=resources,  # type: ignore[arg-type]
+        workers=workers,  # type: ignore[arg-type]
+        recordings=recordings,
+    )
+    workers.service = service
+    await service.open(profile_id="profile-1")
+    await service.start_recording("record-shutdown")
+    workers.recorded.append({"type": "click", "selector": "#tail"})
+
+    await service.shutdown()
+
+    assert recordings.status("record-shutdown")["recording"] is False
+    assert recordings.events("record-shutdown", after_seq=0)["data"][0]["selector"] == "#tail"
+    assert [command["command"] for command in workers.commands][-1] == "recorder_stop"
+    assert resources.owner_id is None
+    factory.dispose()
 
 
 async def _none():

@@ -23,6 +23,12 @@ from autoflow.bootstrap.workflows import WorkflowServices, register_workflow_rou
 
 
 class _UnavailableService:
+    async def startup(self) -> None:
+        pass
+
+    async def shutdown(self) -> None:
+        pass
+
     def __getattr__(self, name: str) -> Any:
         raise RuntimeError(f'Schema registration attempted a business operation: {name}')
 
@@ -51,6 +57,7 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
         events=unavailable,
         inspection=unavailable,
         assistant=unavailable,
+        mcp=unavailable,
         gestures=unavailable,
         event_commands=unavailable,
     )

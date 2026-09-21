@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -41,6 +42,9 @@ from autoflow.infrastructure.database.workflow_assistant import (
 )
 from autoflow.infrastructure.database.workflow_mcp import SqlAlchemyWorkflowMcp
 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+from autoflow.infrastructure.database.workflow_recordings import (
+    SqlAlchemyWorkflowRecordings,
+)
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
 from autoflow.infrastructure.gesture import (
@@ -325,6 +329,8 @@ def build_workflow_services(
         on_event=on_inspection_event,
         on_exit=on_inspection_exit,
     )
+    recording_repository = SqlAlchemyWorkflowRecordings(session_factory)
+    recording_repository.recover_active(now=datetime.now(UTC))
     inspection = WorkflowInspectionService(
         profiles=profiles,
         installed_kernels=installed_kernels,
@@ -332,6 +338,7 @@ def build_workflow_services(
         read_license=read_license,
         resources=resources,
         workers=inspection_workers,
+        recordings=recording_repository,
     )
     inspection_holder["service"] = inspection
     registry = build_production_executor_registry()
