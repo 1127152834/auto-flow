@@ -1697,6 +1697,18 @@
             "symbol": "test_real_project_batch_http",
             "scope": "stop/manual-stop 通过生产 scheduler/worker 停止真实浏览器",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_workflow_worker_process.py",
+            "symbol": "test_windows_ownership_precedes_start_command",
+            "scope": "父端创建与核验 Job 后才发 start；实际子进程、原生函数替身；不代表原生清理验收",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_workflow_worker_process.py",
+            "symbol": "test_native_windows_pre_ready_cleanup_confirms_all_descendants",
+            "scope": "[cancel/timeout] ready 前真实子进程已启动，取消或超时后整 Job 无存活后代，目录与 owner 仅确认后释放；Windows CI 结果见本轮报告",
+            "level": "automated_native_integration"
           }
         ],
         "gaps": [
@@ -1790,6 +1802,12 @@
             "symbol": "test_restart_keeps_an_unverifiable_run_and_its_record_occupancy",
             "scope": "重启保留不可确认执行和记录占用",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_workflow_recovery.py",
+            "symbol": "test_native_windows_recovery_owns_job_and_descendants",
+            "scope": "[live/root-exit/wrong-birth/foreign-job/denied] 真实 Job 后代恢复与错误身份/拒绝终止保留目录；当前候选证据见本轮报告",
+            "level": "automated_native_integration"
           }
         ],
         "gaps": [
@@ -11841,6 +11859,12 @@
             "symbol": "test_real_project_batch_http",
             "scope": "[data-subflow-cancel] 真实 worker 第二次子写入前撤销父 Run，拒绝迟到写入，首次已提交记录保持",
             "level": "automated_production_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_capability_rpc.py",
+            "symbol": "test_child_capability_requires_live_frozen_parent_call",
+            "scope": "[other-table/other-field/no-grant/other-operation] 同一 Task 的其他授权不能被当前子节点使用；合法声明可写，父撤销和无存活调用拒绝",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
@@ -13330,12 +13354,18 @@
             "symbol": "test_reusable_rows_are_claimed_again_without_batch_dedup",
             "scope": "重复输入有不同 Task/Run，有限上限精确，不按历史去重",
             "level": "automated_integration"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "两个输入同一记录组在两个真实 Task 释放后再次领取；来源记录版本/状态推进，伴随记录 contentRevision/statusRevision 保持不变；源码/打包证据按当前 CI 报告",
+            "level": "automated_production_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "需用实际 worker 验证状态不变的同一记录连续领取"
+            "detail": "同一未变化伴随记录已纳入实际 worker 明确断言；当前候选源码/打包结果见报告，所有 UI/实机子条件仍未完整验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -13700,6 +13730,12 @@
             "file": "apps/backend/tests/unit/test_project_graph_executor.py",
             "symbol": "test_frozen_subflow_twice_isolates_inputs_and_exports_only_declared_outputs",
             "scope": "声明输入、父子变量隔离、仅声明输出、独立 visit 与调用路径",
+            "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/unit/test_project_graph_executor.py",
+            "symbol": "test_sensitive_values_keep_taint_across_explicit_outputs",
+            "scope": "显式子输入使用合成凭据、子流程和并行具名输出保持敏感标记；内部值正确且事件不泄露合成秘密",
             "level": "automated_unit"
           }
         ],

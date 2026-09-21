@@ -1,0 +1,75 @@
+{
+  "date": "2026-09-21",
+  "status": "review_fixes_verified_final_matrix_pending",
+  "releaseAccepted": false,
+  "codeCandidate": "0102c047f59ff1a8eb485cd4a9aaa45b20fad755",
+  "scope": [
+    "S1 frozen scoped canvas subflows",
+    "S2 declared manual contract and shared UI entry",
+    "S3 structured branch isolation and serial manual ownership",
+    "S5 independent two-Run capacity and shared OS guards",
+    "S4 subset: Windows new-file publication and native Job ownership/recovery"
+  ],
+  "checks": {
+    "backendFull": "3284 passed, 56 skipped, 2 warnings; before final Windows-only refinements, separately targeted",
+    "realProjectWorker": "26 passed in 274.67s after all four review fixes; actual HTTP/SQLite/CloakBrowser",
+    "windowsNative": {
+      "runId": 35577767754,
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35577767754",
+      "headSha": "30170c669ddef6dbe50e8616f3b3ee91f370e266",
+      "result": "83 passed, 27 skipped",
+      "scope": "Native Job live recovery, parent exit, wrong birth, foreign Job, denied termination; pinned new-file conflicts/cancellation/registration/junction/parent rename; actual workflow-worker Base64 output and registered snapshot"
+    },
+    "localNativeBoundaryRules": "91 passed, 19 native-only skipped before reserved-name follow-up",
+    "frontendFull": "5459 passed (406 files)",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "passed",
+    "scripts": "100 passed",
+    "ruff": "passed",
+    "mypy": "402 source files passed",
+    "mapping": "251 reference checks valid; no status upgrades",
+    "build": "passed",
+    "finalReview": {
+      "findings": "4 Important, 0 Critical; all accepted and fixed; one fix pass, no second review",
+      "manualAndTaint": "102 passed; prior RED 4 nested config + 2 synthetic-secret boundary cases",
+      "childAuthority": "29 passed; prior RED 4 child authority cases",
+      "startupBoundary": "59 passed, 8 native skipped; ownership ordering first failed then passed",
+      "nativeReviewRun": {
+        "runId": 35580013772,
+        "headSha": "0102c047f59ff1a8eb485cd4a9aaa45b20fad755",
+        "conclusion": "failure",
+        "result": "87 passed, 27 skipped, 1 failed portable mock fixture",
+        "confirmedScopes": "Native pre-ready cancellation/timeout, descendants, recovery, new file publication passed",
+        "failure": "Portable ordering test stubbed Job handles but child opened the real Job; fixture corrected, final matrix will verify."
+      }
+    }
+  },
+  "reports": [
+    "subflow-follow-through.json",
+    "manual-follow-through.json",
+    "parallel-follow-through.json",
+    "multi-run-follow-through.json",
+    "multi-run-business-darwin-arm64.json"
+  ],
+  "remaining": [
+    "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
+    "44 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
+    "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
+    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM DMG mount/copy/launch and native Excel open/import/save/export passed; current physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/application/workflows/runtime.py": "0c677f068fd86ad9c63f34a7bcf82c9a45ac160bae5382accc7c3647cdb60f52",
+    "apps/backend/src/autoflow/application/workflows/dispatcher.py": "b50d84f259c58280063b34ad8d862d41b1f98917ce5007e773a982e314faec78",
+    "apps/backend/src/autoflow/application/workflows/browser_resources.py": "e6ecb9fdcb8e4a73c4b0b0e9aa486ca5f5518e9330187da6f60d5a2c96964de2",
+    "apps/backend/src/autoflow/infrastructure/process/windows_job.py": "289dd68257c4336e2d007dd8518ec1a1fe7d1e098037d631a37ecc7573c63737",
+    "apps/backend/src/autoflow/infrastructure/filesystem/windows_output.py": "4986a68d5c1dd39a432b294e0e6816fc2c76f86657086e1232427cba4e149720",
+    "apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py": "8f99aebe92c4190be0ebc98e7cffd70a5ab3ade43f422e37df60076cf630865a",
+    "apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py": "b26e98a1db3198766679506e06f0bc9eff9c8f448745a7278f5c95dad98028d5",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "bddefc270f6feba9388d7e15ea20758e71ff38181b9738fe48423313a8e54be4",
+    "apps/backend/src/autoflow/domain/workflows/run_validation.py": "2e8018e4e65dbeafe5a39157a3cafaad04c4bef7b9714423139f0832c8ecd080",
+    "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "a0c8b1117c843f8d835df4337303c41680d22345babb0e424016be4704679dd1"
+  }
+}

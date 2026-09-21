@@ -6,53 +6,50 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "PM6 historical service-account live Sheets and system credential evidence exists; current PM9 packaged full-chain and desktop OAuth remain unverified. Prior run removed local credentials; current authorization availability is not established.",
-    "Windows/Intel physical installer and native dialogs remain pending. ARM DMG mount/copy/launch and native Excel open/import/save/export passed; Gatekeeper, other native routes, current packaged credential lifecycle, signing/notarization and complete uninstall acceptance remain pending.",
-    "Parallel graphs containing loop/manual nodes are rejected; cross-process manual replay and undeclared jump/input are unsupported; S2 declared inputs and direct successors are implemented.",
-    "Historical full-spec coverage remains partial; no blanket promotion of 251 entries.",
-    "Windows native workflow file output and orphan cleanup without native ownership evidence remain unsupported/refused.",
-    "Frozen project subflows, declared manual inputs/targets, branch isolation and Windows enhancements are approved as S1–S5; S1/S2 source implementations are verified; S3–S5 are in progress.",
-    "Production dispatcher and worker support one active Run. Concurrent Task acceptance (FLOW-A02/DATA-E2E-06) needs the approved independent multi-Run owner/resource lease implementation; sequential ARM packaged evidence is not concurrent acceptance."
+    "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
+    "44 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "Current S1-S5 candidate full three-platform regression and packaged chain pending; historical CI is not its acceptance.",
+    "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
+    "Windows/Intel physical installer and native dialogs remain pending. Historical ARM DMG mount/copy/launch and native Excel open/import/save/export passed; current physical/native routes, Gatekeeper, credential lifecycle and uninstall remain incomplete.",
+    "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
-    "status": "new_candidate_ci_pending",
+    "status": "review_fixes_verified_final_matrix_pending",
     "plan": "docs/superpowers/plans/2026-09-21-pm9-follow-through.md",
     "mappingReview": "test-mapping-review.md",
     "newProductionChanges": true,
-    "baselineEvidenceOnly": "The existing d59607f3 checks/source hashes describe the historical candidate. The new manual expiry CAS fix and expanded smoke require fresh candidate verification.",
+    "baselineEvidenceOnly": "Historical reports retain their own candidate hashes. Current capability source hashes and checks are in runtime-capabilities-follow-through.json.",
     "report": "follow-through.json",
     "releaseAccepted": false,
     "newArchitecturePlan": "docs/superpowers/plans/2026-09-21-pm9-runtime-capabilities.md",
     "multiRunArchitectureAddendum": "docs/superpowers/specs/2026-09-21-pm9-multi-run-capacity.md",
-    "latestReport": "input-environment-follow-through.json"
+    "latestReport": "runtime-capabilities-follow-through.json"
   },
-  "codeCandidate": "4f392ed595fc42ca6310aad47106003283c615fd",
+  "codeCandidate": "0102c047f59ff1a8eb485cd4a9aaa45b20fad755",
   "checks": {
-    "currentLocal": "input-environment-follow-through.json",
+    "currentLocal": "runtime-capabilities-follow-through.json",
     "priorFixes": "follow-through.json",
     "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json"
   },
   "platforms": {
     "win32-x64": {
-      "status": "new-candidate-pending",
+      "status": "capability-candidate-pending",
       "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
     },
     "darwin-x64": {
-      "status": "new-candidate-pending",
+      "status": "capability-candidate-pending",
       "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
     },
     "darwin-arm64": {
-      "status": "new-candidate-pending",
+      "status": "capability-candidate-pending",
       "physicalInstaller": "pending; ARM partial evidence applies to previous 52936b6a installer"
     }
   },
   "ci": {
-    "runId": 35566462369,
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35566462369",
-    "status": "in_progress",
+    "status": "pending",
     "conclusion": null,
-    "scope": "Full regression and source/packaged checks for all three platforms, including the added packaged business-combination runner."
+    "scope": "Final capability candidate full three-platform regression and source/packaged checks; dispatch after final review."
   },
   "historicalEvidence": [
     {
@@ -64,13 +61,24 @@
       "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
       "report": "verification-52936b6a.json",
       "note": "Windows/ARM full CI passed; Intel attempt 1 frontend failure retained and attempt 2 superseded. Does not validate the input-environment fix."
+    },
+    {
+      "codeCandidate": "4f392ed595fc42ca6310aad47106003283c615fd",
+      "report": "verification-4f392ed5.json",
+      "note": "Windows/ARM checks passed. Intel final browser management smoke failed before the bounded UI state refresh fix."
     }
   ],
   "remainingReport": "completion-gaps.md",
-  "deliveryStatus": "input_environment_fix_local_passed_new_candidate_ci_pending",
+  "deliveryStatus": "capability_slices_implemented_release_acceptance_incomplete",
   "developmentSlice": {
-    "slice": "S5",
-    "report": "multi-run-follow-through.json",
-    "status": "source_verified_platform_pending"
+    "slices": [
+      "S1",
+      "S2",
+      "S3",
+      "S5",
+      "S4-new-files-and-job-subset"
+    ],
+    "report": "runtime-capabilities-follow-through.json",
+    "status": "source_verified_final_matrix_pending"
   }
 }

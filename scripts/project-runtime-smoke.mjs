@@ -120,6 +120,8 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.equal(new Set(repeated.tasks.map(task => task.taskId)).size, 2)
     assert.deepEqual(repeatDetails[0].inputSnapshot.inputs.map(input => input.recordRef), repeatDetails[1].inputSnapshot.inputs.map(input => input.recordRef))
     assert.equal(repeatDetails[0].inputSnapshot.inputs.length, 2)
+    assert.equal(repeatDetails[1].inputSnapshot.inputs[1].contentRevision, repeatDetails[0].inputSnapshot.inputs[1].contentRevision, 'unchanged companion content must remain reusable')
+    assert.equal(repeatDetails[1].inputSnapshot.inputs[1].statusRevision, repeatDetails[0].inputSnapshot.inputs[1].statusRevision, 'unchanged companion status must remain reusable')
     assert.equal(repeatDetails[1].inputSnapshot.inputs[0].contentRevision, repeatDetails[0].inputSnapshot.inputs[0].contentRevision + 2)
     assert.equal(repeatDetails[1].inputSnapshot.inputs[0].statusRevision, repeatDetails[0].inputSnapshot.inputs[0].statusRevision + 1)
     const sourceRecord = async () => (await api(`${prefix}/tables/${source.table.tableId}/records?datasetGeneration=${source.table.datasetGeneration}`)).items[0]

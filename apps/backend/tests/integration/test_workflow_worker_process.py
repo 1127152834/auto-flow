@@ -443,15 +443,23 @@ async def test_two_actual_workers_keep_ack_cancellation_and_cleanup_owned_by_run
 
 
 @pytest.mark.asyncio
-async def test_windows_ownership_precedes_start_command(tmp_path, monkeypatch):
+@pytest.mark.parametrize('ownership', ['confirmed', 'unknown'])
+async def test_windows_ownership_precedes_start_command(tmp_path, monkeypatch, ownership):
     from autoflow.infrastructure.process import project_workflow_worker as module
     from autoflow.infrastructure.process import windows_job
     instance, executable = manager(tmp_path)
     calls = []
+    # This portable ordering check stubs native ownership only; the separate
+    # native pre-ready test exercises the real bootstrap and Job membership.
+    instance._command = (sys.executable, '-c', CHILD.replace('job = _windows_kill_on_exit_job()', 'job = None'))
     monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
     monkeypatch.setattr(module.subprocess, 'CREATE_NEW_PROCESS_GROUP', 0, raising=False)
     monkeypatch.setattr(windows_job, 'create_run_job', lambda name: calls.append('create') or 10, raising=False)
-    monkeypatch.setattr(windows_job, 'record_worker_job', lambda *args: calls.append('attach') or 11)
+    def record(*args):
+        calls.append('attach')
+        if ownership == 'unknown': raise OSError('birth unavailable')
+        return 11
+    monkeypatch.setattr(windows_job, 'record_worker_job', record)
     monkeypatch.setattr(windows_job, 'terminate_worker_job', lambda *args: calls.append('terminate'))
     monkeypatch.setattr(windows_job, 'close_worker_job', lambda *args: None)
     send = instance._send
@@ -462,8 +470,18 @@ async def test_windows_ownership_precedes_start_command(tmp_path, monkeypatch):
         await send(worker, message)
     monkeypatch.setattr(instance, '_send', checked_send)
     async def on_event(_event): pass
-    outcome = await instance.run(run_id='a088a638-5afb-4b4b-8d83-45410a3cab42', execution_generation=1, execution_plan={'nodes': []}, parameters={}, variables={}, browser={}, executable=executable, on_event=on_event)
-    assert outcome.cleanup_confirmed and calls[-1] == 'terminate'
+    run_id = 'a088a638-5afb-4b4b-8d83-45410a3cab42'
+    run = instance.run(run_id=run_id, execution_generation=1, execution_plan={'nodes': []}, parameters={}, variables={}, browser={}, executable=executable, on_event=on_event)
+    if ownership == 'unknown':
+        with pytest.raises(WorkflowWorkerError, match='所有权尚未确认'):
+            await run
+        assert instance.busy(run_id)
+        assert instance._workers[run_id].directory.exists()
+        assert instance._workers[run_id].process.returncode is not None
+    else:
+        assert (await run).cleanup_confirmed
+        assert not instance.busy()
+    assert calls == ['create', 'attach', 'terminate']
 
 
 @pytest.mark.asyncio
