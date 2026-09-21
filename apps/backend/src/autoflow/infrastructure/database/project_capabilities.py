@@ -46,12 +46,15 @@ from autoflow.domain.project_data.schema import (
 )
 from autoflow.domain.project_runs.input_selection import (
     MAX_CANDIDATE_EVALUATIONS,
-    LeaseKey,
     RecordRef,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.models import ProjectOperationRow
-from autoflow.infrastructure.database.project_claims import _lease_key
+from autoflow.infrastructure.database.project_claims import (
+    _lease_key,
+    active_record_lease,
+    resolve_record_lease,
+)
 from autoflow.infrastructure.database.project_data import (
     _operation_result,
     _operation_row,
@@ -1349,12 +1352,14 @@ class SqlAlchemyProjectDataCapabilities:
     def _leased_cursor(session: Session, scope: TaskCapabilityScope, ref: RecordRef):
         ref_payload = _ref_payload(ref)
         lease = session.scalar(
-            select(ProjectRecordLeaseRow).where(
+            select(ProjectRecordLeaseRow).join(ProjectTaskRecordCursorRow,
+                ProjectTaskRecordCursorRow.lease_id == ProjectRecordLeaseRow.id).where(
                 ProjectRecordLeaseRow.project_id == scope.project_id,
                 ProjectRecordLeaseRow.task_id == scope.task_id,
                 ProjectRecordLeaseRow.run_id == scope.run_id,
                 ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
-                ProjectRecordLeaseRow.record_ref == ref_payload,
+                ProjectTaskRecordCursorRow.task_id == scope.task_id,
+                ProjectTaskRecordCursorRow.record_ref == ref_payload,
             )
         )
         if lease is None:
@@ -1365,6 +1370,7 @@ class SqlAlchemyProjectDataCapabilities:
             select(ProjectTaskRecordCursorRow).where(
                 ProjectTaskRecordCursorRow.task_id == scope.task_id,
                 ProjectTaskRecordCursorRow.lease_id == lease.id,
+                ProjectTaskRecordCursorRow.record_ref == ref_payload,
             )
         )
         if cursor is None:
@@ -1389,42 +1395,22 @@ class SqlAlchemyProjectDataCapabilities:
     ):
         if lease_mode == "existing":
             return cls._leased_cursor(session, scope, ref)
-        active = session.scalar(
-            select(ProjectRecordLeaseRow).where(
-                ProjectRecordLeaseRow.lease_key
-                == _lease_key(
-                    LeaseKey(
-                        "local",
-                        scope.project_id,
-                        ref.table_id,
-                        ref.dataset_generation,
-                        ref.record_key,
-                    )
-                ),
-                ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
-            )
-        )
+        active = active_record_lease(session, scope.project_id, ref.table_id, ref.dataset_generation, ref.record_key)
         if active is not None:
             if active.task_id == scope.task_id and active.run_id == scope.run_id:
                 cursor = session.scalar(
                     select(ProjectTaskRecordCursorRow).where(
                         ProjectTaskRecordCursorRow.task_id == scope.task_id,
                         ProjectTaskRecordCursorRow.lease_id == active.id,
+                        ProjectTaskRecordCursorRow.record_ref == _ref_payload(ref),
                     )
                 )
-                if cursor is None:
-                    raise ProjectError(
-                        "CAPABILITY_FACTS_INCOMPLETE",
-                        "Task write cursor is missing",
-                        409,
-                    )
-                return active, cursor
-            raise ProjectError(
-                "LEASE_BUSY",
-                "Record is currently used by another task",
-                409,
-                {"retryable": True},
-            )
+                if cursor is not None:
+                    return active, cursor
+                # Another local binding of this source row still needs its own
+                # task-scoped read evidence and version cursor below.
+            else:
+                raise ProjectError("LEASE_BUSY", "Record is currently used by another task", 409, {"retryable": True})
         evidence = session.scalar(
             select(ProjectTaskRecordReadRow)
             .where(
@@ -1484,11 +1470,13 @@ class SqlAlchemyProjectDataCapabilities:
         now = datetime.now(UTC)
         ref = RecordRef(scope.project_id, table_id, generation, key)
         payload = _ref_payload(ref)
-        lease = ProjectRecordLeaseRow(
+        source_key, _identity = resolve_record_lease(session, ref, allow_unseen=source == "createdRecord")
+        active = active_record_lease(session, scope.project_id, table_id, generation, key)
+        if active is not None and (active.task_id != scope.task_id or active.run_id != scope.run_id or active.lease_key != _lease_key(source_key)):
+            raise ProjectError("LEASE_BUSY", "Record is currently used by another task", 409, {"retryable": True})
+        lease = active or ProjectRecordLeaseRow(
             id=str(uuid4()),
-            lease_key=_lease_key(
-                LeaseKey("local", scope.project_id, table_id, generation, key)
-            ),
+            lease_key=_lease_key(source_key),
             project_id=scope.project_id,
             batch_id=task.batch_id,
             task_id=scope.task_id,

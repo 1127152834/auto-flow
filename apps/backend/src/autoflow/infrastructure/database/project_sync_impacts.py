@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.projects.models import ProjectError
 
+from .project_claims import source_record_leases
 from .project_data_models import DataImpactRow, DataRecordRow, DataTableRow
 from .project_sync_models import SheetsBindingRow, SheetsConnectionRow, SyncOperationRow
 
@@ -199,7 +200,11 @@ class SqlAlchemySheetsImpacts:
         epoch = existing.binding_epoch if existing else 0
         columns = {str(entry["columnId"]).upper() for entry in change["mapping"]}
         overlaps = _overlaps(session, project_id, table_id, change, columns)
-        blockers: list[dict[str, Any]] = []
+        targets = {(change["spreadsheetId"], change["sheetId"])}
+        if existing is not None:
+            targets.add((existing.spreadsheet_id, existing.sheet_id))
+        leases = {lease.id: lease for spreadsheet, sheet in targets for lease in source_record_leases(session, spreadsheet, sheet)}
+        blockers: list[dict[str, Any]] = _source_blockers(project_id, table_id, bool(leases))
         if connection.state != "available":
             blockers.append(
                 {
@@ -251,6 +256,7 @@ class SqlAlchemySheetsImpacts:
             "identityStrategy": change["identityStrategy"],
             "mapping": sorted(change["mapping"], key=lambda entry: str(entry["fieldId"])),
             "overlaps": overlaps,
+            "sourceLeases": sorted((lease.id, lease.state, lease.lease_generation) for lease in leases.values()),
         }
         return report, facts
 
@@ -324,18 +330,20 @@ class SqlAlchemySheetsImpacts:
                 "blocking": False,
             },
         ]
+        leases = source_record_leases(session, binding.spreadsheet_id, binding.sheet_id)
         expected = {"tableRevision": table.table_revision, "bindingEpoch": binding.binding_epoch}
         report = {
             "target": _table_locator(project_id, table_id),
             "expectedRevisions": expected,
             "impacts": impacts,
-            "blockers": [],
+            "blockers": _source_blockers(project_id, table_id, bool(leases)),
         }
         facts = {
             "tableRevision": table.table_revision,
             "bindingEpoch": binding.binding_epoch,
             "connectionId": binding.connection_id,
             "identityStrategy": binding.identity_strategy,
+            "sourceLeases": sorted((lease.id, lease.state, lease.lease_generation) for lease in leases),
         }
         return report, facts
 
@@ -400,6 +408,13 @@ class SqlAlchemySheetsImpacts:
             raise _stale(report["blockers"])
         if report["blockers"] or saved.report.get("blockers"):
             raise _stale(report["blockers"] or saved.report["blockers"])
+
+
+def _source_blockers(project_id: str, table_id: str, occupied: bool) -> list[dict[str, Any]]:
+    if not occupied:
+        return []
+    return [{"code": "SHEETS_SOURCE_IN_USE", "resource": _table_locator(project_id, table_id),
+             "state": "blocked", "message": "共享来源仍被任务占用，请等待任务完成或恢复占用后重试。"}]
 
 
 def _overlaps(

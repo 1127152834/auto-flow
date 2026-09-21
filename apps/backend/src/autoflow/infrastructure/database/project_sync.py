@@ -1000,7 +1000,12 @@ class SqlAlchemyProjectSync:
             revision = hashlib.sha256(
                 json.dumps([namespace, pairs], ensure_ascii=False).encode()
             ).hexdigest()
+            peers = session.scalars(select(SheetsBindingRow).where(
+                SheetsBindingRow.spreadsheet_id == binding.spreadsheet_id,
+                SheetsBindingRow.sheet_id == binding.sheet_id,
+            )).all()
             binding.identity_verification = {
+                "bindingPeers": sorted([[peer.table_id, peer.binding_epoch] for peer in peers]),
                 "namespace": namespace,
                 "revision": revision,
                 "bindingEpoch": epoch,

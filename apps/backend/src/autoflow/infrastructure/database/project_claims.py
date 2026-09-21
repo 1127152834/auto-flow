@@ -132,20 +132,16 @@ class SqlAlchemyProjectInputGroups:
             )
             self.session.add(lease)
             self.session.flush()
-            value = selected.value
-            cursor = ProjectTaskRecordCursorRow(
-                id=str(uuid4()),
-                task_id=task_id,
-                lease_id=lease.id,
-                record_ref=record_ref,
-                content_revision=int(value["contentRevision"]),
-                status_revision=int(value["statusRevision"]),
-                link_revision=int(value["linkRevision"]),
-                source="initialInput",
-                updated_at=now,
-            )
-            self.session.add(cursor)
             lease_rows[lease_key] = lease
+        by_ref = {selected.record_ref: selected for selected in selection.inputs}
+        for selected in by_ref.values():
+            value = selected.value
+            self.session.add(ProjectTaskRecordCursorRow(
+                id=str(uuid4()), task_id=task_id, lease_id=lease_rows[selected.lease_key].id,
+                record_ref=_record_ref(selected.record_ref),
+                content_revision=int(value["contentRevision"]), status_revision=int(value["statusRevision"]),
+                link_revision=int(value["linkRevision"]), source="initialInput", updated_at=now,
+            ))
         selected_snapshots = {
             selected.input_id: _snapshot_input(
                 selected, lease_rows[selected.lease_key].id, now
@@ -736,7 +732,7 @@ def _snapshot_input(
 
 
 def resolve_record_lease(
-    session: Session, ref: RecordRef
+    session: Session, ref: RecordRef, *, allow_unseen: bool = False
 ) -> tuple[SourceLeaseKey, dict[str, Any]]:
     """Keep local permissions/cursors separate from physical source exclusion."""
     table = session.get(DataTableRow, ref.table_id)
@@ -774,13 +770,13 @@ def resolve_record_lease(
             SheetsBindingRow.sheet_id == binding.sheet_id,
         )
     ).all()
+    if proof.get("bindingPeers") != sorted([[peer.table_id, peer.binding_epoch] for peer in peers]):
+        raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "共享来源绑定已变化，请重新拉取后领取。", 409)
     for peer in peers:
         if peer.identity_strategy != binding.identity_strategy or (
             peer.identity_verification
             and (
-                not peer.identity_verification.get("valid")
-                or peer.identity_verification.get("namespace") != proof["namespace"]
-                or peer.identity_verification.get("revision") != proof["revision"]
+                peer.identity_verification.get("namespace") != proof["namespace"]
             )
         ):
             raise ProjectError(
@@ -788,28 +784,27 @@ def resolve_record_lease(
                 "同一来源存在未经证明相同的身份列，请修复绑定。",
                 409,
             )
-    mark = session.get(
-        SyncRecordMarkRow, (ref.table_id, ref.record_key.type, ref.record_key.value)
-    )
-    evidence = (mark.observed or {}).get("identity", {}) if mark else {}
-    if (
-        mark is None
-        or mark.remote_missing
-        or evidence.get("revision") != proof["revision"]
-        or evidence.get("bindingEpoch") != binding.binding_epoch
-        or evidence.get("datasetGeneration") != ref.dataset_generation
-    ):
-        raise ProjectError(
-            "SHEETS_IDENTITY_UNVERIFIED",
-            "该记录不在最近完整验证的来源中，请修复后重新拉取。",
-            409,
-        )
+    latest = max((peer for peer in peers if peer.identity_verification),
+                 key=lambda peer: (peer.identity_verification or {}).get("observedAt", ""))
+    source_proof = latest.identity_verification or {}
+    if not source_proof.get("valid"):
+        raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "最近来源验证失败，请修复后重新拉取。", 409)
+    if not allow_unseen:
+        for local, observed in ((binding, proof), (latest, source_proof)):
+            mark = session.get(SyncRecordMarkRow, (local.table_id, ref.record_key.type, ref.record_key.value))
+            evidence = (mark.observed or {}).get("identity", {}) if mark else {}
+            if (mark is None or mark.remote_missing
+                    or evidence.get("revision") != observed["revision"]
+                    or evidence.get("bindingEpoch") != local.binding_epoch
+                    or evidence.get("datasetGeneration") != observed["datasetGeneration"]):
+                raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "该记录不在最近完整验证的来源中，请修复后重新拉取。", 409)
     key = SheetsLeaseKey(
         binding.spreadsheet_id, binding.sheet_id, proof["namespace"], ref.record_key
     )
     return key, {
         "bindingEpoch": binding.binding_epoch,
         "verificationRevision": proof["revision"],
+        "sourceVerificationRevision": source_proof["revision"],
         "leaseKey": _lease_key(key),
     }
 

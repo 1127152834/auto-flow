@@ -15,13 +15,16 @@
   ],
   "baseline": "e71785da7353760ea8bfd567d272dd27865c0188",
   "completedSlices": [
-    "C1"
+    "C1",
+    "C2"
   ],
   "verification": {
     "scopedBackend": "158 passed, 2 warnings in 57.88s",
-    "mypy": "403 source files passed",
+    "mypy": "404 source files passed",
     "ruff": "passed",
-    "realWorkerOnPreviousF580": "26 passed in 279.99s; no C1 production code was edited until this run finished"
+    "realWorkerOnPreviousF580": "26 passed in 279.99s; no C1 production code was edited until this run finished",
+    "C2Backend": "147 passed, 2 warnings in 95.58s",
+    "C2Downgrade": "Shared cursor downgrade refused without deleting either cursor; 1 passed"
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -29,20 +32,38 @@
     "After simulated confirmed owner termination, Q claims using its own content revision and local value",
     "Epoch, column identity, missing row, duplicates and changed header reject prepared claims",
     "Peer invalid identity observation blocks stale proof",
-    "Legacy local Sheets held/reconciling leases block public claims"
+    "Legacy local Sheets held/reconciling leases block public claims",
+    "Dynamic query write refuses another project source owner without committing values or a command",
+    "Same Task writes two local bindings four times, holding one public lease and two cursors at revision 3",
+    "Workflow local create holds public identity, replays original operation and atomically refuses duplicate creation by another project; zero Google writes",
+    "Rebind/unbind/archive include shared source occupancy; blockers disclose only current local table",
+    "Latest valid compatible source scan can serve other existing bindings; newer missing identity blocks stale local rows",
+    "Removing a peer invalidates the old binding-set proof instead of erasing a known bad source observation",
+    "Different identity columns may be bound and read locally, but cannot claim without identity equivalence proof"
   ],
   "limits": [
     "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
-    "C2 dynamic query writes and binding lifecycle remain failing probes until the next slice",
     "C3 complete recovery/UI and C4 real workers pending",
     "R1-R2-R5-R3-R4 approved, not yet implemented",
     "M1-M3 not approved",
-    "Google real authorization, signing and full native platform acceptance external"
+    "Google real authorization, signing and full native platform acceptance external",
+    "Local pull preserves existing readable rows and skipped blank identities; those tables remain ineligible for shared claims until identity is complete",
+    "Source namespace currently uses verified column coordinate/header and exact key encoding; moved/renamed columns require explicit repair"
   ],
   "previousCandidateCI": {
     "run": 35590418456,
     "head": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
     "windows": "failed: 3317 passed / 71 skipped / 1 failed (live manual test 100ms automatic budget expired before second pause)",
-    "macos": "still running; no current C1 CI claim"
+    "macos": "ARM full pass; Intel backend pass/frontend 5458 pass +1 initial-proxy-load failure",
+    "fixtureFixes": "Local dispatcher 28 pass and proxy 14 pass; native CI confirmation pending stable new candidate"
+  },
+  "sourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_claims.py": "e62da35bb944523ffe85c4b6f50fdfb8051a29f465f790407961fbfa7b4d5c36",
+    "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py": "3be353e88be56957acc2a5cf98d1050ac6795984fc1647256faa7c190b6f0026",
+    "apps/backend/src/autoflow/infrastructure/database/project_lifecycle.py": "64def103d2f691bf999e446c21319a7fac758e97c0c2f5b1a5d45ab5ddcfe830",
+    "apps/backend/src/autoflow/infrastructure/database/project_run_models.py": "faa63b215beaa1687b1a2b803cc62885426d75f53c03dd5082caf6eaaf8cf66e",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "ca5be9fbcf33665748066c46f237f01cc124f35355fc2cb258b8cb80d5189493",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "2cc413cbf1645b65344e78819a6a4d016f6271a49ddbf74e955498db472bba16",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_models.py": "eb2845b6060a92823630ddc9b71badeffe491ae70e3475a1170f0b2f6f6c85bb"
   }
 }

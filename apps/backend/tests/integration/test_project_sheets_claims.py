@@ -27,7 +27,7 @@ from tests.integration.test_project_sheets_sync import (
 
 
 @contextmanager
-def shared_tables(tmp_path):
+def shared_tables(tmp_path, *, same_project=False, identity_column="A"):
     from tests.fixtures.sheets import (
         SheetsTable,
         binding_impact,
@@ -43,9 +43,9 @@ def shared_tables(tmp_path):
     )
     with open_sheets_table(tmp_path, transport, columns) as first:
         client = first.client
-        project = new_project(client, "Q")
+        project = first.project if same_project else new_project(client, "Q")
         connection = connect(client, project, new_key())["result"]["connectionId"]
-        table = new_table(client, project)["tableId"]
+        table = new_table(client, project, "T2")["tableId"]
         fields = {
             key: new_field(
                 client,
@@ -62,7 +62,7 @@ def shared_tables(tmp_path):
             "connectionId": connection,
             "spreadsheetId": transport.spreadsheet_id,
             "sheetId": 1000,
-            "identityStrategy": {"kind": "column", "columnId": "A"},
+            "identityStrategy": {"kind": "column", "columnId": identity_column},
             "mapping": [
                 {
                     "fieldId": fields[key]["ref"]["fieldId"],
@@ -301,7 +301,7 @@ def test_peer_observation_of_invalid_identity_blocks_old_local_proof(tmp_path):
             json={"expectedTableRevision": second.table_revision()},
             headers=new_key(),
         )
-        assert response.status_code == 409
+        assert response.status_code == 202
         with first.client.app.state.session_factory() as session:
             selected = SqlAlchemyProjectInputGroups(session).select_required(
                 first.project, plan_for(first)

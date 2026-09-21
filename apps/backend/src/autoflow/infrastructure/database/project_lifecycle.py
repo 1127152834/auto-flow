@@ -33,10 +33,11 @@ from .environment_models import (
 )
 from .models import Base, ProjectOperationRow, ProjectRow
 from .project_automation_models import ProjectAutomationRow
+from .project_claims import source_record_leases
 from .project_data_models import DataImpactRow, DataTableRow
 from .project_excel_models import ProjectExcelExportJobRow, ProjectExcelPublicationRow
 from .project_run_models import ProjectBatchRow, ProjectTaskRow
-from .project_sync_models import SyncOperationRow
+from .project_sync_models import SheetsBindingRow, SyncOperationRow
 from .workflow_runtime_models import (
     WorkflowPreparedContentRow,
     WorkflowRunArtifactRow,
@@ -416,6 +417,9 @@ def _blockers(
     delete's own target and must never refuse the retry.
     """
     blockers: list[dict[str, Any]] = []
+    for binding in session.scalars(select(SheetsBindingRow).where(SheetsBindingRow.project_id == project_id)):
+        if source_record_leases(session, binding.spreadsheet_id, binding.sheet_id):
+            blockers.append(_blocker("SHEETS_SOURCE_IN_USE", {"type": "table", "projectId": project_id, "tableId": binding.table_id}, "blocked", "共享来源仍被任务占用，请等待任务完成或恢复占用后重试。"))
     for batch_id, status in session.execute(
         select(ProjectBatchRow.id, ProjectBatchRow.status).where(
             ProjectBatchRow.project_id == project_id,

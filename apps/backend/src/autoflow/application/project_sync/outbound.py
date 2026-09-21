@@ -200,8 +200,6 @@ class SheetsSyncService:
         valid = valid and len(set(keys)) == len(keys)
         namespace = json.dumps({"columnId": column_letter(identity), "header": header[identity] if identity < len(header) else "", "encoding": "typed-record-key-v1"}, sort_keys=True, ensure_ascii=False)
         self._sync.verify_source_identity(project_id, table_id, generation, int(binding["bindingEpoch"]), namespace, keys, valid=valid)
-        if not valid:
-            raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "来源身份有缺失、重复或不稳定值，请修复后重新拉取。", 409)
         by_column = {
             str(entry["columnId"]).upper(): entry for entry in binding["mapping"]
         }
