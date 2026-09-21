@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B6-013-allure-family",
-  "recordedAt": "2026-09-21",
+  "recordedAt": "2026-09-22",
   "classification": "原版功能迁入 + AutoFlow必要适配",
   "source": {
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -53,11 +53,19 @@
     "userDatabaseTouched": false,
     "browserStarted": false,
     "mockExecutionUsedForBackendEvidence": false,
-    "formalElectronUiTested": false
+    "formalElectronUiTested": true
   },
   "remaining": [
-    "正式Electron真实UI中编排六节点，生成含附件的HTML并验证自动打开",
     "Windows安全输出和shell.openPath仍需Windows实机记录",
-    "源码映射总表测试受并行修改引入的状态词缺验收阻塞；本族的注册、范围和源码文件证据已单独通过"
-  ]
+    "正式打包入口仍需平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-allure.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json",
+    "covers": "正式 Studio 真实 UI 编排 Allure 六节点，使用临时附件生成 HTML 报告并登记产物，验证运行完成和清理",
+    "boundary": "本地临时文本附件、开发入口，未测试 Windows/macOS Intel 和正式打包 shell.openPath"
+  }
 }
