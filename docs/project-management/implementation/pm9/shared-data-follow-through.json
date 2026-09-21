@@ -248,5 +248,23 @@
     "apps/backend/src/autoflow/application/project_sync/columns.py": "e1f5fad5e56fa9f29c9e32608de9c2c1ca62d9e72d1e38419dc780cbd553aca7",
     "apps/desktop/src/renderer/domains/project-data/components/SheetsColumnCreation.tsx": "e0f38652ace057947f3d3317bd6304c37d1ab9854db0d7e7637bab8d07b065d9"
   },
-  "finalReview": "shared-data-final-review.json"
+  "finalReview": "shared-data-final-review.json",
+  "finalCICandidate": {
+    "status": "superseded_test_import_lint",
+    "runId": 35628831527,
+    "headSha": "a8adc43adb172ef799d50b918fda61824d3751e3",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35628831527",
+    "platforms": [
+      "win32-x64",
+      "darwin-x64",
+      "darwin-arm64"
+    ],
+    "supersededDispatch": {
+      "runId": 35628776939,
+      "headSha": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
+      "conclusion": "cancelled",
+      "reason": "Branch push had not completed; detected old commit and canceled. This is not validation evidence."
+    },
+    "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
+  }
 }

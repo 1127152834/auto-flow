@@ -139,5 +139,23 @@
     "status": "C/R slices implemented; final whole review, full regression and current native matrix pending; release not accepted"
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "C/R plus three review fixes, hashes in shared-data-final-review.json; final regression/native validation pending"
+  "workingCandidate": "C/R plus three review fixes, hashes in shared-data-final-review.json; final regression/native validation pending",
+  "finalCICandidate": {
+    "status": "superseded_test_import_lint",
+    "runId": 35628831527,
+    "headSha": "a8adc43adb172ef799d50b918fda61824d3751e3",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35628831527",
+    "platforms": [
+      "win32-x64",
+      "darwin-x64",
+      "darwin-arm64"
+    ],
+    "supersededDispatch": {
+      "runId": 35628776939,
+      "headSha": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
+      "conclusion": "cancelled",
+      "reason": "Branch push had not completed; detected old commit and canceled. This is not validation evidence."
+    },
+    "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
+  }
 }

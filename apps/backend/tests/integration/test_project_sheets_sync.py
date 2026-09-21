@@ -696,6 +696,7 @@ def test_confirmed_push_block_survives_next_failure_and_later_edit(tmp_path, mon
 @pytest.mark.parametrize('scope', ['foreign-project', 'structural-operation'])
 def test_generic_abandon_is_scoped_to_owned_content_intents(tmp_path, scope):
     from uuid import uuid4
+
     from autoflow.infrastructure.database.project_sync_models import SyncOperationRow
 
     transport = FakeSheetsTransport(GRID)

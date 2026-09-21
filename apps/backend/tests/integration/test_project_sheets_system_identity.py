@@ -169,10 +169,17 @@ def test_system_uuid_and_text_binding_share_one_physical_lease_and_push_by_uuid(
         assert transport.grid('数据')[1][2] == a['ref']['recordKey']['value']
         if same_project:
             from sqlalchemy import select
-            from autoflow.domain.project_data.capabilities import QueryProjectRecordsRequest, UpdateProjectRecordCommand
-            from autoflow.infrastructure.database.project_run_models import ProjectRecordLeaseRow, ProjectTaskRecordCursorRow
-            from tests.integration.test_project_sheets_claim_paths import query_task
+
+            from autoflow.domain.project_data.capabilities import (
+                QueryProjectRecordsRequest,
+                UpdateProjectRecordCommand,
+            )
+            from autoflow.infrastructure.database.project_run_models import (
+                ProjectRecordLeaseRow,
+                ProjectTaskRecordCursorRow,
+            )
             from tests.integration.test_project_run_data_start import uid
+            from tests.integration.test_project_sheets_claim_paths import query_task
             scope, service = query_task(first, (second,))
             for bound, value in ((first, 'P1'), (second, 'Q1'), (first, 'P2'), (second, 'Q2')):
                 row = service.query_records(scope, QueryProjectRecordsRequest(1, bound.project, bound.table, bound.dataset_generation(), [bound.field_id('title')], 'workflow', None, [], None, 10))['items'][0]
@@ -312,9 +319,12 @@ def test_explicit_rebind_reuses_owned_system_column_without_rewriting_uuids(tmp_
 @pytest.mark.parametrize('lease_state', ['held', 'reconciling'])
 def test_system_uuid_active_lease_blocks_manual_status(tmp_path, lease_state):
     from sqlalchemy import select
+
     from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
     from autoflow.domain.project_data.identity import RecordKey, encode_record_key
-    from autoflow.infrastructure.database.project_run_models import ProjectRecordLeaseRow
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectRecordLeaseRow,
+    )
     from tests.fixtures.sheets import SheetsTable
     from tests.integration.test_project_sheets_claims import start_bound
     from tests.integration.test_project_sheets_sync import pull
@@ -344,7 +354,12 @@ def test_system_uuid_active_lease_blocks_manual_status(tmp_path, lease_state):
 def test_value_reconcile_refuses_changed_system_identity_owner(tmp_path, monkeypatch, changed):
     from autoflow.providers.data.google_sheets import SheetsApiError
     from tests.fixtures.sheets import SheetsTable
-    from tests.integration.test_project_sheets_sync import edit_title, pull, push, sync_operations
+    from tests.integration.test_project_sheets_sync import (
+        edit_title,
+        pull,
+        push,
+        sync_operations,
+    )
 
     client, transport, project, connection, table, identity, title = prepared(tmp_path)
     with client:

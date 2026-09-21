@@ -27,3 +27,5 @@ Final: Ruling: generated and historical evidence text relies on source contract,
 134 项相关完整回归通过（132.41 秒），包含全部三项审查修复、原身份恢复、共享领取、旧 schema 删除、同步恢复与契约。ruff/mypy(407) 与生成检查通过。最终完整后端与当前三平台矩阵尚待执行。
 
 9afe3be5 首次全量后端为 1 failed / 3427 passed / 67 skipped / 740.91 秒。唯一失败是旧规则仍期望系统身份 notImplemented；按 R3 已批准契约改为显式列必须存在，缺列拒绝，普通列/未知策略拒绝不变。当前生产源码不因旧断言改变；新完整回归接续。
+
+35628831527 在两台 Mac 的 ruff check . 阶段失败，5 项测试导入格式 I001；本机先前仅检查 src，范围不足。改为完全相同门禁并修正导入布局，ruff check . 通过，非 import AST 无变化。取消余下旧矩阵，新候选重跑原三平台；不冒充原生功能失败或通过。

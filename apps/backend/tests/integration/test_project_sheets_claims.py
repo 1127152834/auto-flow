@@ -332,7 +332,11 @@ def test_legacy_active_local_sheet_lease_blocks_shared_claim(tmp_path, state):
 def test_rejected_value_push_keeps_identity_claimable_and_peer_pull_independent(tmp_path):
     from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
     from autoflow.providers.data.google_sheets import SheetsApiError
-    from tests.integration.test_project_sheets_sync import edit_title, push, sync_operations
+    from tests.integration.test_project_sheets_sync import (
+        edit_title,
+        push,
+        sync_operations,
+    )
 
     with shared_tables(tmp_path) as (first, second):
         local = edit_title(first, first.records()[0], 'local survives rejection')
