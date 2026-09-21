@@ -307,3 +307,8 @@ class SourceRecordObservations(ApiModel):
     record: DataRecordRef
     binding_epoch: int | None
     items: list[SourceFieldObservation]
+
+
+class SheetsIdentityVerification(ApiModel):
+    expected_table_revision: int = Field(ge=1)
+    impact_revision: int = Field(ge=1)

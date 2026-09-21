@@ -33,6 +33,7 @@ from .project_sync_models import (
     SyncOperationRow,
     SyncRecordMarkRow,
 )
+from .project_sync_sends import require_source_idle
 
 _OPEN_STATUSES = ("pending", "sending", "verifying", "unknown", "paused")
 
@@ -41,6 +42,7 @@ _OPEN_STATUSES = ("pending", "sending", "verifying", "unknown", "paused")
 _SYNC_KINDS = {
     "inspectSheets": "binding",
     "changeSheetsBinding": "binding",
+    "initializeSheetsIdentity": "systemIdentity",
     "removeSheetsBinding": "binding",
     "syncPull": "pull",
     "syncPush": "push",
@@ -321,6 +323,8 @@ class SqlAlchemyProjectSync:
         impact_revision: int,
         identity_field_id: str | None = None,
         formula_columns: list[str] | None = None,
+        initialization_operation_id: str | None = None,
+        system_identity_plan: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         change = {
             "connectionId": connection_id,
@@ -336,7 +340,7 @@ class SqlAlchemyProjectSync:
             session.execute(text("PRAGMA defer_foreign_keys=ON"))
             _guard_project_write(session, project)
             self.impacts.require_binding(
-                session, project, table_id, change, impact_revision
+                session, project, table_id, change, impact_revision, own=initialization_operation_id
             )
             table = _required_table(session, project, table_id)
             if table.table_revision != expected_table_revision:
@@ -362,6 +366,7 @@ class SqlAlchemyProjectSync:
                     "绑定已被其他操作修改，请重新加载。",
                     bindingEpoch=current_epoch,
                 )
+            original_generation = table.current_generation
             now = datetime.now(UTC)
             epoch = (current_epoch or 0) + 1
             generation = str(uuid4())
@@ -438,7 +443,7 @@ class SqlAlchemyProjectSync:
             row.sheet_name = sheet_name
             row.binding_epoch = epoch
             row.identity_strategy = identity_strategy
-            row.identity_verification = None
+            row.identity_verification = {"systemIdentity": {key: system_identity_plan[key] for key in ("sheetId", "columnIndex", "owner")}} if system_identity_plan else None
             row.mapping = mapping
             row.updated_at = now
             session.add(row)
@@ -455,6 +460,19 @@ class SqlAlchemyProjectSync:
             )
             table.table_revision += 1
             table.updated_at = now
+            if initialization_operation_id is not None:
+                initialized = session.get(SyncOperationRow, initialization_operation_id)
+                operation = session.get(ProjectOperationRow, initialization_operation_id)
+                if initialized is None or operation is None or initialized.request.get("datasetGeneration") != original_generation or initialized.project_id != project or initialized.table_id != table_id or initialized.kind != "systemIdentity" or initialized.status != "verifying":
+                    raise precondition("identityPlan", "初始化事实已变化，请核验原操作。")
+                initialized.status = "confirmed"
+                initialized.status_revision += 1
+                initialized.confirmed_at = initialized.updated_at = now
+                operation.status = "succeeded"
+                operation.status_revision += 1
+                operation.result = binding_view(row)
+                operation.completed_at = operation.updated_at = now
+                operation.error = None
             session.commit()
             return binding_view(row)
 
@@ -633,6 +651,75 @@ class SqlAlchemyProjectSync:
                 False,
             )
 
+    def freeze_identity(self, operation_id: str, plan: dict[str, Any], *, retry: bool = False, confirmation: dict[str, Any] | None = None) -> None:
+        """Persist generated UUIDs and claim the send before touching Google."""
+        with self.sessions() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(SyncOperationRow, operation_id)
+            assert row is not None and row.kind == "systemIdentity"
+            if retry:
+                if row.status != "failed" or (row.error or {}).get("unsent") is not True or row.request.get("initialization") != plan:
+                    raise precondition("identityPlan", "只有证明未发送的原计划允许重试。")
+            elif row.attempts or row.status != "pending" or "initialization" in row.request:
+                raise precondition("identityPlan", "原初始化计划已登记，请核验原操作。")
+            request = row.request
+            confirmation = confirmation or request
+            require_source_idle(session, request["spreadsheetId"], own=row.id, structural=True)
+            _guard_project_write(session, row.project_id)
+            table = _required_table(session, row.project_id, row.table_id)
+            binding = session.get(SheetsBindingRow, row.table_id)
+            if table.table_revision != confirmation["expectedTableRevision"] or (binding.binding_epoch if binding else None) != request["expectedBindingEpoch"]:
+                raise precondition("bindingEpoch", "表或绑定已变化，请重新确认。")
+            new_column = request["identityStrategy"]["columnId"]
+            if any((len(item["columnId"]), item["columnId"]) >= (len(new_column), new_column) for item in request["mapping"]):
+                raise ProjectError("SHEETS_COLUMN_POSITION_IN_USE", "新身份列必须位于所有映射列之后。", 409)
+            for peer in session.scalars(select(SheetsBindingRow).where(
+                SheetsBindingRow.spreadsheet_id == request["spreadsheetId"], SheetsBindingRow.sheet_id == request["sheetId"],
+            )):
+                columns = [entry["columnId"] for entry in peer.mapping] + [peer.identity_strategy.get("columnId", "")]
+                if any((len(column), column) >= (len(new_column), new_column) for column in columns):
+                    raise ProjectError("SHEETS_COLUMN_POSITION_IN_USE", "插入位置会移动已有绑定列，请选择所有已映射列之后的新列。", 409)
+            change = {key: request[key] for key in ("connectionId", "spreadsheetId", "sheetId", "identityStrategy", "mapping")}
+            self.impacts.require_binding(session, row.project_id, row.table_id, change, confirmation["impactRevision"], own=row.id)
+            if retry and table.current_generation != request.get("datasetGeneration"):
+                raise precondition("datasetGeneration", "原初始化数据代次已变化。")
+            row.request = {**request, "initialization": plan, "datasetGeneration": table.current_generation}
+            row.status, row.attempts = "sending", row.attempts + 1
+            row.error = None
+            accepted = session.get(ProjectOperationRow, operation_id)
+            assert accepted is not None
+            accepted.status, accepted.error, accepted.completed_at = "running", None, None
+            accepted.status_revision += 1
+            accepted.updated_at = datetime.now(UTC)
+            row.status_revision += 1
+            row.updated_at = datetime.now(UTC)
+            session.commit()
+
+    def system_identity_plan(self, project: str, table: str, epoch: int) -> dict[str, Any]:
+        with self.sessions() as session:
+            row = session.get(SheetsBindingRow, table)
+            if row is None or row.project_id != project or row.binding_epoch != epoch:
+                raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "系统身份绑定已变化。", 409)
+            plan = (row.identity_verification or {}).get("systemIdentity")
+            if not plan:
+                raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "系统身份缺少原初始化归属证据。", 409)
+            return plan
+
+    def known_system_identity(self, spreadsheet: str, sheet: int, column: str) -> dict[str, Any]:
+        with self.sessions() as session:
+            for row in session.scalars(select(SyncOperationRow).where(SyncOperationRow.kind == "systemIdentity", SyncOperationRow.status == "confirmed").order_by(SyncOperationRow.created_at.desc())):
+                if row.target.get("spreadsheetId") == spreadsheet and row.target.get("sheetId") == sheet and row.request["identityStrategy"]["columnId"] == column:
+                    return row.request["initialization"]
+        raise ProjectError("SHEETS_IDENTITY_INITIALIZATION_REQUIRED", "该列没有已确认的系统归属，请先完成原初始化。", 409)
+
+    def identity_operation(self, project: str, table: str, operation_id: str) -> SyncOperationRow:
+        with self.sessions() as session:
+            row = session.get(SyncOperationRow, operation_id)
+            if row is None or row.project_id != project or row.table_id != table or row.kind != "systemIdentity":
+                raise ProjectError("SYNC_OPERATION_NOT_FOUND", "初始化操作不存在。", 404)
+            session.expunge(row)
+            return row
+
     def sync_operation(self, table: str, sync_operation_id: str) -> dict[str, Any]:
         with self.sessions() as session:
             row = session.get(SyncOperationRow, sync_operation_id)
@@ -712,6 +799,8 @@ class SqlAlchemyProjectSync:
                     "该操作已被其他请求更新，请重新加载。",
                     statusRevision=row.status_revision,
                 )
+            if status == "sending" and row.kind == "push":
+                require_source_idle(session, str(row.target.get("spreadsheetId")))
             now = datetime.now(UTC)
             row.status = status
             row.status_revision += 1
@@ -999,13 +1088,14 @@ class SqlAlchemyProjectSync:
                 namespace = previous["namespace"]
             pairs = sorted({(key.type, key.value) for key in keys})
             revision = hashlib.sha256(
-                json.dumps([namespace, pairs], ensure_ascii=False).encode()
+                json.dumps([namespace, sorted(("text" if kind == "uuid" else kind, value) for kind, value in pairs)], ensure_ascii=False).encode()
             ).hexdigest()
             peers = session.scalars(select(SheetsBindingRow).where(
                 SheetsBindingRow.spreadsheet_id == binding.spreadsheet_id,
                 SheetsBindingRow.sheet_id == binding.sheet_id,
             )).all()
             binding.identity_verification = {
+                **({"systemIdentity": previous["systemIdentity"]} if "systemIdentity" in previous else {}),
                 "bindingPeers": sorted([[peer.table_id, peer.binding_epoch] for peer in peers]),
                 "namespace": namespace,
                 "revision": revision,

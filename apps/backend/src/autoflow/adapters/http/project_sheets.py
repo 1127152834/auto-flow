@@ -13,6 +13,7 @@ from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.domain.projects.models import ProjectError
 
 from .errors import browser_error_responses
+from .project_data_impact_schemas import SheetsImpactReport
 from .project_schemas import OperationAccepted
 from .project_sheets_schemas import (
     GoogleAuthorization,
@@ -23,6 +24,7 @@ from .project_sheets_schemas import (
     SheetsConnectionCreate,
     SheetsConnectionDelete,
     SheetsConnectionDirectory,
+    SheetsIdentityVerification,
     SheetsInspectionCreate,
     SheetsInspectionResult,
     SourceRecordObservations,
@@ -158,6 +160,24 @@ def project_sheets_binding_router(service: SheetsBindingService) -> APIRouter:
             str(idempotency_key),
             body.model_dump(by_alias=True),
         )
+
+    @router.post("/sheets/system-identity", status_code=202, response_model=OperationAccepted,
+                 responses=browser_error_responses(401, 404, 409, 412, 422))
+    def initialize_identity(projectId: CanonicalId, tableId: CanonicalId, body: SheetsBindingWrite, idempotency_key: Key):
+        return service.initialize_identity(str(projectId), str(tableId), str(idempotency_key), body.model_dump(by_alias=True))
+
+    @router.post("/sheets/system-identity/{operationId}/preview", response_model=SheetsImpactReport)
+    def preview_identity(projectId: CanonicalId, tableId: CanonicalId, operationId: CanonicalId):
+        return service.preview_identity(str(projectId), str(tableId), str(operationId))
+
+    @router.post("/sheets/system-identity/{operationId}/retry", status_code=202, response_model=OperationAccepted)
+    def retry_identity(projectId: CanonicalId, tableId: CanonicalId, operationId: CanonicalId, body: SheetsIdentityVerification | None = None):
+        return service.retry_identity(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True) if body else None)
+
+    @router.post("/sheets/system-identity/{operationId}/verify", status_code=202, response_model=OperationAccepted,
+                 responses=browser_error_responses(401, 404, 409, 412, 422))
+    def verify_identity(projectId: CanonicalId, tableId: CanonicalId, operationId: CanonicalId, body: SheetsIdentityVerification | None = None):
+        return service.verify_identity(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True) if body else None)
 
     @router.delete(
         "/sheets/binding",

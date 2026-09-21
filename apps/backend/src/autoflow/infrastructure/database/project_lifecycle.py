@@ -38,6 +38,7 @@ from .project_data_models import DataImpactRow, DataTableRow
 from .project_excel_models import ProjectExcelExportJobRow, ProjectExcelPublicationRow
 from .project_run_models import ProjectBatchRow, ProjectTaskRow
 from .project_sync_models import SheetsBindingRow, SyncOperationRow
+from .project_sync_sends import unresolved_structure
 from .workflow_runtime_models import (
     WorkflowPreparedContentRow,
     WorkflowRunArtifactRow,
@@ -417,6 +418,8 @@ def _blockers(
     delete's own target and must never refuse the retry.
     """
     blockers: list[dict[str, Any]] = []
+    if any(row.project_id == project_id for row in unresolved_structure(session)):
+        blockers.append(_blocker("SHEETS_SOURCE_SEND_IN_PROGRESS", {"type": "project", "projectId": project_id}, "blocked", "来源结构写入尚未确认，请先核验原操作。"))
     for binding in session.scalars(select(SheetsBindingRow).where(SheetsBindingRow.project_id == project_id)):
         if source_record_leases(session, binding.spreadsheet_id, binding.sheet_id):
             blockers.append(_blocker("SHEETS_SOURCE_IN_USE", {"type": "table", "projectId": project_id, "tableId": binding.table_id}, "blocked", "共享来源仍被任务占用，请等待任务完成或恢复占用后重试。"))

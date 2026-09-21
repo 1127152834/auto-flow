@@ -5257,8 +5257,18 @@
       "primary_package": "PM6-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_identity.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/shared-data-follow-through.json",
+          "scope": "R3 原 UUID 初始化、原命令核验与未发送重试、发送互斥、已验证系统列复用；HTTP/SQLite/受控 Google transport 与真实 React 组件",
+          "limitations": "无当前 Google 实网或打包完整应用链，不升级 verified",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "data-source",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -5277,16 +5287,77 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
-        "gaps": [
+        "reviewedAt": "2026-09-22",
+        "checks": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：系统 UUID 初始化响应丢失后核验同一批 UUID，且拒绝覆盖归属不明同名列；不据邻近测试推定覆盖"
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_system_identity_initializes_once_and_recovers_original_command",
+            "scope": "原幂等键不再创建列；初始化成功后拉取保持 UUID 类型",
+            "level": "automated_integration"
           },
           {
-            "kind": "implementation_missing",
-            "detail": "application/project_sync/bindings.py::_identity 对 system 身份策略明确返回 501；系统 UUID 初始化及未知响应恢复未交付，非仅缺实网证据。"
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_lost_identity_response_recovers_one_original_plan_and_blocks_new_sends",
+            "scope": "写成功丢响应只核验原列原 UUID；未知操作禁止重试和另起计划",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_proven_unsent_identity_retries_frozen_uuids_only",
+            "scope": "仅 transport 证明未发送时按持久原 UUID 重试",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_identity_unknown_mismatch_never_publishes_or_resends",
+            "scope": "部分写、改名、移动、内容变化或归属标记丢失时不发布、不重发",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_system_uuid_and_text_binding_share_one_physical_lease_and_push_by_uuid",
+            "scope": "UUID 本地身份和文本视图解析相同公共 lease；UUID 定位原行推值",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_unresolved_structural_send_fences_peer_values_claims_and_binding",
+            "scope": "未决结构发送阻断其他绑定的推值、领取及解绑，核验后恢复发送",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_value_send_unknown_blocks_system_initialization_before_any_column_write",
+            "scope": "值写入未知时禁止登记结构发送，无新增列",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_unknown_identity_recovers_with_fresh_local_confirmation_after_table_edit",
+            "scope": "表资料变更使旧确认失效；同原操作按新影响确认发布，不重复云写",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_system_identity.py",
+            "symbol": "test_explicit_rebind_reuses_owned_system_column_without_rewriting_uuids",
+            "scope": "显式复用已验证列不改 UUID；同名列缺归属拒绝",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/project-data/components/SheetsIdentityInitialization.test.tsx",
+            "testName": "loads the original unknown operation and verifies it without another initialization",
+            "scope": "重新打开组件读取持久原操作，只请求原核验入口而不重新初始化",
+            "level": "automated_component"
+          }
+        ],
+        "gaps": [
+          {
+            "kind": "production_evidence_missing",
+            "detail": "当前打包应用内完整系统 UUID 初始化/恢复/共享领取链未执行。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "实际 Google Sheets 系统 UUID 初始化和恢复需要当前授权测试表；受控 transport 不代替实网。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -16401,5 +16472,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-21: 当前 227 条有范围断言 / 24 条尚无直接断言，192 partially_verified / 59 planned / 0 verified。历史 73 条失效预定路径保留，实际映射逐条记录。S1–S5 和 C1–C3 已补实现及局部证据；C4 回归/新三平台、R1/R2 已实现并补本机真实 worker，R5→R3→R4 继续；历史三平台通过不代表新候选或完整 PM9 完成。releaseAccepted=false。"
+  "pm9_note": "2026-09-22: 251 条覆盖账本，228 条有范围断言 / 23 条未定位，193 partially_verified / 58 planned / 0 verified。R3 系统 UUID 初始化及恢复补局部证据，R4 继续。C Mac @21f8bb1e、Windows @07619b6d 原生流水线通过，不能替代 R3/R4 当前候选三平台及 Google 实网。历史 73 条失效预定路径保留。releaseAccepted=false。"
 }

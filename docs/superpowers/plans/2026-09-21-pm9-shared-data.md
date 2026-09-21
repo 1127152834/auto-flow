@@ -76,3 +76,11 @@
 ## Review Focus
 
 公共键无本地身份；不同绑定不扩大权限；空/重复/变动身份失败关闭；所有领取/生命周期/旧键升级；cursor 与物理 lease 区别；未知写原命令不重发；观察不污染业务值；UUID/增列不接管外部同名数据。M1–M3、跨进程人工恢复及全部 Studio 准入均不在范围。
+
+### R3/R4 implementation contract refinement (2026-09-21, confirmed scope)
+
+- Reuse Google `spreadsheets.batchUpdate` to insert the explicit new column, write its header/initial UUID cells and attach `DOCUMENT` developer metadata in one atomic request. Metadata contains only the frozen operation ownership marker, no credential or local business value. Ref: https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets/batchUpdate and https://developers.google.com/workspace/sheets/api/guides/metadata (read 2026-09-21).
+- First persist the original public request digest separately from the generated frozen plan on the existing SyncOperationRow. Later lookups recover that plan; they never regenerate UUIDs or insert another column after an uncertain send. Verify metadata is unique and still names the original sheet/column, then compare the exact UUID set and original row evidence. Duplicate indistinguishable rows, foreign same-name columns, renamed/moved ownership, partial writes or changed target retain an actionable unresolved operation.
+- R3 must also connect system RecordKey UUIDs to inbound ingestion and shared source claim normalization. Do not only remove `_identity` / `_identity_column` 501 checks: the existing parser and remote-key locator currently assume column keys. Explicitly test UUID versus text views of the same physical identity so an alias cannot obtain a second lease.
+- There is no existing cross-request Spreadsheet send lock in the inspected PM9 source. Reuse the existing sync ledger's short transaction/CAS to serialize structural sends against value sends, and block binding/lifecycle changes while an uncertain structural command remains. This is required by the approved frozen-send contract, not an additional executor.
+- Keep system initialization separate from ordinary binding; a failed or unknown initialization cannot publish a half-initialized local dataset. R4 extends the current binding mapping compatibly after verified column creation; it must preserve generation, existing field identities, Task patches and local values.

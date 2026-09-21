@@ -44,3 +44,11 @@ Windows Job startup race candidate fix (2026-09-21, implementing; native confirm
 Windows startup follow-up (2026-09-21): native probe 35603692816 @dba685ec still fails at exact Job join before ready, so membership re-query alone is not the native fix. CPython 3.11 PC/launcher.c:741–771 creates its own kill-on-close/silent-breakaway Job and assigns the interpreter after creation; Modules/getpath.py handles __PYVENV_LAUNCHER__. Native Job nesting depends on assignment order (Microsoft nested-jobs documentation). Candidate fix launches sys._base_executable directly for this interpreter's unfrozen Windows venv commands, setting the CPython launcher marker to retain the exact venv. Custom non-Python commands and frozen packaging keep their command; named Job/birth checks remain mandatory. Native prefix/import check plus real browser probe required before calling this fixed. Sources: https://raw.githubusercontent.com/python/cpython/3.11/PC/launcher.c ; https://raw.githubusercontent.com/python/cpython/3.11/Modules/getpath.py ; https://learn.microsoft.com/en-us/windows/win32/procthread/nested-jobs .
 
 2026-09-21（confirmed）：Windows 原生探针 35604286479 / 10ce00e8 成功：venv 启动 1 项及真实 worker 9 项通过。完整 Windows 35604833296 随后在 mypy 停止：Windows 条件分支直接访问未在类型存根声明的 sys._base_executable。改为显式模块字典读取（缺属性仍失败关闭），运行 mypy --platform win32 单文件通过；不将探针等同完整打包验收。
+
+### 2026-09-22 R3 与 C4 更新（confirmed，局部验收）
+
+R3 已冻结原操作 UUID、身份列归属及行证据，单次 Sheets batchUpdate 新列/值/metadata。未知响应仅核验；仅证明未发送的原计划允许重试，UUID 不重生成。原操作发布绑定与成功状态同事务；资料修订变化须重新预览影响后明确核验。复用本工作区已验证系统列不云写；同名未知归属拒绝。UUID 拉取/推值接通，文本视图和 UUID 本地键解析同一公共 lease。未决结构发送阻断其他绑定推值、领取和改绑；值发送未知先阻断结构发送。共享 GoogleAccess 使用标准库 RLock 序列化读计划到发送，并以现有 SQLite 账本保留跨请求/重启的未决围栏。没有第二执行器。
+
+90 项后端相关检查、25 项组件/客户端通过，ruff/mypy（406）、typecheck/lint/OpenAPI/build 通过。覆盖账本 251 条中 228 有定位断言、23 未定位，193 partially_verified / 58 planned / 0 verified。DATA-ID-05 只升级 partial；真实 Google 和当前打包完整应用链仍待验收。
+
+C4 Mac @21f8bb1e 的 ARM/Intel 全部通过；Windows @07619b6d 完整流水线 35605861737 通过：3384 后端（77 平台 skip）、5464 前端（407 文件）、21 真实 worker、源码/包链/安装包和万行写入。万行发生 8 次明确 busy 重试，不构造新的性能门槛。两份源码范围分别保留，R3 不包含在这些 CI 中。此前 C4 “Intel pending/Windows failed”当前状态由本节 supersede；失败日志仍保留历史。R4 接续，完整当前候选矩阵与一次整批复审在 R4 后执行。releaseAccepted=false。

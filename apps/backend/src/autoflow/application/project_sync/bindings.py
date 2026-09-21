@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -13,6 +14,7 @@ from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
     DataTableRow,
 )
+from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
 from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
 from autoflow.providers.data.google_sheets import (
     SheetsApiError,
@@ -25,6 +27,14 @@ from autoflow.providers.data.google_sheets import (
 from .access import GoogleAccess
 from .connections import _invalid, _uuid
 from .runs import SheetsRun
+from .system_identity import (
+    canonical_uuid,
+    identity_plan,
+    identity_requests,
+    owned_identity,
+    source_digest,
+    verify_identity,
+)
 
 MAX_MAPPING_ENTRIES = 200
 
@@ -36,9 +46,10 @@ class SheetsBindingService:
         runs: SheetsRun,
         access: GoogleAccess,
         tables: DataTableService,
+        sync: SqlAlchemyProjectSync,
     ) -> None:
         self._sessions, self._runs, self._access = sessions, runs, access
-        self._tables = tables
+        self._tables, self._sync = tables, sync
 
     # ------------------------------------------------------------------- inspection
 
@@ -72,106 +83,213 @@ class SheetsBindingService:
     def put_binding(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        request = _binding_request(payload)
-        with self._sessions() as session:
-            table = _table(session, project_id, table_id)
-            fields = _fields(session, table)
-            epoch = _epoch(session, table_id)
-        identity_field_id = _validate_mapping(request, fields)
-        self._access.require_writable(project_id, request["connectionId"])
-        client = self._access.client(project_id, request["connectionId"])
-        spreadsheet, sheet = _resolve_sheet(client, request)
-        # A column that carries a formula stays read-only locally: the provider
-        # copies the formula for appended rows and never writes one back
-        # (DATA-SH-11), so the binding records the fact instead of letting a
-        # later push overwrite the formula with a literal.
-        formula_columns = _formula_columns(client, request["spreadsheetId"], sheet.title)
-        view, existing = self._runs.accept(
-            project=project_id,
-            table=table_id,
-            kind="changeSheetsBinding",
-            key=key,
-            request=request,
-            binding_epoch=epoch,
-            dedupe=f"binding:{key}",
-        )
-        if existing:
-            return {"operation": view}
-        operation_id = view["operationId"]
-        try:
-            # `filename` is the shared display name for a table source; Sheets
-            # uses the spreadsheet title so the source tab can show it.
-            source = {
-                "sheetName": sheet.title,
-                "spreadsheetTitle": spreadsheet.title,
-                "filename": spreadsheet.title,
-            }
-            binding = self._runs.bind(
-                project_id,
-                table_id,
-                connection_id=request["connectionId"],
-                spreadsheet_id=request["spreadsheetId"],
-                sheet_id=request["sheetId"],
-                spreadsheet_title=spreadsheet.title,
-                sheet_name=sheet.title,
-                identity_strategy=request["identityStrategy"],
-                mapping=request["mapping"],
-                expected_table_revision=request["expectedTableRevision"],
-                expected_binding_epoch=request["expectedBindingEpoch"],
-                source=source,
-                impact_revision=request["impactRevision"],
-                identity_field_id=identity_field_id,
-                formula_columns=sorted(formula_columns),
+        with self._access.send_lock:
+            request = _binding_request(payload)
+            with self._sessions() as session:
+                table = _table(session, project_id, table_id)
+                fields = _fields(session, table)
+                epoch = _epoch(session, table_id)
+            identity_field_id = _validate_mapping(request, fields)
+            self._access.require_writable(project_id, request["connectionId"])
+            client = self._access.client(project_id, request["connectionId"])
+            spreadsheet, sheet = _resolve_sheet(client, request)
+            # A column that carries a formula stays read-only locally: the provider
+            # copies the formula for appended rows and never writes one back
+            # (DATA-SH-11), so the binding records the fact instead of letting a
+            # later push overwrite the formula with a literal.
+            formula_columns = _formula_columns(client, request["spreadsheetId"], sheet.title)
+            system_plan = None
+            if request["identityStrategy"]["kind"] == "system":
+                system_plan = self._sync.known_system_identity(request["spreadsheetId"], sheet.sheet_id, request["identityStrategy"]["columnId"])
+                values = client.values(request["spreadsheetId"], f"{quoted(sheet.title)}!A:{column_letter(sheet.column_count - 1)}", "FORMULA")
+                column = system_plan["columnIndex"]
+                keys = [row[column] if column < len(row) else None for row in values[1:] if any(value not in (None, "") for value in row)]
+                if not owned_identity(system_plan, values[0] if values else [], client.developer_metadata(request["spreadsheetId"])) or not all(canonical_uuid(value) for value in keys) or len(set(keys)) != len(keys):
+                    raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "已有系统列归属或 UUID 不完整，不能复用或覆盖。", 409)
+            view, existing = self._runs.accept(
+                project=project_id,
+                table=table_id,
+                kind="changeSheetsBinding",
+                key=key,
+                request=request,
+                binding_epoch=epoch,
+                dedupe=f"binding:{key}",
             )
-        except ProjectError as error:
-            self._runs.fail(operation_id, error)
-            raise
-        self._runs.complete(operation_id, binding)
-        return {"operation": self._runs.operation_view(operation_id)}
+            if existing:
+                return {"operation": view}
+            operation_id = view["operationId"]
+            try:
+                # `filename` is the shared display name for a table source; Sheets
+                # uses the spreadsheet title so the source tab can show it.
+                source = {
+                    "sheetName": sheet.title,
+                    "spreadsheetTitle": spreadsheet.title,
+                    "filename": spreadsheet.title,
+                }
+                binding = self._runs.bind(
+                    project_id,
+                    table_id,
+                    connection_id=request["connectionId"],
+                    spreadsheet_id=request["spreadsheetId"],
+                    sheet_id=request["sheetId"],
+                    spreadsheet_title=spreadsheet.title,
+                    sheet_name=sheet.title,
+                    identity_strategy=request["identityStrategy"],
+                    mapping=request["mapping"],
+                    expected_table_revision=request["expectedTableRevision"],
+                    expected_binding_epoch=request["expectedBindingEpoch"],
+                    source=source,
+                    impact_revision=request["impactRevision"],
+                    identity_field_id=identity_field_id,
+                    system_identity_plan=system_plan,
+                    formula_columns=sorted(formula_columns),
+                )
+            except ProjectError as error:
+                self._runs.fail(operation_id, error)
+                raise
+            self._runs.complete(operation_id, binding)
+            return {"operation": self._runs.operation_view(operation_id)}
+
+    def initialize_identity(self, project_id: str, table_id: str, key: str, payload: dict[str, Any]) -> dict[str, Any]:
+        with self._access.send_lock:
+            request = _binding_request(payload)
+            if request["identityStrategy"]["kind"] != "system":
+                raise _invalid("identityStrategy", "初始化必须选择系统身份。")
+            with self._sessions() as session:
+                table = _table(session, project_id, table_id)
+                fields = _fields(session, table)
+                epoch = _epoch(session, table_id)
+            _validate_mapping(request, fields)
+            view, existing = self._runs.accept(project=project_id, table=table_id, kind="initializeSheetsIdentity", key=key, request=request, binding_epoch=epoch, dedupe=f"systemIdentity:{key}")
+            if existing:
+                return {"operation": view}
+            operation_id = view["operationId"]
+            plan = None
+            try:
+                self._access.require_writable(project_id, request["connectionId"])
+                client = self._access.client(project_id, request["connectionId"])
+                spreadsheet, sheet = _resolve_sheet(client, request)
+                values = client.values(request["spreadsheetId"], f"{quoted(sheet.title)}!A:{column_letter(sheet.column_count - 1)}", "FORMULA")
+                plan = identity_plan(values, column=_column_index(request["identityStrategy"]["columnId"]), sheet_id=sheet.sheet_id, owner=operation_id)
+                plan.update(columnCount=sheet.column_count, sheetName=sheet.title, spreadsheetTitle=spreadsheet.title, formulaColumns=sorted(_formula_columns(client, request["spreadsheetId"], sheet.title)))
+                writes = identity_requests(plan, sheet.column_count)
+                self._sync.freeze_identity(operation_id, plan)
+                client.batch_update(request["spreadsheetId"], writes)
+            except SheetsApiError as error:
+                self._sync.transition(operation_id, status="failed" if error.unsent or plan is None else "unknown", error={"code": "SHEETS_IDENTITY_SEND_UNCONFIRMED", "message": "初始化未确认，请核验原操作。", "retryable": error.unsent and plan is not None, "unsent": error.unsent or plan is None})
+                return {"operation": self._runs.operation_view(operation_id)}
+            except ProjectError as error:
+                self._runs.fail(operation_id, error)
+                raise
+            return self.verify_identity(project_id, table_id, operation_id)
+
+    def retry_identity(self, project_id: str, table_id: str, operation_id: str, confirmation: dict[str, Any] | None = None) -> dict[str, Any]:
+        with self._access.send_lock:
+            frozen = self._sync.identity_operation(project_id, table_id, operation_id)
+            if frozen.status != "failed" or (frozen.error or {}).get("unsent") is not True:
+                raise ProjectError("SHEETS_IDENTITY_RETRY_UNSAFE", "原请求可能已发送，只能核验，不能再次创建列。", 409)
+            request, plan = frozen.request, frozen.request.get("initialization")
+            if not plan:
+                raise ProjectError("SHEETS_IDENTITY_PLAN_MISSING", "未形成发送计划，请重新检查来源后发起初始化。", 409)
+            self._access.require_writable(project_id, request["connectionId"])
+            client = self._access.client(project_id, request["connectionId"])
+            _, sheet = _resolve_sheet(client, request)
+            values = client.values(request["spreadsheetId"], f"{quoted(sheet.title)}!A:{column_letter(sheet.column_count - 1)}", "FORMULA")
+            if sheet.title != plan["sheetName"] or sheet.column_count != plan["columnCount"] or source_digest(values) != plan["beforeDigest"]:
+                raise ProjectError("SHEETS_IDENTITY_EVIDENCE_MISMATCH", "来源已变化，原计划不能重发。", 409)
+            self._sync.freeze_identity(operation_id, plan, retry=True, confirmation=confirmation)
+            try:
+                client.batch_update(request["spreadsheetId"], identity_requests(plan, sheet.column_count))
+            except SheetsApiError as error:
+                self._sync.transition(operation_id, status="failed" if error.unsent else "unknown", error={"code": "SHEETS_IDENTITY_SEND_UNCONFIRMED", "message": "原初始化尚未确认。", "unsent": error.unsent, "retryable": error.unsent})
+                return {"operation": self._runs.operation_view(operation_id)}
+            return self.verify_identity(project_id, table_id, operation_id, confirmation)
+
+    def preview_identity(self, project_id: str, table_id: str, operation_id: str) -> dict[str, Any]:
+        frozen = self._sync.identity_operation(project_id, table_id, operation_id)
+        change = {key: frozen.request[key] for key in ("connectionId", "spreadsheetId", "sheetId", "identityStrategy", "mapping")}
+        return self._sync.impacts.preview_binding(project_id, table_id, change, own=operation_id)
+
+    def verify_identity(self, project_id: str, table_id: str, operation_id: str, confirmation: dict[str, Any] | None = None) -> dict[str, Any]:
+        with self._access.send_lock:
+            frozen = self._sync.identity_operation(project_id, table_id, operation_id)
+            if frozen.status == "confirmed" or (frozen.status == "failed" and (frozen.error or {}).get("unsent") is True):
+                return {"operation": self._runs.operation_view(operation_id)}
+            request, plan = frozen.request, frozen.request.get("initialization")
+            confirmation = confirmation or {"expectedTableRevision": request["expectedTableRevision"], "impactRevision": request["impactRevision"]}
+            with self._sessions() as session:
+                local = _table(session, project_id, table_id)
+                _validate_mapping(request, _fields(session, local))
+            if not plan:
+                raise ProjectError("SHEETS_IDENTITY_PLAN_MISSING", "原操作尚未生成初始化计划。", 409)
+            client = self._access.client(project_id, request["connectionId"])
+            try:
+                _, sheet = _resolve_sheet(client, request)
+                values = client.values(request["spreadsheetId"], f"{quoted(sheet.title)}!A:{column_letter(sheet.column_count - 1)}", "FORMULA")
+                metadata = client.developer_metadata(request["spreadsheetId"])
+                matched = sheet.title == plan["sheetName"] and verify_identity(plan, values, metadata)
+            except SheetsApiError as error:
+                raise _api_error(error) from error
+            if not matched:
+                self._sync.transition(operation_id, status="unknown", expected_status_revision=frozen.status_revision, error={"code": "SHEETS_IDENTITY_EVIDENCE_MISMATCH", "message": "原身份列、UUID 或行内容尚不能完整核验；不会再次创建或写入。"})
+                return {"operation": self._runs.operation_view(operation_id)}
+            self._sync.transition(operation_id, status="verifying", expected_status_revision=frozen.status_revision, evidence={"checkedAt": datetime.now(UTC).isoformat(), "target": request["spreadsheetId"], "fields": [request["identityStrategy"]["columnId"]], "outcome": "matched"})
+            try:
+                self._runs.bind(project_id, table_id,
+                    connection_id=request["connectionId"], spreadsheet_id=request["spreadsheetId"], sheet_id=request["sheetId"],
+                    spreadsheet_title=plan["spreadsheetTitle"], sheet_name=plan["sheetName"], identity_strategy=request["identityStrategy"], mapping=request["mapping"],
+                    expected_table_revision=confirmation["expectedTableRevision"], expected_binding_epoch=request["expectedBindingEpoch"], impact_revision=confirmation["impactRevision"],
+                    source={"sheetName": plan["sheetName"], "spreadsheetTitle": plan["spreadsheetTitle"], "filename": plan["spreadsheetTitle"]},
+                    formula_columns=plan["formulaColumns"], initialization_operation_id=operation_id, system_identity_plan=plan)
+            except ProjectError as error:
+                self._sync.transition(operation_id, status="failed", error={"code": error.code, "message": error.message}, keep_evidence=True)
+                raise
+            return {"operation": self._runs.operation_view(operation_id)}
 
     def delete_binding(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        if set(payload) != {"impactRevision", "expectedTableRevision"}:
-            raise _invalid("payload", "意外的字段")
-        _uuid(project_id, "projectId")
-        _uuid(table_id, "tableId")
-        _uuid(key, "Idempotency-Key")
-        impact = _revision(payload["impactRevision"], "impactRevision")
-        expected = _revision(
-            payload["expectedTableRevision"], "expectedTableRevision"
-        )
-        with self._sessions() as session:
-            _table(session, project_id, table_id)
-        view, existing = self._runs.accept(
-            project=project_id,
-            table=table_id,
-            kind="removeSheetsBinding",
-            key=key,
-            request={
-                "tableId": table_id,
-                "impactRevision": impact,
-                "expectedTableRevision": expected,
-            },
-            binding_epoch=_epoch_for(self._sessions, project_id, table_id),
-            dedupe=f"unbind:{key}",
-        )
-        if existing:
-            return {"operation": view}
-        operation_id = view["operationId"]
-        try:
-            # The confirmation is re-derived inside the delete transaction, so a
-            # binding change in between is reported instead of silently removed.
-            self._runs.unbind(project_id, table_id, expected, impact)
-            result = {
-                "table": self._tables.get(project_id, table_id),
-                "unbound": True,
-            }
-        except ProjectError as error:
-            self._runs.fail(operation_id, error)
-            raise
-        self._runs.complete(operation_id, result)
-        return {"operation": self._runs.operation_view(operation_id)}
+        with self._access.send_lock:
+            if set(payload) != {"impactRevision", "expectedTableRevision"}:
+                raise _invalid("payload", "意外的字段")
+            _uuid(project_id, "projectId")
+            _uuid(table_id, "tableId")
+            _uuid(key, "Idempotency-Key")
+            impact = _revision(payload["impactRevision"], "impactRevision")
+            expected = _revision(
+                payload["expectedTableRevision"], "expectedTableRevision"
+            )
+            with self._sessions() as session:
+                _table(session, project_id, table_id)
+            view, existing = self._runs.accept(
+                project=project_id,
+                table=table_id,
+                kind="removeSheetsBinding",
+                key=key,
+                request={
+                    "tableId": table_id,
+                    "impactRevision": impact,
+                    "expectedTableRevision": expected,
+                },
+                binding_epoch=_epoch_for(self._sessions, project_id, table_id),
+                dedupe=f"unbind:{key}",
+            )
+            if existing:
+                return {"operation": view}
+            operation_id = view["operationId"]
+            try:
+                # The confirmation is re-derived inside the delete transaction, so a
+                # binding change in between is reported instead of silently removed.
+                self._runs.unbind(project_id, table_id, expected, impact)
+                result = {
+                    "table": self._tables.get(project_id, table_id),
+                    "unbound": True,
+                }
+            except ProjectError as error:
+                self._runs.fail(operation_id, error)
+                raise
+            self._runs.complete(operation_id, result)
+            return {"operation": self._runs.operation_view(operation_id)}
 
     def read_binding(self, project_id: str, table_id: str) -> dict[str, Any] | None:
         with self._sessions() as session:
@@ -321,18 +439,9 @@ def _identity(value: Any) -> dict[str, Any]:
         raise _invalid("identityStrategy", "身份策略必须是 column 或 system")
     kind = value["kind"]
     column_id = value.get("columnId")
-    if kind == "system":
-        # ponytail: system identity needs its own initialization action from the
-        # approved rules. Until that lands, say so instead of guessing keys.
-        raise ProjectError(
-            "SYNC_NOT_IMPLEMENTED",
-            "系统身份来源尚未交付，请把身份列映射到一个文本字段。",
-            501,
-            {"capability": "sheets.systemIdentity"},
-        )
     if not isinstance(column_id, str) or not column_id:
         raise _invalid("identityStrategy", "按列识别身份时必须指定 columnId")
-    return {"kind": "column", "columnId": column_id}
+    return {"kind": kind, "columnId": column_id}
 
 
 def _mapping(value: Any) -> list[dict[str, Any]]:
@@ -398,6 +507,8 @@ def _validate_mapping(
             )
     identity = request["identityStrategy"]
     if identity["kind"] == "system":
+        if any(entry["columnId"] == identity["columnId"] for entry in request["mapping"]):
+            raise _invalid("mapping", "系统身份列不可映射为业务字段。")
         return None
     entry = next(
         (

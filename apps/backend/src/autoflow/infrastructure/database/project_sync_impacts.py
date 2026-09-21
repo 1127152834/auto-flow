@@ -23,6 +23,7 @@ from autoflow.domain.projects.models import ProjectError
 from .project_claims import source_record_leases
 from .project_data_models import DataImpactRow, DataRecordRow, DataTableRow
 from .project_sync_models import SheetsBindingRow, SheetsConnectionRow, SyncOperationRow
+from .project_sync_sends import require_source_idle, unresolved_structure
 
 IMPACT_TTL = timedelta(minutes=10)
 _OPEN_KINDS = ("push",)
@@ -111,6 +112,8 @@ class SqlAlchemySheetsImpacts:
             raise ProjectError(
                 "SHEETS_CONNECTION_NOT_FOUND", "Google 连接不存在。", 404
             )
+        if any(item.project_id == project_id and item.request.get("connectionId") == connection_id for item in unresolved_structure(session)):
+            raise ProjectError("SHEETS_SOURCE_SEND_IN_PROGRESS", "该连接仍有未确认的来源结构操作，请先核验。", 409)
         bound = sorted(
             session.scalars(
                 select(SheetsBindingRow.table_id).where(
@@ -153,10 +156,10 @@ class SqlAlchemySheetsImpacts:
     # ---------------------------------------------------------------- binding
 
     def preview_binding(
-        self, project_id: str, table_id: str, change: dict[str, Any]
+        self, project_id: str, table_id: str, change: dict[str, Any], *, own: str | None = None
     ) -> dict[str, Any]:
         with self._sessions() as session:
-            report, facts = self._binding_facts(session, project_id, table_id, change)
+            report, facts = self._binding_facts(session, project_id, table_id, change, own=own)
         return self._save(
             project_id, "changeSheetsBinding", report["target"], change, report, facts
         )
@@ -168,6 +171,7 @@ class SqlAlchemySheetsImpacts:
         table_id: str,
         change: dict[str, Any],
         impact_revision: int,
+        *, own: str | None = None,
     ) -> dict[str, Any]:
         self._require(
             session,
@@ -176,12 +180,12 @@ class SqlAlchemySheetsImpacts:
             _table_locator(project_id, table_id),
             change,
             impact_revision,
-            lambda: self._binding_facts(session, project_id, table_id, change),
+            lambda: self._binding_facts(session, project_id, table_id, change, own=own),
         )
         return change
 
     def _binding_facts(
-        self, session: Session, project_id: str, table_id: str, change: dict[str, Any]
+        self, session: Session, project_id: str, table_id: str, change: dict[str, Any], *, own: str | None = None
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         table = session.get(DataTableRow, table_id)
         if table is None or table.project_id != project_id:
@@ -200,8 +204,10 @@ class SqlAlchemySheetsImpacts:
         epoch = existing.binding_epoch if existing else 0
         columns = {str(entry["columnId"]).upper() for entry in change["mapping"]}
         overlaps = _overlaps(session, project_id, table_id, change, columns)
+        require_source_idle(session, change["spreadsheetId"], own=own)
         targets = {(change["spreadsheetId"], change["sheetId"])}
         if existing is not None:
+            require_source_idle(session, existing.spreadsheet_id, own=own)
             targets.add((existing.spreadsheet_id, existing.sheet_id))
         leases = {lease.id: lease for spreadsheet, sheet in targets for lease in source_record_leases(session, spreadsheet, sheet)}
         blockers: list[dict[str, Any]] = _source_blockers(project_id, table_id, bool(leases))
@@ -294,6 +300,7 @@ class SqlAlchemySheetsImpacts:
             raise ProjectError(
                 "SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404
             )
+        require_source_idle(session, binding.spreadsheet_id)
         open_rows = session.scalars(
             select(SyncOperationRow).where(
                 SyncOperationRow.table_id == table_id,

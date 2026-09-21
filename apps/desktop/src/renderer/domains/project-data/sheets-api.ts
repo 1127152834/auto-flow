@@ -90,6 +90,13 @@ export function createSheetsApi(client: StreamingApiClient, desktop: Partial<Goo
       // The binding resource is replaced, not posted to: the frozen contract and
       // the route both answer PUT, and a POST is a 405, not a retryable failure.
       (await command.submit(`${table(tableId)}/sheets/binding`, body, key, 'changeSheetsBinding', current, 'PUT')),
+    initializeIdentity: (tableId: string, body: SheetsBindingWrite, key: string, current: () => boolean) =>
+      command.submit(`${table(tableId)}/sheets/system-identity`, body, key, 'initializeSheetsIdentity', current),
+    previewIdentity: (tableId: string, operationId: string) => client.request<SheetsImpactReport>(`${table(tableId)}/sheets/system-identity/${encodeURIComponent(operationId)}/preview`, { method: 'POST' }),
+    verifyIdentity: async (tableId: string, operationId: string, body: Schema['SheetsIdentityVerification']) =>
+      (await client.request<Schema['OperationAccepted']>(`${table(tableId)}/sheets/system-identity/${encodeURIComponent(operationId)}/verify`, { method: 'POST', body })).operation,
+    retryIdentity: async (tableId: string, operationId: string, body: Schema['SheetsIdentityVerification']) =>
+      (await client.request<Schema['OperationAccepted']>(`${table(tableId)}/sheets/system-identity/${encodeURIComponent(operationId)}/retry`, { method: 'POST', body })).operation,
     lookupBinding: async (key: string, current: () => boolean) =>
       (await command.lookup(key, 'changeSheetsBinding', current)),
     /** Removing a binding keeps the local copy; the confirmation says as much. */

@@ -287,6 +287,7 @@ class ProjectOperationView(ApiModel):
         "disconnectSheets",
         "inspectSheets",
         "changeSheetsBinding",
+        "initializeSheetsIdentity",
         "removeSheetsBinding",
         "syncPull",
         "syncPush",

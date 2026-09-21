@@ -55,6 +55,7 @@ from autoflow.infrastructure.database.project_sync_models import (
     SheetsBindingRow,
     SyncRecordMarkRow,
 )
+from autoflow.infrastructure.database.project_sync_sends import require_source_idle
 
 
 class SqlAlchemyProjectInputGroups:
@@ -751,6 +752,8 @@ def resolve_record_lease(
             ref.record_key,
         ), {}
     binding = session.get(SheetsBindingRow, ref.table_id)
+    if binding is not None:
+        require_source_idle(session, binding.spreadsheet_id)
     proof = binding.identity_verification if binding is not None else None
     if (
         binding is None
@@ -773,7 +776,7 @@ def resolve_record_lease(
     if proof.get("bindingPeers") != sorted([[peer.table_id, peer.binding_epoch] for peer in peers]):
         raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "共享来源绑定已变化，请重新拉取后领取。", 409)
     for peer in peers:
-        if peer.identity_strategy != binding.identity_strategy or (
+        if peer.identity_strategy.get("columnId") != binding.identity_strategy.get("columnId") or (
             peer.identity_verification
             and (
                 peer.identity_verification.get("namespace") != proof["namespace"]
@@ -791,7 +794,8 @@ def resolve_record_lease(
         raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "最近来源验证失败，请修复后重新拉取。", 409)
     if not allow_unseen:
         for local, observed in ((binding, proof), (latest, source_proof)):
-            mark = session.get(SyncRecordMarkRow, (local.table_id, ref.record_key.type, ref.record_key.value))
+            kind = "uuid" if local.identity_strategy.get("kind") == "system" else ("text" if ref.record_key.type == "uuid" else ref.record_key.type)
+            mark = session.get(SyncRecordMarkRow, (local.table_id, kind, ref.record_key.value))
             evidence = (mark.observed or {}).get("identity", {}) if mark else {}
             if (mark is None or mark.remote_missing
                     or evidence.get("revision") != observed["revision"]
@@ -799,7 +803,8 @@ def resolve_record_lease(
                     or evidence.get("datasetGeneration") != observed["datasetGeneration"]):
                 raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "该记录不在最近完整验证的来源中，请修复后重新拉取。", 409)
     key = SheetsLeaseKey(
-        binding.spreadsheet_id, binding.sheet_id, proof["namespace"], ref.record_key
+        binding.spreadsheet_id, binding.sheet_id, proof["namespace"],
+        RecordKey("text", ref.record_key.value) if ref.record_key.type == "uuid" else ref.record_key
     )
     return key, {
         "bindingEpoch": binding.binding_epoch,

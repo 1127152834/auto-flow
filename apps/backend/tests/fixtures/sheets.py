@@ -68,6 +68,7 @@ class FakeSheetsTransport:
         title: str = "来源表",
         formulas: dict[str, list[list[Any]]] | None = None,
     ) -> None:
+        self.developer_metadata: list[dict[str, Any]] = []
         self.spreadsheet_id = spreadsheet_id
         self.title = title
         self.ids: dict[str, int] = {}
@@ -100,7 +101,7 @@ class FakeSheetsTransport:
         if self.fail_writes and method != "GET":
             raise self.fail_writes.pop(0)
         if url == f"{API_ROOT}/{self.spreadsheet_id}":
-            return self._metadata()
+            return {**self._metadata(), "developerMetadata": self.developer_metadata}
         if "/values/" in url:
             render = (params or {}).get("valueRenderOption")
             if method == "GET":
@@ -111,6 +112,30 @@ class FakeSheetsTransport:
                 self._write(str(entry["range"]), entry)
             return {"totalUpdatedCells": 1}
         if url.endswith(":batchUpdate"):
+            for request in (json or {}).get("requests", []):
+                if "insertDimension" in request:
+                    span = request["insertDimension"]["range"]
+                    assert span["dimension"] == "COLUMNS"
+                    for row in self.grids[span["sheetId"]] + self.formulas.get(span["sheetId"], []):
+                        while len(row) < span["startIndex"]:
+                            row.append("")
+                        row[span["startIndex"]:span["startIndex"]] = [""] * (span["endIndex"] - span["startIndex"])
+                elif "updateCells" in request:
+                    update = request["updateCells"]
+                    start = update["start"]
+                    for grid in [self.grids[start["sheetId"]]] + ([self.formulas[start["sheetId"]]] if start["sheetId"] in self.formulas else []):
+                        for offset, source in enumerate(update["rows"]):
+                            row_index = start["rowIndex"] + offset
+                            while len(grid) <= row_index:
+                                grid.append([])
+                            row = grid[row_index]
+                            for col_offset, cell in enumerate(source["values"]):
+                                col = start["columnIndex"] + col_offset
+                                while len(row) <= col:
+                                    row.append("")
+                                row[col] = cell.get("userEnteredValue", {}).get("stringValue", "")
+                elif "createDeveloperMetadata" in request:
+                    self.developer_metadata.append(request["createDeveloperMetadata"]["developerMetadata"])
             return {"replies": [{} for _ in (json or {}).get("requests", [])]}
         raise AssertionError(f"unexpected Sheets call {method} {url}")
 

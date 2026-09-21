@@ -177,6 +177,10 @@ class SheetsClient:
             tuple(entries),
         )
 
+    def developer_metadata(self, spreadsheet_id: str) -> list[dict[str, Any]]:
+        payload = self._transport.send("GET", f"{API_ROOT}/{spreadsheet_id}", params={"fields": "developerMetadata"})
+        return [item for item in _list(payload.get("developerMetadata")) if isinstance(item, dict)]
+
     def values(
         self, spreadsheet_id: str, cell_range: str, render: str = "UNFORMATTED_VALUE"
     ) -> list[list[Any]]:

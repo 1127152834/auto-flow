@@ -1,20 +1,18 @@
 {
-  "date": "2026-09-21",
+  "date": "2026-09-22",
   "status": "candidate_regression_in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
-    "Confirmed shared Sheets Task-claim gap: identical physical rows in two projects receive different local lease keys; shared identity and ambiguous-binding admission are missing. See shared-sheets-claims-gap.json and proposed shared-sheets-claims spec; not merely missing tests.",
-    "Source-confirmed Sheets remote row append, delete synchronization and new-row formula-template copy are not implemented. Existing-row push, local tombstone and formula refresh do not prove those capabilities. Proposed separate row-mutations slices are not included in the pending C/R approval question.",
-    "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
-    "29 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
-    "Current production candidate f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34 full local and three-platform regression pending. ARM full success at d21197ad covers previous source 82c067c9; Windows/Intel follow-ups cancelled after source changed.",
-    "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
-    "Windows/Intel physical installer and native dialogs remain pending. Current f580b1c6 ARM isolated DMG copy, packaged sidecar health/parent-exit and actual native open/select/save-cancel passed in install-read-fix-darwin-arm64.json; full native import/export, credentials, signing, Gatekeeper and uninstall remain incomplete.",
-    "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
+    "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet the approved guarantees.",
+    "R4 controlled remote column creation is approved and pending implementation. M1-M3 remote row append/delete/formula templates remain outside approved scope.",
+    "23 of 251 requirements still have no located assertion; 193 partial / 58 planned / 0 verified. Located assertions do not close unproven acceptance subconditions.",
+    "Current R3/R4 candidate needs final whole C/R review, full regression and the stable three-platform matrix. Completed native runs retain their individual source scope.",
+    "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
+    "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
+    "No merge or release is authorized; releaseAccepted=false."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
@@ -30,9 +28,9 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34",
+  "codeCandidate": "07619b6d8f6b8ffcc0dfe88bcd8983206e6da831",
   "checks": {
-    "currentLocal": "runtime-capabilities-follow-through.json",
+    "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
     "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json",
     "capabilityNativeArmInstall": "install-capabilities-darwin-arm64.json",
@@ -40,31 +38,43 @@
   },
   "platforms": {
     "win32-x64": {
-      "status": "new_candidate_pending",
-      "physicalInstaller": "pending native physical machine acceptance"
+      "status": "scoped_native_success_current_R3_pending",
+      "physicalInstaller": "pending native physical machine acceptance",
+      "scopedCiReport": "ci-capabilities-win32-x64.json"
     },
     "darwin-x64": {
-      "status": "new_candidate_pending",
-      "physicalInstaller": "pending native physical machine acceptance"
+      "status": "scoped_native_success_current_R3_pending",
+      "physicalInstaller": "pending native physical machine acceptance",
+      "scopedCiReport": "ci-capabilities-darwin-x64.json"
     },
     "darwin-arm64": {
-      "status": "new_candidate_pending",
+      "status": "scoped_native_success_current_R3_pending",
       "physicalInstaller": "partial current-source evidence: install-read-fix-darwin-arm64.json",
-      "priorCiReport": "ci-capabilities-82c067c9-darwin-arm64.json"
+      "priorCiReport": "ci-capabilities-82c067c9-darwin-arm64.json",
+      "scopedCiReport": "ci-capabilities-darwin-arm64.json"
     }
   },
   "ci": {
-    "status": "completed",
-    "conclusion": "failure",
-    "runId": 35590418456,
-    "headSha": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35590418456",
-    "scope": "Historical f580b1c6 source matrix. C1/C2 source changes require a separate stable candidate; these results do not verify shared claims.",
-    "platformResults": {
-      "darwin-arm64": "success; ci-capabilities-darwin-arm64.json @0303924d / production f580b1c6",
-      "win32-x64": "3317 passed, 71 skipped, 1 failed: synthetic 100ms budget expired before second manual pause",
-      "darwin-x64": "backend passed; frontend 5458 passed / 1 failed: proxy first-load assertion before queued filter response"
-    }
+    "status": "completed_per_platform",
+    "scope": "C1-C3: Mac jobs at 21f8bb1e; Windows follow-up at 07619b6d also includes R1/R2/R5 and the Windows launcher fix. These are distinct source snapshots, not a single current R3 candidate matrix.",
+    "runs": [
+      {
+        "runId": 35597323657,
+        "headSha": "21f8bb1e645e596c360cbcc8ce8f64e9fd51a237",
+        "platforms": {
+          "darwin-arm64": "success",
+          "darwin-x64": "success",
+          "win32-x64": "failure: worker venv redirector Job conflict"
+        }
+      },
+      {
+        "runId": 35605861737,
+        "headSha": "07619b6d8f6b8ffcc0dfe88bcd8983206e6da831",
+        "platforms": {
+          "win32-x64": "success"
+        }
+      }
+    ]
   },
   "historicalEvidence": [
     {
@@ -86,6 +96,24 @@
       "codeCandidate": "82c067c90f8ff177c932087b1b35627936b9f470",
       "report": "verification-82c067c9.json",
       "note": "ARM full CI passed; original Intel schema preparation and Windows callback fixture failures retained. Follow-ups cancelled after new production read-error fix."
+    },
+    {
+      "codeCandidate": "f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34",
+      "ci": {
+        "status": "completed",
+        "conclusion": "failure",
+        "runId": 35590418456,
+        "headSha": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35590418456",
+        "scope": "Historical f580b1c6 source matrix. C1/C2 source changes require a separate stable candidate; these results do not verify shared claims.",
+        "platformResults": {
+          "darwin-arm64": "success; archived ci-capabilities-f580b1c6-darwin-arm64.json",
+          "win32-x64": "3317 passed, 71 skipped, 1 failed: synthetic 100ms budget expired before second manual pause",
+          "darwin-x64": "backend passed; frontend 5458 passed / 1 failed: proxy first-load assertion before queued filter response"
+        }
+      },
+      "report": "runtime-capabilities-follow-through.json",
+      "note": "Historical S1-S5 before shared claims and R1/R2/R5; native full ARM reports preserved."
     }
   ],
   "remainingReport": "completion-gaps.md",
@@ -96,10 +124,17 @@
       "S2",
       "S3",
       "S5",
-      "S4-new-files-and-job-subset"
+      "S4-new-files-and-job-subset",
+      "C1",
+      "C2",
+      "C3",
+      "R1",
+      "R2",
+      "R5"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "S1-S5 implementation retained; f580 CI failures recorded; approved C1-C4/R1-R5 development continues"
+    "status": "C4 native failures being diagnosed; R3/R4 approved and pending; release not accepted"
   },
-  "sharedDataFollowThrough": "shared-data-follow-through.json"
+  "sharedDataFollowThrough": "shared-data-follow-through.json",
+  "workingCandidate": "R3 source hashes in shared-data-follow-through.json; native validation pending"
 }

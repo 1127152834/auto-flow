@@ -389,6 +389,7 @@ def create_app(
         sheets_runs,
         sheets_access,
         DataTableService(SqlAlchemyProjectData(session_factory)),
+        sheets_repository,
     )
     sheets_impacts_service = SheetsImpactService(sheets_impacts)
     sheets_sync = SheetsSyncService(
