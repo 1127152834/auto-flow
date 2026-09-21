@@ -3,6 +3,7 @@ from __future__ import annotations
 # Source: WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb
 # backend/app/services/recorder.py. Adapted to the AutoFlow-owned browser worker.
 import asyncio
+import json
 import re
 from contextlib import suppress
 from typing import Any
@@ -17,6 +18,8 @@ RECORDER_SCRIPT = RECORDER_SCRIPT.replace(
 ).replace(
     "      sessionStorage.setItem(KEY, JSON.stringify(arr));",
     "      sessionStorage.setItem(KEY, JSON.stringify(arr));\n"
+    "      try { if (typeof window.__autoflowRecordCdp === 'function') "
+    "window.__autoflowRecordCdp(JSON.stringify(ev)); } catch (_) {}\n"
     "      try { if (typeof window.__autoflowRecordEvent === 'function') "
     "window.__autoflowRecordEvent(ev).catch(function(){}); } catch (_) {}",
 )
@@ -29,6 +32,11 @@ class RecorderController:
         self.active = False
         self._registered = False
         self._binding_registered = False
+        self._cdp_registered = False
+        self._cdp_sessions: dict[int, Any] = {}
+        self._cdp_contexts: dict[tuple[int, int], dict[str, Any]] = {}
+        self._cdp_main_frames: dict[int, str] = {}
+        self._cdp_tasks: set[asyncio.Task[None]] = set()
         self._bound_events: list[dict[str, Any]] = []
 
     async def start(self) -> dict[str, Any]:
@@ -38,6 +46,11 @@ class RecorderController:
                 "__autoflowRecordEvent", self._capture_bound_event
             )
             self._binding_registered = True
+        if not self._cdp_registered and hasattr(context, "on"):
+            context.on("page", self._schedule_cdp_page)
+            self._cdp_registered = True
+        for page in context.pages:
+            await self._register_cdp_page(page)
         if not self._registered:
             await context.add_init_script(RECORDER_SCRIPT)
             self._registered = True
@@ -76,6 +89,96 @@ class RecorderController:
             await context.add_init_script("window.__webrpaRecorderDisabled = true;")
         self.active = False
         return {"recording": False, "events": events}
+
+    def _schedule_cdp_page(self, page: Any) -> None:
+        task = asyncio.create_task(self._register_cdp_page(page))
+        self._cdp_tasks.add(task)
+        task.add_done_callback(self._cdp_tasks.discard)
+
+    async def _register_cdp_page(self, page: Any) -> None:
+        page_key = id(page)
+        context = self.browser._context
+        if page_key in self._cdp_sessions or not hasattr(context, "new_cdp_session"):
+            return
+        try:
+            session = await context.new_cdp_session(page)
+            self._cdp_sessions[page_key] = session
+            session.on(
+                "Runtime.executionContextCreated",
+                lambda event: self._schedule_cdp_context(page, session, event),
+            )
+            session.on(
+                "Runtime.bindingCalled",
+                lambda event: self._capture_cdp_event(page, event),
+            )
+            await session.send("Runtime.enable")
+            frame_tree = await session.send("Page.getFrameTree")
+            self._cdp_main_frames[page_key] = str(
+                frame_tree.get("frameTree", {}).get("frame", {}).get("id", "")
+            )
+            await session.send(
+                "Runtime.addBinding", {"name": "__autoflowRecordCdp"}
+            )
+        except Exception:  # noqa: BLE001 -- sessionStorage remains the fallback.
+            self._cdp_sessions.pop(page_key, None)
+
+    def _schedule_cdp_context(
+        self, page: Any, session: Any, event: dict[str, Any]
+    ) -> None:
+        context = event.get("context", {})
+        context_id = context.get("id")
+        if not isinstance(context_id, int):
+            return
+        self._cdp_contexts[(id(page), context_id)] = context.get("auxData", {})
+
+        async def bind() -> None:
+            with suppress(Exception):
+                await session.send(
+                    "Runtime.addBinding",
+                    {
+                        "name": "__autoflowRecordCdp",
+                        "executionContextId": context_id,
+                    },
+                )
+
+        task = asyncio.create_task(bind())
+        self._cdp_tasks.add(task)
+        task.add_done_callback(self._cdp_tasks.discard)
+
+    def _capture_cdp_event(self, page: Any, message: dict[str, Any]) -> None:
+        if not self.active:
+            return
+        if message.get("name") != "__autoflowRecordCdp":
+            return
+        try:
+            event = json.loads(message.get("payload", ""))
+        except (TypeError, ValueError):
+            return
+        if not isinstance(event, dict):
+            return
+        page_key = id(page)
+        context_id = message.get("executionContextId")
+        context = (
+            self._cdp_contexts.get((page_key, context_id), {})
+            if isinstance(context_id, int)
+            else {}
+        )
+        frame_id = str(context.get("frameId", ""))
+        frame_meta: dict[str, Any] = {
+            "main": not frame_id or frame_id == self._cdp_main_frames.get(page_key, "")
+        }
+        if not frame_meta["main"]:
+            main_frame = getattr(page, "main_frame", None)
+            child_frames = [frame for frame in _frames(page) if frame is not main_frame]
+            frame_meta.update({"index": -1, "name": "", "selector": ""})
+            event_url = event.get("url", "")
+            for index, frame in enumerate(child_frames):
+                if getattr(frame, "url", "") == event_url:
+                    frame_meta["index"] = index
+                    with suppress(Exception):
+                        frame_meta["name"] = frame.name or ""
+                    break
+        self._bound_events.append({**event, "_frame": frame_meta})
 
     async def _drain(self) -> list[dict[str, Any]]:
         merged: list[dict[str, Any]] = []

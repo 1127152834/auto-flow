@@ -123,3 +123,42 @@ async def test_recording_controller_injects_current_and_future_documents_and_dra
         "recording": False,
         "events": [],
     }
+
+
+@pytest.mark.asyncio
+async def test_recording_controller_accepts_cdp_events_and_ignores_invalid_payloads():
+    browser = Browser()
+    controller = InspectionController(browser)  # type: ignore[arg-type]
+    await controller.execute({"command": "recorder_start"})
+    recorder = controller.recorder
+    page = browser.page
+    recorder._cdp_main_frames[id(page)] = "main-frame"
+    recorder._cdp_contexts[(id(page), 7)] = {"frameId": "main-frame"}
+
+    recorder._capture_cdp_event(
+        page,
+        {
+            "name": "__autoflowRecordCdp",
+            "payload": '{"type":"input","selector":"#tail","value":"尾部","ts":4}',
+            "executionContextId": 7,
+        },
+    )
+    recorder._capture_cdp_event(
+        page,
+        {
+            "name": "__autoflowRecordCdp",
+            "payload": "not-json",
+            "executionContextId": 7,
+        },
+    )
+
+    result = await controller.execute({"command": "recorder_events"})
+    assert result["events"] == [
+        {
+            "type": "input",
+            "selector": "#tail",
+            "value": "尾部",
+            "ts": 4,
+            "_frame": {"main": True},
+        }
+    ]

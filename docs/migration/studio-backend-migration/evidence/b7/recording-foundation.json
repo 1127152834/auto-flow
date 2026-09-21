@@ -22,7 +22,7 @@
   ],
   "adaptations": [
     "不启动WebRPA全局浏览器管理器，录制控制器挂入AutoFlow既有inspection worker",
-    "在冻结sessionStorage缓冲之外增加Playwright binding镜像，用事件内部标识去重，以保留跨origin导航前的尾部操作",
+    "在冻结sessionStorage缓冲之外增加CloakBrowser原生CDP Runtime binding镜像，并用事件内部标识去重，以保留跨origin导航前的尾部操作；Playwright高层binding在跨协议文档中仅保留为兼容回退",
     "录制事件和审查使用Alembic 0016增量迁移，不修改历史迁移或用户数据库"
   ],
   "checks": [
@@ -40,6 +40,11 @@
       "command": "Ruff, mypy, TypeScript, ESLint, OpenAPI generation check and Electron renderer/main/preload build",
       "result": "passed",
       "covers": "格式、类型、生成合同和正式构建入口"
+    },
+    {
+      "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<CloakBrowser> pytest test_b7_recording_cloakbrowser_flow.py（连续3次）及录制专项回归",
+      "result": "真实浏览器用例连续3次通过；录制provider/service/repository/HTTP/真实浏览器19项通过；Ruff和mypy通过",
+      "covers": "中文输入、点击去重、未来标签页、iframe元数据、跨origin导航尾部、事件去重和类型边界"
     }
   ],
   "realBrowser": {
@@ -49,9 +54,10 @@
       "点击去重",
       "iframe元数据"
     ],
-    "currentAttempt": "blocked externally",
-    "reason": "CloakBrowser Pro returned session limit reached for your plan during the cross-origin navigation tail test",
-    "businessAssertionReached": false
+    "currentAttempt": "passed",
+    "reason": null,
+    "businessAssertionReached": true,
+    "evidence": "apps/backend/tests/integration/test_b7_recording_cloakbrowser_flow.py passed three consecutive runs on CloakBrowser 145.0.7632.109.2"
   },
   "boundaries": {
     "workspace": "pytest temporary directory",
@@ -61,7 +67,6 @@
     "windowsTested": false
   },
   "remaining": [
-    "CloakBrowser席位可用后重跑跨origin导航尾部真实用例并核销绑定增强",
     "正式Electron真实UI完成录制、审查、生成、保存重开和独立运行",
     "按当前正式前端合同确认暂停/恢复是否仍为产品要求；现有UI和API仅暴露开始与停止",
     "验证底层进程树清理失败重试，不提前释放互斥资源"
