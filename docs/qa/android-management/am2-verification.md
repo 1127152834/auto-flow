@@ -1,6 +1,6 @@
 # AM2 镜像与模板验收
 
-审计基线：`b828daf9`；当前聚焦后端 `159 passed, 1 warning`、前端 Android `13 files, 45 passed`；Google 组件条件见 [gapps-validation.md](gapps-validation.md)。
+审计基线：`037a27f7`；当前聚焦后端 `159 passed, 1 warning`、前端 Android `13 files, 45 passed`；Google 组件条件见 [gapps-validation.md](gapps-validation.md)。
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
