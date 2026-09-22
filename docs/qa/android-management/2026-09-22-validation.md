@@ -39,7 +39,7 @@
 - 主机的 Lima/Docker-in-Lima 和基础 ReDroid 已完成真实核验；宿主 Docker socket 仍不作为本模块运行时入口。测试实例使用独立临时 workspace，完成后按 workspace/device 标签删除。
 - Google 组件镜像、专用测试账号、可分发测试 APK 和人工原生 scrcpy 窗口未具备，因此 GApps 登录、免费测试应用安装/启动、中文输入、窗口交互仍 `blocked`；没有用 mock 结果代替。
 - `npm run test:scripts` 的三个 Studio inventory/reference 失败与本模块无关，未扩大范围修复；依赖安装/Node 版本会影响其复现。
-- 全量 `cd apps/backend && uv run --group build pytest -x -q` 完成 `257 passed, 1 warning` 后，在既有 `tests/contract/test_proxy_runtime.py::test_runtime_mounts_proxies_but_never_publishes_host_contract` 失败；该 proxy compatibility 断言不在 Android 范围，安卓聚焦集合不受此阻塞。
+- 全量 `cd apps/backend && uv run --group build pytest -x -q` 完成 `262 passed, 1 warning` 后，在既有 `tests/contract/test_proxy_runtime.py::test_runtime_mounts_proxies_but_never_publishes_host_contract` 失败；该 proxy compatibility 断言不在 Android 范围，安卓聚焦集合不受此阻塞。
 - 镜像拉取和内容删除已接入 Mac runtime 的受限 Docker pull/inspect/rm 适配和兼容性门禁；服务端验证忽略客户端结果并核对精确 digest、架构和 OS，未知删除可按原 requestId 核实。本轮真实使用了缓存基础镜像并核对固定 digest，网络拉取、内容删除实机和 GApps 候选仍未验收。观察器规则已接入后台启动/关闭调度；应用列表已接入版本/系统应用标识、搜索、停止、卸载、清除数据、确认和结果未知复核。
 - 备份已接入受限数据卷 copy 归档、摘要、路径/特殊文件校验，并真实完成数据标记写入、停机归档和新卷恢复；缺失适配器、缺失精确镜像、旧 manifest 或损坏归档会明确失败，不发布“恢复成功”。清理按实际 workspace identity 汇总保留数据和备份，预览包含不可逆影响与引用指纹，执行前重检并分别走设备删除操作或受控备份目录删除。
 - AM3 的批量压力和人工窗口验收仍未执行；应用停止/卸载/清除的真实破坏性动作未执行，保持保护边界。诊断导出当前只采集管理快照和只读环境检查，未接入高级日志 IPC/时间窗口，仍不宣称完整日志导出。
