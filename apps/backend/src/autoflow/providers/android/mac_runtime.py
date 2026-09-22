@@ -85,11 +85,13 @@ class MacAndroidRuntime:
         self.terminal: int | None = None
         self.device: dict[str, Any] | None = None
         self.save: Callable[[], None] = lambda: None
+        self.image_catalog: Any | None = None
 
     def for_device(self, device_id: str) -> "MacAndroidRuntime":
         device_id = str(__import__("uuid").UUID(device_id))
         runtime = MacAndroidRuntime(self.root, self.workspace)
         runtime._lock = ExclusiveFileLock(self.root / (VM + "-" + device_id + ".lock"))
+        runtime.image_catalog = self.image_catalog
         return runtime
 
     async def environment(self) -> dict[str, Any]:
@@ -151,7 +153,7 @@ class MacAndroidRuntime:
 
     def new_device(self, config: dict[str, Any]) -> dict[str, Any]:
         name = "autoflow-android-" + config["deviceId"]
-        return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "profileId": config.get("profileId"), "profileName": config.get("profileName", "Android 13 标准 · ARM64"), "instanceType": config.get("instanceType", "persistent"), "locale": config.get("locale", "zh-CN"), "timezone": config.get("timezone", "Asia/Shanghai"), "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
+        return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "profileId": config.get("profileId"), "profileName": config.get("profileName"), "instanceType": config.get("instanceType", "persistent"), "locale": config.get("locale", "zh-CN"), "timezone": config.get("timezone", "Asia/Shanghai"), "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
 
     async def capacity(self, device: dict[str, Any]) -> None:
         from autoflow.providers.android.management import capacity

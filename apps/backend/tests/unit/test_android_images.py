@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from autoflow.application.android.devices import AndroidDeviceService
@@ -70,11 +72,40 @@ async def test_content_delete_accepts_the_production_android_device_service_faca
     assert runtime.deleted == [image["imageId"]]
 
 
+@pytest.mark.asyncio
+async def test_content_delete_cancellation_records_blocked_state_instead_of_pending():
+    class _CancelledRuntime:
+        async def delete_image(self, image_id):
+            raise asyncio.CancelledError()
+
+    devices = _Devices()
+    devices.runtime = _CancelledRuntime()
+    service = AndroidImageService(_Resources(), devices)
+    image = service.register({"id": "sha256:" + "3" * 64, "name": "image", "reference": "redroid/redroid:13"})
+
+    with pytest.raises(asyncio.CancelledError):
+        await service.delete_content(image["id"], request_id="delete-cancel", expected_revision=1)
+
+    assert service.resources.get("image", image["id"])["state"] == "delete_blocked"
+
+
 def test_image_reference_rejects_newline_or_command_option():
     service = AndroidImageService(_Resources(), _Devices())
     with pytest.raises(AndroidError) as error:
         service.register({"id": "sha256:" + "d" * 64, "name": "image", "reference": "repo:tag\n--privileged"})
     assert error.value.code == "ANDROID_IMAGE_REFERENCE_INVALID"
+
+
+def test_delete_ignores_foreign_workspace_device_references():
+    devices = _Devices()
+    devices.runtime = type("Runtime", (), {"workspace_id": "workspace-current"})()
+    service = AndroidImageService(_Resources(), devices)
+    image = service.register({"id": "sha256:" + "f" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    devices.items = [{"deviceId": "foreign-device", "workspaceId": "workspace-other", "deleted": False, "imageId": image["imageId"]}]
+
+    result = service.delete(image["id"], request_id="delete-foreign", expected_revision=1)
+
+    assert result["state"] == "unregistered"
 
 
 def test_verification_record_is_appended_and_server_owns_aggregate_state():

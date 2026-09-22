@@ -59,7 +59,7 @@ class AndroidDeviceRead(ApiModel):
     deleted: bool = False
     operation: AndroidOperation | None = None
     profile_id: str | None = None
-    profile_name: str = "Android 13 标准 · ARM64"
+    profile_name: str | None = None
     instance_type: str = "persistent"
     locale: str = "zh-CN"
     timezone: str = "Asia/Shanghai"

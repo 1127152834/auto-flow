@@ -1,6 +1,7 @@
 """One input lease per device, shared by the embedded and native consoles."""
 
 import asyncio
+from copy import deepcopy
 from time import monotonic
 from typing import Any
 
@@ -385,6 +386,60 @@ class AndroidConsole:
             context = self._check(session, session["view"]["generation"])
             return await context.runtime.app_info()
 
+    def _persist_session(self, session: dict[str, Any]) -> None:
+        """Persist app-operation receipts before and after the runtime call."""
+        request = session.get(
+            "request",
+            {
+                "requestId": session["view"]["id"],
+                "deviceId": session["view"]["deviceId"],
+                "access": session["view"].get("access", "manual"),
+            },
+        )
+        self.resources.save(
+            "session",
+            {
+                "id": session["view"]["id"],
+                "deviceId": session["view"]["deviceId"],
+                "request": request,
+                "appReceipts": deepcopy(session.get("appReceipts", {})),
+                "latestOperation": session["view"].get("latestOperation"),
+            },
+        )
+
+    def _app_operation_unknown(
+        self, session: dict[str, Any], request_id: str | None, error: BaseException
+    ) -> None:
+        receipt = session.get("appReceipts", {}).get(request_id) if request_id else None
+        if receipt is not None:
+            receipt.update(
+                state="needs_verification",
+                error={
+                    "code": "ANDROID_OPERATION_UNKNOWN",
+                    "message": str(error)[:480] or "应用操作结果未知",
+                },
+            )
+        session["view"]["latestOperation"] = "应用操作结果待核实"
+        if request_id:
+            self._persist_session(session)
+
+    def _app_operation_failed(
+        self, session: dict[str, Any], request_id: str | None, error: AndroidError
+    ) -> None:
+        receipt = session.get("appReceipts", {}).get(request_id) if request_id else None
+        if receipt is not None:
+            receipt.update(
+                state="failed",
+                error={
+                    "code": error.code,
+                    "message": error.message[:480],
+                    "status": error.status,
+                },
+            )
+        session["view"]["latestOperation"] = "应用操作失败"
+        if request_id:
+            self._persist_session(session)
+
     async def app_operation(
         self, identifier: str, generation: int, operation: str, value: Any, request_id: str | None = None
     ) -> dict[str, Any]:
@@ -392,28 +447,79 @@ class AndroidConsole:
         async with session["lock"], self.operations:
             context = self._check(session, generation, True)
             receipts = session.setdefault("appReceipts", {})
+            current = {
+                "generation": generation,
+                "operation": operation,
+                "value": value if isinstance(value, str) else "bytes",
+            }
             if request_id:
                 previous = receipts.get(request_id)
-                current = {"generation": generation, "operation": operation, "value": value if isinstance(value, str) else "bytes"}
                 if previous is not None:
-                    if previous != current:
+                    prior_request = previous.get("request", previous)
+                    if prior_request != current:
                         raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他应用操作", 409)
-                    return session["view"]
-                receipts[request_id] = current
+                    state = previous.get("state", "succeeded")
+                    if state == "succeeded":
+                        return session["view"]
+                    if state == "failed":
+                        error = previous.get("error", {})
+                        raise AndroidError(
+                            error.get("code", "ANDROID_APP_OPERATION_FAILED"),
+                            error.get("message", "应用操作失败"),
+                            error.get("status", 502),
+                        )
+                    raise AndroidError(
+                        "ANDROID_OPERATION_UNKNOWN",
+                        "应用操作结果尚未核实，请先核实设备状态",
+                        503,
+                    )
+            if operation not in {"install", "launch", "stop", "uninstall", "clearData"}:
+                raise AndroidError("ANDROID_OPERATION_INVALID", "不支持的应用操作", 422)
+            if operation in {"uninstall", "clearData"} and str(value).startswith(
+                ("com.android.", "com.google.android.")
+            ):
+                raise AndroidError("ANDROID_PROTECTED_APP", "系统应用不能作为普通应用移除或清除", 409)
+            if request_id:
+                receipts[request_id] = {"request": current, "state": "running"}
+                session["view"]["latestOperation"] = "应用操作执行中"
+                self._persist_session(session)
             if operation == "install":
                 try:
                     await context.runtime.install_apk(value)
-                except Exception:
-                    session["view"]["latestOperation"] = "安装结果待核实"
+                except asyncio.CancelledError:
+                    self._app_operation_unknown(session, request_id, asyncio.CancelledError())
                     raise
+                except (TimeoutError, OSError) as error:
+                    self._app_operation_unknown(session, request_id, error)
+                    raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作结果未知，请先核实后重试", 503) from error
+                except AndroidError as error:
+                    self._app_operation_failed(session, request_id, error)
+                    raise
+                except Exception as error:
+                    self._app_operation_unknown(session, request_id, error)
+                    raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作结果未知，请先核实后重试", 503) from error
             else:
                 command = {"launch": "android_launch_app", "stop": "android_stop_app", "uninstall": "android_uninstall_app", "clearData": "android_clear_app_data"}[operation]
-                if operation in {"uninstall", "clearData"} and str(value).startswith(("com.android.", "com.google.android.")):
-                    raise AndroidError("ANDROID_PROTECTED_APP", "系统应用不能作为普通应用移除或清除", 409)
-                await context.runtime.command(command, {"packageName": value}, 30)
+                try:
+                    await context.runtime.command(command, {"packageName": value}, 30)
+                except asyncio.CancelledError:
+                    self._app_operation_unknown(session, request_id, asyncio.CancelledError())
+                    raise
+                except (TimeoutError, OSError) as error:
+                    self._app_operation_unknown(session, request_id, error)
+                    raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作结果未知，请先核实后重试", 503) from error
+                except AndroidError as error:
+                    self._app_operation_failed(session, request_id, error)
+                    raise
+                except Exception as error:
+                    self._app_operation_unknown(session, request_id, error)
+                    raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作结果未知，请先核实后重试", 503) from error
             session["view"]["latestOperation"] = (
                 "APK 已安装" if operation == "install" else {"launch": "应用已启动", "stop": "应用已停止", "uninstall": "应用已卸载", "clearData": "应用数据已清除"}[operation]
             )
+            if request_id:
+                receipts[request_id]["state"] = "succeeded"
+                self._persist_session(session)
             return session["view"]
 
     async def shutdown(self) -> None:

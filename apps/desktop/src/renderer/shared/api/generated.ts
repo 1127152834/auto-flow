@@ -5686,11 +5686,8 @@ export type components = {
             operation?: components["schemas"]["AndroidOperation"] | null;
             /** Profileid */
             profileId?: string | null;
-            /**
-             * Profilename
-             * @default Android 13 标准 · ARM64
-             */
-            profileName: string;
+            /** Profilename */
+            profileName?: string | null;
             /**
              * Instancetype
              * @default persistent

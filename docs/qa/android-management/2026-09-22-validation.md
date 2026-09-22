@@ -8,10 +8,10 @@
 
 | 类别 | 命令 | 实际结果 |
 | --- | --- | --- |
-| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q` | `149 passed, 1 warning` |
-| 前端 Android（历史基线） | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `7 files, 17 passed`；当前聚焦回归以 13 files/42 passed 为准 |
+| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q` | `159 passed, 1 warning` |
+| 前端 Android（历史基线） | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `7 files, 17 passed`；当前聚焦回归以 13 files/45 passed 为准 |
 | 前端类型 | `cd apps/desktop && npm run typecheck` | 通过 |
-| 前端 Android 最终聚焦回归 | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `13 files, 42 passed`（含旧设备列表轮询、未知核实、stale/unknown 打开保护、镜像/模板和维护入口回归） |
+| 前端 Android 最终聚焦回归 | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `13 files, 45 passed`（含旧设备列表轮询、未知核实、stale/unknown 打开保护、镜像/模板和维护入口回归） |
 | 前端 lint | `cd apps/desktop && npm run lint` | 通过 |
 | OpenAPI | `npm run openapi:generate`、`npm run openapi:check` | 通过 |
 | 前端 build | `npm run build` | 完成并有依赖注释 warning；本轮未重复构建 |

@@ -1,3 +1,4 @@
+import asyncio
 import re
 from contextlib import contextmanager
 from copy import deepcopy
@@ -120,8 +121,14 @@ class AndroidImageService:
             return self._public(result)
 
     def _references(self, image_id: str) -> list:
-        refs = [device.get("deviceId") for device in self.devices.list() if not device.get("deleted") and device.get("imageId") == image_id]
         workspace = self._workspace()
+        refs = [
+            device.get("deviceId")
+            for device in self.devices.list()
+            if not device.get("deleted")
+            and device.get("imageId") == image_id
+            and (workspace is None or device.get("workspaceId") in {None, workspace})
+        ]
         refs.extend(item.get("id") for item in self.resources.list("profile") if not item.get("archived") and item.get("imageId") == image_id and (workspace is None or item.get("workspaceId") in {None, workspace}))
         refs.extend(item.get("id") for item in self.resources.list("backup") if item.get("imageId") == image_id and (workspace is None or item.get("workspaceId") in {None, workspace}))
         return refs
@@ -130,7 +137,7 @@ class AndroidImageService:
         with self._runtime_lock() as runtime:
             image = self.resources.get("image", identifier)
             if request_id and image.get("deleteRequestId") == request_id:
-                if image.get("state") in {"delete_pending", "delete_needs_verification"}:
+                if image.get("state") in {"delete_pending", "delete_needs_verification", "delete_blocked"}:
                     raise AndroidError("ANDROID_IMAGE_DELETE_RESULT_UNKNOWN", "镜像内容删除结果未知，请先核实运行时", 503)
                 return self._public(image)
             if expected_revision is not None and int(image.get("revision", 0)) != expected_revision:
@@ -144,8 +151,12 @@ class AndroidImageService:
             self.resources.save("image", pending)
             try:
                 await runtime.delete_image(image["imageId"])
+            except asyncio.CancelledError:
+                pending["state"] = "delete_blocked"
+                self.resources.save("image", pending)
+                raise
             except (TimeoutError, OSError) as error:
-                pending["state"] = "delete_needs_verification"
+                pending["state"] = "delete_blocked"
                 self.resources.save("image", pending)
                 raise AndroidError("ANDROID_IMAGE_DELETE_RESULT_UNKNOWN", "镜像内容删除结果未知，请先核实运行时", 503) from error
             result = deepcopy(image)

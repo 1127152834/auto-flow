@@ -17,14 +17,37 @@ if TYPE_CHECKING:
 IMAGE = "redroid/redroid:13.0.0_64only-latest"
 
 
-async def images() -> list[dict[str, Any]]:
+async def images(reference: str | None = None) -> list[dict[str, Any]]:
+    """Return cached compatible images, optionally for one immutable local ID."""
+    target = reference or IMAGE
     try:
-        item = json.loads(await docker("image", "inspect", IMAGE, timeout=5))[0]
+        item = json.loads(await docker("image", "inspect", target, timeout=5))[0]
     except (AndroidError, OSError, TimeoutError, ValueError):
         return []
-    if item.get("Architecture") != "arm64" or item.get("Os") != "linux":
+    image_id = str(item.get("Id") or "")
+    if (
+        not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id)
+        or item.get("Architecture") not in {"arm64", "aarch64"}
+        or item.get("Os") != "linux"
+    ):
         return []
-    return [{"id": item["Id"], "name": "Android 13 标准 · ARM64", "reference": IMAGE}]
+    if reference and image_id != reference:
+        return []
+    return [{
+        "id": image_id,
+        "name": "Android 13 标准 · ARM64" if not reference else "Android ARM64 镜像",
+        "reference": target,
+    }]
+
+
+async def _admit_image(runtime: "MacAndroidRuntime", image_id: str) -> None:
+    catalog = getattr(runtime, "image_catalog", None)
+    if catalog is not None:
+        records = [item for item in catalog.list() if item.get("imageId") == image_id]
+        if not records or records[0].get("state") in {"deleted", "unregistered"}:
+            raise AndroidError("ANDROID_IMAGE_UNAVAILABLE", "镜像未在当前工作区登记，或已取消登记", 422)
+    if not any(item.get("id") == image_id for item in await images(image_id)):
+        raise AndroidError("ANDROID_IMAGE_UNAVAILABLE", "请选择已缓存且通过 Linux ARM64 检查的镜像", 422)
 
 
 async def objects(kind: str, name: str) -> list[dict[str, Any]]:
@@ -99,6 +122,7 @@ async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: 
     containers, volumes = await verify(device, runtime.workspace_id)
     if action == "recover":
         stage("核实遗留操作")
+        await _admit_image(runtime, device["imageId"])
         await runtime.recover(device)
         device["androidStatus"] = (await runtime.inspect(device))["androidStatus"] if containers else "retained" if volumes else "missing"
         device["dataRetained"] = not containers and bool(volumes)
@@ -128,8 +152,7 @@ async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: 
         return
     if action == "create" or not containers:
         stage("检查镜像与配置")
-        if not any(item["id"] == device["imageId"] for item in await images()):
-            raise AndroidError("ANDROID_IMAGE_UNAVAILABLE", "请选择已缓存的 Android 13 ARM64 标准镜像", 422)
+        await _admit_image(runtime, device["imageId"])
         if action != "create" and not volumes:
             raise AndroidError("ANDROID_DATA_MISSING", "原数据卷不存在，不能以空白数据冒充恢复；请新建实例", 409)
         if not volumes:

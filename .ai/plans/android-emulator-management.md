@@ -4,7 +4,7 @@
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
 - 代码基线：`codex/project-management-pm9@a92f0688f206d4339ff4468c1871f3ccdd6816dc`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
-- 当前阶段：基线重新校准已完成；自动化聚焦后端 `149 passed, 1 warning`、前端 Android `13 files, 42 passed`；真实 macOS 基础管理链已复核，网络/GApps/人工窗口条件按证据记录为 blocked。
+- 当前阶段：基线重新校准已完成；自动化聚焦后端 `159 passed, 1 warning`、前端 Android `13 files, 45 passed`；真实 macOS 基础管理链已复核，网络/GApps/人工窗口条件按证据记录为 blocked。
 
 正文保存在以下文件，不维护第二份规格：
 
@@ -17,7 +17,7 @@
 | --- | --- | --- | --- |
 | AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | T01–T03 自动化通过；T04 自动化与同事务投影验证通过；T05–T07 的人工窗口、完整 HTTP 重启和受控中断仍 blocked |
 | AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | T08–T10/T12 自动化（含模板生命周期集成）通过；网络拉取、候选镜像和 Google 组件网络/账号验收 blocked |
-| AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 自动化（含 13 files/42 passed 前端聚焦）和双实例基础证据存在；批量压力、破坏性应用动作与规模性能 blocked |
+| AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 自动化（含 13 files/45 passed 前端聚焦）和双实例基础证据存在；批量压力、破坏性应用动作与规模性能 blocked |
 | AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 自动化与基础数据卷备份/恢复证据通过；真实多实例恢复、临时/全量引用维护、IPC 和人工清理确认 blocked |
 
 ## 当前校准

@@ -1,4 +1,5 @@
 import asyncio
+import json
 from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -8,6 +9,7 @@ import pytest
 
 from autoflow.application.android.management import AndroidManagement
 from autoflow.domain.android.ports import AndroidError
+from autoflow.providers.android import management as android_management_runtime
 from autoflow.providers.android.mac_runtime import LABEL, MacAndroidRuntime
 from autoflow.providers.android.management import manage
 
@@ -213,3 +215,40 @@ async def test_restoration_records_intended_container_name_before_a_lost_create_
     monkeypatch.setattr(management, 'mutation', lost)
     with pytest.raises(TimeoutError):
         await manage(runtime, device, request('start'), lambda _: None, lambda: saved.append(deepcopy(device)))
+
+
+@pytest.mark.asyncio
+async def test_image_discovery_inspects_requested_custom_digest(monkeypatch):
+    custom = "sha256:" + "b" * 64
+
+    async def fake_docker(*args, **_kwargs):
+        assert args[:3] == ("image", "inspect", custom)
+        return json.dumps([{"Id": custom, "Architecture": "arm64", "Os": "linux"}]).encode()
+
+    monkeypatch.setattr(android_management_runtime, "docker", fake_docker)
+    discovered = await android_management_runtime.images(custom)
+
+    assert discovered == [{"id": custom, "name": "Android ARM64 镜像", "reference": custom}]
+
+
+@pytest.mark.asyncio
+async def test_recover_requires_catalog_and_runtime_admission_for_custom_digest(monkeypatch, tmp_path):
+    custom = "sha256:" + "c" * 64
+    runtime = MacAndroidRuntime(tmp_path, tmp_path / "workspace")
+    runtime.image_catalog = type("Catalog", (), {"list": lambda _self: [{"imageId": custom, "state": "registered"}]})()
+    device = runtime.new_device({**config(), "imageId": custom})
+
+    admitted = []
+
+    async def discover(image_id):
+        admitted.append(image_id)
+        return [{"id": image_id}]
+
+    monkeypatch.setattr(android_management_runtime, "images", discover)
+    monkeypatch.setattr(android_management_runtime, "verify", AsyncMock(return_value=([], [{}])))
+    runtime.recover = AsyncMock()
+
+    await manage(runtime, device, request("recover"), lambda _: None, lambda: None)
+
+    assert admitted == [custom]
+    runtime.recover.assert_awaited_once_with(device)

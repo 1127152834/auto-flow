@@ -20,8 +20,8 @@
 
 以下输出来自 `2026-09-22-validation.md`，不是对缺失的真实设备或人工步骤的替代：
 
-- Android 后端聚焦集合：`149 passed, 1 warning`。
-- Android 前端：`13 files, 42 passed`（含旧设备列表轮询、未知操作核实、stale/unknown 打开保护、镜像/模板和维护入口回归）；typecheck、lint、OpenAPI check、structure 和 build 通过。
+- Android 后端聚焦集合：`159 passed, 1 warning`。
+- Android 前端：`13 files, 45 passed`（含旧设备列表轮询、未知操作核实、stale/unknown 打开保护、镜像/模板和维护入口回归）；typecheck、lint、OpenAPI check、structure 和 build 通过。
 - 全后端：`248 passed, 1 warning` 后在既有 `tests/contract/test_proxy_runtime.py::test_runtime_mounts_proxies_but_never_publishes_host_contract` 失败；该断言属于 proxy compatibility，不在 Android 范围。
 - 全量前端 `npm test`（最新审计）：`423 files, 417 passed, 6 failed（20 个测试失败）`，失败集中在非 Android 模块，不能视为全量门槛通过。
 - 全脚本：历史总记录为 `95 tests: 92 passed, 3 pre-existing Studio inventory/reference failures`；最新审计重跑为 `95 tests: 92 passed, 3 failures`，失败仍为 Studio inventory/reference。
