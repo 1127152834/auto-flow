@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -25,7 +26,56 @@ def test_image_pull_rejects_command_options_before_provider_access() -> None:
     assert response.status_code == 422
 
 
-def test_image_verification_uses_server_catalog_evidence_instead_of_client_passed() -> None:
+@pytest.mark.asyncio
+async def test_image_registration_returns_server_inspected_metadata() -> None:
+    class Resources:
+        def __init__(self):
+            self.items = {}
+
+        def list(self, kind):
+            return [value for (stored_kind, _), value in self.items.items() if stored_kind == kind]
+
+        def save(self, kind, value):
+            self.items[(kind, value["id"])] = value
+
+    class Devices:
+        def list(self):
+            return []
+
+    class Catalog:
+        async def inspect(self, _reference):
+            return SimpleNamespace(
+                image_id="sha256:" + "a" * 64,
+                source_digest="sha256:" + "b" * 64,
+                architecture="arm64",
+                os="linux",
+                android_version="13",
+                google_components="absent",
+            )
+
+    service = AndroidImageService(Resources(), Devices(), Catalog())
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), images=service))
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/android/management/images",
+            json={
+                "id": "sha256:" + "a" * 64,
+                "name": "image",
+                "reference": "redroid/redroid:13",
+            },
+        )
+
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert body["sourceDigest"] == "sha256:" + "b" * 64
+    assert body["architecture"] == "arm64"
+
+
+@pytest.mark.asyncio
+async def test_image_verification_uses_server_catalog_evidence_instead_of_client_passed() -> None:
     class Resources:
         def __init__(self):
             self.items = {}
@@ -55,8 +105,20 @@ def test_image_verification_uses_server_catalog_evidence_instead_of_client_passe
             )
 
     resources = Resources()
-    service = AndroidImageService(resources, Devices(), Catalog())
-    image = service.register({"id": "sha256:" + "4" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    class RegistrationCatalog:
+        async def inspect(self, _reference):
+            return SimpleNamespace(
+                image_id="sha256:" + "4" * 64,
+                source_digest="sha256:" + "8" * 64,
+                architecture="arm64",
+                os="linux",
+                android_version="13",
+                google_components="unknown",
+            )
+
+    service = AndroidImageService(resources, Devices(), RegistrationCatalog())
+    image = await service.register({"id": "sha256:" + "4" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    service.catalog = Catalog()
     app = FastAPI()
     install_error_handlers(app)
     app.include_router(android_management_router(EnvironmentCheckService(None), images=service))
@@ -78,7 +140,8 @@ def test_image_verification_uses_server_catalog_evidence_instead_of_client_passe
     assert body["verification"]["records"][-1]["source"] == "server"
 
 
-def test_image_delete_unknown_has_explicit_server_verification_route() -> None:
+@pytest.mark.asyncio
+async def test_image_delete_unknown_has_explicit_server_verification_route() -> None:
     class Resources:
         def __init__(self):
             self.items = {}
@@ -110,8 +173,19 @@ def test_image_delete_unknown_has_explicit_server_verification_route() -> None:
 
     resources = Resources()
     devices = Devices()
-    service = AndroidImageService(resources, devices)
-    image = service.register({"id": "sha256:" + "5" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    class RegistrationCatalog:
+        async def inspect(self, _reference):
+            return SimpleNamespace(
+                image_id="sha256:" + "5" * 64,
+                source_digest="sha256:" + "f" * 64,
+                architecture="arm64",
+                os="linux",
+                android_version="13",
+                google_components="unknown",
+            )
+
+    service = AndroidImageService(resources, devices, RegistrationCatalog())
+    image = await service.register({"id": "sha256:" + "5" * 64, "name": "image", "reference": "redroid/redroid:13"})
     app = FastAPI()
     install_error_handlers(app)
     app.include_router(android_management_router(EnvironmentCheckService(None), images=service))

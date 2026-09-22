@@ -44,6 +44,30 @@ it('ends the control session before returning to the management list and stops h
   expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST')).toHaveLength(heartbeatCount)
 })
 
+it('waits for a confirmed session end before returning to the management list', async () => {
+  let resolveEnd!: (value: unknown) => void
+  const end = new Promise((resolve) => { resolveEnd = resolve })
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path.endsWith('/actions')) {
+      await end
+      return { ...fixtureSession(true), state: 'closed' }
+    }
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.getByText('控制会话状态未知', { selector: 'strong' })).toBeInTheDocument()
+  const heartbeatCount = mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST').length
+  await new Promise((resolve) => setTimeout(resolve, 30))
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST')).toHaveLength(heartbeatCount)
+  resolveEnd(undefined)
+  await screen.findByText('实例管理')
+})
+
 it('marks a heartbeat failure as unknown and exposes no connected control state', async () => {
   mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
     if (path.endsWith('/heartbeat')) throw new Error('heartbeat lost')
@@ -143,12 +167,12 @@ it('defaults to one persistent instance and preserves the batch id after an unkn
 it('hides archived profiles while copying the source configuration snapshot', async () => {
   const archived = { ...profile, id: 'archived-profile', name: '已归档环境', archived: true }
   const submit = vi.fn(async (_value: BatchRequest): Promise<void> => {})
-  render(<CreateInstances profiles={[archived, profile]} source={devices[0]} sourceSnapshot={{ profileId: archived.id, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' }} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
+  render(<CreateInstances profiles={[archived, profile]} source={devices[0]} sourceSnapshot={{ profileId: profile.id, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' }} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
   expect(screen.queryByRole('option', { name: '已归档环境' })).not.toBeInTheDocument()
   expect(screen.getByLabelText('分辨率')).toHaveValue('1080x1920')
   await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
   await waitFor(() => expect(submit).toHaveBeenCalled())
-  expect(submit.mock.calls[0][0]).toMatchObject({ width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' })
+  expect(submit.mock.calls[0][0]).toMatchObject({ profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' })
 })
 it('readonly console never enables navigation or installation during workflow ownership', async () => {
   render(<DeviceConsole device={devices[2]} session={fixtureSession(false)} run={runs[devices[2].deviceId]} image={images[devices[2].deviceId]} onBack={noop} onSession={noop} onOpen={noop} onManage={noop} onAllocate={noop} onRefresh={noop} />)

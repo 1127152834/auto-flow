@@ -7,8 +7,9 @@ import { BulkActions } from '../components/BulkActions'
 import { DataMaintenance } from '../components/DataMaintenance'
 import { BackupPanel } from '../components/BackupPanel'
 import { ApiClientError } from '../../../shared/api/client'
+import type { ManagementDevicePage } from '../management-api'
 
-const device = { deviceId: 'd1', revision: 2, name: '设备一', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} } as never
+const device: ManagementDevicePage['items'][number] = { deviceId: 'd1', revision: 2, name: '设备一', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} }
 
 afterEach(cleanup)
 
@@ -39,7 +40,7 @@ it('passes an explicit deleteData choice for bulk deletion', async () => {
 
 it('does not allow unknown or stale devices into a bulk action', async () => {
   const bulk = vi.fn()
-  const blocked = { ...device, deviceId: 'unknown', name: '待核实设备', runtimeState: 'unknown', stale: true }
+  const blocked: ManagementDevicePage['items'][number] = { ...device, deviceId: 'unknown', name: '待核实设备', runtimeState: 'unknown', stale: true }
   render(<BulkActions api={{ bulk }} devices={[blocked]} />)
   expect(screen.getByLabelText('待核实设备')).toBeDisabled()
   expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()

@@ -178,9 +178,25 @@ class MacAndroidRuntime:
             await docker("rm", container, timeout=30)
 
     async def restore_volume(self, device: dict[str, Any], data: bytes) -> None:
+        if device.get("workspaceId") != self.workspace_id:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备工作区归属校验失败", 403)
+        if device.get("androidStatus") is not None and device.get("androidStatus") != "stopped":
+            raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止目标实例", 409)
+        if device.get("ownerRunId") or device.get("control") not in {None, "idle"}:
+            raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止并释放目标实例控制会话", 409)
+        volume_id = device.get("volumeId")
+        if not isinstance(volume_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,254}", volume_id):
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷标识无效", 403)
+        try:
+            volume = json.loads(await docker("volume", "inspect", volume_id, timeout=5))[0]
+        except (AndroidError, OSError, TimeoutError, ValueError, IndexError, KeyError, TypeError) as error:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属无法核实", 403) from error
+        labels = volume.get("Labels") or {}
+        if labels.get(LABEL) != self.workspace_id or labels.get("io.autoflow.android.device") != device.get("deviceId"):
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属标签不符", 403)
         container = (await docker("create", "--label", LABEL + "=" + self.workspace_id,
                                   "--label", "io.autoflow.android.device=" + device["deviceId"],
-                                  "-v", f"{device['volumeId']}:/data", device["imageId"], timeout=30)).decode().strip()
+                                  "-v", f"{volume_id}:/data", device["imageId"], timeout=30)).decode().strip()
         try:
             await docker("cp", "-", container + ":/", timeout=600, input_data=data)
         finally:

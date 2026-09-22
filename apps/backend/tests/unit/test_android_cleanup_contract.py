@@ -187,6 +187,50 @@ def test_cleanup_parent_and_child_operations_converge_on_replay():
     assert service.last_operation == {"operationId": "parent-1", "requestId": "cleanup-a", "state": "succeeded", "previewId": preview_id}
 
 
+@pytest.mark.parametrize("child_state", ["failed", "cancelled"])
+def test_cleanup_terminal_child_failure_cannot_mark_parent_succeeded(child_state):
+    resources = _CleanupStore()
+    operations = _CleanupOperations()
+    devices = _TerminalCleanupDevices(operations, child_state)
+    service = CleanupService(resources, devices=devices, operations=operations)
+    preview = service.preview(["d1"], "workspace-a")
+    digest = hashlib.sha256(json.dumps(preview, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    preview_id = resources.list("cleanup-preview")[0]["id"]
+
+    service.execute("workspace-a", digest, "cleanup-terminal", preview_id)
+
+    record = resources.list("cleanup-operation")[0]
+    assert record["state"] == "needs_verification"
+    assert record["items"][0]["state"] == child_state
+    assert operations.parent.state == "needs_verification"
+    assert service.last_operation["state"] == "needs_verification"
+
+
+def test_cleanup_replay_reconciles_child_even_if_parent_was_persisted_successful():
+    resources = _CleanupStore()
+    operations = _CleanupOperations()
+    devices = _PendingCleanupDevices(operations)
+    service = CleanupService(resources, devices=devices, operations=operations)
+    preview = service.preview(["d1"], "workspace-a")
+    digest = hashlib.sha256(json.dumps(preview, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    preview_id = resources.list("cleanup-preview")[0]["id"]
+
+    service.execute("workspace-a", digest, "cleanup-reconcile", preview_id)
+    record = resources.list("cleanup-operation")[0]
+    record["state"] = "succeeded"
+    record["items"][0]["state"] = "succeeded"
+    resources.save("cleanup-operation", record)
+    operations.child_state = "failed"
+
+    service.execute("workspace-a", digest, "cleanup-reconcile", preview_id)
+
+    assert operations.parent.state == "needs_verification"
+    assert service.last_operation["state"] == "needs_verification"
+    record = resources.list("cleanup-operation")[0]
+    assert record["state"] == "needs_verification"
+    assert record["items"][0]["state"] == "failed"
+
+
 def test_cleanup_same_request_id_is_mutually_exclusive():
     resources = _CleanupStore()
     operations = _CleanupOperations()
@@ -313,6 +357,16 @@ class _PendingCleanupDevices:
     def operate(self, device_id, request):
         self.calls += 1
         return {"deviceId": device_id, "operation": {"id": "child-1", "state": "running"}}
+
+
+class _TerminalCleanupDevices(_PendingCleanupDevices):
+    def __init__(self, operations, state):
+        super().__init__(operations)
+        self.state = state
+
+    def operate(self, device_id, request):
+        self.calls += 1
+        return {"deviceId": device_id, "operation": {"id": "child-1", "state": self.state}}
 
 
 class _BlockingCleanupDevices(_PendingCleanupDevices):

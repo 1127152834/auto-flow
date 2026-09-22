@@ -8,11 +8,107 @@ from autoflow.application.android.images import AndroidImageService
 from autoflow.domain.android.ports import AndroidError
 
 
-def test_register_image_keeps_exact_reference_and_delete_checks_device_refs():
+@pytest.mark.asyncio
+async def test_register_inspects_server_metadata_before_persisting() -> None:
+    catalog = _RegisterCatalog()
+    resources = _Resources()
+    service = AndroidImageService(resources, _Devices(), catalog)
+
+    result = await service.register(
+        {
+            "id": "sha256:" + "c" * 64,
+            "name": "候选镜像",
+            "reference": "redroid/redroid:13",
+            "sourceDigest": "sha256:" + "b" * 64,
+            "architecture": "amd64",
+            "extra": "must not persist",
+        }
+    )
+
+    assert catalog.references == ["redroid/redroid:13"]
+    assert result["imageId"] == "sha256:" + "c" * 64
+    assert result["sourceDigest"] == "sha256:" + "d" * 64
+    assert result["architecture"] == "arm64"
+    assert "extra" not in result
+    assert "extra" not in resources.get("image", result["id"])
+
+
+@pytest.mark.asyncio
+async def test_register_rejects_client_digest_when_server_inspection_disagrees() -> None:
+    service = AndroidImageService(
+        _Resources(),
+        _Devices(),
+        _RegisterCatalog(),
+    )
+
+    with pytest.raises(AndroidError) as error:
+        await service.register(
+            {
+                "id": "sha256:" + "a" * 64,
+                "name": "候选镜像",
+                "reference": "redroid/redroid:13",
+            }
+        )
+
+    assert error.value.code == "ANDROID_IMAGE_METADATA_MISMATCH"
+
+
+@pytest.mark.asyncio
+async def test_register_replay_refreshes_stored_metadata_from_server() -> None:
+    image_id = "sha256:" + "e" * 64
+    resources = _Resources()
+    resources.save(
+        "image",
+        {
+            "id": "stored-image",
+            "imageId": image_id,
+            "name": "候选镜像",
+            "reference": "redroid/redroid:13",
+            "revision": 1,
+            "state": "registered",
+            "verification": {"state": "unknown", "evidence": None},
+            "sourceDigest": "client-value",
+            "architecture": "amd64",
+            "os": "windows",
+            "androidVersion": "unknown",
+            "googleComponents": "unknown",
+            "references": [],
+        },
+    )
+    service = AndroidImageService(resources, _Devices(), _CatalogFor(image_id))
+
+    result = await service.register(
+        {"id": image_id, "name": "候选镜像", "reference": "redroid/redroid:13"}
+    )
+
+    assert result["sourceDigest"] == "sha256:" + "f" * 64
+    assert result["architecture"] == "arm64"
+    assert resources.get("image", "stored-image")["architecture"] == "arm64"
+
+
+class _RegisterCatalog:
+    def __init__(self) -> None:
+        self.references: list[str] = []
+
+    async def inspect(self, reference: str) -> SimpleNamespace:
+        self.references.append(reference)
+        return SimpleNamespace(
+            image_id="sha256:" + "c" * 64,
+            source_digest="sha256:" + "d" * 64,
+            architecture="arm64",
+            os="linux",
+            android_version="13",
+            google_components="absent",
+        )
+
+
+@pytest.mark.asyncio
+async def test_register_image_keeps_exact_reference_and_delete_checks_device_refs():
     resources = _Resources()
     devices = _Devices()
-    service = AndroidImageService(resources, devices)
-    image = service.register({"id": "sha256:" + "a" * 64, "name": "候选镜像", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "a" * 64
+    service = AndroidImageService(resources, devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "候选镜像", "reference": "redroid/redroid:13"})
     assert image["imageId"] == "sha256:" + "a" * 64
     devices.items = [{"imageId": image["imageId"], "deleted": False}]
     with pytest.raises(AndroidError) as error:
@@ -39,11 +135,12 @@ class _ImageRuntime:
     async def delete_image(self, image_id): self.deleted.append(image_id)
 
 
-def test_image_registration_is_idempotent_and_content_delete_requires_real_io():
-    service = AndroidImageService(_Resources(), _Devices())
+@pytest.mark.asyncio
+async def test_image_registration_is_idempotent_and_content_delete_requires_real_io():
     request = {"id": "sha256:" + "b" * 64, "name": "image", "reference": "redroid/redroid:13"}
-    first = service.register(request)
-    assert service.register(request)["id"] == first["id"]
+    service = AndroidImageService(_Resources(), _Devices(), _CatalogFor(request["id"]))
+    first = await service.register(request)
+    assert (await service.register(request))["id"] == first["id"]
     with pytest.raises(AndroidError):
         service.delete(first["id"], delete_content=True)
     assert service.list()[0]["state"] == "registered"
@@ -53,8 +150,9 @@ def test_image_registration_is_idempotent_and_content_delete_requires_real_io():
 async def test_content_delete_removes_unreferenced_image_through_runtime():
     devices = _Devices()
     devices.runtime = _ImageRuntime()
-    service = AndroidImageService(_Resources(), devices)
-    image = service.register({"id": "sha256:" + "1" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "1" * 64
+    service = AndroidImageService(_Resources(), devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
     result = await service.delete_content(image["id"])
     assert result["state"] == "deleted"
     assert devices.runtime.deleted == [image["imageId"]]
@@ -64,8 +162,9 @@ async def test_content_delete_removes_unreferenced_image_through_runtime():
 async def test_content_delete_accepts_the_production_android_device_service_facade():
     runtime = _ImageRuntime()
     service = AndroidDeviceService(_DeviceRepository(), runtime)
-    images = AndroidImageService(_Resources(), service)
-    image = images.register({"id": "sha256:" + "2" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "2" * 64
+    images = AndroidImageService(_Resources(), service, _CatalogFor(image_id))
+    image = await images.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
 
     result = await images.delete_content(image["id"])
 
@@ -81,8 +180,9 @@ async def test_content_delete_cancellation_records_blocked_state_instead_of_pend
 
     devices = _Devices()
     devices.runtime = _CancelledRuntime()
-    service = AndroidImageService(_Resources(), devices)
-    image = service.register({"id": "sha256:" + "3" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "3" * 64
+    service = AndroidImageService(_Resources(), devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
 
     with pytest.raises(asyncio.CancelledError):
         await service.delete_content(image["id"], request_id="delete-cancel", expected_revision=1)
@@ -103,8 +203,10 @@ async def test_server_verification_does_not_trust_client_passed_result():
                 google_components="unknown",
             )
 
-    service = AndroidImageService(_Resources(), _Devices(), _CatalogMismatch())
-    image = service.register({"id": "sha256:" + "4" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "4" * 64
+    service = AndroidImageService(_Resources(), _Devices(), _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
+    service.catalog = _CatalogMismatch()
 
     result = await service.verify_server(image["id"], {"check": "image_metadata", "result": "passed", "evidence": {"message": "client said passed"}})
 
@@ -128,8 +230,9 @@ async def test_server_verification_does_not_pass_without_trusted_source_digest()
                 google_components="unknown",
             )
 
+    image_id = "sha256:" + "6" * 64
     service = AndroidImageService(_Resources(), _Devices(), _CatalogWithoutSourceDigest())
-    image = service.register({"id": "sha256:" + "6" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
 
     result = await service.verify_server(image["id"], {"check": "image_metadata", "result": "passed", "evidence": {}})
 
@@ -148,8 +251,9 @@ async def test_unknown_content_delete_can_converge_via_server_verification():
 
     devices = _Devices()
     devices.runtime = _Runtime()
-    service = AndroidImageService(_Resources(), devices)
-    image = service.register({"id": "sha256:" + "5" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "5" * 64
+    service = AndroidImageService(_Resources(), devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
 
     with pytest.raises(AndroidError) as error:
         await service.delete_content(image["id"], request_id="delete-unknown", expected_revision=1)
@@ -173,8 +277,10 @@ async def test_delete_verification_checks_exact_digest_before_falling_back_to_ca
 
     devices = _Devices()
     devices.runtime = _Runtime()
-    service = AndroidImageService(_Resources(), devices, _Catalog())
-    image = service.register({"id": "sha256:" + "7" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "7" * 64
+    service = AndroidImageService(_Resources(), devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
+    service.catalog = _Catalog()
 
     with pytest.raises(AndroidError):
         await service.delete_content(image["id"], request_id="delete-tag", expected_revision=1)
@@ -184,18 +290,21 @@ async def test_delete_verification_checks_exact_digest_before_falling_back_to_ca
     assert result["state"] == "deleted"
 
 
-def test_image_reference_rejects_newline_or_command_option():
+@pytest.mark.asyncio
+async def test_image_reference_rejects_newline_or_command_option():
     service = AndroidImageService(_Resources(), _Devices())
     with pytest.raises(AndroidError) as error:
-        service.register({"id": "sha256:" + "d" * 64, "name": "image", "reference": "repo:tag\n--privileged"})
+        await service.register({"id": "sha256:" + "d" * 64, "name": "image", "reference": "repo:tag\n--privileged"})
     assert error.value.code == "ANDROID_IMAGE_REFERENCE_INVALID"
 
 
-def test_delete_ignores_foreign_workspace_device_references():
+@pytest.mark.asyncio
+async def test_delete_ignores_foreign_workspace_device_references():
     devices = _Devices()
     devices.runtime = type("Runtime", (), {"workspace_id": "workspace-current"})()
-    service = AndroidImageService(_Resources(), devices)
-    image = service.register({"id": "sha256:" + "f" * 64, "name": "image", "reference": "redroid/redroid:13"})
+    image_id = "sha256:" + "f" * 64
+    service = AndroidImageService(_Resources(), devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
     devices.items = [{"deviceId": "foreign-device", "workspaceId": "workspace-other", "deleted": False, "imageId": image["imageId"]}]
 
     result = service.delete(image["id"], request_id="delete-foreign", expected_revision=1)
@@ -203,9 +312,11 @@ def test_delete_ignores_foreign_workspace_device_references():
     assert result["state"] == "unregistered"
 
 
-def test_verification_record_is_appended_and_server_owns_aggregate_state():
-    service = AndroidImageService(_Resources(), _Devices())
-    image = service.register({"id": "sha256:" + "c" * 64, "name": "image", "reference": "redroid/redroid:13"})
+@pytest.mark.asyncio
+async def test_verification_record_is_appended_and_server_owns_aggregate_state():
+    image_id = "sha256:" + "c" * 64
+    service = AndroidImageService(_Resources(), _Devices(), _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
     result = service.verify(image["id"], {"check": "boot", "result": "blocked", "evidence": {"message": "设备不可用"}})
     assert result["verification"]["state"] == "blocked"
     assert result["verification"]["records"][0]["check"] == "boot"
@@ -223,6 +334,22 @@ class _Catalog:
     async def inspect(self, reference):
         assert reference == "redroid/redroid:13"
         return type("Metadata", (), {"image_id": "sha256:" + "e" * 64, "source_digest": "sha256:" + "f" * 64, "architecture": "arm64", "os": "linux", "android_version": "13", "reference": reference, "google_components": "absent"})()
+
+
+class _CatalogFor:
+    def __init__(self, image_id: str):
+        self.image_id = image_id
+
+    async def inspect(self, reference):
+        return SimpleNamespace(
+            image_id=self.image_id,
+            source_digest="sha256:" + "f" * 64,
+            architecture="arm64",
+            os="linux",
+            android_version="13",
+            reference=reference,
+            google_components="unknown",
+        )
 
 
 class _DeviceRepository:

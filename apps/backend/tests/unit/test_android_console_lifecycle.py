@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 from copy import deepcopy
 
 import pytest
@@ -57,6 +58,26 @@ class _AppRuntime:
             assert receipt["state"] == "running"
         if self.failure is not None:
             raise self.failure
+
+    async def app_info(self):
+        return {
+            "applications": [
+                {
+                    "packageName": "org.vendor.settings",
+                    "versionCode": 7,
+                    "versionName": None,
+                    "system": True,
+                    "protected": True,
+                },
+                {
+                    "packageName": "com.example.app",
+                    "versionCode": 1,
+                    "versionName": None,
+                    "system": False,
+                    "protected": False,
+                },
+            ]
+        }
 
 
 class _AppContext:
@@ -134,3 +155,57 @@ async def test_app_operation_cancelled_persists_unknown_without_success_receipt(
         await console.app_operation("s", 3, "install", b"PK apk", "req")
     assert console.sessions["s"]["appReceipts"]["req"]["state"] == "needs_verification"
     assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "needs_verification"
+
+
+@pytest.mark.asyncio
+async def test_apk_receipt_binds_request_id_to_content_digest():
+    console, runtime, _resources = _app_console()
+    first = b"PK\x03\x04first"
+    second = b"PK\x03\x04second"
+
+    await console.app_operation("s", 3, "install", first, "req")
+
+    receipt = console.sessions["s"]["appReceipts"]["req"]
+    assert receipt["request"]["payloadDigest"] == hashlib.sha256(first).hexdigest()
+    with pytest.raises(AndroidError) as conflict:
+        await console.app_operation("s", 3, "install", second, "req")
+    assert conflict.value.code == "ANDROID_REQUEST_CONFLICT"
+    assert len(runtime.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_destructive_app_operation_uses_runtime_metadata_to_protect_system_apps():
+    console, runtime, _resources = _app_console()
+    with pytest.raises(AndroidError) as error:
+        await console.app_operation("s", 3, "uninstall", "org.vendor.settings", "req")
+    assert error.value.code == "ANDROID_PROTECTED_APP"
+    assert runtime.calls == []
+
+
+@pytest.mark.asyncio
+async def test_native_window_is_not_reaped_by_embedded_heartbeat_timeout(monkeypatch):
+    console, runtime, _resources = _app_console()
+    context = console.sessions["s"]["context"]
+    context.device["control"] = "manual"
+    context.runtime.window_open = lambda: True
+    context.runtime.close_window = lambda: (_ for _ in ()).throw(AssertionError("native window closed"))
+    console.sessions["s"]["view"].update(endpoint="native", state="connected")
+    console.sessions["s"]["owned"] = True
+    console.sessions["s"]["seen"] = 0
+
+    sleep_calls = 0
+
+    async def stop_after_one_tick(_delay):
+        nonlocal sleep_calls
+        sleep_calls += 1
+        if sleep_calls == 1:
+            return
+        raise asyncio.CancelledError
+
+    monkeypatch.setattr(asyncio, "sleep", stop_after_one_tick)
+    with pytest.raises(asyncio.CancelledError):
+        await console._expire()
+
+    assert console.sessions["s"]["view"]["state"] == "connected"
+    assert context.device["control"] == "manual"
+    assert runtime.calls == []

@@ -104,15 +104,47 @@ async def confirm_pending(device: dict[str, Any]) -> None:
 
 
 async def capacity(device: dict[str, Any]) -> None:
-    info = json.loads(await docker("info", "--format", "{{json .}}"))
+    try:
+        info = json.loads(await docker("info", "--format", "{{json .}}"))
+        total_cpu = info.get("NCPU")
+        total_memory = info.get("MemTotal")
+    except (AndroidError, OSError, TimeoutError, ValueError, TypeError, AttributeError) as error:
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409) from error
+    if (
+        isinstance(total_cpu, bool)
+        or not isinstance(total_cpu, int)
+        or total_cpu <= 0
+        or isinstance(total_memory, bool)
+        or not isinstance(total_memory, int)
+        or total_memory <= 0
+    ):
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409)
     ids = (await docker("ps", "-q")).decode().split()
     allocated = 0
     if ids:
-        for obj in json.loads(await docker("inspect", *ids)):
-            if obj["Id"] != device["containerId"]:
-                allocated += obj["HostConfig"].get("Memory", 0)
+        try:
+            records = json.loads(await docker("inspect", *ids))
+            for obj in records:
+                if obj["Id"] != device["containerId"]:
+                    memory = obj.get("HostConfig", {}).get("Memory")
+                    if isinstance(memory, bool) or not isinstance(memory, int) or memory < 0:
+                        raise ValueError("invalid memory allocation")
+                    allocated += memory
+        except (AndroidError, OSError, TimeoutError, ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
+            raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409) from error
     # CPU is a quota, shared by scheduling; do not promise dedicated CPU cores.
-    if device.get("cpu", 1) > info["NCPU"] or allocated + device.get("memoryMb", 1536) * 1024 * 1024 > info["MemTotal"] - 512 * 1024 * 1024:
+    requested_cpu = device.get("cpu", 1)
+    requested_memory = device.get("memoryMb", 1536)
+    if (
+        isinstance(requested_cpu, bool)
+        or not isinstance(requested_cpu, int)
+        or requested_cpu <= 0
+        or isinstance(requested_memory, bool)
+        or not isinstance(requested_memory, int)
+        or requested_memory <= 0
+    ):
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "实例容量配置尚未核实，不能启动实例", 409)
+    if requested_cpu > total_cpu or allocated + requested_memory * 1024 * 1024 > total_memory - 512 * 1024 * 1024:
         raise AndroidError("ANDROID_CAPACITY", "运行环境内存预算不足或 CPU 配额过大，请停止空闲设备或降低新实例配置", 422)
 
 

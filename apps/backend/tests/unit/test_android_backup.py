@@ -1,3 +1,4 @@
+import hashlib
 import io
 import tarfile
 from pathlib import Path
@@ -163,3 +164,79 @@ class _Resources:
 class _Runtime:
     def __init__(self, payload: bytes): self.payload = payload
     async def backup_volume(self, _device): return self.payload
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "device",
+    [
+        {"deviceId": "new", "imageId": "sha256:" + "a" * 64, "androidStatus": "ready"},
+        {"deviceId": "new", "imageId": "sha256:" + "a" * 64, "androidStatus": "retained"},
+        {"deviceId": "new", "imageId": "sha256:" + "a" * 64, "androidStatus": "stopped", "control": "manual"},
+        {"deviceId": "new", "imageId": "sha256:" + "a" * 64, "androidStatus": "stopped", "control": "idle", "ownerRunId": "run-1"},
+    ],
+)
+async def test_restore_requires_stopped_unowned_target_before_runtime_write(tmp_path: Path, device):
+    payload = io.BytesIO()
+    with tarfile.open(fileobj=payload, mode="w") as archive:
+        info = tarfile.TarInfo("data/settings.json")
+        info.size = 2
+        archive.addfile(info, io.BytesIO(b"{}"))
+    resources = _Resources()
+    service = AndroidBackupService(resources, tmp_path)
+    image = device["imageId"]
+    record = await service.create_with_runtime(
+        {"deviceId": "source", "imageId": image, "control": "idle", "ownerRunId": None},
+        {"androidStatus": "stopped"},
+        _Runtime(payload.getvalue()),
+    )
+    runtime = type("Runtime", (), {"restore_volume": AsyncMock()})()
+
+    with pytest.raises(AndroidError, match="停止") as caught:
+        await service.restore_data(record["id"], device, runtime)
+
+    assert caught.value.code == "ANDROID_BACKUP_REQUIRES_STOPPED"
+    runtime.restore_volume.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_restore_rejects_unsupported_archive_attributes_before_runtime_write(tmp_path: Path):
+    valid_payload = io.BytesIO()
+    with tarfile.open(fileobj=valid_payload, mode="w") as archive:
+        info = tarfile.TarInfo("data/settings.json")
+        info.size = 2
+        archive.addfile(info, io.BytesIO(b"{}"))
+    payload = io.BytesIO()
+    with tarfile.open(fileobj=payload, mode="w", format=tarfile.PAX_FORMAT) as archive:
+        info = tarfile.TarInfo("data/settings.json")
+        info.size = 2
+        info.pax_headers["SCHILY.xattr.security.selinux"] = "untrusted_u:object_r:app_data_file:s0"
+        archive.addfile(info, io.BytesIO(b"{}"))
+    resources = _Resources()
+    service = AndroidBackupService(resources, tmp_path)
+    image = "sha256:" + "a" * 64
+    record = await service.create_with_runtime(
+        {"deviceId": "source", "imageId": image, "control": "idle", "ownerRunId": None},
+        {"androidStatus": "stopped"},
+        _Runtime(valid_payload.getvalue()),
+    )
+    data_path = Path(record["path"]) / "data.tar"
+    data_path.write_bytes(payload.getvalue())
+    digest = hashlib.sha256()
+    size = 0
+    for path in sorted(Path(record["path"]).iterdir()):
+        content = path.read_bytes()
+        digest.update(content)
+        size += len(content)
+    record.update(sha256=digest.hexdigest(), bytes=size)
+    resources.save("backup", record)
+    runtime = type("Runtime", (), {"restore_volume": AsyncMock()})()
+
+    with pytest.raises(AndroidError, match="属性"):
+        await service.restore_data(
+            record["id"],
+            {"deviceId": "new", "imageId": image, "androidStatus": "stopped", "control": "idle"},
+            runtime,
+        )
+
+    runtime.restore_volume.assert_not_awaited()

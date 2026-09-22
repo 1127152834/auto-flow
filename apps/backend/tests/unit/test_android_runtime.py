@@ -88,6 +88,16 @@ async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_capacity_rejects_unverified_host_resources(monkeypatch):
+    from autoflow.providers.android import management
+
+    monkeypatch.setattr(management, "docker", AsyncMock(return_value=b"{}"))
+    with pytest.raises(AndroidError) as caught:
+        await management.capacity({"containerId": "device", "cpu": 1, "memoryMb": 1536})
+    assert caught.value.code == "ANDROID_CAPACITY_UNKNOWN"
+
+
+@pytest.mark.asyncio
 async def test_container_and_volume_ownership_are_independently_checked(tmp_path, monkeypatch):
     runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
     device = {'containerId': 'container', 'volumeId': 'data', 'workspaceId': runtime.workspace_id, 'deviceId': 'id'}
@@ -213,6 +223,79 @@ async def test_backup_volume_uses_docker_copy_without_starting_android_image(tmp
     assert calls[0][0][0] == "create"
     assert calls[1][0] == ("cp", "backup-container:/data", "-")
     assert calls[-1][0] == ("rm", "backup-container")
+
+
+@pytest.mark.asyncio
+async def test_restore_volume_rejects_foreign_workspace_before_docker_write(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    docker = AsyncMock()
+    monkeypatch.setattr(mac, "docker", docker)
+
+    with pytest.raises(AndroidError, match="归属"):
+        await runtime.restore_volume(
+            {
+                "deviceId": "device",
+                "workspaceId": "foreign-workspace",
+                "volumeId": "device-data",
+                "imageId": "sha256:" + "a" * 64,
+                "androidStatus": "stopped",
+                "control": "idle",
+            },
+            b"archive",
+        )
+
+    docker.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_restore_volume_rejects_running_target_before_docker_write(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    docker = AsyncMock()
+    monkeypatch.setattr(mac, "docker", docker)
+
+    with pytest.raises(AndroidError, match="停止"):
+        await runtime.restore_volume(
+            {
+                "deviceId": "device",
+                "workspaceId": runtime.workspace_id,
+                "volumeId": "device-data",
+                "imageId": "sha256:" + "a" * 64,
+                "androidStatus": "ready",
+                "control": "idle",
+            },
+            b"archive",
+        )
+
+    docker.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_restore_volume_rejects_foreign_volume_labels_before_write(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    calls = []
+
+    async def fake_docker(*args, **kwargs):
+        calls.append((args, kwargs))
+        if args[:2] == ("volume", "inspect"):
+            return json.dumps([{"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "another-device"}}]).encode()
+        raise AssertionError(args)
+
+    monkeypatch.setattr(mac, "docker", fake_docker)
+
+    with pytest.raises(AndroidError, match="归属"):
+        await runtime.restore_volume(
+            {
+                "deviceId": "device",
+                "workspaceId": runtime.workspace_id,
+                "volumeId": "device-data",
+                "imageId": "sha256:" + "a" * 64,
+                "androidStatus": "stopped",
+                "control": "idle",
+            },
+            b"archive",
+        )
+
+    assert calls and calls[0][0][:2] == ("volume", "inspect")
 
 
 @pytest.mark.asyncio

@@ -87,7 +87,11 @@ class CleanupService:
     def _reconcile(self, record: dict[str, Any]) -> dict[str, Any]:
         operations = self.operations or getattr(getattr(self.devices, "management", None), "operations", None)
         for item in record.get("items", []):
-            if item.get("state") != "running" or not item.get("operationId"):
+            # A persisted parent/item may have been marked terminal before the
+            # child response was durably observed.  Always re-read a referenced
+            # child on replay; trusting the cached item state could turn a
+            # later child failure into a false successful parent operation.
+            if not item.get("operationId"):
                 continue
             if operations is None:
                 item["state"] = "needs_verification"
@@ -105,6 +109,10 @@ class CleanupService:
                 state = "needs_verification"
             if state in {"succeeded", "failed", "needs_verification", "cancelled"}:
                 item["state"] = state
+            elif state in {"queued", "running"}:
+                item["state"] = "running"
+            else:
+                item["state"] = "needs_verification"
         states = {item.get("state") for item in record.get("items", [])}
         if states and states <= {"succeeded"}:
             record["state"] = "succeeded"
@@ -241,12 +249,23 @@ class CleanupService:
                         raise AndroidError("ANDROID_CLEANUP_UNAVAILABLE", "设备清理服务未配置", 503)
                     result = self.devices.operate(item["id"], {"requestId": f"cleanup:{digest}:{item['id']}", "action": "delete", "deleteData": True})
                     child = result.get("operation") or {}
-                    if child.get("state") not in {"succeeded", "failed", "cancelled"}:
-                        pending = True
-                        record["items"].append({"id": item["id"], "state": "running", "operationId": child.get("id")})
+                    child_id = child.get("id")
+                    child_state = child.get("state")
+                    if child_state in {"failed", "cancelled", "needs_verification"}:
+                        record["items"].append({"id": item["id"], "state": child_state, "operationId": child_id})
                         if hasattr(self.resources, "save"):
                             self.resources.save("cleanup-operation", deepcopy(record))
                         continue
+                    if child_state not in {"succeeded"}:
+                        pending = True
+                        record["items"].append({"id": item["id"], "state": "running", "operationId": child_id})
+                        if hasattr(self.resources, "save"):
+                            self.resources.save("cleanup-operation", deepcopy(record))
+                        continue
+                    record["items"].append({"id": item["id"], "state": "succeeded", "operationId": child_id})
+                    if hasattr(self.resources, "save"):
+                        self.resources.save("cleanup-operation", deepcopy(record))
+                    continue
                 elif item.get("kind") == "backup":
                     if self.backups is None:
                         raise AndroidError("ANDROID_CLEANUP_UNAVAILABLE", "备份清理服务未配置", 503)
@@ -267,9 +286,18 @@ class CleanupService:
                 record["items"].append({"id": item["id"], "state": "succeeded"})
                 if hasattr(self.resources, "save"):
                     self.resources.save("cleanup-operation", deepcopy(record))
-            record["state"] = "running" if pending else "succeeded"
+            states = {item.get("state") for item in record["items"]}
+            if states & {"failed", "cancelled", "needs_verification"}:
+                record["state"] = "needs_verification"
+            else:
+                record["state"] = "running" if pending else "succeeded"
+            if hasattr(self.resources, "save"):
+                self.resources.save("cleanup-operation", deepcopy(record))
             if operation is not None and not pending:
-                operation = self.operations.transition(operation.operation_id, "running", "succeeded", {"stage_code": "completed"})
+                if record["state"] == "needs_verification":
+                    operation = self.operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "CLEANUP_RESULT_UNKNOWN"})
+                else:
+                    operation = self.operations.transition(operation.operation_id, "running", "succeeded", {"stage_code": "completed"})
         except BaseException as error:
             record["state"] = "needs_verification"
             if hasattr(self.resources, "save"):

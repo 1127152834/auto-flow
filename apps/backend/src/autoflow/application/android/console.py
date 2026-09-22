@@ -1,6 +1,7 @@
 """One input lease per device, shared by the embedded and native consoles."""
 
 import asyncio
+import hashlib
 from copy import deepcopy
 from time import monotonic
 from typing import Any
@@ -30,17 +31,28 @@ class AndroidConsole:
         while True:
             await asyncio.sleep(5)
             for session in list(self.sessions.values()):
-                if (
-                    session["view"]["state"] == "closed"
-                    or monotonic() - session["seen"] < 30
-                ):
+                view = session["view"]
+                if view["state"] == "closed":
+                    continue
+                if view.get("endpoint") == "native":
+                    context = session.get("context")
+                    runtime = getattr(context, "runtime", None)
+                    try:
+                        if runtime is not None and runtime.window_open():
+                            # Native windows are owned by the user and do not
+                            # use the embedded heartbeat lease.
+                            continue
+                    except (AndroidError, OSError, TimeoutError):
+                        view["state"] = "recovery_required"
+                        continue
+                elif monotonic() - session["seen"] < 30:
                     continue
                 async with session["lock"]:
-                    if monotonic() - session["seen"] < 30:
+                    if view.get("endpoint") != "native" and monotonic() - session["seen"] < 30:
                         continue
                     try:
                         await self._close_stream(session)
-                        if session["owned"]:
+                        if session.get("owned"):
                             await session["context"].cleanup()
                         else:
                             context = session["context"]
@@ -452,6 +464,14 @@ class AndroidConsole:
                 "operation": operation,
                 "value": value if isinstance(value, str) else "bytes",
             }
+            if operation == "install":
+                if not isinstance(value, (bytes, bytearray, memoryview)):
+                    raise AndroidError("ANDROID_APK_INVALID", "APK 内容无效", 422)
+                content = bytes(value)
+                current.update(
+                    payloadDigest=hashlib.sha256(content).hexdigest(),
+                    payloadBytes=len(content),
+                )
             if request_id:
                 previous = receipts.get(request_id)
                 if previous is not None:
@@ -475,10 +495,22 @@ class AndroidConsole:
                     )
             if operation not in {"install", "launch", "stop", "uninstall", "clearData"}:
                 raise AndroidError("ANDROID_OPERATION_INVALID", "不支持的应用操作", 422)
-            if operation in {"uninstall", "clearData"} and str(value).startswith(
-                ("com.android.", "com.google.android.")
-            ):
-                raise AndroidError("ANDROID_PROTECTED_APP", "系统应用不能作为普通应用移除或清除", 409)
+            if operation in {"uninstall", "clearData"}:
+                app_info = getattr(context.runtime, "app_info", None)
+                if not callable(app_info):
+                    raise AndroidError("ANDROID_APP_INFO_UNKNOWN", "无法核实目标应用是否受保护", 409)
+                try:
+                    inventory = await app_info()
+                except AndroidError:
+                    raise
+                except (TimeoutError, OSError) as error:
+                    raise AndroidError("ANDROID_APP_INFO_UNKNOWN", "无法核实目标应用是否受保护", 409) from error
+                records = inventory.get("applications") if isinstance(inventory, dict) else None
+                record = next((item for item in records or [] if item.get("packageName") == value), None)
+                if record is None:
+                    raise AndroidError("ANDROID_APP_INFO_UNKNOWN", "无法确认目标为已安装的用户应用", 409)
+                if record.get("system") or record.get("protected"):
+                    raise AndroidError("ANDROID_PROTECTED_APP", "系统或保护应用不能作为普通应用移除或清除", 409)
             if request_id:
                 receipts[request_id] = {"request": current, "state": "running"}
                 session["view"]["latestOperation"] = "应用操作执行中"

@@ -10,10 +10,12 @@ import type { Profile } from '../fleet-api'
 afterEach(cleanup)
 const original: Profile = { id: '00000000-0000-4000-8000-000000000001', revision: 1, name: '验证模板', imageId: `sha256:${'a'.repeat(64)}`, width: 720, height: 1280, dpi: 320, cpu: 1, memoryMb: 1536, locale: 'zh-CN', timezone: 'Asia/Shanghai', shellRoot: 'unknown', applicationRoot: 'unknown', archived: false }
 
-function setup(initial: Profile[] = []) {
+function setup(initial: Profile[] = [], initialImages = [{ id: 'img-1', imageId: original.imageId, name: '标准镜像', reference: 'local:standard', revision: 1, state: 'verified', verification: { state: 'passed' }, createdAt: '' }]) {
   let records = initial.map(item => ({ ...item }))
+  let images = initialImages
   const api = {
     profiles: async () => records.map(item => ({ ...item })),
+    images: async () => ({ items: images, total: images.length, nextCursor: null }),
     standardProfile: async () => original,
     archiveProfile: vi.fn(async (id: string, body: { requestId: string; expectedRevision: number }) => {
       const saved = records.find(profile => profile.id === id)
@@ -31,7 +33,7 @@ function setup(initial: Profile[] = []) {
     },
   }
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><TemplateManager api={api} /></QueryClientProvider>)
-  return { api, records: () => records, replace: (items: Profile[]) => { records = items } }
+  return { api, records: () => records, replace: (items: Profile[]) => { records = items }, setImages: (items: typeof images) => { images = items } }
 }
 
 it('creates a template with a fixed image and complete configuration', async () => {
@@ -77,4 +79,14 @@ it('blocks stale revision writes until the user reloads the current template', a
   expect(screen.getByRole('button', { name: '保存模板' })).toBeEnabled()
   await userEvent.click(screen.getByRole('button', { name: '保存模板' }))
   await waitFor(() => expect(state.records()[0].revision).toBe(3))
+})
+
+it('does not allow an empty or unverified image to be saved', async () => {
+  setup([], [{ id: 'img-1', imageId: original.imageId, name: '未验证镜像', reference: 'local:unknown', revision: 1, state: 'registered', verification: { state: 'unknown' }, createdAt: '' }])
+  await userEvent.click(await screen.findByRole('button', { name: '新建模板' }))
+  expect(screen.getByRole('button', { name: '保存模板' })).toBeDisabled()
+  await userEvent.type(screen.getByLabelText('模板名称'), '无镜像模板')
+  await userEvent.type(screen.getByLabelText('固定镜像 ID'), original.imageId)
+  expect(screen.getByRole('button', { name: '保存模板' })).toBeDisabled()
+  expect(screen.getByText(/镜像必须来自已验证目录/)).toBeVisible()
 })

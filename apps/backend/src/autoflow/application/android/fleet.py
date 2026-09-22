@@ -11,6 +11,25 @@ from autoflow.application.android.management import now
 from autoflow.domain.android.ports import AndroidError
 from autoflow.domain.workflows.models import WorkflowError
 
+_PROFILE_PUBLIC_FIELDS = frozenset(
+    {
+        "id",
+        "revision",
+        "name",
+        "imageId",
+        "width",
+        "height",
+        "dpi",
+        "cpu",
+        "memoryMb",
+        "locale",
+        "timezone",
+        "shellRoot",
+        "applicationRoot",
+        "archived",
+    }
+)
+
 
 class AndroidFleet:
     def __init__(
@@ -44,13 +63,17 @@ class AndroidFleet:
         )
 
     async def profiles(self) -> list[dict[str, Any]]:
-        return self.resources.list("profile")
+        return [self.public_profile(item) for item in self.resources.list("profile")]
+
+    @staticmethod
+    def public_profile(item: dict[str, Any]) -> dict[str, Any]:
+        return {key: value for key, value in item.items() if key in _PROFILE_PUBLIC_FIELDS}
 
     async def create_standard_profile(self) -> dict[str, Any]:
         profiles = self.resources.list("profile")
         existing = next((item for item in profiles if item.get("name") == "Android 13 标准 · ARM64" and not item.get("archived")), None)
         if existing:
-            return existing
+            return self.public_profile(existing)
         environment = await self.devices.environment()
         if environment.get("images"):
             item = {
@@ -69,7 +92,7 @@ class AndroidFleet:
                 "applicationRoot": "unknown",
             }
             self.resources.save("profile", item)
-            return item
+            return self.public_profile(item)
         raise AndroidError("ANDROID_IMAGE_MISSING", "尚未发现兼容镜像", 409)
 
     def save_profile(self, item: dict[str, Any]) -> dict[str, Any]:
@@ -89,8 +112,9 @@ class AndroidFleet:
             "shellRoot": "unknown",
             "applicationRoot": "unknown",
         }
+        saved.pop("archiveRequestId", None)
         self.resources.save("profile", saved)
-        return saved
+        return self.public_profile(saved)
 
     def _existing(
         self, kind: str, identifier: str, request: dict[str, Any]
@@ -115,7 +139,7 @@ class AndroidFleet:
                 "新建临时安卓实例已停用，请改用持久实例",
                 409,
             )
-        profile = self.resources.get("profile", request["profileId"])
+        profile = self.public_profile(self.resources.get("profile", request["profileId"]))
         if profile.get("archived"):
             raise AndroidError(
                 "ANDROID_PROFILE_ARCHIVED",
@@ -363,18 +387,22 @@ class AndroidFleet:
         item["state"] = "starting"
 
     async def _capacity(self, device: dict[str, Any]) -> bool:
-        check = getattr(self.devices.runtime, "capacity", None)
-        if check:
-            try:
-                await check(device)
-            except AndroidError as error:
-                if error.code in {
-                    "ANDROID_CAPACITY",
-                    "ANDROID_MEMORY_BUDGET",
-                    "ANDROID_CPU_BUDGET",
-                }:
-                    return False
-                raise
+        check = getattr(getattr(self.devices, "runtime", None), "capacity", None)
+        if not callable(check):
+            return False
+        try:
+            await check(device)
+        except AndroidError as error:
+            if error.code in {
+                "ANDROID_CAPACITY",
+                "ANDROID_MEMORY_BUDGET",
+                "ANDROID_CPU_BUDGET",
+                "ANDROID_CAPACITY_UNKNOWN",
+            }:
+                return False
+            raise
+        except (KeyError, TypeError, ValueError, OSError, TimeoutError):
+            return False
         return True
 
     async def _allocation_step(self, item: dict[str, Any]) -> None:

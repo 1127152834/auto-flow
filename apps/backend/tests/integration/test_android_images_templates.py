@@ -35,9 +35,9 @@ async def test_image_profile_batch_restart_keeps_original_image_after_tag_retag(
     runtime = _ScenarioRuntime()
     devices = AndroidDeviceService(devices_repo, runtime)
     fleet = AndroidFleet(devices, resources, None, None)
-    images = AndroidImageService(resources, devices)
+    images = AndroidImageService(resources, devices, _ScenarioCatalog([IMAGE_A, IMAGE_B]))
 
-    images.register({"id": IMAGE_A, "name": "基础镜像", "reference": "redroid/redroid:13"})
+    await images.register({"id": IMAGE_A, "name": "基础镜像", "reference": "redroid/redroid:13"})
     profile = fleet.save_profile(_profile(image_id=IMAGE_A))
     batch = fleet.batch(_batch_request(profile))
     await fleet.tick()
@@ -51,7 +51,7 @@ async def test_image_profile_batch_restart_keeps_original_image_after_tag_retag(
 
     # A registry tag may now point at a different immutable digest. The existing profile/device
     # keeps its frozen digest until the user explicitly edits the profile.
-    images.register({"id": IMAGE_B, "name": "基础镜像新摘要", "reference": "redroid/redroid:13"})
+    await images.register({"id": IMAGE_B, "name": "基础镜像新摘要", "reference": "redroid/redroid:13"})
     edited = fleet.save_profile({**profile, "imageId": IMAGE_B, "revision": profile["revision"]})
     assert edited["revision"] == profile["revision"] + 1
 
@@ -140,6 +140,25 @@ def _batch_request(profile: dict[str, Any]) -> dict[str, Any]:
         "locale": profile["locale"],
         "timezone": profile["timezone"],
     }
+
+
+class _ScenarioCatalog:
+    def __init__(self, image_ids: list[str]) -> None:
+        self.image_ids = iter(image_ids)
+
+    async def inspect(self, _reference: str) -> Any:
+        return type(
+            "Metadata",
+            (),
+            {
+                "image_id": next(self.image_ids),
+                "source_digest": "sha256:" + "f" * 64,
+                "architecture": "arm64",
+                "os": "linux",
+                "android_version": "13",
+                "google_components": "unknown",
+            },
+        )()
 
 
 async def _wait_management(devices: AndroidDeviceService) -> None:

@@ -201,19 +201,30 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   }
   const leaveDetail = async () => {
     const current = session
-    setPage('board')
-    if (!current || endingSession.current === current.id) return
+    if (!current) {
+      setPage('board')
+      return
+    }
+    if (endingSession.current === current.id) return
     endingSession.current = current.id
+    setSession((previous) => previous?.id === current.id ? { ...previous, state: 'unknown', latestOperation: '正在结束控制会话' } : previous)
     await queryClient.cancelQueries({ queryKey: ['android', instanceId, 'session', current.id] })
     queryClient.removeQueries({ queryKey: ['android', instanceId, 'session', current.id] })
     if (current.state === 'closed') {
       setSession(null)
+      setPage('board')
       endingSession.current = null
       return
     }
     try {
       const closed = await fleet.action(current, 'end')
-      setSession((previous) => previous?.id === current.id ? (closed.state === 'closed' ? null : closed) : previous)
+      if (closed.state === 'closed') {
+        setSession((previous) => previous?.id === current.id ? null : previous)
+        setPage('board')
+      } else {
+        setSession((previous) => previous?.id === current.id ? { ...closed, state: 'unknown', latestOperation: '控制会话结束结果待核实' } : previous)
+        setError('控制会话结束结果待核实，请留在详情页重试')
+      }
     } catch (cause) {
       setSession((previous) => previous?.id === current.id ? { ...previous, state: 'unknown', latestOperation: '控制会话结束结果待核实' } : previous)
       setError(cause instanceof Error ? `控制会话结束结果未知：${cause.message}` : '控制会话结束结果未知，请重新核实')

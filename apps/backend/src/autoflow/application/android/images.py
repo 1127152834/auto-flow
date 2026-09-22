@@ -1,5 +1,6 @@
 import asyncio
 import re
+from collections.abc import Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from datetime import UTC, datetime
@@ -46,37 +47,112 @@ class AndroidImageService:
         fields = {"id", "imageId", "name", "reference", "revision", "state", "verification", "createdAt", "sourceDigest", "architecture", "os", "androidVersion", "googleComponents", "references"}
         return {key: value for key, value in image.items() if key in fields}
 
-    def register(self, request: dict[str, Any]) -> dict[str, Any]:
+    @staticmethod
+    def _metadata_value(metadata: Any, *keys: str, default: Any = None) -> Any:
+        for key in keys:
+            if isinstance(metadata, Mapping):
+                value = metadata.get(key)
+            else:
+                value = getattr(metadata, key, None)
+            if value is not None:
+                return value
+        return default
+
+    def _normalise_metadata(self, metadata: Any) -> dict[str, Any]:
+        architecture = self._metadata_value(metadata, "architecture")
+        return {
+            "imageId": self._metadata_value(metadata, "imageId", "image_id"),
+            "sourceDigest": self._metadata_value(metadata, "sourceDigest", "source_digest"),
+            "architecture": "arm64" if architecture == "aarch64" else architecture,
+            "os": self._metadata_value(metadata, "os"),
+            "androidVersion": self._metadata_value(metadata, "androidVersion", "android_version"),
+            "googleComponents": self._metadata_value(
+                metadata, "googleComponents", "google_components", default="unknown"
+            ),
+        }
+
+    @staticmethod
+    def _validate_metadata(metadata: dict[str, Any]) -> None:
+        if not _IMAGE_ID.fullmatch(str(metadata.get("imageId") or "")):
+            raise AndroidError("ANDROID_IMAGE_ID_INVALID", "镜像未返回固定摘要", 502)
+        if metadata.get("architecture") not in {"arm64", "aarch64"} or metadata.get("os") != "linux":
+            raise AndroidError(
+                "ANDROID_IMAGE_UNTRUSTED",
+                "镜像不是兼容的 Linux ARM64 镜像",
+                409,
+            )
+
+    async def _inspect_reference(self, reference: str) -> dict[str, Any]:
+        runtime = getattr(self.devices, "runtime", None)
+        inspector = getattr(self.catalog, "inspect", None)
+        if not callable(inspector):
+            inspector = getattr(runtime, "inspect_image", None)
+        if not callable(inspector):
+            raise AndroidError(
+                "ANDROID_IMAGE_CATALOG_UNAVAILABLE",
+                "镜像目录不可访问，不能登记镜像",
+                503,
+            )
+        metadata = await inspector(reference)
+        normalised = self._normalise_metadata(metadata)
+        self._validate_metadata(normalised)
+        return normalised
+
+    def _persist_registered(
+        self, request: dict[str, Any], metadata: dict[str, Any]
+    ) -> dict[str, Any]:
         image_id = request["id"]
-        if not _IMAGE_ID.fullmatch(image_id):
-            raise AndroidError("ANDROID_IMAGE_ID_INVALID", "镜像摘要格式无效", 422)
-        if not _REFERENCE.fullmatch(str(request.get("reference", ""))):
-            raise AndroidError("ANDROID_IMAGE_REFERENCE_INVALID", "镜像引用格式无效", 422)
         existing = next((item for item in self.list() if item["imageId"] == image_id), None)
         if existing is not None:
             if any(existing.get(key) != request.get(key) for key in ("name", "reference")):
                 raise AndroidError("ANDROID_IMAGE_CONFLICT", "镜像摘要已登记为其他内容", 409)
-            return existing
+            metadata_fields = (
+                "sourceDigest",
+                "architecture",
+                "os",
+                "androidVersion",
+                "googleComponents",
+            )
+            if any(existing.get(key) != metadata.get(key) for key in metadata_fields):
+                existing.update({key: metadata.get(key) for key in metadata_fields})
+                self.resources.save("image", existing)
+            return self._public(existing)
         image = {
             "id": str(uuid4()),
             "imageId": image_id,
             "name": request["name"],
-            "reference": request["reference"],
+            "reference": str(request["reference"]),
             "revision": 1,
             "state": "registered",
             "verification": {"state": "unknown", "evidence": None},
-            "sourceDigest": request.get("sourceDigest"),
-            "architecture": request.get("architecture"),
-            "os": request.get("os"),
-            "androidVersion": request.get("androidVersion"),
-            "googleComponents": request.get("googleComponents", "unknown"),
-            "references": [{"kind": "source", "id": image_id, "name": request["reference"]}],
+            "sourceDigest": metadata["sourceDigest"],
+            "architecture": metadata["architecture"],
+            "os": metadata["os"],
+            "androidVersion": metadata["androidVersion"],
+            "googleComponents": metadata["googleComponents"],
+            "references": [{"kind": "source", "id": image_id, "name": str(request["reference"])}],
             "requestId": request.get("requestId"),
             "createdAt": datetime.now(UTC).isoformat(),
             "workspaceId": self._workspace(),
         }
         self.resources.save("image", image)
         return self._public(image)
+
+    async def register(self, request: dict[str, Any]) -> dict[str, Any]:
+        image_id = request["id"]
+        if not _IMAGE_ID.fullmatch(image_id):
+            raise AndroidError("ANDROID_IMAGE_ID_INVALID", "镜像摘要格式无效", 422)
+        reference = str(request.get("reference", ""))
+        if not _REFERENCE.fullmatch(reference):
+            raise AndroidError("ANDROID_IMAGE_REFERENCE_INVALID", "镜像引用格式无效", 422)
+        metadata = await self._inspect_reference(reference)
+        if metadata["imageId"] != image_id:
+            raise AndroidError(
+                "ANDROID_IMAGE_METADATA_MISMATCH",
+                "服务端核实的镜像摘要与请求不一致",
+                409,
+            )
+        return self._persist_registered(request, metadata)
 
     async def pull(self, request_id: str, reference: str) -> dict[str, Any]:
         if self.catalog is None:
@@ -87,17 +163,19 @@ class AndroidImageService:
                 raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他镜像拉取", 409)
             return existing
         metadata = await (self.catalog.pull(reference) if hasattr(self.catalog, "pull") else self.catalog.inspect(reference))
-        image = self.register({
-            "id": metadata.image_id,
+        metadata = self._normalise_metadata(metadata)
+        self._validate_metadata(metadata)
+        image = self._persist_registered({
+            "id": metadata["imageId"],
             "name": reference,
             "reference": reference,
             "requestId": request_id,
-            "sourceDigest": metadata.source_digest,
-            "architecture": metadata.architecture,
-            "os": metadata.os,
-            "androidVersion": metadata.android_version,
-            "googleComponents": metadata.google_components,
-        })
+            "sourceDigest": metadata["sourceDigest"],
+            "architecture": metadata["architecture"],
+            "os": metadata["os"],
+            "androidVersion": metadata["androidVersion"],
+            "googleComponents": metadata["googleComponents"],
+        }, metadata)
         return image
 
     def delete(self, identifier: str, delete_content: bool = False, request_id: str | None = None, expected_revision: int | None = None) -> dict[str, Any]:
@@ -177,15 +255,13 @@ class AndroidImageService:
         if not callable(inspector):
             raise AndroidError("ANDROID_IMAGE_VERIFICATION_UNAVAILABLE", "运行时尚未提供镜像核实适配器", 503)
         metadata = await inspector(reference)
-        if hasattr(metadata, "__dict__"):
-            metadata = vars(metadata)
         return {
-            "imageId": metadata.get("imageId", metadata.get("image_id")),
-            "sourceDigest": metadata.get("sourceDigest", metadata.get("source_digest")),
-            "architecture": metadata.get("architecture"),
-            "os": metadata.get("os"),
-            "androidVersion": metadata.get("androidVersion", metadata.get("android_version")),
-            "googleComponents": metadata.get("googleComponents", metadata.get("google_components", "unknown")),
+            "imageId": self._metadata_value(metadata, "imageId", "image_id"),
+            "sourceDigest": self._metadata_value(metadata, "sourceDigest", "source_digest"),
+            "architecture": self._metadata_value(metadata, "architecture"),
+            "os": self._metadata_value(metadata, "os"),
+            "androidVersion": self._metadata_value(metadata, "androidVersion", "android_version"),
+            "googleComponents": self._metadata_value(metadata, "googleComponents", "google_components", default="unknown"),
         }
 
     async def verify_server(self, identifier: str, observation: dict[str, Any]) -> dict[str, Any]:

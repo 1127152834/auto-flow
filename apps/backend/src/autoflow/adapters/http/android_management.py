@@ -148,6 +148,14 @@ def _diagnostic_response(record: dict[str, Any]) -> DiagnosticRead:
     })
 
 
+def _profile_response(value: dict[str, Any]) -> EnvironmentProfile:
+    # archiveRequestId is an internal replay key and ApiModel rejects unknown
+    # fields; keep it out of every profile DTO, including GET after archive.
+    return EnvironmentProfile.model_validate(
+        {key: data for key, data in value.items() if key != "archiveRequestId"}
+    )
+
+
 def android_management_router(check_service: EnvironmentCheckService, operations: Any | None = None, images: Any | None = None, profiles: Any | None = None, backups: Any | None = None, devices: Any | None = None, bulk: AndroidBulkService | None = None, cleanup: CleanupService | None = None, resources: Any | None = None, observations: Any | None = None) -> APIRouter:
     router = APIRouter(prefix="/api/v1/android/management", tags=["android-management"])
 
@@ -419,7 +427,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def register_image(body: ImageRegister) -> ImageRead:
         if images is None:
             raise RuntimeError("Android image service is not configured")
-        return ImageRead.model_validate(images.register(body.model_dump(by_alias=True, mode="json")))
+        return ImageRead.model_validate(await images.register(body.model_dump(by_alias=True, mode="json")))
 
     @router.post("/image-pulls", response_model=OperationRead, status_code=202)
     async def image_pull(body: ImagePullCreate) -> OperationRead:
@@ -479,24 +487,22 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def profile(identifier: str) -> EnvironmentProfile:
         if profiles is None:
             raise RuntimeError("Android profile service is not configured")
-        return EnvironmentProfile.model_validate(profiles.get("profile", identifier))
+        return _profile_response(profiles.get("profile", identifier))
 
     @router.post("/profiles/{identifier}/archive", response_model=EnvironmentProfile)
     async def archive_profile(identifier: str, body: ProfileArchiveCommand) -> EnvironmentProfile:
         if profiles is None:
             raise RuntimeError("Android profile service is not configured")
         item = profiles.get("profile", identifier)
-        def public(value: dict[str, Any]) -> dict[str, Any]:
-            return {key: data for key, data in value.items() if key != "archiveRequestId"}
         if item.get("archiveRequestId") == body.request_id:
-            return EnvironmentProfile.model_validate(public(item))
+            return _profile_response(item)
         if item.get("revision") != body.expected_revision:
             raise AndroidError("ANDROID_PROFILE_CONFLICT", "设备模板已更新，请重新加载", 409)
         item["archived"] = True
         item["revision"] = int(item.get("revision", 0)) + 1
         item["archiveRequestId"] = body.request_id
         profiles.save("profile", item)
-        return EnvironmentProfile.model_validate(public(item))
+        return _profile_response(item)
 
     @router.get("/backups", response_model=list[BackupRead])
     async def backup_page() -> list[BackupRead]:

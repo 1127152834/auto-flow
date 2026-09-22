@@ -66,6 +66,16 @@ class AndroidBackupService:
                     else:
                         kind = "special"
                     validate_archive_path(PurePosixPath(member.name), kind)
+                    if not (0 <= member.uid <= 0xFFFFFFFF and 0 <= member.gid <= 0xFFFFFFFF and 0 <= member.mode <= 0o7777):
+                        raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份包含不受支持的文件属性", 409)
+                    # Docker's tar copy path does not provide a safe contract
+                    # for arbitrary extended attributes.  Refuse them rather
+                    # than silently dropping metadata needed by Android data.
+                    if any(
+                        key.startswith(("SCHILY.xattr.", "LIBARCHIVE.xattr."))
+                        for key in (member.pax_headers or {})
+                    ):
+                        raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份包含不受支持的文件属性", 409)
         except AndroidError:
             raise
         except (OSError, tarfile.TarError, ValueError, TypeError, EOFError) as error:
@@ -203,6 +213,13 @@ class AndroidBackupService:
             raise AndroidError("ANDROID_BACKUP_NOT_FOUND", "备份不存在或不可恢复", 404)
         if device.get("imageId") != backup.get("imageId"):
             raise AndroidError("ANDROID_BACKUP_IMAGE_MISMATCH", "备份必须使用完全相同的镜像摘要", 409)
+        # Restore writes the target volume; a retained target already owns
+        # data and must not be overwritten.  The HTTP flow creates a fresh
+        # stopped target before reaching this method.
+        if device.get("androidStatus") is not None and device.get("androidStatus") != "stopped":
+            raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止目标实例", 409)
+        if device.get("ownerRunId") or device.get("control") not in {None, "idle"}:
+            raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止并释放目标实例控制会话", 409)
         raw_backup_path = Path(backup.get("path", ""))
         final_root = self.storage.final
         if (

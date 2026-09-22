@@ -117,7 +117,7 @@ def test_image_pull_uses_a_stable_uuid_target_that_fits_operation_schema(tmp_pat
                 image_id="sha256:" + "a" * 64,
                 source_digest=None,
                 architecture="arm64",
-                os="android",
+                os="linux",
                 android_version="14",
                 google_components="none",
             )

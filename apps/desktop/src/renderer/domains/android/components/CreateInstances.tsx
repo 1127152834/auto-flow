@@ -9,6 +9,7 @@ export function CreateInstances({
   profiles,
   environment,
   source,
+  sourceSnapshot,
   onBack,
   onProfiles,
   onSubmit,
@@ -16,19 +17,24 @@ export function CreateInstances({
   profiles: Profile[]
   environment?: AndroidEnvironment
   source?: AndroidDevice
+  sourceSnapshot?: Record<string, unknown>
   onBack(): void
   onProfiles(): void
   onSubmit(value: BatchRequest): Promise<void>
 }) {
+  const availableProfiles = profiles.filter((profile) => !profile.archived)
+  const snapshot = sourceSnapshot ?? {}
+  const snapshotValue = (key: string, fallback: unknown) => snapshot[key] ?? snapshot[key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)] ?? fallback
+  const snapshotProfileId = String(snapshotValue('profileId', source?.profileId ?? ''))
   const [name, setName] = useState(source ? `${source.name} 副本` : '测试设备'),
     [quantity, setQuantity] = useState(1)
-  const [profileId, setProfileId] = useState(source?.profileId ?? profiles[0]?.id ?? '')
-  const profile = profiles.find((p) => p.id === profileId)
-  const [resolution, setResolution] = useState(`${source?.width ?? 720}x${source?.height ?? 1280}`)
+  const [profileId, setProfileId] = useState(availableProfiles.some((profile) => profile.id === snapshotProfileId) ? snapshotProfileId : availableProfiles[0]?.id ?? '')
+  const profile = availableProfiles.find((p) => p.id === profileId)
+  const [resolution, setResolution] = useState(`${Number(snapshotValue('width', source?.width ?? 720))}x${Number(snapshotValue('height', source?.height ?? 1280))}`)
   const [start, setStart] = useState(true),
     [advanced, setAdvanced] = useState(false)
-  const [locale, setLocale] = useState(source?.locale ?? 'zh-CN'),
-    [timezone, setTimezone] = useState(source?.timezone ?? 'Asia/Shanghai')
+  const [locale, setLocale] = useState(String(snapshotValue('locale', source?.locale ?? 'zh-CN'))),
+    [timezone, setTimezone] = useState(String(snapshotValue('timezone', source?.timezone ?? 'Asia/Shanghai')))
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     pending = useRef<BatchRequest | null>(null)
@@ -42,7 +48,7 @@ export function CreateInstances({
       name,
       quantity,
       profileId: profile.id,
-      profileRevision: profile.revision ?? 1,
+      profileRevision: Number(snapshotValue('profileRevision', profile.revision ?? 1)),
       width,
       height,
       start,
@@ -114,7 +120,7 @@ export function CreateInstances({
                   <option value="" disabled>
                     请选择环境配置
                   </option>
-                  {profiles.map((p) => (
+                  {availableProfiles.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
                     </option>
