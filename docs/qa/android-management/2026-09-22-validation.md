@@ -28,6 +28,7 @@
 | 真实备份恢复 | 临时实例通过 ADB 写入 `real-backup-check`，停机后 `backup_volume`、`restore_volume`，再读取目标卷 | `backup_bytes=25472000`；源/恢复标记均为 `real-backup-check`；归档字节数一致；容器/卷标签核验后已清理 |
 | 真实双实例隔离 | 两个独立临时 workspace 同时创建，分别 `for_device`、连接、发送 HOME、截图和读取应用 | ADB serial `127.0.0.1:58272` 与 `127.0.0.1:58287` 不同；两台均 `720x1280`、`102` 应用；按各自 workspace/device 标签清理 |
 | 本轮管理 API 复核 | `android_prepare` + sidecar `environment/capabilities/management/devices`；真实 stop、backup、cleanup、delete | workspace/device 归属一致；环境 `available=true`、6 CPU/7921 MiB；stop operation `succeeded`；backup `201 Created`、`state=available`、`18585260 bytes`；cleanup `200/state=succeeded`；删除后标签过滤容器/卷均为 `0`；Lima 最终 `Stopped` |
+| 最终运行时静态复查 | `limactl start/stop autoflow-redroid`；binderfs 检查；`docker info`；固定 digest `docker image inspect` | Lima 真实启动时 `Running/aarch64`；`aarch64 Ubuntu 24.04.4 LTS 6 8306663424`；输出 `binderfs-ok`；固定镜像实际返回 `arm64 linux`；随后已停止 |
 
 ## 已覆盖
 
