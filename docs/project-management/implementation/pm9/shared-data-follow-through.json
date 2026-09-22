@@ -117,7 +117,7 @@
     },
     "postReviewStatus": "17 passed in 19.73s; includes two held/reconciling cases with explicit preexisting invalid-value fixture. Local supplemental checks after frozen CI candidate.",
     "postReviewOverlappingWrites": "35 passed in 39.99s; two ordered shared-field writes, original confirmed history, local snapshots and source observations",
-    "D1": "Approved D1 production candidate includes source diagnostics and safe source scalar preservation. Local: 138 backend passed in 55.78s, 11 UI tests in 3.32s, mypy407, Ruff, OpenAPI and typecheck pass. Real-browser filter selected 0 tests, so no worker claim; three-platform CI 35677887974 queued for the post-review candidate; native probe and worker probe are skipped."
+    "D1": "Approved D1 production candidate includes source diagnostics and safe source scalar preservation. Local: 138 backend passed in 58.62s, 11 UI tests in 3.32s, mypy407, Ruff, OpenAPI and typecheck pass. D1 real-browser filter selected 0 tests; separate existing PM9 worker scenarios passed locally (5 total), not a D1 bad-value claim; three-platform CI 35677887974 queued for the post-review candidate; native probe and worker probe are skipped."
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",

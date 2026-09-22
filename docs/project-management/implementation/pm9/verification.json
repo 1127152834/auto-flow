@@ -142,7 +142,7 @@
     "status": "C/R implemented; one whole review completed and three Important findings fixed. Local full regression passed; current native failures are being corrected; release not accepted."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "D1 production candidate at 5d1f4608; C/R review fixes remain included. Current native matrix is 5d1f4608; release acceptance pending.",
+  "workingCandidate": "D1 production candidate at ae347de9f5fc1922efa7c4af99c0e606e6bde26a; C/R review fixes remain included. Current native matrix is run 35677887974; release acceptance pending.",
   "finalCICandidate": {
     "status": "failed_platforms_diagnosed_intel_pending",
     "runId": 35629585683,

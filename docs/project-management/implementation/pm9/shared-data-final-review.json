@@ -62,7 +62,7 @@
     "legacyIdentityRule": "Pure boundary test now rejects missing column and accepts explicit system coordinate; source unchanged.",
     "build": "Passed in 34.38s",
     "win32Mypy": "407 source files passed",
-    "d1": "138 backend, 11 UI, mypy407, Ruff, OpenAPI, typecheck pass; real worker selected filter had 0 tests and remains unclaimed."
+    "d1": "138 backend, 11 UI, mypy407, Ruff, OpenAPI, typecheck pass; existing PM9 worker scenarios 5 passed locally; D1 bad-value worker filter selected 0 and remains unclaimed."
   },
   "finalCICandidate": {
     "status": "failed_platforms_diagnosed_intel_pending",
@@ -125,5 +125,41 @@
       }
     ]
   },
-  "localInstaller": "install-shared-data-final-darwin-arm64.json"
+  "localInstaller": "install-shared-data-final-darwin-arm64.json",
+  "d1Review": {
+    "candidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "status": "fixed_scoped_regression_green_native_follow_up_pending",
+    "findings": [
+      {
+        "id": "D1-1",
+        "severity": "Important",
+        "issue": "Excel identity field business-format error fell back to text scalar",
+        "fix": "Identity field validation now rejects the import before fallback",
+        "green": "Dedicated identity rejection test passed; included in 138-test scoped regression"
+      },
+      {
+        "id": "D1-2",
+        "severity": "Important",
+        "issue": "Required source blanks materialized as null/empty string",
+        "fix": "Excel and Sheets omit missing cells; validationIssues derives REQUIRED_FIELD_MISSING",
+        "green": "Dedicated Excel and Sheets missing-source tests passed"
+      },
+      {
+        "id": "D1-3",
+        "severity": "Important",
+        "issue": "Sheets late-invalid identity left earlier rows partially materialized",
+        "fix": "All rows are source-validated before any ingest",
+        "green": "Dedicated late-invalid identity test passed with zero records"
+      }
+    ],
+    "deferredMinor": "UI diagnostics are rendered as one field-list panel after the values list; still distinguishes format issues from read failures.",
+    "scopedBackend": "138 passed, 2 warnings in 58.62s",
+    "nativeRun": {
+      "runId": 35677887974,
+      "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+      "status": "in_progress",
+      "nativeProbe": "skipped",
+      "workerProbe": "skipped"
+    }
+  }
 }
