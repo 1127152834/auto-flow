@@ -1,4 +1,5 @@
 import { setStudioTransport, type StudioTransport } from './transport'
+import type { StudioOpenContext } from '../../../../shared/automation-studio'
 
 let backendOrigin: string | undefined
 
@@ -20,6 +21,16 @@ export const getBackendPort = () => new URL(getBackendBaseUrl()).port
 export const getFrontendPort = () => location.port
 export const setBackendPort = (_port: number | string) => { throw new Error('Studio connection is managed by AutoFlow') }
 export const preloadConfig = async () => { getBackendBaseUrl() }
+
+export function getStudioOpenContext(): StudioOpenContext {
+  const params = new URLSearchParams(location.search)
+  const context: StudioOpenContext = {}
+  for (const key of ['workspaceKey', 'instanceId', 'projectId', 'workflowId'] as const) {
+    const value = params.get(key)
+    if (value) context[key] = value
+  }
+  return context
+}
 
 /** Shared validation for connection composition and authenticated HTTP transport. */
 export function normalizeStudioOrigin(origin: string): string {

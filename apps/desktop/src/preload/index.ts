@@ -4,7 +4,7 @@ import type { SidecarStatus } from '../main/sidecar/supervisor'
 import type { CopyProxyCredentialsRequest } from '../main/ipc/proxy-credentials'
 import type { KernelRef } from '../main/ipc/kernel-paths'
 import type { SettingsBridge, UiPreferences } from '../shared/settings'
-import type { AutomationStudioBridge, StudioLeaveRequest } from '../shared/automation-studio'
+import type { AutomationStudioBridge, StudioLeaveRequest, StudioOpenContext } from '../shared/automation-studio'
 import type { ExternalLinkBridge } from '../shared/external-links'
 import type { ProjectFileBridge } from '../shared/project-files'
 import type { GoogleSheetsBridge } from '../shared/google-sheets'
@@ -12,7 +12,9 @@ import type { DesktopRuntimeContext } from '../shared/runtime'
 import type { StudioPlatformBridge } from '../shared/studio-platform'
 
 const automationStudioBridge: AutomationStudioBridge = {
-  openAutomationStudio: () => ipcRenderer.invoke('autoflow:open-automation-studio'),
+  openAutomationStudio: (context?: StudioOpenContext) => context === undefined
+    ? ipcRenderer.invoke('autoflow:open-automation-studio')
+    : ipcRenderer.invoke('autoflow:open-automation-studio', context),
   onStudioTransitionEnd:handler=>{
     const listener=()=>handler()
     ipcRenderer.on('autoflow:studio-transition-end',listener)

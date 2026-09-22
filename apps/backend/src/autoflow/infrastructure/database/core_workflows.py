@@ -139,7 +139,8 @@ class SqlAlchemyWorkflowRepository:
 
 
 def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
-    if not _current_document(row.document):
+    document = _canonical_document(row)
+    if document is None:
         raise WorkflowError(
             "WORKFLOW_LEGACY_DOCUMENT_UNSUPPORTED",
             "旧版工作流不能按当前 Studio 格式打开",
@@ -151,7 +152,7 @@ def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
             },
         )
     return WorkflowRecord(
-        row.document,
+        document,
         row.revision,
         _aware(row.created_at),
         _aware(row.updated_at),
@@ -159,6 +160,10 @@ def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
 
 
 def _current_document(document: object) -> bool:
+    return _canonical_document_shape(document) or _studio_document_shape(document)
+
+
+def _canonical_document_shape(document: object) -> bool:
     return (
         isinstance(document, dict)
         and document.get("source")
@@ -167,6 +172,50 @@ def _current_document(document: object) -> bool:
         == {"kind": FORMAT_KIND, "version": FORMAT_VERSION}
         and isinstance(document.get("content"), dict)
     )
+
+
+def _studio_document_shape(document: object) -> bool:
+    return (
+        isinstance(document, dict)
+        and isinstance(document.get("schemaVersion"), int)
+        and isinstance(document.get("nodes"), list)
+        and isinstance(document.get("edges"), list)
+        and isinstance(document.get("variables"), list)
+    )
+
+
+def _canonical_document(row: WorkflowDocumentRow) -> dict[str, Any] | None:
+    """Normalize the direct Studio document at the catalog/runtime boundary.
+
+    Studio and the legacy catalog share the same table but intentionally have
+    different transport shapes. Keep the database value untouched and expose
+    one canonical WebRPA record to existing project/runtime consumers.
+    """
+    raw = row.document
+    if _canonical_document_shape(raw):
+        return deepcopy(raw)
+    if not _studio_document_shape(raw):
+        return None
+    assert isinstance(raw, dict)
+    content = deepcopy(raw)
+    content.pop("name", None)
+    content["id"] = row.id
+    content["name"] = row.name
+    layout_nodes = row.layout.get("nodes", {}) if isinstance(row.layout, dict) else {}
+    if isinstance(layout_nodes, dict):
+        for node in content.get("nodes", []):
+            if not isinstance(node, dict):
+                continue
+            layout = layout_nodes.get(node.get("id"))
+            if isinstance(layout, dict):
+                for key, value in layout.items():
+                    node.setdefault(key, deepcopy(value))
+    return {
+        "id": row.id,
+        "source": {"product": SOURCE_PRODUCT, "commit": SOURCE_COMMIT},
+        "format": {"kind": FORMAT_KIND, "version": FORMAT_VERSION},
+        "content": content,
+    }
 
 
 def _legacy_record(row: WorkflowDocumentRow) -> LegacyWorkflowRecord:

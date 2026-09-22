@@ -40,7 +40,7 @@ const automation: Automation = {
 }
 
 const resourceResponse = (path: string) => {
-  if (path === '/api/v1/workflows') return { items: [{ workflowId: 'workflow', name: '资料工作流', revision: 1, updatedAt: '', validation: { status: 'ready', runnable: true, issues: [] } }] }
+  if (path.startsWith('/api/v1/workflows')) return { items: [{ workflowId: 'workflow', name: '资料工作流', revision: 1, updatedAt: '', validation: { status: 'ready', runnable: true, issues: [] } }] }
   if (path === '/api/v1/model-providers') return { items: [], total: 0 }
   if (path === '/api/v1/profiles') return { items: [], total: 0 }
   if (path === '/api/v1/proxy-options') return { proxies: [], pools: [] }
@@ -80,7 +80,7 @@ it('maps an initial automation read failure without exposing the internal identi
 
 it('maps a resource read failure while preserving the dirty automation draft and retry action', async () => {
   const request = vi.fn(async (path: string) => {
-    if (path === '/api/v1/workflows') throw new ApiClientError(`workflow ${INTERNAL_ID} unavailable`, 503, 'RESOURCE_UNAVAILABLE')
+    if (path.startsWith('/api/v1/workflows')) throw new ApiClientError(`workflow ${INTERNAL_ID} unavailable`, 503, 'RESOURCE_UNAVAILABLE')
     const resource = resourceResponse(path); if (resource) return resource
     if (path.endsWith('/validation')) return { status: 'ready', valid: true, runnable: true, issues: [], capabilityRequirements: [], checkedAt: '' }
     if (path.endsWith(`/automations/${AUTOMATION_ID}`)) return automation

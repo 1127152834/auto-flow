@@ -218,7 +218,7 @@ app.whenReady().then(async () => {
   })
   scheduledHotkeys.start()
 
-  ipcMain.handle('autoflow:open-automation-studio', event => studio.open(event))
+  ipcMain.handle('autoflow:open-automation-studio', (event, context: unknown) => studio.open(event, context))
   ipcMain.handle('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
   ipcMain.handle('autoflow:studio-leave-result',(event,result:unknown)=>studio.completeLeave(event,result))
   ipcMain.handle('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })

@@ -19,7 +19,9 @@ class WorkflowDocumentRepository(Protocol):
 
     def get(self, workflow_id: str) -> SavedWorkflow | None: ...
 
-    def list_summaries(self, cursor: int, limit: int) -> WorkflowSummaryPage: ...
+    def list_summaries(
+        self, cursor: int, limit: int, project_id: str | None = None
+    ) -> WorkflowSummaryPage: ...
 
     def update(
         self,

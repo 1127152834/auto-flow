@@ -67,4 +67,23 @@ describe('workflow document write identity',()=>{
 
     expect(writes.map(body=>body.expectedRevision)).toEqual([1,1])
   })
+
+  it('propagates the project scope for Studio documents', async () => {
+    window.history.replaceState({}, '', '/studio.html?projectId=project-a')
+    const requests: string[] = []
+    const bodies: Record<string, unknown>[] = []
+    const { configureStudioConnection } = await import('../api/config')
+    restore = configureStudioConnection('http://studio.test', async (input, init) => {
+      requests.push(String(input))
+      if (init?.body) bodies.push(JSON.parse(String(init.body)))
+      return String(input).includes('/api/workflows?')
+        ? Response.json([])
+        : Response.json({ id: 'workflow-1', name: '流程', nodes: [], edges: [], variables: [], revision: 1 })
+    })
+    const { workflowApi } = await import('../api')
+    await workflowApi.list()
+    await workflowApi.create({ name: '流程', nodes: [], edges: [], variables: [] })
+    expect(requests[0]).toContain('/api/workflows?projectId=project-a')
+    expect(bodies[0]?.projectId).toBe('project-a')
+  })
 })

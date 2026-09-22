@@ -125,14 +125,22 @@ class SqlAlchemyWorkflowDocuments:
             row = session.get(WorkflowDocumentRow, workflow_id)
             return _saved(row) if row is not None else None
 
-    def list_summaries(self, cursor: int, limit: int) -> WorkflowSummaryPage:
+    def list_summaries(
+        self, cursor: int, limit: int, project_id: str | None = None
+    ) -> WorkflowSummaryPage:
         with self._session_factory() as session:
             rows = session.scalars(
                 select(WorkflowDocumentRow)
                 .order_by(WorkflowDocumentRow.updated_at.desc(), WorkflowDocumentRow.id)
-                .offset(cursor)
-                .limit(limit + 1)
             ).all()
+            if project_id is not None:
+                rows = [
+                    row
+                    for row in rows
+                    if isinstance(row.document, dict)
+                    and row.document.get("projectId") == project_id
+                ]
+            rows = rows[cursor : cursor + limit + 1]
             has_more = len(rows) > limit
             items = tuple(
                 WorkflowSummary(

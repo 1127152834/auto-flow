@@ -16093,7 +16093,9 @@ export interface operations {
     };
     list_workflows_api_v1_workflows_get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -16140,7 +16142,9 @@ export interface operations {
     };
     get_workflow_api_v1_workflows__workflowId__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflowId: string;
@@ -24886,7 +24890,9 @@ export interface operations {
     };
     list_workflows_api_workflows_get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24902,6 +24908,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -24983,7 +24998,9 @@ export interface operations {
     };
     get_workflow_api_workflows__workflow_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;

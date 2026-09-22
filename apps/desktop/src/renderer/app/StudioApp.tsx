@@ -9,9 +9,32 @@ import { WorkflowEditor } from '../domains/workflows/components/WorkflowEditor'
 import { InputPromptDialog } from '../domains/workflows/components/InputPromptDialog'
 import { useStudioIntegration } from '../domains/workflows/hooks/useStudioIntegration'
 import { useWorkflowStore } from '../domains/workflows/editor-store'
+import { workflowApi } from '../domains/workflows/api'
+import { getStudioOpenContext } from '../domains/workflows/api/config'
 
 export function StudioApp({ tools }: { tools?: ReactNode }) {
   useStudioIntegration()
+  const [contextError, setContextError] = useState<string | null>(null)
+  const context = getStudioOpenContext()
+  const loadedWorkflow = useRef<string | null>(null)
+  useEffect(() => {
+    if (!context.workflowId || loadedWorkflow.current === context.workflowId) return
+    let disposed = false
+    const load = async () => {
+      const result = await workflowApi.get(context.workflowId!)
+      if (disposed) return
+      if (!result.success || !result.data || !useWorkflowStore.getState().importWorkflow(result.data)) {
+        setContextError(result.error || '无法读取项目工作流')
+        return
+      }
+      loadedWorkflow.current = context.workflowId!
+      setContextError(null)
+    }
+    void load()
+    const retry = () => { if (!loadedWorkflow.current) void load() }
+    window.addEventListener('studio:transport-changed', retry)
+    return () => { disposed = true; window.removeEventListener('studio:transport-changed', retry) }
+  }, [context.workflowId])
   const transitioningRef=useRef(false)
   const [transitioning,setTransitioning]=useState(false)
   useEffect(()=>{
@@ -41,6 +64,7 @@ export function StudioApp({ tools }: { tools?: ReactNode }) {
     {transitioning&&<div role="status" className="fixed inset-0 z-[9999] bg-[hsl(var(--background)/0.9)] grid place-items-center">正在切换工作区，编辑暂时锁定…</div>}
     {tools}
     <StudioConnectionNotice />
+    {contextError ? <div role="alert" className="mx-4 mt-3 rounded-control border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">{contextError}</div> : null}
     <div className="studio-editor @container"><WorkflowEditor /></div>
     <AIAssistantPanel /><InputPromptDialog />
   </main>

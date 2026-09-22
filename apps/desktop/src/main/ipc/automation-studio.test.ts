@@ -57,6 +57,30 @@ it('opens one independent formal renderer, restores it, and allows reopening aft
   expect(FakeWindow.instances).toHaveLength(2)
 })
 
+it('passes the project workflow context to the isolated renderer', async () => {
+  await studio.open(event(), { workspaceKey: 'workspace', instanceId: 'instance', projectId: 'project', workflowId: 'workflow' })
+  expect(FakeWindow.instances[0]!.loadURL).toHaveBeenCalledWith(
+    'http://localhost:5173/?view=automation-studio&workspaceKey=workspace&instanceId=instance&projectId=project&workflowId=workflow',
+  )
+})
+
+it('uses the existing leave guard before switching the Studio project context', async () => {
+  await studio.open(event())
+  const source = FakeWindow.instances[0]!
+  const sender = { sender: source.webContents, senderFrame: source.webContents.mainFrame }
+  studio.registerLeaveReady(sender)
+  const switching = studio.open(event(), { projectId: 'project', workflowId: 'workflow' })
+  const request = source.webContents.send.mock.calls.find(call => call[0] === 'autoflow:studio-prepare-leave')![1]
+  expect(source.destroyed).toBe(false)
+  studio.completeLeave(sender, { id: request.id, allowed: true })
+  await switching
+  expect(source.destroyed).toBe(true)
+  expect(FakeWindow.instances).toHaveLength(2)
+  expect(FakeWindow.instances[1]!.loadURL).toHaveBeenCalledWith(
+    'http://localhost:5173/?view=automation-studio&projectId=project&workflowId=workflow',
+  )
+})
+
 it('rejects other renderers and subframes without creating a window', async () => {
   for (const unauthorized of [event(8), event(7, {}), event(7, null)]) {
     await expect(studio.open(unauthorized)).rejects.toThrow('此窗口不能打开工作流工作台')

@@ -10,7 +10,7 @@ import type {DebugControlRequest,DebugVariablesRequest} from './lib/debugControl
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { getStudioTransportRevision, studioFetch } from './api/transport'
-import { getBackendBaseUrl } from './api/config'
+import { getBackendBaseUrl, getStudioOpenContext } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
 // 获取后端 API 基础地址
@@ -204,34 +204,40 @@ function settleWorkflowWrite(key: string, result: ApiResponse<unknown>): void {
 
 export const workflowApi = {
   list: async () => {
-    const result = await apiRequest<any[]>('/workflows')
+    const projectId = getStudioOpenContext().projectId
+    const result = await apiRequest<any[]>(`/workflows${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ''}`)
     result.data?.forEach(item => rememberWorkflow(item, 1))
     return result
   },
   get: async (id: string) => {
-    const result = await apiRequest<any>(`/workflows/${id}`)
+    const projectId = getStudioOpenContext().projectId
+    const result = await apiRequest<any>(`/workflows/${id}${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ''}`)
     if (result.success) rememberWorkflow(result.data, 1)
     return result
   },
   create: async (data: any) => {
-    const key = workflowWriteKey('create', data)
-    const clientRequestId = workflowRequestId(key, data?.clientRequestId)
+    const projectId = getStudioOpenContext().projectId
+    const scopedData = projectId ? { ...data, projectId } : data
+    const key = workflowWriteKey('create', scopedData)
+    const clientRequestId = workflowRequestId(key, scopedData?.clientRequestId)
     const result = await apiRequest<any>('/workflows', {
-      method: 'POST', body: JSON.stringify({...data, clientRequestId}),
+      method: 'POST', body: JSON.stringify({...scopedData, clientRequestId}),
     })
     if (result.success) rememberWorkflow(result.data, 1)
     settleWorkflowWrite(key, result)
     return result
   },
   update: async (id: string, data: any) => {
-    const expectedRevision = Number.isSafeInteger(data?.expectedRevision)
-      ? data.expectedRevision
-      : workflowRevisions.get(id) ?? (Number.isSafeInteger(data?.revision) ? data.revision : 1)
-    const key = workflowWriteKey(`update:${id}:${expectedRevision}`, data)
-    const clientRequestId = workflowRequestId(key, data?.clientRequestId)
+    const projectId = getStudioOpenContext().projectId
+    const scopedData = projectId ? { ...data, projectId } : data
+    const expectedRevision = Number.isSafeInteger(scopedData?.expectedRevision)
+      ? scopedData.expectedRevision
+      : workflowRevisions.get(id) ?? (Number.isSafeInteger(scopedData?.revision) ? scopedData.revision : 1)
+    const key = workflowWriteKey(`update:${id}:${expectedRevision}`, scopedData)
+    const clientRequestId = workflowRequestId(key, scopedData?.clientRequestId)
     const result = await apiRequest<any>(`/workflows/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({...data, expectedRevision, clientRequestId}),
+      body: JSON.stringify({...scopedData, expectedRevision, clientRequestId}),
     })
     if (result.success) rememberWorkflow(result.data, expectedRevision + 1)
     settleWorkflowWrite(key, result)

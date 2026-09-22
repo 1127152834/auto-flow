@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto'
-import type {StudioLeaveRequest} from '../../shared/automation-studio'
+import type {StudioLeaveRequest, StudioOpenContext} from '../../shared/automation-studio'
 import { BrowserWindow, dialog } from 'electron'
 import type { UiPreferences } from '../../shared/settings'
 
@@ -28,17 +28,27 @@ export class StudioWindowController {
 
   constructor(private readonly options: StudioWindowOptions) {}
 
-  async open(event: DesktopIpcEvent): Promise<void> {
+  async open(event: DesktopIpcEvent, rawContext?: unknown): Promise<void> {
     if (!isWindowMainFrame(event, this.options.mainSenderId())) throw new Error('此窗口不能打开工作流工作台')
-    return this.openWindow()
+    const context = normalizeContext(rawContext)
+    if (this.window && !this.window.isDestroyed() && this.contextKey !== contextKey(context)) {
+      if (!await this.prepareLeave('workspace')) throw new Error('工作流工作台仍有未保存修改')
+      this.window.destroy()
+    }
+    return this.openWindow(context)
   }
 
-  private async openWindow():Promise<void> {
+  private context: StudioOpenContext | undefined
+  private contextKey = ''
+
+  private async openWindow(context: StudioOpenContext = {}):Promise<void> {
     if (this.window && !this.window.isDestroyed()) {
       if (this.window.isMinimized()) this.window.restore()
       this.window.show(); this.window.focus()
       return
     }
+    this.context = context
+    this.contextKey = contextKey(context)
     const window = new BrowserWindow({
       title: '工作流工作台 · AutoFlow', width: 1440, height: 1024, minWidth: 800, minHeight: 600,
       backgroundColor: '#f1eee7', show: false,
@@ -70,8 +80,9 @@ export class StudioWindowController {
       if (this.options.rendererUrl) {
         const url = new URL(this.options.rendererUrl)
         url.searchParams.set('view', 'automation-studio')
+        applyContext(url.searchParams, context)
         await window.loadURL(url.toString())
-      } else await window.loadFile(this.options.rendererFile, { query: { view: 'automation-studio' } })
+      } else await window.loadFile(this.options.rendererFile, { query: { view: 'automation-studio', ...context } })
       if (!window.isDestroyed()) {
         window.setTitle('工作流工作台 · AutoFlow'); window.show(); window.focus()
       }
@@ -126,7 +137,7 @@ export class StudioWindowController {
 
   async finishWorkspaceTransition(changed:boolean):Promise<void> {
     if(!this.window||this.window.isDestroyed())return
-    if(changed){this.window.destroy();await this.openWindow()}
+    if(changed){this.window.destroy();await this.openWindow(this.context)}
     else this.window.webContents.send('autoflow:studio-transition-end')
   }
 
@@ -135,4 +146,23 @@ export class StudioWindowController {
     this.window.webContents.setZoomFactor(preferences.zoom / 100)
     this.window.webContents.send('autoflow:preferences-changed', preferences)
   }
+}
+
+function normalizeContext(value: unknown): StudioOpenContext {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  const source = value as Record<string, unknown>
+  const result: StudioOpenContext = {}
+  for (const key of ['workspaceKey', 'instanceId', 'projectId', 'workflowId'] as const) {
+    const entry = source[key]
+    if (typeof entry === 'string' && entry.length > 0 && entry.length <= 200) result[key] = entry
+  }
+  return result
+}
+
+function contextKey(context: StudioOpenContext): string {
+  return JSON.stringify([context.workspaceKey ?? '', context.instanceId ?? '', context.projectId ?? '', context.workflowId ?? ''])
+}
+
+function applyContext(params: URLSearchParams, context: StudioOpenContext): void {
+  for (const [key, value] of Object.entries(context)) if (value) params.set(key, value)
 }

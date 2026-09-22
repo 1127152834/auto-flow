@@ -70,11 +70,11 @@ class WorkflowDocumentService:
         return document
 
     def list_summaries(
-        self, *, cursor: int = 0, limit: int = 50
+        self, *, cursor: int = 0, limit: int = 50, project_id: str | None = None
     ) -> WorkflowSummaryPage:
         if cursor < 0 or limit < 1 or limit > 200:
             raise WorkflowDocumentError("INVALID_PAGE", "分页参数无效", 422)
-        return self._repository.list_summaries(cursor, limit)
+        return self._repository.list_summaries(cursor, limit, project_id)
 
     def update(
         self,
