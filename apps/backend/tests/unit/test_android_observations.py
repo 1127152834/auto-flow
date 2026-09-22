@@ -67,3 +67,43 @@ async def test_snapshot_projects_observation_into_device_repository() -> None:
     assert devices.device["androidStatus"] == "ready"
     assert devices.device["stale"] is False
     assert devices.device["observedAt"] == "2026-01-01T00:00:00+00:00"
+
+
+@pytest.mark.asyncio
+async def test_snapshot_get_failure_isolated_as_unknown_stale_observation() -> None:
+    class Devices:
+        def get(self, _device_id):
+            raise RuntimeError("repository unavailable")
+
+    service = DeviceObservationService(
+        Devices(),
+        RuntimeError("unused"),
+        now=lambda: datetime(2026, 1, 1, tzinfo=UTC),
+    )
+
+    observation = await service.snapshot("device-1")
+
+    assert observation.runtime_state == "unknown"
+    assert observation.stale is True
+    assert observation.error == "repository unavailable"
+
+
+def test_active_control_and_operation_use_three_second_refresh_interval() -> None:
+    class Devices:
+        def __init__(self):
+            self.device = {"deviceId": "device-1", "control": "manual", "operation": {}}
+
+        def get(self, _device_id):
+            return self.device
+
+    devices = Devices()
+    service = DeviceObservationService(devices, now=lambda: datetime(2026, 1, 1, tzinfo=UTC))
+    service.record("device-1", {"androidStatus": "stopped"}, at=datetime(2026, 1, 1, tzinfo=UTC))
+
+    assert service.refresh_due(datetime(2026, 1, 1, tzinfo=UTC) + timedelta(seconds=2)) == []
+    assert service.refresh_due(datetime(2026, 1, 1, tzinfo=UTC) + timedelta(seconds=3)) == ["device-1"]
+
+    devices.device["control"] = "idle"
+    devices.device["operation"] = {"state": "running", "action": "start"}
+    service.record("device-1", {"androidStatus": "stopped"}, at=datetime(2026, 1, 1, tzinfo=UTC))
+    assert service.refresh_due(datetime(2026, 1, 1, tzinfo=UTC) + timedelta(seconds=3)) == ["device-1"]

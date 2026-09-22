@@ -4598,6 +4598,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/sessions/{identifier}/apps/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify App */
+        post: operations["verify_app_api_v1_android_sessions__identifier__apps_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/sessions/{identifier}/apps/install": {
         parameters: {
             query?: never;
@@ -5857,6 +5874,13 @@ export type components = {
             /** Protected */
             protected: boolean;
         };
+        /** AppVerify */
+        AppVerify: {
+            /** Requestid */
+            requestId: string;
+            /** Generation */
+            generation: number;
+        };
         /** ArchiveProjectRequest */
         ArchiveProjectRequest: {
             /** Impactrevision */
@@ -6348,6 +6372,8 @@ export type components = {
             profileId: string;
             /** Profilerevision */
             profileRevision: number;
+            /** Sourcedeviceid */
+            sourceDeviceId?: string | null;
             /**
              * Quantity
              * @default 1
@@ -7769,6 +7795,8 @@ export type components = {
              * Format: date-time
              */
             createdAt: string;
+            /** Expiresat */
+            expiresAt?: string | null;
         };
         /** DiagnosticsCreate */
         DiagnosticsCreate: {
@@ -28314,6 +28342,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AppAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_app_api_v1_android_sessions__identifier__apps_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppVerify"];
             };
         };
         responses: {

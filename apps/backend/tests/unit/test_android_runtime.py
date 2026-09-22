@@ -335,3 +335,17 @@ async def test_prepare_uses_the_same_workspace_root_as_the_running_service(tmp_p
     await android_prepare.prepare(tmp_path, None, True)
 
     assert seen == [tmp_path / "workspace"]
+
+@pytest.mark.asyncio
+async def test_verify_pending_command_consumes_marker_without_replaying(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
+    runtime.device = {"containerId": "container", "pendingCommand": marker}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    runtime.save = lambda: None
+    docker = AsyncMock(side_effect=[b"0\n", b""])
+    monkeypatch.setattr(mac, "docker", docker)
+    assert await runtime.verify_pending_command() == 0
+    assert "pendingCommand" not in runtime.device
+    assert docker.await_args_list[0].args[:4] == ("exec", "container", "cat", marker)
+    assert docker.await_count == 2

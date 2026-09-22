@@ -45,7 +45,12 @@ class EnvironmentCheckService:
         self.runtime = runtime
 
     async def check(self, _request_id: str) -> EnvironmentCheckResult:
-        environment = await self.runtime.environment()
+        try:
+            environment = await self.runtime.environment()
+        except Exception:  # noqa: BLE001 - a failed probe is a reviewable unknown, not a 500.
+            return self._unknown_result()
+        if not isinstance(environment, dict):
+            return self._unknown_result()
         supported = environment.get("platformSupported")
         available = environment.get("available")
         checks = {name: self._check(name, environment, supported, available) for name in CHECK_NAMES}
@@ -60,6 +65,32 @@ class EnvironmentCheckService:
                 "workflow": False,
             },
             legacy=environment,
+        )
+
+    @staticmethod
+    def _unknown_result() -> EnvironmentCheckResult:
+        message = "运行环境探测失败，请稍后重试"
+        checks = {
+            name: EnvironmentCheck("unknown", "ANDROID_ENVIRONMENT_UNKNOWN", message)
+            for name in CHECK_NAMES
+        }
+        return EnvironmentCheckResult(
+            checked_at=datetime.now(UTC),
+            runtime_id="unknown",
+            checks=checks,
+            capabilities={
+                "management": False,
+                "control": False,
+                "images": "unknown",
+                "workflow": False,
+            },
+            legacy={
+                "available": False,
+                "platformSupported": None,
+                "runtimeId": "unknown",
+                "message": message,
+                "images": [],
+            },
         )
 
     @staticmethod

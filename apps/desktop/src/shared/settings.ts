@@ -27,5 +27,6 @@ export type SettingsBridge = {
   openSettingsDirectory(directory: SettingsDirectory): Promise<DesktopResult<{ opened: true }>>
   previewDiagnostics(includeLogs: boolean): Promise<DesktopResult<DiagnosticPreview>>
   saveDiagnostics(id: string): Promise<DesktopResult<{ saved: boolean; path?: string }>>
+  saveAndroidDiagnostic?(id: string): Promise<DesktopResult<{ saved: boolean; path?: string }>>
   quitApplication(): Promise<DesktopResult<{ quitting: true }>>
 }

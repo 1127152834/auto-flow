@@ -93,3 +93,20 @@ it('disables an already-open destructive confirmation when the session becomes u
 
   expect(within(screen.getByRole('dialog')).getByRole('button', { name: '确认清除数据' })).toBeDisabled()
 })
+
+it('reconciles an unknown app operation by request id without replaying it', async () => {
+  const api = {
+    appAction: vi.fn().mockRejectedValueOnce(new Error('连接中断，结果未知')),
+    launch: vi.fn(),
+    verifyApp: vi.fn().mockResolvedValue(fixtureSession(true)),
+  }
+  const onSession = vi.fn(), onRefresh = vi.fn()
+  render(<ApplicationsPanel apps={apps} api={api} session={fixtureSession(true)} onSession={onSession} onRefresh={onRefresh} />)
+  const article = screen.getByText('org.example.notes').closest('article')!
+  await userEvent.click(within(article).getByRole('button', { name: '清除数据' }))
+  await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '确认清除数据' }))
+  await userEvent.click(await screen.findByRole('button', { name: '按原请求核实' }))
+  await waitFor(() => expect(api.verifyApp).toHaveBeenCalledWith(expect.anything(), expect.any(String), expect.any(Number)))
+  expect(api.appAction).toHaveBeenCalledTimes(1)
+  expect(onSession).toHaveBeenCalled()
+})

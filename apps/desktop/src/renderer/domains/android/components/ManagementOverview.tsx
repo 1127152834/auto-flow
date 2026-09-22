@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import type { AndroidManagementApi, ManagementDevicePage } from '../management-api'
+import type { AndroidApi, AndroidDevice } from '../api'
 import { BulkActions } from './BulkActions'
+import { DevicePreview } from './DevicePreview'
 
 const runtimeLabels: Record<ManagementDevicePage['items'][number]['runtimeState'], string> = {
   stopped: '已停止',
@@ -14,13 +16,14 @@ const runtimeLabels: Record<ManagementDevicePage['items'][number]['runtimeState'
 
 type Props = {
   api: Pick<AndroidManagementApi, 'devices' | 'bulk' | 'bulkAction'>
+  previewApi?: AndroidApi
   instanceId?: string
   onCreate?(): void
   onOpen?(deviceId: string): void
   onManage?(deviceId: string, action: string, operationId?: string, requestId?: string): void
 }
 
-export function ManagementOverview({ api, instanceId = 'default', onCreate, onOpen, onManage }: Props) {
+export function ManagementOverview({ api, previewApi, instanceId = 'default', onCreate, onOpen, onManage }: Props) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [template, setTemplate] = useState('')
@@ -74,6 +77,34 @@ export function ManagementOverview({ api, instanceId = 'default', onCreate, onOp
     const openable = operational && device.runtimeState === 'ready' && device.allowedActions.includes('open')
     const operationId = typeof device.latestOperation?.operationId === 'string' ? device.latestOperation.operationId : typeof device.latestOperation?.operation_id === 'string' ? device.latestOperation.operation_id : typeof device.latestOperation?.id === 'string' ? device.latestOperation.id : undefined
     const requestId = typeof device.latestOperation?.requestId === 'string' ? device.latestOperation.requestId : typeof device.latestOperation?.request_id === 'string' ? device.latestOperation.request_id : undefined
-    return <article key={device.deviceId} className="rounded-control border border-line p-4"><div className="flex items-start justify-between gap-3"><strong className="break-words">{device.name}</strong><span className="text-xs text-muted">{statusLabel}</span></div><p className="mt-2 text-xs text-muted">修订 {device.revision} · {device.stale ? `状态陈旧 · ${statusLabel}` : staleSnapshot ? `快照陈旧 · ${statusLabel}` : '快照有效'}</p>{blocked.length > 0 && <div className="mt-2 rounded-control bg-surface-subtle p-2 text-xs" role="status"><strong>已阻塞</strong>{blocked.map(reason => <p key={reason} className="mt-1">阻塞原因：{reason}</p>)}</div>}{device.allowedActions.length ? <p className="mt-2 text-xs">可操作：{device.allowedActions.join('、')}</p> : <p className="mt-2 text-xs text-muted">当前无可用操作</p>}<div className="mt-3 flex flex-wrap gap-2">{onOpen && <button type="button" disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={`打开${device.name}`}>打开{device.name}</button>}{onManage && device.allowedActions.filter(action => ['start', 'stop', 'restart', 'delete', 'verify'].includes(action)).map(action => <button type="button" key={action} disabled={action !== 'verify' && !operational} onClick={() => onManage(device.deviceId, action, operationId, requestId)}>{action === 'verify' ? '核实状态' : action === 'start' ? '启动设备' : action === 'stop' ? '停止设备' : action === 'restart' ? '重启设备' : '删除实例'}</button>)}</div></article>
+    const spec = device.specSnapshot ?? {}
+    const specValue = (key: string, fallback: unknown) => spec[key] ?? spec[key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)] ?? fallback
+    const previewDevice = {
+      deviceId: device.deviceId,
+      name: device.name,
+      runtimeId: 'management',
+      ownerRunId: null,
+      control: device.owner.kind === 'none' ? 'idle' : 'managing',
+      generation: device.revision,
+      width: Number(specValue('width', 720)),
+      height: Number(specValue('height', 1280)),
+      imageId: String(specValue('imageId', '')),
+      androidStatus: device.runtimeState,
+      lastError: null,
+      cpu: Number(spec.cpu ?? 1),
+      memoryMb: Number(specValue('memoryMb', 1536)),
+      dpi: Number(specValue('dpi', 320)),
+      androidVersion: null,
+      architecture: null,
+      dataRetained: false,
+      deleted: false,
+      operation: null,
+      profileId: null,
+      profileName: null,
+      instanceType: 'persistent',
+      locale: 'zh-CN',
+      timezone: 'Asia/Shanghai',
+    } as unknown as AndroidDevice
+    return <article key={device.deviceId} className="rounded-control border border-line p-4"><div className="flex items-start justify-between gap-3"><strong className="break-words">{device.name}</strong><span className="text-xs text-muted">{statusLabel}</span></div><p className="mt-2 text-xs text-muted">修订 {device.revision} · {device.stale ? `状态陈旧 · ${statusLabel}` : staleSnapshot ? `快照陈旧 · ${statusLabel}` : '快照有效'}</p>{previewApi && <DevicePreview device={previewDevice} api={previewApi} revision={device.revision} enabled={operational && device.runtimeState === 'ready'} />}{blocked.length > 0 && <div className="mt-2 rounded-control bg-surface-subtle p-2 text-xs" role="status"><strong>已阻塞</strong>{blocked.map(reason => <p key={reason} className="mt-1">阻塞原因：{reason}</p>)}</div>}{device.allowedActions.length ? <p className="mt-2 text-xs">可操作：{device.allowedActions.join('、')}</p> : <p className="mt-2 text-xs text-muted">当前无可用操作</p>}<div className="mt-3 flex flex-wrap gap-2">{onOpen && <button type="button" disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={`打开${device.name}`}>打开{device.name}</button>}{onManage && device.allowedActions.filter(action => ['start', 'stop', 'restart', 'delete', 'verify'].includes(action)).map(action => <button type="button" key={action} disabled={action !== 'verify' && !operational} onClick={() => onManage(device.deviceId, action, operationId, requestId)}>{action === 'verify' ? '核实状态' : action === 'start' ? '启动设备' : action === 'stop' ? '停止设备' : action === 'restart' ? '重启设备' : '删除实例'}</button>)}</div></article>
   })}</div>{!visible.length && <p className="mt-4 text-sm text-muted">没有匹配的实例。</p>}{visible.length > 0 && <div className="mt-5"><BulkActions api={api} devices={visible} /></div>}</section>
 }

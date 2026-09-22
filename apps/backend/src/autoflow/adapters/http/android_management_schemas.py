@@ -265,3 +265,4 @@ class DiagnosticRead(ApiModel):
     state: str
     payload: dict[str, Any]
     created_at: datetime
+    expires_at: datetime | None = None

@@ -1,12 +1,14 @@
 import asyncio
 import hashlib
+import hmac
 import inspect
 import json
-from datetime import UTC, datetime
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import NAMESPACE_URL, uuid5
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Header, Query, Request
 
 from autoflow.application.android.bulk import AndroidBulkService
 from autoflow.application.android.cleanup import CleanupService
@@ -15,6 +17,7 @@ from autoflow.application.android.diagnostics import (
     EnvironmentCheckService,
 )
 from autoflow.application.android.diagnostics_export import redact_diagnostics
+from autoflow.application.android.verification import verify_lifecycle_operation
 from autoflow.domain.android.management_models import DeviceFacts
 from autoflow.domain.android.management_rules import policy_for
 from autoflow.domain.android.ports import AndroidError
@@ -91,13 +94,17 @@ def _operation_response(record: Any) -> OperationRead:
     )
 
 
-def _management_device(device: dict[str, Any], observation: Any | None = None) -> ManagementDeviceRead:
+def _management_device(device: dict[str, Any], observation: Any | None = None, *, observation_service: bool = False) -> ManagementDeviceRead:
     operation = device.get("operation") or {}
     control = device.get("control")
     manual_controls = {"manual", "opening_manual", "closing_manual"}
-    runtime_state = observation.runtime_state if observation is not None else device.get("androidStatus", "unknown")
-    observed_at = observation.observed_at if observation is not None else device.get("observedAt")
-    stale = observation.stale if observation is not None else bool(device.get("stale", False))
+    if observation_service and observation is None:
+        # A persisted ready flag predates this process and is not a current fact.
+        runtime_state, observed_at, stale = "unknown", None, True
+    else:
+        runtime_state = observation.runtime_state if observation is not None else device.get("androidStatus", "unknown")
+        observed_at = observation.observed_at if observation is not None else device.get("observedAt")
+        stale = observation.stale if observation is not None else bool(device.get("stale", False))
     facts = DeviceFacts(
         device_id=str(device["deviceId"]),
         revision=max(1, int(device.get("generation", 0) or 0)),
@@ -145,7 +152,45 @@ def _diagnostic_response(record: dict[str, Any]) -> DiagnosticRead:
         "state": record["state"],
         "payload": record["payload"],
         "createdAt": record["createdAt"],
+        "expiresAt": record.get("expiresAt"),
     })
+
+
+def android_management_internal_router(resources: Any, workspace_identity: Callable[[], str]) -> APIRouter:
+    router = APIRouter(prefix="/internal/android/management", include_in_schema=False)
+
+    @router.get("/diagnostics/{identifier}", response_model=DiagnosticRead)
+    def diagnostic_download(
+        identifier: str,
+        request: Request,
+        x_autoflow_host_token: str | None = Header(default=None, alias="x-autoflow-host-token"),
+    ) -> DiagnosticRead:
+        expected = getattr(getattr(request.app.state, "config", None), "host_token", None)
+        if not expected or not hmac.compare_digest(x_autoflow_host_token or "", expected):
+            raise AndroidError("ANDROID_DIAGNOSTIC_UNAUTHORIZED", "诊断下载未获授权", 401)
+        workspace = workspace_identity()
+        record = next(
+            (
+                item
+                for item in resources.list("diagnostic")
+                if item.get("id") == identifier and item.get("workspaceId") == workspace
+            ),
+            None,
+        )
+        if record is None:
+            raise AndroidError("ANDROID_DIAGNOSTIC_NOT_FOUND", "诊断记录不存在或不属于当前工作区", 404)
+        expires_at = record.get("expiresAt")
+        if not isinstance(expires_at, str):
+            raise AndroidError("ANDROID_DIAGNOSTIC_EXPIRED", "诊断下载授权已失效，请重新生成", 410)
+        try:
+            expired = datetime.fromisoformat(expires_at) <= datetime.now(UTC)
+        except (TypeError, ValueError) as error:
+            raise AndroidError("ANDROID_DIAGNOSTIC_EXPIRED", "诊断下载授权已失效，请重新生成", 410) from error
+        if expired:
+            raise AndroidError("ANDROID_DIAGNOSTIC_EXPIRED", "诊断下载授权已失效，请重新生成", 410)
+        return _diagnostic_response(record)
+
+    return router
 
 
 def _profile_response(value: dict[str, Any]) -> EnvironmentProfile:
@@ -174,6 +219,12 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             "includeAdvancedLogs": body.include_advanced_logs,
             "workflow": False,
         }
+        if body.include_advanced_logs:
+            payload["advancedLogs"] = {
+                "status": "unsupported",
+                "code": "ANDROID_DIAGNOSTICS_ADVANCED_LOGS_UNSUPPORTED",
+                "message": "当前未配置受控高级日志采集器",
+            }
         try:
             environment = check_service.check(f"{body.request_id}:environment")
             if inspect.isawaitable(environment):
@@ -252,8 +303,9 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if cursor:
             rows = [item for item in rows if str(item.get("deviceId")) > cursor]
         page = rows[:limit]
+        observation_service = observations is not None and hasattr(observations, "get")
         return ManagementDevicePageRead(
-            items=[_management_device(item, observations.get(str(item["deviceId"])) if observations is not None and hasattr(observations, "get") else None) for item in page],
+            items=[_management_device(item, observations.get(str(item["deviceId"])) if observation_service else None, observation_service=observation_service) for item in page],
             next_cursor=str(page[-1]["deviceId"]) if len(rows) > limit else None,
             total=total,
         )
@@ -397,23 +449,12 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         elif devices is None:
             raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入运行时核实，操作保持待核实", 503)
         else:
-            try:
-                device = devices.get(record.target_id)
-                observed = await devices.runtime.inspect(device)
-            except (AndroidError, TimeoutError, OSError) as error:
-                if not isinstance(error, AndroidError) or error.status != 404 or record.action != "delete":
-                    raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
-                record = operations.transition(record.operation_id, "needs_verification", "succeeded", {"stage_code": "verified", "result_code": "DELETE_VERIFIED"})
-                return _operation_response(record)
-            expected = {"start": {"ready"}, "restart": {"ready"}, "stop": {"stopped", "retained"}, "delete": set()}.get(record.action)
-            status = observed.get("androidStatus")
-            if expected is not None and status in expected:
-                device["control"] = "idle"
-                device["lastError"] = None
-                device.setdefault("operation", {}).update(state="succeeded", stage="已核实", finishedAt=datetime.now(UTC).isoformat())
-                record = verified({"stage_code": "verified", "result_code": "STATE_VERIFIED"}, device)
-            else:
-                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态与操作结果不一致，请继续核实", 503)
+            record = await verify_lifecycle_operation(
+                operations,
+                devices,
+                record,
+                workspace_identity=workspace,
+            )
         return _operation_response(record)
 
     @router.get("/images", response_model=ImagePageRead)
@@ -635,6 +676,8 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def bulk_action(identifier: str, body: BulkAction) -> BulkRead:
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
+        if body.action == "verify":
+            return BulkRead.model_validate(await bulk.verify(identifier, workspace_identity()))
         return BulkRead.model_validate(bulk.action(identifier, body.action, body.request_id, workspace_identity()))
 
     @router.post("/cleanup/previews", response_model=CleanupPreviewRead)
@@ -678,6 +721,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             if existing.get("requestDigest") != request_digest:
                 raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于不同诊断导出", 409)
             return _diagnostic_response(existing)
+        created_at = datetime.now(UTC)
         record = {
             "id": body.request_id,
             "requestId": body.request_id,
@@ -685,7 +729,8 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             "requestDigest": request_digest,
             "state": "ready",
             "payload": await diagnostic_payload(body, workspace),
-            "createdAt": datetime.now(UTC).isoformat(),
+            "createdAt": created_at.isoformat(),
+            "expiresAt": (created_at + timedelta(minutes=5)).isoformat(),
         }
         resources.save("diagnostic", record)
         return _diagnostic_response(record)

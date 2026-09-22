@@ -399,7 +399,29 @@ class MacAndroidRuntime:
         uid = (await self._adb("shell", "id", "-u")).strip()
         return {"packages": list(packages), "applications": applications, "currentPackage": match.group(1) if match else None, "shellRoot": "available" if uid == b"0" else "unavailable", "applicationRoot": "unknown"}
 
+    async def verify_pending_command(self) -> int:
+        """Read and consume the durable ADB command marker without replaying it."""
+        if not self.device:
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "设备操作结果未知，请重新连接", 503)
+        marker = self.device.get("pendingCommand")
+        if not marker:
+            return 0
+        if not re.fullmatch(r"/data/local/tmp/autoflow-operation-[0-9a-f]{32}", marker):
+            raise AndroidError("ANDROID_RECOVERY_REQUIRED", "设备操作标记无效", 503)
+        await self.inspect(self.device)
+        result = await docker("exec", self.device["containerId"], "cat", marker, timeout=5)
+        if not re.fullmatch(rb"[0-9]+\s*", result):
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "Android 操作完成状态仍未知", 503)
+        code = int(result.strip())
+        await docker("exec", self.device["containerId"], "rm", "-f", marker, timeout=5)
+        self.device.pop("pendingCommand", None)
+        self.save()
+        return code
+
     async def install_apk(self, data: bytes) -> None:
+        # Keep runtime callers safe even when they bypass the HTTP upload route.
+        from autoflow.application.android.apk import parse_apk
+        parse_apk(data)
         import tempfile
         with tempfile.TemporaryDirectory(prefix="autoflow-apk-") as directory:
             path = Path(directory) / "application.apk"

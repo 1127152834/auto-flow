@@ -1,3 +1,5 @@
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -32,6 +34,7 @@ class _Devices:
         self.capacity = _Capacity()
         self.runtime = type("Runtime", (), {"capacity": self.capacity})()
         self.operations = operations
+        self.management = type("Management", (), {"workspace_identity": "ws", "operations": operations})()
         self.requests = []
 
     def get(self, identifier):
@@ -44,7 +47,7 @@ class _Devices:
             request["requestId"],
             device_id,
             request["action"],
-            request["requestId"],
+            hashlib.sha256(json.dumps(request, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
             request,
             retry_of=request.get("retryOf"),
         )
@@ -63,6 +66,7 @@ async def test_multi_device_bulk_uses_persistent_queue_capacity_and_new_retry_id
     devices = _Devices(operations)
     service = AndroidBulkService(resources, devices)
     batch = service.create("ws", "bulk-1", "start", [{"deviceId": "d1", "expectedRevision": 1}, {"deviceId": "d2", "expectedRevision": 1}], False)
+    assert all(item["operationId"] for item in batch["items"])
 
     await service.tick()
     batch = service.get(batch["id"])
@@ -77,6 +81,7 @@ async def test_multi_device_bulk_uses_persistent_queue_capacity_and_new_retry_id
     batch = service.get(batch["id"])
     assert batch["items"][0]["state"] == "accepted"
     assert batch["items"][1]["state"] == "cancelled"
+    assert operations.get(batch["items"][1]["operationId"], "ws").state == "cancelled"
     await service.tick()
     assert [request["requestId"] for request in devices.requests] == ["bulk-1:d1:1"]
 
@@ -87,6 +92,9 @@ async def test_multi_device_bulk_uses_persistent_queue_capacity_and_new_retry_id
     batch = service.get(batch["id"])
     assert batch["items"][0]["state"] == "failed"
     service.action(batch["id"], "retryFailed")
+    batch = service.get(batch["id"])
+    assert batch["items"][0]["operationId"]
+    assert batch["items"][0]["retryOf"] == first_operation.operation_id
     await service.tick()
     batch = service.get(batch["id"])
     assert [request["requestId"] for request in devices.requests] == ["bulk-1:d1:1", "bulk-1:d1:2"]
@@ -104,4 +112,34 @@ async def test_multi_device_bulk_uses_persistent_queue_capacity_and_new_retry_id
     assert batch["items"][0]["state"] == "succeeded"
 
     await service.shutdown()
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_bulk_verify_reconciles_unknown_item_without_replaying_operation(tmp_path: Path):
+    database = tmp_path / "android-bulk-verify.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    devices = _Devices(operations)
+
+    async def inspect(_device):
+        return {"androidStatus": "stopped"}
+
+    devices.runtime.inspect = inspect
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "bulk-verify", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    result = service.run(batch["id"], "ws")
+    operation_id = result["items"][0]["operationId"]
+    operation = operations.get(operation_id, "ws")
+    operations.transition(operation.operation_id, "running", "needs_verification", {})
+    devices.items["d1"]["control"] = "recovery_required"
+
+    result = await service.verify(batch["id"], "ws")
+
+    assert result["items"][0]["state"] == "succeeded"
+    assert operations.get(operation_id, "ws").state == "succeeded"
+    assert devices.items["d1"].get("control") == "idle"
+    assert len(devices.requests) == 1
     sessions.dispose()

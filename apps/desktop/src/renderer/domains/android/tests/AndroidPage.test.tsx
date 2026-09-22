@@ -172,7 +172,29 @@ it('hides archived profiles while copying the source configuration snapshot', as
   expect(screen.getByLabelText('分辨率')).toHaveValue('1080x1920')
   await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
   await waitFor(() => expect(submit).toHaveBeenCalled())
-  expect(submit.mock.calls[0][0]).toMatchObject({ profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' })
+  expect(submit.mock.calls[0][0]).toMatchObject({ sourceDeviceId: devices[0].deviceId, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' })
+})
+
+it('keeps an archived source snapshot selectable and blocks creation after editing without an active template', async () => {
+  const archived = { ...profile, id: 'archived-profile', name: '已归档环境', archived: true }
+  const submit = vi.fn(async (_value: BatchRequest): Promise<void> => {})
+  render(<CreateInstances profiles={[archived]} source={devices[0]} sourceSnapshot={{ profileId: archived.id, profileName: archived.name, imageId: archived.imageId, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' }} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
+  expect(screen.getByRole('option', { name: /已归档环境/ })).toBeVisible()
+  expect(screen.getByText(/复制源快照/)).toBeVisible()
+  await userEvent.selectOptions(screen.getByLabelText('分辨率'), '720x1280')
+  expect(screen.getByRole('button', { name: '创建并启动' })).toBeDisabled()
+  expect(submit).not.toHaveBeenCalled()
+})
+
+it('clears source copy mode when selecting another template', async () => {
+  const archived = { ...profile, id: 'archived-profile', name: '已归档环境', archived: true }
+  const submit = vi.fn(async (_value: BatchRequest): Promise<void> => {})
+  render(<CreateInstances profiles={[archived, profile]} source={devices[0]} sourceSnapshot={{ profileId: archived.id, profileName: archived.name, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' }} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
+  await userEvent.selectOptions(screen.getByLabelText('选择环境配置'), profile.id)
+  expect(screen.queryByText(/复制源快照/)).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
+  await waitFor(() => expect(submit).toHaveBeenCalled())
+  expect(submit.mock.calls[0][0]).toMatchObject({ profileId: profile.id, sourceDeviceId: undefined, profileRevision: profile.revision })
 })
 it('readonly console never enables navigation or installation during workflow ownership', async () => {
   render(<DeviceConsole device={devices[2]} session={fixtureSession(false)} run={runs[devices[2].deviceId]} image={images[devices[2].deviceId]} onBack={noop} onSession={noop} onOpen={noop} onManage={noop} onAllocate={noop} onRefresh={noop} />)

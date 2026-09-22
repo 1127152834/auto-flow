@@ -6,6 +6,8 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { ManagementOverview } from '../components/ManagementOverview'
 import type { AndroidManagementApi } from '../management-api'
 
+vi.mock('../components/DevicePreview', () => ({ DevicePreview: ({ device }: { device: { name: string } }) => <div aria-label={`${device.name}预览`} /> }))
+
 afterEach(cleanup)
 
 it('renders snapshot devices and available actions without workflow data', async () => {
@@ -57,6 +59,14 @@ it('does not offer to open a stopped instance', async () => {
   render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onOpen={vi.fn()} /></QueryClientProvider>)
 
   expect(await screen.findByRole('button', { name: '打开已停止设备' })).toBeDisabled()
+})
+
+it('renders a readonly preview card for ready management devices when preview API is provided', async () => {
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'ready', revision: 4, name: '就绪预览', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: { width: 720, height: 1280 }, latestOperation: null, allowedActions: [], blockedReasons: {} }] })),
+  } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} previewApi={{} as never} /></QueryClientProvider>)
+  expect(await screen.findByLabelText('就绪预览预览')).toBeVisible()
 })
 
 it('shows status totals and filters by template and retained data', async () => {

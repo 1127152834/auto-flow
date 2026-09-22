@@ -66,3 +66,29 @@ def test_manual_console_owner_is_projected_as_manual_session():
     assert item["owner"] == {"kind": "manualSession", "id": "console-session"}
     assert "return_to_console" in item["allowedActions"]
     assert "verify" not in item["allowedActions"]
+
+
+def test_management_list_fails_closed_before_first_observation() -> None:
+    class _Observations:
+        def get(self, _device_id):
+            return None
+
+    app = FastAPI()
+    install_error_handlers(app)
+    devices = _Devices()
+    app.include_router(
+        android_management_router(
+            EnvironmentCheckService(devices.runtime),
+            devices=devices,
+            observations=_Observations(),
+        )
+    )
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/management/devices")
+
+    assert response.status_code == 200
+    item = response.json()["items"][0]
+    assert item["runtimeState"] == "unknown"
+    assert item["stale"] is True
+    assert "start" not in item["allowedActions"]

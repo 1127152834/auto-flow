@@ -51,6 +51,53 @@ def test_unknown_operation_is_never_marked_verified_without_observation(tmp_path
     assert operations.get(original.operation_id).state == "needs_verification"
 
 
+def test_delete_verification_does_not_treat_runtime_not_found_as_success(tmp_path):
+    database = tmp_path / "delete-runtime-missing.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+
+    class Runtime:
+        async def inspect(self, _device):
+            raise AndroidError("ANDROID_NOT_FOUND", "runtime object unavailable", 404)
+
+    device = {
+        "deviceId": "device-delete-missing",
+        "name": "delete target",
+        "workspaceId": "default",
+        "control": "recovery_required",
+        "generation": 2,
+        "androidStatus": "unknown",
+        "operation": {"id": "delete-op", "action": "delete", "state": "needs_verification"},
+    }
+    repository.save(device)
+    record = operations.accept(
+        "default",
+        "delete-runtime-missing",
+        device["deviceId"],
+        "delete",
+        "delete-digest",
+        {"deleteData": True},
+    )
+    operations.transition(record.operation_id, "queued", "running", {})
+    operations.transition(record.operation_id, "running", "needs_verification", {})
+    devices = AndroidDeviceService(repository, Runtime())
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations, devices=devices))
+
+    with TestClient(app) as client:
+        response = client.post(
+            f"/api/v1/android/management/operations/{record.operation_id}/verify",
+            json={"requestId": record.request_id},
+        )
+
+    assert response.status_code == 503, response.text
+    assert operations.get(record.operation_id).state == "needs_verification"
+    sessions.dispose()
+
+
 def test_operation_page_total_is_not_just_the_current_page(tmp_path):
     database = tmp_path / "page.sqlite3"
     migrate_database(database)
@@ -398,4 +445,57 @@ def test_verify_lifecycle_commits_operation_and_device_projection_atomically(tmp
     persisted = repository.get(device["deviceId"])
     assert persisted["control"] == "idle"
     assert persisted["operation"]["state"] == "succeeded"
+    sessions.dispose()
+
+
+@pytest.mark.parametrize(
+    ("delete_data", "status"),
+    [(False, "retained"), (False, "missing"), (True, "missing")],
+)
+def test_verify_delete_accepts_the_observed_post_delete_state(tmp_path, delete_data, status):
+    database = tmp_path / f"verify-delete-{delete_data}-{status}.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+
+    class Runtime:
+        async def inspect(self, _device):
+            return {"androidStatus": status}
+
+    runtime = Runtime()
+    devices = AndroidDeviceService(repository, runtime)
+    device = {
+        "deviceId": "device-delete",
+        "name": "delete target",
+        "control": "recovery_required",
+        "generation": 2,
+        "androidStatus": "unknown",
+        "operation": {"id": "delete-op", "action": "delete", "state": "needs_verification"},
+    }
+    repository.save(device)
+    record = operations.accept(
+        "default",
+        f"delete-unknown-{delete_data}-{status}",
+        device["deviceId"],
+        "delete",
+        "delete-digest",
+        {"deleteData": delete_data},
+    )
+    operations.transition(record.operation_id, "queued", "running", {})
+    operations.transition(record.operation_id, "running", "needs_verification", {})
+
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), operations, devices=devices))
+
+    with TestClient(app) as client:
+        response = client.post(
+            f"/api/v1/android/management/operations/{record.operation_id}/verify",
+            json={"requestId": record.request_id},
+        )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["state"] == "succeeded"
+    assert operations.get(record.operation_id).state == "succeeded"
     sessions.dispose()

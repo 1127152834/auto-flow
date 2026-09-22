@@ -453,7 +453,8 @@ class AndroidConsole:
             self._persist_session(session)
 
     async def app_operation(
-        self, identifier: str, generation: int, operation: str, value: Any, request_id: str | None = None
+        self, identifier: str, generation: int, operation: str, value: Any, request_id: str | None = None,
+        apk_metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         session = self.get(identifier)
         async with session["lock"], self.operations:
@@ -471,6 +472,7 @@ class AndroidConsole:
                 current.update(
                     payloadDigest=hashlib.sha256(content).hexdigest(),
                     payloadBytes=len(content),
+                    apkMetadata=deepcopy(apk_metadata) if apk_metadata is not None else None,
                 )
             if request_id:
                 previous = receipts.get(request_id)
@@ -518,6 +520,16 @@ class AndroidConsole:
             if operation == "install":
                 try:
                     await context.runtime.install_apk(value)
+                    # The transport's Success output is not the application result. Read
+                    # the package inventory after install and bind the result to the APK
+                    # metadata captured before the side effect.
+                    metadata = current.get("apkMetadata") or {}
+                    package_name = metadata.get("packageName")
+                    if package_name:
+                        inventory = await context.runtime.app_info()
+                        record = next((item for item in inventory.get("applications", []) if item.get("packageName") == package_name), None)
+                        if record is None or (metadata.get("versionCode") is not None and record.get("versionCode") != metadata["versionCode"]):
+                            raise AndroidError("ANDROID_INSTALL_VERIFY_FAILED", "APK 已传输，但未核实目标包版本", 502)
                 except asyncio.CancelledError:
                     self._app_operation_unknown(session, request_id, asyncio.CancelledError())
                     raise
@@ -525,6 +537,11 @@ class AndroidConsole:
                     self._app_operation_unknown(session, request_id, error)
                     raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作结果未知，请先核实后重试", 503) from error
                 except AndroidError as error:
+                    # A post-install observation failure is unknown; a parser/runtime
+                    # rejection remains a deterministic failure.
+                    if error.code == "ANDROID_INSTALL_VERIFY_FAILED":
+                        self._app_operation_unknown(session, request_id, error)
+                        raise
                     self._app_operation_failed(session, request_id, error)
                     raise
                 except Exception as error:
@@ -553,6 +570,53 @@ class AndroidConsole:
                 receipts[request_id]["state"] = "succeeded"
                 self._persist_session(session)
             return session["view"]
+
+    async def verify_app(self, identifier: str, generation: int, request_id: str) -> dict[str, Any]:
+        session = self.get(identifier)
+        async with session["lock"]:
+            context = self._check(session, generation)
+            receipt = session.setdefault("appReceipts", {}).get(request_id)
+            if receipt is None:
+                raise AndroidError("ANDROID_REQUEST_NOT_FOUND", "应用操作请求不存在", 404)
+            if receipt.get("state") == "succeeded":
+                return session["view"]
+            if receipt.get("state") != "needs_verification":
+                raise AndroidError("ANDROID_REQUEST_NOT_VERIFYABLE", "应用操作当前不需要核实", 409)
+            request = receipt.get("request", receipt)
+            operation = request.get("operation")
+            metadata = request.get("apkMetadata") or {}
+            try:
+                verify_pending = getattr(context.runtime, "verify_pending_command", None)
+                marker_verified = callable(verify_pending)
+                if marker_verified:
+                    result = await verify_pending()
+                    if result != 0:
+                        raise AndroidError("ANDROID_APP_OPERATION_FAILED", "Android 已确认应用操作失败", 422)
+                if operation == "install":
+                    inventory = await context.runtime.app_info()
+                    package_name = metadata.get("packageName")
+                    record = next((item for item in inventory.get("applications", []) if item.get("packageName") == package_name), None)
+                    if record is None or (metadata.get("versionCode") is not None and record.get("versionCode") != metadata["versionCode"]):
+                        raise AndroidError("ANDROID_INSTALL_VERIFY_FAILED", "未核实 APK 的包名或版本", 422)
+                elif not marker_verified:
+                    raise AndroidError("ANDROID_OPERATION_UNKNOWN", "缺少可验证的 Android 操作完成状态", 503)
+                receipt["state"] = "succeeded"
+                receipt.pop("error", None)
+                session["view"]["latestOperation"] = "应用操作已核实"
+                self._persist_session(session)
+                return session["view"]
+            except AndroidError as error:
+                if error.code in {"ANDROID_APP_OPERATION_FAILED", "ANDROID_INSTALL_VERIFY_FAILED"}:
+                    self._app_operation_failed(session, request_id, error)
+                    raise
+                self._app_operation_unknown(session, request_id, error)
+                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
+            except (TimeoutError, OSError) as error:
+                self._app_operation_unknown(session, request_id, error)
+                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
+            except Exception as error:
+                self._app_operation_unknown(session, request_id, error)
+                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
 
     async def shutdown(self) -> None:
         if self.reaper and not self.reaper.done():

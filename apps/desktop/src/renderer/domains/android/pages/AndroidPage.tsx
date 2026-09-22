@@ -70,6 +70,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const [session, setSession] = useState<ConsoleSession | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false)
+  const saveAndroidDiagnostic = typeof window !== 'undefined' ? window.autoflow?.saveAndroidDiagnostic : undefined
   const [profilesOpen, setProfilesOpen] = useState(false),
     [profileDraft, setProfileDraft] = useState<Profile | null>(null)
   const [management, setManagement] = useState<{ device: AndroidDevice; action: string; operationId?: string; requestId?: string } | null>(null),
@@ -333,6 +334,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
       ) : (
         <div className="space-y-5"><RuntimeDiagnostics api={managementApi} /><ManagementOverview
           api={managementApi}
+          previewApi={api}
           instanceId={instanceId}
           onCreate={() => {
             setSource(undefined)
@@ -350,7 +352,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
               setError('实例详情暂不可用，请刷新后重试')
             }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
-        /><ImageManager api={managementApi} /><TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} /><DataMaintenance api={managementApi} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
+        /><ImageManager api={managementApi} /><TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} /><DataMaintenance api={managementApi} saveDiagnostic={saveAndroidDiagnostic} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
       )}
       <Dialog
         open={Boolean(management)}

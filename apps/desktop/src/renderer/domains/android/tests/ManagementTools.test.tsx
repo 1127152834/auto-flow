@@ -9,7 +9,7 @@ import { BackupPanel } from '../components/BackupPanel'
 import { ApiClientError } from '../../../shared/api/client'
 import type { ManagementDevicePage } from '../management-api'
 
-const device: ManagementDevicePage['items'][number] = { deviceId: 'd1', revision: 2, name: '设备一', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} }
+const device: ManagementDevicePage['items'][number] = { deviceId: 'd1', revision: 2, name: '设备一', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start', 'stop', 'restart', 'delete'], blockedReasons: {} }
 
 afterEach(cleanup)
 
@@ -43,6 +43,17 @@ it('does not allow unknown or stale devices into a bulk action', async () => {
   const blocked: ManagementDevicePage['items'][number] = { ...device, deviceId: 'unknown', name: '待核实设备', runtimeState: 'unknown', stale: true }
   render(<BulkActions api={{ bulk }} devices={[blocked]} />)
   expect(screen.getByLabelText('待核实设备')).toBeDisabled()
+  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
+})
+
+it('only allows bulk selection when the target advertises the chosen action and is unowned', async () => {
+  const bulk = vi.fn()
+  const owned: ManagementDevicePage['items'][number] = { ...device, deviceId: 'owned', name: '占用设备', owner: { kind: 'legacyWorkflow', id: 'run-1' }, allowedActions: ['start', 'stop'] }
+  const startOnly: ManagementDevicePage['items'][number] = { ...device, deviceId: 'start-only', name: '仅启动设备', allowedActions: ['start'] }
+  render(<BulkActions api={{ bulk }} devices={[owned, startOnly]} />)
+  expect(screen.getByLabelText('占用设备')).toBeDisabled()
+  await userEvent.selectOptions(screen.getByLabelText('批量动作'), 'stop')
+  expect(screen.getByLabelText('仅启动设备')).toBeDisabled()
   expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
 })
 
@@ -94,6 +105,17 @@ it('requires a preview before cleanup execution', async () => {
   expect(screen.getByLabelText('清理预览')).toHaveTextContent('引用：d1')
   expect(screen.getByLabelText('清理预览')).toHaveTextContent('不可逆')
   expect(screen.getByLabelText('清理预览')).toHaveTextContent('指纹：fingerprint')
+})
+
+it('keeps diagnostic contents out of the renderer and saves by controlled id', async () => {
+  const diagnostics = vi.fn(async () => ({ id: 'diag-1', requestId: 'diag-1', state: 'ready', payload: { secret: 'redacted' }, createdAt: '', expiresAt: '' }))
+  const saveDiagnostic = vi.fn(async () => ({ ok: true as const, value: { saved: true, path: '/tmp/android.json' } }))
+  render(<QueryClientProvider client={new QueryClient()}><DataMaintenance api={{ cleanupPreview: vi.fn(), cleanup: vi.fn(), diagnostics }} saveDiagnostic={saveDiagnostic} resourceIds={['v1']} /></QueryClientProvider>)
+  await userEvent.click(screen.getByRole('button', { name: '生成脱敏诊断' }))
+  expect(await screen.findByRole('status')).toHaveTextContent('诊断已生成，内容已脱敏')
+  expect(screen.queryByText('redacted')).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '保存诊断' }))
+  expect(saveDiagnostic).toHaveBeenCalledWith('diag-1')
 })
 
 it('clears a stale cleanup preview when refreshing it fails', async () => {

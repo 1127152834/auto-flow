@@ -41,11 +41,20 @@ class DeviceObservationService:
             current = self.now()
             known = set(self._observations)
             due = set(self.refresh_due(current))
-            for device in self.devices.list():
-                device_id = str(device.get("deviceId"))
-                if device.get("deleted") or (device_id in known and device_id not in due):
-                    continue
-                await self.snapshot(device_id)
+            try:
+                devices = self.devices.list()
+            except Exception:  # noqa: BLE001 - a repository read outage must not stop observation.
+                devices = []
+            for device in devices:
+                device_id = str(device.get("deviceId")) if isinstance(device, dict) else ""
+                try:
+                    if not device_id:
+                        continue
+                    if device.get("deleted") or (device_id in known and device_id not in due):
+                        continue
+                    await self.snapshot(device_id)
+                except Exception as error:  # noqa: BLE001 - one device cannot stop fleet observation.
+                    self._record_failure(device_id, error)
             await asyncio.sleep(3)
 
     def record(self, device_id: str, observed: dict[str, Any], at: datetime | None = None) -> Observation:
@@ -83,7 +92,7 @@ class DeviceObservationService:
             return None
         current = at or self.now()
         age = max(0.0, (current - observation.observed_at).total_seconds())
-        threshold = 10 if observation.runtime_state in {"ready", "starting"} else 45
+        threshold = 10 if self._is_active(device_id, observation) else 45
         return Observation(**{**observation.__dict__, "stale": observation.stale or age >= threshold})
 
     def refresh_due(self, at: datetime | None = None) -> list[str]:
@@ -91,24 +100,48 @@ class DeviceObservationService:
         due = []
         for device_id, observation in self._observations.items():
             failures = self._failures.get(device_id, 0)
-            threshold = min(3 * (2 ** (failures - 1)), 30) if failures else (3 if observation.runtime_state in {"ready", "starting"} else 15)
+            threshold = min(3 * (2 ** (failures - 1)), 30) if failures else (3 if self._is_active(device_id, observation) else 15)
             if (current - observation.observed_at).total_seconds() >= threshold:
                 due.append(device_id)
         return sorted(due)
 
+    def _is_active(self, device_id: str, observation: Observation) -> bool:
+        if observation.runtime_state in {"ready", "starting"}:
+            return True
+        try:
+            device = self.devices.get(device_id)
+        except Exception:  # noqa: BLE001 - missing metadata keeps the conservative stopped cadence.
+            return False
+        if not isinstance(device, dict):
+            return False
+        control = device.get("control")
+        if control not in {None, "idle"}:
+            return True
+        operation = device.get("operation") or {}
+        return operation.get("state") in {"queued", "running", "waiting_capacity"}
+
+    def _record_failure(self, device_id: str, error: Exception) -> Observation:
+        previous = self._observations.get(device_id)
+        self._failures[device_id] = self._failures.get(device_id, 0) + 1
+        observation = Observation(
+            device_id,
+            previous.runtime_state if previous else "unknown",
+            self.now(),
+            True,
+            str(error)[:240],
+        )
+        self._observations[device_id] = observation
+        self._project(observation)
+        return observation
+
     async def snapshot(self, device_id: str) -> Observation:
         if self.runtime is None:
             raise RuntimeError("Android observation runtime is not configured")
-        device = self.devices.get(device_id)
         try:
+            device = self.devices.get(device_id)
             observed = self.runtime.inspect(device)
             if inspect.isawaitable(observed):
                 observed = await observed
         except Exception as error:  # noqa: BLE001 - retain the last state and expose a safe error.
-            previous = self._observations.get(device_id)
-            self._failures[device_id] = self._failures.get(device_id, 0) + 1
-            observation = Observation(device_id, previous.runtime_state if previous else "unknown", self.now(), True, str(error)[:240])
-            self._observations[device_id] = observation
-            self._project(observation)
-            return observation
+            return self._record_failure(device_id, error)
         return self.record(device_id, observed)

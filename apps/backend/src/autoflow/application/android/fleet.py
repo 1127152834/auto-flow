@@ -30,6 +30,19 @@ _PROFILE_PUBLIC_FIELDS = frozenset(
     }
 )
 
+_SOURCE_SNAPSHOT_FIELDS = (
+    "imageId",
+    "dpi",
+    "cpu",
+    "memoryMb",
+    "width",
+    "height",
+    "profileId",
+    "profileRevision",
+    "locale",
+    "timezone",
+)
+
 
 class AndroidFleet:
     def __init__(
@@ -129,6 +142,49 @@ class AndroidFleet:
             raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于不同内容")
         return existing
 
+    def _source_profile(self, source_device_id: str) -> dict[str, Any]:
+        source_device_id = str(source_device_id)
+        repository = getattr(self.devices, "repository", None)
+        management = getattr(self.devices, "management", None)
+        runtime = getattr(self.devices, "runtime", None)
+        workspace = getattr(runtime, "workspace_id", None) or getattr(management, "workspace_identity", None)
+        if repository is None or not isinstance(workspace, str) or not workspace:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备工作区归属无法核实", 403)
+        try:
+            source = repository.get(source_device_id)
+        except AndroidError as error:
+            if error.status == 404:
+                raise AndroidError("ANDROID_SOURCE_DEVICE_NOT_FOUND", "复制源实例不存在", 404) from error
+            raise
+        if source.get("workspaceId") != workspace:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备工作区归属校验失败", 403)
+        if source.get("deleted"):
+            raise AndroidError("ANDROID_SOURCE_DEVICE_UNAVAILABLE", "复制源实例已删除，不能复制", 409)
+        snapshot = source.get("creationConfig")
+        if not isinstance(snapshot, dict) or any(field not in snapshot for field in _SOURCE_SNAPSHOT_FIELDS):
+            raise AndroidError(
+                "ANDROID_SOURCE_SNAPSHOT_UNAVAILABLE",
+                "复制源实例没有完整的服务端配置快照，请新建实例",
+                409,
+            )
+        # Only copy immutable environment fields. Runtime identity, data volume,
+        # ownership, lifecycle generation and control receipts are intentionally
+        # excluded and are allocated afresh by the management service.
+        return {
+            "id": snapshot["profileId"],
+            "revision": snapshot["profileRevision"],
+            "name": snapshot.get("profileName") or source.get("profileName") or "复制源环境",
+            "imageId": snapshot["imageId"],
+            "width": snapshot["width"],
+            "height": snapshot["height"],
+            "dpi": snapshot["dpi"],
+            "cpu": snapshot["cpu"],
+            "memoryMb": snapshot["memoryMb"],
+            "locale": snapshot["locale"],
+            "timezone": snapshot["timezone"],
+            "archived": False,
+        }
+
     def batch(self, request: dict[str, Any]) -> dict[str, Any]:
         existing = self._existing("batch", request["batchId"], request)
         if existing:
@@ -139,15 +195,27 @@ class AndroidFleet:
                 "新建临时安卓实例已停用，请改用持久实例",
                 409,
             )
-        profile = self.public_profile(self.resources.get("profile", request["profileId"]))
-        if profile.get("archived"):
-            raise AndroidError(
-                "ANDROID_PROFILE_ARCHIVED",
-                "环境模板已归档，不能创建新实例",
-                409,
-            )
-        if profile["revision"] != request["profileRevision"]:
-            raise AndroidError("ANDROID_PROFILE_CONFLICT", "环境配置已更新，请重新加载")
+        if request.get("sourceDeviceId"):
+            profile = self._source_profile(request["sourceDeviceId"])
+        else:
+            profile = self.public_profile(self.resources.get("profile", request["profileId"]))
+            if profile.get("archived"):
+                raise AndroidError(
+                    "ANDROID_PROFILE_ARCHIVED",
+                    "环境模板已归档，不能创建新实例",
+                    409,
+                )
+            if profile["revision"] != request["profileRevision"]:
+                raise AndroidError("ANDROID_PROFILE_CONFLICT", "环境配置已更新，请重新加载")
+            # A normal batch may intentionally override these presentation fields;
+            # source-device batches use their immutable snapshot instead.
+            profile = {
+                **profile,
+                "width": request["width"],
+                "height": request["height"],
+                "locale": request["locale"],
+                "timezone": request["timezone"],
+            }
         items = [
             {
                 "deviceId": str(uuid4()),
@@ -340,14 +408,15 @@ class AndroidFleet:
             config.update(
                 deviceId=item["deviceId"],
                 name=item["name"],
-                width=request["width"],
-                height=request["height"],
+                width=profile["width"],
+                height=profile["height"],
                 start=False,
                 profileId=profile["id"],
                 profileName=profile["name"],
+                profileRevision=profile["revision"],
                 instanceType=request["instanceType"],
-                locale=request["locale"],
-                timezone=request["timezone"],
+                locale=profile["locale"],
+                timezone=profile["timezone"],
             )
             self.devices.management.create(config)
             item["state"] = "creating"

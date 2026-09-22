@@ -57,7 +57,8 @@ export function DeviceConsole(p: ConsoleProps) {
     [fit, setFit] = useState('fit'),
     [packageName, setPackage] = useState(p.apps?.currentPackage ?? '')
   const [videoReady, setVideoReady] = useState(Boolean(p.image)),
-    [volumeMenu, setVolumeMenu] = useState(false)
+    [volumeMenu, setVolumeMenu] = useState(false),
+    [unknownInstall, setUnknownInstall] = useState<string | null>(null)
   const switching = useRef(false)
   const sequence = useRef(0),
     queue = useRef(Promise.resolve()),
@@ -151,10 +152,14 @@ export function DeviceConsole(p: ConsoleProps) {
   const install = async (selected?: File) => {
     if (!selected || !p.api || !p.session) return
     setBusy(true)
+    const requestId = crypto.randomUUID()
     try {
-      p.onSession(await p.api.install(p.session, selected))
+      p.onSession(await p.api.install(p.session, selected, requestId))
+      setUnknownInstall(null)
       p.onRefresh()
     } catch (e) {
+      const code = typeof e === 'object' && e !== null && 'code' in e ? String((e as { code?: unknown }).code) : ''
+      if (!['ANDROID_APK_INVALID', 'ANDROID_APK_UNSUPPORTED', 'ANDROID_APK_TOO_LARGE', 'ANDROID_INSTALL_FAILED'].includes(code)) setUnknownInstall(requestId)
       setError(e instanceof Error ? e.message : '安装结果未知')
     } finally {
       setBusy(false)
@@ -222,11 +227,11 @@ export function DeviceConsole(p: ConsoleProps) {
           </strong>
           <small>{packageName || '选择或安装应用后启动'}</small>
         </div>
-        <Action disabled={readonly || busy} onClick={() => file.current?.click()}>
+        <Action disabled={readonly || busy || Boolean(unknownInstall)} onClick={() => file.current?.click()}>
           <UploadSimple size={17} />
           上传 APK
         </Action>
-        <Action primary disabled={readonly || busy || !packageName} onClick={() => void launch()}>
+        <Action primary disabled={readonly || busy || Boolean(unknownInstall) || !packageName} onClick={() => void launch()}>
           <Play size={16} />
           启动应用
         </Action>
@@ -338,6 +343,7 @@ export function DeviceConsole(p: ConsoleProps) {
         {error && (
           <p role="alert" className="ad-error">
             {error}
+            {unknownInstall && p.api?.verifyApp && p.session && <Action onClick={() => void p.api!.verifyApp(p.session!, unknownInstall).then((next) => { p.onSession(next); setUnknownInstall(null); setError('应用安装已按原请求核实'); p.onRefresh() }).catch((cause) => setError(cause instanceof Error ? cause.message : '安装仍未核实'))}>按原请求核实</Action>}
             <Action onClick={p.onRefresh}>核实状态</Action>
           </p>
         )}

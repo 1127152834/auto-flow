@@ -9,6 +9,21 @@ from autoflow.application.android.diagnostics import EnvironmentCheckService
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("error", [OSError("socket closed"), TimeoutError("probe timed out"), RuntimeError("probe crashed")])
+async def test_environment_probe_failure_returns_stable_unknown_checks(error: Exception) -> None:
+    runtime = AsyncMock()
+    runtime.environment.side_effect = error
+
+    result = await EnvironmentCheckService(runtime).check("check-failed")
+
+    assert result.runtime_id == "unknown"
+    assert set(result.checks) == {"platform", "adb", "lima", "ssh", "scrcpy", "vm", "docker", "binder", "images", "capacity", "disk"}
+    assert {check.status for check in result.checks.values()} == {"unknown"}
+    assert {check.code for check in result.checks.values()} == {"ANDROID_ENVIRONMENT_UNKNOWN"}
+    assert result.capabilities == {"management": False, "control": False, "images": "unknown", "workflow": False}
+
+
+@pytest.mark.asyncio
 async def test_environment_check_is_read_only_and_keeps_unknown_checks_explicit() -> None:
     runtime = AsyncMock()
     runtime.environment.return_value = {
@@ -46,6 +61,27 @@ def test_environment_route_exposes_capabilities_without_workflow_entrypoints() -
     assert response.status_code == 200
     assert response.json()["checks"]["platform"]["status"] == "unsupported"
     assert capabilities.json()["workflow"] is False
+
+
+def test_environment_route_keeps_probe_failure_reviewable() -> None:
+    runtime = AsyncMock()
+    runtime.environment.side_effect = OSError("socket closed")
+    app = FastAPI()
+    app.include_router(android_management_router(EnvironmentCheckService(runtime)))
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/management/environment")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["available"] is False
+    assert body["platformSupported"] is None
+    assert body["checks"]["platform"] == {
+        "status": "unknown",
+        "code": "ANDROID_ENVIRONMENT_UNKNOWN",
+        "message": "运行环境探测失败，请稍后重试",
+        "action": None,
+    }
 
 
 def test_capabilities_report_configured_bulk_service() -> None:

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse
 from starlette.datastructures import UploadFile
 
+from autoflow.application.android.apk import parse_apk
 from autoflow.application.android.console import AndroidConsole
 from autoflow.application.android.fleet import AndroidFleet
 from autoflow.domain.android.ports import AndroidError
@@ -15,6 +16,7 @@ from .android_fleet_schemas import (
     AppAction,
     AppInfo,
     AppLaunch,
+    AppVerify,
     BatchAction,
     BatchCreate,
     BatchRead,
@@ -196,6 +198,10 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
     async def app_action(identifier: UUID, body: AppAction) -> Any:
         return await console.app_operation(str(identifier), body.generation, body.action, body.package_name, body.request_id)
 
+    @router.post("/sessions/{identifier}/apps/verify", response_model=SessionRead)
+    async def verify_app(identifier: UUID, body: AppVerify) -> Any:
+        return await console.verify_app(str(identifier), body.generation, body.request_id)
+
     @router.post(
         "/sessions/{identifier}/apps/install",
         response_model=SessionRead,
@@ -241,10 +247,9 @@ def android_fleet_router(fleet: AndroidFleet, console: AndroidConsole) -> APIRou
                         "ANDROID_APK_TOO_LARGE", "APK 不能超过 256 MB", 413
                     )
                 chunks.extend(data)
-        if not chunks.startswith(b"PK"):
-            raise AndroidError("ANDROID_APK_INVALID", "请选择 APK 文件", 422)
+        metadata = parse_apk(bytes(chunks))
         return await console.app_operation(
-            str(identifier), generation, "install", bytes(chunks), request_id
+            str(identifier), generation, "install", bytes(chunks), request_id, metadata
         )
 
     return router

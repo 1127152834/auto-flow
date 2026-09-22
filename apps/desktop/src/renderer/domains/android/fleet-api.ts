@@ -50,10 +50,12 @@ export const fleetApi = (client: StreamingApiClient) => ({
     }),
   appAction: (s: ConsoleSession, action: 'stop' | 'uninstall' | 'clearData', packageName: string, requestId = crypto.randomUUID()) =>
     client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/actions`, { method: 'POST', body: { requestId, generation: s.generation, action, packageName }, timeoutMs: 40000 }),
-  install: (s: ConsoleSession, file: File) => {
+  verifyApp: (s: ConsoleSession, requestId: string, generation = s.generation) =>
+    client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/verify`, { method: 'POST', body: { requestId, generation }, timeoutMs: 40000 }),
+  install: (s: ConsoleSession, file: File, requestId = crypto.randomUUID()) => {
     const body = new FormData()
     body.append('file', file)
-    return client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/install?generation=${s.generation}&requestId=${encodeURIComponent(crypto.randomUUID())}`, {
+    return client.request<ConsoleSession>(`${base}/sessions/${s.id}/apps/install?generation=${s.generation}&requestId=${encodeURIComponent(requestId)}`, {
       method: 'POST', body, timeoutMs: 150000,
     })
   },

@@ -1,10 +1,13 @@
 import asyncio
+import hashlib
 import inspect
+import json
 import logging
 from datetime import UTC, datetime
 from typing import Any, ClassVar
 from uuid import uuid4
 
+from autoflow.application.android.verification import verify_lifecycle_operation
 from autoflow.domain.android.ports import AndroidError
 
 
@@ -39,18 +42,26 @@ class AndroidBulkService:
     def _workspace_identity(self) -> str | None:
         return getattr(getattr(self.devices, "management", None), "workspace_identity", None)
 
+    def _runtime_workspace_identity(self) -> str | None:
+        value = getattr(getattr(self.devices, "runtime", None), "workspace_id", None)
+        return str(value) if value is not None else None
+
     def _get(self, identifier: str, workspace: str | None = None) -> dict[str, Any]:
         getter = getattr(self.devices, "get", None)
         if getter is not None:
             try:
-                device = getter(identifier, workspace=workspace) if workspace is not None else getter(identifier)
-            except TypeError as error:
-                if workspace is None or "unexpected keyword" not in str(error):
-                    raise
                 device = getter(identifier)
+            except TypeError as error:
+                if workspace is None or "workspace" not in str(error) or "required" not in str(error):
+                    raise
+                device = getter(identifier, workspace=workspace)
         else:
             device = self.devices.repository.get(identifier)
-        if workspace is not None and device.get("workspaceId") not in (None, workspace):
+        expected_workspace = self._runtime_workspace_identity() or workspace
+        management_workspace = self._workspace_identity()
+        if workspace is not None and management_workspace is not None and workspace != management_workspace:
+            raise AndroidError("ANDROID_NOT_FOUND", "安卓设备未登记", 404)
+        if workspace is not None and device.get("workspaceId") not in (None, expected_workspace):
             raise AndroidError("ANDROID_NOT_FOUND", "安卓设备未登记", 404)
         return device
 
@@ -68,10 +79,52 @@ class AndroidBulkService:
         frozen = []
         for item in items:
             device = self._get(item["deviceId"], workspace)
-            frozen.append({"deviceId": item["deviceId"], "expectedRevision": item["expectedRevision"], "state": "queued", "operationId": None, "retryOf": None, "error": None, "name": device.get("name")})
+            frozen_item = {"deviceId": item["deviceId"], "expectedRevision": item["expectedRevision"], "state": "queued", "operationId": None, "retryOf": None, "error": None, "name": device.get("name")}
+            frozen.append(frozen_item)
         record = {"id": str(uuid4()), "workspaceIdentity": workspace, "requestId": request_id, "action": action, "deleteData": delete_data, "state": "queued", "items": frozen, "createdAt": datetime.now(UTC).isoformat()}
+        for item in frozen:
+            self._ensure_operation(record, item)
         self.resources.save("bulk", record)
         return record
+
+    def _operations(self) -> Any | None:
+        return getattr(getattr(self.devices, "management", None), "operations", None)
+
+    @staticmethod
+    def _operation_record(operations: Any, operation_id: str, workspace: str | None) -> Any:
+        try:
+            return operations.get(operation_id, workspace)
+        except TypeError:
+            return operations.get(operation_id)
+
+    def _ensure_operation(self, batch: dict[str, Any], item: dict[str, Any], *, attempt: int = 1, retry_of: str | None = None) -> Any | None:
+        operations = self._operations()
+        if operations is None or not hasattr(operations, "accept"):
+            return None
+        request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]}
+        if retry_of is not None:
+            request["retryOf"] = retry_of
+        digest = hashlib.sha256(json.dumps(request, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        try:
+            record = operations.accept(batch["workspaceIdentity"], request["requestId"], item["deviceId"], batch["action"], digest, request, retry_of=retry_of)
+        except TypeError:
+            if retry_of is not None:
+                raise
+            record = operations.accept(batch["workspaceIdentity"], request["requestId"], item["deviceId"], batch["action"], digest, request)
+        item["operationId"] = record.operation_id
+        return record
+
+    def _mark_failed(self, batch: dict[str, Any], item: dict[str, Any], message: str) -> None:
+        operation_id = item.get("operationId")
+        operations = self._operations()
+        if not operation_id or operations is None:
+            return
+        try:
+            record = self._operation_record(operations, operation_id, batch.get("workspaceIdentity"))
+            if record.state in {"queued", "waiting_capacity"}:
+                operations.transition(operation_id, record.state, "failed", {"stage_code": "failed", "result_code": "ANDROID_BULK_ITEM_FAILED", "message": message})
+        except (AndroidError, KeyError, LookupError, TypeError):
+            return
 
     def get(self, identifier: str, workspace: str | None = None) -> dict[str, Any]:
         batch = self.resources.get("bulk", identifier)
@@ -115,6 +168,7 @@ class AndroidBulkService:
                 item.update(state="needs_verification", error="操作结果未知，请核实设备状态")
             except AndroidError as error:
                 item.update(state="failed", error=error.message)
+                self._mark_failed(batch, item, error.message)
         self._batch_state(batch)
         self.resources.save("bulk", batch)
 
@@ -177,6 +231,7 @@ class AndroidBulkService:
                     item.update(state="waiting_device", error=error.message)
                 else:
                     item.update(state="failed", error=error.message)
+                    self._mark_failed(batch, item, error.message)
                 changed = True
                 break
         self._batch_state(batch)
@@ -211,15 +266,37 @@ class AndroidBulkService:
         self._batch_state(batch)
         return changed
 
+    async def verify(self, identifier: str, workspace: str | None = None) -> dict[str, Any]:
+        batch = self.get(identifier, workspace)
+        self._reconcile(batch)
+        operations = self._operations()
+        for item in batch["items"]:
+            if item.get("state") not in {"accepted", "needs_verification"} or not item.get("operationId") or operations is None:
+                continue
+            try:
+                record = self._operation_record(operations, item["operationId"], batch.get("workspaceIdentity"))
+                if record.state != "needs_verification":
+                    continue
+                await verify_lifecycle_operation(
+                    operations,
+                    self.devices,
+                    record,
+                    workspace_identity=batch.get("workspaceIdentity") or "default",
+                )
+            except AndroidError as error:
+                item.update(state="needs_verification", error=error.message)
+            else:
+                item.update(state="succeeded", error=None)
+        self._batch_state(batch)
+        self.resources.save("bulk", batch)
+        return batch
+
     def _operation_state(self, item: dict[str, Any], workspace: str | None = None) -> tuple[str | None, str | None]:
         operation_id = item.get("operationId")
         operations = getattr(getattr(self.devices, "management", None), "operations", None)
         if operation_id and operations is not None:
             try:
-                try:
-                    record = operations.get(operation_id, workspace)
-                except TypeError:
-                    record = operations.get(operation_id)
+                record = self._operation_record(operations, operation_id, workspace)
                 if workspace is not None and getattr(record, "workspace_identity", workspace) != workspace:
                     return "needs_verification", "操作归属无法核实，请重新检查"
                 return record.state, getattr(record, "message", None)
@@ -263,11 +340,34 @@ class AndroidBulkService:
         if action == "cancelPending":
             for item in batch["items"]:
                 if item["state"] in {"queued", "waiting_capacity", "waiting_device"}:
+                    operation_id = item.get("operationId")
+                    operations = self._operations()
+                    if operation_id and operations is not None:
+                        try:
+                            operation = self._operation_record(operations, operation_id, batch.get("workspaceIdentity"))
+                            if operation.state in {"queued", "waiting_capacity"}:
+                                operations.transition(operation_id, operation.state, "cancelled", {"stage_code": "cancelled", "result_code": "BULK_CANCELLED"})
+                            elif operation.state not in self._terminal_items:
+                                item.update(state="needs_verification", error="取消结果未知，请核实操作状态")
+                                continue
+                        except (AndroidError, KeyError, LookupError, TypeError) as error:
+                            item.update(state="needs_verification", error=str(error)[:240] or "取消结果未知，请核实操作状态")
+                            continue
                     item["state"] = "cancelled"
         elif action == "retryFailed":
             for item in batch["items"]:
                 if item["state"] == "failed":
-                    item.update(state="queued", operationId=None, retryOf=item.get("operationId"), error=None)
+                    retry_of = item.get("operationId")
+                    item.update(state="queued", operationId=None, retryOf=retry_of, error=None)
+                    operations = self._operations()
+                    if retry_of and operations is not None:
+                        try:
+                            parent = self._operation_record(operations, retry_of, batch.get("workspaceIdentity"))
+                            retry = self._ensure_operation(batch, item, attempt=int(parent.attempt) + 1, retry_of=retry_of)
+                            if retry is not None:
+                                item["attempt"] = int(retry.attempt) - 1
+                        except (AndroidError, KeyError, LookupError, TypeError) as error:
+                            item.update(state="needs_verification", error=str(error)[:240] or "重试操作无法核实")
         elif action == "verify":
             self._reconcile(batch)
         else:

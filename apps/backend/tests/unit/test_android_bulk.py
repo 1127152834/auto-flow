@@ -160,6 +160,43 @@ def test_bulk_rejects_targets_owned_by_another_workspace():
     assert error.value.status == 404
 
 
+def test_bulk_uses_runtime_workspace_identity_for_management_devices():
+    resources = _Resources()
+
+    class _Runtime:
+        workspace_id = "runtime-workspace-hash"
+
+    class _RuntimeDevices:
+        runtime = _Runtime()
+        management = type("Management", (), {"workspace_identity": "/workspace/autoflow"})()
+
+        def __init__(self):
+            self.items = {
+                "d1": {
+                    "deviceId": "d1",
+                    "workspaceId": "runtime-workspace-hash",
+                    "generation": 1,
+                    "control": "idle",
+                }
+            }
+
+        def get(self, identifier):
+            return self.items[identifier]
+
+    service = AndroidBulkService(resources, _RuntimeDevices())
+
+    batch = service.create(
+        "/workspace/autoflow",
+        "r-runtime-workspace",
+        "stop",
+        [{"deviceId": "d1", "expectedRevision": 1}],
+        False,
+    )
+
+    assert batch["workspaceIdentity"] == "/workspace/autoflow"
+    assert batch["items"][0]["deviceId"] == "d1"
+
+
 @pytest.mark.asyncio
 async def test_bulk_queue_only_advances_batches_for_the_bound_workspace():
     resources = _Resources()

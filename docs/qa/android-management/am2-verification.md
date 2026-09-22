@@ -1,6 +1,6 @@
 # AM2 镜像与模板验收
 
-审计基线：`432d1cdc`；当前聚焦后端 `175 passed, 1 warning`、前端 Android `13 files, 47 passed`；Google 组件条件见 [gapps-validation.md](gapps-validation.md)。
+审计基线：`c60148fb`；当前聚焦后端 `235 passed, 2 warnings`、前端 Android `13 files, 81 passed`；Google 组件条件见 [gapps-validation.md](gapps-validation.md)。
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
@@ -14,7 +14,7 @@
 
 ```text
 cd apps/backend && uv run pytest tests/contract/test_android_{images,templates}.py tests/unit/test_android_{image_catalog,image_verification,images}.py -q
-通过（包含在 Android 聚焦集合 175 passed 中）
+通过（包含在 Android 聚焦集合 235 passed 中）
 ```
 
 这组 unit/contract 结果不能证明网络拉取或 Google 登录流程。

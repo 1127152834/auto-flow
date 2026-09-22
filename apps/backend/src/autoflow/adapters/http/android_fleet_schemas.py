@@ -43,6 +43,7 @@ class BatchCreate(AndroidRename):
     batch_id: UUID
     profile_id: UUID
     profile_revision: int = Field(ge=1, strict=True)
+    source_device_id: UUID | None = None
     quantity: int = Field(default=1, ge=1, le=20, strict=True)
     instance_type: Literal["persistent", "temporary"] = "persistent"
     start: bool = True
@@ -167,6 +168,11 @@ class AppAction(ApiModel):
     generation: int = Field(ge=0, strict=True)
     package_name: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$", max_length=240)
     action: Literal["stop", "uninstall", "clearData"]
+
+
+class AppVerify(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    generation: int = Field(ge=0, strict=True)
 
 
 class BatchAction(ApiModel):

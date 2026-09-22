@@ -16,6 +16,7 @@ export type ImageRegister = components['schemas']['ImageRegister']
 export type ImagePullCreate = components['schemas']['ImagePullCreate']
 export type ImageDelete = components['schemas']['ImageDelete']
 export type ImageVerificationCreate = components['schemas']['ImageVerificationCreate']
+export type Diagnostic = components['schemas']['DiagnosticRead']
 
 const base = '/api/v1/android/management'
 export const androidManagementApi = (client: StreamingApiClient) => ({
@@ -38,7 +39,7 @@ export const androidManagementApi = (client: StreamingApiClient) => ({
   bulkAction: (id: string, body: Record<string, unknown>) => client.request<Bulk>(`${base}/bulk-operations/${id}/actions`, { method: 'POST', body }),
   cleanupPreview: (resourceIds: string[]) => client.request<{ items: Record<string, unknown>[]; previewId?: string; confirmationDigest: string }>(`${base}/cleanup/previews`, { method: 'POST', body: { resourceIds } }),
   cleanup: (body: { requestId: string; previewId?: string; confirmationDigest: string }) => client.request<{ items: Record<string, unknown>[]; state: string; operationId?: string; requestId?: string; previewId?: string }>(`${base}/cleanup`, { method: 'POST', body }),
-  diagnostics: (body: { requestId: string; deviceIds: string[]; includeAdvancedLogs?: boolean }) => client.request<components['schemas']['DiagnosticRead']>(`${base}/diagnostics`, { method: 'POST', body }),
+  diagnostics: (body: { requestId: string; deviceIds: string[]; includeAdvancedLogs?: boolean }) => client.request<Diagnostic>(`${base}/diagnostics`, { method: 'POST', body }),
   backups: () => client.request<Backup[]>(`${base}/backups`, { timeoutMs: 20000 }),
   backup: (body: { requestId: string; deviceId: string; expectedRevision: number }) => client.request<Backup>(`${base}/backups`, { method: 'POST', body, timeoutMs: 120000 }),
   restoreBackup: (id: string, body: { requestId: string; newName: string }) => client.request<BackupRestore>(`${base}/backups/${id}/restore`, { method: 'POST', body, timeoutMs: 120000 }),

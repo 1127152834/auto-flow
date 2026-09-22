@@ -44,7 +44,7 @@ class _AppRuntime:
     async def command(self, operation, args, timeout):
         self.calls.append((operation, args, timeout))
         if self.console is not None:
-            receipt = self.console.sessions["s"].get("appReceipts", {}).get("req")
+            receipt = next(iter(self.console.sessions["s"].get("appReceipts", {}).values()), None)
             assert receipt is not None
             assert receipt["state"] == "running"
         if self.failure is not None:
@@ -53,7 +53,7 @@ class _AppRuntime:
     async def install_apk(self, value):
         self.calls.append(("install", value))
         if self.console is not None:
-            receipt = self.console.sessions["s"].get("appReceipts", {}).get("req")
+            receipt = next(iter(self.console.sessions["s"].get("appReceipts", {}).values()), None)
             assert receipt is not None
             assert receipt["state"] == "running"
         if self.failure is not None:
@@ -209,3 +209,42 @@ async def test_native_window_is_not_reaped_by_embedded_heartbeat_timeout(monkeyp
     assert console.sessions["s"]["view"]["state"] == "connected"
     assert context.device["control"] == "manual"
     assert runtime.calls == []
+
+@pytest.mark.asyncio
+async def test_install_observes_package_and_version_before_success():
+    console, _runtime, _resources = _app_console()
+    await console.app_operation(
+        "s", 3, "install", b"opaque", "install-req",
+        {"packageName": "com.example.app", "versionCode": 1, "versionName": None},
+    )
+    assert console.sessions["s"]["appReceipts"]["install-req"]["state"] == "succeeded"
+
+
+@pytest.mark.asyncio
+async def test_unknown_app_action_can_be_reconciled_by_marker_without_replay():
+    console, runtime, _resources = _app_console(TimeoutError("adb timeout"))
+    from unittest.mock import AsyncMock
+    runtime.verify_pending_command = AsyncMock(return_value=0)
+    with pytest.raises(AndroidError) as error:
+        await console.app_operation("s", 3, "stop", "com.example.app", "stop-req")
+    assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
+    await console.verify_app("s", 3, "stop-req")
+    assert console.sessions["s"]["appReceipts"]["stop-req"]["state"] == "succeeded"
+    runtime.verify_pending_command.assert_awaited_once()
+    assert len(runtime.calls) == 1
+
+@pytest.mark.asyncio
+async def test_install_version_mismatch_stays_unverified_until_explicit_reconciliation():
+    console, runtime, _resources = _app_console()
+    runtime.app_info = lambda: asyncio.sleep(0, result={"applications": [{"packageName": "com.example.app", "versionCode": 9}]})
+    with pytest.raises(AndroidError) as error:
+        await console.app_operation(
+            "s", 3, "install", b"opaque", "install-mismatch",
+            {"packageName": "com.example.app", "versionCode": 1, "versionName": None},
+        )
+    assert error.value.code == "ANDROID_INSTALL_VERIFY_FAILED"
+    assert console.sessions["s"]["appReceipts"]["install-mismatch"]["state"] == "needs_verification"
+    with pytest.raises(AndroidError) as verified:
+        await console.verify_app("s", 3, "install-mismatch")
+    assert verified.value.code == "ANDROID_INSTALL_VERIFY_FAILED"
+    assert console.sessions["s"]["appReceipts"]["install-mismatch"]["state"] == "failed"
