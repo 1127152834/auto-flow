@@ -1,6 +1,6 @@
 {
   "date": "2026-09-22",
-  "status": "D1_implemented_local_scoped_native_follow_up_pending",
+  "status": "D1_implemented_scoped_three_platform_ci_passed_external_acceptance_pending",
   "releaseAccepted": false,
   "approvedOrder": [
     "C1",
@@ -326,5 +326,20 @@
     ]
   },
   "priorC2ProductionCandidate": "376b8a59",
-  "priorC3TestCandidate": "85bb8c7c"
+  "priorC3TestCandidate": "85bb8c7c",
+  "nativeD1Candidate": {
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "status": "passed",
+    "platforms": [
+      "darwin-arm64",
+      "win32-x64",
+      "darwin-x64"
+    ],
+    "reports": [
+      "ci-d1-final-darwin-arm64.json",
+      "ci-d1-final-darwin-x64.json",
+      "ci-d1-final-win32-x64.json"
+    ]
+  }
 }

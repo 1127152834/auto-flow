@@ -1,6 +1,6 @@
 {
   "date": "2026-09-22",
-  "status": "candidate_regression_in_progress",
+  "status": "candidate_regression_passed_release_acceptance_incomplete",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -9,7 +9,7 @@
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
     "16 of 251 requirements still have no located assertion; 198 partial / 53 planned / 0 verified. Located assertions do not close unproven acceptance subconditions.",
-    "D1 current local gates: 86 record/capability tests, 138 scoped Sheets/Excel/records tests, UI 11 tests, mypy 407 and OpenAPI pass. Current candidate CI is recorded separately.",
+    "D1 post-review candidate: source identity/omission/atomic prevalidation fixes included; dedicated D1 bad-value worker filter remains unclaimed.",
     "One independent whole C/R review completed; three Important findings fixed with RED counterexamples. Local full regression passed; current native follow-ups pending.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
@@ -142,85 +142,43 @@
     "status": "C/R implemented; one whole review completed and three Important findings fixed. Local full regression passed; current native failures are being corrected; release not accepted."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "D1 production candidate at ae347de9f5fc1922efa7c4af99c0e606e6bde26a; C/R review fixes remain included. Current native matrix is run 35677887974; release acceptance pending.",
+  "workingCandidate": "D1 post-review production candidate ae347de9f5fc1922efa7c4af99c0e606e6bde26a; Actions 35677887974 passed on Windows x64, macOS Intel and Apple Silicon. Release acceptance remains pending.",
   "finalCICandidate": {
-    "status": "failed_platforms_diagnosed_intel_pending",
-    "runId": 35629585683,
-    "headSha": "d75297fb0274c60fe9390181c75b0137e2e5b401",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35629585683",
-    "supersededRuns": [
-      {
-        "status": "superseded_test_import_lint",
-        "runId": 35628831527,
-        "headSha": "a8adc43adb172ef799d50b918fda61824d3751e3",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35628831527",
-        "platforms": [
-          "win32-x64",
-          "darwin-x64",
-          "darwin-arm64"
-        ],
-        "supersededDispatch": {
-          "runId": 35628776939,
-          "headSha": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
-          "conclusion": "cancelled",
-          "reason": "Branch push had not completed; detected old commit and canceled. This is not validation evidence."
-        },
-        "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
-      }
-    ],
-    "productionSource": "C/R production at 3c02b51f plus approved D1 source diagnostics at ae347de9f5fc1922efa7c4af99c0e606e6bde26a; current candidate includes both",
-    "platformFailures": [
-      {
-        "platform": "win32-x64",
-        "jobId": 106432247096,
-        "stage": "full backend",
-        "result": "1 failed, 3429 passed, 77 skipped, 2 warnings in 1244.13s",
-        "cause": "Scheduler test bounded SQLite setup plus execution plus event wake to one second. Now observes parked scheduler and real terminal notification directly; 34 passed in 20.23s. Suppressing subscribe_idle in a temporary counterexample fails exactly the notification assertion."
+    "status": "passed_all_platforms",
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+    "platforms": {
+      "darwin-arm64": {
+        "status": "passed",
+        "report": "ci-d1-final-darwin-arm64.json",
+        "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143792"
       },
-      {
-        "platform": "darwin-arm64",
-        "jobId": 106432247480,
-        "stage": "full frontend",
-        "result": "1 failed, 5468 passed / 409 files in 387.05s",
-        "cause": "Real HTTP UI test used default one-second findByRole while browser status and profiles were still loading. Controlled 1100ms status delay reproduced same failure. Await actual HTTP-driven controls with bounded five-second waits; command exclusion assertions and production code unchanged.",
-        "localVerification": "Controlled delayed HTTP counterexample: original 1 failed/1 passed; corrected 4 passed in 3.66s including normal and delayed copies. Temporary copy removed; committed browser command/lifecycle files 20 passed in 2.09s."
+      "win32-x64": {
+        "status": "passed",
+        "report": "ci-d1-final-win32-x64.json",
+        "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143984"
+      },
+      "darwin-x64": {
+        "status": "passed",
+        "report": "ci-d1-final-darwin-x64.json",
+        "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143937"
       }
-    ],
-    "next": "Await current three-platform candidate; preserve each platform result and keep missing physical/external evidence explicit.",
-    "currentCandidateRun": {
-      "runId": 35677887974,
-      "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
-      "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
-      "status": "queued",
-      "scope": "Approved D1 production candidate; all three platform jobs required. Native probe and worker probe are skipped by the workflow and provide no evidence."
     },
-    "followUpRuns": [
-      {
-        "platform": "win32-x64",
-        "runId": 35633602923,
-        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633602923",
-        "status": "in_progress"
-      },
-      {
-        "platform": "darwin-arm64",
-        "runId": 35633607909,
-        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633607909",
-        "status": "in_progress"
-      }
-    ]
+    "nativeProbe": "skipped",
+    "workerProbe": "skipped",
+    "physicalInstallation": "pending"
   },
   "codeCandidateScope": "Current final production candidate ae347de9f5fc1922efa7c4af99c0e606e6bde26a includes approved D1 source changes; prior hashes remain historical scoped evidence. Current native runs are listed in finalCICandidate.",
   "testCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
   "d1": "D1 source safe business-format preservation: Sheets and XLSX direct cases pass; source identity and unsafe wire values remain strict; required source omissions remain absent; Sheets prevalidates all rows before materialization. Production packaged/real-Google/worker acceptance pending.",
   "d1Verification": {
-    "backend": "138 passed, 2 warnings in 58.62s for D1 records/sheets/excel/capability scope",
-    "frontend": "11 passed in 3.32s for RecordFieldsView and RecordDetailPage",
+    "backend": "138 scoped backend passed locally; current CI full backend: 3453 macOS / 3443 Windows passed, platform-specific skips retained",
+    "frontend": "5470 passed on each platform",
     "typecheck": "passed",
     "openapi": "passed",
     "mypy": "407 source files passed",
     "ruff": "passed",
-    "realWorker": "0 selected tests; existing real-browser filter had 29 deselected, no worker evidence claimed"
+    "realWorker": "21 passed, 11 deselected on each platform; this is existing PM9 scenario coverage. Dedicated D1 bad-value worker filter did not select a test and remains unclaimed."
   }
 }

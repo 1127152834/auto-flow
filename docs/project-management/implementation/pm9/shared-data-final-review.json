@@ -1,6 +1,6 @@
 {
   "date": "2026-09-22",
-  "status": "findings_fixed_scoped_regression_D1_local_pass_native_follow_up_pending",
+  "status": "findings_fixed_scoped_regression_D1_local_and_three_platform_ci_pass_external_acceptance_pending",
   "releaseAccepted": false,
   "reviewedRange": {
     "base": "e71785da7353760ea8bfd567d272dd27865c0188",
@@ -65,65 +65,26 @@
     "d1": "138 backend, 11 UI, mypy407, Ruff, OpenAPI, typecheck pass; existing PM9 worker scenarios 5 passed locally; D1 bad-value worker filter selected 0 and remains unclaimed."
   },
   "finalCICandidate": {
-    "status": "failed_platforms_diagnosed_intel_pending",
-    "runId": 35629585683,
-    "headSha": "d75297fb0274c60fe9390181c75b0137e2e5b401",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35629585683",
-    "supersededRuns": [
-      {
-        "status": "superseded_test_import_lint",
-        "runId": 35628831527,
-        "headSha": "a8adc43adb172ef799d50b918fda61824d3751e3",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35628831527",
-        "platforms": [
-          "win32-x64",
-          "darwin-x64",
-          "darwin-arm64"
-        ],
-        "supersededDispatch": {
-          "runId": 35628776939,
-          "headSha": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
-          "conclusion": "cancelled",
-          "reason": "Branch push had not completed; detected old commit and canceled. This is not validation evidence."
-        },
-        "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
-      }
-    ],
-    "productionSource": "unchanged since 3c02b51f; later commits update rules/import layout and reports",
-    "platformFailures": [
-      {
-        "platform": "win32-x64",
-        "jobId": 106432247096,
-        "stage": "full backend",
-        "result": "1 failed, 3429 passed, 77 skipped, 2 warnings in 1244.13s",
-        "cause": "Scheduler test bounded SQLite setup plus execution plus event wake to one second. Now observes parked scheduler and real terminal notification directly; 34 passed in 20.23s. Suppressing subscribe_idle in a temporary counterexample fails exactly the notification assertion."
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "status": "passed_all_platforms",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+    "platforms": {
+      "darwin-arm64": {
+        "status": "passed",
+        "report": "ci-d1-final-darwin-arm64.json"
       },
-      {
-        "platform": "darwin-arm64",
-        "jobId": 106432247480,
-        "stage": "full frontend",
-        "result": "1 failed, 5468 passed / 409 files in 387.05s",
-        "cause": "Real HTTP UI test used default one-second findByRole while browser status and profiles were still loading. Controlled 1100ms status delay reproduced same failure. Await actual HTTP-driven controls with bounded five-second waits; command exclusion assertions and production code unchanged.",
-        "localVerification": "Controlled delayed HTTP counterexample: original 1 failed/1 passed; corrected 4 passed in 3.66s including normal and delayed copies. Temporary copy removed; committed browser command/lifecycle files 20 passed in 2.09s."
-      }
-    ],
-    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged.",
-    "followUpRuns": [
-      {
-        "platform": "win32-x64",
-        "runId": 35633602923,
-        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633602923",
-        "status": "in_progress"
+      "win32-x64": {
+        "status": "passed",
+        "report": "ci-d1-final-win32-x64.json"
       },
-      {
-        "platform": "darwin-arm64",
-        "runId": 35633607909,
-        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
-        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633607909",
-        "status": "in_progress"
+      "darwin-x64": {
+        "status": "passed",
+        "report": "ci-d1-final-darwin-x64.json"
       }
-    ]
+    },
+    "nativeProbe": "skipped",
+    "workerProbe": "skipped"
   },
   "localInstaller": "install-shared-data-final-darwin-arm64.json",
   "d1Review": {
@@ -157,7 +118,7 @@
     "nativeRun": {
       "runId": 35677887974,
       "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
-      "status": "in_progress",
+      "status": "passed_all_platforms",
       "nativeProbe": "skipped",
       "workerProbe": "skipped"
     }
