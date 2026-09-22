@@ -1660,9 +1660,9 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2607,8 +2607,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 235,
-    "withNoLocatedAssertion": 16,
+    "withAssertions": 236,
+    "withNoLocatedAssertion": 15,
     "statuses": {
       "partially_verified": 198,
       "planned": 53

@@ -1,6 +1,6 @@
 # PM9 assertion mapping review
 
-2026-09-22 最新机器统计：251 条，235 有范围断言/16 未定位，198 partial/53 planned/0 verified。SH-02 两种顺序写历史/本地值/来源观察与 SYNC-09 拒绝写后拉取/领取已映射；完整 worker/UI/实网子条件保留。具体以 coverage.json 和 coverage-audit.json 为准。
+2026-09-22 最新机器统计：251 条，236 有范围断言/15 未定位，198 partial/53 planned/0 verified。DATA-TABLE-08 已补系统状态只读、业务 status 字段共存、伪造改型/删除/来源映射拒绝和业务状态写入的直接 SQLite/能力服务断言；生产 worker/UI/实网子条件保留。具体以 coverage.json 和 coverage-audit.json 为准。
 
 日期：2026-09-21。状态：confirmed（映射审查），完整产品验收仍未完成。来源：原始设计各需求编号、现有测试函数断言及本轮运行记录。
 
@@ -76,4 +76,8 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 候选 ae347de9f5fc1922efa7c4af99c0e606e6bde26a 的 Actions 35677887974 在 Windows x64、macOS Intel、Apple Silicon 全部通过：各平台后端 3443/3453 passed（平台 skip 保留）、前端 5470 passed、21 个既有真实 worker 场景通过；同提交源码/打包链、五路万行写入和 1000 条/分钟合成日志报告已保存为 ci-d1-final-*.json。这证明 CI 平台链，不等于物理安装、签名、公证或真实 Google/OAuth 验收；native probe/worker probe job 被跳过。
 
-当前台账仍为 251 条、235 条有明确范围断言、16 条未定位，198 partially_verified、53 planned、0 verified。D1 专门坏业务值 worker 筛选未命中，仍未宣称；S4 已存在文件覆盖/追加/读取、M1–M3、真实 Google/OAuth、完整打包 Sheets 链和三平台实机安装/签名仍是实际或外部条件缺口。releaseAccepted=false，草稿 PR 不合并、不发布。
+当前台账为 251 条、236 条有明确范围断言、15 条未定位，198 partially_verified、53 planned、0 verified。D1 专门坏业务值 worker 筛选未命中，仍未宣称；S4 已存在文件覆盖/追加/读取、M1–M3、真实 Google/OAuth、完整打包 Sheets 链和三平台实机安装/签名仍是实际或外部条件缺口。releaseAccepted=false，草稿 PR 不合并、不发布。
+
+### 2026-09-22 DATA-TABLE-08 补证
+
+`test_system_status_is_read_only_while_business_status_field_and_status_write_coexist` 以真实 SQLite 能力服务联合断言：结构查询返回固定 `statusId` 且 `writable=false`；普通 `status` 字段可以共存；伪造系统字段的改型、删除和来源映射分别被拒绝，失败操作不留下持久事实；同一条记录仍可通过正式状态命令写入业务状态。定向文件 15 passed；此证据仍属于本机能力服务集成，不替代真实 worker、打包应用、三平台原生交互或 Google 实网验收。

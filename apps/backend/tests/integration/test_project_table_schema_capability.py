@@ -4,13 +4,23 @@ from dataclasses import replace
 import pytest
 from sqlalchemy import func, select
 
+from autoflow.application.project_data.catalog import DataCatalogService
+from autoflow.application.project_data.records import DataRecordService
 from autoflow.domain.project_data import capabilities as commands
+from autoflow.domain.project_data.identity import RecordKey, encode_record_key
+from autoflow.domain.project_runs.input_selection import RecordRef
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
+from autoflow.infrastructure.database.project_data_catalog import (
+    SqlAlchemyProjectDataCatalog,
+)
 from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
     DataRecordRow,
     DataTableRow,
+)
+from autoflow.infrastructure.database.project_data_records import (
+    SqlAlchemyProjectDataRecords,
 )
 from autoflow.infrastructure.database.project_run_models import (
     ProjectRecordLeaseRow,
@@ -18,6 +28,8 @@ from autoflow.infrastructure.database.project_run_models import (
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 from tests.integration.test_project_capability_fencing import (  # noqa: F401
+    _record_ref,
+    _scope,
     _service,
     capability_context,
 )
@@ -116,3 +128,167 @@ def test_schema_query_returns_only_selected_source_metadata_and_no_write_grant(t
         assert denied.value.code == 'CAPABILITY_SCOPE_DENIED'
         assert facts(first.client.app.state.session_factory) == before
         assert first.transport.changes() == 0
+
+
+def test_system_status_is_read_only_while_business_status_field_and_status_write_coexist(capability_context):  # noqa: F811
+    factory, project, task, table, field, record = capability_context
+    service = _service(factory)
+    catalog = DataCatalogService(SqlAlchemyProjectDataCatalog(factory))
+    business_field = catalog.create_field(
+        project,
+        table["tableId"],
+        uid(),
+        {
+            "definition": {
+                "key": "status",
+                "name": "业务状态",
+                "type": "string",
+                "required": False,
+                "validation": {},
+            },
+            "expectedTableRevision": 2,
+            "sourceColumnPolicy": "localOnly",
+        },
+    )[0]["field"]
+    business_status = catalog.create_status(
+        project,
+        table["tableId"],
+        uid(),
+        {
+            "name": "已处理",
+            "color": "#2f855a",
+            "order": 1,
+            "expectedTableRevision": 3,
+        },
+    )[0]["status"]
+
+    schema_scope = replace(
+        service.scope(project, task.task_id, task.run_id),
+        table_grants=frozenset(
+            {
+                commands.TableCapabilityGrant(
+                    table["tableId"],
+                    table["datasetGeneration"],
+                    frozenset({"queryTableSchema"}),
+                    frozenset(
+                        {field["ref"]["fieldId"], business_field["ref"]["fieldId"]}
+                    ),
+                )
+            }
+        ),
+    )
+    schema = service.query_table_schema(
+        schema_scope,
+        commands.QueryProjectTableSchemaRequest(
+            1,
+            project,
+            table["tableId"],
+            table["datasetGeneration"],
+            [field["ref"]["fieldId"], business_field["ref"]["fieldId"]],
+        ),
+    )
+    assert {item["key"] for item in schema["fields"]} == {"value", "status"}
+    assert schema["systemProperties"] == {
+        "statusId": {"type": "status", "nullable": True, "writable": False}
+    }
+
+    with pytest.raises(ProjectError) as mapped_system:
+        catalog.create_field(
+            project,
+            table["tableId"],
+            uid(),
+            {
+                "definition": {
+                    "key": "system-status",
+                    "name": "系统状态映射",
+                    "type": "string",
+                    "required": False,
+                    "validation": {},
+                },
+                "expectedTableRevision": 4,
+                "sourceColumnPolicy": "mapped",
+            },
+        )
+    assert mapped_system.value.code == "SOURCE_MAPPING_UNAVAILABLE"
+
+    system_definition = {
+        "key": "statusId",
+        "name": "系统状态",
+        "type": "string",
+        "required": False,
+        "validation": {},
+    }
+    capability_scope = _scope(project, task, table, field, _record_ref(project, record), 1)
+    modify_op, delete_op = uid(), uid()
+    with pytest.raises(ProjectError) as modified_system:
+        service.modify_field(
+            capability_scope,
+            commands.ModifyProjectFieldCommand(
+                modify_op,
+                1,
+                project,
+                table["tableId"],
+                table["datasetGeneration"],
+                business_status["statusId"],
+                system_definition,
+                4,
+                1,
+                1,
+            ),
+        )
+    assert modified_system.value.code == "CAPABILITY_SCOPE_DENIED"
+    with pytest.raises(ProjectError) as deleted_system:
+        service.delete_field(
+            capability_scope,
+            commands.DeleteProjectFieldCommand(
+                delete_op,
+                1,
+                project,
+                table["tableId"],
+                table["datasetGeneration"],
+                business_status["statusId"],
+                4,
+                1,
+            ),
+        )
+    assert deleted_system.value.code == "CAPABILITY_SCOPE_DENIED"
+    with factory() as session:
+        assert session.get(ProjectOperationRow, modify_op) is None
+        assert session.get(ProjectOperationRow, delete_op) is None
+        assert session.get(DataTableRow, table["tableId"]).table_revision == 4
+
+    ref = record["ref"]
+    service.read_record(
+        capability_scope,
+        commands.ReadProjectRecordRequest(
+            1,
+            _record_ref(project, record),
+            [field["ref"]["fieldId"]],
+            "workflow",
+        ),
+    )
+    changed, replayed = service.set_record_status(
+        capability_scope,
+        commands.SetRecordStatusCommand(
+            uid(),
+            1,
+            RecordRef(
+                project,
+                ref["tableId"],
+                ref["datasetGeneration"],
+                RecordKey(ref["recordKey"]["type"], ref["recordKey"]["value"]),
+            ),
+            business_status["statusId"],
+            record["statusRevision"],
+        ),
+    )
+    assert not replayed and changed["statusId"] == business_status["statusId"]
+    assert DataRecordService(SqlAlchemyProjectDataRecords(factory)).get(
+        project,
+        table["tableId"],
+        table["datasetGeneration"],
+        encode_record_key(
+            RecordKey(ref["recordKey"]["type"], ref["recordKey"]["value"])
+        ),
+        ref["recordKey"]["type"],
+    )["statusId"] == business_status["statusId"]

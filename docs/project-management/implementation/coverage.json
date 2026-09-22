@@ -10606,12 +10606,19 @@
         "PM2-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-22",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_table_schema_capability.py",
+            "symbol": "test_system_status_is_read_only_while_business_status_field_and_status_write_coexist",
+            "scope": "结构查询明确返回只读 statusId；业务 key=status 可并存；伪造系统字段改型、删除和来源映射均拒绝且不留下操作事实，业务状态仍可写入",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：系统状态不能被字段节点改型/删除/映射，业务 status 字段可共存；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "当前断言为真实 SQLite/能力服务集成场景；生产 worker、打包应用和三平台原生交互仍需对应验收证据"
           }
         ],
         "statusBeforeReview": "verified"

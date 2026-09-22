@@ -1,6 +1,6 @@
 # PM9 剩余工作复核
 
-最新状态（2026-09-22）：C1–C4 与 R1–R5 已实现，一次整批审查的三项 Important 均修复；本机完整回归通过，当前原生 CI 补跑见 verification.json。235 条有范围断言、16 未定位、198 partial/53 planned/0 verified。D1 来源业务格式错误保留/诊断已按批准方案实现，当前候选仍待三平台 CI 与外部验收；S4 既有文件、M1–M3 与外部验收仍未闭合。下文按日期保留的阶段状态不代表最新实现仍缺失。
+最新状态（2026-09-22）：C1–C4 与 R1–R5 已实现，一次整批审查的三项 Important 均修复；本机完整回归通过，当前原生 CI 补跑见 verification.json。DATA-TABLE-08 已补直接 SQLite/能力服务断言；当前 236 条有范围断言、15 未定位、198 partial/53 planned/0 verified。D1 来源业务格式错误保留/诊断已按批准方案实现，当前候选仍待三平台 CI 与外部验收；S4 既有文件、M1–M3 与外部验收仍未闭合。下文按日期保留的阶段状态不代表最新实现仍缺失。
 
 2026-09-21 共享数据续作：两份方案已获批准，按 C1–C4→R1→R2→R5→R3→R4 实施。C1–C3 已接通公共身份、全部占用入口、独立本地游标、生命周期和旧锁阻断；29 项真实 worker 与最新独立状态 3 项、前端 5460 项通过。C4 后端全量发现 4 个历史迁移 head 断言过期，修正验证及新三平台继续。当前 227 条有范围断言 / 24 未定位，192 partial / 59 planned / 0 verified。R1 表结构查询和 R2 本地字段删除已接通并通过本机实际 worker；R5→R3→R4 继续实施；Windows 既有文件安全操作和外部验收仍未闭合。详见 shared-data-follow-through.json。下文 f580 及更早现状保留为对应候选历史，不代表当前 C1–C3 实现仍缺失。
 
@@ -221,4 +221,6 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 候选 ae347de9f5fc1922efa7c4af99c0e606e6bde26a 的 Actions 35677887974 在 Windows x64、macOS Intel、Apple Silicon 全部通过：各平台后端 3443/3453 passed（平台 skip 保留）、前端 5470 passed、21 个既有真实 worker 场景通过；同提交源码/打包链、五路万行写入和 1000 条/分钟合成日志报告已保存为 ci-d1-final-*.json。这证明 CI 平台链，不等于物理安装、签名、公证或真实 Google/OAuth 验收；native probe/worker probe job 被跳过。
 
-当前台账仍为 251 条、235 条有明确范围断言、16 条未定位，198 partially_verified、53 planned、0 verified。D1 专门坏业务值 worker 筛选未命中，仍未宣称；S4 已存在文件覆盖/追加/读取、M1–M3、真实 Google/OAuth、完整打包 Sheets 链和三平台实机安装/签名仍是实际或外部条件缺口。releaseAccepted=false，草稿 PR 不合并、不发布。
+当前台账为 251 条、236 条有明确范围断言、15 条未定位，198 partially_verified、53 planned、0 verified。D1 专门坏业务值 worker 筛选未命中，仍未宣称；S4 已存在文件覆盖/追加/读取、M1–M3、真实 Google/OAuth、完整打包 Sheets 链和三平台实机安装/签名仍是实际或外部条件缺口。releaseAccepted=false，草稿 PR 不合并、不发布。
+
+2026-09-22 DATA-TABLE-08 补证：新增真实 SQLite/能力服务联合场景，证明固定系统状态元数据只读、业务 `status` 字段共存、伪造改型/删除/来源映射拒绝且无半写，业务状态写入仍成功。`test_project_table_schema_capability.py` 15 项通过。该项只补本机直接断言，不改变生产 worker、打包、实网或三平台原生验收边界。
