@@ -2,21 +2,23 @@
 
 - 状态：`partial`；代码、契约和真实基础 ReDroid 链路已验证，Google 组件、测试 APK、批量压力和手动原生窗口仍 `blocked`。
 - worktree：`codex/android-management-complete`，起点 `a92f0688f206d4339ff4468c1871f3ccdd6816dc`。
+- 代码交付提交：`432d1cdc`；OpenAPI 生成类型与本提交一致。
 - 主工作区既有 Studio 未提交改动未复制、未修改。
 
 ## 已执行
 
 | 类别 | 命令 | 实际结果 |
 | --- | --- | --- |
-| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q` | `159 passed, 1 warning` |
-| 前端 Android（历史基线） | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `7 files, 17 passed`；当前聚焦回归以 13 files/45 passed 为准 |
+| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q` | `175 passed, 1 warning` |
+| 前端 Android（历史基线） | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | 旧记录已由本轮 13 files/47 passed 覆盖 |
 | 前端类型 | `cd apps/desktop && npm run typecheck` | 通过 |
-| 前端 Android 最终聚焦回归 | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `13 files, 45 passed`（含旧设备列表轮询、未知核实、stale/unknown 打开保护、镜像/模板和维护入口回归） |
+| 前端 Android 最终聚焦回归 | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `13 files, 47 passed`（含批量失败项 retryFailed 幂等请求、镜像删除未知结果核实、服务端镜像验证入口） |
 | 前端 lint | `cd apps/desktop && npm run lint` | 通过 |
 | OpenAPI | `npm run openapi:generate`、`npm run openapi:check` | 通过 |
 | 前端 build | `npm run build` | 完成并有依赖注释 warning；本轮未重复构建 |
 | smoke 参数保护 | `cd apps/backend && uv run pytest tests/unit/test_android_management_smoke_args.py -q` | `2 passed`；带授权参数时明确输出 blocked |
 | 新增契约集合 | `cd apps/backend && uv run pytest tests/contract/test_android_{apps,backups,images,templates}.py -q` | `4 passed, 1 warning` |
+| 本轮增量契约/单元 | `cd apps/backend && uv run pytest tests/contract/test_android_images.py tests/contract/test_android_management_diagnostics.py tests/unit/test_android_images.py tests/unit/test_android_diagnostics_export.py tests/contract/test_android_management_operations.py -q` | `32 passed, 1 warning` |
 | 迁移 | Alembic 临时 SQLite 升级及旧 Android 历史回归 | head=`am01_management_operations`，通过 |
 | 结构检查 | `npm run test:structure` | `4 passed` |
 | 全脚本基线 | `npm run test:scripts` | `95 tests: 92 passed, 3 pre-existing Studio inventory/reference failures` |
@@ -29,7 +31,7 @@
 
 ## 已覆盖
 
-只读环境诊断、逐项 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、全量计数分页和迁移；管理首页不请求 workflows/allocations/runs 或旧 `/api/v1/android/devices`；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、引用保护、来源校验、拉取引用安全校验、验证结果归并、模板 revision 归档；persistent 默认创建并拒绝 temporary；停机备份前置条件、受限目录/权限、归档摘要/字节数/镜像一致性和路径安全校验；诊断脱敏；容量未知和预留阻止准入；观察器活跃 3 秒刷新、失败指数退避和 10/45 秒陈旧规则；应用操作 requestId/保护包边界、真实 Android 平台包名解析；清理预览摘要冻结并执行受控删除；批量操作 UI 冻结设备 revision；smoke 授权保护；前端诊断面板、管理快照、批量操作、备份入口、镜像/模板和会话控制器。备份适配使用 Docker volume copy，不依赖 Android 镜像提供独立 `/bin/sh`。
+只读环境诊断、逐项 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、全量计数分页和迁移；管理首页不请求 workflows/allocations/runs 或旧 `/api/v1/android/devices`；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、引用保护、来源校验、拉取引用安全校验、服务端镜像元数据验证和精确 imageId 删除核实、模板 revision 归档；persistent 默认创建并以稳定错误拒绝 temporary；停机备份前置条件、受限目录/权限、归档摘要/字节数/镜像一致性和路径安全校验；诊断导出采集环境/设备/操作快照并递归脱敏；容量未知和预留阻止准入；观察器活跃 3 秒刷新、失败指数退避和 10/45 秒陈旧规则；应用操作 requestId/保护包边界、真实 Android 平台包名解析；清理预览摘要冻结并执行受控删除；批量操作 UI 冻结设备 revision、失败项 retryOf lineage 和稳定请求号；smoke 授权保护；前端诊断面板、管理快照、批量操作、备份入口、镜像/模板和会话控制器。备份适配使用 Docker volume copy，不依赖 Android 镜像提供独立 `/bin/sh`。
 
 ## 阻塞项与风险
 
@@ -37,6 +39,6 @@
 - Google 组件镜像、专用测试账号、可分发测试 APK 和人工原生 scrcpy 窗口未具备，因此 GApps 登录、免费测试应用安装/启动、中文输入、窗口交互仍 `blocked`；没有用 mock 结果代替。
 - `npm run test:scripts` 的三个 Studio inventory/reference 失败与本模块无关，未扩大范围修复；依赖安装/Node 版本会影响其复现。
 - 全量 `cd apps/backend && uv run --group build pytest -x -q` 完成 `257 passed, 1 warning` 后，在既有 `tests/contract/test_proxy_runtime.py::test_runtime_mounts_proxies_but_never_publishes_host_contract` 失败；该 proxy compatibility 断言不在 Android 范围，安卓聚焦集合不受此阻塞。
-- 镜像拉取和内容删除已接入 Mac runtime 的受限 Docker pull/inspect/rm 适配和兼容性门禁；内容删除仍受设备、模板和备份引用保护，本轮真实使用了缓存基础镜像并核对固定 digest，网络拉取、内容删除实机和 GApps 候选仍未验收。观察器规则已接入后台启动/关闭调度；应用列表已接入版本/系统应用标识、搜索、停止、卸载、清除数据、确认和结果未知复核。
+- 镜像拉取和内容删除已接入 Mac runtime 的受限 Docker pull/inspect/rm 适配和兼容性门禁；服务端验证忽略客户端结果并核对精确 digest、架构和 OS，未知删除可按原 requestId 核实。本轮真实使用了缓存基础镜像并核对固定 digest，网络拉取、内容删除实机和 GApps 候选仍未验收。观察器规则已接入后台启动/关闭调度；应用列表已接入版本/系统应用标识、搜索、停止、卸载、清除数据、确认和结果未知复核。
 - 备份已接入受限数据卷 copy 归档、摘要、路径/特殊文件校验，并真实完成数据标记写入、停机归档和新卷恢复；缺失适配器、缺失精确镜像、旧 manifest 或损坏归档会明确失败，不发布“恢复成功”。清理按实际 workspace identity 汇总保留数据和备份，预览包含不可逆影响与引用指纹，执行前重检并分别走设备删除操作或受控备份目录删除。
-- AM3 的批量压力和人工窗口验收仍未执行；应用停止/卸载/清除的真实破坏性动作未执行，保持保护边界。
+- AM3 的批量压力和人工窗口验收仍未执行；应用停止/卸载/清除的真实破坏性动作未执行，保持保护边界。诊断导出当前只采集管理快照和只读环境检查，未接入高级日志 IPC/时间窗口，仍不宣称完整日志导出。
