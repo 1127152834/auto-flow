@@ -81,3 +81,15 @@ it('keeps destructive actions disabled when system or protected metadata is unkn
   expect(within(app).getByRole('button', { name: '清除数据' })).toBeDisabled()
   expect(within(app).getByRole('button', { name: '卸载' })).toBeDisabled()
 })
+
+it('disables an already-open destructive confirmation when the session becomes unknown', async () => {
+  const api = { appAction: vi.fn(), launch: vi.fn() }
+  const view = render(<ApplicationsPanel apps={apps} api={api} session={fixtureSession(true)} onSession={vi.fn()} onRefresh={vi.fn()} />)
+  const app = screen.getByText('org.example.notes').closest('article')!
+  await userEvent.click(within(app).getByRole('button', { name: '清除数据' }))
+  expect(screen.getByRole('dialog')).toBeVisible()
+
+  view.rerender(<ApplicationsPanel apps={apps} api={api} session={{ ...fixtureSession(true), state: 'unknown' }} onSession={vi.fn()} onRefresh={vi.fn()} />)
+
+  expect(within(screen.getByRole('dialog')).getByRole('button', { name: '确认清除数据' })).toBeDisabled()
+})
