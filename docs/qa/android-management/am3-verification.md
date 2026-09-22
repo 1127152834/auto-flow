@@ -1,6 +1,6 @@
 # AM3 多实例效率验收
 
-审计基线：`97354567`；当前聚焦后端 `149 passed, 1 warning`、前端 Android `13 files, 42 passed`；真实双实例基础证据来自 [总体验收记录](2026-09-22-validation.md)。
+审计基线：`b828daf9`；当前聚焦后端 `149 passed, 1 warning`、前端 Android `13 files, 42 passed`；真实双实例基础证据来自 [总体验收记录](2026-09-22-validation.md)。
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |

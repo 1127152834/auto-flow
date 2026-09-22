@@ -4,7 +4,7 @@
 
 实施计划 100 个 checkbox 当前分布：`passed=25`、`blocked=70`、`not_run=5`、`failed=0`。
 
-审计基线：`codex/android-management-complete`，代码交付提交 `97354567`；本页聚焦计数按隔离 worktree 的可复核输出记录，主工作区既有 Studio 文档改动不属于本模块，未纳入 Android 证据。
+审计基线：`codex/android-management-complete`，代码交付提交 `b828daf9`；本页聚焦计数按隔离 worktree 的可复核输出记录，主工作区既有 Studio 文档改动不属于本模块，未纳入 Android 证据。
 
 ## 阶段索引
 

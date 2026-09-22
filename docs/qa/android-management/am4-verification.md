@@ -1,6 +1,6 @@
 # AM4 数据与维护验收
 
-审计基线：`97354567`；当前聚焦后端 `149 passed, 1 warning`、前端 Android `13 files, 42 passed`；完整端到端演练尚未完成。
+审计基线：`b828daf9`；当前聚焦后端 `149 passed, 1 warning`、前端 Android `13 files, 42 passed`；完整端到端演练尚未完成。
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
