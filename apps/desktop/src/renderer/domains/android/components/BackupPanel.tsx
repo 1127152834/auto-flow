@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
+import { ApiClientError } from '../../../shared/api/client'
 import type { AndroidManagementApi, Backup } from '../management-api'
 
 export function BackupPanel({ api, deviceId, revision, runtimeState, control, hasControlSession, stale }: { api: Pick<AndroidManagementApi, 'backups' | 'backup' | 'restoreBackup' | 'operationByRequest'>; deviceId: string; revision: number; runtimeState?: string; control?: string; hasControlSession?: boolean; stale?: boolean }) {
@@ -16,7 +17,7 @@ export function BackupPanel({ api, deviceId, revision, runtimeState, control, ha
     pending.current = { kind: 'create', requestId }; setBusy(true); setError(''); setMessage('')
     if (needsVerification) return void verify()
     try { await api.backup({ requestId, deviceId, expectedRevision: revision }); pending.current = null; setNeedsVerification(false); setMessage('备份已创建'); await backups.refetch() }
-    catch (cause) { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '备份结果尚未确认，请核实原请求') }
+    catch (cause) { if (cause instanceof ApiClientError && cause.status === 409) { setNeedsVerification(false); setError(cause.message) } else { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '备份结果尚未确认，请核实原请求') } }
     finally { setBusy(false) }
   }
   const restore = async (backupId: string) => {
@@ -26,7 +27,7 @@ export function BackupPanel({ api, deviceId, revision, runtimeState, control, ha
     pending.current = { kind: 'restore', backupId, requestId }; setBusy(true); setError(''); setMessage('')
     if (needsVerification) return void verify()
     try { const result = await api.restoreBackup(backupId, { requestId, newName: '恢复实例' }); pending.current = null; setNeedsVerification(false); setMessage(`恢复已提交，操作 ${result.operationId ?? '已接收'} 将在资源看板中显示`); await backups.refetch() }
-    catch (cause) { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '恢复结果尚未确认，请核实原请求') }
+    catch (cause) { if (cause instanceof ApiClientError && cause.status === 409) { setNeedsVerification(false); setError(cause.message) } else { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '恢复结果尚未确认，请核实原请求') } }
     finally { setBusy(false) }
   }
   const verify = async () => {
