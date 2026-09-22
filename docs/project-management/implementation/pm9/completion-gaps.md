@@ -214,3 +214,11 @@ DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源�
 当前 251 条中 232 有定位断言、19 未定位；197 partially_verified / 54 planned / 0 verified。LIFE-09 的活动 worker/保存/未知写联合链、完整打包和实网条件仍保留，releaseAccepted=false。
 
 2026-09-22 最新补证：已有坏业务值 fixture 的 HTTP 状态设置/占用 held 与 reconciling 拒绝/模拟释放后清空通过；17 项共享领取回归。D1 实现后，Sheets/XLSX 普通来源业务格式错误保留原值并派生诊断；身份与 unsafe wire scalar 严格拒绝；必填来源缺失保持缺失；Sheets 先全量预校验再物化，避免坏身份造成半批发布。真实 worker、打包完整链和实网授权仍未验收。当前机器统计 251/235 有断言/16 未定位，198 partial/53 planned/0 verified；前文 197/54、233/18 为阶段性手工统计，本节 supersede。未改变任何条目状态。当前补跑固定 0d7524d9，后补的状态场景单独保留本机范围。
+
+### 2026-09-22 D1 review修复与三平台候选（confirmed）
+
+D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段业务格式错误不再降级为文本身份；Excel/Sheets 必填来源缺失不写入 values，由当前字段快照派生 REQUIRED_FIELD_MISSING；Sheets 先全量预校验身份和 unsafe wire scalar，再写入任何记录，晚到坏身份不会留下半批物化。D1 相关定向后端 138 passed、2 warnings；RecordFieldsView/RecordDetailPage 11 passed；Ruff 全目录、mypy 407、OpenAPI、typecheck 通过。UI 诊断为字段列表后的聚合面板，仍能区分格式问题与读取失败，记作 Minor 表达差异。
+
+候选 ae347de9f5fc1922efa7c4af99c0e606e6bde26a 的 Actions 35677887974 在 Windows x64、macOS Intel、Apple Silicon 全部通过：各平台后端 3443/3453 passed（平台 skip 保留）、前端 5470 passed、21 个既有真实 worker 场景通过；同提交源码/打包链、五路万行写入和 1000 条/分钟合成日志报告已保存为 ci-d1-final-*.json。这证明 CI 平台链，不等于物理安装、签名、公证或真实 Google/OAuth 验收；native probe/worker probe job 被跳过。
+
+当前台账仍为 251 条、235 条有明确范围断言、16 条未定位，198 partially_verified、53 planned、0 verified。D1 专门坏业务值 worker 筛选未命中，仍未宣称；S4 已存在文件覆盖/追加/读取、M1–M3、真实 Google/OAuth、完整打包 Sheets 链和三平台实机安装/签名仍是实际或外部条件缺口。releaseAccepted=false，草稿 PR 不合并、不发布。
