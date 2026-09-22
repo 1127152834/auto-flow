@@ -4,7 +4,6 @@ import { useApi } from '../../../app/ApiProvider'
 import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
 import { fleetApi, type ConsoleSession, type Profile } from '../fleet-api'
 import { androidManagementApi, type ManagementDevicePage } from '../management-api'
-import { ResourceBoard } from '../components/ResourceBoard'
 import { CreateInstances } from '../components/CreateInstances'
 import { DeviceConsole } from '../components/DeviceConsole'
 import { Action } from '../components/PrototypeControls'
@@ -84,9 +83,10 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     refetchInterval: 3000,
   })
   const pendingManagement = useRef<DeviceCommand | null>(null),
-    pendingOpen = useRef<{ deviceId: string; requestId: string } | null>(null)
+    pendingOpen = useRef<{ deviceId: string; requestId: string } | null>(null),
+    endingSession = useRef<string | null>(null)
   const managementDevices = useQuery({
-    queryKey: ['android-management', 'devices'],
+    queryKey: ['android-management', instanceId, 'devices'],
     queryFn: async () => {
       const items: ManagementDevicePage['items'] = []
       let cursor = ''
@@ -122,7 +122,8 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const sessionStatus = useQuery({
     queryKey: ['android', instanceId, 'session', session?.id],
     queryFn: () => fleet.heartbeat(session!, session!.clientSessionId ?? session!.id),
-    enabled: Boolean(connected && session && session.state !== 'closed'),
+    enabled: Boolean(connected && page === 'detail' && session?.state === 'connected'),
+    retry: false,
     refetchInterval: 5000,
   })
   useEffect(() => {
@@ -140,17 +141,25 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           : sessionStatus.data,
       )
   }, [sessionStatus.data])
-  const all = managementDevices.data?.items.map(managementDeviceToLegacy) ?? [],
+  useEffect(() => {
+    if (!sessionStatus.error || !session) return
+    setSession((previous) => previous && previous.id === session.id && previous.state === 'connected'
+      ? { ...previous, state: 'unknown', latestOperation: '控制会话状态待核实' }
+      : previous)
+    setError('控制会话状态未知，请重新连接并核实设备')
+  }, [sessionStatus.error, session?.id])
+  const managementRecord = managementDevices.data?.items.find((item) => item.deviceId === selected),
+    all = managementDevices.data?.items.map(managementDeviceToLegacy) ?? [],
     device = all.find((d) => d.deviceId === selected)
   const apps = useQuery({
     queryKey: ['android', instanceId, 'apps', session?.id, session?.generation],
     queryFn: () => fleet.apps(session!.id),
-    enabled: Boolean(connected && session && session.state !== 'closed'),
+    enabled: Boolean(connected && page === 'detail' && session?.state === 'connected'),
     refetchInterval: 10000,
   })
   const refresh = () => {
     void apps.refetch()
-    void queryClient.invalidateQueries({ queryKey: ['android-management'] })
+    void queryClient.invalidateQueries({ queryKey: ['android-management', instanceId] })
   }
   const perform = async (fn: () => Promise<unknown>) => {
     if (busy) return
@@ -173,7 +182,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     if (selected !== d.deviceId) setHistoryPage(0)
     setSelected(d.deviceId)
     setPage('detail')
-    if (session?.deviceId === d.deviceId && session.state !== 'closed') {
+    if (session?.deviceId === d.deviceId && session.state === 'connected') {
       await sessionStatus.refetch()
       return
     }
@@ -189,6 +198,28 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
       setSession(next)
       pendingOpen.current = null
     })
+  }
+  const leaveDetail = async () => {
+    const current = session
+    setPage('board')
+    if (!current || endingSession.current === current.id) return
+    endingSession.current = current.id
+    await queryClient.cancelQueries({ queryKey: ['android', instanceId, 'session', current.id] })
+    queryClient.removeQueries({ queryKey: ['android', instanceId, 'session', current.id] })
+    if (current.state === 'closed') {
+      setSession(null)
+      endingSession.current = null
+      return
+    }
+    try {
+      const closed = await fleet.action(current, 'end')
+      setSession((previous) => previous?.id === current.id ? (closed.state === 'closed' ? null : closed) : previous)
+    } catch (cause) {
+      setSession((previous) => previous?.id === current.id ? { ...previous, state: 'unknown', latestOperation: '控制会话结束结果待核实' } : previous)
+      setError(cause instanceof Error ? `控制会话结束结果未知：${cause.message}` : '控制会话结束结果未知，请重新核实')
+    } finally {
+      endingSession.current = null
+    }
   }
   const onSession = useCallback((s: ConsoleSession) => {
     setSession(s)
@@ -250,6 +281,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           profiles={profiles.data ?? []}
           environment={environment.data}
           source={source}
+          sourceSnapshot={managementDevices.data?.items.find((item) => item.deviceId === source?.deviceId)?.specSnapshot}
           onBack={() => setPage('board')}
           onProfiles={() => setProfilesOpen(true)}
           onSubmit={async (body) => {
@@ -270,18 +302,27 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           historyPage={historyPage}
           onHistoryPage={setHistoryPage}
           apps={apps.data}
-          onBack={() => setPage('board')}
+          onBack={() => void leaveDetail()}
           onSession={onSession}
           onOpen={() => void open(device)}
           onManage={(action) => manage(device, action)}
           onAllocate={() => undefined}
           onRefresh={refresh}
         />
-        <BackupPanel api={managementApi} deviceId={device.deviceId} revision={device.generation} />
+        <BackupPanel
+          api={managementApi}
+          deviceId={device.deviceId}
+          revision={device.generation}
+          runtimeState={managementRecord?.runtimeState ?? device.androidStatus}
+          control={device.control}
+          hasControlSession={Boolean(session?.deviceId === device.deviceId && session.state !== 'closed')}
+          stale={Boolean(managementRecord?.stale || device.androidStatus === 'unknown')}
+        />
         </>
       ) : (
         <div className="space-y-5"><RuntimeDiagnostics api={managementApi} /><ManagementOverview
           api={managementApi}
+          instanceId={instanceId}
           onCreate={() => {
             setSource(undefined)
             setPage('create')
@@ -298,26 +339,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
               setError('实例详情暂不可用，请刷新后重试')
             }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
-        /><ResourceBoard
-          devices={all}
-          profiles={profiles.data ?? []}
-          allocations={[]}
-          batches={[]}
-          runs={{}}
-          managementMode
-          api={api}
-          onCreate={() => {
-            setSource(undefined)
-            setPage('create')
-          }}
-          onProfiles={() => setProfilesOpen(true)}
-          onOpen={(d) => void open(d)}
-          onAllocate={() => undefined}
-          onManage={manage}
-          onRuns={() => undefined}
-          onBatch={() => undefined}
-          onCancelAllocation={() => undefined}
-        /><ImageManager api={managementApi} /><TemplateManager api={{ ...fleet, archiveProfile: managementApi.archiveProfile }} /><DataMaintenance api={managementApi} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
+        /><ImageManager api={managementApi} /><TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} /><DataMaintenance api={managementApi} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
       )}
       <Dialog
         open={Boolean(management)}

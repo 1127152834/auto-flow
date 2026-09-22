@@ -37,6 +37,14 @@ it('passes an explicit deleteData choice for bulk deletion', async () => {
   expect(bulk).toHaveBeenLastCalledWith(expect.objectContaining({ action: 'delete', deleteData: true }))
 })
 
+it('does not allow unknown or stale devices into a bulk action', async () => {
+  const bulk = vi.fn()
+  const blocked = { ...device, deviceId: 'unknown', name: '待核实设备', runtimeState: 'unknown', stale: true }
+  render(<BulkActions api={{ bulk }} devices={[blocked]} />)
+  expect(screen.getByLabelText('待核实设备')).toBeDisabled()
+  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
+})
+
 it('keeps a failed batch retryable with the original request and reports unknown outcomes', async () => {
   const bulk = vi.fn()
     .mockRejectedValueOnce(new Error('批次连接中断'))
@@ -149,9 +157,9 @@ it.each([
   expect(api.backup).not.toHaveBeenCalled()
 })
 
-it('keeps an accepted cleanup result pending until the original request is verified', async () => {
+it.each(['accepted', 'running', 'needs_verification'])('keeps a %s cleanup result pending until the original request is verified', async (state) => {
   const cleanupPreview = vi.fn(async () => ({ items: [{ id: 'v1' }], previewId: 'preview-1', confirmationDigest: 'digest' }))
-  const cleanup = vi.fn(async (body: { requestId: string }) => ({ items: [], state: 'needs_verification', requestId: body.requestId, previewId: 'preview-1' }))
+  const cleanup = vi.fn(async (body: { requestId: string }) => ({ items: [], state, requestId: body.requestId, previewId: 'preview-1' }))
   const diagnostics = vi.fn()
   const operationByRequest = vi.fn(async () => ({ operationId: 'cleanup-op', requestId: 'r', targetId: 'cleanup', action: 'cleanup', state: 'needs_verification', stageCode: 'verify', stageLabel: '待核实', attempt: 1, createdAt: '' }))
   const verify = vi.fn(async () => ({ operationId: 'cleanup-op', requestId: 'r', targetId: 'cleanup', action: 'cleanup', state: 'succeeded', stageCode: 'verified', stageLabel: '已核实', attempt: 1, createdAt: '' }))

@@ -66,7 +66,7 @@ export function DeviceConsole(p: ConsoleProps) {
     sessionRef = useRef(p.session),
     failed = useRef(false)
   sessionRef.current = p.session
-  const readonly = p.session?.state === 'closed' || p.session?.access !== 'manual',
+  const readonly = !p.session || p.session.state !== 'connected' || p.session.access !== 'manual' || p.session.endpoint !== 'embedded',
     workflow = Boolean(p.run && !['succeeded', 'failed', 'stopped', 'interrupted'].includes(p.run.state)),
     temporary = p.device.instanceType === 'temporary'
   const inputError = useCallback((message: string) => {
@@ -660,7 +660,12 @@ export function DeviceConsole(p: ConsoleProps) {
       </div>
       <div className="ad-console-status">
         <Dot tone={videoReady ? 'green' : 'gray'} />
-        {readonly ? (
+        {p.session?.state === 'unknown' ? (
+          <>
+            <strong>控制会话状态未知</strong>
+            <span>输入已锁定，请重新连接并核实</span>
+          </>
+        ) : readonly ? (
           videoReady ? (
             '画面连接正常 · 输入已锁定'
           ) : (
