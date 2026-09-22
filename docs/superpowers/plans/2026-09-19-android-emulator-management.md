@@ -238,7 +238,7 @@ def test_request_id_cannot_change_target(repo):
         repo.accept('ws', 'r1', 'd2', 'stop', 'digest-b', {})
 ```
 
-- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_management_operations.py tests/contract/test_android_management_operations.py -q)`；聚焦集合 `126 passed, 1 warning`。（状态：passed）
+- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_management_operations.py tests/contract/test_android_management_operations.py -q)`；当前 Android 聚焦集合 `149 passed, 1 warning`。（状态：passed）
 - [ ] 基线迁移父节点已重查为当前 `0019_recording_commands`；`transition_with_device` 在同一 SQLAlchemy 事务保存操作状态与设备投影，外部命令仍在事务外；保留锁、marker和标签校验。（状态：passed）
 - [ ] 加by-request静态路由、verify、90天历史紧凑化；未知只能核实，缺卷不能补空卷。旧1000回执上限语义已移除，紧凑回执保留重复请求保护；迁移和API类型回归通过。（状态：passed）
 - [ ] GREEN后纳入最终交付提交 `feat(android): complete management implementation and acceptance evidence`。（状态：passed）

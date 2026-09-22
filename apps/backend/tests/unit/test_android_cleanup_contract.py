@@ -1,5 +1,8 @@
 import hashlib
 import json
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
 
 import pytest
 
@@ -145,6 +148,65 @@ def test_cleanup_lists_owned_orphan_backup_staging_and_uses_controlled_discard(t
     assert backups.discarded == ["stale-1"]
 
 
+def test_cleanup_preview_digest_is_scoped_per_workspace():
+    service = CleanupService([])
+    first = service.preview([], "workspace-a")
+    digest = hashlib.sha256(json.dumps(first, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    service.preview([], "workspace-b")
+
+    service.execute("workspace-a", digest, "cleanup-a")
+    service.execute("workspace-b", digest, "cleanup-b")
+
+
+def test_cleanup_requires_preview_id_to_match_the_frozen_record():
+    service = CleanupService([])
+    preview = service.preview([], "workspace-a")
+    digest = hashlib.sha256(json.dumps(preview, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+    with pytest.raises(AndroidError, match="预览"):
+        service.execute("workspace-a", digest, "cleanup-a", "foreign-preview")
+
+
+def test_cleanup_parent_and_child_operations_converge_on_replay():
+    resources = _CleanupStore()
+    operations = _CleanupOperations()
+    devices = _PendingCleanupDevices(operations)
+    service = CleanupService(resources, devices=devices, operations=operations)
+    preview = service.preview(["d1"], "workspace-a")
+    digest = hashlib.sha256(json.dumps(preview, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    preview_id = resources.list("cleanup-preview")[0]["id"]
+
+    service.execute("workspace-a", digest, "cleanup-a", preview_id)
+    assert operations.parent.state == "running"
+    assert service.last_operation["state"] == "running"
+
+    operations.child_state = "succeeded"
+    service.execute("workspace-a", digest, "cleanup-a", preview_id)
+
+    assert operations.parent.state == "succeeded"
+    assert service.last_operation == {"operationId": "parent-1", "requestId": "cleanup-a", "state": "succeeded", "previewId": preview_id}
+
+
+def test_cleanup_same_request_id_is_mutually_exclusive():
+    resources = _CleanupStore()
+    operations = _CleanupOperations()
+    devices = _BlockingCleanupDevices(operations)
+    service = CleanupService(resources, devices=devices, operations=operations)
+    preview = service.preview(["d1"], "workspace-a")
+    digest = hashlib.sha256(json.dumps(preview, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    preview_id = resources.list("cleanup-preview")[0]["id"]
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(service.execute, "workspace-a", digest, "cleanup-a", preview_id)
+        assert devices.started.wait(timeout=2)
+        second = pool.submit(service.execute, "workspace-a", digest, "cleanup-a", preview_id)
+        devices.release.set()
+        first.result(timeout=2)
+        second.result(timeout=2)
+
+    assert devices.calls == 1
+
+
 class _ResourceRepository:
     def __init__(self):
         self.backup = {"id": "b1", "workspaceId": "w", "kind": "backup", "path": "/w/b1", "sha256": "a"}
@@ -196,3 +258,70 @@ class _StagingBackups:
 
     def discard(self, identifier):
         self.discarded.append(identifier)
+
+
+class _CleanupStore:
+    def __init__(self):
+        self.resources = []
+        self.records = {}
+
+    def list(self, kind):
+        if kind == "cleanup":
+            return list(self.resources)
+        return [value for (stored_kind, _), value in self.records.items() if stored_kind == kind]
+
+    def save(self, kind, item):
+        self.records[(kind, item["id"])] = item
+
+    def delete(self, kind, identifier):
+        self.records.pop((kind, identifier), None)
+
+
+class _CleanupOperations:
+    def __init__(self):
+        self.parent = None
+        self.child_state = "running"
+
+    def accept(self, workspace, request_id, target_id, action, digest, payload):
+        if self.parent is not None:
+            return self.parent
+        self.parent = SimpleNamespace(operation_id="parent-1", request_id=request_id, state="queued", workspace_identity=workspace)
+        return self.parent
+
+    def transition(self, operation_id, expected, next_state, changes):
+        assert operation_id == "parent-1"
+        assert self.parent.state == expected
+        self.parent.state = next_state
+        return self.parent
+
+    def by_request(self, workspace, request_id):
+        return self.parent
+
+    def get(self, operation_id, workspace=None):
+        return SimpleNamespace(state=self.child_state)
+
+
+class _PendingCleanupDevices:
+    def __init__(self, operations):
+        self.management = SimpleNamespace(operations=operations, workspace_identity="workspace-a")
+        self.repository = self
+        self.calls = 0
+
+    def list(self):
+        return [{"deviceId": "d1", "workspaceId": "workspace-a", "dataRetained": True, "deleted": False}]
+
+    def operate(self, device_id, request):
+        self.calls += 1
+        return {"deviceId": device_id, "operation": {"id": "child-1", "state": "running"}}
+
+
+class _BlockingCleanupDevices(_PendingCleanupDevices):
+    def __init__(self, operations):
+        super().__init__(operations)
+        self.started = threading.Event()
+        self.release = threading.Event()
+
+    def operate(self, device_id, request):
+        self.started.set()
+        self.release.wait(timeout=2)
+        return super().operate(device_id, request)

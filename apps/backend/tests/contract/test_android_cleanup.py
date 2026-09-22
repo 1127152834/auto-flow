@@ -51,6 +51,7 @@ def test_cleanup_contract_exposes_frozen_summary_and_rejects_replay():
         assert response.status_code == 200
         body = response.json()
         assert [item["id"] for item in body["items"]] == ["owned"]
+        assert body["previewId"] != body["confirmationDigest"]
         item = body["items"][0]
         assert item["revision"] == 4
         assert item["workspaceId"] == "owned"
@@ -60,7 +61,7 @@ def test_cleanup_contract_exposes_frozen_summary_and_rejects_replay():
 
         cleanup = client.post(
             "/api/v1/android/management/cleanup",
-            json={"requestId": "cleanup-1", "confirmationDigest": body["confirmationDigest"]},
+            json={"requestId": "cleanup-1", "previewId": body["previewId"], "confirmationDigest": body["confirmationDigest"]},
         )
         assert cleanup.status_code == 200
         assert cleanup.json()["state"] == "accepted"
@@ -71,3 +72,10 @@ def test_cleanup_contract_exposes_frozen_summary_and_rejects_replay():
         )
         assert replay.status_code == 409
         assert replay.json()["error"]["code"] == "ANDROID_CLEANUP_CHANGED"
+
+        mismatch = client.post(
+            "/api/v1/android/management/cleanup",
+            json={"requestId": "cleanup-2", "previewId": "foreign-preview", "confirmationDigest": body["confirmationDigest"]},
+        )
+        assert mismatch.status_code == 409
+        assert mismatch.json()["error"]["code"] == "ANDROID_CLEANUP_CHANGED"

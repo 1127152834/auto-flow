@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import io
 import json
@@ -141,6 +142,9 @@ class AndroidBackupService:
         except (TimeoutError, OSError) as error:
             self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(error))
             raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份结果未知，请先核实后重试", 503) from error
+        except asyncio.CancelledError:
+            self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="请求已取消，备份结果未知")
+            raise
         except Exception as error:
             self._complete(operation, "failed", code=getattr(error, "code", "ANDROID_BACKUP_FAILED"), message=str(error))
             raise

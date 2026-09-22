@@ -114,6 +114,59 @@ async def test_restore_rejects_corrupt_digest_and_does_not_write_runtime(
     sessions.dispose()
 
 
+@pytest.mark.asyncio
+async def test_restore_environment_failure_marks_operation_unknown(tmp_path: Path) -> None:
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+    runtime = _Runtime(_tar(b"source"), IMAGE)
+    devices = AndroidDeviceService(repository, runtime)
+    devices.management.workspace_identity = str(tmp_path.resolve())
+    backups = AndroidBackupService(resources, tmp_path, operations)
+    source = {
+        "deviceId": "source-device",
+        "name": "source",
+        "imageId": IMAGE,
+        "control": "idle",
+        "ownerRunId": None,
+        "generation": 1,
+        "creationConfig": {
+            "width": 720,
+            "height": 1280,
+            "dpi": 320,
+            "cpu": 2,
+            "memoryMb": 1536,
+        },
+    }
+    repository.save(source)
+    backup = await backups.create_with_runtime(source, None, runtime, "backup-request", 1)
+    runtime.environment_error = OSError("runtime probe lost")
+
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(
+        android_management_router(
+            EnvironmentCheckService(runtime),
+            operations,
+            backups=backups,
+            devices=devices,
+        )
+    )
+    body = {"requestId": "restore-environment-failure", "newName": "copy"}
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.post(
+            f"/api/v1/android/management/backups/{backup['id']}/restore", json=body
+        )
+
+    assert response.status_code == 503, response.text
+    operation = operations.by_request(str(tmp_path.resolve()), body["requestId"])
+    assert operation.state == "needs_verification"
+    assert operation.result_code == "RESTORE_RESULT_UNKNOWN"
+    assert runtime.restore_calls == 0
+    sessions.dispose()
+
+
 def _sessions(tmp_path: Path):
     path = tmp_path / "android-restore.sqlite3"
     migrate_database(path)
@@ -135,6 +188,7 @@ class _Runtime:
         self.image = image
         self.locked = 0
         self.restore_calls = 0
+        self.environment_error: BaseException | None = None
 
     def lock(self):
         self.locked += 1
@@ -153,6 +207,8 @@ class _Runtime:
         self.restore_calls += 1
 
     async def environment(self):
+        if self.environment_error:
+            raise self.environment_error
         return {
             "available": True,
             "platformSupported": True,

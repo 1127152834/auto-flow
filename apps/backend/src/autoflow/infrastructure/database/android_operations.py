@@ -46,6 +46,8 @@ class SqlAlchemyAndroidOperationRepository:
         self.sessions = sessions
 
     def accept(self, workspace_identity: str, request_id: str, target_id: str, action: str, request_digest: str, payload: dict[str, Any]) -> OperationRecord:
+        if len(target_id) > 36:
+            raise AndroidError("ANDROID_OPERATION_TARGET_INVALID", "操作目标编号超过持久化长度限制", 422)
         with self.sessions.begin() as session:
             existing = session.scalar(select(AndroidOperationRow).where(AndroidOperationRow.workspace_identity == workspace_identity, AndroidOperationRow.request_id == request_id))
             if existing is not None:
@@ -77,7 +79,7 @@ class SqlAlchemyAndroidOperationRepository:
 
     def page(self, device_id: str | None = None, cursor: str | None = None, limit: int = 50, workspace_identity: str | None = None) -> list[OperationRecord]:
         with self.sessions() as session:
-            query = select(AndroidOperationRow).order_by(AndroidOperationRow.created_at.desc(), AndroidOperationRow.id.desc()).limit(min(max(limit, 1), 100))
+            query = select(AndroidOperationRow).order_by(AndroidOperationRow.created_at.desc(), AndroidOperationRow.id.desc()).limit(min(max(limit, 1), 200))
             if workspace_identity is not None:
                 query = query.where(AndroidOperationRow.workspace_identity == workspace_identity)
             if device_id:

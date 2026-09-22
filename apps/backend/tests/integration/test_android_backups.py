@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import io
 import tarfile
 from pathlib import Path
@@ -64,6 +65,27 @@ async def test_unknown_backup_result_is_durable_and_never_replayed(
     with pytest.raises(AndroidError, match="已处理"):
         await service.create_with_runtime(_device(), None, runtime, "backup-unknown", 1)
     assert runtime.backup_calls == 1
+    assert not list((tmp_path / "android-backups" / "staging").glob("*"))
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_cancelled_backup_marks_result_unknown_and_releases_runtime(
+    tmp_path: Path,
+) -> None:
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    runtime = _Runtime(_tar(b"data"), backup_error=asyncio.CancelledError())
+    service = AndroidBackupService(resources, tmp_path, operations)
+
+    with pytest.raises(asyncio.CancelledError):
+        await service.create_with_runtime(_device(), None, runtime, "backup-cancelled", 1)
+
+    operation = operations.by_request(str(tmp_path.resolve()), "backup-cancelled")
+    assert operation.state == "needs_verification"
+    assert operation.result_code == "BACKUP_RESULT_UNKNOWN"
+    assert runtime.locked == 0
     assert not list((tmp_path / "android-backups" / "staging").glob("*"))
     sessions.dispose()
 

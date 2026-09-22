@@ -15,8 +15,15 @@ class AndroidImageService:
     def __init__(self, resources: Any, devices: Any, catalog: Any | None = None) -> None:
         self.resources, self.devices, self.catalog = resources, devices, catalog
 
+    def _workspace(self) -> str | None:
+        return getattr(getattr(self.devices, "runtime", None), "workspace_id", None)
+
     def list(self) -> list[dict[str, Any]]:
-        return self.resources.list("image")
+        workspace = self._workspace()
+        return [
+            item for item in self.resources.list("image")
+            if workspace is None or item.get("workspaceId") in {None, workspace}
+        ]
 
     @contextmanager
     def _runtime_lock(self):
@@ -64,6 +71,7 @@ class AndroidImageService:
             "references": [{"kind": "source", "id": image_id, "name": request["reference"]}],
             "requestId": request.get("requestId"),
             "createdAt": datetime.now(UTC).isoformat(),
+            "workspaceId": self._workspace(),
         }
         self.resources.save("image", image)
         return self._public(image)
@@ -113,8 +121,9 @@ class AndroidImageService:
 
     def _references(self, image_id: str) -> list:
         refs = [device.get("deviceId") for device in self.devices.list() if not device.get("deleted") and device.get("imageId") == image_id]
-        refs.extend(item.get("id") for item in self.resources.list("profile") if not item.get("archived") and item.get("imageId") == image_id)
-        refs.extend(item.get("id") for item in self.resources.list("backup") if item.get("imageId") == image_id)
+        workspace = self._workspace()
+        refs.extend(item.get("id") for item in self.resources.list("profile") if not item.get("archived") and item.get("imageId") == image_id and (workspace is None or item.get("workspaceId") in {None, workspace}))
+        refs.extend(item.get("id") for item in self.resources.list("backup") if item.get("imageId") == image_id and (workspace is None or item.get("workspaceId") in {None, workspace}))
         return refs
 
     async def delete_content(self, identifier: str, request_id: str | None = None, expected_revision: int | None = None) -> dict[str, Any]:

@@ -1,4 +1,6 @@
 
+import asyncio
+
 import pytest
 
 from autoflow.application.android.bulk import AndroidBulkService
@@ -125,6 +127,71 @@ def test_bulk_service_uses_android_device_service_management_facade():
     assert devices.management.calls == [("d1", {"requestId": "r-facade:d1:1", "action": "stop", "deleteData": False})]
 
 
+def test_bulk_rejects_targets_owned_by_another_workspace():
+    resources = _Resources()
+    devices = _WorkspaceDevices()
+    service = AndroidBulkService(resources, devices)
+
+    with pytest.raises(AndroidError) as error:
+        service.create("ws-a", "r-cross", "stop", [{"deviceId": "d-b", "expectedRevision": 1}], False)
+
+    assert error.value.status == 404
+
+
+@pytest.mark.asyncio
+async def test_bulk_queue_only_advances_batches_for_the_bound_workspace():
+    resources = _Resources()
+    devices = _WorkspaceDevices()
+    devices.management = type("Management", (), {"workspace_identity": "ws-a"})()
+    service = AndroidBulkService(resources, devices)
+    foreign = {
+        "id": "foreign-batch",
+        "workspaceIdentity": "ws-b",
+        "requestId": "foreign",
+        "action": "stop",
+        "deleteData": False,
+        "state": "queued",
+        "items": [{"deviceId": "d-b", "expectedRevision": 1, "state": "queued", "operationId": None, "error": None}],
+    }
+    resources.save("bulk", foreign)
+
+    await service.tick()
+
+    assert devices.requests == []
+    assert resources.get("bulk", "foreign-batch")["items"][0]["state"] == "queued"
+
+
+@pytest.mark.asyncio
+async def test_bulk_reconciles_cancelled_operation_and_batch_state():
+    resources = _Resources()
+    devices = _OperationDevices(state="cancelled")
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws-a", "r-cancelled", "stop", [{"deviceId": "d-a", "expectedRevision": 1}], False)
+    result = service.run(batch["id"])
+
+    assert result["items"][0]["state"] == "accepted"
+    await service.tick()
+
+    result = service.get(batch["id"])
+    assert result["items"][0]["state"] == "cancelled"
+    assert result["state"] == "cancelled"
+
+
+@pytest.mark.asyncio
+async def test_bulk_cancelled_error_persists_unknown_result_before_propagating():
+    resources = _Resources()
+    devices = _CancelledDevices()
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws-a", "r-interrupt", "stop", [{"deviceId": "d-a", "expectedRevision": 1}], False)
+
+    with pytest.raises(asyncio.CancelledError):
+        await service.tick()
+
+    saved = service.get(batch["id"])
+    assert saved["items"][0]["state"] == "needs_verification"
+    assert saved["state"] == "needs_verification"
+
+
 class _Resources:
     def __init__(self): self.items = {}
     def get(self, kind, identifier):
@@ -138,6 +205,47 @@ class _Devices:
     def __init__(self): self.items = {"d1": {"deviceId": "d1", "generation": 1, "control": "idle"}, "d2": {"deviceId": "d2", "generation": 2, "control": "idle"}}
     def get(self, identifier): return self.items[identifier]
     def operate(self, device_id, request): return {"deviceId": device_id, "operation": {"id": request["requestId"]}}
+
+
+class _WorkspaceDevices:
+    def __init__(self):
+        self.items = {
+            "d-a": {"deviceId": "d-a", "workspaceId": "ws-a", "generation": 1, "control": "idle"},
+            "d-b": {"deviceId": "d-b", "workspaceId": "ws-b", "generation": 1, "control": "idle"},
+        }
+        self.requests = []
+
+    def get(self, identifier):
+        return self.items[identifier]
+
+    def operate(self, device_id, request):
+        self.requests.append((device_id, request))
+        return {"deviceId": device_id, "operation": {"id": request["requestId"]}}
+
+
+class _OperationDevices(_WorkspaceDevices):
+    def __init__(self, state):
+        super().__init__()
+        self.state = state
+        self.management = type("Management", (), {"workspace_identity": "ws-a", "operations": self})()
+
+    def operate(self, device_id, request):
+        self.requests.append((device_id, request))
+        return {"deviceId": device_id, "operation": {"id": request["requestId"]}}
+
+    def get(self, identifier, workspace=None):
+        if identifier == "r-cancelled:d-a:1":
+            return type("Operation", (), {"state": self.state, "message": None, "workspace_identity": "ws-a"})()
+        return self.items[identifier]
+
+
+class _CancelledDevices(_WorkspaceDevices):
+    def __init__(self):
+        super().__init__()
+        self.management = type("Management", (), {"workspace_identity": "ws-a"})()
+
+    def operate(self, _device_id, _request):
+        raise asyncio.CancelledError
 
 
 class _Management:

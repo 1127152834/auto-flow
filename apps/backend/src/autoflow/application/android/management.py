@@ -41,22 +41,27 @@ class AndroidManagement:
             return existing
         self._admit()
         request = {"requestId": str(config["deviceId"]), "action": "create", "deleteData": False}
-        durable = self._accept_operation(str(config["deviceId"]), request)
-        if durable is not None and durable.state not in {"queued", "running"}:
-            raise AndroidError("ANDROID_CREATE_REQUEST_REPLAYED", "创建请求已处理，请先核实操作结果", 409)
+        durable = None
         try:
+            durable = self._accept_operation(str(config["deviceId"]), request)
+            if durable is not None and durable.state not in {"queued", "running"}:
+                raise AndroidError("ANDROID_CREATE_REQUEST_REPLAYED", "创建请求已处理，请先核实操作结果", 409)
             device = self.runtime.new_device(config)
             device["creationConfig"] = deepcopy(config)
             return self._start(device, request, durable)
         except (TimeoutError, OSError) as error:
-            if durable is not None:
-                self.operations.transition(durable.operation_id, "queued", "needs_verification", {"stage_code": "verify", "result_code": "CREATE_RESULT_UNKNOWN", "message": str(error)[:480]})
-            self.runtime.unlock()
+            try:
+                if durable is not None:
+                    self.operations.transition(durable.operation_id, "queued", "needs_verification", {"stage_code": "verify", "result_code": "CREATE_RESULT_UNKNOWN", "message": str(error)[:480]})
+            finally:
+                self.runtime.unlock()
             raise AndroidError("ANDROID_CREATE_RESULT_UNKNOWN", "创建结果未知，请先核实后重试", 503) from error
         except BaseException:
-            if durable is not None and durable.state == "queued":
-                self.operations.transition(durable.operation_id, "queued", "failed", {"stage_code": "failed", "result_code": "ANDROID_CREATE_FAILED"})
-            self.runtime.unlock()
+            try:
+                if durable is not None and durable.state == "queued":
+                    self.operations.transition(durable.operation_id, "queued", "failed", {"stage_code": "failed", "result_code": "ANDROID_CREATE_FAILED"})
+            finally:
+                self.runtime.unlock()
             raise
 
     def operate(self, device_id: str, request: dict[str, Any]) -> dict[str, Any]:

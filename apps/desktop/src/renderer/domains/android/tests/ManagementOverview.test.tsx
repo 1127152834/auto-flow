@@ -43,3 +43,17 @@ it('renders blocked reasons and translated stale status', async () => {
   expect(screen.getByText(/状态陈旧/)).toHaveTextContent('状态陈旧 · 待核实')
   expect(screen.getByText('阻塞原因：可用内存不足，等待容量释放')).toBeVisible()
 })
+
+it('does not offer to open a stopped instance', async () => {
+  const api = {
+    devices: vi.fn(async () => ({
+      total: 1,
+      nextCursor: null,
+      items: [{ deviceId: 'stopped', revision: 1, name: '已停止设备', runtimeState: 'stopped', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} }],
+    })),
+  } as unknown as AndroidManagementApi
+
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onOpen={vi.fn()} /></QueryClientProvider>)
+
+  expect(await screen.findByRole('button', { name: '打开已停止设备' })).toBeDisabled()
+})

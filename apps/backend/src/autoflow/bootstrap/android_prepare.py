@@ -65,7 +65,7 @@ async def prepare(data_dir: Path, archive: Path | None, recover: bool) -> dict:
     sessions = create_session_factory(paths.database)
     repo = SqlAlchemyDeviceRepository(sessions)
     root = android_runtime_root()
-    runtime = MacAndroidRuntime(root, paths.data_dir)
+    runtime = MacAndroidRuntime(root, paths.workspace)
     runtime.lock()
     try:
         if recover:

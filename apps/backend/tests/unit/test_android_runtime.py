@@ -11,6 +11,7 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.bootstrap import android_prepare
 from autoflow.providers.android import mac_runtime as mac
 
 
@@ -212,3 +213,27 @@ async def test_backup_volume_uses_docker_copy_without_starting_android_image(tmp
     assert calls[0][0][0] == "create"
     assert calls[1][0] == ("cp", "backup-container:/data", "-")
     assert calls[-1][0] == ("rm", "backup-container")
+
+
+@pytest.mark.asyncio
+async def test_prepare_uses_the_same_workspace_root_as_the_running_service(tmp_path, monkeypatch):
+    seen: list[object] = []
+
+    class Runtime:
+        def __init__(self, _root, workspace):
+            seen.append(workspace)
+
+        def lock(self):
+            return None
+
+        def unlock(self):
+            return None
+
+        async def disconnect(self):
+            return None
+
+    monkeypatch.setattr(android_prepare, "MacAndroidRuntime", Runtime)
+
+    await android_prepare.prepare(tmp_path, None, True)
+
+    assert seen == [tmp_path / "workspace"]

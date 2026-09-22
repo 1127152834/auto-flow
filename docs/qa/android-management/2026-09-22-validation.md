@@ -1,6 +1,6 @@
 # 安卓模拟器管理验收证据（2026-09-22）
 
-- 状态：`partial`；代码、契约和真实基础 ReDroid 链路已验证，Google 组件、测试 APK、双实例和手动原生窗口仍 `blocked`。
+- 状态：`partial`；代码、契约和真实基础 ReDroid 链路已验证，Google 组件、测试 APK、批量压力和手动原生窗口仍 `blocked`。
 - worktree：`codex/android-management-complete`，起点 `a92f0688f206d4339ff4468c1871f3ccdd6816dc`。
 - 主工作区既有 Studio 未提交改动未复制、未修改。
 
@@ -8,10 +8,10 @@
 
 | 类别 | 命令 | 实际结果 |
 | --- | --- | --- |
-| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q` | `126 passed, 1 warning` |
-| 前端 Android（历史基线） | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `7 files, 17 passed`；后续聚焦回归以 13 files/39 passed 为准 |
+| 后端 Android/迁移/契约 | `cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q` | `149 passed, 1 warning` |
+| 前端 Android（历史基线） | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `7 files, 17 passed`；当前聚焦回归以 13 files/42 passed 为准 |
 | 前端类型 | `cd apps/desktop && npm run typecheck` | 通过 |
-| 前端 Android 最终聚焦回归 | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `13 files, 39 passed`（含 stale preview、镜像/模板和维护入口回归） |
+| 前端 Android 最终聚焦回归 | `cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests` | `13 files, 42 passed`（含旧设备列表轮询、未知核实、stale/unknown 打开保护、镜像/模板和维护入口回归） |
 | 前端 lint | `cd apps/desktop && npm run lint` | 通过 |
 | OpenAPI | `npm run openapi:generate`、`npm run openapi:check` | 通过 |
 | 前端 build | `npm run build` | 完成并有依赖注释 warning；本轮未重复构建 |
@@ -25,10 +25,11 @@
 | 真实生命周期/画面/应用 | 临时实例上执行 `connect`、`app_info`、`android_screenshot`、HOME、stop、再次 connect | 应用清单 `102` 项；截图尺寸 `720x1280`；当前包 `com.android.launcher3`；停止后状态 `exited`，再次连接恢复 `ready` |
 | 真实备份恢复 | 临时实例通过 ADB 写入 `real-backup-check`，停机后 `backup_volume`、`restore_volume`，再读取目标卷 | `backup_bytes=25472000`；源/恢复标记均为 `real-backup-check`；归档字节数一致；容器/卷标签核验后已清理 |
 | 真实双实例隔离 | 两个独立临时 workspace 同时创建，分别 `for_device`、连接、发送 HOME、截图和读取应用 | ADB serial `127.0.0.1:58272` 与 `127.0.0.1:58287` 不同；两台均 `720x1280`、`102` 应用；按各自 workspace/device 标签清理 |
+| 本轮管理 API 复核 | `android_prepare` + sidecar `environment/capabilities/management/devices`；真实 stop、backup、cleanup、delete | workspace/device 归属一致；环境 `available=true`、6 CPU/7921 MiB；stop operation `succeeded`；backup `201 Created`、`state=available`、`18585260 bytes`；cleanup `200/state=succeeded`；删除后标签过滤容器/卷均为 `0`；Lima 最终 `Stopped` |
 
 ## 已覆盖
 
-只读环境诊断、逐项 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、全量计数分页和迁移；管理首页不请求 workflows/allocations/runs；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、引用保护、来源校验、拉取引用安全校验、验证结果归并、模板 revision 归档；persistent 默认创建并拒绝 temporary；停机备份前置条件、受限目录/权限、归档摘要/字节数/镜像一致性和路径安全校验；诊断脱敏；容量未知和预留阻止准入；观察器活跃 3 秒刷新、失败指数退避和 10/45 秒陈旧规则；应用操作 requestId/保护包边界、真实 Android 平台包名解析；清理预览摘要冻结并执行受控删除；批量操作 UI 冻结设备 revision；smoke 授权保护；前端诊断面板、管理快照、批量操作、备份入口、镜像/模板和会话控制器。备份适配使用 Docker volume copy，不依赖 Android 镜像提供独立 `/bin/sh`。
+只读环境诊断、逐项 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、全量计数分页和迁移；管理首页不请求 workflows/allocations/runs 或旧 `/api/v1/android/devices`；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、引用保护、来源校验、拉取引用安全校验、验证结果归并、模板 revision 归档；persistent 默认创建并拒绝 temporary；停机备份前置条件、受限目录/权限、归档摘要/字节数/镜像一致性和路径安全校验；诊断脱敏；容量未知和预留阻止准入；观察器活跃 3 秒刷新、失败指数退避和 10/45 秒陈旧规则；应用操作 requestId/保护包边界、真实 Android 平台包名解析；清理预览摘要冻结并执行受控删除；批量操作 UI 冻结设备 revision；smoke 授权保护；前端诊断面板、管理快照、批量操作、备份入口、镜像/模板和会话控制器。备份适配使用 Docker volume copy，不依赖 Android 镜像提供独立 `/bin/sh`。
 
 ## 阻塞项与风险
 

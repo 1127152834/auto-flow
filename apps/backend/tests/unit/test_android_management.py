@@ -1,5 +1,6 @@
 import asyncio
 from copy import deepcopy
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
@@ -159,6 +160,22 @@ async def test_external_timeout_marks_operation_needs_verification():
     device = repo.get(c["deviceId"])
     assert device["control"] == "recovery_required"
     assert device["operation"]["state"] == "needs_verification"
+
+
+def test_create_replayed_terminal_operation_releases_runtime_lock():
+    repo, runtime = Repository(), Runtime()
+    service = AndroidManagement(repo, runtime)
+
+    class Operations:
+        def accept(self, *_args, **_kwargs):
+            return SimpleNamespace(state="succeeded", operation_id="already-done")
+
+    service.operations = Operations()
+
+    with pytest.raises(AndroidError, match="已处理"):
+        service.create(config())
+
+    assert not runtime.locked
 
 
 class TimeoutRuntime(Runtime):

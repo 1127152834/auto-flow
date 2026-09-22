@@ -646,7 +646,7 @@ def create_app(
     app.include_router(studio_retention_router(studio_retention))
     app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
-    app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android, android_bulk, android_cleanup, android_resources))
+    app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android, android_bulk, android_cleanup, android_resources, observations=android_observations))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)

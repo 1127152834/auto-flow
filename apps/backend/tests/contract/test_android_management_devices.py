@@ -35,3 +35,34 @@ def test_management_device_list_is_a_snapshot_page_and_does_not_inspect_inline()
     assert response.status_code == 200
     assert response.json()["items"][0]["deviceId"].startswith("1111")
     assert response.json()["nextCursor"] is None
+
+
+def test_manual_console_owner_is_projected_as_manual_session():
+    class _ManualDevices:
+        runtime = _Runtime()
+
+        def __init__(self):
+            self.repository = type("Repository", (), {"list": lambda _self: [{
+                "deviceId": "33333333-3333-4333-8333-333333333333",
+                "name": "手动设备",
+                "generation": 3,
+                "androidStatus": "ready",
+                "control": "manual",
+                "ownerRunId": "console-session",
+                "deleted": False,
+                "creationConfig": {},
+            }]})()
+
+    app = FastAPI()
+    install_error_handlers(app)
+    devices = _ManualDevices()
+    app.include_router(android_management_router(EnvironmentCheckService(devices.runtime), devices=devices))
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/management/devices")
+
+    assert response.status_code == 200
+    item = response.json()["items"][0]
+    assert item["owner"] == {"kind": "manualSession", "id": "console-session"}
+    assert "return_to_console" in item["allowedActions"]
+    assert "verify" not in item["allowedActions"]

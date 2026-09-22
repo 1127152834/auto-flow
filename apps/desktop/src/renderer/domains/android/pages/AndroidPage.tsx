@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../../app/ApiProvider'
 import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
 import { fleetApi, type ConsoleSession, type Profile } from '../fleet-api'
-import { androidManagementApi } from '../management-api'
+import { androidManagementApi, type ManagementDevicePage } from '../management-api'
 import { ResourceBoard } from '../components/ResourceBoard'
 import { CreateInstances } from '../components/CreateInstances'
 import { DeviceConsole } from '../components/DeviceConsole'
@@ -16,6 +16,48 @@ import { TemplateManager } from '../components/TemplateManager'
 import { DataMaintenance } from '../components/DataMaintenance'
 import { BackupPanel } from '../components/BackupPanel'
 import '../android.css'
+
+const specValue = (spec: Record<string, unknown>, key: string, fallback: unknown) => spec[key] ?? spec[key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)] ?? fallback
+
+function managementDeviceToLegacy(device: ManagementDevicePage['items'][number]): AndroidDevice {
+  const spec = device.specSnapshot ?? {}, operation = device.latestOperation
+  const operationId = typeof operation?.operationId === 'string' ? operation.operationId : typeof operation?.operation_id === 'string' ? operation.operation_id : typeof operation?.id === 'string' ? operation.id : undefined
+  const stale = device.stale || device.runtimeState === 'unknown'
+  return {
+    deviceId: device.deviceId,
+    name: device.name,
+    runtimeId: String(specValue(spec, 'runtimeId', 'management')),
+    ownerRunId: device.owner.kind === 'legacyWorkflow' ? device.owner.id ?? null : null,
+    control: stale ? 'recovery_required' : device.owner.kind === 'manualSession' ? 'manual' : operation && ['queued', 'running', 'waiting_capacity'].includes(String(operation.state)) ? 'managing' : operation && ['needs_verification', 'interrupted', 'failed'].includes(String(operation.state)) ? 'recovery_required' : 'idle',
+    generation: device.revision,
+    width: Number(specValue(spec, 'width', 720)),
+    height: Number(specValue(spec, 'height', 1280)),
+    imageId: String(specValue(spec, 'imageId', '')),
+    androidStatus: stale ? 'unknown' : device.runtimeState,
+    lastError: typeof operation?.message === 'string' ? operation.message : typeof operation?.error === 'string' ? operation.error : null,
+    cpu: Number(specValue(spec, 'cpu', 1)),
+    memoryMb: Number(specValue(spec, 'memoryMb', 1536)),
+    dpi: Number(specValue(spec, 'dpi', 320)),
+    androidVersion: typeof specValue(spec, 'androidVersion', null) === 'string' ? String(specValue(spec, 'androidVersion', null)) : null,
+    architecture: typeof specValue(spec, 'architecture', null) === 'string' ? String(specValue(spec, 'architecture', null)) : null,
+    dataRetained: Boolean(specValue(spec, 'dataRetained', device.runtimeState === 'retained')),
+    deleted: Boolean(specValue(spec, 'deleted', false)),
+    operation: operationId ? {
+      id: operationId,
+      action: String(specValue(operation ?? {}, 'action', '')),
+      state: String(specValue(operation ?? {}, 'state', '')),
+      stage: String(specValue(operation ?? {}, 'stageLabel', specValue(operation ?? {}, 'stage', ''))),
+      error: typeof specValue(operation ?? {}, 'message', specValue(operation ?? {}, 'error', null)) === 'string' ? String(specValue(operation ?? {}, 'message', specValue(operation ?? {}, 'error', null))) : null,
+      startedAt: String(specValue(operation ?? {}, 'startedAt', specValue(operation ?? {}, 'createdAt', new Date(0).toISOString()))),
+      finishedAt: typeof specValue(operation ?? {}, 'finishedAt', null) === 'string' ? String(specValue(operation ?? {}, 'finishedAt', null)) : null,
+    } : null,
+    profileId: typeof specValue(spec, 'profileId', null) === 'string' ? String(specValue(spec, 'profileId', null)) : null,
+    profileName: String(specValue(spec, 'profileName', 'Android 实例')),
+    instanceType: String(specValue(spec, 'instanceType', 'persistent')),
+    locale: String(specValue(spec, 'locale', 'zh-CN')),
+    timezone: String(specValue(spec, 'timezone', 'Asia/Shanghai')),
+  }
+}
 
 export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const { client, instanceId } = useApi(),
@@ -31,7 +73,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     [busy, setBusy] = useState(false)
   const [profilesOpen, setProfilesOpen] = useState(false),
     [profileDraft, setProfileDraft] = useState<Profile | null>(null)
-  const [management, setManagement] = useState<{ device: AndroidDevice; action: string; operationId?: string } | null>(null),
+  const [management, setManagement] = useState<{ device: AndroidDevice; action: string; operationId?: string; requestId?: string } | null>(null),
     [name, setName] = useState(''),
     [deleteData, setDeleteData] = useState(false)
   const [historyPage, setHistoryPage] = useState(0)
@@ -43,9 +85,21 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   })
   const pendingManagement = useRef<DeviceCommand | null>(null),
     pendingOpen = useRef<{ deviceId: string; requestId: string } | null>(null)
-  const devices = useQuery({
-    queryKey: ['android', instanceId, 'devices'],
-    queryFn: api.devices,
+  const managementDevices = useQuery({
+    queryKey: ['android-management', 'devices'],
+    queryFn: async () => {
+      const items: ManagementDevicePage['items'] = []
+      let cursor = ''
+      let total = 0
+      do {
+        const page = await managementApi.devices(cursor ? `?limit=50&cursor=${encodeURIComponent(cursor)}` : '?limit=50')
+        if (Array.isArray(page)) break
+        items.push(...page.items)
+        total = page.total
+        cursor = page.nextCursor ?? ''
+      } while (cursor)
+      return { items, total, nextCursor: null }
+    },
     enabled: connected,
     refetchInterval: 3000,
   })
@@ -86,7 +140,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           : sessionStatus.data,
       )
   }, [sessionStatus.data])
-  const all = devices.data ?? [],
+  const all = managementDevices.data?.items.map(managementDeviceToLegacy) ?? [],
     device = all.find((d) => d.deviceId === selected)
   const apps = useQuery({
     queryKey: ['android', instanceId, 'apps', session?.id, session?.generation],
@@ -95,7 +149,6 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     refetchInterval: 10000,
   })
   const refresh = () => {
-    void devices.refetch()
     void apps.refetch()
     void queryClient.invalidateQueries({ queryKey: ['android-management'] })
   }
@@ -113,6 +166,10 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     }
   }
   const open = async (d: AndroidDevice) => {
+    if (d.androidStatus !== 'ready') {
+      setError('设备尚未就绪，不能打开控制台')
+      return
+    }
     if (selected !== d.deviceId) setHistoryPage(0)
     setSelected(d.deviceId)
     setPage('detail')
@@ -120,7 +177,6 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
       await sessionStatus.refetch()
       return
     }
-    if (d.androidStatus !== 'ready') return
     await perform(async () => {
       if (session && session.state !== 'closed') await fleet.action(session, 'end')
       if (pendingOpen.current?.deviceId !== d.deviceId)
@@ -137,14 +193,14 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const onSession = useCallback((s: ConsoleSession) => {
     setSession(s)
   }, [])
-  const manage = (d: AndroidDevice, action: string, operationId?: string) => {
+  const manage = (d: AndroidDevice, action: string, operationId?: string, requestId?: string) => {
     if (action === 'copy') {
       setSource(d)
       setPage('create')
       return
     }
     setError('')
-    setManagement({ device: d, action, operationId })
+    setManagement({ device: d, action, operationId, requestId })
     setName(d.name)
     setDeleteData(false)
     pendingManagement.current = null
@@ -155,7 +211,10 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
       if (management.action === 'rename') await api.rename(management.device.deviceId, name)
       else if (management.action === 'verify') {
         if (!management.operationId) throw new Error('缺少待核实操作编号，请从操作历史打开')
-        await managementApi.verify(management.operationId, { requestId: pendingManagement.current?.requestId ?? crypto.randomUUID() })
+        const operation = management.requestId ? null : await managementApi.operation(management.operationId)
+        const requestId = management.requestId ?? operation?.requestId
+        if (!requestId) throw new Error('缺少原操作请求编号，请从操作历史打开')
+        await managementApi.verify(management.operationId, { requestId })
       }
       else {
         pendingManagement.current ??= {
@@ -167,6 +226,9 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
       }
       setManagement(null)
     })
+  }
+  const loadDevice = async (deviceId: string) => {
+    return all.find((item) => item.deviceId === deviceId)
   }
   return (
     <>
@@ -182,7 +244,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           {error}
         </p>
       </div>
-      {devices.isError && <div className="ad-error">设备状态无法核实，请检查本机服务。</div>}
+      {managementDevices.isError && <div className="ad-error">设备状态无法核实，请检查本机服务。</div>}
       {page === 'create' ? (
         <CreateInstances
           profiles={profiles.data ?? []}
@@ -225,12 +287,16 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
             setPage('create')
           }}
           onOpen={(id) => {
-            const target = all.find((item) => item.deviceId === id)
-            if (target) void open(target)
+            void loadDevice(id).then((target) => {
+              if (target) return open(target)
+              setError('实例详情暂不可用，请刷新后重试')
+            }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
-          onManage={(id, action, operationId) => {
-            const target = all.find((item) => item.deviceId === id)
-            if (target) manage(target, action, operationId)
+          onManage={(id, action, operationId, requestId) => {
+            void loadDevice(id).then((target) => {
+              if (target) return manage(target, action, operationId, requestId)
+              setError('实例详情暂不可用，请刷新后重试')
+            }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
         /><ResourceBoard
           devices={all}

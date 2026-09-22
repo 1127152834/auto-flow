@@ -1,5 +1,6 @@
 import hashlib
 import json
+import threading
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -77,19 +78,31 @@ def preview_cleanup(resources: list[dict[str, Any]], workspace_identity: str) ->
 class CleanupService:
     def __init__(self, resources: Any, devices: Any | None = None, backups: Any | None = None, operations: Any | None = None) -> None:
         self.resources, self.devices, self.backups, self.operations = resources, devices, backups, operations
-        self.used: set[str] = set()
-        self.previews: dict[str, list[dict[str, Any]]] = {}
+        self.used: set[tuple[str, str]] = set()
+        self.previews: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        self.preview_ids: dict[tuple[str, str], str] = {}
+        self.request_lock = threading.RLock()
         self.last_operation: dict[str, Any] | None = None
 
     def _reconcile(self, record: dict[str, Any]) -> dict[str, Any]:
-        operations = getattr(getattr(self.devices, "management", None), "operations", None)
+        operations = self.operations or getattr(getattr(self.devices, "management", None), "operations", None)
         for item in record.get("items", []):
             if item.get("state") != "running" or not item.get("operationId"):
                 continue
+            if operations is None:
+                item["state"] = "needs_verification"
+                continue
             try:
-                state = operations.get(item["operationId"]).state if operations is not None else None
-            except AndroidError:
-                state = None
+                try:
+                    child = operations.get(item["operationId"], record.get("workspaceId"))
+                except TypeError:
+                    child = operations.get(item["operationId"])
+                if record.get("workspaceId") is not None and getattr(child, "workspace_identity", record["workspaceId"]) != record["workspaceId"]:
+                    state = "needs_verification"
+                else:
+                    state = child.state
+            except (AndroidError, AttributeError, KeyError, LookupError, TypeError):
+                state = "needs_verification"
             if state in {"succeeded", "failed", "needs_verification", "cancelled"}:
                 item["state"] = state
         states = {item.get("state") for item in record.get("items", [])}
@@ -148,49 +161,78 @@ class CleanupService:
     def preview(self, resource_ids: list[str], workspace_identity: str) -> list[dict[str, Any]]:
         candidates = preview_cleanup([item for item in self._items(workspace_identity) if item.get("id") in resource_ids], workspace_identity)
         digest = hashlib.sha256(json.dumps(candidates, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        self.previews[digest] = deepcopy(candidates)
+        preview_id = str(uuid4())
+        key = (workspace_identity, digest)
+        self.previews[key] = deepcopy(candidates)
+        self.preview_ids[key] = preview_id
         if hasattr(self.resources, "save"):
-            self.resources.save("cleanup-preview", {"id": str(uuid4()), "workspaceId": workspace_identity, "items": deepcopy(candidates), "confirmationDigest": digest, "state": "preview"})
+            self.resources.save("cleanup-preview", {"id": preview_id, "workspaceId": workspace_identity, "items": deepcopy(candidates), "confirmationDigest": digest, "state": "preview"})
         return deepcopy(candidates)
 
-    def execute(self, workspace_identity: str, confirmation_digest: str, request_id: str | None = None) -> list[dict[str, Any]]:
-        candidates = self.previews.get(confirmation_digest)
-        if candidates is None and hasattr(self.resources, "list"):
-            stored = next((item for item in self.resources.list("cleanup-preview") if item.get("confirmationDigest") == confirmation_digest), None)
-            if stored and stored.get("workspaceId") == workspace_identity and stored.get("confirmationDigest") == confirmation_digest:
-                candidates = stored.get("items")
+    def preview_id_for(self, workspace_identity: str, confirmation_digest: str) -> str | None:
+        key = (workspace_identity, confirmation_digest)
+        preview_id = self.preview_ids.get(key)
+        if preview_id is not None:
+            return preview_id
+        if hasattr(self.resources, "list"):
+            stored = next((item for item in self.resources.list("cleanup-preview") if item.get("workspaceId") == workspace_identity and item.get("confirmationDigest") == confirmation_digest), None)
+            if stored is not None:
+                self.preview_ids[key] = str(stored["id"])
+                return str(stored["id"])
+        return None
+
+    def execute(self, workspace_identity: str, confirmation_digest: str, request_id: str | None = None, preview_id: str | None = None) -> list[dict[str, Any]]:
+        with self.request_lock:
+            return self._execute(workspace_identity, confirmation_digest, request_id, preview_id)
+
+    def _execute(self, workspace_identity: str, confirmation_digest: str, request_id: str | None = None, preview_id: str | None = None) -> list[dict[str, Any]]:
+        key = (workspace_identity, confirmation_digest)
+        candidates = self.previews.get(key)
+        stored = None
+        if hasattr(self.resources, "list"):
+            stored = next((item for item in self.resources.list("cleanup-preview") if item.get("workspaceId") == workspace_identity and item.get("confirmationDigest") == confirmation_digest and (preview_id is None or item.get("id") == preview_id)), None)
+        if candidates is None and stored is not None:
+            candidates = stored.get("items")
+        expected_preview_id = self.preview_id_for(workspace_identity, confirmation_digest)
+        if preview_id is not None and expected_preview_id != preview_id:
+            raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理预览编号已变化，请重新确认", 409)
+        preview_id = preview_id or expected_preview_id
         if candidates is None:
             raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理预览已变化，请重新确认", 409)
         if request_id and hasattr(self.resources, "list"):
             previous = next((item for item in self.resources.list("cleanup-operation") if item.get("workspaceId") == workspace_identity and item.get("requestId") == request_id), None)
             if previous is not None:
+                if previous.get("confirmationDigest") != confirmation_digest or (preview_id is not None and previous.get("previewId") != preview_id):
+                    raise AndroidError("ANDROID_CLEANUP_REQUEST_CONFLICT", "请求编号已用于不同清理预览", 409)
                 previous = self._reconcile(deepcopy(previous))
                 if previous.get("state") != "running":
                     self.resources.save("cleanup-operation", deepcopy(previous))
                     if self.operations is not None:
                         try:
                             op = self.operations.by_request(workspace_identity, request_id)
-                            if op.state == "running":
-                                self.operations.transition(op.operation_id, "running", "succeeded" if previous["state"] == "succeeded" else "needs_verification", {"stage_code": "completed" if previous["state"] == "succeeded" else "verify"})
+                            desired = "succeeded" if previous["state"] == "succeeded" else "needs_verification"
+                            if op.state in {"running", "needs_verification"} and op.state != desired:
+                                op = self.operations.transition(op.operation_id, op.state, desired, {"stage_code": "completed" if desired == "succeeded" else "verify"})
                         except AndroidError:
                             pass
-                self.last_operation = {"operationId": previous.get("id"), "requestId": request_id, "state": previous.get("state"), "previewId": confirmation_digest}
+                parent_id = previous.get("operationId") or previous.get("id")
+                self.last_operation = {"operationId": parent_id, "requestId": request_id, "state": previous.get("state"), "previewId": preview_id}
                 return deepcopy(previous.get("candidates", candidates))
         current = {item["id"]: item for item in preview_cleanup(self._items(workspace_identity), workspace_identity)}
         if any(current.get(item["id"]) != item for item in candidates):
             raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理预览已变化，请重新确认", 409)
         digest = confirmation_digest
-        if digest in self.used:
+        if (workspace_identity, digest) in self.used:
             raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理预览已使用，请重新生成", 409)
         operation = None
         if self.operations is not None and request_id:
-            operation = self.operations.accept(workspace_identity, request_id, "cleanup", "cleanup", digest, {"previewId": digest})
+            operation = self.operations.accept(workspace_identity, request_id, "cleanup", "cleanup", digest, {"previewId": preview_id})
             if operation.state == "queued":
                 operation = self.operations.transition(operation.operation_id, "queued", "running", {"stage_code": "deleting"})
             elif operation.state != "running":
-                self.last_operation = {"operationId": operation.operation_id, "requestId": operation.request_id, "state": operation.state}
+                self.last_operation = {"operationId": operation.operation_id, "requestId": operation.request_id, "state": operation.state, "previewId": preview_id}
                 return deepcopy(candidates)
-        record = {"id": str(uuid4()), "requestId": request_id, "workspaceId": workspace_identity, "confirmationDigest": digest, "state": "running", "items": [], "candidates": deepcopy(candidates)}
+        record = {"id": str(uuid4()), "operationId": operation.operation_id if operation is not None else None, "requestId": request_id, "workspaceId": workspace_identity, "previewId": preview_id, "confirmationDigest": digest, "state": "running", "items": [], "candidates": deepcopy(candidates)}
         pending = False
         try:
             for item in candidates:
@@ -232,13 +274,13 @@ class CleanupService:
             record["state"] = "needs_verification"
             if hasattr(self.resources, "save"):
                 self.resources.save("cleanup-operation", deepcopy(record))
-            if operation is not None:
-                self.operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "CLEANUP_RESULT_UNKNOWN", "message": str(error)[:480]})
+            if operation is not None and operation.state in {"running", "needs_verification"}:
+                self.operations.transition(operation.operation_id, operation.state, "needs_verification", {"stage_code": "verify", "result_code": "CLEANUP_RESULT_UNKNOWN", "message": str(error)[:480]})
             if isinstance(error, AndroidError):
                 raise
             raise AndroidError("ANDROID_CLEANUP_RESULT_UNKNOWN", "清理结果未知，请核实后重试", 503) from error
-        self.last_operation = {"operationId": operation.operation_id if operation is not None else record["id"], "requestId": request_id, "state": record["state"], "previewId": digest}
+        self.last_operation = {"operationId": operation.operation_id if operation is not None else record["id"], "requestId": request_id, "state": record["state"], "previewId": preview_id}
         if not pending:
-            self.used.add(digest)
-            self.previews.pop(digest, None)
+            self.used.add((workspace_identity, digest))
+            self.previews.pop(key, None)
         return candidates

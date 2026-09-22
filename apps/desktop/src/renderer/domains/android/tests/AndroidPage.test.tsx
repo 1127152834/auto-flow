@@ -15,7 +15,10 @@ const noop = vi.fn()
 afterEach(cleanup)
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => path.endsWith('/environment') ? environment : path.endsWith('/devices') ? [devices[0]] : path.endsWith('/profiles') ? [profile] : path.endsWith('/sessions') && init?.method === 'POST' ? fixtureSession(true) : path.endsWith('/sessions/fixture') ? fixtureSession(true) : path.endsWith('/apps') ? { packages: [], currentPackage: null, shellRoot: 'unknown', applicationRoot: 'unknown' } : path.endsWith('/actions') ? { ...fixtureSession(true), state: 'closed' } : [])
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return { items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['open', 'stop'], blockedReasons: {} }], total: 1, nextCursor: null }
+    return path.endsWith('/environment') ? environment : path.endsWith('/devices') ? [devices[0]] : path.endsWith('/profiles') ? [profile] : path.endsWith('/sessions') && init?.method === 'POST' ? fixtureSession(true) : path.endsWith('/sessions/fixture') ? fixtureSession(true) : path.endsWith('/apps') ? { packages: [], currentPackage: null, shellRoot: 'unknown', applicationRoot: 'unknown' } : path.endsWith('/actions') ? { ...fixtureSession(true), state: 'closed' } : []
+  })
 })
 it('opens embedded control only on explicit click; refresh does not create a native window', async () => {
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
@@ -32,6 +35,36 @@ it('management home does not request retired workflow, allocation, or run endpoi
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalled())
   expect(mocks.client.request.mock.calls.map(([path]) => path).filter((path) => /workflows|allocations|\/runs/.test(path))).toEqual([])
   expect(screen.queryByRole('button', { name: '分配给工作流' })).not.toBeInTheDocument()
+})
+
+it('management home does not poll the retired device list endpoint', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await screen.findByText('安卓设备')
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalled())
+  expect(mocks.client.request.mock.calls.filter(([path]) => path === '/api/v1/android/devices')).toHaveLength(0)
+})
+
+it('verifies a management operation with its original request id', async () => {
+  const requestId = 'request-original'
+  mocks.client.request.mockImplementation(async (path: string) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return {
+      items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'unknown', owner: { kind: 'none', id: null }, observedAt: null, stale: true, specSnapshot: devices[0], latestOperation: { operationId: 'operation-1' }, allowedActions: ['verify'], blockedReasons: { state: '请核实设备状态' } }], total: 1, nextCursor: null,
+    }
+    if (path === '/api/v1/android/management/operations/operation-1') return { operationId: 'operation-1', requestId, targetId: devices[0].deviceId, action: 'start', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, retryOf: null, createdAt: '', startedAt: '', finishedAt: null, resultCode: null, message: null, allowedActions: ['verify'] }
+    if (path === '/api/v1/android/management/operations/operation-1/verify') return { operationId: 'operation-1', requestId, targetId: devices[0].deviceId, action: 'start', state: 'succeeded', stageCode: 'verified', stageLabel: '已核实', attempt: 1, retryOf: null, createdAt: '', startedAt: '', finishedAt: '', resultCode: 'STATE_VERIFIED', message: null, allowedActions: [] }
+    if (path.endsWith('/environment')) return environment
+    if (path.endsWith('/profiles')) return [profile]
+    if (path.endsWith('/images')) return { items: [], total: 0, nextCursor: null }
+    if (path.endsWith('/backups')) return []
+    if (path.endsWith('/capabilities')) return { management: true, control: true, images: true, bulk: true, backups: true, workflow: false, reasons: {} }
+    if (path.endsWith('/cleanup/previews')) return { items: [], confirmationDigest: 'digest' }
+    if (path.endsWith('/diagnostics')) return { id: 'diagnostic-1', state: 'ready', createdAt: '' }
+    return []
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '核实状态' }))
+  await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/operations/operation-1/verify', expect.objectContaining({ body: { requestId } })))
 })
 it('cleanup preview includes registered backups while diagnostics remain device scoped', async () => {
   const backup = { id: 'backup-1', deviceId: devices[0].deviceId, bytes: 12, imageId: profile.imageId, sha256: 'digest', formatVersion: 1, state: 'ready', createdAt: '' }

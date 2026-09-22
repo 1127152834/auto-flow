@@ -89,18 +89,23 @@ def _operation_response(record: Any) -> OperationRead:
     )
 
 
-def _management_device(device: dict[str, Any]) -> ManagementDeviceRead:
+def _management_device(device: dict[str, Any], observation: Any | None = None) -> ManagementDeviceRead:
     operation = device.get("operation") or {}
+    control = device.get("control")
+    manual_controls = {"manual", "opening_manual", "closing_manual"}
+    runtime_state = observation.runtime_state if observation is not None else device.get("androidStatus", "unknown")
+    observed_at = observation.observed_at if observation is not None else device.get("observedAt")
+    stale = observation.stale if observation is not None else bool(device.get("stale", False))
     facts = DeviceFacts(
         device_id=str(device["deviceId"]),
         revision=max(1, int(device.get("generation", 0) or 0)),
-        runtime_state=device.get("androidStatus", "unknown"),
-        owner_kind="legacyWorkflow" if device.get("ownerRunId") else ("manualSession" if device.get("control") == "manual" else "none"),
+        runtime_state=runtime_state,
+        owner_kind="manualSession" if control in manual_controls else ("legacyWorkflow" if device.get("ownerRunId") else "none"),
         owner_id=device.get("ownerRunId"),
-        control=device.get("control", "idle"),
+        control=control or "idle",
         operation_action=operation.get("action"),
         operation_state=operation.get("state"),
-        stale=bool(device.get("stale", False)),
+        stale=stale,
     )
     policy = policy_for(facts)
     return ManagementDeviceRead(
@@ -109,7 +114,7 @@ def _management_device(device: dict[str, Any]) -> ManagementDeviceRead:
         name=str(device.get("name", "未命名设备")),
         runtime_state=facts.runtime_state,
         owner={"kind": facts.owner_kind, "id": facts.owner_id},
-        observed_at=device.get("observedAt"),
+        observed_at=observed_at,
         stale=facts.stale,
         spec_snapshot=dict(device.get("creationConfig") or {}),
         latest_operation=operation or None,
@@ -118,7 +123,20 @@ def _management_device(device: dict[str, Any]) -> ManagementDeviceRead:
     )
 
 
-def android_management_router(check_service: EnvironmentCheckService, operations: Any | None = None, images: Any | None = None, profiles: Any | None = None, backups: Any | None = None, devices: Any | None = None, bulk: AndroidBulkService | None = None, cleanup: CleanupService | None = None, resources: Any | None = None) -> APIRouter:
+def _backup_response(record: dict[str, Any]) -> BackupRead:
+    return BackupRead.model_validate({
+        "id": record["id"],
+        "deviceId": record["deviceId"],
+        "imageId": record["imageId"],
+        "formatVersion": record["formatVersion"],
+        "sha256": record["sha256"],
+        "bytes": record["bytes"],
+        "createdAt": record["createdAt"],
+        "state": record["state"],
+    })
+
+
+def android_management_router(check_service: EnvironmentCheckService, operations: Any | None = None, images: Any | None = None, profiles: Any | None = None, backups: Any | None = None, devices: Any | None = None, bulk: AndroidBulkService | None = None, cleanup: CleanupService | None = None, resources: Any | None = None, observations: Any | None = None) -> APIRouter:
     router = APIRouter(prefix="/api/v1/android/management", tags=["android-management"])
 
     def workspace_identity() -> str:
@@ -165,7 +183,12 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     ) -> ManagementDevicePageRead:
         if devices is None:
             return ManagementDevicePageRead(items=[], next_cursor=None, total=0)
-        rows = [item for item in devices.repository.list() if not item.get("deleted")]
+        workspace = getattr(getattr(devices, "runtime", None), "workspace_id", None) or workspace_identity()
+        rows = [
+            item
+            for item in devices.repository.list()
+            if not item.get("deleted") and item.get("workspaceId") in {None, workspace}
+        ]
         if status:
             rows = [item for item in rows if item.get("androidStatus", "unknown") == status]
         if profile_id:
@@ -178,7 +201,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             rows = [item for item in rows if str(item.get("deviceId")) > cursor]
         page = rows[:limit]
         return ManagementDevicePageRead(
-            items=[_management_device(item) for item in page],
+            items=[_management_device(item, observations.get(str(item["deviceId"])) if observations is not None and hasattr(observations, "get") else None) for item in page],
             next_cursor=str(page[-1]["deviceId"]) if len(rows) > limit else None,
             total=total,
         )
@@ -192,6 +215,9 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             record = operations.transition(record.operation_id, "queued", "running", {"stage_code": "checking"})
             try:
                 await check_service.check(body.request_id)
+            except asyncio.CancelledError:
+                operations.transition(record.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "CHECK_RESULT_UNKNOWN", "message": "请求已取消，环境检查结果未知"})
+                raise
             except Exception as error:  # noqa: BLE001 - a lost diagnostic result must become needs_verification
                 record = operations.transition(record.operation_id, "running", "needs_verification", {"result_code": "CHECK_RESULT_UNKNOWN", "message": str(error)[:480]})
             else:
@@ -226,25 +252,114 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         record = operations.get(operation_id, workspace_identity())
         if body.request_id != record.request_id:
             raise AndroidError("ANDROID_REQUEST_CONFLICT", "核实请求编号与原操作不一致", 409)
-        if record.state == "needs_verification":
-            if devices is None:
-                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入运行时核实，操作保持待核实", 503)
+        if record.state != "needs_verification":
+            return _operation_response(record)
+
+        def verified(changes: dict[str, Any], device: dict[str, Any] | None = None) -> Any:
+            # Lifecycle verification must commit the durable operation and the
+            # device projection together.  The fallback keeps lightweight test
+            # repositories compatible while production uses the SQL transaction.
+            transition_with_device = getattr(operations, "transition_with_device", None)
+            if device is not None and callable(transition_with_device):
+                return transition_with_device(record.operation_id, "needs_verification", "succeeded", changes, device)
+            result = operations.transition(record.operation_id, "needs_verification", "succeeded", changes)
+            if device is not None and devices is not None and hasattr(devices, "repository"):
+                devices.repository.save(device)
+            return result
+
+        payload = record.payload or {}
+        workspace = workspace_identity()
+        if record.action == "pull":
+            if images is None or not hasattr(images, "list"):
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入镜像目录核实", 503)
+            observed = next(
+                (
+                    item
+                    for item in images.list()
+                    if item.get("requestId") == record.request_id
+                    and item.get("reference") == payload.get("reference")
+                    and item.get("workspaceId") in {None, workspace}
+                ),
+                None,
+            )
+            if observed is None:
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "镜像拉取结果仍无法核实", 503)
+            record = verified({"stage_code": "verified", "result_code": "IMAGE_PULL_VERIFIED"})
+        elif record.action == "backup":
+            if backups is None or not hasattr(backups, "resources"):
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入备份目录核实", 503)
+            backup_workspace = getattr(backups, "workspace_identity", workspace)
+            observed = next(
+                (
+                    item
+                    for item in backups.resources.list("backup")
+                    if item.get("requestId") == record.request_id
+                    and (not payload.get("deviceId") or item.get("deviceId") == payload.get("deviceId"))
+                    and item.get("workspaceId") in {workspace, backup_workspace}
+                ),
+                None,
+            )
+            if observed is None:
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "备份结果仍无法核实", 503)
+            record = verified({"stage_code": "verified", "result_code": "BACKUP_VERIFIED"})
+        elif record.action == "restore":
+            if devices is None or not hasattr(devices, "repository"):
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入恢复目标核实", 503)
+            observed = next(
+                (
+                    item
+                    for item in devices.repository.list()
+                    if item.get("deviceId") == record.target_id
+                    and item.get("restoreRequestId") == record.request_id
+                    and (not payload.get("backupId") or item.get("restoreBackupId") == payload.get("backupId"))
+                    and item.get("workspaceId") in {None, workspace}
+                    and item.get("restoreState") == "restored"
+                    and item.get("dataRetained") is True
+                ),
+                None,
+            )
+            if observed is None:
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "恢复结果仍无法核实", 503)
+            record = verified({"stage_code": "verified", "result_code": "RESTORE_VERIFIED"})
+        elif record.action == "cleanup":
+            if cleanup is None or not hasattr(cleanup, "resources") or not hasattr(cleanup.resources, "list"):
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入清理记录核实", 503)
+            observed = next(
+                (
+                    item
+                    for item in cleanup.resources.list("cleanup-operation")
+                    if item.get("requestId") == record.request_id and item.get("workspaceId") == workspace
+                    and (not payload.get("previewId") or item.get("confirmationDigest") == payload.get("previewId"))
+                ),
+                None,
+            )
+            if observed is None or observed.get("state") != "succeeded":
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "清理结果仍无法核实", 503)
+            record = verified({"stage_code": "verified", "result_code": "CLEANUP_VERIFIED"})
+        elif record.action == "check" and record.target_id == "environment":
+            try:
+                await check_service.check(record.request_id)
+            except Exception as error:
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "环境检查结果仍无法核实", 503) from error
+            record = verified({"stage_code": "verified", "result_code": "ENVIRONMENT_CHECKED"})
+        elif devices is None:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入运行时核实，操作保持待核实", 503)
+        else:
             try:
                 device = devices.get(record.target_id)
                 observed = await devices.runtime.inspect(device)
-            except AndroidError as error:
-                if error.status != 404 or record.action != "delete":
+            except (AndroidError, TimeoutError, OSError) as error:
+                if not isinstance(error, AndroidError) or error.status != 404 or record.action != "delete":
                     raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
                 record = operations.transition(record.operation_id, "needs_verification", "succeeded", {"stage_code": "verified", "result_code": "DELETE_VERIFIED"})
                 return _operation_response(record)
             expected = {"start": {"ready"}, "restart": {"ready"}, "stop": {"stopped", "retained"}, "delete": set()}.get(record.action)
             status = observed.get("androidStatus")
             if expected is not None and status in expected:
-                record = operations.transition(record.operation_id, "needs_verification", "succeeded", {"stage_code": "verified", "result_code": "STATE_VERIFIED"})
-                if hasattr(devices, "repository"):
-                    device["control"] = "idle"
-                    device.setdefault("operation", {}).update(state="succeeded", stage="已核实", finishedAt=datetime.now(UTC).isoformat())
-                    devices.repository.save(device)
+                device["control"] = "idle"
+                device["lastError"] = None
+                device.setdefault("operation", {}).update(state="succeeded", stage="已核实", finishedAt=datetime.now(UTC).isoformat())
+                record = verified({"stage_code": "verified", "result_code": "STATE_VERIFIED"}, device)
             else:
                 raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态与操作结果不一致，请继续核实", 503)
         return _operation_response(record)
@@ -268,8 +383,10 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             raise AndroidError("ANDROID_IMAGE_PULL_UNAVAILABLE", "镜像拉取适配器尚未配置", 503)
         if operations is None:
             raise AndroidError("ANDROID_OPERATION_UNAVAILABLE", "操作记录服务尚未配置", 503)
+        workspace = workspace_identity()
         digest = hashlib.sha256(json.dumps({"reference": body.reference}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        record = operations.accept(workspace_identity(), body.request_id, "image", "pull", digest, {"reference": body.reference})
+        target_id = str(uuid5(NAMESPACE_URL, f"{workspace}/android-image-pull/{body.request_id}"))
+        record = operations.accept(workspace, body.request_id, target_id, "pull", digest, {"reference": body.reference})
         if record.state != "queued":
             return _operation_response(record)
         record = operations.transition(record.operation_id, "queued", "running", {"stage_code": "pulling"})
@@ -330,7 +447,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             return []
         workspace = workspace_identity()
         return [
-            BackupRead.model_validate(item)
+            _backup_response(item)
             for item in backups.resources.list("backup")
             if item.get("workspaceId") == workspace
         ]
@@ -342,7 +459,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         device = devices.get(body.device_id)
         if int(device.get("generation", 1) or 1) != body.expected_revision:
             raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新加载", 409)
-        return BackupRead.model_validate(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
+        return _backup_response(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
 
     @router.post("/devices/{identifier}/backups", response_model=BackupRead, status_code=201)
     async def backup(identifier: str, body: BackupCreate) -> BackupRead:
@@ -355,7 +472,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             raise AndroidError("ANDROID_BACKUP_REQUEST_INVALID", "备份请求缺少设备版本", 422)
         if int(device.get("generation", 1) or 1) != body.expected_revision:
             raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新加载", 409)
-        return BackupRead.model_validate(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
+        return _backup_response(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
 
     @router.post("/backups/{identifier}/restore", response_model=BackupRestoreRead, status_code=202)
     async def restore_backup(identifier: str, body: BackupRestore) -> BackupRestoreRead:
@@ -384,7 +501,16 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             if operation is not None:
                 operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_INCOMPATIBLE", "message": "备份缺少可恢复的实例配置快照"})
             raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份缺少可恢复的实例配置快照", 409)
-        environment = await devices.environment()
+        try:
+            environment = await devices.environment()
+        except asyncio.CancelledError:
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": "请求已取消，恢复结果未知"})
+            raise
+        except (TimeoutError, OSError) as error:
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": str(error)[:480]})
+            raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "恢复结果未知，请核实新实例", 503) from error
         if not any(image.get("id") == record.get("imageId") for image in environment.get("images", [])):
             if operation is not None:
                 operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_IMAGE_MISSING", "message": "备份所需的精确镜像当前不可用"})
@@ -434,7 +560,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
         result = bulk.create(workspace_identity(), body.request_id, body.action, [item.model_dump(by_alias=True) for item in body.items], body.delete_data)
-        return BulkRead.model_validate(bulk.run(result["id"]))
+        return BulkRead.model_validate(bulk.run(result["id"], workspace_identity()))
 
     @router.get("/bulk-operations/{identifier}", response_model=BulkRead)
     async def bulk_get(identifier: str) -> BulkRead:
@@ -456,17 +582,17 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         import hashlib
         import json
         digest = hashlib.sha256(json.dumps(items, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        return CleanupPreviewRead(items=items, confirmation_digest=digest, preview_id=digest)
+        preview_id = cleanup.preview_id_for(workspace_identity(), digest) or digest
+        return CleanupPreviewRead(items=items, confirmation_digest=digest, preview_id=preview_id)
 
     @router.post("/cleanup", response_model=CleanupRead)
     async def cleanup_execute(body: CleanupExecute) -> CleanupRead:
         if cleanup is None:
             raise RuntimeError("Android cleanup service is not configured")
-        if body.preview_id is not None and body.preview_id != body.confirmation_digest:
-            raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理预览编号与摘要不一致，请重新确认", 409)
-        items = cleanup.execute(workspace_identity(), body.confirmation_digest, body.request_id)
+        items = cleanup.execute(workspace_identity(), body.confirmation_digest, body.request_id, body.preview_id)
         operation = cleanup.last_operation or {}
-        return CleanupRead(items=items, state=operation.get("state", "accepted") if cleanup.operations is not None else "accepted", operation_id=operation.get("operationId"), request_id=body.request_id, preview_id=body.confirmation_digest)
+        response_preview_id = operation.get("previewId") or body.preview_id or cleanup.preview_id_for(workspace_identity(), body.confirmation_digest)
+        return CleanupRead(items=items, state=operation.get("state", "accepted") if cleanup.operations is not None else "accepted", operation_id=operation.get("operationId"), request_id=body.request_id, preview_id=response_preview_id)
 
     @router.post("/diagnostics", response_model=DiagnosticRead, status_code=202)
     async def diagnostics(body: DiagnosticsCreate) -> DiagnosticRead:

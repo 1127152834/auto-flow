@@ -23,6 +23,7 @@ export const androidManagementApi = (client: StreamingApiClient) => ({
   capabilities: () => client.request<ManagementCapabilities>(`${base}/capabilities`, { timeoutMs: 20000 }),
   devices: (query = '') => client.request<ManagementDevicePage>(`${base}/devices${query}`, { timeoutMs: 20000 }),
   operations: (query = '') => client.request<OperationPage>(`${base}/operations${query}`, { timeoutMs: 20000 }),
+  operation: (operationId: string) => client.request<Operation>(`${base}/operations/${encodeURIComponent(operationId)}`, { timeoutMs: 20000 }),
   operationByRequest: (requestId: string) => client.request<Operation>(`${base}/operations/by-request/${encodeURIComponent(requestId)}`, { timeoutMs: 20000 }),
   verify: (operationId: string, body: { requestId: string }) => client.request<Operation>(`${base}/operations/${encodeURIComponent(operationId)}/verify`, { method: 'POST', body, timeoutMs: 40000 }),
   images: () => client.request<{ items: Image[]; nextCursor: string | null; total: number }>(`${base}/images`, { timeoutMs: 20000 }),

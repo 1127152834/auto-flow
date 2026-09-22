@@ -1,6 +1,6 @@
 # AM3 多实例效率验收
 
-审计基线：`edf3906b`；当前聚焦后端 `126 passed, 1 warning`、前端 Android `13 files, 39 passed`；真实双实例基础证据来自 [总体验收记录](2026-09-22-validation.md)。
+审计基线：`97354567`；当前聚焦后端 `149 passed, 1 warning`、前端 Android `13 files, 42 passed`；真实双实例基础证据来自 [总体验收记录](2026-09-22-validation.md)。
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
@@ -13,10 +13,10 @@
 
 ```text
 cd apps/backend && uv run pytest tests/unit/test_android_bulk.py tests/unit/test_android_capacity_rules.py tests/unit/test_android_observations.py -q
-通过（包含在 Android 聚焦集合 126 passed 中）
+通过（包含在 Android 聚焦集合 149 passed 中）
 
 cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests
-13 files, 39 passed（含 stale preview 回归）
+13 files, 42 passed（含旧设备列表轮询和 stale/unknown 打开保护回归）
 ```
 
 硬件不足、破坏性应用操作和批量性能未用 mock 结果替代。

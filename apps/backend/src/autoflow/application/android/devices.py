@@ -261,7 +261,16 @@ class AndroidDeviceService:
             recover_running = getattr(self.management.operations, "recover_running", None)
             if callable(recover_running):
                 recover_running(self.management.workspace_identity)
-        records = [d for d in self.repository.list() if not d.get("deleted") and (d.get("ownerRunId") or d.get("control") != "idle")]
+        records = [
+            d
+            for d in self.repository.list()
+            if not d.get("deleted")
+            and (
+                d.get("ownerRunId")
+                or d.get("control") != "idle"
+                or d.get("operation", {}).get("state") == "needs_verification"
+            )
+        ]
         if not records:
             return
         try:
@@ -273,7 +282,12 @@ class AndroidDeviceService:
                 device["control"] = "recovery_required"
                 self.repository.save(device)
                 try:
-                    if device.get("operation", {}).get("state") in {"running", "interrupted", "failed"}:
+                    operation_state = device.get("operation", {}).get("state")
+                    if operation_state == "needs_verification":
+                        device["lastError"] = "管理操作结果待核实，请先核实设备状态"
+                        self.repository.save(device)
+                        continue
+                    if operation_state in {"running", "interrupted", "failed"}:
                         device["operation"].update(state="interrupted", stage="等待核实", error="服务已重启，请核实设备状态")
                         device["lastError"] = "管理操作中断，请点击核实状态"
                         self.repository.save(device)

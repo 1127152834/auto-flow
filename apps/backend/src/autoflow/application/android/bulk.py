@@ -9,7 +9,7 @@ from autoflow.domain.android.ports import AndroidError
 
 
 class AndroidBulkService:
-    _terminal_items: ClassVar[set[str]] = {"succeeded", "failed", "cancelled"}
+    _terminal_items: ClassVar[set[str]] = {"succeeded", "failed", "cancelled", "needs_verification"}
 
     def __init__(self, resources: Any, devices: Any) -> None:
         self.resources, self.devices = resources, devices
@@ -36,11 +36,23 @@ class AndroidBulkService:
                 logging.getLogger(__name__).exception("Android bulk queue tick failed")
             await asyncio.sleep(0.2)
 
-    def _get(self, identifier: str) -> dict[str, Any]:
+    def _workspace_identity(self) -> str | None:
+        return getattr(getattr(self.devices, "management", None), "workspace_identity", None)
+
+    def _get(self, identifier: str, workspace: str | None = None) -> dict[str, Any]:
         getter = getattr(self.devices, "get", None)
         if getter is not None:
-            return getter(identifier)
-        return self.devices.repository.get(identifier)
+            try:
+                device = getter(identifier, workspace=workspace) if workspace is not None else getter(identifier)
+            except TypeError as error:
+                if workspace is None or "unexpected keyword" not in str(error):
+                    raise
+                device = getter(identifier)
+        else:
+            device = self.devices.repository.get(identifier)
+        if workspace is not None and device.get("workspaceId") not in (None, workspace):
+            raise AndroidError("ANDROID_NOT_FOUND", "安卓设备未登记", 404)
+        return device
 
     def create(self, workspace: str, request_id: str, action: str, items: list[dict[str, Any]], delete_data: bool) -> dict[str, Any]:
         if not items or len(items) > 20 or len({item["deviceId"] for item in items}) != len(items):
@@ -55,7 +67,7 @@ class AndroidBulkService:
             return existing
         frozen = []
         for item in items:
-            device = self._get(item["deviceId"])
+            device = self._get(item["deviceId"], workspace)
             frozen.append({"deviceId": item["deviceId"], "expectedRevision": item["expectedRevision"], "state": "queued", "operationId": None, "error": None, "name": device.get("name")})
         record = {"id": str(uuid4()), "workspaceIdentity": workspace, "requestId": request_id, "action": action, "deleteData": delete_data, "state": "queued", "items": frozen, "createdAt": datetime.now(UTC).isoformat()}
         self.resources.save("bulk", record)
@@ -67,8 +79,8 @@ class AndroidBulkService:
             raise AndroidError("ANDROID_BULK_NOT_FOUND", "批次不存在", 404)
         return batch
 
-    def run(self, identifier: str) -> dict[str, Any]:
-        batch = self.resources.get("bulk", identifier)
+    def run(self, identifier: str, workspace: str | None = None) -> dict[str, Any]:
+        batch = self.get(identifier, workspace)
         if batch["state"] in {"queued", "running"}:
             batch["state"] = "running"
         # HTTP requests run with the persistent queue started at bootstrap. Keep
@@ -84,13 +96,18 @@ class AndroidBulkService:
             if item["state"] != "queued":
                 continue
             try:
-                device = self._get(item["deviceId"])
+                device = self._get(item["deviceId"], batch.get("workspaceIdentity"))
                 if int(device.get("generation", 0)) != int(item["expectedRevision"]):
                     raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
                 attempt = int(item.get("attempt", 0)) + 1
                 item["attempt"] = attempt
                 result = self.devices.operate(item["deviceId"], {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]})
                 item.update(state="accepted", operationId=(result.get("operation") or {}).get("id"))
+            except asyncio.CancelledError:
+                item.update(state="needs_verification", error="操作被中断，结果未知，请核实设备状态")
+                self._batch_state(batch)
+                self.resources.save("bulk", batch)
+                raise
             except (TimeoutError, OSError):
                 item.update(state="needs_verification", error="操作结果未知，请核实设备状态")
             except AndroidError as error:
@@ -100,7 +117,10 @@ class AndroidBulkService:
 
     async def tick(self) -> None:
         async with self.tick_lock:
+            workspace = self._workspace_identity()
             for batch in sorted(self.resources.list("bulk"), key=lambda item: item.get("createdAt", "")):
+                if workspace is not None and batch.get("workspaceIdentity") != workspace:
+                    continue
                 if batch.get("state") in {"succeeded", "failed", "cancelled", "partially_failed", "needs_verification"} and not any(item.get("state") in {"queued", "waiting_capacity", "waiting_device", "accepted"} for item in batch.get("items", [])):
                     continue
                 await self._advance(batch)
@@ -118,7 +138,7 @@ class AndroidBulkService:
             if item.get("state") not in {"queued", "waiting_capacity", "waiting_device"}:
                 continue
             try:
-                device = self._get(item["deviceId"])
+                device = self._get(item["deviceId"], batch.get("workspaceIdentity"))
                 if int(device.get("generation", 0)) != int(item["expectedRevision"]):
                     raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
                 if device.get("control") != "idle":
@@ -136,6 +156,11 @@ class AndroidBulkService:
                 item.update(state="accepted", operationId=(result.get("operation") or {}).get("id"), error=None)
                 changed = True
                 break
+            except asyncio.CancelledError:
+                item.update(state="needs_verification", error="操作被中断，结果未知，请核实设备状态")
+                self._batch_state(batch)
+                self.resources.save("bulk", batch)
+                raise
             except (TimeoutError, OSError):
                 item.update(state="needs_verification", error="操作结果未知，请核实设备状态")
                 changed = True
@@ -174,24 +199,29 @@ class AndroidBulkService:
         for item in batch["items"]:
             if item.get("state") != "accepted":
                 continue
-            state, message = self._operation_state(item)
-            if state in {"succeeded", "failed", "needs_verification"}:
+            state, message = self._operation_state(item, batch.get("workspaceIdentity"))
+            if state in self._terminal_items:
                 item.update(state=state, error=message)
                 changed = True
         self._batch_state(batch)
         return changed
 
-    def _operation_state(self, item: dict[str, Any]) -> tuple[str | None, str | None]:
+    def _operation_state(self, item: dict[str, Any], workspace: str | None = None) -> tuple[str | None, str | None]:
         operation_id = item.get("operationId")
         operations = getattr(getattr(self.devices, "management", None), "operations", None)
         if operation_id and operations is not None:
             try:
-                record = operations.get(operation_id)
-                return record.state, record.message
-            except AndroidError:
-                pass
+                try:
+                    record = operations.get(operation_id, workspace)
+                except TypeError:
+                    record = operations.get(operation_id)
+                if workspace is not None and getattr(record, "workspace_identity", workspace) != workspace:
+                    return "needs_verification", "操作归属无法核实，请重新检查"
+                return record.state, getattr(record, "message", None)
+            except (AndroidError, AttributeError, KeyError, LookupError, TypeError):
+                return "needs_verification", "操作结果未知，请核实设备状态"
         try:
-            device = self._get(item["deviceId"])
+            device = self._get(item["deviceId"], workspace)
         except AndroidError:
             return None, None
         operation = device.get("operation") or {}
@@ -217,6 +247,7 @@ class AndroidBulkService:
 
     def action(self, identifier: str, action: str, request_id: str | None = None, workspace: str | None = None) -> dict[str, Any]:
         batch = self.get(identifier, workspace)
+        self._reconcile(batch)
         receipts = batch.setdefault("actionReceipts", {})
         if request_id:
             previous = receipts.get(request_id)
