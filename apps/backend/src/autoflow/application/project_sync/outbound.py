@@ -21,6 +21,7 @@ from autoflow.domain.project_data.identity import (
     RecordKeyType,
     decode_record_key,
 )
+from autoflow.domain.project_data.records import validate_record_scalar
 from autoflow.domain.project_data.rules import validate_value
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.project_data_models import (
@@ -212,7 +213,14 @@ class SheetsSyncService:
         by_column = {
             str(entry["columnId"]).upper(): entry for entry in binding["mapping"]
         }
-        created = refreshed = conflicts = rows = 0
+        identity_field_id: str | None = None
+        if not system:
+            identity_field = fields.get(
+                str(by_column.get(column_letter(identity), {}).get("fieldId"))
+            )
+            identity_field_id = identity_field.id if identity_field is not None else None
+        prepared: list[tuple[RecordKey, dict[str, Any]]] = []
+        rows = 0
         for index in range(1, len(raw)):
             row = raw[index]
             if not any(str(value) != "" for value in row):
@@ -234,14 +242,25 @@ class SheetsSyncService:
                 # it from the FORMULA view while plain cells keep the value the
                 # user sees.
                 source = raw if field.formula else computed
-                values[field.id] = _coerce(
-                    field.type, _cell_value(source, index, position)
-                )
+                source_value = _cell_value(source, index, position)
+                if source_value is None:
+                    # A blank source cell is missing input, not a new local null
+                    # value.  Leave it absent so required diagnostics remain
+                    # REQUIRED_FIELD_MISSING and local data is not overwritten.
+                    continue
+                values[field.id] = _coerce(field.type, source_value)
             if not system:
-                identity_field = fields.get(str(by_column.get(column_letter(identity), {}).get("fieldId")))
+                identity_field = fields.get(identity_field_id) if identity_field_id else None
                 if identity_field is not None:
-                    validate_value({"key": identity_field.key, "name": identity_field.name, "type": identity_field.type, "required": identity_field.required, "validation": identity_field.validation}, values.get(identity_field.id))
+                    _validate_source_value(identity_field, values.get(identity_field.id), strict=True)
             key = _record_key_for(marker, system=system)
+            for field_id, value in values.items():
+                field = fields[field_id]
+                if field.id != identity_field_id:
+                    _validate_source_value(field, value)
+            prepared.append((key, values))
+        created = refreshed = conflicts = 0
+        for key, values in prepared:
             outcome = self._ingest(project_id, table_id, generation, key, values)
             if valid:
                 self._sync.observe_source(project_id, table_id, generation, int(binding["bindingEpoch"]), key, values)
@@ -893,8 +912,7 @@ def _coerce(field_type: str, value: Any) -> Any:
 
 def _cell_value(computed: list[list[Any]], index: int, position: int) -> Any:
     row = computed[index] if index < len(computed) else []
-    value = row[position] if position < len(row) else ""
-    return "" if value is None else value
+    return row[position] if position < len(row) else None
 
 
 def _same(left: Any, right: Any) -> bool:
@@ -937,6 +955,22 @@ def _record_key_for(marker: Any, *, system: bool = False) -> RecordKey:
     if isinstance(marker, int) or (isinstance(marker, float) and marker.is_integer()):
         return RecordKey("integer", str(int(marker)))
     return RecordKey("text", str(marker))
+
+
+def _validate_source_value(field: DataFieldRow, value: Any, *, strict: bool = False) -> None:
+    definition = {
+        "key": field.key,
+        "name": field.name,
+        "type": field.type,
+        "required": field.required,
+        "validation": field.validation,
+    }
+    try:
+        validate_value(definition, value)
+    except ProjectError:
+        if strict:
+            raise
+        validate_record_scalar(value)
 
 
 def _key_type(value: str | None) -> RecordKeyType:

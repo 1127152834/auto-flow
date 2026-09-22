@@ -36,4 +36,9 @@ Final: Ruling: generated and historical evidence text relies on source contract,
 
 HTTP 延迟反例由 1 failed/1 passed 变为 4 passed/3.66 秒（原文件与临时延迟副本），临时副本已移除；正式命令/生命周期两文件 20 passed/2.09 秒。所有互斥、最终状态和错误恢复断言保留。
 
-D1（已批准）在当前候选 b44cf86d：安全来源业务 Scalar 的 Sheets/XLSX 物化保留原值，记录快照派生 validationIssues，工作流投影按授权字段过滤；身份/unsafe Scalar/人工写入严格。134 项相关后端、11 项 UI、mypy407、Ruff、OpenAPI、typecheck 通过。真实浏览器过滤命中 0 项，未声称 worker 证据；打包/实网/三平台 D1 仍待新候选。
+D1（已批准）在当前候选 5d1f4608：安全来源业务 Scalar 的 Sheets/XLSX 物化保留原值，记录快照派生 validationIssues，工作流投影按授权字段过滤；身份/unsafe Scalar/人工写入严格。134 项相关后端、11 项 UI、mypy407、Ruff、OpenAPI、typecheck 通过。真实浏览器过滤命中 0 项，未声称 worker 证据；打包/实网/三平台 D1 仍待新候选。
+
+
+2026-09-22 D1 候选更新（confirmed）：生产候选 5d1f4608992f906092191bd00ab421564f997c3e 已推送，三平台 Actions 35638303073 正在运行；native probe 与 worker probe 由工作流跳过，不计为证据。D1 本机 134 后端、11 UI、mypy407、Ruff、OpenAPI、typecheck 通过；真实 worker、打包完整链、实网授权与实机安装仍待外部条件。
+
+2026-09-22 D1 review RED→GREEN（confirmed）：独立审查发现 Excel 身份字段错误回退、Excel/Sheets 缺失值物化、Sheets 坏身份半批发布；均已在共享源验证入口修复。身份字段业务校验现在拒绝导入，缺失字段不写入 values，Sheets 先完整预校验后再 ingest。D1 相关四文件 138 passed/2 warnings，Ruff 与 mypy 407 通过；需要对 post-review SHA 重新运行三平台 CI。UI 诊断为字段列表后的聚合面板，保留为 Minor 表达差异。

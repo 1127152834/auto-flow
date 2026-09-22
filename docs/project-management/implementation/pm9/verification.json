@@ -9,7 +9,7 @@
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
     "16 of 251 requirements still have no located assertion; 198 partial / 53 planned / 0 verified. Located assertions do not close unproven acceptance subconditions.",
-    "D1 current local gates: 86 record/capability tests, 65 Sheets/Excel/records tests, UI 7 tests, mypy 407 and OpenAPI pass. Full current D1 backend/frontend/native candidate pending.",
+    "D1 current local gates: 86 record/capability tests, 138 scoped Sheets/Excel/records tests, UI 11 tests, mypy 407 and OpenAPI pass. Current candidate CI is recorded separately.",
     "One independent whole C/R review completed; three Important findings fixed with RED counterexamples. Local full regression passed; current native follow-ups pending.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
@@ -29,7 +29,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
+  "codeCandidate": "5d1f4608992f906092191bd00ab421564f997c3e",
   "checks": {
     "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -142,7 +142,7 @@
     "status": "C/R implemented; one whole review completed and three Important findings fixed. Local full regression passed; current native failures are being corrected; release not accepted."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "C/R and review fixes at 3c02b51f; subsequent tests/evidence only. Native follow-up pending.",
+  "workingCandidate": "D1 production candidate at 5d1f4608; C/R review fixes remain included. Current native matrix is 5d1f4608; release acceptance pending.",
   "finalCICandidate": {
     "status": "failed_platforms_diagnosed_intel_pending",
     "runId": 35629585683,
@@ -168,7 +168,7 @@
         "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
       }
     ],
-    "productionSource": "unchanged since 3c02b51f; later commits update rules/import layout and reports",
+    "productionSource": "C/R production at 3c02b51f plus approved D1 source diagnostics at 5d1f4608992f906092191bd00ab421564f997c3e; current candidate includes both",
     "platformFailures": [
       {
         "platform": "win32-x64",
@@ -186,7 +186,14 @@
         "localVerification": "Controlled delayed HTTP counterexample: original 1 failed/1 passed; corrected 4 passed in 3.66s including normal and delayed copies. Temporary copy removed; committed browser command/lifecycle files 20 passed in 2.09s."
       }
     ],
-    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged.",
+    "next": "Await current three-platform candidate; preserve each platform result and keep missing physical/external evidence explicit.",
+    "currentCandidateRun": {
+      "runId": 35638303073,
+      "headSha": "5d1f4608992f906092191bd00ab421564f997c3e",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35638303073",
+      "status": "success",
+      "scope": "Approved D1 production candidate; all three platform jobs required. Native probe and worker probe are skipped by the workflow and provide no evidence."
+    },
     "followUpRuns": [
       {
         "platform": "win32-x64",
@@ -204,11 +211,11 @@
       }
     ]
   },
-  "codeCandidateScope": "Final production change; later d75297fb/0d7524d9/705cea16 modify only tests, documentation and evidence. Current native runs are scoped individually in finalCICandidate.",
-  "testCandidate": "b44cf86d71624dc931ba304309adc2af363cccef",
-  "d1": "D1 source safe business-format preservation: Sheets and XLSX direct cases pass; original values and validationIssues are derived without new error ledger; unsafe values and identity remain strict. Production packaged/real-Google/worker acceptance pending.",
+  "codeCandidateScope": "Current final production candidate 5d1f4608992f906092191bd00ab421564f997c3e includes approved D1 source changes; prior hashes remain historical scoped evidence. Current native runs are listed in finalCICandidate.",
+  "testCandidate": "5d1f4608992f906092191bd00ab421564f997c3e",
+  "d1": "D1 source safe business-format preservation: Sheets and XLSX direct cases pass; source identity and unsafe wire values remain strict; required source omissions remain absent; Sheets prevalidates all rows before materialization. Production packaged/real-Google/worker acceptance pending.",
   "d1Verification": {
-    "backend": "134 passed, 2 warnings in 55.78s for D1 records/sheets/excel/capability scope",
+    "backend": "138 passed, 2 warnings in 58.62s for D1 records/sheets/excel/capability scope",
     "frontend": "11 passed in 3.32s for RecordFieldsView and RecordDetailPage",
     "typecheck": "passed",
     "openapi": "passed",

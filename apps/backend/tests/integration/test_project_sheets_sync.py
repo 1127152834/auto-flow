@@ -3,7 +3,9 @@
 import base64
 
 import pytest
+from sqlalchemy import select
 
+from autoflow.infrastructure.database.project_data_models import DataFieldRow
 from autoflow.providers.data.google_sheets import SheetsApiError
 from tests.fixtures.sheets import FakeSheetsTransport, new_key, open_sheets_table
 
@@ -764,3 +766,44 @@ def test_pull_preserves_safe_business_format_error_for_status_and_diagnosis(tmp_
         assert issue['rule'] == 'type' and issue['code'] == 'INVALID_PROJECT_DATA'
         assert record['contentRevision'] == record['statusRevision'] == record['linkRevision'] == 1
         assert sync_operations(sheets) == [] and transport.changes() == 0
+
+
+def test_pull_keeps_missing_required_source_cell_absent_with_diagnosis(tmp_path):
+    transport = FakeSheetsTransport({'数据': [['编号', '标题', '金额'], ['A-1', 'valid', None]]})
+    with open_sheets_table(tmp_path, transport, [*COLUMNS, ('amount', '金额', 'number')]) as sheets:
+        with sheets.client.app.state.session_factory.begin() as session:
+            field = session.scalars(select(DataFieldRow).where(
+                DataFieldRow.id == sheets.field_id('amount'),
+                DataFieldRow.dataset_generation == sheets.dataset_generation(),
+            )).one()
+            field.required = True
+        operation = pull(sheets)
+        assert operation['status'] == 'succeeded'
+        record = sheets.records()[0]
+        amount_id = sheets.field_id('amount')
+        assert all(cell['fieldId'] != amount_id for cell in record['values'])
+        issue = next(item for item in record['validationIssues'] if item['fieldId'] == amount_id)
+        assert issue['rule'] == 'required' and issue['code'] == 'REQUIRED_FIELD_MISSING'
+
+
+def test_pull_rejects_late_invalid_identity_without_partial_materialization(tmp_path):
+    transport = FakeSheetsTransport({'数据': [['编号', '金额'], ['A-1', 1], ['BAD', 2]]})
+    with open_sheets_table(
+        tmp_path,
+        transport,
+        [('code', '编号', 'string'), ('amount', '金额', 'number')],
+    ) as sheets:
+        with sheets.client.app.state.session_factory.begin() as session:
+            field = session.scalars(select(DataFieldRow).where(
+                DataFieldRow.id == sheets.field_id('code'),
+                DataFieldRow.dataset_generation == sheets.dataset_generation(),
+            )).one()
+            field.validation = {'pattern': '^[A-Z]-\\d+$'}
+        response = sheets.client.post(
+            sheets.url('/sync/pull'),
+            json={'expectedTableRevision': sheets.table_revision()},
+            headers=new_key(),
+        )
+        assert response.status_code == 422, response.text
+        assert response.json()['error']['code'] == 'INVALID_PROJECT_DATA'
+        assert sheets.records() == []

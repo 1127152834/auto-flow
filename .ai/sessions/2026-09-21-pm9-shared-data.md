@@ -83,4 +83,8 @@ DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源�
 
 2026-09-22 继续核对：SH-02 两个顺序共享写直接断言，完整同步文件 35 passed/39.99 秒；SYNC-09 复核既有失败推值后双拉取和真实 Task 领取。仅这两项 planned→partial，最新机器统计 235/16/198 partial/53 planned/0 verified。所有后补均为测试/记录，生产源码仍 3c02b51f。
 
-2026-09-22 D1 已获批准并实施：原值旁展示结构化格式诊断，Sheets/XLSX 安全业务 Scalar 保留；身份和非法 wire Scalar 仍拒绝。134 后端/11 UI 通过；真实 worker 过滤无命中，保持未验收。生产新候选为 b44cf86d，releaseAccepted=false。
+2026-09-22 D1 已获批准并实施：原值旁展示结构化格式诊断，Sheets/XLSX 安全业务 Scalar 保留；身份和非法 wire Scalar 仍拒绝。134 后端/11 UI 通过；真实 worker 过滤无命中，保持未验收。生产新候选为 5d1f4608，releaseAccepted=false。
+
+2026-09-22 D1 候选已推送：5d1f4608992f906092191bd00ab421564f997c3e，Actions 35638303073 三平台待完成；releaseAccepted=false。
+
+2026-09-22 D1 final review RED→GREEN：修复身份严格性、缺失保留和 Sheets 全量预校验；138 相关后端通过，releaseAccepted=false。旧 35638303073 只覆盖修复前候选，post-review 需新 CI。

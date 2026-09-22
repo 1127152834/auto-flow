@@ -322,9 +322,9 @@ def test_remote_cells_are_fitted_to_the_local_field_type():
     assert outbound._coerce("boolean", True) is True
 
     assert outbound._cell_value([["a"]], 0, 0) == "a"
-    assert outbound._cell_value([["a"]], 0, 4) == ""
-    assert outbound._cell_value([["a"]], 3, 0) == ""
-    assert outbound._cell_value([[None]], 0, 0) == ""
+    assert outbound._cell_value([["a"]], 0, 4) is None
+    assert outbound._cell_value([["a"]], 3, 0) is None
+    assert outbound._cell_value([[None]], 0, 0) is None
 
 
 def test_verification_keeps_the_written_type_and_value():

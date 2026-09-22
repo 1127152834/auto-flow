@@ -68,4 +68,4 @@ DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源�
 
 当前 251 条中 232 有定位断言、19 未定位；197 partially_verified / 54 planned / 0 verified。LIFE-09 的活动 worker/保存/未知写联合链、完整打包和实网条件仍保留，releaseAccepted=false。
 
-2026-09-22 最新补证：已有坏业务值 fixture 的 HTTP 状态设置/占用 held 与 reconciling 拒绝/模拟释放后清空通过；17 项共享领取回归。实际从 Sheets 引入 number 映射文本时 422，属于实现缺失，D1 来源保留与诊断规格 proposed，不能称作只差实网。当前机器统计 251/233 有断言/18 未定位，196 partial/55 planned/0 verified；前文 197/54 为 LIFE-09 原本已 partial 却重复计入升级的手工误差，本节 supersede。未改变任何条目状态。当前补跑固定 0d7524d9，后补的状态场景单独保留本机范围。
+2026-09-22 最新补证：已有坏业务值 fixture 的 HTTP 状态设置/占用 held 与 reconciling 拒绝/模拟释放后清空通过；17 项共享领取回归。D1 实现后，Sheets/XLSX 普通来源业务格式错误保留原值并派生诊断；身份与 unsafe wire scalar 严格拒绝；必填来源缺失保持缺失；Sheets 先全量预校验再物化，避免坏身份造成半批发布。真实 worker、打包完整链和实网授权仍未验收。当前机器统计 251/235 有断言/16 未定位，198 partial/53 planned/0 verified；前文 197/54、233/18 为阶段性手工统计，本节 supersede。未改变任何条目状态。当前补跑固定 0d7524d9，后补的状态场景单独保留本机范围。

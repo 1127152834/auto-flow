@@ -62,7 +62,7 @@
     "legacyIdentityRule": "Pure boundary test now rejects missing column and accepts explicit system coordinate; source unchanged.",
     "build": "Passed in 34.38s",
     "win32Mypy": "407 source files passed",
-    "d1": "134 backend, 11 UI, mypy407, Ruff, OpenAPI, typecheck pass; real worker selected filter had 0 tests and remains unclaimed."
+    "d1": "138 backend, 11 UI, mypy407, Ruff, OpenAPI, typecheck pass; real worker selected filter had 0 tests and remains unclaimed."
   },
   "finalCICandidate": {
     "status": "failed_platforms_diagnosed_intel_pending",

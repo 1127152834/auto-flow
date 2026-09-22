@@ -577,3 +577,101 @@ def test_import_preserves_safe_business_format_error_for_record_diagnosis(tmp_pa
         issue = next(item for item in record['validationIssues'] if item['rule'] == 'type')
         assert issue['fieldId']
         assert next(cell['value'] for cell in record['values'] if cell['fieldId'] == issue['fieldId']) == 'not-a-number'
+
+
+def test_import_rejects_business_format_error_in_identity_column(tmp_path):
+    from openpyxl import load_workbook
+
+    app = _app(tmp_path)
+    with TestClient(app, headers={"x-autoflow-token": "renderer"}) as client:
+        project, token, proof = prepare(client, tmp_path)
+        book = load_workbook(tmp_path / "source.xlsx")
+        book.active["B1"] = "金额"
+        book.active["B2"] = "not-a-number"
+        book.save(tmp_path / "source.xlsx")
+        inspection = client.post(
+            f"/api/v1/projects/{project}/table-imports/excel/inspect",
+            json={"selectionToken": token},
+            headers=proof,
+        ).json()["inspection"]
+        body = request_for(inspection)
+        body["mapping"].append(
+            {
+                "columnIndex": 1,
+                "target": {
+                    "kind": "new",
+                    "definition": {
+                        "key": "amount",
+                        "name": "金额",
+                        "type": "number",
+                        "required": True,
+                        "validation": {},
+                    },
+                },
+            }
+        )
+        body["identity"] = {"mode": "column", "columnIndex": 1}
+        key = str(uuid4())
+        accepted = client.post(
+            f"/api/v1/projects/{project}/table-imports/excel",
+            json=body,
+            headers={**proof, "Idempotency-Key": key},
+        )
+        assert accepted.status_code == 202, accepted.text
+        operation = client.get(
+            f"/api/v1/projects/{project}/operations/by-idempotency-key/{key}"
+        ).json()
+        assert operation["status"] == "failed"
+        assert operation["error"]["code"] == "INVALID_PROJECT_DATA"
+        assert client.get(f"/api/v1/projects/{project}/tables").json()["total"] == 0
+
+
+def test_import_keeps_missing_required_source_cell_absent_with_diagnosis(tmp_path):
+    from openpyxl import load_workbook
+
+    app = _app(tmp_path)
+    with TestClient(app, headers={"x-autoflow-token": "renderer"}) as client:
+        project, token, proof = prepare(client, tmp_path)
+        book = load_workbook(tmp_path / "source.xlsx")
+        book.active["B1"] = "金额"
+        book.active["B2"] = None
+        book.save(tmp_path / "source.xlsx")
+        inspection = client.post(
+            f"/api/v1/projects/{project}/table-imports/excel/inspect",
+            json={"selectionToken": token},
+            headers=proof,
+        ).json()["inspection"]
+        body = request_for(inspection)
+        body["mapping"].append(
+            {
+                "columnIndex": 1,
+                "target": {
+                    "kind": "new",
+                    "definition": {
+                        "key": "amount",
+                        "name": "金额",
+                        "type": "number",
+                        "required": True,
+                        "validation": {},
+                    },
+                },
+            }
+        )
+        key = str(uuid4())
+        accepted = client.post(
+            f"/api/v1/projects/{project}/table-imports/excel",
+            json=body,
+            headers={**proof, "Idempotency-Key": key},
+        )
+        assert accepted.status_code == 202, accepted.text
+        operation = client.get(
+            f"/api/v1/projects/{project}/operations/by-idempotency-key/{key}"
+        ).json()
+        assert operation["status"] == "succeeded", operation
+        table = operation["result"]["table"]
+        record = client.get(
+            f"/api/v1/projects/{project}/tables/{table['tableId']}/records",
+            params={"datasetGeneration": table["datasetGeneration"]},
+        ).json()["items"][0]
+        amount_id = next(field["fieldId"] for field in record["validationIssues"] if field["rule"] == "required")
+        assert all(cell["fieldId"] != amount_id for cell in record["values"])
