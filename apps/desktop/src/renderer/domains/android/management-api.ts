@@ -26,6 +26,7 @@ export const androidManagementApi = (client: StreamingApiClient) => ({
   operation: (operationId: string) => client.request<Operation>(`${base}/operations/${encodeURIComponent(operationId)}`, { timeoutMs: 20000 }),
   operationByRequest: (requestId: string) => client.request<Operation>(`${base}/operations/by-request/${encodeURIComponent(requestId)}`, { timeoutMs: 20000 }),
   verify: (operationId: string, body: { requestId: string }) => client.request<Operation>(`${base}/operations/${encodeURIComponent(operationId)}/verify`, { method: 'POST', body, timeoutMs: 40000 }),
+  checkEnvironment: (body: { requestId: string }) => client.request<Operation>(`${base}/environment/checks`, { method: 'POST', body, timeoutMs: 40000 }),
   images: () => client.request<{ items: Image[]; nextCursor: string | null; total: number }>(`${base}/images`, { timeoutMs: 20000 }),
   archiveProfile: (id: string, body: { requestId: string; expectedRevision: number }) => client.request<components['schemas']['EnvironmentProfile']>(`${base}/profiles/${id}/archive`, { method: 'POST', body }),
   registerImage: (body: ImageRegister) => client.request<Image>(`${base}/images`, { method: 'POST', body }),

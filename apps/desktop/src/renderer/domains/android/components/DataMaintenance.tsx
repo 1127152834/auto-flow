@@ -2,32 +2,45 @@ import { useState } from 'react'
 import { ApiClientError } from '../../../shared/api/client'
 import type { AndroidManagementApi } from '../management-api'
 
-export function DataMaintenance({ api, resourceIds, diagnosticDeviceIds = resourceIds }: { api: Pick<AndroidManagementApi, 'cleanupPreview' | 'cleanup' | 'diagnostics'> & Partial<Pick<AndroidManagementApi, 'operationByRequest'>>; resourceIds: string[]; diagnosticDeviceIds?: string[] }) {
-  const [preview, setPreview] = useState<{ items: Record<string, unknown>[]; previewId?: string; confirmationDigest: string } | null>(null)
+type Preview = { items: Record<string, unknown>[]; previewId?: string; confirmationDigest: string }
+
+export function DataMaintenance({ api, resourceIds, diagnosticDeviceIds = resourceIds }: { api: Pick<AndroidManagementApi, 'cleanupPreview' | 'cleanup' | 'diagnostics'> & Partial<Pick<AndroidManagementApi, 'operationByRequest' | 'verify'>>; resourceIds: string[]; diagnosticDeviceIds?: string[] }) {
+  const [preview, setPreview] = useState<Preview | null>(null)
   const [message, setMessage] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false)
   const [requestId, setRequestId] = useState<string | null>(null), [needsVerification, setNeedsVerification] = useState(false)
   const inspect = async () => {
     setBusy(true); setError(''); setMessage(''); setPreview(null); setRequestId(null); setNeedsVerification(false)
     try { setPreview(await api.cleanupPreview(resourceIds)) } catch (cause) { setError(cause instanceof Error ? cause.message : '清理预览失败') } finally { setBusy(false) }
   }
-  const execute = async () => {
-    if (!preview) return
-    setBusy(true); setError(''); setMessage('')
-    if (needsVerification) return void verify()
-    const request = requestId ?? crypto.randomUUID(); setRequestId(request)
-    try { await api.cleanup({ requestId: request, previewId: preview.previewId ?? preview.confirmationDigest, confirmationDigest: preview.confirmationDigest }); setPreview(null); setNeedsVerification(false); setMessage('清理已完成') }
-    catch (cause) {
-      if (cause instanceof ApiClientError && cause.status === 409) { setPreview(null); setError('清理预览已变化，请重新预览后确认') }
-      else { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '清理结果尚未确认，请核实原请求') }
-    } finally { setBusy(false) }
-  }
   const verify = async () => {
     if (!requestId) return
     setBusy(true); setError('')
-    if (!api.operationByRequest) return setError('当前服务不支持按原请求核实')
-    try { const operation = await api.operationByRequest(requestId); setMessage(`清理操作状态：${operation.stageLabel}`); if (operation.state === 'succeeded') { setPreview(null); setNeedsVerification(false) } }
-    catch (cause) { setError(cause instanceof Error ? cause.message : '清理操作仍待核实') }
-    finally { setBusy(false) }
+    if (!api.operationByRequest) { setBusy(false); setError('当前服务不支持按原请求核实'); return }
+    try {
+      const operation = await api.operationByRequest(requestId)
+      if (operation.state === 'needs_verification' && api.verify) {
+        const verified = await api.verify(operation.operationId, { requestId })
+        if (verified.state === 'succeeded') { setPreview(null); setNeedsVerification(false); setMessage('清理已完成') }
+        else setMessage(`清理操作状态：${verified.stageLabel}`)
+      } else {
+        setMessage(`清理操作状态：${operation.stageLabel}`)
+        if (operation.state === 'succeeded') { setPreview(null); setNeedsVerification(false) }
+      }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : '清理操作仍待核实') } finally { setBusy(false) }
+  }
+  const execute = async () => {
+    if (!preview) return
+    if (needsVerification) return void verify()
+    setBusy(true); setError(''); setMessage('')
+    const request = requestId ?? crypto.randomUUID(); setRequestId(request)
+    try {
+      const result = await api.cleanup({ requestId: request, previewId: preview.previewId ?? preview.confirmationDigest, confirmationDigest: preview.confirmationDigest })
+      if (result.state === 'succeeded') { setPreview(null); setNeedsVerification(false); setMessage('清理已完成') }
+      else { setNeedsVerification(true); setMessage(`清理请求已${result.state === 'running' ? '执行' : '接收'}，结果待核实`) }
+    } catch (cause) {
+      if (cause instanceof ApiClientError && cause.status === 409) { setPreview(null); setError('清理预览已变化，请重新预览后确认') }
+      else { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '清理结果尚未确认，请核实原请求') }
+    } finally { setBusy(false) }
   }
   const diagnostic = async () => {
     setBusy(true); setError(''); setMessage('')

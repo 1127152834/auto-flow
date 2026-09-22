@@ -20,6 +20,23 @@ it('freezes selected revisions when submitting a bulk action', async () => {
   expect(bulk).toHaveBeenCalledWith(expect.objectContaining({ items: [{ deviceId: 'd1', expectedRevision: 2 }] }))
 })
 
+it('passes an explicit deleteData choice for bulk deletion', async () => {
+  const bulk = vi.fn(async (body: Record<string, unknown>) => ({ id: 'b', requestId: body.requestId as string, action: 'delete', deleteData: Boolean(body.deleteData), state: 'queued', items: [], createdAt: '' }))
+  render(<BulkActions api={{ bulk }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.selectOptions(screen.getByLabelText('批量动作'), 'delete')
+  expect(screen.getByLabelText('同时删除数据（不可恢复）')).not.toBeChecked()
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  expect(bulk).toHaveBeenCalledWith(expect.objectContaining({ action: 'delete', deleteData: false }))
+  cleanup()
+  render(<BulkActions api={{ bulk }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.selectOptions(screen.getByLabelText('批量动作'), 'delete')
+  await userEvent.click(screen.getByLabelText('同时删除数据（不可恢复）'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  expect(bulk).toHaveBeenLastCalledWith(expect.objectContaining({ action: 'delete', deleteData: true }))
+})
+
 it('keeps a failed batch retryable with the original request and reports unknown outcomes', async () => {
   const bulk = vi.fn()
     .mockRejectedValueOnce(new Error('批次连接中断'))
@@ -107,7 +124,7 @@ it('keeps backup request retryable and refreshes after restore', async () => {
   const operationByRequest = vi.fn(async () => ({ operationId: 'op-1', requestId: 'r', targetId: 'd1', action: 'backup', state: 'succeeded', stageCode: 'complete', stageLabel: '已完成', attempt: 1, createdAt: '' }))
   const backups = vi.fn(async () => [backupRecord])
   const api = { backup, restoreBackup, backups, operationByRequest }
-  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} /></QueryClientProvider>)
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
   await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('连接中断')
   await userEvent.click(screen.getByRole('button', { name: '核实原请求' }))
@@ -115,4 +132,37 @@ it('keeps backup request retryable and refreshes after restore', async () => {
   await userEvent.click(screen.getByRole('button', { name: '恢复为新实例' }))
   await vi.waitFor(() => expect(restoreBackup).toHaveBeenCalledTimes(1))
   expect(backups).toHaveBeenCalledTimes(3)
+})
+
+it.each([
+  { runtimeState: 'ready', control: 'idle', hasControlSession: false, stale: false },
+  { runtimeState: 'unknown', control: 'idle', hasControlSession: false, stale: false },
+  { runtimeState: 'stopped', control: 'manual', hasControlSession: false, stale: false },
+  { runtimeState: 'stopped', control: 'idle', hasControlSession: true, stale: false },
+  { runtimeState: 'retained', control: 'idle', hasControlSession: false, stale: true },
+])('blocks backup unless stopped, current and free of control: %o', async (state) => {
+  const api = { backups: vi.fn(async () => []), backup: vi.fn(), restoreBackup: vi.fn(), operationByRequest: vi.fn() }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} {...state} /></QueryClientProvider>)
+  const button = screen.getByRole('button', { name: '创建停机备份' })
+  expect(button).toBeDisabled()
+  await userEvent.click(button)
+  expect(api.backup).not.toHaveBeenCalled()
+})
+
+it('keeps an accepted cleanup result pending until the original request is verified', async () => {
+  const cleanupPreview = vi.fn(async () => ({ items: [{ id: 'v1' }], previewId: 'preview-1', confirmationDigest: 'digest' }))
+  const cleanup = vi.fn(async (body: { requestId: string }) => ({ items: [], state: 'needs_verification', requestId: body.requestId, previewId: 'preview-1' }))
+  const diagnostics = vi.fn()
+  const operationByRequest = vi.fn(async () => ({ operationId: 'cleanup-op', requestId: 'r', targetId: 'cleanup', action: 'cleanup', state: 'needs_verification', stageCode: 'verify', stageLabel: '待核实', attempt: 1, createdAt: '' }))
+  const verify = vi.fn(async () => ({ operationId: 'cleanup-op', requestId: 'r', targetId: 'cleanup', action: 'cleanup', state: 'succeeded', stageCode: 'verified', stageLabel: '已核实', attempt: 1, createdAt: '' }))
+  render(<DataMaintenance api={{ cleanupPreview, cleanup, diagnostics, operationByRequest, verify }} resourceIds={['v1']} />)
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  await userEvent.click(await screen.findByRole('button', { name: '确认清理 1 项' }))
+  expect(screen.queryByText('清理已完成')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '核实原清理请求' })).toBeVisible()
+  await userEvent.click(screen.getByRole('button', { name: '核实原清理请求' }))
+  expect(operationByRequest).toHaveBeenCalledWith(cleanup.mock.calls[0][0].requestId)
+  expect(verify).toHaveBeenCalledWith('cleanup-op', { requestId: cleanup.mock.calls[0][0].requestId })
+  expect(await screen.findByText('清理已完成')).toBeVisible()
+  expect(cleanup).toHaveBeenCalledTimes(1)
 })
