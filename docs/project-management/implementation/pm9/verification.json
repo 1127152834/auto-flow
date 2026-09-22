@@ -29,7 +29,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "5d1f4608992f906092191bd00ab421564f997c3e",
+  "codeCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
   "checks": {
     "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -168,7 +168,7 @@
         "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
       }
     ],
-    "productionSource": "C/R production at 3c02b51f plus approved D1 source diagnostics at 5d1f4608992f906092191bd00ab421564f997c3e; current candidate includes both",
+    "productionSource": "C/R production at 3c02b51f plus approved D1 source diagnostics at ae347de9f5fc1922efa7c4af99c0e606e6bde26a; current candidate includes both",
     "platformFailures": [
       {
         "platform": "win32-x64",
@@ -188,10 +188,10 @@
     ],
     "next": "Await current three-platform candidate; preserve each platform result and keep missing physical/external evidence explicit.",
     "currentCandidateRun": {
-      "runId": 35638303073,
-      "headSha": "5d1f4608992f906092191bd00ab421564f997c3e",
-      "url": "https://github.com/1127152834/auto-flow/actions/runs/35638303073",
-      "status": "success",
+      "runId": 35677887974,
+      "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+      "status": "queued",
       "scope": "Approved D1 production candidate; all three platform jobs required. Native probe and worker probe are skipped by the workflow and provide no evidence."
     },
     "followUpRuns": [
@@ -211,8 +211,8 @@
       }
     ]
   },
-  "codeCandidateScope": "Current final production candidate 5d1f4608992f906092191bd00ab421564f997c3e includes approved D1 source changes; prior hashes remain historical scoped evidence. Current native runs are listed in finalCICandidate.",
-  "testCandidate": "5d1f4608992f906092191bd00ab421564f997c3e",
+  "codeCandidateScope": "Current final production candidate ae347de9f5fc1922efa7c4af99c0e606e6bde26a includes approved D1 source changes; prior hashes remain historical scoped evidence. Current native runs are listed in finalCICandidate.",
+  "testCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
   "d1": "D1 source safe business-format preservation: Sheets and XLSX direct cases pass; source identity and unsafe wire values remain strict; required source omissions remain absent; Sheets prevalidates all rows before materialization. Production packaged/real-Google/worker acceptance pending.",
   "d1Verification": {
     "backend": "138 passed, 2 warnings in 58.62s for D1 records/sheets/excel/capability scope",

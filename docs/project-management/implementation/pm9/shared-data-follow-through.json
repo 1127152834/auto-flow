@@ -117,7 +117,7 @@
     },
     "postReviewStatus": "17 passed in 19.73s; includes two held/reconciling cases with explicit preexisting invalid-value fixture. Local supplemental checks after frozen CI candidate.",
     "postReviewOverlappingWrites": "35 passed in 39.99s; two ordered shared-field writes, original confirmed history, local snapshots and source observations",
-    "D1": "Approved D1 production candidate includes source diagnostics and safe source scalar preservation. Local: 138 backend passed in 55.78s, 11 UI tests in 3.32s, mypy407, Ruff, OpenAPI and typecheck pass. Real-browser filter selected 0 tests, so no worker claim; three-platform CI 35638303073 passed for the pre-review candidate; a new run is required for the post-review source fixes."
+    "D1": "Approved D1 production candidate includes source diagnostics and safe source scalar preservation. Local: 138 backend passed in 55.78s, 11 UI tests in 3.32s, mypy407, Ruff, OpenAPI and typecheck pass. Real-browser filter selected 0 tests, so no worker claim; three-platform CI 35677887974 queued for the post-review candidate; native probe and worker probe are skipped."
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -177,8 +177,8 @@
     "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "2cc413cbf1645b65344e78819a6a4d016f6271a49ddbf74e955498db472bba16",
     "apps/backend/src/autoflow/infrastructure/database/project_sync_models.py": "eb2845b6060a92823630ddc9b71badeffe491ae70e3475a1170f0b2f6f6c85bb"
   },
-  "productionCandidate": "5d1f4608992f906092191bd00ab421564f997c3e",
-  "testCandidate": "5d1f4608992f906092191bd00ab421564f997c3e",
+  "productionCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+  "testCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
   "nativeSharedCandidate": {
     "status": "completed_per_platform",
     "scope": "C4 native evidence uses Mac @21f8bb1e and Windows @07619b6d; does not replace final current R3/R4 matrix",

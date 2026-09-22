@@ -88,3 +88,4 @@ DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源�
 2026-09-22 D1 候选已推送：5d1f4608992f906092191bd00ab421564f997c3e，Actions 35638303073 三平台待完成；releaseAccepted=false。
 
 2026-09-22 D1 final review RED→GREEN：修复身份严格性、缺失保留和 Sheets 全量预校验；138 相关后端通过，releaseAccepted=false。旧 35638303073 只覆盖修复前候选，post-review 需新 CI。
+2026-09-22 D1 post-review candidate ae347de9f5fc1922efa7c4af99c0e606e6bde26a pushed; Actions 35677887974 queued.
