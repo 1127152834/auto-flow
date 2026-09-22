@@ -5,13 +5,13 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from autoflow.bootstrap import android_prepare
 from autoflow.domain.android.ports import AndroidError
 from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
-from autoflow.bootstrap import android_prepare
 from autoflow.providers.android import mac_runtime as mac
 
 
@@ -213,6 +213,21 @@ async def test_backup_volume_uses_docker_copy_without_starting_android_image(tmp
     assert calls[0][0][0] == "create"
     assert calls[1][0] == ("cp", "backup-container:/data", "-")
     assert calls[-1][0] == ("rm", "backup-container")
+
+
+@pytest.mark.asyncio
+async def test_inspect_image_reports_missing_digest_as_not_found(tmp_path, monkeypatch):
+    async def missing(*_args, **_kwargs):
+        raise AndroidError("ANDROID_COMMAND_FAILED", "docker image inspect: No such image", 502)
+
+    monkeypatch.setattr(mac, "docker", missing)
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+
+    with pytest.raises(AndroidError) as error:
+        await runtime.inspect_image("sha256:" + "a" * 64)
+
+    assert error.value.status == 404
+    assert error.value.code == "ANDROID_IMAGE_NOT_FOUND"
 
 
 @pytest.mark.asyncio

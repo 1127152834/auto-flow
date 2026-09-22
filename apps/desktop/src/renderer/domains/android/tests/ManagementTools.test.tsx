@@ -38,6 +38,24 @@ it('keeps a failed batch retryable with the original request and reports unknown
   expect(await screen.findByRole('status')).toHaveTextContent('succeeded')
 })
 
+it('summarizes failed batch items and retries them with an idempotent action request', async () => {
+  const bulk = vi.fn(async () => ({ id: 'b', requestId: 'create-r', action: 'start', deleteData: false, state: 'partially_failed', items: [{ deviceId: 'd1', name: '设备一', state: 'failed', operationId: 'op-1' }], createdAt: '' }))
+  const bulkAction = vi.fn()
+    .mockRejectedValueOnce(new Error('批次重试连接中断'))
+    .mockResolvedValueOnce({ id: 'b', requestId: 'create-r', action: 'start', deleteData: false, state: 'running', items: [{ deviceId: 'd1', name: '设备一', state: 'queued', retryOf: 'op-1' }], createdAt: '' })
+  render(<BulkActions api={{ bulk, bulkAction }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+
+  expect(await screen.findByLabelText('批次结果')).toHaveTextContent('重试自 op-1')
+  await userEvent.click(screen.getByRole('button', { name: '重试失败项' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('批次重试连接中断')
+  await userEvent.click(screen.getByRole('button', { name: '重试失败项' }))
+  await vi.waitFor(() => expect(bulkAction).toHaveBeenCalledTimes(2))
+  expect(bulkAction.mock.calls[0][1]).toEqual(expect.objectContaining({ action: 'retryFailed' }))
+  expect(bulkAction.mock.calls[0][1].requestId).toBe(bulkAction.mock.calls[1][1].requestId)
+})
+
 it('requires a preview before cleanup execution', async () => {
   const cleanupPreview = vi.fn(async () => ({ items: [{ id: 'v1', kind: 'backup', references: ['d1'], size: 128, reversible: false, fingerprint: 'fingerprint' }], confirmationDigest: 'digest' }))
   const cleanup = vi.fn(async () => ({ items: [], state: 'accepted' }))

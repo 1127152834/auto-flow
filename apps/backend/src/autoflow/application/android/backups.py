@@ -49,6 +49,28 @@ class AndroidBackupService:
             changes["message"] = message[:480]
         self.operations.transition(record.operation_id, "running", state, changes)
 
+    @staticmethod
+    def _validate_archive(data: bytes) -> None:
+        """Reject malformed or unsafe tar streams before publishing or restoring."""
+        if not isinstance(data, (bytes, bytearray)):
+            raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份数据不是受支持的归档", 409)
+        try:
+            with tarfile.open(fileobj=io.BytesIO(data), mode="r:") as archive:
+                for member in archive.getmembers():
+                    if member.isreg() or member.isdir():
+                        kind = "file"
+                    elif member.issym() or member.islnk():
+                        kind = "link"
+                    elif member.isdev() or member.isfifo():
+                        kind = "device"
+                    else:
+                        kind = "special"
+                    validate_archive_path(PurePosixPath(member.name), kind)
+        except AndroidError:
+            raise
+        except (OSError, tarfile.TarError, ValueError, TypeError, EOFError) as error:
+            raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份数据不是有效或受支持的归档", 409) from error
+
     @contextmanager
     def _runtime_lock(self, runtime: Any):
         lock = getattr(runtime, "lock", None)
@@ -105,10 +127,7 @@ class AndroidBackupService:
                 backup_id = str(uuid4())
                 staged = self.storage.stage(backup_id)
                 try:
-                    with tarfile.open(fileobj=io.BytesIO(data), mode="r:") as archive:
-                        for member in archive.getmembers():
-                            kind = "link" if member.issym() or member.islnk() else "device" if member.isdev() or member.isfifo() else "file"
-                            validate_archive_path(PurePosixPath(member.name), kind)
+                    self._validate_archive(data)
                     data_path = staged / "data.tar"
                     data_path.write_bytes(data)
                     os.chmod(data_path, 0o600)
@@ -156,8 +175,11 @@ class AndroidBackupService:
         raw_path = Path(backup.get("path", ""))
         if raw_path.is_symlink():
             raise AndroidError("ANDROID_CLEANUP_UNAVAILABLE", "备份路径不在受控目录内", 503)
+        final_root = self.storage.final
+        if final_root.is_symlink() or not final_root.is_dir():
+            raise AndroidError("ANDROID_CLEANUP_UNAVAILABLE", "备份路径不在受控目录内", 503)
         path = raw_path.resolve()
-        root = self.storage.final.resolve()
+        root = final_root.resolve()
         if not path.is_dir() or path.parent != root:
             raise AndroidError("ANDROID_CLEANUP_UNAVAILABLE", "备份路径不在受控目录内", 503)
         for child in path.iterdir():
@@ -182,15 +204,25 @@ class AndroidBackupService:
         if device.get("imageId") != backup.get("imageId"):
             raise AndroidError("ANDROID_BACKUP_IMAGE_MISMATCH", "备份必须使用完全相同的镜像摘要", 409)
         raw_backup_path = Path(backup.get("path", ""))
-        backup_path = raw_backup_path.resolve()
-        if raw_backup_path.is_symlink() or not hasattr(runtime, "restore_volume") or not backup_path.is_dir() or backup_path.parent != self.storage.final.resolve():
+        final_root = self.storage.final
+        if (
+            raw_backup_path.is_symlink()
+            or final_root.is_symlink()
+            or not final_root.is_dir()
+            or not hasattr(runtime, "restore_volume")
+        ):
             raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷恢复适配器", 503)
+        backup_path = raw_backup_path.resolve()
+        if not backup_path.is_dir() or backup_path.parent != final_root.resolve():
+            raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "备份路径不在受控目录内", 503)
         data_path = backup_path / "data.tar"
-        if not data_path.is_file():
+        if data_path.is_symlink() or not data_path.is_file():
             raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份缺少可恢复的数据卷归档", 409)
         digest = hashlib.sha256()
         size = 0
         for path in sorted(backup_path.iterdir()):
+            if path.is_symlink():
+                raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含链接条目", 409)
             if not path.is_file():
                 raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含不支持的条目", 409)
             chunk = path.read_bytes()
@@ -199,10 +231,7 @@ class AndroidBackupService:
         if backup.get("sha256") != digest.hexdigest() or backup.get("bytes") != size:
             raise AndroidError("ANDROID_BACKUP_CORRUPT", "备份摘要或字节数不匹配", 409)
         data = data_path.read_bytes()
-        with tarfile.open(fileobj=io.BytesIO(data), mode="r:") as archive:
-            for member in archive.getmembers():
-                kind = "link" if member.issym() or member.islnk() else "device" if member.isdev() or member.isfifo() else "file"
-                validate_archive_path(PurePosixPath(member.name), kind)
+        self._validate_archive(data)
         with self._runtime_lock(runtime):
             await runtime.restore_volume(device, data)
         return {"deviceId": device["deviceId"], "backupId": backup_id, "state": "restored"}

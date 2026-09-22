@@ -109,6 +109,12 @@ class AndroidFleet:
         existing = self._existing("batch", request["batchId"], request)
         if existing:
             return existing
+        if request.get("instanceType") == "temporary":
+            raise AndroidError(
+                "ANDROID_TEMPORARY_DISABLED",
+                "新建临时安卓实例已停用，请改用持久实例",
+                409,
+            )
         profile = self.resources.get("profile", request["profileId"])
         if profile.get("archived"):
             raise AndroidError(
@@ -154,6 +160,15 @@ class AndroidFleet:
         return batch
 
     def allocate(self, request: dict[str, Any]) -> dict[str, Any]:
+        if request.get("mode") == "temporary":
+            existing = self._existing("allocation", request["requestId"], request)
+            if existing is not None:
+                return existing
+            raise AndroidError(
+                "ANDROID_TEMPORARY_DISABLED",
+                "新建临时安卓实例已停用，请改用持久实例",
+                409,
+            )
         raise AndroidError(
             "ANDROID_WORKFLOW_RUNTIME_UNAVAILABLE",
             "当前 Studio 尚未提供安卓工作流执行契约；设备管理和手动控制仍可使用",

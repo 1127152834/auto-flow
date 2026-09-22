@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ApiClientError } from '../../../shared/api/client'
 import { ImageManager } from '../components/ImageManager'
 import type { AndroidManagementApi } from '../management-api'
 
@@ -70,6 +71,18 @@ it('separates unregister from content deletion and records verification', async 
   expect(api.deleteImage).toHaveBeenCalledWith('image-1', expect.objectContaining({ deleteContent: true, requestId: expect.any(String) }))
   await userEvent.click(screen.getByRole('button', { name: '验证 Android 13' }))
   await userEvent.type(screen.getByLabelText('验证检查项'), '启动')
-  await userEvent.click(screen.getByRole('button', { name: '记录验证' }))
-  expect(api.verifyImage).toHaveBeenCalledWith('image-1', expect.objectContaining({ check: '启动', result: 'passed' }))
+  await userEvent.click(screen.getByRole('button', { name: '服务端核实' }))
+  expect(api.verifyImage).toHaveBeenCalledWith('image-1', expect.objectContaining({ check: '启动' }))
+})
+
+it('核实未知的镜像内容删除结果而不重复删除', async () => {
+  const deleteImage = vi.fn(async () => { throw new ApiClientError('删除结果未知', 503, 'ANDROID_IMAGE_DELETE_RESULT_UNKNOWN') })
+  const verifyImageDelete = vi.fn(async () => ({ ...image, state: 'deleted' }))
+  renderManager({ deleteImage, verifyImageDelete })
+  await userEvent.click(await screen.findByRole('button', { name: '删除镜像内容 Android 13' }))
+  await userEvent.click(screen.getByRole('button', { name: '确认删除镜像内容' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('删除结果未知')
+  await userEvent.click(screen.getByRole('button', { name: '核实删除结果' }))
+  expect(verifyImageDelete).toHaveBeenCalledWith('image-1', expect.objectContaining({ requestId: expect.any(String) }))
+  expect(deleteImage).toHaveBeenCalledTimes(1)
 })

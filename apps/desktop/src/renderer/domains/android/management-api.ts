@@ -32,6 +32,7 @@ export const androidManagementApi = (client: StreamingApiClient) => ({
   pullImage: (body: ImagePullCreate) => client.request<Operation>(`${base}/image-pulls`, { method: 'POST', body, timeoutMs: 120000 }),
   deleteImage: (identifier: string, body: ImageDelete) => client.request<Image>(`${base}/images/${encodeURIComponent(identifier)}`, { method: 'DELETE', body, timeoutMs: 120000 }),
   verifyImage: (identifier: string, body: ImageVerificationCreate) => client.request<Image>(`${base}/images/${encodeURIComponent(identifier)}/verifications`, { method: 'POST', body, timeoutMs: 40000 }),
+  verifyImageDelete: (identifier: string, body: { requestId: string }) => client.request<Image>(`${base}/images/${encodeURIComponent(identifier)}/delete-verifications`, { method: 'POST', body, timeoutMs: 40000 }),
   bulk: (body: Record<string, unknown>) => client.request<Bulk>(`${base}/bulk-operations`, { method: 'POST', body }),
   bulkAction: (id: string, body: Record<string, unknown>) => client.request<Bulk>(`${base}/bulk-operations/${id}/actions`, { method: 'POST', body }),
   cleanupPreview: (resourceIds: string[]) => client.request<{ items: Record<string, unknown>[]; previewId?: string; confirmationDigest: string }>(`${base}/cleanup/previews`, { method: 'POST', body: { resourceIds } }),

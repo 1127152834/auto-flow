@@ -44,7 +44,7 @@ class BatchCreate(AndroidRename):
     profile_id: UUID
     profile_revision: int = Field(ge=1, strict=True)
     quantity: int = Field(default=1, ge=1, le=20, strict=True)
-    instance_type: Literal["persistent"] = "persistent"
+    instance_type: Literal["persistent", "temporary"] = "persistent"
     start: bool = True
     width: int = Field(default=720, ge=320, le=1920, strict=True)
     height: int = Field(default=1280, ge=320, le=2560, strict=True)

@@ -72,11 +72,33 @@ def test_bulk_retry_uses_a_new_request_id_after_terminal_failure():
 
     first = service.run(batch["id"])
     assert first["items"][0]["state"] == "failed"
-    service.action(batch["id"], "retryFailed")
+    pending = service.action(batch["id"], "retryFailed")
+    assert pending["state"] == "running"
     second = service.run(batch["id"])
 
     assert second["items"][0]["state"] == "accepted"
     assert devices.requests == ["r-retry:d1:1", "r-retry:d1:2"]
+
+
+def test_bulk_retry_preserves_operation_lineage_without_overwriting_failure():
+    resources = _Resources()
+    devices = _RetryLineageDevices()
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "r-lineage", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+
+    first = service.run(batch["id"])
+    assert first["items"][0]["operationId"] == "operation-1"
+    first["items"][0].update(state="failed", error="第一次失败")
+    service.action(batch["id"], "retryFailed", "retry-action")
+
+    pending = service.get(batch["id"])
+    assert pending["items"][0]["state"] == "queued"
+    assert pending["items"][0]["operationId"] is None
+    assert pending["items"][0]["retryOf"] == "operation-1"
+
+    retried = service.run(batch["id"])
+    assert retried["items"][0]["operationId"] == "operation-2"
+    assert devices.requests[-1]["retryOf"] == "operation-1"
 
 
 def test_bulk_action_request_is_idempotent_and_conflicts_on_changed_action():
@@ -301,3 +323,15 @@ class _RetryDevices(_QueueDevices):
         if len(self.requests) == 1:
             raise AndroidError("ANDROID_PARTIAL_FAILURE", "failed")
         return super().operate(device_id, request)
+
+
+class _RetryLineageDevices(_QueueDevices):
+    def __init__(self):
+        super().__init__()
+        self.requests = []
+        self._operation_number = 0
+
+    def operate(self, device_id, request):
+        self.requests.append(request)
+        self._operation_number += 1
+        return {"deviceId": device_id, "operation": {"id": f"operation-{self._operation_number}"}}

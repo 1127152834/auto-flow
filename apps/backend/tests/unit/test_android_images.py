@@ -1,4 +1,5 @@
 import asyncio
+from types import SimpleNamespace
 
 import pytest
 
@@ -87,6 +88,100 @@ async def test_content_delete_cancellation_records_blocked_state_instead_of_pend
         await service.delete_content(image["id"], request_id="delete-cancel", expected_revision=1)
 
     assert service.resources.get("image", image["id"])["state"] == "delete_blocked"
+
+
+@pytest.mark.asyncio
+async def test_server_verification_does_not_trust_client_passed_result():
+    class _CatalogMismatch:
+        async def inspect(self, _reference):
+            return SimpleNamespace(
+                image_id="sha256:" + "9" * 64,
+                source_digest="sha256:" + "8" * 64,
+                architecture="arm64",
+                os="linux",
+                android_version="13",
+                google_components="unknown",
+            )
+
+    service = AndroidImageService(_Resources(), _Devices(), _CatalogMismatch())
+    image = service.register({"id": "sha256:" + "4" * 64, "name": "image", "reference": "redroid/redroid:13"})
+
+    result = await service.verify_server(image["id"], {"check": "image_metadata", "result": "passed", "evidence": {"message": "client said passed"}})
+
+    assert result["verification"]["state"] == "failed"
+    record = result["verification"]["records"][-1]
+    assert record["result"] == "failed"
+    assert record["source"] == "server"
+    assert record["evidence"]["imageId"] == "sha256:" + "9" * 64
+
+
+@pytest.mark.asyncio
+async def test_server_verification_does_not_pass_without_trusted_source_digest():
+    class _CatalogWithoutSourceDigest:
+        async def inspect(self, _reference):
+            return SimpleNamespace(
+                image_id="sha256:" + "6" * 64,
+                source_digest=None,
+                architecture="arm64",
+                os="linux",
+                android_version="13",
+                google_components="unknown",
+            )
+
+    service = AndroidImageService(_Resources(), _Devices(), _CatalogWithoutSourceDigest())
+    image = service.register({"id": "sha256:" + "6" * 64, "name": "image", "reference": "redroid/redroid:13"})
+
+    result = await service.verify_server(image["id"], {"check": "image_metadata", "result": "passed", "evidence": {}})
+
+    assert result["verification"]["state"] == "blocked"
+    assert result["verification"]["records"][-1]["evidence"]["code"] == "ANDROID_IMAGE_SOURCE_UNKNOWN"
+
+
+@pytest.mark.asyncio
+async def test_unknown_content_delete_can_converge_via_server_verification():
+    class _Runtime:
+        async def delete_image(self, _image_id):
+            raise TimeoutError("lost response")
+
+        async def inspect_image(self, _image_id):
+            raise AndroidError("ANDROID_IMAGE_NOT_FOUND", "镜像不存在", 404)
+
+    devices = _Devices()
+    devices.runtime = _Runtime()
+    service = AndroidImageService(_Resources(), devices)
+    image = service.register({"id": "sha256:" + "5" * 64, "name": "image", "reference": "redroid/redroid:13"})
+
+    with pytest.raises(AndroidError) as error:
+        await service.delete_content(image["id"], request_id="delete-unknown", expected_revision=1)
+    assert error.value.code == "ANDROID_IMAGE_DELETE_RESULT_UNKNOWN"
+
+    result = await service.verify_delete_content(image["id"], "delete-unknown")
+
+    assert result["state"] == "deleted"
+    assert service.resources.get("image", image["id"])["state"] == "deleted"
+
+
+@pytest.mark.asyncio
+async def test_delete_verification_checks_exact_digest_before_falling_back_to_catalog_tag():
+    class _Runtime:
+        async def delete_image(self, _image_id):
+            raise TimeoutError("lost response")
+
+    class _Catalog:
+        async def inspect(self, _reference):
+            return SimpleNamespace(image_id="sha256:" + "8" * 64)
+
+    devices = _Devices()
+    devices.runtime = _Runtime()
+    service = AndroidImageService(_Resources(), devices, _Catalog())
+    image = service.register({"id": "sha256:" + "7" * 64, "name": "image", "reference": "redroid/redroid:13"})
+
+    with pytest.raises(AndroidError):
+        await service.delete_content(image["id"], request_id="delete-tag", expected_revision=1)
+
+    result = await service.verify_delete_content(image["id"], "delete-tag")
+
+    assert result["state"] == "deleted"
 
 
 def test_image_reference_rejects_newline_or_command_option():

@@ -68,7 +68,7 @@ class AndroidBulkService:
         frozen = []
         for item in items:
             device = self._get(item["deviceId"], workspace)
-            frozen.append({"deviceId": item["deviceId"], "expectedRevision": item["expectedRevision"], "state": "queued", "operationId": None, "error": None, "name": device.get("name")})
+            frozen.append({"deviceId": item["deviceId"], "expectedRevision": item["expectedRevision"], "state": "queued", "operationId": None, "retryOf": None, "error": None, "name": device.get("name")})
         record = {"id": str(uuid4()), "workspaceIdentity": workspace, "requestId": request_id, "action": action, "deleteData": delete_data, "state": "queued", "items": frozen, "createdAt": datetime.now(UTC).isoformat()}
         self.resources.save("bulk", record)
         return record
@@ -101,7 +101,10 @@ class AndroidBulkService:
                     raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
                 attempt = int(item.get("attempt", 0)) + 1
                 item["attempt"] = attempt
-                result = self.devices.operate(item["deviceId"], {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]})
+                request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]}
+                if item.get("retryOf"):
+                    request["retryOf"] = item["retryOf"]
+                result = self.devices.operate(item["deviceId"], request)
                 item.update(state="accepted", operationId=(result.get("operation") or {}).get("id"))
             except asyncio.CancelledError:
                 item.update(state="needs_verification", error="操作被中断，结果未知，请核实设备状态")
@@ -151,6 +154,8 @@ class AndroidBulkService:
                         break
                 attempt = int(item.get("attempt", 0)) + 1
                 request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]}
+                if item.get("retryOf"):
+                    request["retryOf"] = item["retryOf"]
                 item["attempt"] = attempt
                 result = self.devices.operate(item["deviceId"], request)
                 item.update(state="accepted", operationId=(result.get("operation") or {}).get("id"), error=None)
@@ -262,11 +267,12 @@ class AndroidBulkService:
         elif action == "retryFailed":
             for item in batch["items"]:
                 if item["state"] == "failed":
-                    item.update(state="queued", error=None)
+                    item.update(state="queued", operationId=None, retryOf=item.get("operationId"), error=None)
         elif action == "verify":
             self._reconcile(batch)
         else:
             raise AndroidError("ANDROID_BULK_ACTION_INVALID", "批次动作无效", 422)
+        self._batch_state(batch)
         if request_id:
             receipts[request_id] = action
         self.resources.save("bulk", batch)

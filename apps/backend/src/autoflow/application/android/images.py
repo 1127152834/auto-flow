@@ -43,7 +43,8 @@ class AndroidImageService:
 
     @staticmethod
     def _public(image: dict[str, Any]) -> dict[str, Any]:
-        return {key: value for key, value in image.items() if not key.startswith("_") and key not in {"deleteRequestId", "deleteRequestDigest"}}
+        fields = {"id", "imageId", "name", "reference", "revision", "state", "verification", "createdAt", "sourceDigest", "architecture", "os", "androidVersion", "googleComponents", "references"}
+        return {key: value for key, value in image.items() if key in fields}
 
     def register(self, request: dict[str, Any]) -> dict[str, Any]:
         image_id = request["id"]
@@ -165,6 +166,112 @@ class AndroidImageService:
                 result["deleteRequestId"] = request_id
             self.resources.save("image", result)
             return self._public(result)
+
+    async def _server_probe(self, image: dict[str, Any]) -> dict[str, Any]:
+        runtime = getattr(self.devices, "runtime", None)
+        inspector = getattr(self.catalog, "inspect", None)
+        reference = image.get("reference")
+        if not callable(inspector):
+            inspector = getattr(runtime, "inspect_image", None)
+            reference = image["imageId"]
+        if not callable(inspector):
+            raise AndroidError("ANDROID_IMAGE_VERIFICATION_UNAVAILABLE", "运行时尚未提供镜像核实适配器", 503)
+        metadata = await inspector(reference)
+        if hasattr(metadata, "__dict__"):
+            metadata = vars(metadata)
+        return {
+            "imageId": metadata.get("imageId", metadata.get("image_id")),
+            "sourceDigest": metadata.get("sourceDigest", metadata.get("source_digest")),
+            "architecture": metadata.get("architecture"),
+            "os": metadata.get("os"),
+            "androidVersion": metadata.get("androidVersion", metadata.get("android_version")),
+            "googleComponents": metadata.get("googleComponents", metadata.get("google_components", "unknown")),
+        }
+
+    async def verify_server(self, identifier: str, observation: dict[str, Any]) -> dict[str, Any]:
+        """Record verification only from a runtime/catalog probe.
+
+        The client observation remains a check label and explanation.  Its result
+        is deliberately ignored so a caller cannot manufacture a passed image.
+        """
+        image = self.resources.get("image", identifier)
+        check = str(observation.get("check", ""))
+        evidence: dict[str, Any] = {"source": "server", "reference": image.get("reference")}
+        if check not in {"image_metadata", "runtime_image"}:
+            result = "blocked"
+            evidence["code"] = "ANDROID_IMAGE_CHECK_UNSUPPORTED"
+        else:
+            try:
+                observed = await self._server_probe(image)
+            except AndroidError as error:
+                result = "failed" if error.status == 404 or error.code in {"ANDROID_IMAGE_UNTRUSTED", "ANDROID_IMAGE_ID_INVALID"} else "blocked"
+                evidence.update(code=error.code, message=error.message[:240])
+            except (TimeoutError, OSError) as error:
+                result = "blocked"
+                evidence.update(code="ANDROID_IMAGE_VERIFICATION_UNKNOWN", message=str(error)[:240])
+            else:
+                evidence.update({key: value for key, value in observed.items() if value is not None})
+                required = (observed.get("imageId"), observed.get("architecture"), observed.get("os"))
+                source_known = bool(observed.get("sourceDigest")) or str(image.get("reference", "")).startswith("local:")
+                if not source_known:
+                    result = "blocked"
+                    evidence["code"] = "ANDROID_IMAGE_SOURCE_UNKNOWN"
+                elif required[0] != image.get("imageId") or required[1] not in {"arm64", "aarch64"} or required[2] != "linux":
+                    result = "failed"
+                    evidence["code"] = "ANDROID_IMAGE_METADATA_MISMATCH"
+                else:
+                    result = "passed"
+        verification = deepcopy(image.get("verification") or {"state": "not_tested", "records": []})
+        records = list(verification.get("records") or [])
+        records.append({"check": check, "result": result, "source": "server", "evidence": evidence, "recordedAt": datetime.now(UTC).isoformat()})
+        verification["records"] = records
+        results = {record.get("result") for record in records}
+        verification["state"] = "failed" if "failed" in results else "blocked" if "blocked" in results else "passed" if results and results == {"passed"} else "not_tested"
+        image["verification"] = verification
+        image["state"] = "verified" if verification["state"] == "passed" else "registered"
+        self.resources.save("image", image)
+        return self._public(image)
+
+    async def verify_delete_content(self, identifier: str, request_id: str) -> dict[str, Any]:
+        """Reconcile an interrupted image deletion without issuing another delete."""
+        with self._runtime_lock() as runtime:
+            image = self.resources.get("image", identifier)
+            if image.get("deleteRequestId") != request_id:
+                raise AndroidError("ANDROID_REQUEST_CONFLICT", "核实请求编号与镜像删除请求不一致", 409)
+            if image.get("state") == "deleted":
+                return self._public(image)
+            inspector = getattr(runtime, "inspect_image", None)
+            reference = image["imageId"]
+            catalog_probe = False
+            if not callable(inspector):
+                inspector = getattr(self.catalog, "inspect", None)
+                reference = image.get("reference")
+                catalog_probe = True
+            if not callable(inspector):
+                raise AndroidError("ANDROID_IMAGE_VERIFICATION_UNAVAILABLE", "运行时尚未提供镜像核实适配器", 503)
+            try:
+                observed = await inspector(reference)
+            except AndroidError as error:
+                if error.status != 404:
+                    raise AndroidError("ANDROID_IMAGE_DELETE_RESULT_UNKNOWN", "镜像内容删除结果仍未知，请稍后核实", 503) from error
+                result = deepcopy(image)
+                result.update(state="deleted", revision=int(image.get("revision", 0)) + 1, deletedAt=datetime.now(UTC).isoformat())
+                self.resources.save("image", result)
+                return self._public(result)
+            except (TimeoutError, OSError) as error:
+                raise AndroidError("ANDROID_IMAGE_DELETE_RESULT_UNKNOWN", "镜像内容删除结果仍未知，请稍后核实", 503) from error
+            if catalog_probe:
+                observed_id = observed.get("imageId", observed.get("image_id")) if isinstance(observed, dict) else getattr(observed, "image_id", None)
+                if observed_id != image.get("imageId"):
+                    result = deepcopy(image)
+                    result.update(state="deleted", revision=int(image.get("revision", 0)) + 1, deletedAt=datetime.now(UTC).isoformat())
+                    self.resources.save("image", result)
+                    return self._public(result)
+            pending = deepcopy(image)
+            pending["state"] = "delete_blocked"
+            pending["deleteVerifiedAt"] = datetime.now(UTC).isoformat()
+            self.resources.save("image", pending)
+            return self._public(pending)
 
     def verify(self, identifier: str, observation: dict[str, Any]) -> dict[str, Any]:
         image = self.resources.get("image", identifier)

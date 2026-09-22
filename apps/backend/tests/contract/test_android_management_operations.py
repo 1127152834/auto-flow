@@ -79,6 +79,24 @@ def test_operation_accept_rejects_target_ids_that_cannot_fit_migration(tmp_path)
     sessions.dispose()
 
 
+def test_retry_operation_records_parent_and_increments_attempt(tmp_path):
+    database = tmp_path / "retry-lineage.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    original = operations.accept("default", "original", "device", "stop", "digest", {})
+    operations.transition(original.operation_id, "queued", "running", {})
+    operations.transition(original.operation_id, "running", "failed", {})
+
+    retry = operations.accept(
+        "default", "retry", "device", "stop", "retry-digest", {}, retry_of=original.operation_id
+    )
+
+    assert retry.retry_of == original.operation_id
+    assert retry.attempt == original.attempt + 1
+    sessions.dispose()
+
+
 def test_image_pull_uses_a_stable_uuid_target_that_fits_operation_schema(tmp_path):
     database = tmp_path / "image-pull.sqlite3"
     migrate_database(database)
@@ -286,6 +304,54 @@ def test_verify_cleanup_is_read_only_and_does_not_delete_again(tmp_path):
     assert response.status_code == 200, response.text
     assert response.json()["state"] == "succeeded"
     assert resources.list("cleanup-operation")[0]["state"] == "succeeded"
+    sessions.dispose()
+
+
+def test_verify_cleanup_matches_the_frozen_preview_id(tmp_path):
+    database = tmp_path / "verify-cleanup-preview.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    resources.save(
+        "cleanup-operation",
+        {
+            "id": "cleanup-row",
+            "workspaceId": "default",
+            "requestId": "cleanup-unknown",
+            "previewId": "preview-1",
+            "state": "succeeded",
+            "items": [],
+        },
+    )
+    record = operations.accept(
+        "default",
+        "cleanup-unknown",
+        "cleanup",
+        "cleanup",
+        "cleanup-digest",
+        {"previewId": "preview-1"},
+    )
+    operations.transition(record.operation_id, "queued", "running", {})
+    operations.transition(record.operation_id, "running", "needs_verification", {})
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(
+        android_management_router(
+            EnvironmentCheckService(None),
+            operations,
+            cleanup=SimpleNamespace(resources=resources),
+        )
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            f"/api/v1/android/management/operations/{record.operation_id}/verify",
+            json={"requestId": "cleanup-unknown"},
+        )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["state"] == "succeeded"
     sessions.dispose()
 
 

@@ -4102,6 +4102,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/management/images/{identifier}/delete-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Image Delete */
+        post: operations["verify_image_delete_api_v1_android_management_images__identifier__delete_verifications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/management/profiles/{identifier}": {
         parameters: {
             query?: never;
@@ -6339,9 +6356,9 @@ export type components = {
             /**
              * Instancetype
              * @default persistent
-             * @constant
+             * @enum {string}
              */
-            instanceType: "persistent";
+            instanceType: "persistent" | "temporary";
             /**
              * Start
              * @default true
@@ -8587,6 +8604,11 @@ export type components = {
              */
             deleteContent: boolean;
         };
+        /** ImageDeleteVerification */
+        ImageDeleteVerification: {
+            /** Requestid */
+            requestId: string;
+        };
         /** ImagePageRead */
         ImagePageRead: {
             /** Items */
@@ -8654,11 +8676,6 @@ export type components = {
         ImageVerificationCreate: {
             /** Check */
             check: string;
-            /**
-             * Result
-             * @enum {string}
-             */
-            result: "passed" | "failed" | "blocked";
             /** Evidence */
             evidence?: {
                 [key: string]: unknown;
@@ -27300,6 +27317,41 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_image_delete_api_v1_android_management_images__identifier__delete_verifications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageDeleteVerification"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

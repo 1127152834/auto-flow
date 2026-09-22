@@ -40,9 +40,13 @@ async def run(argv: list[str], timeout: float = 15, input_data: bytes | None = N
         await process.wait()
         raise
     try:
-        stdout, _ = await asyncio.wait_for(process.communicate(input_data), timeout)
+        stdout, stderr = await asyncio.wait_for(process.communicate(input_data), timeout)
         if process.returncode:
-            raise AndroidError("ANDROID_COMMAND_FAILED", "安卓运行环境命令失败，请检查设备与连接", 502)
+            detail = stderr.decode(errors="replace").strip()
+            message = "安卓运行环境命令失败，请检查设备与连接"
+            if detail:
+                message += ": " + detail[:240]
+            raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
         return stdout
     finally:
         if process.returncode is None:
@@ -183,7 +187,12 @@ class MacAndroidRuntime:
             await docker("rm", container, timeout=30)
 
     async def inspect_image(self, reference: str) -> dict[str, Any]:
-        item = json.loads(await docker("image", "inspect", reference, timeout=10))[0]
+        try:
+            item = json.loads(await docker("image", "inspect", reference, timeout=10))[0]
+        except AndroidError as error:
+            if error.status == 502 and any(marker in error.message.lower() for marker in ("no such image", "manifest unknown", "not found")):
+                raise AndroidError("ANDROID_IMAGE_NOT_FOUND", "镜像不存在", 404) from error
+            raise
         repo_digests = item.get("RepoDigests") or []
         source_digest = next((value.split("@", 1)[1] for value in repo_digests if "@" in value), None)
         labels = item.get("Config", {}).get("Labels") or {}

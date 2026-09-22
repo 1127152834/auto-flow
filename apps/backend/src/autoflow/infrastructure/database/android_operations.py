@@ -1,3 +1,4 @@
+import threading
 from copy import deepcopy
 from datetime import UTC, datetime
 from typing import Any, cast
@@ -44,18 +45,56 @@ class OperationRecord:
 class SqlAlchemyAndroidOperationRepository:
     def __init__(self, sessions: sessionmaker[Session]) -> None:
         self.sessions = sessions
+        self._accept_lock = threading.Lock()
 
-    def accept(self, workspace_identity: str, request_id: str, target_id: str, action: str, request_digest: str, payload: dict[str, Any]) -> OperationRecord:
+    def accept(
+        self,
+        workspace_identity: str,
+        request_id: str,
+        target_id: str,
+        action: str,
+        request_digest: str,
+        payload: dict[str, Any],
+        retry_of: str | None = None,
+    ) -> OperationRecord:
+        # ponytail: one backend process uses one lock; add a database uniqueness constraint if multi-process retries matter.
+        with self._accept_lock:
+            return self._accept_unlocked(workspace_identity, request_id, target_id, action, request_digest, payload, retry_of)
+
+    def _accept_unlocked(
+        self,
+        workspace_identity: str,
+        request_id: str,
+        target_id: str,
+        action: str,
+        request_digest: str,
+        payload: dict[str, Any],
+        retry_of: str | None = None,
+    ) -> OperationRecord:
         if len(target_id) > 36:
             raise AndroidError("ANDROID_OPERATION_TARGET_INVALID", "操作目标编号超过持久化长度限制", 422)
+        if retry_of is not None and len(retry_of) > 36:
+            raise AndroidError("ANDROID_RETRY_INVALID", "原操作编号无效", 422)
         with self.sessions.begin() as session:
             existing = session.scalar(select(AndroidOperationRow).where(AndroidOperationRow.workspace_identity == workspace_identity, AndroidOperationRow.request_id == request_id))
             if existing is not None:
                 if existing.target_id != target_id or existing.action != action or existing.request_digest != request_digest:
                     raise AndroidError("ANDROID_OPERATION_IDEMPOTENCY_CONFLICT", "请求编号已用于不同操作", 409)
                 return OperationRecord(existing)
+            attempt = 1
+            if retry_of is not None:
+                parent = session.get(AndroidOperationRow, retry_of)
+                if (
+                    parent is None
+                    or parent.workspace_identity != workspace_identity
+                    or parent.target_id != target_id
+                    or parent.action != action
+                    or parent.state != "failed"
+                ):
+                    raise AndroidError("ANDROID_RETRY_INVALID", "只能重试同一设备上已失败的原操作", 409)
+                attempt = parent.attempt + 1
             now = datetime.now(UTC)
-            row = AndroidOperationRow(id=str(uuid4()), workspace_identity=workspace_identity, request_id=request_id, target_id=target_id, action=action, request_digest=request_digest, payload=deepcopy(payload), state="queued", stage_code="queued", stage_label=_LABELS["queued"], attempt=1, created_at=now)
+            row = AndroidOperationRow(id=str(uuid4()), workspace_identity=workspace_identity, request_id=request_id, target_id=target_id, action=action, request_digest=request_digest, payload=deepcopy(payload), state="queued", stage_code="queued", stage_label=_LABELS["queued"], attempt=attempt, retry_of=retry_of, created_at=now)
             session.add(row)
             try:
                 session.flush()

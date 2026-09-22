@@ -39,7 +39,15 @@ class _Devices:
 
     def operate(self, device_id, request):
         self.requests.append(request)
-        record = self.operations.accept("ws", request["requestId"], device_id, request["action"], request["requestId"], request)
+        record = self.operations.accept(
+            "ws",
+            request["requestId"],
+            device_id,
+            request["action"],
+            request["requestId"],
+            request,
+            retry_of=request.get("retryOf"),
+        )
         record = self.operations.transition(record.operation_id, "queued", "running", {})
         self.items[device_id]["operation"] = {"id": record.operation_id, "state": "running"}
         return {"deviceId": device_id, "operation": {"id": record.operation_id}}
@@ -86,6 +94,8 @@ async def test_multi_device_bulk_uses_persistent_queue_capacity_and_new_retry_id
     assert batch["items"][1]["state"] == "cancelled"
 
     retry_operation = operations.by_request("ws", "bulk-1:d1:2")
+    assert retry_operation.retry_of == first_operation.operation_id
+    assert retry_operation.attempt == first_operation.attempt + 1
     operations.transition(retry_operation.operation_id, "running", "succeeded", {})
     devices.items["d1"]["operation"].update(state="succeeded")
     await service.tick()

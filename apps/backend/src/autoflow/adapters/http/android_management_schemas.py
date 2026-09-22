@@ -145,9 +145,12 @@ class ImageDelete(ApiModel):
     delete_content: bool = False
 
 
+class ImageDeleteVerification(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+
+
 class ImageVerificationCreate(ApiModel):
     check: str = Field(min_length=1, max_length=80)
-    result: Literal["passed", "failed", "blocked"]
     evidence: dict[str, Any] = Field(default_factory=dict)
 
 

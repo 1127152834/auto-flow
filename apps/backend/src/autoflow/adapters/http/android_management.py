@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import inspect
 import json
 from datetime import UTC, datetime
 from typing import Any
@@ -35,6 +36,7 @@ from .android_management_schemas import (
     DiagnosticsCreate,
     EnvironmentCheckCommand,
     ImageDelete,
+    ImageDeleteVerification,
     ImagePageRead,
     ImagePullCreate,
     ImageRead,
@@ -136,6 +138,16 @@ def _backup_response(record: dict[str, Any]) -> BackupRead:
     })
 
 
+def _diagnostic_response(record: dict[str, Any]) -> DiagnosticRead:
+    return DiagnosticRead.model_validate({
+        "id": record["id"],
+        "requestId": record["requestId"],
+        "state": record["state"],
+        "payload": record["payload"],
+        "createdAt": record["createdAt"],
+    })
+
+
 def android_management_router(check_service: EnvironmentCheckService, operations: Any | None = None, images: Any | None = None, profiles: Any | None = None, backups: Any | None = None, devices: Any | None = None, bulk: AndroidBulkService | None = None, cleanup: CleanupService | None = None, resources: Any | None = None, observations: Any | None = None) -> APIRouter:
     router = APIRouter(prefix="/api/v1/android/management", tags=["android-management"])
 
@@ -147,6 +159,38 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             # services.  Resolving workspace identity is a business lookup, so it
             # must remain deferred until request handling in that mode.
             return "default"
+
+    async def diagnostic_payload(body: DiagnosticsCreate, workspace: str) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "deviceIds": body.device_ids,
+            "includeAdvancedLogs": body.include_advanced_logs,
+            "workflow": False,
+        }
+        try:
+            environment = check_service.check(f"{body.request_id}:environment")
+            if inspect.isawaitable(environment):
+                environment = await environment
+            if isinstance(environment, EnvironmentCheckResult):
+                payload["environment"] = environment.as_dict()
+        except Exception as error:  # noqa: BLE001 - diagnostics remain exportable when a probe is unavailable.
+            payload["environment"] = {"status": "unknown", "code": "ANDROID_DIAGNOSTICS_ENVIRONMENT_UNKNOWN", "message": str(error)[:240]}
+        repository = getattr(devices, "repository", None)
+        if repository is not None and callable(getattr(repository, "list", None)):
+            wanted = set(body.device_ids)
+            payload["devices"] = [
+                _management_device(row).model_dump(by_alias=True, mode="json")
+                for row in repository.list()
+                if (not wanted or str(row.get("deviceId")) in wanted)
+                and row.get("workspaceId") in {None, workspace}
+                and not row.get("deleted")
+            ]
+        if operations is not None and callable(getattr(operations, "page", None)):
+            try:
+                rows = operations.page(None, None, 200, workspace_identity=workspace)
+            except TypeError:
+                rows = operations.page(None, None, 200)
+            payload["operations"] = [_operation_response(row).model_dump(by_alias=True, mode="json") for row in rows]
+        return redact_diagnostics(payload)
 
     if backups is not None and operations is not None:
         backups.operations = operations
@@ -329,7 +373,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
                     item
                     for item in cleanup.resources.list("cleanup-operation")
                     if item.get("requestId") == record.request_id and item.get("workspaceId") == workspace
-                    and (not payload.get("previewId") or item.get("confirmationDigest") == payload.get("previewId"))
+                    and (not payload.get("previewId") or item.get("previewId") == payload.get("previewId"))
                 ),
                 None,
             )
@@ -416,7 +460,20 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def verify_image(identifier: str, body: ImageVerificationCreate) -> ImageRead:
         if images is None:
             raise RuntimeError("Android image service is not configured")
-        return ImageRead.model_validate(images.verify(identifier, body.model_dump(by_alias=True)))
+        payload = body.model_dump(by_alias=True)
+        verifier = getattr(images, "verify_server", None)
+        if not callable(verifier):
+            raise AndroidError("ANDROID_IMAGE_VERIFICATION_UNAVAILABLE", "尚未接入镜像服务端核实适配器", 503)
+        result = verifier(identifier, payload)
+        if inspect.isawaitable(result):
+            result = await result
+        return ImageRead.model_validate(result)
+
+    @router.post("/images/{identifier}/delete-verifications", response_model=ImageRead)
+    async def verify_image_delete(identifier: str, body: ImageDeleteVerification) -> ImageRead:
+        if images is None or not hasattr(images, "verify_delete_content"):
+            raise AndroidError("ANDROID_IMAGE_VERIFICATION_UNAVAILABLE", "尚未接入镜像删除核实服务", 503)
+        return ImageRead.model_validate(await images.verify_delete_content(identifier, body.request_id))
 
     @router.get("/profiles/{identifier}", response_model=EnvironmentProfile)
     async def profile(identifier: str) -> EnvironmentProfile:
@@ -598,8 +655,33 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def diagnostics(body: DiagnosticsCreate) -> DiagnosticRead:
         if resources is None:
             raise RuntimeError("Android diagnostics store is not configured")
-        record = {"id": body.request_id, "requestId": body.request_id, "state": "ready", "payload": redact_diagnostics({"deviceIds": body.device_ids, "includeAdvancedLogs": body.include_advanced_logs, "workflow": False}), "createdAt": datetime.now(UTC).isoformat()}
+        workspace = workspace_identity()
+        request_payload = body.model_dump(by_alias=True, mode="json")
+        request_digest = hashlib.sha256(
+            json.dumps(request_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+        ).hexdigest()
+        existing = next(
+            (
+                item
+                for item in resources.list("diagnostic")
+                if item.get("workspaceId") == workspace and item.get("requestId") == body.request_id
+            ),
+            None,
+        )
+        if existing is not None:
+            if existing.get("requestDigest") != request_digest:
+                raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于不同诊断导出", 409)
+            return _diagnostic_response(existing)
+        record = {
+            "id": body.request_id,
+            "requestId": body.request_id,
+            "workspaceId": workspace,
+            "requestDigest": request_digest,
+            "state": "ready",
+            "payload": await diagnostic_payload(body, workspace),
+            "createdAt": datetime.now(UTC).isoformat(),
+        }
         resources.save("diagnostic", record)
-        return DiagnosticRead.model_validate(record)
+        return _diagnostic_response(record)
 
     return router

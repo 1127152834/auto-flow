@@ -98,7 +98,18 @@ class AndroidManagement:
         import hashlib
         import json
         digest = hashlib.sha256(json.dumps(request, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        return self.operations.accept(self.workspace_identity, request["requestId"], device_id, request["action"], digest, request)
+        retry_of = request.get("retryOf")
+        if retry_of is None:
+            return self.operations.accept(self.workspace_identity, request["requestId"], device_id, request["action"], digest, request)
+        return self.operations.accept(
+            self.workspace_identity,
+            request["requestId"],
+            device_id,
+            request["action"],
+            digest,
+            request,
+            retry_of=retry_of,
+        )
 
     def _start(self, device: dict[str, Any], request: dict[str, Any], durable: Any | None = None) -> dict[str, Any]:
         factory = getattr(self.runtime, "for_device", None)
