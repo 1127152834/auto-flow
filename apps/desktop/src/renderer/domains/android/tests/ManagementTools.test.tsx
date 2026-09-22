@@ -1,12 +1,16 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { BulkActions } from '../components/BulkActions'
 import { DataMaintenance } from '../components/DataMaintenance'
+import { BackupPanel } from '../components/BackupPanel'
+import { ApiClientError } from '../../../shared/api/client'
 
 const device = { deviceId: 'd1', revision: 2, name: '设备一', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} } as never
+
+afterEach(cleanup)
 
 it('freezes selected revisions when submitting a bulk action', async () => {
   const bulk = vi.fn(async (body: Record<string, unknown>) => ({ id: 'b', requestId: body.requestId as string, action: 'start', deleteData: false, state: 'queued', items: [], createdAt: '' }))
@@ -16,12 +20,81 @@ it('freezes selected revisions when submitting a bulk action', async () => {
   expect(bulk).toHaveBeenCalledWith(expect.objectContaining({ items: [{ deviceId: 'd1', expectedRevision: 2 }] }))
 })
 
+it('keeps a failed batch retryable with the original request and reports unknown outcomes', async () => {
+  const bulk = vi.fn()
+    .mockRejectedValueOnce(new Error('批次连接中断'))
+    .mockResolvedValueOnce({ id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'needs_verification', items: [{ state: 'accepted' }], createdAt: '' })
+  const bulkAction = vi.fn(async () => ({ id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'succeeded', items: [{ state: 'succeeded' }], createdAt: '' }))
+  render(<BulkActions api={{ bulk, bulkAction }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('批次连接中断')
+  await userEvent.click(screen.getByRole('button', { name: '重试批量操作' }))
+  await vi.waitFor(() => expect(bulk).toHaveBeenCalledTimes(2))
+  expect(bulk.mock.calls[0][0]).toEqual(bulk.mock.calls[1][0])
+  expect(await screen.findByRole('alert')).toHaveTextContent('批次结果未知')
+  await userEvent.click(screen.getByRole('button', { name: '核实批次' }))
+  await vi.waitFor(() => expect(bulkAction).toHaveBeenCalledWith('b', expect.objectContaining({ action: 'verify' })))
+  expect(await screen.findByRole('status')).toHaveTextContent('succeeded')
+})
+
 it('requires a preview before cleanup execution', async () => {
-  const cleanupPreview = vi.fn(async () => ({ items: [{ id: 'v1' }], confirmationDigest: 'digest' }))
+  const cleanupPreview = vi.fn(async () => ({ items: [{ id: 'v1', kind: 'backup', references: ['d1'], size: 128, reversible: false, fingerprint: 'fingerprint' }], confirmationDigest: 'digest' }))
   const cleanup = vi.fn(async () => ({ items: [], state: 'accepted' }))
   const diagnostics = vi.fn(async () => ({ id: 'd', requestId: 'r', state: 'ready', payload: {}, createdAt: '' }))
   render(<QueryClientProvider client={new QueryClient()}><DataMaintenance api={{ cleanupPreview, cleanup, diagnostics }} resourceIds={['v1']} /></QueryClientProvider>)
   expect(screen.queryByRole('button', { name: /确认清理/ })).not.toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
   expect(await screen.findByRole('button', { name: '确认清理 1 项' })).toBeVisible()
+  expect(screen.getByLabelText('清理预览')).toHaveTextContent('对象：v1 · backup')
+  expect(screen.getByLabelText('清理预览')).toHaveTextContent('引用：d1')
+  expect(screen.getByLabelText('清理预览')).toHaveTextContent('不可逆')
+  expect(screen.getByLabelText('清理预览')).toHaveTextContent('指纹：fingerprint')
+})
+
+it('clears a stale cleanup preview when refreshing it fails', async () => {
+  let fail = false
+  const cleanupPreview = vi.fn(async () => {
+    if (fail) throw new Error('清理目录暂不可用')
+    return { items: [{ id: 'v1' }], confirmationDigest: 'digest' }
+  })
+  const cleanup = vi.fn(async () => ({ items: [], state: 'accepted' }))
+  const diagnostics = vi.fn(async () => ({ id: 'd', requestId: 'r', state: 'ready', payload: {}, createdAt: '' }))
+  render(<QueryClientProvider client={new QueryClient()}><DataMaintenance api={{ cleanupPreview, cleanup, diagnostics }} resourceIds={['v1']} /></QueryClientProvider>)
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  expect(await screen.findByRole('button', { name: '确认清理 1 项' })).toBeVisible()
+  fail = true
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('清理目录暂不可用')
+  expect(screen.queryByRole('button', { name: /确认清理/ })).not.toBeInTheDocument()
+})
+
+it('surfaces cleanup conflicts and requires a fresh preview', async () => {
+  const cleanupPreview = vi.fn(async () => ({ items: [{ id: 'v1' }], confirmationDigest: 'digest' }))
+  const cleanup = vi.fn(async () => { throw new ApiClientError('清理预览已变化', 409, 'ANDROID_CLEANUP_CHANGED') })
+  const diagnostics = vi.fn(async () => ({ id: 'd', requestId: 'r', state: 'ready', payload: {}, createdAt: '' }))
+  render(<QueryClientProvider client={new QueryClient()}><DataMaintenance api={{ cleanupPreview, cleanup, diagnostics }} resourceIds={['v1']} /></QueryClientProvider>)
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  await userEvent.click(await screen.findByRole('button', { name: '确认清理 1 项' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('清理预览已变化，请重新预览后确认')
+  expect(screen.queryByRole('button', { name: /确认清理/ })).not.toBeInTheDocument()
+})
+
+it('keeps backup request retryable and refreshes after restore', async () => {
+  const backupRecord = { id: 'b1', deviceId: 'd1', bytes: 3, imageId: 'img', sha256: 'digest', formatVersion: 1, state: 'ready', createdAt: '' }
+  const backup = vi.fn()
+    .mockRejectedValueOnce(new Error('连接中断'))
+    .mockResolvedValueOnce(backupRecord)
+  const restoreBackup = vi.fn(async () => ({ deviceId: 'd2', operationId: 'op-1', requestId: 'restore-r', targetId: 'd2', backupId: 'b1', state: 'restored' }))
+  const operationByRequest = vi.fn(async () => ({ operationId: 'op-1', requestId: 'r', targetId: 'd1', action: 'backup', state: 'succeeded', stageCode: 'complete', stageLabel: '已完成', attempt: 1, createdAt: '' }))
+  const backups = vi.fn(async () => [backupRecord])
+  const api = { backup, restoreBackup, backups, operationByRequest }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} /></QueryClientProvider>)
+  await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('连接中断')
+  await userEvent.click(screen.getByRole('button', { name: '核实原请求' }))
+  await vi.waitFor(() => expect(operationByRequest).toHaveBeenCalled())
+  await userEvent.click(screen.getByRole('button', { name: '恢复为新实例' }))
+  await vi.waitFor(() => expect(restoreBackup).toHaveBeenCalledTimes(1))
+  expect(backups).toHaveBeenCalledTimes(3)
 })

@@ -35,6 +35,14 @@ class AndroidDeviceService:
         factory = getattr(self.runtime, "for_device", None)
         return AndroidDeviceService(self.repository, factory(device_id)) if factory else self
 
+    def get(self, device_id: str) -> dict[str, Any]:
+        """Expose the device facade used by bulk and cleanup services."""
+        return self.repository.get(device_id)
+
+    def operate(self, device_id: str, request: dict[str, Any]) -> dict[str, Any]:
+        """Route lifecycle writes through the durable management owner."""
+        return self.management.operate(device_id, request)
+
     async def environment(self) -> dict[str, Any]:
         return await self.runtime.environment()
 
@@ -249,6 +257,10 @@ class AndroidDeviceService:
             raise
 
     async def recover(self) -> None:
+        if self.management.operations is not None:
+            recover_running = getattr(self.management.operations, "recover_running", None)
+            if callable(recover_running):
+                recover_running(self.management.workspace_identity)
         records = [d for d in self.repository.list() if not d.get("deleted") and (d.get("ownerRunId") or d.get("control") != "idle")]
         if not records:
             return
@@ -274,7 +286,10 @@ class AndroidDeviceService:
         finally:
             self.runtime.unlock()
 
+    def list(self) -> list[dict[str, Any]]:
+        return self.repository.list()
+
 
 def device_view(device: dict[str, Any]) -> dict[str, Any]:
     fields = ("deviceId", "name", "runtimeId", "ownerRunId", "control", "generation", "width", "height", "imageId")
-    return {key: device.get(key) for key in fields} | {"androidStatus": device.get("androidStatus", "unknown"), "lastError": device.get("lastError"), "cpu": device.get("cpu", 1), "memoryMb": device.get("memoryMb", 1536), "dpi": device.get("dpi", 320), "androidVersion": "13", "architecture": "arm64", "dataRetained": device.get("dataRetained", False), "deleted": device.get("deleted", False), "operation": device.get("operation"), "profileId": device.get("profileId"), "profileName": device.get("profileName", "Android 13 标准 · ARM64"), "instanceType": device.get("instanceType", "persistent"), "locale": device.get("locale", "zh-CN"), "timezone": device.get("timezone", "Asia/Shanghai")}
+    return {key: device.get(key) for key in fields} | {"androidStatus": device.get("androidStatus", "unknown"), "lastError": device.get("lastError"), "cpu": device.get("cpu", 1), "memoryMb": device.get("memoryMb", 1536), "dpi": device.get("dpi", 320), "androidVersion": device.get("androidVersion"), "architecture": device.get("architecture"), "dataRetained": device.get("dataRetained", False), "deleted": device.get("deleted", False), "operation": device.get("operation"), "profileId": device.get("profileId"), "profileName": device.get("profileName", "Android 13 标准 · ARM64"), "instanceType": device.get("instanceType", "persistent"), "locale": device.get("locale", "zh-CN"), "timezone": device.get("timezone", "Asia/Shanghai")}

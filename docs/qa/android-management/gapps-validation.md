@@ -1,0 +1,14 @@
+# Google/GApps 镜像验证
+
+状态：`blocked`；验证结果必须保持 `not_tested`/`blocked`，不能因为发现包名而写入 `passed`。
+
+## 当前证据
+
+- `summarize_verification([])` 返回 `not_tested`。
+- 包检测、登录条件缺失和必需检查失败的归并逻辑已有 unit 测试。
+- 本轮没有可用的 Google/GApps 专用镜像、网络、测试账号、商店访问条件或可分发测试 APK。
+- 因此以下检查均未执行：启动、商店、登录、免费测试应用下载/启动、停机重启、第二实例隔离。
+
+## 验收边界
+
+完成验证时应使用新建且带 workspace/device 标签的临时实例，记录候选来源、固定 `imageId`、架构、构建说明、每个 `check_id` 的 `status`、`checked_at`、`evidence_id` 和 `reason`。缺任一外部条件时保留 `blocked`，不得将基础 ReDroid 镜像或包名清单当作 Google 认证结果。

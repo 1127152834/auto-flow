@@ -130,6 +130,43 @@ async def test_shutdown_marks_interrupted_and_busy_device_cannot_be_mutated():
 
 
 @pytest.mark.asyncio
+async def test_archived_operation_receipts_do_not_block_new_lifecycle_request():
+    repo, runtime = Repository(), Runtime()
+    c = config()
+    device = runtime.new_device(c)
+    device["operationReceipts"] = {
+        f"old-{index}": {"requestId": f"old-{index}", "action": "stop", "deleteData": False}
+        for index in range(1000)
+    }
+    repo.save(device)
+    service = AndroidManagement(repo, runtime)
+
+    service.operate(c["deviceId"], request("stop"))
+    await service.task
+
+    assert runtime.calls == ["stop"]
+
+
+@pytest.mark.asyncio
+async def test_external_timeout_marks_operation_needs_verification():
+    repo, runtime = Repository(), TimeoutRuntime()
+    service = AndroidManagement(repo, runtime)
+
+    c = config()
+    service.create(c)
+    await service.task
+
+    device = repo.get(c["deviceId"])
+    assert device["control"] == "recovery_required"
+    assert device["operation"]["state"] == "needs_verification"
+
+
+class TimeoutRuntime(Runtime):
+    async def manage(self, device, request, stage, save):
+        raise TimeoutError("response lost")
+
+
+@pytest.mark.asyncio
 async def test_delete_refuses_foreign_volume_before_any_mutation(tmp_path, monkeypatch):
     runtime = MacAndroidRuntime(tmp_path, tmp_path / 'workspace')
     c = config()

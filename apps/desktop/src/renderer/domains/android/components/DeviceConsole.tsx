@@ -238,7 +238,7 @@ export function DeviceConsole(p: ConsoleProps) {
       <h3>设备信息</h3>
       <p>
         <AndroidLogo size={21} />
-        Android {p.device.androidVersion}
+        Android {p.device.androidVersion ?? '版本待核实'}
       </p>
       <p>
         <Monitor size={21} />
@@ -280,7 +280,7 @@ export function DeviceConsole(p: ConsoleProps) {
             <Badge tone={workflow ? 'gray' : 'brown'}>{temporary ? '临时实例' : '持久实例'}</Badge>
           </div>
           <p>
-            Android {p.device.androidVersion} · {p.device.width} × {p.device.height}
+            Android {p.device.androidVersion ?? '版本待核实'} · {p.device.width} × {p.device.height}
           </p>
         </div>
         <div className="ad-heading-actions">

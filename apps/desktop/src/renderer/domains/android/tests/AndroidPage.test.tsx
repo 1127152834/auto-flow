@@ -33,6 +33,30 @@ it('management home does not request retired workflow, allocation, or run endpoi
   expect(mocks.client.request.mock.calls.map(([path]) => path).filter((path) => /workflows|allocations|\/runs/.test(path))).toEqual([])
   expect(screen.queryByRole('button', { name: '分配给工作流' })).not.toBeInTheDocument()
 })
+it('cleanup preview includes registered backups while diagnostics remain device scoped', async () => {
+  const backup = { id: 'backup-1', deviceId: devices[0].deviceId, bytes: 12, imageId: profile.imageId, sha256: 'digest', formatVersion: 1, state: 'ready', createdAt: '' }
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string; body?: { resourceIds?: string[]; deviceIds?: string[] } }) => {
+    if (path.endsWith('/backups') && !init?.method) return [backup]
+    if (path.endsWith('/cleanup/previews')) {
+      expect(init?.body?.resourceIds).toEqual(expect.arrayContaining([devices[0].deviceId, 'backup-1']))
+      return { items: [], confirmationDigest: 'digest' }
+    }
+    if (path.endsWith('/diagnostics')) {
+      expect(init?.body?.deviceIds).toEqual([devices[0].deviceId])
+      return { id: 'diagnostic-1', state: 'ready', createdAt: '' }
+    }
+    if (path.endsWith('/environment')) return environment
+    if (path.endsWith('/devices')) return [devices[0]]
+    if (path.endsWith('/profiles')) return [profile]
+    return []
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await screen.findByRole('heading', { name: '数据维护' })
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/cleanup/previews', expect.anything()))
+  await userEvent.click(screen.getByRole('button', { name: '生成脱敏诊断' }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/diagnostics', expect.anything()))
+})
 it('preserves the six-card three-column board and both waiting tasks', () => {
   render(<ResourceBoard devices={devices} profiles={[profile]} allocations={allocations} runs={runs} batches={[]} images={images} onCreate={noop} onProfiles={noop} onOpen={noop} onAllocate={noop} onManage={noop} onRuns={noop} onBatch={noop} />)
   expect(screen.getAllByRole('article')).toHaveLength(6)

@@ -110,6 +110,12 @@ class AndroidFleet:
         if existing:
             return existing
         profile = self.resources.get("profile", request["profileId"])
+        if profile.get("archived"):
+            raise AndroidError(
+                "ANDROID_PROFILE_ARCHIVED",
+                "环境模板已归档，不能创建新实例",
+                409,
+            )
         if profile["revision"] != request["profileRevision"]:
             raise AndroidError("ANDROID_PROFILE_CONFLICT", "环境配置已更新，请重新加载")
         items = [

@@ -1,5 +1,8 @@
 
+import pytest
+
 from autoflow.application.android.bulk import AndroidBulkService
+from autoflow.application.android.devices import AndroidDeviceService
 from autoflow.domain.android.ports import AndroidError
 
 
@@ -10,9 +13,88 @@ def test_bulk_freezes_targets_and_keeps_partial_failures():
     batch = service.create("ws", "r1", "stop", [{"deviceId": "d1", "expectedRevision": 1}, {"deviceId": "d2", "expectedRevision": 9}], False)
     assert [item["deviceId"] for item in batch["items"]] == ["d1", "d2"]
     result = service.run(batch["id"])
-    assert result["state"] == "partially_failed"
+    assert result["state"] == "running"
     assert result["items"][0]["state"] in {"queued", "accepted", "succeeded"}
     assert result["items"][1]["state"] == "failed"
+
+
+@pytest.mark.asyncio
+async def test_bulk_tick_projects_terminal_device_operation_state_without_get_side_effects():
+    resources = _Resources()
+    devices = _Devices()
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "r-project", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    result = service.run(batch["id"])
+    assert result["state"] == "running"
+    devices.items["d1"]["operation"] = {"id": "r-project:d1:1", "state": "succeeded"}
+
+    result = service.get(batch["id"])
+    assert result["items"][0]["state"] == "accepted"
+
+    await service.tick()
+
+    result = service.get(batch["id"])
+    assert result["items"][0]["state"] == "succeeded"
+    assert result["state"] == "succeeded"
+
+
+@pytest.mark.asyncio
+async def test_bulk_waits_for_unknown_capacity_then_advances_one_device_at_a_time():
+    resources = _Resources()
+    devices = _QueueDevices()
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "r-capacity", "start", [{"deviceId": "d1", "expectedRevision": 1}, {"deviceId": "d2", "expectedRevision": 1}], False)
+
+    await service.tick()
+    assert batch["items"][0]["state"] == "waiting_capacity"
+    assert devices.calls == []
+
+    devices.runtime.ready = True
+    await service.tick()
+    assert batch["items"][0]["state"] == "accepted"
+    assert batch["items"][1]["state"] == "queued"
+    assert [call[0] for call in devices.calls] == ["d1"]
+
+    devices.items["d1"]["operation"]["state"] = "succeeded"
+    await service.tick()
+    assert batch["items"][0]["state"] == "succeeded"
+    assert batch["items"][1]["state"] == "accepted"
+    assert [call[0] for call in devices.calls] == ["d1", "d2"]
+
+
+def test_bulk_retry_uses_a_new_request_id_after_terminal_failure():
+    resources = _Resources()
+    devices = _RetryDevices()
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "r-retry", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+
+    first = service.run(batch["id"])
+    assert first["items"][0]["state"] == "failed"
+    service.action(batch["id"], "retryFailed")
+    second = service.run(batch["id"])
+
+    assert second["items"][0]["state"] == "accepted"
+    assert devices.requests == ["r-retry:d1:1", "r-retry:d1:2"]
+
+
+def test_bulk_action_request_is_idempotent_and_conflicts_on_changed_action():
+    resources = _Resources()
+    service = AndroidBulkService(resources, _Devices())
+    batch = service.create("ws", "r-action", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+
+    first = service.action(batch["id"], "cancelPending", "a1")
+    again = service.action(batch["id"], "cancelPending", "a1")
+    assert again["items"] == first["items"]
+    with pytest.raises(AndroidError, match="请求编号"):
+        service.action(batch["id"], "retryFailed", "a1")
+
+
+def test_bulk_unknown_result_is_not_reported_as_running_when_queue_is_drained():
+    batch = {"items": [{"state": "needs_verification"}, {"state": "succeeded"}]}
+
+    AndroidBulkService._batch_state(batch)
+
+    assert batch["state"] == "partially_failed"
 
 
 def test_bulk_request_id_is_idempotent_and_conflicts_on_changed_action():
@@ -30,6 +112,19 @@ def test_bulk_request_id_is_idempotent_and_conflicts_on_changed_action():
         raise AssertionError("changed bulk request must conflict")
 
 
+def test_bulk_service_uses_android_device_service_management_facade():
+    resources = _Resources()
+    devices = AndroidDeviceService(_Repository(), object())
+    devices.management = _Management()
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "r-facade", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+
+    result = service.run(batch["id"])
+
+    assert result["items"][0]["state"] == "accepted"
+    assert devices.management.calls == [("d1", {"requestId": "r-facade:d1:1", "action": "stop", "deleteData": False})]
+
+
 class _Resources:
     def __init__(self): self.items = {}
     def get(self, kind, identifier):
@@ -43,3 +138,58 @@ class _Devices:
     def __init__(self): self.items = {"d1": {"deviceId": "d1", "generation": 1, "control": "idle"}, "d2": {"deviceId": "d2", "generation": 2, "control": "idle"}}
     def get(self, identifier): return self.items[identifier]
     def operate(self, device_id, request): return {"deviceId": device_id, "operation": {"id": request["requestId"]}}
+
+
+class _Management:
+    def __init__(self):
+        self.calls = []
+
+    def operate(self, device_id, request):
+        self.calls.append((device_id, request))
+        return {"deviceId": device_id, "operation": {"id": request["requestId"]}}
+
+
+class _Repository:
+    def get(self, identifier):
+        if identifier != "d1":
+            raise AndroidError("NOT_FOUND", "not found", 404)
+        return {"deviceId": "d1", "generation": 1, "control": "idle"}
+
+
+class _QueueRuntime:
+    def __init__(self):
+        self.ready = False
+
+    async def capacity(self, _device):
+        if not self.ready:
+            raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "unknown")
+
+
+class _QueueDevices:
+    def __init__(self):
+        self.items = {
+            "d1": {"deviceId": "d1", "generation": 1, "control": "idle"},
+            "d2": {"deviceId": "d2", "generation": 1, "control": "idle"},
+        }
+        self.runtime = _QueueRuntime()
+        self.calls = []
+
+    def get(self, identifier):
+        return self.items[identifier]
+
+    def operate(self, device_id, request):
+        self.calls.append((device_id, request))
+        self.items[device_id]["operation"] = {"id": request["requestId"], "state": "running"}
+        return {"deviceId": device_id, "operation": {"id": request["requestId"]}}
+
+
+class _RetryDevices(_QueueDevices):
+    def __init__(self):
+        super().__init__()
+        self.requests = []
+
+    def operate(self, device_id, request):
+        self.requests.append(request["requestId"])
+        if len(self.requests) == 1:
+            raise AndroidError("ANDROID_PARTIAL_FAILURE", "failed")
+        return super().operate(device_id, request)

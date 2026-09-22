@@ -1,4 +1,5 @@
 import re
+from contextlib import contextmanager
 from copy import deepcopy
 from datetime import UTC, datetime
 from typing import Any
@@ -16,6 +17,25 @@ class AndroidImageService:
 
     def list(self) -> list[dict[str, Any]]:
         return self.resources.list("image")
+
+    @contextmanager
+    def _runtime_lock(self):
+        runtime = getattr(self.devices, "runtime", None)
+        lock = getattr(runtime, "lock", None)
+        unlock = getattr(runtime, "unlock", None)
+        locked = False
+        if callable(lock):
+            lock()
+            locked = True
+        try:
+            yield runtime
+        finally:
+            if locked and callable(unlock):
+                unlock()
+
+    @staticmethod
+    def _public(image: dict[str, Any]) -> dict[str, Any]:
+        return {key: value for key, value in image.items() if not key.startswith("_") and key not in {"deleteRequestId", "deleteRequestDigest"}}
 
     def register(self, request: dict[str, Any]) -> dict[str, Any]:
         image_id = request["id"]
@@ -46,7 +66,7 @@ class AndroidImageService:
             "createdAt": datetime.now(UTC).isoformat(),
         }
         self.resources.save("image", image)
-        return image
+        return self._public(image)
 
     async def pull(self, request_id: str, reference: str) -> dict[str, Any]:
         if self.catalog is None:
@@ -70,19 +90,26 @@ class AndroidImageService:
         })
         return image
 
-    def delete(self, identifier: str, delete_content: bool = False) -> dict[str, Any]:
+    def delete(self, identifier: str, delete_content: bool = False, request_id: str | None = None, expected_revision: int | None = None) -> dict[str, Any]:
         if delete_content:
             raise AndroidError("ANDROID_IMAGE_DELETE_UNAVAILABLE", "镜像内容删除尚未启用", 503)
-        image = self.resources.get("image", identifier)
-        image_id = image["imageId"]
-        refs = self._references(image_id)
-        if refs:
-            raise AndroidError("ANDROID_IMAGE_REFERENCED", "镜像仍被资源引用，不能删除内容", 409)
-        result = deepcopy(image)
-        result["state"] = "unregistered"
-        result["deletedAt"] = datetime.now(UTC).isoformat()
-        self.resources.save("image", result)
-        return result
+        with self._runtime_lock():
+            image = self.resources.get("image", identifier)
+            if request_id and image.get("deleteRequestId") == request_id:
+                return self._public(image)
+            if expected_revision is not None and int(image.get("revision", 0)) != expected_revision:
+                raise AndroidError("ANDROID_IMAGE_CONFLICT", "镜像目录已更新，请重新加载", 409)
+            refs = self._references(image["imageId"])
+            if refs:
+                raise AndroidError("ANDROID_IMAGE_REFERENCED", "镜像仍被资源引用，不能删除内容", 409)
+            result = deepcopy(image)
+            result["state"] = "unregistered"
+            result["revision"] = int(image.get("revision", 0)) + 1
+            result["deletedAt"] = datetime.now(UTC).isoformat()
+            if request_id:
+                result["deleteRequestId"] = request_id
+            self.resources.save("image", result)
+            return self._public(result)
 
     def _references(self, image_id: str) -> list:
         refs = [device.get("deviceId") for device in self.devices.list() if not device.get("deleted") and device.get("imageId") == image_id]
@@ -90,18 +117,34 @@ class AndroidImageService:
         refs.extend(item.get("id") for item in self.resources.list("backup") if item.get("imageId") == image_id)
         return refs
 
-    async def delete_content(self, identifier: str) -> dict[str, Any]:
-        image = self.resources.get("image", identifier)
-        if self._references(image["imageId"]):
-            raise AndroidError("ANDROID_IMAGE_REFERENCED", "镜像仍被资源引用，不能删除内容", 409)
-        runtime = getattr(self.devices, "runtime", None)
-        if runtime is None or not hasattr(runtime, "delete_image"):
-            raise AndroidError("ANDROID_IMAGE_DELETE_UNAVAILABLE", "运行时尚未提供镜像内容删除适配器", 503)
-        await runtime.delete_image(image["imageId"])
-        result = deepcopy(image)
-        result.update(state="deleted", deletedAt=datetime.now(UTC).isoformat())
-        self.resources.save("image", result)
-        return result
+    async def delete_content(self, identifier: str, request_id: str | None = None, expected_revision: int | None = None) -> dict[str, Any]:
+        with self._runtime_lock() as runtime:
+            image = self.resources.get("image", identifier)
+            if request_id and image.get("deleteRequestId") == request_id:
+                if image.get("state") in {"delete_pending", "delete_needs_verification"}:
+                    raise AndroidError("ANDROID_IMAGE_DELETE_RESULT_UNKNOWN", "镜像内容删除结果未知，请先核实运行时", 503)
+                return self._public(image)
+            if expected_revision is not None and int(image.get("revision", 0)) != expected_revision:
+                raise AndroidError("ANDROID_IMAGE_CONFLICT", "镜像目录已更新，请重新加载", 409)
+            if self._references(image["imageId"]):
+                raise AndroidError("ANDROID_IMAGE_REFERENCED", "镜像仍被资源引用，不能删除内容", 409)
+            if runtime is None or not hasattr(runtime, "delete_image"):
+                raise AndroidError("ANDROID_IMAGE_DELETE_UNAVAILABLE", "运行时尚未提供镜像内容删除适配器", 503)
+            pending = deepcopy(image)
+            pending.update(state="delete_pending", deleteRequestId=request_id, deleteRequestDigest=str(expected_revision))
+            self.resources.save("image", pending)
+            try:
+                await runtime.delete_image(image["imageId"])
+            except (TimeoutError, OSError) as error:
+                pending["state"] = "delete_needs_verification"
+                self.resources.save("image", pending)
+                raise AndroidError("ANDROID_IMAGE_DELETE_RESULT_UNKNOWN", "镜像内容删除结果未知，请先核实运行时", 503) from error
+            result = deepcopy(image)
+            result.update(state="deleted", revision=int(image.get("revision", 0)) + 1, deletedAt=datetime.now(UTC).isoformat())
+            if request_id:
+                result["deleteRequestId"] = request_id
+            self.resources.save("image", result)
+            return self._public(result)
 
     def verify(self, identifier: str, observation: dict[str, Any]) -> dict[str, Any]:
         image = self.resources.get("image", identifier)

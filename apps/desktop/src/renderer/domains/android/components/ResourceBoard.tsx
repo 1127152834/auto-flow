@@ -72,8 +72,7 @@ export function ResourceBoard(p: BoardProps) {
             </Badge>
           </div>
           <p className="ad-spec">
-            Android {d.androidVersion} · {d.width} × {d.height}
-            {d.profileName?.includes('Magisk') && ' · Magisk'}
+            {d.androidVersion ? `Android ${d.androidVersion}` : 'Android 版本待核实'} · {d.width} × {d.height} · {d.architecture ?? '架构待核实'}
           </p>
           {g !== 1 && !starting && <Badge tone="brown">{temporary ? '临时实例' : '持久实例'}</Badge>}
           {g === 1 ? (

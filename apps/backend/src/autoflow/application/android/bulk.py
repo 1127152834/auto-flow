@@ -1,13 +1,40 @@
+import asyncio
+import inspect
+import logging
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 from uuid import uuid4
 
 from autoflow.domain.android.ports import AndroidError
 
 
 class AndroidBulkService:
+    _terminal_items: ClassVar[set[str]] = {"succeeded", "failed", "cancelled"}
+
     def __init__(self, resources: Any, devices: Any) -> None:
         self.resources, self.devices = resources, devices
+        self.task: asyncio.Task[None] | None = None
+        self.closing = False
+        self.tick_lock = asyncio.Lock()
+
+    async def start(self) -> None:
+        self.closing = False
+        if self.task is None or self.task.done():
+            self.task = asyncio.create_task(self._loop(), name="android-bulk-queue")
+
+    async def shutdown(self) -> None:
+        self.closing = True
+        if self.task and not self.task.done():
+            self.task.cancel()
+            await asyncio.gather(self.task, return_exceptions=True)
+
+    async def _loop(self) -> None:
+        while not self.closing:
+            try:
+                await self.tick()
+            except Exception:
+                logging.getLogger(__name__).exception("Android bulk queue tick failed")
+            await asyncio.sleep(0.2)
 
     def _get(self, identifier: str) -> dict[str, Any]:
         getter = getattr(self.devices, "get", None)
@@ -34,11 +61,25 @@ class AndroidBulkService:
         self.resources.save("bulk", record)
         return record
 
-    def get(self, identifier: str) -> dict[str, Any]:
-        return self.resources.get("bulk", identifier)
+    def get(self, identifier: str, workspace: str | None = None) -> dict[str, Any]:
+        batch = self.resources.get("bulk", identifier)
+        if workspace is not None and batch.get("workspaceIdentity") != workspace:
+            raise AndroidError("ANDROID_BULK_NOT_FOUND", "批次不存在", 404)
+        return batch
 
     def run(self, identifier: str) -> dict[str, Any]:
-        batch = self.get(identifier)
+        batch = self.resources.get("bulk", identifier)
+        if batch["state"] in {"queued", "running"}:
+            batch["state"] = "running"
+        # HTTP requests run with the persistent queue started at bootstrap. Keep
+        # this synchronous fallback for focused/unit callers that do not start it.
+        if self.task is None:
+            self._run_inline(batch)
+        else:
+            self.resources.save("bulk", batch)
+        return batch
+
+    def _run_inline(self, batch: dict[str, Any]) -> None:
         for item in batch["items"]:
             if item["state"] != "queued":
                 continue
@@ -46,26 +87,156 @@ class AndroidBulkService:
                 device = self._get(item["deviceId"])
                 if int(device.get("generation", 0)) != int(item["expectedRevision"]):
                     raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
-                result = self.devices.operate(item["deviceId"], {"requestId": f'{batch["requestId"]}:{item["deviceId"]}', "action": batch["action"], "deleteData": batch["deleteData"]})
+                attempt = int(item.get("attempt", 0)) + 1
+                item["attempt"] = attempt
+                result = self.devices.operate(item["deviceId"], {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]})
                 item.update(state="accepted", operationId=(result.get("operation") or {}).get("id"))
+            except (TimeoutError, OSError):
+                item.update(state="needs_verification", error="操作结果未知，请核实设备状态")
             except AndroidError as error:
                 item.update(state="failed", error=error.message)
-        states = {item["state"] for item in batch["items"]}
-        batch["state"] = "partially_failed" if "failed" in states and len(states) > 1 else "failed" if "failed" in states else "succeeded"
+        self._batch_state(batch)
         self.resources.save("bulk", batch)
-        return batch
 
-    def action(self, identifier: str, action: str) -> dict[str, Any]:
-        batch = self.get(identifier)
+    async def tick(self) -> None:
+        async with self.tick_lock:
+            for batch in sorted(self.resources.list("bulk"), key=lambda item: item.get("createdAt", "")):
+                if batch.get("state") in {"succeeded", "failed", "cancelled", "partially_failed", "needs_verification"} and not any(item.get("state") in {"queued", "waiting_capacity", "waiting_device", "accepted"} for item in batch.get("items", [])):
+                    continue
+                await self._advance(batch)
+                if any(item.get("state") == "accepted" for item in batch.get("items", [])):
+                    break
+
+    async def _advance(self, batch: dict[str, Any]) -> None:
+        changed = self._reconcile(batch)
+        if any(item.get("state") == "accepted" for item in batch["items"]):
+            self._batch_state(batch)
+            if changed:
+                self.resources.save("bulk", batch)
+            return
+        for item in batch["items"]:
+            if item.get("state") not in {"queued", "waiting_capacity", "waiting_device"}:
+                continue
+            try:
+                device = self._get(item["deviceId"])
+                if int(device.get("generation", 0)) != int(item["expectedRevision"]):
+                    raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
+                if device.get("control") != "idle":
+                    item.update(state="waiting_device", error="设备当前被占用或待核实")
+                    break
+                if batch["action"] in {"start", "restart"}:
+                    admitted, reason = await self._capacity(device)
+                    if not admitted:
+                        item.update(state="waiting_capacity", error=reason)
+                        break
+                attempt = int(item.get("attempt", 0)) + 1
+                request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]}
+                item["attempt"] = attempt
+                result = self.devices.operate(item["deviceId"], request)
+                item.update(state="accepted", operationId=(result.get("operation") or {}).get("id"), error=None)
+                changed = True
+                break
+            except (TimeoutError, OSError):
+                item.update(state="needs_verification", error="操作结果未知，请核实设备状态")
+                changed = True
+                break
+            except AndroidError as error:
+                if error.code in {"ANDROID_CAPACITY", "ANDROID_MEMORY_BUDGET", "ANDROID_CPU_BUDGET", "ANDROID_CAPACITY_UNKNOWN"}:
+                    item.update(state="waiting_capacity", error=error.message)
+                elif error.code in {"ANDROID_BUSY", "ANDROID_RUNTIME_BUSY", "ANDROID_MANAGEMENT_BUSY", "ANDROID_RECOVERY_REQUIRED"}:
+                    item.update(state="waiting_device", error=error.message)
+                else:
+                    item.update(state="failed", error=error.message)
+                changed = True
+                break
+        self._batch_state(batch)
+        if changed or batch.get("state") != "queued":
+            self.resources.save("bulk", batch)
+
+    async def _capacity(self, device: dict[str, Any]) -> tuple[bool, str | None]:
+        checker = getattr(getattr(self.devices, "runtime", None), "capacity", None)
+        if checker is None:
+            return False, "容量尚未核实，不能启动批量操作"
+        try:
+            result = checker(device)
+            if inspect.isawaitable(result):
+                await result
+        except AndroidError as error:
+            if error.code in {"ANDROID_CAPACITY", "ANDROID_MEMORY_BUDGET", "ANDROID_CPU_BUDGET", "ANDROID_CAPACITY_UNKNOWN"}:
+                return False, error.message
+            raise
+        except (OSError, TimeoutError, ValueError):
+            return False, "容量尚未核实，不能启动批量操作"
+        return True, None
+
+    def _reconcile(self, batch: dict[str, Any]) -> bool:
+        changed = False
+        for item in batch["items"]:
+            if item.get("state") != "accepted":
+                continue
+            state, message = self._operation_state(item)
+            if state in {"succeeded", "failed", "needs_verification"}:
+                item.update(state=state, error=message)
+                changed = True
+        self._batch_state(batch)
+        return changed
+
+    def _operation_state(self, item: dict[str, Any]) -> tuple[str | None, str | None]:
+        operation_id = item.get("operationId")
+        operations = getattr(getattr(self.devices, "management", None), "operations", None)
+        if operation_id and operations is not None:
+            try:
+                record = operations.get(operation_id)
+                return record.state, record.message
+            except AndroidError:
+                pass
+        try:
+            device = self._get(item["deviceId"])
+        except AndroidError:
+            return None, None
+        operation = device.get("operation") or {}
+        if operation.get("id") != operation_id:
+            return None, None
+        return operation.get("state"), operation.get("error") or device.get("lastError")
+
+    @staticmethod
+    def _request_id(batch: dict[str, Any], item: dict[str, Any], attempt: int) -> str:
+        return f'{batch["requestId"]}:{item["deviceId"]}:{attempt}'
+
+    @classmethod
+    def _batch_state(cls, batch: dict[str, Any]) -> None:
+        states = {item["state"] for item in batch["items"]}
+        if states & {"queued", "waiting_capacity", "waiting_device", "accepted"}:
+            batch["state"] = "running"
+        elif "needs_verification" in states:
+            batch["state"] = "needs_verification" if states == {"needs_verification"} else "partially_failed"
+        elif "failed" in states or "cancelled" in states:
+            batch["state"] = "partially_failed" if len(states) > 1 else "failed" if "failed" in states else "cancelled"
+        else:
+            batch["state"] = "succeeded"
+
+    def action(self, identifier: str, action: str, request_id: str | None = None, workspace: str | None = None) -> dict[str, Any]:
+        batch = self.get(identifier, workspace)
+        receipts = batch.setdefault("actionReceipts", {})
+        if request_id:
+            previous = receipts.get(request_id)
+            if previous is not None:
+                if previous != action:
+                    raise AndroidError("ANDROID_BULK_REQUEST_CONFLICT", "请求编号已用于不同批次动作", 409)
+                return batch
         if action == "cancelPending":
             for item in batch["items"]:
-                if item["state"] == "queued":
+                if item["state"] in {"queued", "waiting_capacity", "waiting_device"}:
                     item["state"] = "cancelled"
         elif action == "retryFailed":
             for item in batch["items"]:
                 if item["state"] == "failed":
                     item.update(state="queued", error=None)
+        elif action == "verify":
+            self._reconcile(batch)
         else:
             raise AndroidError("ANDROID_BULK_ACTION_INVALID", "批次动作无效", 422)
+        if request_id:
+            receipts[request_id] = action
         self.resources.save("bulk", batch)
         return batch

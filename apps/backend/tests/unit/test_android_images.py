@@ -1,5 +1,6 @@
 import pytest
 
+from autoflow.application.android.devices import AndroidDeviceService
 from autoflow.application.android.images import AndroidImageService
 from autoflow.domain.android.ports import AndroidError
 
@@ -56,6 +57,19 @@ async def test_content_delete_removes_unreferenced_image_through_runtime():
     assert devices.runtime.deleted == [image["imageId"]]
 
 
+@pytest.mark.asyncio
+async def test_content_delete_accepts_the_production_android_device_service_facade():
+    runtime = _ImageRuntime()
+    service = AndroidDeviceService(_DeviceRepository(), runtime)
+    images = AndroidImageService(_Resources(), service)
+    image = images.register({"id": "sha256:" + "2" * 64, "name": "image", "reference": "redroid/redroid:13"})
+
+    result = await images.delete_content(image["id"])
+
+    assert result["state"] == "deleted"
+    assert runtime.deleted == [image["imageId"]]
+
+
 def test_image_reference_rejects_newline_or_command_option():
     service = AndroidImageService(_Resources(), _Devices())
     with pytest.raises(AndroidError) as error:
@@ -83,3 +97,8 @@ class _Catalog:
     async def inspect(self, reference):
         assert reference == "redroid/redroid:13"
         return type("Metadata", (), {"image_id": "sha256:" + "e" * 64, "source_digest": "sha256:" + "f" * 64, "architecture": "arm64", "os": "linux", "android_version": "13", "reference": reference, "google_components": "absent"})()
+
+
+class _DeviceRepository:
+    def list(self):
+        return []

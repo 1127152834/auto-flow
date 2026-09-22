@@ -40,11 +40,22 @@ class AndroidManagement:
                 raise AndroidError("ANDROID_REQUEST_CONFLICT", "设备编号已用于其他创建配置")
             return existing
         self._admit()
+        request = {"requestId": str(config["deviceId"]), "action": "create", "deleteData": False}
+        durable = self._accept_operation(str(config["deviceId"]), request)
+        if durable is not None and durable.state not in {"queued", "running"}:
+            raise AndroidError("ANDROID_CREATE_REQUEST_REPLAYED", "创建请求已处理，请先核实操作结果", 409)
         try:
             device = self.runtime.new_device(config)
             device["creationConfig"] = deepcopy(config)
-            return self._start(device, {"requestId": config["deviceId"], "action": "create", "deleteData": False})
+            return self._start(device, request, durable)
+        except (TimeoutError, OSError) as error:
+            if durable is not None:
+                self.operations.transition(durable.operation_id, "queued", "needs_verification", {"stage_code": "verify", "result_code": "CREATE_RESULT_UNKNOWN", "message": str(error)[:480]})
+            self.runtime.unlock()
+            raise AndroidError("ANDROID_CREATE_RESULT_UNKNOWN", "创建结果未知，请先核实后重试", 503) from error
         except BaseException:
+            if durable is not None and durable.state == "queued":
+                self.operations.transition(durable.operation_id, "queued", "failed", {"stage_code": "failed", "result_code": "ANDROID_CREATE_FAILED"})
             self.runtime.unlock()
             raise
 
@@ -58,8 +69,6 @@ class AndroidManagement:
             return device
         if device.get("deleted"):
             raise AndroidError("ANDROID_NOT_FOUND", "设备已删除", 404)
-        if len(receipts) >= 1000:
-            raise AndroidError("ANDROID_OPERATION_LIMIT", "设备操作记录达到本版本上限，请联系维护者")
         if device.get("ownerRunId") or device.get("control") not in {"idle", "recovery_required"}:
             raise AndroidError("ANDROID_BUSY", "请先结束设备的手动会话或工作流")
         if device.get("control") == "recovery_required" and request["action"] != "recover":
@@ -92,13 +101,20 @@ class AndroidManagement:
             self.device_runtime = factory(device["deviceId"])
             assert self.device_runtime is not None
             self.device_runtime.lock()
-        if durable is not None:
-            durable = self.operations.transition(durable.operation_id, "queued", "running", {"stage_code": "starting"})
-            self.operation_id = durable.operation_id
-        device.setdefault("operationReceipts", {})[request["requestId"]] = deepcopy(request)
-        device.update(control="managing", lastError=None, operation={"id": durable.operation_id if durable is not None else request["requestId"], "action": request["action"], "state": "running", "stage": "准备中", "error": None, "startedAt": now(), "finishedAt": None})
         try:
-            self.repository.save(device)
+            device.setdefault("operationReceipts", {})[request["requestId"]] = deepcopy(request)
+            device["generation"] = int(device.get("generation", 0) or 0) + 1
+            device.update(control="managing", lastError=None, operation={"id": durable.operation_id if durable is not None else request["requestId"], "action": request["action"], "state": "running", "stage": "准备中", "error": None, "startedAt": now(), "finishedAt": None})
+            if durable is not None:
+                atomic_transition = getattr(self.operations, "transition_with_device", None)
+                if callable(atomic_transition):
+                    durable = atomic_transition(durable.operation_id, "queued", "running", {"stage_code": "starting"}, device)
+                else:
+                    durable = self.operations.transition(durable.operation_id, "queued", "running", {"stage_code": "starting"})
+                    self.repository.save(device)
+                self.operation_id = durable.operation_id
+            else:
+                self.repository.save(device)
         except BaseException:
             if self.device_runtime:
                 self.device_runtime.unlock()
@@ -111,26 +127,38 @@ class AndroidManagement:
         def save() -> None:
             self.repository.save(device)
 
+        def finish(next_state: str, changes: dict[str, Any]) -> None:
+            if self.operation_id and self.operations is not None:
+                atomic_transition = getattr(self.operations, "transition_with_device", None)
+                if callable(atomic_transition):
+                    atomic_transition(self.operation_id, "running", next_state, changes, device)
+                else:
+                    save()
+                    self.operations.transition(self.operation_id, "running", next_state, changes)
+            else:
+                save()
+
         def stage(text: str) -> None:
             device["operation"]["stage"] = text
             save()
 
         try:
             await self.runtime.manage(device, request, stage, save)
-            if self.operation_id and self.operations is not None:
-                self.operations.transition(self.operation_id, "running", "succeeded", {"stage_code": "completed"})
             device.update(control="idle", lastError=None)
             device["operation"].update(state="succeeded", stage="已完成", finishedAt=now())
+            finish("succeeded", {"stage_code": "completed"})
         except asyncio.CancelledError:
-            if self.operation_id and self.operations is not None:
-                self.operations.transition(self.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESULT_UNKNOWN", "message": "操作中断，请核实实际设备状态"})
             device.update(control="recovery_required", lastError="操作中断，请核实实际设备状态")
             device["operation"].update(state="interrupted", stage="等待核实", error=device["lastError"], finishedAt=now())
+            finish("needs_verification", {"stage_code": "verify", "result_code": "RESULT_UNKNOWN", "message": "操作中断，请核实实际设备状态"})
+        except (TimeoutError, OSError) as error:
+            device.update(control="recovery_required", lastError="操作响应超时，结果未知，请核实实际设备状态")
+            device["operation"].update(state="needs_verification", stage="等待核实", error=device["lastError"], finishedAt=now())
+            finish("needs_verification", {"stage_code": "verify", "result_code": "RESULT_UNKNOWN", "message": str(error)[:480]})
         except Exception as error:  # noqa: BLE001 -- persist a reviewable failed operation, never raw shell diagnostics.
-            if self.operation_id and self.operations is not None:
-                self.operations.transition(self.operation_id, "running", "failed", {"stage_code": "failed", "result_code": getattr(error, "code", "ANDROID_OPERATION_FAILED"), "message": str(error)[:480]})
             device.update(control="recovery_required", lastError=error.message if isinstance(error, AndroidError) else "设备操作未完成，请核实实际状态")
             device["operation"].update(state="failed", stage="需要处理", error=device["lastError"], finishedAt=now())
+            finish("failed", {"stage_code": "failed", "result_code": getattr(error, "code", "ANDROID_OPERATION_FAILED"), "message": str(error)[:480]})
         finally:
             try:
                 save()
@@ -148,6 +176,7 @@ class AndroidManagement:
         self._admit()
         try:
             device["name"] = name
+            device["generation"] = int(device.get("generation", 0) or 0) + 1
             self.repository.save(device)
             return device
         finally:

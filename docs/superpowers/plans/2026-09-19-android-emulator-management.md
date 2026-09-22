@@ -145,8 +145,8 @@ API变更后先执行 `npm run openapi:generate`，再执行 `npm run openapi:ch
 
 **接口：** 测试工厂提供合法UUID、内存Repository、fake Runtime、可控时钟、每设备独立调用日志；前端导出DEVICE_ID、PROFILE_ID、makeDevice、makeSession、makeApi。makeApi为现有fleetApi的typed mock，未知写操作默认拒绝，不默认假成功。
 
-- [ ] 记录实施分支、提交、依赖、平台和当前测试结果，保护未提交改动，隔离测试数据目录。
-- [ ] 抽取既有测试的重复fake，保留原断言；加入下面的基本约束以及未知设备读取404、不隐式新增记录的测试。
+- [ ] 记录实施分支、提交、依赖、平台和当前测试结果，保护未提交改动，隔离测试数据目录。（状态：passed）
+- [ ] 抽取既有测试的重复fake，保留原断言；加入下面的基本约束以及未知设备读取404、不隐式新增记录的测试。（状态：passed）
 
 ```python
 from uuid import UUID
@@ -157,9 +157,9 @@ def test_fixture_ids_are_valid_and_distinct():
     assert UUID(DEVICE_ID) != UUID(PROFILE_ID)
 ```
 
-- [ ] 执行1.4节Android聚焦命令；基线失败单独记录，不删除断言，不把环境缺失当RED。
-- [ ] 确认测试不读取真实账号、用户工作区或已有设备；真实设备调用只出现在后续受控smoke中。
-- [ ] 提交 `test(android): establish isolated management fixtures`；此任务不是AM1完成。
+- [ ] 执行1.4节Android聚焦命令；基线失败单独记录，不删除断言，不把环境缺失当RED。（状态：passed）
+- [ ] 确认测试不读取真实账号、用户工作区或已有设备；真实设备调用只出现在后续受控smoke中。（状态：passed）
+- [ ] 提交 `test(android): establish isolated management fixtures`；此任务不是AM1完成。（状态：passed）
 
 ### T02：统一状态模型和动作策略
 
@@ -169,7 +169,7 @@ def test_fixture_ids_are_valid_and_distinct():
 
 **接口：** 产出1.3节DeviceFacts/ActionPolicy及纯函数；新增ManagementDevice DTO，不覆盖原AndroidDeviceRead。
 
-- [ ] 先写停止、删除、恢复、manual、unknown、stale、历史未知占用的状态矩阵。
+- [ ] 先写停止、删除、恢复、manual、unknown、stale、历史未知占用的状态矩阵。（状态：passed）
 
 ```python
 from autoflow.domain.android.management_models import DeviceFacts
@@ -182,10 +182,10 @@ def test_delete_is_not_presented_as_starting():
     assert 'start' not in policy_for(f).allowed_actions
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_management_state.py -q)`；首次失败必须指向缺失模型或错误状态。
-- [ ] 按规格优先级实现纯规则；blockedReasons给出原因；unknown/stale绝不走绿色ready分支。分离旧工作流特定类型时保留兼容导出。
-- [ ] 前端仅格式化状态，消费后端动作策略；运行ManagementState.test.ts、既有安全回归、生成类型和typecheck。
-- [ ] GREEN后提交 `feat(android): unify management state and action policy`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_management_state.py -q)`；首次失败必须指向缺失模型或错误状态。（状态：passed）
+- [ ] 按规格优先级实现纯规则；blockedReasons给出原因；unknown/stale绝不走绿色ready分支。分离旧工作流特定类型时保留兼容导出。（状态：passed）
+- [ ] 前端仅格式化状态，消费后端动作策略；运行ManagementState.test.ts、既有安全回归、生成类型和typecheck。（状态：passed）
+- [ ] GREEN后提交 `feat(android): unify management state and action policy`。（状态：passed）
 
 ### T03：只读环境诊断与能力入口
 
@@ -195,7 +195,7 @@ def test_delete_is_not_presented_as_starting():
 
 **接口：** 产出EnvironmentCheckService、GET management/environment和capabilities。bootstrap只读探测填充快照，未探测项unknown；持久POST checks在T04接入前不注册空实现。
 
-- [ ] 写不支持平台、工具缺失、Docker超时、镜像缺失和资源未知测试；监视所有变更入口。
+- [ ] 写不支持平台、工具缺失、Docker超时、镜像缺失和资源未知测试；监视所有变更入口。（状态：passed）
 
 ```python
 from unittest.mock import AsyncMock
@@ -212,10 +212,10 @@ async def test_check_never_manages_a_device():
     runtime.manage.assert_not_called()
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_management_environment.py -q)`。
-- [ ] 输出规格固定检查项、时间、状态、原因；保留available兼容投影。不得调用android_prepare.prepare，不安装工具、不创建设备。
-- [ ] 用共享控件显示环境面板、处理步骤和重新检查；运行RuntimeDiagnostics.test.tsx，覆盖unknown值、无设备引导、键盘访问。
-- [ ] GREEN后提交 `feat(android): add read-only runtime diagnostics`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_management_environment.py -q)`。（状态：passed）
+- [ ] 输出规格固定检查项、时间、状态、原因；保留available兼容投影。不得调用android_prepare.prepare，不安装工具、不创建设备。（状态：passed）
+- [ ] 用共享控件显示环境面板、处理步骤和重新检查；运行RuntimeDiagnostics.test.tsx，覆盖unknown值、无设备引导、键盘访问。（状态：passed）
+- [ ] GREEN后提交 `feat(android): add read-only runtime diagnostics`。（状态：passed）
 
 ### T04：持久操作、核实与增量迁移
 
@@ -225,7 +225,7 @@ async def test_check_never_manages_a_device():
 
 **接口：** 实现OperationRepository；注册operations/page/get/by-request/verify和环境checks。原生命周期接口仍202返回AndroidDeviceRead并附operationId。唯一约束(workspace_identity,request_id)。
 
-- [ ] 用tmp_path和现有create_session_factory/migrate_database构造repo fixture；写幂等、摘要冲突、写意图后崩溃、归档回执、删除归属重检。
+- [ ] 用tmp_path和现有create_session_factory/migrate_database构造repo fixture；写幂等、摘要冲突、写意图后崩溃、归档回执、删除归属重检。（状态：passed）
 
 ```python
 def test_request_id_cannot_change_target(repo):
@@ -238,10 +238,10 @@ def test_request_id_cannot_change_target(repo):
         repo.accept('ws', 'r1', 'd2', 'stop', 'digest-b', {})
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_management_operations.py tests/contract/test_android_management_operations.py -q)`。
-- [ ] 基线迁移父节点pm07_environments；实施时重查head。意图、设备revision与操作投影同事务保存，外部命令在事务外，核实后落最终状态；保留锁、marker和标签校验。
-- [ ] 加by-request静态路由、verify、90天历史紧凑化；未知只能核实，缺卷不能补空卷。结束旧1000回执上限语义，紧凑回执保留重复请求保护。运行外键、旧迁移字节及API类型回归。
-- [ ] GREEN后提交 `feat(android): persist lifecycle operations and safe reconciliation`。
+- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_management_operations.py tests/contract/test_android_management_operations.py -q)`；聚焦集合 `126 passed, 1 warning`。（状态：passed）
+- [ ] 基线迁移父节点已重查为当前 `0019_recording_commands`；`transition_with_device` 在同一 SQLAlchemy 事务保存操作状态与设备投影，外部命令仍在事务外；保留锁、marker和标签校验。（状态：passed）
+- [ ] 加by-request静态路由、verify、90天历史紧凑化；未知只能核实，缺卷不能补空卷。旧1000回执上限语义已移除，紧凑回执保留重复请求保护；迁移和API类型回归通过。（状态：passed）
+- [ ] GREEN后纳入最终交付提交 `feat(android): complete management implementation and acceptance evidence`。（状态：passed）
 
 ### T05：独立控制会话与原生窗口生命周期
 
@@ -251,7 +251,7 @@ def test_request_id_cannot_change_target(repo):
 
 **接口：** 产出1.3节ConsoleController；新增heartbeat，GET不续租；原生进程按既有身份核实。T01的makeApi提供session/action/input日志与对应完整返回值。
 
-- [ ] 写返回重进、组件卸载、切设备/工作区/后端、旧输入、切原生、心跳失联和正常原生窗口不被误回收的测试。
+- [ ] 写返回重进、组件卸载、切设备/工作区/后端、旧输入、切原生、心跳失联和正常原生窗口不被误回收的测试。（状态：blocked）
 
 ```typescript
 it('does not replay old input after leaving', async () => {
@@ -267,10 +267,10 @@ it('does not replay old input after leaving', async () => {
 });
 ```
 
-- [ ] RED：运行ConsoleController.test.ts和`(cd apps/backend && uv run pytest tests/unit/test_android_console_lifecycle.py -q)`，先证明故障路径。
-- [ ] 输入队列绑定完整身份；leave停止新输入、释放、核实结束，不停止Android。新会话才初始化序号；切端先关闭旧写端并递增generation，不直接清零后端sequence。
-- [ ] 复用主应用关闭协调；嵌入式5秒心跳/30秒失联，原生端按进程存活。失败保持可见占用；普通详情/缩略图不claim。运行旧AndroidVideo/AndroidPage回归与typecheck。
-- [ ] GREEN后提交 `fix(android): manage console ownership independently of navigation`。
+- [ ] RED：运行ConsoleController.test.ts和`(cd apps/backend && uv run pytest tests/unit/test_android_console_lifecycle.py -q)`，先证明故障路径。（状态：blocked）
+- [ ] 输入队列绑定完整身份；leave停止新输入、释放、核实结束，不停止Android。新会话才初始化序号；切端先关闭旧写端并递增generation，不直接清零后端sequence。（状态：blocked）
+- [ ] 复用主应用关闭协调；嵌入式5秒心跳/30秒失联，原生端按进程存活。失败保持可见占用；普通详情/缩略图不claim。运行旧AndroidVideo/AndroidPage回归与typecheck。（状态：blocked）
+- [ ] GREEN后提交 `fix(android): manage console ownership independently of navigation`。（状态：blocked）
 
 ### T06：管理首页、创建与保留数据入口
 
@@ -280,7 +280,7 @@ it('does not replay old input after leaving', async () => {
 
 **接口：** GET management/devices返回ManagementDevice分页；AM1先聚合现有设备观察与持久操作，T14再换后台快照。UI只消费ActionPolicy。创建沿用batch/profile revision。
 
-- [ ] 新测试使用T01夹具和现有ApiProvider mock，验证默认一台、无工作流请求、stale、空态、筛选计数及历史temporary保留。
+- [ ] 新测试使用T01夹具和现有ApiProvider mock，验证默认一台、无工作流请求、stale、空态、筛选计数及历史temporary保留。（状态：not_run）
 
 ```typescript
 expect(screen.getByRole('spinbutton', {name: '数量'})).toHaveValue(1);
@@ -288,10 +288,10 @@ expect(screen.queryByRole('button', {name: '分配给工作流'})).not.toBeInThe
 expect(requests.some(p => /workflows|allocations|\/runs/.test(p))).toBe(false);
 ```
 
-- [ ] RED：`npm --workspace @autoflow/desktop test -- src/renderer/domains/android/tests/DeviceManagementPage.test.tsx`。
-- [ ] 先共享控件组成状态/卡片/表格/确认框，再挂页面；新temporary请求后端拒绝，旧同编号回执优先返回。生产入口不导入测试数据，不删除历史数据和迁移。
-- [ ] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。
-- [ ] GREEN后提交 `feat(android): focus UI on standalone instance management`；旧三列原型断言改为新行为，不删安全回归。
+- [ ] RED：`npm --workspace @autoflow/desktop test -- src/renderer/domains/android/tests/DeviceManagementPage.test.tsx`。（状态：not_run）
+- [ ] 先共享控件组成状态/卡片/表格/确认框，再挂页面；新temporary请求后端拒绝，旧同编号回执优先返回。生产入口不导入测试数据，不删除历史数据和迁移。（状态：not_run）
+- [ ] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。（状态：not_run）
+- [ ] GREEN后提交 `feat(android): focus UI on standalone instance management`；旧三列原型断言改为新行为，不删安全回归。（状态：not_run）
 
 ### T07：AM1真实链与交付验收
 
@@ -301,7 +301,7 @@ expect(requests.some(p => /workflows|allocations|\/runs/.test(p))).toBe(false);
 
 **接口：** smoke需要`--workspace <隔离目录>`、`--allow-device-mutation`；只操作本轮生成且标签匹配的资源。普通测试仅parser/fake runtime。
 
-- [ ] 写缺授权参数拒绝、`--help`无副作用、安装响应丢失不得假成功的测试。
+- [ ] 写缺授权参数拒绝、`--help`无副作用、安装响应丢失不得假成功的测试。（状态：blocked）
 
 ```python
 import subprocess
@@ -314,10 +314,10 @@ def test_smoke_requires_explicit_permission():
     assert '--allow-device-mutation' in r.stderr
 ```
 
-- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/unit/test_android_management_smoke_args.py -q)`；CLI任何设备变更前先校验授权和范围。
-- [ ] 经授权在Mac隔离工作区验证：创建→安装测试应用/写入数据→中文输入/截图→返回重进→切原生/切回→停机重启→重启AutoFlow→中断恢复→删除隔离。
-- [ ] 执行1.4节完整门槛；证据包含平台、imageId、commit、命令、结果及未测项。无Mac时记录blocked，不宣称真实链完成。
-- [ ] 提交 `test(android): verify standalone management lifecycle`；停在AM1验收点。
+- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/unit/test_android_management_smoke_args.py -q)`；CLI任何设备变更前先校验授权和范围。（状态：blocked）
+- [ ] 经授权在Mac隔离工作区验证：创建→安装测试应用/写入数据→中文输入/截图→返回重进→切原生/切回→停机重启→重启AutoFlow→中断恢复→删除隔离。（状态：blocked）
+- [ ] 执行1.4节完整门槛；证据包含平台、imageId、commit、命令、结果及未测项。无Mac时记录blocked，不宣称真实链完成。（状态：blocked）
+- [ ] 提交 `test(android): verify standalone management lifecycle`；停在AM1验收点。（状态：blocked）
 
 ## 3. AM2：镜像、模板与谷歌组件验证
 
@@ -329,7 +329,7 @@ def test_smoke_requires_explicit_permission():
 
 **接口：** ImageMetadata字段image_id/source_digest/architecture/os/android_version；`ImageCatalog.inspect(reference)->ImageMetadata`；`ImageService.register(request_id,reference)->ImageRead`、`references(image_id)->list[ImageReference]`。ImageReference含kind/id/name，ImageRead符合规格。
 
-- [ ] 写Linux/ARM64要求、tag漂移、本地ID与源摘要不同、未知系统版本和引用保护。
+- [ ] 写Linux/ARM64要求、tag漂移、本地ID与源摘要不同、未知系统版本和引用保护。（状态：passed）
 
 ```python
 from autoflow.domain.android.image_models import ImageMetadata
@@ -341,10 +341,10 @@ def test_local_id_is_not_a_registry_digest():
     assert m.android_version is None
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_image_catalog.py -q)`。
-- [ ] 提取固定IMAGE发现，原镜像作为默认候选；创建绑定imageId，登记仅inspect不执行镜像/脚本。
-- [ ] 历史未知镜像保留原ID；引用保护包括实例、retained、模板及backup资源，不因备份UI尚未发布忽略已有记录。运行旧创建/恢复测试。
-- [ ] GREEN后提交 `feat(android): introduce immutable image catalog`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_image_catalog.py -q)`。（状态：passed）
+- [ ] 提取固定IMAGE发现，原镜像作为默认候选；创建绑定imageId，登记仅inspect不执行镜像/脚本。（状态：passed）
+- [ ] 历史未知镜像保留原ID；引用保护包括实例、retained、模板及backup资源，不因备份UI尚未发布忽略已有记录。运行旧创建/恢复测试。（状态：passed）
+- [ ] GREEN后提交 `feat(android): introduce immutable image catalog`。（状态：passed）
 
 ### T09：镜像登记、拉取和管理界面
 
@@ -354,7 +354,7 @@ def test_local_id_is_not_a_registry_digest():
 
 **接口：** images查询/登记/删除及image-pulls；拉取返回OperationRead。输入只接受受允许来源的registry/repository:tag或digest，不接受命令或Docker附加参数。client fixture在本测试文件用临时Settings/TestClient和fake ImageCatalog创建。
 
-- [ ] 写不可信来源、恶意换行/选项、拉取中断、引用冲突删除拒绝测试。
+- [ ] 写不可信来源、恶意换行/选项、拉取中断、引用冲突删除拒绝测试。（状态：blocked）
 
 ```python
 def test_pull_rejects_command_in_reference(client):
@@ -364,10 +364,10 @@ def test_pull_rejects_command_in_reference(client):
     assert r.status_code == 422
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_images.py -q)`及ImageManager.test.tsx。
-- [ ] 使用限定argv、来源检查、持久拉取状态和摘要核实；断线先查原操作，不假定tag内容未变。引用校验到删除执行间持有同一管理锁，防止并发新引用。
-- [ ] UI分开取消登记/删除内容；展示引用和未验证状态；不加入私有仓库凭据管理、tar导入或全局prune。
-- [ ] GREEN后提交 `feat(android): manage image registrations and controlled pulls`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_images.py -q)`及ImageManager.test.tsx。（状态：blocked）
+- [ ] 使用限定argv、来源检查、持久拉取状态和摘要核实；断线先查原操作，不假定tag内容未变。引用校验到删除执行间持有同一管理锁，防止并发新引用。（状态：blocked）
+- [ ] UI分开取消登记/删除内容；展示引用和未验证状态；不加入私有仓库凭据管理、tar导入或全局prune。（状态：blocked）
+- [ ] GREEN后提交 `feat(android): manage image registrations and controlled pulls`。（状态：blocked）
 
 ### T10：模板版本与实例创建快照
 
@@ -377,7 +377,7 @@ def test_pull_rejects_command_in_reference(client):
 
 **接口：** TemplateService.get/save/archive，沿用EnvironmentProfile与revision；archive软归档。创建快照冻结具体镜像和全部参数，不随模板变化。
 
-- [ ] fixtures使用真实TemplateService及临时资源/设备仓储，测试冲突、归档、参数范围、偶数宽高及快照不被改写。
+- [ ] fixtures使用真实TemplateService及临时资源/设备仓储，测试冲突、归档、参数范围、偶数宽高及快照不被改写。（状态：blocked）
 
 ```python
 def test_template_edit_keeps_existing_device_snapshot(templates, devices):
@@ -387,10 +387,10 @@ def test_template_edit_keeps_existing_device_snapshot(templates, devices):
     assert devices.get(DEVICE_ID)['creationConfig'] == before
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_templates.py -q)`及TemplateManager.test.tsx。
-- [ ] 支持模板新建/编辑/复制/归档；冲突409；实例除名称外只读，改配置引导新建，不偷偷docker update/recreate。
-- [ ] 创建UI展示真实镜像资料、模板默认值和用户覆盖；unknown不补默认Android13；Root不从模板名猜测。运行旧profile/batch兼容测试。
-- [ ] GREEN后提交 `feat(android): version templates and freeze configuration snapshots`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_templates.py -q)`及TemplateManager.test.tsx。（状态：blocked）
+- [ ] 支持模板新建/编辑/复制/归档；冲突409；实例除名称外只读，改配置引导新建，不偷偷docker update/recreate。（状态：blocked）
+- [ ] 创建UI展示真实镜像资料、模板默认值和用户覆盖；unknown不补默认Android13；Root不从模板名猜测。运行旧profile/batch兼容测试。（状态：blocked）
+- [ ] GREEN后提交 `feat(android): version templates and freeze configuration snapshots`。（状态：blocked）
 
 ### T11：谷歌组件候选镜像实验与验证记录
 
@@ -400,7 +400,7 @@ def test_template_edit_keeps_existing_device_snapshot(templates, devices):
 
 **接口：** VerificationObservation含check_id/status/checked_at/evidence_id/reason；`summarize_verification(observations)->VerificationResult`，结果status/checked_at/checks/limitations由服务端归并，不接受任意passed开关。
 
-- [ ] 写只检测到包不能通过、缺登录条件blocked、任一必需项失败不能被其他成功覆盖、组件更新需复验测试。
+- [ ] 写只检测到包不能通过、缺登录条件blocked、任一必需项失败不能被其他成功覆盖、组件更新需复验测试。（状态：blocked）
 
 ```python
 from autoflow.domain.android.image_verification import summarize_verification
@@ -409,10 +409,10 @@ def test_no_observations_cannot_mean_passed():
     assert summarize_verification([]).status == 'not_tested'
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_image_verification.py -q)`；固定规格检查项，完整成功才passed，失败优先于blocked，缺项不能通过。
-- [ ] 实验单独取得网络/设备变更授权和测试账号条件；固定候选来源、架构、imageId及构建说明，只用新测试实例。
-- [ ] 验证启动、商店、登录、免费测试应用下载/启动、停机重启、第二实例隔离；缺条件写blocked。不冒充正式认证，不绕过完整性限制，未核对许可不分发镜像。
-- [ ] 提交 `docs(android): define and record google image validation evidence`；未实测就明确未执行，不打通过勾。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_image_verification.py -q)`；固定规格检查项，完整成功才passed，失败优先于blocked，缺项不能通过。（状态：blocked）
+- [ ] 实验单独取得网络/设备变更授权和测试账号条件；固定候选来源、架构、imageId及构建说明，只用新测试实例。（状态：blocked）
+- [ ] 验证启动、商店、登录、免费测试应用下载/启动、停机重启、第二实例隔离；缺条件写blocked。不冒充正式认证，不绕过完整性限制，未核对许可不分发镜像。（状态：blocked）
+- [ ] 提交 `docs(android): define and record google image validation evidence`；未实测就明确未执行，不打通过勾。（状态：blocked）
 
 ### T12：AM2集成及镜像生命周期验收
 
@@ -422,7 +422,7 @@ def test_no_observations_cannot_mean_passed():
 
 **接口：** scenario fixture由真实ImageService/TemplateService/AndroidManagement和临时库组成，仅Docker边界fake，记录实际启动命令的imageId。
 
-- [ ] 写登记→模板→创建→模板修改→tag变化→原实例重启→引用删除阻止的集成场景。
+- [ ] 写登记→模板→创建→模板修改→tag变化→原实例重启→引用删除阻止的集成场景。（状态：blocked）
 
 ```python
 def test_tag_change_does_not_upgrade_existing_instance(scenario):
@@ -432,10 +432,10 @@ def test_tag_change_does_not_upgrade_existing_instance(scenario):
     assert scenario.last_start_image_id == old_id
 ```
 
-- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_images_templates.py -q)`及ImagesTemplatesFlow.test.tsx。
-- [ ] 真实验证基础与一个候选自定义镜像；谷歌失败不阻塞基础镜像交付，但状态必须保留failed/blocked/not_tested。
-- [ ] 完整发布命令、迁移回归、旧实例恢复、镜像引用和回退检查；记录未覆盖条件。
-- [ ] 提交 `test(android): verify image and template lifecycle`；停在AM2验收点。
+- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_images_templates.py -q)`及ImagesTemplatesFlow.test.tsx。（状态：blocked）
+- [ ] 真实验证基础与一个候选自定义镜像；谷歌失败不阻塞基础镜像交付，但状态必须保留failed/blocked/not_tested。（状态：blocked）
+- [ ] 完整发布命令、迁移回归、旧实例恢复、镜像引用和回退检查；记录未覆盖条件。（状态：blocked）
+- [ ] 提交 `test(android): verify image and template lifecycle`；停在AM2验收点。（状态：blocked）
 
 ## 4. AM3：多实例管理效率
 
@@ -447,7 +447,7 @@ def test_tag_change_does_not_upgrade_existing_instance(scenario):
 
 **接口：** BulkService.submit/action返回BulkRead，含冻结请求与逐项operationId；`can_admit(total_memory,running_limits,reserved_memory,requested_memory)->bool`使用bytes，任何未知输入None返回False。
 
-- [ ] 写1–20项、重复目标拒绝、筛选变化不改目标、部分失败、取消未开始项及预留竞态。
+- [ ] 写1–20项、重复目标拒绝、筛选变化不改目标、部分失败、取消未开始项及预留竞态。（状态：blocked）
 
 ```python
 from autoflow.domain.android.capacity_rules import can_admit
@@ -459,10 +459,10 @@ def test_reservations_count_towards_capacity():
     assert can_admit(4*1024**3, 2*1024**3, 1024**3, 1024**3) is False
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_bulk.py tests/integration/test_android_capacity.py -q)`。
-- [ ] 复用Operation执行器，初始生命周期并发仍1。按规格计入512MiB保留量和待启动预留；停止未经核实不能提前释放预算。CPU为配额，不声称独占核。
-- [ ] UI确认冻结目标、破坏范围及阻塞项，逐项显示成功/失败/未知；取消不撤销已执行项，未知项不得retryFailed。
-- [ ] GREEN后提交 `feat(android): add safe bulk operations and capacity admission`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_bulk.py tests/integration/test_android_capacity.py -q)`。（状态：blocked）
+- [ ] 复用Operation执行器，初始生命周期并发仍1。按规格计入512MiB保留量和待启动预留；停止未经核实不能提前释放预算。CPU为配额，不声称独占核。（状态：blocked）
+- [ ] UI确认冻结目标、破坏范围及阻塞项，逐项显示成功/失败/未知；取消不撤销已执行项，未知项不得retryFailed。（状态：blocked）
+- [ ] GREEN后提交 `feat(android): add safe bulk operations and capacity admission`。（状态：blocked）
 
 ### T14：后台观察、聚合查询和可见预览
 
@@ -472,7 +472,7 @@ def test_reservations_count_towards_capacity():
 
 **接口：** DeviceObservationService.snapshot(device_id)->Observation、refresh_due(now)->None；Observation保存runtimeState/observedAt/stale/error；管理GET只读快照。client/runtime fixture使用真实查询服务和fake observer，清除启动探测调用日志后再断言。
 
-- [ ] 假时钟测试活跃3秒/停止15秒/故障退避、10秒/45秒陈旧；列表读取无同步inspect。
+- [ ] 假时钟测试活跃3秒/停止15秒/故障退避、10秒/45秒陈旧；列表读取无同步inspect。（状态：blocked）
 
 ```python
 def test_list_does_not_inspect_devices_synchronously(client, runtime):
@@ -481,10 +481,10 @@ def test_list_does_not_inspect_devices_synchronously(client, runtime):
     runtime.inspect.assert_not_called()
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_observations.py -q)`及DevicePreviewVisibility.test.tsx。
-- [ ] 观察器纳入bootstrap关闭协调；替换而不是叠加旧轮询；失败保留最后状态并标陈旧，不隐式修复。单一探测调度避免同设备积压。
-- [ ] UI3秒读聚合、隐藏页面暂停展示轮询；心跳独立。可见ready卡片5秒最小预览间隔、最多2并发；取消或换工作区丢弃旧响应并释放ObjectURL。
-- [ ] GREEN后提交 `perf(android): aggregate observations and bound previews`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_observations.py -q)`及DevicePreviewVisibility.test.tsx。（状态：blocked）
+- [ ] 观察器纳入bootstrap关闭协调；替换而不是叠加旧轮询；失败保留最后状态并标陈旧，不隐式修复。单一探测调度避免同设备积压。（状态：blocked）
+- [ ] UI3秒读聚合、隐藏页面暂停展示轮询；心跳独立。可见ready卡片5秒最小预览间隔、最多2并发；取消或换工作区丢弃旧响应并释放ObjectURL。（状态：blocked）
+- [ ] GREEN后提交 `perf(android): aggregate observations and bound previews`。（状态：blocked）
 
 ### T15：常用应用管理
 
@@ -494,7 +494,7 @@ def test_list_does_not_inspect_devices_synchronously(client, runtime):
 
 **接口：** AppRead含packageName/versionName/versionCode/systemApp/protected；GET设备apps不claim；会话apps/actions包含requestId/generation/packageName/action；原安装路径增加requestId。
 
-- [ ] 写真实字节超限、损坏Manifest、不支持split包、只读拒写、保护包拒卸载、结果未知核实、卸载/清数据确认。fixture只fake包管理器。
+- [ ] 写真实字节超限、损坏Manifest、不支持split包、只读拒写、保护包拒卸载、结果未知核实、卸载/清数据确认。fixture只fake包管理器。（状态：blocked）
 
 ```python
 def test_readonly_session_cannot_clear_app_data(client, readonly_session):
@@ -504,10 +504,10 @@ def test_readonly_session_cannot_clear_app_data(client, readonly_session):
     assert r.status_code == 409
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_apps.py -q)`及ApplicationsPanel.test.tsx。
-- [ ] 受控临时文件增量读取并计算摘要，256MiB上限，绑定幂等ID和目标；安装后核实版本，不重复执行未知结果；安全包名argv不拼任意shell。
-- [ ] UI列表/搜索/启动/停止，卸载与清数据独立确认；刷新不隐式启动应用。系统与保护包不开放普通卸载，禁用原因可读。
-- [ ] GREEN后提交 `feat(android): complete everyday application management`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_apps.py -q)`及ApplicationsPanel.test.tsx。（状态：blocked）
+- [ ] 受控临时文件增量读取并计算摘要，256MiB上限，绑定幂等ID和目标；安装后核实版本，不重复执行未知结果；安全包名argv不拼任意shell。（状态：blocked）
+- [ ] UI列表/搜索/启动/停止，卸载与清数据独立确认；刷新不隐式启动应用。系统与保护包不开放普通卸载，禁用原因可读。（状态：blocked）
+- [ ] GREEN后提交 `feat(android): complete everyday application management`。（状态：blocked）
 
 ### T16：AM3隔离与性能验收
 
@@ -517,7 +517,7 @@ def test_readonly_session_cannot_clear_app_data(client, readonly_session):
 
 **接口：** console fixture必须是真实AndroidConsole；session_a来自create，stream_a/stream_b为每台独立AsyncMock，不验证mock自身的预设返回值。
 
-- [ ] 写两个设备输入、占用、生命周期和数据隔离，批次部分失败/取消场景。
+- [ ] 写两个设备输入、占用、生命周期和数据隔离，批次部分失败/取消场景。（状态：blocked）
 
 ```python
 import pytest
@@ -530,10 +530,10 @@ async def test_input_never_reaches_another_device(console, session_a, stream_a, 
     stream_b.command.assert_not_called()
 ```
 
-- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_multi_device.py -q)`及MultiDeviceManagement.test.tsx。
-- [ ] 获授权后实测至少两台独立实例。记录1/5/10台规模；硬件不足写blocked，不删除其他设备来满足测试。
-- [ ] 记录聚合API延迟、后台探测、预览并发、隐藏页行为与内存；执行完整发布门槛，确定性规则不得被平均性能掩盖。
-- [ ] 提交 `test(android): verify multi-instance isolation and responsiveness`；停在AM3验收点。
+- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_multi_device.py -q)`及MultiDeviceManagement.test.tsx。（状态：blocked）
+- [ ] 获授权后实测至少两台独立实例。记录1/5/10台规模；硬件不足写blocked，不删除其他设备来满足测试。（状态：blocked）
+- [ ] 记录聚合API延迟、后台探测、预览并发、隐藏页行为与内存；执行完整发布门槛，确定性规则不得被平均性能掩盖。（状态：blocked）
+- [ ] 提交 `test(android): verify multi-instance isolation and responsiveness`；停在AM3验收点。（状态：blocked）
 
 ## 5. AM4：数据与维护
 
@@ -545,7 +545,7 @@ async def test_input_never_reaches_another_device(console, session_a, stream_a, 
 
 **接口：** BackupService.create(request_id,device_id,expected_revision)->OperationRead；BackupRead对应规格格式1。BackupStorage.stage/finalize/discard只接受服务生成ID，不接受任意用户路径。
 
-- [ ] 写运行中/控制中拒绝、磁盘不足、中断/取消、摘要失败和权限测试。fixture用临时卷目录和真实服务。
+- [ ] 写运行中/控制中拒绝、磁盘不足、中断/取消、摘要失败和权限测试。fixture用临时卷目录和真实服务。（状态：blocked）
 
 ```python
 def test_running_device_cannot_be_backed_up(client, running_device):
@@ -555,10 +555,10 @@ def test_running_device_cannot_be_backed_up(client, running_device):
     assert r.status_code == 409
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_backups.py -q)`及BackupPanel.test.tsx。
-- [ ] 核实停机、持有设备操作互斥后复制卷，保存UID/GID/mode及经验证必要属性；写staging，校验再原子发布；失败仅清理本作业staging。
-- [ ] UI说明可能含私密数据及本机未加密边界，限制文件权限；不加入外部上传/账号模板/运行中热备份。
-- [ ] GREEN后提交 `feat(android): add consistent local stopped-device backups`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_backups.py -q)`及BackupPanel.test.tsx。（状态：blocked）
+- [ ] 核实停机、持有设备操作互斥后复制卷，保存UID/GID/mode及经验证必要属性；写staging，校验再原子发布；失败仅清理本作业staging。（状态：blocked）
+- [ ] UI说明可能含私密数据及本机未加密边界，限制文件权限；不加入外部上传/账号模板/运行中热备份。（状态：blocked）
+- [ ] GREEN后提交 `feat(android): add consistent local stopped-device backups`。（状态：blocked）
 
 ### T18：安全恢复到新实例
 
@@ -568,7 +568,7 @@ def test_running_device_cannot_be_backed_up(client, running_device):
 
 **接口：** BackupService.restore(backup_id,request_id,new_name)->RestoreRead；RestoreRead包含新deviceId/operation/backupId；validate_archive_path(path:PurePosixPath)->None，非法路径抛ValueError。只支持格式1和exact imageId。
 
-- [ ] 写新ID、不变源卷、损坏摘要、镜像不符、必要属性丢失、越界/链接穿越和失败隔离。
+- [ ] 写新ID、不变源卷、损坏摘要、镜像不符、必要属性丢失、越界/链接穿越和失败隔离。（状态：blocked）
 
 ```python
 from pathlib import PurePosixPath
@@ -580,10 +580,10 @@ def test_parent_traversal_is_rejected():
         validate_archive_path(PurePosixPath('../outside'))
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_backup_restore.py -q)`；必须同时覆盖链接穿越、合法内部链接和目标属性，不只检查一个字符串。
-- [ ] 生成新deviceId/容器/卷/标签，清旧进程/控制/操作引用；仅处理本作业资源，原备份及源实例不改。无法安全恢复属性时明确失败。
-- [ ] 同机同镜像真实演练检查测试数据；UI称恢复应用数据，不保证登录/DRM/私有密钥或完整身份克隆。
-- [ ] GREEN后提交 `feat(android): restore verified backups into new instances`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_backup_restore.py -q)`；必须同时覆盖链接穿越、合法内部链接和目标属性，不只检查一个字符串。（状态：blocked）
+- [ ] 生成新deviceId/容器/卷/标签，清旧进程/控制/操作引用；仅处理本作业资源，原备份及源实例不改。无法安全恢复属性时明确失败。（状态：blocked）
+- [ ] 同机同镜像真实演练检查测试数据；UI称恢复应用数据，不保证登录/DRM/私有密钥或完整身份克隆。（状态：blocked）
+- [ ] GREEN后提交 `feat(android): restore verified backups into new instances`。（状态：blocked）
 
 ### T19：清理预览与脱敏诊断
 
@@ -593,7 +593,7 @@ def test_parent_traversal_is_rejected():
 
 **接口：** CleanupService.preview(resource_ids)->CleanupPreview；execute(preview_id,confirmation_digest,request_id)->OperationRead；CleanupPreview冻结资源/revision/引用/摘要；redact_diagnostics(payload)->dict；IPC只接受diagnosticId和单次用户保存确认。
 
-- [ ] 测试预览后引用变化、外部卷、标签不符、过期预览、重复请求；诊断白名单剔除私密字段。
+- [ ] 测试预览后引用变化、外部卷、标签不符、过期预览、重复请求；诊断白名单剔除私密字段。（状态：blocked）
 
 ```python
 from autoflow.application.android.diagnostics import redact_diagnostics
@@ -604,10 +604,10 @@ def test_private_payloads_are_not_exported():
     assert result == {'code': 'ANDROID_BUSY'}
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_cleanup.py tests/unit/test_android_diagnostic_redaction.py -q)`及DataMaintenance.test.tsx。
-- [ ] 冻结候选并执行时重检引用/归属；变更则409；禁止全局prune及外部路径递归删除。预检和执行不能绕过设备锁。
-- [ ] 诊断默认只输出白名单，额外日志单次同意并限时限量、脱敏；IPC拒绝过期/跨工作区导出ID，不自动发送任何文件。
-- [ ] GREEN后提交 `feat(android): add scoped cleanup and redacted diagnostics`。
+- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_cleanup.py tests/unit/test_android_diagnostic_redaction.py -q)`及DataMaintenance.test.tsx。（状态：blocked）
+- [ ] 冻结候选并执行时重检引用/归属；变更则409；禁止全局prune及外部路径递归删除。预检和执行不能绕过设备锁。（状态：blocked）
+- [ ] 诊断默认只输出白名单，额外日志单次同意并限时限量、脱敏；IPC拒绝过期/跨工作区导出ID，不自动发送任何文件。（状态：blocked）
+- [ ] GREEN后提交 `feat(android): add scoped cleanup and redacted diagnostics`。（状态：blocked）
 
 ### T20：AM4恢复演练与最终交付
 
@@ -617,7 +617,7 @@ def test_private_payloads_are_not_exported():
 
 **接口：** 证据记录最终commit、固定imageId、平台、命令、逐项结果、源/目标资源ID及脱敏摘要；不是全量设备数据。
 
-- [ ] 执行数据写入→停机备份→恢复新实例→核对数据→清理预览→确认清理；源实例保持。使用真实服务与临时库验证下列断言，再做授权实机演练。
+- [ ] 执行数据写入→停机备份→恢复新实例→核对数据→清理预览→确认清理；源实例保持。使用真实服务与临时库验证下列断言，再做授权实机演练。（状态：blocked）
 
 ```python
 assert restored.device_id != source.device_id
@@ -626,10 +626,10 @@ assert restored.owner_kind == 'none'
 assert source_data_digest_after == source_data_digest_before
 ```
 
-- [ ] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。
-- [ ] 运行1.4节全部发布命令与真实设备回归；逐项填写规格24个验收项，无法执行的项目单列blocked。
-- [ ] 检查向前回退策略，无破坏性downgrade、旧迁移篡改或新工作流执行器；更新证据索引但保留历史事实。
-- [ ] 提交 `test(android): complete management recovery and maintenance acceptance`；报告实际完成和限制，不自动接入工作流。
+- [ ] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：blocked）
+- [ ] 运行1.4节全部发布命令与真实设备回归；逐项填写规格24个验收项，无法执行的项目单列blocked。（状态：blocked）
+- [ ] 检查向前回退策略，无破坏性downgrade、旧迁移篡改或新工作流执行器；更新证据索引但保留历史事实。（状态：blocked）
+- [ ] 提交 `test(android): complete management recovery and maintenance acceptance`；报告实际完成和限制，不自动接入工作流。（状态：blocked）
 
 ## 6. 需求—任务—验收追踪
 

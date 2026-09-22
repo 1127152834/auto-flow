@@ -204,7 +204,7 @@ export function CreateInstances({
               </div>
               <div>
                 <dt>系统</dt>
-                <dd>Android 13 · ARM64</dd>
+                <dd>{profile?.name ?? '系统版本待核实'}</dd>
               </div>
               <div>
                 <dt>分辨率</dt>

@@ -141,6 +141,7 @@ class ImagePullCreate(ApiModel):
 
 class ImageDelete(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
+    expected_revision: int = Field(ge=1, strict=True)
     delete_content: bool = False
 
 
@@ -172,6 +173,15 @@ class BackupRestore(ApiModel):
     new_name: str = Field(min_length=1, max_length=80)
 
 
+class BackupRestoreRead(ApiModel):
+    operation_id: str | None = None
+    request_id: str
+    target_id: str
+    device_id: str
+    backup_id: str
+    state: str
+
+
 class BulkItemCreate(ApiModel):
     device_id: str
     expected_revision: int = Field(ge=1, strict=True)
@@ -186,7 +196,7 @@ class BulkCreate(ApiModel):
 
 class BulkAction(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
-    action: Literal["cancelPending", "retryFailed"]
+    action: Literal["cancelPending", "retryFailed", "verify"]
 
 
 class BulkRead(ApiModel):
@@ -199,12 +209,44 @@ class BulkRead(ApiModel):
     created_at: datetime
 
 
+class CleanupPreviewItem(ApiModel):
+    id: str
+    kind: str
+    purpose: str
+    revision: int = Field(ge=1)
+    references: list[dict[str, Any]] = Field(default_factory=list)
+    workspace_id: str
+    ownership: dict[str, Any]
+    size: int = Field(ge=0)
+    irreversible_impact: str
+    sha256: str | None = None
+    path_summary: dict[str, str] | None = None
+    summary: dict[str, Any]
+    fingerprint: str
+    reversible: bool = False
+
+
+class CleanupPreviewRead(ApiModel):
+    items: list[CleanupPreviewItem]
+    confirmation_digest: str
+    preview_id: str
+
+
+class CleanupRead(ApiModel):
+    items: list[CleanupPreviewItem]
+    state: str
+    operation_id: str | None = None
+    request_id: str | None = None
+    preview_id: str | None = None
+
+
 class CleanupPreviewCreate(ApiModel):
     resource_ids: list[str] = Field(min_length=1, max_length=200)
 
 
 class CleanupExecute(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
+    preview_id: str | None = None
     confirmation_digest: str = Field(min_length=32, max_length=128)
 
 

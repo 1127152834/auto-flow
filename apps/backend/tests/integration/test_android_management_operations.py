@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from autoflow.domain.android.ports import AndroidError
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
 from autoflow.infrastructure.database.android_operations import (
     SqlAlchemyAndroidOperationRepository,
 )
@@ -64,3 +65,14 @@ def test_cursor_matches_timestamp_order(repository):
         seen.extend(item.operation_id for item in page)
         cursor = page[-1].operation_id
     assert seen == expected
+
+
+def test_transition_with_device_commits_operation_and_projection_together(repository):
+    device_repository = SqlAlchemyDeviceRepository(repository.sessions)
+    operation = repository.accept("ws", "r-atomic", "d-atomic", "start", "digest", {})
+    device = {"deviceId": "d-atomic", "control": "managing", "generation": 1, "operation": {"state": "running"}}
+
+    running = repository.transition_with_device(operation.operation_id, "queued", "running", {"stage_code": "starting"}, device)
+
+    assert running.state == "running"
+    assert device_repository.get("d-atomic")["operation"]["state"] == "running"

@@ -1,9 +1,37 @@
 import { useQuery } from '@tanstack/react-query'
+import { useRef, useState } from 'react'
 import type { AndroidManagementApi, Backup } from '../management-api'
 
-export function BackupPanel({ api, deviceId, revision }: { api: Pick<AndroidManagementApi, 'backups' | 'backup' | 'restoreBackup'>; deviceId: string; revision: number }) {
+export function BackupPanel({ api, deviceId, revision }: { api: Pick<AndroidManagementApi, 'backups' | 'backup' | 'restoreBackup' | 'operationByRequest'>; deviceId: string; revision: number }) {
   const backups = useQuery({ queryKey: ['android-management', 'backups'], queryFn: api.backups })
   const own = (backups.data ?? []).filter((backup: Backup) => backup.deviceId === deviceId)
-  const create = async () => { await api.backup({ requestId: crypto.randomUUID(), deviceId, expectedRevision: revision }); await backups.refetch() }
-  return <section aria-label="实例备份" className="rounded-card border border-line bg-surface p-5"><h2 className="font-semibold">数据备份</h2><p className="mt-1 text-sm text-muted">仅允许已停止且无控制会话的实例。</p><button type="button" onClick={() => void create()}>创建停机备份</button><div className="mt-3 grid gap-2">{own.map(backup => <article key={backup.id} className="rounded-control border border-line p-3"><span>{backup.id} · {backup.bytes} bytes</span><button type="button" onClick={() => void api.restoreBackup(backup.id, { requestId: crypto.randomUUID(), newName: '恢复实例' })}>恢复为新实例</button></article>)}</div></section>
+  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [message, setMessage] = useState('')
+  const [needsVerification, setNeedsVerification] = useState(false)
+  const pending = useRef<{ kind: 'create' | 'restore'; backupId?: string; requestId: string } | null>(null)
+  const create = async () => {
+    const requestId = pending.current?.kind === 'create' ? pending.current.requestId : crypto.randomUUID()
+    pending.current = { kind: 'create', requestId }; setBusy(true); setError(''); setMessage('')
+    if (needsVerification) return void verify()
+    try { await api.backup({ requestId, deviceId, expectedRevision: revision }); pending.current = null; setNeedsVerification(false); setMessage('备份已创建'); await backups.refetch() }
+    catch (cause) { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '备份结果尚未确认，请核实原请求') }
+    finally { setBusy(false) }
+  }
+  const restore = async (backupId: string) => {
+    const requestId = pending.current?.kind === 'restore' && pending.current.backupId === backupId ? pending.current.requestId : crypto.randomUUID()
+    pending.current = { kind: 'restore', backupId, requestId }; setBusy(true); setError(''); setMessage('')
+    if (needsVerification) return void verify()
+    try { const result = await api.restoreBackup(backupId, { requestId, newName: '恢复实例' }); pending.current = null; setNeedsVerification(false); setMessage(`恢复已提交，操作 ${result.operationId ?? '已接收'} 将在资源看板中显示`); await backups.refetch() }
+    catch (cause) { setNeedsVerification(true); setError(cause instanceof Error ? cause.message : '恢复结果尚未确认，请核实原请求') }
+    finally { setBusy(false) }
+  }
+  const verify = async () => {
+    const request = pending.current
+    if (!request) return
+    setBusy(true); setError('')
+    try { const operation = await api.operationByRequest(request.requestId); if (operation.state === 'succeeded') { pending.current = null; setNeedsVerification(false); setMessage('已核实操作完成'); await backups.refetch() } else setError(`操作状态：${operation.stageLabel}`) }
+    catch (cause) { setError(cause instanceof Error ? cause.message : '操作仍待核实') }
+    finally { setBusy(false) }
+  }
+  const retry = () => pending.current ? (needsVerification ? void verify() : pending.current.kind === 'create' ? void create() : pending.current.backupId ? void restore(pending.current.backupId) : undefined) : undefined
+  return <section aria-label="实例备份" aria-busy={busy} className="rounded-card border border-line bg-surface p-5"><h2 className="font-semibold">数据备份</h2><p className="mt-1 text-sm text-muted">仅允许已停止且无控制会话的实例。</p>{backups.isError && <p role="alert" className="mt-2 text-sm">备份目录暂不可用。<button type="button" onClick={() => void backups.refetch()}>重新读取</button></p>}{!backups.isError && <button type="button" disabled={busy} onClick={() => void create()}>{busy && pending.current?.kind === 'create' ? '正在创建…' : '创建停机备份'}</button>}{own.length === 0 && !backups.isPending && !backups.isError && <p className="mt-3 text-sm text-muted">此实例尚无备份。</p>}<div className="mt-3 grid gap-2">{own.map(backup => <article key={backup.id} className="rounded-control border border-line p-3"><span>{backup.id} · {backup.bytes} bytes</span><button type="button" disabled={busy} onClick={() => void restore(backup.id)}>{busy && pending.current?.kind === 'restore' && pending.current.backupId === backup.id ? '正在恢复…' : '恢复为新实例'}</button></article>)}</div>{error && <p role="alert" className="mt-3 text-sm text-danger">{error}{pending.current && <button type="button" onClick={retry}>{needsVerification ? '核实原请求' : `重试${pending.current.kind === 'create' ? '创建备份' : '恢复'}`}</button>}</p>}{message && <p role="status" className="mt-3 text-sm">{message}</p>}</section>
 }

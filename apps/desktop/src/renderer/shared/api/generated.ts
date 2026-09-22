@@ -5669,16 +5669,10 @@ export type components = {
              * @default 320
              */
             dpi: number;
-            /**
-             * Androidversion
-             * @default 13
-             */
-            androidVersion: string;
-            /**
-             * Architecture
-             * @default arm64
-             */
-            architecture: string;
+            /** Androidversion */
+            androidVersion?: string | null;
+            /** Architecture */
+            architecture?: string | null;
             /**
              * Dataretained
              * @default false
@@ -6301,6 +6295,21 @@ export type components = {
             /** Newname */
             newName: string;
         };
+        /** BackupRestoreRead */
+        BackupRestoreRead: {
+            /** Operationid */
+            operationId?: string | null;
+            /** Requestid */
+            requestId: string;
+            /** Targetid */
+            targetId: string;
+            /** Deviceid */
+            deviceId: string;
+            /** Backupid */
+            backupId: string;
+            /** State */
+            state: string;
+        };
         /** BatchAction */
         BatchAction: {
             /**
@@ -6564,7 +6573,7 @@ export type components = {
              * Action
              * @enum {string}
              */
-            action: "cancelPending" | "retryFailed";
+            action: "cancelPending" | "retryFailed" | "verify";
         };
         /** BulkCreate */
         BulkCreate: {
@@ -6669,6 +6678,8 @@ export type components = {
         CleanupExecute: {
             /** Requestid */
             requestId: string;
+            /** Previewid */
+            previewId?: string | null;
             /** Confirmationdigest */
             confirmationDigest: string;
         };
@@ -6676,6 +6687,70 @@ export type components = {
         CleanupPreviewCreate: {
             /** Resourceids */
             resourceIds: string[];
+        };
+        /** CleanupPreviewItem */
+        CleanupPreviewItem: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Purpose */
+            purpose: string;
+            /** Revision */
+            revision: number;
+            /** References */
+            references?: {
+                [key: string]: unknown;
+            }[];
+            /** Workspaceid */
+            workspaceId: string;
+            /** Ownership */
+            ownership: {
+                [key: string]: unknown;
+            };
+            /** Size */
+            size: number;
+            /** Irreversibleimpact */
+            irreversibleImpact: string;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Pathsummary */
+            pathSummary?: {
+                [key: string]: string;
+            } | null;
+            /** Summary */
+            summary: {
+                [key: string]: unknown;
+            };
+            /** Fingerprint */
+            fingerprint: string;
+            /**
+             * Reversible
+             * @default false
+             */
+            reversible: boolean;
+        };
+        /** CleanupPreviewRead */
+        CleanupPreviewRead: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
+            /** Confirmationdigest */
+            confirmationDigest: string;
+            /** Previewid */
+            previewId: string;
+        };
+        /** CleanupRead */
+        CleanupRead: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
+            /** State */
+            state: string;
+            /** Operationid */
+            operationId?: string | null;
+            /** Requestid */
+            requestId?: string | null;
+            /** Previewid */
+            previewId?: string | null;
         };
         /** CleanupSummaryView */
         CleanupSummaryView: {
@@ -8507,6 +8582,8 @@ export type components = {
         ImageDelete: {
             /** Requestid */
             requestId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
             /**
              * Deletecontent
              * @default false
@@ -27419,9 +27496,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["BackupRestoreRead"];
                 };
             };
             /** @description Validation Error */
@@ -27553,9 +27628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CleanupPreviewRead"];
                 };
             };
             /** @description Validation Error */
@@ -27588,9 +27661,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CleanupRead"];
                 };
             };
             /** @description Validation Error */

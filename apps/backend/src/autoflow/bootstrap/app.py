@@ -393,11 +393,11 @@ def create_app(
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
     android_operations = SqlAlchemyAndroidOperationRepository(session_factory)
-    android_images = AndroidImageService(android_resources, android.repository, ImageCatalog(android.runtime))
+    android_images = AndroidImageService(android_resources, android, ImageCatalog(android.runtime))
     android_backups = AndroidBackupService(android_resources, paths.workspace)
     android_observations = DeviceObservationService(android.repository, android.runtime)
     android_bulk = AndroidBulkService(android_resources, android)
-    android_cleanup = CleanupService(android_resources, android, android_backups)
+    android_cleanup = CleanupService(android_resources, android, android_backups, android_operations)
     android.management.operations = android_operations
     android.management.workspace_identity = str(paths.workspace.resolve())
     android_runs = CurrentAndroidRunBoundary()
@@ -410,10 +410,12 @@ def create_app(
     app.state.android_console = android_console
     app.state.android_operations = android_operations
     app.state.android_observations = android_observations
+    app.state.android_bulk = android_bulk
     app.router.add_event_handler("startup", android.recover)
     app.router.add_event_handler("startup", android_fleet.start)
     app.router.add_event_handler("startup", android_console.start)
     app.router.add_event_handler("startup", android_observations.start)
+    app.router.add_event_handler("startup", android_bulk.start)
 
     environment_store = EnvironmentStore(paths.workspace / "environments")
 
@@ -599,6 +601,7 @@ def create_app(
                 android_fleet.shutdown(),
                 android_console.shutdown(),
                 android_observations.shutdown(),
+                android_bulk.shutdown(),
                 close_project_workflows(),
                 test_browser_workers.shutdown(),
                 kernel_worker_manager.shutdown(),

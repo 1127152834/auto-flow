@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../../app/ApiProvider'
 import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
 import { fleetApi, type ConsoleSession, type Profile } from '../fleet-api'
@@ -22,6 +22,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     api = useMemo(() => androidApi(client), [client]),
     managementApi = useMemo(() => androidManagementApi(client), [client]),
     fleet = useMemo(() => fleetApi(client), [client])
+  const queryClient = useQueryClient()
   const [page, setPage] = useState<'board' | 'create' | 'detail'>('board'),
     [selected, setSelected] = useState<string | null>(null),
     [source, setSource] = useState<AndroidDevice>()
@@ -30,7 +31,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     [busy, setBusy] = useState(false)
   const [profilesOpen, setProfilesOpen] = useState(false),
     [profileDraft, setProfileDraft] = useState<Profile | null>(null)
-  const [management, setManagement] = useState<{ device: AndroidDevice; action: string } | null>(null),
+  const [management, setManagement] = useState<{ device: AndroidDevice; action: string; operationId?: string } | null>(null),
     [name, setName] = useState(''),
     [deleteData, setDeleteData] = useState(false)
   const [historyPage, setHistoryPage] = useState(0)
@@ -59,12 +60,21 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     queryFn: fleet.profiles,
     enabled: connected,
   })
+  const backups = useQuery({
+    queryKey: ['android-management', instanceId, 'backups'],
+    queryFn: managementApi.backups,
+    enabled: connected,
+  })
   const sessionStatus = useQuery({
     queryKey: ['android', instanceId, 'session', session?.id],
     queryFn: () => fleet.heartbeat(session!, session!.clientSessionId ?? session!.id),
     enabled: Boolean(connected && session && session.state !== 'closed'),
     refetchInterval: 5000,
   })
+  useEffect(() => {
+    void queryClient.removeQueries({ queryKey: ['android-management'] })
+    void queryClient.removeQueries({ queryKey: ['android', 'profiles'] })
+  }, [instanceId, queryClient])
   useEffect(() => {
     if (sessionStatus.data)
       setSession((previous) =>
@@ -87,6 +97,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const refresh = () => {
     void devices.refetch()
     void apps.refetch()
+    void queryClient.invalidateQueries({ queryKey: ['android-management'] })
   }
   const perform = async (fn: () => Promise<unknown>) => {
     if (busy) return
@@ -126,14 +137,14 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const onSession = useCallback((s: ConsoleSession) => {
     setSession(s)
   }, [])
-  const manage = (d: AndroidDevice, action: string) => {
+  const manage = (d: AndroidDevice, action: string, operationId?: string) => {
     if (action === 'copy') {
       setSource(d)
       setPage('create')
       return
     }
     setError('')
-    setManagement({ device: d, action })
+    setManagement({ device: d, action, operationId })
     setName(d.name)
     setDeleteData(false)
     pendingManagement.current = null
@@ -142,10 +153,14 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     if (!management) return
     await perform(async () => {
       if (management.action === 'rename') await api.rename(management.device.deviceId, name)
+      else if (management.action === 'verify') {
+        if (!management.operationId) throw new Error('缺少待核实操作编号，请从操作历史打开')
+        await managementApi.verify(management.operationId, { requestId: pendingManagement.current?.requestId ?? crypto.randomUUID() })
+      }
       else {
         pendingManagement.current ??= {
           requestId: crypto.randomUUID(),
-          action: management.action as DeviceCommand['action'],
+          action: (management.action === 'verify' ? 'recover' : management.action) as DeviceCommand['action'],
           deleteData,
         }
         await api.operate(management.device.deviceId, pendingManagement.current)
@@ -213,9 +228,9 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
             const target = all.find((item) => item.deviceId === id)
             if (target) void open(target)
           }}
-          onManage={(id, action) => {
+          onManage={(id, action, operationId) => {
             const target = all.find((item) => item.deviceId === id)
-            if (target) manage(target, action)
+            if (target) manage(target, action, operationId)
           }}
         /><ResourceBoard
           devices={all}
@@ -236,7 +251,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           onRuns={() => undefined}
           onBatch={() => undefined}
           onCancelAllocation={() => undefined}
-        /><ImageManager api={managementApi} /><TemplateManager api={fleet} /><DataMaintenance api={managementApi} resourceIds={all.map((item) => item.deviceId)} /></div>
+        /><ImageManager api={managementApi} /><TemplateManager api={{ ...fleet, archiveProfile: managementApi.archiveProfile }} /><DataMaintenance api={managementApi} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
       )}
       <Dialog
         open={Boolean(management)}

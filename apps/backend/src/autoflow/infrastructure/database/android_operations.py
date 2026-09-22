@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.android.ports import AndroidError
 
-from .android_models import AndroidOperationRow
+from .android_models import AndroidDeviceRow, AndroidOperationRow
 
 _LABELS = {"queued": "排队中", "running": "执行中", "waiting_capacity": "等待容量", "succeeded": "已完成", "failed": "失败", "cancelled": "已取消", "needs_verification": "待核实"}
 _TRANSITIONS = {
@@ -61,10 +61,10 @@ class SqlAlchemyAndroidOperationRepository:
                 raise AndroidError("ANDROID_OPERATION_RETRY", "操作已被其他请求接收，请重新查询", 409) from error
             return OperationRecord(row)
 
-    def get(self, operation_id: str) -> OperationRecord:
+    def get(self, operation_id: str, workspace_identity: str | None = None) -> OperationRecord:
         with self.sessions() as session:
             row = session.get(AndroidOperationRow, operation_id)
-            if row is None:
+            if row is None or (workspace_identity is not None and row.workspace_identity != workspace_identity):
                 raise AndroidError("ANDROID_OPERATION_NOT_FOUND", "安卓操作不存在", 404)
             return OperationRecord(row)
 
@@ -75,9 +75,11 @@ class SqlAlchemyAndroidOperationRepository:
                 raise AndroidError("ANDROID_OPERATION_NOT_FOUND", "安卓操作不存在", 404)
             return OperationRecord(row)
 
-    def page(self, device_id: str | None = None, cursor: str | None = None, limit: int = 50) -> list[OperationRecord]:
+    def page(self, device_id: str | None = None, cursor: str | None = None, limit: int = 50, workspace_identity: str | None = None) -> list[OperationRecord]:
         with self.sessions() as session:
             query = select(AndroidOperationRow).order_by(AndroidOperationRow.created_at.desc(), AndroidOperationRow.id.desc()).limit(min(max(limit, 1), 100))
+            if workspace_identity is not None:
+                query = query.where(AndroidOperationRow.workspace_identity == workspace_identity)
             if device_id:
                 query = query.where(AndroidOperationRow.target_id == device_id)
             if cursor:
@@ -87,9 +89,11 @@ class SqlAlchemyAndroidOperationRepository:
                 query = query.where(or_(AndroidOperationRow.created_at < boundary.created_at, and_(AndroidOperationRow.created_at == boundary.created_at, AndroidOperationRow.id < cursor)))
             return [OperationRecord(row) for row in session.scalars(query)]
 
-    def count(self, device_id: str | None = None) -> int:
+    def count(self, device_id: str | None = None, workspace_identity: str | None = None) -> int:
         with self.sessions() as session:
             query = select(func.count()).select_from(AndroidOperationRow)
+            if workspace_identity is not None:
+                query = query.where(AndroidOperationRow.workspace_identity == workspace_identity)
             if device_id:
                 query = query.where(AndroidOperationRow.target_id == device_id)
             return int(session.scalar(query) or 0)
@@ -109,13 +113,51 @@ class SqlAlchemyAndroidOperationRepository:
                     values[key] = changes[key]
             if next_state == "running" and row.started_at is None:
                 values["started_at"] = datetime.now(UTC)
-            if next_state in {"succeeded", "failed", "cancelled"}:
+            if next_state in {"succeeded", "failed", "cancelled", "needs_verification"}:
                 values["finished_at"] = datetime.now(UTC)
             result = session.execute(update(AndroidOperationRow).where(AndroidOperationRow.id == operation_id, AndroidOperationRow.state == expected_state).values(**values))
             if cast(CursorResult, result).rowcount != 1:
                 raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "操作状态已变化，请先核实", 409)
             session.refresh(row)
             return OperationRecord(row)
+
+    def transition_with_device(self, operation_id: str, expected_state: str, next_state: str, changes: dict[str, Any], device: dict[str, Any]) -> OperationRecord:
+        """Commit an operation transition and its device projection in one SQLite transaction."""
+        if next_state not in _TRANSITIONS.get(expected_state, set()):
+            raise AndroidError("ANDROID_OPERATION_STATE_INVALID", "操作状态无效", 422)
+        with self.sessions.begin() as session:
+            row = session.get(AndroidOperationRow, operation_id)
+            if row is None:
+                raise AndroidError("ANDROID_OPERATION_NOT_FOUND", "安卓操作不存在", 404)
+            if row.state != expected_state:
+                raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "操作状态已变化，请先核实", 409)
+            values = {"state": next_state, "stage_code": str(changes.get("stage_code", next_state)), "stage_label": str(changes.get("stage_label", _LABELS[next_state]))}
+            for key in ("result_code", "message"):
+                if key in changes:
+                    values[key] = changes[key]
+            if next_state == "running" and row.started_at is None:
+                values["started_at"] = datetime.now(UTC)
+            if next_state in {"succeeded", "failed", "cancelled", "needs_verification"}:
+                values["finished_at"] = datetime.now(UTC)
+            result = session.execute(update(AndroidOperationRow).where(AndroidOperationRow.id == operation_id, AndroidOperationRow.state == expected_state).values(**values))
+            if cast(CursorResult, result).rowcount != 1:
+                raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "操作状态已变化，请先核实", 409)
+            session.merge(AndroidDeviceRow(id=device["deviceId"], owner_run_id=device.get("ownerRunId"), payload=deepcopy(device)))
+            session.refresh(row)
+            return OperationRecord(row)
+
+    def recover_running(self, workspace_identity: str) -> int:
+        with self.sessions.begin() as session:
+            rows = list(session.scalars(select(AndroidOperationRow).where(AndroidOperationRow.workspace_identity == workspace_identity, AndroidOperationRow.state == "running")))
+            now = datetime.now(UTC)
+            for row in rows:
+                row.state = "needs_verification"
+                row.stage_code = "verify"
+                row.stage_label = _LABELS["needs_verification"]
+                row.result_code = "SERVICE_RESTART_RESULT_UNKNOWN"
+                row.message = "服务已重启，请核实外部操作结果"
+                row.finished_at = now
+            return len(rows)
 
     def compact(self, before: datetime) -> int:
         with self.sessions.begin() as session:

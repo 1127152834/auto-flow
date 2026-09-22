@@ -53,8 +53,8 @@ class AndroidDeviceRead(ApiModel):
     cpu: int = 1
     memory_mb: int = 1536
     dpi: int = 320
-    android_version: str = "13"
-    architecture: str = "arm64"
+    android_version: str | None = None
+    architecture: str | None = None
     data_retained: bool = False
     deleted: bool = False
     operation: AndroidOperation | None = None

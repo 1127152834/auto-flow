@@ -1,7 +1,9 @@
 import asyncio
+import hashlib
+import json
 from datetime import UTC, datetime
 from typing import Any
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid5
 
 from fastapi import APIRouter, Query
 
@@ -21,11 +23,14 @@ from .android_management_schemas import (
     BackupCreate,
     BackupRead,
     BackupRestore,
+    BackupRestoreRead,
     BulkAction,
     BulkCreate,
     BulkRead,
     CleanupExecute,
     CleanupPreviewCreate,
+    CleanupPreviewRead,
+    CleanupRead,
     DiagnosticRead,
     DiagnosticsCreate,
     EnvironmentCheckCommand,
@@ -117,7 +122,17 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     router = APIRouter(prefix="/api/v1/android/management", tags=["android-management"])
 
     def workspace_identity() -> str:
-        return str(getattr(getattr(devices, "management", None), "workspace_identity", "default"))
+        try:
+            return str(getattr(getattr(devices, "management", None), "workspace_identity", "default"))
+        except RuntimeError:
+            # The schema exporter binds an unavailable sentinel instead of runtime
+            # services.  Resolving workspace identity is a business lookup, so it
+            # must remain deferred until request handling in that mode.
+            return "default"
+
+    if backups is not None and operations is not None:
+        backups.operations = operations
+        backups.workspace_identity = workspace_identity()
 
     @router.get("/environment", response_model=ManagementEnvironmentRead)
     async def environment() -> ManagementEnvironmentRead:
@@ -172,7 +187,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def environment_check(body: EnvironmentCheckCommand) -> OperationRead:
         if operations is None:
             raise RuntimeError("Android operation repository is not configured")
-        record = operations.accept("default", body.request_id, "environment", "check", "environment-check-v1", {})
+        record = operations.accept(workspace_identity(), body.request_id, "environment", "check", "environment-check-v1", {})
         if record.state == "queued":
             record = operations.transition(record.operation_id, "queued", "running", {"stage_code": "checking"})
             try:
@@ -187,29 +202,51 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def operation_page(device_id: str | None = Query(default=None), cursor: str | None = Query(default=None), limit: int = Query(default=50, ge=1, le=200)) -> OperationPageRead:
         if operations is None:
             return OperationPageRead(items=[], next_cursor=None, total=0)
-        items = operations.page(device_id, cursor, limit)
-        total = operations.count(device_id) if hasattr(operations, "count") else len(items)
+        workspace = workspace_identity()
+        items = operations.page(device_id, cursor, limit, workspace_identity=workspace)
+        total = operations.count(device_id, workspace_identity=workspace) if hasattr(operations, "count") else len(items)
         return OperationPageRead(items=[_operation_response(item) for item in items], next_cursor=items[-1].operation_id if len(items) == limit else None, total=total)
 
     @router.get("/operations/by-request/{request_id}", response_model=OperationRead)
     async def operation_by_request(request_id: str) -> OperationRead:
         if operations is None:
             raise RuntimeError("Android operation repository is not configured")
-        return _operation_response(operations.by_request("default", request_id))
+        return _operation_response(operations.by_request(workspace_identity(), request_id))
 
     @router.get("/operations/{operation_id}", response_model=OperationRead)
     async def operation(operation_id: str) -> OperationRead:
         if operations is None:
             raise RuntimeError("Android operation repository is not configured")
-        return _operation_response(operations.get(operation_id))
+        return _operation_response(operations.get(operation_id, workspace_identity()))
 
     @router.post("/operations/{operation_id}/verify", response_model=OperationRead)
     async def verify(operation_id: str, body: OperationVerifyCommand) -> OperationRead:
         if operations is None:
             raise RuntimeError("Android operation repository is not configured")
-        record = operations.get(operation_id)
+        record = operations.get(operation_id, workspace_identity())
+        if body.request_id != record.request_id:
+            raise AndroidError("ANDROID_REQUEST_CONFLICT", "核实请求编号与原操作不一致", 409)
         if record.state == "needs_verification":
-            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入运行时核实，操作保持待核实", 503)
+            if devices is None:
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入运行时核实，操作保持待核实", 503)
+            try:
+                device = devices.get(record.target_id)
+                observed = await devices.runtime.inspect(device)
+            except AndroidError as error:
+                if error.status != 404 or record.action != "delete":
+                    raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
+                record = operations.transition(record.operation_id, "needs_verification", "succeeded", {"stage_code": "verified", "result_code": "DELETE_VERIFIED"})
+                return _operation_response(record)
+            expected = {"start": {"ready"}, "restart": {"ready"}, "stop": {"stopped", "retained"}, "delete": set()}.get(record.action)
+            status = observed.get("androidStatus")
+            if expected is not None and status in expected:
+                record = operations.transition(record.operation_id, "needs_verification", "succeeded", {"stage_code": "verified", "result_code": "STATE_VERIFIED"})
+                if hasattr(devices, "repository"):
+                    device["control"] = "idle"
+                    device.setdefault("operation", {}).update(state="succeeded", stage="已核实", finishedAt=datetime.now(UTC).isoformat())
+                    devices.repository.save(device)
+            else:
+                raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态与操作结果不一致，请继续核实", 503)
         return _operation_response(record)
 
     @router.get("/images", response_model=ImagePageRead)
@@ -229,10 +266,25 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def image_pull(body: ImagePullCreate) -> OperationRead:
         if images is None or not hasattr(images, "pull"):
             raise AndroidError("ANDROID_IMAGE_PULL_UNAVAILABLE", "镜像拉取适配器尚未配置", 503)
-        result = await images.pull(body.request_id, body.reference)
         if operations is None:
             raise AndroidError("ANDROID_OPERATION_UNAVAILABLE", "操作记录服务尚未配置", 503)
-        record = operations.accept("default", body.request_id, "image", "pull", body.reference, {"imageId": result.get("imageId")})
+        digest = hashlib.sha256(json.dumps({"reference": body.reference}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        record = operations.accept(workspace_identity(), body.request_id, "image", "pull", digest, {"reference": body.reference})
+        if record.state != "queued":
+            return _operation_response(record)
+        record = operations.transition(record.operation_id, "queued", "running", {"stage_code": "pulling"})
+        try:
+            result = await images.pull(body.request_id, body.reference)
+        except asyncio.CancelledError:
+            operations.transition(record.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "IMAGE_PULL_CANCELLED", "message": "请求已取消，拉取结果未知"})
+            raise
+        except (TimeoutError, OSError) as error:
+            record = operations.transition(record.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "IMAGE_PULL_RESULT_UNKNOWN", "message": str(error)[:480]})
+        except Exception as error:
+            operations.transition(record.operation_id, "running", "failed", {"stage_code": "failed", "result_code": getattr(error, "code", "ANDROID_IMAGE_PULL_FAILED"), "message": str(error)[:480]})
+            raise
+        else:
+            record = operations.transition(record.operation_id, "running", "succeeded", {"stage_code": "completed", "result_code": "IMAGE_PULL_SUCCEEDED", "message": str(result.get("imageId", ""))[:480]})
         return _operation_response(record)
 
     @router.delete("/images/{identifier}", response_model=ImageRead)
@@ -240,8 +292,8 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if images is None:
             raise RuntimeError("Android image service is not configured")
         if body.delete_content and hasattr(images, "delete_content"):
-            return ImageRead.model_validate(await images.delete_content(identifier))
-        return ImageRead.model_validate(images.delete(identifier, body.delete_content))
+            return ImageRead.model_validate(await images.delete_content(identifier, body.request_id, body.expected_revision))
+        return ImageRead.model_validate(images.delete(identifier, body.delete_content, body.request_id, body.expected_revision))
 
     @router.post("/images/{identifier}/verifications", response_model=ImageRead, status_code=201)
     async def verify_image(identifier: str, body: ImageVerificationCreate) -> ImageRead:
@@ -260,17 +312,28 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if profiles is None:
             raise RuntimeError("Android profile service is not configured")
         item = profiles.get("profile", identifier)
+        def public(value: dict[str, Any]) -> dict[str, Any]:
+            return {key: data for key, data in value.items() if key != "archiveRequestId"}
+        if item.get("archiveRequestId") == body.request_id:
+            return EnvironmentProfile.model_validate(public(item))
         if item.get("revision") != body.expected_revision:
             raise AndroidError("ANDROID_PROFILE_CONFLICT", "设备模板已更新，请重新加载", 409)
         item["archived"] = True
+        item["revision"] = int(item.get("revision", 0)) + 1
+        item["archiveRequestId"] = body.request_id
         profiles.save("profile", item)
-        return EnvironmentProfile.model_validate(item)
+        return EnvironmentProfile.model_validate(public(item))
 
     @router.get("/backups", response_model=list[BackupRead])
     async def backup_page() -> list[BackupRead]:
         if backups is None:
             return []
-        return [BackupRead.model_validate(item) for item in backups.resources.list("backup")]
+        workspace = workspace_identity()
+        return [
+            BackupRead.model_validate(item)
+            for item in backups.resources.list("backup")
+            if item.get("workspaceId") == workspace
+        ]
 
     @router.post("/backups", response_model=BackupRead, status_code=201)
     async def create_backup(body: BackupCreate) -> BackupRead:
@@ -279,78 +342,131 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         device = devices.get(body.device_id)
         if int(device.get("generation", 1) or 1) != body.expected_revision:
             raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新加载", 409)
-        observed = await devices.runtime.inspect(device)
-        return BackupRead.model_validate(await backups.create_with_runtime(device, observed, devices.runtime))
+        return BackupRead.model_validate(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
 
     @router.post("/devices/{identifier}/backups", response_model=BackupRead, status_code=201)
     async def backup(identifier: str, body: BackupCreate) -> BackupRead:
         if backups is None or devices is None:
             raise RuntimeError("Android backup service is not configured")
         device = devices.get(identifier)
-        observed = await devices.runtime.inspect(device)
-        return BackupRead.model_validate(await backups.create_with_runtime(device, observed, devices.runtime))
+        if body.device_id is not None and body.device_id != identifier:
+            raise AndroidError("ANDROID_BACKUP_REQUEST_INVALID", "路径设备与请求设备不一致", 422)
+        if body.expected_revision is None:
+            raise AndroidError("ANDROID_BACKUP_REQUEST_INVALID", "备份请求缺少设备版本", 422)
+        if int(device.get("generation", 1) or 1) != body.expected_revision:
+            raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新加载", 409)
+        return BackupRead.model_validate(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
 
-    @router.post("/backups/{identifier}/restore", status_code=202)
-    async def restore_backup(identifier: str, body: BackupRestore) -> dict[str, Any]:
+    @router.post("/backups/{identifier}/restore", response_model=BackupRestoreRead, status_code=202)
+    async def restore_backup(identifier: str, body: BackupRestore) -> BackupRestoreRead:
         if backups is None or devices is None:
             raise AndroidError("ANDROID_BACKUP_RESTORE_UNAVAILABLE", "备份恢复服务尚未配置", 503)
-        record = next((item for item in backups.resources.list("backup") if item.get("id") == identifier), None)
+        workspace = workspace_identity()
+        record = next((item for item in backups.resources.list("backup") if item.get("id") == identifier and item.get("workspaceId") == workspace), None)
         if record is None:
             raise AndroidError("ANDROID_BACKUP_NOT_FOUND", "备份不存在或不可恢复", 404)
-        environment = await devices.environment()
-        if not any(image.get("id") == record.get("imageId") for image in environment.get("images", [])):
-            raise AndroidError("ANDROID_BACKUP_IMAGE_MISSING", "备份所需的精确镜像当前不可用", 409)
+        new_device_id = str(uuid5(NAMESPACE_URL, f"{workspace}/android-restore/{body.request_id}"))
+        payload = {"backupId": identifier, "newName": body.new_name, "newDeviceId": new_device_id}
+        operation = None
+        if operations is not None:
+            digest = hashlib.sha256(json.dumps({"action": "restore", **payload}, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+            operation = operations.accept(workspace, body.request_id, new_device_id, "restore", digest, payload)
+            if operation.state == "succeeded":
+                existing = next((item for item in devices.repository.list() if item.get("restoreRequestId") == body.request_id), None)
+                if existing is None:
+                    raise AndroidError("ANDROID_RESTORE_RESULT_UNKNOWN", "恢复结果已记录但设备不可见，请核实后再试", 503)
+                return BackupRestoreRead(operation_id=operation.operation_id, request_id=body.request_id, target_id=existing["deviceId"], device_id=existing["deviceId"], backup_id=identifier, state="restored")
+            if operation.state in {"running", "needs_verification", "failed", "cancelled"}:
+                raise AndroidError("ANDROID_RESTORE_REQUEST_REPLAYED", "恢复请求已处理，请先核实操作结果", 409)
+            operation = operations.transition(operation.operation_id, "queued", "running", {"stage_code": "creating"})
         config = dict(record.get("config") or {})
         if any(key not in config for key in ("width", "height", "dpi", "cpu", "memoryMb")):
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_INCOMPATIBLE", "message": "备份缺少可恢复的实例配置快照"})
             raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份缺少可恢复的实例配置快照", 409)
-        new_device_id = str(uuid4())
-        config.update(deviceId=new_device_id, name=body.new_name, imageId=record["imageId"], instanceType="persistent", start=False)
-        created = devices.management.create(config)
-        task = devices.management.task
-        if task is not None:
-            await asyncio.shield(task)
+        environment = await devices.environment()
+        if not any(image.get("id") == record.get("imageId") for image in environment.get("images", [])):
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_IMAGE_MISSING", "message": "备份所需的精确镜像当前不可用"})
+            raise AndroidError("ANDROID_BACKUP_IMAGE_MISSING", "备份所需的精确镜像当前不可用", 409)
+        config.update(deviceId=new_device_id, name=body.new_name, imageId=record["imageId"], instanceType="persistent", start=False, restoreRequestId=body.request_id, restoreBackupId=identifier)
         try:
+            created = devices.management.create(config)
+            task = devices.management.task
+            if task is not None:
+                await asyncio.shield(task)
+            created = devices.repository.get(new_device_id)
+            if created.get("deleted") or created.get("control") == "recovery_required" or created.get("androidStatus") in {"ready", "running"} or created.get("operation", {}).get("state") in {"failed", "needs_verification", "interrupted"}:
+                raise AndroidError("ANDROID_BACKUP_RESTORE_CREATE_FAILED", "恢复目标实例创建未完成，未写入数据卷", 503)
             await backups.restore_data(identifier, created, devices.runtime)
-        except BaseException:
-            created.update(control="recovery_required", lastError="恢复数据卷未完成，请核实新实例")
+            created.update(dataRetained=True, restoreState="restored")
             devices.repository.save(created)
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "succeeded", {"stage_code": "completed", "result_code": "BACKUP_RESTORED"})
+        except asyncio.CancelledError:
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": "请求已取消，恢复结果未知"})
+            created = locals().get("created")
+            if isinstance(created, dict):
+                created.update(control="recovery_required", lastError="恢复结果未知，请核实新实例")
+                devices.repository.save(created)
             raise
-        return {"deviceId": new_device_id, "backupId": identifier, "state": "restored"}
+        except (TimeoutError, OSError) as error:
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": str(error)})
+            created = locals().get("created")
+            if isinstance(created, dict):
+                created.update(control="recovery_required", lastError="恢复结果未知，请核实新实例")
+                devices.repository.save(created)
+            raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "恢复结果未知，请核实新实例", 503) from error
+        except BaseException as error:
+            if operation is not None and operation.state == "running":
+                operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": getattr(error, "code", "ANDROID_BACKUP_RESTORE_FAILED"), "message": str(error)})
+            created = locals().get("created")
+            if isinstance(created, dict) and created.get("control") != "recovery_required":
+                created.update(control="recovery_required", lastError="恢复数据卷未完成，请核实新实例")
+                devices.repository.save(created)
+            raise
+        return BackupRestoreRead(operation_id=operation.operation_id if operation is not None else None, request_id=body.request_id, target_id=new_device_id, device_id=new_device_id, backup_id=identifier, state="restored")
 
     @router.post("/bulk-operations", response_model=BulkRead, status_code=202)
     async def bulk_create(body: BulkCreate) -> BulkRead:
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
-        result = bulk.create("default", body.request_id, body.action, [item.model_dump(by_alias=True) for item in body.items], body.delete_data)
+        result = bulk.create(workspace_identity(), body.request_id, body.action, [item.model_dump(by_alias=True) for item in body.items], body.delete_data)
         return BulkRead.model_validate(bulk.run(result["id"]))
 
     @router.get("/bulk-operations/{identifier}", response_model=BulkRead)
     async def bulk_get(identifier: str) -> BulkRead:
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
-        return BulkRead.model_validate(bulk.get(identifier))
+        return BulkRead.model_validate(bulk.get(identifier, workspace_identity()))
 
     @router.post("/bulk-operations/{identifier}/actions", response_model=BulkRead)
     async def bulk_action(identifier: str, body: BulkAction) -> BulkRead:
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
-        return BulkRead.model_validate(bulk.action(identifier, body.action))
+        return BulkRead.model_validate(bulk.action(identifier, body.action, body.request_id, workspace_identity()))
 
-    @router.post("/cleanup/previews")
-    async def cleanup_preview(body: CleanupPreviewCreate) -> dict[str, Any]:
+    @router.post("/cleanup/previews", response_model=CleanupPreviewRead)
+    async def cleanup_preview(body: CleanupPreviewCreate) -> CleanupPreviewRead:
         if cleanup is None:
             raise RuntimeError("Android cleanup service is not configured")
         items = cleanup.preview(body.resource_ids, workspace_identity())
         import hashlib
         import json
         digest = hashlib.sha256(json.dumps(items, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        return {"items": items, "confirmationDigest": digest}
+        return CleanupPreviewRead(items=items, confirmation_digest=digest, preview_id=digest)
 
-    @router.post("/cleanup")
-    async def cleanup_execute(body: CleanupExecute) -> dict[str, Any]:
+    @router.post("/cleanup", response_model=CleanupRead)
+    async def cleanup_execute(body: CleanupExecute) -> CleanupRead:
         if cleanup is None:
             raise RuntimeError("Android cleanup service is not configured")
-        return {"items": cleanup.execute(workspace_identity(), body.confirmation_digest), "state": "accepted"}
+        if body.preview_id is not None and body.preview_id != body.confirmation_digest:
+            raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理预览编号与摘要不一致，请重新确认", 409)
+        items = cleanup.execute(workspace_identity(), body.confirmation_digest, body.request_id)
+        operation = cleanup.last_operation or {}
+        return CleanupRead(items=items, state=operation.get("state", "accepted") if cleanup.operations is not None else "accepted", operation_id=operation.get("operationId"), request_id=body.request_id, preview_id=body.confirmation_digest)
 
     @router.post("/diagnostics", response_model=DiagnosticRead, status_code=202)
     async def diagnostics(body: DiagnosticsCreate) -> DiagnosticRead:

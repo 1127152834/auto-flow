@@ -58,7 +58,24 @@ class DeviceObservationService:
         )
         self._observations[device_id] = observation
         self._failures.pop(device_id, None)
+        self._project(observation)
         return observation
+
+    def _project(self, observation: Observation) -> None:
+        save = getattr(self.devices, "save", None)
+        if save is None:
+            return
+        try:
+            device = self.devices.get(observation.device_id)
+            device.update(
+                androidStatus=observation.runtime_state,
+                observedAt=observation.observed_at.isoformat(),
+                stale=observation.stale,
+                lastError=observation.error,
+            )
+            save(device)
+        except Exception:  # noqa: BLE001 - an in-memory observation still serves reads when projection is unavailable.
+            return
 
     def get(self, device_id: str, at: datetime | None = None) -> Observation | None:
         observation = self._observations.get(device_id)
@@ -92,5 +109,6 @@ class DeviceObservationService:
             self._failures[device_id] = self._failures.get(device_id, 0) + 1
             observation = Observation(device_id, previous.runtime_state if previous else "unknown", self.now(), True, str(error)[:240])
             self._observations[device_id] = observation
+            self._project(observation)
             return observation
         return self.record(device_id, observed)
