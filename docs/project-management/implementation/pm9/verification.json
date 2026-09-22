@@ -120,7 +120,7 @@
     }
   ],
   "remainingReport": "completion-gaps.md",
-  "deliveryStatus": "D1_implemented_scoped_native_follow_up_pending_release_acceptance_incomplete",
+  "deliveryStatus": "D1_implemented_scoped_three_platform_ci_passed_release_acceptance_incomplete",
   "developmentSlice": {
     "slices": [
       "S1",
@@ -139,7 +139,7 @@
       "R4"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "C/R implemented; one whole review completed and three Important findings fixed. Local full regression passed; current native failures are being corrected; release not accepted."
+    "status": "C/R and approved D1 implemented; local and current three-platform regression passed; external acceptance and release remain incomplete."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
   "workingCandidate": "D1 post-review production candidate ae347de9f5fc1922efa7c4af99c0e606e6bde26a; Actions 35677887974 passed on Windows x64, macOS Intel and Apple Silicon. Release acceptance remains pending.",

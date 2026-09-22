@@ -117,7 +117,8 @@
     },
     "postReviewStatus": "17 passed in 19.73s; includes two held/reconciling cases with explicit preexisting invalid-value fixture. Local supplemental checks after frozen CI candidate.",
     "postReviewOverlappingWrites": "35 passed in 39.99s; two ordered shared-field writes, original confirmed history, local snapshots and source observations",
-    "D1": "Approved D1 production candidate includes source diagnostics and safe source scalar preservation. Local: 138 backend passed in 58.62s, 11 UI tests in 3.32s, mypy407, Ruff, OpenAPI and typecheck pass. D1 real-browser filter selected 0 tests; separate existing PM9 worker scenarios passed locally (5 total), not a D1 bad-value claim; three-platform CI 35677887974 queued for the post-review candidate; native probe and worker probe are skipped."
+    "D1": "138 related backend tests passed, 2 warnings; 11 UI; mypy407/Ruff/OpenAPI/typecheck pass; 5 existing PM9 worker scenarios passed locally; D1 dedicated bad-value worker proof remains open.",
+    "nativeMatrix": "Actions 35677887974 passed on all three platforms; native/worker probe jobs were skipped and physical installation remains pending."
   },
   "assertionScope": [
     "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
@@ -265,6 +266,37 @@
   },
   "finalReview": "shared-data-final-review.json",
   "finalCICandidate": {
+    "status": "passed_all_platforms",
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+    "platforms": {
+      "darwin-arm64": "ci-d1-final-darwin-arm64.json",
+      "darwin-x64": "ci-d1-final-darwin-x64.json",
+      "win32-x64": "ci-d1-final-win32-x64.json"
+    },
+    "nativeProbe": "skipped",
+    "workerProbe": "skipped",
+    "physicalInstallation": "pending"
+  },
+  "priorC2ProductionCandidate": "376b8a59",
+  "priorC3TestCandidate": "85bb8c7c",
+  "nativeD1Candidate": {
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "status": "passed",
+    "platforms": [
+      "darwin-arm64",
+      "win32-x64",
+      "darwin-x64"
+    ],
+    "reports": [
+      "ci-d1-final-darwin-arm64.json",
+      "ci-d1-final-darwin-x64.json",
+      "ci-d1-final-win32-x64.json"
+    ]
+  },
+  "historicalFinalCICandidate": {
     "status": "failed_platforms_diagnosed_intel_pending",
     "runId": 35629585683,
     "headSha": "d75297fb0274c60fe9390181c75b0137e2e5b401",
@@ -323,23 +355,6 @@
         "url": "https://github.com/1127152834/auto-flow/actions/runs/35633607909",
         "status": "in_progress"
       }
-    ]
-  },
-  "priorC2ProductionCandidate": "376b8a59",
-  "priorC3TestCandidate": "85bb8c7c",
-  "nativeD1Candidate": {
-    "runId": 35677887974,
-    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
-    "status": "passed",
-    "platforms": [
-      "darwin-arm64",
-      "win32-x64",
-      "darwin-x64"
-    ],
-    "reports": [
-      "ci-d1-final-darwin-arm64.json",
-      "ci-d1-final-darwin-x64.json",
-      "ci-d1-final-win32-x64.json"
     ]
   }
 }
