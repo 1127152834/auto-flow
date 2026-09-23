@@ -401,7 +401,7 @@
       "evidenceRefs": [
         "docs/migration/studio-backend-migration/evidence/shared-services/credential-runtime-2026-09-23/result.json"
       ],
-      "remaining": "第三方及平台节点真实环境仍按17槽位保留；项目资源授权策略待用户确认。用户删除的14通知节点保持排除。"
+      "remaining": "第三方及平台节点真实环境仍按17槽位保留；用户已确认项目资源使用默认值且允许显式覆盖，不新增资源白名单。用户删除的14通知节点保持排除。"
     },
     {
       "id": "BE.SUPPORT.triggers-schedules",

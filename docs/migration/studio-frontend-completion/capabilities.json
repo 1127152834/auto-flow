@@ -20594,7 +20594,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -20785,7 +20791,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -20976,7 +20988,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -21171,7 +21189,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -21366,7 +21390,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -21558,7 +21588,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -21756,7 +21792,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -21947,7 +21989,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -22129,7 +22177,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -22322,7 +22376,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -22515,7 +22575,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -22708,7 +22774,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -22897,7 +22969,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -23080,7 +23158,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -23273,7 +23357,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -24154,7 +24244,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -24349,7 +24445,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -24544,7 +24646,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -24726,7 +24834,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -24944,7 +25058,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -25127,7 +25247,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -25327,7 +25453,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -25518,7 +25650,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -31802,7 +31940,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -32022,7 +32166,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {
@@ -32232,7 +32382,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、容量/取消/凭据边界、独立P1复核及darwin-arm64正式Electron逐节点结果和日志均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json",
+        "boundary": "复用原执行器；准入、字段、output与无浏览器资源清理。项目worker公共凭据/模型端口单列，未覆盖全部项目运行上下文。"
+      }
     }
   },
   {

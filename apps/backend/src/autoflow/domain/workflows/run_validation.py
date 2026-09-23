@@ -56,7 +56,7 @@ def prepare_run(document: object) -> PreparedWorkflow:
             "WORKFLOW_NOT_RUNNABLE", "工作流包含尚不可执行的节点", 422, issues
         )
     graph_adapter = projected["content"].get("schemaVersion") == 3 or any(
-        node["data"]["moduleType"] == "screenshot" for node in nodes
+        node["data"]["moduleType"] not in _DEFAULT_CONFIGS for node in nodes
     )
     by_id = {node["id"]: node for node in nodes}
     # Defaults validate Studio content without rewriting its frozen snapshot.

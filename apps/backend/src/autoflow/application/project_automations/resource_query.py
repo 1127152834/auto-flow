@@ -4,6 +4,7 @@ from typing import Any
 
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
+from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
 from autoflow.domain.models.errors import ModelError
 from autoflow.domain.profiles.errors import ProfileNotFound
 from autoflow.domain.profiles.models import Profile
@@ -24,6 +25,7 @@ class ProjectAutomationResourceQuery:
         proxy_options: ProxyOptionsLookup,
         model_service: ModelService,
         environments: Any | None = None,
+        workflow_runtime: WorkflowRuntimeService | None = None,
     ) -> None:
         self._projects = projects
         self._profiles = profiles
@@ -31,6 +33,12 @@ class ProjectAutomationResourceQuery:
         self._proxy_options = proxy_options
         self._model_service = model_service
         self._environments = environments
+        self._workflow_runtime = workflow_runtime
+
+    def requires_browser(self, automation: AutomationRecord) -> bool:
+        return self._workflow_runtime is None or self._workflow_runtime.requires_browser(
+            automation.workflow_id
+        )
 
     def inspect_resources(self, automation: AutomationRecord) -> list[dict[str, Any]]:
         project = self._projects.get(automation.project_id)
@@ -44,6 +52,8 @@ class ProjectAutomationResourceQuery:
                     automation.project_id,
                 )
             ]
+        if not self.requires_browser(automation):
+            return []
         defaults = project.default_resources
         issues: list[dict[str, Any]] = []
         profile: Profile | None = None

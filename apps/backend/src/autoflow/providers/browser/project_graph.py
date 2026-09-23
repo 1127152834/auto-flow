@@ -40,6 +40,9 @@ class _TimedNode(ModuleExecutor):
     def module_type(self) -> str:
         return self.executor.module_type
 
+    def requires_browser_for(self, config: dict[str, Any]) -> bool:
+        return self.executor.requires_browser_for(config)
+
     async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
         # Preserve the project's whole-node timeout, including fractional seconds.
         timeout = config.get('timeout', 0)
@@ -146,8 +149,11 @@ class ProjectGraphExecutor:
         if success:
             data = self.nodes[node_id]
             config = data.get('config', data)
-            name = config.get('variableName')
-            if name and event.get('data') is not None:
+            name = config.get('resultVariable') or config.get('variableName')
+            # A present JSON null from dict_get_path is a real result, not absence.
+            if name and (event.get('data') is not None or (
+                data['moduleType'] == 'dict_get_path' and name in self.context.variables
+            )):
                 await self.emit('output', node_id, visit, {'name': name, 'value': event['data']})
             await self.emit('log', node_id, visit, {'level': 'info', 'message': '节点执行完成'})
         else:

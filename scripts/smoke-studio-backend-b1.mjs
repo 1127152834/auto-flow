@@ -17,8 +17,9 @@ const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const failedPauseOnly = process.env.AUTOFLOW_B8_FAILED_PAUSE_ONLY === '1'
 const runToOnly = process.env.AUTOFLOW_B8_RUN_TO_ONLY === '1'
 const b8Only = failedPauseOnly || runToOnly
+const projectDataMode = process.env.AUTOFLOW_PROJECT_DATA === '1'
 const projectTaskMode = process.env.AUTOFLOW_B1_PROJECT_TASK === '1'
-const projectMode = projectTaskMode || process.env.AUTOFLOW_B1_PROJECT === '1'
+const projectMode = projectDataMode || projectTaskMode || process.env.AUTOFLOW_B1_PROJECT === '1'
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectMode ? 'project-integration' : b8Only ? 'b8' : 'b1'}`)
 const evidencePrefix = failedPauseOnly ? 'formal-failed-pause-electron-' : runToOnly ? 'formal-run-to-electron-' : 'formal-electron-'
 const evidenceDir = await mkdtemp(join(evidenceRoot, evidencePrefix))
@@ -49,7 +50,7 @@ let projectId = null
 
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 await mkdir(join(userData, 'data', 'kernels'), { recursive: true })
-execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basename(sourceKernel))])
+if (!projectDataMode) execFileSync('cp', ['-cR', sourceKernel, join(userData, 'data', 'kernels', basename(sourceKernel))])
 
 try {
   desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${userData}`, '--inspect=0'] })
@@ -63,7 +64,7 @@ try {
   eventAbort = new AbortController()
   void collectEvents(runtime, eventAbort.signal, observedEvents)
 
-  const profile = await api(runtime, '/v1/profiles', {
+  const profile = projectDataMode ? null : await api(runtime, '/v1/profiles', {
     method: 'POST',
     body: {
       name: 'B1 正式验收配置', description: '隔离工作区中的 CloakBrowser 配置', startUrl: 'about:blank',
@@ -73,7 +74,7 @@ try {
       releaseChannel: 'stable', proxyMode: 'none', proxyId: null, proxyPoolId: null,
     },
   })
-  checkpoint('主应用真实服务在临时工作区创建 CloakBrowser Profile')
+  if (!projectDataMode) checkpoint('主应用真实服务在临时工作区创建 CloakBrowser Profile')
 
   if (projectMode) {
     await click(main, '项目', 'a, button')
@@ -94,7 +95,7 @@ try {
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
-  await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
+  if (!projectDataMode) await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   checkpoint('主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile')
   if (credentialMode) {
     await click(studio, '更多操作'); await click(studio, '全局配置', '[role="menuitem"]')
@@ -112,6 +113,9 @@ try {
   await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 0", 'new empty workflow')
   checkpoint('通过正式新建入口创建空工作流')
 
+  if (projectDataMode) {
+    await verifyProjectData(runtime)
+  } else {
   if (process.env.AUTOFLOW_B1_METADATA === '1') {
     const metadata = await api(runtime, '/system/module-required-fields')
     assert.equal(metadata.coveredModules.length, 213)
@@ -677,6 +681,7 @@ try {
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
   }
+}
 } catch (error) {
   if (main) { await capture(main, join(evidenceDir, 'main-failure.png')).catch(() => undefined); await writeFile(join(evidenceDir, 'main-failure.txt'), String(await main.evaluate('document.body.innerText').catch(() => 'unavailable'))).catch(() => undefined) }
   if (studio) await capture(studio, join(evidenceDir, 'failure.png')).catch(() => undefined)
@@ -695,6 +700,79 @@ try {
 }
 
 function checkpoint(message) { checks.push(message); console.log(message) }
+
+async function verifyProjectData(runtime) {
+  assert.deepEqual((await api(runtime, '/v1/profiles')).items, [])
+  await setInput(studio, 'input[placeholder="工作流名称"]', '项目纯数据闭环')
+  const modules = [
+    ['CSV解析', '输入CSV内容或变量', 'A,B,C', 'rows'],
+    ['列表扁平化', '输入嵌套列表变量名', 'rows', 'flat'],
+    ['列表反转', '输入列表变量名', 'flat', 'reversed'],
+    ['CSV生成', '输入数据列表变量名', 'reversed', 'csv'],
+  ]
+  const ids = []
+  for (const [index, [label, placeholder, value, output]] of modules.entries()) {
+    await addFromQuickPicker(studio, index, label)
+    const id = await waitFor(studio, `(()=>{const e=[...document.querySelectorAll('.react-flow__node')].find(e=>e.textContent.includes(${JSON.stringify(label)}));return e?.dataset.id})()`, label)
+    ids.push(id)
+    await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(id)}]`)
+    await setInput(studio, `[placeholder=${JSON.stringify(placeholder)}]`, value)
+    await setInput(studio, '[placeholder="保存结果的变量名"]', output)
+  }
+  await arrangeNodes(studio, ids)
+  for (let i = 0; i < ids.length - 1; i++) await connectNodes(studio, ids[i], ids[i+1])
+  await click(studio, '保存')
+  await waitFor(studio, "document.body.innerText.includes('工作流已保存: 项目纯数据闭环')", 'data save')
+  const saved = (await api(runtime, '/workflows')).find(x => x.name === '项目纯数据闭环')
+  assert.equal(saved.projectId, projectId)
+  assert.equal(saved.nodes.length, 4)
+  assert.equal(saved.edges.length, 3)
+  await closeWindowThroughOs(desktop.child.pid)
+  studio.close(); studio = undefined
+  await waitForNoStudio(desktop.debugOrigin)
+  studio = await openStudioFromMain(main, desktop.debugOrigin)
+  await waitFor(studio, "document.body.innerText.includes('模块库')", 'data studio reopen', 30_000)
+  if (!await studio.evaluate("document.querySelectorAll('.react-flow__node').length === 4")) {
+    await click(studio, '打开'); await click(studio, '打开工作流 项目纯数据闭环', '[role="button"]')
+  }
+  await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 4", 'data restored')
+  await capture(studio, join(evidenceDir, 'data-workflow-restored.png'))
+  await closeWindowThroughOs(desktop.child.pid)
+  studio.close(); studio = undefined
+  await waitForNoStudio(desktop.debugOrigin)
+  checkpoint('正式Studio真实UI编排四个纯数据节点、连线、保存、原生关闭并重开恢复；无Profile或内核')
+  await click(main, '新建自动化')
+  await setInput(main, '[aria-label="自动化名称"]', '纯数据项目任务')
+  await click(main, '关联工作流', '[role="combobox"]')
+  await click(main, '项目纯数据闭环', '[role="option"]')
+  await click(main, '保存配置')
+  await waitFor(main, "document.body.innerText.includes('自动化已创建')", 'data automation saved')
+  await click(main, '启动运行')
+  await waitFor(main, "document.body.innerText.includes('启动自动化')", 'data batch dialog')
+  await setInput(main, '[aria-label="本次任务数"]', '1')
+  await click(main, '启动 1 个任务')
+  await waitFor(main, "document.body.innerText.includes('本批次任务')", 'data batch detail', 30_000)
+  const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+  const terminal = await waitForValue(async () => {
+    const x = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`)
+    return ['completed', 'failed', 'stopped', 'interrupted'].includes(x.batch.status) ? x : null
+  }, 'data task terminal', 30_000)
+  assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify(terminal))
+  const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
+  await click(main, '查看任务'); await click(main, '输入与输出', '[role="tab"]')
+  const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+  assert.equal(outputs.items.length, 4)
+  assert.deepEqual(outputs.items.find(x=>x.name==='reversed').value, ['C','B','A'])
+  assert.equal(outputs.items.find(x=>x.name==='csv').value, 'C\r\nB\r\nA\r\n')
+  await waitFor(main, "document.body.innerText.includes('reversed') && document.body.innerText.includes('csv')", 'data output UI')
+  await capture(main, join(evidenceDir, 'project-data-output.png'))
+  assert.equal((await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)).total, 4)
+  assert.deepEqual(execFileSync('ps', ['-axo','command='], {encoding:'utf8'}).split('\n').filter(x=>x.includes(userData) && /Chromium|CloakBrowser|--project-workflow-worker/.test(x)), [])
+  checkpoint('项目真实批次无需Profile执行CSV解析→扁平化→反转→CSV生成；四份输出持久化可查，worker清理完成')
+  const report = {evidenceId:'BE-project-advanced-data', result:'passed', checkedAt:new Date().toISOString(), platform:`${process.platform}-${process.arch}`, entry:desktop.packaged?'packaged-directory':'development-build', projectId, workflowId:saved.id, batchId:batch.batchId, taskId:task.taskId, checks, buildArtifacts:desktop.packaged?await packagedBuildHashes():null, buildSha256:await buildHash(), boundaries:{userDatabaseTouched:false, workspace:'ephemeral', noProfile:true, noKernel:true, realWorker:true, interaction:'real UI; API assertions only'}}
+  await writeFile(join(evidenceDir,'result.json'), JSON.stringify(report,null,2)+'\n')
+  console.log(JSON.stringify({evidenceDir,...report},null,2))
+}
 
 async function verifyRunToTarget({ studio, runtime, saved, nodeIds, userData, evidenceDir, observedEvents }) {
   const targetId = nodeIds[2]
@@ -966,7 +1044,7 @@ async function arrangeNodes(cdp, nodeIds) {
   const pane = await cdp.evaluate(`(()=>{const r=document.querySelector('.react-flow__pane').getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()`)
   const targets = nodeIds.map((_, index) => ({ x: pane.x + pane.width * .46, y: pane.y + 65 + index * ((pane.height - 130) / 4) }))
   for (let index = nodeIds.length - 1; index >= 0; index--) {
-    const from = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeIds[index])}]');if(!e)return null;const r=e.getBoundingClientRect();for(const yf of [.5,.3,.7])for(const xf of [.5,.2,.8]){const x=r.x+r.width*xf,y=r.y+r.height*yf;const hit=document.elementFromPoint(x,y);if(hit?.closest('.react-flow__node')===e&&!hit.closest('.react-flow__handle'))return{x,y,dx:x-r.x-r.width/2,dy:y-r.y-r.height/2}}return null})()`, `unobscured node position ${nodeIds[index]}`)
+    const from = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeIds[index])}]');if(!e)return null;const r=e.getBoundingClientRect();for(const yf of [.5,.3,.7])for(const xf of [.5,.2,.8,.95,.05]){const x=r.x+r.width*xf,y=r.y+r.height*yf;const hit=document.elementFromPoint(x,y);if(hit?.closest('.react-flow__node')===e&&!hit.closest('.react-flow__handle'))return{x,y,dx:x-r.x-r.width/2,dy:y-r.y-r.height/2}}return null})()`, `unobscured node position ${nodeIds[index]}`)
     const to = targets[index]
     to.x += from.dx; to.y += from.dy
     await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...from })

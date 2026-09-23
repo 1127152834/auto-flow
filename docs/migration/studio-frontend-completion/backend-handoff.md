@@ -164,3 +164,15 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 ## 凭据真实消费闭环（2026-09-23）
 
 [凭据运行证据](../studio-backend-migration/evidence/shared-services/credential-runtime-2026-09-23/result.json) 已完成：原生凭据UI保存→真实CloakBrowser输入引用→页面验证→日志重开→UI删除，开发V7sWWS及最终本地unsigned包ZMGYx6通过。共享系统存储按字段经所属worker私有管道读取，不进入日志/SSE；缺失/空字段保留源占位符，读取等待可停止且迟到响应丢弃。8项真实worker/5项管道保护补充82项关联回归。此闭环不代表所有集成或项目凭据ACL已完成；213节点622/17槽位不变，Intel/Windows未实测。
+
+## 项目资源默认规则（2026-09-23，用户确认）
+
+Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式覆盖，不新增资源白名单。该产品选择已经确认，后续按已有主应用资源边界接入。历史文字中的“权限资源／凭据ACL待确认”不代表获准新增ACL；项目归属与跨项目数据隔离仍继续校验。
+
+## 高级数据项目任务桥（2026-09-23，开发及正式包通过）
+
+[本批证据](../studio-backend-migration/evidence/project-integration/advanced-data-2026-09-23/result.json)集中记录26个既有高级列表／字典／CSV执行器的项目准入、字段保留及输出登记。复用现有图执行器，不重写数据算法；旧四节点和五节点桥保留。纯数据冻结计划不要求Profile或内核，不预留浏览器环境；停止和重启仍经过受管worker清理，JSON null产出仍作为有效结果登记。
+
+开发正式UI已经完成CSV解析→列表扁平化→反转→CSV生成的项目批次链，保存及原生关闭重开后运行，四份持久输出可查。正式包状态由本批证据记录，不借用前一包结果。26入口共享桥接通过不等同项目控制流／业务表／全部公共运行上下文已完成：项目worker凭据读取及模型端口仍单列；普通Studio的凭据证据不能替代项目任务凭据消费。
+
+该链路随后通过最终macOS arm64 unsigned包 `V8a98L`；同包 `7k2XEy` 实际回归原五节点、PNG、导航停止、失败和恢复成功。最终177项关联回归、Ruff/mypy/OpenAPI/目录检查、PyInstaller及冻结启动通过。仅此批项目顺序数据桥核销，不替代其他节点族、凭据/模型上下文或平台验收。

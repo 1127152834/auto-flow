@@ -1,0 +1,37 @@
+正式项目 UI 新建项目，由项目自动化目录进入 Studio
+主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile
+通过正式新建入口创建空工作流
+正式Studio真实UI编排四个纯数据节点、连线、保存、原生关闭并重开恢复；无Profile或内核
+项目真实批次无需Profile执行CSV解析→扁平化→反转→CSV生成；四份输出持久化可查，worker清理完成
+{
+  "evidenceDir": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-V8a98L",
+  "evidenceId": "BE-project-advanced-data",
+  "result": "passed",
+  "checkedAt": "2026-09-23T06:45:14.605Z",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "9580c764-c71b-4065-88e2-9286a98a9e0c",
+  "workflowId": "0IzYqkxv4BOWPhPt-4YPn",
+  "batchId": "06470cab-2214-4368-b9f8-c72a81e27d06",
+  "taskId": "dfd5ffbc-4805-49fe-bdaf-fba77825e32a",
+  "checks": [
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "正式Studio真实UI编排四个纯数据节点、连线、保存、原生关闭并重开恢复；无Profile或内核",
+    "项目真实批次无需Profile执行CSV解析→扁平化→反转→CSV生成；四份输出持久化可查，worker清理完成"
+  ],
+  "buildArtifacts": {
+    "appAsarSha256": "0928be5a38460c30588efddf395f6a6228c02f7ef500dbc3964d7104370fab41",
+    "backendExecutableSha256": "7592853e30d325e10c1fc3f1621d704ba9e3be040f9b1d2e8c42f3b7fffa2137"
+  },
+  "buildSha256": "d98185d9bb04953f502c8620f98572652973b1e3184429a1dda1ad1071cb3775",
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "noProfile": true,
+    "noKernel": true,
+    "realWorker": true,
+    "interaction": "real UI; API assertions only"
+  }
+}

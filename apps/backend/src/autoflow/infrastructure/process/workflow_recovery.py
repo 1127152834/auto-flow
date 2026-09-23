@@ -16,7 +16,7 @@ from autoflow.infrastructure.process.project_browser_processes import (
 
 
 async def recover_worker_directories(
-    temp_dir: Path, run_id: str, executable: Path, *, timeout: float = 3,
+    temp_dir: Path, run_id: str, executable: Path | None, *, timeout: float = 3,
 ) -> None:
     if str(UUID(run_id)) != run_id:
         raise RuntimeError("Invalid workflow cleanup identity")

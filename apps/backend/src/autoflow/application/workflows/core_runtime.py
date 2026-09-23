@@ -9,6 +9,9 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
 from autoflow.domain.workflows.models import WorkflowRepository, canonical_json
 from autoflow.domain.workflows.run_validation import prepare_run as compile_workflow
 from autoflow.domain.workflows.runtime import (
@@ -76,6 +79,19 @@ class WorkflowRuntimeService:
     ) -> None:
         self._session_factory = session_factory
         self._workflow_repository = workflow_repository
+
+    def requires_browser(self, workflow_id: str) -> bool:
+        from .runtime import WorkflowRuntime
+
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            # Missing documents are reported by document validation; resource
+            # inspection must not silently treat them as a pure-data workflow.
+            if row is None:
+                return True
+            return WorkflowRuntime(build_production_executor_registry()).requires_browser(
+                workflow_record(row).document["content"]
+            )
 
     def prepare_content(
         self,
@@ -155,7 +171,11 @@ class WorkflowRuntimeService:
             )
         record = workflow_record(current)
         prepared = compile_workflow(record.document)
-        requirements = ["browser.cloakbrowser"]
+        from .runtime import WorkflowRuntime
+
+        requirements = (["browser.cloakbrowser"] if WorkflowRuntime(
+            build_production_executor_registry()
+        ).requires_browser(prepared.document["content"]) else [])
         missing = sorted(set(requirements) - set(available_capabilities))
         if missing:
             raise WorkflowRuntimeError(

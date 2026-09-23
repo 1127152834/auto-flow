@@ -13,10 +13,14 @@ from threading import Event, Thread
 from typing import Any, Protocol, TextIO
 from uuid import uuid4
 
+from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.infrastructure.filesystem.project_workflow_artifacts import (
     ProjectScreenshotWriter,
 )
-from autoflow.providers.browser.project_graph import ProjectGraphExecutor
+from autoflow.providers.browser.project_graph import (
+    ProjectGraphExecutor,
+    _ProjectRegistry,
+)
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
 
@@ -143,13 +147,23 @@ def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.s
 
 async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, stdout: TextIO) -> int:
     run_id, generation = _validate_start(command)
-    executable = Path(_required_env("CLOAKBROWSER_BINARY_PATH"))
-    cache = Path(_required_env("CLOAKBROWSER_CACHE_DIR"))
-    if not executable.is_absolute() or not executable.is_file() or not cache.is_absolute():
-        raise ProtocolFailure
+    plan = command["executionPlan"]
+    document = plan.get("document")
+    if not isinstance(document, dict):
+        document = {"nodes": [{"data": {**node["data"], "moduleType": node["moduleType"]}}
+                              for node in plan["nodes"]]}
+    requires_browser = WorkflowRuntime(_ProjectRegistry(None)).requires_browser(document)
     browser = command["browser"]
-    launch = browser_launch_options(browser, headless=_boolean(browser, "headless"))
-    relay_context = BrowserProxyRelay(proxy) if (proxy := _optional_proxy(browser)) else nullcontext()
+    launch = {}
+    proxy = None
+    if requires_browser:
+        executable = Path(_required_env("CLOAKBROWSER_BINARY_PATH"))
+        cache = Path(_required_env("CLOAKBROWSER_CACHE_DIR"))
+        if not executable.is_absolute() or not executable.is_file() or not cache.is_absolute():
+            raise ProtocolFailure
+        launch = browser_launch_options(browser, headless=_boolean(browser, "headless"))
+        proxy = _optional_proxy(browser)
+    relay_context = BrowserProxyRelay(proxy) if proxy else nullcontext()
     control = _Control(incoming, generation, stopped)
     control_task = asyncio.create_task(control.read())
     context = None
@@ -191,34 +205,35 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         with relay_guard as relay:
             launch["proxy"] = {"server": relay.url} if relay is not None else None
             with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):  # noqa: ASYNC230
-                from cloakbrowser import (  # type: ignore[import-untyped]
-                    launch_context_async,
-                    launch_persistent_context_async,
-                )
-                user_data_dir = browser.get("userDataDir")
-                launching = asyncio.create_task(
-                    launch_persistent_context_async(user_data_dir=user_data_dir, **launch)
-                    if isinstance(user_data_dir, str) and user_data_dir
-                    else launch_context_async(**launch)
-                )
-                launch_cancel = asyncio.create_task(control.wait_cancelled())
-                try:
-                    done, _ = await asyncio.wait(
-                        {launching, launch_cancel}, return_when=asyncio.FIRST_COMPLETED
+                if requires_browser:
+                    from cloakbrowser import (  # type: ignore[import-untyped]
+                        launch_context_async,
+                        launch_persistent_context_async,
                     )
-                    if launching not in done:
-                        launching.cancel()
-                    context = await launching
-                    control.check_parent()
-                    if control.cancelled:
-                        raise asyncio.CancelledError
-                finally:
-                    launch_cancel.cancel()
-                    if not launching.done():
-                        launching.cancel()
-                    await asyncio.gather(launch_cancel, launching, return_exceptions=True)
-                context.set_default_timeout(0)
-                context.set_default_navigation_timeout(0)
+                    user_data_dir = browser.get("userDataDir")
+                    launching = asyncio.create_task(
+                        launch_persistent_context_async(user_data_dir=user_data_dir, **launch)
+                        if isinstance(user_data_dir, str) and user_data_dir
+                        else launch_context_async(**launch)
+                    )
+                    launch_cancel = asyncio.create_task(control.wait_cancelled())
+                    try:
+                        done, _ = await asyncio.wait(
+                            {launching, launch_cancel}, return_when=asyncio.FIRST_COMPLETED
+                        )
+                        if launching not in done:
+                            launching.cancel()
+                        context = await launching
+                        control.check_parent()
+                        if control.cancelled:
+                            raise asyncio.CancelledError
+                    finally:
+                        launch_cancel.cancel()
+                        if not launching.done():
+                            launching.cancel()
+                        await asyncio.gather(launch_cancel, launching, return_exceptions=True)
+                    context.set_default_timeout(0)
+                    context.set_default_navigation_timeout(0)
                 _write(stdout, _envelope(command, "ready"))
                 variables = dict(command.get("variables", {}))
                 variables.update(command.get("parameters", {}))

@@ -43,7 +43,7 @@ class _Worker:
     directory: Path
     artifact_directory: Path
     relative_artifact_directory: str
-    executable: Path
+    executable: Path | None
     task: asyncio.Task[Any]
     process: asyncio.subprocess.Process | None = None
     birth: int | None = None
@@ -83,7 +83,7 @@ class ProjectWorkflowWorkerManager:
     async def run(
         self, *, run_id: str, execution_generation: int,
         execution_plan: dict[str, Any], parameters: dict[str, Any],
-        variables: dict[str, Any], browser: dict[str, Any], executable: Path,
+        variables: dict[str, Any], browser: dict[str, Any], executable: Path | None,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
     ) -> WorkerOutcome:
         if str(UUID(run_id)) != run_id or execution_generation < 1:
@@ -100,7 +100,7 @@ class ProjectWorkflowWorkerManager:
                 self._root / run_id / f"generation-{execution_generation}",
                 self._artifact_root / run_id / f"generation-{execution_generation}",
                 f"runs/{run_id}/generation-{execution_generation}",
-                executable.resolve(strict=True), current,
+                executable.resolve(strict=True) if executable is not None else None, current,
             )
             self._worker = worker
         try:
@@ -111,8 +111,10 @@ class ProjectWorkflowWorkerManager:
             env = os.environ.copy()
             env.update(self._worker_env)
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
+            env.pop("CLOAKBROWSER_BINARY_PATH", None)
+            if worker.executable is not None:
+                env["CLOAKBROWSER_BINARY_PATH"] = str(worker.executable)
             env.update({
-                "CLOAKBROWSER_BINARY_PATH": str(worker.executable),
                 "CLOAKBROWSER_CACHE_DIR": str(worker.directory),
                 "AUTOFLOW_WORKFLOW_ARTIFACT_DIR": str(worker.artifact_directory),
                 "AUTOFLOW_WORKFLOW_ARTIFACT_RELATIVE_DIR": worker.relative_artifact_directory,

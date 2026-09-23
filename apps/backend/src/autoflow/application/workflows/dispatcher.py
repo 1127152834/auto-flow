@@ -37,7 +37,7 @@ class WorkerPort(Protocol):
         parameters: dict[str, Any],
         variables: dict[str, Any],
         browser: dict[str, Any],
-        executable: Path,
+        executable: Path | None,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
     ) -> WorkerOutcome: ...
 
@@ -386,17 +386,17 @@ class WorkflowRunDispatcher:
                         "WORKFLOW_ADMISSION_CLOSED", "运行准入已关闭", 503
                     )
                 content = self._prepared(dispatched.prepared_content_id)
-                lease = await self._resources.acquire(
-                    dispatched.resource_request, dispatched.run_request_id
-                )
-                self._lease = lease
+                if "browser.cloakbrowser" in content.capability_requirements:
+                    lease = await self._resources.acquire(
+                        dispatched.resource_request, dispatched.run_request_id
+                    )
+                    self._lease = lease
                 current = self._get_run(dispatched.run_id)
                 if (
                     current.status != "running"
                     or current.execution_generation != dispatched.execution_generation
                 ):
-                    lease.release()
-                    self._lease = None
+                    self._release_lease()
                     if current.status == "stopping":
                         self._transition_current(
                             current.run_id, current.execution_generation, "cancelled"
@@ -414,8 +414,8 @@ class WorkflowRunDispatcher:
                             execution_plan=thaw_json(content.execution_plan),
                             parameters=thaw_json(current.parameters),
                             variables=self._variables(content, current),
-                            browser=dict(lease.browser),
-                            executable=lease.executable,
+                            browser=dict(lease.browser) if lease else {},
+                            executable=lease.executable if lease else None,
                             on_event=lambda event: self._commit_event(
                                 current, content, event
                             ),
@@ -435,8 +435,7 @@ class WorkflowRunDispatcher:
                     )
             if self._worker.busy() or not outcome.cleanup_confirmed:
                 raise RuntimeError("worker cleanup unconfirmed")
-            lease.release()
-            self._lease = None
+            self._release_lease()
             current = self._get_run(dispatched.run_id)
             if (
                 current.execution_generation != dispatched.execution_generation

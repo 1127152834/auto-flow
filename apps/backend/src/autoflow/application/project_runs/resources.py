@@ -40,6 +40,14 @@ class ProjectRunResourceResolver:
                 {"issues": issues, "retryable": False},
             )
 
+        if not self._query.requires_browser(automation):
+            return {
+                "browser": "none",
+                "automaticExecutionTimeoutSeconds": automation.run_policy[
+                    "automaticExecutionTimeoutSeconds"
+                ],
+            }
+
         policy = automation.environment_policy
         source = policy.get("source")
         if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:

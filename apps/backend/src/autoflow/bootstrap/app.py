@@ -480,6 +480,7 @@ def create_app(
         proxy_options,
         model_service,
         environment_service,
+        workflow_runtime=app.state.project_workflow_runtime,
     )
     project_run_coordinator = ProjectRunCoordinator(
         session_factory,

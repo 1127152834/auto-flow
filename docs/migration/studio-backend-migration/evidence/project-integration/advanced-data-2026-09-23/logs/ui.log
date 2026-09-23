@@ -1,0 +1,14 @@
+正式项目 UI 新建项目，由项目自动化目录进入 Studio
+主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile
+通过正式新建入口创建空工作流
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+Error: timed out waiting for unobscured node position Ji-vNl_N_aFP6DY_RuaX_: null
+    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)
+    at async arrangeNodes (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:1047:18)
+    at async verifyProjectData (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:722:3)
+    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:117:5
+
+Node.js v26.7.0

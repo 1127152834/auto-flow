@@ -31,6 +31,9 @@ class ResourceQuery:
         self.issues = list(issues)
         self.seen = []
 
+    def requires_browser(self, value):
+        return True
+
     def inspect_resources(self, value):
         self.seen.append(value)
         return self.issues

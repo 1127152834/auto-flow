@@ -510,6 +510,9 @@ def configure_project_workflow_runtime(
     worker = ProjectWorkflowWorkerManager(temp_dir)
 
     async def recover(run: Any) -> None:
+        if run.resource_request.get("browser") == "none":
+            await recover_worker_directories(temp_dir, run.run_id, None)
+            return
         for kernel in installed():
             if f"{kernel.edition}:{kernel.version}" == run.resource_request.get(
                 "kernelId"

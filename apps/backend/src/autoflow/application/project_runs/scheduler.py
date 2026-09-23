@@ -588,6 +588,8 @@ class ProjectBatchScheduler:
                     if isinstance(item, dict) and item.get("inputId"):
                         inputs[item["inputId"]] = item
             frozen = batch.frozen_request or {}
+            if frozen.get("resourceRequest", {}).get("browser") == "none":
+                return
             policy = frozen.get("environmentOverride") or frozen.get("automation", {}).get(
                 "environmentPolicy"
             )
@@ -874,7 +876,7 @@ class ProjectBatchScheduler:
                 )
             )
             session.flush()
-            if environments is not None:
+            if environments is not None and prepared["resourceRequest"].get("browser") != "none":
                 policy = row.frozen_request["automation"]["environmentPolicy"]
                 environments.reserve_task_instance(
                     session, project_id, task_id, run.run_id, policy,

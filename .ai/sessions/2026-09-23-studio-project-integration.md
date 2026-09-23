@@ -174,3 +174,15 @@
 - 82关联、8最终实际worker、5管道保护分别通过；Ruff/mypy/OpenAPI/结构通过。开发V7sWWS、最终unsigned包ZMGYx6完整真实UI通过；znjbwe保留前一候选，不冒充最终版本。汇总shared-services/credential-runtime-2026-09-23。
 - 下一块高级数据26节点项目任务桥：现有注册和算法可复用，缺catalog准入/resultVariable产出以及无浏览器项目资源链。已有80项用例，先补边界再实际项目任务验收；无新执行器。
 - 范围213、622/17及14通知排除不变；项目资源白名单问题未收到答复，其他实现继续。
+
+## 项目资源规则确认 confirmed
+
+来源：本轮用户异步答复。Studio Profile/模型沿用项目默认值，允许任务显式覆盖；不新增资源白名单。此前该问题待确认状态superseded。后续在已有资源边界实现默认继承及显式覆盖，不将默认资源当作ACL。
+
+## 高级数据项目顺序任务桥 confirmed
+
+- 26个列表/字典/CSV节点复用原版迁入执行器；项目catalog准入，resultVariable输出登记，dict_get_path实际JSON null保留。旧四节点格式仍可执行，新数据族保持原字段并使用共享图适配。
+- 既有runtime判断实际浏览器需求；纯数据无Profile/内核/代理租约，不预留环境实例，真实worker ACK/停止/持久日志机制不变。重启恢复使用原生身份和每run临时目录标记；真实三个进程用例证明其他运行与用户进程存活。冷进程import回归修复compat re-export循环。
+- 26入口81项测试、6项真实worker/保存/无Profile/停止/JSON null/bootstrap恢复，最终关联177项通过；另194广回归及46环境/批次专项保留。Ruff/mypy/OpenAPI/结构通过，冻结约270秒。
+- 正式开发IvwKrU及最终unsigned包V8a98L通过无Profile/无内核的CSV解析→扁平化→反转→CSV生成、保存/AXClose/重开、批次与四份持久输出。最终包7k2XEy回归原五节点/PNG/停止/失败/恢复。DQkSqy UI拖动遮挡、CJlcax纯数据仍预留环境的失败证据保留，未放宽断言。
+- 汇总project-integration/advanced-data-2026-09-23；26节点旧三槽位未重标，新增项目顺序桥证据，213与622/17不变。公共项目CredentialReader/models端口尚缺，不能把普通Studio凭据通过计到项目任务；控制流/业务表/其余节点族及平台仍保留。下一块依用户明确答复接项目默认Profile/模型且允许覆盖，不新增ACL。
