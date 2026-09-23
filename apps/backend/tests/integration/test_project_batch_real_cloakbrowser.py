@@ -956,6 +956,13 @@ async def test_real_project_batch_http(
                 assert environments['total'] == 1
                 attempts_path = prefix + f"/tasks/{failed['taskId']}/node-attempts"
                 attempts = (await client.get(attempts_path)).json()
+                forged_targets = [{'recordRef': row['ref'], 'expectedLinkRevision': row['linkRevision'], 'replaceAllowed': False} for row in rows]
+                forged_targets[0]['recordRef'] = {**forged_targets[0]['recordRef'], 'projectId': str(uuid4())}
+                forged = await client.post(prefix + f"/environment-operations/{saved['operationId']}/repair", headers={'Idempotency-Key': str(uuid4())}, json={'recordTargets': forged_targets})
+                assert forged.status_code == 202, forged.text
+                assert forged.json()['outcome']['phase'] == 'saved_unlinked'
+                assert (await client.get(prefix + '/environments')).json() == environments
+                assert (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items'] == rows
                 repaired = await client.post(prefix + f"/environment-operations/{saved['operationId']}/repair", headers={'Idempotency-Key': str(uuid4())}, json={'recordTargets': [{'recordRef': row['ref'], 'expectedLinkRevision': row['linkRevision'], 'replaceAllowed': False} for row in rows]})
                 assert repaired.status_code == 202, repaired.text
                 assert repaired.json()['outcome']['phase'] == 'completed'

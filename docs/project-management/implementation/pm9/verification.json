@@ -1,22 +1,22 @@
 {
   "date": "2026-09-23",
-  "status": "new_link_boundary_candidate_regression_pending_release_not_accepted",
+  "status": "current_c165_three_platform_ci_and_arm_isolated_install_passed_release_not_accepted",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "DATA-LINK-02 forged recordRef.projectId acceptance fixed at the shared association preflight and commit boundary; local contract/rule 33 passed and real browser worker data-link-race passed. New production source needs full regression and three-platform/packaged verification; historical dadb24a1 CI does not cover this guard.",
+    "DATA-LINK-02 forged recordRef.projectId acceptance fixed at shared association preflight and commit boundary; local full backend 3479 passed/77 skipped, contract/rule 33 passed, and actual browser-worker End followed by forged repair refusal/correct repair-only association passed. Current c16532d7 three-platform CI succeeded after Intel-only retry. DATA-LINK-02 remains partial because worker-generated forged End target and full business acceptance are open.",
     "S4 Windows existing ordinary-file read and absolute-drive new-file table export passed bounded native probe 35832925704 and final three-platform matrix 35833223498 at dadb24a1. Existing output overwrite/append remain refused with 501.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
     "3 of 251 requirements still have no located assertion (DATA-LIFE-01, DATA-SH-03, XE-G07); DATA-LINK-02 now has direct scoped evidence, so 205 partial / 46 planned / 0 verified. DATA-WRITE-13 real-worker partial Sheets intent preservation passed the earlier selected three-platform CI; packaged real-Google and full business acceptance remain open.",
     "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6 and variable parity20/20 passed. Earlier 1b2979ea matrix backend3474/75 on Mac is historical; current full backend counts are in finalCICandidate.",
-    "Old ARM data-response-loss failure reproduced locally: Chromium owner PID exited but stale SingletonSocket target remained; ownership-checked macOS lock fix passed source real worker and unit tests. Current dadb24a1 ARM DMG isolated local installation/full desktop smoke passed using the public 145 kernel; other physical release gates remain pending.",
+    "Old ARM data-response-loss failure reproduced locally: Chromium owner PID exited but stale SingletonSocket target remained; ownership-checked macOS lock fix passed source real worker and unit tests. Current c16532d7 ARM DMG isolated local installation/full desktop smoke passed; Finder/Gatekeeper, native panels and other physical release gates remain pending.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local and selected three-platform real-worker scenario passed. Current packaged real-Google acceptance remains separate.",
-    "Historical defa1955 matrix35816693045: ARM data-response-loss failed; Windows/Intel cancelled. Matrix35819716149 @3df7700c ARM real worker passed but stale source smoke failed; Windows/Intel cancelled. Matrix35833223498 @dadb24a1 succeeded on Windows x64, macOS Intel and Apple Silicon, but predates the DATA-LINK-02 production guard; it is historical for the new candidate. CI success is not complete PM9 release acceptance.",
+    "Historical defa1955 matrix35816693045: ARM data-response-loss failed; Windows/Intel cancelled. Matrix35819716149 @3df7700c ARM real worker passed but stale source smoke failed; Windows/Intel cancelled. Prior matrix35833223498 @dadb24a1 succeeded on Windows, Intel and ARM but predates DATA-LINK-02 guard. Current matrix35846519367 @c16532d7 succeeded on Windows/ARM attempt 1 and Intel attempt 2; Intel attempt 1 DMG build failed Resource busy after tests and packaged smoke passed. CI success is not complete PM9 release acceptance.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
-    "Current dadb24a1 ARM CI DMG was checksum-verified, copied to an isolated local installation and ran full desktop smoke. Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain incomplete. Earlier ARM native-dialog evidence retains its historical hash.",
+    "Current c16532d7 ARM CI DMG was checksum-verified, copied to an isolated local installation and ran full desktop smoke. Current Intel DMG checksum and x86_64 image contents were verified on ARM, but no Intel physical run. Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain incomplete. Earlier dadb24a1 ARM native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
@@ -33,7 +33,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "pending_link_boundary_commit",
+  "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
   "checks": {
     "currentLocal": "lifecycle-restart-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -44,18 +44,18 @@
   },
   "platforms": {
     "win32-x64": {
-      "status": "previous_full_ci_success_new_guard_pending_physical_acceptance_pending",
+      "status": "current_c165_full_ci_success_physical_acceptance_pending",
       "physicalInstaller": "pending native physical machine acceptance",
       "scopedCiReport": "ci-capabilities-win32-x64.json"
     },
     "darwin-x64": {
-      "status": "previous_full_ci_success_new_guard_pending_physical_acceptance_pending",
-      "physicalInstaller": "pending native physical machine acceptance",
+      "status": "current_c165_full_ci_success_after_intel_only_retry_physical_acceptance_pending",
+      "physicalInstaller": "current c16532d7 DMG hdiutil verify VALID and mounted x86_64 app checked on ARM; Intel physical installation remains pending",
       "scopedCiReport": "ci-capabilities-darwin-x64.json"
     },
     "darwin-arm64": {
-      "status": "previous_full_ci_success_new_guard_pending_physical_acceptance_pending",
-      "physicalInstaller": "current dadb24a1 CI DMG checksum/mount/isolated copy/full installed desktop smoke passed locally; installed-arm-current-candidate.json. Finder/Gatekeeper and native panels pending",
+      "status": "current_c165_full_ci_and_isolated_install_success_physical_release_gates_pending",
+      "physicalInstaller": "Current c16532d7 CI DMG checksum/mount/isolated copy/full installed desktop smoke passed locally; installed-arm-link-guard-candidate.json. Finder/Gatekeeper and native panels pending",
       "priorCiReport": "ci-capabilities-82c067c9-darwin-arm64.json",
       "scopedCiReport": "ci-capabilities-darwin-arm64.json",
       "priorNativePanels": "install-read-fix-darwin-arm64.json (historical hash, not current panel evidence)"
@@ -146,41 +146,44 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Post-dadb24a1 DATA-LINK-02 project-identity guard has local contract/rule33, Ruff/mypy407 and actual browser worker data-link-race1 passed; full backend, three-platform and packaged candidate checks are pending. The prior dadb24a1 matrix35833223498 and isolated ARM DMG remain historical source-specific evidence; exact old measurements remain in ci-s4-final-follow-through.json and installed-arm-current-candidate.json.",
+  "workingCandidate": "Production source c16532d79fe8db87a8f9b371d9045a02fb89e362: local full backend 3479 passed/77 skipped, contract/rule33, Ruff/mypy407 and actual browser-worker End followed by forged repair/correct repair-only association passed. Current three-platform CI 35846519367 succeeded (Windows/ARM attempt 1, Intel attempt 2 after attempt 1 DMG temporary-device Resource busy). Current ARM DMG isolated installed full desktop smoke passed. Packaged live Google/OAuth, physical platform gates and unapproved L/M/S4 options remain open.",
   "finalCICandidate": {
-    "codeCandidate": "dadb24a146bc6cb7635ee4725447724f14ee543e",
-    "productionSourceCommit": "dadb24a146bc6cb7635ee4725447724f14ee543e",
-    "status": "historical_three_platform_checks_success_before_link_guard",
+    "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+    "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+    "status": "three_platform_success_after_intel_only_retry",
+    "runId": "35846519367",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35846519367",
+    "report": "ci-link-boundary-final-follow-through.json",
+    "attempt1": "Windows and ARM success, Intel DMG temporary disk Resource busy failure after tests and packaged smoke passed",
+    "attempt2": "Intel-only complete success on identical source",
     "platforms": {
       "win32-x64": {
         "status": "success",
-        "nativeBoundary": "251 passed / 28 skipped",
-        "backend": "3469 passed / 85 skipped",
+        "backend": "3471 passed / 85 skipped",
         "frontend": "5471 passed",
-        "realWorker": "29 passed / 11 deselected"
-      },
-      "darwin-x64": {
-        "status": "success",
-        "backend": "3477 passed / 77 skipped",
-        "frontend": "5471 passed",
-        "realWorker": "29 passed / 11 deselected"
+        "realWorker": "29 passed / 11 deselected",
+        "installer": "NSIS built"
       },
       "darwin-arm64": {
         "status": "success",
-        "backend": "3477 passed / 77 skipped",
+        "backend": "3479 passed / 77 skipped",
         "frontend": "5471 passed",
-        "realWorker": "29 passed / 11 deselected"
+        "realWorker": "29 passed / 11 deselected",
+        "installer": "DMG built and isolated local install/full desktop smoke passed"
+      },
+      "darwin-x64": {
+        "status": "success_after_retry",
+        "backend": "3479 passed / 77 skipped",
+        "frontend": "5471 passed",
+        "realWorker": "29 passed / 11 deselected",
+        "installer": "DMG built; image verified on ARM, physical Intel pending"
       }
     },
-    "physicalInstallation": "Current dadb24a1 ARM CI DMG passed local checksum/read-only mount/isolated copy/full installed desktop smoke; Finder/Gatekeeper, native panels, Windows/Intel physical installation and signing remain pending",
-    "runId": "35833223498",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35833223498",
-    "realWorkerSelection": "29 passed/11 deselected on each platform, including real_loop_keeps_two_sheet_intents, data-response-loss, real_archive and manual-evidence-reconnect.",
-    "report": "ci-s4-final-follow-through.json",
-    "nativeProbeJobs": "pm9-native-probe and pm9-worker-probe skipped"
+    "nativeProbeJobs": "pm9-native-probe and pm9-worker-probe skipped; independent prior native probe evidence retained",
+    "physicalInstallation": "ARM isolated command-line install passed; Windows/Intel physical installation, Finder/Gatekeeper/native panels/signing/notarization pending"
   },
   "codeCandidateScope": "Prior PM9 production runtime/data/Windows capabilities plus shared environment association project-identity guard.",
-  "testCandidate": "pending_link_boundary_commit",
+  "testCandidate": "Post-c165 test-only real-worker forged-repair assertion, passed locally in 13.26s; not part of Actions 35846519367 source snapshot. Production source remains c16532d79fe8db87a8f9b371d9045a02fb89e362.",
   "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -439,7 +442,7 @@
   },
   "linkBoundaryFollowThrough": {
     "report": "link-boundary-follow-through.json",
-    "status": "local_contract_and_real_worker_passed_full_candidate_pending",
+    "status": "local_full_current_three_platform_ci_and_arm_installed_passed_release_pending",
     "releaseAccepted": false
   },
   "windowsExistingOutputRead": {
@@ -448,5 +451,26 @@
     "nativeRun": "35832925704",
     "fullRun": "35833223498",
     "releaseAccepted": false
+  },
+  "linkBoundaryCICandidate": {
+    "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+    "runId": "35846519367",
+    "report": "ci-link-boundary-final-follow-through.json",
+    "attempt1": "ci-link-boundary-attempt-1.json",
+    "attempt1Status": "windows_arm_success_intel_dmg_detach_failure",
+    "attempt2": "intel_only_success",
+    "nativeProbeJobs": "skipped",
+    "releaseAccepted": false
+  },
+  "installedArmLinkGuardCandidate": {
+    "report": "installed-arm-link-guard-candidate.json",
+    "status": "current_c165_arm_isolated_install_full_desktop_smoke_passed",
+    "releaseAccepted": false
+  },
+  "historicalPreviousFinalCICandidate": {
+    "codeCandidate": "dadb24a146bc6cb7635ee4725447724f14ee543e",
+    "runId": "35833223498",
+    "report": "ci-s4-final-follow-through.json",
+    "note": "Succeeded before DATA-LINK-02 project identity guard; retained as historical source-specific evidence."
   }
 }

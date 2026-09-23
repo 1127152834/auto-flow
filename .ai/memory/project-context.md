@@ -1,6 +1,6 @@
 # 项目上下文
 
-2026-09-23 DATA-LINK-02 新候选（confirmed 本机范围，完整平台待验）：生产环境关联仓库预检与提交均增加 `recordRef.projectId` 权威项目核对；伪造外部项目标签但保留本地行键的直接 HTTP 反例 RED→GREEN。契约/规则 33 passed，真实浏览器 data-link-race 1 passed，Ruff/mypy407 通过；251 条台账变为 248 有范围断言、3 未定位、205 partial/46 planned/0 verified。上一 dadb24a1 三平台 CI 与 ARM 隔离安装属于新 guard 前源码，不能作为本候选平台证据。详情见 `docs/project-management/implementation/pm9/link-boundary-follow-through.json`；`releaseAccepted=false`。下文旧候选和统计按各自哈希保留历史。
+2026-09-23 DATA-LINK-02 新候选（confirmed 本机与三平台 CI 范围，物理发行待验）：生产环境关联仓库预检与提交均增加 `recordRef.projectId` 权威项目核对；伪造外部项目标签但保留本地行键的直接 HTTP 反例 RED→GREEN。本机全后端 3479 passed/77 skipped，契约/规则 33 passed，真实浏览器 data-link-race 1 passed（实际 End 保存后伪造身份修复保持未关联、正确修复不重跑），Ruff/mypy407 通过；251 条台账变为 248 有范围断言、3 未定位、205 partial/46 planned/0 verified。当前 c16532d7 的 Windows/ARM CI 与 ARM 隔离安装已通过；Intel 首次全部测试及打包 smoke 通过但 DMG 临时盘弹出 Resource busy，同源码单 job 重跑后完整成功；首轮失败证据保留，Intel 实机仍待验收。上一 dadb24a1 仍为历史源码。详情见 `docs/project-management/implementation/pm9/link-boundary-follow-through.json`；`releaseAccepted=false`。下文旧候选和统计按各自哈希保留历史。
 
 2026-09-23 本机回归收口（confirmed）：生命周期源码94f8e0a8完整后端3472 passed/74 skipped/2 warnings，796.74秒；之后defa1955二进制读取补丁单独16项+真实worker1项、Ruff/mypy407/构建/原15秒sidecar通过，未宣称同一最终本机全量快照。最终三平台35816693045进行中。已完成源生产恢复/删除/服务重启补证及运行目录清理修复；Windows真实PNG409的读取修复待原生确认。旧14df矩阵35811305102两种Mac成功、Windows失败；所有旧状态以此按hash区分。releaseAccepted=false。
 

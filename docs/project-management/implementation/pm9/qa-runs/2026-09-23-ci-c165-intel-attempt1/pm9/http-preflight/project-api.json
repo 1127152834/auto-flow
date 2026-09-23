@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "x64",
+  "packaged": false,
+  "startedAt": "2026-09-23T10:12:04.048Z",
+  "checks": [
+    "1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses",
+    "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+    "archive blocks writes, repeat command recovers one operation, restore preserves data",
+    "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+    "restarted production sidecar retains the same project and record"
+  ],
+  "concurrentWrites": {
+    "status": "passed",
+    "producers": 5,
+    "records": 1000,
+    "busyRetries": 0,
+    "table": {
+      "projectId": "541cbbe1-44c9-426f-b995-b819a74ac6b7",
+      "tableId": "382c34be-4d9a-46fe-8b6f-e3a39059f324",
+      "name": "PM9 并发写入回归",
+      "description": "",
+      "sourceKind": "local",
+      "source": {
+        "kind": "local"
+      },
+      "datasetGeneration": "8f6336b7-688c-4b5b-8575-7f7ba35d9e40",
+      "tableRevision": 1,
+      "identity": {
+        "mode": "system"
+      },
+      "slotDefinitions": [],
+      "recordCount": 0,
+      "syncSummary": {
+        "status": "notApplicable",
+        "pendingCount": 0,
+        "unknownCount": 0
+      },
+      "createdAt": "2026-09-23T10:12:12.234792Z",
+      "updatedAt": "2026-09-23T10:12:12.234792Z"
+    }
+  },
+  "projectId": "541cbbe1-44c9-426f-b995-b819a74ac6b7",
+  "tableId": "339f78e0-df9a-460e-893e-6f0a596a0cb8",
+  "tablePath": "/projects/541cbbe1-44c9-426f-b995-b819a74ac6b7/tables/339f78e0-df9a-460e-893e-6f0a596a0cb8",
+  "boundary": "production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed"
+}
