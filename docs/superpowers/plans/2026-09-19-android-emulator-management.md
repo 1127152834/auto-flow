@@ -57,7 +57,7 @@
 
 | 阶段 | 任务当前状态 | 下一验收门槛 |
 | --- | --- | --- |
-| AM1 | T01–T05 `passed`；T06/T07 `partial` | 精确 200%/两种窗口尺寸、旧 temporary 兼容与应用写入受控中断 |
+| AM1 | T01–T05 `passed`；T06/T07 `partial` | 精确 200%/两种窗口尺寸、旧 temporary 兼容与桌面应用确认流程 |
 | AM2 | T08/T10 功能 `passed`；T09/T12 `partial`；T11 检测规则 `passed`、专用 GApps 账号链 `blocked` | 固定摘要网络拉取和认证 HTTP 内容删除已实测；待桌面删除、断线核实、候选镜像/账号下载链与阶段回退 |
 | AM3 | T13–T16 `partial` | 双实例/五实例、部分失败、修订冲突项重试和容量等待取消已验；十台容量 blocked，运行时瞬时故障/未知结果、桌面前台/探测指标、应用确认与真实 ADB 断连仍未验 |
 | AM4 | T17–T19 已列功能 `passed`；T20 `partial` | 文件流备份恢复、真实 ENOSPC/传输取消、受限高级日志与全分支审查修复已验；恢复解包中 SIGKILL 已补；目标磁盘不足/取消恢复、多对象清理硬中断已补；备份传输硬中断和完整负向矩阵见后续验证记录 |
@@ -347,7 +347,7 @@ def test_smoke_requires_explicit_permission():
 ```
 
 - [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/unit/test_android_management_smoke_args.py -q)`；CLI任何设备变更前先校验授权和范围。（状态：not_run；当前 GREEN 已验证；该步骤独立历史 RED 输出未找到，不追认通过；[证据 T07.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t07)）
-- [ ] 经授权在Mac隔离工作区验证：创建→安装测试应用/写入数据→中文输入/截图→返回重进→切原生/切回→停机重启→重启AutoFlow→中断恢复→删除隔离。（状态：not_run；真实基础链已有证据；进程级受控操作中断仍未完成完整同链；[证据 T07.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t07)）
+- [x] 经授权在Mac隔离工作区验证：创建→安装测试应用/写入数据→中文输入/截图→返回重进→切原生/切回→停机重启→重启AutoFlow→中断恢复→删除隔离。（状态：passed；基础链及桌面控制已有真实证据；安装执行中ADB断线/HTTP进程树强杀、重启核实保持未知和应用数据不变已补，分轮资源ID归档；[证据 T07.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t07)）
 - [x] 执行1.4节完整门槛；证据包含平台、imageId、commit、命令、结果及未测项。无Mac时记录blocked，不宣称真实链完成。（状态：passed；最终完整门禁和真机限制已独立记录；不宣称全真实场景完成；[证据 T07.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t07)）
 - [x] 提交 `test(android): verify standalone management lifecycle`；停在AM1验收点。（状态：passed；阶段证据已提交；用户 AM1–AM4 连续授权覆盖旧暂停点；[证据 T07.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t07)）
 

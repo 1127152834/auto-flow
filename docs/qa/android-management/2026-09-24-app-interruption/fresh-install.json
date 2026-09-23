@@ -1,0 +1,52 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-app-interrupt-4wjr0jzp",
+  "apk": {
+    "packageName": "moe.shizuku.privileged.api",
+    "versionCode": 1086,
+    "versionName": "13.6.0.r1086.2650830c"
+  },
+  "apkSha256": "6e273ab0e991c4e79bc8b1bbb9b9dd739ccac1a8712a541a214078886b7b790f",
+  "cases": [
+    {
+      "mode": "adb_disconnect",
+      "deviceId": "ccdd870e-b5d7-40eb-8594-5e08606809ac",
+      "sessionId": "cbc4009e-e84d-46de-bb72-82e011295c09",
+      "requestId": "2ab4a382-edd6-41f5-96ae-ba9240381a8e",
+      "generation": 2,
+      "guestPackagePid": 1881,
+      "guestProcessBirth": "543483",
+      "uploadedBytes": 2571773,
+      "completionAbsentBeforeFault": true,
+      "tunnelPid": 47547,
+      "httpResult": 502,
+      "receiptAfterFault": "needs_verification",
+      "replayStatus": 410,
+      "verifyStatus": 503,
+      "receiptAfterVerify": "needs_verification",
+      "unknownControlBlocked": true,
+      "sourceProbeUnchanged": true
+    },
+    {
+      "mode": "http_sigkill",
+      "deviceId": "abbd3073-fccf-408e-83b4-eb4a3e9f7f84",
+      "sessionId": "b65fa1fb-9e0a-4590-8476-627085f6ed22",
+      "requestId": "4fdb21bc-34e7-4b1d-ac71-ebc0eb101cd8",
+      "generation": 2,
+      "guestPackagePid": 1993,
+      "guestProcessBirth": "545637",
+      "uploadedBytes": 2571773,
+      "completionAbsentBeforeFault": true,
+      "killedProcessGroups": 2,
+      "httpResult": "RemoteProtocolError",
+      "receiptAfterFault": "running",
+      "replayStatus": 410,
+      "verifyStatus": 503,
+      "receiptAfterVerify": "needs_verification",
+      "unknownControlBlocked": true,
+      "sourceProbeUnchanged": true
+    }
+  ],
+  "status": "passed",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "ownedContainersVolumesRemoved": true
+}

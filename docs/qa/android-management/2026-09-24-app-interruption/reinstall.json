@@ -1,0 +1,56 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-app-interrupt-5dmwqsxp",
+  "apk": {
+    "packageName": "moe.shizuku.privileged.api",
+    "versionCode": 1086,
+    "versionName": "13.6.0.r1086.2650830c"
+  },
+  "apkSha256": "6e273ab0e991c4e79bc8b1bbb9b9dd739ccac1a8712a541a214078886b7b790f",
+  "cases": [
+    {
+      "mode": "adb_disconnect",
+      "deviceId": "170808fa-51d9-41de-b9dd-5128d68689ee",
+      "sessionId": "7bc3b6b9-e188-48c2-83f2-f3a003cdb31a",
+      "requestId": "eca3b04c-ef12-463a-ab85-5bbb5280285f",
+      "generation": 2,
+      "guestPackagePid": 2366,
+      "guestProcessBirth": "556220",
+      "uploadedBytes": 2571773,
+      "completionAbsentBeforeFault": true,
+      "tunnelPid": 53727,
+      "httpResult": 502,
+      "receiptAfterFault": "needs_verification",
+      "replayStatus": 410,
+      "verifyStatus": 503,
+      "receiptAfterVerify": "needs_verification",
+      "unknownControlBlocked": true,
+      "sourceProbeUnchanged": true,
+      "applicationDataUnchanged": true,
+      "installedVersionAfterFault": 1086
+    },
+    {
+      "mode": "http_sigkill",
+      "deviceId": "f0271721-cdef-48ee-a215-b65b5288a161",
+      "sessionId": "03015e90-1fd0-46d9-b460-28dd5806359c",
+      "requestId": "6da7f688-caee-4334-b29f-132d991593c3",
+      "generation": 2,
+      "guestPackagePid": 2312,
+      "guestProcessBirth": "558615",
+      "uploadedBytes": 2571773,
+      "completionAbsentBeforeFault": true,
+      "killedProcessGroups": 2,
+      "httpResult": "RemoteProtocolError",
+      "receiptAfterFault": "running",
+      "replayStatus": 410,
+      "verifyStatus": 503,
+      "receiptAfterVerify": "needs_verification",
+      "unknownControlBlocked": true,
+      "sourceProbeUnchanged": true,
+      "applicationDataUnchanged": true,
+      "installedVersionAfterFault": 1086
+    }
+  ],
+  "status": "passed",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "ownedContainersVolumesRemoved": true
+}
