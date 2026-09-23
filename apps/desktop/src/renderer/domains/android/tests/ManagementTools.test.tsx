@@ -169,6 +169,13 @@ it('surfaces cleanup conflicts and requires a fresh preview', async () => {
   expect(screen.queryByRole('button', { name: /确认清理/ })).not.toBeInTheDocument()
 })
 
+it('describes private local storage and restore limits before either action', async () => {
+  const api = { backups: async () => [{ id: 'b1', deviceId: 'd1', bytes: 3, imageId: 'img', sha256: 'digest', formatVersion: 1, state: 'available', createdAt: '' }], backup: vi.fn(), restoreBackup: vi.fn(), operationByRequest: vi.fn() }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
+  expect(screen.getByRole('button', { name: '创建停机备份' })).toHaveAccessibleDescription(/本机.*未加密.*账号.*私密数据/)
+  expect(await screen.findByRole('button', { name: '恢复为新实例' })).toHaveAccessibleDescription(/新实例.*应用数据.*不保证登录状态.*DRM.*私有密钥/)
+})
+
 it('keeps backup request retryable and refreshes after restore', async () => {
   const backupRecord = { id: 'b1', deviceId: 'd1', bytes: 3, imageId: 'img', sha256: 'digest', formatVersion: 1, state: 'ready', createdAt: '' }
   const backup = vi.fn()

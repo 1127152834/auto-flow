@@ -1,13 +1,13 @@
 # AM2 镜像与模板验收
 
-日期：2026-09-23；状态：`partial`。审计起点 `3ee61947`；当前完整门槛见[全量验证](2026-09-23-current-full-gates.md)，Google 组件条件见 [gapps-validation.md](gapps-validation.md)。
+日期：2026-09-23；状态：`partial`。审计起点 `3ee61947`；当前完整门槛见[全量验证](2026-09-24-final-full-gates.md)，Google 组件条件见 [gapps-validation.md](gapps-validation.md)。
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
 | T08 不可变镜像目录 | `passed` | `image_models.py`、`image_catalog.py`、`images.py` 及 unit 测试；引用保护覆盖设备、profile、backup；真实基础 ReDroid 固定 digest `sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b`。 |
 | T09 登记/拉取/UI | `partial` | 来源换行/命令选项拒绝契约、服务端镜像元数据核验、ImageManager 自动化和隔离桌面真实登记通过；拉取前限制仓库与引用格式经 RED→GREEN 覆盖。固定摘要的官方 ReDroid 仓库真实网络拉取成功，imageId/sourceDigest 与目标一致且原 tag 未变。本机 Lima Docker 上自建 ARM64 测试镜像已通过真实 HTTP 登记、按固定摘要删除，删除后 inspect 不存在。桌面内容删除、断线摘要核验仍未实测。 |
 | T10 模板版本与快照 | `passed`（自动化与本机基础链） | `TemplateManager` 自动化与 `tests/integration/test_android_images_templates.py` 覆盖登记→profile→batch→编辑→tag 变化→原实例 restart 保持原 imageId→引用阻删；隔离桌面已通过真实固定镜像登记和标准模板创建。GApps 候选镜像模板另属 T11。 |
-| T11 GApps 实验 | `blocked` | 验证归并函数 unit 通过；没有专用镜像、网络、账号、商店和测试 APK，按要求写为 `blocked`/`not_tested`。 |
+| T11 GApps 实验 | `blocked` | 验证归并函数 unit 通过；没有专用 GApps 候选镜像、测试账号和商店下载链；本地测试 APK 已可用，普通官方镜像网络拉取已验，按要求写为 `blocked`/`not_tested`。 |
 | T12 AM2 生命周期 | `partial` | 后端模板/镜像生命周期集成与前端自动化通过，真实登记、标准模板、固定摘要网络拉取及本机内容删除已验；候选镜像和 GApps 实例链缺少实测。 |
 
 ## 自动验证命令摘要

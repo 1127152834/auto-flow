@@ -4,10 +4,10 @@
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
-| T17 停机备份 | `partial` | 运行中拒绝、摘要/路径安全 unit/contract 与 `test_android_backups.py` 自动化通过；真实停止后管理备份路由返回 `201 Created`、`state=available`、`bytes=18585260`，[发布一致性](2026-09-23-publication-verification.md)已补故障注入；[真实发布前 SIGKILL](2026-09-23-backup-hard-interruption-verification.md)证明无假成功、暂存可清且源卷读回不变。磁盘不足、取消、权限和归档传输中硬中断仍未完整验证。 |
-| T18 安全恢复 | `partial` | 新卷恢复、损坏摘要、镜像不符、越界路径和特殊文件拒绝 unit 通过；`test_android_backup_restore.py` 自动化与真实源/目标标记一致；[持久属性](2026-09-23-persistent-metadata-verification.md)覆盖 xattrs/ACL、卷根属性、硬/软链接、部分失败隔离和正常恢复；[真实写入后发布前 SIGKILL](2026-09-23-restore-hard-interruption-verification.md)后待核实隔离、删除目标及新请求恢复通过。解包中断、磁盘不足仍未完成。 |
-| T19 清理与诊断 | `partial` | 默认诊断白名单、runtime workspace 归属、预览摘要、409 变化提示与真实 HTTP 备份/暂存/未登记产物清理通过；受限本机保存 IPC 已实现；[应用命令标记](2026-09-23-command-marker-verification.md)修复后真实成功链不再新增客体残留。[新 APK 暂存回收](2026-09-23-guest-apk-cleanup-verification.md)及[完成标记跨重启隔离](2026-09-23-app-marker-restart-verification.md)经 RED→GREEN 与真实状态注入通过。[高级日志](2026-09-24-advanced-logs-and-capacity.md)单次同意、归属、限时限量及真实 ReDroid 元数据导出通过；无登记旧客体标记和真实 ADB 断连仍是软件/验收缺口。 |
-| T20 AM4 最终演练 | `partial` | 数据写入→停机备份→新卷恢复→真实清理的基础链与自动化已有独立证据；另有[备份发布前硬中断](2026-09-23-backup-hard-interruption-verification.md)和[恢复写入后发布前硬中断](2026-09-23-restore-hard-interruption-verification.md)及安全清理读回。磁盘不足、损坏包、解包中断、镜像引用阻止、最终全分支审查和完整失败矩阵未形成同链真实证据。 |
+| T17 停机备份 | `passed`（AC19 功能） | 运行/控制拒绝、归档安全、权限、原子发布及真实停机备份通过；[真实 ENOSPC 与传输中取消](2026-09-24-backup-failure-verification.md)证明不发布成功备份、原请求不重放、源数据保留。UI 已 RED→GREEN 补本机未加密与私密数据说明。传输中宿主 SIGKILL、真实权限拒绝仍属扩展未验项。 |
+| T18 安全恢复 | `partial` | 新 ID/新卷/源保护、摘要/镜像/路径/链接/属性回归通过；真实1792项属性读回、恢复发布前硬中断隔离及新请求恢复已验。UI 已说明应用数据恢复不保证登录/DRM/私钥；[真实解包在途中 SIGKILL](2026-09-24-restore-transfer-interruption.md)后隔离及新请求恢复通过；目标磁盘不足和取消恢复仍未验。 |
+| T19 清理与诊断 | `partial` | 冻结预览、引用/归属变化409、真实备份/暂存清理和受限保存通过；[高级日志](2026-09-24-advanced-logs-and-capacity.md)单次确认及真实196条仅元数据通过。无来源旧客体文件保持排除，多对象清理硬中断未演练。 |
+| T20 AM4 最终演练 | `partial` | 真实写入/停机备份/新卷恢复/读回/清理、备份和恢复发布点 SIGKILL、真实 ENOSPC/传输取消、最终分支审查及软件门禁均有记录；恢复解包在途中硬中断已补；目标磁盘不足、取消恢复及完整真实负向矩阵尚未结束。 |
 
 ## 自动验证命令摘要
 
@@ -18,7 +18,7 @@ cd apps/backend && uv run pytest tests/contract/test_android_backups.py tests/un
 
 上面的命令与 Docker `create`/`cp` 是早期快照；当前真实备份使用 Lima 客体侧 GNU tar。新证据见[持久数据属性增量](2026-09-23-persistent-metadata-verification.md)，不代表多实例恢复和人工清理确认已完成。
 
-[全分支审查修复](2026-09-23-final-review-remediation.md)补齐自定义缓存镜像按固定 imageId 恢复、备份对镜像删除的引用保护，以及文件流备份/恢复。真实 Mac 在独立工作区使用 17,868,800 字节 tar 完成源实例写入→停机备份→HTTP 恢复新实例→启动读回，源/目标和备份均清理；旧整包字节方法在实验中被显式设为失败。磁盘不足与归档传输/解包中断仍未完成。
+[全分支审查修复](2026-09-23-final-review-remediation.md)补齐自定义缓存镜像按固定 imageId 恢复、备份对镜像删除的引用保护，以及文件流备份/恢复。真实 Mac 在独立工作区使用 17,868,800 字节 tar 完成源实例写入→停机备份→HTTP 恢复新实例→启动读回，源/目标和备份均清理；旧整包字节方法在实验中被显式设为失败。真实备份磁盘不足与在途任务取消已由 2026-09-24 故障记录补足；恢复解包中 SIGKILL 已由 2026-09-24 记录补足；备份传输中宿主硬中断和恢复目标磁盘不足仍未完成。
 
 ## 发布一致性增量
 

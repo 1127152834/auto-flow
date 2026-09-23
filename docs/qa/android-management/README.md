@@ -1,5 +1,9 @@
 # 安卓模拟器管理验收证据
 
+[任务逐项证据审计](2026-09-24-task-evidence-audit.md)已核对当前 102 项计划步骤：81 项 passed、18 项 not_run、3 项 blocked；not_run 包含没有找到原始历史 RED 输出的步骤，不用当前 GREEN 追认。代码、契约、迁移、前端、各层测试和真实命令已按 T01–T20 映射。
+
+[真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)新增独立 64 MiB 映像的 ENOSPC 与真实在途取消证据，源数据未变且资源已清理；补齐备份未加密/恢复能力边界的可访问说明。
+
 [24 项验收校准](2026-09-23-acceptance-matrix.md)逐项区分通过、部分完成与外部阻塞；不把局部自动化或真实单链推断为四阶段全部完成。
 
 最新 AM1 [真实控制、应用与保留卷验收](2026-09-23-am1-real-control-retention.md)覆盖中文输入、原生/嵌入式切换、30 秒失联回收、HTTP 重启、真实 APK 操作及同卷数据恢复；本轮 RED→GREEN 接通了原本缺失的保留数据 `restore` 入口。此前的[管理操作历史](2026-09-23-operation-history-verification.md)与[控制会话竞态](2026-09-23-control-session-verification.md)分别保留自身证据。真实网络断开及桌面控制同链仍未验收。
@@ -20,17 +24,17 @@
 
 最新 T15/T19 [应用完成标记跨重启隔离](2026-09-23-app-marker-restart-verification.md)修复自动恢复释放未核实结果的问题；真实重启后设备保持隔离，显式核实才清理已确认的标记。无登记的旧客体文件和真实断连仍待验收。
 
-最新 T17 [真实备份发布前硬中断](2026-09-23-backup-hard-interruption-verification.md)在实际卷归档暂存后发送 `SIGKILL`：重启后原操作为 `needs_verification`，无假成功备份；公开清理删除孤立暂存，源卷探针读回一致。归档传输中断及磁盘不足仍未验收。
+最新 T17 [真实备份发布前硬中断](2026-09-23-backup-hard-interruption-verification.md)在实际卷归档暂存后发送 `SIGKILL`：重启后原操作为 `needs_verification`，无假成功备份；公开清理删除孤立暂存，源卷探针读回一致。其后真实备份 ENOSPC 与传输取消已通过，见上方 2026-09-24 增量；传输中宿主 SIGKILL 仍未验。
 
-最新 T18 [真实恢复写入后发布前硬中断](2026-09-23-restore-hard-interruption-verification.md)在目标卷真实解包完成后发送 `SIGKILL`：重启后仍为待核实，启动/备份/控制被拒绝；目标可删除，同一备份可由新请求正常恢复。tar 解包过程中断仍未验收。
+最新 T18 [真实恢复写入后发布前硬中断](2026-09-23-restore-hard-interruption-verification.md)在目标卷真实解包完成后发送 `SIGKILL`：重启后仍为待核实，启动/备份/控制被拒绝；目标可删除，同一备份可由新请求正常恢复。随后[真实解包在途中硬中断](2026-09-24-restore-transfer-interruption.md)也已通过：确有部分文件、重启仍隔离、新请求恢复读回一致。
 
 最新 T05/T17/T18 增量见[原生窗口、恢复归属与持久数据属性](2026-09-23-persistent-metadata-verification.md)：118 项最终定向测试与真实 Mac 原生窗口、卷根及扩展属性/ACL、链接保留、部分失败隔离和正常恢复通过；[完整门槛](2026-09-23-full-gates.md)后端 3964 passed、26 skipped。全阶段仍 `partial`。前一增量见[恢复清单与目标身份](2026-09-23-restore-manifest-verification.md)。
 
-[最终完整自动化门槛](2026-09-24-final-full-gates.md)在审查修复后重跑：后端 `4031 passed/26 skipped`，Node 22 前端 `424` 文件/`5625` 项，类型/lint/OpenAPI/构建、Ruff、迁移、结构与脚本均通过。早先[门槛快照](2026-09-23-current-full-gates.md)仅保留历史对照；软件门槛不代替[24 项矩阵](2026-09-23-acceptance-matrix.md)中的真实场景与外部条件。
+[最终完整自动化门槛](2026-09-24-final-full-gates.md)在审查修复后重跑：后端 `4031 passed/26 skipped`，Node 22 前端 `424` 文件/`5625` 项，类型/lint/OpenAPI/构建、Ruff、迁移、结构与脚本均通过。后续 UI 说明增量重跑前端为 `424` 文件/`5626` 项（894.27s），类型/lint/OpenAPI/build 再次 exit 0，见[故障与说明增量](2026-09-24-backup-failure-verification.md)。早先[门槛快照](2026-09-23-current-full-gates.md)仅保留历史对照；软件门槛不代替[24 项矩阵](2026-09-23-acceptance-matrix.md)中的真实场景与外部条件。
 
 状态：`partial`，完整开发与验收目标仍 active。[清理目录与文件保护](2026-09-23-cleanup-verification.md)是前一阶段的 346 项后端快照，其后已补恢复中断隔离和数据属性；APK 遗留临时文件、硬中断等仍待完成。[落盘与事务一致性](2026-09-23-publication-verification.md)、[归档安全与属性](2026-09-23-archive-verification.md)、[持久预留与真实验证](2026-09-23-capacity-verification.md)保留各自执行时的历史结果。最新 T06 后端全量、前端及类型/构建门槛见[操作历史记录](2026-09-23-operation-history-verification.md)；前一 AM4 完整门槛见[历史记录](2026-09-23-full-gates.md)。只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
 
-实施计划的旧 checkbox 状态未完成逐项重新审计，不能作为当前完成率；以最新验收记录中的实际命令、输出和剩余工作为准。
+实施计划 checkbox 已逐项校准；步骤通过数不等于产品完成率，整体验收仍受真实未运行项和外部条件约束。
 
 审计基线：`codex/android-management-complete`，9 月 22 日历史代码提交 `3ee61947`；本页聚焦计数按隔离 worktree 的可复核输出记录，主工作区既有 Studio 文档改动不属于本模块，未纳入 Android 证据。
 
