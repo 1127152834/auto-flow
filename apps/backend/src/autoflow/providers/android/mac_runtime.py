@@ -461,13 +461,21 @@ class MacAndroidRuntime:
             return
         if self.device["pendingCommand"] != marker or not re.fullmatch(r"/data/local/tmp/autoflow-operation-[0-9a-f]{32}", marker):
             raise AndroidError("ANDROID_OPERATION_UNKNOWN", "设备操作标记已变化", 503)
+        remote = self.device.get("pendingApk")
+        if remote and not re.fullmatch(r"/data/local/tmp/autoflow-apk-[0-9a-f]{32}\.apk", remote):
+            raise AndroidError("ANDROID_RECOVERY_REQUIRED", "APK 暂存路径无效", 503)
         await self.inspect(self.device)
+        if remote:
+            await docker("exec", self.device["containerId"], "rm", "-f", remote, timeout=5)
         await docker("exec", self.device["containerId"], "rm", "-f", marker, timeout=5)
         self.device.pop("pendingCommand")
+        self.device.pop("pendingApk", None)
         try:
             self.save()
         except BaseException:
             self.device["pendingCommand"] = marker
+            if remote:
+                self.device["pendingApk"] = remote
             raise
 
     async def install_apk(self, data: bytes) -> None:
@@ -479,7 +487,11 @@ class MacAndroidRuntime:
             path = Path(directory) / "application.apk"
             await asyncio.to_thread(path.write_bytes, data)
             assert self.device is not None
+            if self.device.get("pendingApk") or self.device.get("pendingCommand"):
+                raise AndroidError("ANDROID_RECOVERY_REQUIRED", "上一应用操作尚未清理", 503)
             remote = "/data/local/tmp/autoflow-apk-" + uuid4().hex + ".apk"
+            self.device["pendingApk"] = remote
+            self.save()  # Persist the guest path before a lost push response can orphan it.
             await self._adb("push", str(path), remote, timeout=60)
             marker = "/data/local/tmp/autoflow-operation-" + uuid4().hex
             self.device["pendingCommand"] = marker
@@ -565,7 +577,7 @@ class MacAndroidRuntime:
             await run(["adb", "disconnect", self.serial])
             self.serial = None
 
-    async def recover(self, device: dict[str, Any]) -> None:
+    async def recover(self, device: dict[str, Any], *, preserve_command: bool = False) -> None:
         # Only signals identities persisted by this device controller; never a name-wide kill.
         for identity in device.get("processes", {}).values():
             pid, birth = identity["pid"], identity["birth"]
@@ -591,7 +603,17 @@ class MacAndroidRuntime:
                 raise AndroidError("ANDROID_RECOVERY_REQUIRED", "设备操作标记无效", 503)
             await self.inspect(device)
             result = await docker("exec", device["containerId"], "cat", marker, timeout=5)
-            if not re.fullmatch(rb"(?:v2:)?[0-9]+\s*", result):
+            completion = re.fullmatch(rb"(v2:)?([0-9]+)\s*", result)
+            if completion is None or (completion[1] and int(completion[2]) == 124) or (not completion[1] and int(completion[2]) == 0):
                 raise AndroidError("ANDROID_RECOVERY_REQUIRED", "Android 操作结束状态未知", 503)
-        device.pop("pendingCommand", None)
+        remote = device.get("pendingApk")
+        if remote:
+            if not re.fullmatch(r"/data/local/tmp/autoflow-apk-[0-9a-f]{32}\.apk", remote):
+                raise AndroidError("ANDROID_RECOVERY_REQUIRED", "APK 暂存路径无效", 503)
+            await self.inspect(device)
+            await docker("exec", device["containerId"], "rm", "-f", remote, timeout=5)
+            device.pop("pendingApk", None)
+        if marker and not preserve_command:
+            await docker("exec", device["containerId"], "rm", "-f", marker, timeout=5)
+            device.pop("pendingCommand", None)
         device["processes"] = {}

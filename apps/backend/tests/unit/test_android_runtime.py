@@ -518,3 +518,94 @@ async def test_successful_app_response_keeps_marker_until_receipt_acknowledgemen
     else:
         await runtime.command(operation, {"packageName": "com.example.app"}, 1, retain_completion=True)
     assert runtime.device["pendingCommand"].startswith("/data/local/tmp/autoflow-operation-")
+
+
+@pytest.mark.asyncio
+async def test_interrupted_apk_push_records_guest_file_before_transport(tmp_path):
+    from tests.unit.test_android_apk import _apk, _manifest
+
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    runtime.device = {"containerId": "container"}
+    saved = []
+    runtime.save = lambda: saved.append(dict(runtime.device))
+
+    async def lost_push(*args, **_kwargs):
+        assert args[0] == "push"
+        assert saved[-1]["pendingApk"] == args[2]
+        raise TimeoutError("push result lost")
+
+    runtime._adb = lost_push
+    with pytest.raises(TimeoutError):
+        await runtime.install_apk(_apk(_manifest()))
+    assert runtime.device["pendingApk"].startswith("/data/local/tmp/autoflow-apk-")
+    assert "pendingCommand" not in runtime.device
+
+
+@pytest.mark.asyncio
+async def test_recover_removes_interrupted_apk_push_only_from_owned_device(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    remote = "/data/local/tmp/autoflow-apk-" + "a" * 32 + ".apk"
+    device = {"containerId": "container", "pendingApk": remote}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    command = AsyncMock(return_value=b"")
+    monkeypatch.setattr(mac, "docker", command)
+    await runtime.recover(device)
+    assert "pendingApk" not in device
+    command.assert_awaited_once_with("exec", "container", "rm", "-f", remote, timeout=5)
+
+    device["pendingApk"] = "/data/local/tmp/other.apk"
+    with pytest.raises(AndroidError) as error:
+        await runtime.recover(device)
+    assert error.value.code == "ANDROID_RECOVERY_REQUIRED"
+    assert command.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_receipt_acknowledgement_removes_apk_before_command_evidence(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    remote = "/data/local/tmp/autoflow-apk-" + "a" * 32 + ".apk"
+    marker = "/data/local/tmp/autoflow-operation-" + "b" * 32
+    runtime.device = {"containerId": "container", "pendingApk": remote, "pendingCommand": marker}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    runtime.save = lambda: None
+    command = AsyncMock(return_value=b"")
+    monkeypatch.setattr(mac, "docker", command)
+    await runtime.acknowledge_pending_command(marker)
+    assert "pendingApk" not in runtime.device and "pendingCommand" not in runtime.device
+    assert [call.args[4] for call in command.await_args_list] == [remote, marker]
+
+
+@pytest.mark.asyncio
+async def test_automatic_recovery_preserves_app_evidence_until_explicit_verification(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
+    device = {"containerId": "container", "pendingCommand": marker}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    command = AsyncMock(return_value=b"v2:0\n")
+    monkeypatch.setattr(mac, "docker", command)
+
+    await runtime.recover(device, preserve_command=True)
+    assert device["pendingCommand"] == marker
+    command.assert_awaited_once_with("exec", "container", "cat", marker, timeout=5)
+
+    await runtime.recover(device)
+    assert "pendingCommand" not in device
+    assert [call.args[2] for call in command.await_args_list] == ["cat", "cat", "rm"]
+    assert command.await_args_list[-1].args[4] == marker
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("result", [b"v2:124\n", b"0\n"])
+async def test_explicit_recovery_refuses_indeterminate_app_marker(tmp_path, monkeypatch, result):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
+    device = {"containerId": "container", "pendingCommand": marker}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    command = AsyncMock(return_value=result)
+    monkeypatch.setattr(mac, "docker", command)
+
+    with pytest.raises(AndroidError) as error:
+        await runtime.recover(device)
+    assert error.value.code == "ANDROID_RECOVERY_REQUIRED"
+    assert device["pendingCommand"] == marker
+    command.assert_awaited_once_with("exec", "container", "cat", marker, timeout=5)

@@ -211,7 +211,7 @@ class AndroidConsole:
             )
         ):
             raise AndroidError("ANDROID_SESSION_STALE", "控制权已变化，请刷新会话")
-        if manual and (context.device.get("pendingCommand") or any(
+        if manual and (context.device.get("pendingCommand") or context.device.get("pendingApk") or any(
             receipt.get("state") in {"running", "needs_verification"}
             for receipt in session.get("appReceipts", {}).values()
         )):

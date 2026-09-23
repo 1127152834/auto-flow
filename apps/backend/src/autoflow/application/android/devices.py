@@ -247,8 +247,12 @@ class AndroidDeviceService:
             if self.close_console:
                 await self.close_console()
             await self.runtime.disconnect()
-            await self.runtime.recover(self.device)
-            self.device.update(control="idle", ownerRunId=None, lastError=None)
+            if self.device.get("pendingCommand"):
+                await self.runtime.recover(self.device, preserve_command=True)
+                self.device.update(control="recovery_required", ownerRunId=None, lastError="应用操作结果待核实，请核实设备状态")
+            else:
+                await self.runtime.recover(self.device)
+                self.device.update(control="idle", ownerRunId=None, lastError=None)
             self._save()
             self.device = None
             self.runtime.unlock()
@@ -271,6 +275,8 @@ class AndroidDeviceService:
                 d.get("ownerRunId")
                 or d.get("control") != "idle"
                 or d.get("operation", {}).get("state") == "needs_verification"
+                or d.get("pendingApk")
+                or d.get("pendingCommand")
             )
         ]
         if not records:
@@ -294,8 +300,12 @@ class AndroidDeviceService:
                         device["lastError"] = "管理操作中断，请点击核实状态"
                         self.repository.save(device)
                         continue
-                    await self.runtime.recover(device)
-                    device.update(ownerRunId=None, control="idle", lastError=None)
+                    if device.get("pendingCommand"):
+                        await self.runtime.recover(device, preserve_command=True)
+                        device.update(ownerRunId=None, control="recovery_required", lastError="应用操作结果待核实，请核实设备状态")
+                    else:
+                        await self.runtime.recover(device)
+                        device.update(ownerRunId=None, control="idle", lastError=None)
                 except (AndroidError, OSError, TimeoutError):
                     device["lastError"] = "遗留操作未确认结束，设备保持隔离"
                 self.repository.save(device)
