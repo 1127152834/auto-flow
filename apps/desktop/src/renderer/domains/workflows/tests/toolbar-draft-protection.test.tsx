@@ -8,6 +8,7 @@ vi.hoisted(() => {
 const confirm = vi.hoisted(() => vi.fn(async () => false))
 vi.mock('../components/controls/confirm-dialog', async importOriginal => ({ ...(await importOriginal<typeof import('../components/controls/confirm-dialog')>()), useConfirm: () => ({ confirm, alert: vi.fn(), ConfirmDialog: () => null }) }))
 import { Toolbar } from '../components/Toolbar'
+import { workflowApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 vi.mock('../hooks/stores/aiPermissionStore', () => ({ actionNeedsApproval: () => false, requestApproval: async () => true }))
@@ -377,4 +378,35 @@ it.each([{ id: 1, revision: 1 }, { id: 'draft' }, { id: 'draft', revision: '1' }
   render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.level === 'error')).toBe(true))
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+})
+
+
+it('updates the saved project workflow loaded by the host instead of creating it again', async () => {
+  const previous = location.href
+  try {
+    const created = await workflowApi.create({ id: 'host-loaded-workflow', name: '宿主打开的流程', nodes: [], edges: [], variables: [] })
+    expect(created.success).toBe(true)
+    const fetched = await workflowApi.get('host-loaded-workflow')
+    expect(fetched.success).toBe(true)
+    expect(useWorkflowStore.getState().importWorkflow(fetched.data)).toBe(true)
+    history.replaceState({}, '', '?workflowId=host-loaded-workflow')
+    saved = []
+    render(<Toolbar />)
+    fireEvent.change(screen.getByPlaceholderText('工作流名称'), { target: { value: '宿主流程修改后' } })
+    fireEvent.blur(screen.getByPlaceholderText('工作流名称'))
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    await waitFor(() => expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(false))
+    expect(saved).toEqual([])
+    const reloaded = await workflowApi.get('host-loaded-workflow')
+    expect(reloaded.data?.name).toBe('宿主流程修改后')
+    expect(reloaded.data?.revision).toBe(2)
+    fireEvent.click(screen.getByRole('button', { name: '新建' }))
+    await waitFor(() => expect(useWorkflowStore.getState().id).not.toBe('host-loaded-workflow'))
+    fireEvent.change(screen.getByPlaceholderText('工作流名称'), { target: { value: '新的项目草稿' } })
+    fireEvent.blur(screen.getByPlaceholderText('工作流名称'))
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    await waitFor(() => expect(saved).toHaveLength(1))
+    expect(saved[0].id).not.toBe('host-loaded-workflow')
+    expect((await workflowApi.get('host-loaded-workflow')).data?.revision).toBe(2)
+  } finally { history.replaceState({}, '', previous) }
 })

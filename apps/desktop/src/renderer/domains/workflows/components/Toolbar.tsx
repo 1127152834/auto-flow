@@ -22,7 +22,7 @@ import { usePasswordPrompt } from './controls/password-prompt'
 import { cn } from '../lib/utils'
 import { browserApi, workflowApi } from '../api'
 import { socketService } from '../events'
-import { getBackendBaseUrl } from '../api/config'
+import { getBackendBaseUrl, getStudioOpenContext } from '../api/config'
 import { GlobalConfigDialog } from './GlobalConfigDialog'
 // 教学文档体积较大（含 mermaid 等依赖），改为 lazy 引入，只有点开"教学文档"才加载
 const DocumentationDialog = lazy(() => import('./documentation/index').then(m => ({ default: m.DocumentationDialog })))
@@ -84,7 +84,11 @@ export function Toolbar() {
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const diagnosticRunId = useWorkflowStore(state => state.currentExecutionRunId)
   const documentId = useWorkflowStore(state => state.id)
-  const [serverWorkflow, setServerWorkflow] = useState<{documentId: string; id: string} | null>(null)
+  const [serverWorkflow, setServerWorkflow] = useState<{documentId: string; id: string} | null>(() => {
+    // StudioApp mounts the editor only after loading this exact saved document.
+    const id = getStudioOpenContext().workflowId
+    return id && id === documentId ? { documentId, id } : null
+  })
   const workflowId = serverWorkflow?.documentId === documentId ? serverWorkflow.id : null
   const setWorkflowId = useCallback((id: string | null) => {
     setServerWorkflow(id ? {documentId, id} : null)
