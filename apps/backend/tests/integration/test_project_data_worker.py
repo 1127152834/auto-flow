@@ -892,7 +892,10 @@ def test_project_detects_browser_requirement_inside_custom_module(tmp_path: Path
 
 
 @pytest.mark.asyncio
-async def test_project_task_runs_frozen_nested_workflow_in_real_worker(tmp_path: Path) -> None:
+@pytest.mark.parametrize("reference_mode", ["direct", "declared_variable"])
+async def test_project_task_runs_frozen_nested_workflow_in_real_worker(
+    tmp_path: Path, reference_mode: str,
+) -> None:
     factory, _, _, coordinator, _, project, automation = setup(tmp_path)
     documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
     worker = ProjectWorkflowWorkerManager(tmp_path / "nested-workflow-worker", start_timeout=10)
@@ -909,10 +912,11 @@ async def test_project_task_runs_frozen_nested_workflow_in_real_worker(tmp_path:
         )
         saved_child = documents.create(child, client_request_id=str(uuid4()))
         parent = _studio_payload(automation.workflow_id)
+        workflow_reference = saved_child.id if reference_mode == "direct" else "{child_ref}"
         parent.update(schemaVersion=3, nodes=[
             {"id": "call", "type": "run_workflow_file", "position": {"x": 0, "y": 0}, "data": {
                 "moduleType": "run_workflow_file", "config": {
-                    "workflowFile": saved_child.id, "resultVariable": "summary",
+                    "workflowFile": workflow_reference, "resultVariable": "summary",
                 },
             }},
             {"id": "root-output", "type": "set_variable", "position": {"x": 200, "y": 0}, "data": {
@@ -920,7 +924,10 @@ async def test_project_task_runs_frozen_nested_workflow_in_real_worker(tmp_path:
                     "variableName": "result", "variableValue": "{child_value}",
                 },
             }},
-        ], edges=[{"id": "after-call", "source": "call", "target": "root-output"}], variables=[])
+        ], edges=[{"id": "after-call", "source": "call", "target": "root-output"}], variables=(
+            [{"name": "child_ref", "value": saved_child.id, "type": "string"}]
+            if reference_mode == "declared_variable" else []
+        ))
         documents.update(
             automation.workflow_id, parent, expected_revision=1,
             client_request_id=str(uuid4()),
