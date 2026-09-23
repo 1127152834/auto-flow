@@ -160,6 +160,14 @@ def _diagnostic_response(record: dict[str, Any]) -> DiagnosticRead:
     })
 
 
+def _bulk_response(record: dict[str, Any]) -> BulkRead:
+    return BulkRead.model_validate({
+        field.alias: record[field.alias]
+        for field in BulkRead.model_fields.values()
+        if field.alias in record
+    })
+
+
 def android_management_internal_router(resources: Any, workspace_identity: Callable[[], str]) -> APIRouter:
     router = APIRouter(prefix="/internal/android/management", include_in_schema=False)
 
@@ -680,21 +688,21 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
         result = bulk.create(workspace_identity(), body.request_id, body.action, [item.model_dump(by_alias=True) for item in body.items], body.delete_data)
-        return BulkRead.model_validate(bulk.run(result["id"], workspace_identity()))
+        return _bulk_response(bulk.run(result["id"], workspace_identity()))
 
     @router.get("/bulk-operations/{identifier}", response_model=BulkRead)
     async def bulk_get(identifier: str) -> BulkRead:
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
-        return BulkRead.model_validate(bulk.get(identifier, workspace_identity()))
+        return _bulk_response(bulk.get(identifier, workspace_identity()))
 
     @router.post("/bulk-operations/{identifier}/actions", response_model=BulkRead)
     async def bulk_action(identifier: str, body: BulkAction) -> BulkRead:
         if bulk is None:
             raise RuntimeError("Android bulk service is not configured")
         if body.action == "verify":
-            return BulkRead.model_validate(await bulk.verify(identifier, workspace_identity()))
-        return BulkRead.model_validate(bulk.action(identifier, body.action, body.request_id, workspace_identity()))
+            return _bulk_response(await bulk.verify(identifier, workspace_identity()))
+        return _bulk_response(bulk.action(identifier, body.action, body.request_id, workspace_identity()))
 
     @router.get("/cleanup/resources", response_model=CleanupResourcePage)
     async def cleanup_resources() -> CleanupResourcePage:
