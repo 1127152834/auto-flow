@@ -5100,8 +5100,18 @@
       "primary_package": "PM9-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_full_scenarios.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "real_source_http_worker_browser",
+          "report": "docs/project-management/implementation/pm9/manual-write-conflict-follow-through.json",
+          "scope": "两真实worker：FX-04版本7/3/2，人工字段编辑后旧字段/状态结论冲突进入人工分支，输入不变；另一链自身版本推进；随后网页失败仍保留之前成功创建/修改。",
+          "platform": "macOS arm64",
+          "limitations": "本机源码/本地表，初始版本明确夹具；非打包界面、Sheets出站与新三平台验收",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "verification",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -5128,19 +5138,25 @@
         "PM9-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
             "symbol": "test_query_then_dynamic_write_advances_task_cursor_and_stale_write_conflicts",
             "scope": "自己写推进游标，人工更新后旧写冲突",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_write_conflict_real_cloakbrowser.py",
+            "symbol": "test_real_write_versions_and_partial_failure",
+            "scope": "两真实worker：FX-04版本7/3/2，人工字段编辑后旧字段/状态结论冲突进入人工分支，输入不变；另一链自身版本推进；随后网页失败仍保留之前成功创建/修改。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "真实 worker 人工窗口交错且后续失败保留前序写入待补"
+            "detail": "源码真实worker人工字段/状态冲突、声明人工分支及后续网页失败保留已提交写通过；打包UI冲突处置/原输入展示、Sheets出站和新三平台联合待验。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -11441,6 +11457,15 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "real_source_http_worker_browser",
+          "report": "docs/project-management/implementation/pm9/manual-write-conflict-follow-through.json",
+          "scope": "真实worker显式引用已确认内容8成功改状态3→4；人工改内容8但任务仍7时状态命令REVISION_CONFLICT，状态3不变且游标不吸收人工版本。",
+          "platform": "macOS arm64",
+          "limitations": "本机源码/本地表，初始版本明确夹具；非打包界面、Sheets出站与新三平台验收",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -11464,19 +11489,25 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
             "symbol": "test_fake_capability_changes_email_status_and_creates_account_once",
             "scope": "显式状态写检查内容版本和前态，状态游标推进",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_write_conflict_real_cloakbrowser.py",
+            "symbol": "test_real_write_versions_and_partial_failure",
+            "scope": "真实worker显式引用已确认内容8成功改状态3→4；人工改内容8但任务仍7时状态命令REVISION_CONFLICT，状态3不变且游标不吸收人工版本。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "真实 worker 与人工编辑交错后的状态结论保护待补"
+            "detail": "真实worker与人工编辑交错后的状态结论保护已通过；打包界面与当前三平台同场景仍待验。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -11608,7 +11639,16 @@
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         },
-        "docs/project-management/implementation/pm9/follow-through.json"
+        "docs/project-management/implementation/pm9/follow-through.json",
+        {
+          "milestone": "PM9",
+          "kind": "real_source_http_worker_browser",
+          "report": "docs/project-management/implementation/pm9/manual-write-conflict-follow-through.json",
+          "scope": "真实worker内容7→8、状态3→4后网页超时，完整记录及成功写摘要保留，新增记录不回滚；本地表不包含Sheets队列。",
+          "platform": "macOS arm64",
+          "limitations": "本机源码/本地表，初始版本明确夹具；非打包界面、Sheets出站与新三平台验收",
+          "user_acceptance": "pending"
+        }
       ],
       "owner": "project-data",
       "acceptance_methods": [
@@ -11631,7 +11671,7 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "scripts/project-runtime-smoke.mjs",
@@ -11639,6 +11679,12 @@
             "scope": "真实 worker 连续写字段、明确改为另一业务状态，随后点击缺失元素失败；字段/状态版本和已成功节点事实仍保留",
             "level": "automated_production",
             "evidence": "docs/project-management/implementation/pm9/follow-through.json"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_write_conflict_real_cloakbrowser.py",
+            "symbol": "test_real_write_versions_and_partial_failure",
+            "scope": "真实worker内容7→8、状态3→4后网页超时，完整记录及成功写摘要保留，新增记录不回滚；本地表不包含Sheets队列。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
@@ -11671,7 +11717,16 @@
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         },
-        "docs/project-management/implementation/pm9/follow-through.json"
+        "docs/project-management/implementation/pm9/follow-through.json",
+        {
+          "milestone": "PM9",
+          "kind": "real_source_http_worker_browser",
+          "report": "docs/project-management/implementation/pm9/manual-write-conflict-follow-through.json",
+          "scope": "真实人工窗口PATCH7→8后旧任务字段写REVISION_CONFLICT，人工新值保留，原输入旧值/7不改，任务确认游标仍7。",
+          "platform": "macOS arm64",
+          "limitations": "本机源码/本地表，初始版本明确夹具；非打包界面、Sheets出站与新三平台验收",
+          "user_acceptance": "pending"
+        }
       ],
       "owner": "project-data",
       "acceptance_methods": [
@@ -11694,7 +11749,7 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
@@ -11708,6 +11763,12 @@
             "scope": "真实双输入 Task 连续写入两次；第二写使用第一写结果版本；人工窗口更新后旧第二写 REVISION_CONFLICT，人工值/版本及原始输入值/版本保留",
             "level": "automated_production",
             "evidence": "docs/project-management/implementation/pm9/follow-through.json"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_write_conflict_real_cloakbrowser.py",
+            "symbol": "test_real_write_versions_and_partial_failure",
+            "scope": "真实人工窗口PATCH7→8后旧任务字段写REVISION_CONFLICT，人工新值保留，原输入旧值/7不改，任务确认游标仍7。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
@@ -17652,5 +17713,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-24 DATA-CLAIM-14不限领取补证（confirmed本机源码子范围）：保存默认上限1、公开启动maxTasks=null，单一最终态A01由真实TCP HTTP/SQLite/worker/CloakBrowser连续成功5Task，第6Task人工等待时公开停止为cancelled；六次同RecordRef/内容版本1/状态版本2，完整原记录不变，每次只持有本Run一条lease，最终6条全部释放。原停止命令查询/重放一致，停止后三轮真实调度无新增Task，工作目录/容量清空。真实1 passed/28.11秒，相关50 passed/26.99秒，Ruff通过；保存策略null和时间格式比较的夹具错误保留，不称产品修复。CI两处选择已包含新用例，collect1/51不是执行；fresh CLI401，新三平台/打包UI说明与停止验收保留。生产仍a7059dc6，不重复无改动全量/构建。251仍209partial/42planned/0verified，249有断言/2未定位及241生产/19实现/8测试/24外部缺口不变；releaseAccepted=false。见unlimited-reclaim-follow-through.json。"
+  "pm9_note": "2026-09-24 DATA-E2E-03人工版本/部分失败联合补证（confirmed本机源码子范围）：FX-04初始业务夹具7/3/2，真实TCP HTTP/SQLite/worker/CloakBrowser两链分别证明任务写内容7→8、状态3→4和游标8/4/2，以及人工窗口PATCH到内容8后旧字段/旧内容状态写均REVISION_CONFLICT、游标仍7/3/2且原输入不变；声明人工分支继续不吸收人工新值。两链先前createRecord均保留，后续真实缺失元素超时失败后完整记录快照不变，公开写入摘要只含成功提交，End未执行，两条lease/目录/容量回收。最终2 passed/24.56秒，相关15 passed/4.36秒，Ruff通过；首轮三操作合并grant被422拒绝，修正为各节点精确授权，未改生产。CI选择collect2/53非执行，fresh CLI401；打包UI/Sheets出站联合/新三平台仍待验。仅E2E-03 planned→partial，WRITE-05/08/09补映射；251为210partial/41planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。生产仍a7059dc6，不重跑无变化全量/构建；releaseAccepted=false。见manual-write-conflict-follow-through.json。"
 }

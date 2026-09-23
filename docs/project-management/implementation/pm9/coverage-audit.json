@@ -500,8 +500,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 141,
-        "planned": 37
+        "partially_verified": 142,
+        "planned": 36
       },
       "items": [
         {
@@ -697,10 +697,10 @@
         },
         {
           "id": "DATA-E2E-03",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -1738,9 +1738,9 @@
         {
           "id": "DATA-WRITE-05",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -1768,9 +1768,9 @@
         {
           "id": "DATA-WRITE-08",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -1778,9 +1778,9 @@
         {
           "id": "DATA-WRITE-09",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 3,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2633,8 +2633,8 @@
     "withAssertions": 249,
     "withNoLocatedAssertion": 2,
     "statuses": {
-      "partially_verified": 209,
-      "planned": 42
+      "partially_verified": 210,
+      "planned": 41
     }
   }
 }
