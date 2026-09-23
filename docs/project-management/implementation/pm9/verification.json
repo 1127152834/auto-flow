@@ -124,7 +124,7 @@
     }
   ],
   "remainingReport": "completion-gaps.md",
-  "deliveryStatus": "authorized_PM9_slices_implemented_partial_evidence_release_acceptance_incomplete",
+  "deliveryStatus": "approved_runtime_slices_delivered_with_confirmed_created_field_write_gap_release_acceptance_incomplete",
   "developmentSlice": {
     "slices": [
       "S1",
@@ -146,7 +146,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Production source c16532d79fe8db87a8f9b371d9045a02fb89e362: local full backend 3479 passed/77 skipped, contract/rule33, Ruff/mypy407 and actual browser-worker End followed by forged repair/correct repair-only association passed. Current three-platform CI 35846519367 succeeded (Windows/ARM attempt 1, Intel attempt 2 after attempt 1 DMG temporary-device Resource busy). Current ARM DMG isolated installed full desktop smoke passed. Packaged live Google/OAuth, physical platform gates and unapproved L/M/S4 options remain open.",
+  "workingCandidate": "Production source c16532d79fe8db87a8f9b371d9045a02fb89e362: local full backend 3479 passed/77 skipped, contract/rule33, Ruff/mypy407 and actual browser-worker End followed by forged repair/correct repair-only association passed. Current three-platform CI 35846519367 succeeded (Windows/ARM attempt 1, Intel attempt 2 after attempt 1 DMG temporary-device Resource busy). Current ARM DMG isolated installed full desktop smoke passed. Packaged live Google/OAuth, physical platform gates and unapproved L/M/S4 options remain open. Subsequent current ARM packaged probes confirm a previously misclassified implementation gap for new-field result writes (DATA-SCHEMA-02/09, FLOW-A14); old grant write fails CAPABILITY_SCOPE_DENIED, prospective field pregrant fails CAPABILITY_FACTS_INCOMPLETE. Ensure reuse/type-conflict/T2 compatibility packaged subset passes; no production fix yet.",
   "finalCICandidate": {
     "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
@@ -473,5 +473,18 @@
     "report": "ci-s4-final-follow-through.json",
     "note": "Succeeded before DATA-LINK-02 project identity guard; retained as historical source-specific evidence."
   },
-  "workerLinkBoundaryFollowThrough": "link-boundary-follow-through.json"
+  "workerLinkBoundaryFollowThrough": "link-boundary-follow-through.json",
+  "createdFieldResultsFollowThrough": "created-field-results-follow-through.json",
+  "implementationGaps": [
+    {
+      "requirements": [
+        "DATA-SCHEMA-02",
+        "DATA-SCHEMA-09",
+        "FLOW-A14"
+      ],
+      "status": "confirmed",
+      "detail": "Creating/ensuring a new field does not grant a later record write to its returned field ID; static pregrant fails before creation. Current ARM packaged actual-worker failures retained; explicit result-source contract FR1–FR3 is proposed, not approved.",
+      "report": "created-field-results-follow-through.json"
+    }
+  ]
 }

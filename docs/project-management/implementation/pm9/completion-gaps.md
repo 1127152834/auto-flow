@@ -1,5 +1,9 @@
 # PM9 剩余工作复核
 
+2026-09-23 新字段结果写回缺口（confirmed，当前 ARM 打包实测）：DATA-SCHEMA-02/09、FLOW-A14 从“仅缺测试/生产证据”纠正为 implementation_missing。T1 新增字段后写新 fieldId 被 CAPABILITY_SCOPE_DENIED 拒绝；提前静态授予未存在字段则批次 409 CAPABILITY_FACTS_INCOMPLETE。两个失败报告及可重放补丁均保留，清理通过，不计验收成功。现有打包业务脚本新增同定义复用、异型同键冲突、原结构/值不变及 T2 旧契约兼容并通过；脚本101项通过。具体字段结果来源授权、调用/分支/循环隔离及动态字段键契约见 FR1–FR3 规格/计划，尚未批准，未放宽现有权限。详见 [报告](created-field-results-follow-through.json)。251 条状态仍205 partial/46 planned/0 verified，releaseAccepted=false。
+
+下文早期“已批准切片全部实现”的结论只描述各自当时子范围；上述实测缺口为当前优先结论。
+
 2026-09-23 FLOW-A06 原生回归缺陷（confirmed 局部）：旧 defa1955 三平台矩阵的 macOS ARM `data-response-loss` 27 项真实 worker 通过、1 项失败；本机复现同一终态实例清理卡住。原因是 Chromium 所属 PID 已退出而遗留 `SingletonSocket` 目标仍存在；macOS 环境适配器现只在本机锁 PID 已确认退出且锁未变化时忽略遗留标记，其他情况保持保守拒绝。本机同场景 RED→GREEN、环境单元15项、相关所有权/恢复46项通过；最终源码全量和新三平台待验证。旧矩阵不能计三平台通过，详见 [专项报告](response-loss-lock-follow-through.json)，`releaseAccepted=false`。
 
 2026-09-23 DATA-WRITE-13 最新子范围（confirmed）：修复循环索引嵌套引用把 `RecordRef` 对象转成字符串的共用变量解析缺陷。源码真实 HTTP/SQLite/worker/CloakBrowser + 受控 Sheets transport 6 项通过：第二表前两行更新及两条 pending 出站意图在第三行字段校验失败后保留；lease 释放、End 未执行。变量差异测试20项通过。台账 248/251 有范围断言、3 未定位，204 partial/47 planned/0 verified。打包 UI、真实 Google 送达核验、跨平台该组合仍待验收；完整回归和新候选 CI 进行中，`releaseAccepted=false`。详见 [专项报告](sheets-loop-partial-follow-through.json)。下文旧计数均为历史候选。

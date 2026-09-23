@@ -115,3 +115,6 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 
 2026-09-23 真实 worker 伪造 End 补证（confirmed，仅本机源码）：新增 `data-link-forged-end`，由实际两次 createRecord 输出生成一条合法目标和一条仅替换 projectId 的伪造目标。原 worker/父进程能力服务拒绝整组：End 为 CAPABILITY_SCOPE_DENIED、两个项目均零环境、零 end-save 操作；两条已写数据及 linkRevision=1 保留、两条 lease 释放、进程/临时目录清理完成。与原 data-link-race 共 2 passed/33 deselected（64.70 秒）；契约/规则 33 passed、Ruff 通过。首次测试仅末尾错误的 /fixture 计数断言失败，既有数据场景实际打开 /login，修正测试后通过，无新增生产修复。CI 选择已纳入新场景；生产源码仍 c16532d7，此次新增断言不计入历史三平台结果。DATA-LINK-02 仍 partial，完整打包/跨平台反向场景及用户验收保留。251 条结构复核无未分类项，73 条预定路径缺失中 72 条已有范围映射，205 partial/46 planned/0 verified；`releaseAccepted=false`。
+
+
+2026-09-23 新字段结果写回缺口（confirmed，当前 ARM 打包实测）：DATA-SCHEMA-02/09、FLOW-A14 从“仅缺测试/生产证据”纠正为 implementation_missing。T1 新增字段后写新 fieldId 被 CAPABILITY_SCOPE_DENIED 拒绝；提前静态授予未存在字段则批次 409 CAPABILITY_FACTS_INCOMPLETE。两个失败报告及可重放补丁均保留，清理通过，不计验收成功。现有打包业务脚本新增同定义复用、异型同键冲突、原结构/值不变及 T2 旧契约兼容并通过；脚本101项通过。具体字段结果来源授权、调用/分支/循环隔离及动态字段键契约见 FR1–FR3 规格/计划，尚未批准，未放宽现有权限。详见 [报告](created-field-results-follow-through.json)。251 条状态仍205 partial/46 planned/0 verified，releaseAccepted=false。

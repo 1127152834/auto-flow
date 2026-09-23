@@ -7588,19 +7588,29 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
             "symbol": "test_query_then_dynamic_write_advances_task_cursor_and_stale_write_conflicts",
             "scope": "新增字段原键恢复、ensure 复用相同 fieldId、改显示名原键恢复",
             "level": "automated_integration"
+          },
+          {
+            "file": "scripts/smoke-project-business-combinations.mjs",
+            "symbol": "checkBusinessCombinations",
+            "scope": "当前 c16532d7 ARM 打包：T1 同键同定义 ensure 返回原 fieldId、created=false、结构版本不变；另一真实 Task 同键异型以 FIELD_DEFINITION_CONFLICT 失败且字段/值不变；T2 保持原 waiting Run 后写旧字段。没有证明返回新字段写入。",
+            "level": "automated_production_integration"
           }
         ],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "当前 c16532d7 ARM 打包反例：Task 创建字段后写新 fieldId 被 CAPABILITY_SCOPE_DENIED 拒绝；预先把未存在 fieldId 加静态 grant 则批次 409 CAPABILITY_FACTS_INCOMPLETE。缺少由显式来源操作派生后续写权限和动态字段键的契约，不是仅缺测试/外部授权。失败报告及待确认 FR1–FR3 见 pm9/created-field-results-follow-through.json。"
+          },
+          {
             "kind": "production_evidence_missing",
-            "detail": "同键异类型、其他活跃任务不受影响、随后用返回字段写入的真实链需补"
+            "detail": "已补当前 ARM 打包同定义复用、异型同键冲突及 T2 旧字段兼容；新字段返回引用写回尚未实现，完整组合与其他平台/UI 验收须在修复后运行，失败反例不计通过。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -7649,19 +7659,25 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
             "symbol": "test_query_then_dynamic_write_advances_task_cursor_and_stale_write_conflicts",
             "scope": "新增字段原键恢复、ensure 复用相同 fieldId、改显示名原键恢复",
             "level": "automated_integration"
+          },
+          {
+            "file": "scripts/smoke-project-business-combinations.mjs",
+            "symbol": "checkBusinessCombinations",
+            "scope": "当前 c16532d7 ARM 打包：T1 同键同定义 ensure 返回原 fieldId、created=false、结构版本不变；另一真实 Task 同键异型以 FIELD_DEFINITION_CONFLICT 失败且字段/值不变；T2 保持原 waiting Run 后写旧字段。没有证明返回新字段写入。",
+            "level": "automated_production_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "同键异类型、其他活跃任务不受影响、随后用返回字段写入的真实链需补"
+            "detail": "当前 ARM 打包同定义复用、字符串/数字异型冲突与 T2 兼容通过；必填/校验/来源策略全部不匹配组合、其他平台与完整业务验收尚未逐项闭合，不批量升级 verified。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -8116,12 +8132,12 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "scripts/smoke-project-business-combinations.mjs",
             "symbol": "checkBusinessCombinations",
-            "scope": "T2 旧契约处于真实 waiting_manual 时，独立 T1 确保字段、写记录/状态并完成；T2 保持原 Run 后续可按旧字段契约写入。S5 Mac 源报告通过，当前打包结果见 CI；不证明新字段写回/异型冲突/删字段保护全部条件。",
+            "scope": "当前 c16532d7 ARM 打包：T1 同键同定义 ensure 返回原 fieldId、created=false、结构版本不变；另一真实 Task 同键异型以 FIELD_DEFINITION_CONFLICT 失败且字段/值不变；T2 保持原 waiting Run 后写旧字段。没有证明返回新字段写入。",
             "level": "automated_production_integration"
           },
           {
@@ -8133,8 +8149,12 @@
         ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "同键异型竞争、同一组合场景的新 fieldId 后续写回仍缺完整直接断言；独立第二 Task 删除保护已有 R2 专属集成，不能将其扩写为所有组合条件完成。"
+            "kind": "implementation_missing",
+            "detail": "当前 c16532d7 ARM 打包反例：Task 创建字段后写新 fieldId 被 CAPABILITY_SCOPE_DENIED 拒绝；预先把未存在 fieldId 加静态 grant 则批次 409 CAPABILITY_FACTS_INCOMPLETE。缺少由显式来源操作派生后续写权限和动态字段键的契约，不是仅缺测试/外部授权。失败报告及待确认 FR1–FR3 见 pm9/created-field-results-follow-through.json。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "已补当前 ARM 打包同定义复用、异型同键冲突及 T2 旧字段兼容；新字段返回引用写回尚未实现，完整组合与其他平台/UI 验收须在修复后运行，失败反例不计通过。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -12899,7 +12919,7 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
@@ -12910,8 +12930,12 @@
         ],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "当前 c16532d7 ARM 打包反例：Task 创建字段后写新 fieldId 被 CAPABILITY_SCOPE_DENIED 拒绝；预先把未存在 fieldId 加静态 grant 则批次 409 CAPABILITY_FACTS_INCOMPLETE。缺少由显式来源操作派生后续写权限和动态字段键的契约，不是仅缺测试/外部授权。失败报告及待确认 FR1–FR3 见 pm9/created-field-results-follow-through.json。"
+          },
+          {
             "kind": "production_evidence_missing",
-            "detail": "同键异类型、其他活跃任务不受影响、随后用返回字段写入的真实链需补"
+            "detail": "已补当前 ARM 打包同定义复用、异型同键冲突及 T2 旧字段兼容；新字段返回引用写回尚未实现，完整组合与其他平台/UI 验收须在修复后运行，失败反例不计通过。"
           }
         ],
         "statusBeforeReview": "planned"

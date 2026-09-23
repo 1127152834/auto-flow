@@ -55,14 +55,14 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
     }
     throw new Error(`Timeout: ${label}`)
   }
-  async function completed(batchId) {
+  async function completed(batchId, expectedStatus = 'succeeded') {
     const state = await wait(async () => {
       const value = await api(`${prefix}/batches/${batchId}`)
       return ['completed', 'failed', 'interrupted', 'stopped'].includes(value.batch.status) && value
     }, 'terminal batch')
     const task = (await api(`${prefix}/tasks?batchId=${batchId}`)).items[0]
     const attempts = await api(`${prefix}/tasks/${task.taskId}/node-attempts`)
-    assert.equal(state.statusCounts.succeeded, 1, JSON.stringify({ state, attempts }))
+    assert.equal(state.statusCounts[expectedStatus], 1, JSON.stringify({ state, attempts }))
     return { task, attempts: attempts.items }
   }
   async function sharedPersonChain() {
@@ -193,6 +193,7 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
   const newer = await start(await workflow('T1 运行中加列增行并写状态', [
     node('open', 'open_page', { url: 'about:blank' }),
     data('ensure', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: addedFieldId, definition: { key: 'receipt', name: '回执', type: 'string', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: 3 }),
+    data('reuse', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: randomUUID(), definition: { key: 'receipt', name: '回执', type: 'string', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: 4 }),
     data('create', target, 'createRecord', { tableId: target.tableId, datasetGeneration: target.datasetGeneration, values: { [target.fieldId]: 'created-by-T1' } }),
     query('row-1'), update('new-task-written'),
     data('status', source, 'setRecordStatus', { recordRef: "{query['items'][0]['ref']}", statusId: status.statusId, expectedStatusRevision: "{query['items'][0]['statusRevision']}", expectedContentRevisionWhenDerived: "{update['contentRevision']}" }), end(),
@@ -206,10 +207,28 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
   assert.equal(t2WaitingAfter.run.status, 'waiting_manual', 'T1 must finish while old-contract T2 is still suspended')
   assert.equal((await api(`${prefix}/manual-items/${checkpoint.manualItemId}`)).status, 'waiting')
   assert.notEqual(t1.task.runId, t2WaitingAfter.run.runId)
+  const t1Outputs = (await api(`${prefix}/tasks/${t1.task.taskId}/outputs`)).items
+  const ensured = t1Outputs.find(output => output.name === 'ensure').value
+  const reused = t1Outputs.find(output => output.name === 'reuse').value
+  assert.equal(ensured.created, true)
+  assert.equal(reused.created, false)
+  assert.deepEqual(reused.field.ref, ensured.field.ref)
+  assert.equal(reused.tableRevision, ensured.tableRevision, 'identical ensure must not advance schema revision')
+  const beforeConflict = { fields: await api(`${prefix}/tables/${source.tableId}/fields`), rows: await records(source) }
+  const conflicting = await completed(await start(await workflow('异型同键不得覆盖回执字段', [
+    node('open', 'open_page', { url: 'about:blank' }),
+    data('conflict', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: randomUUID(), definition: { key: 'receipt', name: '回执', type: 'number', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: ensured.tableRevision }), end(),
+  ])), 'failed')
+  assert.equal(conflicting.attempts.find(attempt => attempt.nodeId === 'conflict').error.code, 'FIELD_DEFINITION_CONFLICT')
+  assert.equal(conflicting.attempts.some(attempt => attempt.nodeId === 'end'), false)
+  assert.deepEqual(await api(`${prefix}/tables/${source.tableId}/fields`), beforeConflict.fields)
+  assert.deepEqual(await records(source), beforeConflict.rows)
+  assert.equal((await api(`${prefix}/tasks/${checkpoint.taskId}`)).run.status, 'waiting_manual')
   await api(`${prefix}/manual-items/${checkpoint.manualItemId}/resume`, { checkpointRevision: checkpoint.checkpointRevision, expectedStatusRevision: checkpoint.statusRevision })
   const t2 = await completed(old)
   const fields = await api(`${prefix}/tables/${source.tableId}/fields`)
-  assert.ok(fields.items.some(field => field.ref.fieldId === addedFieldId && field.key === 'receipt'))
+  assert.equal(fields.items.filter(field => field.ref.fieldId === addedFieldId && field.key === 'receipt').length, 1)
+  assert.equal(fields.items.filter(field => field.key === 'receipt').length, 1)
   const created = await records(target)
   assert.equal(created.total, 1, 'createRecord must have exactly one effect')
   assert.equal(created.items[0].values[0].value, 'created-by-T1')
@@ -226,6 +245,7 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
     concurrentRecordClaims: await concurrentRecordClaims(),
     checks: ['Cancelling a second live Run preserves T2 checkpoint/browser and executes no cancelled write', 'T1 started and completed while old-contract T2 remained waiting_manual in its original Run', 'T1 ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status before T2 resumed', 'T2 then queried and wrote using its prepared old field contract; manual node executed once'],
     taskIds: [t1.task.taskId, t2.task.taskId],
+    schemaEnsure: { status: 'passed', createdFieldRef: ensured.field.ref, reusedFieldRef: reused.field.ref, tableRevision: ensured.tableRevision, conflictingTaskId: conflicting.task.taskId, conflictCode: 'FIELD_DEFINITION_CONFLICT', checks: ['same-definition ensure returns the original field ID without another column or schema revision', 'another real Task requesting the same key with a different type fails without changing fields or values', 'T2 remains waiting in its original Run through both ensure and conflict, then writes its original field'], limits: ['writing the newly returned field is not asserted by this scenario'] },
     concurrency: { status: 'passed', overlapStartedAt, t1CompletedAt, waitingRunId: t2WaitingAfter.run.runId, completedRunId: t1.task.runId, waitingStateBefore: t2WaitingBefore.run.status, waitingStateAfter: t2WaitingAfter.run.status },
     remaining: ['Sheets structure/value phases require authorized live resources', 'Excel source byte preservation belongs to separate native import/export evidence', 'Conflict and partial-success combinations remain separate evidence'],
   }

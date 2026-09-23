@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-23 当前字段能力勘误（confirmed）：c16532d7 ARM 打包真实 worker 证明创建新字段后写入受 frozen grant 阻断，预先授权未存在 fieldId 也被拒。DATA-SCHEMA-02/09、FLOW-A14确属实现缺失；同定义复用/异型冲突/T2兼容已补打包证据通过，不能代替新字段写入。新增 FR1–FR3 字段结果权限规格/计划为 proposed，见 `.ai/knowledge/2026-09-23-pm9-created-field-results.md`。此前“已批准功能均有实现”不能覆盖该新反例；releaseAccepted=false。
+
 2026-09-23 End 权限边界补证（confirmed 本机范围）：真实 worker 生成合法/伪造项目记录混合目标，原权限门禁在保存前拒绝整组，已提交数据保留、零环境保存和关联、lease/进程释放。关联两场景2 passed、契约/规则33 passed、Ruff通过；详见 `pm9/link-boundary-follow-through.json`。仅测试/CI选择/文档更新，生产源码仍c16532d7；新增断言不计入此前CI，完整验收仍pending，releaseAccepted=false。
 
 2026-09-23 DATA-LINK-02 新候选（confirmed 本机与三平台 CI 范围，物理发行待验）：生产环境关联仓库预检与提交均增加 `recordRef.projectId` 权威项目核对；伪造外部项目标签但保留本地行键的直接 HTTP 反例 RED→GREEN。本机全后端 3479 passed/77 skipped，契约/规则 33 passed，真实浏览器 data-link-race 1 passed（实际 End 保存后伪造身份修复保持未关联、正确修复不重跑），Ruff/mypy407 通过；251 条台账变为 248 有范围断言、3 未定位、205 partial/46 planned/0 verified。当前 c16532d7 的 Windows/ARM CI 与 ARM 隔离安装已通过；Intel 首次全部测试及打包 smoke 通过但 DMG 临时盘弹出 Resource busy，同源码单 job 重跑后完整成功；首轮失败证据保留，Intel 实机仍待验收。上一 dadb24a1 仍为历史源码。详情见 `docs/project-management/implementation/pm9/link-boundary-follow-through.json`；`releaseAccepted=false`。下文旧候选和统计按各自哈希保留历史。
