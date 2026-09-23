@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "final_source_local_full_passed_native_matrix_in_progress",
+  "status": "current_three_platform_ci_passed_release_not_accepted",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -8,12 +8,12 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "3 of 251 requirements still have no located assertion; 204 partial / 47 planned / 0 verified. DATA-WRITE-13 now has source real-worker partial Sheets intent preservation; packaged, real-Google and cross-platform gates remain open.",
-    "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6, variable parity20/20 and final-source full backend3474 passed/75 skipped. Corrected smoke script candidate1b2979ea is under native matrix35822065171.",
+    "3 of 251 requirements still have no located assertion (DATA-LIFE-01, DATA-SH-03, XE-G07); 204 partial / 47 planned / 0 verified. DATA-WRITE-13 real-worker partial Sheets intent preservation passed selected three-platform CI; packaged real-Google and full business acceptance remain open.",
+    "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6, variable parity20/20 and final-source full backend3474 passed/75 skipped. Corrected smoke script candidate1b2979ea passed three-platform matrix35822065171.",
     "Old ARM data-response-loss failure reproduced locally: Chromium owner PID exited but stale SingletonSocket target remained; ownership-checked macOS lock fix passed source real worker and unit tests. Current ARM isolated DMG installation and full desktop smoke passed locally; other platforms and release gates remain pending.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
-    "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. Current packaged/real-Google acceptance remains separate.",
-    "Historical defa1955 matrix35816693045: ARM data-response-loss failed (27 other worker cases passed); Windows/Intel were cancelled as superseded. Matrix35819716149 @3df7700c ARM passed selected worker but failed source smoke on an extra terminal End command; corrected script passed current local installed-app chain. New matrix35822065171 @1b2979ea is in progress. No current three-platform completion claimed.",
+    "D1 declared-input bad-value claim bypass fixed; dedicated local and selected three-platform real-worker scenario passed. Current packaged real-Google acceptance remains separate.",
+    "Historical defa1955 matrix35816693045: ARM data-response-loss failed; Windows/Intel cancelled. Matrix35819716149 @3df7700c ARM real worker passed but stale source smoke failed; Windows/Intel cancelled. Current matrix35822065171 @1b2979ea checks succeeded on Windows x64, macOS Intel and Apple Silicon; native probe and worker probe jobs skipped. CI success is not complete PM9 release acceptance.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Current ARM DMG was verified, copied to an isolated installation directory and ran full desktop smoke. Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain incomplete. Earlier ARM native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
@@ -142,33 +142,44 @@
       "R4"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
+    "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Production source6d1f1d83 / smoke follow-through commit1b2979ea: backend full local3474 passed /75 skipped /2 dependency warnings in764.47s; variable parity20, Sheets real browser6, response-loss real browser1 RED→GREEN, environment unit15, related ownership/recovery46, Ruff/mypy407 and coverage reference checks passed. Current ARM DMG isolated install/full desktop smoke passed, scripts101 passed. Native matrix35822065171 is in progress; prior35819716149 ARM failed on stale smoke script.",
+  "workingCandidate": "Production source6d1f1d83 / smoke follow-through commit1b2979ea: backend full local3474 passed /75 skipped /2 dependency warnings in764.47s; variable parity20, Sheets real browser6, response-loss real browser1 RED→GREEN, environment unit15, related ownership/recovery46, Ruff/mypy407 and coverage reference checks passed. Current ARM DMG isolated install/full desktop smoke passed, scripts101 passed. Matrix35822065171 three checks succeeded; exact platform scope and measurements in ci-final-follow-through.json.",
   "finalCICandidate": {
-    "codeCandidate": "1b2979ea",
+    "codeCandidate": "1b2979ea40bf1420068972985677367e27ca4b27",
     "productionSourceCommit": "6d1f1d834803c124940ac8a25d007178a51c5f2d",
-    "status": "in_progress",
+    "status": "three_platform_checks_success",
     "platforms": {
       "win32-x64": {
-        "status": "in_progress"
+        "status": "success",
+        "backend": "3462 passed / 87 skipped",
+        "frontend": "5471 passed",
+        "realWorker": "29 passed / 11 deselected"
       },
       "darwin-x64": {
-        "status": "in_progress"
+        "status": "success",
+        "backend": "3474 passed / 75 skipped",
+        "frontend": "5471 passed",
+        "realWorker": "29 passed / 11 deselected"
       },
       "darwin-arm64": {
-        "status": "in_progress"
+        "status": "success",
+        "backend": "3474 passed / 75 skipped",
+        "frontend": "5471 passed",
+        "realWorker": "29 passed / 11 deselected"
       }
     },
     "physicalInstallation": "ARM isolated command-line DMG installation/full smoke passed locally; complete physical installation and native gates pending",
     "runId": "35822065171",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35822065171",
-    "realWorkerSelection": "Includes real_loop_keeps_two_sheet_intents, data-response-loss, real_archive, manual-evidence-reconnect and existing scoped worker cases. Results must be read from current run."
+    "realWorkerSelection": "29 passed/11 deselected on each platform, including real_loop_keeps_two_sheet_intents, data-response-loss, real_archive and manual-evidence-reconnect.",
+    "report": "ci-final-follow-through.json",
+    "nativeProbeJobs": "pm9-native-probe and pm9-worker-probe skipped"
   },
   "codeCandidateScope": "Lifecycle deletion, Windows binary artifact read, typed indexed loop references and macOS ownership-checked stale Chromium runtime locks.",
   "testCandidate": "1b2979ea",
-  "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
+  "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
     "realWorker": "4 passed locally: new dedicated D1 invalid-value scenario plus shared resume/stop/loss; Google and credentials controlled",
@@ -389,26 +400,26 @@
   "archiveSettlementFollowThrough": "archive-settlement-follow-through.json",
   "lifecycleRestartFollowThrough": {
     "report": "lifecycle-restart-follow-through.json",
-    "status": "local_full_lifecycle_passed_final_native_ci_in_progress",
+    "status": "local_full_and_current_three_platform_ci_passed_release_pending",
     "releaseAccepted": false,
     "codeCandidate": "94f8e0a823467f548232b7a4f61adf718ee66f9b",
     "nativeCI": "35822065171"
   },
   "windowsArtifactBinaryRead": {
     "report": "windows-artifact-binary-read.json",
-    "status": "local_passed_windows_native_recheck_pending",
+    "status": "local_and_current_windows_native_ci_passed_release_pending",
     "releaseAccepted": false,
     "nativeCI": "35822065171"
   },
   "sheetsLoopPartialFollowThrough": {
     "report": "sheets-loop-partial-follow-through.json",
-    "status": "local_full_and_real_worker_passed_final_native_ci_in_progress",
+    "status": "local_full_and_selected_three_platform_real_worker_passed_release_pending",
     "coverage": "248/251 scoped; 204 partial / 47 planned / 0 verified",
     "releaseAccepted": false
   },
   "responseLossLockFollowThrough": {
     "report": "response-loss-lock-follow-through.json",
-    "status": "local_full_and_red_green_passed_final_native_ci_in_progress",
+    "status": "local_full_red_green_and_selected_three_platform_real_worker_passed_release_pending",
     "oldCiRun": "35816693045",
     "finalCiRun": "35822065171",
     "releaseAccepted": false

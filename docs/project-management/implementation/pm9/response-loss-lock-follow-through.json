@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_red_green_passed_new_native_candidate_pending",
+  "status": "local_red_green_and_selected_three_platform_ci_passed",
   "requirement": "FLOW-A06",
   "regression": {
     "ciRun": "https://github.com/1127152834/auto-flow/actions/runs/35816693045",
@@ -16,6 +16,7 @@
     "browser ownership, environment persist/restore and workflow recovery: 46 passed, 8 skipped",
     "Ruff source/tests and mypy 407 source files passed"
   ],
-  "limits": "The final-source full backend regression, new three-platform matrix and packaged native dialogs are pending. The old ARM failure is not counted as a pass.",
+  "nativeValidation": "Actions 35822065171 @1b2979ea: final-source full backend passed on Windows x64 and both Mac architectures; selected real worker 29 passed/11 deselected on each, including data-response-loss. Source and packaged chains and installers passed. See ci-final-follow-through.json.",
+  "limits": "The old ARM failure is not counted as a pass. Native physical dialogs, signing/notarization, real Google and complete PM9 release acceptance remain pending.",
   "releaseAccepted": false
 }

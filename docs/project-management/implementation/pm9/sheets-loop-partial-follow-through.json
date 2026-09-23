@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "targeted_source_worker_passed_full_regression_and_native_ci_pending",
+  "status": "targeted_source_worker_full_regression_and_selected_three_platform_ci_passed",
   "requirement": "DATA-WRITE-13",
   "source": "docs/project-management/design/data-and-state-rules.md:254",
   "productionFix": "apps/backend/src/autoflow/domain/workflows/variables.py retains the object and integer types of complete indexed references containing a nested loop index; malformed trailing access paths remain unresolved.",
@@ -30,7 +30,7 @@
   },
   "remaining": [
     "Current PM9 packaged UI and real Google delivery/reconciliation for this partial-success chain are not validated.",
-    "Cross-platform execution of this exact loop/Sheets combination and user-visible partial-success state are not validated.",
+    "The exact loop/Sheets scenario passed selected real HTTP/SQLite/worker/browser tests on Windows x64, macOS Intel and Apple Silicon in Actions 35822065171; user-visible packaged partial-success state remains unvalidated.",
     "S4 existing Windows file operations, L1-L3 and M1-M3 implementation, and other PM9 release gates remain open."
   ],
   "releaseAccepted": false

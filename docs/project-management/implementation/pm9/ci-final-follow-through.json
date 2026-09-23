@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-23",
+  "status": "three_platform_ci_passed_release_not_accepted",
+  "runId": "35822065171",
+  "url": "https://github.com/1127152834/auto-flow/actions/runs/35822065171",
+  "headSha": "1b2979ea40bf1420068972985677367e27ca4b27",
+  "productionSourceCommit": "6d1f1d834803c124940ac8a25d007178a51c5f2d",
+  "jobs": {
+    "darwin-arm64": {
+      "jobId": 107055840559,
+      "status": "success",
+      "backend": "3474 passed / 75 skipped / 2 dependency warnings",
+      "frontend": "5471 passed / 409 files",
+      "realWorker": "29 passed / 11 deselected / 2 dependency warnings",
+      "packaged": "source and packaged production HTTP/SQLite/worker/browser plus desktop smoke passed",
+      "installer": "AutoFlow-0.1.0-arm64.dmg built and uploaded",
+      "desktopVolume": {
+        "records": 10000,
+        "fiveWriterSeedMs": 74198,
+        "busyRetries": 0,
+        "realWorkerLogs": 1004,
+        "realWorkerLogsPerMinuteObserved": 1496,
+        "syntheticLogs": 1000,
+        "syntheticMaxBatchLagMs": 195
+      }
+    },
+    "darwin-x64": {
+      "jobId": 107055840564,
+      "status": "success",
+      "backend": "3474 passed / 75 skipped / 2 dependency warnings",
+      "frontend": "5471 passed / 409 files",
+      "realWorker": "29 passed / 11 deselected / 2 dependency warnings",
+      "packaged": "source and packaged production HTTP/SQLite/worker/browser plus desktop smoke passed",
+      "installer": "AutoFlow-0.1.0.dmg built and uploaded",
+      "desktopVolume": {
+        "records": 10000,
+        "fiveWriterSeedMs": 176374,
+        "busyRetries": 0,
+        "realWorkerLogs": 1004,
+        "realWorkerLogsPerMinuteObserved": 1632,
+        "syntheticLogs": 1000,
+        "syntheticMaxBatchLagMs": 410
+      }
+    },
+    "win32-x64": {
+      "jobId": 107055840370,
+      "status": "success",
+      "backend": "3462 passed / 87 skipped / 2 dependency warnings",
+      "frontend": "5471 passed / 409 files",
+      "realWorker": "29 passed / 11 deselected / 2 dependency warnings",
+      "packaged": "native Windows boundary tests and source/packaged production HTTP/SQLite/worker/browser plus desktop smoke passed",
+      "installer": "AutoFlow Setup 0.1.0.exe built and uploaded",
+      "desktopVolume": {
+        "records": 10000,
+        "fiveWriterSeedMs": 670182,
+        "busyRetries": 0,
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 100723,
+        "realWorkerLogsPerMinuteObserved": 598,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60098,
+        "syntheticMaxBatchLagMs": 124
+      }
+    }
+  },
+  "separateJobs": {
+    "pm9-native-probe": "skipped",
+    "pm9-worker-probe": "skipped"
+  },
+  "interpretation": "Fixed 1000 synthetic repository log events in 60 seconds passed on all three CI runners. It is a separate load path and does not imply Windows real-worker throughput of 1000/minute. No unapproved performance target is inferred from the 10000-row times.",
+  "remaining": [
+    "Current packaged complete Google Sheets/OAuth, system UUID and remote column real-Google chains require current authorization; historical PM6 service-account Sheets and system credential evidence remains valid.",
+    "Physical Windows/Intel installation and native file-picker/credential/import/export/uninstall gates remain open. Current ARM command-line isolated DMG copy/full smoke passed separately; Finder/Gatekeeper, signing and notarization remain open.",
+    "S4 safe existing-file overwrite/append/read, L1-L3 and M1-M3 implementation gaps remain; current CI does not make all 251 acceptance items verified."
+  ],
+  "releaseAccepted": false
+}

@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_dmg_installed_app_smoke_passed_native_matrix_pending",
+  "status": "local_dmg_installed_app_smoke_and_three_platform_ci_passed_release_pending",
   "platform": "macOS Apple Silicon",
   "productionSource": "6d1f1d834803c124940ac8a25d007178a51c5f2d",
   "artifact": {
@@ -33,7 +33,7 @@
   "remaining": [
     "This is one isolated Mac ARM command-line DMG installation, not a Finder/Gatekeeper, signed/notarized, uninstall or three-platform physical acceptance.",
     "Native file picker, real Google/OAuth and current packaged Sheets end-to-end remain pending.",
-    "One earlier pagination timeout remains unexplained; repeat platform CI and preserve page diagnostics on recurrence."
+    "One earlier local pagination timeout remains unexplained; the same full packaged desktop chain passed on all three CI runners and now preserves page diagnostics on recurrence."
   ],
   "releaseAccepted": false
 }
