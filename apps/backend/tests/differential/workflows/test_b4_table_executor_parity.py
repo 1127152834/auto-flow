@@ -621,9 +621,17 @@ def test_table_executor_does_not_import_the_frozen_file_service_or_excel_stack()
 
 @pytest.mark.parametrize(
     "save_path",
-    ["../escape.csv", "C:\\outside\\escape.csv"],
+    [
+        "../escape.csv",
+        "C:relative.csv",
+        r"\\server\share\escape.csv",
+        pytest.param(
+            "C:\\outside\\escape.csv",
+            marks=pytest.mark.skipif(sys.platform == "win32", reason="valid Windows absolute path"),
+        ),
+    ],
 )
-def test_export_rejects_paths_outside_the_managed_artifact_root(save_path: str) -> None:
+def test_export_rejects_ambiguous_paths(save_path: str) -> None:
     artifacts = _RecordingArtifacts()
     context = ExecutionContext(
         data_rows=[{"a": 1}], artifacts=artifacts, clock=_fixed_clock()
@@ -640,7 +648,6 @@ def test_export_rejects_paths_outside_the_managed_artifact_root(save_path: str) 
     assert artifacts.text_calls == []
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="Table export still rejects Windows drive paths")
 def test_csv_export_allows_explicit_absolute_path(tmp_path: Path) -> None:
     artifacts = _RecordingArtifacts()
     context = ExecutionContext(

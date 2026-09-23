@@ -1181,7 +1181,7 @@ async def test_workflow_worker_runs_table_family_and_registers_excel_artifact(
             "table_export",
             {
                 "exportFormat": "excel",
-                "savePath": "reports/result.xlsx",
+                "savePath": str(tmp_path / "reports/result.xlsx"),
                 "sheetName": "结果",
                 "variableName": "path",
             },
@@ -1228,7 +1228,7 @@ async def test_workflow_worker_runs_table_family_and_registers_excel_artifact(
     ]
     assert completions[4]["data"] == 3
     assert len(completions[5]["artifactIds"]) == 1
-    target = artifact_root / "runs/run-table/outputs/reports/result.xlsx"
+    target = tmp_path / "reports/result.xlsx"
     assert target.read_bytes().startswith(b"PK")
     artifact_events = [
         event for event in events if event["type"] == "artifact:registered"
