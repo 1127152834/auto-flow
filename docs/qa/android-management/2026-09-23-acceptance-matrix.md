@@ -23,7 +23,7 @@
 | AM-AC16 | `passed`（自动化及真实容量实验） | 持久预留、未知预算拒绝、stop 丢响应后核实释放，见 [容量实测](2026-09-23-capacity-verification.md)。 |
 | AM-AC17 | `partial` | 聚合快照、陈旧规则及可见预览自动化通过；[单运行实例](am3-verification.md)真实认证 HTTP 快照 20 次 `median=1.91ms`、`p95=2.70ms`。5/10 台、前台/内存与预览并发指标未实测。 |
 | AM-AC18 | `partial` | APK 大小/Manifest/split、未知结果和保护包自动化；[真实自建实例](2026-09-23-am1-real-control-retention.md)已完成安装包/版本核实、启动、停止、清数据、卸载。桌面确认流与丢响应实机仍未演练。 |
-| AM-AC19 | `partial` | 运行中备份拒绝与原子发布自动化、真实停机备份成功；磁盘不足、取消、权限和硬中断未完整验收。 |
+| AM-AC19 | `partial` | 运行中备份拒绝与原子发布自动化、真实停机备份成功；[真实发布前 SIGKILL](2026-09-23-backup-hard-interruption-verification.md)后操作待核实、无假成功备份，暂存清理与源卷读回通过。磁盘不足、取消、权限和归档传输中中断未完整验收。 |
 | AM-AC20 | `partial` | [最终真实恢复](2026-09-23-persistent-metadata-verification.md)覆盖新 ID/卷、1792 持久条目及启动读回；损坏包/镜像不符/越界拒绝为自动化，硬中断未实测。 |
 | AM-AC21 | `passed`（自动化及真实清理） | 预览后指纹/引用变化 409、外部路径/标签保护及真实 HTTP 清理，见 [清理验收](2026-09-23-cleanup-verification.md)。 |
 | AM-AC22 | `passed`（默认导出） | 默认诊断字段白名单排除输入、账号、原始日志、截图和数据；受限 IPC 本地保存且无自动上传，见 [后端增量](2026-09-23-validation.md)。高级日志单次同意/限时限量仍属 T19 缺口。 |

@@ -4,10 +4,10 @@
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
-| T17 停机备份 | `partial` | 运行中拒绝、摘要/路径安全 unit/contract 与 `test_android_backups.py` 自动化通过；真实停止后管理备份路由返回 `201 Created`、`state=available`、`bytes=18585260`，[发布一致性](2026-09-23-publication-verification.md)已补故障注入；磁盘不足/取消/权限/硬中断未完整验证。 |
+| T17 停机备份 | `partial` | 运行中拒绝、摘要/路径安全 unit/contract 与 `test_android_backups.py` 自动化通过；真实停止后管理备份路由返回 `201 Created`、`state=available`、`bytes=18585260`，[发布一致性](2026-09-23-publication-verification.md)已补故障注入；[真实发布前 SIGKILL](2026-09-23-backup-hard-interruption-verification.md)证明无假成功、暂存可清且源卷读回不变。磁盘不足、取消、权限和归档传输中硬中断仍未完整验证。 |
 | T18 安全恢复 | `partial` | 新卷恢复、损坏摘要、镜像不符、越界路径和特殊文件拒绝 unit 通过；`test_android_backup_restore.py` 自动化与真实源/目标标记一致；[最新真机证据](2026-09-23-persistent-metadata-verification.md)覆盖 xattrs/ACL、卷根属性、硬/软链接、部分失败隔离和正常恢复；硬进程中断仍未完成。 |
 | T19 清理与诊断 | `partial` | 默认诊断白名单、runtime workspace 归属、预览摘要、409 变化提示与真实 HTTP 备份/暂存/未登记产物清理通过；受限本机保存 IPC 已实现；[应用命令标记](2026-09-23-command-marker-verification.md)修复后真实成功链不再新增客体残留。高级日志采集、时间窗口/体积限制、旧客体标记及中断 APK 文件仍是软件缺口，不能归为外部条件阻塞。 |
-| T20 AM4 最终演练 | `partial` | 数据写入→停机备份→新卷恢复→真实清理的基础链与自动化已有独立证据；磁盘不足、损坏包、恢复硬中断、镜像引用阻止、最终全分支审查和完整失败矩阵未形成同链真实证据。 |
+| T20 AM4 最终演练 | `partial` | 数据写入→停机备份→新卷恢复→真实清理的基础链与自动化已有独立证据；另有[备份发布前硬中断](2026-09-23-backup-hard-interruption-verification.md)及清理读回。磁盘不足、损坏包、恢复硬中断、镜像引用阻止、最终全分支审查和完整失败矩阵未形成同链真实证据。 |
 
 ## 自动验证命令摘要
 

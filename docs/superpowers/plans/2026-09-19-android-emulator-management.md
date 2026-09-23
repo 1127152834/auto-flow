@@ -40,14 +40,14 @@
 - T13 修复 Docker 未限额内存记零、容器枚举失败和不完整 inspect 被准入；该历史待办由9月23日持久预算增量覆盖，18项集成及真实双工作区证据见 `docs/qa/android-management/2026-09-23-capacity-verification.md`；整任务重审仍未完成。
 - T19 修复诊断设备归属使用路径而非 runtime hash，默认诊断字段改为白名单；高级日志采集仍未实现，不能以环境 blocked 代替。
 - T17/T18 归档安全增量以 `233c09dd` 为基线：内部安全链接、UID/GID/mode、摘要字节复用与源保护已完成；314项聚焦及真实新实例启动读回通过，xattrs/发布耐久性/中断仍待完成。证据见 `docs/qa/android-management/2026-09-23-archive-verification.md`。
-- T17 发布增量以 `715cdb16` 为基线：私有目录、staging 摘要、fsync/rename、备份目录记录与成功终态原子事务及回执未知保护已完成；328项聚焦与真实Mac新实例恢复通过，硬中断孤立文件核实/清理仍待完成。证据见 `docs/qa/android-management/2026-09-23-publication-verification.md`。
+- T17 发布增量以 `715cdb16` 为基线：私有目录、staging 摘要、fsync/rename、备份目录记录与成功终态原子事务及回执未知保护已完成；328项聚焦与真实Mac新实例恢复通过。后续真实卷归档暂存完成后、发布前 `SIGKILL` 的孤立文件核实与公开 HTTP 清理已通过；归档传输中断、磁盘不足等仍待完成。证据见 `docs/qa/android-management/2026-09-23-publication-verification.md` 与 `docs/qa/android-management/2026-09-23-backup-hard-interruption-verification.md`。
 - T19 清理增量以 `a47bbb9d` 为基线：新增目录契约/UI选择、备份暂存及未登记产物、内容指纹/文件锁和明确retained筛选；后端346、前端Android104项以及真实HTTP清理通过。成功应用操作的完成标记已补持久回执后清理，真实 APK 重跑无新增；旧客体标记、上传中断文件/恢复中断仍待完成，证据见 `docs/qa/android-management/2026-09-23-cleanup-verification.md` 与 `docs/qa/android-management/2026-09-23-command-marker-verification.md`。
 - T18 恢复隔离增量以 `be067690` 为基线：恢复意图在IO前持久化，启动/控制/备份隔离，generation/请求/备份栅栏与成功原子发布；真实部分写入、普通recover仍隔离、正常HTTP恢复和重放通过。362项后端、105项前端聚焦通过；硬进程中断/xattrs/全量门槛仍待完成，见 `docs/qa/android-management/2026-09-23-restore-isolation-verification.md`。
 - 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
 
 ### 0.4 2026-09-23 当前验收口径
 
-当前隔离分支已提交 `4f612d53` 操作历史与 `57fb391c` 保留卷恢复入口；最新状态以 [24 项验收校准](../../qa/android-management/2026-09-23-acceptance-matrix.md)、[真实控制与保留卷链](../../qa/android-management/2026-09-23-am1-real-control-retention.md)及[真实持久数据属性验收](../../qa/android-management/2026-09-23-persistent-metadata-verification.md)为准。旧 checklist 的 `blocked` 是各次执行时的快照，不再作为软件任务不能继续的结论。真实 Mac 已验证中文输入、原生切端、30 秒回收、HTTP 重启、APK 操作、同卷保留恢复和双实例删除隔离，另已验证新卷恢复的 1792 项持久条目与 417 项 xattrs/55 项 ACL；卷根目录属性及硬/软链接另由客体实验验证。专用谷歌镜像/账号/网络链保持外部 `blocked`，高级日志、旧应用命令标记清理、桌面长名称/缩放/真实断网、规模/硬中断及 T20 失败矩阵仍是软件或未执行项。前一阶段完整门槛见[记录](../../qa/android-management/2026-09-23-full-gates.md)，本次保留卷增量结果见[新记录](../../qa/android-management/2026-09-23-am1-real-control-retention.md)；通过代码门槛不代表整目标验收完成。
+当前隔离分支已提交 `4f612d53` 操作历史、`57fb391c` 保留卷恢复及 `2a7a0c0d` 应用完成标记修复；最新状态以 [24 项验收校准](../../qa/android-management/2026-09-23-acceptance-matrix.md)、[真实控制与保留卷链](../../qa/android-management/2026-09-23-am1-real-control-retention.md)及[真实持久数据属性验收](../../qa/android-management/2026-09-23-persistent-metadata-verification.md)为准。旧 checklist 的 `blocked` 是各次执行时的快照，不再作为软件任务不能继续的结论。真实 Mac 已验证中文输入、原生切端、30 秒回收、HTTP 重启、APK 操作、同卷保留恢复、双实例删除隔离和备份发布前硬中断后安全清理；另已验证新卷恢复的 1792 项持久条目与 417 项 xattrs/55 项 ACL，卷根目录属性及硬/软链接另由客体实验验证。专用谷歌镜像/账号/网络链保持外部 `blocked`，高级日志、旧应用命令标记清理、桌面长名称/缩放/真实断网、规模/其他硬中断及 T20 失败矩阵仍是软件或未执行项。前一阶段完整门槛见[记录](../../qa/android-management/2026-09-23-full-gates.md)，本次硬中断结果见[新记录](../../qa/android-management/2026-09-23-backup-hard-interruption-verification.md)；通过代码门槛不代表整目标验收完成。
 
 ## Global Constraints
 
@@ -645,7 +645,7 @@ assert restored.owner_kind == 'none'
 assert source_data_digest_after == source_data_digest_before
 ```
 
-- [ ] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：partial；受控部分写入与发布故障已有证据，硬中断等剩余见最新QA）
+- [ ] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：partial；真实备份发布前 `SIGKILL` 已证实无假成功并安全清理暂存，恢复中断/磁盘不足等仍见最新QA）
 - [ ] 运行1.4节全部发布命令与真实设备回归；逐项填写规格24个验收项，无法执行的项目单列blocked。（状态：blocked）
 - [ ] 检查向前回退策略，无破坏性downgrade、旧迁移篡改或新工作流执行器；更新证据索引但保留历史事实。（状态：blocked）
 - [ ] 提交 `test(android): complete management recovery and maintenance acceptance`；报告实际完成和限制，不自动接入工作流。（状态：blocked）
