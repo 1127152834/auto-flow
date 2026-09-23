@@ -24,7 +24,10 @@
     "mypy": "passed",
     "openapi": "passed",
     "rendererMainPreloadBuild": "passed",
-    "projectSqlHttpStatistics": 43
+    "projectSqlHttpStatistics": 43,
+    "pyinstaller": "passed",
+    "frozenBackendSmoke": "passed",
+    "macOSArm64Package": "passed"
   },
   "formalEvidence": "../formal-recording-electron-eUd5nT/result.json",
   "studioHtmlSha256": "2a679dd7bf0087d935b507bc5b54b6e3d7b012b19fc4988c404075fb18a26988",
@@ -37,14 +40,15 @@
   "boundaries": {
     "workerProtocolTests": "not browser evidence",
     "platform": "macOS arm64 development-build real UI",
-    "formalPackage": "not tested this batch",
+    "formalPackage": "macOS arm64 unsigned local package; real UI recording/replay and native close passed",
     "macOSIntel": "not tested",
     "Windows": "not tested",
     "nodeSlots": "622 passed / 17 real-execution pending; unchanged"
   },
   "remaining": [
     "project resource permissions and task/data-table integration",
-    "formal package and other platforms",
+    "macOS Intel and Windows not tested",
     "remaining retained node execution slots"
-  ]
+  ],
+  "packagedEvidence": "../formal-recording-electron-xIkcrm/result.json"
 }
