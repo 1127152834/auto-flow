@@ -2,6 +2,8 @@
 
 日期：2026-09-15。用途：所有 Studio 后端规格、实施任务、代码审查和验收的共同输入。
 
+范围修订（2026-09-23，用户明确确认）：14个通知节点为主动删除，当前有效集合为213；旧227基线已被范围文档替代，不恢复删除节点。
+
 **当前交付是约束文档，不代表后端已经实现或验收。**
 
 状态说明：
@@ -19,7 +21,7 @@
 | ID | 约束 | 执行要求 | 不合格示例 |
 |---|---|---|---|
 | G-01 | 浏览器只使用 CloakBrowser | 运行、Debug、拾取、录制及网页 AI 工具统一使用主应用管理的 CloakBrowser Profile 和浏览器能力 | 失败后回退到系统 Chrome；另加 Firefox；单独下载 Playwright 自带 Chromium |
-| G-02 | 只实现已批准前端声明的节点 | 当前 227 个入口，以范围文档及有效目录的具体类型集合核对；共享执行器可以复用 | 从原版批量注册全部执行器；因为后端实现简单而重新开放排除节点 |
+| G-02 | 只实现已批准前端声明的节点 | 当前 213 个入口，以范围文档及有效目录的具体类型集合核对；共享执行器可以复用 | 从原版批量注册全部执行器；因为后端实现简单而重新开放排除节点 |
 | G-03 | 遵循 AutoFlow 架构和目录规则 | 使用现有 Python sidecar、领域分层、HTTP/SSE、数据库、凭据、进程和 provider 边界 | 把 WebRPA backend/app 整体嵌入；新增另一套 sidecar、配置体系或执行服务 |
 | G-04 | 小助手使用 LangGraph 重构 | 小助手的多轮状态、模型与工具调度、批准/拒绝、取消和恢复由 LangGraph 实际编排 | 仅在单次 OpenAI 请求外套一个空图；保留另一条绕过图的完整助手循环 |
 
@@ -30,7 +32,7 @@
 | 用途 | 入口 |
 |---|---|
 | 项目规则与目录 | [AGENTS.md](../../AGENTS.md)、[目录结构](../PROJECT_STRUCTURE.md)、[系统架构](../architecture/README.md)及其最新补充 |
-| 有效节点范围 | [227 节点范围](../migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md)、[能力台账](../migration/studio-frontend-completion/capabilities.json) |
+| 有效节点范围 | [213 节点范围](../migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md)、[能力台账](../migration/studio-frontend-completion/capabilities.json) |
 | 前端服务消费 | [后端交接](../migration/studio-frontend-completion/backend-handoff.md)、[合同矩阵](../migration/studio-frontend-completion/contract-matrix.md)、[服务清单](../migration/studio-frontend-completion/service-inventory.json) |
 | 源码行为与适配 | [源码迁入决定](../../.ai/decisions/2026-09-13-studio-webrpa-source-migration.md)、[前端来源说明](../../apps/desktop/src/renderer/domains/workflows/SOURCE.md) |
 | 实际验收 | [验收记录](../migration/studio-frontend-completion/acceptance.md)、[已验证用例](../migration/studio-frontend-completion/verified-cases.json)及各自证据 |
@@ -41,7 +43,7 @@
 
 ### 1.3 节点范围与配套范围
 
-**G-06：按类型集合核对范围，不能只核对数量。** 227 是当前入口基线，不要求编写 227 个执行器类，也不等于 227 个后端服务。多个入口可映射同一执行器；别名和模式映射必须有记录。测试比较具体允许类型及入口映射，防止“新增一个、漏掉一个，数量仍相同”。
+**G-06：按类型集合核对范围，不能只核对数量。** 213 是当前入口基线，不要求编写 213 个执行器类，也不等于 213 个后端服务。多个入口可映射同一执行器；别名和模式映射必须有记录。测试比较具体允许类型及入口映射，防止“新增一个、漏掉一个，数量仍相同”。
 
 **G-07：前端未声明的节点不开发，保留节点的依赖必须补齐。** 文档、模块依赖、凭据、模型、MCP、日志、图片资源、通知、计划任务和运行期交互等服务，按当前能力与服务台账核定，不能因为它们不是画布节点就省略。也不能把泛化的“只做 Web”解释成删除已保留的变量、数据处理或其他工具能力。
 
