@@ -1,0 +1,126 @@
+{
+  "scope": [
+    "email_trigger",
+    "send_email"
+  ],
+  "frozenSource": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "sourceFiles": [
+    "backend/app/executors/advanced.py#SendEmailExecutor",
+    "backend/app/executors/trigger.py#EmailTriggerExecutor",
+    "backend/app/services/trigger_manager.py#TriggerManager._email_monitor_loop"
+  ],
+  "testFile": "apps/backend/tests/integration/test_b6_mail_transport_worker.py",
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "release": "25.4.0"
+  },
+  "result": {
+    "passed": 16,
+    "failed": 0,
+    "durationSeconds": 31.21,
+    "newRealTLSWorkerCases": 8
+  },
+  "checks": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "cases": [
+    {
+      "id": "MAIL-TLS-SMTP-MIME",
+      "assertions": [
+        "real TLS and SMTP AUTH/MAIL/RCPT/DATA/QUIT",
+        "UTF-8 subject/body",
+        "dot-stuffed line roundtrip",
+        "single MIME message",
+        "successor executes",
+        "socket and process cleanup"
+      ]
+    },
+    {
+      "id": "MAIL-TLS-IMAP-MIME",
+      "assertions": [
+        "real TLS and IMAP LOGIN/SELECT/SEARCH/FETCH/STORE/CLOSE/LOGOUT",
+        "independent sender and subject filtering",
+        "two matching messages; last selected",
+        "multipart plain text selection",
+        "only matching IDs marked seen",
+        "saved variable consumed downstream",
+        "socket and process cleanup"
+      ]
+    },
+    {
+      "id": "MAIL-TLS-SMTP-AUTH",
+      "assertions": [
+        "real 535 authentication rejection",
+        "no DATA and no successor",
+        "node error and cleanup"
+      ]
+    },
+    {
+      "id": "MAIL-TLS-SMTP-RCPT",
+      "assertions": [
+        "real 550 recipient rejection",
+        "no DATA and no successor",
+        "node error and cleanup"
+      ]
+    },
+    {
+      "id": "MAIL-TLS-IMAP-AUTH",
+      "assertions": [
+        "real NO authentication rejection",
+        "source-compatible retry then timeout",
+        "no successor and cleanup"
+      ]
+    },
+    {
+      "id": "MAIL-TLS-IMAP-EMPTY",
+      "assertions": [
+        "empty UNSEEN result",
+        "timeout instead of fabricated message",
+        "no successor and cleanup"
+      ]
+    },
+    {
+      "id": "MAIL-TLS-SMTP-STOP",
+      "assertions": [
+        "stop while awaiting DATA reply",
+        "server observes EOF before fixture shutdown",
+        "stop under 3 seconds",
+        "no successor/no completed event",
+        "worker no longer busy and no active process"
+      ]
+    },
+    {
+      "id": "MAIL-TLS-IMAP-STOP",
+      "assertions": [
+        "stop while awaiting SEARCH reply",
+        "server observes EOF before fixture shutdown",
+        "stop under 3 seconds",
+        "no successor/no completed event",
+        "worker no longer busy and no active process"
+      ]
+    }
+  ],
+  "boundary": {
+    "service": "minimal controlled SMTP/IMAP protocol endpoints; not production mail servers",
+    "smtpRouting": "child test launcher routes only smtp.qq.com:465 to random loopback TLS port; all other non-loopback socket.create_connection destinations rejected",
+    "productionClients": "smtplib.SMTP_SSL and imaplib.IMAP4_SSL unchanged; real production integration gateway/executors/worker",
+    "credentials": "fixture-only credentials and temporary generated certificate; no user credentials",
+    "notValidated": [
+      "external QQ provider delivery",
+      "full SMTP/IMAP server compliance",
+      "certificate trust/hostname security policy",
+      "formal Electron UI",
+      "Windows",
+      "macOS Intel"
+    ]
+  },
+  "initialFailure": {
+    "passed": 7,
+    "failed": 1,
+    "reason": "expected IMAP STORE text omitted parentheses automatically added by the real standard-library client",
+    "correction": "assert exact wire form n +FLAGS (\\Seen); no production change or weakened message/result assertions"
+  }
+}
