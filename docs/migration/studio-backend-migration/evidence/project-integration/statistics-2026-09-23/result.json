@@ -1,0 +1,40 @@
+{
+  "status": "passed-with-explicit-remaining-scope",
+  "date": "2026-09-23",
+  "classification": "AutoFlow必要适配",
+  "checks": {
+    "backend": "26 passed, including real worker event-name regression and original project task statistics",
+    "frontend": "20 passed: statistics panel, native entry, assets",
+    "typescript": "passed",
+    "eslint": "passed",
+    "ruff": "passed",
+    "mypy": "3 production files passed",
+    "openapi": "passed",
+    "build": "renderer/main/preload passed"
+  },
+  "formalElectron": "../formal-electron-oV2m53/result.json",
+  "failedFormalElectron": "../formal-electron-lom2FL/failure.json",
+  "capabilities": [
+    "persisted Studio cohort filtered by project/workflow/start date/status",
+    "run states, success rate, real duration, execution/result/file/diagnostic/debug counts",
+    "scheduled trigger evidence and explicit unknown source",
+    "top workflow/failure node, latest absolute-time activity, bounded run/log/asset drill-down",
+    "1000 real persisted iterations; mixed timezone millisecond boundaries; reconstruction without SSE accumulators"
+  ],
+  "corrections": [
+    "mixed ISO offsets ordered by julianday and aware datetime",
+    "initial query/fixture incorrectly used node-started; formal UI exposed zero count; changed to actual runtime node_start and added real worker producer test without reducing expected counts"
+  ],
+  "remaining": [
+    "recording project ownership and counts: null with explicit explanation, not zero",
+    "project task execution bridge and all resource authorization",
+    "inspection/recording lifecycle",
+    "packaged build, macOS Intel, Windows"
+  ],
+  "boundaries": {
+    "platform": "macOS arm64 development build",
+    "userDatabaseTouched": false,
+    "mockExecution": false,
+    "recordingCountClaimed": false
+  }
+}

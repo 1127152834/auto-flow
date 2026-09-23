@@ -105,3 +105,9 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 `GET /api/v1/projects/{projectId}/run-assets` 以 kind、runId、nodeId、cursor/limit 查询现有索引投影，返回元数据、total/nextCursor，不包含完整值或磁盘路径。`GET /api/workflow-runs/{runId}/results/{sequence}` 按已登记事件读取完整结果；文件仍用原 artifact 地址，均带宿主 projectId。新文件有真实 registeredAt，旧文件无登记/事件时间时返回 null。数据目录可预览、下载并读取对应执行日志。
 
 证据：[数据入口及完整正式 UI](../studio-backend-migration/evidence/project-integration/data-assets-2026-09-23/result.json)、[项目删除清理集成](../studio-backend-migration/evidence/project-integration/delete-cleanup-2026-09-23/result.json)。永久删除先清受管运行目录，成功后清该项目运行/索引/文档/保存回执；失败保留 deleting 和重试责任，其他项目、共享资源及用户外部输出不删除。正式 UI 删除、业务数据表写入、统计与录制归属尚未在这两份证据中关闭。
+
+### Studio 统计事实与下钻（2026-09-23）
+
+`GET /api/v1/projects/{projectId}/statistics/studio` 复用项目统计服务，按 from/to（运行启动时间）、workflowId、status、cursor/limit 在数据库过滤和聚合。成功为 completed、取消为 stopped；成功率分母只计 completed+failed，时长包含暂停/清理。节点执行按真实 execution:node_start 事件统计，结果次数不是业务记录数，文件与诊断独立计数。计划来源按已登记执行关联，缺证据返回 unknown。结果包含有界运行列表和下一游标；前端从统计读取原运行日志及原项目资产，无假任务ID。活跃状态刷新后可能变化，不冒充原任务冻结结果集。
+
+[统计及正式 UI 证据](../studio-backend-migration/evidence/project-integration/statistics-2026-09-23/result.json)。录制归属尚缺，因此 recordingCount=null，接口和页面给出真实原因；录制统计仍待后续归属接入，不将 null 算通过。正式包和其他平台未在此项核销。

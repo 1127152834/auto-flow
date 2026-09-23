@@ -23,7 +23,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.application.project_runs.queries import ProjectRunQueries
@@ -37,7 +37,18 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectTaskInputSnapshotRow,
     ProjectTaskRow,
 )
-from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+from autoflow.infrastructure.database.projects import SqlAlchemyProjects, guard_project
+from autoflow.infrastructure.database.workflow_models import (
+    ScheduledTaskExecutionRow,
+    WorkflowRunArtifactRow,
+    WorkflowRunEventRow,
+)
+from autoflow.infrastructure.database.workflow_models import (
+    WorkflowRunRow as StudioRunRow,
+)
+from autoflow.infrastructure.database.workflow_project_scope import (
+    studio_run_project_expression,
+)
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 
 TERMINAL_STATUSES = ("succeeded", "failed", "cancelled", "timed_out", "interrupted")
@@ -71,6 +82,92 @@ class ProjectStatisticsService:
         self._factory = session_factory
         self._queries = queries or ProjectRunQueries(session_factory)
         self._secret = _secret(session_factory)
+
+    def studio(
+        self, project_id: str, *, from_: datetime | None = None,
+        to: datetime | None = None, workflow_id: str | None = None,
+        status: str | None = None, cursor: int = 0, limit: int = 50,
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        """Read one transaction of Studio facts, filtered by run start time.
+
+        Active runs may change on refresh; this is not the frozen task result set.
+        The result never loads document snapshots, result values or error secrets.
+        """
+        from typing import get_args
+
+        from autoflow.domain.workflows.runs import RunStatus
+
+        calculated = _aware(now or datetime.now(UTC))
+        upper = min(_aware(to), calculated) if to is not None else calculated
+        lower = _aware(from_) if from_ is not None else upper - DEFAULT_WINDOW
+        if lower > upper or cursor < 0 or not 1 <= limit <= 200 or (status is not None and status not in get_args(RunStatus)):
+            raise ProjectError("STATISTICS_RANGE_INVALID", "运行统计筛选无效", 422)
+        run, event, artifact = StudioRunRow, WorkflowRunEventRow, WorkflowRunArtifactRow
+        query = select(
+            run.id.label("runId"), run.workflow_id.label("workflowId"),
+            run.payload["workflowName"].as_string().label("workflowName"),
+            run.payload["mode"].as_string().label("mode"),
+            run.payload["status"].as_string().label("status"),
+            run.started_at.label("startedAt"), run.payload["finishedAt"].as_string().label("finishedAt"),
+        ).where(
+            studio_run_project_expression() == project_id,
+            func.julianday(run.started_at) >= func.julianday(lower.isoformat()),
+            func.julianday(run.started_at) <= func.julianday(upper.isoformat()),
+        )
+        if workflow_id is not None:
+            query = query.where(run.workflow_id == workflow_id)
+        if status is not None:
+            query = query.where(run.payload["status"].as_string() == status)
+        cohort = query.subquery()
+        ids = select(cohort.c.runId)
+        events = select(event).where(event.run_id.in_(ids)).subquery()
+        event_type = events.c.payload["type"].as_string()
+        event_node = events.c.payload["nodeId"].as_string()
+        duration = (func.julianday(cohort.c.finishedAt) - func.julianday(cohort.c.startedAt)) * 86400000
+        scheduled_source = select(ScheduledTaskExecutionRow.payload["trigger_type"].as_string()).where(
+            ScheduledTaskExecutionRow.payload["run_id"].as_string() == cohort.c.runId,
+        ).order_by(ScheduledTaskExecutionRow.created_at, ScheduledTaskExecutionRow.id).limit(1).scalar_subquery()
+        source = func.coalesce(scheduled_source, "unknown")
+        with self._factory() as session:
+            session.execute(text("BEGIN"))
+            guard_project(session, project_id, writable=False)
+            by_status = {state: count for state, count in session.execute(select(cohort.c.status, func.count()).group_by(cohort.c.status))}
+            total = sum(by_status.values())
+            average = session.scalar(select(func.avg(duration)).where(cohort.c.status.in_(("completed", "failed")), duration >= 0))
+            node_count = session.scalar(select(func.count()).select_from(events).where(event_type == "execution:node_start")) or 0
+            result_count = session.scalar(select(func.count()).select_from(events).where(
+                event_type == "execution:node-succeeded", event_node.is_not(None),
+                func.json_type(events.c.payload, "$.payload.result.data").not_in(("null",)),
+            )) or 0
+            files = {purpose: count for purpose, count in session.execute(select(artifact.purpose, func.count()).where(artifact.run_id.in_(ids)).group_by(artifact.purpose))}
+            failures = [{"nodeId": node, "count": count} for node, count in session.execute(
+                select(event_node, func.count()).where(event_type == "execution:node-failed", event_node.is_not(None)).group_by(event_node).order_by(func.count().desc(), event_node).limit(10)
+            )]
+            workflows = [{"workflowId": identifier, "name": name, "count": count} for identifier, name, count in session.execute(
+                select(cohort.c.workflowId, func.max(cohort.c.workflowName), func.count()).group_by(cohort.c.workflowId).order_by(func.count().desc(), cohort.c.workflowId).limit(10)
+            )]
+            triggers = {trigger: count for trigger, count in session.execute(select(source, func.count()).select_from(cohort).group_by(source))}
+            debug = session.scalar(select(func.count()).select_from(cohort).where(cohort.c.mode == "debug")) or 0
+            run_time = func.coalesce(cohort.c.finishedAt, cohort.c.startedAt)
+            event_time = events.c.payload["occurredAt"].as_string()
+            latest_run = session.scalar(select(run_time).order_by(func.julianday(run_time).desc()).limit(1))
+            latest_event = session.scalar(select(event_time).order_by(func.julianday(event_time).desc()).limit(1))
+            items = [dict(row) for row in session.execute(select(cohort).order_by(func.julianday(cohort.c.startedAt).desc(), cohort.c.runId).offset(cursor).limit(limit)).mappings()]
+        decided = by_status.get("completed", 0) + by_status.get("failed", 0)
+        return {
+            "projectId": project_id, "from": lower.isoformat(), "to": upper.isoformat(), "calculatedAt": calculated.isoformat(),
+            "totalRuns": total, "byStatus": by_status,
+            "successRate": by_status.get("completed", 0) / decided if decided else None,
+            "averageDurationMs": round(average) if average is not None else None,
+            "nodeExecutionCount": node_count, "extractionExecutionCount": result_count,
+            "artifactCount": files.get("result", 0), "diagnosticCount": files.get("diagnostic", 0),
+            "debugCount": debug, "recordingCount": None,
+            "recordingUnavailableReason": "历史录制尚未保存项目归属，不能据工作区总量推算项目次数",
+            "latestActivityAt": max(filter(None, (latest_run, latest_event)), key=lambda value: _aware(datetime.fromisoformat(value)), default=None),
+            "failuresByNode": failures, "runsByWorkflow": workflows, "byTrigger": triggers,
+            "items": items, "nextCursor": cursor + len(items) if cursor + len(items) < total else None,
+        }
 
     def get(
         self,

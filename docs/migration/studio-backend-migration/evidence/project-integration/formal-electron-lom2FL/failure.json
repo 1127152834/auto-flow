@@ -1,0 +1,303 @@
+{
+  "checkedAt": "2026-09-23T03:43:48.870Z",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "通过 macOS 原生窗口关闭按钮触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变",
+    "再次正常关闭并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增",
+    "正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线",
+    "正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化",
+    "运行终态后 CloakBrowser 进程树和临时会话均已清理",
+    "项目数据页真实点击读取提取值、对应节点执行日志和 PNG 预览；下载文件与运行登记产物字节一致"
+  ],
+  "observedEvents": [
+    {
+      "id": 1,
+      "name": "execution:started",
+      "data": {
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "documentId": "AdhFwfcVsmvjc02FbJZ8S"
+      }
+    },
+    {
+      "id": 2,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "Gq23U1mUmU5_VMQ0_W4T-",
+        "executionId": "c79908ec-8b95-41d4-b5b2-78b54c792731",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 2
+      }
+    },
+    {
+      "id": 3,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "Gq23U1mUmU5_VMQ0_W4T-",
+        "executionId": "c79908ec-8b95-41d4-b5b2-78b54c792731",
+        "success": true,
+        "sequence": 3,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "execution:log",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "log": {
+          "sequence": 4,
+          "id": "03aea276-b274-4a89-a247-b056127de2e8-4",
+          "timestamp": "2026-09-23T03:43:43.205229+00:00",
+          "level": "success",
+          "message": "已打开网页: [已隐藏的URL]",
+          "nodeId": "Gq23U1mUmU5_VMQ0_W4T-",
+          "executionId": "c79908ec-8b95-41d4-b5b2-78b54c792731",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "91Ju3XPn5duYasQ3apCXo",
+        "executionId": "1f31f6bc-47e6-46da-acf3-a3315ce2e8ab",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 5
+      }
+    },
+    {
+      "id": 6,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "91Ju3XPn5duYasQ3apCXo",
+        "executionId": "1f31f6bc-47e6-46da-acf3-a3315ce2e8ab",
+        "success": true,
+        "sequence": 6,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": "execution:log",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "log": {
+          "sequence": 7,
+          "id": "03aea276-b274-4a89-a247-b056127de2e8-7",
+          "timestamp": "2026-09-23T03:43:43.289231+00:00",
+          "level": "success",
+          "message": "已输入文本到: #workflow-input",
+          "nodeId": "91Ju3XPn5duYasQ3apCXo",
+          "executionId": "1f31f6bc-47e6-46da-acf3-a3315ce2e8ab",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "d875Kbuq-1n86eYtvu0Yx",
+        "executionId": "9a523797-2c1c-46e4-95cc-5e368188e0b5",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 8
+      }
+    },
+    {
+      "id": 9,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "d875Kbuq-1n86eYtvu0Yx",
+        "executionId": "9a523797-2c1c-46e4-95cc-5e368188e0b5",
+        "success": true,
+        "sequence": 9,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "execution:log",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "log": {
+          "sequence": 10,
+          "id": "03aea276-b274-4a89-a247-b056127de2e8-10",
+          "timestamp": "2026-09-23T03:43:43.312324+00:00",
+          "level": "success",
+          "message": "已点击元素: .workflow-action",
+          "nodeId": "d875Kbuq-1n86eYtvu0Yx",
+          "executionId": "9a523797-2c1c-46e4-95cc-5e368188e0b5",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "46iNvBwDw2RxVag2-X7YL",
+        "executionId": "83813fa4-44d0-4d70-9d4d-406d82cf6b91",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 11
+      }
+    },
+    {
+      "id": 12,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "46iNvBwDw2RxVag2-X7YL",
+        "executionId": "83813fa4-44d0-4d70-9d4d-406d82cf6b91",
+        "success": true,
+        "sequence": 12,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "execution:log",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "log": {
+          "sequence": 13,
+          "id": "03aea276-b274-4a89-a247-b056127de2e8-13",
+          "timestamp": "2026-09-23T03:43:43.350585+00:00",
+          "level": "success",
+          "message": "已获取元素信息: 真实 CloakBrowser 五节点",
+          "nodeId": "46iNvBwDw2RxVag2-X7YL",
+          "executionId": "83813fa4-44d0-4d70-9d4d-406d82cf6b91",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "R1Kc-rKYGaJ6D3lO2uB0p",
+        "executionId": "382baa3c-c06f-4283-9fe4-29cf9fe9f0fa",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 14
+      }
+    },
+    {
+      "id": 15,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "nodeId": "R1Kc-rKYGaJ6D3lO2uB0p",
+        "executionId": "382baa3c-c06f-4283-9fe4-29cf9fe9f0fa",
+        "success": true,
+        "sequence": 15,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 16,
+      "name": "execution:log",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "log": {
+          "sequence": 16,
+          "id": "03aea276-b274-4a89-a247-b056127de2e8-16",
+          "timestamp": "2026-09-23T03:43:43.407187+00:00",
+          "level": "success",
+          "message": "已保存截图: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b1-MQkt9t/workspace/runs/03aea276-b274-4a89-a247-b056127de2e8/artifacts/screenshot_20260923_034343.png",
+          "nodeId": "R1Kc-rKYGaJ6D3lO2uB0p",
+          "executionId": "382baa3c-c06f-4283-9fe4-29cf9fe9f0fa",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      }
+    },
+    {
+      "id": 17,
+      "name": "execution:completed",
+      "data": {
+        "runId": "03aea276-b274-4a89-a247-b056127de2e8",
+        "workflowId": "AdhFwfcVsmvjc02FbJZ8S",
+        "result": {
+          "status": "completed",
+          "executedNodes": 5,
+          "failedNodes": 0
+        }
+      }
+    }
+  ],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n'0' !== '5'\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:258:14"
+}

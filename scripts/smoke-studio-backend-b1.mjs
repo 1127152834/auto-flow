@@ -249,6 +249,23 @@ try {
     }, 'native artifact download', 15000)
     assert.deepEqual(downloaded, png)
     checkpoint('项目数据页真实点击读取提取值、对应节点执行日志和 PNG 预览；下载文件与运行登记产物字节一致')
+    if (process.env.AUTOFLOW_B1_STATS === '1') {
+      await click(main, '统计', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+      await click(main, 'Studio 运行统计', 'summary')
+      await waitFor(main, "document.querySelector('[aria-label=\"Studio 统计指标\"]')?.innerText.includes('100.0%')", 'persisted Studio statistics')
+      const metrics = await main.evaluate("Object.fromEntries([...document.querySelectorAll('[aria-label=\"Studio 统计指标\"] > div')].map(e=>[e.querySelector('dt').textContent,e.querySelector('dd').textContent]))")
+      assert.equal(metrics['运行总数'], '1')
+      assert.equal(metrics['节点执行次数'], '5')
+      assert.equal(metrics['结果文件'], '1')
+      assert.equal(metrics['调试次数'], '0')
+      await click(main, `查看运行 ${runId}`)
+      await waitFor(main, `document.querySelector('[aria-label=统计运行详情] pre')?.textContent.includes(${JSON.stringify(nodeIds[3])})`, 'statistics drill-down to real node logs')
+      await click(main, '本次运行的产物', 'summary')
+      await click(main, `预览 ${screenshot.assetId}`, 'button')
+      await waitFor(main, "(()=>{const image=document.querySelector('[aria-label=统计运行详情] img');return image?.complete&&image.naturalWidth>0})()", 'statistics drill-down to registered PNG')
+      await capture(main, join(evidenceDir, 'project-statistics-drilldown.png'))
+      checkpoint('项目统计从真实持久记录显示 1 次成功、5 次节点执行、1 个 PNG，并真实点击下钻到同次运行日志和截图')
+    }
     await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
   }
 

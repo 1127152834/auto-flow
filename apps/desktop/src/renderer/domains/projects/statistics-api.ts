@@ -8,6 +8,8 @@ export type StatisticsInterval = 'day' | 'week' | 'month'
 export type StatisticsResult = 'succeeded' | 'failed' | 'cancelled' | 'timed_out' | 'interrupted'
 export type StatisticsQuery = { from?: string; to?: string; timezone?: string; automationId?: string; tableId?: string; interval?: StatisticsInterval }
 export type StatisticsTaskQuery = { result: StatisticsResult; intervalStart?: string; page: number; pageSize: number; sort?: string }
+export type StudioStatistics = Schema['StudioProjectStatistics']
+export type StudioStatisticsQuery = { from: string; to?: string; workflowId?: string; status?: string; cursor: number }
 
 const encoded = encodeURIComponent
 const query = (value: Record<string, string | number | undefined>) => new URLSearchParams(Object.entries(value).filter((entry): entry is [string, string | number] => entry[1] !== undefined).map(([key, item]) => [key, String(item)])).toString()
@@ -17,5 +19,10 @@ export function createProjectStatisticsApi(client: StreamingApiClient, projectId
   return {
     get: (filter: StatisticsQuery, signal?: AbortSignal) => client.request<ProjectStatistics>(`${root}/statistics?${query(filter)}`, { signal }),
     tasks: (resultSetId: string, filter: StatisticsTaskQuery, signal?: AbortSignal) => client.request<StatisticsTaskPage>(`${root}/statistics/${encoded(resultSetId)}/tasks?${query(filter)}`, { signal }),
+    studio: async (filter: StudioStatisticsQuery, signal?: AbortSignal) => {
+      const value = await client.request<StudioStatistics>(`${root}/statistics/studio?${query({ ...filter, limit: 50 })}`, { signal })
+      if (value.projectId !== projectId) throw new Error('统计项目身份不一致')
+      return value
+    },
   }
 }

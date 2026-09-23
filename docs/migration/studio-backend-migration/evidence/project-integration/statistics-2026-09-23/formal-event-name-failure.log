@@ -1,0 +1,31 @@
+主应用真实服务在临时工作区创建 CloakBrowser Profile
+正式项目 UI 新建项目，由项目自动化目录进入 Studio
+主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile
+通过正式新建入口创建空工作流
+通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store
+通过画布连接手柄建立五节点顺序链
+正式保存经真实 HTTP 写入 SQLite，返回修订 1
+通过 macOS 原生窗口关闭按钮触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变
+再次正常关闭并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增
+正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线
+正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化
+运行终态后 CloakBrowser 进程树和临时会话均已清理
+项目数据页真实点击读取提取值、对应节点执行日志和 PNG 预览；下载文件与运行登记产物字节一致
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+'0' !== '5'
+
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:258:14 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '0',
+  expected: '5',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.7.0

@@ -8,15 +8,15 @@ import { Select } from '../../../shared/components/ui/select'
 import { safeProjectError } from '../../projects/presentation-error'
 import { createProjectRunAssetsApi, type AssetQuery, type RunAsset } from '../run-assets-api'
 
-type Props = { workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient; disabled: boolean }
+type Props = { workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient; disabled: boolean; initialRunId?: string }
 const kinds = [{ value: '', label: '全部运行数据' }, { value: 'result', label: '节点结果' }, { value: 'file', label: '结果文件' }, { value: 'diagnostic', label: '变量诊断' }]
 const label = (asset: RunAsset) => `${asset.workflowName} · ${asset.nodeId} · ${asset.executionId ?? '历史执行'}`
 export function ProjectRunAssets(props: Props) {
-  return <Assets key={JSON.stringify([props.workspaceKey, props.instanceId, props.projectId])} {...props} />
+  return <Assets key={JSON.stringify([props.workspaceKey, props.instanceId, props.projectId, props.initialRunId])} {...props} />
 }
-function Assets({ workspaceKey, instanceId, projectId, client, disabled }: Props) {
+function Assets({ workspaceKey, instanceId, projectId, client, disabled, initialRunId = '' }: Props) {
   const api = useMemo(() => createProjectRunAssetsApi(client, projectId), [client, projectId])
-  const [query, setQuery] = useState<AssetQuery>({ kind: '', nodeId: '', runId: '', cursor: 0 })
+  const [query, setQuery] = useState<AssetQuery>({ kind: '', nodeId: '', runId: initialRunId, cursor: 0 })
   const [selected, setSelected] = useState<RunAsset | null>(null)
   const [preview, setPreview] = useState<{ url?: string; text?: string } | null>(null)
   const [error, setError] = useState<string | null>(null)

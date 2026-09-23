@@ -7,6 +7,7 @@ import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { createAutomationApi } from '../../project-automations/api'
 import { FailureDestinations } from '../components/FailureDestinations'
 import { StatisticsTrend } from '../components/StatisticsTrend'
+import { StudioStatisticsPanel } from '../components/StudioStatisticsPanel'
 import { createProjectStatisticsApi, type ProjectStatistics, type StatisticsInterval } from '../statistics-api'
 import type { RunFrozen } from '../types'
 
@@ -98,6 +99,7 @@ export function StatisticsPage({
   const key = `autoflow:statistics:${JSON.stringify([workspaceKey, projectId])}`
   const [browse, setBrowse] = useState(() => restore(key))
   const [drillFailure, setDrillFailure] = useState<string | null>(null)
+  const [showStudio, setShowStudio] = useState(false)
   const api = useMemo(() => createProjectStatisticsApi(client, projectId), [client, projectId])
   const automations = useMemo(() => createAutomationApi(client, projectId), [client, projectId])
   const timezone = useMemo(zone, [])
@@ -165,6 +167,7 @@ export function StatisticsPage({
   const windowLabel = `${dayLabel.format(new Date(shownWindow.from))} — ${dayLabel.format(new Date(shownWindow.to))}（截至 ${momentLabel.format(new Date(shownWindow.to))}）`
 
   return <section aria-label="统计" className="grid min-w-0 gap-5">
+    <details onToggle={event => setShowStudio(event.currentTarget.open)}><summary className="cursor-pointer">Studio 运行统计</summary>{showStudio ? <StudioStatisticsPanel {...{ workspaceKey, instanceId, projectId, client, disabled }} /> : null}</details>
     {stats.isLoading && !data ? <><Skeleton className="h-24 w-full" /><Skeleton className="h-64 w-full" /></> : null}
     {disabled && !data ? <p role="status" className="m-0 rounded-control border border-line bg-surface px-4 py-3 text-sm text-muted">本地服务暂不可用，统计会在连接恢复后重新加载。</p> : null}
     {error && !data ? <div role="alert" className="flex items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 text-sm text-danger">

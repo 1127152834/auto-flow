@@ -1262,6 +1262,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/statistics/studio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Studio Statistics */
+        get: operations["studio_statistics_api_v1_projects__projectId__statistics_studio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/statistics": {
         parameters: {
             query?: never;
@@ -11203,6 +11220,55 @@ export type components = {
             /** Nextcursor */
             nextCursor: number | null;
         };
+        /** StudioProjectStatistics */
+        StudioProjectStatistics: {
+            /** Projectid */
+            projectId: string;
+            /** From */
+            from: string;
+            /** To */
+            to: string;
+            /** Calculatedat */
+            calculatedAt: string;
+            /** Totalruns */
+            totalRuns: number;
+            /** Bystatus */
+            byStatus: {
+                [key: string]: number;
+            };
+            /** Successrate */
+            successRate: number | null;
+            /** Averagedurationms */
+            averageDurationMs: number | null;
+            /** Nodeexecutioncount */
+            nodeExecutionCount: number;
+            /** Extractionexecutioncount */
+            extractionExecutionCount: number;
+            /** Artifactcount */
+            artifactCount: number;
+            /** Diagnosticcount */
+            diagnosticCount: number;
+            /** Debugcount */
+            debugCount: number;
+            /** Recordingcount */
+            recordingCount: number | null;
+            /** Recordingunavailablereason */
+            recordingUnavailableReason: string | null;
+            /** Latestactivityat */
+            latestActivityAt: string | null;
+            /** Failuresbynode */
+            failuresByNode: components["schemas"]["StudioStatisticsNodeCount"][];
+            /** Runsbyworkflow */
+            runsByWorkflow: components["schemas"]["StudioStatisticsWorkflowCount"][];
+            /** Bytrigger */
+            byTrigger: {
+                [key: string]: number;
+            };
+            /** Items */
+            items: components["schemas"]["StudioStatisticsRun"][];
+            /** Nextcursor */
+            nextCursor: number | null;
+        };
         /** StudioRecorderBatch */
         StudioRecorderBatch: {
             /**
@@ -11657,6 +11723,39 @@ export type components = {
             status: "pending" | "claimed" | "completed" | "failed" | "expired";
             /** Claimid */
             claimId?: string | null;
+        };
+        /** StudioStatisticsNodeCount */
+        StudioStatisticsNodeCount: {
+            /** Nodeid */
+            nodeId: string;
+            /** Count */
+            count: number;
+        };
+        /** StudioStatisticsRun */
+        StudioStatisticsRun: {
+            /** Runid */
+            runId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Workflowname */
+            workflowName: string;
+            /** Mode */
+            mode: string | null;
+            /** Status */
+            status: string;
+            /** Startedat */
+            startedAt: string;
+            /** Finishedat */
+            finishedAt: string | null;
+        };
+        /** StudioStatisticsWorkflowCount */
+        StudioStatisticsWorkflowCount: {
+            /** Workflowid */
+            workflowId: string;
+            /** Name */
+            name: string;
+            /** Count */
+            count: number;
         };
         /** StudioVariableTrackingCleared */
         StudioVariableTrackingCleared: {
@@ -17407,6 +17506,62 @@ export interface operations {
             };
             /** @description Precondition Failed */
             412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    studio_statistics_api_v1_projects__projectId__statistics_studio_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+                workflowId?: string | null;
+                status?: ("starting" | "running" | "paused" | "failed_paused" | "completed" | "failed" | "stopped" | "interrupted") | null;
+                cursor?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioProjectStatistics"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
