@@ -183,6 +183,22 @@ class SqlAlchemyAndroidOperationRepository:
             result = session.execute(update(AndroidOperationRow).where(AndroidOperationRow.id == operation_id, AndroidOperationRow.state == expected_state).values(**values))
             if cast(CursorResult, result).rowcount != 1:
                 raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "操作状态已变化，请先核实", 409)
+            if row.action == "restore" and row.payload.get("backupId"):
+                stored = session.get(AndroidDeviceRow, row.target_id)
+                prior = stored.payload if stored is not None else {}
+                if (
+                    row.target_id != device["deviceId"]
+                    or prior.get("deleted")
+                    or prior.get("generation") != device.get("generation")
+                    or prior.get("workspaceId") != device.get("workspaceId")
+                    or prior.get("restoreState") != "pending"
+                    or prior.get("restoreRequestId") != row.request_id
+                    or device.get("restoreRequestId") != row.request_id
+                    or prior.get("restoreBackupId") != row.payload["backupId"]
+                    or device.get("restoreBackupId") != row.payload["backupId"]
+                    or (next_state == "succeeded" and device.get("restoreState") != "restored")
+                ):
+                    raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "恢复目标版本或请求归属已变化，请先核实", 409)
             session.merge(AndroidDeviceRow(id=device["deviceId"], owner_run_id=device.get("ownerRunId"), payload=deepcopy(device)))
             session.refresh(row)
             return OperationRecord(row)

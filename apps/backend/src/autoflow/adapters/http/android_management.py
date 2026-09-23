@@ -19,7 +19,7 @@ from autoflow.application.android.diagnostics import (
 from autoflow.application.android.diagnostics_export import diagnostic_snapshot
 from autoflow.application.android.verification import verify_lifecycle_operation
 from autoflow.domain.android.management_models import DeviceFacts
-from autoflow.domain.android.management_rules import policy_for
+from autoflow.domain.android.management_rules import policy_for, restore_pending
 from autoflow.domain.android.ports import AndroidError
 
 from .android_fleet_schemas import EnvironmentProfile
@@ -116,6 +116,7 @@ def _management_device(device: dict[str, Any], observation: Any | None = None, *
         operation_action=operation.get("action"),
         operation_state=operation.get("state"),
         stale=stale,
+        restore_pending=restore_pending(device),
     )
     policy = policy_for(facts)
     return ManagementDeviceRead(
@@ -123,6 +124,7 @@ def _management_device(device: dict[str, Any], observation: Any | None = None, *
         revision=facts.revision,
         name=str(device.get("name", "未命名设备")),
         runtime_state=facts.runtime_state,
+        restore_state="pending" if facts.restore_pending else ("restored" if device.get("restoreState") == "restored" else None),
         owner={"kind": facts.owner_kind, "id": facts.owner_id},
         observed_at=observed_at,
         stale=facts.stale,
@@ -418,9 +420,9 @@ def android_management_router(check_service: EnvironmentCheckService, operations
                     if item.get("deviceId") == record.target_id
                     and item.get("restoreRequestId") == record.request_id
                     and (not payload.get("backupId") or item.get("restoreBackupId") == payload.get("backupId"))
-                    and item.get("workspaceId") in {None, workspace}
+                    and item.get("workspaceId") in {workspace, getattr(getattr(devices, "runtime", None), "workspace_id", None)}
                     and item.get("restoreState") == "restored"
-                    and item.get("dataRetained") is True
+                    and not item.get("deleted")
                 ),
                 None,
             )
@@ -595,7 +597,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             digest = hashlib.sha256(json.dumps({"action": "restore", **payload}, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
             operation = operations.accept(workspace, body.request_id, new_device_id, "restore", digest, payload)
             if operation.state == "succeeded":
-                existing = next((item for item in devices.repository.list() if item.get("restoreRequestId") == body.request_id), None)
+                existing = next((item for item in devices.repository.list() if item.get("deviceId") == new_device_id and item.get("restoreRequestId") == body.request_id and item.get("restoreBackupId") == identifier and item.get("restoreState") == "restored" and not item.get("deleted")), None)
                 if existing is None:
                     raise AndroidError("ANDROID_RESTORE_RESULT_UNKNOWN", "恢复结果已记录但设备不可见，请核实后再试", 503)
                 return BackupRestoreRead(operation_id=operation.operation_id, request_id=body.request_id, target_id=existing["deviceId"], device_id=existing["deviceId"], backup_id=identifier, state="restored")
@@ -621,7 +623,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             if operation is not None:
                 operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_IMAGE_MISSING", "message": "备份所需的精确镜像当前不可用"})
             raise AndroidError("ANDROID_BACKUP_IMAGE_MISSING", "备份所需的精确镜像当前不可用", 409)
-        config.update(deviceId=new_device_id, name=body.new_name, imageId=record["imageId"], instanceType="persistent", start=False, restoreRequestId=body.request_id, restoreBackupId=identifier)
+        config.update(deviceId=new_device_id, name=body.new_name, imageId=record["imageId"], instanceType="persistent", start=False, restoreRequestId=body.request_id, restoreBackupId=identifier, restoreOperationId=operation.operation_id if operation else None)
         try:
             created = devices.management.create(config)
             task = devices.management.task
@@ -631,33 +633,44 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             if created.get("deleted") or created.get("control") == "recovery_required" or created.get("androidStatus") in {"ready", "running"} or created.get("operation", {}).get("state") in {"failed", "needs_verification", "interrupted"}:
                 raise AndroidError("ANDROID_BACKUP_RESTORE_CREATE_FAILED", "恢复目标实例创建未完成，未写入数据卷", 503)
             await backups.restore_data(identifier, created, devices.runtime)
-            created.update(dataRetained=True, restoreState="restored")
-            devices.repository.save(created)
+            created.update(dataRetained=False, restoreState="restored", control="idle", lastError=None)
             if operation is not None:
-                operations.transition(operation.operation_id, "running", "succeeded", {"stage_code": "completed", "result_code": "BACKUP_RESTORED"})
-        except asyncio.CancelledError:
-            if operation is not None:
-                operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": "请求已取消，恢复结果未知"})
-            created = locals().get("created")
-            if isinstance(created, dict):
-                created.update(control="recovery_required", lastError="恢复结果未知，请核实新实例")
+                operation = operations.transition_with_device(operation.operation_id, "running", "succeeded", {"stage_code": "completed", "result_code": "BACKUP_RESTORED"}, created)
+            else:
                 devices.repository.save(created)
-            raise
-        except (TimeoutError, OSError) as error:
-            if operation is not None:
-                operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": str(error)})
-            created = locals().get("created")
-            if isinstance(created, dict):
-                created.update(control="recovery_required", lastError="恢复结果未知，请核实新实例")
-                devices.repository.save(created)
-            raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "恢复结果未知，请核实新实例", 503) from error
         except BaseException as error:
-            if operation is not None and operation.state == "running":
-                operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": getattr(error, "code", "ANDROID_BACKUP_RESTORE_FAILED"), "message": str(error)})
-            created = locals().get("created")
-            if isinstance(created, dict) and created.get("control") != "recovery_required":
-                created.update(control="recovery_required", lastError="恢复数据卷未完成，请核实新实例")
-                devices.repository.save(created)
+            # Read durable state: the local completion projection may never have committed.
+            # A lost commit acknowledgement must not downgrade a published restoration.
+            unknown = isinstance(error, (asyncio.CancelledError, TimeoutError, OSError))
+            try:
+                latest = operations.get(operation.operation_id) if operation is not None else None
+                target = next((item for item in devices.repository.list() if item.get("deviceId") == new_device_id), None)
+                committed = (
+                    target is not None and not target.get("deleted")
+                    and target.get("restoreState") == "restored"
+                    and target.get("restoreRequestId") == body.request_id
+                    and target.get("restoreBackupId") == identifier
+                    and (latest is None or latest.state == "succeeded")
+                )
+                if committed and not isinstance(error, asyncio.CancelledError):
+                    return BackupRestoreRead(operation_id=latest.operation_id if latest else None, request_id=body.request_id, target_id=new_device_id, device_id=new_device_id, backup_id=identifier, state="restored")
+                if not committed and latest is not None and latest.state == "running":
+                    state = "needs_verification" if unknown else "failed"
+                    changes = {"stage_code": "verify" if unknown else "failed", "result_code": "RESTORE_RESULT_UNKNOWN" if unknown else getattr(error, "code", "ANDROID_BACKUP_RESTORE_FAILED"), "message": str(error)[:480]}
+                    if target is not None and restore_pending(target) and target.get("control") != "managing":
+                        target.update(control="recovery_required", lastError="恢复数据卷未完成，请核实新实例")
+                        operations.transition_with_device(latest.operation_id, "running", state, changes, target)
+                    else:
+                        operations.transition(latest.operation_id, "running", state, changes)
+            except Exception as persistence_error:
+                # Pending intent was persisted before any IO; unavailable storage cannot release it.
+                if isinstance(error, asyncio.CancelledError):
+                    raise error from persistence_error
+                raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "恢复结果无法持久核实，请核实新实例", 503) from persistence_error
+            if isinstance(error, asyncio.CancelledError):
+                raise
+            if unknown:
+                raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "恢复结果未知，请核实新实例", 503) from error
             raise
         return BackupRestoreRead(operation_id=operation.operation_id if operation is not None else None, request_id=body.request_id, target_id=new_device_id, device_id=new_device_id, backup_id=identifier, state="restored")
 

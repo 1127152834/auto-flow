@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import UTC, datetime
 from typing import Any
 
+from autoflow.domain.android.management_rules import require_restored, restore_pending
 from autoflow.domain.android.ports import AndroidError, AndroidRuntime, DeviceRepository
 
 
@@ -30,6 +31,8 @@ class AndroidManagement:
         self.runtime.lock()
 
     def create(self, config: dict[str, Any]) -> dict[str, Any]:
+        if config.get("restoreRequestId") and config.get("start", True):
+            require_restored(config)
         try:
             existing = self.repository.get(config["deviceId"])
         except AndroidError as error:
@@ -48,6 +51,8 @@ class AndroidManagement:
                 raise AndroidError("ANDROID_CREATE_REQUEST_REPLAYED", "创建请求已处理，请先核实操作结果", 409)
             device = self.runtime.new_device(config)
             device["creationConfig"] = deepcopy(config)
+            if config.get("restoreRequestId"):
+                device.update(restoreState="pending", restoreRequestId=config["restoreRequestId"], restoreBackupId=config["restoreBackupId"], restoreOperationId=config.get("restoreOperationId"))
             return self._start(device, request, durable)
         except (TimeoutError, OSError) as error:
             try:
@@ -78,6 +83,8 @@ class AndroidManagement:
             raise AndroidError("ANDROID_BUSY", "请先结束设备的手动会话或工作流")
         if device.get("control") == "recovery_required" and request["action"] != "recover":
             raise AndroidError("ANDROID_RECOVERY_REQUIRED", "请先核实上一次设备操作")
+        if restore_pending(device) and (request["action"] not in {"recover", "delete"} or (request["action"] == "delete" and not request.get("deleteData"))):
+            require_restored(device)
         durable = self._accept_operation(device_id, request)
         if durable is not None and durable.state not in {"queued", "running"}:
             if durable.state == "needs_verification":

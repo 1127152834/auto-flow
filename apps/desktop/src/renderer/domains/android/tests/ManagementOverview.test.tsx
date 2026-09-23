@@ -117,3 +117,15 @@ it('does not execute operational actions for unknown or stale devices', async ()
   await userEvent.click(screen.getByRole('button', { name: '核实状态' }))
   expect(onManage).toHaveBeenCalledWith('d', 'verify', undefined, undefined)
 })
+
+
+it('shows a quarantined restore and one reason without start or open actions', async () => {
+  const reason = '数据恢复尚未完成或核实；目标只能核实后永久删除'
+  const api = { devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'partial', revision: 3, name: '中断恢复', runtimeState: 'stopped', restoreState: 'pending', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['verify', 'delete'], blockedReasons: { start: reason, restart: reason, open: reason, backup: reason } }] })) } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onOpen={vi.fn()} onManage={vi.fn()} /></QueryClientProvider>)
+  expect(await screen.findByText('恢复数据待核实')).toBeVisible()
+  expect(screen.getAllByText(`阻塞原因：${reason}`)).toHaveLength(1)
+  expect(screen.queryByRole('button', { name: '启动设备' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '打开中断恢复' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: '核实状态' })).toBeEnabled()
+})

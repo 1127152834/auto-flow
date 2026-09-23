@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import io
 import tarfile
+from concurrent.futures import CancelledError
 from pathlib import Path
 
 import pytest
@@ -23,12 +25,14 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.providers.android.mac_runtime import MacAndroidRuntime
 
 IMAGE = "sha256:" + "b" * 64
 
 
 @pytest.mark.asyncio
-async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path) -> None:
+@pytest.mark.parametrize("fault", [None, "commit_ack", "commit_before", "copy", "cancel"])
+async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path, monkeypatch, fault) -> None:
     sessions = _sessions(tmp_path)
     resources = AndroidResourceRepository(sessions)
     operations = SqlAlchemyAndroidOperationRepository(sessions)
@@ -67,15 +71,63 @@ async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path) ->
             devices=devices,
         )
     )
+    original_transition = operations.transition_with_device
+
+    def faulty_transition(*args):
+        if args[2] == "succeeded" and args[4].get("restoreState") == "restored":
+            if fault == "commit_before":
+                raise OSError("database unavailable before commit")
+            result = original_transition(*args)
+            if fault == "commit_ack":
+                raise OSError("committed but acknowledgement lost")
+            return result
+        return original_transition(*args)
+
+    monkeypatch.setattr(operations, "transition_with_device", faulty_transition)
+    if fault in {"copy", "cancel"}:
+        async def interrupted_copy(_device, _data):
+            runtime.restore_calls += 1
+            if fault == "cancel":
+                raise asyncio.CancelledError
+            raise TimeoutError("partial write, connection lost")
+        monkeypatch.setattr(runtime, "restore_volume", interrupted_copy)
     body = {"requestId": "restore-request", "newName": "copy"}
     with TestClient(app) as client:
-        first = client.post(
-            f"/api/v1/android/management/backups/{backup['id']}/restore", json=body
-        )
+        if fault == "cancel":
+            with pytest.raises(CancelledError):
+                client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json=body)
+        else:
+            first = client.post(
+                f"/api/v1/android/management/backups/{backup['id']}/restore", json=body
+            )
         second = client.post(
             f"/api/v1/android/management/backups/{backup['id']}/restore", json=body
         )
 
+    if fault in {"copy", "commit_before", "cancel"}:
+        if fault != "cancel":
+            assert first.status_code == 503, first.text
+        assert second.status_code == 409, second.text
+        operation = operations.by_request(str(tmp_path.resolve()), "restore-request")
+        assert operation.state == "needs_verification"
+        target = repository.get(operation.target_id)
+        assert target["restoreState"] == "pending"
+        assert target["control"] == "recovery_required"
+        # Reconstruct management and verify runtime recovery cannot publish restored data.
+        devices.management.operate(target["deviceId"], {"requestId": "recover", "action": "recover", "deleteData": False})
+        await devices.management.task
+        target = repository.get(target["deviceId"])
+        assert target["control"] == "idle"
+        with pytest.raises(AndroidError, match="恢复"):
+            devices.management.operate(target["deviceId"], {"requestId": "start", "action": "start", "deleteData": False})
+        with pytest.raises(AndroidError, match="恢复"):
+            repository.claim(target["deviceId"], "console")
+        with pytest.raises(AndroidError, match="恢复"):
+            await backups.create_with_runtime(target, None, runtime)
+        assert repository.get(source["deviceId"]) == source
+        assert runtime.restore_calls == 1
+        sessions.dispose()
+        return
     assert first.status_code == 202, first.text
     assert second.status_code == 202, second.text
     assert first.json()["deviceId"] == second.json()["deviceId"]
@@ -217,13 +269,8 @@ class _Runtime:
         }
 
     def new_device(self, config):
-        return {
-            **config,
-            "control": "idle",
-            "ownerRunId": None,
-            "androidStatus": "unknown",
-            "generation": 0,
-        }
+        # Match the production adapter: restoration metadata is the application owner's responsibility.
+        return MacAndroidRuntime(Path("/runtime"), Path("/workspace")).new_device(config)
 
     async def manage(self, device, _request, _stage, save):
         device["androidStatus"] = "stopped"

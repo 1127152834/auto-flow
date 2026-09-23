@@ -9103,6 +9103,8 @@ export type components = {
              * @enum {string}
              */
             runtimeState: "stopped" | "starting" | "ready" | "retained" | "missing" | "unknown";
+            /** Restorestate */
+            restoreState?: ("pending" | "restored") | null;
             owner: components["schemas"]["OwnerRead"];
             /** Observedat */
             observedAt: string | null;

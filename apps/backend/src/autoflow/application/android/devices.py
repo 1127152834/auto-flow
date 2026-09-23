@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from autoflow.application.android.management import AndroidManagement
+from autoflow.domain.android.management_rules import require_restored
 from autoflow.domain.android.ports import AndroidError, AndroidRuntime, DeviceRepository
 
 Emit = Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]]
@@ -67,6 +68,7 @@ class AndroidDeviceService:
             device = self.repository.get(device_id)
             if device.get("deleted") or device.get("control") in {"managing", "recovery_required"}:
                 raise AndroidError("ANDROID_PREVIEW_UNAVAILABLE", "当前设备状态无法核实")
+            require_restored(device)
             cached = self.previews.get(device_id)
             if cached and monotonic() - cached[0] < 1:
                 return cached[1]

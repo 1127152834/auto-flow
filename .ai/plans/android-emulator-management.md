@@ -2,9 +2,9 @@
 
 - 日期：2026-09-23（校准；原计划 2026-09-19）
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
-- 当前实施基线：`codex/android-management-complete@a47bbb9d`；原起点 `a92f0688`。
+- 当前实施基线：`codex/android-management-complete@be067690`；原起点 `a92f0688`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
-- 当前阶段：完整目标 active/partial；后端 Android+迁移 head 最近验证 346 passed，前端核验/预览边界已修复，指定 Node22 的 Android 14文件/104项、类型/lint/OpenAPI/结构/build已通过；全量前端及脚本仍失败。逐项命令与剩余工作以最新 QA 记录为准，不用聚焦通过代表完整交付。
+- 当前阶段：完整目标 active/partial；后端 Android+迁移 head 最近验证 362 passed，前端核验/预览边界已修复，指定 Node22 的 Android 14文件/105项、类型/lint/OpenAPI/结构/build已通过；全量前端及脚本仍失败。逐项命令与剩余工作以最新 QA 记录为准，不用聚焦通过代表完整交付。
 
 正文保存在以下文件，不维护第二份规格：
 
@@ -18,7 +18,7 @@
 | AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | T01–T03 自动化通过；T04 自动化与同事务投影验证通过；T05–T07 的人工窗口、完整 HTTP 重启和受控中断仍 blocked |
 | AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | T08–T10/T12 自动化（含模板生命周期集成）通过；网络拉取、候选镜像和 Google 组件网络/账号验收 blocked |
 | AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 批量、观察、应用和双实例基础证据存在；预览取消及应用核验前端边界已补齐，指定 Node22 验证见 QA 记录。持久容量预留、停止未知预算及启动入口已补齐18项集成与真实双工作区容量实验；批量压力、真实应用动作与规模性能 not_run |
-| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 基础备份/恢复、默认诊断白名单及受限保存 IPC 已实现；安全内部链接和 UID/GID/mode 已补齐25项回归及真实新实例启动读回；备份发布落盘和目录/操作原子提交已补齐；备份暂存/未登记目录与UI选择、文件锁、内容指纹清理已补齐；xattrs、恢复中断、APK遗留临时文件、高级日志及完整失败演练仍待完成 |
+| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 基础备份/恢复、默认诊断白名单及受限保存 IPC 已实现；安全内部链接和 UID/GID/mode 已补齐25项回归及真实新实例启动读回；备份发布落盘和目录/操作原子提交已补齐；备份暂存/未登记目录与UI选择、文件锁、内容指纹清理已补齐；恢复意图持久化、失败隔离和成功原子发布已补齐，含真实部分写入及正常HTTP恢复验收；xattrs、硬进程中断、APK遗留临时文件、高级日志及完整失败演练仍待完成 |
 
 ## 当前校准
 
@@ -39,3 +39,5 @@
 - 最新 AM4 发布证据：[落盘与事务一致性](../../docs/qa/android-management/2026-09-23-publication-verification.md)。
 
 - 最新 AM4 清理证据：[目录、文件保护与真实HTTP](../../docs/qa/android-management/2026-09-23-cleanup-verification.md)。
+
+- 最新 AM4 恢复证据：[中断隔离与成功发布](../../docs/qa/android-management/2026-09-23-restore-isolation-verification.md)。

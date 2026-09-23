@@ -42,6 +42,7 @@
 - T17/T18 归档安全增量以 `233c09dd` 为基线：内部安全链接、UID/GID/mode、摘要字节复用与源保护已完成；314项聚焦及真实新实例启动读回通过，xattrs/发布耐久性/中断仍待完成。证据见 `docs/qa/android-management/2026-09-23-archive-verification.md`。
 - T17 发布增量以 `715cdb16` 为基线：私有目录、staging 摘要、fsync/rename、备份目录记录与成功终态原子事务及回执未知保护已完成；328项聚焦与真实Mac新实例恢复通过，硬中断孤立文件核实/清理仍待完成。证据见 `docs/qa/android-management/2026-09-23-publication-verification.md`。
 - T19 清理增量以 `a47bbb9d` 为基线：新增目录契约/UI选择、备份暂存及未登记产物、内容指纹/文件锁和明确retained筛选；后端346、前端Android104项以及真实HTTP清理通过。APK遗留文件/恢复中断仍待完成，证据见 `docs/qa/android-management/2026-09-23-cleanup-verification.md`。
+- T18 恢复隔离增量以 `be067690` 为基线：恢复意图在IO前持久化，启动/控制/备份隔离，generation/请求/备份栅栏与成功原子发布；真实部分写入、普通recover仍隔离、正常HTTP恢复和重放通过。362项后端、105项前端聚焦通过；硬进程中断/xattrs/全量门槛仍待完成，见 `docs/qa/android-management/2026-09-23-restore-isolation-verification.md`。
 - 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
 
 ## Global Constraints
@@ -582,7 +583,7 @@ def test_running_device_cannot_be_backed_up(client, running_device):
 
 **接口：** BackupService.restore(backup_id,request_id,new_name)->RestoreRead；RestoreRead包含新deviceId/operation/backupId；validate_archive_path(path:PurePosixPath)->None，非法路径抛ValueError。只支持格式1和exact imageId。
 
-- [ ] 写新ID、不变源卷、损坏摘要、镜像不符、必要属性丢失、越界/链接穿越和失败隔离。（状态：blocked）
+- [ ] 写新ID、不变源卷、损坏摘要、镜像不符、必要属性丢失、越界/链接穿越和失败隔离。（状态：partial；已完成隔离/发布/真实恢复，剩余与证据见2026-09-23-restore-isolation-verification.md）
 
 ```python
 from pathlib import PurePosixPath
@@ -594,10 +595,10 @@ def test_parent_traversal_is_rejected():
         validate_archive_path(PurePosixPath('../outside'))
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_backup_restore.py -q)`；必须同时覆盖链接穿越、合法内部链接和目标属性，不只检查一个字符串。（状态：blocked）
-- [ ] 生成新deviceId/容器/卷/标签，清旧进程/控制/操作引用；仅处理本作业资源，原备份及源实例不改。无法安全恢复属性时明确失败。（状态：blocked）
-- [ ] 同机同镜像真实演练检查测试数据；UI称恢复应用数据，不保证登录/DRM/私有密钥或完整身份克隆。（状态：blocked）
-- [ ] GREEN后提交 `feat(android): restore verified backups into new instances`。（状态：blocked）
+- [ ] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_backup_restore.py -q)`；必须同时覆盖链接穿越、合法内部链接和目标属性，不只检查一个字符串。（状态：partial；已完成隔离/发布/真实恢复，剩余与证据见2026-09-23-restore-isolation-verification.md）
+- [ ] 生成新deviceId/容器/卷/标签，清旧进程/控制/操作引用；仅处理本作业资源，原备份及源实例不改。无法安全恢复属性时明确失败。（状态：partial；已完成隔离/发布/真实恢复，剩余与证据见2026-09-23-restore-isolation-verification.md）
+- [ ] 同机同镜像真实演练检查测试数据；UI称恢复应用数据，不保证登录/DRM/私有密钥或完整身份克隆。（状态：partial；已完成隔离/发布/真实恢复，剩余与证据见2026-09-23-restore-isolation-verification.md）
+- [ ] GREEN后提交 `feat(android): restore verified backups into new instances`。（状态：partial；已完成隔离/发布/真实恢复，剩余与证据见2026-09-23-restore-isolation-verification.md）
 
 ### T19：清理预览与脱敏诊断
 
@@ -640,7 +641,7 @@ assert restored.owner_kind == 'none'
 assert source_data_digest_after == source_data_digest_before
 ```
 
-- [ ] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：blocked）
+- [ ] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：partial；受控部分写入与发布故障已有证据，硬中断等剩余见最新QA）
 - [ ] 运行1.4节全部发布命令与真实设备回归；逐项填写规格24个验收项，无法执行的项目单列blocked。（状态：blocked）
 - [ ] 检查向前回退策略，无破坏性downgrade、旧迁移篡改或新工作流执行器；更新证据索引但保留历史事实。（状态：blocked）
 - [ ] 提交 `test(android): complete management recovery and maintenance acceptance`；报告实际完成和限制，不自动接入工作流。（状态：blocked）

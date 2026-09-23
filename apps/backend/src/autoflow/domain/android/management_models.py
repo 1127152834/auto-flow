@@ -27,6 +27,7 @@ class DeviceFacts:
     operation_state: OperationState | None = None
     stale: bool = False
     retained: bool = False
+    restore_pending: bool = False
     last_error: str | None = None
 
 

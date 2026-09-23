@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from autoflow.domain.android.capacity_rules import can_admit
+from autoflow.domain.android.management_rules import require_restored, restore_pending
 from autoflow.domain.android.ports import AndroidError
 from autoflow.providers.android import capacity_reservations as reservations
 from autoflow.providers.android.mac_runtime import LABEL, VM, docker, run
@@ -191,6 +192,8 @@ async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: 
 
 async def _manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: dict[str, Any], stage: Callable[[str], None], save: Callable[[], None]) -> None:
     action = request["action"]
+    if restore_pending(device) and (action not in {"create", "recover", "delete"} or (action == "delete" and not request.get("deleteData")) or (action == "create" and device.get("creationConfig", {}).get("start", True))):
+        require_restored(device)
     await confirm_pending(device)
     containers, volumes = await verify(device, runtime.workspace_id)
     pending = reservations.pending(runtime.root, device)

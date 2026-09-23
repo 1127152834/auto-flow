@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from autoflow.domain.android.management_rules import require_restored
 from autoflow.domain.android.ports import AndroidError
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 from autoflow.infrastructure.process.browser_processes import process_birth
@@ -292,6 +293,7 @@ class MacAndroidRuntime:
         self.save()
 
     async def connect(self, device: dict[str, Any], save: Callable[[], None]) -> None:
+        require_restored(device)
         self.device, self.save = device, save
         observed = await self.inspect(device)
         if observed["dockerStatus"] == "missing":

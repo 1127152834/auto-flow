@@ -16,6 +16,7 @@ class ManagementDeviceRead(ApiModel):
     revision: int = Field(ge=1)
     name: str
     runtime_state: Literal["stopped", "starting", "ready", "retained", "missing", "unknown"]
+    restore_state: Literal["pending", "restored"] | None = None
     owner: OwnerRead
     observed_at: datetime | None
     stale: bool

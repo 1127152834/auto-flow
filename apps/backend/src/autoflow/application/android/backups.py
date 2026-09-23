@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+from autoflow.domain.android.management_rules import require_restored
 from autoflow.domain.android.ports import AndroidError
 from autoflow.providers.android.backup_storage import (
     BackupStorage,
@@ -124,6 +125,7 @@ class AndroidBackupService:
                 with self._runtime_lock(runtime):
                     if hasattr(runtime, "inspect"):
                         observed = await runtime.inspect(device)
+                    require_restored(device)
                     if (observed or {}).get("androidStatus") not in {"stopped", "retained"} or device.get("control") != "idle" or device.get("ownerRunId"):
                         raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "备份前必须停止实例并释放控制会话", 409)
                     if not hasattr(runtime, "backup_volume"):
