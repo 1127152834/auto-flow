@@ -51,10 +51,6 @@ def _easyocr_model_dir() -> Path:
     packaged = Path(__file__).resolve().parents[3] / "resources" / "easyocr"
     if packaged.is_dir():
         return packaged
-    for parent in Path(__file__).resolve().parents:
-        candidate = parent / "reference/WebRPA/backend/models/ocr/easyocr"
-        if candidate.is_dir():
-            return candidate
     raise RuntimeError("EasyOCR 模型资源不存在")
 
 

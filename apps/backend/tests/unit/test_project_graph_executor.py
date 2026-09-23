@@ -2,7 +2,6 @@ import asyncio
 from time import monotonic
 
 import pytest
-
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 
 
@@ -147,3 +146,33 @@ async def test_nested_failure_can_continue_without_failing_project_task():
     assert executor.context.variables['summary']['success'] is False
     assert any(kind == 'nodeAttempt' and node_id == 'bad' and payload['status'] == 'failed'
                for kind, node_id, _visit, payload in events)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('kind,config,name', [
+    ('face_recognition', {}, 'face_match_result'),
+    ('image_ocr', {}, 'ocr_text'),
+    ('face_recognition', {'resultVariable': ''}, None),
+    ('image_ocr', {'resultVariable': ''}, None),
+    ('ocr_captcha', {'variableName': ' primary ', 'resultVariable': 'alias'}, 'primary'),
+    ('ocr_captcha', {'resultVariable': ' alias '}, 'alias'),
+    ('ocr_captcha', {}, None),
+])
+@pytest.mark.parametrize('sensitive', [False, True])
+async def test_recognition_project_outputs_use_actual_variables_and_source_names(kind, config, name, sensitive):
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    executor.nodes = {'recognition': {'moduleType': kind, 'config': config}}
+    if name:
+        executor.context.set_variable(name, 'actual value', sensitive=sensitive)
+    executor.started['visit'] = monotonic()
+    await executor.publish({
+        'type': 'execution:node_complete', 'nodeId': 'recognition',
+        'executionId': 'visit', 'success': True, 'data': {'text': 'different result envelope'},
+    })
+    outputs = [payload for kind, _, _, payload in events if kind == 'output']
+    assert outputs == ([{'name': name, 'value': 'actual value'}] if name and not sensitive else [])

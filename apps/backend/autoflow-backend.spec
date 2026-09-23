@@ -33,7 +33,7 @@ datas = [
     *collect_data_files('faster_whisper'),
     *collect_data_files('mediapipe'),
     ('src/autoflow/resources/mediapipe/hand_landmarker.task', 'autoflow/resources/mediapipe'),
-    ('../../reference/WebRPA/backend/models/ocr/easyocr/*.pth', 'autoflow/resources/easyocr'),
+    ('src/autoflow/resources/easyocr/*.pth', 'autoflow/resources/easyocr'),
     *copy_metadata('tzdata'),
     *copy_metadata('cloakbrowser'),
     *copy_metadata('keyring'),

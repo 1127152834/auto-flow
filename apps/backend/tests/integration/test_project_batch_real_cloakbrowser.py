@@ -1,6 +1,7 @@
 """Opt-in real HTTP/SQLite/CloakBrowser batch chain; no Studio or synthetic Run facts."""
 
 import asyncio
+import base64
 import hashlib
 import inspect
 import io
@@ -12,8 +13,6 @@ from uuid import uuid4
 
 import httpx
 import pytest
-from openpyxl import load_workbook
-
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
@@ -22,6 +21,8 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+from openpyxl import load_workbook
+
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
@@ -31,7 +32,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "firecrawl_failure", "firecrawl_stop", "element_change", "element_timeout", "element_stop"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "firecrawl_failure", "firecrawl_stop", "element_change", "element_timeout", "element_stop", "captcha", "captcha_failure", "captcha_stop"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -131,6 +132,35 @@ async def test_real_project_batch_http(
             ]
             document["content"]["edges"] = [
                 {"id": f"web-edge-{index}", "source": f"web-{index}", "target": f"web-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            document["content"]["variables"] = []
+        elif scenario.startswith("captcha"):
+            from tests.integration.test_b5_captcha_cloakbrowser_flow import _captcha_png
+
+            image = base64.b64encode(_captcha_png()).decode()
+            page = tmp_path / "captcha.html"
+            page.write_text(f"""<!doctype html><html><body>
+                <img id="captcha" src="data:image/png;base64,{image}">
+                <input id="code"><button id="submit" type="button"
+                  onclick="document.body.dataset.submitted=code.value">提交</button>
+                <div id="slider" style="margin-top:30px;width:30px;height:30px;background:#666"></div>
+                <script>let start=0;
+                slider.addEventListener('pointerdown', e => start=e.clientX);
+                document.addEventListener('pointerup', e => document.body.dataset.distance=Math.round(e.clientX-start));
+                </script></body></html>""", encoding="utf-8")
+            steps = [
+                ("open_page", {"url": page.as_uri(), "openMode": "current_tab"}),
+                ("ocr_captcha", {"imageSelector": "#captcha" if scenario == "captcha" else "#missing", "inputSelector": "#code", "variableName": " code ", "autoSubmit": True, "submitSelector": "#submit", "timeout": 1 if scenario == "captcha_failure" else 60}),
+                ("slider_captcha", {"sliderSelector": "#slider", "targetDistance": 35}),
+                ("inject_javascript", {"javascriptCode": "return {value: code.value, submitted: document.body.dataset.submitted, distance: document.body.dataset.distance}", "saveResult": "actual_page"}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"captcha-{index}", "type": kind, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": kind, "config": config}}
+                for index, (kind, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"captcha-edge-{index}", "source": f"captcha-{index}", "target": f"captcha-{index + 1}"}
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
@@ -319,7 +349,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "element_change"}:
+            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "element_change", "captcha"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -348,7 +378,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "element_change"} else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "element_change", "captcha"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -393,11 +423,11 @@ async def test_real_project_batch_http(
                 assert response.status_code == 200, response.text
                 detail = response.json()
                 element_waiting = False
-                if scenario == "element_stop" and detail["batch"]["status"] == "running":
+                if scenario in {"element_stop", "captcha_stop"} and detail["batch"]["status"] == "running":
                     current_tasks = (await client.get(prefix + "/tasks", params={"batchId": batch_id})).json()["items"]
                     for current_task in current_tasks:
                         current_attempts = (await client.get(prefix + f"/tasks/{current_task['taskId']}/node-attempts")).json()["items"]
-                        element_waiting |= any(item["nodeId"] == "mutation-1" and item["status"] == "running" for item in current_attempts)
+                        element_waiting |= any(item["nodeId"] == ("captcha-1" if scenario == "captcha_stop" else "mutation-1") and item["status"] == "running" for item in current_attempts)
                 if (scenario == "stop" or element_waiting or (scenario == "firecrawl_stop" and "/crawl/start" in requests)) and detail["batch"]["status"] == "running":
                     if element_waiting:
                         await asyncio.sleep(0.75)
@@ -440,7 +470,18 @@ async def test_real_project_batch_http(
                 json=payload,
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
-            if scenario == "element_change":
+            if scenario == "captcha":
+                assert detail["statusCounts"]["succeeded"] == 2, (detail, worker_failures)
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    outputs = (await client.get(task_path + "/outputs")).json()["items"]
+                    assert {item["name"]: item["value"] for item in outputs} == {
+                        "code": "1234", "actual_page": {"value": "1234", "submitted": "1234", "distance": "35"},
+                    }
+                    attempts = (await client.get(task_path + "/node-attempts")).json()
+                    assert attempts["total"] == 4
+                    assert {item["status"] for item in attempts["items"]} == {"succeeded"}
+            elif scenario == "element_change":
                 assert detail["statusCounts"]["succeeded"] == 2, detail
                 for task in tasks:
                     task_path = prefix + f"/tasks/{task['taskId']}"
@@ -621,7 +662,7 @@ async def test_real_project_batch_http(
                     assert [event.sequence for event in events] == list(
                         range(1, len(events) + 1)
                     )
-            elif scenario in {"stop", "firecrawl_stop", "element_stop"}:
+            elif scenario in {"stop", "firecrawl_stop", "element_stop", "captcha_stop"}:
                 assert scenario_stopped and detail["batch"]["status"] == "stopped", worker_failures
                 assert detail["statusCounts"]["cancelled"] == 2, worker_failures
             elif scenario == "budget":
@@ -652,6 +693,12 @@ async def test_real_project_batch_http(
                 for task in tasks:
                     outputs = await client.get(prefix + f"/tasks/{task['taskId']}/outputs")
                     assert outputs.json()["items"] == []
+            if scenario in {"captcha_failure", "captcha_stop"}:
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    assert (await client.get(task_path + "/outputs")).json()["items"] == []
+                    attempts = (await client.get(task_path + "/node-attempts")).json()["items"]
+                    assert not any(item["nodeId"] in {"captcha-2", "captcha-3"} for item in attempts)
             # Run completion and profile-copy cleanup are separate durable facts.
             for _ in range(175):
                 cleanup_details = [

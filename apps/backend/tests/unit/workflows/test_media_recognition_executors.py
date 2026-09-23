@@ -242,3 +242,27 @@ def test_media_recognition_family_is_registered_without_browser(
 ) -> None:
     executor = build_production_executor_registry().get(module_type)
     assert executor.requires_browser_for({}) is False
+
+
+def test_easyocr_default_models_are_owned_resources_not_reference(monkeypatch):
+    from pathlib import Path
+
+    from autoflow.application.workflows.executors import media_recognition
+
+    monkeypatch.delenv("AUTOFLOW_EASYOCR_MODEL_DIR", raising=False)
+    models = media_recognition._easyocr_model_dir()
+    assert models == Path(media_recognition.__file__).resolve().parents[3] / "resources/easyocr"
+    assert all((models / name).is_file() for name in ("craft_mlt_25k.pth", "zh_sim_g2.pth"))
+
+
+def test_missing_bundled_models_never_search_reference(monkeypatch, tmp_path):
+    from autoflow.application.workflows.executors import media_recognition
+
+    reference = tmp_path / "reference/WebRPA/backend/models/ocr/easyocr"
+    reference.mkdir(parents=True)
+    module = tmp_path / "src/autoflow/application/workflows/executors/media_recognition.py"
+    module.parent.mkdir(parents=True)
+    monkeypatch.setattr(media_recognition, "__file__", str(module))
+    monkeypatch.delenv("AUTOFLOW_EASYOCR_MODEL_DIR", raising=False)
+    with pytest.raises(RuntimeError, match="模型资源不存在"):
+        media_recognition._easyocr_model_dir()

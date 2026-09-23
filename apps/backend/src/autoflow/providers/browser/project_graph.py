@@ -253,7 +253,7 @@ class ProjectGraphExecutor:
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
             module_type = node_data.get("moduleType")
-            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report", "ssh_connect", "ssh_upload_file", "ssh_download_file", "base64", "firecrawl_scrape"}:
+            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report", "ssh_connect", "ssh_upload_file", "ssh_download_file", "base64", "firecrawl_scrape", "face_recognition", "image_ocr"}:
                 current.artifacts = self.artifact_writer(node_id, visit, module_type)
             await emit('nodeAttempt', {'status': 'started'})
             self.cancellation.raise_if_cancelled()
@@ -326,8 +326,13 @@ class ProjectGraphExecutor:
                 name = None
             if data['moduleType'] == 'page_load_complete':
                 name = config.get('saveToVariable', 'page_loaded')
+            if data['moduleType'] in {'face_recognition', 'image_ocr'}:
+                default = 'face_match_result' if data['moduleType'] == 'face_recognition' else 'ocr_text'
+                name = str(config.get('resultVariable', default))
+            if data['moduleType'] == 'ocr_captcha':
+                name = str(config.get('variableName') or config.get('resultVariable') or '').strip()
             if isinstance(name, str) and name and name not in current.sensitive_variables:
-                if data['moduleType'] in {'run_command', 'python_script', 'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'input_prompt', 'js_script', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop'}:
+                if data['moduleType'] in {'run_command', 'python_script', 'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'input_prompt', 'js_script', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop', 'ocr_captcha', 'face_recognition', 'image_ocr'}:
                     if name in current.variables:
                         await emit('output', {'name': name, 'value': current.variables[name]})
                 elif event.get('data') is not None or (
