@@ -33,7 +33,7 @@ LABEL = "io.autoflow.android.workspace"
 
 
 async def _stop_command(process: asyncio.subprocess.Process) -> None:
-    # limactl may leave an SSH child holding archive descriptors after its own exit.
+    # Failed or interrupted limactl commands may leave an SSH child writing archives.
     try:
         if os.name == "posix":
             os.killpg(process.pid, signal.SIGKILL)
@@ -61,8 +61,9 @@ async def run(argv: list[str], timeout: float = 15, input_data: bytes | None = N
                 message += ": " + detail[:240]
             raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
         return stdout
-    finally:
+    except BaseException:
         await _stop_command(process)
+        raise
 
 
 async def run_file(argv: list[str], timeout: float, *, input_path: Path | None = None, output_path: Path | None = None) -> None:
@@ -87,8 +88,9 @@ async def run_file(argv: list[str], timeout: float, *, input_path: Path | None =
                 if detail:
                     message += ": " + detail
                 raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
-        finally:
+        except BaseException:
             await _stop_command(process)
+            raise
 
 
 async def docker(*args: str, timeout: float = 30, input_data: bytes | None = None) -> bytes:

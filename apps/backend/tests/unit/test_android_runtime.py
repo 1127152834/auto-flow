@@ -64,6 +64,29 @@ async def test_command_cancellation_or_timeout_stops_descendant_writes(tmp_path,
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(os.name != "posix", reason="Mac commands can start a persistent ADB daemon")
+@pytest.mark.parametrize("runner", ["run", "run_file"])
+async def test_successful_command_preserves_started_daemon(tmp_path, runner):
+    written = tmp_path / "written"
+    child_pid = tmp_path / "child.pid"
+    child = "import sys,time\nf=open(sys.argv[1],'ab',buffering=0)\nwhile True:\n f.write(b'x')\n time.sleep(.01)\n"
+    parent = "import pathlib,subprocess,sys,time\np=subprocess.Popen([sys.executable,'-c',sys.argv[1],sys.argv[2]],stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\npathlib.Path(sys.argv[3]).write_text(str(p.pid))\nwhile not pathlib.Path(sys.argv[2]).exists(): time.sleep(.01)\n"
+    try:
+        await getattr(mac, runner)([sys.executable, "-c", parent, child, str(written), str(child_pid)], 5)
+        after_exit = written.stat().st_size
+        async with asyncio.timeout(1):
+            while written.stat().st_size == after_exit:
+                await asyncio.sleep(.01)
+        assert written.stat().st_size > after_exit
+    finally:
+        if child_pid.exists():
+            try:
+                os.kill(int(child_pid.read_text()), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+
+@pytest.mark.asyncio
 async def test_advanced_log_collection_checks_owned_running_container_before_logcat(tmp_path, monkeypatch):
     from autoflow.providers.android import management
 

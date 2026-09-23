@@ -490,3 +490,83 @@ it('readonly console never enables navigation or installation during workflow ow
   await userEvent.click(screen.getByRole('button', { name: '应用' }))
   expect(screen.getByRole('button', { name: '上传 APK' })).toBeDisabled()
 })
+
+it('discards an in-flight heartbeat failure while switching control endpoints', async () => {
+  let rejectHeartbeat!: (error: Error) => void
+  const heartbeat = new Promise<ReturnType<typeof fixtureSession>>((_, reject) => { rejectHeartbeat = reject })
+  let finishSwitch!: (session: ReturnType<typeof fixtureSession>) => void
+  const switching = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finishSwitch = resolve })
+  const next = { ...fixtureSession(true), endpoint: 'native' as const, generation: 2 }
+  let switched = false
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { body?: { action?: string } }) => {
+    if (path.endsWith('/heartbeat')) return switched ? Promise.resolve(next) : heartbeat
+    if (path.endsWith('/actions') && init?.body?.action === 'native') return switching
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path.endsWith('/heartbeat'))).toBe(true))
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '独立 Mac 窗口' }))
+  await act(async () => { rejectHeartbeat(new ApiClientError('切换中的旧租约', 410, 'ANDROID_SESSION_EXPIRED')); await heartbeat.catch(() => {}) })
+  await act(async () => { switched = true; finishSwitch(next); await switching })
+  await screen.findByText('正在独立 Mac 窗口操作')
+  expect(screen.queryByText('控制会话状态未知，请重新连接并核实设备')).not.toBeInTheDocument()
+})
+
+it.each(['native', 'embedded'] as const)('does not restore a cached readonly endpoint after switching to %s at the same generation', async (endpoint) => {
+  const initial = { ...fixtureSession(false), deviceId: devices[0].deviceId, endpoint: endpoint === 'native' ? 'embedded' as const : 'native' as const }
+  const next = { ...initial, endpoint }
+  let switched = false
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string; body?: { action?: string } }) => {
+    if (path.endsWith('/sessions') && init?.method === 'POST') return Promise.resolve(initial)
+    if (path.endsWith('/heartbeat')) return switched ? new Promise(() => {}) : Promise.resolve(initial)
+    if (path.endsWith('/actions') && init?.body?.action === endpoint) { switched = true; return Promise.resolve(next) }
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path.endsWith('/heartbeat'))).toBe(true))
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: endpoint === 'native' ? '独立 Mac 窗口' : '返回页面操作' }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.filter(([path]) => path.endsWith('/heartbeat')).length).toBeGreaterThan(1))
+  if (endpoint === 'native') await screen.findByText('正在独立 Mac 窗口操作')
+  else await waitFor(() => expect(screen.queryByText('正在独立 Mac 窗口操作')).not.toBeInTheDocument())
+})
+
+it('keeps endpoint transitions scoped to the backend and session that started them', async () => {
+  let finishOld!: (session: ReturnType<typeof fixtureSession>) => void
+  const oldSwitch = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finishOld = resolve })
+  let finishNew!: (session: ReturnType<typeof fixtureSession>) => void
+  const newSwitch = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finishNew = resolve })
+  const replacement = { ...fixtureSession(true), id: 'replacement-session' }
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string; body?: { action?: string } }) => {
+    if (path.endsWith('/sessions') && init?.method === 'POST') return Promise.resolve(mocks.instanceId === 'instance' ? fixtureSession(true) : replacement)
+    if (path.endsWith('/heartbeat')) return Promise.resolve(path.includes(replacement.id) ? replacement : fixtureSession(true))
+    if (path.endsWith('/actions') && init?.body?.action === 'native') return path.includes(replacement.id) ? newSwitch : oldSwitch
+    return fallback(path, init)
+  })
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const view = render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '独立 Mac 窗口' }))
+  mocks.instanceId = 'replacement'
+  view.rerender(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path === '/api/v1/android/sessions/replacement-session/heartbeat')).toBe(true))
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '独立 Mac 窗口' }))
+  const heartbeats = () => mocks.client.request.mock.calls.filter(([path]) => path === '/api/v1/android/sessions/replacement-session/heartbeat').length
+  const count = heartbeats()
+  await act(async () => { finishOld({ ...fixtureSession(true), endpoint: 'native', generation: 2 }); await oldSwitch })
+  await act(async () => { await queryClient.invalidateQueries({ queryKey: ['android', 'replacement', 'session'] }) })
+  expect(heartbeats()).toBe(count)
+  await act(async () => { finishNew({ ...replacement, endpoint: 'native', generation: 2 }); await newSwitch })
+})

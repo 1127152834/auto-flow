@@ -70,7 +70,7 @@
 | <a id="t02"></a>T02 | `passed` | 纯状态规则以上述自动化证明；[真实管理状态](2026-09-23-am1-real-control-retention.md)作交叉核对。 |
 | <a id="t03"></a>T03 | `passed` | 生产 environment 检查 Mac/Lima/ADB/binder，真实 `available=true`，见 AM1 QA；负向无副作用由契约测试证明。 |
 | <a id="t04"></a>T04 | `passed` | [真实 HTTP 重启和历史查询](2026-09-23-operation-history-verification.md)，SQL 事务/幂等/迁移负向由集成测试证明。 |
-| <a id="t05"></a>T05 | `not_run` | [控制链](2026-09-23-am1-real-control-retention.md)已验输入/切端/租约/HTTP 重启；尚缺同一桌面链的真实断线、UI 离开保留原生窗口。 |
+| <a id="t05"></a>T05 | `passed` | [控制链](2026-09-23-am1-real-control-retention.md)已验输入/切端/租约/HTTP 重启；[真实桌面控制](2026-09-24-desktop-control.md)补原生跨模块保留、切回、SSH/ADB断线锁定、结束清理与重连。最终构建再次完成往返，两个自建实例均核实missing。 |
 | <a id="t06"></a>T06 | `not_run` | [桌面链](2026-09-23-desktop-ui-verification.md)已验创建/生命周期/长名/高缩放；精确 200%、指定两窗口尺寸、旧 temporary 同链未验。 |
 | <a id="t07"></a>T07 | `not_run` | `scripts/smoke-android-management.py` 与 AM1 QA 已有自建实例、APK/中文输入/数据/双实例删除隔离；进程级受控操作中断仍待完整同链。 |
 | <a id="t08"></a>T08 | `passed` | [AM2](am2-verification.md)固定基础 imageId、真实登记与按摘要删除；引用变化自动化有明确保护。 |

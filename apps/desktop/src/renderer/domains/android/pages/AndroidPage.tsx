@@ -70,7 +70,10 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     [source, setSource] = useState<AndroidDevice>()
   const [session, setSession] = useState<ConsoleSession | null>(null),
     [error, setError] = useState(''),
-    [busy, setBusy] = useState(false)
+    [busy, setBusy] = useState(false),
+    [transition, setTransition] = useState<{ client: typeof client; instanceId: typeof instanceId; session: ConsoleSession } | null>(null)
+  const sessionChanging = transition?.client === client && transition?.instanceId === instanceId &&
+    transition?.session.id === session?.id && transition?.session.generation === session?.generation && transition?.session.endpoint === session?.endpoint
   const saveAndroidDiagnostic = typeof window !== 'undefined' ? window.autoflow?.saveAndroidDiagnostic : undefined
   const [profilesOpen, setProfilesOpen] = useState(false),
     [profileDraft, setProfileDraft] = useState<Profile | null>(null)
@@ -94,6 +97,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
       pendingLeave.current = null
       currentSession.current = null
       setSession(null)
+      setTransition(null)
       setSelected(null)
       setPage('board')
       setBusy(false)
@@ -144,14 +148,14 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     enabled: connected,
   })
   const sessionStatus = useQuery({
-    queryKey: ['android', instanceId, 'session', session?.id],
+    queryKey: ['android', instanceId, 'session', session?.id, session?.generation, session?.endpoint],
     queryFn: () => fleet.heartbeat(session!, session!.clientSessionId ?? session!.id),
-    enabled: Boolean(connected && page === 'detail' && session?.state === 'connected'),
+    enabled: Boolean(connected && !sessionChanging && page === 'detail' && session?.state === 'connected'),
     retry: false,
     refetchInterval: 5000,
   })
   useEffect(() => {
-    if (sessionStatus.data)
+    if (sessionStatus.data && !sessionChanging)
       setSession((previous) =>
         previous &&
         (previous.id !== sessionStatus.data.id ||
@@ -160,14 +164,14 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           ? previous
           : sessionStatus.data,
       )
-  }, [sessionStatus.data])
+  }, [sessionStatus.data, sessionChanging])
   useEffect(() => {
-    if (!sessionStatus.error || !session) return
+    if (!sessionStatus.error || !session || sessionChanging) return
     setSession((previous) => previous && previous.id === session.id && previous.state === 'connected'
       ? { ...previous, state: 'unknown', latestOperation: '控制会话状态待核实' }
       : previous)
     setError('控制会话状态未知，请重新连接并核实设备')
-  }, [sessionStatus.error, session?.id])
+  }, [sessionStatus.error, session?.id, sessionChanging])
   const managementRecord = managementDevices.data?.items.find((item) => item.deviceId === selected),
     all = managementDevices.data?.items.map(managementDeviceToLegacy) ?? [],
     device = all.find((d) => d.deviceId === selected)
@@ -454,6 +458,12 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           apps={apps.data}
           onBack={() => void leaveDetail()}
           onSession={onSession}
+          onTransition={async (changing) => {
+            if (!session || !isCurrentBackend()) return
+            setTransition((previous) => changing ? { client, instanceId, session }
+              : previous?.client === client && previous.instanceId === instanceId && previous.session === session ? null : previous)
+            if (changing) await queryClient.cancelQueries({ queryKey: ['android', instanceId, 'session', session.id] })
+          }}
           onOpen={() => void open(device)}
           onManage={(action) => manage(device, action)}
           onRefresh={refresh}

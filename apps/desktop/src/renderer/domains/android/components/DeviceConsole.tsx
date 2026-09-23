@@ -38,6 +38,7 @@ export type ConsoleProps = {
   initialText?: string
   onBack(): void
   onSession(s: ConsoleSession): void
+  onTransition?(changing: boolean): Promise<void> | void
   onOpen(): void
   onManage(action: string): void
   onRefresh(): void
@@ -78,7 +79,7 @@ export function DeviceConsole(p: ConsoleProps) {
   const send = useCallback(
     (command: Partial<InputCommand>) => {
       const session = sessionRef.current
-      if (!session || session.access !== 'manual' || !p.api || failed.current) return
+      if (!session || session.access !== 'manual' || !p.api || failed.current || switching.current) return
       const payload: InputCommand = {
         action: 0,
         keycode: 0,
@@ -114,6 +115,7 @@ export function DeviceConsole(p: ConsoleProps) {
     switching.current = true
     setError('')
     try {
+      await p.onTransition?.(true)
       await queue.current
       if (!current()) return
       const s = await p.api.action(issued, kind)
@@ -126,6 +128,7 @@ export function DeviceConsole(p: ConsoleProps) {
     } finally {
       setBusy(false)
       switching.current = false
+      void p.onTransition?.(false)
     }
   }
   useEffect(() => {

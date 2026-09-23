@@ -57,7 +57,7 @@
 
 | 阶段 | 任务当前状态 | 下一验收门槛 |
 | --- | --- | --- |
-| AM1 | T01–T04 `passed`；T05–T07 `partial` | 桌面控制与真实断线同链、精确 200%/两种窗口尺寸、旧 temporary 兼容与受控中断 |
+| AM1 | T01–T05 `passed`；T06/T07 `partial` | 精确 200%/两种窗口尺寸、旧 temporary 兼容与应用写入受控中断 |
 | AM2 | T08/T10 功能 `passed`；T09/T12 `partial`；T11 检测规则 `passed`、专用 GApps 账号链 `blocked` | 固定摘要网络拉取和认证 HTTP 内容删除已实测；待桌面删除、断线核实、候选镜像/账号下载链与阶段回退 |
 | AM3 | T13–T16 `partial` | 双实例/五实例、部分失败、修订冲突项重试和容量等待取消已验；十台容量 blocked，运行时瞬时故障/未知结果、桌面前台/探测指标、应用确认与真实 ADB 断连仍未验 |
 | AM4 | T17–T19 已列功能 `passed`；T20 `partial` | 文件流备份恢复、真实 ENOSPC/传输取消、受限高级日志与全分支审查修复已验；恢复解包中 SIGKILL 已补；目标磁盘不足/取消恢复、多对象清理硬中断已补；备份传输硬中断和完整负向矩阵见后续验证记录 |
@@ -301,8 +301,8 @@ it('does not replay old input after leaving', async () => {
 
 - [x] RED：运行ConsoleController.test.ts和`(cd apps/backend && uv run pytest tests/unit/test_android_console_lifecycle.py -q)`，先证明故障路径。（状态：passed；页面竞态 RED→GREEN 见 control-session-verification QA；[证据 T05.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t05)）
 - [x] 输入队列绑定完整身份；leave停止新输入、释放、核实结束，不停止Android。新会话才初始化序号；切端先关闭旧写端并递增generation，不直接清零后端sequence。（状态：passed；完整身份输入队列和切端 generation 栅栏已实现并回归；[证据 T05.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t05)）
-- [x] 复用主应用关闭协调；嵌入式5秒心跳/30秒失联，原生端按进程存活。失败保持可见占用；普通详情/缩略图不claim。运行旧AndroidVideo/AndroidPage回归与typecheck。（状态：passed；关闭协调及 5/30 秒租约已自动化和真实租约验证；断网实测另列 T07；[证据 T05.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t05)）
-- [x] GREEN后提交 `fix(android): manage console ownership independently of navigation`。（状态：passed；控制软件已入历史；桌面同链仍 not_run；[证据 T05.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t05)）
+- [x] 复用主应用关闭协调；嵌入式5秒心跳/30秒失联，原生端按进程存活。失败保持可见占用；普通详情/缩略图不claim。运行旧AndroidVideo/AndroidPage回归与typecheck。（状态：passed；关闭协调及 5/30 秒租约已验；真实桌面SSH/ADB断线及恢复见2026-09-24-desktop-control；[证据 T05.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t05)）
+- [x] GREEN后提交 `fix(android): manage console ownership independently of navigation`。（状态：passed；控制软件已入历史；真实桌面往返/原生离页/断线恢复已验；[证据 T05.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t05)）
 
 ### T06：管理首页、创建与保留数据入口
 

@@ -1,0 +1,125 @@
+Window: "AutoFlow", App: Electron.
+0 标准窗口 AutoFlow, Secondary Actions: Raise
+	1 container AutoFlow
+		2 container
+			3 HTML 内容 AutoFlow, URL: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/android
+				4 container
+					5 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
+					6 container 全局导航
+						7 按钮 总览
+						8 按钮 项目
+						9 按钮 浏览器配置
+						10 按钮 安卓设备
+						11 按钮 代理管理
+						12 按钮 模型管理
+					13 按钮 设置
+						14 图像
+						15 文本 设置
+					16 文本 本地服务正常
+					17 container
+						18 按钮 返回资源看板 / QA Final Control Review
+							19 图像
+							20 文本 返回资源看板
+							21 文本 /
+							22 文本 QA Final Control Review
+						23 标题 QA Final Control Review, Value: 1
+							24 文本 QA Final Control Review
+						25 图像
+						26 text 已就绪 持久实例
+						27 container
+							28 text Android  版本待核实  ·  720  ×  1280
+						29 按钮 复制配置
+							30 图像
+							31 文本 复制配置
+						32 按钮 更多设备操作
+							33 图像
+						34 container 设备详情
+							35 按钮 控制台
+							36 按钮 应用
+							37 按钮 环境配置
+						38 标题 手动控制中, Value: 2
+							39 文本 手动控制中
+						40 文本 由你独占操作
+						41 弹出式按钮 Description: 画面显示方式, Value: 适应窗口
+							42 (selected) 查看画面
+						43 按钮 全屏
+							44 图像
+							45 文本 全屏
+						46 按钮 结束控制
+						47 图像 安卓触控画面
+						48 container
+							49 按钮 返回
+								50 图像
+								51 文本 返回
+							52 按钮 主页
+								53 图像
+								54 文本 主页
+							55 按钮 最近任务
+								56 图像
+								57 文本 最近任务
+							58 按钮 音量
+								59 图像
+								60 文本 音量
+							61 按钮 旋转
+								62 图像
+								63 文本 旋转
+							64 按钮 截图
+								65 图像
+								66 文本 截图
+						67 text 点击即触控 · 按住拖动可滑动 · 长按可呼出菜单 实时画面
+						68 container
+							69 标题 输入与操作, Value: 2
+								70 文本 输入与操作
+							71 图像
+							72 text 键盘输入 点击画面后接收键盘事件。
+							73 切换 Description: 键盘输入, Value: on
+							74 标题 文本发送, Value: 3
+								75 文本 文本发送
+							76 文本输入区 (settable) Description: 文本发送, Placeholder: 输入要发送的文本
+							77 文本 中文通过文本发送。
+							78 按钮 (disabled) 发送到设备
+						79 container
+							80 标题 应用, Value: 3
+								81 文本 应用
+							82 文本 当前应用
+							83 图像
+							84 文本 launcher3
+							85 文本 com.android.launcher3
+							86 按钮 上传 APK
+								87 图像
+								88 文本 上传 APK
+							89 按钮 启动应用
+								90 图像
+								91 文本 启动应用
+						92 container
+							93 标题 设备信息, Value: 3
+								94 文本 设备信息
+							95 图像
+							96 text Android  版本待核实
+							97 图像
+							98 text 720  ×  1280
+							99 图像
+							100 text 数据： 持久保存
+							101 图像
+							102 text Root shell： 不可用
+						103 text 已连接 最新操作： 按键已发送
+					104 container 实例备份
+						105 标题 数据备份, Value: 2
+							106 文本 数据备份
+						107 文本 仅允许已停止且无控制会话的实例。
+						108 文本 备份保存在本机，未加密，可能包含账号和应用私密数据。
+						109 文本 恢复会创建新实例并还原应用数据；不保证登录状态、DRM 或私有密钥可用。
+						110 文本 备份创建已禁用：实例必须已停止、状态新鲜、未被控制且没有活动控制会话。
+						111 按钮 (disabled) 创建停机备份
+						112 文本 此实例尚无备份。
+	113 关闭按钮
+	114 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	115 最小化按钮
+116 menu bar
+	117 Electron
+	118 File
+	119 Edit
+	120 View
+	121 Window
+
+The focused UI element is 52 按钮 主页

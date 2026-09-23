@@ -84,3 +84,22 @@ it('does not send queued text or publish an old input response after the session
   expect(api.input).toHaveBeenCalledTimes(1)
   expect(initial.onSession).not.toHaveBeenCalled()
 })
+
+it('does not send old-generation input when opening a native window blurs the page', async () => {
+  const next = { ...fixtureSession(true), endpoint: 'native' as const, generation: 2 }
+  const api = {
+    input: vi.fn().mockRejectedValue(new Error('控制权已变化，请刷新会话')),
+    action: vi.fn(async () => {
+      window.dispatchEvent(new Event('blur'))
+      await Promise.resolve()
+      return next
+    }),
+  }
+  const initial = props(api)
+  render(<DeviceConsole {...initial} />)
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '独立 Mac 窗口' }))
+  await waitFor(() => expect(initial.onSession).toHaveBeenCalledWith(next))
+  expect(api.input).not.toHaveBeenCalled()
+  expect(screen.queryByText('控制权已变化，请刷新会话')).not.toBeInTheDocument()
+})

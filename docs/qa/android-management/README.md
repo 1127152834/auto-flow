@@ -10,9 +10,9 @@
 
 [24 项验收校准](2026-09-23-acceptance-matrix.md)逐项区分通过、部分完成与外部阻塞；不把局部自动化或真实单链推断为四阶段全部完成。
 
-最新 AM1 [真实控制、应用与保留卷验收](2026-09-23-am1-real-control-retention.md)覆盖中文输入、原生/嵌入式切换、30 秒失联回收、HTTP 重启、真实 APK 操作及同卷数据恢复；本轮 RED→GREEN 接通了原本缺失的保留数据 `restore` 入口。此前的[管理操作历史](2026-09-23-operation-history-verification.md)与[控制会话竞态](2026-09-23-control-session-verification.md)分别保留自身证据。真实网络断开及桌面控制同链仍未验收。
+最新 AM1 [真实控制、应用与保留卷验收](2026-09-23-am1-real-control-retention.md)覆盖中文输入、原生/嵌入式切换、30 秒失联回收、HTTP 重启、真实 APK 操作及同卷数据恢复；本轮 RED→GREEN 接通了原本缺失的保留数据 `restore` 入口。此前的[管理操作历史](2026-09-23-operation-history-verification.md)与[控制会话竞态](2026-09-23-control-session-verification.md)分别保留自身证据。后续[真实桌面控制](2026-09-24-desktop-control.md)已补原生跨模块保留、往返、SSH/ADB断线和重连。
 
-[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)新增镜像登记、模板、长名称实例创建/启动/停止/保留/恢复与历史页面证据，修复镜像/旧环境 500、正常设备误报及高缩放状态竖排。应用 125% 和原生五档高缩放已实测；精确 200% 数值、真实网络断开与桌面原生控制同链仍未验收。
+[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)新增镜像登记、模板、长名称实例创建/启动/停止/保留/恢复与历史页面证据，修复镜像/旧环境 500、正常设备误报及高缩放状态竖排。应用 125% 和原生五档高缩放已实测；精确 200% 数值与指定窗口尺寸仍未验收；真实控制往返和受控SSH断线见9月24日增量。
 
 [AM2 镜像增量](am2-verification.md)已在真实 Mac/Lima 按固定摘要拉取官方 ReDroid 镜像，并通过认证 HTTP 登记/删除自建 ARM64 测试镜像内容；拉取前来源边界经 RED→GREEN。候选 GApps 账号链、真实断线核实和桌面内容删除仍未验收。[AM3 双实例批量链](2026-09-23-am3-real-bulk-verification.md)完成 start/stop/delete 三批各两项成功、最终容器与卷消失，同时修复真实 HTTP 批次记录泄漏内部字段引起的 500；[审查修复与五实例真实链](2026-09-23-final-review-remediation.md)另覆盖五台 ready、20 次快照、并发预览、文件流备份/恢复和跨重建应用回执核实。十台本机容量阻塞，外部 GApps 条件仍未验收。
 
@@ -48,7 +48,7 @@
 
 | 阶段 | 任务 | 证据 | 状态 |
 | --- | --- | --- | --- |
-| AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T04 自动验证；T05/T07 真实输入、切端、租约回收、HTTP 重启及保留卷恢复已验，桌面边界与硬中断仍缺证据 |
+| AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T05已验；真实桌面往返/原生离页/SSH断线恢复已补，T06/T07精确窗口/缩放及应用写入硬中断仍缺证据 |
 | AM2 | T08–T12 | [am2-verification.md](am2-verification.md) | 镜像/模板自动化、固定摘要网络拉取及真实 HTTP 内容删除通过；候选 GApps 镜像/账号链缺条件 |
 | AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；真实五实例规模、批量 start/stop/delete、部分失败及容量等待取消已验；真实运行时失败后重试与未知项核实也已通过；十台本机容量 blocked，前台/探测指标未完整记录 |
 | AM4 | T17–T20 | [am4-verification.md](am4-verification.md) | 备份/恢复/清理与高级日志自动化、真实文件流读回及 logcat 摘要已验；完整失败演练与最终交付未完成 |
@@ -76,3 +76,5 @@
 - `blocked`：已有实现或局部测试，但任务要求依赖当前缺失的设备、网络、账号、APK、人工窗口或压力条件。
 - `not_run`：任务要求的专门测试/集成流程/文档证据不存在或没有执行记录。
 - `failed`：已有可执行路径与要求冲突，需先修复根因再验收。
+
+- 2026-09-24 桌面控制增量：[真实断线、原生往返及根因修复](2026-09-24-desktop-control.md)：已完成自建设备真实控制/导航/SSH断线/重新连接与清理，补ADB后台服务、切端输入/心跳身份和离线清理回归；最终后端4041passed/26skipped、前端5631passed，类型/lint/OpenAPI/build通过；T05/AC05/AC06关闭，总目标仍partial。
