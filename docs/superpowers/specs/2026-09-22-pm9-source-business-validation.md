@@ -2,6 +2,8 @@
 
 日期：2026-09-22。状态：confirmed（用户于 2026-09-22 单独批准 D1），实施中。来源：data-and-state-rules.md DATA-TABLE-02、DATA-STATE-08、DATA-SH-05；当前 HTTP/SQLite/受控 Sheets 反例。
 
+2026-09-23 实施校正：来源保留、诊断和 UI 已交付；本轮专属真实 worker 验证发现“声明坏字段仍领取”的遗漏，已在共享输入选择及提交重验复用当前字段规则修复。未使用坏字段和未选中坏行仍允许，选中声明字段的类型/必填/规则错误在 Task/lease/浏览器前拒绝。D1 worker 与原三类共享交接本机 4 项通过；新生产候选完整回归及三平台证据见 `docs/project-management/implementation/pm9/input-validation-follow-through.json`，打包完整链/实网不由本机证据替代。
+
 ## 现状与范围
 
 以普通 number 字段映射远端文本 `not-a-number`，POST sync/pull 返回 422 INVALID_PROJECT_DATA，记录没有引入。来源身份可靠仍不能人工标记该行。原操作经 _create_record → SqlAlchemyProjectDataRecords._validate 复用严格人工值校验；同类 ExcelImportService.run 在普通单元格校验失败时使整个导入失败（此项已读代码，尚未实测）。当前 DataCellView.error 表示读取失败，RecordFieldsView 会隐藏原值，不能借用它冒充业务校验问题。

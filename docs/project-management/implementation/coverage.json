@@ -9312,7 +9312,7 @@
           {
             "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
             "symbol": "test_invalid_business_value_can_be_marked_but_active_owner_blocks_status",
-            "scope": "显式已有坏业务值 fixture，真实 HTTP 可标状态；held/reconciling 阻断且不改记录，模拟确认释放后可清空，原值/内容版本不变、无同步意图和云写。来源导入保留未验证，实际 Sheets 反例仍失败。",
+            "scope": "显式已有坏业务值 fixture，真实 HTTP 可标状态；held/reconciling 阻断且不改记录，模拟确认释放后可清空，原值/内容版本不变、无同步意图和云写。该测试用数据库 fixture 构造已有坏值；来源导入证据见 DATA-TABLE-02，历史反例已由 D1 修复。",
             "level": "automated_integration"
           }
         ],
@@ -10264,7 +10264,7 @@
         "PM2-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-22",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
@@ -10277,12 +10277,30 @@
             "symbol": "test_import_preserves_safe_business_format_error_for_record_diagnosis",
             "scope": "真实临时 XLSX 导入安全 Scalar 格式错误原值与结构化问题保留。",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_selected_input_validates_only_declared_source_fields",
+            "scope": "来源坏格式/必填缺失只阻断声明使用该字段的输入，未使用字段不阻断，拒绝无 Task/lease 与源写。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_prepared_input_rechecks_field_validation_before_claim",
+            "scope": "未选中的坏记录不阻断已选好行；准备后规则改变，提交前重新检查并拒绝，无 Task/lease。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_worker_uses_valid_input_while_bad_source_field_remains_diagnosed",
+            "scope": "macOS ARM 真实 HTTP/SQLite/worker/CloakBrowser：未使用坏字段仍可人工继续并写有效字段；原值/诊断/快照保留；声明坏字段后在 Task/lease/浏览器启动前失败，前一成功写保留。Google 与凭据受控，非打包或实网。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "人工编辑只校验 Patch、当前打包来源完整链和真实 worker 联合证据仍待验收。"
+            "detail": "人工编辑只校验 Patch 与当前打包来源完整链仍需对应联合证据；新增坏值 worker 场景三平台待验收，Google/OAuth 实网需外部授权。"
           }
         ],
         "statusBeforeReview": "verified"
@@ -10606,12 +10624,18 @@
         "PM2-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-22",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_table_schema_capability.py",
             "symbol": "test_system_status_is_read_only_while_business_status_field_and_status_write_coexist",
-            "scope": "结构查询明确返回只读 statusId；业务 key=status 可并存；伪造系统字段改型、删除和来源映射均拒绝且不留下操作事实，业务状态仍可写入",
+            "scope": "只读 statusId 与业务 status 字段并存；赋予字段修改/删除权限后状态目录 UUID 仍以 FIELD_NOT_FOUND 拒绝，无操作/版本变化；正式状态写只推进状态版本。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_table_schema_capability.py",
+            "symbol": "test_sheets_binding_cannot_map_system_status",
+            "scope": "真实 HTTP Sheets 绑定拒绝 literal statusId 与状态目录 UUID；普通 status 字段正常映射；拒绝后记录、绑定、操作/lease 和远端写数量不变。Google transport 受控。",
             "level": "automated_integration"
           }
         ],
@@ -11475,12 +11499,23 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_capability_fencing.py",
+            "symbol": "test_opposing_dynamic_writes_return_conflicts_without_stealing_leases",
+            "scope": "两个 SQLite Task 各动态取得一条 lease 后并发反向单记录写，均有限时返回 LEASE_BUSY；原写入、版本、lease 所有权、游标和输入快照不变，拒绝操作未入账。Task 激活为 fixture，未启动 worker。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：两个任务反向请求对方记录时不永久等待或半组写；不据邻近测试推定覆盖"
+            "detail": "单节点有限多记录组全有或全无仍无直接证据；两个单记录命令不证明组原子性。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "真实 worker 重试耗尽/人工分支和打包并发链待验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"

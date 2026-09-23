@@ -15,10 +15,11 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectTaskRow,
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
-from tests.fixtures.sheets import new_key
+from tests.fixtures.sheets import FakeSheetsTransport, new_key, open_sheets_table
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_data_start import uid
 from tests.integration.test_project_sheets_claims import plan_for, shared_tables
+from tests.integration.test_project_sheets_sync import pull
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
 )
@@ -37,7 +38,7 @@ def wait_for(check, label, timeout=90):
     raise AssertionError(f"Timeout waiting for {label}: {last}")
 
 
-def start_real(bound, profile, url, label, status_id=None):
+def start_real(bound, profile, url, label, status_id=None, *, input_key="title"):
     def node(identity, kind, data):
         return {"id": identity, "type": kind, "position": {"x": 0, "y": 0}, "data": {"moduleType": kind, **data}}
     nodes = [
@@ -58,6 +59,7 @@ def start_real(bound, profile, url, label, status_id=None):
     assert saved.status_code == 201, saved.text
     prefix = f"/api/v1/projects/{bound.project}"
     input_plan = plan_for(bound)
+    input_plan["inputs"][0]["fieldBindings"][0]["fieldRef"]["fieldId"] = bound.field_id(input_key)
     input_plan["inputs"][0]["filter"] = {"type": "status", "operator": "eq", "statusId": status_id} if status_id else {"type": "status", "operator": "isNull"}
     response = bound.client.post(prefix + "/automations", headers=new_key(), json={
         "name": label, "description": "", "workflowId": saved.json()["id"], "inputPlan": input_plan, "parameterSchema": [],
@@ -92,6 +94,62 @@ def resume(bound, item):
         "checkpointRevision": item["checkpointRevision"], "expectedStatusRevision": item["statusRevision"],
     })
     assert response.status_code == 202, response.text
+
+
+def test_real_worker_uses_valid_input_while_bad_source_field_remains_diagnosed(
+    tmp_path, valid_profile_values, real_cloak_page,
+):
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith("chromium-"))
+    shutil.copytree(source, tmp_path / "data" / "kernels" / source.name, symlinks=True)
+    transport = FakeSheetsTransport({"数据": [["编号", "标题", "金额"], ["A-1", "valid", "not-a-number"]]})
+    with open_sheets_table(tmp_path, transport, [
+        ("code", "编号", "string"), ("title", "标题", "string"), ("amount", "金额", "number"),
+    ]) as bound:
+        pull(bound)
+        before = bound.records()[0]
+        amount = bound.field_id("amount")
+        assert next(cell["value"] for cell in before["values"] if cell["fieldId"] == amount) == "not-a-number"
+        assert [issue["fieldId"] for issue in before["validationIssues"]] == [amount]
+        app = bound.client.app
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, "headless": True, "browser_version": source.name.removeprefix("chromium-"),
+        }))
+        batch = start_real(bound, profile, url, "valid field committed")
+        item = wait_for(lambda: manual_item(bound), "D1 real worker checkpoint")
+        detail = bound.client.get(f"/api/v1/projects/{bound.project}/tasks/{item['taskId']}").json()
+        snapshot = detail["inputSnapshot"]
+        captured = snapshot["inputs"][0]
+        assert [mapping["fieldRef"]["fieldId"] for mapping in captured["fieldMappings"]] == [bound.field_id("title")]
+        captured_values = {value["fieldId"]: value["value"] for value in captured["values"]}
+        assert captured_values[bound.field_id("title")] == "valid"
+        assert captured_values[amount] == "not-a-number"
+        resume(bound, item)
+        wait_for(lambda: batch_detail(bound, batch)["batch"]["status"] == "completed", "D1 worker completion")
+        assert batch_detail(bound, batch)["statusCounts"]["succeeded"] == 1
+        after = bound.records()[0]
+        values = {cell["fieldId"]: cell["value"] for cell in after["values"]}
+        assert values[bound.field_id("title")] == "valid field committed"
+        assert values[amount] == "not-a-number"
+        assert after["validationIssues"] == before["validationIssues"]
+        assert after["ref"] == before["ref"]
+        assert after["contentRevision"] == before["contentRevision"] + 1
+        assert (after["statusRevision"], after["linkRevision"]) == (before["statusRevision"], before["linkRevision"])
+        assert bound.client.get(f"/api/v1/projects/{bound.project}/tasks/{item['taskId']}").json()["inputSnapshot"] == snapshot
+
+        # The same source row must fail selection when the bad field is required.
+        rejected_batch = start_real(bound, profile, url, "invalid input", input_key="amount")
+        wait_for(lambda: batch_detail(bound, rejected_batch)["batch"]["status"] == "failed", "D1 invalid input selection")
+        rejected = batch_detail(bound, rejected_batch)
+        assert rejected["taskCount"] == 0
+        assert rejected["batch"]["selectionOutcome"]["status"] == "configurationError"
+        assert bound.records()[0] == after
+        with app.state.session_factory() as session:
+            assert len(session.scalars(select(ProjectTaskRow)).all()) == 1
+            assert not session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.state.in_(("held", "reconciling")))).all()
+        assert not app.state.project_workflow_worker_manager.busy()
+        assert requests.count("/fixture") == 1
+        assert transport.changes() == 0
 
 
 @pytest.mark.parametrize("handoff", ["resume", "stop", "loss"])

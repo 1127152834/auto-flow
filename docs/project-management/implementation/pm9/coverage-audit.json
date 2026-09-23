@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-22",
+  "date": "2026-09-23",
   "status": "mapping_reviewed_acceptance_incomplete",
   "source": "docs/project-management/implementation/coverage.json",
   "scope": "All 251 requirement IDs have assertion scopes or explicit gaps. Reference validation is not release acceptance.",
@@ -829,7 +829,7 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 5,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -839,7 +839,7 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -1800,9 +1800,10 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "test_missing",
+            "production_evidence_missing"
           ]
         },
         {
@@ -2607,8 +2608,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 236,
-    "withNoLocatedAssertion": 15,
+    "withAssertions": 237,
+    "withNoLocatedAssertion": 14,
     "statuses": {
       "partially_verified": 198,
       "planned": 53

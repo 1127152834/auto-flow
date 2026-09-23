@@ -192,25 +192,6 @@ def test_system_status_is_read_only_while_business_status_field_and_status_write
         "statusId": {"type": "status", "nullable": True, "writable": False}
     }
 
-    with pytest.raises(ProjectError) as mapped_system:
-        catalog.create_field(
-            project,
-            table["tableId"],
-            uid(),
-            {
-                "definition": {
-                    "key": "system-status",
-                    "name": "系统状态映射",
-                    "type": "string",
-                    "required": False,
-                    "validation": {},
-                },
-                "expectedTableRevision": 4,
-                "sourceColumnPolicy": "mapped",
-            },
-        )
-    assert mapped_system.value.code == "SOURCE_MAPPING_UNAVAILABLE"
-
     system_definition = {
         "key": "statusId",
         "name": "系统状态",
@@ -219,10 +200,17 @@ def test_system_status_is_read_only_while_business_status_field_and_status_write
         "validation": {},
     }
     capability_scope = _scope(project, task, table, field, _record_ref(project, record), 1)
+    # Even a field-authorized caller cannot turn a status directory ID into a Field.
+    structure_scope = replace(capability_scope, table_grants=frozenset({
+        commands.TableCapabilityGrant(table["tableId"], table["datasetGeneration"],
+            frozenset({"modifyField", "deleteField"}), frozenset({business_status["statusId"]}))
+    }))
+    before = facts(factory)
+    statuses_before = catalog.statuses(project, table["tableId"])
     modify_op, delete_op = uid(), uid()
     with pytest.raises(ProjectError) as modified_system:
         service.modify_field(
-            capability_scope,
+            structure_scope,
             commands.ModifyProjectFieldCommand(
                 modify_op,
                 1,
@@ -236,10 +224,10 @@ def test_system_status_is_read_only_while_business_status_field_and_status_write
                 1,
             ),
         )
-    assert modified_system.value.code == "CAPABILITY_SCOPE_DENIED"
+    assert modified_system.value.code == "FIELD_NOT_FOUND"
     with pytest.raises(ProjectError) as deleted_system:
         service.delete_field(
-            capability_scope,
+            structure_scope,
             commands.DeleteProjectFieldCommand(
                 delete_op,
                 1,
@@ -251,7 +239,9 @@ def test_system_status_is_read_only_while_business_status_field_and_status_write
                 1,
             ),
         )
-    assert deleted_system.value.code == "CAPABILITY_SCOPE_DENIED"
+    assert deleted_system.value.code == "FIELD_NOT_FOUND"
+    assert facts(factory) == before
+    assert catalog.statuses(project, table["tableId"]) == statuses_before
     with factory() as session:
         assert session.get(ProjectOperationRow, modify_op) is None
         assert session.get(ProjectOperationRow, delete_op) is None
@@ -283,6 +273,9 @@ def test_system_status_is_read_only_while_business_status_field_and_status_write
         ),
     )
     assert not replayed and changed["statusId"] == business_status["statusId"]
+    assert changed["statusRevision"] == record["statusRevision"] + 1
+    assert changed["contentRevision"] == record["contentRevision"]
+    assert changed["linkRevision"] == record["linkRevision"]
     assert DataRecordService(SqlAlchemyProjectDataRecords(factory)).get(
         project,
         table["tableId"],
@@ -292,3 +285,42 @@ def test_system_status_is_read_only_while_business_status_field_and_status_write
         ),
         ref["recordKey"]["type"],
     )["statusId"] == business_status["statusId"]
+
+
+@pytest.mark.parametrize("target", ["statusId", "status-directory-id"])
+def test_sheets_binding_cannot_map_system_status(tmp_path, target):
+    from copy import deepcopy
+
+    from tests.fixtures.sheets import FakeSheetsTransport, new_key, open_sheets_table
+    from tests.integration.test_project_sheets_sync import pull
+
+    transport = FakeSheetsTransport({"数据": [["编号", "status"], ["A-1", "source-value"]]})
+    with open_sheets_table(tmp_path, transport, [("code", "编号", "string"), ("status", "业务字段 status", "string")]) as sheets:
+        pull(sheets)
+        status = sheets.client.post(sheets.url("/statuses"), headers=new_key(), json={
+            "name": "已处理", "color": "#2f855a", "order": 1,
+            "expectedTableRevision": sheets.table_revision(),
+        })
+        assert status.status_code == 201, status.text
+        status_id = status.json()["statusId"]
+        factory = sheets.client.app.state.session_factory
+        before = facts(factory)
+        records = sheets.records()
+        assert next(cell["value"] for cell in records[0]["values"] if cell["fieldId"] == sheets.field_id("status")) == "source-value"
+        binding = sheets.client.get(sheets.url("/sheets/binding")).json()
+        mapping = deepcopy(binding["mapping"])
+        business_mapping = next(item for item in mapping if item["fieldId"] == sheets.field_id("status"))
+        business_mapping["fieldId"] = "statusId" if target == "statusId" else status_id
+        key = new_key()
+        rejected = sheets.client.put(sheets.url("/sheets/binding"), headers=key, json={
+            **{name: binding[name] for name in ("connectionId", "spreadsheetId", "sheetId", "identityStrategy")},
+            "mapping": mapping, "expectedTableRevision": sheets.table_revision(), "impactRevision": 1,
+        })
+        assert rejected.status_code == 422, rejected.text
+        if target == "status-directory-id":
+            assert rejected.json()["error"]["code"] == "SHEETS_MAPPING_UNKNOWN_FIELD"
+        assert facts(factory) == before
+        assert sheets.records() == records
+        assert sheets.client.get(sheets.url("/sheets/binding")).json() == binding
+        assert sheets.client.get(f"/api/v1/projects/{sheets.project}/operations/by-idempotency-key/{key['Idempotency-Key']}").status_code == 404
+        assert transport.changes() == 0

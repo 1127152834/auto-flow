@@ -181,6 +181,95 @@ def _advance_execution_generation(factory, task, generation: int) -> None:
         run.status_revision += 1
 
 
+def test_opposing_dynamic_writes_return_conflicts_without_stealing_leases(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectTaskInputSnapshotRow,
+        ProjectTaskRecordCursorRow,
+    )
+    from tests.integration.test_project_capability_field_impacts import _activate_task
+    from tests.integration.test_project_run_data_start import _table
+
+    factory, project, automation, _ = _setup(tmp_path)
+    try:
+        table, field = _table(factory, project, "动态写入", "first")
+        field_id = field["ref"]["fieldId"]
+        DataRecordService(SqlAlchemyProjectDataRecords(factory)).create(
+            project, table["tableId"], uid(), {
+                "datasetGeneration": table["datasetGeneration"],
+                "values": [{"fieldId": field_id, "value": "second"}],
+            },
+        )
+        grants = [{
+            "tableId": table["tableId"], "datasetGeneration": table["datasetGeneration"],
+            "operations": ["queryRecords", "updateRecord"],
+            "fieldIds": [field_id], "readPurposes": ["workflow"],
+        }]
+        tasks = [_activate_task(factory, project, automation, grants) for _ in range(2)]
+        with factory.begin() as session:
+            for task in tasks:
+                run = session.get(WorkflowRunRow, task.run_id)
+                run.status, run.execution_generation = "running", 1
+                run.status_revision += 1
+        service = _service(factory)
+        scopes = [service.scope(project, task.id, task.run_id) for task in tasks]
+        query = QueryProjectRecordsRequest(
+            1, project, table["tableId"], table["datasetGeneration"],
+            [field_id], "workflow", None, [], None, 10,
+        )
+        records = service.query_records(scopes[0], query)["items"]
+        assert len(records) == 2
+        assert service.query_records(scopes[1], query)["items"] == records
+        refs = [_record_ref(project, record) for record in records]
+        for index, scope in enumerate(scopes):
+            service.update_record(scope, UpdateProjectRecordCommand(
+                uid(), 1, refs[index], {field_id: f"owned-{index}"},
+                records[index]["contentRevision"],
+            ))
+
+        def facts():
+            with factory() as session:
+                return (
+                    [(r.key_value, r.values_json, r.content_revision, r.status_revision, r.link_revision)
+                     for r in session.scalars(select(DataRecordRow).order_by(DataRecordRow.key_value))],
+                    [(r.id, r.task_id, r.record_ref, r.state, r.lease_generation)
+                     for r in session.scalars(select(ProjectRecordLeaseRow).order_by(ProjectRecordLeaseRow.id))],
+                    [(r.id, r.content_revision, r.status_revision, r.link_revision)
+                     for r in session.scalars(select(ProjectTaskRecordCursorRow).order_by(ProjectTaskRecordCursorRow.id))],
+                    [(r.task_id, r.inputs) for r in session.scalars(select(ProjectTaskInputSnapshotRow).order_by(ProjectTaskInputSnapshotRow.id))],
+                )
+
+        before = facts()
+        assert {(lease[1], lease[3]) for lease in before[1]} == {(task.id, "held") for task in tasks}
+        assert len(before[1]) == 2
+        barrier = Barrier(2, timeout=5)
+        operation_ids = [uid(), uid()]
+
+        def cross_write(index):
+            other = 1 - index
+            barrier.wait()
+            with pytest.raises(ProjectError) as denied:
+                service.update_record(scopes[index], UpdateProjectRecordCommand(
+                    operation_ids[index], 1, refs[other], {field_id: "must-not-write"},
+                    records[other]["contentRevision"],
+                ))
+            return denied.value.code, denied.value.status, denied.value.details
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = [pool.submit(cross_write, index) for index in range(2)]
+            assert [future.result(timeout=5) for future in futures] == [
+                ("LEASE_BUSY", 409, {"retryable": True}),
+                ("LEASE_BUSY", 409, {"retryable": True}),
+            ]
+        assert facts() == before
+        with factory() as session:
+            assert all(session.get(ProjectOperationRow, op) is None for op in operation_ids)
+    finally:
+        factory.dispose()
+
+
 def test_old_execution_generation_read_evidence_cannot_authorize_dynamic_write(
     capability_context,
 ):

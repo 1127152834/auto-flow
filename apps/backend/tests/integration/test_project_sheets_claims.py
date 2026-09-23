@@ -110,6 +110,59 @@ def plan_for(bound):
     }
 
 
+@pytest.mark.parametrize("source_value", ["not-a-number", None])
+def test_selected_input_validates_only_declared_source_fields(tmp_path, source_value):
+    from copy import deepcopy
+
+    from autoflow.infrastructure.database.project_data_models import DataFieldRow
+
+    transport = FakeSheetsTransport({"数据": [["编号", "标题", "金额"], ["A-1", "valid", source_value]]})
+    with open_sheets_table(tmp_path, transport, [*COLUMNS, ("amount", "金额", "number")]) as bound:
+        factory = bound.client.app.state.session_factory
+        with factory.begin() as session:
+            session.get(DataFieldRow, (bound.field_id("amount"), bound.dataset_generation())).required = True
+        pull(bound)
+        before = bound.records()
+        good_plan = plan_for(bound)
+        bad_plan = deepcopy(good_plan)
+        bad_plan["inputs"][0]["fieldBindings"][0]["fieldRef"]["fieldId"] = bound.field_id("amount")
+        with factory() as session:
+            groups = SqlAlchemyProjectInputGroups(session)
+            prepared = groups.select_required(bound.project, good_plan)
+            assert prepared.status == "ready"
+            rejected = groups.select_required(bound.project, bad_plan)
+            assert rejected.status == "configurationError"
+            assert rejected.issue_input_ids == (bad_plan["inputs"][0]["inputId"],)
+            assert bound.field_id("amount") in dict(rejected.issue_details)[rejected.issue_input_ids[0]]
+            assert not session.scalars(select(ProjectTaskRow)).all()
+            assert not session.scalars(select(ProjectRecordLeaseRow)).all()
+        assert bound.records() == before
+        assert transport.changes() == 0
+
+
+def test_prepared_input_rechecks_field_validation_before_claim(tmp_path):
+    from autoflow.infrastructure.database.project_data_models import DataFieldRow
+
+    transport = FakeSheetsTransport({"数据": [["编号", "标题", "金额"], ["A-1", "valid", 3], ["A-2", "unused", "bad"]]})
+    with open_sheets_table(tmp_path, transport, [*COLUMNS, ("amount", "金额", "number")]) as bound:
+        pull(bound)
+        plan = plan_for(bound)
+        plan["inputs"][0]["fieldBindings"][0]["fieldRef"]["fieldId"] = bound.field_id("amount")
+        factory = bound.client.app.state.session_factory
+        with factory() as session:
+            prepared = SqlAlchemyProjectInputGroups(session).select_required(bound.project, plan)
+            assert prepared.status == "ready"  # An unselected bad row does not block A-1.
+            assert prepared.inputs[0].record_ref.record_key.value == "A-1"
+        with factory.begin() as session:
+            session.get(DataFieldRow, (bound.field_id("amount"), bound.dataset_generation())).validation = {"minimum": 5}
+        with factory() as session:
+            rejected = SqlAlchemyProjectInputGroups(session).revalidate_selected(bound.project, plan, prepared)
+            assert rejected.status == "configurationError"
+            assert "minimum" in dict(rejected.issue_details)[plan["inputs"][0]["inputId"]]
+            assert not session.scalars(select(ProjectRecordLeaseRow)).all()
+            assert not session.scalars(select(ProjectTaskRow)).all()
+
+
 def test_shared_sheet_lease_keys(tmp_path):
     with (
         shared_tables(tmp_path) as (first, second),

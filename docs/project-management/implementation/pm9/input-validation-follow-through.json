@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-23",
+  "status": "local_worker_passed_full_regression_in_progress",
+  "releaseAccepted": false,
+  "parentCommit": "1eeeafffe687568e1f61fabba90ad393f1491c29",
+  "candidateCommit": "pending_commit",
+  "productionFile": "apps/backend/src/autoflow/infrastructure/database/project_claims.py",
+  "problem": "A reliable Sheets row with a preserved invalid number could still become a declared input, creating a Task/lease and launching the real browser.",
+  "fix": "Reuse validation_issues for declared fields on selected records in both preparation and commit revalidation; thaw frozen DateScalar values using existing _mutable. Unused invalid fields and unselected invalid rows remain allowed.",
+  "redEvidence": [
+    "Dedicated real-worker scenario visited the fixture twice: the second batch declared the invalid amount but reached the manual checkpoint instead of failing selection.",
+    "Direct selection tests for not-a-number and required missing source values both returned ready instead of configurationError."
+  ],
+  "checks": {
+    "sourceBoundary": "2 passed: invalid type and required missing value; no Task/lease/source writes",
+    "realWorker": "4 passed, 2 warnings in 66.27s: new D1 scenario and existing shared-source resume/stop/loss handoff",
+    "realBrowser": "macOS arm64 CloakBrowser 145.0.7632.109.2; production HTTP/SQLite/worker; Google transport and credentials are fixtures",
+    "relatedRegression": "Initial 88 passed / 1 failed exposed frozen DateScalar mapping; shared thaw fixed. Combined final rerun: 89 passed, 2 warnings in 148.65s.",
+    "ruff": "passed for entire backend",
+    "mypy": "407 source files passed",
+    "openapi": "passed",
+    "scripts": "101 passed",
+    "coverageReferences": "251 mappings valid; verifier 4 passed",
+    "fullBackend": "running",
+    "nativeCI": "pending new candidate"
+  },
+  "coverage": {
+    "requirements": 251,
+    "withAssertions": 237,
+    "withNoLocatedAssertion": 14,
+    "partiallyVerified": 198,
+    "planned": 53,
+    "verified": 0,
+    "statusesUpgraded": false
+  },
+  "review": "Independent scoped review completed: no P1/P2 findings, high confidence; 7 precise tests passed / 36 deselected; diff check passed.",
+  "limits": [
+    "TABLE-08 coverage now uses fully authorized field operations and actual Sheets binding HTTP; prior general mapped/permission rejection was insufficient.",
+    "WRITE-12 uses two concurrent single-record capability commands and fixture-activated Tasks; no multi-record group atomicity or worker retry claim.",
+    "No current packaged complete Sheets/Google/OAuth or signing/physical installation evidence; PM6 historical live evidence remains valid.",
+    "S4 existing Windows files remain refused; M1-M3 are not approved; other unmapped/partial requirements remain open."
+  ]
+}

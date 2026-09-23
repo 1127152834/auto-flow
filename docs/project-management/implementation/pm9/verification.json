@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-22",
-  "status": "candidate_regression_passed_release_acceptance_incomplete",
+  "date": "2026-09-23",
+  "status": "input_validation_fix_regression_in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -8,9 +8,9 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "15 of 251 requirements still have no located assertion; 198 partial / 53 planned / 0 verified. Located assertions do not close unproven acceptance subconditions.",
-    "D1 post-review candidate: source identity/omission/atomic prevalidation fixes included; dedicated D1 bad-value worker filter remains unclaimed.",
-    "One independent whole C/R review completed; three Important findings fixed with RED counterexamples. Local full regression passed; current native follow-ups pending.",
+    "14 of 251 requirements still have no located assertion; 198 partial / 53 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
+    "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
+    "One independent whole C/R review completed; three Important findings fixed. New input-validation change has a separate scoped review and full regression in progress.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
@@ -120,7 +120,7 @@
     }
   ],
   "remainingReport": "completion-gaps.md",
-  "deliveryStatus": "D1_implemented_scoped_three_platform_ci_passed_release_acceptance_incomplete",
+  "deliveryStatus": "D1_input_validation_fix_local_worker_passed_new_candidate_validation_in_progress",
   "developmentSlice": {
     "slices": [
       "S1",
@@ -142,7 +142,7 @@
     "status": "C/R and approved D1 implemented; local and current three-platform regression passed; external acceptance and release remain incomplete."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "D1 post-review production candidate ae347de9f5fc1922efa7c4af99c0e606e6bde26a; Actions 35677887974 passed on Windows x64, macOS Intel and Apple Silicon. Release acceptance remains pending.",
+  "workingCandidate": "Uncommitted D1 claim-validation fix on 1eeeafff; local bad-value real-worker scenario passed; full regression in progress. Historical ae347de9/1eeeafff CI does not validate this production change.",
   "finalCICandidate": {
     "status": "passed_all_platforms",
     "runId": 35677887974,
@@ -169,9 +169,9 @@
     "workerProbe": "skipped",
     "physicalInstallation": "pending"
   },
-  "codeCandidateScope": "Current final production candidate ae347de9f5fc1922efa7c4af99c0e606e6bde26a includes approved D1 source changes; prior hashes remain historical scoped evidence. Current native runs are listed in finalCICandidate.",
+  "codeCandidateScope": "codeCandidate/finalCICandidate below identify the prior accepted CI source only; workingCandidate and inputValidationFollowThrough identify the newer change pending commit and native validation.",
   "testCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
-  "d1": "D1 source safe business-format preservation: Sheets and XLSX direct cases pass; source identity and unsafe wire values remain strict; required source omissions remain absent; Sheets prevalidates all rows before materialization. Production packaged/real-Google/worker acceptance pending.",
+  "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
   "d1Verification": {
     "backend": "138 scoped backend passed locally; current CI full backend: 3453 macOS / 3443 Windows passed, platform-specific skips retained",
     "frontend": "5470 passed on each platform",
@@ -180,5 +180,34 @@
     "mypy": "407 source files passed",
     "ruff": "passed",
     "realWorker": "21 passed, 11 deselected on each platform; this is existing PM9 scenario coverage. Dedicated D1 bad-value worker filter did not select a test and remains unclaimed."
-  }
+  },
+  "inputValidationFollowThrough": "input-validation-follow-through.json",
+  "laterCIEvidence": [
+    {
+      "headSha": "1eeeafffe687568e1f61fabba90ad393f1491c29",
+      "runId": "35704062667",
+      "event": "push",
+      "status": "success",
+      "platforms": [
+        "windows-2022",
+        "macos-15-intel",
+        "macos-15"
+      ],
+      "scope": "prior source, before new claim-validation fix"
+    },
+    {
+      "headSha": "1eeeafffe687568e1f61fabba90ad393f1491c29",
+      "runId": "35704068537",
+      "event": "pull_request",
+      "status": "failure",
+      "passedPlatforms": [
+        "windows-2022",
+        "macos-15"
+      ],
+      "failedPlatform": "macos-15-intel",
+      "failedStep": "Build installer artifact",
+      "error": "dmgbuild.core.DMGError: Unable to detach device cleanly: hdiutil could not eject disk4 - Resource busy",
+      "scope": "PR merge checkout; preserve independently from successful push matrix"
+    }
+  ]
 }

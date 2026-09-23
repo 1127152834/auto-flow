@@ -1,6 +1,6 @@
 # PM9 assertion mapping review
 
-2026-09-22 最新机器统计：251 条，236 有范围断言/15 未定位，198 partial/53 planned/0 verified。DATA-TABLE-08 已补系统状态只读、业务 status 字段共存、伪造改型/删除/来源映射拒绝和业务状态写入的直接 SQLite/能力服务断言；生产 worker/UI/实网子条件保留。具体以 coverage.json 和 coverage-audit.json 为准。
+2026-09-23 最新机器统计：251 条，237 有范围断言/14 未定位，198 partial/53 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
 
 日期：2026-09-21。状态：confirmed（映射审查），完整产品验收仍未完成。来源：原始设计各需求编号、现有测试函数断言及本轮运行记录。
 

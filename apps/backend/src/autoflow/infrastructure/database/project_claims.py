@@ -24,6 +24,7 @@ from autoflow.domain.project_data.query import (
     validate_filter,
     validate_order,
 )
+from autoflow.domain.project_data.rules import validation_issues
 from autoflow.domain.project_runs.input_selection import (
     MAX_CANDIDATE_EVALUATIONS,
     Candidate,
@@ -96,8 +97,42 @@ class SqlAlchemyProjectInputGroups:
                     restriction=restriction.get(item["inputId"]),
                 )
             )
-        selection = select_required_inputs(sources)
+        selection = self._validate_selected_values(select_required_inputs(sources))
         return self.validate_relation_uniqueness(project_id, input_plan, selection)
+
+    def _validate_selected_values(self, selection: InputSelection) -> InputSelection:
+        """Check declared input values both before preparation and at claim commit."""
+        if selection.status != "ready":
+            return selection
+        for selected in selection.inputs:
+            ref = selected.record_ref
+            field_ids = {
+                binding["fieldRef"]["fieldId"]
+                for binding in selected.value.get("fieldMappings", [])
+            }
+            fields = list(self.session.scalars(select(DataFieldRow).where(
+                DataFieldRow.project_id == ref.project_id,
+                DataFieldRow.table_id == ref.table_id,
+                DataFieldRow.dataset_generation == ref.dataset_generation,
+                DataFieldRow.id.in_(field_ids),
+            )))
+            issues = validation_issues([
+                {"fieldId": field.id, "key": field.key, "name": field.name,
+                 "type": field.type, "required": field.required, "validation": field.validation}
+                for field in fields
+            ], {cell["fieldId"]: _mutable(cell["value"]) for cell in selected.value["values"]})
+            missing = field_ids - {field.id for field in fields}
+            if missing or issues:
+                detail = (
+                    f"Input field {min(missing)} is unavailable"
+                    if missing else f"Input field {issues[0]['fieldId']}: {issues[0]['code']} ({issues[0]['rule']})"
+                )
+                return InputSelection(
+                    "configurationError", issue_input_ids=(selected.input_id,),
+                    issue_details=((selected.input_id, detail),),
+                    effective_required_input_ids=selection.effective_required_input_ids,
+                )
+        return selection
 
     def hold(
         self,
@@ -208,7 +243,7 @@ class SqlAlchemyProjectInputGroups:
             )
             for item in raw_inputs
         ]
-        current = select_required_inputs(sources)
+        current = self._validate_selected_values(select_required_inputs(sources))
         if current.status != "ready":
             return current
         prepared_by_id = {item.input_id: item for item in prepared.inputs}
