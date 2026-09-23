@@ -4591,6 +4591,14 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/excel-multi-input-follow-through.json",
+          "scope": "FX-01真实Excel/TCP HTTP/6个真实worker任务：显式状态推进、关联账号释放再取、D只读、最终态同批重复，原Excel不改；本机源码子范围。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -4614,19 +4622,25 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
             "symbol": "test_fake_capability_changes_email_status_and_creates_account_once",
             "scope": "人员写入拒绝、邮箱显式状态变化、新账号原键创建一次",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_excel_real_cloakbrowser.py",
+            "symbol": "test_excel_multi_input_status_progression_and_same_batch_reclaim",
+            "scope": "三表正式导入初始null→显式状态；3Task依次W01/W02/W03配A01与D只读；下一批最终态3次W01复用；网页读回、无并发lease、版本及原Excel hash联合断言。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "目前直接调用 capability；多输入连续 3 个真实 Task 待补"
+            "detail": "本机源码TCP HTTP/真实Excel/worker连续3Task及最终态复用已通过；打包界面、原生文件选择和新三平台同场景仍待验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -4946,8 +4960,17 @@
       "primary_package": "PM9-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_full_scenarios.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/excel-multi-input-follow-through.json",
+          "scope": "FX-01真实Excel/TCP HTTP/6个真实worker任务：显式状态推进、关联账号释放再取、D只读、最终态同批重复，原Excel不改；本机源码子范围。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "verification",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -4974,19 +4997,25 @@
         "PM9-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
             "symbol": "test_fake_capability_changes_email_status_and_creates_account_once",
             "scope": "显式邮箱改态和新增账号的事务/幂等规则",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_excel_real_cloakbrowser.py",
+            "symbol": "test_excel_multi_input_status_progression_and_same_batch_reclaim",
+            "scope": "三表正式导入初始null→显式状态；3Task依次W01/W02/W03配A01与D只读；下一批最终态3次W01复用；网页读回、无并发lease、版本及原Excel hash联合断言。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "Excel→多输入→3 Task→同记录复用完整生产链待补"
+            "detail": "本机源码TCP HTTP/真实Excel/worker连续3Task及最终态复用已通过；打包界面、原生文件选择和新三平台同场景仍待验收。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -17608,5 +17637,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-24 DATA-CLAIM-03启动失败修复（confirmed本机源码/新包回归子范围）：a7059dc6修正真实子进程finished/failed在ready前被误判interrupted；只接受启动前失败/取消，保留身份、清理、退出与所有权检查。真实2场景证明失败占名额、非空状态/值/版本不变、释放后同记录可再取及同键无重复；8项协议反向/终态检查通过，相关81 passed/3 skipped。最终完整后端3505 passed, 86 skipped, 2 warnings in 911.71s，Ruff/mypy408、4映射/251引用、后端构建与未签名ARM完整桌面passed/24截图；清理界面已目视复核。前端未变，保留7b896163的5475/409原范围。仅DATA-CLAIM-03 planned→partial，合计208partial/43planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。CLI401仍阻断当前新矩阵，打包启动失败UI与系统性资源故障受阻组合待补；releaseAccepted=false。见startup-failure-follow-through.json。"
+  "pm9_note": "2026-09-24 DATA-E2E-01/CLAIM-12真实Excel链补证（confirmed本机源码子范围）：正式文件选择授权→TCP HTTP inspect/import将FX-01三表导入且初始状态null；显式初始化后，真实worker三Task依次处理W01/W02/W03、A01保持可用、只读查询D01并把组合值写入/读回网页；第二批按已完成筛选且不写状态，连续三Task重复W01/A01。每次只持有本Task两条lease，前Task已释放，D从无lease；每批6条最终释放，W状态版本2→3且内容/关联版本不变，A/D完整快照及原Excel hash不变。最终真实场景1 passed/51.11秒，相关67 passed/2依赖警告/72.23秒，Ruff通过；保留代理502和inspect预期状态码夹具修正。生产源码仍a7059dc6，复用其完整3505/86/2及ARM24图原范围，不重跑无改动全量/构建。仅E2E-01 planned→partial，CLAIM-12补实际映射；251合计209partial/42planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。新三平台及打包/原生导入界面验收仍待补，CLI401；releaseAccepted=false。见excel-multi-input-follow-through.json。"
 }

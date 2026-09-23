@@ -7,11 +7,12 @@
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
     "Confirmed persistent identity defect from cb040daf ARM package remains: identity implementation unchanged in a7059dc6; fixed/input restore login but use edited Profile UA/locale/timezone/seed. I1-I3 await approval. Maintenance source-confirmed only; see persistent-identity-audit.json.",
+    "DATA-E2E-01/CLAIM-12: source TCP HTTP/Excel/real worker progression and same-batch reuse now passed; packaged/native picker/current three-platform evidence remain pending. DATA-CLAIM-14 unlimited5+user-stop remains separate.",
     "DATA-CLAIM-03 local real child fail→same record recovery verified in scope; packaged startup-failure UI, Windows/Intel new candidate and systemic-resource blocked-vs-exhausted combination remain pending.",
     "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
     "Current a7059dc6 fixes confirmed pre-ready failure classification; full local backend and rebuilt ARM desktop pass. New all-platform validation requires CLI authentication/manual trigger (fresh401). Historical35902129697 covers51e8991e only; logs403/artifacts not re-inspected.",
     "Implementation proposals awaiting approval: G1-G3 finite-group atomic writes; L1-L3 verified-principal reauthorization/sender isolation; M1-M3 remote Sheets rows/formulas; S4 Windows existing-file overwrite/append (still501); FR1-FR3 new-field result authorization; AD1-AD3 persistent Run file deletion; W1-W3 including W1c project Studio session/docking/binding destination; separate AU-08 project-owned workflow ownership; P1-P3 frozen proxy membership/endpoints. See implementationGaps and completion-gaps.md for contracts and evidence.",
-    "251 requirements remain208 partially_verified/43 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/19 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
+    "251 requirements remain209 partially_verified/42 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/19 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
     "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
     "Current a7059dc6 ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel image verification remain scoped; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization/full native acceptance remain external.",
@@ -42,7 +43,8 @@
     "priorLocal": "lifecycle-restart-follow-through.json",
     "previousLocal": "source-outage-follow-through.json",
     "currentNativeArmInstallScope": "Historical installer-specific evidence only; latest a7059dc6 package:dir smoke is not physical installer acceptance.",
-    "startupFailure": "startup-failure-follow-through.json"
+    "startupFailure": "startup-failure-follow-through.json",
+    "excelMultiInput": "excel-multi-input-follow-through.json"
   },
   "platforms": {
     "win32-x64": {
@@ -708,5 +710,12 @@
     "packagedDesktop": "Rebuilt unsigned ARM full24screens passed; actual cleaned UI checked. Fixed-environment no-save case only, not physical installation.",
     "nativeDispatch": "Current CLI authentication/manual all trigger pending; old35902129697 excludes current source.",
     "additionalCounterexample": "persistent-identity-audit.json remains unresolved; current unchanged backend still lacks durable identity package."
+  },
+  "excelMultiInputFollowThrough": {
+    "status": "local_real_tcp_http_worker_passed_packaged_and_native_pending",
+    "report": "excel-multi-input-follow-through.json",
+    "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+    "productionChanged": false,
+    "releaseAccepted": false
   }
 }

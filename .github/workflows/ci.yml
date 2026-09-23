@@ -59,7 +59,7 @@ jobs:
           PYTHON
       - run: uv run --directory apps/backend pytest -q tests/integration/test_workflow_worker_process.py::test_project_worker_launch_preserves_venv_without_redirector_job
       - name: Diagnose real worker protocol without payload logging
-        run: uv run --directory apps/backend pytest -vv --tb=short --maxfail=2 tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py -k "success or data-response-loss or data-schema or data-delete-field or manual-declared or manual-evidence-reconnect or manual-force-stop or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
+        run: uv run --directory apps/backend pytest -vv --tb=short --maxfail=2 tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py tests/integration/test_project_excel_real_cloakbrowser.py -k "success or data-response-loss or data-schema or data-delete-field or manual-declared or manual-evidence-reconnect or manual-force-stop or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or excel_multi_input or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
         env:
           AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
           AUTOFLOW_TEST_WORKER_DIAGNOSTICS: '1'
@@ -121,7 +121,7 @@ jobs:
               output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
           PYTHON
       - name: Verify real worker recovery, shared Sheets claims and manual expiry race
-        run: uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py -k "parallel or manual-declared or manual-evidence-reconnect or manual-force-stop or data-schema or data-delete-field or data-subflow or data-response-loss or data-link- or data-old-candidate or manual-race or manual-expire or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
+        run: uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py tests/integration/test_project_excel_real_cloakbrowser.py -k "parallel or manual-declared or manual-evidence-reconnect or manual-force-stop or data-schema or data-delete-field or data-subflow or data-response-loss or data-link- or data-old-candidate or manual-race or manual-expire or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or excel_multi_input or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
         env:
           AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
       - run: node scripts/smoke-project-management.mjs --runtime-kernel "${{ env.PM9_BROWSER_EXECUTABLE }}" --output-dir artifacts/pm9/source

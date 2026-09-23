@@ -500,8 +500,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 140,
-        "planned": 38
+        "partially_verified": 141,
+        "planned": 37
       },
       "items": [
         {
@@ -618,9 +618,9 @@
         {
           "id": "DATA-CLAIM-12",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -677,10 +677,10 @@
         },
         {
           "id": "DATA-E2E-01",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2633,8 +2633,8 @@
     "withAssertions": 249,
     "withNoLocatedAssertion": 2,
     "statuses": {
-      "partially_verified": 208,
-      "planned": 43
+      "partially_verified": 209,
+      "planned": 42
     }
   }
 }

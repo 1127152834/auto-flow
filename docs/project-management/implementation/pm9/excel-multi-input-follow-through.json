@@ -1,0 +1,238 @@
+{
+  "date": "2026-09-24",
+  "status": "local_real_tcp_http_worker_passed_packaged_and_native_pending",
+  "releaseAccepted": false,
+  "requirements": [
+    "DATA-E2E-01",
+    "DATA-CLAIM-12"
+  ],
+  "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+  "testedBaseCommit": "caef2410ec1b296b57ecc79fe11dc0a5efdce2d8",
+  "productionChanged": false,
+  "scope": "Real TCP HTTP via uvicorn, controlled host file-selection grant, original XLSX/inspection/import, actual SQLite and six native CloakBrowser workers. No ASGI transport or synthetic worker/Task facts. No actual native picker or packaged UI claim.",
+  "observedBatches": [
+    {
+      "batchId": "833aa730-e4de-43d6-9b82-5c17b2549e51",
+      "changeStatus": true,
+      "createdTaskCount": 3,
+      "releasedLeaseCount": 6,
+      "tasks": [
+        {
+          "taskId": "4c630b44-c609-4f40-b704-9641d39ac6ca",
+          "runId": "c2449b1e-e902-4350-a989-9b1161c984e7",
+          "inputKeys": [
+            "W01",
+            "A01"
+          ],
+          "inputStatusRevisions": [
+            2,
+            2
+          ],
+          "browserValue": "W01/A01/reference-value"
+        },
+        {
+          "taskId": "c7a53749-c730-41b1-8766-4614980e0d71",
+          "runId": "650eb8de-e6f9-40f2-8174-e28df842ebac",
+          "inputKeys": [
+            "W02",
+            "A01"
+          ],
+          "inputStatusRevisions": [
+            2,
+            2
+          ],
+          "browserValue": "W02/A01/reference-value"
+        },
+        {
+          "taskId": "1caa4535-c833-4c82-9e8e-b7520657f88e",
+          "runId": "45743652-e10b-4078-9a35-10eddf11e8d7",
+          "inputKeys": [
+            "W03",
+            "A01"
+          ],
+          "inputStatusRevisions": [
+            2,
+            2
+          ],
+          "browserValue": "W03/A01/reference-value"
+        }
+      ],
+      "workRecordStatusRevisions": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "batchId": "bf8d1e1a-4c56-4636-bbe5-361beefb8016",
+      "changeStatus": false,
+      "createdTaskCount": 3,
+      "releasedLeaseCount": 6,
+      "tasks": [
+        {
+          "taskId": "76752736-d7e2-4221-9082-441971ccfd87",
+          "runId": "6bf66edb-9594-4ab4-a9a1-28555459ea36",
+          "inputKeys": [
+            "W01",
+            "A01"
+          ],
+          "inputStatusRevisions": [
+            3,
+            2
+          ],
+          "browserValue": "W01/A01/reference-value"
+        },
+        {
+          "taskId": "1783dc6f-9074-49f2-ab08-b068a68f9ac9",
+          "runId": "e3f27794-9641-4a95-8f35-059859b1026f",
+          "inputKeys": [
+            "W01",
+            "A01"
+          ],
+          "inputStatusRevisions": [
+            3,
+            2
+          ],
+          "browserValue": "W01/A01/reference-value"
+        },
+        {
+          "taskId": "9ad86a98-a2c4-497c-9205-868e7f32cb4e",
+          "runId": "3ec95d57-c07e-431d-80c7-ad15aa5bfcc4",
+          "inputKeys": [
+            "W01",
+            "A01"
+          ],
+          "inputStatusRevisions": [
+            3,
+            2
+          ],
+          "browserValue": "W01/A01/reference-value"
+        }
+      ],
+      "workRecordStatusRevisions": [
+        3,
+        3,
+        3
+      ]
+    }
+  ],
+  "sourceHashBefore": "88cb82dbdd51fac4fdc6d667ce1af339b30fdb3758e0998d32f0e7ef417387f6",
+  "sourceHashAfter": "88cb82dbdd51fac4fdc6d667ce1af339b30fdb3758e0998d32f0e7ef417387f6",
+  "activeLeaseGroups": [
+    [
+      "A01",
+      "W01"
+    ],
+    [
+      "A01",
+      "W02"
+    ],
+    [
+      "A01",
+      "W03"
+    ],
+    [
+      "A01",
+      "W01"
+    ],
+    [
+      "A01",
+      "W01"
+    ],
+    [
+      "A01",
+      "W01"
+    ]
+  ],
+  "fixtureRequests": 6,
+  "assertions": [
+    "All5 imported records initially status=null/statusRevision1; explicit status catalog and initialization through HTTP",
+    "Three first-batch Tasks freeze W01/W02/W03 and related A01, then explicitly move W pending→complete; A and D remain unchanged",
+    "Each Task queries D through declared read-only grant, fills and reads actual browser text matching current frozen group",
+    "Second batch filters completed W and never writes status; three distinct Tasks/Runs reclaim W01/A01 in same batch",
+    "Before every worker start exactly2 held leases belong to its committed Run and earlier leases are released; D never gets a lease",
+    "At each batch completion6 leases released; W statusRevision3/contentRevision1/linkRevision1/environmentIdnull, unchanged values",
+    "Second batch leaves complete W records unchanged; A/D complete public records unchanged; original XLSX SHA256 unchanged",
+    "All six node graphs succeed including End without retention; worker/dispatcher/scheduler and generation directories clear"
+  ],
+  "checks": {
+    "real": "1 passed in51.11s; two batches,six native Tasks",
+    "initialReal": "1 passed in29.14s before adding retained trace and W link invariants",
+    "related": "67 passed,2 warnings in72.23s",
+    "ruff": "passed",
+    "ciSelection": "1/50 selected,49 deselected; collection only",
+    "fullRegression": "Not repeated: production and desktop scripts unchanged from a7059dc6. Retain startup-failure-follow-through.json full3505 passed/86 skipped/2 warnings,ARM24 screenshots and unchanged frontend5475/409 scope.",
+    "native": "New scenario added to both existing real-worker CI selections; fresh CLI401 prevents dispatch",
+    "mapping": "4 tests passed;251 valid references,not complete acceptance"
+  },
+  "fixtureFailures": [
+    "Initial loopback HTTP request inherited environment proxy and returned502; use existing trust_env=False local-client convention",
+    "Inspection is synchronous200 when complete; initial test expected202, corrected to route contract"
+  ],
+  "commands": [
+    "AUTOFLOW_TEST_CLOAKBROWSER='<installed CloakBrowser executable>' uv run --directory apps/backend pytest -s -q tests/integration/test_project_excel_real_cloakbrowser.py",
+    "uv run --directory apps/backend pytest -q tests/contract/test_pm2_excel_imports.py tests/integration/test_project_run_data_start.py tests/integration/test_project_data_scheduler.py tests/integration/test_project_node_writes.py",
+    "uv run --directory apps/backend ruff check tests/integration/test_project_excel_real_cloakbrowser.py"
+  ],
+  "remaining": [
+    "Packaged UI/import-file selection/business chain and current Windows/Intel/ARM scenario execution",
+    "DATA-CLAIM-14 requires unlimited batch with sole A01 input,at least5 repeats and public user stop; finite3 repeats here do not satisfy it",
+    "Competing automations and unknown old-worker ownership require their separate acceptance; serial groups here do not prove those races",
+    "All previously recorded implementation proposals and external acceptance remain;releaseAccepted=false"
+  ],
+  "artifacts": {
+    "ci-selection.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/ci-selection.log",
+      "sha256": "59e9ca4c926e22a2c65835e3bd9bbeddbdd73845872fe21c3649953422764819"
+    },
+    "fixture-inspection-status.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/fixture-inspection-status.log",
+      "sha256": "792835a3f08e44384a59bde39ea3bf1a5c1a62956bf67e0a5e615d0395d404fe"
+    },
+    "gh-auth.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/gh-auth.log",
+      "sha256": "3dcbb6c07e0b3a5972dae966e3c42397ac666122860132b69be6d44145771358"
+    },
+    "initial.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/initial.log",
+      "sha256": "5e8aa1a4056d1f2420fec2dafa7fdb9c57ec4e86aeab7828b8572dd3bf5d502f"
+    },
+    "real-final.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/real-final.log",
+      "sha256": "8b94572073bf396e1c4be3decd22bd95943a1a9e3e1ff8191cfc09d5b675ccbf"
+    },
+    "real.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/real.log",
+      "sha256": "8c0881ca9cc7fb0a6c23e91d080b0fee1343e48ca960df2198a40a0a31fff331"
+    },
+    "related.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/related.log",
+      "sha256": "009a984de40bfc8cedb92a1d9fb9e12f1450b726e55242ffce193465a9cbfbd9"
+    },
+    "ruff-final.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/ruff-final.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "ruff.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "runtime-evidence.json": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/runtime-evidence.json",
+      "sha256": "307a169564d9f8b1bff3e837da0f54455985c8d43c40acefd2ca6297bf3d717c"
+    },
+    "mapping-tests.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/mapping-tests.log",
+      "sha256": "4b24e89d5021f3d07433885ad40661ed56826aa6c80256f92efae18aa556f05e"
+    },
+    "mapping.log": {
+      "path": ".tmp-tests/pm9-excel-multi-input-2026-09-24/mapping.log",
+      "sha256": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f"
+    }
+  },
+  "testSource": {
+    "path": "apps/backend/tests/integration/test_project_excel_real_cloakbrowser.py",
+    "sha256": "ff1941f3e87fb34b6554fa1fab6fd9460e06ccd770fc501cba96af5aed6605db",
+    "symbol": "test_excel_multi_input_status_progression_and_same_batch_reclaim"
+  }
+}
