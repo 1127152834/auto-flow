@@ -1,0 +1,83 @@
+{
+  "evidenceId": "BE-B6-SSH-local-disk-worker-2026-09-23",
+  "recordedAt": "2026-09-23",
+  "gitHeadAtCheck": "e5926ddd0cefa48070b9dab72bce99cb1119de66",
+  "platform": "darwin-arm64",
+  "result": "passed",
+  "level": "real production worker against local SSH/SFTP service, not formal Electron",
+  "classification": "AutoFlow必要适配验收补充",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/ssh.py",
+    "license": "LICENSE.WebRPA",
+    "existingEvidence": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+  },
+  "capabilities": [
+    "node:ssh_connect",
+    "node:ssh_execute_command",
+    "node:ssh_upload_file",
+    "node:ssh_download_file",
+    "node:ssh_disconnect"
+  ],
+  "existingEvidenceClassification": {
+    "test_ssh_executors.py": "fake gateway / artifact unit boundary",
+    "test_ssh_integration_gateway.py": "monkeypatched SSHClient provider unit boundary",
+    "previous_test_b6_ssh_worker.py": "real TCP SSH/SFTP handshake and production worker; in-memory SFTP files and fixed server command response; not a mock executor",
+    "current_test_b6_ssh_worker.py": "same production executor and worker; real TCP SSH/SFTP, temporary disk files, allowlisted real command subprocesses"
+  },
+  "checks": [
+    {
+      "command": "cd apps/backend && .venv/bin/python -m pytest tests/integration/test_b6_ssh_worker.py tests/unit/workflows/test_ssh_executors.py tests/unit/workflows/test_ssh_integration_gateway.py -q",
+      "result": "9 passed in 17.87s",
+      "log": "pytest.log"
+    },
+    {
+      "command": "cd apps/backend && .venv/bin/ruff check tests/integration/test_b6_ssh_worker.py",
+      "result": "passed"
+    },
+    {
+      "command": "cd apps/backend && MYPYPATH=src .venv/bin/mypy tests/integration/test_b6_ssh_worker.py",
+      "result": "passed"
+    },
+    {
+      "command": "node --check scripts/smoke-studio-backend-b6-ssh.mjs",
+      "result": "passed; syntax only, Electron not launched by this task"
+    },
+    {
+      "command": "test_b6_ssh_worker.py --root <temporary-directory> --status <temporary-status.json>, then close fixture stdin",
+      "result": "ready status and ephemeral loopback port observed; EOF shutdown exited 0; final closed=true, activeConnections=0"
+    }
+  ],
+  "scenarios": [
+    {
+      "test": "test_real_worker_runs_ssh_family_against_local_server",
+      "assertions": "five registered executors succeed in order; command stdout ok plus exit 0; local input uploaded to isolated remote disk then downloaded from the same remote file with identical bytes; explicit disconnect; no remaining worker/SSH connection; secret absent from events"
+    },
+    {
+      "test": "test_worker_closes_ssh_session_after_node_failure",
+      "assertions": "real command process returns stderr unsupported and exit 7; node/run fail; worker and transport closed"
+    },
+    {
+      "test": "test_real_ssh_failures_do_not_run_following_nodes[authentication|missing-file|disconnected]",
+      "assertions": "real authentication failure, SFTP missing file and command after explicit disconnect fail at correct node; following command never runs; no partial local download; worker and transport cleaned"
+    },
+    {
+      "test": "test_stopping_real_ssh_command_closes_worker_and_connection",
+      "assertions": "while real command subprocess sleeps and node has 60-second timeout, stop completes within 5 seconds; worker process, transport and fixture subprocess all end; no later node or fake successful command completion"
+    }
+  ],
+  "boundaries": {
+    "productionCodeChanged": false,
+    "userDatabaseTouched": false,
+    "userCredentialsUsed": false,
+    "externalHostUsed": false,
+    "browserStarted": false,
+    "fixtureBind": "127.0.0.1 ephemeral port only",
+    "remoteFiles": "pytest temporary directory, SFTP paths constrained beneath root",
+    "commandExecution": "allowlist maps printf ok, unsupported and wait to fixed Python subprocess arguments; no shell or arbitrary commands",
+    "ledgerChanged": false,
+    "formalElectron": "script prepared for main agent's serialized GUI verification; not passed by this evidence",
+    "platformPending": ["macOS Intel", "Windows", "frozen/package entry"],
+    "externalPending": ["external-host network and host-key policy"]
+  }
+}

@@ -1,107 +1,146 @@
 from __future__ import annotations
 
+import argparse
 import asyncio
+import json
 import os
+import signal
 import socket
+import subprocess
+import sys
+from itertools import pairwise
 from pathlib import Path
-from threading import Event, Lock, Thread
-from typing import Any
+from threading import Event, Thread
+from typing import Any, BinaryIO
 
 import paramiko
 import pytest
+from paramiko.common import (
+    AUTH_FAILED,
+    AUTH_SUCCESSFUL,
+    OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,
+    OPEN_SUCCEEDED,
+)
+from paramiko.sftp import SFTP_PERMISSION_DENIED
+
 from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
 
 
-class _MemoryHandle(paramiko.SFTPHandle):
-    def __init__(
-        self, flags: int, files: dict[str, bytearray], lock: Lock, path: str
-    ) -> None:
-        super().__init__(flags)
-        self._files = files
-        self._lock = lock
-        self._path = path
-
-    def read(self, offset: int, length: int) -> bytes:
-        with self._lock:
-            return bytes(self._files.get(self._path, bytearray())[offset : offset + length])
-
-    def write(self, offset: int, data: bytes) -> int:
-        with self._lock:
-            content = self._files.setdefault(self._path, bytearray())
-            if offset > len(content):
-                content.extend(b"\0" * (offset - len(content)))
-            content[offset : offset + len(data)] = data
-        return paramiko.SFTP_OK
+class _DiskHandle(paramiko.SFTPHandle):
+    readfile: BinaryIO
+    writefile: BinaryIO
 
 
-class _MemorySFTP(paramiko.SFTPServerInterface):
+class _DiskSFTP(paramiko.SFTPServerInterface):
     def __init__(
         self,
         server: paramiko.ServerInterface,
         *args: Any,
-        files: dict[str, bytearray],
-        lock: Lock,
+        root: Path,
         **kwargs: Any,
     ) -> None:
         super().__init__(server, *args, **kwargs)
-        self._files = files
-        self._lock = lock
+        self._root = root.resolve()
 
     def open(
         self, path: str, flags: int, attr: paramiko.SFTPAttributes
-    ) -> _MemoryHandle | int:
+    ) -> paramiko.SFTPHandle | int:
         del attr
-        with self._lock:
-            if flags & os.O_CREAT:
-                self._files.setdefault(path, bytearray())
-            if flags & os.O_TRUNC:
-                self._files[path] = bytearray()
-            if path not in self._files:
-                return paramiko.SFTP_NO_SUCH_FILE
-        return _MemoryHandle(flags, self._files, self._lock, path)
+        target = (self._root / path.lstrip("/")).resolve()
+        if not target.is_relative_to(self._root):
+            return SFTP_PERMISSION_DENIED
+        try:
+            descriptor = os.open(target, flags, 0o600)
+        except OSError as error:
+            return paramiko.SFTPServer.convert_errno(error.errno or 0)
+        handle = _DiskHandle(flags)
+        if flags & os.O_WRONLY:
+            handle.writefile = os.fdopen(descriptor, "wb")
+        else:
+            handle.readfile = os.fdopen(descriptor, "rb")
+        return handle
 
 
 class _SSHServerInterface(paramiko.ServerInterface):
+    def __init__(self, server: _LocalSSHServer) -> None:
+        self.server = server
+
     def check_auth_password(self, username: str, password: str) -> int:
         if username == "tester" and password == "secret":
-            return paramiko.AUTH_SUCCESSFUL
-        return paramiko.AUTH_FAILED
+            return AUTH_SUCCESSFUL
+        return AUTH_FAILED
 
     def get_allowed_auths(self, _username: str) -> str:
         return "password"
 
     def check_channel_request(self, kind: str, _chanid: int) -> int:
-        return paramiko.OPEN_SUCCEEDED if kind == "session" else paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+        return (
+            OPEN_SUCCEEDED
+            if kind == "session"
+            else OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+        )
 
     def check_channel_exec_request(
         self, channel: paramiko.Channel, command: bytes
     ) -> bool:
-        def reply() -> None:
-            if command == b"printf ok":
-                channel.send(b"ok\n")
-                channel.send_exit_status(0)
-            else:
-                channel.send_stderr(b"unsupported\n")
-                channel.send_exit_status(1)
-            channel.shutdown_write()
+        # Only these local test commands run; no host shell or user credentials.
+        scripts = {
+            b"printf ok": "import sys; sys.stdout.write('ok\\n')",
+            b"unsupported": "import sys; sys.stderr.write('unsupported\\n'); sys.exit(7)",
+            b"wait": "import time; time.sleep(60)",
+        }
+        if command not in scripts:
+            return False
 
-        Thread(target=reply, daemon=True).start()
+        def reply() -> None:
+            process = subprocess.Popen(
+                [sys.executable, "-c", scripts[command]],
+                cwd=self.server.root,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.server.commands.append(process)
+            self.server.command_started.set()
+            try:
+                while process.poll() is None:
+                    transport = channel.get_transport()
+                    if (
+                        self.server.stop.wait(0.02)
+                        or not transport
+                        or not transport.is_active()
+                    ):
+                        return
+                output, error = process.communicate(timeout=2)
+                channel.sendall(output)
+                channel.sendall_stderr(error)
+                channel.send_exit_status(process.returncode)
+                channel.shutdown_write()
+            finally:
+                if process.poll() is None:
+                    process.terminate()
+                process.communicate(timeout=2)
+
+        thread = Thread(target=reply, daemon=True)
+        self.server.command_threads.append(thread)
+        thread.start()
         return True
 
 
 class _LocalSSHServer:
-    def __init__(self) -> None:
-        self.files: dict[str, bytearray] = {
-            "/remote/source.bin": bytearray(b"remote-source")
-        }
-        self.lock = Lock()
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        (root / "remote").mkdir(parents=True)
+        (root / "remote/source.bin").write_bytes(b"remote-source")
         self.stop = Event()
+        self.command_started = Event()
+        self.commands: list[subprocess.Popen[bytes]] = []
+        self.command_threads: list[Thread] = []
         self.socket = socket.socket()
         self.socket.bind(("127.0.0.1", 0))
         self.socket.listen()
         self.socket.settimeout(0.1)
         self.port = self.socket.getsockname()[1]
-        self.host_key = paramiko.RSAKey.generate(1024)
+        self.host_key = paramiko.RSAKey.generate(2048)
         self.transports: list[paramiko.Transport] = []
         self.thread = Thread(target=self._serve, daemon=True)
 
@@ -114,6 +153,11 @@ class _LocalSSHServer:
         for transport in self.transports:
             transport.close()
         self.thread.join(timeout=2)
+        for thread in self.command_threads:
+            thread.join(timeout=3)
+        assert not self.thread.is_alive()
+        assert all(not thread.is_alive() for thread in self.command_threads)
+        assert all(process.poll() is not None for process in self.commands)
 
     def _serve(self) -> None:
         while not self.stop.is_set():
@@ -127,12 +171,11 @@ class _LocalSSHServer:
             transport.set_subsystem_handler(
                 "sftp",
                 paramiko.SFTPServer,
-                _MemorySFTP,
-                files=self.files,
-                lock=self.lock,
+                _DiskSFTP,
+                root=self.root,
             )
             try:
-                transport.start_server(server=_SSHServerInterface())
+                transport.start_server(server=_SSHServerInterface(self))
                 while transport.is_active() and not self.stop.wait(0.05):
                     transport.accept(0.05)
             finally:
@@ -143,7 +186,7 @@ class _LocalSSHServer:
 async def test_real_worker_runs_ssh_family_against_local_server(
     tmp_path: Path,
 ) -> None:
-    server = _LocalSSHServer()
+    server = _LocalSSHServer(tmp_path / "remote-host")
     server.start()
     events: list[dict[str, object]] = []
     manager = WorkflowWorkerManager(
@@ -203,7 +246,7 @@ async def test_real_worker_runs_ssh_family_against_local_server(
                 "moduleType": "ssh_download_file",
                 "config": {
                     "connectionName": "fixture",
-                    "remotePath": "/remote/source.bin",
+                    "remotePath": "/remote/upload.bin",
                     "localPath": "download.bin",
                 },
             },
@@ -253,10 +296,13 @@ async def test_real_worker_runs_ssh_family_against_local_server(
         assert manager.busy() is False
         assert len(completed) == 5
         assert all(event.get("success") is True for event in completed)
-        assert bytes(server.files["/remote/upload.bin"]) == b"local-upload"
+        assert completed[1]["data"] == {"output": "ok\n", "error": "", "exit_code": 0}
+        assert (server.root / "remote/upload.bin").read_bytes() == b"local-upload"
         assert (
             artifact_root / "runs" / "ssh-run" / "outputs" / "download.bin"
-        ).read_bytes() == b"remote-source"
+        ).read_bytes() == b"local-upload"
+        assert manager.active_processes() == []
+        assert server.transports and not any(t.is_active() for t in server.transports)
         assert any(event.get("type") == "execution:completed" for event in events)
         assert "secret" not in str(events)
     finally:
@@ -266,7 +312,7 @@ async def test_real_worker_runs_ssh_family_against_local_server(
 
 @pytest.mark.asyncio
 async def test_worker_closes_ssh_session_after_node_failure(tmp_path: Path) -> None:
-    server = _LocalSSHServer()
+    server = _LocalSSHServer(tmp_path / "remote-host")
     server.start()
     events: list[dict[str, object]] = []
     manager = WorkflowWorkerManager(
@@ -329,9 +375,222 @@ async def test_worker_closes_ssh_session_after_node_failure(tmp_path: Path) -> N
             await asyncio.sleep(0.01)
 
         assert any(event.get("type") == "execution:failed" for event in events)
+        failed = next(
+            event
+            for event in events
+            if event.get("nodeId") == "fail"
+            and event.get("type") == "execution:node_complete"
+        )
+        assert failed["success"] is False
+        assert failed["data"] == {
+            "output": "",
+            "error": "unsupported\n",
+            "exit_code": 7,
+        }
+        assert manager.active_processes() == []
         assert server.transports
         assert not any(transport.is_active() for transport in server.transports)
         assert "secret" not in str(events)
     finally:
         await manager.shutdown()
         server.close()
+
+
+def _node(node_id: str, kind: str, **config: Any) -> dict[str, Any]:
+    return {
+        "id": node_id,
+        "type": "moduleNode",
+        "data": {"moduleType": kind, "config": config},
+    }
+
+
+def _payload(tmp_path: Path, nodes: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "runId": "ssh-boundary-run",
+        "workflowId": "ssh-boundary-flow",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "workspace"),
+        "document": {
+            "nodes": nodes,
+            "edges": [
+                {"id": f"e-{i}", "source": left["id"], "target": right["id"]}
+                for i, (left, right) in enumerate(pairwise(nodes))
+            ],
+            "variables": [],
+        },
+    }
+
+
+async def _wait_clean(manager: WorkflowWorkerManager, server: _LocalSSHServer) -> None:
+    async with asyncio.timeout(10):
+        while (
+            manager.busy()
+            or any(t.is_active() for t in server.transports)
+            or any(p.poll() is None for p in server.commands)
+        ):
+            await asyncio.sleep(0.02)
+    assert manager.active_processes() == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure", ["authentication", "missing-file", "disconnected"])
+async def test_real_ssh_failures_do_not_run_following_nodes(
+    tmp_path: Path, failure: str
+) -> None:
+    server = _LocalSSHServer(tmp_path / "remote-host")
+    server.start()
+    events: list[dict[str, Any]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path, termination_timeout=0.5, on_event=events.append
+    )
+    nodes = [
+        _node(
+            "connect",
+            "ssh_connect",
+            host="127.0.0.1",
+            port=server.port,
+            username="tester",
+            password="wrong" if failure == "authentication" else "secret",
+            timeout=5,
+        )
+    ]
+    if failure == "missing-file":
+        nodes.append(
+            _node(
+                "missing",
+                "ssh_download_file",
+                remotePath="/remote/absent",
+                localPath="absent.bin",
+            )
+        )
+    elif failure == "disconnected":
+        nodes.extend(
+            [
+                _node("disconnect", "ssh_disconnect"),
+                _node(
+                    "after-disconnect",
+                    "ssh_execute_command",
+                    command="printf ok",
+                    timeout=5,
+                ),
+            ]
+        )
+    nodes.append(
+        _node("must-not-run", "ssh_execute_command", command="printf ok", timeout=5)
+    )
+    try:
+        await manager.start(
+            "ssh-boundary-run", "profile-1", None, _payload(tmp_path, nodes)
+        )
+        await _wait_clean(manager, server)
+        completed = [
+            event for event in events if event.get("type") == "execution:node_complete"
+        ]
+        assert completed[-1]["success"] is False
+        assert (
+            completed[-1]["nodeId"]
+            == {
+                "authentication": "connect",
+                "missing-file": "missing",
+                "disconnected": "after-disconnect",
+            }[failure]
+        )
+        assert not any(event.get("nodeId") == "must-not-run" for event in events)
+        assert any(event.get("type") == "execution:failed" for event in events)
+        assert not (
+            tmp_path / "workspace/runs/ssh-boundary-run/outputs/absent.bin"
+        ).exists()
+        assert server.transports
+        assert "secret" not in str(events)
+    finally:
+        await manager.shutdown()
+        server.close()
+
+
+@pytest.mark.asyncio
+async def test_stopping_real_ssh_command_closes_worker_and_connection(
+    tmp_path: Path,
+) -> None:
+    server = _LocalSSHServer(tmp_path / "remote-host")
+    server.start()
+    events: list[dict[str, Any]] = []
+    manager = WorkflowWorkerManager(
+        tmp_path, termination_timeout=0.5, on_event=events.append
+    )
+    nodes = [
+        _node(
+            "connect",
+            "ssh_connect",
+            host="127.0.0.1",
+            port=server.port,
+            username="tester",
+            password="secret",
+            timeout=5,
+        ),
+        _node("waiting", "ssh_execute_command", command="wait", timeout=60),
+        _node("must-not-run", "ssh_execute_command", command="printf ok", timeout=5),
+    ]
+    try:
+        await manager.start(
+            "ssh-boundary-run", "profile-1", None, _payload(tmp_path, nodes)
+        )
+        assert await asyncio.to_thread(server.command_started.wait, 5)
+        assert manager.busy() and manager.active_processes()
+        async with asyncio.timeout(5):
+            await manager.stop("ssh-boundary-run")
+            await _wait_clean(manager, server)
+        assert server.transports
+        assert not any(event.get("nodeId") == "must-not-run" for event in events)
+        assert not any(
+            event.get("type") == "execution:node_complete"
+            and event.get("nodeId") == "waiting"
+            and event.get("success") is True
+            for event in events
+        )
+        assert "secret" not in str(events)
+    finally:
+        await manager.shutdown()
+        server.close()
+
+
+def _serve_fixture() -> None:
+    """Expose the same loopback service to the separately scheduled Electron test."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", required=True, type=Path)
+    parser.add_argument("--status", required=True, type=Path)
+    args = parser.parse_args()
+    server = _LocalSSHServer(args.root)
+    signal.signal(signal.SIGTERM, lambda *_: server.stop.set())
+    signal.signal(signal.SIGINT, lambda *_: server.stop.set())
+
+    def close_on_eof() -> None:
+        sys.stdin.read()
+        server.stop.set()
+
+    Thread(target=close_on_eof, daemon=True).start()
+
+    def report(closed: bool = False) -> None:
+        value = {
+            "port": server.port,
+            "closed": closed,
+            "connections": len(server.transports),
+            "activeConnections": sum(t.is_active() for t in server.transports),
+            "commands": [p.poll() for p in server.commands],
+        }
+        temporary = args.status.with_suffix(".tmp")
+        temporary.write_text(json.dumps(value), encoding="utf-8")
+        temporary.replace(args.status)
+
+    server.start()
+    try:
+        report()
+        while not server.stop.wait(0.05):
+            report()
+    finally:
+        server.close()
+        report(closed=True)
+
+
+if __name__ == "__main__":
+    _serve_fixture()
