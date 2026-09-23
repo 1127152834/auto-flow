@@ -11838,8 +11838,8 @@
         ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "单节点有限多记录组全有或全无仍无直接证据；两个单记录命令不证明组原子性。"
+            "kind": "implementation_missing",
+            "detail": "有限记录组原子写未实现：当前领域命令/服务/worker/Studio只支持单条updateRecord，仓库每次单条事务提交；运行契约检查拒绝RecordRef列表。现有双worker单条反向冲突不证明组原子性。G1–G3新增契约/冻结多表授权/组事务方案待确认，见group-write-audit.json。"
           },
           {
             "kind": "production_evidence_missing",
@@ -11847,6 +11847,13 @@
           }
         ],
         "statusBeforeReview": "partially_verified"
+      },
+      "implementationAudit": {
+        "date": "2026-09-24",
+        "report": "docs/project-management/implementation/pm9/group-write-audit.json",
+        "status": "confirmed_missing_group_contract",
+        "proposedSpec": "docs/superpowers/specs/2026-09-24-pm9-atomic-record-group.md",
+        "proposedPlan": "docs/superpowers/plans/2026-09-24-pm9-atomic-record-group.md"
       }
     },
     {
@@ -17451,5 +17458,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-24: 251条覆盖账本，249条有范围断言/2条未定位，206 partially_verified/45 planned/0 verified。73条失效预定路径已有逐条范围映射。DATA-CLAIM-09已补同行移除/改绑/namespace和当前代次真实worker链，仅移除该项test_missing；打包实网和新增三平台证据保留，releaseAccepted=false。"
+  "pm9_note": "2026-09-24: 251条覆盖账本，249条有范围断言/2条未定位，206 partially_verified/45 planned/0 verified。73条失效预定路径已有逐条范围映射。DATA-CLAIM-09已补同行移除/改绑/namespace和当前代次真实worker链，仅移除该项test_missing；打包实网和新增三平台证据保留，releaseAccepted=false。 DATA-WRITE-12组原子写从缺测试纠正为实现缺失，G1–G3待确认；既有单写冲突证据保留。"
 }

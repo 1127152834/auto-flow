@@ -6,6 +6,7 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "DATA-WRITE-12 finite-group atomic update is an implementation gap, not just missing tests. Current domain rejects RecordRef arrays and worker has no group operation; existing single-write conflict/replay2 tests passed. G1–G3 spec and plan await confirmation. See group-write-audit.json.",
     "DATA-CLAIM-09 public peer replacement/namespace/current-generation recovery passed actual HTTP/SQLite/browser/worker locally. Together with peer removal, closes the specifically named missing-test cases only; packaged live-Google/UI and new native evidence remain pending. Status remains partial; see peer-rebind-follow-through.json.",
     "Current1c676965 fixes first-source-outage empty cache being mistaken for noMatch.42 related/6 boundary/2 real-worker tests and Ruff/mypy408 passed; serial full backend3493 passed/80 skipped/2 warnings/778.49s; rebuilt ARM full desktop passed22screenshots; native matrix pending. Current live matrices exclude this source. See partial-source-follow-through.json; releaseAccepted=false.",
     "DATA-CLAIM-09 source outage: current binding successful read time and separate latest pull state implemented; controlled-Google real worker reliable-cache success and invalid-identity zero-Task refusal passed. Local frontend5474/409, scripts102, types/lint/OpenAPI/build and full ARM desktop22screens passed. Initial full backend3483 passed/79 skipped/4 process timing failures retained; unchanged isolated6 and serial full3487 passed/79 skipped; original failures and unknown cause retained. Prior CI35895754111@25bb8ab2 excludes this production change. See source-outage-follow-through.json; releaseAccepted=false. Current new matrix35902129697@a317e1f8 includes source51e8991e and the two new real-worker cases; in progress. Prior25bb8ab2 matrix35895754111 completed successfully on all three platforms; its artifacts/logs were checked separately.",
@@ -506,6 +507,14 @@
       "status": "confirmed",
       "detail": "No specified project automation Studio opening/return/session contract or docking implementation; existing single independent window is not this capability. W1-W3 contract/plan proposed, user decision pending.",
       "report": "studio-window-follow-through.json"
+    },
+    {
+      "requirements": [
+        "DATA-WRITE-12"
+      ],
+      "status": "confirmed",
+      "detail": "Finite record-group atomic writes have no workflow-facing command/service/worker/Studio contract. Existing update_record commits one record per transaction. Opposing single-record tests do not cover group atomicity. G1–G3 spec/plan proposed; approval pending.",
+      "report": "group-write-audit.json"
     }
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
@@ -581,5 +590,6 @@
   },
   "partialSourceFollowThrough": "partial-source-follow-through.json",
   "peerOutageFollowThrough": "peer-outage-follow-through.json",
-  "peerRebindFollowThrough": "peer-rebind-follow-through.json"
+  "peerRebindFollowThrough": "peer-rebind-follow-through.json",
+  "groupWriteAudit": "group-write-audit.json"
 }

@@ -1814,7 +1814,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 2,
           "gapKinds": [
-            "test_missing",
+            "implementation_missing",
             "production_evidence_missing"
           ]
         },
