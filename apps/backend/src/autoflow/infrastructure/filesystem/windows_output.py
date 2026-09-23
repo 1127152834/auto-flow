@@ -134,6 +134,45 @@ def pinned_parent(target: Path):
 
 
 @contextmanager
+def readable_output(target: Path):
+    import msvcrt
+
+    kernel = _api()
+    try:
+        # Deny writers and deletion while reading; open the link itself so it can be rejected.
+        handle = _open(kernel, target, 0x80000000, 1, 3, 0x00200000)
+    except FileNotFoundError:
+        yield None
+        return
+    try:
+        info = (ctypes.c_uint32 * 2)()
+        if not kernel.GetFileInformationByHandleEx(
+            handle, 9, info, ctypes.sizeof(info)
+        ):
+            raise ctypes.WinError(ctypes.get_last_error())  # type: ignore[attr-defined]
+        if info[0] & (0x400 | 0x10):
+            raise _invalid()
+        final = ctypes.create_unicode_buffer(32768)
+        length = kernel.GetFinalPathNameByHandleW(handle, final, len(final), 0)
+        if (
+            not length
+            or length >= len(final)
+            or final.value.removeprefix("\\\\?\\").casefold() != str(target).casefold()
+        ):
+            raise _invalid()
+        descriptor = msvcrt.open_osfhandle(  # type: ignore[attr-defined]
+            handle, os.O_RDONLY | os.O_BINARY
+        )
+    except BaseException:
+        kernel.CloseHandle(handle)
+        raise
+    try:
+        yield descriptor
+    finally:
+        os.close(descriptor)
+
+
+@contextmanager
 def staged_output(target: Path):
     import msvcrt
 

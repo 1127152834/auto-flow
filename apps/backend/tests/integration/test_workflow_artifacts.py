@@ -1348,6 +1348,55 @@ async def test_native_windows_output_rejects_ambiguous_paths(artifacts, name):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows file handles')
+async def test_native_windows_reads_existing_output_without_following_reparse_points(artifacts, tmp_path):
+    import subprocess
+
+    from autoflow.infrastructure.filesystem.windows_output import (
+        pinned_parent,
+        readable_output,
+    )
+
+    store, _ = artifacts
+    writer = store.writer(run_id='run-artifacts', node_id='read', execution_id='native', purpose='result')
+    target = store._root / 'runs/run-artifacts/outputs/input.bin'
+    target.parent.mkdir(parents=True)
+    content = b'\x00\xff\x89PNG\r\n\x1a\n'
+    target.write_bytes(content)
+
+    snapshot = await writer.read_binary_output(output_path='input.bin', max_bytes=len(content))
+    assert snapshot.content == content and snapshot.identity != 'missing'
+    assert (await writer.read_binary_output(output_path='absent.bin', max_bytes=1)).identity == 'missing'
+    with pytest.raises(WorkflowRunError) as too_large:
+        await writer.read_binary_output(output_path='input.bin', max_bytes=len(content) - 1)
+    assert too_large.value.code == 'ARTIFACT_TOO_LARGE'
+
+    with pinned_parent(target), readable_output(target) as descriptor:
+        assert descriptor is not None
+        with pytest.raises(OSError):
+            target.unlink()
+        with pytest.raises(OSError):
+            target.write_bytes(b'changed')
+        with pytest.raises(OSError):
+            target.parent.rename(tmp_path / 'moved')
+    assert target.read_bytes() == content
+
+    outsider = tmp_path / 'outside'
+    outsider.mkdir()
+    (outsider / 'secret.bin').write_bytes(b'secret')
+    junction = target.parent / 'linked'
+    await asyncio.to_thread(
+        subprocess.run,
+        ['cmd', '/c', 'mklink', '/J', str(junction), str(outsider)],
+        check=True,
+        capture_output=True,
+    )
+    with pytest.raises(WorkflowRunError) as invalid:
+        await writer.read_binary_output(output_path='linked/secret.bin', max_bytes=100)
+    assert invalid.value.code == 'ARTIFACT_PATH_INVALID'
+
+
+@pytest.mark.asyncio
 async def test_actual_worker_publishes_new_binary_and_registers_matching_snapshot(tmp_path):
     import base64
     import json
@@ -1371,6 +1420,36 @@ async def test_actual_worker_publishes_new_binary_and_registers_matching_snapsho
         assert len(facts) == 1
         assert facts[0]['sha256'] == hashlib.sha256(content).hexdigest()
         assert target.read_bytes() == (root / facts[0]['relativePath']).read_bytes() == content
+    finally:
+        if process.returncode is None: process.kill()
+        await process.wait()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows file handles')
+async def test_actual_windows_worker_reads_existing_binary_output(tmp_path):
+    import base64
+    import json
+
+    target = tmp_path / 'existing.png'
+    content = b'\x89PNG\r\n\x1a\n\x00\xff'
+    target.write_bytes(content)
+    command = {'runId': 'native-read', 'workflowId': 'native-read', 'profileId': 'none', 'requiresBrowser': False, 'artifactRoot': str(tmp_path / 'workspace'), 'document': {'nodes': [{'id': 'read', 'type': 'moduleNode', 'data': {'moduleType': 'base64', 'config': {'operation': 'file_to_base64', 'filePath': str(target)}}}], 'edges': []}}
+    process = await asyncio.create_subprocess_exec(sys.executable, '-m', 'autoflow', '--workflow-worker', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        assert process.stdin is not None and process.stdout is not None
+        process.stdin.write((json.dumps(command) + '\n').encode())
+        await process.stdin.drain()
+        events = []
+        async with asyncio.timeout(20):
+            while line := await process.stdout.readline():
+                events.append(json.loads(line))
+            await process.wait()
+        assert process.returncode == 0, (events, (await process.stderr.read()).decode())
+        assert events[-1]['type'] == 'execution:completed'
+        completed = [event for event in events if event['type'] == 'execution:node_complete']
+        assert len(completed) == 1
+        assert completed[0]['data'] == 'data:image/png;base64,' + base64.b64encode(content).decode()
     finally:
         if process.returncode is None: process.kill()
         await process.wait()

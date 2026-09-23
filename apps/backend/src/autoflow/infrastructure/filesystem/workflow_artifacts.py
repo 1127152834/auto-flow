@@ -887,12 +887,20 @@ class WorkflowArtifactStore:
         max_bytes: int,
         cancellation: CancellationToken | None,
     ) -> BinaryOutputSnapshot:
-        if sys.platform == "win32":
-            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         if max_bytes <= 0:
             raise WorkflowRunError(
                 "ARTIFACT_SIZE_INVALID", "读取容量限制必须为正数", 422
             )
+        if sys.platform == "win32":
+            from .windows_output import output_target, pinned_parent, readable_output
+
+            target = output_target(self._root / "runs" / run_id / "outputs", output_path)
+            with pinned_parent(target), readable_output(target) as descriptor:
+                if descriptor is None:
+                    return BinaryOutputSnapshot(content=None, identity="missing")
+                return self._read_output_descriptor(
+                    descriptor, target, max_bytes, cancellation
+                )
         target, directory_fd = self._open_output_parent(run_id, output_path)
         try:
             self._raise_if_cancelled(cancellation)
@@ -911,51 +919,52 @@ class WorkflowArtifactStore:
                     ) from error
                 raise
             try:
-                metadata = os.fstat(descriptor)
-                if not stat.S_ISREG(metadata.st_mode):
-                    raise WorkflowRunError(
-                        "ARTIFACT_PATH_INVALID", "输出路径不是普通文件", 422
-                    )
-                if metadata.st_size > max_bytes:
-                    raise WorkflowRunError(
-                        "ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422
-                    )
-                chunks: list[bytes] = []
-                size = 0
-                while chunk := os.read(descriptor, 1024 * 1024):
-                    self._raise_if_cancelled(cancellation)
-                    size += len(chunk)
-                    if size > max_bytes:
-                        raise WorkflowRunError(
-                            "ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422
-                        )
-                    chunks.append(chunk)
-                final_metadata = os.fstat(descriptor)
-                try:
-                    path_metadata = os.stat(
-                        target.name, dir_fd=directory_fd, follow_symlinks=False
-                    )
-                except FileNotFoundError as error:
-                    raise WorkflowRunError(
-                        "ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409
-                    ) from error
-
-                if self._output_identity(metadata) != self._output_identity(
-                    final_metadata
-                ) or self._output_identity(metadata) != self._output_identity(
-                    path_metadata
-                ):
-                    raise WorkflowRunError(
-                        "ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409
-                    )
-                return BinaryOutputSnapshot(
-                    content=b"".join(chunks),
-                    identity=self._output_identity(metadata),
+                return self._read_output_descriptor(
+                    descriptor, target, max_bytes, cancellation, directory_fd
                 )
             finally:
                 os.close(descriptor)
         finally:
             os.close(directory_fd)
+
+    def _read_output_descriptor(
+        self,
+        descriptor: int,
+        target: Path,
+        max_bytes: int,
+        cancellation: CancellationToken | None,
+        directory_fd: int | None = None,
+    ) -> BinaryOutputSnapshot:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise WorkflowRunError("ARTIFACT_PATH_INVALID", "输出路径不是普通文件", 422)
+        if metadata.st_size > max_bytes:
+            raise WorkflowRunError("ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422)
+        chunks: list[bytes] = []
+        size = 0
+        while chunk := os.read(descriptor, 1024 * 1024):
+            self._raise_if_cancelled(cancellation)
+            size += len(chunk)
+            if size > max_bytes:
+                raise WorkflowRunError("ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422)
+            chunks.append(chunk)
+        final_metadata = os.fstat(descriptor)
+        try:
+            path_metadata = (
+                os.stat(target, follow_symlinks=False)
+                if directory_fd is None
+                else os.stat(target.name, dir_fd=directory_fd, follow_symlinks=False)
+            )
+        except FileNotFoundError as error:
+            raise WorkflowRunError(
+                "ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409
+            ) from error
+        identity = self._output_identity(metadata)
+        if identity != self._output_identity(final_metadata) or identity != self._output_identity(
+            path_metadata
+        ):
+            raise WorkflowRunError("ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409)
+        return BinaryOutputSnapshot(content=b"".join(chunks), identity=identity)
 
     def _write_text_and_register(
         self,
