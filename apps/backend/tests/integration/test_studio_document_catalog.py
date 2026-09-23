@@ -166,7 +166,10 @@ def test_direct_studio_document_is_visible_to_project_catalog_and_runtime(
         available_capabilities=["browser.cloakbrowser"],
     )
     assert prepared.document["content"]["name"] == "项目工作流"
-    assert prepared.document["content"]["nodes"][0]["data"]["openMode"] == "new_tab"
+    # v3 preparation validates defaults without changing the saved run snapshot.
+    frozen_data = prepared.document["content"]["nodes"][0]["data"]
+    assert frozen_data == record.document["content"]["nodes"][0]["data"]
+    assert "openMode" not in frozen_data
 
     factory.dispose()
 
