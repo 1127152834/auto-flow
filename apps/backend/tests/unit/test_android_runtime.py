@@ -1,5 +1,8 @@
+import asyncio
 import json
+import os
 import shlex
+import signal
 import struct
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -26,6 +29,38 @@ async def test_file_backed_command_streams_stdin_and_stdout(tmp_path):
     await mac.run_file([sys.executable, "-c", "import sys; sys.stdout.buffer.write(sys.stdin.buffer.read()[::-1])"], 5, input_path=source, output_path=target)
 
     assert target.read_bytes() == source.read_bytes()[::-1]
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(os.name != "posix", reason="Mac command descendants use POSIX process groups")
+@pytest.mark.parametrize("runner", ["run", "run_file"])
+@pytest.mark.parametrize("stop", ["cancel", "timeout"])
+async def test_command_cancellation_or_timeout_stops_descendant_writes(tmp_path, runner, stop):
+    written = tmp_path / "written"
+    child_pid = tmp_path / "child.pid"
+    child = "import sys,time\nf=open(sys.argv[1],'ab',buffering=0)\nwhile True:\n f.write(b'x')\n time.sleep(.01)\n"
+    parent = "import pathlib,subprocess,sys,time\np=subprocess.Popen([sys.executable,'-c',sys.argv[1],sys.argv[2]],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\npathlib.Path(sys.argv[3]).write_text(str(p.pid))\ntime.sleep(30)\n"
+    task = asyncio.create_task(getattr(mac, runner)([sys.executable, "-c", parent, child, str(written), str(child_pid)], 2 if stop == "timeout" else 30))
+    try:
+        async with asyncio.timeout(5):
+            while not written.exists() or written.stat().st_size == 0:
+                await asyncio.sleep(.01)
+        if stop == "cancel":
+            task.cancel()
+        with pytest.raises(asyncio.CancelledError if stop == "cancel" else TimeoutError):
+            await task
+        after_stop = written.stat().st_size
+        await asyncio.sleep(.15)
+        assert written.stat().st_size == after_stop, "A descendant is still writing after the command stopped"
+    finally:
+        if not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        if child_pid.exists():
+            try:
+                os.kill(int(child_pid.read_text()), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
 
 
 @pytest.mark.asyncio

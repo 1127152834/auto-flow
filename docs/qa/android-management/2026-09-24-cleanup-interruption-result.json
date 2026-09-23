@@ -1,0 +1,19 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am4-cleanup-interrupt-xpz0ss0k",
+  "status": "passed",
+  "resourceIds": [
+    "staging:b8fe3a3a-7ae3-4d75-8b72-64779579f525",
+    "staging:6af9ebf4-9cdb-4474-b219-fb620ead44bb"
+  ],
+  "requestId": "d34be486-a8a9-4b4c-9167-721cdcf6c57b",
+  "processExit": -9,
+  "deletedBeforeCrash": "staging:6af9ebf4-9cdb-4474-b219-fb620ead44bb",
+  "unexecutedAfterCrash": "staging:b8fe3a3a-7ae3-4d75-8b72-64779579f525",
+  "parentState": "needs_verification",
+  "replayState": "running",
+  "verificationHttpStatus": 503,
+  "noAutomaticReplay": true,
+  "explicitNewPreviewSucceeded": true,
+  "externalProbePreserved": true,
+  "ownedTemporaryFilesDeleted": true
+}

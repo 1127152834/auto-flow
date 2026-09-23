@@ -60,7 +60,7 @@
 | AM1 | T01–T04 `passed`；T05–T07 `partial` | 桌面控制与真实断线同链、精确 200%/两种窗口尺寸、旧 temporary 兼容与受控中断 |
 | AM2 | T08/T10 功能 `passed`；T09/T12 `partial`；T11 检测规则 `passed`、专用 GApps 账号链 `blocked` | 固定摘要网络拉取和认证 HTTP 内容删除已实测；待桌面删除、断线核实、候选镜像/账号下载链与阶段回退 |
 | AM3 | T13–T16 `partial` | 双实例/五实例、部分失败、修订冲突项重试和容量等待取消已验；十台容量 blocked，运行时瞬时故障/未知结果、桌面前台/探测指标、应用确认与真实 ADB 断连仍未验 |
-| AM4 | T17/AC19 功能 `passed`；T18–T20 `partial` | 文件流备份恢复、真实 ENOSPC/传输取消、受限高级日志与全分支审查修复已验；恢复解包中 SIGKILL 已补；目标磁盘不足/取消恢复、备份传输中宿主硬中断和完整负向矩阵仍缺 |
+| AM4 | T17–T19 已列功能 `passed`；T20 `partial` | 文件流备份恢复、真实 ENOSPC/传输取消、受限高级日志与全分支审查修复已验；恢复解包中 SIGKILL 已补；目标磁盘不足/取消恢复、多对象清理硬中断已补；备份传输硬中断和完整负向矩阵见后续验证记录 |
 
 本轮各次自建 QA 实例和备份均记录清理及归属核实；这不赋予无来源旧文件可删除资格。Node 22、全量后端与最终审查按实际输出单独登记。102 个步骤的状态、文件映射和缺证原因见[逐项审计](../../qa/android-management/2026-09-24-task-evidence-audit.md)；功能通过与历史 RED 证据是否完备分开记录。
 
@@ -617,7 +617,7 @@ def test_parent_traversal_is_rejected():
 - [x] RED：`(cd apps/backend && uv run pytest tests/integration/test_android_backup_restore.py -q)`；必须同时覆盖链接穿越、合法内部链接和目标属性，不只检查一个字符串。（状态：passed；恢复隔离与 manifest/身份 RED→GREEN 见对应 QA；[证据 T18.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t18)）
 - [x] 生成新deviceId/容器/卷/标签，清旧进程/控制/操作引用；仅处理本作业资源，原备份及源实例不改。无法安全恢复属性时明确失败。（状态：passed；新目标意图和归属、源保护及安全属性失败已实现；[证据 T18.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t18)）
 - [x] 同机同镜像真实演练检查测试数据；UI称恢复应用数据，不保证登录/DRM/私有密钥或完整身份克隆。（状态：passed；真实源/目标数据与属性读回；本轮补登录/DRM/私钥限制说明；[证据 T18.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t18)）
-- [x] GREEN后提交 `feat(android): restore verified backups into new instances`。（状态：passed；恢复软件已入历史；真实解包中 SIGKILL 已验，取消/目标磁盘不足另列未验项；[证据 T18.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t18)）
+- [x] GREEN后提交 `feat(android): restore verified backups into new instances`。（状态：passed；恢复软件已入历史；真实解包中 SIGKILL 已验，取消/目标磁盘不足真实验收亦通过；[证据 T18.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t18)）
 
 ### T19：清理预览与脱敏诊断
 
@@ -641,7 +641,7 @@ def test_private_payloads_are_not_exported():
 - [x] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_cleanup.py tests/unit/test_android_diagnostic_redaction.py -q)`及DataMaintenance.test.tsx。（状态：passed；清理与高级日志 RED→GREEN 见 cleanup/advanced QA；复用现有测试文件；[证据 T19.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t19)）
 - [x] 冻结候选并执行时重检引用/归属；变更则409；禁止全局prune及外部路径递归删除。预检和执行不能绕过设备锁。（状态：passed；冻结指纹/引用与设备锁、异步父子收敛回归通过；[证据 T19.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t19)）
 - [x] 诊断默认只输出白名单，额外日志单次同意并限时限量、脱敏；IPC拒绝过期/跨工作区导出ID，不自动发送任何文件。（状态：passed；高级日志单次确认、5 分钟/64KiB/200行、真实196条仅元数据已验；[证据 T19.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t19)）
-- [x] GREEN后提交 `feat(android): add scoped cleanup and redacted diagnostics`。（状态：passed；软件切片已提交；无来源旧客体文件不能推断归属，多对象硬中断未验；[证据 T19.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t19)）
+- [x] GREEN后提交 `feat(android): add scoped cleanup and redacted diagnostics`。（状态：passed；软件切片已提交；多对象硬中断已验；无来源旧客体文件仍不能推断归属；[证据 T19.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t19)）
 
 ### T20：AM4恢复演练与最终交付
 
@@ -660,7 +660,7 @@ assert restored.owner_kind == 'none'
 assert source_data_digest_after == source_data_digest_before
 ```
 
-- [ ] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：not_run；磁盘不足与传输取消已补；真实解包中 SIGKILL 已补；损坏包同链与完整故障矩阵尚未运行；[证据 T20.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
+- [x] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：passed；真实备份/恢复 ENOSPC、取消、在途硬中断、损坏包与多对象清理已验；引用和脱敏保护包含本轮451项回归，高级日志有真实证据；[证据 T20.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
 - [ ] 运行1.4节全部发布命令与真实设备回归；逐项填写规格24个验收项，无法执行的项目单列blocked。（状态：not_run；软件门禁已通过，24 项均有说明；仍有具备条件的真实项尚未运行；[证据 T20.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
 - [x] 检查向前回退策略，无破坏性downgrade、旧迁移篡改或新工作流执行器；更新证据索引但保留历史事实。（状态：passed；迁移头/旧迁移字节与业务回归通过；回退策略为关闭新入口并向前修复，实操演练另列 T12；[证据 T20.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
 - [x] 提交 `test(android): complete management recovery and maintenance acceptance`；报告实际完成和限制，不自动接入工作流。（状态：passed；30eb0926 已交付代码/证据并报告 partial；整体目标仍 active；[证据 T20.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）

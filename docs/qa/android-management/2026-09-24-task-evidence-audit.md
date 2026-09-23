@@ -35,7 +35,7 @@
 
 ## 自动测试到任务的映射
 
-以下文件均已在当前仓库核对存在。2026-09-24 实际运行全部 `test_android*.py` 得 `447 passed, 2 warnings in 29.43s`；全部 Android 前端 `14 files / 135 tests` 通过。随后补备份可访问说明：单项 RED `1 failed/25 skipped`（按钮无说明），GREEN 同文件 `26 passed`；前端全量在该变更后另重跑，结果见本轮故障验收记录。最新未变的后端全量为 `4031 passed/26 skipped`，不能将以下重叠测试数相加。
+以下文件均已在当前仓库核对存在。2026-09-24 实际运行全部 `test_android*.py` 得 `447 passed, 2 warnings in 29.43s`；全部 Android 前端 `14 files / 135 tests` 通过。随后补备份可访问说明：单项 RED `1 failed/25 skipped`（按钮无说明），GREEN 同文件 `26 passed`；前端全量在该变更后另重跑，结果见本轮故障验收记录。上一个后端树全量为 `4031 passed/26 skipped`；本轮命令树修复后聚焦 `451 passed`、完整后端4035 passed/26 skipped，见[本轮报告](2026-09-24-restore-cancel-and-disk-full.md)，不能将以下重叠测试数相加。
 
 | 任务 | 单元 / 契约 / 集成 / 前端证据 |
 | --- | --- |
@@ -82,9 +82,9 @@
 | <a id="t14"></a>T14 | `not_run` | [五台/双预览](2026-09-23-final-review-remediation.md)通过；后台探测次数、隐藏页面同链与前台延迟未记录完整。 |
 | <a id="t15"></a>T15 | `not_run` | [真实 APK 动作](2026-09-23-am1-real-control-retention.md)及[跨重建版本核实](2026-09-24-final-branch-review.md)通过；桌面破坏性确认同链、真实 ADB 断连未验。 |
 | <a id="t16"></a>T16 | `not_run` / 十台 `blocked` | 1/5 台 API、双实例隔离有证据；[7921 MiB < 8192 MiB](2026-09-24-advanced-logs-and-capacity.md)阻塞十台，其他规模缺的前台/探测指标仍可继续。 |
-| <a id="t17"></a>T17 | `passed`（已列功能） | [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)补足 AC19；归档/权限/摘要/发布回归通过。宿主硬中断发生在传输中及真实权限拒绝仍作扩展故障 `not_run`，不冒充已验。 |
-| <a id="t18"></a>T18 | `not_run` | [新卷属性读回](2026-09-23-persistent-metadata-verification.md)与[写入后硬中断](2026-09-23-restore-hard-interruption-verification.md)通过；[真实解包中 SIGKILL](2026-09-24-restore-transfer-interruption.md)已验；恢复目标磁盘不足和取消恢复仍未验。 |
-| <a id="t19"></a>T19 | `not_run` | [真实清理](2026-09-23-cleanup-verification.md)、[高级诊断](2026-09-24-advanced-logs-and-capacity.md)通过；多对象清理硬中断与旧卷文件来源缺失仍有边界需记录。 |
+| <a id="t17"></a>T17 | `passed`（已列功能） | [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)补足 AC19；归档/权限/摘要/发布回归通过。[传输中进程树 SIGKILL](2026-09-24-restore-cancel-and-disk-full.md)已补；真实权限拒绝仍作扩展故障 `not_run`。 |
+| <a id="t18"></a>T18 | `passed`（已列功能） | [新卷属性读回](2026-09-23-persistent-metadata-verification.md)与[写入后硬中断](2026-09-23-restore-hard-interruption-verification.md)通过；[真实解包中 SIGKILL](2026-09-24-restore-transfer-interruption.md)已验；[目标 ENOSPC/取消恢复](2026-09-24-restore-cancel-and-disk-full.md)已验，源与备份保留，进程树回收通过。 |
+| <a id="t19"></a>T19 | `passed`（已列功能） | [真实清理](2026-09-23-cleanup-verification.md)、[高级诊断](2026-09-24-advanced-logs-and-capacity.md)通过；[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验；无归属记录的旧文件保持排除，不据此推断可删除。 |
 | <a id="t20"></a>T20 | `not_run` | 实际服务/实例/源数据保护和全量门禁有证据；上述具备条件的剩余故障及桌面链未全部运行，不能整体完成。 |
 
 ## 校准取舍
@@ -94,4 +94,4 @@
 - 历史任务的提交标题是建议行为描述，实际合并到已有有界提交；勾选“提交”只确认软件切片已入历史，不代表整个阶段真实验收完成。
 - 外部不足才写 blocked；缺真实执行记录写 not_run。102 个步骤的全部状态均应可追溯到本表，不能再让旧 blanket blocked 长期作为当前状态。
 
-本轮最终文档核验：102 个勾选与状态逐一一致（81 passed / 18 not_run / 3 blocked），67 个显式实现路径存在，283 个修改文档的本地链接存在；`git diff --check` exit 0。两份真实 QA 脚本 Ruff 通过，`--help` exit 0，缺少 `--allow-device-mutation` 时均 exit 2。三个 Studio 文件 SHA-256 与本轮开始一致。
+本轮最终文档核验：102 个勾选与状态逐一一致（82 passed / 17 not_run / 3 blocked），67 个显式实现路径存在，277 个修改文档的本地链接存在；`git diff --check` exit 0。三份本轮新增/修改真实 QA 脚本 Ruff 通过，`--help` exit 0，缺少 `--allow-device-mutation` 时均 exit 2。三个 Studio 文件 SHA-256 与本轮开始一致。

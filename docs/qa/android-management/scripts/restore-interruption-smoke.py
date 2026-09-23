@@ -69,6 +69,23 @@ async def stop_server(process, client):
             raise
 
 
+async def kill_owned_tree(process):
+    assert os.getpgid(process.pid) == process.pid
+    rows = [tuple(map(int, line.split())) for line in (await run(["ps", "-axo", "pid=,ppid=,pgid="], 5)).decode().splitlines()]
+    owned = {process.pid}
+    while descendants := {pid for pid, parent, _ in rows if parent in owned} - owned:
+        owned.update(descendants)
+    groups = {group for pid, _, group in rows if pid in owned}
+    assert groups <= owned and os.getpgrp() not in groups
+    for group in sorted(groups - {process.pid}) + [process.pid]:
+        try:
+            os.killpg(group, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    assert await process.wait() == -signal.SIGKILL
+    return len(groups)
+
+
 async def wait_device(repository, device_id, operation_id):
     for _ in range(180):
         row = repository.get(device_id)
@@ -95,7 +112,7 @@ async def operate(client, repository, device_id, action):
     return await wait_device(repository, device_id, result["operation"]["id"])
 
 
-async def exercise():
+async def exercise(interrupt_backup_first=False):
     workspace = Path(tempfile.mkdtemp(prefix="autoflow-am4-unpack-interrupt-"))
     paths = AppPaths.from_data_dir(workspace)
     paths.database.parent.mkdir(parents=True)
@@ -127,6 +144,37 @@ async def exercise():
         await docker("exec", source["containerId"], "dd", "if=/dev/urandom", f"of={probe}", "bs=1048576", "count=256", timeout=90)
         source_hash = (await docker("exec", source["containerId"], "sha256sum", probe)).decode().split()[0]
         source = await operate(client, repository, source_id, "stop")
+        if interrupt_backup_first:
+            backup_request = str(uuid4())
+            body = {"requestId": backup_request, "deviceId": source_id, "expectedRevision": public_device_revision(source["generation"])}
+            transfer = asyncio.create_task(client.post("/api/v1/android/management/backups", json=body))
+            async with asyncio.timeout(90):
+                while True:
+                    assert not transfer.done(), "Backup completed before interruption"
+                    partials = list((paths.workspace / "android-backups" / "staging").glob("*/data.tar"))
+                    partial = partials[0].stat().st_size if partials else 0
+                    if 1048576 <= partial < 256 * 1024**2:
+                        break
+                    await asyncio.sleep(.001)
+            groups = await kill_owned_tree(process)
+            await asyncio.gather(transfer, return_exceptions=True)
+            await client.aclose()
+            process = client = None
+            resources = AndroidResourceRepository(sessions)
+            assert not resources.list("backup")
+            process, client = await start_server(workspace)
+            unknown = expect(await client.get(f"/api/v1/android/management/operations/by-request/{backup_request}"), 200)
+            assert unknown["state"] == "needs_verification"
+            replay = await client.post("/api/v1/android/management/backups", json=body)
+            assert replay.status_code == 409 and "ANDROID_BACKUP_REQUEST_REPLAYED" in replay.text
+            inventory = expect(await client.get("/api/v1/android/management/cleanup/resources"), 200)
+            staged_ids = [item["id"] for item in inventory["items"] if item["kind"] == "backup-staging"]
+            if staged_ids:
+                preview = expect(await client.post("/api/v1/android/management/cleanup/previews", json={"resourceIds": staged_ids}), 200)
+                cleaned = expect(await client.post("/api/v1/android/management/cleanup", json={"requestId": str(uuid4()), "previewId": preview["previewId"], "confirmationDigest": preview["confirmationDigest"]}), 200)
+                assert cleaned["state"] == "succeeded"
+            assert not list((paths.workspace / "android-backups" / "staging").iterdir())
+            report["interruptedBackup"] = {"requestId": backup_request, "bytesAtKill": partial, "terminatedOwnedProcessGroups": groups, "state": unknown["state"], "noPublishedBackup": True, "replayProtected": True, "stagingCleaned": True}
         backup = expect(await client.post("/api/v1/android/management/backups", json={
             "requestId": str(uuid4()), "deviceId": source_id, "expectedRevision": public_device_revision(source["generation"]),
         }), 201)
@@ -162,9 +210,9 @@ else: raise TimeoutError('No real target write observed')
         observed = int(await asyncio.wait_for(monitor.stdout.readline(), 130))
         assert 0 < observed < 256 * 1024**2, observed
         assert not transfer.done(), "HTTP restore already completed before interruption"
-        assert os.getpgid(process.pid) == process.pid
-        os.killpg(process.pid, signal.SIGKILL)
-        assert await process.wait() == -signal.SIGKILL
+        # Commands have their own groups so cancellation can reap SSH descendants.
+        # This fault kills the complete self-owned sidecar tree, including those groups.
+        report["terminatedOwnedProcessGroups"] = await kill_owned_tree(process)
         await asyncio.gather(transfer, return_exceptions=True)
         await monitor.wait()
         await client.aclose()
@@ -246,7 +294,8 @@ else: raise TimeoutError('No real target write observed')
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--allow-device-mutation", action="store_true")
+    parser.add_argument("--interrupt-backup-first", action="store_true")
     args = parser.parse_args()
     if not args.allow_device_mutation:
         parser.error("--allow-device-mutation is required")
-    asyncio.run(exercise())
+    asyncio.run(exercise(args.interrupt_backup_first))

@@ -2,20 +2,20 @@
 
 - 日期：2026-09-24（校准；原计划 2026-09-19）
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
-- 当前实施基线：`codex/android-management-complete@30eb0926` 加 2026-09-24 真实备份故障、界面说明和逐项审计增量；原起点 `a92f0688`。
+- 当前实施基线：`codex/android-management-complete@162fa380` 加命令树回收与真实恢复故障增量；原起点 `a92f0688`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
 
 ## 2026-09-23 全分支审查后增量
 
-- 2026-09-24 续行：[真实备份 ENOSPC 与传输取消](../../docs/qa/android-management/2026-09-24-backup-failure-verification.md)通过，无可用备份/暂存残留，原请求不重放，源探针保持；补备份本机未加密和恢复登录/DRM/私钥边界说明（RED 1 failed → GREEN 26 passed）。[任务逐项审计](../../docs/qa/android-management/2026-09-24-task-evidence-audit.md)将当前 102 步全部附证据：81 passed、18 not_run、3 blocked；部分 not_run 为历史 RED 缺证，未追认。
+- 2026-09-24 续行：[真实备份 ENOSPC 与传输取消](../../docs/qa/android-management/2026-09-24-backup-failure-verification.md)通过，无可用备份/暂存残留，原请求不重放，源探针保持；补备份本机未加密和恢复登录/DRM/私钥边界说明（RED 1 failed → GREEN 26 passed）。[任务逐项审计](../../docs/qa/android-management/2026-09-24-task-evidence-audit.md)将当前 102 步全部附证据：82 passed、17 not_run、3 blocked；部分 not_run 为历史 RED 缺证，未追认。
 - 2026-09-24 最终只读复审已覆盖运行时、Operation、镜像、批次、备份恢复、清理、诊断及前端，未发现剩余 Critical/Important。修复和先 RED 后 GREEN 的证据见[最终分支审查](../../docs/qa/android-management/2026-09-24-final-branch-review.md)；未完成真实环境矩阵不因代码审查通过而转为通过。
 
 - 状态：`confirmed`（以下定向/真实证据）；完整目标仍 `partial`。来源：[审查修复与真实验收](../../docs/qa/android-management/2026-09-23-final-review-remediation.md)。以下结论覆盖本页下方较早的规模及自动化快照。
 - AM1：应用操作持久回执可在控制台重建后按原会话与请求编号核实；未核实完成标记不能被普通设备恢复清除。真实 ReDroid 完成标记、重建控制台、回执提交、恢复和删除通过；真实 HTTP 进程 `SIGKILL` 尚未注入。
 - AM2：备份的工作区路径身份加入镜像引用保护；自定义镜像恢复按固定 imageId 实际缓存核实；同摘要每次拉取有独立持久回执；元数据核验与谷歌六项验收分别在契约与界面显示。专用 GApps 镜像/账号链继续 `blocked/not_tested`。
 - AM3：真实五实例全部 ready，20 次 HTTP 快照 `median=2.13ms/p95=2.74ms`，两台并发预览及五台内存读数已记录，最终容器/卷为零。[真实部分失败、修订冲突项重试与取消](../../docs/qa/android-management/2026-09-24-bulk-failure-cancel.md)通过，并修复新设备公开修订号与批次比较不一致。十台最低需求 8192 MiB 超过本机 Lima 的 7921 MiB，真实规模标记 `blocked`；运行时瞬时失败/未知结果的重试仍未验收。
-- AM4：生产备份/恢复改为 Lima 文件描述符流和逐块摘要；真实 17,868,800 字节备份→新实例读回通过。[高级日志](../../docs/qa/android-management/2026-09-24-advanced-logs-and-capacity.md)已按单次确认/归属/限时限量提供元数据摘要，真实 ReDroid 196 条通过。真实备份磁盘不足与归档传输取消已补；恢复解包中 SIGKILL 已补；目标磁盘不足与取消恢复仍未验收。
-- 自动化：最终审查后[完整软件门槛](../../docs/qa/android-management/2026-09-24-final-full-gates.md)通过：后端 `4031 passed, 26 skipped, 2 warnings in 852.64s`；Node 22 前端在后续 UI 说明增量后再跑 `424` 文件/`5626` 项（894.27s），类型/lint/OpenAPI/构建再次 exit 0；后端树未变，Ruff、迁移、结构与脚本沿用相同实现树的通过输出。定向测试集合有重叠，不相加。
+- AM4：生产备份/恢复改为 Lima 文件描述符流和逐块摘要；真实 17,868,800 字节备份→新实例读回通过。[高级日志](../../docs/qa/android-management/2026-09-24-advanced-logs-and-capacity.md)已按单次确认/归属/限时限量提供元数据摘要，真实 ReDroid 196 条通过。真实备份磁盘不足与归档传输取消已补；恢复解包中 SIGKILL 已补；目标磁盘不足与取消恢复已验，修复普通/文件命令仅杀父进程导致 SSH 继续写入的根因。
+- 自动化：最终审查后[完整软件门槛](../../docs/qa/android-management/2026-09-24-final-full-gates.md)通过：后端 `4031 passed, 26 skipped, 2 warnings in 852.64s`；Node 22 前端在后续 UI 说明增量后再跑 `424` 文件/`5626` 项（894.27s），类型/lint/OpenAPI/构建再次 exit 0；本轮后端命令树有修复，451项聚焦、完整4035 passed/26 skipped及Ruff/compileall/OpenAPI通过；全量终态见[本轮故障报告](../../docs/qa/android-management/2026-09-24-restore-cancel-and-disk-full.md)，旧4031项不冒充新树结果。结构与脚本对应源码未改。定向测试集合有重叠，不相加。
 - 当前阶段：完整目标 active/partial；最终审查增量已提交 30eb0926，本次后续故障/说明/审计形成独立有界提交。真实 Mac 输入/切端/租约回收/HTTP 重启、应用动作及跨重建回执、同卷恢复与双实例删除隔离、五实例、部分失败/修订冲突项重试/容量取消、文件流备份恢复、ENOSPC/传输取消和高级日志均有独立证据；十实例受本机容量阻塞，其他故障和外部 GApps 链仍未完成。逐项命令与风险以最新 QA 记录为准。
 
 正文保存在以下文件，不维护第二份规格：
@@ -30,7 +30,7 @@
 | AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | 自动化与真实 Mac 输入、切端、租约回收、HTTP 重启、保留卷恢复及隔离桌面创建/生命周期通过；Shizuku 安装后重建控制台可核实原回执并恢复控制。精确 200% 设置、指定窗口尺寸、真实断网和进程级控制硬中断仍未验收 |
 | AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | T08–T10/T12 自动化（含模板生命周期集成）通过；固定摘要官方 ReDroid 仓库真实网络拉取成功且原 tag 未变，自建 ARM64 小镜像经认证 HTTP 登记并实际删除内容。候选 GApps 镜像/账号下载链 blocked；真实断线后拉取核实和桌面内容删除未验收 |
 | AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 真实双实例 start/stop/delete、部分失败后修订冲突项 `retryFailed`、容量等待取消、五实例快照及双预览通过；真实 APK 安装/版本核实、启动、停止、清数据、卸载和重建回执通过。十实例因 Lima 内存预算不足 `blocked`；运行时瞬时失败/未知结果及桌面前台交互指标仍未验收 |
-| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 自动化覆盖归档安全、同事务发布、恢复归属、清理保护与脱敏边界；真实文件流备份恢复、持久条目读回、备份/恢复发布点 `SIGKILL` 后隔离、高级日志 196 条仅元数据、实际资源清理通过。真实备份磁盘不足/传输取消已验；恢复解包中 SIGKILL 已验；目标磁盘不足/取消恢复、旧卷标记清理与完整故障矩阵仍未验收 |
+| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 自动化覆盖归档安全、同事务发布、恢复归属、清理保护与脱敏边界；真实文件流备份恢复、持久条目读回、备份/恢复发布点 `SIGKILL` 后隔离、高级日志 196 条仅元数据、实际资源清理通过。真实备份磁盘不足/传输取消已验；恢复解包中 SIGKILL 已验；目标磁盘不足/取消恢复与多对象清理硬中断已验；完整故障矩阵仍未结束，无来源旧文件继续排除 |
 
 ## 当前校准
 

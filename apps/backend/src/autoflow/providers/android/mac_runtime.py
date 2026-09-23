@@ -32,15 +32,25 @@ ARCHIVE_SHA = "8fef43520405dd523c74e1530ac68febcc5a405ea89712c874936675da8513dd"
 LABEL = "io.autoflow.android.workspace"
 
 
+async def _stop_command(process: asyncio.subprocess.Process) -> None:
+    # limactl may leave an SSH child holding archive descriptors after its own exit.
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        elif process.returncode is None:
+            process.kill()
+    except ProcessLookupError:
+        pass
+    await process.wait()
+
+
 async def run(argv: list[str], timeout: float = 15, input_data: bytes | None = None) -> bytes:
-    spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdin=asyncio.subprocess.PIPE if input_data is not None else None, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE))
+    spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdin=asyncio.subprocess.PIPE if input_data is not None else None, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, start_new_session=os.name == "posix"))
     try:
         process = await asyncio.shield(spawn)
     except asyncio.CancelledError:
         process = await _wait_for_spawn(spawn)
-        if process.returncode is None:
-            process.kill()
-        await process.wait()
+        await _stop_command(process)
         raise
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(input_data), timeout)
@@ -52,9 +62,7 @@ async def run(argv: list[str], timeout: float = 15, input_data: bytes | None = N
             raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
         return stdout
     finally:
-        if process.returncode is None:
-            process.kill()
-            await process.wait()
+        await _stop_command(process)
 
 
 async def run_file(argv: list[str], timeout: float, *, input_path: Path | None = None, output_path: Path | None = None) -> None:
@@ -63,14 +71,12 @@ async def run_file(argv: list[str], timeout: float, *, input_path: Path | None =
         stdin = stack.enter_context(input_path.open("rb")) if input_path else subprocess.DEVNULL
         stdout = stack.enter_context(output_path.open("wb")) if output_path else subprocess.DEVNULL
         stderr = stack.enter_context(tempfile.TemporaryFile())
-        spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdin=stdin, stdout=stdout, stderr=stderr))
+        spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdin=stdin, stdout=stdout, stderr=stderr, start_new_session=os.name == "posix"))
         try:
             process = await asyncio.shield(spawn)
         except asyncio.CancelledError:
             process = await _wait_for_spawn(spawn)
-            if process.returncode is None:
-                process.kill()
-            await process.wait()
+            await _stop_command(process)
             raise
         try:
             await asyncio.wait_for(process.wait(), timeout)
@@ -82,9 +88,7 @@ async def run_file(argv: list[str], timeout: float, *, input_path: Path | None =
                     message += ": " + detail
                 raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
         finally:
-            if process.returncode is None:
-                process.kill()
-                await process.wait()
+            await _stop_command(process)
 
 
 async def docker(*args: str, timeout: float = 30, input_data: bytes | None = None) -> bytes:
