@@ -4,6 +4,7 @@ import asyncio
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.base import ModuleExecutor, ModuleResult
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
@@ -246,7 +247,9 @@ async def test_error_edge_handles_failure_without_running_normal_successor() -> 
 
 
 @pytest.mark.asyncio
-async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
+async def test_count_loop_repeats_body_and_runs_done_branch_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = [0.0]
+    monkeypatch.setattr("autoflow.application.workflows.runtime.perf_counter", lambda: clock[0])
     calls: list[int] = []
     events: list[dict[str, Any]] = []
 
@@ -271,6 +274,7 @@ async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
         _self: ModuleExecutor, _config: dict[str, Any], context: ExecutionContext
     ) -> ModuleResult:
         calls.append(context.variables["index"])
+        clock[0] += (context.variables["index"] + 1) / 10
         return ModuleResult(success=True)
 
     async def done(
@@ -309,6 +313,9 @@ async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
         if event["type"] == "execution:node_start" and event["nodeId"] == "body"
     ]
     assert len({event["executionId"] for event in body_starts}) == 3
+    body_completions = [event for event in events if event["type"] == "execution:node_complete" and event["nodeId"] == "body"]
+    assert [event["duration"] for event in body_completions] == pytest.approx([100, 200, 300])
+    assert [event["executionId"] for event in body_completions] == [event["executionId"] for event in body_starts]
     assert [event["executionContext"]["loops"] for event in body_starts] == [
         [
             {

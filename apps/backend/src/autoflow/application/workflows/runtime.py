@@ -4,7 +4,9 @@ import asyncio
 import copy
 import json
 from collections.abc import Coroutine, Mapping
+from contextvars import ContextVar
 from dataclasses import dataclass, field
+from time import perf_counter
 from typing import Any
 from uuid import uuid4
 
@@ -12,7 +14,7 @@ from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.graph import ExecutionGraph, WorkflowNode, parse_workflow
 from autoflow.domain.workflows.scope import WorkflowScopeIssue, validate_workflow_scope
 
-from .executors.base import ModuleResult
+from .executors.base import ModuleExecutor, ModuleResult
 from .executors.registry import ExecutorRegistry
 
 # Source: WebRPA workflow_executor.py important_modules/trigger_modules, approved scope only.
@@ -53,6 +55,29 @@ SYSTEM_LOG_NODE_TYPES = frozenset({
 
 MAX_NODE_DISPATCHES = 100_000
 _LOOP_NODE_TYPES = frozenset({"loop", "foreach", "infinite_loop", "foreach_dict"})
+
+
+@dataclass(slots=True)
+class _NodeTiming:
+    started_at: float = field(default_factory=lambda: perf_counter())
+    paused_seconds: float = 0.0
+    waiting: int = 0
+    pause_started: float = 0.0
+
+    def enter_pause(self) -> None:
+        if not self.waiting:
+            self.pause_started = perf_counter()
+        self.waiting += 1
+
+    def leave_pause(self) -> None:
+        self.waiting -= 1
+        if not self.waiting:
+            self.paused_seconds += perf_counter() - self.pause_started
+
+
+# Task inheritance binds nested calls to their ancestors, never sibling roots.
+# Count overlapping child boundary waits once; retain no per-pause history.
+_node_timings: ContextVar[tuple[_NodeTiming, ...]] = ContextVar("node_timings", default=())
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +145,7 @@ class WorkflowRuntime:
         context: ExecutionContext,
         *,
         start_node_id: str | None = None,
+        detached: bool = False,
     ) -> WorkflowRuntimeResult:
         issues = self.preflight(document)
         if issues:
@@ -134,9 +160,16 @@ class WorkflowRuntime:
                 "",
             )
             return WorkflowRuntimeResult(False, (), (issue,))
-        return await _WorkflowScheduler(self._registry, graph, context).run(
-            [start_node_id] if start_node_id is not None else None
-        )
+        # Non-waiting workflow calls keep cancellation/debug ownership, but their
+        # background pauses cannot change the caller's action duration.
+        token = _node_timings.set(()) if detached else None
+        try:
+            return await _WorkflowScheduler(self._registry, graph, context).run(
+                [start_node_id] if start_node_id is not None else None
+            )
+        finally:
+            if token is not None:
+                _node_timings.reset(token)
 
 
 @dataclass(slots=True)
@@ -264,13 +297,30 @@ class _WorkflowScheduler:
             self._remember_failure(node.id, result)
             return result
 
+        parents = _node_timings.get()
         if self.context.debug is not None:
-            await self.context.debug.before_node(
-                self.context,
-                node_id=node.id,
-                label=str(node.data.get("label") or node.type),
-            )
+            for parent in parents:
+                parent.enter_pause()
+            try:
+                await self.context.debug.before_node(
+                    self.context,
+                    node_id=node.id,
+                    label=str(node.data.get("label") or node.type),
+                )
+            finally:
+                for parent in parents:
+                    parent.leave_pause()
 
+        timing = _NodeTiming()
+        token = _node_timings.set((*parents, timing))
+        try:
+            return await self._execute_node(node, executor, timing)
+        finally:
+            _node_timings.reset(token)
+
+    async def _execute_node(
+        self, node: WorkflowNode, executor: ModuleExecutor, timing: _NodeTiming
+    ) -> ModuleResult:
         execution_id = str(uuid4())
         node_label = str(node.data.get("label") or node.type)
         execution_context = execution_context_snapshot(self.context)
@@ -307,6 +357,9 @@ class _WorkflowScheduler:
             dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
         )
         self.context.begin_node()
+        # Frozen source measures dispatch milliseconds; exclude transport setup
+        # and the enclosing call's own/nested debug boundary waits.
+        timing.started_at = perf_counter()
         result = await _execute_with_cancellation(
             executor.execute(config, self.context), self.context
         )
@@ -388,6 +441,9 @@ class _WorkflowScheduler:
             )
         if not _is_json_value(result.data):
             result = ModuleResult(success=False, error="节点结果包含无法序列化的数据")
+        result.duration = max(
+            0.0, perf_counter() - timing.started_at - timing.paused_seconds
+        ) * 1000
         for change in self.context.end_variable_tracking(tracking_token):
             await _publish(
                 self.context,

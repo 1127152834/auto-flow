@@ -1,0 +1,223 @@
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+_ test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[set_variable-True-0-125] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f4ab0d0>
+node_type = 'set_variable', success = True, nested_pause = 0, expected = 125
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(('node_type', 'success', 'nested_pause', 'expected'), [
+        ('set_variable', True, 0, 125), ('set_variable', False, 0, 125),
+        ('run_workflow_file', True, 50, 125),
+        # An already-running ordinary action is not frozen when another branch pauses.
+        ('set_variable', True, 50, 50125),
+    ])
+    async def test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause(
+        monkeypatch, node_type, success, nested_pause, expected,
+    ):
+        now = [0.0]
+        monkeypatch.setattr('autoflow.application.workflows.runtime.perf_counter', lambda: now[0], raising=False)
+
+        class Debug:
+            paused_seconds = 0.0
+            async def before_node(self, _context, *, node_id, label):
+                now[0] += 100
+                self.paused_seconds += 100
+
+        debug = Debug()
+        events = []
+        class Sink:
+            async def publish(self, event): events.append(dict(event))
+        class Action(ModuleExecutor):
+            module_type = node_type
+            async def execute(self, _config, _context):
+                now[0] += nested_pause + .125
+                debug.paused_seconds += nested_pause
+                return ModuleResult(success=success, message='measured', error=None if success else 'failure', duration=999)
+        registry = ExecutorRegistry()
+        registry.register(Action)
+        result = await WorkflowRuntime(registry).execute({'nodes': [{'id': 'node', 'data': {'moduleType': node_type}}], 'edges': []}, ExecutionContext(debug=debug, events=Sink()))
+        assert result.success is success
+        completed = next(event for event in events if event['type'] == 'execution:node_complete')
+>       assert completed['duration'] == pytest.approx(expected)
+E       assert 999 == 125 ± 1.3e-04
+E
+E         comparison failed
+E         Obtained: 999
+E         Expected: 125 ± 1.3e-04
+
+tests/unit/workflows/test_runtime_duration.py:49: AssertionError
+_ test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[set_variable-False-0-125] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f246750>
+node_type = 'set_variable', success = False, nested_pause = 0, expected = 125
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(('node_type', 'success', 'nested_pause', 'expected'), [
+        ('set_variable', True, 0, 125), ('set_variable', False, 0, 125),
+        ('run_workflow_file', True, 50, 125),
+        # An already-running ordinary action is not frozen when another branch pauses.
+        ('set_variable', True, 50, 50125),
+    ])
+    async def test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause(
+        monkeypatch, node_type, success, nested_pause, expected,
+    ):
+        now = [0.0]
+        monkeypatch.setattr('autoflow.application.workflows.runtime.perf_counter', lambda: now[0], raising=False)
+
+        class Debug:
+            paused_seconds = 0.0
+            async def before_node(self, _context, *, node_id, label):
+                now[0] += 100
+                self.paused_seconds += 100
+
+        debug = Debug()
+        events = []
+        class Sink:
+            async def publish(self, event): events.append(dict(event))
+        class Action(ModuleExecutor):
+            module_type = node_type
+            async def execute(self, _config, _context):
+                now[0] += nested_pause + .125
+                debug.paused_seconds += nested_pause
+                return ModuleResult(success=success, message='measured', error=None if success else 'failure', duration=999)
+        registry = ExecutorRegistry()
+        registry.register(Action)
+        result = await WorkflowRuntime(registry).execute({'nodes': [{'id': 'node', 'data': {'moduleType': node_type}}], 'edges': []}, ExecutionContext(debug=debug, events=Sink()))
+        assert result.success is success
+        completed = next(event for event in events if event['type'] == 'execution:node_complete')
+>       assert completed['duration'] == pytest.approx(expected)
+E       assert 999 == 125 ± 1.3e-04
+E
+E         comparison failed
+E         Obtained: 999
+E         Expected: 125 ± 1.3e-04
+
+tests/unit/workflows/test_runtime_duration.py:49: AssertionError
+_ test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[run_workflow_file-True-50-125] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e06ea90>
+node_type = 'run_workflow_file', success = True, nested_pause = 50
+expected = 125
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(('node_type', 'success', 'nested_pause', 'expected'), [
+        ('set_variable', True, 0, 125), ('set_variable', False, 0, 125),
+        ('run_workflow_file', True, 50, 125),
+        # An already-running ordinary action is not frozen when another branch pauses.
+        ('set_variable', True, 50, 50125),
+    ])
+    async def test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause(
+        monkeypatch, node_type, success, nested_pause, expected,
+    ):
+        now = [0.0]
+        monkeypatch.setattr('autoflow.application.workflows.runtime.perf_counter', lambda: now[0], raising=False)
+
+        class Debug:
+            paused_seconds = 0.0
+            async def before_node(self, _context, *, node_id, label):
+                now[0] += 100
+                self.paused_seconds += 100
+
+        debug = Debug()
+        events = []
+        class Sink:
+            async def publish(self, event): events.append(dict(event))
+        class Action(ModuleExecutor):
+            module_type = node_type
+            async def execute(self, _config, _context):
+                now[0] += nested_pause + .125
+                debug.paused_seconds += nested_pause
+                return ModuleResult(success=success, message='measured', error=None if success else 'failure', duration=999)
+        registry = ExecutorRegistry()
+        registry.register(Action)
+        result = await WorkflowRuntime(registry).execute({'nodes': [{'id': 'node', 'data': {'moduleType': node_type}}], 'edges': []}, ExecutionContext(debug=debug, events=Sink()))
+        assert result.success is success
+        completed = next(event for event in events if event['type'] == 'execution:node_complete')
+>       assert completed['duration'] == pytest.approx(expected)
+E       assert 999 == 125 ± 1.3e-04
+E
+E         comparison failed
+E         Obtained: 999
+E         Expected: 125 ± 1.3e-04
+
+tests/unit/workflows/test_runtime_duration.py:49: AssertionError
+_ test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[set_variable-True-50-50125] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f4bf4d0>
+node_type = 'set_variable', success = True, nested_pause = 50, expected = 50125
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(('node_type', 'success', 'nested_pause', 'expected'), [
+        ('set_variable', True, 0, 125), ('set_variable', False, 0, 125),
+        ('run_workflow_file', True, 50, 125),
+        # An already-running ordinary action is not frozen when another branch pauses.
+        ('set_variable', True, 50, 50125),
+    ])
+    async def test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause(
+        monkeypatch, node_type, success, nested_pause, expected,
+    ):
+        now = [0.0]
+        monkeypatch.setattr('autoflow.application.workflows.runtime.perf_counter', lambda: now[0], raising=False)
+
+        class Debug:
+            paused_seconds = 0.0
+            async def before_node(self, _context, *, node_id, label):
+                now[0] += 100
+                self.paused_seconds += 100
+
+        debug = Debug()
+        events = []
+        class Sink:
+            async def publish(self, event): events.append(dict(event))
+        class Action(ModuleExecutor):
+            module_type = node_type
+            async def execute(self, _config, _context):
+                now[0] += nested_pause + .125
+                debug.paused_seconds += nested_pause
+                return ModuleResult(success=success, message='measured', error=None if success else 'failure', duration=999)
+        registry = ExecutorRegistry()
+        registry.register(Action)
+        result = await WorkflowRuntime(registry).execute({'nodes': [{'id': 'node', 'data': {'moduleType': node_type}}], 'edges': []}, ExecutionContext(debug=debug, events=Sink()))
+        assert result.success is success
+        completed = next(event for event in events if event['type'] == 'execution:node_complete')
+>       assert completed['duration'] == pytest.approx(expected)
+E       assert 999 == 50125 ± 0.050125
+E
+E         comparison failed
+E         Obtained: 999
+E         Expected: 50125 ± 0.050125
+
+tests/unit/workflows/test_runtime_duration.py:49: AssertionError
+_____ test_real_debug_controller_tracks_pause_time_including_cancellation ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e0979d0>
+
+    @pytest.mark.asyncio
+    async def test_real_debug_controller_tracks_pause_time_including_cancellation(monkeypatch):
+        now = [5.0]
+        monkeypatch.setattr('autoflow.providers.browser.workflow_worker.perf_counter', lambda: now[0], raising=False)
+        stopped = Event()
+        debug = _WorkerDebugController(stopped, step_mode=True, breakpoints=set())
+        events = []
+        class Sink:
+            async def publish(self, event): events.append(dict(event))
+        context = ExecutionContext(debug=debug, events=Sink())
+        task = asyncio.create_task(debug.before_node(context, node_id='first', label='first'))
+        try:
+            async with asyncio.timeout(1):
+                while not events: await asyncio.sleep(0)
+            pause = events[0]
+            now[0] = 35
+>           assert debug.paused_seconds == 30
+                   ^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: '_WorkerDebugController' object has no attribute 'paused_seconds'
+
+tests/unit/workflows/test_runtime_duration.py:70: AttributeError
+=========================== short test summary info ============================
+FAILED tests/unit/workflows/test_runtime_duration.py::test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[set_variable-True-0-125]
+FAILED tests/unit/workflows/test_runtime_duration.py::test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[set_variable-False-0-125]
+FAILED tests/unit/workflows/test_runtime_duration.py::test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[run_workflow_file-True-50-125]
+FAILED tests/unit/workflows/test_runtime_duration.py::test_node_duration_uses_monotonic_milliseconds_and_excludes_own_or_nested_pause[set_variable-True-50-50125]
+FAILED tests/unit/workflows/test_runtime_duration.py::test_real_debug_controller_tracks_pause_time_including_cancellation
+5 failed in 0.66s

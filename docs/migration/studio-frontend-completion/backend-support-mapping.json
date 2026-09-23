@@ -215,7 +215,12 @@
       "deliveryReconciliation20260923": {
         "status": "verified-macos-arm64-development-and-local-package",
         "evidence": "docs/migration/studio-backend-migration/evidence/shared-services/log-delivery-2026-09-23/result.json",
-        "remainingTimingGap": "ModuleResult.duration仍默认0；后续在现有调度边界实现实际毫秒；不影响本块内容与续读验收"
+        "remainingTimingGap": "superseded: actual monotonic dispatch timing verified; see durationReconciliation20260923"
+      },
+      "durationReconciliation20260923": {
+        "status": "verified-macos-arm64-development-and-local-package",
+        "evidence": "docs/migration/studio-backend-migration/evidence/shared-services/node-duration-2026-09-23/result.json",
+        "semantics": "实际毫秒；自身/等待子调用断点不计；独立分支及非等待后台流程不影响调用方；循环每轮独立"
       }
     },
     {

@@ -1,0 +1,43 @@
+{
+  "evidenceId": "BE.SUPPORT.logs-artifacts.duration",
+  "status": "verified-macos-arm64-development-and-local-package",
+  "classification": [
+    "原版节点毫秒计时迁入",
+    "AutoFlow必要适配：单调时钟、嵌套调试等待归属及非等待后台调用隔离"
+  ],
+  "source": "reference/WebRPA/backend/app/services/workflow_executor.py:1195",
+  "implementation": [
+    "apps/backend/src/autoflow/application/workflows/runtime.py",
+    "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
+  ],
+  "tests": {
+    "regression": 78,
+    "ruff": "passed",
+    "mypy": "passed",
+    "cases": [
+      "success and returned failure measure action, not own real debug wait",
+      "nested real runtime excludes its own child pause",
+      "independent parallel pause does not shorten active action or parent call",
+      "non-waiting worker nested workflow cannot alter ancestor timing",
+      "loop body duration and executionId remain per dispatch",
+      "raised error/cancellation cannot fabricate node completion"
+    ],
+    "pyinstaller": "passed in 171 seconds",
+    "frozenStartup": "passed",
+    "localUnsignedPackage": "passed",
+    "packagedUI": "passed; final detached-call implementation included"
+  },
+  "developmentEvidence": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-JYr7gE/result.json",
+  "reviewFixes": [
+    "global worker pause counter rejected: unrelated branch changed parent duration",
+    "detached background workflow clears only inherited timing, retaining original debug/cancellation and call-stack semantics"
+  ],
+  "boundaries": [
+    "No new clock framework or production source loading",
+    "No API/DB/schema change",
+    "Does not change overall run elapsed time, diagnostics history or replay",
+    "Development UI before final detached-call refinement; final package must validate final implementation",
+    "Intel/Windows untested; 213 node slots remain 622 passed /17 real execution pending"
+  ],
+  "packagedEvidence": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-0jega9/result.json"
+}

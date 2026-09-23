@@ -228,8 +228,15 @@ try {
     const logs = await api(runtime, `/workflow-runs/${run.runId}/logs?cursor=0&limit=100`)
     assert.ok(logs.items.some(log => log.nodeId === printId && log.message === marker && log.level === 'info'))
     assert.ok(logs.items.some(log => log.nodeId === nodeIds[0]), 'ordinary logs remain persisted')
+    const nodeDurations = nodeIds.map(nodeId => {
+      const log = logs.items.find(item => item.nodeId === nodeId)
+      assert.ok(Number.isFinite(log?.duration) && log.duration > 0, `real browser node ${nodeId} has measured milliseconds`)
+      return {nodeId, durationMs:log.duration}
+    })
     const userEvent = await waitForValue(async () => observedEvents.find(event => event.name === 'execution:log' && event.data?.runId === run.runId && event.data.log?.nodeId === printId), 'confirmed user log event')
     assert.equal(userEvent.data.log.isUserLog, true)
+    assert.ok(userEvent.data.log.duration > 0)
+    assert.equal(userEvent.data.log.duration, logs.items.find(log => log.nodeId === printId).duration)
     await capture(studio, join(evidenceDir, 'concise-user-log.png'))
     const before = requestedStreams.length
     await click(studio, '简洁日志')
@@ -246,7 +253,7 @@ try {
     await capture(studio, join(evidenceDir, 'reopened-log-history.png'))
     assert.deepEqual(execFileSync('ps', ['-axo', 'command='], {encoding:'utf8'}).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)), [])
     checkpoint('真实UI切换简洁/详细SSE，用户日志保留，普通节点日志完整持久化；续读游标、关窗重开历史和进程清理通过')
-    const report = {evidenceId:'BE-studio-log-delivery',checkedAt:new Date().toISOString(),result:'passed',platform:`${process.platform}-${process.arch}`,entry:desktop.packaged?'packaged-directory':'development-build',workflowId:saved.id,runId:run.runId,requestedStreams:requestedStreams.map(value=>{const url=new URL(value);return {afterSeq:url.searchParams.get('afterSeq'),verboseLog:url.searchParams.get('verboseLog')}}),checks,packageBoundary:desktop.packaged?await verifyPackageBoundary():null,buildArtifacts:desktop.packaged?await packagedBuildHashes():null,boundaries:{userDatabaseTouched:false,workspace:'ephemeral',interaction:'real UI only; API asserts logs and process cleanup'}}
+    const report = {evidenceId:'BE-studio-log-delivery',checkedAt:new Date().toISOString(),result:'passed',platform:`${process.platform}-${process.arch}`,entry:desktop.packaged?'packaged-directory':'development-build',workflowId:saved.id,runId:run.runId,nodeDurations,requestedStreams:requestedStreams.map(value=>{const url=new URL(value);return {afterSeq:url.searchParams.get('afterSeq'),verboseLog:url.searchParams.get('verboseLog')}}),checks,packageBoundary:desktop.packaged?await verifyPackageBoundary():null,buildArtifacts:desktop.packaged?await packagedBuildHashes():null,boundaries:{userDatabaseTouched:false,workspace:'ephemeral',interaction:'real UI only; API asserts logs and process cleanup'}}
     await writeFile(join(evidenceDir,'result.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({evidenceDir,...report},null,2))
   } else if (projectTaskMode) {
     await closeWindowThroughOs(desktop.child.pid)

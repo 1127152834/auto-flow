@@ -149,6 +149,14 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 
 关联失败与修复：真实 HTTP 测试显式禁用外部代理避免本机请求502；保留原 success 导出断言，未更改测试期望。复核以同一个网络 chunk 的取消场景复现旧帧推进游标，现取消后不消费余帧。实际 UI 测试只修正节点遮挡、原版 tooltip 改写及读取 DOM 返回 boolean，保存/重开/真实执行断言保留。
 
-登记的新缺口（非本块阻塞）：`application/workflows/runtime.py` 转发 `ModuleResult.duration` 但未实际计时；冻结源 `workflow_executor.py:1195` 使用实际毫秒。来源为本次日志只读审查，影响节点耗时诊断的准确性；后续在既有调度边界补计时，不能把默认0作为真实测量。它不影响本块的模式切换、日志内容、分类及事件身份验收。
+历史发现（已由下节实际耗时修复替代）：`application/workflows/runtime.py` 曾转发 `ModuleResult.duration` 但未实际计时；冻结源 `workflow_executor.py:1195` 使用实际毫秒。来源为本次日志只读审查，影响节点耗时诊断的准确性；后续在既有调度边界补计时，不能把默认0作为真实测量。它不影响本块的模式切换、日志内容、分类及事件身份验收。
 
 本块97项后端、46项前端及类型/lint/OpenAPI/结构/构建通过。开发入口与本次macOS arm64 unsigned正式包均实际切换日志模式、执行六节点、保存重开、读取同次历史，并确认CloakBrowser清理；PyInstaller与冻结启动通过。证据：[log-delivery-2026-09-23/result.json](../studio-backend-migration/evidence/shared-services/log-delivery-2026-09-23/result.json)。诊断耗时与其余项目集成仍保留，不核销任何未测节点/平台。
+
+### 节点真实耗时（2026-09-23 confirmed）
+
+冻结源以毫秒记录节点执行；迁入调度器现使用单调时钟，在节点自身断点结束后计时，执行完成/失败结果透传到事件、持久日志和既有毫秒显示。不改整次运行墙钟时长，不制造取消/抛错节点的完成事件。
+
+嵌套等待通过现有任务上下文关联调用祖先，只扣本调用链的调试边界等待；重叠等待计一次，不存逐次计时历史。非等待子流程在原 worker 后台入口分离计时祖先，仍保留原取消/调试和调用深度保护。最初共享 worker 暂停累计方案会误扣无关并行分支，已由真实控制器及嵌套 Runtime 回归替代。
+
+证据：[node-duration-2026-09-23/result.json](../studio-backend-migration/evidence/shared-services/node-duration-2026-09-23/result.json)。78项关联回归、Ruff/mypy通过；开发入口真实五网页动作及用户日志的非零毫秒、持久恢复和进程清理已验证。最终后台调用细化后，PyInstaller171秒、冻结启动和本次macOS arm64本地unsigned包真实六节点、持久毫秒及关窗恢复均通过；其他平台与全项目集成不因此核销。

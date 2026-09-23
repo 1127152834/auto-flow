@@ -526,7 +526,7 @@ class _WorkerNestedWorkflows:
         name = str(snapshot.get("name") or canonical)
         if not wait_complete:
             task = asyncio.create_task(
-                self._execute(snapshot, canonical, variables),
+                self._execute(snapshot, canonical, variables, detached=True),
                 name=f"nested-workflow:{canonical}",
             )
             self._background.add(task)
@@ -561,6 +561,8 @@ class _WorkerNestedWorkflows:
         snapshot: dict[str, Any],
         canonical: str,
         variables: Mapping[str, Any],
+        *,
+        detached: bool = False,
     ) -> NestedWorkflowResult:
         stack = self._stack.get()
         name = str(snapshot.get("name") or canonical)
@@ -634,7 +636,7 @@ class _WorkerNestedWorkflows:
         )
         try:
             result = await WorkflowRuntime(self._registry).execute(
-                canvas_subflows.top_level_document(), child
+                canvas_subflows.top_level_document(), child, detached=detached
             )
             nested = NestedWorkflowResult(
                 reference=reference,

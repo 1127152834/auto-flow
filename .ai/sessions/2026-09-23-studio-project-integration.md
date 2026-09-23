@@ -159,3 +159,10 @@
 - 只读review发现取消旧流仍消费单chunk余帧，新增用例先红后绿，逐帧取消检查保证原afterSeq续读且不取消交互命令。97后端、46前端、类型/lint/OpenAPI/结构通过。
 - 开发formal-electron-34nlyy、本地unsigned包formal-electron-VTa59T：真实UI简洁/详细切换、六节点CloakBrowser执行、用户日志保留、完整历史、关窗重开、资源清理通过。PyInstaller170秒、冻结启动通过。失败RIYCJ6/YpG5Mp/jZ4qpZ均保留：只修复测试节点遮挡、原版tooltip及DOM读取boolean，不改产品或验收断言。
 - 汇总shared-services/log-delivery-2026-09-23。旧404/501三项已核销；source review另发现节点duration默认0，登记为既有运行诊断缺口，准备在既有调度边界计时。其余项目权限资源/业务数据/全部族准入及17节点实际环境未关闭，用户删除14项不恢复。
+
+## 节点耗时诊断 confirmed
+
+- 恢复冻结源实际毫秒语义，单调时钟计时；真实调试控制器/嵌套Runtime/循环返回失败与抛错取消均覆盖。review发现全worker暂停累计误扣独立分支，改为任务调用祖先计时；复核发现非等待子流程继承祖先，沿原worker后台入口清除计时继承，不改变调试/取消与调用深度。重叠等待仅计一次，不存暂停历史。
+- 78关联回归、Ruff/mypy通过；正式开发JYr7gE与最终unsigned包0jega9实际UI创建六节点并执行，五网页动作均记录真实毫秒，用户日志/SSE与持久日志相同，AXClose/重开/资源清理通过。PyInstaller171秒、冻结启动和本地包通过。汇总shared-services/node-duration-2026-09-23。
+- 新发现（登记，未核销）：真实worker未注入CredentialReader，凭据管理实现不等同节点可消费；助手会话/命令尚无项目归属。项目现有defaultResources是默认+可覆盖，不是ACL；已异步询问用户是否保持或新增资源白名单，不能擅把默认值变成权限限制。后续继续不依赖此决定的真实凭据消费接入。
+- 213节点槽位622/17不变；14通知排除保持；Intel/Windows未测。
