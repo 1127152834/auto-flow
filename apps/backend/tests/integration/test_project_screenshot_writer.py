@@ -81,6 +81,53 @@ async def test_project_binary_output_waits_for_durable_event(
 
 
 @pytest.mark.asyncio
+async def test_project_empty_file_can_be_downloaded_as_registered_artifact(tmp_path):
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    writer = ProjectArtifactWriter(tmp_path, "run", 1, "file", "visit", "file", emit)
+    target = await writer.write_bytes(
+        name="empty.txt", content=b"", mime_type="application/octet-stream"
+    )
+    assert Path(target).read_bytes() == b""
+    assert events[0][3]["byteSize"] == 0
+
+
+@pytest.mark.asyncio
+async def test_project_text_export_waits_for_ack_and_preserves_snapshots(tmp_path):
+    arrived, confirmed = asyncio.Event(), asyncio.Event()
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+        arrived.set()
+        await confirmed.wait()
+
+    writer = ProjectArtifactWriter(tmp_path, "run", 2, "export", "visit", "file", emit)
+    pending = asyncio.create_task(writer.write_text(
+        output_path="exports/items.txt", content="甲\n乙", separator="\n",
+        encoding="utf-8", append=False, mime_type="text/plain",
+    ))
+    await asyncio.wait_for(arrived.wait(), 3)
+    assert not pending.done()
+    assert events[0][3]["mediaType"] == "application/octet-stream"
+    snapshot = tmp_path / events[0][3]["relativePath"]
+    assert snapshot.read_text() == "甲\n乙"
+    confirmed.set()
+    target = Path(await pending)
+    assert target.read_text() == "甲\n乙"
+
+    second = ProjectArtifactWriter(tmp_path, "run", 2, "export", "next", "file", emit)
+    assert Path(await second.write_text(
+        output_path="exports/items.txt", content="丙", separator="\n",
+        encoding="utf-8", append=True, mime_type="text/plain",
+    )).read_text() == "甲\n乙\n丙"
+    assert snapshot.read_text() == "甲\n乙"
+
+
+@pytest.mark.asyncio
 async def test_screenshot_paths_and_existing_files_keep_shared_store_rules(tmp_path):
     events = []
 

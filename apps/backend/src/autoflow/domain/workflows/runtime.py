@@ -240,7 +240,7 @@ def create_run_artifact(
             or (kind == "image" and not media_type.startswith("image/"))
             or (kind == "file" and media_type != "application/octet-stream")
             or type(byte_size) is not int
-            or byte_size < 1
+            or byte_size < (0 if kind == "file" else 1)
             or byte_size > (MAX_ARTIFACT_BYTES if kind == "screenshot" else 64 * 1024 * 1024)
             or not isinstance(sha256, str)
             or len(sha256) != 64

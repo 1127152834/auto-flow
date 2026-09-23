@@ -49,6 +49,7 @@ class ProjectArtifactWriter:
             execution_id=execution_id,
             purpose="result",
             cancellation=self._cancellation,
+            max_bytes=64 * 1024 * 1024 if kind == "file" else None,
         )
 
     def register_artifact(self, **values: Any) -> WorkflowArtifact:
@@ -65,7 +66,7 @@ class ProjectArtifactWriter:
             else False
         )
         limit = 20 * 1024 * 1024 if self._kind == "screenshot" else 64 * 1024 * 1024
-        if not valid_media or not content or len(content) > limit or len(mime_type) > 120:
+        if not valid_media or (not content and self._kind != "file") or len(content) > limit or len(mime_type) > 120:
             raise WorkflowRunError(
                 "RUN_ARTIFACT_INVALID", "项目产物的类型或大小无效", 422
             )
@@ -87,6 +88,10 @@ class ProjectArtifactWriter:
         artifact = self._pending
         assert artifact is not None
         self._pending = None
+        await self._emit_artifact(artifact)
+        return target
+
+    async def _emit_artifact(self, artifact: WorkflowArtifact) -> None:
         # Do not let an uncertain ACK roll back a file that SQL may have committed.
         # The dispatcher checks durable facts before removing an uncommitted file.
         await self._emit(
@@ -99,14 +104,17 @@ class ProjectArtifactWriter:
                 "purpose": "result",
                 "availability": "available",
                 "relativePath": artifact.relative_path,
-                "mediaType": artifact.mime_type,
+                "mediaType": (
+                    "application/octet-stream"
+                    if self._kind == "file"
+                    else artifact.mime_type
+                ),
                 "byteSize": artifact.size,
                 "sha256": artifact.sha256,
                 "createdAt": datetime.now(UTC).isoformat(),
                 "unavailableReason": None,
             },
         )
-        return target
 
     async def write_text(
         self,
@@ -118,7 +126,37 @@ class ProjectArtifactWriter:
         append: bool,
         mime_type: str,
     ) -> str:
-        raise WorkflowRunError("WORKFLOW_NOT_RUNNABLE", "项目任务尚未接入文本产物", 422)
+        if self._kind != "file" or mime_type not in {
+            "text/plain", "text/csv", "application/json"
+        }:
+            raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目文本产物类型无效", 422)
+        writing = asyncio.create_task(
+            self._writer.write_text(
+                output_path=output_path,
+                content=content,
+                separator=separator,
+                encoding=encoding,
+                append=append,
+                mime_type=mime_type,
+            )
+        )
+        try:
+            target = await asyncio.shield(writing)
+        except asyncio.CancelledError:
+            self._cancellation.event.set()
+            # A completed output is already visible. Persist its snapshot even
+            # if the node timed out before the worker received the ACK.
+            target = await writing
+            artifact = self._pending
+            if artifact is not None:
+                self._pending = None
+                await self._emit_artifact(artifact)
+            raise
+        artifact = self._pending
+        assert artifact is not None
+        self._pending = None
+        await self._emit_artifact(artifact)
+        return target
 
     async def write_binary_output(
         self,

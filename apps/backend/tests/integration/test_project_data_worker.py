@@ -110,7 +110,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -155,10 +155,14 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("random", "random_number", {"randomType": "integer", "minValue": 7, "maxValue": 7, "variableName": "pick"}, 7),
         ("clock", "get_time", {"timeFormat": "date", "variableName": "today"}, None),
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps}[family]
+    export_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("first", "list_export", {"listVariable": "items", "outputPath": "exports/items.txt", "separator": "\\n"}, None),
+        ("append", "list_export", {"listVariable": "items", "outputPath": "exports/items.txt", "separator": "\\n", "appendMode": True}, None),
+        ("empty", "list_export", {"listVariable": "empty_items", "outputPath": "exports/empty.txt"}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
-    assert "list_export" not in runnable_module_types()  # Project artifacts are not wired yet.
     assert node_types <= set(build_production_executor_registry().get_all_types())
     document = _studio_payload(automation.workflow_id)
     document.update(
@@ -170,7 +174,8 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         edges=[{
             "id": f"edge-{index}", "source": steps[index][0], "target": steps[index + 1][0],
         } for index in range(len(steps) - 1)],
-        variables=([{"name": "items", "type": "array", "value": [1, 2, 3, 3]}]
+        variables=([{"name": "items", "type": "array", "value": ["甲", "乙"]}, {"name": "empty_items", "type": "array", "value": []}]
+                   if family == "export" else [{"name": "items", "type": "array", "value": [1, 2, 3, 3]}]
                    if family == "math" else [{"name": "payload", "type": "string", "value": '{"items":[{"name":"甲"},{"name":"乙"}]}'}]
                    if family == "variables" else []),
     )
@@ -230,6 +235,12 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             for node_id, _, _, expected in steps:
                 if expected is not None:
                     assert outputs[node_id] == expected
+        elif family == "export":
+            evidence = ProjectRunEvidence(factory, tmp_path / "workspace")
+            artifacts, total = evidence.artifacts(project.project_id, task.task_id)
+            assert total == 3 and [item.kind for item in artifacts] == ["file"] * 3
+            assert [evidence.artifact_content(project.project_id, task.task_id, item.artifact_id)[0].decode() for item in artifacts] == ["甲\n乙", "甲\n乙\n甲\n乙", ""]
+            assert outputs == {}
         else:
             assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
         assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)

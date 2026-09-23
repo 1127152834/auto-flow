@@ -19123,7 +19123,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及darwin-arm64正式Electron逐节点结果、日志和产物均有实际证据；未实测平台未推定通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/list-export-2026-09-24/README.md",
+        "boundary": "复用冻结源码导出语义和AutoFlow安全文件存储；覆盖、追加及空列表文件均按项目运行登记不可变快照。macOS arm64开发和本地未签名包通过，Intel/Windows未验收。"
+      }
     }
   },
   {

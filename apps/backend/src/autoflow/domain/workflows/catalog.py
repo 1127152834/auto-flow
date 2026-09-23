@@ -92,6 +92,7 @@ _RUNNABLE_MODULES = (
     ("list_operation", "列表操作"),
     ("list_get", "列表取值"),
     ("list_length", "列表长度"),
+    ("list_export", "列表导出"),
     ("dict_operation", "字典操作"),
     ("dict_get", "字典取值"),
     ("dict_keys", "字典键列表"),

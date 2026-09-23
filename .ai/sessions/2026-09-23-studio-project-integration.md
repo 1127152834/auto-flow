@@ -344,3 +344,9 @@
 - 依赖已就绪的三个冻结源码执行器接入项目目录，136→139；项目输出读取实际变量值。JSON解析节点同时存在旧默认`resultVariable`与用户设置`variableName`时，项目登记以原执行器写入的后者为准。真实项目 worker 与关联差分 84 项通过，Ruff/mypy/OpenAPI通过。
 - 正式 Electron 开发入口与 macOS arm64 本地 unsigned 包经真实 UI 声明初值、配置、保存、正常关窗和项目任务启动；三项输出准确，未启动 CloakBrowser。先前测试脚本的 Tab 自动补全导致变量名被旧建议覆盖，改为 Escape 关闭建议再离开输入框，未改产品控件。证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/variable-family-2026-09-24/README.md`。
 - Base64文件分支仍受项目产物端口约束，打印日志成功级别尚未纳入项目日志合同，网络采集还需大结果合同；这些未被本族核销。Intel/Windows及用户数据库仍未实测。
+
+## 项目任务列表导出（2026-09-24，confirmed）
+
+- `list_export` 使用已迁入的冻结 WebRPA 执行器，项目目录 139→140。共享 `WorkflowArtifactStore` 在发布目标文件前执行可选 64 MiB 上限；项目 worker 以既有事件 ACK 登记覆盖、追加及空文件的不可变快照，下载类型收敛为安全附件 MIME。节点成功在产物事件确认之后提交。
+- 独立临时工作区的真实项目 worker 三次导出与可读取产物、共享文件边界、项目 ACK 等 76 项通过；Ruff、mypy、OpenAPI 和脚本语法检查通过。正式 Electron 开发入口与 macOS arm64 本地未签名包均通过真实 UI 编排、保存、正常关窗、项目任务、内容哈希和任务页下载入口验收。完整证据见 `docs/migration/studio-backend-migration/evidence/project-integration/list-export-2026-09-24/README.md`。
+- 二进制文件读写、`export_log` 的项目日志记录消费、网络大结果等仍按各自依赖处理；Intel/Windows 与用户数据库未实测。本族未改变 Studio 213 节点批准范围。

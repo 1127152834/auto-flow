@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-list-export-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T16:26:07.971Z",
+  "gitHead": "6d0d5e0b39d4ba9602789c84376dd1c5334fa6e9",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "e8ff75fa-a87a-4601-a6a5-1afe25c992e1",
+  "workflowId": "xmiVmw2HoTxxvHPqTc8Pn",
+  "batchId": "014031b4-9d08-4cac-ab02-adff3b62c579",
+  "taskId": "5224e334-7db8-421f-871d-1317d797b1c4",
+  "sawCloakBrowser": false,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 声明列表变量并保存覆盖、追加两个列表导出节点",
+    "两个列表导出节点分别登记覆盖与追加的不可变文件快照，正式内容接口的字节与 SHA-256 一致",
+    "正式项目任务完成两次列表导出，任务页列出两个可下载产物且未启动 CloakBrowser"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

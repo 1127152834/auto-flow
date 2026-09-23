@@ -39,6 +39,7 @@ class _BoundArtifactWriter:
         execution_id: str | None,
         purpose: str,
         cancellation: CancellationToken | None,
+        max_bytes: int | None,
     ) -> None:
         self._store = store
         self._run_id = run_id
@@ -46,6 +47,7 @@ class _BoundArtifactWriter:
         self._execution_id = execution_id
         self._purpose = purpose
         self._cancellation = cancellation
+        self._max_bytes = max_bytes
 
     async def write_bytes(
         self, *, name: str, content: bytes, mime_type: str
@@ -85,6 +87,7 @@ class _BoundArtifactWriter:
             append=append,
             mime_type=mime_type,
             cancellation=self._cancellation,
+            max_bytes=self._max_bytes,
         )
 
     async def write_binary_output(
@@ -148,6 +151,7 @@ class WorkflowArtifactStore:
         execution_id: str | None,
         purpose: str,
         cancellation: CancellationToken | None = None,
+        max_bytes: int | None = None,
     ) -> _BoundArtifactWriter:
         if not run_id or Path(run_id).name != run_id:
             raise WorkflowRunError("ARTIFACT_PATH_INVALID", "运行标识不能用于产物路径", 422)
@@ -158,6 +162,7 @@ class WorkflowArtifactStore:
             execution_id=execution_id,
             purpose=purpose,
             cancellation=cancellation,
+            max_bytes=max_bytes,
         )
 
     @staticmethod
@@ -966,6 +971,7 @@ class WorkflowArtifactStore:
         append: bool,
         mime_type: str,
         cancellation: CancellationToken | None,
+        max_bytes: int | None,
     ) -> str:
         target, directory_fd = self._open_output_parent(run_id, output_path)
         try:
@@ -985,6 +991,7 @@ class WorkflowArtifactStore:
                 append=append,
                 mime_type=mime_type,
                 cancellation=cancellation,
+                max_bytes=max_bytes,
                 target=target,
                 directory_fd=directory_fd,
             )
@@ -1004,6 +1011,7 @@ class WorkflowArtifactStore:
         append: bool,
         mime_type: str,
         cancellation: CancellationToken | None,
+        max_bytes: int | None,
         target: Path,
         directory_fd: int,
     ) -> str:
@@ -1073,6 +1081,10 @@ class WorkflowArtifactStore:
                         cancellation=cancellation,
                     )
                 )
+                if max_bytes is not None and snapshot_size > max_bytes:
+                    raise WorkflowRunError(
+                        "ARTIFACT_TOO_LARGE", "输出文件超过项目产物大小限制", 422
+                    )
             finally:
                 os.close(staged_fd)
 
