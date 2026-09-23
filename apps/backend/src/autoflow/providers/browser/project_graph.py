@@ -257,10 +257,12 @@ class ProjectGraphExecutor:
                         await emit('output', {'name': output_name, 'value': current.variables[output_name]})
             name = (config.get('resultVariable') or config.get('variableName')
                     or config.get('saveResult') or config.get('saveMessage'))
+            if data['moduleType'] == 'json_parse':
+                name = config.get('variableName')
             if data['moduleType'] == 'page_load_complete':
                 name = config.get('saveToVariable', 'page_loaded')
             if isinstance(name, str) and name and name not in current.sensitive_variables:
-                if data['moduleType'] in {'inject_javascript', 'handle_dialog', 'page_load_complete'}:
+                if data['moduleType'] in {'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time'}:
                     if name in current.variables:
                         await emit('output', {'name': name, 'value': current.variables[name]})
                 elif event.get('data') is not None or (

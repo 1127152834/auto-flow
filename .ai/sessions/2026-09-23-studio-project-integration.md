@@ -338,3 +338,9 @@
 - 用户再次确认项目默认资源可被任务显式覆盖，无白名单；沿用已实现的 Profile/模型选择边界。项目目录新增冻结源码 `switch_tab`，135→136，Studio 范围 213 不变。项目事件适配分别登记索引、标题和 URL，敏感 URL 不进入公开输出。
 - 真实 CloakBrowser 项目批次八个场景、冻结源码差分和适配专项通过；正式 Electron 开发入口及 macOS arm64 本地 unsigned 包经真实 UI 编排、保存、正常关窗、项目运行、任务结果及浏览器清理验收。证据和哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/tab-switch-2026-09-23/README.md`。
 - 网络采集受项目事件消息容量限制，仍需大结果合同；`list_export` 的文本产物安全发布亦未解决。Intel/Windows 与用户数据库未验收。
+
+## 项目任务 JSON／随机数／时间变量族（2026-09-24，confirmed）
+
+- 依赖已就绪的三个冻结源码执行器接入项目目录，136→139；项目输出读取实际变量值。JSON解析节点同时存在旧默认`resultVariable`与用户设置`variableName`时，项目登记以原执行器写入的后者为准。真实项目 worker 与关联差分 84 项通过，Ruff/mypy/OpenAPI通过。
+- 正式 Electron 开发入口与 macOS arm64 本地 unsigned 包经真实 UI 声明初值、配置、保存、正常关窗和项目任务启动；三项输出准确，未启动 CloakBrowser。先前测试脚本的 Tab 自动补全导致变量名被旧建议覆盖，改为 Escape 关闭建议再离开输入框，未改产品控件。证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/variable-family-2026-09-24/README.md`。
+- Base64文件分支仍受项目产物端口约束，打印日志成功级别尚未纳入项目日志合同，网络采集还需大结果合同；这些未被本族核销。Intel/Windows及用户数据库仍未实测。

@@ -1,0 +1,24 @@
+{
+  "evidenceId": "BE-project-variable-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T15:59:49.522Z",
+  "gitHead": "3e7aa03c60c15bf5954f54ff5034395b355ea9cb",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "f90f27ab-689f-4ea8-8f87-76e3b863ab83",
+  "workflowId": "x78oNv8f8rrSDBMaUxe9h",
+  "batchId": "0980b96e-a1f8-4d09-89d3-bde02732326c",
+  "taskId": "4cc0554b-6e1e-494e-8b3b-ad6de60f0fd3",
+  "sawCloakBrowser": false,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 声明变量并保存 JSON解析、随机数和时间流程",
+    "正式项目任务真实 worker 产出JSON、数值与日期，未启动 CloakBrowser"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

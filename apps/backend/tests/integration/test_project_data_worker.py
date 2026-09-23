@@ -21,7 +21,6 @@ from typing import Any, NoReturn
 from uuid import UUID, uuid4
 
 import pytest
-
 from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
@@ -59,6 +58,7 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
+
 from tests.differential.workflows.test_b4_math_family_executor_parity import (
     VALID_CASES as MATH_CASES,
 )
@@ -110,7 +110,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -150,7 +150,12 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("hex-cmyk", "hex_to_cmyk", {"hexColor": "#ff0000", "resultVariable": "hex_cmyk"}, None),
         ("uuid", "uuid_generator", {"uuidVersion": 5, "namespace": "dns", "name": "autoflow.cn", "resultVariable": "uuid"}, None),
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps}[family]
+    variable_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("json", "json_parse", {"sourceVariable": "payload", "jsonPath": "$.items[1].name", "variableName": "parsed", "resultVariable": "parsed_json"}, "乙"),
+        ("random", "random_number", {"randomType": "integer", "minValue": 7, "maxValue": 7, "variableName": "pick"}, 7),
+        ("clock", "get_time", {"timeFormat": "date", "variableName": "today"}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert "list_export" not in runnable_module_types()  # Project artifacts are not wired yet.
@@ -166,7 +171,8 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             "id": f"edge-{index}", "source": steps[index][0], "target": steps[index + 1][0],
         } for index in range(len(steps) - 1)],
         variables=([{"name": "items", "type": "array", "value": [1, 2, 3, 3]}]
-                   if family == "math" else []),
+                   if family == "math" else [{"name": "payload", "type": "string", "value": '{"items":[{"name":"甲"},{"name":"乙"}]}'}]
+                   if family == "variables" else []),
     )
     WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
         automation.workflow_id, document, expected_revision=1,
@@ -207,6 +213,13 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             assert outputs["list_sum"] == 9
             assert outputs["math_power"] == 1024
             assert outputs["stat_median"] == 2.5
+        elif family == "variables":
+            assert outputs["json"] == "乙"
+            assert outputs["random"] == 7
+            assert isinstance(outputs["clock"], str) and len(outputs["clock"]) == 10
+            assert {event.payload["name"] for event in events if event.kind == "output"} == {
+                "parsed", "pick", "today",
+            }
         elif family == "utility":
             assert set(outputs) == {node_id for node_id, _, _, _ in steps}
             assert len(outputs["password"]) == 12
@@ -265,8 +278,6 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
             if item["capability"] == "browser.cloakbrowser"
         )
         assert browser["required"] is False
-        from sqlalchemy import select
-
         from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
         from autoflow.application.project_runs.resources import (
             ProjectRunResourceResolver,
@@ -274,6 +285,7 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
         from autoflow.infrastructure.database.environment_models import (
             ProjectEnvironmentInstanceRow,
         )
+        from sqlalchemy import select
 
         runner = ProjectRunCoordinator(
             factory, runtime,
@@ -1472,10 +1484,9 @@ async def test_stop_cancels_browser_free_worker_and_confirms_cleanup(
 
 @pytest.mark.asyncio
 async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_path: Path) -> None:
-    from fastapi import FastAPI
-
     from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
     from autoflow.bootstrap.workflows import configure_project_workflow_runtime
+    from fastapi import FastAPI
 
     factory, queued = _queued_pure_data_run(tmp_path, values=[1, 2, 3])
     runtime = WorkflowRuntimeService(factory)

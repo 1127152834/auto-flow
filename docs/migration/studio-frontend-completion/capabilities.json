@@ -15616,7 +15616,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/variable-family-2026-09-24/README.md",
+        "boundary": "项目输出按JSON解析节点实际写入的variableName登记，保留原版解析和变量语义。"
+      }
     }
   },
   {
@@ -16126,7 +16132,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/variable-family-2026-09-24/README.md",
+        "boundary": "复用冻结源码随机数执行器；项目输出登记实际数值，不将节点摘要对象误当变量值。"
+      }
     }
   },
   {
@@ -16352,7 +16364,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/variable-family-2026-09-24/README.md",
+        "boundary": "复用冻结源码时间格式与执行时钟；项目输出登记实际日期值，不将节点摘要对象误当变量值。"
+      }
     }
   },
   {
