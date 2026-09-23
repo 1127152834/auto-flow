@@ -6,7 +6,8 @@ import { observeInstanceSeed } from './smoke-profile-test-browser.mjs'
 // Real Studio HTTP -> project batch -> child worker -> browser -> data/End.
 export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks = {}) {
   const server = createServer((request, response) => {
-    if (request.url === '/login') response.setHeader('Set-Cookie', 'pm9=logged-in; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax')
+    if (request.url === '/login') response.setHeader('Set-Cookie', ['pm9=logged-in; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax', 'pm9-session=1; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax'])
+    if (request.url === '/unsaved-session') response.setHeader('Set-Cookie', 'pm9-session=9; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax')
     response.setHeader('Content-Type', 'text/html; charset=utf-8')
     if (request.url === '/profile') {
       response.end(`<!doctype html><body><script>
@@ -23,7 +24,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       </script></body>`)
       return
     }
-    response.end(`<output id="account">001</output><output id="auth">${request.headers.cookie?.includes('pm9=logged-in') ? 'signed-in' : 'signed-out'}</output>`)
+    response.end(`<output id="account">001</output><output id="auth">${request.headers.cookie?.includes('pm9=logged-in') ? 'signed-in' : 'signed-out'}</output><output id="session">${request.headers.cookie?.split('; ').find(value => value.startsWith('pm9-session='))?.slice('pm9-session='.length) ?? 'missing'}</output>`)
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const site = `http://127.0.0.1:${server.address().port}`
@@ -117,9 +118,35 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.equal(records.items[0].values[0].value, '001-中文')
     const environmentId = records.items[0].currentEnvironmentId
     assert.ok(environmentId)
-    const readLogin = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 登录复用', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: '#auth', attribute: 'text', variableName: 'login' }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'read'), edge('read', 'end')] })
+    const readLogin = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 登录复用', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: '#auth', attribute: 'text', variableName: 'login' }), node('session', 'get_element_info', { selector: '#session', attribute: 'text', variableName: 'session' }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'read'), edge('read', 'session'), edge('session', 'end')] })
     const second = await run(readLogin.id, { source: 'fixedEnvironment', environmentId, proxyOverride: { mode: 'none' }, modelProviderId: null })
     assert.equal(second.outputs.find(output => output.name === 'login')?.value, 'signed-in')
+    assert.equal(second.outputs.find(output => output.name === 'session')?.value, '1')
+    const savedBeforeDiscard = (await api(`${prefix}/environments/${environmentId}`)).environment
+    const savedEnvironmentCount = (await api(prefix + '/environments')).total
+    const changedSession = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 修改会话但不保存', variables: [], nodes: [node('change', 'open_page', { url: site + '/unsaved-session' }), node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: '#session', attribute: 'text', variableName: 'session' }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('change', 'open'), edge('open', 'read'), edge('read', 'end')] })
+    const unretained = []
+    const changed = await run(changedSession.id, { source: 'fixedEnvironment', environmentId, proxyOverride: { mode: 'none' }, modelProviderId: null })
+    assert.equal(changed.outputs.find(output => output.name === 'session')?.value, '9', 'the real browser work copy must actually change before discard')
+    const restoredSession = await run(readLogin.id, {}, [], {}, 'succeeded', { inputs: [] }, null, { automation: second.automation })
+    assert.equal(restoredSession.outputs.find(output => output.name === 'session')?.value, '1', 'later fixed restore must read the saved session, not the discarded work copy')
+    assert.equal(restoredSession.outputs.find(output => output.name === 'login')?.value, 'signed-in')
+    for (const result of [changed, restoredSession]) {
+      let instance
+      for (let attempt = 0; attempt < 100; attempt++) {
+        instance = (await api(`${prefix}/environment-instances?taskId=${result.task.taskId}`)).items[0]
+        if (instance?.state === 'cleaned') break
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      assert.equal(instance?.state, 'cleaned', 'End without retention cleans its work copy by default')
+      assert.equal(instance.sourceContentGeneration, savedBeforeDiscard.ref.contentGeneration)
+      unretained.push({ taskId: result.task.taskId, instanceId: instance.instanceId, state: instance.state })
+    }
+    assert.notEqual(unretained[0].instanceId, unretained[1].instanceId)
+    assert.deepEqual((await api(`${prefix}/environments/${environmentId}`)).environment, savedBeforeDiscard, 'no-retention End must not publish or revise the saved environment')
+    assert.equal((await api(prefix + '/environments')).total, savedEnvironmentCount, 'no-retention End must not silently save another environment')
+    const noAutomaticSave = { status: 'passed', savedEnvironmentCount, environmentId, savedGeneration: savedBeforeDiscard.ref.contentGeneration, modifiedSession: '9', restoredSession: '1', instances: unretained, scope: 'actual fixed-environment browser work copy changes its persistent cookie, succeeds without save, is cleaned, then a new Task restores the old saved value and unchanged environment facts' }
+    await hooks.verifyUnretained?.(project.projectId, noAutomaticSave)
     const selectorParameter = randomUUID()
     const failureWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 失败后续', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: `{${selectorParameter}}`, attribute: 'text', variableName: 'account', timeout: .3 }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'read'), edge('read', 'end')] })
     const inputPlan = { inputs: [{ inputId: randomUUID(), alias: '来源', tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, mode: 'independent', required: true, fieldBindings: [{ inputFieldId: randomUUID(), inputFieldAlias: '编号', fieldRef: { projectId: project.projectId, tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, fieldId: source.fieldId } }], filter: { type: 'all', items: [] }, orderBy: [{ systemField: 'recordKey', direction: 'asc' }] }] }
@@ -431,7 +458,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       await new Promise(resolve => setTimeout(resolve, 500))
     }
     assert.equal((await api(prefix)).lifecycleState, 'active')
-    return { projectId: project.projectId, environmentId, subflows, profileFreeze, parallel, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
+    return { projectId: project.projectId, environmentId, subflows, profileFreeze, parallel, noAutomaticSave, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
   } finally {
     await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
   }

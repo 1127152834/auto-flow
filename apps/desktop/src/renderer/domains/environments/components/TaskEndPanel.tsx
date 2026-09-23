@@ -49,6 +49,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
       }, crypto.randomUUID())
     },
     onSuccess: result => {
+      void instance.refetch()
       const phase = result.outcome && 'phase' in result.outcome ? String(result.outcome.phase) : 'completed'
       notify({
         title: phase === 'saved_unlinked' ? '环境已保存，关联未完成' : phase === 'completed' ? (retain ? '已保留登录环境' : '已结束并关闭环境') : '结束结果已记录',
@@ -74,6 +75,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
       }, crypto.randomUUID())
     },
     onSuccess: result => {
+      void instance.refetch()
       const phase = result.outcome && 'phase' in result.outcome ? String(result.outcome.phase) : 'completed'
       notify({ title: phase === 'completed' ? '已按原操作修复关联' : '修复未完成，请核对当前关联事实', tone: phase === 'completed' ? 'success' : 'error' })
     },
@@ -81,7 +83,15 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   })
   if (instance.isLoading) return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm">正在读取任务环境…</section>
   if (!current) return <section className="rounded-control border border-line bg-surface p-4 text-sm text-muted">当前任务还没有可保留的环境实例。</section>
-  const phase = end.data?.outcome && 'phase' in end.data.outcome ? String(end.data.outcome.phase) : null
+  const outcome = repair.data?.outcome ?? end.data?.outcome
+  const phase = outcome && 'phase' in outcome ? String(outcome.phase) : null
+  if (current.state === 'cleaned') return <section className="grid gap-3 rounded-control border border-line bg-surface p-4 text-sm" aria-label="环境结束结果">
+    <p role="status" className="m-0">本次浏览器工作副本已清理，不能再次保存本次会话。</p>
+    {phase === 'saved_unlinked' ? <>
+      <p role="alert" className="m-0 text-warning">环境已保存，记录关联未完成。可用原操作修复，不会重跑网页。</p>
+      <Button size="sm" variant="secondary" disabled={disabled || repair.isPending} onClick={() => repair.mutate()}>修复关联</Button>
+    </> : null}
+  </section>
   const toggle = (key: string, checked: boolean) => {
     setSelected(currentSelected => {
       const next = new Set(currentSelected)

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { connectCdp, launchElectron, waitFor, waitForProjectPage, clickElement } from './electron-cdp.mjs'
@@ -378,7 +378,16 @@ try {
   report.checks.push('all six project tabs open settled production pages')
   if (browserVersion) {
     report.automationDeletion = await checkAutomationDeletion(browserVersion)
-    report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion, { resumeManual: async (projectId, item) => {
+    report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion, { verifyUnretained: async (projectId, evidence) => {
+      await access(join(userData, 'workspace/environments/environments', evidence.environmentId, 'generations', String(evidence.savedGeneration)))
+      for (const instance of evidence.instances) await assert.rejects(access(join(userData, 'workspace/environments/instances', instance.instanceId)), { code: 'ENOENT' })
+      await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/tasks/' + evidence.instances[0].taskId + '/io')}`)
+      await waitFor(cdp, "document.body.innerText.includes('本次浏览器工作副本已清理，不能再次保存本次会话。') && !document.querySelector('main [role=progressbar]')", 'completed no-retention Task evidence')
+      assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('[role=status], [role=alert]')].some(element => /已保留登录环境|环境已保存/.test(element.innerText)))"), false, 'completed no-retention Task must not announce a successful save')
+      assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(element => element.innerText.trim() === '结束并保留'))"), false)
+      await capture('session-not-saved')
+      evidence.desktop = { workCopiesAbsent: true, saveSuccessAnnouncement: false }
+    }, resumeManual: async (projectId, item) => {
       await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/manual/' + item.manualItemId)}`)
       await waitFor(cdp, "Boolean(document.querySelector('input[type=radio][value=continue]:not(:disabled)'))", 'live manual continuation ready')
       await cdp.evaluate("document.querySelector('input[type=radio][value=continue]').click()")
