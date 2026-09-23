@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "all_original_jobs_failed_final_local_harness_passed_followup_ready",
+  "status": "original_three_failures_retained_followup_queued",
   "releaseAccepted": false,
   "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
   "runId": "35886627514",
@@ -27,9 +27,12 @@
     "desktopEvidence": ".tmp-tests/pm9-parallel-desktop-2026-09-24/project-desktop.json"
   },
   "followUp": {
-    "status": "ready_for_one_three_platform_dispatch",
+    "status": "queued",
     "platform": "all",
-    "scope": "All three original jobs are terminal failures. One new matrix will validate updated harness and supplemental assertions; production remains69baeeb2. No live job cancelled and no stale-code retry."
+    "scope": "All three original jobs are terminal failures. One new matrix will validate updated harness and supplemental assertions; production remains69baeeb2. No live job cancelled and no stale-code retry.",
+    "runId": "35895754111",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
+    "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69"
   },
   "platforms": {
     "darwin-arm64": "failure: required URL guidance; metadata API assertions passed and screenshot node unselected",

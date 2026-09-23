@@ -1,12 +1,12 @@
 {
   "date": "2026-09-24",
-  "status": "final_local_desktop_passed_three_platform_followup_ready",
+  "status": "final_local_desktop_passed_three_platform_followup_queued",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "Current69baeeb2 CI35886627514 completed with three failures in packaged desktop harness: both Macs required-URL guidance (metadata API passed, screenshots node unselected); Windows loaded compact reopened Studio but text readiness failed. Covered-target click RED→GREEN and viewport/panel restoration diagnosis recorded; final full local ARM desktop with compact viewport regression passed; one new matrix ready. Supplemental parallel packaged API and ARM desktop passed; no release acceptance.",
+    "Current69baeeb2 CI35886627514 completed with three failures in packaged desktop harness: both Macs required-URL guidance (metadata API passed, screenshots node unselected); Windows loaded compact reopened Studio but text readiness failed. Covered-target click RED→GREEN and viewport/panel restoration diagnosis recorded; final full local ARM desktop with compact viewport regression passed; new matrix35895754111 @25bb8ab2 queued; production remains69baeeb2. Supplemental parallel packaged API and ARM desktop passed; no release acceptance.",
     "ARM packaged Profile/root-document freeze passed with actual browser seed observations old/old/new; full ARM desktop smoke also passed. Proxy candidate/endpoints are confirmed implementation gaps, P1–P3 proposed awaiting approval. Added script assertions are supplemental, absent from running69baeeb2 CI35886627514; releaseAccepted=false.",
     "Supplemental ARM packaged public-HTTP subflow freeze/isolation/End association, parent stop at child checkpoint and narrowed child field permission all passed, including full desktop smoke. Production remains69baeeb2; additional script assertions are not in current35886627514. Full Profile/proxy/asset combinations and Windows/Intel same-scenario packaged evidence remain open. Ledger statuses unchanged.",
     "Current metadata production404 fixed:17 targeted backend/45 frontend/3486 full backend and full ARM packaged desktop passed;69 of227 source nodes covered,project metadata remains uncovered. Foreground frame-measurement harness fixed after visibility=hidden diagnosis; both negative runs retained. Previous632caf6d matrix does not validate this route; new source69baeeb2 matrix35886627514 in progress. ReleaseAccepted remains false.",
@@ -534,9 +534,12 @@
   "resourceFreezeFollowThrough": "resource-freeze-follow-through.json",
   "currentCICandidate": {
     "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
-    "runId": "35886627514",
-    "status": "all_original_jobs_failed_final_local_harness_passed_followup_ready",
-    "report": "ci-metadata-click-follow-through.json"
+    "testAndHarnessCandidate": "25bb8ab236becc1ee0fe64f79422455101a71f69",
+    "runId": "35895754111",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
+    "status": "queued",
+    "report": "ci-metadata-click-follow-through.json",
+    "previousRun": "35886627514: all three packaged desktop jobs failed; preserved, not accepted"
   },
   "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json"
 }
