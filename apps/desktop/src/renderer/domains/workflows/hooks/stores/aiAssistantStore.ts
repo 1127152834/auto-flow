@@ -55,6 +55,8 @@ export interface RollbackSnapshot {
 }
 
 interface AIAssistantState {
+  scope: string | null | undefined
+  activateScope: (scope: string | null) => void
   // 面板可见性
   isPanelOpen: boolean
   setPanelOpen: (open: boolean) => void
@@ -92,6 +94,19 @@ interface AIAssistantState {
 }
 
 export const useAIAssistantStore = create<AIAssistantState>((set, get) => ({
+  scope: undefined,
+  activateScope: (scope) => {
+    if (get().scope === scope) return
+    set({
+      scope,
+      currentSessionId: null,
+      messages: [],
+      sessions: [],
+      liveToolCalls: [],
+      rollbackSnapshots: {},
+      isSending: false,
+    })
+  },
   isPanelOpen: false,
   setPanelOpen: (open) => set({ isPanelOpen: open }),
   togglePanel: () => set({ isPanelOpen: !get().isPanelOpen }),

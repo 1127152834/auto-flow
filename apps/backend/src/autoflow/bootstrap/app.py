@@ -637,7 +637,10 @@ def create_app(
     app.include_router(workflow_catalog_router(project_workflow_service))
     project_lifecycle_repository = SqlAlchemyProjectLifecycle(
         session_factory, environment_root=environment_store.root, workflow_artifact_root=paths.workspace,
-        inspection_blockers=workflow_services.inspection.project_blockers if workflow_services.inspection is not None else None
+        inspection_blockers=lambda project_id: [
+            *(workflow_services.inspection.project_blockers(project_id) if workflow_services.inspection is not None else []),
+            *(workflow_services.assistant.project_blockers(project_id) if workflow_services.assistant is not None else []),
+        ],
     )
     project_lifecycle_coordinator = ProjectLifecycleCoordinator(
         project_lifecycle_repository, quiesce_gate

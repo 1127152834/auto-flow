@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse
 from pydantic import ConfigDict, Field
 
@@ -152,30 +152,31 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
     router = APIRouter(prefix="/api/ai-assistant", tags=["studio-assistant"])
 
     @router.get("/sessions", response_model=list[AssistantSessionSummary])
-    def sessions() -> list[dict[str, Any]]:
-        return service.list_sessions()
+    def sessions(project_id: str | None = Query(default=None, alias="projectId")) -> list[dict[str, Any]]:
+        return service.list_sessions(project_id=project_id)
 
     @router.post("/sessions", response_model=AssistantCreatedSession)
-    def create_session(body: AssistantCreateSession) -> dict[str, str]:
-        return service.create_session(body.title)
+    def create_session(body: AssistantCreateSession, project_id: str | None = Query(default=None, alias="projectId")) -> dict[str, str]:
+        return service.create_session(body.title, project_id=project_id)
 
     @router.get(
         "/sessions/{session_id}",
         response_model=AssistantSessionResponse,
         response_model_exclude_none=True,
     )
-    def get_session(session_id: str) -> dict[str, Any]:
-        return service.get_session(session_id)
+    def get_session(session_id: str, project_id: str | None = Query(default=None, alias="projectId")) -> dict[str, Any]:
+        return service.get_session(session_id, project_id=project_id)
 
     @router.delete("/sessions/{session_id}", response_model=AssistantSuccess)
-    def delete_session(session_id: str) -> dict[str, bool]:
-        return service.delete_session(session_id)
+    def delete_session(session_id: str, project_id: str | None = Query(default=None, alias="projectId")) -> dict[str, bool]:
+        return service.delete_session(session_id, project_id=project_id)
 
     @router.patch("/sessions/{session_id}/title", response_model=AssistantSuccess)
     def rename_session(
-        session_id: str, body: AssistantRenameSession
+        session_id: str, body: AssistantRenameSession,
+        project_id: str | None = Query(default=None, alias="projectId"),
     ) -> dict[str, bool]:
-        return service.rename_session(session_id, body.title)
+        return service.rename_session(session_id, body.title, project_id=project_id)
 
     @router.post(
         "/sessions/{session_id}/truncate",
@@ -183,19 +184,20 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
         response_model_exclude_none=True,
     )
     def truncate_session(
-        session_id: str, body: AssistantTruncateSession
+        session_id: str, body: AssistantTruncateSession,
+        project_id: str | None = Query(default=None, alias="projectId"),
     ) -> dict[str, Any]:
-        return service.truncate_session(session_id, body.message_id)
+        return service.truncate_session(session_id, body.message_id, project_id=project_id)
 
     @router.post("/sessions/{session_id}/cancel", response_model=AssistantCancelled)
-    async def cancel(session_id: str) -> dict[str, Any]:
-        return await service.cancel(session_id)
+    async def cancel(session_id: str, project_id: str | None = Query(default=None, alias="projectId")) -> dict[str, Any]:
+        return await service.cancel(session_id, project_id=project_id)
 
     @router.post(
         "/chat", response_model=AssistantChatResponse, response_model_exclude_none=True
     )
-    async def chat(body: AssistantChatRequest) -> dict[str, Any]:
-        session_id = body.session_id or service.create_session()["session_id"]
+    async def chat(body: AssistantChatRequest, project_id: str | None = Query(default=None, alias="projectId")) -> dict[str, Any]:
+        session_id = body.session_id or service.create_session(project_id=project_id)["session_id"]
         return await service.chat(
             session_id=session_id,
             message=body.message,
@@ -207,6 +209,7 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
             max_tokens=body.config.max_tokens,
             images=body.images,
             fallback_model_ids=body.fallback_model_ids,
+            project_id=project_id,
         )
 
     @router.post("/test-connection", response_model=AssistantModelTestResponse)
@@ -214,8 +217,8 @@ def workflow_ai_router(service: WorkflowAssistantService) -> APIRouter:
         return await service.test_model(body.model_id)
 
     @router.get("/artifacts/{kind}/{artifact_id}", response_class=FileResponse)
-    def artifact(kind: str, artifact_id: str) -> FileResponse:
-        path, media_type = service.artifact_file(kind, artifact_id)
+    def artifact(kind: str, artifact_id: str, project_id: str | None = Query(default=None, alias="projectId")) -> FileResponse:
+        path, media_type = service.artifact_file(kind, artifact_id, project_id=project_id)
         return FileResponse(path, media_type=media_type, filename=path.name)
 
     @router.post("/extract-file", response_model=AssistantExtractedFile)

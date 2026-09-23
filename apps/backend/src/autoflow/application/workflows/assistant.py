@@ -6,6 +6,7 @@ import asyncio
 import copy
 import hashlib
 import json
+from collections.abc import Mapping
 from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
@@ -27,6 +28,18 @@ from autoflow.providers.assistant import (
     AssistantModelReply,
     AssistantToolCall,
 )
+
+_UNSCOPED = object()
+
+
+def _contains_reference(value: Any, reference: str) -> bool:
+    if isinstance(value, str):
+        return value == reference
+    if isinstance(value, Mapping):
+        return any(_contains_reference(item, reference) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return any(_contains_reference(item, reference) for item in value)
+    return False
 
 
 class ManagedModels(Protocol):
@@ -154,14 +167,19 @@ class WorkflowAssistantService:
         max_tokens: int = 4000,
         images: list[str] | None = None,
         fallback_model_ids: list[str] | None = None,
+        project_id: str | None = None,
     ) -> dict[str, Any]:
         if not message.strip():
             raise WorkflowRunError("ASSISTANT_MESSAGE_REQUIRED", "消息不能为空", 422)
         safe_message = str(redact_sensitive_value(message))
+        self._repository.check_project(project_id, writable=True)
         lock = self._locks.setdefault(session_id, asyncio.Lock())
         async with lock:
-            session = self._repository.get(session_id) or self._repository.create(
-                session_id, safe_message.strip()[:24] or "新对话", now=_now()
+            existing = self._repository.get(session_id)
+            if existing is not None and existing.project_id != project_id:
+                raise WorkflowRunError("ASSISTANT_SESSION_NOT_FOUND", "小助手会话不存在", 404)
+            session = existing or self._repository.create(
+                session_id, safe_message.strip()[:24] or "新对话", now=_now(), project_id=project_id
             )
             if session.status in {"running", "waiting_for_action"}:
                 raise WorkflowRunError(
@@ -354,10 +372,11 @@ class WorkflowAssistantService:
         return response
 
     async def submit_event_command(
-        self, command_id: str, event: str, data: dict[str, Any]
+        self, command_id: str, event: str, data: dict[str, Any], *, project_id: str | None = None
     ) -> tuple[dict[str, Any], int]:
+        self._repository.check_project(project_id, writable=True)
         if event != "ai_client_action_ack":
-            return await self._submit_event_command_unlocked(command_id, event, data)
+            return await self._submit_event_command_unlocked(command_id, event, data, project_id=project_id)
         session_id = data.get("session_id")
         tool_call_id = data.get("tool_call_id")
         lock_key = (
@@ -367,13 +386,13 @@ class WorkflowAssistantService:
         )
         lock = self._locks.setdefault(lock_key, asyncio.Lock())
         async with lock:
-            return await self._submit_event_command_unlocked(command_id, event, data)
+            return await self._submit_event_command_unlocked(command_id, event, data, project_id=project_id)
 
     async def _submit_event_command_unlocked(
-        self, command_id: str, event: str, data: dict[str, Any]
+        self, command_id: str, event: str, data: dict[str, Any], *, project_id: str | None = None
     ) -> tuple[dict[str, Any], int]:
         if event == "ai_client_action_claim":
-            return await self._claim_event_command(command_id, data)
+            return await self._claim_event_command(command_id, data, project_id=project_id)
         if event != "ai_client_action_ack":
             raise WorkflowRunError("COMMAND_NOT_FOUND", "命令不属于小助手", 404)
         tool_call_id = data.get("tool_call_id")
@@ -408,6 +427,7 @@ class WorkflowAssistantService:
         ).hexdigest()
         previous = self._repository.get_command(command_id)
         if previous is not None:
+            self._required(previous.session_id, project_id)
             if previous.request_hash != fingerprint:
                 return {
                     "commandId": command_id,
@@ -424,9 +444,11 @@ class WorkflowAssistantService:
             else (
                 self._repository.get(requested_session_id)
                 if requested_session_id
-                else self._repository.find_pending(tool_call_id)
+                else self._repository.find_pending(tool_call_id, project_id=project_id)
             )
         )
+        if session is not None and session.project_id != project_id:
+            raise WorkflowRunError("ASSISTANT_SESSION_NOT_FOUND", "小助手会话不存在", 404)
         if (
             session is None
             or not session.pending_action
@@ -561,7 +583,7 @@ class WorkflowAssistantService:
         return receipt, 200
 
     async def _claim_event_command(
-        self, command_id: str, data: dict[str, Any]
+        self, command_id: str, data: dict[str, Any], *, project_id: str | None = None
     ) -> tuple[dict[str, Any], int]:
         session_id = data.get("session_id")
         tool_call_id = data.get("tool_call_id")
@@ -591,6 +613,7 @@ class WorkflowAssistantService:
         async with lock:
             previous = self._repository.get_command(command_id)
             if previous is not None:
+                self._required(previous.session_id, project_id)
                 if previous.request_hash != fingerprint:
                     return {
                         "commandId": command_id,
@@ -600,6 +623,8 @@ class WorkflowAssistantService:
                 if previous.receipt is not None:
                     return copy.deepcopy(previous.receipt), 200
             session = self._repository.get(session_id)
+            if session is not None and session.project_id != project_id:
+                raise WorkflowRunError("ASSISTANT_SESSION_NOT_FOUND", "小助手会话不存在", 404)
             if (
                 session is None
                 or not session.pending_action
@@ -642,10 +667,11 @@ class WorkflowAssistantService:
             )
             return receipt, 200
 
-    def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
+    def event_command(self, command_id: str, *, project_id: str | None = None) -> tuple[dict[str, Any], int]:
         command = self._repository.get_command(command_id)
         if command is None:
             raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)
+        self._required(command.session_id, project_id)
         if command.receipt is None:
             return {
                 "commandId": command_id,
@@ -655,8 +681,8 @@ class WorkflowAssistantService:
             }, 200
         return {**copy.deepcopy(command.receipt), "httpStatus": 200}, 200
 
-    def get_session(self, session_id: str) -> dict[str, Any]:
-        session = self._required(session_id)
+    def get_session(self, session_id: str, *, project_id: str | None = None) -> dict[str, Any]:
+        session = self._required(session_id, project_id)
         pending_action = copy.deepcopy(session.pending_action)
         if pending_action is not None:
             pending_action.pop("kind", None)
@@ -669,7 +695,8 @@ class WorkflowAssistantService:
             "revision": session.revision,
         }
 
-    def artifact_file(self, kind: str, artifact_id: str) -> tuple[Path, str]:
+    def artifact_file(self, kind: str, artifact_id: str, *, project_id: str | None = None) -> tuple[Path, str]:
+        self._repository.check_project(project_id)
         scheme = {
             "attachment": "assistant-attachment://",
             "artifact": "assistant-artifact://",
@@ -678,9 +705,16 @@ class WorkflowAssistantService:
             raise WorkflowRunError(
                 "ASSISTANT_ARTIFACT_INVALID", "小助手产物类型无效", 422
             )
-        return self._files.artifact_file(f"{scheme}{artifact_id}")
+        reference = f"{scheme}{artifact_id}"
+        if not any(
+            _contains_reference((session.messages, session.pending_action), reference)
+            for session in self._repository.list(project_id)
+        ):
+            raise WorkflowRunError("ASSISTANT_ARTIFACT_NOT_FOUND", "小助手产物不存在", 404)
+        return self._files.artifact_file(reference)
 
-    def list_sessions(self) -> list[dict[str, Any]]:
+    def list_sessions(self, *, project_id: str | None = None) -> list[dict[str, Any]]:
+        self._repository.check_project(project_id)
         return [
             {
                 "id": item.id,
@@ -696,24 +730,24 @@ class WorkflowAssistantService:
                     "",
                 ),
             }
-            for item in self._repository.list()
+            for item in self._repository.list(project_id)
         ]
 
-    def create_session(self, title: str | None = None) -> dict[str, str]:
+    def create_session(self, title: str | None = None, *, project_id: str | None = None) -> dict[str, str]:
         session = self._repository.create(
-            uuid4().hex, (title or "新对话").strip() or "新对话", now=_now()
+            uuid4().hex, (title or "新对话").strip() or "新对话", now=_now(), project_id=project_id
         )
         return {"session_id": session.id, "title": session.title}
 
-    def rename_session(self, session_id: str, title: str) -> dict[str, bool]:
-        session = self._required(session_id)
+    def rename_session(self, session_id: str, title: str, *, project_id: str | None = None) -> dict[str, bool]:
+        session = self._required(session_id, project_id)
         if not title.strip():
             raise WorkflowRunError("ASSISTANT_TITLE_REQUIRED", "会话标题不能为空", 422)
         self._repository.save(session.with_changes(title=title.strip()))
         return {"success": True}
 
-    def truncate_session(self, session_id: str, message_id: str) -> dict[str, Any]:
-        session = self._required(session_id)
+    def truncate_session(self, session_id: str, message_id: str, *, project_id: str | None = None) -> dict[str, Any]:
+        session = self._required(session_id, project_id)
         index = next(
             (
                 index
@@ -802,18 +836,19 @@ class WorkflowAssistantService:
             protected["data"] = self._files.externalize(protected["data"])
         return protected
 
-    def delete_session(self, session_id: str) -> dict[str, bool]:
-        session = self._required(session_id)
+    def delete_session(self, session_id: str, *, project_id: str | None = None) -> dict[str, bool]:
+        session = self._required(session_id, project_id)
         if session.status in {"running", "waiting_for_action"}:
             raise WorkflowRunError("ASSISTANT_SESSION_BUSY", "请先停止当前对话", 409)
         self._repository.delete(session_id)
         return {"success": True}
 
-    async def cancel(self, session_id: str) -> dict[str, Any]:
+    async def cancel(self, session_id: str, *, project_id: str | None = None) -> dict[str, Any]:
         return await self._cancel_session(
             session_id,
             message="[已停止] 任务被你打断。",
             reason="user_cancelled",
+            project_id=project_id,
         )
 
     async def shutdown(self) -> None:
@@ -831,9 +866,9 @@ class WorkflowAssistantService:
             )
 
     async def _cancel_session(
-        self, session_id: str, *, message: str, reason: str
+        self, session_id: str, *, message: str, reason: str, project_id: str | None | object = _UNSCOPED
     ) -> dict[str, Any]:
-        session = self._required(session_id)
+        session = self._required(session_id, project_id)
         if session.status not in {"running", "waiting_for_action"}:
             return {"success": True, "session_id": session_id}
         cancelled = _message("assistant", message)
@@ -880,9 +915,29 @@ class WorkflowAssistantService:
     def has_command(self, command_id: str) -> bool:
         return self._repository.get_command(command_id) is not None
 
-    def _required(self, session_id: str) -> AssistantSession:
+    def session_project(self, session_id: str) -> tuple[bool, str | None]:
         session = self._repository.get(session_id)
-        if session is None:
+        return (session is not None, session.project_id if session is not None else None)
+
+    def command_project(self, command_id: str) -> tuple[bool, str | None]:
+        command = self._repository.get_command(command_id)
+        return self.session_project(command.session_id) if command is not None else (False, None)
+
+    def project_blockers(self, project_id: str) -> list[dict[str, Any]]:
+        if any(item.status in {"running", "waiting_for_action"} for item in self._repository.list(project_id)):
+            return [{
+                "code": "STUDIO_ASSISTANT_ACTIVE",
+                "resource": {"type": "project", "projectId": project_id},
+                "state": "active",
+                "message": "小助手对话尚未结束，请先停止会话",
+            }]
+        return []
+
+    def _required(self, session_id: str, project_id: str | None | object = _UNSCOPED) -> AssistantSession:
+        if project_id is not _UNSCOPED:
+            self._repository.check_project(project_id if isinstance(project_id, str) else None)
+        session = self._repository.get(session_id)
+        if session is None or (project_id is not _UNSCOPED and session.project_id != project_id):
             raise WorkflowRunError(
                 "ASSISTANT_SESSION_NOT_FOUND", "小助手会话不存在", 404
             )

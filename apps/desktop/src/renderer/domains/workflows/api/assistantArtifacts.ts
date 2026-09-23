@@ -1,4 +1,4 @@
-import { getBackendBaseUrl } from './config'
+import { getBackendBaseUrl, scopeStudioUrl } from './config'
 import { studioFetch } from './transport'
 
 const REFERENCE = /^(assistant-(attachment|artifact)):\/\/([^/]+)$/
@@ -7,7 +7,7 @@ function artifactUrl(reference: string): string {
   const match = REFERENCE.exec(reference)
   if (!match) throw new Error('小助手产物标识无效')
   const kind = match[2] === 'attachment' ? 'attachment' : 'artifact'
-  return `${getBackendBaseUrl()}/api/ai-assistant/artifacts/${kind}/${encodeURIComponent(match[3])}`
+  return scopeStudioUrl(`${getBackendBaseUrl()}/api/ai-assistant/artifacts/${kind}/${encodeURIComponent(match[3])}`)
 }
 
 export async function readAssistantArtifact(reference: string): Promise<Blob> {

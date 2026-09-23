@@ -18,8 +18,9 @@ class AssistantSession:
     revision: int
     created_at: datetime
     updated_at: datetime
+    project_id: str | None = None
 
-    def with_changes(self, **changes: Any) -> "AssistantSession":
+    def with_changes(self, **changes: Any) -> AssistantSession:
         return replace(self, **copy.deepcopy(changes))
 
 

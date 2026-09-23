@@ -1,0 +1,38 @@
+{
+  "capabilityId": "BE.SUPPORT.models-ai-mcp",
+  "slice": "project-assistant-session-ownership",
+  "classification": "AutoFlow必要适配",
+  "status": "backend-and-frontend-contract-passed-formal-ui-pending",
+  "scope": 213,
+  "sourceReuse": [
+    "迁入的LangGraph小助手、会话及工具命令协议",
+    "AutoFlow项目归属检查与项目生命周期预检",
+    "现有Studio请求项目绑定和事件游标"
+  ],
+  "checks": {
+    "relatedBackend": "31 passed: assistant repository, HTTP, service, contract and event API",
+    "relatedFrontend": "21 passed: assistant store, project request binding, artifact transport and panel entry",
+    "mypy": "8 changed source files passed",
+    "ruff": "changed source and test files passed",
+    "typescript": "passed",
+    "eslint": "changed frontend files passed",
+    "openapi": "generated and check passed",
+    "desktopBuild": "renderer, main and preload passed",
+    "diffCheck": "passed"
+  },
+  "actualEvidence": [
+    "项目甲的会话、图片附件与工具命令不能由项目乙或独立入口读取、修改、确认或删除；甲项目仍可恢复",
+    "共享事件序号对外项目只投递studio:cursor，不包含原小助手事件数据",
+    "等待工具确认的小助手阻止项目归档预检；完成后阻塞自动消失",
+    "0020到0021真实增量迁移保留旧会话为独立入口，不改写旧会话",
+    "前端会话Store在项目切换时清空，取消待审批操作并中止旧请求；附件和小助手API沿用宿主项目参数",
+    "未使用用户数据库，仅用临时SQLite及受控模型夹具"
+  ],
+  "notYetAccepted": [
+    "小助手项目会话尚未通过新构建的正式Electron真实UI链路",
+    "本批模型调用为受控本地夹具，不冒充真实外部模型",
+    "本次迁移尚未验证新的PyInstaller冻结后端及正式Electron打包入口",
+    "项目管理其余节点族、业务数据桥、macOS Intel及Windows仍按各自台账保留"
+  ],
+  "nodeExecutionLedger": "213 approved, 622 of 639 execution slots passed, 17 pending; assistant project ownership does not relabel node slots"
+}

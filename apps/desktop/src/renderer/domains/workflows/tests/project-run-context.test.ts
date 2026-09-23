@@ -1,8 +1,30 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { apiRequest, recorderApi, variableTrackingApi, workflowApi } from '../api'
 import { configureStudioConnection } from '../api/config'
+import { aiAssistantApi } from '../api/aiAssistantApi'
 
 afterEach(() => vi.unstubAllGlobals())
+
+it('scopes assistant sessions, chat and command recovery to the host project', async () => {
+  vi.stubGlobal('location', { search: '?projectId=host-project' })
+  const urls: string[] = []
+  const restore = configureStudioConnection('http://project-run.test', async input => {
+    urls.push(String(input))
+    return Response.json([])
+  })
+  try {
+    await aiAssistantApi.listSessions()
+    await aiAssistantApi.getSession('session')
+    await aiAssistantApi.createSession('新对话')
+    await aiAssistantApi.chat({ message: '你好', config: {
+      modelId: 'model', temperature: 0.7, maxTokens: 4000,
+      systemPrompt: '', enableTools: false, autoApprove: false,
+    } })
+    await apiRequest('/events/commands/assistant-command?projectId=other')
+    expect(urls).toHaveLength(5)
+    for (const url of urls) expect(new URL(url).searchParams.get('projectId')).toBe('host-project')
+  } finally { restore() }
+})
 
 it('binds run and debug requests to the host project without saving the draft', async () => {
   vi.stubGlobal('location', { search: '?projectId=host-project' })

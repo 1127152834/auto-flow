@@ -1,5 +1,5 @@
 // Source: WebRPA@5ccb900e, components/ai-assistant/AIAssistantPanel.tsx; see SOURCE.md for license and adaptation boundaries.
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   X,
   Sparkles,
@@ -77,6 +77,7 @@ function formatWorkDuration(ms: number): string {
 }
 
 export function AIAssistantPanel({ standalone = false }: { standalone?: boolean } = {}) {  const isOpen = useAIAssistantStore((s) => s.isPanelOpen)
+  const resourceScope = getStudioResourceScope()
   const setOpen = useAIAssistantStore((s) => s.setPanelOpen)
   const pendingApproval = useAIPermissionStore((s) => s.pending)
   const messages = useAIAssistantStore((s) => s.messages)
@@ -295,8 +296,9 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
 
   useEffect(() => {
     if (!isOpen) return
+    const scope = getStudioResourceScope()
     aiAssistantApi.listSessions().then((res) => {
-      if (res.success && Array.isArray(res.data)) {
+      if (scope === getStudioResourceScope() && res.success && Array.isArray(res.data)) {
         setSessions(res.data)
       }
     })
@@ -459,6 +461,21 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
   const pendingScreenshotCaptionRef = useRef<string>('这是当前 WebRPA 编辑器界面的截图，请查看并据此分析问题。')
   // 防循环：标记「当前这一回合本身就是截图自动发起的回合」，避免截图回合再触发截图无限套娃
   const autoScreenshotInFlightRef = useRef(false)
+  useLayoutEffect(() => {
+    if (useAIAssistantStore.getState().scope === resourceScope) return
+    cancelPendingApproval()
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
+    inflightSessionIdRef.current = null
+    streamingMsgIdRef.current = null
+    pendingScreenshotRef.current = null
+    autoScreenshotInFlightRef.current = false
+    setInput('')
+    setAttachedImages([])
+    setAttachedDocs([])
+    setError(null)
+    useAIAssistantStore.getState().activateScope(resourceScope)
+  }, [resourceScope])
   useEffect(() => {
     return onAssistantUiEvent('editor_screenshot_captured', (payload: any) => {
       const dataUrl = payload?.dataUrl
@@ -534,7 +551,6 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     }
   }, [isOpen, setAssistantModelId, standalone])
 
-  const resourceScope = getStudioResourceScope()
   const scopedModelId = resourceScope && projectResources.scope === resourceScope
     ? projectResources.modelId || ''
     : ''
@@ -761,10 +777,12 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
   }
 
   async function handleSelectSession(id: string) {
+    const scope = getStudioResourceScope()
     setShowSessions(false)
     setError(null)
     setLastWorkMs(null)  // 切换会话清除上一次的耗时提示，避免误导
     const res = await aiAssistantApi.getSession(id)
+    if (scope !== getStudioResourceScope()) return
     if (res.success && res.data) {
       setCurrentSessionId(res.data.id)
       setMessages(res.data.messages || [])
@@ -858,6 +876,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     // 关键：在请求发出「之前」就确定 session_id 并登记为在途会话，
     // 这样执行期间点「停止」能精准取消到后端正在跑的这次任务（解决新会话停不掉的问题）
     const sidForRequest = currentSessionId || `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const requestScope = getStudioResourceScope()
     inflightSessionIdRef.current = sidForRequest
     if (!currentSessionId) setCurrentSessionId(sidForRequest)
 
@@ -883,6 +902,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
         images: images.length > 0 ? images : undefined,
         fallbackModelIds: candidates.length > 1 ? candidates.slice(1).map(model => model.id) : undefined,
       }, ac.signal)
+      if (requestScope !== getStudioResourceScope()) return
       if (!res.success || !res.data) {
         if (ac.signal.aborted) return
         setError(res.error || '请求失败')
@@ -892,6 +912,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
       setCurrentSessionId(sid)
       inflightSessionIdRef.current = sid
       const full = await aiAssistantApi.getSession(sid)
+      if (requestScope !== getStudioResourceScope()) return
       if (full.success && full.data) {
         const serverMsgs = full.data.messages || []
         // 兜底：服务器回传的最后一条用户消息，恢复成「原始输入 + 图片 + 附件名」用于展示，
@@ -922,20 +943,23 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
       streamingMsgIdRef.current = null
       await dispatchClientActions(full.success ? full.data?.messages || [] : [], sid)
     } catch (e: any) {
+      if (requestScope !== getStudioResourceScope()) return
       if (ac.signal.aborted || (e && (e.name === 'AbortError' || /aborted/i.test(String(e.message))))) {
         // 用户主动中断，不报错
         return
       }
       setError(e instanceof Error ? e.message : String(e))
     } finally {
-      setSending(false)
-      abortControllerRef.current = null
-      inflightSessionIdRef.current = null
-      aiAssistantApi.listSessions().then((res) => {
-        if (res.success && Array.isArray(res.data)) {
-          setSessions(res.data)
-        }
-      })
+      if (requestScope === getStudioResourceScope()) {
+        setSending(false)
+        abortControllerRef.current = null
+        inflightSessionIdRef.current = null
+        aiAssistantApi.listSessions().then((res) => {
+          if (requestScope === getStudioResourceScope() && res.success && Array.isArray(res.data)) {
+            setSessions(res.data)
+          }
+        })
+      }
       // 若本回合 AI 截取了编辑器界面，回合结束后自动把截图作为图片发给视觉模型分析
       if (autoScreenshotInFlightRef.current) {
         // 本回合就是「截图自动发起」的回合：清除标记，且丢弃此回合内再次截取的图，杜绝无限套娃

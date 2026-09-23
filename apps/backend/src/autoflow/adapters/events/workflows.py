@@ -99,6 +99,15 @@ def _scope_run_event(item: StudioEvent, project_id: str | None, runs: WorkflowRu
     return item
 
 
+def _scope_assistant_event(item: StudioEvent, project_id: str | None, commands: Any) -> StudioEvent:
+    if not item.event.startswith("ai_assistant:"):
+        return item
+    session_id = item.data.get("session_id")
+    owner = getattr(commands, "assistant_session_project", None)
+    found, bound_project = owner(session_id) if callable(owner) and isinstance(session_id, str) else (False, None)
+    return item if found and bound_project == project_id else StudioEvent(item.sequence, "studio:cursor", {})
+
+
 def _scope_log_event(item: StudioEvent, verbose: bool) -> StudioEvent:
     # Source: WebRPA make_execution_callbacks.on_log. Delivery preference is
     # connection-local; persisted logs and the shared journal remain complete.
@@ -165,7 +174,7 @@ def workflow_events_router(
                 while not await request.is_disconnected():
                     try:
                         item = await asyncio.wait_for(queue.get(), timeout=15)
-                        yield _frame(_scope_log_event(_scope_run_event(item, project_id, runs), verbose_log))
+                        yield _frame(_scope_log_event(_scope_assistant_event(_scope_run_event(item, project_id, runs), project_id, commands), verbose_log))
                     except TimeoutError:
                         yield b": keep-alive\n\n"
 
@@ -197,9 +206,17 @@ def workflow_events_router(
                 owner = commands.request_run(request_id) if isinstance(request_id, str) else None
                 if owner is None or runs is None or not runs.belongs_to_project(owner, project_id):
                     raise WorkflowRunError("REQUEST_NOT_FOUND", "交互请求不存在", 404)
-            payload, http_status = await commands.submit_event_command(
-                request.command_id, request.event, request.data
-            )
+            if request.event in {"ai_client_action_claim", "ai_client_action_ack"}:
+                assistant_submit = getattr(commands, "submit_assistant_command", None)
+                if not callable(assistant_submit):
+                    raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)
+                payload, http_status = await assistant_submit(
+                    request.command_id, request.event, request.data, project_id
+                )
+            else:
+                payload, http_status = await commands.submit_event_command(
+                    request.command_id, request.event, request.data
+                )
             return JSONResponse(payload, status_code=http_status)
 
         @router.get("/commands/{command_id}", response_model=StudioCommandLookup)
@@ -207,7 +224,18 @@ def workflow_events_router(
             command_id: str,
             project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
         ) -> JSONResponse:
-            payload, http_status = commands.event_command(command_id)
+            assistant_owner = getattr(commands, "assistant_command_project", None)
+            assistant_lookup = getattr(commands, "assistant_event_command", None)
+            if callable(assistant_owner):
+                found, bound_project = assistant_owner(command_id)
+                if found:
+                    if bound_project != project_id or not callable(assistant_lookup):
+                        raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)
+                    payload, http_status = assistant_lookup(command_id, project_id)
+                else:
+                    payload, http_status = commands.event_command(command_id)
+            else:
+                payload, http_status = commands.event_command(command_id)
             run_id = commands.command_run(command_id) if project_id is not None else None
             if project_id is not None and isinstance(run_id, str) and (runs is None or not runs.belongs_to_project(run_id, project_id)):
                 raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)

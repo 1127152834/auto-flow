@@ -1,10 +1,11 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { hydrateAssistantArtifacts, readAssistantArtifact } from '../api/assistantArtifacts'
 import { configureStudioConnection } from '../api/config'
 
 let restore: (() => void) | undefined
-afterEach(() => { restore?.(); restore = undefined })
+beforeEach(() => { vi.stubGlobal('location', { search: '' }) })
+afterEach(() => { restore?.(); restore = undefined; vi.unstubAllGlobals() })
 
 describe('小助手产物引用', () => {
   it('通过 AutoFlow 受控传输读取图片而不把 base64 放进会话', async () => {
@@ -35,6 +36,15 @@ describe('小助手产物引用', () => {
     })
 
     expect(value).toEqual({ nested: { text: '完整内容', count: 7 } })
+  })
+
+  it('项目中的附件读取携带宿主项目标识', async () => {
+    vi.stubGlobal('location', { search: '?projectId=project-a' })
+    restore = configureStudioConnection('http://127.0.0.1:1234', async (input) => {
+      expect(String(input)).toBe('http://127.0.0.1:1234/api/ai-assistant/artifacts/artifact/value.json?projectId=project-a')
+      return new Response('{}', { headers: { 'content-type': 'application/json' } })
+    })
+    await readAssistantArtifact('assistant-artifact://value.json')
   })
 
   it('拒绝任意 URL 和目录穿越标识', async () => {

@@ -6,11 +6,13 @@ import io
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import faster_whisper
 import httpx
 import openpyxl
 import pytest
+from autoflow.adapters.events.workflows import StudioEvent, _scope_assistant_event
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
 from autoflow.domain.models import ModelInvocationResult
@@ -88,6 +90,16 @@ async def _client(tmp_path, gateway: AssistantGateway):
     return app, client, response.json()["models"][0]["id"]
 
 
+async def _project(client: httpx.AsyncClient, name: str) -> str:
+    response = await client.post(
+        "/api/v1/projects",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={"name": name, "description": ""},
+    )
+    assert response.status_code == 201, response.text
+    return response.json()["projectId"]
+
+
 @pytest.mark.asyncio
 async def test_http_chat_uses_managed_model_and_persists_session(tmp_path) -> None:
     gateway = AssistantGateway()
@@ -142,6 +154,47 @@ async def test_http_chat_uses_managed_model_and_persists_session(tmp_path) -> No
         len(list((tmp_path / "workspace" / "assistant" / "attachments").glob("*.png")))
         == 1
     )
+
+
+@pytest.mark.asyncio
+async def test_project_assistant_sessions_and_artifacts_are_isolated(tmp_path) -> None:
+    _app, client, model_id = await _client(tmp_path, AssistantGateway())
+    try:
+        first = await _project(client, "小助手项目甲")
+        second = await _project(client, "小助手项目乙")
+        chat = await client.post(
+            "/api/ai-assistant/chat",
+            params={"projectId": first},
+            json={
+                "sessionId": "project-assistant",
+                "message": "识别图片",
+                "config": {"modelId": model_id, "enableTools": False},
+                "images": ["data:image/png;base64,YQ=="],
+            },
+        )
+        assert chat.status_code == 200, chat.text
+        own = await client.get(
+            "/api/ai-assistant/sessions/project-assistant", params={"projectId": first}
+        )
+        reference = own.json()["messages"][0]["images"][0]
+        artifact_path = "/api/ai-assistant/artifacts/attachment/" + reference.removeprefix("assistant-attachment://")
+        assert (await client.get(artifact_path, params={"projectId": first})).content == b"a"
+        for params in ({"projectId": second}, {}):
+            assert (await client.get("/api/ai-assistant/sessions/project-assistant", params=params)).status_code == 404
+            assert (await client.get(artifact_path, params=params)).status_code == 404
+            assert (await client.patch("/api/ai-assistant/sessions/project-assistant/title", params=params, json={"title": "越权"})).status_code == 404
+            assert (await client.post("/api/ai-assistant/sessions/project-assistant/cancel", params=params)).status_code == 404
+            assert (await client.delete("/api/ai-assistant/sessions/project-assistant", params=params)).status_code == 404
+            assert (await client.post(
+                "/api/ai-assistant/chat", params=params,
+                json={"sessionId": "project-assistant", "message": "越权", "config": {"modelId": model_id, "enableTools": False}},
+            )).status_code == 404
+        assert [item["id"] for item in (await client.get("/api/ai-assistant/sessions", params={"projectId": first})).json()] == ["project-assistant"]
+        assert (await client.get("/api/ai-assistant/sessions", params={"projectId": second})).json() == []
+        assert (await client.get("/api/ai-assistant/sessions")).json() == []
+        assert (await client.get("/api/ai-assistant/sessions/project-assistant", params={"projectId": first})).status_code == 200
+    finally:
+        await client.aclose()
 
 
 @pytest.mark.asyncio
@@ -318,3 +371,64 @@ async def test_http_event_command_resumes_exact_pending_action(tmp_path) -> None
     assert completed.status_code == 200
     assert completed.json()["message"]["content"] == "已完成"
     assert len(gateway.invocations) == 2
+
+
+@pytest.mark.asyncio
+async def test_project_assistant_commands_and_events_do_not_cross_projects(tmp_path) -> None:
+    gateway = AssistantGateway(use_tool=True)
+    app, client, model_id = await _client(tmp_path, gateway)
+    try:
+        first = await _project(client, "命令项目甲")
+        second = await _project(client, "命令项目乙")
+        chat = asyncio.create_task(client.post(
+            "/api/ai-assistant/chat", params={"projectId": first},
+            json={
+                "sessionId": "project-tool-session", "message": "添加节点",
+                "config": {"modelId": model_id}, "workflowContext": {"nodes": []},
+            },
+        ))
+        for _ in range(100):
+            state = await client.get(
+                "/api/ai-assistant/sessions/project-tool-session", params={"projectId": first}
+            )
+            if state.status_code == 200 and state.json()["status"] == "waiting_for_action":
+                break
+            await asyncio.sleep(0.01)
+        assert state.json()["status"] == "waiting_for_action"
+        impact = await client.get(f"/api/v1/projects/{first}/lifecycle-impact", params={"action": "archive"})
+        assert impact.status_code == 200, impact.text
+        assert any(blocker["code"] == "STUDIO_ASSISTANT_ACTIVE" for blocker in impact.json()["blockers"])
+        event = StudioEvent(1, "ai_assistant:client_action_request", {
+            "session_id": "project-tool-session", "secret": "project-only"
+        })
+        mux = app.state.workflow_services.event_commands
+        assert _scope_assistant_event(event, first, mux) == event
+        assert _scope_assistant_event(event, second, mux).event == "studio:cursor"
+        assert _scope_assistant_event(event, None, mux).data == {}
+        claim = {
+            "commandId": "project-claim", "event": "ai_client_action_claim",
+            "data": {
+                "session_id": "project-tool-session", "tool_call_id": "tool-http-1",
+                "executor_id": "window-a",
+            },
+        }
+        assert (await client.post("/api/events/commands", params={"projectId": second}, json=claim)).status_code == 404
+        assert (await client.post("/api/events/commands", params={"projectId": first}, json=claim)).status_code == 200
+        assert (await client.get("/api/events/commands/project-claim", params={"projectId": second})).status_code == 404
+        assert (await client.get("/api/events/commands/project-claim")).status_code == 404
+        ack = {
+            "commandId": "project-ack", "event": "ai_client_action_ack",
+            "data": {
+                "session_id": "project-tool-session", "tool_call_id": "tool-http-1",
+                "claim_command_id": "project-claim", "result": {"success": True},
+            },
+        }
+        assert (await client.post("/api/events/commands", params={"projectId": second}, json=ack)).status_code == 404
+        accepted = await client.post("/api/events/commands", params={"projectId": first}, json=ack)
+        assert accepted.status_code == 200, accepted.text
+        assert (await client.get("/api/events/commands/project-ack", params={"projectId": first})).status_code == 200
+        assert (await asyncio.wait_for(chat, 2)).status_code == 200
+        impact = await client.get(f"/api/v1/projects/{first}/lifecycle-impact", params={"action": "archive"})
+        assert all(blocker["code"] != "STUDIO_ASSISTANT_ACTIVE" for blocker in impact.json()["blockers"])
+    finally:
+        await client.aclose()

@@ -45,6 +45,18 @@ describe('aiAssistantStore 消息管理', () => {
     S.getState().clearMessages()
     expect(S.getState().messages).toEqual([])
   })
+
+  it('切换项目时不保留上一个项目的会话和待执行工具', () => {
+    S.getState().activateScope('project-a')
+    S.getState().setCurrentSessionId('session-a')
+    S.getState().setMessages([msg('private-a')])
+    S.getState().upsertLiveToolCall({ id: 'tool-a', name: 'x', arguments: {}, status: 'pending' })
+    S.getState().activateScope('project-b')
+    expect(S.getState().currentSessionId).toBeNull()
+    expect(S.getState().messages).toEqual([])
+    expect(S.getState().liveToolCalls).toEqual([])
+    expect(S.getState().scope).toBe('project-b')
+  })
 })
 
 describe('aiAssistantStore 回滚快照（issue 6）', () => {

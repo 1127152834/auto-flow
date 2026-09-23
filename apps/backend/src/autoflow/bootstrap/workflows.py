@@ -171,6 +171,24 @@ class StudioEventCommandMux:
             return await self._assistant.submit_event_command(command_id, event, dict(data))
         return await self._workflows.submit_event_command(command_id, event, data)
 
+    async def submit_assistant_command(
+        self, command_id: str, event: str, data: Mapping[str, Any], project_id: str | None
+    ) -> tuple[dict[str, Any], int]:
+        return await self._assistant.submit_event_command(
+            command_id, event, dict(data), project_id=project_id
+        )
+
+    def assistant_session_project(self, session_id: str) -> tuple[bool, str | None]:
+        return self._assistant.session_project(session_id)
+
+    def assistant_command_project(self, command_id: str) -> tuple[bool, str | None]:
+        return self._assistant.command_project(command_id)
+
+    def assistant_event_command(
+        self, command_id: str, project_id: str | None
+    ) -> tuple[dict[str, Any], int]:
+        return self._assistant.event_command(command_id, project_id=project_id)
+
     def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
         if self._assistant.has_command(command_id):
             return self._assistant.event_command(command_id)

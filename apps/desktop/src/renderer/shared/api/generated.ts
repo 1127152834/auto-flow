@@ -24719,7 +24719,9 @@ export interface operations {
     };
     sessions_api_ai_assistant_sessions_get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24735,11 +24737,22 @@ export interface operations {
                     "application/json": components["schemas"]["AssistantSessionSummary"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     create_session_api_ai_assistant_sessions_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24772,7 +24785,9 @@ export interface operations {
     };
     get_session_api_ai_assistant_sessions__session_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 session_id: string;
@@ -24803,7 +24818,9 @@ export interface operations {
     };
     delete_session_api_ai_assistant_sessions__session_id__delete: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 session_id: string;
@@ -24834,7 +24851,9 @@ export interface operations {
     };
     rename_session_api_ai_assistant_sessions__session_id__title_patch: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 session_id: string;
@@ -24869,7 +24888,9 @@ export interface operations {
     };
     truncate_session_api_ai_assistant_sessions__session_id__truncate_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 session_id: string;
@@ -24904,7 +24925,9 @@ export interface operations {
     };
     cancel_api_ai_assistant_sessions__session_id__cancel_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 session_id: string;
@@ -24935,7 +24958,9 @@ export interface operations {
     };
     chat_api_ai_assistant_chat_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -25001,7 +25026,9 @@ export interface operations {
     };
     artifact_api_ai_assistant_artifacts__kind___artifact_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 kind: string;

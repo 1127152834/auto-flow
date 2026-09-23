@@ -42,7 +42,7 @@ export function getStudioResourceScope(): string | null {
 export function scopeStudioUrl(url: string, projectId = getStudioOpenContext().projectId): string {
   if (!projectId) return url
   const scoped = new URL(url)
-  if (/^\/api\/(?:workflows|workflow-runs|events|browser|element-picker|recorder)(?:\/|$)/.test(scoped.pathname)) {
+  if (/^\/api\/(?:workflows|workflow-runs|events|browser|element-picker|recorder|ai-assistant)(?:\/|$)/.test(scoped.pathname)) {
     scoped.searchParams.set('projectId', projectId)
     return scoped.toString()
   }

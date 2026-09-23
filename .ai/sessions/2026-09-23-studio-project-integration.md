@@ -233,3 +233,9 @@
 - 15个批准AI入口与实际执行器注册逐项一致。派发器从运行快照的执行副本补默认模型，显式modelId优先；复用ModelService绑定及WorkflowModelGateway，私有worker启动消息传递密钥，不写持久资源/文档/事件。模型错误在启动worker前明确失败。
 - 受控本地HTTP模型的真实项目worker调用、输出事件、密钥不落SQLite、缺默认/非法ID失败及项目任务回归通过。关联123项与新增目录注册1项、Ruff/mypy/OpenAPI/结构通过；证据project-integration/project-task-model-2026-09-23/result.json。
 - 本批尚无项目AI任务正式Electron UI、最新冻结包或项目任务外部真实模型验收；助手后端项目归属、其余任务节点族/数据桥及17个实际执行槽位仍待完成。下一块先做助手项目归属，正式UI可与此独立推进。
+
+## 小助手会话项目归属（后端和前端合同已验）
+
+- 0021增量迁移将新会话绑定项目，旧会话保留独立入口；HTTP会话、附件、命令、SSE和前端项目Store按归属隔离，活跃会话接入项目归档预检。
+- 专项31后端及21前端测试、Ruff/mypy/TypeScript/ESLint/OpenAPI通过，详见 `docs/migration/studio-backend-migration/evidence/project-integration/assistant-project-2026-09-23/result.json`。
+- 正式Electron UI及新包验收尚未完成，213节点622/17槽位不变。下一步完成正式UI链路及剩余项目集成，不将受控模型夹具算作真实外部模型。

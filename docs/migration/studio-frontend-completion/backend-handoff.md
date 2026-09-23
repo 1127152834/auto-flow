@@ -212,3 +212,9 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 按已确认的“项目默认值＋显式覆盖”规则，项目任务的无浏览器资源请求也冻结有效`modelProviderId`；纯数据任务不因未使用的模型默认值失效。15个已批准AI入口进入项目目录，并逐项核对批准范围与真实执行器注册。节点显式`modelId`优先；缺省时由主应用`ModelService`按冻结提供方解析。模型凭据只在派发时读取，经受控父子进程消息传入原有`WorkflowModelGateway`，不写入Batch、PreparedContent、CoreRun、日志或公开事件。解析失败以明确错误终止，未启动浏览器或worker。
 
 [项目模型端口证据](../studio-backend-migration/evidence/project-integration/project-task-model-2026-09-23/result.json)覆盖正式项目启动的真实SQLite资源冻结、无浏览器AI节点的实际worker/HTTP模型调用、继承与显式覆盖、输出持久化、无秘密落库、缺默认与非法ID失败，以及原项目任务、AI worker回归。它不等同于项目任务AI的正式Electron UI和外部真实模型效果；这两项仍待单独验收。助手会话/命令及附件的服务端项目归属、其余项目节点族/数据桥、Intel/Windows仍未关闭。Studio 213节点和622/17执行槽位不因项目桥接测试重标。
+
+## 小助手会话项目归属（2026-09-23）
+
+新增0021增量迁移为小助手会话保存可空项目标识，历史会话仍归独立入口。项目甲、项目乙与独立入口的会话读取、修改、聊天、附件下载、工具命令确认和查询均按归属隔离；共享SSE保留连续游标，跨项目帧不含原数据。小助手运行或等待工具确认时，项目归档预检报告活跃会话，结束后解除。前端沿用现有项目URL边界，切换项目时清空会话状态、取消待审批动作并中止旧请求。
+
+[本批专项证据](../studio-backend-migration/evidence/project-integration/assistant-project-2026-09-23/result.json)包含真实SQLite迁移、HTTP命令及产物、生命周期和前端请求测试。正式Electron真实UI、冻结/打包入口及外部真实模型效果仍单列；不据此核销节点执行槽位。

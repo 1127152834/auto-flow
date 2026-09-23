@@ -8,7 +8,9 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.workflows.assistant import AssistantCommand, AssistantSession
+from autoflow.domain.workflows.runs import WorkflowRunError
 
+from .projects import guard_project
 from .workflow_models import WorkflowAssistantCommandRow, WorkflowAssistantSessionRow
 
 
@@ -27,6 +29,7 @@ def _session(row: WorkflowAssistantSessionRow) -> AssistantSession:
         revision=row.revision,
         created_at=_aware(row.created_at),
         updated_at=_aware(row.updated_at),
+        project_id=row.project_id,
     )
 
 
@@ -48,15 +51,25 @@ class SqlAlchemyWorkflowAssistant:
     def __init__(self, session_factory: sessionmaker[Session]) -> None:
         self._session_factory = session_factory
 
-    def create(self, session_id: str, title: str, *, now: datetime) -> AssistantSession:
+    def check_project(self, project_id: str | None, *, writable: bool = False) -> None:
+        if project_id is not None:
+            with self._session_factory() as database:
+                guard_project(database, project_id, writable=writable)
+
+    def create(self, session_id: str, title: str, *, now: datetime, project_id: str | None = None) -> AssistantSession:
         with self._session_factory() as database:
             database.execute(text("BEGIN IMMEDIATE"))
+            if project_id is not None:
+                guard_project(database, project_id)
             existing = database.get(WorkflowAssistantSessionRow, session_id)
             if existing is not None:
+                if existing.project_id != project_id:
+                    raise WorkflowRunError("ASSISTANT_SESSION_NOT_FOUND", "小助手会话不存在", 404)
                 database.rollback()
                 return _session(existing)
             row = WorkflowAssistantSessionRow(
                 id=session_id,
+                project_id=project_id,
                 title=title,
                 payload={"messages": [], "status": "idle", "pendingAction": None},
                 revision=1,
@@ -72,17 +85,19 @@ class SqlAlchemyWorkflowAssistant:
             row = database.get(WorkflowAssistantSessionRow, session_id)
             return _session(row) if row is not None else None
 
-    def list(self) -> tuple[AssistantSession, ...]:
+    def list(self, project_id: str | None = None) -> tuple[AssistantSession, ...]:
         with self._session_factory() as database:
             rows = database.scalars(
-                select(WorkflowAssistantSessionRow).order_by(
+                select(WorkflowAssistantSessionRow).where(
+                    WorkflowAssistantSessionRow.project_id == project_id
+                ).order_by(
                     WorkflowAssistantSessionRow.updated_at.desc()
                 )
             )
             return tuple(_session(row) for row in rows)
 
-    def find_pending(self, command_id: str) -> AssistantSession | None:
-        for item in self.list():
+    def find_pending(self, command_id: str, *, project_id: str | None = None) -> AssistantSession | None:
+        for item in self.list(project_id):
             if item.pending_action and item.pending_action.get("commandId") == command_id:
                 return item
         return None
