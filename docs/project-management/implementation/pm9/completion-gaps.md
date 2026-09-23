@@ -1,6 +1,8 @@
 # PM9 剩余工作复核
 
-2026-09-24 来源断网切片（confirmed 定向，完整验证进行中）：真实 worker/浏览器在已核验缓存且 Google transport 持续断网时完成本地提交，完整扫描撤销身份后再断网则零 Task。来源拉取卡原从仅出站变化列表找 pull，已修复为状态返回 latestPull；新增当前代次 lastPulledAt，失败/推送不伪装成成功来源时间。定向2、组件12、全前端5474/409、脚本102、映射4/251、类型/lint/OpenAPI及构建通过。首轮后端完整回归3483通过/79跳过/4项进程时限失败；原样定向6项复查通过，串行全量复验进行中，尚不能声明完整通过；当前完整ARM打包桌面通过22截图；不含真实Sheets断网联合UI。现有三平台35895754111@25bb8ab2不含本轮生产修复，继续保留。详见 source-outage-follow-through.json。未升级台账，releaseAccepted=false。
+2026-09-24 DATA-WRITE-12双worker补证（confirmed子范围）：公开fixedRecord各持A/B并先写，反向查询/写入均LEASE_BUSY进入声明人工错误分支；lease/游标/原输入/两条pending意图不变，公开stop后释放且前写保留。1项真实测试通过，首次未声明筛选字段的422夹具错误保留；没有产品代码改动。组原子性/配置重试/打包及Windows/Intel同场景继续待验，详见opposing-writes-follow-through.json。
+
+2026-09-24 来源断网切片（confirmed 本机完整/打包，原生后续待验）：真实 worker/浏览器在已核验缓存且 Google transport 持续断网时完成本地提交，完整扫描撤销身份后再断网则零 Task。来源拉取卡原从仅出站变化列表找 pull，已修复为状态返回 latestPull；新增当前代次 lastPulledAt，失败/推送不伪装成成功来源时间。定向2、组件12、全前端5474/409、脚本102、映射4/251、类型/lint/OpenAPI及构建通过。首轮后端完整回归3483通过/79跳过/4项进程时限失败；原样定向6项和串行全量3487通过/79跳过（836.98秒），保留首轮失败与未知根因；当前完整ARM打包桌面通过22截图；不含真实Sheets断网联合UI。现有三平台35895754111@25bb8ab2不含本轮生产修复，继续保留。详见 source-outage-follow-through.json。未升级台账，releaseAccepted=false。
 
 2026-09-24 并行补证/CI诊断（confirmed局部）：ARM正式打包API通过2/3次循环变量隔离与精确五条写入、唯一End声明输出关联、并行人工串行交接和停止保留前写。公开事件不提供内部scope、同workflow重复绑定两次脚本错误已修正并保留失败报告。当前69baeeb2三平台35886627514的ARM在打包必填提示失败，截图节点未选中，metadata HTTP断言和后端3486/前端5473通过；旧点击helper对覆盖目标误点已由隔离Electron复现并修复，102脚本/4映射及完整ARM打包桌面通过。最终三平台均失败：Intel同为未选中节点，Windows为紧凑重开窗口隐藏就绪文字。恢复视口及显式展开面板已复现通过，最终完整新版桌面通过；全部旧job结束后已触发三平台35895754111，源码25bb8ab2（生产仍69baeeb2），结果待完成。详见parallel-packaged-follow-through.json和ci-metadata-click-follow-through.json。251条状态未升级，releaseAccepted=false。
 

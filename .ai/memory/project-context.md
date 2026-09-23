@@ -1,5 +1,9 @@
 # 项目上下文
 
+2026-09-24 DATA-WRITE-12补证（confirmed子范围）：新增两真实worker固定A/B先写，再反向query/update均LEASE_BUSY进入人工错误分支；冻结原输入v1、当前值/游标v2、双方lease及A/B两条pending意图不变，stop后释放。最终1项12.89秒通过；首次未声明筛选字段422夹具问题保留并改用既有fixedRecord。无生产改动，仍51e8991e；CI选择32/43包含本轮两新增案例。组原子性/配置重试/打包/Windows/Intel仍待验，opposing-writes-follow-through.json。
+
+2026-09-24 来源断网切片（confirmed 定向/打包，本机完整复验通过、原生后续未收口；supersedes 下文“当前”候选）：生产51e8991e、证据669c01c0已推送草稿PR #1。lastPulledAt/latestPull修复来源拉取卡从出站列表推断拉取的错误；受控Google断网可靠缓存真实worker成功、重复身份后再断网零Task通过。全前端5474/409、102脚本、4映射/251引用、类型/lint/OpenAPI/构建和新ARM完整桌面22截图通过。首轮全后端3483通过/79跳过/4项进程时限失败保留，原样6项复查通过，串行全量3487通过/79跳过（836.98秒）；不据复跑推断根因修复。旧矩阵35895754111@25bb8ab2仍在运行，不包含51e8991e生产修复。详见source-outage-follow-through.json。251条249有断言/2未定位，206partial/45planned/0verified；releaseAccepted=false。
+
 2026-09-24 并行补证/CI诊断（confirmed局部）：ARM正式打包API通过2/3次循环变量隔离与精确五条写入、唯一End声明输出关联、并行人工串行交接和停止保留前写。公开事件不提供内部scope、同workflow重复绑定两次脚本错误已修正并保留失败报告。当前69baeeb2三平台35886627514的ARM在打包必填提示失败，截图节点未选中，metadata HTTP断言和后端3486/前端5473通过；旧点击helper对覆盖目标误点已由隔离Electron复现并修复，102脚本/4映射及完整ARM打包桌面通过。最终三平台均失败：Intel同为未选中节点，Windows为紧凑重开窗口隐藏就绪文字。恢复视口及显式展开面板已复现通过，最终完整新版桌面通过；全部旧job结束后已触发三平台35895754111，源码25bb8ab2（生产仍69baeeb2），结果待完成。详见parallel-packaged-follow-through.json和ci-metadata-click-follow-through.json。251条状态未升级，releaseAccepted=false。
 
 2026-09-24 Profile冻结补证与代理勘误（confirmed子范围）：ARM正式打包API/真实worker证明旧批次两个Task保留原根文档、UA/语言/时区及实际启动seed，新批次使用公开编辑后的新值。Canvas实测不变，错误的必变断言已更正并保留负向报告。现有资源类/SQLite诊断证实代理新成员与改动端点进入旧快照，ENV-05/XE-A20/XE-C02增加implementation_missing，P1–P3规格/计划待确认。完整打包API/ARM桌面、101脚本/4映射/251引用通过；生产仍69baeeb2，三平台35886627514继续且不含本次新脚本断言。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见resource-freeze-follow-through.json。

@@ -11727,6 +11727,15 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/opposing-writes-follow-through.json",
+          "scope": "本机两真实worker反向动态单记录写冲突、人工分支、保持原事实及停止释放",
+          "limitations": "未覆盖整组原子提交/配置重试、打包和实网；状态不升级",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -11750,12 +11759,18 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-23",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_capability_fencing.py",
             "symbol": "test_opposing_dynamic_writes_return_conflicts_without_stealing_leases",
             "scope": "两个 SQLite Task 各动态取得一条 lease 后并发反向单记录写，均有限时返回 LEASE_BUSY；原写入、版本、lease 所有权、游标和输入快照不变，拒绝操作未入账。Task 激活为 fixture，未启动 worker。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_opposing_writes_enter_manual_branch_without_stealing_leases",
+            "scope": "两真实worker各固定领取并修改一条记录，经人工屏障后查询/反向写均LEASE_BUSY进入错误边人工分支；双方lease/游标/原输入和两条同步意图不变，公开停止后释放且前写保留。无配置自动重试或有限多记录组原子性结论。",
             "level": "automated_integration"
           }
         ],
@@ -11766,7 +11781,7 @@
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "真实 worker 重试耗尽/人工分支和打包并发链待验收。"
+            "detail": "真实双worker反向单记录写与人工错误分支已在本机验证；配置重试耗尽、Windows/Intel及打包同场景仍待验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"

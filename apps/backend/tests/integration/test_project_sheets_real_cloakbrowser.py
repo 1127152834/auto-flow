@@ -629,3 +629,142 @@ def test_real_worker_uses_reliable_cache_during_source_outage_but_rejects_invali
         assert not app.state.project_workflow_worker_manager.busy()
         assert requests.count("/fixture") == 1
         assert len(transport.calls) == calls and transport.changes() == 0
+
+
+def test_real_opposing_writes_enter_manual_branch_without_stealing_leases(
+    tmp_path, valid_profile_values, real_cloak_page,
+):
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectTaskRecordCursorRow,
+    )
+    from tests.integration.test_project_sheets_sync import sync_operations
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith("chromium-"))
+    shutil.copytree(source, tmp_path / "data" / "kernels" / source.name, symlinks=True)
+    transport = FakeSheetsTransport({"数据": [["编号", "标题"], ["A", "first"], ["B", "second"]]})
+    with open_sheets_table(tmp_path, transport, [("code", "编号", "string"), ("title", "标题", "string")]) as bound:
+        pull(bound)
+        app, client = bound.client.app, bound.client
+        prefix = f"/api/v1/projects/{bound.project}"
+        assert app.state.project_workflow_dispatcher.capacity == 2
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, "headless": True, "browser_version": source.name.removeprefix("chromium-"),
+        }))
+        title, code = bound.field_id("title"), bound.field_id("code")
+        generation = bound.dataset_generation()
+        before = bound.records()
+
+        def node(identity, kind, data):
+            return {"id": identity, "type": kind, "position": {"x": 0, "y": 0}, "data": {"moduleType": kind, **data}}
+
+        batches = []
+        for own, other in (("A", "B"), ("B", "A")):
+            grant = {"tableId": bound.table, "datasetGeneration": generation,
+                     "operations": ["updateRecord"], "fieldIds": [title], "readPurposes": ["workflow"]}
+            document = workflow_payload(uid())
+            document["content"]["nodes"] = [
+                node("inputs", "project_data", {"operation": "inputs", "variableName": "frozen", "arguments": {}}),
+                node("open", "open_page", {"url": url, "timeout": 30}),
+                node("own", "project_data", {"operation": "updateRecord", "variableName": "owned", "tableGrant": grant,
+                     "arguments": {"recordRef": "{frozen[0]['recordRef']}", "changes": {title: "owned-" + own},
+                                   "expectedContentRevision": "{frozen[0]['contentRevision']}"}}),
+                node("barrier", "project_manual", {"reason": "owner barrier", "timeoutSeconds": 120}),
+                node("query", "project_data", {"operation": "queryRecords", "variableName": "other",
+                     "tableGrant": {**grant, "operations": ["queryRecords"], "fieldIds": [title, code]},
+                     "arguments": {"tableId": bound.table, "datasetGeneration": generation, "fieldIds": [title, code],
+                                   "readPurpose": "workflow", "filter": {"type": "compare", "fieldId": code, "operator": "eq", "value": other},
+                                   "orderBy": [], "cursor": None, "limit": 1}}),
+                node("cross", "project_data", {"operation": "updateRecord", "variableName": "crossed", "tableGrant": grant,
+                     "arguments": {"recordRef": "{other['items'][0]['ref']}", "changes": {title: "must-not-write"},
+                                   "expectedContentRevision": "{other['items'][0]['contentRevision']}"}}),
+                node("conflict", "project_manual", {"reason": "cross conflict", "timeoutSeconds": 120}),
+            ]
+            document["content"]["edges"] = [
+                {"id": uid(), "source": a, "target": b}
+                for a, b in (("inputs", "open"), ("open", "own"), ("own", "barrier"), ("barrier", "query"), ("query", "cross"))
+            ] + [{"id": uid(), "source": "cross", "target": "conflict", "sourceHandle": "error"}]
+            saved = client.post("/api/workflows", json={**document["content"], "id": document["id"], "clientRequestId": uid()})
+            assert saved.status_code == 201, saved.text
+            plan = plan_for(bound)
+            plan["inputs"][0].update(mode="fixedRecord", fixedRecord=next(
+                row["ref"] for row in before if row["ref"]["recordKey"]["value"] == own
+            ))
+            configured = client.post(prefix + "/automations", headers=new_key(), json={
+                "name": "cross-" + own, "description": "", "workflowId": saved.json()["id"], "inputPlan": plan, "parameterSchema": [],
+                "environmentPolicy": {"source": "newFromProfile", "profileId": profile.id, "proxyOverride": {"mode": "none"}, "modelProviderId": None},
+                "runPolicy": {"maxTasks": 1, "concurrency": 1, "maxLiveInstances": 1, "continueAfterFailure": False,
+                              "automaticExecutionTimeoutSeconds": 60, "manualDeadlineSeconds": 180},
+            })
+            assert configured.status_code == 201, configured.text
+            automation = configured.json()
+            validation = client.get(prefix + f"/automations/{automation['automationId']}/validation")
+            assert validation.status_code == 200 and validation.json()["runnable"], validation.text
+            accepted = client.post(prefix + f"/automations/{automation['automationId']}/batches", headers=new_key(), json={
+                "expectedAutomationRevision": automation["managementRevision"], "parameters": {}, "maxTasks": 1, "concurrency": 1,
+            })
+            assert accepted.status_code == 202, accepted.text
+            batches.append(accepted.json()["operation"]["result"]["batch"]["batchId"])
+
+        def waiting(reason):
+            response = client.get(prefix + "/manual-items")
+            assert response.status_code == 200, response.text
+            return [item for item in response.json()["items"] if item["status"] == "waiting" and item["reason"] == reason]
+
+        wait_for(lambda: len(waiting("owner barrier")) == 2, "both real workers own their input before cross writes")
+        barriers = waiting("owner barrier")
+        snapshots = {item["taskId"]: client.get(prefix + f"/tasks/{item['taskId']}").json()["inputSnapshot"] for item in barriers}
+        for snapshot in snapshots.values():
+            captured = snapshot["inputs"][0]
+            original = next(row for row in before if row["ref"] == captured["recordRef"])
+            assert captured["contentRevision"] == original["contentRevision"] == 1
+            assert {cell["fieldId"]: cell["value"] for cell in captured["values"]} == {
+                cell["fieldId"]: cell["value"] for cell in original["values"]
+            }
+        owned = bound.records()
+        assert [row["contentRevision"] for row in owned] == [2, 2]
+        assert {cell["value"] for row in owned for cell in row["values"] if cell["fieldId"] == title} == {"owned-A", "owned-B"}
+        assert [row["ref"] for row in owned] == [row["ref"] for row in before]
+
+        def ownership():
+            with app.state.session_factory() as session:
+                leases = [(row.id, row.task_id, row.record_ref, row.state, row.lease_generation)
+                          for row in session.scalars(select(ProjectRecordLeaseRow).order_by(ProjectRecordLeaseRow.id))]
+                cursors = [(row.id, row.task_id, row.record_ref, row.content_revision, row.status_revision, row.link_revision)
+                           for row in session.scalars(select(ProjectTaskRecordCursorRow).order_by(ProjectTaskRecordCursorRow.id))]
+                return leases, cursors
+
+        held = ownership()
+        assert len(held[0]) == len(held[1]) == 2
+        assert {row[1] for row in held[0]} == set(snapshots) and all(row[3] == "held" for row in held[0])
+        pending = sync_operations(bound, "pending")
+        assert len(pending) == 2
+        assert {item["record"]["recordKey"]["value"] for item in pending} == {"A", "B"}
+        assert {item["targetContentRevision"] for item in pending} == {2}
+        for item in barriers:
+            resume(bound, item)
+        # Error branches retain both leases until we explicitly stop; no timing race
+        # allows one task to finish and release its record before the other tries it.
+        wait_for(lambda: len(waiting("cross conflict")) == 2, "both conflicts reach declared manual branches")
+        assert {item["taskId"] for item in waiting("cross conflict")} == set(snapshots)
+        assert bound.records() == owned and ownership() == held
+        assert sync_operations(bound, "pending") == pending
+        for task_id, snapshot in snapshots.items():
+            path = prefix + f"/tasks/{task_id}"
+            assert client.get(path).json()["inputSnapshot"] == snapshot
+            attempts = client.get(path + "/node-attempts").json()["items"]
+            cross, = [attempt for attempt in attempts if attempt["nodeId"] == "cross"]
+            assert cross["status"] == "failed" and cross["error"]["code"] == "LEASE_BUSY", attempts
+            assert sum(attempt["nodeId"] == "own" and attempt["status"] == "succeeded" for attempt in attempts) == 1
+        for batch in batches:
+            current = batch_detail(bound, batch)["batch"]
+            stopped = client.post(prefix + f"/batches/{batch}/stop", headers=new_key(), json={
+                "expectedStatusRevision": current["statusRevision"], "reason": "end opposing write observation",
+            })
+            assert stopped.status_code == 202, stopped.text
+        wait_for(lambda: all(batch_detail(bound, batch)["batch"]["status"] == "stopped" for batch in batches), "both owners stop and release")
+        assert not waiting("cross conflict")
+        assert bound.records() == owned and sync_operations(bound, "pending") == pending
+        assert all(row[3] not in {"held", "reconciling"} for row in ownership()[0])
+        assert not app.state.project_workflow_worker_manager.busy()
+        assert requests.count("/fixture") == 2 and transport.changes() == 0

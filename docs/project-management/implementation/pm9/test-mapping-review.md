@@ -139,3 +139,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 
 2026-09-24 DATA-CLAIM-09：新增已核验缓存断网下真实 worker 领取/人工继续/本地提交、重复身份扫描后再断网零领取，及 HTTP 来源成功时间与组件失败提示断言。发现并修复拉取卡错误读取出站队列的问题；lastPulledAt/latestPull 按当前绑定提供事实。其余缓存信任组合、三平台新断言、打包实网联合 UI 保留缺口；时间不是 TTL 或身份可靠保证。249/2、206partial/45planned/0verified不变。完整回归/打包和本轮精确候选以 source-outage-follow-through.json 为准；releaseAccepted=false。
+
+2026-09-24 DATA-WRITE-12：两真实worker反向动态写分别得到LEASE_BUSY并进入声明人工错误分支，保持已提交值、lease/游标/原输入/待推送意图；停止后释放。新增一个精确映射，不把两个单记录命令当作组原子性，也不宣称配置自动重试。有限多记录组、打包、Windows/Intel及实网仍保留；249/2、206partial/45planned/0verified不变，详见opposing-writes-follow-through.json。

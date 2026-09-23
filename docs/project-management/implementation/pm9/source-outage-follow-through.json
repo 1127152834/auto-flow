@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "targeted_and_packaged_passed_serial_full_regression_pending",
+  "status": "local_full_and_packaged_passed_native_followup_pending",
   "releaseAccepted": false,
   "requirement": "DATA-CLAIM-09",
   "parentCommit": "6c1167cd47039987d3f03697dc8b50261b00d497",
@@ -38,7 +38,7 @@
         "host shutdown with open SSE timed out 3s (no active worker)",
         "closed browser status not removed within 2s"
       ],
-      "cause": "not established; resource pressure is a hypothesis, deadlines unchanged; isolated and serial full follow-up pending"
+      "cause": "not established; resource pressure remains a hypothesis. Original four failures retained. Unchanged isolated6 and serial full3487 passed without extending deadlines or altering unrelated production startup/cleanup."
     },
     "scripts": "102 passed",
     "mapping": "4 tests passed;251 valid references; no status promotions",
@@ -88,12 +88,18 @@
         "twoFramesMs": 7
       }
     },
-    "kernelEntrypointIsolated": "4 passed /10.30s after two full-run failures; original trace pending, not proof full regression passed",
+    "kernelEntrypointIsolated": "4 passed /10.30s; superseded in validation scope by unchanged6 process checks and serial full3487 pass, original failure retained",
     "processBoundariesFollowUp": "6 passed /9.84s, original tests and deadlines unchanged; cannot erase original full-run failures",
     "backendFullSerial": {
-      "status": "in_progress",
+      "status": "passed",
       "evidence": ".tmp-tests/pm9-source-outage-2026-09-24/backend-full-serial.log",
-      "scope": "same source, no concurrent frontend/build/package/smoke workload from this task"
+      "scope": "same source, no concurrent frontend/build/package/smoke workload from this task",
+      "passed": 3487,
+      "skipped": 79,
+      "warnings": 2,
+      "seconds": 836.98,
+      "source": "51e8991e production and collected tests; later opposing-write test is separate",
+      "sha256": "eff34149288cd67d4e3bb7f0eca8f84eb6ae9f857e2ec742372ad3987d7beefd"
     }
   },
   "redGreen": [
@@ -124,5 +130,12 @@
     "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "8c378cabf3ae4444c83e7eee588e6b883a6dbf44e482256d8bf46beb8d563629",
     "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "b4880d9b014f453ad863165281cf1c784a2acb0eefbd62f16a78a1605cce78bb"
   },
-  "codeCandidate": "51e8991e198f782030b678e8decce9a424decaf5"
+  "codeCandidate": "51e8991e198f782030b678e8decce9a424decaf5",
+  "evidenceSha256": {
+    ".tmp-tests/pm9-source-outage-2026-09-24/backend-full.log": "af4a6cb8f5ff49df96458073d680f09a7dc0a15648d8a983b1be73424ff30a7e",
+    ".tmp-tests/pm9-source-outage-2026-09-24/backend-full-serial.log": "eff34149288cd67d4e3bb7f0eca8f84eb6ae9f857e2ec742372ad3987d7beefd",
+    ".tmp-tests/pm9-source-outage-2026-09-24/frontend-full.log": "27af81c45dcf5102225a1010d47c8bbf03ee5cca29c41d1f44d7d4e89adf6d54",
+    ".tmp-tests/pm9-source-outage-2026-09-24/targeted-real-worker.log": "612f3488b0addb9d2874c0f32edad1de449e4df3c1e60b2e4eefd287f134fa03",
+    ".tmp-tests/pm9-source-outage-2026-09-24/process-boundaries-recheck.log": "5729eb149f48c2948672de5db697d9fe1ccdd76abd2cce3b61b9c98aafc0dec9"
+  }
 }
