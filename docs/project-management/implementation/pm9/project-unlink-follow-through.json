@@ -1,0 +1,120 @@
+{
+  "date": "2026-09-24",
+  "status": "local_packaged_subscope_passed_native_pending",
+  "releaseAccepted": false,
+  "requirement": "AU-08",
+  "parentCommit": "04285667609e0917a740a1efdfb62b3c62c859a1",
+  "productionSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+  "change": "Extend the existing packaged desktop acceptance script with whole-project deletion and reuse of the same edited independent workflow. No production code or contract change.",
+  "assertions": [
+    "An independently stored workflow is edited through public HTTP; its new manual reason is observed by the actual worker before archive.",
+    "Public project archive stops the waiting batch and cancels its Task; fresh delete impact has no blockers.",
+    "Public exact-name project deletion converges through the workspace-scoped original operation key; project, project-scoped operation and former automation return404.",
+    "Only owned frozen prepared content is cleared (one before archive, zero after deletion). Independent workflow id, revision, nodes and edges remain exactly the edited values.",
+    "Replaying the original project DELETE returns the same operation and result; only optional null DTO defaults are normalized in comparison.",
+    "The same workflow can be associated in a new project; Manager shows its retained document and saved configuration."
+  ],
+  "fixtureCorrections": [
+    {
+      "attempt": "initial-desktop",
+      "outcome": "failed",
+      "cause": "Used project-scoped operation lookup after deletion. Existing contract requires workspace lookup; corrected URL and explicitly assert project lookup404. Not a product defect."
+    },
+    {
+      "attempt": "receipt-desktop",
+      "outcome": "failed",
+      "cause": "DELETE DTO includes workflowId/workflowDisposition null defaults, workspace lookup excludes unset fields. Normalize these two optional defaults only; keep all other result equality assertions. Not a product defect."
+    }
+  ],
+  "checks": {
+    "scripts": "102 passed /0 failed /2156.470083ms",
+    "coverage": "4 mapping tests passed;251 valid references; no acceptance promotion",
+    "packagedDesktop": {
+      "status": "passed",
+      "platform": "darwin",
+      "arch": "arm64",
+      "screenshots": 23,
+      "report": ".tmp-tests/pm9-project-unlink-2026-09-24/desktop/project-desktop.json",
+      "projectDeletion": {
+        "status": "passed",
+        "deletedProjectId": "b149a84f-786a-4ccc-866a-677ddc57efd1",
+        "retainedWorkflowId": "1974d76b-3bbe-4949-ae50-96c87a7ac85e",
+        "retainedRevision": 2,
+        "stoppedTaskId": "c73e5c1e-37a3-4027-ac63-8f0c2c66a50a",
+        "operationId": "2a03cd35-e107-42c2-be29-49835ad181a2",
+        "nextProjectId": "568ae734-ecbd-43ba-be5f-0e656c86a1a4",
+        "nextAutomationId": "8bd00be4-4565-4f26-8634-d4c822a26bef",
+        "scope": "public HTTP archive/delete with actual waiting worker; new project association shown in Manager; no Studio editing lock or project-owned document deletion claim"
+      },
+      "visualReview": [
+        "project-project-delete-unlinked.png"
+      ],
+      "scope": "Full existing management/runtime/Studio/volume/restart chain plus new project-delete assertions on unchanged unsigned cb040daf ARM package; not physical install or native Windows/Intel evidence."
+    },
+    "fullBackend": "Not rerun: no production change; cb040daf full3497 passed/84 skipped/2 warnings retained in unknown-owner-follow-through.json.",
+    "build": "Reused exact cb040daf unsigned ARM binaries; no production rebuild needed.",
+    "nativeDispatch": "Fresh CLI identity check401. No duplicate pipeline dispatched; old35902129697 all-three-job success does not cover current production."
+  },
+  "observations": {
+    "workerLogLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 32691,
+      "logsPerMinute": 1843,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "recordWriteMs": 44809,
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
+    "syntheticProducer": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60025,
+      "maxBatchLagMs": 35
+    },
+    "scope": "Single local run observations, no cross-platform throughput requirement or sustained-load conclusion."
+  },
+  "remaining": [
+    "AU-08 Studio concurrent editing/run ownership, existing association destination, project-owned document ownership/removal and durable Run file cleanup remain unproved or unimplemented.",
+    "Current production persistent environment identity drift counterexample remains unresolved; I1–I3 proposed repair requires approval.",
+    "Current Windows/Intel native CI and physical acceptance, live PM9 Sheets/OAuth/signing and other proposed architecture remain pending."
+  ],
+  "coverage": {
+    "requirements": 251,
+    "partiallyVerified": 206,
+    "planned": 45,
+    "verified": 0,
+    "gapRequirementCounts": {
+      "production_evidence_missing": 241,
+      "implementation_missing": 19,
+      "test_missing": 8,
+      "external_acceptance_pending": 24
+    },
+    "note": "Overlapping requirement counts unchanged; only AU-08 project-level unlink subcondition removed from test_missing detail."
+  },
+  "sourceSha256": {
+    "scripts/smoke-project-management-desktop.mjs": "8630cee9a895b73e7dfe39f9013ca15d4b64e5b3c57355255f33ede9826ce2cd"
+  },
+  "packageSha256": {
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow": "afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7",
+    "apps/backend/dist/autoflow-backend/autoflow-backend": "eb6cd1e2dba7129ab72750d763724980d2084d7fc3aec32ce4f9b0f4762e5abd"
+  },
+  "evidenceSha256": {
+    ".tmp-tests/pm9-project-unlink-2026-09-24/cli-auth.log": "ba173275c4e18ac221de6d0560a76198a5ae465cc57915cc26da6e3bad25f14d",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/coverage-tests.log": "eb762cc33066adc3243006e80b261a3f23ad3c26aacdd4c17493550780f189dd",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/coverage.log": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/desktop/project-desktop.json": "50124c2bad4a052cdf218257762f4281c60d46e108c0be55ddfe0dcd4d5f1fe1",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/desktop/project-project-delete-unlinked.png": "4114225d01bbe15bd93c9d1d89dd5f18e5ca8bd3ace13cbcc1cd820a691a635e",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/desktop.log": "22e24f11aec0150c2314fe92a0bc5f48e58aeda3993f97740bacc61ee397df4b",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/initial-desktop/project-desktop.json": "6f06bb6c5678601c4d41456e0cdfb88778efdb8b042c6fe574dfac96585ec11e",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/initial-desktop.log": "1aae4162e425a68929a95eefe5880746ae32151ddf7abfcb7f3a10c1608f33c3",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/receipt-desktop/project-desktop.json": "87b9ecba3a96bf267f2f65decd55573193bab17e6420ac08e28944fdee778994",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/receipt-desktop.log": "44b7e0a4a57cf1827183f5d921044acfea0047af7ace3b054746370a77c0fca0",
+    ".tmp-tests/pm9-project-unlink-2026-09-24/scripts.log": "bd8f66bd43ff4d7fd7973d89e4efdfa93c70db2408d0c70e297bbaa6f353914d"
+  }
+}

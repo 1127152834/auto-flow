@@ -554,7 +554,14 @@
     "packagedDesktop": "Rebuilt unsigned ARM complete desktop passed/22 screenshots;3 visually checked. Not packaged unknown-owner fault or physical installer acceptance.",
     "nativeDispatch": "Authentication restoration/manual trigger pending; old35902129697 excludes current source.",
     "source": "cb040daf2393860b6435a340ce236b0a0f784f55",
-    "additionalCounterexample": "persistent-identity-audit.json: fixed/input identityPreserved=false and seedPreserved=false. Earlier full suite/package checks remain passed for their own scopes; current production not fully acceptable."
+    "additionalCounterexample": "persistent-identity-audit.json: fixed/input identityPreserved=false and seedPreserved=false. Earlier full suite/package checks remain passed for their own scopes; current production not fully acceptable.",
+    "additionalPackagedAcceptance": {
+      "report": "project-unlink-follow-through.json",
+      "productionSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+      "status": "passed",
+      "screenshots": 23,
+      "scope": "same cb040daf ARM package; edited independent workflow survives whole-project deletion and re-association; persistent identity counterexample remains unresolved"
+    }
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -663,5 +670,6 @@
       "No merge or release is authorized; releaseAccepted=false."
     ]
   },
-  "persistentIdentityAudit": "persistent-identity-audit.json"
+  "persistentIdentityAudit": "persistent-identity-audit.json",
+  "projectUnlinkFollowThrough": "project-unlink-follow-through.json"
 }

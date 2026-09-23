@@ -1332,6 +1332,14 @@
           "scope": "独立工作流自动化删除界面和真实等待worker阻断；快照范围/清理顺序反例修复。本报告按候选区分，不代表项目所有权完成。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/project-unlink-follow-through.json",
+          "scope": "当前cb040daf ARM打包：修改原独立文档并真实执行，项目归档停止后永久删除，通过工作区恢复原删除命令，保留原ID/版本/节点/边并重新关联新项目；不覆盖Studio占用/文档所有权/持久文件清理。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-A",
@@ -1360,7 +1368,7 @@
       ],
       "pm8_note": "PM8-A2 交付独立流程删除影响与解绑；本轮端到端未复验该界面路径。",
       "testMapping": {
-        "reviewedAt": "2026-09-23",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_automation_repository.py",
@@ -1395,7 +1403,7 @@
           {
             "file": "scripts/smoke-project-management-desktop.mjs",
             "symbol": "checkAutomationDeletion",
-            "scope": "真实worker等待阻断、停止后旧清单拒绝、精确名称UI删除、原命令恢复、独立文档不变且可再关联；修复后增加只读SQLite快照清理断言，候选运行结果见专项报告 追加终态人工项不残留断言；不包含文件清理成功。",
+            "scope": "真实worker等待阻断、停止后旧清单拒绝、精确名称UI删除、原命令恢复、独立文档不变且可再关联；修复后增加只读SQLite快照清理断言，候选运行结果见专项报告 追加终态人工项不残留断言；不包含文件清理成功。 追加项目级归档停止实际worker、精确名称删除、工作区原命令查询/重放、清理冻结快照、保留编辑后的独立文档并关联新项目（project-unlink-follow-through.json）。",
             "level": "automated_real_application"
           },
           {
@@ -1412,11 +1420,11 @@
           },
           {
             "kind": "test_missing",
-            "detail": "Studio并行编辑/运行占用、已有绑定去向定位及项目级删除后解除关联的完整联合场景仍需补。"
+            "detail": "Studio并行编辑/运行占用、已有绑定去向定位仍需补；项目级删除后解除关联及原独立文档重新关联已由当前ARM打包真实worker联合场景证明。"
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "本机ARM打包已证明独立流程自动化删除子范围；修复后最终候选完整链及所有AU-08条件待补，不能由子范围升verified。"
+            "detail": "本机ARM打包已证明独立流程自动化删除与项目级删除后重新关联子范围；Windows/Intel同场景及所有AU-08条件待补，不能由子范围升verified。"
           }
         ],
         "statusBeforeReview": "partially_verified"

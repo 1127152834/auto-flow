@@ -142,7 +142,49 @@ async function checkAutomationDeletion(browserVersion) {
     const linkedAgain = await api(prefix + '/automations', { ...body, name: '重新关联保留的独立文档' })
     assert.equal(linkedAgain.workflowId, workflow.id)
     await capture('automation-unlinked')
-    return { status: 'passed', projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['one independent workflow cannot be associated twice', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained independent document can be associated again'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
+    // Project deletion must unlink the same edited independent document too.
+    const edited = structuredClone(documentAfter)
+    edited.nodes.find(node => node.id === 'manual').data.reason = '项目删除前使用同一份新文档'
+    const editedDocument = await api(`/api/workflows/${workflow.id}`, { ...edited, expectedRevision: edited.revision, clientRequestId: randomUUID() }, 'PUT')
+    const secondStart = await api(`${prefix}/automations/${linkedAgain.automationId}/batches`, { expectedAutomationRevision: linkedAgain.managementRevision, parameters: {}, maxTasks: 1, concurrency: 1 })
+    const secondBatchId = secondStart.operation.result.batch.batchId
+    const secondManual = await poll(async () => (await api(prefix + '/manual-items')).items.find(item => item.status === 'waiting'), 'edited independent workflow running before project deletion')
+    assert.equal(secondManual.reason, '项目删除前使用同一份新文档')
+    assert.equal(await preparedCount(), 1)
+    const beforeArchive = await api(prefix)
+    const archiveImpact = await api(prefix + '/lifecycle-impact?action=archive')
+    const archiveKey = randomUUID()
+    const archive = await api(prefix + '/archive', { impactRevision: archiveImpact.impactRevision, expectedManagementRevision: beforeArchive.managementRevision }, 'POST', 202, archiveKey)
+    const archived = await poll(async () => { const value = await api(prefix); return value.lifecycleState === 'archived' && value }, 'archive stops real worker before project removal')
+    assert.equal((await api(prefix + `/operations/by-idempotency-key/${archiveKey}`)).operationId, archive.operation.operationId)
+    assert.equal((await api(prefix + `/batches/${secondBatchId}`)).batch.status, 'stopped')
+    assert.equal((await api(prefix + `/tasks/${secondManual.taskId}`)).run.status, 'cancelled')
+    const deleteImpact = await api(prefix + '/lifecycle-impact?action=delete')
+    assert.deepEqual(deleteImpact.blockers, [])
+    const projectDeleteKey = randomUUID()
+    const projectDeleteBody = { confirmationName: archived.name, expectedManagementRevision: archived.managementRevision, impactRevision: deleteImpact.impactRevision }
+    const removed = await api(prefix, projectDeleteBody, 'DELETE', 202, projectDeleteKey)
+    const removedOperation = await poll(async () => { const value = await api(`/api/v1/workspace/operations/by-idempotency-key/${projectDeleteKey}`); return value.status === 'succeeded' && value }, 'project deletion operation converges')
+    assert.equal(removedOperation.operationId, removed.operation.operationId)
+    assert.deepEqual(removedOperation.result, { target: { type: 'project', projectId: project.projectId }, deleted: true })
+    await api(prefix, undefined, 'GET', 404)
+    await api(prefix + `/operations/by-idempotency-key/${projectDeleteKey}`, undefined, 'GET', 404)
+    await api(`${prefix}/automations/${linkedAgain.automationId}`, undefined, 'GET', 404)
+    assert.equal(await preparedCount(), 0)
+    const projectReplay = await api(prefix, projectDeleteBody, 'DELETE', 200, projectDeleteKey)
+    assert.equal(projectReplay.operation.operationId, removedOperation.operationId)
+    // DELETE includes optional DTO defaults; the workspace lookup excludes unset fields.
+    assert.deepEqual({ workflowId: null, workflowDisposition: null, ...projectReplay.operation.result }, { workflowId: null, workflowDisposition: null, ...removedOperation.result })
+    const survived = await api(`/api/workflows/${workflow.id}`)
+    for (const key of ['id', 'revision', 'nodes', 'edges']) assert.deepEqual(survived[key], editedDocument[key], `project deletion must preserve edited workflow ${key}`)
+    const nextProject = await api('/api/v1/projects', { name: '删除项目后重新关联' })
+    const nextAutomation = await api(`/api/v1/projects/${nextProject.projectId}/automations`, { ...body, name: '原独立文档' })
+    assert.equal(nextAutomation.workflowId, workflow.id)
+    await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + nextProject.projectId + '/automations/' + nextAutomation.automationId)}`)
+    await waitFor(cdp, "document.body.innerText.includes('原独立文档') && !document.querySelector('main [role=progressbar]')", 'same independent document linked in the new project')
+    await capture('project-delete-unlinked')
+    const projectDeletion = { status: 'passed', deletedProjectId: project.projectId, retainedWorkflowId: workflow.id, retainedRevision: survived.revision, stoppedTaskId: secondManual.taskId, operationId: removedOperation.operationId, nextProjectId: nextProject.projectId, nextAutomationId: nextAutomation.automationId, scope: 'public HTTP archive/delete with actual waiting worker; new project association shown in Manager; no Studio editing lock or project-owned document deletion claim' }
+    return { status: 'passed', projectDeletion, projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['one independent workflow cannot be associated twice', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained independent document can be associated again'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
   } finally { cdp.socket.removeEventListener('message', observe) }
 }
 
