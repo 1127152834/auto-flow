@@ -37,7 +37,258 @@
       "darwin-arm64": {
         "status": "success",
         "jobId": "107299145250",
-        "scope": "Job terminal success including prior failing packaged desktop; exact counts/artifacts await whole-run log availability."
+        "scope": "Terminal job success; downloaded artifact reports and three key UI screenshots inspected. Full regression counts await whole-run logs; no count inferred from step success.",
+        "artifact": {
+          "id": "10769571016",
+          "name": "pm9-macos-15",
+          "bytes": 267927494,
+          "zipSha256": "95f7876d267485fb76ba2e0f1bb846e43fa9c73b6351d65f187b0487858572dd",
+          "evidenceRoot": ".tmp-tests/pm9-ci-35895754111-arm",
+          "reports": [
+            {
+              "path": "artifacts/pm9/packaged/project-api.json",
+              "sha256": "1432be85bb21df625e429b5f9201856c84ab55af71ce6356d6a5db43deb3d5ac",
+              "status": "passed"
+            },
+            {
+              "path": "artifacts/pm9/packaged/project-desktop.json",
+              "sha256": "2b785a2d1e02a29d16e7fe03d98b3c8340851573da043258001ac869122d6490",
+              "status": "passed"
+            },
+            {
+              "path": "artifacts/pm9/packaged/business-combinations.json",
+              "sha256": "dea37f8a697c7293536be08237b790cf89b89a46b54694778ee411d662900c73",
+              "status": "passed"
+            }
+          ]
+        },
+        "packagedEvidence": {
+          "metadata": {
+            "schemaRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+            "coveredCount": 69,
+            "emptyUrlGuidance": "passed",
+            "projectNodeUncovered": true
+          },
+          "windows": {
+            "status": "passed",
+            "originalWindowId": 2,
+            "reopenedWindowId": 3,
+            "savedRevision": 3,
+            "checks": [
+              "Manager repeated opens restore one minimized native Studio and keep its identity",
+              "Studio renderer cannot call Manager-only open authority",
+              "dirty native close can be cancelled without saving or discarding edits",
+              "save-and-close increments the existing document once and retains project configuration",
+              "compact reopened viewport has a live canvas; widening plus explicit panel expansion restores controls",
+              "reopened window shares the service; explicitly reopening the document retains edits, with zero Project and exactly the original completed Run"
+            ],
+            "limits": [
+              "Electron native close/minimize API; not physical OS keyboard or window-manager gesture acceptance",
+              "explicit document reopen only; no automatic session restoration, project automation binding, docking or active-task dual-window proof"
+            ]
+          },
+          "screenshots": 22,
+          "visualInspection": {
+            "requiredUrl": "Selected open_page node with visible missing-URL guidance.",
+            "compactReopen": "1008x662 viewport shows live empty canvas and collapsed side panels.",
+            "restoredDocument": "1440x1024 viewport shows expanded panels and saved project node/result identity.",
+            "limits": "Existing unimplemented Studio commands and unrelated 404/501 messages remain visible; no full Studio capability or physical window-manager acceptance claim."
+          },
+          "screenshotHashes": {
+            "project-studio-required-url.png": "1f7625e660b7adac6eb785fc79f80cd543afde62d87c8b67862a3e04f1875781",
+            "project-studio-reopened-compact.png": "89c38385c75477ec69b1c6afe2895b38e5a1fbfec1c8b53bacba01aff377c5a4",
+            "project-studio-reopened-document.png": "d9078ae41623c78cb24adceeacd45171e3600f7a3f775c8d32c2a8540195a2a2"
+          },
+          "runtime": {
+            "subflows": {
+              "status": "passed",
+              "frozenTaskIds": [
+                "640dfed0-d455-4a3f-9171-ad285b3218a0",
+                "3ed6fb8c-896c-49e6-b538-43515df90a69"
+              ],
+              "cancelledTaskId": "59bf763f-68db-491d-a9e4-0b35adb9e731",
+              "deniedTaskId": "3ae2d49f-576b-4e2a-8c1e-eb8d2c04e679",
+              "deniedCode": "CAPABILITY_SCOPE_DENIED",
+              "sourceEditedAfterPrepare": true,
+              "recordsAfterTwoTasks": 4,
+              "retainedAfterCancel": 1,
+              "checks": [
+                "two tasks use frozen child after public document edit at live manual barrier",
+                "two calls export separate records and keep parent private variable",
+                "root End links both outputs for each task",
+                "public parent batch stop cancels child checkpoint, prevents later write/End and retains committed record",
+                "child cannot borrow parent field permission; parent committed record survives the denied child write"
+              ]
+            },
+            "profileFreeze": {
+              "status": "passed",
+              "taskIds": [
+                "96bd9d99-8367-47ce-ba9b-63bc1a635764",
+                "68796675-6545-42d5-b5b7-f5a7facbe2c2"
+              ],
+              "freshTaskId": "673b2f78-700c-4bab-9fa7-23d5df02e3ce",
+              "originalSeed": 87454,
+              "newSeed": 80387,
+              "seedObservations": [
+                {
+                  "pid": 70446,
+                  "seed": 87454
+                },
+                {
+                  "pid": 70739,
+                  "seed": 87454
+                },
+                {
+                  "pid": 70783,
+                  "seed": 80387
+                }
+              ],
+              "seedObservationScope": "actual disposable instance browser argv at manual barrier",
+              "canvasChanged": false,
+              "frozenObservation": {
+                "userAgent": "AutoFlow-PM9-frozen",
+                "language": "en-US",
+                "timezone": "UTC",
+                "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+              },
+              "freshObservation": {
+                "userAgent": "AutoFlow-PM9-edited",
+                "language": "fr-FR",
+                "timezone": "Europe/Paris",
+                "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+              },
+              "checks": [
+                "old batch second Task preserves original root document and browser-visible UA/locale/timezone/canvas after public Profile edit and seed reset",
+                "fresh explicit batch observes new root document and changed Profile identity"
+              ]
+            },
+            "parallel": {
+              "status": "passed",
+              "loopTaskId": "e21ccc76-5321-4461-b8a1-c7b1f4634206",
+              "manualTaskId": "8f65430c-3188-4de2-bafd-999c6e9365d8",
+              "stoppedTaskId": "6e6b640b-6a09-4d7b-9bae-32bbb14d33f8",
+              "loopValues": [
+                "A-0",
+                "A-1",
+                "B-0",
+                "B-1",
+                "B-2"
+              ],
+              "linkedValues": [
+                "A-1",
+                "B-2"
+              ],
+              "manualItems": 2,
+              "retainedPreForkWrites": 2,
+              "checks": [
+                "same-name loop variables isolated; exact 2/3 values and distinct public event visit IDs",
+                "only declared last outputs linked by one End",
+                "two live manual checkpoints serialized before ordinary branch work and join runs once",
+                "stop discards queued manual, prevents branch/join/End and retains committed pre-fork record"
+              ]
+            },
+            "logLoad": {
+              "logCount": 1004,
+              "logPages": 6,
+              "elapsedMs": 38623,
+              "logsPerMinute": 1560,
+              "scope": "real worker throughput and server pagination; no renderer memory claim"
+            }
+          },
+          "volume": {
+            "concurrentWrites": {
+              "status": "passed",
+              "producers": 5,
+              "records": 10000,
+              "busyRetries": 0
+            },
+            "seedMs": 67095,
+            "twoFramesMs": 30
+          },
+          "syntheticProducer": {
+            "targetLogsPerMinute": 1000,
+            "seconds": 60,
+            "emitted": 1000,
+            "elapsedMs": 60189,
+            "maxBatchLagMs": 202
+          },
+          "apiRuntimeLogLoad": {
+            "logCount": 1004,
+            "logPages": 6,
+            "elapsedMs": 39223,
+            "logsPerMinute": 1536,
+            "scope": "real worker throughput and server pagination; no renderer memory claim"
+          },
+          "business": {
+            "executableSha256": "3caf391a1ae50029a2bae0ff2945b67b94ca6a7a7fed2dad28701b67efdc7e5b",
+            "sharedPersonChain": {
+              "status": "passed",
+              "checks": [
+                "P1 verified state/content/environment link and revisions unchanged across both Tasks",
+                "E1 explicitly registered and excluded from original pending selection; retry batch creates no Task/account",
+                "Exactly one new A1 and E1 link the same saved login environment",
+                "Next Task starts from A1 input environment, restores cookie, and selects P1 through personNo field equality"
+              ],
+              "taskIds": [
+                "41fe7516-5d7c-4e78-9b8b-b6951196f861",
+                "f8d51803-44c7-44e0-921c-ef5737fddd56"
+              ],
+              "environmentId": "a9d95468-a8c8-570b-914c-e86edbba2d3f",
+              "scope": "ARM packaged public HTTP and actual worker/browser; no full native UI flow or live Sheets claim"
+            },
+            "concurrentRecordClaims": {
+              "status": "passed",
+              "taskIds": [
+                "970e1d16-fada-448e-8f55-881711334e3b",
+                "b45f4ae8-a60f-40ec-ab7d-0417f2bbf8f7"
+              ],
+              "checks": [
+                "One data batch reaches two simultaneous manual checkpoints with distinct leased records",
+                "Same source Profile produces isolated cookie stores",
+                "Completing the first Task keeps the second live; both finish once and no third Task is claimed"
+              ]
+            },
+            "checks": [
+              "Cancelling a second live Run preserves T2 checkpoint/browser and executes no cancelled write",
+              "T1 started and completed while old-contract T2 remained waiting_manual in its original Run",
+              "T1 ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status before T2 resumed",
+              "T2 then queried and wrote using its prepared old field contract; manual node executed once"
+            ],
+            "schemaEnsure": {
+              "status": "passed",
+              "createdFieldRef": {
+                "projectId": "ee3c3830-79a3-4806-b776-1f19c7fca1a3",
+                "tableId": "a84644af-c11a-4542-b2ce-33ad27c38098",
+                "datasetGeneration": "7b7bc030-34fb-4031-8599-c01ca52cb060",
+                "fieldId": "8b7e16c8-1143-41ce-9d00-273f7afa7f2a"
+              },
+              "reusedFieldRef": {
+                "projectId": "ee3c3830-79a3-4806-b776-1f19c7fca1a3",
+                "tableId": "a84644af-c11a-4542-b2ce-33ad27c38098",
+                "datasetGeneration": "7b7bc030-34fb-4031-8599-c01ca52cb060",
+                "fieldId": "8b7e16c8-1143-41ce-9d00-273f7afa7f2a"
+              },
+              "tableRevision": 4,
+              "conflictingTaskId": "a41351e0-1e90-44ae-b956-f74e550b8805",
+              "conflictCode": "FIELD_DEFINITION_CONFLICT",
+              "checks": [
+                "same-definition ensure returns the original field ID without another column or schema revision",
+                "another real Task requesting the same key with a different type fails without changing fields or values",
+                "T2 remains waiting in its original Run through both ensure and conflict, then writes its original field"
+              ],
+              "limits": [
+                "writing the newly returned field is not asserted by this scenario"
+              ]
+            },
+            "cleanup": "passed"
+          },
+          "limits": [
+            "Evidence belongs to25bb8ab2 / production69baeeb2 only, not51e8991e or the new source-outage/opposing-write cases.",
+            "Actual worker rate and 10000-record duration are one-run observations, not a new performance requirement.",
+            "Profile canvas hash did not change after seed reset; actual process argv proves old/old/new seed only.",
+            "No live Sheets/OAuth, physical installer, signing, project Studio ownership/docking or proxy-freeze acceptance."
+          ]
+        }
       },
       "darwin-x64": {
         "status": "in_progress"

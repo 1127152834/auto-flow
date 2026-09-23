@@ -562,7 +562,8 @@
       "darwin-arm64": "success; job107299145250",
       "darwin-x64": "in_progress",
       "win32-x64": "in_progress"
-    }
+    },
+    "artifactEvidence": "ci-metadata-click-follow-through.json: followUp.platforms.darwin-arm64; artifact10769571016 downloaded/hash-verified; packaged API/business/desktop reports passed,22screenshots and3 key images inspected. Applies only to25bb8ab2."
   },
   "opposingWritesFollowThrough": {
     "status": "local_real_two_workers_passed",

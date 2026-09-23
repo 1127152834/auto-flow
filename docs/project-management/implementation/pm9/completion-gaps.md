@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-24 旧候选 ARM CI 产物复核（confirmed 局部）：35895754111@25bb8ab2 的 artifact10769571016 已下载并校验 SHA256；打包 API、business-combinations、完整桌面均 passed，22截图中必填提示/紧凑重开/恢复文档3张已目视核对。真实 worker1004条/38623ms（1560条/分钟），万行67095ms、0busy，固定合成1000条/60189ms；均为该次观测。详见 ci-metadata-click-follow-through.json。该证据不覆盖新生产51e8991e或新增两个 worker 场景；新矩阵35902129697仍进行中，台账状态不变，releaseAccepted=false。
+
 2026-09-24 当前验收候选：生产51e8991e、本轮测试a317e1f8已推送；新三平台35902129697实际headSha匹配、in_progress，包含两个新增真实worker场景。旧35895754111的ARM已success，Windows/Intel继续；不会将旧结果用于新源码。原四项本机进程时限失败保留，原样6项/串行3487项通过，不声称根因修复。releaseAccepted=false。
 
 2026-09-24 DATA-WRITE-12双worker补证（confirmed子范围）：公开fixedRecord各持A/B并先写，反向查询/写入均LEASE_BUSY进入声明人工错误分支；lease/游标/原输入/两条pending意图不变，公开stop后释放且前写保留。1项真实测试通过，首次未声明筛选字段的422夹具错误保留；没有产品代码改动。组原子性/配置重试/打包及Windows/Intel同场景继续待验，详见opposing-writes-follow-through.json。
