@@ -291,6 +291,40 @@ try {
   if (packageBoundary) checkpoint('目录包未携带冻结源码路径、Mock 服务或 Vite 开发地址')
 
   await capture(studio, join(evidenceDir, 'completed.png'))
+  if (projectMode) {
+    await click(studio, '执行日志')
+    await click(studio, '', '[aria-label="运行日志记录"]')
+    await waitFor(studio, "(()=>{const labels=[...document.querySelectorAll('[role=option]')].map(e=>e.textContent);return labels.length===3&&['completed','failed','stopped'].every(status=>labels.some(label=>label.includes(status)))})()", 'own project run history')
+    await click(studio, 'completed', '[role="option"]')
+    await waitFor(studio, "document.body.innerText.includes('执行完成')", 'completed run history logs')
+    await closeWindowThroughOs(desktop.child.pid)
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin, 30_000)
+    await click(main, '项目', 'a, button')
+    await click(main, '新建项目')
+    await setInput(main, '#project-name', 'Studio 历史隔离验收')
+    await click(main, '创建项目')
+    await waitFor(main, "document.body?.innerText.includes('Studio 历史隔离验收')", 'second project created')
+    if (!await main.evaluate('Boolean(document.querySelector(\'[aria-label="项目功能"]\'))')) await click(main, 'Studio 历史隔离验收', '[role="button"],button')
+    await waitFor(main, 'Boolean(document.querySelector(\'[aria-label="项目功能"]\'))', 'second project page')
+    const otherProjectId = (await main.evaluate('location.hash')).match(/projects\/([^/]+)/)?.[1]
+    assert.ok(otherProjectId && otherProjectId !== projectId)
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    studio = await openStudioFromMain(main, desktop.debugOrigin)
+    await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
+    await waitFor(studio, "document.body?.innerText.includes('模块库')", 'second project Studio')
+    await click(studio, '执行日志')
+    await waitFor(studio, "document.querySelector('[aria-label=\"运行日志记录\"]')?.textContent.includes('暂无运行记录')", 'second project empty run history')
+    await click(studio, '', '[aria-label="运行日志记录"]')
+    await wait(1000)
+    assert.deepEqual(await studio.evaluate("[...document.querySelectorAll('[role=option]')].map(e=>e.textContent)"), ['暂无运行记录'])
+    await press(studio, 'Escape', { code: 'Escape', keyCode: 27 })
+    assert.equal(await studio.evaluate("document.body.innerText.includes('B1 五节点正式闭环')"), false)
+    assert.equal((await api(runtime, `/workflow-runs?projectId=${otherProjectId}`)).total, 0)
+    assert.equal((await api(runtime, `/workflow-runs?projectId=${projectId}`)).total, 3)
+    await capture(studio, join(evidenceDir, 'other-project-empty-history.png'))
+    checkpoint('正式 UI 的原项目可查三次运行；进入第二项目后历史列表与回放日志均不泄露原项目运行，原记录仍持久化')
+  }
   const buildArtifacts = desktop.packaged ? await packagedBuildHashes() : null
   const report = {
     evidenceId: 'BE-B1-formal-electron', checkedAt: new Date().toISOString(),

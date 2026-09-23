@@ -6,7 +6,7 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from .models import ProjectRow
 from .project_automation_models import ProjectAutomationRow
-from .workflow_models import WorkflowDocumentRow
+from .workflow_models import WorkflowDocumentRow, WorkflowRunRow
 
 
 def workflow_project_expression() -> ColumnElement[str]:
@@ -36,4 +36,19 @@ def readable_workflow_project() -> ColumnElement[bool]:
     existing_project = select(ProjectRow.id).where(
         ProjectRow.id == owner, ProjectRow.lifecycle_state != "deleted",
     ).correlate(WorkflowDocumentRow).exists()
+    return or_(owner.is_(None), existing_project)
+
+
+def studio_run_project_expression() -> ColumnElement[str]:
+    saved_owner = select(workflow_project_expression()).where(
+        WorkflowDocumentRow.id == WorkflowRunRow.workflow_id,
+    ).correlate(WorkflowRunRow).scalar_subquery()
+    return func.coalesce(WorkflowRunRow.payload["projectId"].as_string(), saved_owner)
+
+
+def readable_studio_run_project() -> ColumnElement[bool]:
+    owner = studio_run_project_expression()
+    existing_project = select(ProjectRow.id).where(
+        ProjectRow.id == owner, ProjectRow.lifecycle_state != "deleted",
+    ).correlate(WorkflowRunRow).exists()
     return or_(owner.is_(None), existing_project)

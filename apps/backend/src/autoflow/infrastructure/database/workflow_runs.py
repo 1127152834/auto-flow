@@ -28,7 +28,11 @@ from .workflow_models import (
     WorkflowRunEventRow,
     WorkflowRunRow,
 )
-from .workflow_project_scope import workflow_project_id
+from .workflow_project_scope import (
+    readable_studio_run_project,
+    studio_run_project_expression,
+    workflow_project_id,
+)
 
 
 def _iso(value: datetime) -> str:
@@ -39,7 +43,7 @@ def _datetime(value: Any) -> datetime | None:
     return datetime.fromisoformat(value) if isinstance(value, str) and value else None
 
 
-def _run(row: WorkflowRunRow) -> WorkflowRun:
+def _run(row: WorkflowRunRow, project_id: str | None = None) -> WorkflowRun:
     value = row.payload
     return WorkflowRun(
         run_id=row.id,
@@ -64,7 +68,7 @@ def _run(row: WorkflowRunRow) -> WorkflowRun:
         custom_module_snapshots=copy.deepcopy(
             value.get("customModuleSnapshots", {})
         ),
-        project_id=value.get("projectId"),
+        project_id=value.get("projectId") or project_id,
     )
 
 
@@ -193,8 +197,10 @@ class SqlAlchemyWorkflowRuns:
 
     def get(self, run_id: str) -> WorkflowRun | None:
         with self._session_factory() as session:
-            row = session.get(WorkflowRunRow, run_id)
-            return _run(row) if row is not None else None
+            record = session.execute(select(WorkflowRunRow, studio_run_project_expression()).where(
+                WorkflowRunRow.id == run_id, readable_studio_run_project(),
+            )).first()
+            return _run(record[0], record[1]) if record is not None else None
 
     @staticmethod
     def _require_run(session: Session, run_id: str) -> WorkflowRunRow:
@@ -202,6 +208,14 @@ class SqlAlchemyWorkflowRuns:
         if row is None:
             raise WorkflowRunError("RUN_NOT_FOUND", "运行记录不存在", 404)
         return row
+
+    def belongs_to_project(self, run_id: str, project_id: str) -> bool:
+        with self._session_factory() as session:
+            return session.scalar(select(WorkflowRunRow.id).where(
+                WorkflowRunRow.id == run_id,
+                studio_run_project_expression() == project_id,
+                readable_studio_run_project(),
+            )) is not None
 
     @staticmethod
     def _next_sequence(session: Session, run_id: str) -> int:
@@ -277,21 +291,23 @@ class SqlAlchemyWorkflowRuns:
             return tuple(_event(row) for row in rows)
 
     def list_runs(
-        self, *, document_id: str | None, cursor: int, limit: int
+        self, *, document_id: str | None, cursor: int, limit: int,
+        project_id: str | None = None,
     ) -> tuple[tuple[WorkflowRun, ...], int, int | None]:
         with self._session_factory() as session:
-            statement = select(WorkflowRunRow)
+            statement = select(WorkflowRunRow, studio_run_project_expression()).where(readable_studio_run_project())
+            if project_id is not None:
+                statement = statement.where(studio_run_project_expression() == project_id)
             if document_id is not None:
                 statement = statement.where(
                     WorkflowRunRow.payload["documentId"].as_string() == document_id
                 )
-            rows = session.scalars(
-                statement.order_by(WorkflowRunRow.started_at.desc(), WorkflowRunRow.id)
+            total = session.scalar(select(func.count()).select_from(statement.subquery())) or 0
+            page = session.execute(
+                statement.order_by(WorkflowRunRow.started_at.desc(), WorkflowRunRow.id).offset(cursor).limit(limit)
             ).all()
-            total = len(rows)
-            page = rows[cursor : cursor + limit]
             next_cursor = cursor + len(page) if cursor + len(page) < total else None
-            return tuple(_run(row) for row in page), total, next_cursor
+            return tuple(_run(row, owner) for row, owner in page), total, next_cursor
 
     def finish(
         self,

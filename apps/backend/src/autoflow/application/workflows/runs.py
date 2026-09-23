@@ -40,6 +40,8 @@ class WorkflowRunRepository(Protocol):
 
     def get(self, run_id: str) -> WorkflowRun | None: ...
 
+    def belongs_to_project(self, run_id: str, project_id: str) -> bool: ...
+
     def append_event(
         self,
         run_id: str,
@@ -58,7 +60,8 @@ class WorkflowRunRepository(Protocol):
     ) -> tuple[WorkflowRunEvent, ...]: ...
 
     def list_runs(
-        self, *, document_id: str | None, cursor: int, limit: int
+        self, *, document_id: str | None, cursor: int, limit: int,
+        project_id: str | None = None,
     ) -> tuple[tuple[WorkflowRun, ...], int, int | None]: ...
 
     def finish(
@@ -193,13 +196,17 @@ class WorkflowRunService:
         self.get(run_id)
         return self._repository.list_events(run_id, after_sequence, limit)
 
+    def belongs_to_project(self, run_id: str, project_id: str) -> bool:
+        return self._repository.belongs_to_project(run_id, project_id)
+
     def list_runs(
-        self, *, document_id: str | None, cursor: int, limit: int
+        self, *, document_id: str | None, cursor: int, limit: int,
+        project_id: str | None = None,
     ) -> tuple[tuple[WorkflowRun, ...], int, int | None]:
         if cursor < 0 or limit < 1 or limit > 200:
             raise WorkflowRunError("RUN_PAGE_INVALID", "运行分页参数无效", 422)
         return self._repository.list_runs(
-            document_id=document_id, cursor=cursor, limit=limit
+            document_id=document_id, cursor=cursor, limit=limit, project_id=project_id,
         )
 
     def logs(

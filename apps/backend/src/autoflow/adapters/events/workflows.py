@@ -19,6 +19,7 @@ from autoflow.adapters.http.workflow_studio_schemas import (
     StudioJsScriptState,
     StudioSpeechState,
 )
+from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.workflows.runs import WorkflowRunError
 
 
@@ -88,6 +89,16 @@ def _frame(item: StudioEvent) -> bytes:
     return f"id: {item.sequence}\nevent: {item.event}\ndata: {data}\n\n".encode()
 
 
+def _scope_run_event(item: StudioEvent, project_id: str | None, runs: WorkflowRunService | None) -> StudioEvent:
+    if project_id is not None and (item.event.startswith("execution:") or "runId" in item.data):
+        run_id = item.data.get("runId")
+        if not isinstance(run_id, str) or runs is None or not runs.belongs_to_project(run_id, project_id):
+            # The journal's sequence is workspace-wide. Preserve its cursor
+            # without leaking another project's event, identity or payload.
+            return StudioEvent(item.sequence, "studio:cursor", {})
+    return item
+
+
 class StudioEventCommands(Protocol):
     async def submit_event_command(
         self, command_id: str, event: str, data: Mapping[str, Any]
@@ -105,7 +116,8 @@ class StudioEventCommands(Protocol):
 
 
 def workflow_events_router(
-    journal: StudioEventJournal, commands: StudioEventCommands | None = None
+    journal: StudioEventJournal, commands: StudioEventCommands | None = None,
+    runs: WorkflowRunService | None = None,
 ) -> APIRouter:
     router = APIRouter(prefix="/api/events", tags=["studio-events"])
 
@@ -113,6 +125,7 @@ def workflow_events_router(
     async def stream_events(
         request: Request,
         after_sequence: int = Query(default=0, alias="afterSeq", ge=0),
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
     ) -> StreamingResponse:
         # Validate before creating the streaming response so an impossible cursor
         # is returned as the normal AutoFlow error envelope.
@@ -122,7 +135,8 @@ def workflow_events_router(
             async with journal.subscribe(after_sequence=after_sequence) as queue:
                 while not await request.is_disconnected():
                     try:
-                        yield _frame(await asyncio.wait_for(queue.get(), timeout=15))
+                        item = await asyncio.wait_for(queue.get(), timeout=15)
+                        yield _frame(_scope_run_event(item, project_id, runs))
                     except TimeoutError:
                         yield b": keep-alive\n\n"
 

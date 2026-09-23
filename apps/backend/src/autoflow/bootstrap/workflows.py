@@ -422,7 +422,7 @@ def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))
     app.include_router(
         workflow_events_router(
-            services.events, services.event_commands or services.commands
+            services.events, services.event_commands or services.commands, services.runs,
         )
     )
 

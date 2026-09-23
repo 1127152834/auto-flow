@@ -1,5 +1,6 @@
 import { parseServerSentEvents } from '../../../shared/api/events'
 import { studioFetch } from './transport'
+import { getStudioOpenContext } from './config'
 import type { components } from '../../../shared/api/generated'
 
 type StudioCommandReceipt = components['schemas']['StudioCommandReceipt']
@@ -19,6 +20,7 @@ export class StudioEventClient {
   private controller = new AbortController()
   private sequence = 0
   private retry: ReturnType<typeof setTimeout> | undefined
+  private readonly projectId = getStudioOpenContext().projectId
   constructor(private baseUrl: string) { queueMicrotask(() => void this.listen()) }
   on(event: string, listener: Listener) {
     if (!this.listeners.has(event)) this.listeners.set(event, new Set())
@@ -99,7 +101,9 @@ export class StudioEventClient {
     const abortConnection = () => connection.abort()
     this.controller.signal.addEventListener('abort', abortConnection, { once: true })
     try {
-      const response = await studioFetch(`${this.baseUrl}/api/events/stream?afterSeq=${this.sequence}`, { signal: connection.signal })
+      const query = new URLSearchParams({ afterSeq: String(this.sequence) })
+      if (this.projectId) query.set('projectId', this.projectId)
+      const response = await studioFetch(`${this.baseUrl}/api/events/stream?${query}`, { signal: connection.signal })
       if (!response.ok || !response.body) {
         if (response.status === 409) {
           const payload: unknown = await response.json().catch(() => null)

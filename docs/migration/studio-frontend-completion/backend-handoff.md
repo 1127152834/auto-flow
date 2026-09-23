@@ -28,6 +28,8 @@
 
 项目运行归属、归档等待清理及五节点真实运行已补 [正式窗口证据](../studio-backend-migration/evidence/project-integration/formal-electron-RnPj0V/result.json)：普通运行、失败调试、原生关闭中的取消/放弃停止、重开、内核缺失启动失败均覆盖。运行请求和详情包含可选 `projectId`，已存文档归属在数据库事务中校验，未保存草稿不顺带创建文档。这里的通过限 macOS arm64 开发入口；不表示项目运行读权限、资源授权、数据资产及统计已完成。
 
+后续 [项目运行读取及事件隔离证据](../studio-backend-migration/evidence/project-integration/formal-electron-hpS5Ek/result.json) 已通过：`/api/workflow-runs` 整个路由族接受窗口绑定的 `projectId`，列表先过滤再分页，详情/日志/结果/产物/诊断和导出跨项目返回 `RUN_NOT_FOUND`；归档历史保留、已删除项目不可读。`/api/events/stream?projectId=...` 将其他项目运行变成同序号、空数据的 `studio:cursor`，前端沿用连续游标，不回放外来运行内容。原项目三次运行可查，第二项目真实 UI 列表与日志隔离；控制命令、非运行会话及完整资源权限仍单独待完成。
+
 当前没有需要用户决定的产品冲突，源码使用授权不再是实施阻塞。正式数据库副本、跨平台机器和第三方凭据属于后续验收环境等待。
 
 事实源：
@@ -35,7 +37,7 @@
 - `service-inventory.json`：171 个前端服务方法、83 个事件、50 个直接请求、105 个 AI 动作、23 个服务族。
 - `contract-matrix.md` 与 `contract-matrix-validation.md`：请求、响应、事件、错误、分页、幂等和恢复规则。
 - OpenAPI 生成类型：`apps/desktop/src/renderer/shared/api/generated.ts`。
-- 前端传输入口：`apps/desktop/src/renderer/domains/workflows/services/transport.ts`。
+- 前端传输入口：`apps/desktop/src/renderer/domains/workflows/api/transport.ts`。
 
 ## 交接原则
 

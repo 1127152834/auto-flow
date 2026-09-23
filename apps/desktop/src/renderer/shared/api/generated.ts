@@ -25116,6 +25116,7 @@ export interface operations {
                 variable?: string | null;
                 operation?: string | null;
                 valueType?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25147,7 +25148,9 @@ export interface operations {
     };
     clear_variable_tracking_api_workflow_runs__run_id__variable_tracking_delete: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 run_id: string;
@@ -25181,6 +25184,7 @@ export interface operations {
             query: {
                 sequence: number;
                 side: string;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25218,6 +25222,7 @@ export interface operations {
                 variable?: string | null;
                 operation?: string | null;
                 valueType?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25251,6 +25256,7 @@ export interface operations {
                 cursor?: number;
                 limit?: number;
                 throughSequence?: number | null;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25284,6 +25290,7 @@ export interface operations {
         parameters: {
             query: {
                 key: string;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25318,6 +25325,7 @@ export interface operations {
         parameters: {
             query: {
                 throughSequence: number;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25350,6 +25358,7 @@ export interface operations {
             query?: {
                 cursor?: number;
                 limit?: number;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25383,7 +25392,9 @@ export interface operations {
     };
     get_artifact_api_workflow_runs__run_id__artifacts__artifact_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 run_id: string;
@@ -25415,6 +25426,7 @@ export interface operations {
         parameters: {
             query?: {
                 documentId?: string | null;
+                projectId?: string | null;
                 cursor?: number;
                 limit?: number;
             };
@@ -25448,7 +25460,9 @@ export interface operations {
     };
     get_run_api_workflow_runs__run_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 run_id: string;
@@ -25488,6 +25502,7 @@ export interface operations {
                 levels?: string | null;
                 nodeId?: string | null;
                 executionId?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25526,6 +25541,7 @@ export interface operations {
                 levels?: string | null;
                 nodeId?: string | null;
                 executionId?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path: {
@@ -25557,6 +25573,7 @@ export interface operations {
         parameters: {
             query?: {
                 afterSeq?: number;
+                projectId?: string | null;
             };
             header?: never;
             path?: never;

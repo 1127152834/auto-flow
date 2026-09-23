@@ -7,13 +7,13 @@ from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any, Protocol
 
-from fastapi import APIRouter, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from pydantic import ConfigDict, Field
 
 from autoflow.adapters.http.schemas import ApiModel
 from autoflow.application.workflows.runs import WorkflowRunService
-from autoflow.domain.workflows.runs import WorkflowRun
+from autoflow.domain.workflows.runs import WorkflowRun, WorkflowRunError
 
 from .workflow_studio_schemas import (
     StudioDebugControlReceipt,
@@ -396,7 +396,17 @@ def _tracking_value(
 def workflow_runs_router(
     service: WorkflowRunService, artifact_root: Path | None = None
 ) -> APIRouter:
-    router = APIRouter(prefix="/api/workflow-runs", tags=["studio-workflow-runs"])
+    def require_project_run(
+        request: Request,
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+    ) -> None:
+        run_id = request.path_params.get("run_id")
+        if run_id is not None:
+            run = service.get(run_id)
+            if project_id is not None and run.project_id != project_id:
+                raise WorkflowRunError("RUN_NOT_FOUND", "运行记录不存在", 404)
+
+    router = APIRouter(prefix="/api/workflow-runs", tags=["studio-workflow-runs"], dependencies=[Depends(require_project_run)])
 
     @router.get(
         "/{run_id}/variable-tracking",
@@ -610,11 +620,12 @@ def workflow_runs_router(
     @router.get("")
     def list_runs(
         document_id: str | None = Query(default=None, alias="documentId"),
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
         cursor: int = Query(default=0, ge=0),
         limit: int = Query(default=20, ge=1, le=200),
     ) -> dict[str, Any]:
         items, total, next_cursor = service.list_runs(
-            document_id=document_id, cursor=cursor, limit=limit
+            document_id=document_id, cursor=cursor, limit=limit, project_id=project_id,
         )
         return {
             "items": [run_summary(run) for run in items],

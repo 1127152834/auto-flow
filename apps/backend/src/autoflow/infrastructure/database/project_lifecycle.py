@@ -15,7 +15,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast, overload
 
-from sqlalchemy import Table, and_, delete, func, or_, select, text
+from sqlalchemy import Table, delete, func, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.projects.models import (
@@ -37,9 +37,8 @@ from .project_data_models import DataImpactRow, DataTableRow
 from .project_excel_models import ProjectExcelExportJobRow, ProjectExcelPublicationRow
 from .project_run_models import ProjectBatchRow, ProjectTaskRow
 from .project_sync_models import SyncOperationRow
-from .workflow_models import WorkflowDocumentRow
 from .workflow_models import WorkflowRunRow as StudioRunRow
-from .workflow_project_scope import workflow_project_expression
+from .workflow_project_scope import studio_run_project_expression
 from .workflow_runtime_models import (
     WorkflowPreparedContentRow,
     WorkflowRunArtifactRow,
@@ -421,19 +420,10 @@ def _blockers(
     blockers: list[dict[str, Any]] = []
     # Older live Studio runs did not persist projectId. Their saved document
     # still identifies the owner for lifecycle protection; never rewrite them.
-    project_workflows = select(WorkflowDocumentRow.id).where(
-        workflow_project_expression() == project_id
-    )
     for run in session.scalars(
         select(StudioRunRow).where(
             StudioRunRow.active_slot == 2,
-            or_(
-                StudioRunRow.payload["projectId"].as_string() == project_id,
-                and_(
-                    StudioRunRow.payload["projectId"].as_string().is_(None),
-                    StudioRunRow.workflow_id.in_(project_workflows),
-                ),
-            ),
+            studio_run_project_expression() == project_id,
         )
     ):
         blockers.append(_blocker(
