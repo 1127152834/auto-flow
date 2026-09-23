@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "targeted_passed_full_regression_in_progress",
+  "status": "local_full_regression_passed_native_ci_in_progress_initial_startup_timeout_unresolved",
   "releaseAccepted": false,
   "parentCommit": "27ddfaf271d27200b3f58adb7b9230b317acebf5",
   "defect": "manual_runtime persisted checkpoint but ProjectRunEvents public projection and OpenAPI enum omitted it; real TCP SSE returned RUN_EVENT_HISTORY_UNAVAILABLE 409 at manual wait.",
@@ -13,7 +13,7 @@
     "ruff": "passed",
     "mypy": "407 files passed",
     "openapi": "generation and check passed",
-    "fullBackend": "in_progress",
+    "fullBackend": "3465 passed / 73 skipped / 2 warnings in 966.88s (16:06); uv run --directory apps/backend pytest -q --maxfail=20; skipped opt-in/external cases are not passes",
     "fullFrontend": "409 files / 5471 tests passed in 229.62s; typecheck, ESLint and build passed (existing Rollup annotation warnings)",
     "nativeCI": {
       "runId": "35811305102",
@@ -21,13 +21,16 @@
       "headSha": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
       "status": "in_progress",
       "supersedes": "35810132035 cancelled after new checkpoint production fix, not success"
-    }
+    },
+    "backendBuild": "PyInstaller build passed",
+    "packagedSidecar": "Initial unchanged 15s smoke failed: sidecar readiness timeout. Separate diagnostic became ready in 3545ms with authenticated HTTP200/status ok/apiVersion v1/instance match. Original 15s smoke repeated unchanged and passed. Initial timeout root cause unresolved; no production timeout change.",
+    "coverageVerifier": "251 references and aggregate counts consistent; 4 verifier tests passed; not release acceptance"
   },
   "review": "Independent read-only review: no actionable P1/P2, high confidence; explicitly separates real backend TCP test and controlled frontend EOF test.",
   "coverage": {
     "requirements": 251,
-    "withAssertions": 245,
-    "withNoLocatedAssertion": 6,
+    "withAssertions": 246,
+    "withNoLocatedAssertion": 5,
     "statuses": {
       "partially_verified": 203,
       "planned": 48
@@ -36,14 +39,21 @@
   "remaining": [
     "Packaged renderer + real backend disconnect/reconnect combined evidence is not provided by separate tests.",
     "New scenario must run in three-platform candidate matrix; physical acceptance remains external.",
-    "Six requirements still have no located direct assertion; other partial requirements retain their unmet conditions.",
-    "L1-L3 and M1-M3 unapproved; Windows existing-file operations remain refused."
+    "Five requirements still have no located direct assertion; other partial requirements retain their unmet conditions.",
+    "L1-L3 and M1-M3 unapproved; Windows existing-file operations remain refused.",
+    "Local newly built sidecar initial readiness exceeded the existing 15s smoke window; diagnostic second launch was 3545ms. Root cause remains unknown; do not label a later pass as a fix."
   ],
   "candidateCommit": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
   "standaloneCoreEvidence": {
     "check": "test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
     "result": "1 passed / 3 deselected in 11.65s",
     "scope": "2026-09-23 XE-A19 共享核心补证（confirmed）：复用现有真实浏览器持久运行场景，SQL 核验零 Project/仅一 Run；仅 browser 能力准备项目 createRecord 文档被明确拒绝，原文档不变且随后可编辑保存，不隐式建项目。1 passed/3 deselected（11.65 秒）。仅 core/document/worker 子范围由 planned 改 partial；Studio 窗口提示/编辑体验、HTTP 联合和打包验收未完成，新断言不在已启动的14df矩阵中。最新 245 有范围断言/6 未定位、203 partial/48 planned/0 verified；先前计数为历史。",
-    "candidateScope": "test-only follow-up after 14dfae7c; not contained in current matrix"
+    "candidateScope": "test-only follow-up after 14dfae7c; not contained in current matrix",
+    "review": "Independent read-only review found no actionable P1/P2, high confidence; correct missing capability is hit before data resolution and document editing is directly asserted."
+  },
+  "parameterGateEvidence": {
+    "result": "2 passed / 32 deselected in 25.21s",
+    "command": "AUTOFLOW_TEST_CLOAKBROWSER=<installed pinned binary> uv run --directory apps/backend pytest tests/integration/test_project_batch_real_cloakbrowser.py -k \"success or manual-stop\" -q",
+    "scope": "2026-09-23 XE-G02 子范围复核（confirmed）：本机真实 success/manual-stop 两场景 2 passed/32 deselected（25.21 秒），分别证明有限两次参数运行/日志输出/同键重放/资源回收，以及实际人工等待后的取消和清理；独立通用核心场景证明准备内容不被后续文档编辑替换。强停、归属不明的退出核验与安装包/三平台整组门禁仍未闭合。当前 246 有范围断言/5 未定位、203 partial/48 planned/0 verified，不按数量判断完成率。"
   }
 }

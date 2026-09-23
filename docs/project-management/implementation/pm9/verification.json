@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "lifecycle_fence_targeted_passed_native_ci_in_progress_release_acceptance_incomplete",
+  "status": "local_full_regression_passed_native_ci_in_progress_initial_startup_timeout_unresolved",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -121,7 +121,7 @@
     }
   ],
   "remainingReport": "completion-gaps.md",
-  "deliveryStatus": "D1_input_validation_fix_local_worker_passed_new_candidate_validation_in_progress",
+  "deliveryStatus": "authorized_PM9_slices_implemented_partial_evidence_release_acceptance_incomplete",
   "developmentSlice": {
     "slices": [
       "S1",
@@ -143,7 +143,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "14dfae7c checkpoint production fix pushed; focused real TCP/worker, 20 related backend, 25 related frontend, full frontend 5471, typecheck/lint/build, Ruff/mypy407/OpenAPI passed. Full backend and replacement three-platform matrix running. Later XE-A19 test-only local evidence is excluded from that matrix.",
+  "workingCandidate": "14dfae7c production checkpoint fix; later aef0f412 is standalone-core test/evidence only. Full local backend 3465 passed/73 skipped/2 warnings; frontend5471 and typecheck/lint/build; Ruff,mypy407,OpenAPI,PyInstaller passed. Packaged sidecar initial15s timeout remains unresolved despite 3545ms diagnostic and unchanged-window repeat passing. Replacement full three-platform run35811305102 remains in progress. Later standalone-core test is not in that matrix.",
   "finalCICandidate": {
     "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
     "status": "in_progress",
@@ -295,5 +295,10 @@
     "limits": "macOS ARM source only; added after running native CI candidate"
   },
   "lifecycleFenceFollowThrough": "lifecycle-fence-follow-through.json",
-  "eventReconnectFollowThrough": "docs/project-management/implementation/pm9/event-reconnect-follow-through.json"
+  "eventReconnectFollowThrough": "docs/project-management/implementation/pm9/event-reconnect-follow-through.json",
+  "additionalStandaloneCoreEvidence": {
+    "testCommit": "aef0f412a28cea41eb360df7e5bfa228ff8db2b6",
+    "result": "1 passed/3 deselected in11.65s",
+    "ciScope": "local-only assertion additions after14df matrix source; production code identical"
+  }
 }

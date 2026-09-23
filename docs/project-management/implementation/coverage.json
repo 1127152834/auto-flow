@@ -15627,6 +15627,14 @@
           "scope": "PM3当前交付包或规则已在管理界面与真实CloakBrowser链验证。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/event-reconnect-follow-through.json",
+          "scope": "真实有限参数运行、人工等待取消和独立内容冻结子范围；不代表整组门禁。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-C",
@@ -15654,12 +15662,29 @@
         "PM3-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "success：两 Task 的冻结参数、真实网页两个输出、5次成功节点访问、10条日志和连续事件、批次幂等查询/重放、worker/blocker/临时目录回收；manual-stop：实际等待人工后停止，至少一个取消Task及全部人工项取消，同样资源回收。只证明两项直接场景，不推定强停/归属不明时的核验。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_workflow_real_cloakbrowser.py",
+            "symbol": "test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
+            "scope": "通用流程准备后编辑原文档变量，真实运行仍输出旧内容，零/false参数保持、持久事件连续、服务重建不重跑。不是 Studio 窗口或完整 G02 门禁。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：固定参数真实运行的幂等、取消、退出核验整组门禁；不据邻近测试推定覆盖"
+            "detail": "尚未把强停/归属不明时退出核验、平台进程成员证明与参数运行组织成完整联合门禁；当前取消证据限人工等待。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "上述断言本机源码链运行通过；未完成安装包 UI 及三平台 G02 各子条件的完整联合验收。"
           }
         ],
         "statusBeforeReview": "verified"

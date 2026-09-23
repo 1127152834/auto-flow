@@ -1,12 +1,14 @@
 # PM9 剩余断言与能力补齐计划
 
+2026-09-23 XE-G02 子范围复核（confirmed）：本机真实 success/manual-stop 两场景 2 passed/32 deselected（25.21 秒），分别证明有限两次参数运行/日志输出/同键重放/资源回收，以及实际人工等待后的取消和清理；独立通用核心场景证明准备内容不被后续文档编辑替换。强停、归属不明的退出核验与安装包/三平台整组门禁仍未闭合。当前 246 有范围断言/5 未定位、203 partial/48 planned/0 verified，不按数量判断完成率。
+
 2026-09-23 XE-A19 共享核心补证（confirmed）：复用现有真实浏览器持久运行场景，SQL 核验零 Project/仅一 Run；仅 browser 能力准备项目 createRecord 文档被明确拒绝，原文档不变且随后可编辑保存，不隐式建项目。1 passed/3 deselected（11.65 秒）。仅 core/document/worker 子范围由 planned 改 partial；Studio 窗口提示/编辑体验、HTTP 联合和打包验收未完成，新断言不在已启动的14df矩阵中。最新 245 有范围断言/6 未定位、203 partial/48 planned/0 verified；先前计数为历史。
 
 2026-09-23 XE-C07 最新补证（supersedes 此前 243/8 统计）：真实 TCP/worker 人工等待场景发现 checkpoint 未纳入公开事件投影，导致 JSON/SSE 补读 409；已补最小身份/版本契约及生成类型，内部续跑内容不公开。修复后真实断开/继续/缺口补读、8 次唯一节点访问、3 个输出、日志分页、失败截图摘要和资源回收通过；20 项后端契约/证据与25项相关前端通过，独立审查无 P1/P2。前端 EOF 去重是独立受控测试，尚非安装包 UI 断网联合证据。台账 244 有范围断言/7 未定位、202 partial/49 planned/0 verified；完整回归/新候选 CI 见 verification.json 与 event-reconnect-follow-through.json。releaseAccepted=false。
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；C1–C4 和 R1–R5 设计已批准；M1–M3 仍 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 245 条有明确范围的断言，6 条尚无已定位断言；203 partially_verified / 48 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 246 条有明确范围的断言，5 条尚无已定位断言；203 partially_verified / 48 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 2026-09-23 执行更新：DATA-TABLE-08 已用充分字段权限和真实 Sheets 绑定请求替换宽泛拒绝证据；DATA-WRITE-12 已补双任务反向单记录冲突，保留多记录组和生产 worker 重试缺口。D1 真实 worker 场景暴露并修复声明坏值仍领取的缺陷：共享选择/提交重验只校验已选输入的声明字段，保留未使用坏值。专属 worker 及原共享交接 4 项通过，新场景加入既有 CI；完整回归/新三平台结果见 verification.json。后续继续 DATA-WRITE-13 真实循环部分成功、FLOW-A01/A05 参数与可选输入隔离；云端行变更 M1–M3 仍未批准。
 
@@ -181,7 +183,7 @@ SH-02 新增两种写入顺序，逐次远端值/原历史 confirmed/双方完�
 
 2026-09-23 FLOW-A05：同一自动化两个独立单任务批次的可选输入从有到无，真实 worker 验收 1 passed/31 deselected（37.63 秒）。第二次两次 inputs capability 输出与持久快照均空，零 lease，首次快照保持且资源回收；不是同批次、变量表达式或打包 UI 证据。独立复审无 P1/P2。最新 241 有断言/10 未定位、201 partial/50 planned/0 verified。
 
-当前未定位的 6 条：DATA-LIFE-01、DATA-SH-03、XE-A17、XE-G02、XE-G06、XE-G07。以上仍按表中最小联合场景执行；已有部分断言的条目也保留其未闭合子条件。
+当前未定位的 5 条：DATA-LIFE-01、DATA-SH-03、XE-A17、XE-G06、XE-G07。以上仍按表中最小联合场景执行；已有部分断言的条目也保留其未闭合子条件。
 
 2026-09-23 XE-A01：parameter-single 真实 worker 场景 1 passed/32 deselected（38.06 秒）；无表、参数 first 网页填写/读取、同键重放后唯一 Batch/Task/Run、零 lease 和资源回收联合通过。仅本机源码证据，不扩大为打包 UI/三平台或 XE-G02 全部门禁。当前 242 有断言/9 未定位、201 partial/50 planned/0 verified。
 
