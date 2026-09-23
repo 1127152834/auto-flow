@@ -6,7 +6,7 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "S4 Windows existing ordinary-file read passed bounded native handle/worker probe at 2fe33528; final candidate regression is pending. Existing output overwrite/append remain refused; held-target replacement experiments did not meet approved guarantees.",
+    "S4 Windows existing ordinary-file read passed bounded native probe 35832075007 at 113668fd; final three-platform regression is pending. Existing output overwrite/append remain refused; table absolute-drive output also remains rejected at application level.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
     "3 of 251 requirements still have no located assertion (DATA-LIFE-01, DATA-SH-03, XE-G07); 204 partial / 47 planned / 0 verified. DATA-WRITE-13 real-worker partial Sheets intent preservation passed selected three-platform CI; packaged real-Google and full business acceptance remain open.",
     "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6, variable parity20/20 and final-source full backend3474 passed/75 skipped. Corrected smoke script candidate1b2979ea passed three-platform matrix35822065171.",
@@ -431,8 +431,8 @@
   },
   "windowsExistingOutputRead": {
     "report": "windows-existing-output-read.json",
-    "status": "windows_native_read_passed_final_candidate_pending",
-    "nativeRun": "35829751668",
+    "status": "windows_native_read_and_relative_table_output_passed_final_candidate_pending",
+    "nativeRun": "35832075007",
     "releaseAccepted": false
   }
 }

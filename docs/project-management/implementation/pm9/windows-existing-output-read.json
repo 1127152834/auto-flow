@@ -26,6 +26,13 @@
     "correction": "Remove the obsolete platform-failure assertion and two obsolete Windows skips for relative new-file table exports; retain the absolute-drive-path skip until its application contract is implemented. Include worker contract and those two table cases in the bounded native probe. Final candidate recheck pending."
   },
   "scopedProbeAdjustment": "35831675395 @bde396de passed the corrected worker contract and existing-file read cases, but its broad differential file selection failed 32 frozen-source cases because the bounded job does not check out reference/WebRPA; the remaining absolute-drive-path fake case is still deliberately rejected by TableExportExecutor. This is not a Windows read regression. The next probe selects only the two applicable relative new-file table tests.",
+  "finalScopedNative": {
+    "runId": "35832075007",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35832075007",
+    "headSha": "113668fd5998057c04878f05fa4675216295b645",
+    "result": "127 passed, 28 skipped in 24.73s",
+    "scope": "Native Windows existing binary read, missing-parent no-side-effect, cancellation, Base64 worker, table-family Excel worker, and relative new-file CSV/XLSX tests passed. The absolute-drive-path table test remains skipped."
+  },
   "limits": [
     "This scoped native job did not include the later read-only parent fix and did not run the three-platform full regression or packaged desktop chain for the final code.",
     "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement. Table export also still rejects Windows absolute drive paths at its application layer.",
