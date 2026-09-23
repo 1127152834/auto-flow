@@ -23,7 +23,12 @@ const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidenc
 const evidencePrefix = failedPauseOnly ? 'formal-failed-pause-electron-' : runToOnly ? 'formal-run-to-electron-' : 'formal-electron-'
 const evidenceDir = await mkdtemp(join(evidenceRoot, evidencePrefix))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b1-'))
-const pageUrl = pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href
+const credentialMode = process.env.AUTOFLOW_B1_CREDENTIALS === '1'
+const credentialName = `运行临时凭据-${randomUUID()}`
+const credentialSecret = randomUUID()
+const credentialPage = join(userData, 'credential-page.html')
+if (credentialMode) await writeFile(credentialPage, `<!doctype html><meta charset="utf-8"><label>密码<input type="password" id="workflow-input"></label><button class="workflow-action" onclick="document.querySelector('#workflow-output').textContent=document.querySelector('#workflow-input').value===${JSON.stringify(credentialSecret).replaceAll('"','&quot;')}?'真实 CloakBrowser 五节点':'凭据未解析'">确认</button><output id="workflow-output"></output>`)
+const pageUrl = pathToFileURL(credentialMode ? credentialPage : join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href
 const slowServer = createServer(() => undefined)
 await new Promise((resolve, reject) => {
   slowServer.once('error', reject)
@@ -91,6 +96,17 @@ try {
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   checkpoint('主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile')
+  if (credentialMode) {
+    await click(studio, '更多操作'); await click(studio, '全局配置', '[role="menuitem"]')
+    await click(studio, '凭据库', 'nav button'); await click(studio, '新增凭据')
+    await setInput(studio, 'input[placeholder="如：我的邮箱"]', credentialName)
+    await setInput(studio, 'input[placeholder="值"]', credentialSecret)
+    await click(studio, '保存', 'fieldset button')
+    await waitFor(studio, `document.body.innerText.includes(${JSON.stringify(credentialName)}) && document.body.innerText.includes('••••••')`, 'native credential saved')
+    await click(studio, '关闭全局配置')
+    checkpoint('真实凭据库UI保存本次随机临时字段；不记录明文截图')
+  }
+
 
   await click(studio, '新建')
   await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 0", 'new empty workflow')
@@ -131,7 +147,7 @@ try {
   await setInput(studio, 'input[placeholder="工作流名称"]', 'B1 五节点正式闭环')
   const modules = [
     ['打开网页', 'open_page', { placeholder: 'https://example.com', value: pageUrl }],
-    ['输入文本', 'input_text', { placeholder: '例如: #input, .text-field', value: '#workflow-input', extra: ['textarea[placeholder="要输入的文本内容"]', '真实 CloakBrowser 五节点'] }],
+    ['输入文本', 'input_text', { placeholder: '例如: #input, .text-field', value: '#workflow-input', extra: ['textarea[placeholder="要输入的文本内容"]', credentialMode ? `{{凭据:${credentialName}.value}}` : '真实 CloakBrowser 五节点'] }],
     ['点击元素', 'click_element', { placeholder: '例如: #button, .submit', value: '.workflow-action' }],
     ['提取数据', 'get_element_info', { placeholder: '例如: #title, .content', value: '#workflow-output', extra: ['#variableName', 'result'] }],
     ['网页截图', 'screenshot', { placeholder: null, value: null }],
@@ -224,6 +240,14 @@ try {
     const run = await waitForValue(async () => (await api(runtime, `/workflow-runs?documentId=${saved.id}&cursor=0&limit=20`)).items[0], 'real log run')
     const finalLogRun = await waitForValue(async () => {const value=await api(runtime, `/workflow-runs/${run.runId}`);return ['completed','failed','stopped','interrupted'].includes(value.status)?value:null}, 'real log run cleanup', 120_000)
     assert.equal(finalLogRun.status, 'completed', JSON.stringify(finalLogRun))
+    if (credentialMode) {
+      const results = await api(runtime, `/workflow-runs/${run.runId}/results?cursor=0&limit=100`)
+      assert.equal(results.items.find(item=>item.nodeId===nodeIds[3])?.values.value, '真实 CloakBrowser 五节点')
+      assert.equal(JSON.stringify([results,finalLogRun,observedEvents]).includes(credentialSecret), false)
+      assert.equal(observedEvents.some(event=>event.name==='credential:read'||event.name==='credential:result'), false)
+      checkpoint('CloakBrowser密码输入使用系统凭据，受控页面只返回正确性标记；明文不进入SSE/快照/结果')
+    }
+
     await waitFor(studio, `document.body.innerText.includes(${JSON.stringify(marker)}) && document.body.innerText.includes('执行完成')`, 'user log visible in concise mode')
     const logs = await api(runtime, `/workflow-runs/${run.runId}/logs?cursor=0&limit=100`)
     assert.ok(logs.items.some(log => log.nodeId === printId && log.message === marker && log.level === 'info'))
@@ -253,7 +277,16 @@ try {
     await capture(studio, join(evidenceDir, 'reopened-log-history.png'))
     assert.deepEqual(execFileSync('ps', ['-axo', 'command='], {encoding:'utf8'}).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)), [])
     checkpoint('真实UI切换简洁/详细SSE，用户日志保留，普通节点日志完整持久化；续读游标、关窗重开历史和进程清理通过')
-    const report = {evidenceId:'BE-studio-log-delivery',checkedAt:new Date().toISOString(),result:'passed',platform:`${process.platform}-${process.arch}`,entry:desktop.packaged?'packaged-directory':'development-build',workflowId:saved.id,runId:run.runId,nodeDurations,requestedStreams:requestedStreams.map(value=>{const url=new URL(value);return {afterSeq:url.searchParams.get('afterSeq'),verboseLog:url.searchParams.get('verboseLog')}}),checks,packageBoundary:desktop.packaged?await verifyPackageBoundary():null,buildArtifacts:desktop.packaged?await packagedBuildHashes():null,boundaries:{userDatabaseTouched:false,workspace:'ephemeral',interaction:'real UI only; API asserts logs and process cleanup'}}
+    if (credentialMode) {
+      await click(studio, '更多操作'); await click(studio, '全局配置', '[role="menuitem"]')
+      await click(studio, '凭据库', 'nav button'); await click(studio, `删除凭据 ${credentialName}`)
+      await click(studio, '删除')
+      await waitForValue(async()=> !(await api(runtime,'/credentials')).credentials.some(item=>item.name===credentialName), 'temporary credential deleted')
+      await click(studio, '关闭全局配置')
+      checkpoint('凭据通过真实界面删除，运行日志与文档重开保留原引用')
+    }
+
+    const report = {evidenceId:credentialMode?'BE-studio-credential-runtime':'BE-studio-log-delivery',checkedAt:new Date().toISOString(),result:'passed',platform:`${process.platform}-${process.arch}`,entry:desktop.packaged?'packaged-directory':'development-build',workflowId:saved.id,runId:run.runId,nodeDurations,requestedStreams:requestedStreams.map(value=>{const url=new URL(value);return {afterSeq:url.searchParams.get('afterSeq'),verboseLog:url.searchParams.get('verboseLog')}}),checks,packageBoundary:desktop.packaged?await verifyPackageBoundary():null,buildArtifacts:desktop.packaged?await packagedBuildHashes():null,boundaries:{userDatabaseTouched:false,workspace:'ephemeral',interaction:'real UI only; API asserts logs and process cleanup'}}
     await writeFile(join(evidenceDir,'result.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({evidenceDir,...report},null,2))
   } else if (projectTaskMode) {
     await closeWindowThroughOs(desktop.child.pid)
@@ -650,6 +683,10 @@ try {
   await writeFile(join(evidenceDir, 'failure.json'), JSON.stringify({ checkedAt: new Date().toISOString(), checks, observedEvents, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
   throw error
 } finally {
+  if (credentialMode) {
+    const key = `studio-credential:${createHash('sha256').update(credentialName).digest('hex')}`
+    execFileSync('uv', ['run','--directory','apps/backend','python','-c', `from autoflow.infrastructure.credentials.system import SystemCredentialStore; SystemCredentialStore().delete(${JSON.stringify(key)})`], {cwd:root,stdio:'ignore'})
+  }
   eventAbort?.abort(); studio?.close(); main?.close(); native?.close(); await stop(desktop?.child)
   if (kernelMoved) await rename(unavailableKernel, isolatedKernel).catch(() => undefined)
   slowServer.closeAllConnections()

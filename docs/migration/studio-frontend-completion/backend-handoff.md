@@ -160,3 +160,7 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 嵌套等待通过现有任务上下文关联调用祖先，只扣本调用链的调试边界等待；重叠等待计一次，不存逐次计时历史。非等待子流程在原 worker 后台入口分离计时祖先，仍保留原取消/调试和调用深度保护。最初共享 worker 暂停累计方案会误扣无关并行分支，已由真实控制器及嵌套 Runtime 回归替代。
 
 证据：[node-duration-2026-09-23/result.json](../studio-backend-migration/evidence/shared-services/node-duration-2026-09-23/result.json)。78项关联回归、Ruff/mypy通过；开发入口真实五网页动作及用户日志的非零毫秒、持久恢复和进程清理已验证。最终后台调用细化后，PyInstaller171秒、冻结启动和本次macOS arm64本地unsigned包真实六节点、持久毫秒及关窗恢复均通过；其他平台与全项目集成不因此核销。
+
+## 凭据真实消费闭环（2026-09-23）
+
+[凭据运行证据](../studio-backend-migration/evidence/shared-services/credential-runtime-2026-09-23/result.json) 已完成：原生凭据UI保存→真实CloakBrowser输入引用→页面验证→日志重开→UI删除，开发V7sWWS及最终本地unsigned包ZMGYx6通过。共享系统存储按字段经所属worker私有管道读取，不进入日志/SSE；缺失/空字段保留源占位符，读取等待可停止且迟到响应丢弃。8项真实worker/5项管道保护补充82项关联回归。此闭环不代表所有集成或项目凭据ACL已完成；213节点622/17槽位不变，Intel/Windows未实测。

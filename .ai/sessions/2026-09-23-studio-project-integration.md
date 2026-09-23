@@ -166,3 +166,11 @@
 - 78关联回归、Ruff/mypy通过；正式开发JYr7gE与最终unsigned包0jega9实际UI创建六节点并执行，五网页动作均记录真实毫秒，用户日志/SSE与持久日志相同，AXClose/重开/资源清理通过。PyInstaller171秒、冻结启动和本地包通过。汇总shared-services/node-duration-2026-09-23。
 - 新发现（登记，未核销）：真实worker未注入CredentialReader，凭据管理实现不等同节点可消费；助手会话/命令尚无项目归属。项目现有defaultResources是默认+可覆盖，不是ACL；已异步询问用户是否保持或新增资源白名单，不能擅把默认值变成权限限制。后续继续不依赖此决定的真实凭据消费接入。
 - 213节点槽位622/17不变；14通知排除保持；Intel/Windows未测。
+
+## 凭据真实消费 confirmed
+
+- 已核销此前缺CredentialReader：原版variables保持动态get_field，同一StudioCredentialService与系统存储经受管worker私有请求读取。stdin唯一线程直接唤醒解析器；重复/超时/空字段/缺失/EOF/停止有用例，秘密不入SQL/SSE/结果。
+- 原生读取daemon每run一项，父3秒预算及20ms停止检查；写锁再次拒绝stopping响应，迟到值丢弃。子流程继承读取器。
+- 82关联、8最终实际worker、5管道保护分别通过；Ruff/mypy/OpenAPI/结构通过。开发V7sWWS、最终unsigned包ZMGYx6完整真实UI通过；znjbwe保留前一候选，不冒充最终版本。汇总shared-services/credential-runtime-2026-09-23。
+- 下一块高级数据26节点项目任务桥：现有注册和算法可复用，缺catalog准入/resultVariable产出以及无浏览器项目资源链。已有80项用例，先补边界再实际项目任务验收；无新执行器。
+- 范围213、622/17及14通知排除不变；项目资源白名单问题未收到答复，其他实现继续。

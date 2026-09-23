@@ -336,6 +336,10 @@ def create_app(
         license_store.read,
         test_browser_workers,
     )
+    studio_credentials = StudioCredentialService(
+        SqlAlchemyStudioCredentials(session_factory), active_credentials
+    )
+    app.state.studio_credentials = studio_credentials
     workflow_services = build_workflow_services(
         session_factory,
         profiles=profile_service,
@@ -348,6 +352,7 @@ def create_app(
         artifact_root=paths.workspace,
         models=model_service,
         credential_store=active_credentials,
+        resolve_credential=studio_credentials.resolve,
     )
     workflow_services.runs.recover_interrupted()
     webdav_workflows = WebDavWorkflowService(paths.workspace, active_credentials)
@@ -363,10 +368,6 @@ def create_app(
     app.state.image_assets = image_assets
     workflow_bundles = WorkflowBundleService(workflow_services.modules, image_assets)
     app.state.workflow_bundles = workflow_bundles
-    studio_credentials = StudioCredentialService(
-        SqlAlchemyStudioCredentials(session_factory), active_credentials
-    )
-    app.state.studio_credentials = studio_credentials
     studio_retention = StudioRetentionService(
         SqlAlchemyStudioRetention(session_factory), paths.workspace
     )

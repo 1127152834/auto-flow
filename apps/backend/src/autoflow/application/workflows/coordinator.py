@@ -8,6 +8,7 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Event, Thread
 from typing import Any, Protocol, cast
 from uuid import uuid4
 
@@ -96,6 +97,7 @@ class WorkflowRunCoordinator:
         artifact_root: Path,
         modules: CustomModuleService | None = None,
         resolve_model: Callable[[str], ModelExecutionBinding] | None = None,
+        resolve_credential: Callable[[str], Mapping[str, str]] | None = None,
     ) -> None:
         self._documents = documents
         self._runs = runs
@@ -111,6 +113,8 @@ class WorkflowRunCoordinator:
         self._artifact_root = artifact_root.resolve()
         self._modules = modules
         self._resolve_model = resolve_model
+        self._resolve_credential = resolve_credential
+        self._credential_reads: dict[str, Event] = {}
         self._terminal_intents: dict[str, dict[str, Any]] = {}
         self._command_lock = asyncio.Lock()
         self._event_command_lock = asyncio.Lock()
@@ -720,10 +724,65 @@ class WorkflowRunCoordinator:
             )
             return copy.deepcopy(receipt), 200
 
+    async def _read_worker_credential(self, run_id: str, name: str, field: str) -> str | None:
+        resolver = self._resolve_credential
+        previous = self._credential_reads.get(run_id)
+        run = self._runs.get(run_id)
+        if resolver is None or (previous is not None and not previous.is_set()):
+            return None
+        if run.stop_requested or run.status not in {"starting", "running", "paused"}:
+            return None
+        done, discard = Event(), Event()
+        result: list[str | None] = []
+        self._credential_reads[run_id] = done
+
+        def read() -> None:
+            try:
+                value = resolver(name).get(field)
+                if not discard.is_set():
+                    result.append(value)
+            except Exception:  # noqa: BLE001 -- source preserves unavailable placeholders.
+                result.clear()
+            finally:
+                done.set()
+
+        # Native keychain UI can block indefinitely. One outstanding read per run;
+        # daemon ownership avoids blocking stop/sidecar exit on that system prompt.
+        Thread(target=read, daemon=True, name="workflow-credential-read").start()
+        try:
+            async with asyncio.timeout(3):
+                while not done.is_set():
+                    current = self._runs.get(run_id)
+                    if current.stop_requested or current.status not in {"starting", "running", "paused"}:
+                        return None
+                    await asyncio.sleep(0.02)
+            return result[0] if result else None
+        except TimeoutError:
+            return None
+        finally:
+            discard.set()
+            if done.is_set():
+                self._credential_reads.pop(run_id, None)
+
     async def on_worker_event(self, event: dict[str, object]) -> None:
         run_id = _required_string(event, "runId")
         run = self._runs.get(run_id)
         event_type = _required_string(event, "type")
+        if event_type == "credential:read":
+            # Secrets only cross this owned worker pipe, never the journal/HTTP/SSE.
+            request_id = _required_string(event, "requestId")
+            name, field = event.get("name"), event.get("field")
+            if not isinstance(name, str) or not isinstance(field, str):
+                raise TypeError("凭据请求名称和字段必须是字符串")
+            # Empty parts are legal unmatched source references, not pipe failure.
+            value = await self._read_worker_credential(run_id, name, field) if name and field else None
+            current = self._runs.get(run_id)
+            if current.stop_requested or current.status not in {"starting", "running", "paused"}:
+                return
+            await self._workers.send_command(run_id, {
+                "type": "credential:result", "requestId": request_id, "value": value,
+            })
+            return
         if event_type == "execution:failed_paused":
             pause_id = _required_string(event, "pauseId")
             paused_node_id = _required_string(event, "node_id")
@@ -1704,6 +1763,7 @@ class WorkflowRunCoordinator:
         # WorkflowWorkerManager invokes this only after the process tree and its
         # private directory are gone. Resource release is the final cleanup step.
         run = self._runs.get(run_id)
+        self._credential_reads.pop(run_id, None)
         self._debug_pauses.pop(run_id, None)
         active = self._active_runs_by_workflow.get(run.workflow_id)
         if active is not None:

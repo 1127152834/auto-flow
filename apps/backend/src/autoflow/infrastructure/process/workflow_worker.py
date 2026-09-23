@@ -271,6 +271,8 @@ class WorkflowWorkerManager:
             raise RuntimeError("workflow worker 命令通道已关闭")
         encoded = (json.dumps(command, ensure_ascii=False) + "\n").encode()
         async with worker.write_lock:
+            if command.get("type") == "credential:result" and run_id in self._stopping:
+                return
             stdin.write(encoded)
             await stdin.drain()
 
@@ -362,6 +364,8 @@ class WorkflowWorkerManager:
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         continue
                     if isinstance(event, dict) and self._on_event is not None:
+                        if event.get("type") == "credential:read" and event.get("runId") != run_id:
+                            raise RuntimeError("工作进程凭据请求归属不匹配")
                         callback_result = self._on_event(event)
                         if isawaitable(callback_result):
                             await callback_result

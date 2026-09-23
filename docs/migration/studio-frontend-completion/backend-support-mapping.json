@@ -391,13 +391,17 @@
         "apps/backend/src/autoflow/adapters/http/workflow_resources.py"
       ],
       "classification": "AutoFlow必要适配",
-      "status": "真实后端待迁入",
+      "status": "部分真实验收：凭据系统存储与worker按字段消费已通过；其余集成按节点台账核销",
       "milestone": "B6",
       "contractRefs": [
         "docs/migration/studio-frontend-completion/credential-protocol-contract.md",
         "docs/migration/studio-frontend-completion/path-service-contract.md"
       ],
-      "risk": "各连接器的第三方依赖、平台支持和真实凭据需要逐项探测；秘密不得进入节点文档、日志、SSE、诊断或导出。"
+      "risk": "各连接器的第三方依赖、平台支持和真实凭据需要逐项探测；秘密不得进入节点文档、日志、SSE、诊断或导出。",
+      "evidenceRefs": [
+        "docs/migration/studio-backend-migration/evidence/shared-services/credential-runtime-2026-09-23/result.json"
+      ],
+      "remaining": "第三方及平台节点真实环境仍按17槽位保留；项目资源授权策略待用户确认。用户删除的14通知节点保持排除。"
     },
     {
       "id": "BE.SUPPORT.triggers-schedules",

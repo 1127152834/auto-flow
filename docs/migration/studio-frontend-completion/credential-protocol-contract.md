@@ -51,3 +51,15 @@
 真实后端交接：用事务或原子文件替换同时提交秘密字段变更、revision 和命令回执；在服务端移动原密文/秘密值，禁止将秘密返回管理 UI；保证同请求幂等、同 ID 异请求冲突、修订比较及持久化失败传播。当前完成的是前端合同消费与 Mock 元数据实现，未证明真实秘密存储、加密原子落盘、真实凭据注入或 Electron 原生交互。
 
 定时停止交接：本切片未提交；未执行整合 Electron 构建或原生 UI 验证。已完成日志保存在 evidence/f5-credential-fields/。恢复从主任务整合构建/原生凭据入口验证开始，不需重新实现字段命令。
+
+## 真实运行消费接入（2026-09-23，macOS arm64 开发及正式包已验收）
+
+上文历史Mock/字段管理的验收边界保留；本项补真实worker此前未注入CredentialReader的缺口。沿冻结源get_field与现有resolve_value支持`{{凭据:名称.字段}}`、`{{cred:名称.字段}}`及省略字段时value，不提前改写流程或复制整库秘密。缺失字段、读取失败保留原文字面量；停止通过CancelledError结束，不伪装为空凭据成功。
+
+既有受管管道新增内部`credential:read/runId/requestId/name/field`与`credential:result/requestId/value`，不构成renderer HTTP/SSE能力。manager验证runId与受管worker一致，父协调器通过同一StudioCredentialService读取系统秘密；响应只进入该worker stdin。stdin唯一读取线程直接唤醒同步解析器，重复/过期请求不应用，EOF/停止解锁等待。子流程和自定义模块继承同一reader。
+
+原生系统凭据库可能等待弹窗。父读取只有3秒等待预算、每run最多一个未返回读取；停止先结束所有权等待，迟到结果丢弃。底层调用留在daemon线程中自然收尾，不占住worker或sidecar退出。实际管道写锁内再次拒绝stopping运行的秘密响应。没有新增秘密文件/明文DB/第二凭据存储；秘密跟踪继续复用现有上下文脱敏。
+
+[证据与边界](../studio-backend-migration/evidence/shared-services/credential-runtime-2026-09-23/result.json)：真实UI保存临时系统凭据→节点写入引用→CloakBrowser密码框输入→受控页面返回正确性标记→保存重开日志→UI删除临时凭据；测试检查明文不进入持久日志、SSE或普通结果。运行执行器测试与系统秘密存储实测分别记账。正式包在同证据记录核销，不据此宣称项目资源ACL或所有外部集成完成。
+
+最终包 `formal-electron-ZMGYx6` 含空名称/字段兼容修正并通过同一真实UI链；此前 `znjbwe` 为前一候选证据，不作为最终构建替代。82项关联回归、最终8项实际worker及5项读取/写锁测试、Ruff/mypy/OpenAPI/目录检查通过。Windows及Intel未实测。

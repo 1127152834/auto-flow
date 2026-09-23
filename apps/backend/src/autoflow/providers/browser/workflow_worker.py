@@ -9,6 +9,7 @@ from collections.abc import Mapping
 from contextvars import ContextVar
 from pathlib import Path
 from threading import Event, Lock, Thread
+from time import monotonic
 from typing import Any, TextIO
 from uuid import uuid4
 
@@ -120,6 +121,7 @@ async def _run_in_session(
             models=WorkflowModelGateway(_model_bindings(command)),
             external_integrations=integrations,
             debug=command_bus.debug,
+            credentials=command_bus.credentials,
             variable_tracking_enabled=bool(command.get("debug")),
         )
         sink = _WorkerEventSink(
@@ -1336,6 +1338,58 @@ class _WorkerDebugController:
             pause["release"].set()
 
 
+class _WorkerCredentialReader:
+    """Private sidecar replies wake the stdin thread, never wait on this event loop."""
+
+    def __init__(self, stopped: Event, stdout: TextIO, run_id: str) -> None:
+        self._stopped = stopped
+        self._stdout = stdout
+        self._run_id = run_id
+        self._lock = Lock()
+        self._pending: dict[str, tuple[Event, dict[str, Any]]] = {}
+        self._closed = False
+
+    def get_field(self, name: str, field: str) -> str | None:
+        request_id = str(uuid4())
+        ready = Event()
+        result: dict[str, Any] = {}
+        with self._lock:
+            if self._closed or self._stopped.is_set():
+                raise asyncio.CancelledError
+            self._pending[request_id] = (ready, result)
+        try:
+            _write(self._stdout, {
+                "type": "credential:read", "runId": self._run_id,
+                "requestId": request_id, "name": name, "field": field,
+            })
+            deadline = monotonic() + 5
+            while not ready.wait(0.05):
+                if self._stopped.is_set() or self._closed:
+                    raise asyncio.CancelledError
+                if monotonic() >= deadline:
+                    raise TimeoutError("凭据读取超时")
+            if self._stopped.is_set() or self._closed:
+                raise asyncio.CancelledError
+            value = result.get("value")
+            return value if isinstance(value, str) else None
+        finally:
+            with self._lock:
+                self._pending.pop(request_id, None)
+
+    def receive(self, command: Mapping[str, Any]) -> None:
+        with self._lock:
+            pending = self._pending.get(str(command.get("requestId") or ""))
+            if pending is not None and not pending[0].is_set():
+                pending[1]["value"] = command.get("value")
+                pending[0].set()
+
+    def close(self) -> None:
+        with self._lock:
+            self._closed = True
+            for ready, _result in self._pending.values():
+                ready.set()
+
+
 class _WorkerCommandBus:
     def __init__(
         self,
@@ -1348,6 +1402,7 @@ class _WorkerCommandBus:
         self._stopped = stopped
         self._stdout = stdout
         self._run_id = _required_string(command, "runId")
+        self.credentials = _WorkerCredentialReader(stopped, stdout, self._run_id)
         workflow_id = command.get("workflowId")
         self._workflow_id = workflow_id if isinstance(workflow_id, str) else ""
         raw_breakpoints = command.get("breakpoints", [])
@@ -1380,10 +1435,14 @@ class _WorkerCommandBus:
         return _BoundInputPrompts(self, context)
 
     def receive(self, command: dict[str, Any]) -> None:
+        if command.get("type") == "credential:result":
+            self.credentials.receive(command)
+            return
         if not self._loop.is_closed():
             self._loop.call_soon_threadsafe(self._apply, command)
 
     def close(self) -> None:
+        self.credentials.close()
         if not self._loop.is_closed():
             self._loop.call_soon_threadsafe(self._cancel_pending)
 
