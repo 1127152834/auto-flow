@@ -26,6 +26,7 @@ from autoflow.domain.environments.rules import (
     resolve_environment_source,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.domain.workflows.runtime import TERMINAL_STATUSES
 from autoflow.infrastructure.database.environment_models import (
     ProjectEndOperationRow,
     ProjectEnvironmentInstanceRow,
@@ -314,6 +315,51 @@ class SqlAlchemyEnvironments:
             inputs=inputs,
             environments={row.id: _environment(row) for row in environments},
         )
+
+    def disposable_task_instances(self, instance_id: str | None = None) -> builtins.list[EnvironmentInstance]:
+        """Only terminal task copies without outstanding retention/manual ownership."""
+        with self._session_factory() as session:
+            statement = select(ProjectEnvironmentInstanceRow).join(
+                WorkflowRunRow, WorkflowRunRow.id == ProjectEnvironmentInstanceRow.active_run_id,
+            ).join(
+                ProjectTaskRow, ProjectTaskRow.id == ProjectEnvironmentInstanceRow.active_task_id,
+            ).where(
+                ProjectTaskRow.run_id == WorkflowRunRow.id,
+                ProjectTaskRow.project_id == ProjectEnvironmentInstanceRow.project_id,
+                WorkflowRunRow.status.in_(TERMINAL_STATUSES),
+                ProjectEnvironmentInstanceRow.maintenance_operation_id.is_(None),
+                ProjectEnvironmentInstanceRow.state.in_(
+                    ("reserved", "starting", "active", "closing", "closed", "cleaning", "cleanup_failed")
+                ),
+                ~select(ProjectManualItemRow.id).where(
+                    ProjectManualItemRow.instance_id == ProjectEnvironmentInstanceRow.id,
+                ).exists(),
+            )
+            if instance_id is not None:
+                statement = statement.where(ProjectEnvironmentInstanceRow.id == instance_id)
+            result = []
+            for row in session.scalars(statement):
+                operations = session.scalars(select(ProjectOperationRow).where(
+                    ProjectOperationRow.project_id == row.project_id,
+                    ProjectOperationRow.kind == "saveEnvironment",
+                ))
+                protected = False
+                for operation in operations:
+                    resource = operation.resource
+                    outcome = operation.result or {}
+                    if outcome.get("phase") == "completed" and outcome.get("complete") is True:
+                        continue
+                    if resource.get("retainEnvironment") is False:
+                        continue
+                    target = resource.get("instanceId") or (outcome.get("instance") or {}).get("instanceId")
+                    # Legacy commands lack instance identity. An unresolved save
+                    # cannot authorize automatic deletion of any possible copy.
+                    if target is None or target == row.id:
+                        protected = True
+                        break
+                if not protected:
+                    result.append(_instance(row))
+            return result
 
     def set_instance_state(self, instance_id: str, state: str) -> EnvironmentInstance:
         with self._session_factory() as session:

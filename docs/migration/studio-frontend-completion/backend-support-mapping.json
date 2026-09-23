@@ -184,6 +184,13 @@
         "completedSlice": "B1.3 worker和资源清理；B1.5持久状态、幂等、活跃名额和启动恢复；B1.6真实HTTP命令、运行协调和SSE补读合同；B1.7正式主链成功终态清理",
         "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json",
         "remaining": "B1.7运行中停止、正常关窗和完整离开矩阵；Debug命令在B8"
+      },
+      "projectEnvironmentFinalization20260924": {
+        "status": "verified-source-real-browser-development-and-macos-arm64-package",
+        "classification": "AutoFlow必要适配",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/environment-finalization-2026-09-24/README.md",
+        "semantics": "终态任务无保留意图才清理工作副本；保存/人工操作与清理互斥；失败保留占用和重试责任；未知旧保存意图保守保留；慢清理不持停止准入锁。",
+        "remaining": "历史iVkaGt/Ie6Ngs偶发interrupted根因未唯一确认；修复后正式取消和清理通过。Windows/macOS Intel未验收。"
       }
     },
     {
@@ -228,6 +235,11 @@
         "status": "verified-macos-arm64-development-and-local-package",
         "evidence": "docs/migration/studio-backend-migration/evidence/shared-services/node-duration-2026-09-23/result.json",
         "semantics": "实际毫秒；自身/等待子调用断点不计；独立分支及非等待后台流程不影响调用方；循环每轮独立"
+      },
+      "projectScreenshotPurpose20260924": {
+        "status": "verified-development-and-macos-arm64-package",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/environment-finalization-2026-09-24/README.md",
+        "semantics": "结果截图、失败截图按实际purpose区分；混合截图使用中性标题。"
       }
     },
     {

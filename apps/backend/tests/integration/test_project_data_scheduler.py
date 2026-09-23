@@ -112,7 +112,10 @@ def test_environment_reservation_failure_rolls_back_data_task_and_run(data_servi
         def attach_task_instance(self, *args, **kwargs):
             raise environment_error("CAPACITY_EXHAUSTED", "No environment capacity", 429)
 
-    factory, project, _, _, _, _, scheduler = data_services
+    factory, project, _, coordinator, _, _, scheduler = data_services
+    # This rollback case needs a browser resource; browser-free tasks correctly
+    # skip environment reservation and cannot exercise a capacity failure.
+    coordinator._resolve_resources = lambda *_: {"browser": "newFromProfile", "profileId": uid()}
     batch = start(data_services)
     scheduler._environments = UnavailableEnvironment()
     with pytest.raises(ProjectError) as failure:

@@ -436,3 +436,35 @@
 - 开发MGrIw3、macOS arm64未签名包P8z83d真实UI完成项目编排、保存、正常关窗、输出与后继日志、再次运行停止。冻结163.4秒，包哈希及细节见element-change-2026-09-24/README.md。没有改写原版监听器、没有编辑用户数据库。
 - 剩余31个项目目录入口，整体goal active。下一块优先处理已登记的共享环境结束状态/截图展示，暂不再开新节点：查询根据EnvironmentInstance.state显示pending，scheduler只看到记录lease释放和实例创建，尚未确认自动结束/保留语义，不能把浏览器进程消失直接当作工作副本已删除。先查正式项目环境规格，随后在实际生命周期边界修复并真实验收。
 - 小助手/模型/原生设备/外部服务等原有未验收项仍单列。js_script/input_prompt/剪贴板等需要项目交互命令端口；邮件/Telegram存在真实外部服务依赖，不能通过空绑定或Mock直接核销。项目默认值＋显式覆盖已持续验证，无白名单。
+
+### 下一块恢复入口
+
+- 元素变化已提交 `5dd816d9`；本轮无仍运行的测试/构建进程。实际工作树只剩此前无关修改、既有未纳入证据，以及本段检查点。
+- 已查正式摘要 `docs/superpowers/specs/2026-09-12-project-management-design.md`：第10行引用 `docs/project-management/design/README.md` 与 `.ai/decisions/2026-09-12-project-data-workflow-semantics.md`，明确结束节点可保留环境并关联记录；第143行要求运行结果、浏览器清理、业务状态分别展示。下一步先读这些直接引用，不自动删除工作副本、不用 run.terminal 伪造环境清理成功。
+- 已定位：`application/project_runs/queries.py::_cleanup` 优先读 EnvironmentInstance，active→pending；`application/environments/service.py::attach_task_instance` 将reserved→active，`close_instance/quiesce_instance` 才更新closed/cleaned；`WorkflowRunDispatcher` 结束只释放浏览器使用锁，尚未发现任务自然结束调用环境结束服务。需要核实这是缺生命周期衔接还是保留语义；原始进程清理测试本身仍有效。
+- 另一明确展示缺陷：`TaskEvidence.tsx` 的截图标题写死“失败时页面截图”，当前成功产物也进入该区。修复应按产物用途/实际失败来源显示，保留失败场景测试，不将所有图片一概改作成功结果。
+
+### 项目环境终态收尾进行中（2026-09-24，confirmed，尚未提交/关闭）
+
+- 用户再次确认项目默认资源＋显式覆盖，无白名单。接续共享环境/截图缺口，无新总体设计，不恢复14通知。
+- 依正式环境规格第9节，在现有 EnvironmentService / SqlAlchemyEnvironments / ProjectBatchScheduler 接入无保留意图的终态任务工作副本清理。保存/End/人工处理共用实例锁；旧无实例身份保存命令保守保留；清理失败保留持久环境占用并重试；源版本不改。
+- 新增 `test_project_environment_finalization.py`，真实临时SQLite/目录验证五终态、关闭批次恢复、保存失败/并发、旧命令、原版本/占用、门禁及迟到人工请求。142项相关回归通过，最后人工请求保护后37项环境/保留测试通过；集合重叠。真实CloakBrowser元素成功/超时/停止3项通过，已核对实际 `workspace/workspace/environments/instances` 目录，不靠状态字段替代文件事实。
+- 前端任务终态仍刷新pending/running/failed清理；已清理状态不显示无效保留入口；保存部分成功只允许修复关联，禁止重复End；结果PNG不再称失败截图。164项UI回归＋最后3项End专项通过。TypeScript/ESLint/OpenAPI/结构检查此前通过，最新构建待收口。
+- 正式开发 W7ZeTp 成功与停止均数据库cleaned、实际目录缺失、UI已清理；uoNDah截图标题通过。截图复核发现已清理仍显示End按钮，已补保护，需最后构建重验。
+- 冻结第1轮构建中源码有追加保护，包内marshal检查发现 `open_manual` 没有最终guard；第2轮增量仍复用旧Analysis代码。已touch唯一改动的service源文件触发重新分析，第3轮 `/tmp/autoflow-cleanup-freeze-verified.log` 正进行。不得用前两包标最终通过，不删除用户数据或git clean。
+- 当前工具进程：最后前端构建 `/tmp/autoflow-cleanup-build-delivery.log`，后端第3冻结如上。完成后用 CArchiveReader 打开EXE中PYZ，确认 service.open_manual 常量含“任务环境已清理，无法转入人工处理”，再package:dir；最终真实UI重跑元素family＋Firecrawl截图family。脚本已补清理目录/数据库/UI与无效End消失断言。
+- 本批证据入口 `docs/migration/studio-backend-migration/evidence/project-integration/environment-finalization-2026-09-24/README.md` 当前明确进行中。现有工作树无关component-tools/validation/implementation改动继续保留，不混入提交。整体goal active，项目入口余31，外部服务/硬件/模型等门槛未关闭。
+
+### 环境收尾继续核验（2026-09-24，confirmed，未关闭）
+
+- 资源规则用户明确回复：项目默认值＋任务显式覆盖，无白名单；不增加新产品范围。
+- 最终旧包已以字节码比对确认环境service/scheduler完整，但Ie6Ngs停止仍为interrupted，完整task-stop.json已保存。源码/冻结worker API（含延迟停止）及三次诊断UI未再复现；暂不能声称已找到这两次异常的唯一原因。
+- 新确定缺陷：ProjectWorkflowWorkerManager收finished后不关闭stdin导致等待EOF的worker退出超时。新增确定性失败用例，最小修复关闭控制输入后再等待退出；继续校验退出码与实际进程清理。91项worker/调度/环境回归通过。修复旧调度测试夹具缺nodes而未进入测试目标的问题，保留完整断言。
+- 当前正在最终真实浏览器三场景回归；随后重冻/包内代码对照和无诊断正式UI验收。前端未继续改生产代码，不重做前端构建。临时QA诊断模块已移除。整体goal仍active，项目目录仍182/213（31入口未关闭），其他已登记外部及平台门槛不变。
+
+### 环境收尾本批验收完成（2026-09-24，confirmed）
+
+- 最终共享管道EOF修复后，91项worker/调度/环境＋9项恢复通过；真实CloakBrowser三场景59.68秒通过。Ruff、四生产文件mypy、git diff检查通过；同版本前端检查/构建无需重做。
+- 最终冻结172.166秒，目录包成功；比对包内EnvironmentService三方法、scheduler.tick、worker.run和源码一致。开发cWgIdZ、目录包jYk8Qm真实UI成功/停止均通过，task-stop cancelled、环境目录缺失、UI已清理且无保留入口。目录包m1k6Sk结果截图正确；两份截图已人工查看。
+- 仍保留两个早期interrupted失败，不能确定其唯一原因就是EOF缺陷；不删除失败或放宽断言。三次插桩诊断运行已逐目录标DIAGNOSTIC，临时模块已移除，正式验收未使用QA替换。Windows/Intel/签名发布未测。
+- 完整证据见 environment-finalization-2026-09-24/README.md。下一块为项目交互命令（js_script/input_prompt等依赖），复用Studio已有命令与宿主边界，先核对实际项目协议再迁入，不靠空适配注册。项目目录仍余31，整体goal active。

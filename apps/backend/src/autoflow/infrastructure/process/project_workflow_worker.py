@@ -158,7 +158,11 @@ class ProjectWorkflowWorkerManager:
             if worker.stop_requested:
                 await self._send_stop(worker)
             outcome = await self._exchange(worker, on_event)
-            assert worker.process is not None
+            assert worker.process is not None and worker.process.stdin is not None
+            # No more commands follow the terminal envelope. Release the worker's
+            # sole stdin reader before waiting for interpreter/process shutdown.
+            worker.ready = False
+            worker.process.stdin.close()
             await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
             if (worker.process.returncode not in {0, 1}
                 or (outcome.status == "succeeded" and worker.process.returncode != 0)):

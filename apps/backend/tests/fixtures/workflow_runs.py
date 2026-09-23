@@ -44,7 +44,12 @@ def create_queued_run(factory, *, node_ids=("open",), resource_request=None):
                     ]
                 },
             },
-            execution_plan={"orderedNodeIds": list(node_ids), "frozen": True},
+            execution_plan={
+                "orderedNodeIds": list(node_ids), "frozen": True,
+                "nodes": [{"nodeId": node_id, "moduleType": "open_page",
+                           "data": {"moduleType": "open_page", "url": "https://example.test"}}
+                          for node_id in node_ids],
+            },
             adapter_version="webrpa-chain/v1",
             capability_requirements=["browser.cloakbrowser"],
             provenance={"kind": "test"},

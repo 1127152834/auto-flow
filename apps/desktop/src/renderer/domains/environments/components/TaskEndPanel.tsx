@@ -9,7 +9,7 @@ import { safeProjectError } from '../../projects/presentation-error'
 import { createEnvironmentApi } from '../api'
 import { bindableRecords, selectedTargets } from '../record-targets'
 
-export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, inputs = [], client, disabled }: {
+export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, inputs = [], client, disabled, environmentCleaned = false }: {
   workspaceKey: string
   instanceId: string
   projectId: string
@@ -19,6 +19,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   inputs?: unknown[]
   client: StreamingApiClient
   disabled: boolean
+  environmentCleaned?: boolean
 }) {
   const api = useMemo(() => createEnvironmentApi(client, projectId), [client, projectId])
   const instance = useQuery({
@@ -82,6 +83,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   if (instance.isLoading) return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm">正在读取任务环境…</section>
   if (!current) return <section className="rounded-control border border-line bg-surface p-4 text-sm text-muted">当前任务还没有可保留的环境实例。</section>
   const phase = end.data?.outcome && 'phase' in end.data.outcome ? String(end.data.outcome.phase) : null
+  if ((environmentCleaned || current.state === 'cleaned') && phase !== 'saved_unlinked') return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm text-muted">临时环境已清理，无法再保留此工作副本；已保存的环境不受影响。</section>
   const toggle = (key: string, checked: boolean) => {
     setSelected(currentSelected => {
       const next = new Set(currentSelected)
@@ -107,7 +109,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
       <label className="flex items-center gap-2 text-sm"><Checkbox checked={replaceAllowed} onCheckedChange={value => setReplaceAllowed(value === true)} disabled={disabled || end.isPending} /><span>允许替换已有关联</span></label>
     </fieldset> : retain ? <p className="m-0 text-sm text-muted">当前任务没有可关联的记录目标，可以只保存环境。</p> : null}
     <div className="flex flex-wrap gap-2">
-      <Button size="sm" disabled={disabled || end.isPending} onClick={() => end.mutate()}>{retain ? '结束并保留' : '结束并关闭'}</Button>
+      <Button size="sm" disabled={disabled || end.isPending || environmentCleaned || current.state === 'cleaned' || phase === 'saved_unlinked' || phase === 'completed'} onClick={() => end.mutate()}>{retain ? '结束并保留' : '结束并关闭'}</Button>
       {phase === 'saved_unlinked' ? <Button size="sm" variant="secondary" disabled={disabled || repair.isPending} onClick={() => repair.mutate()}>修复关联</Button> : null}
     </div>
     {phase === 'saved_unlinked' ? <p role="alert" className="m-0 text-sm text-warning">环境已保存，记录关联未完成。可用原操作修复，不会重跑网页。</p> : null}

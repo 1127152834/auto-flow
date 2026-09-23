@@ -1,0 +1,166 @@
+..............................................FFFFFFF...FF.FF.F.F.FFF... [ 79%]
+...................                                                      [100%]
+=================================== FAILURES ===================================
+_ test_success_uses_frozen_plan_typed_parameters_and_commits_event_before_return _
+tests/integration/test_workflow_dispatch.py:125: in test_success_uses_frozen_plan_typed_parameters_and_commits_event_before_return
+    call = worker.calls[0]
+           ^^^^^^^^^^^^^^^
+E   IndexError: list index out of range
+____________ test_capacity_is_one_and_queued_cancel_never_launches _____________
+tests/integration/test_workflow_dispatch.py:158: in test_capacity_is_one_and_queued_cancel_never_launches
+    with pytest.raises(WorkflowRuntimeError, match="容量"):
+E   Failed: DID NOT RAISE WorkflowRuntimeError
+____ test_unknown_worker_failure_fences_then_interrupts_only_after_cleanup _____
+tests/integration/test_workflow_dispatch.py:187: in test_unknown_worker_failure_fences_then_interrupts_only_after_cleanup
+    assert worker.force_calls == [run.run_id]
+E   AssertionError: assert [] == ['a9c6dc3f-34...2a4d93e177db']
+E
+E     Right contains one more item: 'a9c6dc3f-3481-44c2-bde2-2a4d93e177db'
+E     Use -v to get more diff
+_________ test_cleanup_failure_retains_reconciling_lease_and_capacity __________
+tests/integration/test_workflow_dispatch.py:201: in test_cleanup_failure_retains_reconciling_lease_and_capacity
+    assert current.status == "reconciling" and not resources.lease.released
+E   AssertionError: assert ('interrupted' == 'reconciling'
+E
+E     - reconciling
+E     + interrupted)
+__________ test_explicit_worker_terminal_status_is_preserved[failed] ___________
+tests/integration/test_workflow_dispatch.py:221: in test_explicit_worker_terminal_status_is_preserved
+    assert finished.status == outcome and finished.status_revision == 4
+E   AssertionError: assert ('interrupted' == 'failed'
+E
+E     - failed
+E     + interrupted)
+_________ test_explicit_worker_terminal_status_is_preserved[timed_out] _________
+tests/integration/test_workflow_dispatch.py:221: in test_explicit_worker_terminal_status_is_preserved
+    assert finished.status == outcome and finished.status_revision == 4
+E   AssertionError: assert ('interrupted' == 'timed_out'
+E
+E     - timed_out
+E     + interrupted)
+_________ test_stopping_event_is_acked_until_force_revokes_generation __________
+tests/integration/test_workflow_dispatch.py:237: in test_stopping_event_is_acked_until_force_revokes_generation
+    stopping = await dispatcher.cancel(
+src/autoflow/application/workflows/dispatcher.py:192: in cancel
+    run = self._transition_identity(
+src/autoflow/application/workflows/dispatcher.py:678: in _transition_identity
+    changed = repository.transition_run(
+src/autoflow/infrastructure/database/workflow_runtime.py:252: in transition_run
+    changed = transition_core_run(
+src/autoflow/domain/workflows/runtime.py:432: in transition_core_run
+    raise WorkflowRuntimeError(
+E   autoflow.domain.workflows.runtime.WorkflowRuntimeError: 运行状态已发生变化
+_____ test_cancel_during_acquire_prevents_launch_and_force_requires_grace ______
+tests/integration/test_workflow_dispatch.py:383: in test_cancel_during_acquire_prevents_launch_and_force_requires_grace
+    stopping = await dispatcher.cancel(
+src/autoflow/application/workflows/dispatcher.py:192: in cancel
+    run = self._transition_identity(
+src/autoflow/application/workflows/dispatcher.py:678: in _transition_identity
+    changed = repository.transition_run(
+src/autoflow/infrastructure/database/workflow_runtime.py:252: in transition_run
+    changed = transition_core_run(
+src/autoflow/domain/workflows/runtime.py:432: in transition_core_run
+    raise WorkflowRuntimeError(
+E   autoflow.domain.workflows.runtime.WorkflowRuntimeError: 运行状态已发生变化
+_________ test_force_during_acquire_revokes_generation_before_cleanup __________
+tests/integration/test_workflow_dispatch.py:411: in test_force_during_acquire_revokes_generation_before_cleanup
+    stopping = await dispatcher.cancel(
+src/autoflow/application/workflows/dispatcher.py:192: in cancel
+    run = self._transition_identity(
+src/autoflow/application/workflows/dispatcher.py:678: in _transition_identity
+    changed = repository.transition_run(
+src/autoflow/infrastructure/database/workflow_runtime.py:252: in transition_run
+    changed = transition_core_run(
+src/autoflow/domain/workflows/runtime.py:432: in transition_core_run
+    raise WorkflowRuntimeError(
+E   autoflow.domain.workflows.runtime.WorkflowRuntimeError: 运行状态已发生变化
+_________ test_acquire_cleanup_error_stays_reconciling_until_recovery __________
+tests/integration/test_workflow_dispatch.py:489: in test_acquire_cleanup_error_stays_reconciling_until_recovery
+    stopping = await dispatcher.cancel(
+src/autoflow/application/workflows/dispatcher.py:192: in cancel
+    run = self._transition_identity(
+src/autoflow/application/workflows/dispatcher.py:678: in _transition_identity
+    changed = repository.transition_run(
+src/autoflow/infrastructure/database/workflow_runtime.py:252: in transition_run
+    changed = transition_core_run(
+src/autoflow/domain/workflows/runtime.py:432: in transition_core_run
+    raise WorkflowRuntimeError(
+E   autoflow.domain.workflows.runtime.WorkflowRuntimeError: 运行状态已发生变化
+______ test_failed_guard_recovery_remains_owned_across_reconcile_retries _______
+tests/integration/test_workflow_dispatch.py:525: in test_failed_guard_recovery_remains_owned_across_reconcile_retries
+    stopping = await dispatcher.cancel(
+src/autoflow/application/workflows/dispatcher.py:192: in cancel
+    run = self._transition_identity(
+src/autoflow/application/workflows/dispatcher.py:678: in _transition_identity
+    changed = repository.transition_run(
+src/autoflow/infrastructure/database/workflow_runtime.py:252: in transition_run
+    changed = transition_core_run(
+src/autoflow/domain/workflows/runtime.py:432: in transition_core_run
+    raise WorkflowRuntimeError(
+E   autoflow.domain.workflows.runtime.WorkflowRuntimeError: 运行状态已发生变化
+________ test_force_and_reconcile_are_serialized_until_cleanup_finishes ________
+tests/integration/test_workflow_dispatch.py:610: in test_force_and_reconcile_are_serialized_until_cleanup_finishes
+    stopping = await dispatcher.cancel(
+src/autoflow/application/workflows/dispatcher.py:192: in cancel
+    run = self._transition_identity(
+src/autoflow/application/workflows/dispatcher.py:678: in _transition_identity
+    changed = repository.transition_run(
+src/autoflow/infrastructure/database/workflow_runtime.py:252: in transition_run
+    changed = transition_core_run(
+src/autoflow/domain/workflows/runtime.py:432: in transition_core_run
+    raise WorkflowRuntimeError(
+E   autoflow.domain.workflows.runtime.WorkflowRuntimeError: 运行状态已发生变化
+_________ test_quiesce_blockers_and_shutdown_preserve_cleanup_failure __________
+tests/integration/test_workflow_dispatch.py:673: in test_quiesce_blockers_and_shutdown_preserve_cleanup_failure
+    assert set(dispatcher.blockers()) == {
+E   AssertionError: assert set() == {'workflow_ru..._worker_busy'}
+E
+E     Extra items in the right set:
+E     'workflow_runs_active'
+E     'workflow_worker_busy'
+E     Use -v to get more diff
+_________ test_shutdown_recovery_resolves_failed_acquire_cancellation __________
+tests/integration/test_workflow_dispatch.py:744: in test_shutdown_recovery_resolves_failed_acquire_cancellation
+    assert dispatcher._get_run(run.run_id).status == "reconciling"
+E   AssertionError: assert 'interrupted' == 'reconciling'
+E
+E     - reconciling
+E     + interrupted
+_________ test_automatic_budget_times_out_only_after_confirmed_cleanup _________
+tests/integration/test_workflow_dispatch.py:768: in test_automatic_budget_times_out_only_after_confirmed_cleanup
+    assert current.status == "timed_out"
+E   AssertionError: assert 'interrupted' == 'timed_out'
+E
+E     - timed_out
+E     + interrupted
+_______ test_budget_with_unknown_cleanup_does_not_claim_terminal_timeout _______
+tests/integration/test_workflow_dispatch.py:793: in test_budget_with_unknown_cleanup_does_not_claim_terminal_timeout
+    assert current.status == "reconciling" and current.execution_generation == 2
+E   AssertionError: assert ('interrupted' == 'reconciling'
+E
+E     - reconciling
+E     + interrupted)
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_workflow_dispatch.py::test_success_uses_frozen_plan_typed_parameters_and_commits_event_before_return
+FAILED tests/integration/test_workflow_dispatch.py::test_capacity_is_one_and_queued_cancel_never_launches
+FAILED tests/integration/test_workflow_dispatch.py::test_unknown_worker_failure_fences_then_interrupts_only_after_cleanup
+FAILED tests/integration/test_workflow_dispatch.py::test_cleanup_failure_retains_reconciling_lease_and_capacity
+FAILED tests/integration/test_workflow_dispatch.py::test_explicit_worker_terminal_status_is_preserved[failed]
+FAILED tests/integration/test_workflow_dispatch.py::test_explicit_worker_terminal_status_is_preserved[timed_out]
+FAILED tests/integration/test_workflow_dispatch.py::test_stopping_event_is_acked_until_force_revokes_generation
+FAILED tests/integration/test_workflow_dispatch.py::test_cancel_during_acquire_prevents_launch_and_force_requires_grace
+FAILED tests/integration/test_workflow_dispatch.py::test_force_during_acquire_revokes_generation_before_cleanup
+FAILED tests/integration/test_workflow_dispatch.py::test_acquire_cleanup_error_stays_reconciling_until_recovery
+FAILED tests/integration/test_workflow_dispatch.py::test_failed_guard_recovery_remains_owned_across_reconcile_retries
+FAILED tests/integration/test_workflow_dispatch.py::test_force_and_reconcile_are_serialized_until_cleanup_finishes
+FAILED tests/integration/test_workflow_dispatch.py::test_quiesce_blockers_and_shutdown_preserve_cleanup_failure
+FAILED tests/integration/test_workflow_dispatch.py::test_shutdown_recovery_resolves_failed_acquire_cancellation
+FAILED tests/integration/test_workflow_dispatch.py::test_automatic_budget_times_out_only_after_confirmed_cleanup
+FAILED tests/integration/test_workflow_dispatch.py::test_budget_with_unknown_cleanup_does_not_claim_terminal_timeout
+16 failed, 75 passed, 1 warning in 20.95s

@@ -1,0 +1,274 @@
+{
+  "terminal": {
+    "batch": {
+      "batchId": "6a06a83a-da18-4b35-a894-cc3d0a6ee704",
+      "projectId": "f54a47aa-24cb-4404-91c8-c5f75e22b9dc",
+      "automationId": "fad91b93-b8a7-40f9-89cb-45b9d10dce27",
+      "automationName": "项目网页监听自动化",
+      "startOperationId": "6e51023f-a43e-42a5-8cbb-974dc5f6ba6b",
+      "status": "completed",
+      "statusRevision": 3,
+      "managementRevision": 1,
+      "requestedCount": 1,
+      "createdTaskCount": 1,
+      "activeTaskCount": 0,
+      "claimGateState": "closed",
+      "selectionOutcome": null,
+      "createdAt": "2026-09-23T21:36:24.107584Z",
+      "completedAt": "2026-09-23T21:36:36.332690Z"
+    },
+    "statusCounts": {
+      "succeeded": 1,
+      "interrupted": 0,
+      "cancelled": 0,
+      "failed": 0,
+      "timed_out": 0
+    },
+    "taskCount": 1,
+    "reusedInputGroupCount": 0,
+    "unchangedInputStreak": 0,
+    "stopOperation": null,
+    "forceStopAllowed": false,
+    "forceStopAvailableAt": null,
+    "configurationSnapshot": {
+      "automation": {
+        "automationId": "fad91b93-b8a7-40f9-89cb-45b9d10dce27",
+        "projectId": "f54a47aa-24cb-4404-91c8-c5f75e22b9dc",
+        "workflowId": "QGQTm6rrc5hyTZ8oaANWp",
+        "name": "项目网页监听自动化",
+        "description": "",
+        "managementRevision": 1,
+        "inputPlan": {
+          "inputs": []
+        },
+        "parameterSchema": [],
+        "environmentPolicy": {
+          "source": "newFromProfile"
+        },
+        "runPolicy": {
+          "maxTasks": 1,
+          "concurrency": 1,
+          "maxLiveInstances": 1,
+          "continueAfterFailure": false,
+          "automaticExecutionTimeoutSeconds": 900,
+          "manualDeadlineSeconds": 900
+        },
+        "capabilityRequirements": [],
+        "createdAt": "2026-09-23T21:36:23.781469+00:00",
+        "updatedAt": "2026-09-23T21:36:23.781469+00:00"
+      },
+      "parameters": {},
+      "maxTasks": 1,
+      "concurrency": 1,
+      "resourceRequest": {
+        "browser": "newFromProfile",
+        "profileId": "c18f356f-eb91-4c83-996e-ef35f0307a0d",
+        "kernelId": "public:145.0.7632.109.2",
+        "proxy": {
+          "mode": "profile"
+        },
+        "modelProviderId": null,
+        "frozenConfiguration": {
+          "profileSpec": {
+            "name": "B3 控制流纯数据验收配置",
+            "description": "临时工作区；控制流不得启动浏览器",
+            "start_url": "about:blank",
+            "locale": "zh-CN",
+            "timezone": "Asia/Shanghai",
+            "geoip": false,
+            "headless": true,
+            "humanize": false,
+            "human_preset": "default",
+            "user_agent": null,
+            "viewport": null,
+            "color_scheme": "light",
+            "extension_paths": [],
+            "expert_args": [],
+            "browser_version": "145.0.7632.109.2",
+            "browser_edition": "public",
+            "release_channel": "stable",
+            "proxy_mode": "none",
+            "proxy_id": null,
+            "proxy_pool_id": null
+          },
+          "fingerprintSeed": 88145,
+          "createdAt": "2026-09-23T21:36:18.249858+00:00",
+          "updatedAt": "2026-09-23T21:36:18.249858+00:00"
+        },
+        "automaticExecutionTimeoutSeconds": 900
+      },
+      "workflowRevision": 1,
+      "dataCapabilityBinding": null
+    }
+  },
+  "taskDetail": {
+    "automationName": "项目网页监听自动化",
+    "batchStartedAt": "2026-09-23T21:36:24.107584Z",
+    "parameterDefinitions": [],
+    "nodeNames": {
+      "SJwH_andwoi8cvsbrMAds": "打开网页",
+      "e1gEy4QjdFqzU1jLviE1c": "子元素变化触发器",
+      "sz664QP97nuXxFI0n6Fxz": "打印日志"
+    },
+    "task": {
+      "taskId": "cb947b3e-e600-4dbc-a411-c233be1f0ab1",
+      "projectId": "f54a47aa-24cb-4404-91c8-c5f75e22b9dc",
+      "batchId": "6a06a83a-da18-4b35-a894-cc3d0a6ee704",
+      "runId": "75b8f4c9-4cde-44bb-a676-a645682a3aa9",
+      "runRequestId": "1d558734-1566-4d6e-9ff5-a3534b5c0e13",
+      "status": "succeeded",
+      "statusRevision": 4,
+      "inputSnapshotId": "38d875c7-25df-4209-9532-211b6fd8ef07",
+      "taskOrdinal": 1,
+      "automationName": null,
+      "batchStartedAt": null,
+      "inputIdentifier": null,
+      "endNodeName": null,
+      "lastStatusAt": null,
+      "manualItemId": null,
+      "createdAt": "2026-09-23T21:36:24.107584Z",
+      "completedAt": "2026-09-23T21:36:36.290955Z"
+    },
+    "inputSnapshot": {
+      "inputSnapshotId": "38d875c7-25df-4209-9532-211b6fd8ef07",
+      "taskId": "cb947b3e-e600-4dbc-a411-c233be1f0ab1",
+      "batchId": "6a06a83a-da18-4b35-a894-cc3d0a6ee704",
+      "parameters": {},
+      "inputs": [],
+      "capturedAt": "2026-09-23T21:36:24.107584Z"
+    },
+    "currentInputs": [],
+    "run": {
+      "runId": "75b8f4c9-4cde-44bb-a676-a645682a3aa9",
+      "runRequestId": "1d558734-1566-4d6e-9ff5-a3534b5c0e13",
+      "status": "succeeded",
+      "statusRevision": 4,
+      "executionGeneration": 1,
+      "preparedContentId": "132cce43-690a-43bc-a214-6113994938e5",
+      "capabilityBindings": [],
+      "resourceRequest": {
+        "browser": "newFromProfile",
+        "profileId": "c18f356f-eb91-4c83-996e-ef35f0307a0d",
+        "kernelId": "public:145.0.7632.109.2",
+        "proxy": {
+          "mode": "profile"
+        },
+        "modelProviderId": null,
+        "automaticExecutionTimeoutSeconds": 900
+      },
+      "lastSequence": 17,
+      "terminal": true,
+      "error": null,
+      "startedAt": "2026-09-23T21:36:24.135878Z",
+      "finishedAt": "2026-09-23T21:36:36.290955Z"
+    },
+    "dataWrites": [],
+    "cleanup": {
+      "status": "succeeded",
+      "operationId": null,
+      "message": "已确认浏览器退出，临时环境已释放。"
+    }
+  },
+  "attempts": {
+    "items": [
+      {
+        "nodeVisitId": "c84ca056-6403-4b6d-b4af-61a282ef9536",
+        "nodeId": "SJwH_andwoi8cvsbrMAds",
+        "nodeName": "打开网页",
+        "attempt": 1,
+        "status": "succeeded",
+        "startedAt": "2026-09-23T21:36:34.050601Z",
+        "completedAt": "2026-09-23T21:36:34.340196Z",
+        "error": null,
+        "executionContext": null
+      },
+      {
+        "nodeVisitId": "4e9bbe3e-5540-429e-a690-181335a9b341",
+        "nodeId": "e1gEy4QjdFqzU1jLviE1c",
+        "nodeName": "子元素变化触发器",
+        "attempt": 1,
+        "status": "succeeded",
+        "startedAt": "2026-09-23T21:36:34.362937Z",
+        "completedAt": "2026-09-23T21:36:35.328433Z",
+        "error": null,
+        "executionContext": null
+      },
+      {
+        "nodeVisitId": "8cc3dd6c-a0e0-40d3-bdbf-1b2ceaf0da1b",
+        "nodeId": "sz664QP97nuXxFI0n6Fxz",
+        "nodeName": "打印日志",
+        "attempt": 1,
+        "status": "succeeded",
+        "startedAt": "2026-09-23T21:36:35.339656Z",
+        "completedAt": "2026-09-23T21:36:35.372706Z",
+        "error": null,
+        "executionContext": null
+      }
+    ],
+    "page": 1,
+    "pageSize": 100,
+    "total": 3,
+    "sort": "createdAt"
+  },
+  "outputs": {
+    "items": [
+      {
+        "outputId": "ed6ca40ed00341dcbc75fe2d5ab25a73",
+        "kind": "value",
+        "name": "new_selector",
+        "value": "#added",
+        "runId": "75b8f4c9-4cde-44bb-a676-a645682a3aa9",
+        "sequence": 8,
+        "nodeId": "e1gEy4QjdFqzU1jLviE1c",
+        "nodeName": "子元素变化触发器",
+        "nodeVisitId": "4e9bbe3e-5540-429e-a690-181335a9b341",
+        "attempt": 1,
+        "createdAt": "2026-09-23T21:36:35.295977Z",
+        "executionContext": null
+      },
+      {
+        "outputId": "4293efb8176a427ebdd12272c092808c",
+        "kind": "value",
+        "name": "change_info",
+        "value": {
+          "changeType": "childList",
+          "previousCount": 1,
+          "currentCount": 2,
+          "addedCount": 1,
+          "removedCount": 0,
+          "mutationCount": 1,
+          "changes": [
+            {
+              "type": "childList",
+              "addedCount": 1,
+              "removedCount": 0
+            }
+          ],
+          "addedNodes": [
+            {
+              "tagName": "p",
+              "className": "",
+              "id": "added",
+              "textContent": "新增内容"
+            }
+          ],
+          "removedNodes": [],
+          "newElementText": "新增内容",
+          "timestamp": "2026-09-24T05:36:35.295650"
+        },
+        "runId": "75b8f4c9-4cde-44bb-a676-a645682a3aa9",
+        "sequence": 9,
+        "nodeId": "e1gEy4QjdFqzU1jLviE1c",
+        "nodeName": "子元素变化触发器",
+        "nodeVisitId": "4e9bbe3e-5540-429e-a690-181335a9b341",
+        "attempt": 1,
+        "createdAt": "2026-09-23T21:36:35.306142Z",
+        "executionContext": null
+      }
+    ],
+    "page": 1,
+    "pageSize": 100,
+    "total": 2,
+    "sort": "createdAt"
+  }
+}

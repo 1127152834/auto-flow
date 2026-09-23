@@ -175,3 +175,19 @@ it('downloads a registered file with its original name without treating it as a 
   expect(createObjectURL).toHaveBeenCalledOnce()
   expect(screen.queryByRole('img', { name: /report.txt/ })).not.toBeInTheDocument()
 })
+
+
+it.each([['pending', '待清理'], ['failed', '清理失败']])('refreshes %s cleanup after the run is terminal until the copy is removed', async (status, label) => {
+  let reads = 0
+  const request = vi.fn(async (path: string) => {
+    if (path.endsWith('/tasks/task-1')) return { ...detail, cleanup: {
+      status: ++reads === 1 ? status : 'succeeded', operationId: null, message: null,
+    } }
+    if (path.includes('node-attempts')) return { items: [], page: 1, pageSize: 100, total: 0, sort: 'createdAt' }
+    if (path.includes('logs?')) return { items: [], afterSequence: 0, lastSequence: 0, hasMore: false }
+    throw new Error(`unexpected ${path}`)
+  })
+  renderPage(request as StreamingApiClient['request'])
+  expect(await screen.findByText(label)).toBeVisible()
+  expect(await screen.findByText('已清理', {}, { timeout: 3500 })).toBeVisible()
+})

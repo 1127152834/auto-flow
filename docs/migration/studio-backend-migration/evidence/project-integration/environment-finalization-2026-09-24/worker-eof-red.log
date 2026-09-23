@@ -1,0 +1,26 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_finished_worker_receives_control_eof_before_parent_waits_for_exit ____
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:500: in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/subprocess.py:137: in wait
+    return await self._transport._wait()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_subprocess.py:230: in _wait
+    return await waiter
+           ^^^^^^^^^^^^
+E   asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+tests/integration/test_workflow_worker_process.py:160: in test_finished_worker_receives_control_eof_before_parent_waits_for_exit
+    result = await start(instance, executable, persist)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/infrastructure/process/project_workflow_worker.py:162: in run
+    await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:502: in wait_for
+    raise exceptions.TimeoutError() from exc
+E   TimeoutError
+=========================== short test summary info ============================
+FAILED tests/integration/test_workflow_worker_process.py::test_finished_worker_receives_control_eof_before_parent_waits_for_exit
+1 failed, 19 deselected in 1.21s

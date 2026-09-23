@@ -169,3 +169,12 @@ it('uses the required ordinal and frozen unnamed-node label without exposing the
   expect(screen.getByRole('heading', { name: '任务 1' })).toBeVisible()
   expect(screen.getByText('未命名节点')).toBeVisible()
 })
+
+it('labels a successful node screenshot as an output rather than failure evidence', () => {
+  render(<TaskDetail {...props} selectedTab="evidence"
+    detail={{ ...detail, task: { ...detail.task, status: 'succeeded' }, run: { ...detail.run, status: 'succeeded', error: null } }}
+    attempts={{ ...attempts, items: [], total: 0 }}
+    artifacts={{ items: [{ artifactId: 'png-1', kind: 'screenshot', purpose: 'result', availability: 'available', nodeId: 'shot', nodeName: '网页截图', eventSequence: 1, executionGeneration: 1, byteSize: 42, createdAt: '2026-09-24T00:00:00Z' }], total: 1, page: 1, pageSize: 100, sort: 'createdAt' }}/>)
+  expect(screen.getByRole('heading', { name: '节点输出截图' })).toBeVisible()
+  expect(screen.queryByRole('heading', { name: '失败时页面截图' })).not.toBeInTheDocument()
+})

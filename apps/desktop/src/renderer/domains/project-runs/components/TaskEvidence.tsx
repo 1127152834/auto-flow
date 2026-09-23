@@ -154,7 +154,7 @@ function OutputTable({ items, label }: { items: Outputs['items']; label: string 
   </TableScroll>
 }
 
-export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel = '失败时页面截图', loading, error, onOpenArtifact, onOpenRecord, onLocateLog, onLoadMoreArtifacts, onLoadMoreAttempts, onLoadMoreOutputs }: TaskEvidenceProps) {
+export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel = '页面截图', loading, error, onOpenArtifact, onOpenRecord, onLocateLog, onLoadMoreArtifacts, onLoadMoreAttempts, onLoadMoreOutputs }: TaskEvidenceProps) {
   const names = new Map((detail.parameterDefinitions ?? []).map(item => [item.parameterId, item.name]))
   const failed = attempts?.items.filter(item => item.status === 'failed') ?? [], primary = failed.at(-1)
   const summaryError = primary?.error ?? detail.run.error
@@ -163,6 +163,9 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
   const inlineArtifact = artifacts?.items.find(item => item.kind === 'screenshot' && item.availability === 'available')
   const screenshots = artifacts?.items.filter(item => item.kind === 'screenshot') ?? []
   const otherArtifacts = artifacts?.items.filter(item => item.kind !== 'screenshot') ?? []
+  const screenshotTitle = screenshots.some(item => item.purpose === 'result')
+    ? screenshots.some(item => item.purpose === 'error') ? '页面截图' : '节点输出截图'
+    : screenshots.length || summaryError ? '失败时页面截图' : '页面截图'
   const enlargementLabel = /^(失败截图|节点截图)：/.test(inlineScreenshotLabel)
     ? `放大${inlineScreenshotLabel}`
     : `放大${inlineArtifact?.purpose === 'result' ? '节点截图' : '失败截图'}：${inlineScreenshotLabel}`
@@ -183,7 +186,7 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
         </div>
       </section>
       <section className="min-w-0 rounded-card border border-line bg-surface p-5">
-        <h3 className="mt-0">失败时页面截图</h3>
+        <h3 className="mt-0">{screenshotTitle}</h3>
         {inlineScreenshotUrl ? <div className="grid gap-2">
           {inlineArtifact && onOpenArtifact
             ? <button type="button" className="overflow-hidden rounded-control border border-line bg-canvas text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label={enlargementLabel} onClick={() => onOpenArtifact(inlineArtifact)}><img className="max-h-[32rem] w-full object-contain" src={inlineScreenshotUrl} alt={inlineScreenshotLabel}/></button>

@@ -170,6 +170,20 @@ class ProjectBatchScheduler:
                 pass
 
     async def tick(self) -> None:
+        if self._closed:
+            return
+        if self._environments is not None:
+            with self._factory() as session:
+                active = session.scalar(select(WorkflowRunRow.id).where(
+                    WorkflowRunRow.status.not_in(TERMINAL_STATUSES | {"queued"}),
+                ).limit(1))
+            # Cleanup can wait for a browser/filesystem. Do not delay another
+            # active run's cancellation or hold the stop-admission lock.
+            if active is None:
+                with self._gate.mutation() as admitted:
+                    if not admitted:
+                        return
+                    await asyncio.to_thread(self._environments.cleanup_terminal_tasks)
         async with self._lock:
             if self._closed:
                 return

@@ -4,7 +4,9 @@ import asyncio
 import hashlib
 import inspect
 import io
+import os
 import shutil
+import traceback
 from pathlib import Path
 from uuid import uuid4
 
@@ -31,7 +33,7 @@ real_cloak_page = cloak_fixture
 @pytest.mark.asyncio
 @pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "firecrawl_failure", "firecrawl_stop", "element_change", "element_timeout", "element_stop"])
 async def test_real_project_batch_http(
-    tmp_path, valid_profile_values, real_cloak_page, scenario
+    tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
     executable, url, requests = real_cloak_page
     source = next(
@@ -50,6 +52,20 @@ async def test_real_project_batch_http(
         instance_token="isolated-test-token",
     )
     app = create_app(settings)
+    worker_failures = []
+    worker = app.state.project_workflow_worker_manager
+    original_run = worker.run
+    if frozen_worker := os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER"):
+        worker._command = (str(Path(frozen_worker).resolve(strict=True)), "--project-workflow-worker")
+
+    async def observe_run(**kwargs):
+        try:
+            return await original_run(**kwargs)
+        except Exception:
+            worker_failures.append(traceback.format_exc())
+            raise
+
+    monkeypatch.setattr(worker, "run", observe_run)
     try:
         # Fixture preparation only. Project, automation and batch are created through real HTTP.
         profile = app.state.profile_service.create(
@@ -371,6 +387,7 @@ async def test_real_project_batch_http(
             found_operation = await client.get(prefix+f"/operations/by-idempotency-key/{key}")
             assert found_operation.status_code == 200, found_operation.text
             assert found_operation.json()["operationId"] == accepted["operationId"]
+            scenario_stopped = False
             for _ in range(300):
                 response = await client.get(prefix + f"/batches/{batch_id}")
                 assert response.status_code == 200, response.text
@@ -382,6 +399,8 @@ async def test_real_project_batch_http(
                         current_attempts = (await client.get(prefix + f"/tasks/{current_task['taskId']}/node-attempts")).json()["items"]
                         element_waiting |= any(item["nodeId"] == "mutation-1" and item["status"] == "running" for item in current_attempts)
                 if (scenario == "stop" or element_waiting or (scenario == "firecrawl_stop" and "/crawl/start" in requests)) and detail["batch"]["status"] == "running":
+                    if element_waiting:
+                        await asyncio.sleep(0.75)
                     stopped = await client.post(
                         prefix + f"/batches/{batch_id}/stop",
                         headers={"Idempotency-Key": str(uuid4())},
@@ -603,8 +622,8 @@ async def test_real_project_batch_http(
                         range(1, len(events) + 1)
                     )
             elif scenario in {"stop", "firecrawl_stop", "element_stop"}:
-                assert scenario_stopped and detail["batch"]["status"] == "stopped"
-                assert detail["statusCounts"]["cancelled"] == 2
+                assert scenario_stopped and detail["batch"]["status"] == "stopped", worker_failures
+                assert detail["statusCounts"]["cancelled"] == 2, worker_failures
             elif scenario == "budget":
                 assert detail["statusCounts"]["timed_out"] == 1
                 assert detail["statusCounts"]["cancelled"] == 1
@@ -633,6 +652,21 @@ async def test_real_project_batch_http(
                 for task in tasks:
                     outputs = await client.get(prefix + f"/tasks/{task['taskId']}/outputs")
                     assert outputs.json()["items"] == []
+            # Run completion and profile-copy cleanup are separate durable facts.
+            for _ in range(175):
+                cleanup_details = [
+                    (await client.get(prefix + f"/tasks/{task['taskId']}")).json()
+                    for task in tasks
+                ]
+                if all(item["cleanup"]["status"] in {"succeeded", "notRequired"} for item in cleanup_details):
+                    break
+                await asyncio.sleep(0.2)
+            else:
+                pytest.fail(f"Environment copies were not cleaned: {cleanup_details}")
+            copies = workspace / "workspace" / "environments" / "instances"
+            assert copies.is_dir()
+            assert not list(copies.iterdir())
+
             assert not app.state.project_workflow_worker_manager.busy()
             assert app.state.project_workflow_dispatcher.blockers() == []
             assert app.state.project_run_scheduler.blockers() == []

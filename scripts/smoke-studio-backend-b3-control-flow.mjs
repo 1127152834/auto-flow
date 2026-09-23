@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
@@ -292,6 +292,8 @@ try {
       const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'DOM watcher terminal', 40_000)
       const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
       const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
+      const taskDetail = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}`)
+      await writeFile(join(evidenceDir, `task-${action}.json`), JSON.stringify({ terminal, taskDetail, attempts, outputs }, null, 2) + '\n')
       if (action === 'mutation') {
         assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, attempts }))
         const values = Object.fromEntries(outputs.items.map(item => [item.name, item.value]))
@@ -302,13 +304,22 @@ try {
         const logs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/logs?pageSize=100`)
         assert.ok(logs.items.some(item => item.message === '检测到: 新增内容'), JSON.stringify(logs))
       } else {
-        assert.equal(terminal.statusCounts.cancelled, 1)
+        assert.equal(terminal.statusCounts.cancelled, 1, JSON.stringify({ terminal, taskDetail, attempts }))
         assert.equal(outputs.items.length, 0)
         assert.equal(attempts.items.length, 2)
       }
       assert.deepEqual(cloakProcesses(userData), [])
-      tasks.push({ action, batchId: batch.batchId, taskId: task.taskId })
+      await waitForValue(async () => {
+        const detail = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}`)
+        return detail.cleanup.status === 'succeeded' ? detail : null
+      }, 'terminal environment copy cleanup', 40_000)
+      const copies = sqliteRows(join(userData, 'data', 'autoflow.sqlite3'), `SELECT id,state FROM project_environment_instances WHERE active_task_id=${sqlLiteral(task.taskId)}`)
+      assert.equal(copies.length, 1)
+      assert.equal(copies[0].state, 'cleaned')
+      await assert.rejects(stat(join(userData, 'workspace', 'environments', 'instances', copies[0].id)), { code: 'ENOENT' })
+      tasks.push({ action, batchId: batch.batchId, taskId: task.taskId, environmentInstanceId: copies[0].id, cleanup: 'succeeded' })
       await click(main, '查看任务')
+      await waitFor(main, "document.body?.innerText.includes('临时环境已清理，无法再保留此工作副本') && ![...document.querySelectorAll('button')].some(el => el.textContent === '结束并保留')", 'cleanup displayed without invalid retention action')
       await click(main, '输入与输出', '[role="tab"]')
       await main.command('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 1150, y: 800, deltaX: 0, deltaY: 300 })
       await wait(150)
@@ -531,6 +542,9 @@ try {
     assert.ok(httpRequests.some(item => item[1] === '/sitemap.xml'))
     await click(main, '查看任务')
     await click(main, '异常与证据', '[role="tab"]')
+    await waitFor(main, "[...document.querySelectorAll('h3')].some(el=>el.textContent==='节点输出截图')", 'result screenshot title')
+    assert.ok(!(await main.evaluate("[...document.querySelectorAll('h3')].some(el=>el.textContent==='失败时页面截图')")))
+    await waitFor(main, "document.body?.innerText.includes('已清理')", 'work copy cleanup displayed', 40_000)
     await capture(main, join(evidenceDir, 'project-firecrawl-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
     checkpoint('项目默认 Profile 启动真实 CloakBrowser；三类结果及 PNG 完整登记，浏览器清理完成')

@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
     WorkflowWorkerError,
@@ -46,6 +47,8 @@ if os.environ.get('MODE')=='removed-cache':
  import shutil
  shutil.rmtree(os.environ['CLOAKBROWSER_CACHE_DIR'])
 send('finished',status='succeeded',error=None,cleanupConfirmed=True)
+if os.environ.get('MODE')=='wait-control-eof':
+ assert sys.stdin.read()==''
 '''
 
 
@@ -145,6 +148,19 @@ async def test_worker_waits_for_durable_callback_before_ack_and_completion(tmp_p
     assert result.status == 'succeeded'
     assert result.cleanup_confirmed
     assert (tmp_path / 'proof').read_text() == 'after-ack'
+    assert not instance.busy()
+
+
+@pytest.mark.asyncio
+async def test_finished_worker_receives_control_eof_before_parent_waits_for_exit(tmp_path):
+    instance, executable = manager(tmp_path, "wait-control-eof")
+
+    async def persist(_event):
+        pass
+
+    result = await start(instance, executable, persist)
+    assert result.status == "succeeded"
+    assert result.cleanup_confirmed
     assert not instance.busy()
 
 
