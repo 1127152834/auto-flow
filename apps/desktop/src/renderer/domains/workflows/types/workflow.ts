@@ -739,6 +739,7 @@ export type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'success'
 
 // 日志条目
 export interface LogEntry {
+  origin?: 'studio' | 'run'
   id: string
   timestamp: string
   level: LogLevel

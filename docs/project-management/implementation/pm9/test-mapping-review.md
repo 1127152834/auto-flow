@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。新三平台候选待启动；旧35874897768不含此修复。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。
+
 2026-09-23 eb50e1ef本机收口（confirmed本机范围）：终态人工事项清理与未决人工阻断修复完整后端3483 passed/78 skipped/2依赖警告（792.43秒）；38相关后端、最终11删除契约、6前端、101脚本、Ruff/mypy407、前端typecheck/lint、后端构建/应用打包通过。新ARM包完整桌面smoke passed，取消后删除无人工残留，独立文档/原命令恢复保持；五路10000行56381ms/0busy、真实worker1004条31665ms、固定1000条合成输入60019ms/最大滞后51ms分别记录。实际resolved事项清理也由另一真实worker探针证明，但同一PNG文件仍残留，该负向报告保持failed。AD1–AD3等待确认，不用本片成功覆盖文件缺口。新三平台35874897768运行中，旧5346矩阵35871462256已取消；[专项报告](automation-deletion-follow-through.json)按候选保存。251条205partial/46planned/0verified不变，releaseAccepted=false。
 
 2026-09-23 AU-08删除后残留复核（confirmed）：5346ceca已通过的本机界面/快照子范围不等于全部清理完成。真实worker取消后删除留下cancelled人工事项；人工继续后浏览器失败生成可读取PNG，删除成功仍留下resolved人工事项和同一截图文件。终态人工记录已在同删除事务按目标Task清理；waiting/resume_requested在批次终态时仍独立阻断，其他Task事项保留。38相关后端、最终删除文件11项、前端6项（含人工阻断显示）、101脚本、Ruff/mypy407通过。新包真实resolved人工项清理已证实，但截图仍残留，失败报告明确保留。AD1–AD3持久文件删除/失败恢复规格与计划已提交确认，未先实现；新完整后端和打包验收进行中。旧CI35871462256因新确定缺陷取消，不计通过。完整证据见[删除专项报告](automation-deletion-follow-through.json)，台账状态未提升，releaseAccepted=false。

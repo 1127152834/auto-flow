@@ -58,3 +58,29 @@ it('keeps edits made while the document request is pending dirty', async () => {
   await waitFor(() => expect(useWorkflowStore.getState().variables[0].value).toBe('newer'))
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
+
+it('updates an opened document using its revision instead of trying to create its existing ID', async () => {
+  const document = { id: 'opened-project-document', name: '项目文档', revision: 4, updatedAt: '2026-09-23T00:00:00Z', nodes: [], edges: [], variables: [{ name: 'draft', value: 'original', type: 'string', scope: 'global' }] }
+  const writes: { path: string; method: string; body: Record<string, unknown> }[] = []
+  setStudioTransport(async (input, init) => {
+    const path = new URL(String(input)).pathname
+    if (path === '/api/workflows' && (!init?.method || init.method === 'GET')) return Response.json([document])
+    if (path === `/api/workflows/${document.id}` && (!init?.method || init.method === 'GET')) return Response.json(document)
+    if (path.startsWith('/api/workflows') && ['POST', 'PUT'].includes(init?.method || '')) {
+      const body = JSON.parse(String(init?.body))
+      writes.push({ path, method: init!.method!, body })
+      return init?.method === 'PUT' ? Response.json({ ...body, revision: 5 }) : Response.json({ error: '工作流 ID 已存在' }, { status: 409 })
+    }
+    return mockRequest(input, init)
+  })
+  useWorkflowStore.getState().markAsSaved()
+  render(<Toolbar />)
+  fireEvent.click(screen.getByRole('button', { name: '打开' }))
+  fireEvent.click(await screen.findByRole('button', { name: '打开工作流 项目文档' }))
+  await waitFor(() => expect(useWorkflowStore.getState().id).toBe(document.id))
+  act(() => useWorkflowStore.getState().updateVariable('draft', 'edited'))
+  fireEvent.click(screen.getByRole('button', { name: '保存' }))
+  await waitFor(() => expect(writes).toHaveLength(1))
+  expect(writes[0]).toMatchObject({ path: `/api/workflows/${document.id}`, method: 'PUT', body: { id: document.id, expectedRevision: 4, variables: [{ name: 'draft', value: 'edited' }] } })
+  await waitFor(() => expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(false))
+})

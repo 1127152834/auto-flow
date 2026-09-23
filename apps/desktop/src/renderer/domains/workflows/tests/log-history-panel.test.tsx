@@ -122,3 +122,22 @@ it('loads older run pages and retains the explicitly selected older run after re
  await waitFor(()=>expect(list).toHaveBeenLastCalledWith(undefined,0,50))
  expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('分页运行99')
 })
+
+
+it('shows local command feedback beside persisted history without presenting it as run evidence', async () => {
+  render(<LogPanel />)
+  await screen.findByText('100/650')
+  act(() => useWorkflowStore.getState().addLog({ level: 'error', message: '执行失败: 缺少项目能力' }))
+  expect(screen.getByRole('alert').textContent).toContain('执行失败: 缺少项目能力')
+  expect(screen.getByText('100/650')).toBeTruthy()
+  act(() => useWorkflowStore.getState().addLogBatch([{ level: 'info', message: '运行事件不覆盖操作提示' }]))
+  expect(screen.getByRole('alert').textContent).toContain('执行失败: 缺少项目能力')
+  act(() => useWorkflowStore.getState().addLog({ origin: 'run', level: 'success', message: '执行完成' }))
+  expect(screen.getByRole('alert').textContent).toContain('执行失败: 缺少项目能力')
+  act(() => useWorkflowStore.getState().addLog({ level: 'success', message: '工作流已保存: 项目文档' }))
+  expect(screen.queryByRole('alert')).toBeNull()
+  expect(screen.getByRole('status').textContent).toContain('工作流已保存: 项目文档')
+  expect(screen.getByText('100/650')).toBeTruthy()
+  act(() => useWorkflowStore.getState().clearLogs())
+  expect(screen.queryByText(/工作流已保存: 项目文档/)).toBeNull()
+})

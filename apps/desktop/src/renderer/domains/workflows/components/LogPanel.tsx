@@ -250,6 +250,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     return () => clearTimeout(timer)
   }, [effectiveRunId, logs.length, loadHistoryLogs])
 
+  // Local command acknowledgements are not persisted run logs. Keep them visible
+  // without mixing them into the selected run's counts, filters or export.
+  const commandFeedback = effectiveRunId ? logs.findLast(log => log.origin === 'studio') : undefined
   const matchingHistory = historyRunId === effectiveRunId
   const visibleLogs = effectiveRunId ? (matchingHistory ? historyLogs ?? [] : []) : filteredLogs
   const visibleTotal = effectiveRunId ? (matchingHistory && historyLogs !== null ? historyTotal : 0) : logs.length
@@ -845,6 +848,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
         <div className="h-[calc(100%-2.5rem)] animate-fade-in">
           {activeTab === 'logs' && (
             <div className="h-full flex flex-col">
+              {commandFeedback && <div role={commandFeedback.level === 'error' ? 'alert' : 'status'} className="px-3 py-2 border-b text-xs break-words">
+                当前操作：{commandFeedback.message}
+              </div>}
               {/* 日志搜索和筛选栏 */}
               <div
                 className="flex items-center gap-2 px-3 py-2 border-b border-[hsl(var(--border))]"

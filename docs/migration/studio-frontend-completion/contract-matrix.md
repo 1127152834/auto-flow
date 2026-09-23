@@ -195,7 +195,7 @@
 
 | 事件 ID | 订阅位置 | 发送位置 | 状态 |
 |---|---|---|---|
-| event:ask_ai | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:455 | apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx:344; apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:288 | 已登记；服务事件语义由事件合同专项验证 |
+| event:ask_ai | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:455 | apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx:344; apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:291 | 已登记；服务事件语义由事件合同专项验证 |
 | event:beforeunload | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:495; apps/desktop/src/renderer/app/StudioApp.tsx:37 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:build_progress | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:460; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:497; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:522 | 已登记；服务事件语义由事件合同专项验证 |
 | event:close_auto_browser | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:687 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1582 | 已登记；服务事件语义由事件合同专项验证 |
@@ -207,13 +207,13 @@
 | event:command_error | apps/desktop/src/renderer/domains/workflows/events.ts:291 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:connect | apps/desktop/src/renderer/domains/workflows/events.ts:299 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:disconnect | apps/desktop/src/renderer/domains/workflows/events.ts:319 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
-| event:download_data | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:425 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:998 | 已登记；服务事件语义由事件合同专项验证 |
+| event:download_data | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:428 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:998 | 已登记；服务事件语义由事件合同专项验证 |
 | event:editingModuleChanged | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:192 | apps/desktop/src/renderer/domains/workflows/lib/customModuleEditing.ts:50; apps/desktop/src/renderer/domains/workflows/lib/customModuleEditing.ts:100 | 已登记；服务事件语义由事件合同专项验证 |
 | event:editor_screenshot_captured | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:446 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1626 | 已登记；服务事件语义由事件合同专项验证 |
-| event:execution_stop | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:846 | 已登记；服务事件语义由事件合同专项验证 |
+| event:execution_stop | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:847 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:completed | apps/desktop/src/renderer/domains/workflows/events.ts:577 | apps/desktop/src/renderer/domains/workflows/events.ts:634 | 已登记；服务事件语义由事件合同专项验证 |
-| event:execution:data_row | apps/desktop/src/renderer/domains/workflows/events.ts:660 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
-| event:execution:data_row_batch | apps/desktop/src/renderer/domains/workflows/events.ts:672 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
+| event:execution:data_row | apps/desktop/src/renderer/domains/workflows/events.ts:661 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
+| event:execution:data_row_batch | apps/desktop/src/renderer/domains/workflows/events.ts:673 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:input_prompt | apps/desktop/src/renderer/domains/workflows/events.ts:534 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:js_script | apps/desktop/src/renderer/domains/workflows/events.ts:544 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:log | apps/desktop/src/renderer/domains/workflows/events.ts:459 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
@@ -225,23 +225,23 @@
 | event:execution:play_video | apps/desktop/src/renderer/domains/workflows/events.ts:558 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:resumed | apps/desktop/src/renderer/domains/workflows/events.ts:381 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:started | apps/desktop/src/renderer/domains/workflows/events.ts:339 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
-| event:execution:stopped | apps/desktop/src/renderer/domains/workflows/events.ts:684 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
+| event:execution:stopped | apps/desktop/src/renderer/domains/workflows/events.ts:685 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:tts_request | apps/desktop/src/renderer/domains/workflows/events.ts:539 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:execution:view_image | apps/desktop/src/renderer/domains/workflows/events.ts:567 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
-| event:export_logs | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:422 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:993 | 已登记；服务事件语义由事件合同专项验证 |
+| event:export_logs | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:425 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:993 | 已登记；服务事件语义由事件合同专项验证 |
 | event:export_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:670 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:574; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:28 | 已登记；服务事件语义由事件合同专项验证 |
 | event:fit_view | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1074 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:520; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:688; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:857; apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx:360; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:424 | 已登记；服务事件语义由事件合同专项验证 |
 | event:focus_node | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1079 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:660 | 已登记；服务事件语义由事件合同专项验证 |
 | event:highlight-node | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/components/ModuleNode.tsx:92 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:custom_action | apps/desktop/src/renderer/domains/workflows/events.ts:736; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:134 | apps/desktop/src/renderer/domains/workflows/events.ts:738 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:macro_start | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1986; apps/desktop/src/renderer/domains/workflows/events.ts:715 | apps/desktop/src/renderer/domains/workflows/events.ts:717 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:macro_stop | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1987; apps/desktop/src/renderer/domains/workflows/events.ts:722 | apps/desktop/src/renderer/domains/workflows/events.ts:724 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:no_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:710 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:run | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:631 | apps/desktop/src/renderer/domains/workflows/events.ts:698 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:run_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:695 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:screenshot | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:154; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:633; apps/desktop/src/renderer/domains/workflows/events.ts:729 | apps/desktop/src/renderer/domains/workflows/events.ts:731 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:stop | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:632 | apps/desktop/src/renderer/domains/workflows/events.ts:705 | 已登记；服务事件语义由事件合同专项验证 |
-| event:hotkey:stop_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:703 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:custom_action | apps/desktop/src/renderer/domains/workflows/events.ts:737; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:134 | apps/desktop/src/renderer/domains/workflows/events.ts:739 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:macro_start | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1986; apps/desktop/src/renderer/domains/workflows/events.ts:716 | apps/desktop/src/renderer/domains/workflows/events.ts:718 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:macro_stop | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1987; apps/desktop/src/renderer/domains/workflows/events.ts:723 | apps/desktop/src/renderer/domains/workflows/events.ts:725 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:no_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:711 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:run | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:631 | apps/desktop/src/renderer/domains/workflows/events.ts:699 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:run_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:696 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:screenshot | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:154; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:633; apps/desktop/src/renderer/domains/workflows/events.ts:730 | apps/desktop/src/renderer/domains/workflows/events.ts:732 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:stop | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:632 | apps/desktop/src/renderer/domains/workflows/events.ts:706 | 已登记；服务事件语义由事件合同专项验证 |
+| event:hotkey:stop_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:704 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:keydown | apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx:285; apps/desktop/src/renderer/domains/workflows/components/QuickModulePicker.tsx:69; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:480; apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:189; apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1033; apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx:45; apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx:216; apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx:255; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:94 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:keyup | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1034 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:mousemove | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:210 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
@@ -265,18 +265,18 @@
 | event:save_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:650 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:548; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:23 | 已登记；服务事件语义由事件合同专项验证 |
 | event:scroll | apps/desktop/src/renderer/domains/workflows/lib/globalTooltip.ts:250 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:selector:healed | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1067 | apps/desktop/src/renderer/domains/workflows/events.ts:644 | 已登记；服务事件语义由事件合同专项验证 |
-| event:set_current_workflow | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:314; apps/desktop/src/renderer/domains/workflows/events.ts:861 | 已登记；服务事件语义由事件合同专项验证 |
-| event:set_verbose_log | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:310; apps/desktop/src/renderer/domains/workflows/events.ts:853 | 已登记；服务事件语义由事件合同专项验证 |
+| event:set_current_workflow | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:314; apps/desktop/src/renderer/domains/workflows/events.ts:862 | 已登记；服务事件语义由事件合同专项验证 |
+| event:set_verbose_log | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:310; apps/desktop/src/renderer/domains/workflows/events.ts:854 | 已登记；服务事件语义由事件合同专项验证 |
 | event:show_toast | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:433 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1458; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1531; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1641 | 已登记；服务事件语义由事件合同专项验证 |
 | event:socket:reconnected | apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:38; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:121 | apps/desktop/src/renderer/domains/workflows/events.ts:303 | 已登记；服务事件语义由事件合同专项验证 |
 | event:stop_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:662 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:567; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:22 | 已登记；服务事件语义由事件合同专项验证 |
 | event:storage | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:189 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:studio:connection-error | apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:15 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:32 | 已登记；服务事件语义由事件合同专项验证 |
 | event:studio:connection-restored | apps/desktop/src/renderer/domains/workflows/components/BrowserProfileSelect.tsx:28; apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:227; apps/desktop/src/renderer/domains/workflows/components/RunResultsPanel.tsx:31; apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:16; apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx:60; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:70 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:24; apps/desktop/src/renderer/domains/workflows/development/StudioMockTools.tsx:33 | 已登记；服务事件语义由事件合同专项验证 |
-| event:studio:run-history-changed | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:228 | apps/desktop/src/renderer/domains/workflows/events.ts:354; apps/desktop/src/renderer/domains/workflows/events.ts:637; apps/desktop/src/renderer/domains/workflows/events.ts:691 | 已登记；服务事件语义由事件合同专项验证 |
+| event:studio:run-history-changed | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:228 | apps/desktop/src/renderer/domains/workflows/events.ts:354; apps/desktop/src/renderer/domains/workflows/events.ts:637; apps/desktop/src/renderer/domains/workflows/events.ts:692 | 已登记；服务事件语义由事件合同专项验证 |
 | event:studio:transport-changed | apps/desktop/src/renderer/domains/workflows/components/BrowserProfileSelect.tsx:28; apps/desktop/src/renderer/domains/workflows/components/CredentialSettings.tsx:65; apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:94; apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx:55; apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx:91; apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx:369; apps/desktop/src/renderer/domains/workflows/components/RetentionSettings.tsx:55; apps/desktop/src/renderer/domains/workflows/components/RunResultsPanel.tsx:30; apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:42; apps/desktop/src/renderer/domains/workflows/components/WorkflowOpenDialog.tsx:75; apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx:59; apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx:45; apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx:38; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:39; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:69 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:6 | 已登记；服务事件语义由事件合同专项验证 |
 | event:take_screenshot | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:692 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1606 | 已登记；服务事件语义由事件合同专项验证 |
-| event:upload_image | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:428 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1003 | 已登记；服务事件语义由事件合同专项验证 |
+| event:upload_image | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:431 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1003 | 已登记；服务事件语义由事件合同专项验证 |
 | event:view_image_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:142 | 已登记；服务事件语义由事件合同专项验证 |
 
 ## 直接网络消费入口

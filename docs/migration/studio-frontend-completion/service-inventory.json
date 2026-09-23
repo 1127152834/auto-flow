@@ -4207,7 +4207,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 296,
+          "line": 299,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.exportRunLogs(effectiveRunId, {\n          query: logSearchQuery,\n          levels: Array.from(logLevelFilters).sort(),\n          nodeId: logNodeFilter || undefined,\n        })"
         }
@@ -4235,7 +4235,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 405,
+          "line": 408,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.exportRunResults(runId,page.data.throughSequence)"
         },
@@ -4444,7 +4444,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 403,
+          "line": 406,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.getRunResults(runId,0,1)"
         },
@@ -4699,7 +4699,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 288,
+          "line": 291,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "emitAssistantUiEvent"
         }
@@ -4907,7 +4907,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 425,
+          "line": 428,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4976,7 +4976,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 846,
+          "line": 847,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5009,7 +5009,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 660,
+          "line": 661,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5022,7 +5022,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 672,
+          "line": 673,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5178,7 +5178,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 684,
+          "line": 685,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5217,7 +5217,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 422,
+          "line": 425,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5341,7 +5341,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 736,
+          "line": 737,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         },
@@ -5355,7 +5355,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 738,
+          "line": 739,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:custom_action', { detail: data })"
@@ -5374,7 +5374,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 715,
+          "line": 716,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5382,7 +5382,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 717,
+          "line": 718,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_start')"
@@ -5401,7 +5401,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 722,
+          "line": 723,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5409,7 +5409,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 724,
+          "line": 725,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_stop')"
@@ -5422,7 +5422,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 710,
+          "line": 711,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5443,7 +5443,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 698,
+          "line": 699,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:run')"
@@ -5456,7 +5456,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 695,
+          "line": 696,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5481,7 +5481,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 729,
+          "line": 730,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5489,7 +5489,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 731,
+          "line": 732,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:screenshot')"
@@ -5510,7 +5510,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 705,
+          "line": 706,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:stop')"
@@ -5523,7 +5523,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 703,
+          "line": 704,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -6074,7 +6074,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 861,
+          "line": 862,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -6093,7 +6093,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 853,
+          "line": 854,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -6304,7 +6304,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 691,
+          "line": 692,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('studio:run-history-changed', { detail: { workflowId:data.workflowId, runId:data.runId, status:'stopped' } })"
@@ -6442,7 +6442,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 428,
+          "line": 431,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }

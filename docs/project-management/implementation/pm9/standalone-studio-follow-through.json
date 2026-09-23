@@ -1,0 +1,83 @@
+{
+  "date": "2026-09-23",
+  "status": "local_full_frontend_and_packaged_passed_final_ci_pending",
+  "releaseAccepted": false,
+  "requirement": "XE-A19",
+  "parentCommit": "b4edb7ecc88d22744e7d39dcd0ad11a98aa095e9",
+  "backendSource": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+  "defects": [
+    {
+      "problem": "Persisted run selection hides subsequent local command failures and save acknowledgements.",
+      "red": "Original ARM packaged Studio completes generic browser run then project-node execute returns422; error stays invisible. Existing LogPanel regression added and failed for missing alert.",
+      "fix": "Mark local single-entry log origin; show latest Studio feedback separately from persisted history, retain counts/filters/export; runtime completion explicitly remains run-origin."
+    },
+    {
+      "problem": "Opening a document synchronously changes the store ID but Toolbar onOpened callback binds server identity to the previously rendered document ID. Later save uses POST create and conflicts on the existing ID.",
+      "red": "After feedback correction actual packaged UI exposes save409 ID already exists. New open/edit/save test receives POST instead of PUT.",
+      "fix": "Bind the open acknowledgement explicitly to the document ID just imported. Other asynchronous save/export callbacks keep their original captured identity, equality and revision guards."
+    }
+  ],
+  "checks": {
+    "targetedFrontend": "50 passed / 4 files in5.50s on final narrow open binding; both regressions RED then GREEN",
+    "typecheck": "passed",
+    "lint": "passed",
+    "scripts": "101 passed",
+    "build": "frontend build and ARM package passed; signing identity unavailable as before",
+    "standalonePackagedProbe": {
+      "status": "passed",
+      "standaloneWorkflowId": "2a491a7e-ddf0-42ff-926c-c01ce1d8055b",
+      "projectWorkflowId": "3de14533-8c10-4f8e-b9f8-d0f3f9916ee8",
+      "runId": "9a9e4785-31ae-4e36-9cd0-135f5a99cddf",
+      "refusal": "当前操作：执行失败: HTTP 422: Unprocessable Entity - 工作流包含尚未迁入或无法运行的节点",
+      "checks": [
+        "zero Project before and after independent real browser run",
+        "actual Studio displays project context guidance; existing standalone admission returns HTTP 422 unsupported node, creates no run and leaves the document unchanged",
+        "actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project"
+      ],
+      "limits": [
+        "one ARM packaged window; full Studio module/physical platform gates remain separate"
+      ]
+    },
+    "fullFrontend": "409 files / 5473 passed in 208.97s on final source; earlier broader binding version independently passed5473 in251.52s",
+    "fullPackagedDesktop": "passed on final narrow opening identity fix: standalone Studio, project management, manual/automation deletion, real worker runtime, volume,200%zoom, second window and restart",
+    "mapping": "251 valid references; four mapping verifier tests passed; assertion references are not release acceptance"
+  },
+  "evidence": "qa-runs/2026-09-23-studio-independent/project-desktop.json",
+  "negativeEvidence": [
+    "qa-runs/2026-09-23-studio-independent/negative/hidden-feedback.json",
+    "qa-runs/2026-09-23-studio-independent/negative/opened-document-save-conflict.json"
+  ],
+  "limits": [
+    "Current Studio refusal is existing HTTP422 unsupported-node admission, not shared-core CAPABILITY_MISSING; project configuration explicitly says to run from project automation batch. No admission whitelist expanded.",
+    "The existing required-field metadata endpoint returns404 in this package; no claim of full Studio configuration or all node support. Project grant/arguments and result-variable edit are directly checked.",
+    "One rebuilt ARM application; not Finder/Gatekeeper, signed installer, Windows/Intel physical acceptance or Google/OAuth.",
+    "Previous CI35874897768 does not include these frontend fixes or new script assertions. Final candidate CI pending.",
+    "AD1-AD3/FR1-FR3/L1-L3/M1-M3 and existing-file replacement remain separate pending decisions; releaseAccepted=false."
+  ],
+  "artifacts": {
+    "appAsarSha256": "fa536a77f2af1e5a74a01012ecc35a1e4d0fd044963b1f926ab8bfdb93ba663f",
+    "backendSha256": "cb6b8166723b1c4b103b69e100f1037af9e0b8dcaa48c9920a4e0c2c9f366908",
+    "scope": "locally rebuilt unsigned ARM application; backend unchanged from eb50e1ef"
+  },
+  "observations": {
+    "realWorkerLogs": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 33992,
+      "logsPerMinute": 1772,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "records": 10000,
+    "singleRecordHttpWriters": 5,
+    "writeElapsedMs": 47223,
+    "busyRetries": 0,
+    "synthetic": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60022,
+      "maxBatchLagMs": 35
+    },
+    "scope": "one ARM run; synthetic input is not worker throughput and no cross-platform performance target is inferred"
+  }
+}

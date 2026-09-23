@@ -1632,7 +1632,7 @@ export function Toolbar() {
         beforeReplace={confirmLeave}
         isOpen={showLocalWorkflow}
         onClose={() => setShowLocalWorkflow(false)}
-        onOpened={setWorkflowId}
+        onOpened={id => setServerWorkflow({ documentId: id, id })}
         onLog={(level, message) => addLog({ level, message })}
       />
       

@@ -498,5 +498,6 @@
     "previousCompleteCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "supersededCancelledRun": 35871462256,
     "releaseAccepted": false
-  }
+  },
+  "standaloneStudioFollowThrough": "standalone-studio-follow-through.json"
 }

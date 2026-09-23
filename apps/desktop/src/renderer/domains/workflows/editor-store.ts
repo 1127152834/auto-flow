@@ -2819,6 +2819,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   addLog: (log) => {
     const maxLogs = get().maxLogCount
     const newLog: LogEntry = {
+      origin: 'studio',
       ...log,
       id: nanoid(),
       timestamp: new Date().toISOString(),

@@ -14199,6 +14199,14 @@
           "scope": "无 Project 的共享 core/document/真实 worker 子范围，不包含 Studio 窗口。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/standalone-studio-follow-through.json",
+          "scope": "ARM实际打包Studio：零Project独立浏览器运行、明确项目上下文提示、422准入拒绝不产生Run不改文档、编辑保存保持节点与冻结grant/参数。两处实际UI缺陷已修复；非全Studio或实机发行验收。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -14229,16 +14237,30 @@
             "symbol": "test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
             "scope": "已有真实通用网页 Run 成功与服务重建后事实保留；新增 SQL 零 Project/仅1Run，browser-only 准备 createRecord 文档返回 CAPABILITY_MISSING project.data，拒绝不改文档，随后编辑保存原项目节点，仍零 Project/仅1Run。直接 core/document 服务调用，不是 Studio 页面。",
             "level": "automated_integration"
+          },
+          {
+            "file": "scripts/smoke-project-management-desktop.mjs",
+            "symbol": "checkStandaloneStudio",
+            "scope": "实际独立Studio窗口从主界面打开；通用网页真实worker完成且零Project。项目写回文档上下文提示可见，独立启动422无Run且文档未变；编辑结果变量后保存修订推进、grant/arguments/operation不丢失，最终零Project/仅一Run。",
+            "level": "automated_real_application"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/workflows/tests/log-history-panel.test.tsx",
+            "testName": "shows local command feedback beside persisted history without presenting it as run evidence",
+            "scope": "历史运行已选中时本地错误/保存确认可见，运行批次和终态消息不覆盖操作提示，历史计数仍100/650，清理本地日志后提示消失。",
+            "level": "automated_component"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx",
+            "testName": "updates an opened document using its revision instead of trying to create its existing ID",
+            "scope": "真实Toolbar打开响应导入后编辑变量，发送一次原ID的PUT与expectedRevision4；不是POST新建，成功后清dirty。",
+            "level": "automated_component"
           }
         ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "Studio 实际窗口加载项目写回文档、显示明确能力提示及编辑保留的前后端联合断言尚未完成。"
-          },
-          {
             "kind": "production_evidence_missing",
-            "detail": "新增断言仅本机 macOS ARM 源码核心链，未纳入当前已启动的三平台候选，也不是安装包 Studio 验收。"
+            "detail": "本机重建ARM窗口子场景通过；新前端与脚本尚未在最终三平台候选执行，Windows/Intel物理窗口与完整发行验收保留。现有元数据404和非项目独立准入通用422不等于全部Studio能力已接通。"
           }
         ],
         "statusBeforeReview": "planned"

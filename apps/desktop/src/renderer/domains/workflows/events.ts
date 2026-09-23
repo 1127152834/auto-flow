@@ -649,6 +649,7 @@ class SocketService {
       
       // 添加完成日志
       store.addLog({
+        origin: 'run',
         level: status === 'completed' ? 'success' : status === 'stopped' ? 'info' : 'error',
         message: `执行${status === 'completed' ? '完成' : status === 'stopped' ? '已停止' : '失败'}，共执行 ${data.result.executedNodes} 个节点，失败 ${data.result.failedNodes} 个`,
       })

@@ -32,38 +32,38 @@ async function launch() {
   await cdp.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   return waitFor(cdp, `(async()=>{const r=await window.autoflow.getRuntimeContext(); return r.sidecar.state==='ready'?r.sidecar:null})()`, 'production sidecar ready', 60_000)
 }
-async function click(text, selector = 'button') {
-  const point = await waitFor(cdp, `(()=>{const elements=[...document.querySelectorAll(${JSON.stringify(selector)})];const e=elements.find(e=>e.getClientRects().length&&!e.disabled&&(e.textContent.trim()===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)}));if(!e)return null;e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`, `button ${text}`)
-  for (const type of ['mousePressed', 'mouseReleased']) await cdp.command('Input.dispatchMouseEvent', { type, ...point, button: 'left', clickCount: 1 })
+async function click(text, selector = 'button', target = cdp) {
+  const point = await waitFor(target, `(()=>{const elements=[...document.querySelectorAll(${JSON.stringify(selector)})];const e=elements.find(e=>e.getClientRects().length&&!e.disabled&&(!${JSON.stringify(text)}||e.textContent.trim()===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)}));if(!e)return null;e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`, `button ${text}`)
+  for (const type of ['mousePressed', 'mouseReleased']) await target.command('Input.dispatchMouseEvent', { type, ...point, button: 'left', clickCount: 1 })
 }
-async function fill(selector, value) {
-  await waitFor(cdp, `Boolean(document.querySelector(${JSON.stringify(selector)}))`, selector)
-  await cdp.evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});e.focus();e.select()})()`)
-  await cdp.command('Input.insertText', { text: value })
+async function fill(selector, value, target = cdp) {
+  await waitFor(target, `Boolean(document.querySelector(${JSON.stringify(selector)}))`, selector)
+  await target.evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});e.focus();e.select()})()`)
+  await target.command('Input.insertText', { text: value })
 }
-async function capture(name) {
+async function capture(name, target = cdp) {
   if (!options['output-dir']) return
   await mkdir(options['output-dir'], { recursive: true })
-  const { data } = await cdp.command('Page.captureScreenshot', { format: 'png' })
+  const { data } = await target.command('Page.captureScreenshot', { format: 'png' })
   const filename = `project-${name}.png`
   await writeFile(join(options['output-dir'], filename), data, 'base64')
   report.screenshots.push(filename)
 }
+async function api(path, body, method = body === undefined ? 'GET' : 'POST', expectedStatus, key = randomUUID()) {
+  const response = await fetch(sidecar.baseUrl + path, { method, headers: { 'x-autoflow-token': sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': key }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30_000) })
+  const value = await response.json()
+  assert.ok(expectedStatus === undefined ? response.ok : response.status === expectedStatus, `${method} ${path}: ${response.status} ${JSON.stringify(value)}`)
+  return value
+}
+async function poll(check, label) {
+  for (let attempt = 0; attempt < 300; attempt++) {
+    const value = await check()
+    if (value) return value
+    await new Promise(resolvePoll => setTimeout(resolvePoll, 200))
+  }
+  throw new Error(`Timeout: ${label}`)
+}
 async function checkAutomationDeletion(browserVersion) {
-  async function api(path, body, method = body === undefined ? 'GET' : 'POST', expectedStatus, key = randomUUID()) {
-    const response = await fetch(sidecar.baseUrl + path, { method, headers: { 'x-autoflow-token': sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': key }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30_000) })
-    const value = await response.json()
-    assert.ok(expectedStatus === undefined ? response.ok : response.status === expectedStatus, `${method} ${path}: ${response.status} ${JSON.stringify(value)}`)
-    return value
-  }
-  async function poll(check, label) {
-    for (let attempt = 0; attempt < 300; attempt++) {
-      const value = await check()
-      if (value) return value
-      await new Promise(resolvePoll => setTimeout(resolvePoll, 200))
-    }
-    throw new Error(`Timeout: ${label}`)
-  }
   const project = await api('/api/v1/projects', { name: '独立流程解除关联验收' })
   const prefix = `/api/v1/projects/${project.projectId}`
   const profile = await api('/api/v1/profiles', { name: '解除关联真实浏览器', browserVersion, headless: true })
@@ -146,9 +146,85 @@ async function checkAutomationDeletion(browserVersion) {
     return { status: 'passed', projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['one independent workflow cannot be associated twice', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained independent document can be associated again'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
   } finally { cdp.socket.removeEventListener('message', observe) }
 }
+
+async function checkStandaloneStudio(browserVersion) {
+  assert.equal((await api('/api/v1/projects')).total, 0)
+  const profile = await api('/api/v1/profiles', { name: '独立 Studio 配置', browserVersion, browserEdition: 'public', headless: true })
+  const standalone = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '零项目通用网页', variables: [], nodes: [
+    { id: 'open-general', type: 'open_page', position: { x: 100, y: 100 }, data: { moduleType: 'open_page', label: '通用网页', url: 'about:blank' } },
+  ], edges: [] })
+  const tableId = randomUUID(), datasetGeneration = randomUUID(), fieldId = randomUUID()
+  const projectData = { moduleType: 'project_data', label: '项目写回', operation: 'createRecord', variableName: 'saved_record',
+    tableGrant: { tableId, datasetGeneration, fieldIds: [fieldId], operations: ['createRecord'], readPurposes: [] },
+    arguments: { tableId, datasetGeneration, values: { [fieldId]: '必须保留的配置' } } }
+  const document = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '缺项目能力仍可编辑', variables: [], nodes: [
+    { id: 'write-project', type: 'project_data', position: { x: 100, y: 100 }, data: projectData },
+  ], edges: [] })
+  await click('工作流工作台编排并运行浏览器自动化流程')
+  const studioTarget = await poll(async () => (await (await fetch(`${desktop.debugOrigin}/json/list`)).json()).find(target => target.type === 'page' && target.url.includes('view=automation-studio')), 'standalone Studio window')
+  studio = await connectCdp(studioTarget.webSocketDebuggerUrl)
+  try {
+    await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
+    await waitFor(studio, "document.body.innerText.includes('模块库')", 'production Studio ready', 30_000)
+    assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
+    await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value===${JSON.stringify(profile.id)}`, 'independent browser profile')
+    await click('打开', 'button', studio)
+    await click('打开工作流 ' + standalone.name, '[role=button]', studio)
+    await waitFor(studio, "Boolean(document.querySelector('.react-flow__node[data-id=\"open-general\"]'))", 'standalone workflow loaded')
+    await click('运行 (F5)', '[aria-label="运行 (F5)"]', studio)
+    await click('无头运行', '[role=menuitem]', studio)
+    const run = await poll(async () => {
+      const page = await api(`/api/workflow-runs?documentId=${standalone.id}&cursor=0&limit=20`)
+      const value = page.items[0]
+      if (!value) return null
+      const current = await api(`/api/workflow-runs/${value.runId}`)
+      return ['completed', 'failed', 'stopped', 'interrupted'].includes(current.status) ? current : null
+    }, 'independent real browser run')
+    assert.equal(run.status, 'completed')
+    await waitFor(studio, "document.body.innerText.includes('执行完成')", 'Studio terminal event')
+    assert.equal((await api('/api/v1/projects')).total, 0)
+    await capture('studio-independent-run', studio)
+    await click('打开', 'button', studio)
+    await click('打开工作流 ' + document.name, '[role=button]', studio)
+    await waitFor(studio, "Boolean(document.querySelector('.react-flow__node[data-id=\"write-project\"]'))", 'project write document loaded')
+    await click('', '.react-flow__node[data-id="write-project"]', studio)
+    await waitFor(studio, "document.body.innerText.includes('从项目自动化批次运行。使用任务的输入快照和数据权限')", 'explicit project capability guidance')
+    await capture('studio-project-context', studio)
+    await click('运行 (F5)', '[aria-label="运行 (F5)"]', studio)
+    await click('无头运行', '[role=menuitem]', studio)
+    const refusal = await waitFor(studio, "[...document.querySelectorAll('[role=alert]')].find(e=>e.innerText.includes('执行失败:'))?.innerText", 'standalone project node admission refused')
+    assert.ok(refusal.includes('HTTP 422') && refusal.includes('工作流包含尚未迁入或无法运行的节点'))
+    assert.equal((await api(`/api/workflow-runs?documentId=${document.id}&cursor=0&limit=20`)).items.length, 0)
+    const afterRefusal = await api(`/api/workflows/${document.id}`)
+    assert.equal(afterRefusal.revision, document.revision)
+    assert.deepEqual(afterRefusal.nodes, document.nodes)
+    await capture('studio-capability-refused', studio)
+    await fill('#project-data-result', 'edited_record', studio)
+    await click('保存', 'button', studio)
+    await waitFor(studio, `document.body.innerText.includes(${JSON.stringify('工作流已保存: ' + document.name)})`, 'project document saved from Studio')
+    const edited = await api(`/api/workflows/${document.id}`)
+    assert.ok(edited.revision > document.revision)
+    const node = edited.nodes.find(node => node.id === 'write-project')
+    assert.ok(node)
+    assert.equal(node.data.variableName, 'edited_record')
+    for (const key of ['moduleType', 'operation', 'tableGrant', 'arguments']) assert.deepEqual(node.data[key], projectData[key], `Studio retains project ${key}`)
+    assert.equal((await api('/api/v1/projects')).total, 0)
+    assert.equal((await api('/api/workflow-runs?cursor=0&limit=20')).items.length, 1)
+    await capture('studio-project-document-saved', studio)
+    return { status: 'passed', standaloneWorkflowId: standalone.id, projectWorkflowId: document.id, runId: run.runId, refusal, checks: ['zero Project before and after independent real browser run', 'actual Studio displays project context guidance; existing standalone admission returns HTTP 422 unsupported node, creates no run and leaves the document unchanged', 'actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project'], limits: [`one ${process.platform}/${process.arch} application window; full Studio module/physical platform gates remain separate`] }
+  } catch (error) {
+    await capture('studio-failure', studio).catch(() => {})
+    throw error
+  } finally {
+    studio.close()
+    await native.evaluate("pm9Electron.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('view=automation-studio'))?.close()")
+    studio = undefined
+  }
+}
 try {
   const browserVersion = options['runtime-kernel'] ? await installRuntimeKernel(options['runtime-kernel'], userData) : null
   sidecar = await launch()
+  if (browserVersion) report.standaloneStudio = await checkStandaloneStudio(browserVersion)
   await click('项目')
   await click('新建项目')
   await waitFor(cdp, "document.activeElement?.id==='project-name'", 'keyboard autofocus')

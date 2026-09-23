@@ -50051,7 +50051,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3308,
+        "line": 3309,
         "condition": "node.type === 'group'",
         "fields": [],
         "components": []
@@ -50059,7 +50059,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3396,
+        "line": 3397,
         "condition": "node.type === 'group'",
         "fields": [],
         "components": []
@@ -50254,7 +50254,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3311,
+        "line": 3312,
         "condition": "node.type === 'note'",
         "fields": [],
         "components": []
@@ -50262,7 +50262,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3399,
+        "line": 3400,
         "condition": "node.type === 'note'",
         "fields": [],
         "components": []
