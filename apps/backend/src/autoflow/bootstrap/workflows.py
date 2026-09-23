@@ -40,6 +40,7 @@ from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.runs import WorkflowRunError
+from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.workflow_assistant import (
     SqlAlchemyWorkflowAssistant,
 )
@@ -384,6 +385,20 @@ def build_workflow_services(
     )
     inspection_holder["service"] = inspection
     registry = build_production_executor_registry()
+
+    def resolve_default_model(project_id: str) -> str:
+        project = SqlAlchemyProjects(session_factory).get(project_id)
+        if project is None or project.lifecycle_state == "deleted":
+            raise WorkflowRunError("PROJECT_NOT_FOUND", "项目不存在", 404)
+        if project.lifecycle_state != "active":
+            raise WorkflowRunError("PROJECT_NOT_ACTIVE", "项目当前不可运行", 409)
+        provider_id = project.default_resources.get("modelProviderId")
+        if not isinstance(provider_id, str) or not provider_id:
+            raise WorkflowRunError("PROJECT_DEFAULT_MODEL_MISSING", "项目未设置默认模型服务，请显式选择模型", 422)
+        if models is None:
+            raise WorkflowRunError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
+        return str(models.default_model_id(provider_id))
+
     coordinator = WorkflowRunCoordinator(
         documents=documents,
         runs=runs,
@@ -399,6 +414,7 @@ def build_workflow_services(
         artifact_root=artifact_root,
         modules=modules,
         resolve_model=models.execution_binding if models is not None else None,
+        resolve_default_model=resolve_default_model,
         resolve_credential=resolve_credential,
     )
     holder["coordinator"] = coordinator

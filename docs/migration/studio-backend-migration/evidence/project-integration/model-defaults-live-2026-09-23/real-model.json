@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-09-23T07:57:50.484825+00:00",
+  "status": "passed",
+  "boundary": "真实系统凭据、真实外部模型、真实 worker；不含 Electron UI 验收",
+  "mainDatabaseAccess": "SQLite URI mode=ro; PRAGMA query_only=ON on every connection",
+  "projectRunStorage": "independent temporary workspace",
+  "browserUsed": false,
+  "externalCallsPlanned": 1,
+  "providerId": "2e849e74-d0d0-4a41-a34d-976a2dc99ba6",
+  "modelId": "67a181fe-ab56-4442-b106-b97a73f5ce87",
+  "providerKind": "openai-compatible",
+  "providerHostname": "openrouter.ai",
+  "runStatus": "completed",
+  "cleanupState": "completed",
+  "nodeId": "ask",
+  "executionId": "c1a74412-ba9d-45a5-b7c7-98a7ae2bad8e",
+  "response": "项目默认模型验收成功",
+  "model": "aion-labs/aion-2.0",
+  "usage": {
+    "prompt_tokens": 12,
+    "completion_tokens": 112,
+    "total_tokens": 124,
+    "cost": 0.0001888,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0001888,
+      "upstream_inference_prompt_cost": 9.6e-06,
+      "upstream_inference_completions_cost": 0.0001792
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 128,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "eventCount": 6,
+  "savedDocumentUnchanged": true,
+  "rawSnapshotUnchanged": true,
+  "remainingWorkerPids": [],
+  "busyAfterCleanup": false,
+  "serviceBlockersAfterCleanup": [],
+  "elapsedSeconds": 7.026,
+  "readOnlyModelConnections": 7
+}

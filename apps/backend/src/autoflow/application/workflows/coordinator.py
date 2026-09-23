@@ -30,6 +30,7 @@ from autoflow.domain.workflows.runs import (
     WorkflowRunError,
     WorkflowRunStart,
 )
+from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
 from autoflow.domain.workflows.variables import resolve_value
 
 from .documents import WorkflowDocumentService
@@ -97,6 +98,7 @@ class WorkflowRunCoordinator:
         artifact_root: Path,
         modules: CustomModuleService | None = None,
         resolve_model: Callable[[str], ModelExecutionBinding] | None = None,
+        resolve_default_model: Callable[[str], str] | None = None,
         resolve_credential: Callable[[str], Mapping[str, str]] | None = None,
     ) -> None:
         self._documents = documents
@@ -113,6 +115,7 @@ class WorkflowRunCoordinator:
         self._artifact_root = artifact_root.resolve()
         self._modules = modules
         self._resolve_model = resolve_model
+        self._resolve_default_model = resolve_default_model
         self._resolve_credential = resolve_credential
         self._credential_reads: dict[str, Event] = {}
         self._terminal_intents: dict[str, dict[str, Any]] = {}
@@ -298,6 +301,14 @@ class WorkflowRunCoordinator:
                 raise WorkflowRunError(
                     error.code, error.message, error.status, error.details
                 ) from error
+            raw_custom_module_dependencies = copy.deepcopy(custom_module_dependencies)
+            resolved_default_model = self._apply_project_model_default(
+                [document, *workflow_dependencies.values(), *(
+                    workflow for snapshot in custom_module_dependencies.values()
+                    if isinstance((workflow := snapshot.get("workflow")), dict)
+                )],
+                request.get("projectId") or draft.document.get("projectId"),
+            )
             for module_id, snapshot in custom_module_dependencies.items():
                 workflow = snapshot.get("workflow")
                 if not isinstance(workflow, Mapping):
@@ -355,9 +366,10 @@ class WorkflowRunCoordinator:
                 profile_snapshot={
                     **_profile_snapshot(profile),
                     "runOptions": run_options,
+                    **({"resolvedDefaultModelId": resolved_default_model} if resolved_default_model else {}),
                 },
                 mode=cast(Any, mode),
-                custom_module_snapshots=copy.deepcopy(custom_module_dependencies),
+                custom_module_snapshots=raw_custom_module_dependencies,
                 project_id=request.get("projectId"),
             )
             run = self._runs.start(start)
@@ -399,6 +411,7 @@ class WorkflowRunCoordinator:
                     workflow_dependencies=workflow_dependencies,
                     custom_module_dependencies=custom_module_dependencies,
                     model_bindings=model_bindings,
+                    executable_document=document,
                 )
                 await self._workers.start(
                     run_id,
@@ -465,6 +478,40 @@ class WorkflowRunCoordinator:
                         "RUN_START_FAILED", "工作流浏览器启动失败", 503
                     ) from error
                 raise
+
+    def _apply_project_model_default(
+        self, documents: Sequence[dict[str, Any]], project_id: str | None,
+    ) -> str | None:
+        resolved: str | None = None
+        for document in documents:
+            for node in document.get("nodes", []):
+                if not isinstance(node, Mapping):
+                    continue
+                data = node.get("data")
+                if not isinstance(data, dict):
+                    continue
+                node_type = data.get("moduleType", node.get("type"))
+                if not isinstance(node_type, str) or node_type not in APPROVED_NODE_TYPES or not node_type.startswith("ai_"):
+                    continue
+                config = data.get("config")
+                values = config if isinstance(config, dict) else data
+                model_id = values.get("modelId")
+                details = {"nodeId": node.get("id"), "path": "config.modelId"}
+                if model_id is not None and not isinstance(model_id, str):
+                    raise WorkflowRunError("MODEL_ID_INVALID", "模型标识必须是字符串", 422, details)
+                if isinstance(model_id, str) and model_id.strip():
+                    continue
+                if project_id is None:
+                    continue
+                if self._resolve_default_model is None:
+                    raise WorkflowRunError("MODEL_SERVICE_UNAVAILABLE", "项目默认模型服务不可用", 503, details)
+                if resolved is None:
+                    try:
+                        resolved = self._resolve_default_model(project_id)
+                    except (ModelError, WorkflowRunError) as error:
+                        raise WorkflowRunError(error.code, error.message, error.status, {**error.details, **details}) from error
+                values["modelId"] = resolved
+        return resolved
 
     def _resolve_model_bindings(
         self,
@@ -1912,17 +1959,12 @@ def _worker_payload(
     workflow_dependencies: dict[str, dict[str, Any]],
     custom_module_dependencies: dict[str, dict[str, object]],
     model_bindings: Sequence[ModelExecutionBinding],
+    executable_document: dict[str, Any],
 ) -> dict[str, Any]:
     spec = profile.spec
     run_options = start.profile_snapshot.get("runOptions", {})
     if not isinstance(run_options, Mapping):
         run_options = {}
-    executable_document = WorkflowDraft(
-        start.document_id,
-        start.workflow_name,
-        copy.deepcopy(start.document_snapshot),
-        copy.deepcopy(start.layout_snapshot),
-    ).to_payload()
     return {
         "runId": start.run_id,
         "workflowId": start.workflow_id,
@@ -1958,7 +2000,7 @@ def _worker_payload(
         "breakpoints": copy.deepcopy(run_options.get("breakpoints", [])),
         "startNodeId": run_options.get("startNodeId"),
         "runToNodeId": run_options.get("runToNodeId"),
-        "document": executable_document,
+        "document": {**executable_document, "id": start.document_id},
         "workflowDependencies": workflow_dependencies,
         "customModuleDependencies": custom_module_dependencies,
         "modelBindings": [

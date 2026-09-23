@@ -343,7 +343,17 @@
         "docs/migration/studio-frontend-completion/mcp-service-contract.md",
         "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
       ],
-      "risk": "不得复制原版明文或全局配置；AI节点只引用主应用模型标识和后端秘密引用，MCP调用必须服从真实命令状态与权限结果。"
+      "risk": "不得复制原版明文或全局配置；AI节点只引用主应用模型标识和后端秘密引用，MCP调用必须服从真实命令状态与权限结果。",
+      "projectModelDefaults": {
+        "status": "已实现且已验收",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/model-defaults-2026-09-23/result.json",
+        "liveModelEvidence": "docs/migration/studio-backend-migration/evidence/project-integration/model-defaults-live-2026-09-23/real-model.json",
+        "remaining": [
+          "项目任务worker的模型和凭据端口",
+          "小助手后端会话和命令的项目归属"
+        ],
+        "scopeNote": "不据此关闭共享能力全部剩余项或任何未测节点平台"
+      }
     },
     {
       "id": "BE.SUPPORT.assistant-langgraph",

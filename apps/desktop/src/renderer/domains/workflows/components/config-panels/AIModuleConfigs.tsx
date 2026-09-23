@@ -1,6 +1,6 @@
 // Source: WebRPA@5ccb900e, components/workflow/config-panels/AIModuleConfigs.tsx; see SOURCE.md for license and adaptation boundaries.
 import type React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { NodeData } from '../../editor-store'
 import type { ModelOptionList } from '../../api'
 import { modelApi } from '../../api'
@@ -14,6 +14,7 @@ import { VariableNameInput } from '../controls/variable-name-input'
 import { VariableRefInput } from '../controls/variable-ref-input'
 import { Bot, Cpu } from 'lucide-react'
 import { useGlobalConfigStore } from '../../hooks/stores/globalConfigStore'
+import { getStudioResourceScope } from '../../api/config'
 
 type RenderSelectorInput = (id: string, label: string, placeholder: string) => React.ReactNode
 type ModelOption = ModelOptionList['items'][number]
@@ -23,39 +24,76 @@ type BatchChange = (data: Partial<NodeData>) => void
 export function AIModelPicker({ data, onBatchChange }: { data: NodeData; onBatchChange: BatchChange }) {
   const [models, setModels] = useState<ModelOption[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [listError, setListError] = useState('')
+  const [defaultError, setDefaultError] = useState('')
+  const [projectDefaultModelId, setProjectDefaultModelId] = useState('')
+  const requestRef = useRef(0)
   const autoFallback = useGlobalConfigStore((s) => s.config.ai?.autoFallback) ?? false
 
   useEffect(() => {
     let active = true
     const load = async () => {
+      const request = ++requestRef.current
+      const scope = getStudioResourceScope()
       setLoading(true)
-      const result = await modelApi.listOptions()
-      if (!active) return
+      setListError('')
+      setDefaultError('')
+      setProjectDefaultModelId('')
+      const [result, projectDefault] = await Promise.all([
+        modelApi.listOptions(),
+        scope ? modelApi.projectDefault() : Promise.resolve({ success: true as const, data: null }),
+      ])
+      if (!active || request !== requestRef.current || scope !== getStudioResourceScope()) return
       if (!result.success || !Array.isArray(result.data?.items)) {
-        setError(`模型列表加载失败：${result.error || '响应格式错误'}`)
+        setListError(`模型列表加载失败：${result.error || '响应格式错误'}`)
         setModels([])
       } else {
-        setError('')
         setModels(result.data.items)
+        if (!projectDefault.success) {
+          setDefaultError(projectDefault.error || '项目默认模型读取失败')
+        } else if (projectDefault.data?.modelId) {
+          if (result.data.items.some(model => model.id === projectDefault.data?.modelId)) {
+            setProjectDefaultModelId(projectDefault.data.modelId)
+          } else {
+            setDefaultError('项目默认模型不可用，请显式选择模型')
+          }
+        }
       }
       setLoading(false)
     }
     void load()
     window.addEventListener('studio:transport-changed', load)
-    return () => { active = false; window.removeEventListener('studio:transport-changed', load) }
+    window.addEventListener('studio:connection-restored', load)
+    return () => {
+      active = false
+      window.removeEventListener('studio:transport-changed', load)
+      window.removeEventListener('studio:connection-restored', load)
+    }
   }, [])
 
+  const explicitModelId = typeof data.modelId === 'string' ? data.modelId : ''
+  const projectDefaultModel = models.find(model => model.id === projectDefaultModelId)
+  const effectiveModelId = explicitModelId || projectDefaultModelId
+  const effectiveModelAvailable = Boolean(effectiveModelId) && models.some(model => model.id === effectiveModelId)
+  const error = listError || (!explicitModelId ? defaultError : '')
+  const emptyLabel = loading
+    ? '正在读取主应用模型…'
+    : projectDefaultModel
+      ? `继承项目默认：${projectDefaultModel.displayName}（${projectDefaultModel.providerName}）`
+      : getStudioResourceScope()
+        ? '项目默认模型不可用，请显式选择模型…'
+        : '请选择模型…'
+
   useEffect(() => {
-    if (loading || !data.modelId) return
-    const desired = autoFallback ? models.filter(model => model.id !== data.modelId).map(model => model.id) : []
+    if (loading || listError || !effectiveModelAvailable) return
+    const desired = autoFallback ? models.filter(model => model.id !== effectiveModelId).map(model => model.id) : []
     const current = Array.isArray(data.fallbackModelIds) ? data.fallbackModelIds : []
     if (JSON.stringify(current) !== JSON.stringify(desired)) {
       onBatchChange({ fallbackModelIds: desired.length ? desired : undefined })
     }
-  }, [autoFallback, data.modelId, loading, models, onBatchChange])
+  }, [autoFallback, data.fallbackModelIds, effectiveModelAvailable, effectiveModelId, listError, loading, models, onBatchChange])
 
-  const selectedMissing = Boolean(data.modelId) && !loading && !error && !models.some(model => model.id === data.modelId)
+  const selectedMissing = Boolean(explicitModelId) && !loading && !listError && !models.some(model => model.id === explicitModelId)
   return (
     <div className="space-y-2">
       <Label className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-violet-600" />主应用模型</Label>
@@ -78,7 +116,7 @@ export function AIModelPicker({ data, onBatchChange }: { data: NodeData; onBatch
           })
         }}
       >
-        <option value="">{loading ? '正在读取主应用模型…' : '请选择模型…'}</option>
+        <option value="">{emptyLabel}</option>
         {models.map((model) => (
           <option key={model.id} value={model.id}>{model.displayName}（{model.providerName}）</option>
         ))}

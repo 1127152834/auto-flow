@@ -169,6 +169,21 @@ export const systemApi = {
 
 export const modelApi = {
   listOptions: () => apiRequest<ModelOptionList>('/v1/models/options'),
+  projectDefault: async (): Promise<ApiResponse<{modelId: string} | null>> => {
+    const scope = getStudioResourceScope()
+    if (!scope) return {success: true, data: null}
+    const revision = getStudioTransportRevision()
+    const [defaults, options] = await Promise.all([projectResourceApi.defaults(), modelApi.listOptions()])
+    if (scope !== getStudioResourceScope() || revision !== getStudioTransportRevision()) return {success: false, error: '项目或服务已变更，未采用旧模型配置'}
+    if (!defaults.success) return {success: false, error: defaults.error, httpStatus: defaults.httpStatus}
+    if (!options.success) return {success: false, error: options.error, httpStatus: options.httpStatus}
+    const providerId = defaults.data?.modelProviderId
+    if (!providerId) return {success: false, error: '项目未设置默认模型服务，请显式选择模型', httpStatus: 422}
+    if (!Array.isArray(options.data?.items) || !options.data.items.every(item => item && typeof item.id === 'string' && item.id && typeof item.providerId === 'string')) return {success: false, error: '主应用模型列表响应无效'}
+    const model = options.data.items.find(item => item.providerId === providerId)
+    if (!model) return {success: false, error: '项目默认模型服务没有可用模型，请显式选择模型', httpStatus: 409}
+    return {success: true, data: {modelId: model.id}}
+  },
 }
 
 // ==================== 工作流 API ====================

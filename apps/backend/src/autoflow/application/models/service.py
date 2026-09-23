@@ -78,6 +78,20 @@ class ModelService:
         with self._transaction() as repo:
             return repo.list_options()
 
+    def default_model_id(self, provider_id: str) -> str:
+        provider = self.get_provider(provider_id)
+        if not provider.enabled:
+            raise ModelError("MODEL_PROVIDER_DISABLED", "模型供应商已停用", 409)
+        for option in self.list_options():
+            if option.provider_id == provider_id:
+                return option.id
+        raise ModelError(
+            "PROJECT_DEFAULT_MODEL_UNAVAILABLE",
+            "项目默认模型供应商没有已启用的模型",
+            409,
+            {"providerId": provider_id},
+        )
+
     def execution_binding(self, model_id: str) -> ModelExecutionBinding:
         with self._transaction() as repo:
             model = repo.get_model(model_id)

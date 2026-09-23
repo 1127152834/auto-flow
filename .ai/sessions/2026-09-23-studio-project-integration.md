@@ -202,3 +202,11 @@
 
 - 协调器在资源解析前复用原运行资源快照、保留原请求哈希校验；同ID不同草稿/布局/身份/调试参数仍409，不以ID相同绕过内容核验。成功/失败/停止记录重试不重放worker，不重读秘密。
 - 3红复现后，14专项及关联总51通过，Ruff/mypy通过。真实SQLite＋模拟worker边界，非真实模型证据；正式入口将在模型默认值闭环中回归。证据project-integration/resource-retry-2026-09-23。
+
+## 项目模型默认值与覆盖 confirmed
+
+- 用户选择沿用默认+覆盖已落地；ModelService复用现有排序和启用选项，协调器仅填执行副本；15 AI入口平铺/嵌套及模块依赖覆盖，无秘密写库。保留原始快照，worker文档ID沿旧身份规范。
+- 前端面板/小助手隔离项目覆盖，加载失败保留旧备用配置；迟到结果被代际检查拒绝。12组件+8HTTP专项包含在74关联回归，后端52/45/33分组重叠分别登记。类型/lint/OpenAPI/目录/构建通过。
+- 正式开发tBtjEa、最终unsigned包2pmiUF真实UI14节点、保存AXClose重开、受控模型11对话+2媒体、Cloak视觉点击与LangGraph助手默认/覆盖通过；同包RjFuGN完整五节点/Profile/失败Debug/正常关窗与清理回归通过。原RIMkoF、ZhvnYU、zAFzR4脚本定位/硬编码视口失败保留，修改后仍精确断言。
+- OpenRouter aion-labs/aion-2.0独立真实worker一次调用通过，8.38秒，原始响应/usage/清理证据单列；主模型DB URI ro+query_only，无主库写入，不混作UI证据。冻结175.6秒，前端构建33.5秒。
+- 证据project-integration/model-defaults-2026-09-23。下块项目worker仍缺models/credentials端口，助手会话/命令归属独立待做；17实际环境/平台槽位不变，不恢复14通知。

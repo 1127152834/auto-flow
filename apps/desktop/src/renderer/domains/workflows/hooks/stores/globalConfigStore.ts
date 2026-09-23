@@ -173,6 +173,7 @@ interface GlobalConfigState {
     scope: string | null
     defaults?: components['schemas']['ProjectDefaultResources']
     profileId?: string
+    modelId?: string
   }
   syncProjectResourceScope: () => void
   updateSystemConfig: (config: Partial<GlobalConfig['system']>) => void
@@ -189,6 +190,7 @@ interface GlobalConfigState {
   updateQQConfig: (config: Partial<GlobalConfig['qq']>) => void
   updateFeishuConfig: (config: Partial<GlobalConfig['feishu']>) => void
   updateDisplayConfig: (config: Partial<GlobalConfig['display']>) => void
+  setAssistantModelId: (id: string) => void
   setBrowserProfileId: (id: string) => void
   updateBrowserConfig: (config: Partial<GlobalConfig['browser']>) => void
   resetConfig: () => void
@@ -361,6 +363,15 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
             aiScraper: { ...get().config.aiScraper, ...aiScraperConfig },
           },
         })
+      },
+
+      setAssistantModelId: (modelId) => {
+        get().syncProjectResourceScope()
+        if (get().projectResources.scope) {
+          set({projectResources: {...get().projectResources, modelId}})
+        } else {
+          get().updateAIAssistantConfig({modelId})
+        }
       },
 
       updateAIAssistantConfig: (aiAssistantConfig) => {

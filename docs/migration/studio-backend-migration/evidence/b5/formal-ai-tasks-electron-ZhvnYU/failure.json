@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-23T07:54:00.599Z",
+  "checks": [
+    "正式项目入口使用主应用第二个模型提供商作为默认值，第一项仍可显式覆盖",
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置和模型均来自主应用",
+    "通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务、对话、图片视频生成及视觉节点编排",
+    "正式保存 14 个节点及 13 条连线；模型选择仅保存稳定ID或继承空值，不保存地址或密钥",
+    "模型继承与显式覆盖随真实保存、原生关窗和重开恢复；文档节点未被默认解析改写"
+  ],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n435 !== 432\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-ai-tasks.mjs:170:10\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

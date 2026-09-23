@@ -33454,7 +33454,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
-        "line": 840,
+        "line": 878,
         "condition": "moduleType === 'ai_extract'",
         "fields": [
           "fields"
@@ -33764,7 +33764,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
-        "line": 852,
+        "line": 890,
         "condition": "moduleType === 'ai_classify'",
         "fields": [
           "categories"
@@ -34074,7 +34074,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
-        "line": 864,
+        "line": 902,
         "condition": "moduleType === 'ai_summarize'",
         "fields": [
           "maxWords",
@@ -34388,7 +34388,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
-        "line": 887,
+        "line": 925,
         "condition": "moduleType === 'ai_translate'",
         "fields": [
           "targetLang"
@@ -34980,7 +34980,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
-        "line": 898,
+        "line": 936,
         "condition": "moduleType === 'ai_normalize'",
         "fields": [
           "normalizeType",
@@ -35310,7 +35310,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
-        "line": 815,
+        "line": 853,
         "condition": "moduleType === 'ai_dedup_semantic'",
         "fields": [
           "inputList",
@@ -35633,7 +35633,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
-        "line": 925,
+        "line": 963,
         "condition": "moduleType === 'ai_route'",
         "fields": [
           "routes"

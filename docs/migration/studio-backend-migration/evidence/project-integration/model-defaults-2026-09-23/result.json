@@ -1,0 +1,74 @@
+{
+  "capabilityId": "BE.SUPPORT.models-ai-mcp",
+  "slice": "project-model-default-and-explicit-override",
+  "classification": "AutoFlow必要适配",
+  "status": "passed",
+  "scope": 213,
+  "decision": "项目默认提供商内按主应用既有选项排序取首个启用模型；允许显式覆盖，不增加资源白名单",
+  "development": "../../b5/formal-ai-tasks-electron-tBtjEa/result.json",
+  "packaged": "../../b5/formal-ai-tasks-electron-2pmiUF/result.json",
+  "realModel": "../model-defaults-live-2026-09-23/real-model.json",
+  "checks": {
+    "backendRelated": {
+      "passed": 52,
+      "log": "backend-related.log"
+    },
+    "finalDefaultsAndBootstrap": {
+      "passed": 45,
+      "log": "backend-final.log"
+    },
+    "workerProtocolAndGateway": {
+      "passed": 33,
+      "log": "worker-regression.log"
+    },
+    "frontendRelated": {
+      "passed": 74,
+      "files": 8,
+      "log": "frontend-final.log"
+    },
+    "note": "后端组有重叠，不将52/45/33相加为唯一用例数",
+    "typescript": "passed",
+    "eslint": "passed",
+    "ruff": "passed",
+    "mypy": "passed",
+    "openapi": "passed",
+    "structure": "passed",
+    "build": "passed",
+    "freeze": "passed",
+    "package": "passed"
+  },
+  "behaviors": [
+    "空模型ID继承项目默认，显式ID优先，原文档和历史运行快照不写入解析值",
+    "15个批准AI入口的平铺及嵌套配置、子流程与自定义模块执行副本接入同一解析边界",
+    "缺失默认、禁用提供商、无可用模型、非法显式ID明确失败；无全局第一项回退",
+    "前端参数面板与小助手按工作区/项目隔离会话覆盖；连接变化拒绝迟到配置",
+    "原版自动备用模型在继承时排除有效主模型，加载错误不擦除旧配置",
+    "同runId重试不重读已变更资源、不重新执行；变更请求仍409"
+  ],
+  "failedAttempts": [
+    {
+      "path": "../../b5/formal-ai-tasks-electron-RIMkoF/failure.json",
+      "reason": "测试脚本只识别请选择模型标签，遗漏继承默认标签；修正按主应用模型字段定位控件"
+    },
+    {
+      "path": "../../b5/formal-ai-tasks-electron-ZhvnYU/failure.json",
+      "reason": "测试写死视口中心；受控页改为回报实际视口及点击位置，保持精确坐标和点击次数断言"
+    },
+    {
+      "path": "../../b5/formal-ai-tasks-electron-zAFzR4/failure.json",
+      "reason": "真实14节点已通过，小助手按钮title被既有tooltip改为data-tip；补实际DOM属性定位"
+    }
+  ],
+  "boundaries": {
+    "platform": "macOS arm64",
+    "package": "local unsigned directory package",
+    "otherPlatforms": "untested",
+    "controlledModels": "Electron14节点及LangGraph选择采用本地HTTP协议夹具，不视为外部模型效果",
+    "liveModel": "独立真实worker+主应用系统凭据+OpenRouter一次实际请求；不声称该用例为Electron UI",
+    "userDatabase": "仅真实模型用例只读主模型库；其余数据独立临时工作区；无用户数据库写入",
+    "projectTaskWorker": "模型与凭据端口仍待接入",
+    "assistantProjectOwnership": "会话与命令的后端归属仍待接入",
+    "nodeExecutionSlots": "622 passed / 17 pending unchanged"
+  },
+  "packagedProfileLifecycleRegression": "../formal-electron-RjFuGN/result.json"
+}

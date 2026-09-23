@@ -37,6 +37,7 @@ import { useAiActionLogStore } from '../../hooks/stores/aiActionLogStore'
 import { useWorkflowStore } from '../../editor-store'
 import { aiAssistantApi } from '../../api/aiAssistantApi'
 import { modelApi, type ModelOptionList } from '../../api'
+import { getStudioResourceScope } from '../../api/config'
 import {
   bindAssistantSocketEvents,
   acknowledgeAssistantClientAction,
@@ -92,10 +93,16 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
   const rollbackSnapshots = useAIAssistantStore((s) => s.rollbackSnapshots)
 
   const aiAssistantConfig = useGlobalConfigStore((s) => s.config.aiAssistant)
+  const projectResources = useGlobalConfigStore((s) => s.projectResources)
+  const setAssistantModelId = useGlobalConfigStore((s) => s.setAssistantModelId)
   const updateAIAssistantConfig = useGlobalConfigStore((s) => s.updateAIAssistantConfig)
   const [showModelMenu, setShowModelMenu] = useState(false)
   const [managedModels, setManagedModels] = useState<ModelOptionList['items']>([])
   const [modelError, setModelError] = useState('')
+  const [projectDefaultError, setProjectDefaultError] = useState('')
+  const [projectDefaultModelId, setProjectDefaultModelId] = useState('')
+  const [modelsLoading, setModelsLoading] = useState(true)
+  const modelRequestRef = useRef(0)
 
   // 独立 Agent 窗口（Electron）置顶状态
   const [agentPinned, setAgentPinned] = useState(true)
@@ -479,27 +486,70 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     if (!isOpen && !standalone) return
     let active = true
     const load = async () => {
-      const response = await modelApi.listOptions()
-      if (!active) return
+      const request = ++modelRequestRef.current
+      useGlobalConfigStore.getState().syncProjectResourceScope()
+      const scope = getStudioResourceScope()
+      setModelsLoading(true)
+      setManagedModels([])
+      setModelError('')
+      setProjectDefaultError('')
+      setProjectDefaultModelId('')
+      const [response, projectDefault] = await Promise.all([
+        modelApi.listOptions(),
+        scope ? modelApi.projectDefault() : Promise.resolve({ success: true as const, data: null }),
+      ])
+      if (!active || request !== modelRequestRef.current || scope !== getStudioResourceScope()) return
       if (!response.success || !Array.isArray(response.data?.items)) {
         setManagedModels([])
         setModelError(response.error || '主应用模型列表加载失败')
+        setModelsLoading(false)
         return
       }
       setManagedModels(response.data.items)
       setModelError('')
-      const selected = aiAssistantConfig?.modelId
-      if (!selected && response.data.items[0]) {
-        updateAIAssistantConfig({ modelId: response.data.items[0].id })
+      if (scope) {
+        if (!projectDefault.success) {
+          setProjectDefaultError(projectDefault.error || '项目默认模型读取失败')
+        } else if (projectDefault.data?.modelId) {
+          if (response.data.items.some((model) => model.id === projectDefault.data?.modelId)) {
+            setProjectDefaultModelId(projectDefault.data.modelId)
+          } else {
+            setProjectDefaultError('项目默认模型不可用，请显式选择模型')
+          }
+        } else {
+          setProjectDefaultError('项目未设置默认模型服务')
+        }
+      } else if (!useGlobalConfigStore.getState().config.aiAssistant?.modelId && response.data.items[0]) {
+        setAssistantModelId(response.data.items[0].id)
       }
+      setModelsLoading(false)
     }
     void load()
     window.addEventListener('studio:transport-changed', load)
-    return () => { active = false; window.removeEventListener('studio:transport-changed', load) }
-  }, [isOpen, standalone, aiAssistantConfig?.modelId, updateAIAssistantConfig])
+    window.addEventListener('studio:connection-restored', load)
+    return () => {
+      active = false
+      window.removeEventListener('studio:transport-changed', load)
+      window.removeEventListener('studio:connection-restored', load)
+    }
+  }, [isOpen, setAssistantModelId, standalone])
 
-  const activeModelId = aiAssistantConfig?.modelId
+  const resourceScope = getStudioResourceScope()
+  const scopedModelId = resourceScope && projectResources.scope === resourceScope
+    ? projectResources.modelId || ''
+    : ''
+  const activeModelId = resourceScope
+    ? scopedModelId || projectDefaultModelId
+    : aiAssistantConfig?.modelId
   const activeModel = managedModels.find((model) => model.id === activeModelId)
+  const selectedModelMissing = Boolean(activeModelId) && !modelsLoading && !modelError && !activeModel
+  const effectiveModelError = modelError || (
+    resourceScope && !scopedModelId
+      ? projectDefaultError
+      : selectedModelMissing
+        ? '已选模型不可用，请重新选择'
+        : ''
+  )
 
   const resolvedConfig = (() => {
     const a = aiAssistantConfig
@@ -519,7 +569,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     }
   })()
 
-  const configReady = !!activeModel && !modelError
+  const configReady = !modelsLoading && !!activeModel && !effectiveModelError
 
   // 当前正在执行的操作（用于"工作中"指示器展示具体在干什么，避免用户以为卡住）
   const currentActivity = (() => {
@@ -754,7 +804,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     const docNames = text === undefined ? attachedDocs.map((d) => d.name) : []
     if (!messageText && images.length === 0 && docs.length === 0) return
     if (!configReady) {
-      setError(modelError || '请先在主应用模型管理中添加并选择模型')
+      setError(effectiveModelError || '请先在主应用模型管理中添加并选择模型')
       return
     }
     // 文档附件仍在解析中则提示等待
@@ -1280,7 +1330,9 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             {!configReady && (
               <div className="status-row status-row-warning mt-5 max-w-[340px]">
                 <Settings className="w-3.5 h-3.5 shrink-0" />
-                <span className="text-[12px]">请先在WebRPA编辑器的全局配置中填写模型API</span>
+                <span className="text-[12px]">
+                  {effectiveModelError || (modelsLoading ? '正在读取主应用模型…' : '请先在主应用模型管理中添加并选择模型')}
+                </span>
               </div>
             )}
           </div>
@@ -1560,26 +1612,48 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                       主应用尚未配置可用模型
                     </div>
                   ) : (
-                    assistantModels.map((m) => {
-                      const on = !autoSceneRoute && (activeModel?.id === m.id)
-                      return (
+                    <>
+                      {resourceScope && projectDefaultModelId && (
                         <button
-                          key={m.id}
                           onClick={() => {
-                            updateAIAssistantConfig({ modelId: m.id, autoSceneRoute: false })
+                            setAssistantModelId('')
+                            updateAIAssistantConfig({ autoSceneRoute: false })
                             setShowModelMenu(false)
                           }}
-                          className={'w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-left transition-colors ' + (on ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
+                          className={'w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-left transition-colors ' + (!autoSceneRoute && !scopedModelId ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
                         >
                           <Cpu className="w-3.5 h-3.5 flex-shrink-0 text-[hsl(var(--brand-600))]" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-[12px] font-medium text-[hsl(var(--slate-800))] truncate">{m.displayName}</div>
-                            <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">{m.providerName} · {m.modelKey}</div>
+                            <div className="text-[12px] font-medium text-[hsl(var(--slate-800))] truncate">使用项目默认</div>
+                            <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">
+                              {managedModels.find((model) => model.id === projectDefaultModelId)?.displayName}
+                            </div>
                           </div>
-                          {on && <Check className="w-3.5 h-3.5 text-[hsl(var(--brand-600))] flex-shrink-0" />}
+                          {!autoSceneRoute && !scopedModelId && <Check className="w-3.5 h-3.5 text-[hsl(var(--brand-600))] flex-shrink-0" />}
                         </button>
-                      )
-                    })
+                      )}
+                      {assistantModels.map((m) => {
+                        const on = !autoSceneRoute && Boolean(scopedModelId || !resourceScope) && (activeModel?.id === m.id)
+                        return (
+                          <button
+                            key={m.id}
+                            onClick={() => {
+                              setAssistantModelId(m.id)
+                              updateAIAssistantConfig({ autoSceneRoute: false })
+                              setShowModelMenu(false)
+                            }}
+                            className={'w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-left transition-colors ' + (on ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
+                          >
+                            <Cpu className="w-3.5 h-3.5 flex-shrink-0 text-[hsl(var(--brand-600))]" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[12px] font-medium text-[hsl(var(--slate-800))] truncate">{m.displayName}</div>
+                              <div className="text-[10px] text-[hsl(var(--muted-foreground))] truncate">{m.providerName} · {m.modelKey}</div>
+                            </div>
+                            {on && <Check className="w-3.5 h-3.5 text-[hsl(var(--brand-600))] flex-shrink-0" />}
+                          </button>
+                        )
+                      })}
+                    </>
                   )}
                   {assistantModels.length > 0 && (
                     <button

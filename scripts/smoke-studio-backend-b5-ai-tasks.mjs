@@ -4,7 +4,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
-import { basename, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 
 import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
@@ -16,6 +16,8 @@ const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const evidenceRoot = join(root, 'docs/migration/studio-backend-migration/evidence/b5')
 const evidenceDir = await mkdtemp(join(await mkdir(evidenceRoot, { recursive: true }).then(() => evidenceRoot), 'formal-ai-tasks-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b5-ai-tasks-'))
+const projectModels = process.env.AUTOFLOW_PROJECT_MODELS === '1'
+let projectId = null
 const workflowName = 'B5 AI 数据任务与对话正式闭环'
 const checks = []
 const model = await startModel()
@@ -50,7 +52,7 @@ try {
   const profile = await api(runtime, '/v1/profiles', {
     method: 'POST',
     body: {
-      name: 'B5 AI任务验收配置', description: '临时工作区；本流程不启动浏览器', startUrl: 'about:blank',
+      name: 'B5 AI任务验收配置', description: '临时工作区；视觉节点使用真实浏览器', startUrl: 'about:blank',
       locale: 'zh-CN', timezone: 'Asia/Shanghai', geoip: false, headless: true, humanize: false,
       humanPreset: 'default', userAgent: null, viewportJson: null, colorScheme: 'light', extensionPathsJson: [], expertArgsJson: [],
       browserVersion: kernelVersion, browserEdition: 'public', releaseChannel: 'stable', proxyMode: 'none', proxyId: null, proxyPoolId: null,
@@ -64,6 +66,28 @@ try {
     },
   })
   const modelId = provider.models[0].id
+  let defaultModelId = modelId
+  if (projectModels) {
+    const defaultProvider = await api(runtime, '/v1/model-providers/connect', {method:'POST', body:{
+      provider:{name:'Z 项目默认模型',presetId:'custom-openai-compatible',providerKind:'openai-compatible',baseUrl:model.baseUrl,apiKey:'',enabled:true,description:'隔离项目默认模型验收'},
+      selectedModels:[{modelKey:'project-default-fixture',displayName:'Z 项目默认模型',tagsJson:['chat'],enabled:true,description:''}],
+    }})
+    defaultModelId = defaultProvider.models[0].id
+    const options = (await api(runtime, '/v1/models/options')).items
+    assert.equal(options[0].id, modelId)
+    assert.equal(options[1].id, defaultModelId)
+    await click(main,'项目','a,button'); await click(main,'新建项目')
+    await setInput(main,'#project-name','Studio 项目模型验收'); await click(main,'创建项目')
+    await waitFor(main,"document.body.innerText.includes('Studio 项目模型验收')",'created project')
+    if (!await main.evaluate('Boolean(document.querySelector(\'[aria-label="项目功能"]\'))')) await click(main,'Studio 项目模型验收','[role="button"],button')
+    await waitFor(main,'Boolean(document.querySelector(\'[aria-label="项目功能"]\'))','project detail')
+    projectId = (await main.evaluate('location.hash')).match(/projects\/([^/]+)/)?.[1]
+    assert.ok(projectId)
+    const project = await api(runtime,`/v1/projects/${projectId}`)
+    await api(runtime,`/v1/projects/${projectId}`,{method:'PATCH',body:{expectedManagementRevision:project.managementRevision,defaultResources:{...project.defaultResources,profileId:profile.id,modelProviderId:defaultProvider.id}}})
+    await click(main,'自动化','[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    checkpoint('正式项目入口使用主应用第二个模型提供商作为默认值，第一项仍可显式覆盖')
+  }
   assert.deepEqual(cloakProcesses(userData), [])
 
   studio = await openStudioFromMain(main, desktop.debugOrigin)
@@ -82,7 +106,10 @@ try {
     nodeIds.push(nodeId)
     for (const [selector, value] of module.inputs) await setInput(studio, selector, value)
     for (const [label, option] of module.selects ?? []) await chooseSelectOption(studio, label, option)
-    if (module.model !== false) await chooseFirstModel(studio)
+    if (module.model !== false) {
+      if (!projectModels || module.type === 'ai_chat') await chooseFirstModel(studio)
+      else await waitFor(studio, "[...document.querySelectorAll('[role=combobox]')].some(e=>e.textContent.includes('Z 项目默认模型'))", 'inherited default model label')
+    }
   }
   for (let index = 0; index < nodeIds.length - 1; index++) await connectNodes(studio, nodeIds[index], nodeIds[index + 1])
   await waitFor(studio, `document.querySelectorAll('.react-flow__edge').length === ${modules.length - 1}`, 'workflow edges')
@@ -94,9 +121,25 @@ try {
   assert.ok(saved)
   assert.deepEqual(saved.nodes.map(node => node.data.moduleType), modules.map(item => item.type))
   assert.equal(saved.edges.length, modules.length - 1)
-  assert.ok(saved.nodes.filter(node => node.data.moduleType !== 'open_page').every(node => node.data.modelId === modelId))
+  assert.ok(saved.nodes.filter(node => node.data.moduleType !== 'open_page').every(node =>
+    projectModels && node.data.moduleType !== 'ai_chat' ? !node.data.modelId : node.data.modelId === modelId))
+  if(projectModels) assert.equal(saved.projectId,projectId)
   assert.equal(JSON.stringify(saved).includes(model.baseUrl), false)
-  checkpoint('正式保存接口只写稳定 modelId，十三节点和十二条连线进入临时 SQLite，不保存模型地址或密钥')
+  checkpoint(`正式保存 ${modules.length} 个节点及 ${modules.length-1} 条连线；模型选择仅保存稳定ID或继承空值，不保存地址或密钥`)
+
+  if (projectModels) {
+    execFileSync('osascript',['-e','tell application "System Events"','-e',`tell (first application process whose unix id is ${desktop.child.pid})`,'-e','set frontmost to true','-e','click (first button of (first window whose name contains "工作流工作台") whose subrole is "AXCloseButton")','-e','end tell','-e','end tell'])
+    studio.close(); studio = undefined
+    await waitForValue(async()=>!(await(await fetch(`${desktop.debugOrigin}/json/list`)).json()).some(x=>x.type==='page'&&x.url.includes('studio.html')), 'native Studio close',30000)
+    studio = await openStudioFromMain(main, desktop.debugOrigin)
+    await studio.command('Emulation.setDeviceMetricsOverride',{width:2560,height:1600,deviceScaleFactor:1,mobile:false})
+    await waitFor(studio,"document.body.innerText.includes('模块库')",'Studio reopened')
+    await click(studio,'打开'); await click(studio,`打开工作流 ${workflowName}`,'[role="button"]')
+    await waitFor(studio,`document.querySelectorAll('.react-flow__node').length === ${modules.length}`,'restored nodes')
+    const restored = await api(runtime,`/workflows/${saved.id}`)
+    assert.deepEqual(restored.nodes,saved.nodes)
+    checkpoint('模型继承与显式覆盖随真实保存、原生关窗和重开恢复；文档节点未被默认解析改写')
+  }
 
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
@@ -123,18 +166,27 @@ try {
   assert.equal(typeof byNode[nodeIds[10]].path, 'string')
   assert.equal(byNode[nodeIds[12]].response, '视觉识别通过')
   assert.equal(byNode[nodeIds[12]].image_source, 'screenshot')
-  assert.equal(byNode[nodeIds[13]].x, 600)
-  assert.equal(byNode[nodeIds[13]].y, 432)
   assert.equal(model.clicked, 1)
+  assert.ok(model.lastClick && model.lastClick.width > 0 && model.lastClick.height > 0)
+  assert.equal(byNode[nodeIds[13]].x, Math.floor(model.lastClick.width / 2))
+  assert.equal(byNode[nodeIds[13]].y, Math.floor(model.lastClick.height / 2))
+  assert.equal(model.lastClick.x, byNode[nodeIds[13]].x)
+  assert.equal(model.lastClick.y, byNode[nodeIds[13]].y)
   const chatRequests = model.requests.filter(request => request.path === '/v1/chat/completions')
   assert.equal(chatRequests.length, 11)
-  assert.ok(chatRequests.every(request => request.body.model === 'ai-task-fixture'))
+  if (projectModels) {
+    assert.equal(chatRequests.filter(request=>request.body.model==='ai-task-fixture').length,1)
+    assert.equal(chatRequests.filter(request=>request.body.model==='project-default-fixture').length,10)
+    assert.equal(terminal.profileSnapshot.resolvedDefaultModelId,defaultModelId)
+    assert.ok(terminal.documentSnapshot.nodes.filter(node=>node.data.moduleType!=='ai_chat').every(node=>!node.data.config?.modelId && !node.data.modelId))
+    checkpoint('真实worker使用项目默认模型执行十次对话，显式模型仅用于AI对话节点；原始运行快照不写回默认值')
+  } else assert.ok(chatRequests.every(request => request.body.model === 'ai-task-fixture'))
   const visionRequest = chatRequests.find(request => JSON.stringify(request.body.messages).includes('视觉验收'))
   assert.ok(JSON.stringify(visionRequest?.body.messages).includes('data:image/png;base64,'))
   assert.equal(model.requests.filter(request => request.path === '/v1/images/generations').length, 1)
   assert.equal(model.requests.filter(request => request.path === '/v1/generations').length, 1)
   assert.equal(model.requests.filter(request => request.path === '/v1/generations/video-job').length, 1)
-  checkpoint('真实 worker 经主应用模型绑定完成十次对话和两次媒体生成，页面截图与视觉坐标进入托管模型且结果逐项匹配')
+  checkpoint(`真实 worker 经主应用模型绑定完成 ${chatRequests.length} 次对话和两次媒体生成；受控模型服务的页面截图与视觉坐标协议结果逐项匹配`)
 
   const artifacts = await api(runtime, `/workflow-runs/${encodeURIComponent(run.runId)}/artifacts?cursor=0&limit=20`)
   assert.equal(artifacts.items.length, 2)
@@ -150,16 +202,34 @@ try {
   checkpoint('AI视觉与视觉操作使用主应用 Profile 启动 CloakBrowser，真实点击受控页面按钮，运行结束后浏览器和worker均已清理')
 
   await capture(studio, join(evidenceDir, 'completed.png'))
+  if (projectModels) {
+    await click(studio, 'AI 小助手')
+    await waitFor(studio, "document.querySelector('button[title=\"切换模型\"],button[data-tip=\"切换模型\"]')?.textContent.includes('Z 项目默认模型')", 'assistant inherits project model')
+    await setInput(studio, 'textarea[placeholder^="告诉我你想做什么"]', '项目模型默认问候')
+    await click(studio,'发送消息')
+    await waitFor(studio,"document.body.innerText.includes('项目默认调用确认')",'assistant default response')
+    await click(studio,'','button[title="切换模型"],button[data-tip="切换模型"]')
+    await click(studio,'B5 AI Task Fixture','button')
+    await setInput(studio, 'textarea[placeholder^="告诉我你想做什么"]', '项目模型显式问候')
+    await click(studio,'发送消息')
+    await waitFor(studio,"document.body.innerText.includes('项目覆盖调用确认')",'assistant explicit response')
+    const assistantRequests = model.requests.filter(x=>x.body?.stream)
+    assert.deepEqual(assistantRequests.map(x=>x.body.model), ['project-default-fixture','ai-task-fixture'])
+    checkpoint('正式小助手通过LangGraph以项目默认模型发送，再真实点击跨提供商显式覆盖；受控SSE响应与实际请求一致')
+    await capture(studio, join(evidenceDir,'project-assistant-models.png'))
+  }
+
   const report = {
     evidenceId: 'BE-B5-ai-task-chat-media-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-    result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
-    workflowId: saved.id, profileId: profile.id, modelId, runId: run.runId, checks,
+    result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build',
+    workflowId: saved.id, profileId: profile.id, modelId, defaultModelId, projectId, runId: run.runId, checks,
     nodes: modules.map((module, index) => ({ moduleType: module.type, nodeId: nodeIds[index], result: byNode[nodeIds[index]] })),
     providerRequestCount: model.requests.length, artifactIds: [imageArtifact.artifactId, videoArtifact.artifactId],
     buildSha256: await buildHash(),
+    buildArtifacts: desktop.packaged ? await packagedBuildHashes() : null,
     boundaries: {
-      workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'none',
+      workspace: 'ephemeral', userDatabaseTouched: false, browserLaunch: 'real CloakBrowser for page and visual nodes',
       model: 'local controlled OpenAI-compatible HTTP fixture configured through main application model management',
       interaction: 'formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access',
       externalWaiting: 'third-party production model providers remain separately unverified',
@@ -194,7 +264,7 @@ async function startModel() {
   ])
   const server = createServer(async (request, response) => {
     const url = new URL(request.url, 'http://127.0.0.1')
-    if (request.method === 'GET' && url.pathname === '/v1/models') return json(response, { data: [{ id: 'ai-task-fixture', context_length: 32768 }] })
+    if (request.method === 'GET' && url.pathname === '/v1/models') return json(response, { data: [{ id: 'ai-task-fixture', context_length: 32768 }, {id:'project-default-fixture',context_length:32768}] })
     if (request.method === 'GET' && url.pathname === '/v1/generations/video-job') {
       requests.push({ method: request.method, path: url.pathname })
       return json(response, { status: 'completed', url: `http://127.0.0.1:${server.address().port}/media.mp4` })
@@ -206,15 +276,21 @@ async function startModel() {
       return response.end(content)
     }
     if (request.method === 'GET' && url.pathname === '/page') {
-      const content = Buffer.from('<!doctype html><html><body><h1>AutoFlow AI视觉验收页面</h1><button style="position:absolute;left:550px;top:382px;width:100px;height:100px" onclick="fetch(\'/clicked\')">验收按钮</button></body></html>')
+      const content = Buffer.from('<!doctype html><html><body><h1>AutoFlow AI视觉验收页面</h1><button style="position:absolute;left:calc(50vw - 50px);top:calc(50vh - 50px);width:100px;height:100px" onclick="fetch(\'/clicked?x=\'+event.clientX+\'&y=\'+event.clientY+\'&width=\'+innerWidth+\'&height=\'+innerHeight)">验收按钮</button></body></html>')
       response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-length': content.length })
       return response.end(content)
     }
-    if (request.method === 'GET' && url.pathname === '/clicked') { requests.push({ method: request.method, path: url.pathname }); server.clicked += 1; return json(response, { ok: true }) }
+    if (request.method === 'GET' && url.pathname === '/clicked') { requests.push({ method: request.method, path: url.pathname }); server.clicked += 1; server.lastClick = Object.fromEntries(['x','y','width','height'].map(key=>[key,Number(url.searchParams.get(key))])); return json(response, { ok: true }) }
     let raw = ''
     for await (const chunk of request) raw += chunk
     const body = raw ? JSON.parse(raw) : {}
     requests.push({ method: request.method, path: url.pathname, body })
+    if (body.stream) {
+      response.writeHead(200, {'content-type':'text/event-stream'})
+      const content = body.model === 'project-default-fixture' ? '项目默认调用确认' : '项目覆盖调用确认'
+      response.end(`data: ${JSON.stringify({choices:[{delta:{content}}]})}\n\ndata: [DONE]\n\n`)
+      return
+    }
     if (request.method === 'POST' && url.pathname === '/v1/images/generations') return json(response, { data: [{ b64_json: Buffer.from('PNG').toString('base64') }] })
     if (request.method === 'POST' && url.pathname === '/v1/generations') return json(response, { id: 'video-job' })
     if (request.method !== 'POST' || url.pathname !== '/v1/chat/completions') return json(response, { error: { message: 'not found' } }, 404)
@@ -228,6 +304,7 @@ async function startModel() {
   return {
     baseUrl: `http://127.0.0.1:${server.address().port}/v1`, pageUrl: `http://127.0.0.1:${server.address().port}/page`, requests,
     get clicked() { return server.clicked },
+    get lastClick() { return server.lastClick },
     close: () => new Promise(resolve => { server.close(resolve); server.closeAllConnections() }),
   }
 }
@@ -293,7 +370,7 @@ async function setInput(cdp, selector, value) {
 }
 
 async function chooseFirstModel(cdp) {
-  const picker = `(()=>{const e=[...document.querySelectorAll('[role="combobox"]')].find(e=>e.getClientRects().length&&e.dataset.disabled===undefined&&e.textContent.includes('请选择'));if(!e)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`
+  const picker = `(()=>{const label=[...document.querySelectorAll('label')].find(e=>e.textContent.includes('主应用模型'));const e=label?.parentElement?.querySelector('[role="combobox"]');if(!e)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`
   let p = await cdp.evaluate(picker)
   if (!p) {
     await click(cdp, 'AI 模型设置', 'summary')
@@ -357,4 +434,18 @@ async function buildHash() {
   const hash = createHash('sha256')
   for (const file of (await readdir(join(root, 'apps/desktop/out'), { recursive: true })).filter(file => /\.(js|css|html)$/.test(file)).sort()) hash.update(file).update(await readFile(join(root, 'apps/desktop/out', file)))
   return hash.digest('hex')
+}
+
+async function packagedBuildHashes() {
+  const executableIndex = process.argv.indexOf('--executable')
+  assert.notEqual(executableIndex, -1)
+  const resources = resolve(dirname(resolve(process.argv[executableIndex + 1])), '../Resources')
+  return {
+    appAsarSha256: await fileHash(join(resources, 'app.asar')),
+    backendExecutableSha256: await fileHash(join(resources, 'backend', 'autoflow-backend')),
+  }
+}
+
+async function fileHash(path) {
+  return createHash('sha256').update(await readFile(path)).digest('hex')
 }

@@ -186,3 +186,13 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 ### 运行重试的资源冻结（2026-09-23）
 
 同一runId按原始文档、布局、Profile ID及运行选项校验；已接受请求复用原资源/模块快照，Profile或模型随后修改/停用不会引发重启。不同请求仍409。51项真实SQLite及协议回归见 `../studio-backend-migration/evidence/project-integration/resource-retry-2026-09-23/result.json`；真实模型与正式入口组合验收另计。
+
+## 项目默认模型与显式覆盖（2026-09-23 confirmed）
+
+按已确认资源规则，Studio AI节点空`modelId`继承项目默认提供商中按主应用既有排序返回的首个启用模型；显式ID优先，不设白名单。缺失/禁用默认、无可用模型和无效显式ID明确失败，不回退全局第一项。根文档、子流程、自定义模块只修改本次执行副本，保存文档及原运行快照保持原始配置；非秘密解析模型ID记入运行资源快照。稳定runId重试沿前节已冻结资源处理，不重读秘密或重放动作。
+
+节点面板显示继承值，保留原版备用模型机制；小助手沿真实LangGraph和主应用模型服务，选择覆盖仅限当前工作区/项目会话。请求代际变化隔离迟到结果，默认失效仍可显式选择其他可用模型。未添加新的服务端模型管理接口。
+
+[专项与正式UI证据](../studio-backend-migration/evidence/project-integration/model-defaults-2026-09-23/result.json)：开发`tBtjEa`与本次unsigned包`2pmiUF`实际创建14节点，继承/覆盖、保存、AXClose重开、运行、媒体产物、CloakBrowser视觉点击和小助手切换通过。同包`RjFuGN`回归五节点、Profile默认/覆盖、失败Debug、正常关窗取消/保存/停止及清理。真实外部模型另有[一次OpenRouter调用](../studio-backend-migration/evidence/project-integration/model-defaults-live-2026-09-23/real-model.json)，主模型库仅只读、凭据仅经系统存储及私有worker通道；受控HTTP模型UI测试不替代该证据。
+
+前端74项关联、后端分组52/45/33项（组间有重叠，不能累加）、Ruff/mypy/TypeScript/ESLint、OpenAPI/目录及构建/冻结/打包通过。macOS arm64实测，Intel/Windows未测。项目任务worker模型/凭据与助手会话后端项目归属仍未关闭，213节点及622/17槽位不变。
