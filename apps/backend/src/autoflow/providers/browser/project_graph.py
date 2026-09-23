@@ -250,6 +250,11 @@ class ProjectGraphExecutor:
         if success:
             data = node_data
             config = data.get('config', data)
+            if data['moduleType'] == 'switch_tab':
+                for key in ('saveIndexVariable', 'saveTitleVariable', 'saveUrlVariable'):
+                    output_name = config.get(key)
+                    if isinstance(output_name, str) and output_name and output_name in current.variables and output_name not in current.sensitive_variables:
+                        await emit('output', {'name': output_name, 'value': current.variables[output_name]})
             name = (config.get('resultVariable') or config.get('variableName')
                     or config.get('saveResult') or config.get('saveMessage'))
             if data['moduleType'] == 'page_load_complete':

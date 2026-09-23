@@ -332,3 +332,9 @@
 - 冻结 WebRPA `advanced_browser.py` 的 11 个批准执行器一次接入项目目录，124→135；Studio 有效范围仍为 213。仅扩展共享项目产物适配，截图、下载文件和保存图片均经原子写入、持久事件确认、受控路径及哈希读取；旧截图保持兼容。
 - 两条真实 CloakBrowser 项目任务各执行 13 节点链，项目默认 Profile、下载、图片、变量、尝试与清理通过；关联后端 209 项、项目真实批次 7 项、前端项目运行 156 项通过。Ruff、mypy、TypeScript、ESLint、OpenAPI、构建通过。
 - 正式 Electron 开发入口和 macOS arm64 本地 unsigned 包均经真实 UI 保存关窗、项目任务运行、产物读取和图片预览；证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/advanced-browser-family-2026-09-23/README.md`。Intel/Windows、用户数据库与余下项目节点族不据此关闭。
+
+## 项目任务标签页切换（2026-09-23，confirmed）
+
+- 用户再次确认项目默认资源可被任务显式覆盖，无白名单；沿用已实现的 Profile/模型选择边界。项目目录新增冻结源码 `switch_tab`，135→136，Studio 范围 213 不变。项目事件适配分别登记索引、标题和 URL，敏感 URL 不进入公开输出。
+- 真实 CloakBrowser 项目批次八个场景、冻结源码差分和适配专项通过；正式 Electron 开发入口及 macOS arm64 本地 unsigned 包经真实 UI 编排、保存、正常关窗、项目运行、任务结果及浏览器清理验收。证据和哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/tab-switch-2026-09-23/README.md`。
+- 网络采集受项目事件消息容量限制，仍需大结果合同；`list_export` 的文本产物安全发布亦未解决。Intel/Windows 与用户数据库未验收。

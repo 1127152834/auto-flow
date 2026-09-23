@@ -26,7 +26,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -130,6 +130,27 @@ async def test_real_project_batch_http(
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
+        elif scenario == "tab_switch":
+            fixture_dir = Path(__file__).parents[1] / "fixtures"
+            first_page = (fixture_dir / "workflow-page.html").resolve().as_uri()
+            second_page = (fixture_dir / "workflow-b2-web-actions.html").resolve().as_uri()
+            steps = [
+                ("open_page", {"url": first_page, "openMode": "current_tab"}),
+                ("open_page", {"url": second_page, "openMode": "new_tab"}),
+                ("switch_tab", {"switchMode": "title", "tabTitle": "AutoFlow B1 受控页面", "matchMode": "exact", "saveIndexVariable": "first_index", "saveTitleVariable": "first_title", "saveUrlVariable": "first_url"}),
+                ("get_element_info", {"selector": "#workflow-submit", "attribute": "text", "variableName": "first_button"}),
+                ("switch_tab", {"switchMode": "last", "saveIndexVariable": "last_index", "saveTitleVariable": "last_title", "saveUrlVariable": "last_url"}),
+                ("get_element_info", {"selector": "#child-a", "attribute": "text", "variableName": "last_child"}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"tab-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"tab-edge-{index}", "source": f"tab-{index}", "target": f"tab-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            document["content"]["variables"] = []
         elif scenario == "advanced_browser":
             upload = tmp_path / "project-upload.txt"
             upload.write_text("AutoFlow 上传", encoding="utf-8")
@@ -183,7 +204,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario in {"web_basic", "advanced_browser"}:
+            if scenario in {"web_basic", "advanced_browser", "tab_switch"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -212,7 +233,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                    **({} if scenario in {"web_basic", "advanced_browser"} else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -309,6 +330,24 @@ async def test_real_project_batch_http(
                         "dialog_message": "AutoFlow dialog",
                     }
                 assert not app.state.project_workflow_worker_manager.busy()
+            elif scenario == "tab_switch":
+                assert detail["statusCounts"]["succeeded"] == 2
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    attempts = await client.get(task_path + "/node-attempts")
+                    outputs = await client.get(task_path + "/outputs")
+                    assert attempts.status_code == outputs.status_code == 200
+                    assert attempts.json()["total"] == len(steps)
+                    assert {item["status"] for item in attempts.json()["items"]} == {"succeeded"}
+                    values = {item["name"]: item["value"] for item in outputs.json()["items"]}
+                    assert values["first_title"] == "AutoFlow B1 受控页面"
+                    assert values["last_title"] == "AutoFlow B2 网页动作受控页面"
+                    assert values["first_url"] == first_page
+                    assert values["last_url"] == second_page
+                    assert values["first_index"] == 0
+                    assert values["last_index"] == 1
+                    assert values["first_button"] == "确认"
+                    assert values["last_child"]
             elif scenario == "advanced_browser":
                 assert detail["statusCounts"]["succeeded"] == 2
                 for task in tasks:

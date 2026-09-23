@@ -42,6 +42,7 @@ _RUNNABLE_MODULES = (
     ("go_forward", "前进"),
     ("switch_iframe", "切换 iframe"),
     ("switch_to_main", "切回主页面"),
+    ("switch_tab", "切换标签页"),
     ("hover_element", "悬停元素"),
     ("handle_dialog", "处理弹窗"),
     ("inject_javascript", "注入 JavaScript"),

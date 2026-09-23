@@ -1392,7 +1392,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser动作及正式Electron UI保存、恢复、执行、Excel产物哈希、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/tab-switch-2026-09-23/README.md",
+        "boundary": "复用冻结源码切换行为；项目任务登记索引、标题、URL三个独立输出，敏感URL不公开。项目默认Profile与显式覆盖沿已有规则；其他平台未验收。"
+      }
     }
   },
   {

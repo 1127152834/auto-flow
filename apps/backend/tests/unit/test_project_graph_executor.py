@@ -1,7 +1,7 @@
 import asyncio
+from time import monotonic
 
 import pytest
-
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 
 
@@ -56,6 +56,36 @@ async def test_stop_at_committed_start_prevents_first_node():
     with pytest.raises(asyncio.CancelledError):
         await executor.run({'document': {'nodes': [node('set', 'set_variable', variableName='answer', variableValue=5)], 'edges': []}})
     assert len(events) == 1 and 'answer' not in executor.context.variables
+
+
+@pytest.mark.asyncio
+async def test_switch_tab_outputs_each_variable_without_publishing_sensitive_url():
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    executor.nodes = {
+        'switch': {'moduleType': 'switch_tab', 'config': {
+            'saveIndexVariable': 'index', 'saveTitleVariable': 'title',
+            'saveUrlVariable': 'url',
+        }}
+    }
+    executor.context.set_variable('index', 1)
+    executor.context.set_variable('title', '受控页面')
+    executor.context.set_variable('url', 'https://example.test/?token=secret', sensitive=True)
+    executor.started['visit'] = monotonic()
+
+    await executor.publish({
+        'type': 'execution:node_complete', 'nodeId': 'switch',
+        'executionId': 'visit', 'success': True,
+        'data': {'index': 1, 'title': '受控页面', 'url': 'https://example.test/?token=[已隐藏]'},
+    })
+
+    assert [(payload['name'], payload['value']) for kind, _, _, payload in events if kind == 'output'] == [
+        ('index', 1), ('title', '受控页面'),
+    ]
 
 
 @pytest.mark.asyncio
