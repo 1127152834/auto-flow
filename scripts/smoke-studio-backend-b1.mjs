@@ -17,7 +17,8 @@ const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const failedPauseOnly = process.env.AUTOFLOW_B8_FAILED_PAUSE_ONLY === '1'
 const runToOnly = process.env.AUTOFLOW_B8_RUN_TO_ONLY === '1'
 const b8Only = failedPauseOnly || runToOnly
-const projectMode = process.env.AUTOFLOW_B1_PROJECT === '1'
+const projectTaskMode = process.env.AUTOFLOW_B1_PROJECT_TASK === '1'
+const projectMode = projectTaskMode || process.env.AUTOFLOW_B1_PROJECT === '1'
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectMode ? 'project-integration' : b8Only ? 'b8' : 'b1'}`)
 const evidencePrefix = failedPauseOnly ? 'formal-failed-pause-electron-' : runToOnly ? 'formal-run-to-electron-' : 'formal-electron-'
 const evidenceDir = await mkdtemp(join(evidenceRoot, evidencePrefix))
@@ -133,7 +134,129 @@ try {
   if (projectMode) assert.equal(saved.projectId, projectId)
   checkpoint('正式保存经真实 HTTP 写入 SQLite，返回修订 1')
 
-  if (runToOnly) {
+  if (projectTaskMode) {
+    await closeWindowThroughOs(desktop.child.pid)
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    studio = await openStudioFromMain(main, desktop.debugOrigin)
+    await waitFor(studio, "document.body?.innerText.includes('模块库')", 'project workflow reopen', 30_000)
+    if (!await studio.evaluate("document.querySelectorAll('.react-flow__node').length === 5")) {
+      await click(studio, '打开')
+      await click(studio, '打开工作流 B1 五节点正式闭环', '[role="button"]')
+    }
+    await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 5", 'five nodes restored')
+    assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__edge').length"), 4)
+    await closeWindowThroughOs(desktop.child.pid)
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    checkpoint('正式 Studio 原生关闭重开，恢复五节点后关闭窗口返回项目')
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', 'Studio 五节点项目任务')
+    await click(main, '关联工作流', '[role="combobox"]')
+    await click(main, 'B1 五节点正式闭环', '[role="option"]')
+    await click(main, '资源与环境', '[role="tab"]')
+    await click(main, '浏览器配置来源', '[role="combobox"]')
+    await click(main, '指定浏览器配置', '[role="option"]')
+    await click(main, '浏览器配置', '[role="combobox"]')
+    await click(main, profile.name, '[role="option"]')
+    await click(main, '保存配置')
+    await waitFor(main, "document.body.innerText.includes('自动化已创建')", 'project automation saved')
+    await click(main, '启动运行')
+    await waitFor(main, "document.body.innerText.includes('启动自动化')", 'project batch dialog')
+    await setInput(main, '[aria-label="本次任务数"]', '1')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body.innerText.includes('本批次任务')", 'project batch detail', 30_000)
+    const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const terminal = await waitForValue(async () => {
+      const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`)
+      return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null
+    }, 'project task terminal', 120_000)
+    assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify(terminal))
+    const tasks = await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)
+    assert.equal(tasks.total, 1)
+    const task = tasks.items[0]
+    await click(main, '查看任务')
+    await click(main, '输入与输出', '[role="tab"]')
+    await waitFor(main, "document.body.innerText.includes('真实 CloakBrowser 五节点')", 'project output rendered')
+    const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+    assert.ok(outputs.items.some(item => item.name === 'result' && item.value === '真实 CloakBrowser 五节点'))
+    const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
+    assert.equal(attempts.total, 5)
+    assert.ok(attempts.items.every(item => item.status === 'succeeded'))
+    const artifacts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/artifacts?pageSize=100`)
+    assert.equal(artifacts.total, 1)
+    assert.equal(artifacts.items[0].purpose, 'result')
+    await click(main, '查看节点截图：网页截图')
+    await waitFor(main, "[...document.querySelectorAll('img')].some(e=>e.alt==='节点截图：网页截图' && e.complete && e.naturalWidth>0)", 'project PNG preview')
+    const png = await apiBytes(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/artifacts/${artifacts.items[0].artifactId}/content`)
+    assert.deepEqual([...png.subarray(0,8)], [137,80,78,71,13,10,26,10])
+    assert.equal(createHash('sha256').update(png).digest('hex'), artifacts.items[0].sha256)
+    await capture(main, join(evidenceDir, 'project-task-png.png'))
+    await wait(800)
+    assert.deepEqual(execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)), [])
+    checkpoint('项目自动化真实 UI 绑定 Studio 文档和主应用 Profile，批次五节点执行、输出和 PNG 展示通过，浏览器已清理')
+    await press(main, 'Escape', { keyCode: 27 })
+    const scenarioBatches = []
+    for (const [scenario, url] of [['stop', slowUrl], ['failure', 'http://127.0.0.1:1/unavailable'], ['recovered', pageUrl]]) {
+      await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+      await click(main, '打开自动化 Studio 五节点项目任务')
+      await click(main, '打开 Studio')
+      studio = await connectStudio(desktop.debugOrigin)
+      await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 5", 'bound workflow reopen')
+      await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[0])}]`)
+      await setInput(studio, '[placeholder="https://example.com"]', url)
+      const beforeRevision = (await api(runtime, `/workflows/${saved.id}`)).revision
+      await click(studio, '保存')
+      await waitForValue(async () => (await api(runtime, `/workflows/${saved.id}`)).revision > beforeRevision, 'updated project source revision')
+      await closeWindowThroughOs(desktop.child.pid)
+      studio.close(); studio = undefined
+      await waitForNoStudio(desktop.debugOrigin)
+      await click(main, '启动运行')
+      await waitFor(main, "document.body.innerText.includes('启动自动化')", 'new task launch')
+      await click(main, '启动 1 个任务')
+      await waitFor(main, "document.body.innerText.includes('本批次任务')", 'next batch detail', 30_000)
+      const current = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+      assert.notEqual(current.batchId, batch.batchId)
+      if (scenario === 'stop') {
+        await waitForValue(async () => {
+          const value = await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${current.batchId}`)
+          const item = value.items[0]
+          if (!item) return null
+          const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${item.taskId}/node-attempts?pageSize=100`)
+          return attempts.total > 0 ? item : null
+        }, 'navigation actually started')
+        await click(main, '停止批次')
+        await waitFor(main, "document.body.innerText.includes('停止当前批次？')", 'ordinary stop dialog')
+        await setInput(main, '[aria-label="停止原因"]', 'Studio 项目任务停止验收')
+        await click(main, '确认停止')
+      }
+      const final = await waitForValue(async () => {
+        const value = await api(runtime, `/v1/projects/${projectId}/batches/${current.batchId}`)
+        return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null
+      }, `${scenario} task terminal`, 120_000)
+      const currentTasks = await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${current.batchId}`)
+      const currentTask = currentTasks.items[0]
+      assert.equal(currentTask.status, scenario === 'stop' ? 'cancelled' : scenario === 'failure' ? 'failed' : 'succeeded', JSON.stringify(final))
+      const currentAttempts = await api(runtime, `/v1/projects/${projectId}/tasks/${currentTask.taskId}/node-attempts?pageSize=100`)
+      assert.equal(currentAttempts.total, scenario === 'recovered' ? 5 : 1)
+      if (scenario === 'failure') {
+        const failureArtifacts = await api(runtime, `/v1/projects/${projectId}/tasks/${currentTask.taskId}/artifacts?pageSize=100`)
+        assert.equal(failureArtifacts.total, 1)
+        assert.equal(failureArtifacts.items[0].purpose, 'error')
+        assert.equal(failureArtifacts.items[0].availability, 'available')
+      }
+      await wait(400)
+      assert.deepEqual(execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)), [])
+      scenarioBatches.push({ scenario, batchId: current.batchId, taskId: currentTask.taskId, status: currentTask.status })
+      await capture(main, join(evidenceDir, `project-task-${scenario}.png`))
+      checkpoint(`项目任务 ${scenario} 真实 UI 验收完成，后续节点与进程清理符合预期`)
+    }
+    const packageBoundary = desktop.packaged ? await verifyPackageBoundary() : null
+    const buildArtifacts = desktop.packaged ? await packagedBuildHashes() : null
+    const report = { evidenceId: 'BE-project-studio-task-bridge', scenarioBatches, checkedAt: new Date().toISOString(), result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary, buildArtifacts, buildSha256: await buildHash(), projectId, workflowId: saved.id, profileId: profile.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'real UI mouse/keyboard; APIs only setup Profile and assert evidence' } }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+  } else if (runToOnly) {
     const runId = await verifyRunToTarget({
       studio, runtime, saved, nodeIds, userData, evidenceDir, observedEvents,
     })
@@ -597,7 +720,7 @@ async function closeWindowThroughOs(pid) {
   await wait(150)
 }
 
-async function waitForValue(read, description, timeoutMs) {
+async function waitForValue(read, description, timeoutMs = 15_000) {
   const deadline = Date.now() + timeoutMs
   let last
   while (Date.now() < deadline) {

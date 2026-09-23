@@ -221,6 +221,7 @@ def _canonical_document(row: WorkflowDocumentRow) -> dict[str, Any] | None:
         return None
     assert isinstance(raw, dict)
     content = deepcopy(raw)
+    content.setdefault("schemaVersion", 3)
     content.pop("name", None)
     content["id"] = row.id
     content["name"] = row.name

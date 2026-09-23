@@ -8,7 +8,7 @@ import subprocess
 import sys
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Literal, cast
 from uuid import UUID
 
@@ -270,11 +270,20 @@ class ProjectWorkflowWorkerManager:
             worker is None
             or worker.run_id != run_id
             or worker.generation != execution_generation
-            or relative_path
-            != f"{worker.relative_artifact_directory}/{artifact_id}.png"
+
         ):
             return
-        candidate = worker.artifact_directory / f"{artifact_id}.png"
+        relative = PurePosixPath(relative_path)
+        prefix = PurePosixPath(worker.relative_artifact_directory)
+        if relative.as_posix() != relative_path or "\\" in relative_path or ".." in relative.parts or not relative.is_relative_to(prefix):
+            return
+        suffix = relative.relative_to(prefix)
+        legacy = suffix == PurePosixPath(f"{artifact_id}.png")
+        if not legacy and (len(suffix.parts) < 2 or suffix.parts[0] != "artifacts" or suffix.suffix.lower() != ".png"):
+            return
+        candidate = worker.artifact_directory / Path(*suffix.parts)
+        if candidate.resolve() != candidate.absolute():
+            return
         try:
             info = candidate.lstat()
             if not candidate.is_file() or candidate.is_symlink() or info.st_nlink != 1:

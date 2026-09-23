@@ -9819,9 +9819,9 @@ export type components = {
             kind: "screenshot";
             /**
              * Purpose
-             * @constant
+             * @enum {string}
              */
-            purpose: "error";
+            purpose: "error" | "result";
             /**
              * Availability
              * @enum {string}

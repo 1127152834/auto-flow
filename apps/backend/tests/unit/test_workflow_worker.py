@@ -6,7 +6,7 @@ import json
 import sys
 import threading
 from types import SimpleNamespace
-from typing import Self
+from typing import Any, Self
 
 import pytest
 
@@ -164,6 +164,7 @@ async def test_fractional_second_timeout_is_not_truncated_to_zero() -> None:
     executor = WorkflowExecutor(context, {}, lambda *_: asyncio.sleep(0), lambda: False)
     result = await executor.run(plan(node("open", "open_page", timeout=0.02, url="https://x")))
     assert result["status"] == "failed"
+    assert isinstance(result["error"], dict)
     assert result["error"]["code"] == "WORKFLOW_NODE_TIMEOUT"
 
 
@@ -185,12 +186,7 @@ async def test_worker_disables_playwright_default_timeouts_for_zero_budget(
     )
     output = io.StringIO()
 
-    class Ack:
-        async def next(self) -> dict[str, object]:
-            event = json.loads(output.getvalue().splitlines()[-1])["event"]
-            return {"type": "event_committed", "eventId": event["eventId"], "executionGeneration": 3}
-
-    assert await _run(command(), threading.Event(), Ack(), output) == 0
+    assert await _run(command(), threading.Event(), Ack(output), output) == 0
     assert context.default_timeout == 0
     assert context.navigation_timeout == 0
 
@@ -245,12 +241,39 @@ async def test_stop_while_started_event_waits_for_ack_then_skips_action() -> Non
     assert context.pages == []
 
 
+class Ack:
+    """One parent acknowledgement per emitted event, without replaying the last line."""
+
+    def __init__(self, output: io.StringIO) -> None:
+        self.output = output
+        self.cursor = 0
+        self.messages: asyncio.Queue[dict[str, object] | Exception] = asyncio.Queue()
+
+    async def next(self) -> dict[str, object]:
+        while True:
+            if not self.messages.empty():
+                message = self.messages.get_nowait()
+                if isinstance(message, Exception):
+                    raise message
+                return message
+            lines = self.output.getvalue().splitlines()
+            while self.cursor < len(lines):
+                message = json.loads(lines[self.cursor])
+                self.cursor += 1
+                if message["type"] == "event":
+                    return {"type": "event_committed", "eventId": message["event"]["eventId"], "executionGeneration": 3}
+            await asyncio.sleep(0.001)
+
+
 class Incoming:
     def __init__(self, messages: list[dict[str, object] | Exception]) -> None:
         self.messages = iter(messages)
 
     async def next(self) -> dict[str, object]:
-        value = next(self.messages)
+        value = next(self.messages, None)
+        if value is None:
+            await asyncio.Future()
+            raise AssertionError("unreachable")
         if isinstance(value, Exception):
             raise value
         return value
@@ -267,7 +290,7 @@ def _fake_cloakbrowser(launch, persistent=None):
     )
 
 
-def command() -> dict[str, object]:
+def command() -> dict[str, Any]:
     browser = {
         "headless": True, "fingerprintSeed": 12345, "expertArgs": [], "geoip": False,
         "humanize": False, "humanPreset": "default", "extensionPaths": [],
@@ -288,16 +311,8 @@ async def test_worker_envelopes_ack_gate_and_cleanup(monkeypatch: pytest.MonkeyP
 
     monkeypatch.setitem(sys.modules, "cloakbrowser", _fake_cloakbrowser(launch))
 
-    class Ack:
-        async def next(self) -> dict[str, object]:
-            while not output.getvalue().splitlines(): await asyncio.sleep(0)
-            event = json.loads(output.getvalue().splitlines()[-1])
-            while event["type"] != "event":
-                await asyncio.sleep(0); event = json.loads(output.getvalue().splitlines()[-1])
-            return {"type": "event_committed", "eventId": event["event"]["eventId"], "executionGeneration": 3}
-
     output = io.StringIO()
-    assert await _run(command(), threading.Event(), Ack(), output) == 0
+    assert await _run(command(), threading.Event(), Ack(output), output) == 0
     decoded = [json.loads(line) for line in output.getvalue().splitlines()]
     assert decoded[0] == {"type": "ready", "protocolVersion": 1, "runId": "run", "executionGeneration": 3}
     assert all(message.get("protocolVersion") == 1 for message in decoded if message["type"] != "error")
@@ -352,6 +367,7 @@ async def test_node_failure_emits_failed_evidence_then_cleans_up() -> None:
     )
     assert result["status"] == "failed"
     assert events[-1][0] == "nodeAttempt"
+    assert isinstance(events[-1][3], dict)
     assert events[-1][3]["status"] == "failed"
     assert events[-1][3]["error"]["code"] == "WORKFLOW_PAGE_CLOSED"
 
@@ -394,16 +410,7 @@ async def test_worker_captures_failure_screenshot_before_closing_browser(
     )
     output = io.StringIO()
 
-    class Ack:
-        async def next(self) -> dict[str, object]:
-            event = json.loads(output.getvalue().splitlines()[-1])["event"]
-            return {
-                "type": "event_committed",
-                "eventId": event["eventId"],
-                "executionGeneration": 3,
-            }
-
-    assert await _run(command(), threading.Event(), Ack(), output) == 1
+    assert await _run(command(), threading.Event(), Ack(output), output) == 1
     events = [
         message["event"]
         for message in map(json.loads, output.getvalue().splitlines())
@@ -448,18 +455,6 @@ async def test_cleanup_failure_has_identity_and_never_claims_finished(
     monkeypatch.setitem(
         sys.modules, "cloakbrowser", _fake_cloakbrowser(launch)
     )
-
-    class Ack:
-        def __init__(self, output: io.StringIO) -> None:
-            self.output = output
-
-        async def next(self) -> dict[str, object]:
-            event = json.loads(self.output.getvalue().splitlines()[-1])["event"]
-            return {
-                "type": "event_committed",
-                "eventId": event["eventId"],
-                "executionGeneration": 3,
-            }
 
     output = io.StringIO()
     assert await _run(command(), threading.Event(), Ack(output), output) == 1
@@ -509,12 +504,7 @@ async def test_proxy_relay_exit_failure_never_claims_cleanup(
     payload["browser"] = {**payload["browser"], "proxy": {"server": "http://upstream", "username": "u", "password": "p"}}
     output = io.StringIO()
 
-    class Ack:
-        async def next(self) -> dict[str, object]:
-            event = json.loads(output.getvalue().splitlines()[-1])["event"]
-            return {"type": "event_committed", "eventId": event["eventId"], "executionGeneration": 3}
-
-    incoming = Ack() if valid_ack else Incoming(
+    incoming = Ack(output) if valid_ack else Incoming(
         [{"type": "event_committed", "eventId": "wrong", "executionGeneration": 3}]
     )
     assert await _run(payload, threading.Event(), incoming, output) == 1
@@ -548,13 +538,196 @@ async def test_worker_opens_saved_environment_directory_as_persistent_context(
     )
     output = io.StringIO()
 
-    class Ack:
-        async def next(self) -> dict[str, object]:
-            event = json.loads(output.getvalue().splitlines()[-1])["event"]
-            return {"type": "event_committed", "eventId": event["eventId"], "executionGeneration": 3}
-
     payload = command()
-    payload["browser"]["userDataDir"] = str(work_directory)  # type: ignore[index]
-    assert await _run(payload, threading.Event(), Ack(), output) == 0
+    payload["browser"]["userDataDir"] = str(work_directory)
+    assert await _run(payload, threading.Event(), Ack(output), output) == 0
     assert seen and seen[0]["user_data_dir"] == str(work_directory)
     assert context.closed
+
+
+@pytest.fixture
+def controlled_worker(monkeypatch: pytest.MonkeyPatch, tmp_path):
+    executable, cache, context = tmp_path / "chrome", tmp_path / "cache", Context()
+    executable.write_bytes(b"x")
+    cache.mkdir()
+    monkeypatch.setenv("CLOAKBROWSER_BINARY_PATH", str(executable))
+    monkeypatch.setenv("CLOAKBROWSER_CACHE_DIR", str(cache))
+    monkeypatch.setenv("AUTOFLOW_WORKFLOW_ARTIFACT_DIR", str(tmp_path / "runs/run/generation-3"))
+    monkeypatch.setenv("AUTOFLOW_WORKFLOW_ARTIFACT_RELATIVE_DIR", "runs/run/generation-3")
+
+    async def launch(**_: object) -> Context:
+        return context
+
+    monkeypatch.setitem(sys.modules, "cloakbrowser", _fake_cloakbrowser(launch))
+    output = io.StringIO()
+    return context, output, Ack(output)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("control", ["stop", "eof"])
+@pytest.mark.parametrize("adapter", ["chain", "graph"])
+async def test_worker_interrupts_long_action_without_waiting_for_next_event(
+    controlled_worker, control, adapter,
+) -> None:
+    from autoflow.providers.browser.project_workflow_worker import ProtocolFailure
+
+    context, output, incoming = controlled_worker
+    entered, cancelled = asyncio.Event(), asyncio.Event()
+
+    class WaitingPage(Page):
+        async def goto(self, url: str, **kwargs: object) -> None:
+            entered.set()
+            try:
+                await asyncio.Future()
+            finally:
+                cancelled.set()
+
+    async def new_page() -> Page:
+        page = WaitingPage()
+        context.pages.append(page)
+        return page
+
+    context.new_page = new_page
+    payload = command()
+    if adapter == "graph":
+        payload["executionPlan"] = {"document": {
+            "nodes": [{"id": "open", "data": {"moduleType": "open_page", "url": "https://one", "timeout": 0}}],
+            "edges": [],
+        }}
+    running = asyncio.create_task(_run(payload, threading.Event(), incoming, output))
+    try:
+        await asyncio.wait_for(entered.wait(), 1)
+        incoming.messages.put_nowait(
+            {"type": "stop", "executionGeneration": 3} if control == "stop" else ProtocolFailure()
+        )
+        done, _ = await asyncio.wait({running}, timeout=0.4)
+        assert running in done, "control must interrupt a running action before the next event"
+        assert await running == (0 if control == "stop" else 1)
+        assert cancelled.is_set() and context.closed
+        finished = json.loads(output.getvalue().splitlines()[-1])
+        assert finished["cleanupConfirmed"] is True
+        assert finished["status"] == ("cancelled" if control == "stop" else "failed")
+        if control == "eof":
+            assert finished["error"]["code"] == "WORKFLOW_PARENT_UNAVAILABLE"
+    finally:
+        running.cancel()
+        await asyncio.gather(running, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("control", ["stop", "timeout"])
+async def test_failed_screenshot_is_bounded_and_keeps_original_node_failure(
+    controlled_worker, monkeypatch, control,
+) -> None:
+    from autoflow.providers.browser import project_workflow_worker as worker
+
+    context, output, incoming = controlled_worker
+    entered, cancelled = asyncio.Event(), asyncio.Event()
+    monkeypatch.setattr(worker, "FAILURE_SCREENSHOT_TIMEOUT_SECONDS", 0.05, raising=False)
+
+    class FailingPage(Page):
+        async def goto(self, url: str, **kwargs: object) -> None:
+            raise RuntimeError("browser action failed")
+
+        async def screenshot(self, **kwargs: object) -> bytes:
+            entered.set()
+            try:
+                await asyncio.Future()
+            finally:
+                cancelled.set()
+            raise AssertionError("unreachable")
+
+    async def new_page() -> Page:
+        page = FailingPage()
+        context.pages.append(page)
+        return page
+
+    context.new_page = new_page
+    running = asyncio.create_task(_run(command(), threading.Event(), incoming, output))
+    try:
+        await asyncio.wait_for(entered.wait(), 1)
+        if control == "stop":
+            incoming.messages.put_nowait({"type": "stop", "executionGeneration": 3})
+        done, _ = await asyncio.wait({running}, timeout=0.4)
+        assert running in done, "failure evidence must not prevent terminal cleanup"
+        assert await running == 1
+        assert cancelled.is_set() and context.closed
+        messages = [json.loads(line) for line in output.getvalue().splitlines()]
+        failed = next(message["event"] for message in messages if message["type"] == "event" and message["event"]["kind"] == "nodeAttempt" and message["event"]["payload"]["status"] == "failed")
+        artifact = next(message["event"] for message in messages if message["type"] == "event" and message["event"]["kind"] == "artifact")
+        assert artifact["payload"]["availability"] == "unavailable"
+        assert messages[-1]["status"] == "failed"
+        assert messages[-1]["error"] == failed["payload"]["error"]
+        assert messages[-1]["cleanupConfirmed"] is True
+    finally:
+        running.cancel()
+        await asyncio.gather(running, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("control", ["stop", "eof"])
+async def test_control_interrupts_browser_launch(controlled_worker, monkeypatch, control) -> None:
+    from autoflow.providers.browser.project_workflow_worker import ProtocolFailure
+
+    _, output, incoming = controlled_worker
+    entered, cancelled = asyncio.Event(), asyncio.Event()
+
+    async def launch(**_: object) -> Context:
+        entered.set()
+        try:
+            await asyncio.Future()
+        finally:
+            cancelled.set()
+        raise AssertionError("unreachable")
+
+    monkeypatch.setitem(sys.modules, "cloakbrowser", _fake_cloakbrowser(launch))
+    running = asyncio.create_task(_run(command(), threading.Event(), incoming, output))
+    try:
+        await asyncio.wait_for(entered.wait(), 1)
+        incoming.messages.put_nowait(
+            {"type": "stop", "executionGeneration": 3} if control == "stop" else ProtocolFailure()
+        )
+        done, _ = await asyncio.wait({running}, timeout=0.4)
+        assert running in done
+        assert await running == (0 if control == "stop" else 1)
+        assert cancelled.is_set()
+        final = json.loads(output.getvalue().splitlines()[-1])
+        assert final["status"] == ("cancelled" if control == "stop" else "failed")
+        assert final["cleanupConfirmed"] is True
+        if control == "eof":
+            assert final["error"]["code"] == "WORKFLOW_PARENT_UNAVAILABLE"
+    finally:
+        running.cancel()
+        await asyncio.gather(running, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+async def test_late_ack_only_confirms_original_event_after_action_timeout() -> None:
+    from autoflow.providers.browser.project_workflow_worker import _Control, _Input
+
+    incoming = _Input(io.StringIO())
+    control = _Control(incoming, 3, threading.Event())
+    reader = asyncio.create_task(control.read())
+    original = asyncio.get_running_loop().create_future()
+    control.pending["original"] = original
+
+    async def await_original() -> None:
+        await asyncio.shield(original)
+
+    timed_out = asyncio.create_task(await_original())
+    await asyncio.sleep(0)
+    timed_out.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await timed_out
+    newer = asyncio.get_running_loop().create_future()
+    control.pending["newer"] = newer
+    try:
+        incoming.messages.put({"type": "event_committed", "executionGeneration": 3, "eventId": "original"})
+        await asyncio.wait_for(asyncio.shield(original), 0.4)
+        assert not newer.done()
+        incoming.messages.put({"type": "event_committed", "executionGeneration": 3, "eventId": "newer"})
+        await asyncio.wait_for(asyncio.shield(newer), 0.4)
+        assert control.failure is None and control.pending == {}
+    finally:
+        reader.cancel()
+        await asyncio.gather(reader, return_exceptions=True)

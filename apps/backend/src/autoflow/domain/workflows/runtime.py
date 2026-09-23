@@ -176,7 +176,7 @@ class RunArtifact:
     ordinal: int
     node_id: str
     node_visit_id: str | None
-    purpose: Literal["error"]
+    purpose: Literal["error", "result"]
     event_sequence: int
     execution_generation: int
     kind: Literal["screenshot"]
@@ -220,7 +220,7 @@ def create_run_artifact(
         or (node_visit_id is not None and len(node_visit_id) > 120)
         or type(ordinal) is not int
         or ordinal < 1
-        or purpose != "error"
+        or purpose not in {"error", "result"}
         or type(event_sequence) is not int
         or event_sequence < 1
         or type(execution_generation) is not int
@@ -259,7 +259,7 @@ def create_run_artifact(
         ordinal,
         node_id,
         node_visit_id,
-        "error",
+        cast(Literal["error", "result"], purpose),
         event_sequence,
         execution_generation,
         "screenshot",
@@ -280,7 +280,8 @@ def _controlled_artifact_path(
         return False
     path = PurePosixPath(value)
     return (
-        not path.is_absolute()
+        value == path.as_posix()
+        and not path.is_absolute()
         and "." not in path.parts
         and ".." not in path.parts
         and path.parts[:3] == ("runs", run_id, f"generation-{execution_generation}")

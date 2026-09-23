@@ -8,12 +8,13 @@ from autoflow.domain.workflows.run_validation import prepare_run
 from tests.fixtures.workflows import workflow_payload
 
 
-def test_runnable_catalog_is_exactly_the_pm3_worker_fixture_chain():
+def test_project_catalog_admits_the_five_node_studio_bridge():
     assert {item["moduleType"] for item in node_catalog() if item["runnable"]} == {
         "open_page",
         "input_text",
         "click_element",
         "get_element_info",
+        "screenshot",
     }
 
 
@@ -162,7 +163,7 @@ def test_prepare_accepts_zero_timeout_as_no_limit_for_every_worker_node():
 
 
 @pytest.mark.parametrize(
-    "module_type", ["wait_element", "screenshot", "ai_chat", "condition", "group"]
+    "module_type", ["wait_element", "ai_chat", "condition", "group"]
 )
 def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
     payload = workflow_payload()
@@ -264,3 +265,37 @@ def test_prepare_rejects_non_finite_configuration_values():
     with pytest.raises(WorkflowError) as caught:
         prepare_run(payload)
     assert caught.value.code == "WORKFLOW_INVALID"
+
+
+@pytest.mark.parametrize("mode", ["fullpage", "viewport", "element"])
+def test_screenshot_modes_are_admitted_with_valid_config(mode):
+    payload = workflow_payload()
+    node = payload["content"]["nodes"][3]
+    node["type"] = node["data"]["moduleType"] = "screenshot"
+    node["data"]["screenshotType"] = mode
+    prepared = prepare_run(payload)
+    assert prepared.graph_adapter
+    assert prepared.document == payload
+
+
+@pytest.mark.parametrize("config", [{"screenshotType": "invalid"}, {"screenshotType": "element"}, {"savePath": 42}])
+def test_screenshot_invalid_config_is_not_hidden_by_defaults(config):
+    payload = workflow_payload()
+    node = payload["content"]["nodes"][3]
+    node.update(type="screenshot", data={"moduleType": "screenshot", **config})
+    with pytest.raises(WorkflowError) as caught:
+        prepare_run(payload)
+    assert caught.value.details["issues"][0]["nodeId"] == "read"
+
+
+def test_studio_nested_config_empty_input_and_snapshot_preserved():
+    payload = workflow_payload()
+    payload["content"]["schemaVersion"] = 3
+    for node in payload["content"]["nodes"]:
+        kind = node["data"]["moduleType"]
+        node["data"] = {"moduleType": kind, "config": node["data"]}
+        if kind == "input_text":
+            node["data"]["config"]["text"] = ""
+    prepared = prepare_run(payload)
+    assert prepared.graph_adapter
+    assert prepared.document == payload

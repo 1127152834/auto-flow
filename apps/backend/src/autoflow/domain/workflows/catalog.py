@@ -1,13 +1,14 @@
 from copy import deepcopy
 from typing import Any
 
-# PM3 Task 4/6 freezes the first worker chain to navigation, input, click and
-# text extraction. Other Studio modules remain valid draft content.
+# Project tasks admit the five-node Studio bridge; other families require
+# their project resource ports before admission.
 _RUNNABLE_MODULES = (
     ("open_page", "打开网页"),
     ("input_text", "输入文本"),
     ("click_element", "点击元素"),
     ("get_element_info", "读取文本"),
+    ("screenshot", "网页截图"),
 )
 
 

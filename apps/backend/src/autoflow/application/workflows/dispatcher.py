@@ -541,9 +541,10 @@ class WorkflowRunDispatcher:
             return
         try:
             with self._sessions() as session:
-                committed = SqlAlchemyWorkflowRuntimeRepository(session).get_artifact(
-                    run.run_id, artifact_id
-                )
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                committed = repository.get_artifact(run.run_id, artifact_id)
+                if repository.artifact_path_is_registered(run.run_id, relative_path):
+                    return
         except Exception:  # noqa: BLE001 - unknown fact checks must preserve evidence.
             return
         if committed is None:

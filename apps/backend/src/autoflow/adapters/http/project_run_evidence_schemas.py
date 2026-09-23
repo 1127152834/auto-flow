@@ -71,7 +71,7 @@ class RunOutputPage(ApiModel):
 class RunArtifactView(ApiModel):
     artifact_id: str
     kind: Literal["screenshot"]
-    purpose: Literal["error"]
+    purpose: Literal["error", "result"]
     availability: Literal["available", "unavailable"]
     node_id: str
     node_name: str

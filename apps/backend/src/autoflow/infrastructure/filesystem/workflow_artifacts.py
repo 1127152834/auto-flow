@@ -124,10 +124,21 @@ class _BoundArtifactWriter:
 
 
 class WorkflowArtifactStore:
-    def __init__(self, root: Path, repository: WorkflowArtifactRepository) -> None:
+    def __init__(self, root: Path, repository: WorkflowArtifactRepository, *, execution_generation: int | None = None) -> None:
+        if execution_generation is not None and (type(execution_generation) is not int or execution_generation < 0):
+            raise ValueError("invalid execution generation")
+        self._execution_generation = execution_generation
         self._root = root.resolve()
         self._repository = repository
         self._retry_pending_output_cleanups()
+
+    def _run_root(self, run_id: str) -> Path:
+        root = self._root / "runs" / run_id
+        if self._execution_generation is not None:
+            root /= f"generation-{self._execution_generation}"
+        if root.resolve() != root or not root.is_relative_to(self._root):
+            raise WorkflowRunError("ARTIFACT_PATH_INVALID", "产物目录不能是符号链接", 422)
+        return root
 
     def writer(
         self,
@@ -213,13 +224,12 @@ class WorkflowArtifactStore:
     ) -> str:
         self._raise_if_cancelled(cancellation)
         relative_name = self._relative_name(name)
-        run_root = self._root / "runs" / run_id
+        run_root = self._run_root(run_id)
         target = run_root / "artifacts" / Path(*relative_name.parts)
-        target = target.resolve()
-        if not target.is_relative_to(run_root.resolve()):
+        if target.resolve() != target or not target.is_relative_to(run_root):
             raise WorkflowRunError("ARTIFACT_PATH_INVALID", "产物路径超出运行目录", 422)
-        self._place_file(target, content)
         relative_path = target.relative_to(self._root).as_posix()
+        self._place_file(target, content)
         try:
             self._raise_if_cancelled(cancellation)
             self._repository.register_artifact(
@@ -259,7 +269,7 @@ class WorkflowArtifactStore:
             return parent / raw.name, self._open_directory(parent)
 
         relative = self._relative_name(output_path)
-        output_root = self._root / "runs" / run_id / "outputs"
+        output_root = self._run_root(run_id) / "outputs"
         output_root.mkdir(parents=True, exist_ok=True)
         output_root = output_root.resolve()
         directory_fd = self._open_directory(output_root)
@@ -307,7 +317,7 @@ class WorkflowArtifactStore:
         cancellation: CancellationToken | None,
         suffix: str = ".txt",
     ) -> tuple[Path, int, str]:
-        run_root = self._root / "runs" / run_id
+        run_root = self._run_root(run_id)
         target = run_root / "artifacts" / "exports" / f"{uuid4().hex}{suffix}"
         target.parent.mkdir(parents=True, exist_ok=True)
         temporary = target.parent / f".{target.name}.{uuid4().hex}.tmp"
@@ -843,7 +853,7 @@ class WorkflowArtifactStore:
                     backup_path = None
                 except (OSError, WorkflowRunError) as error:
                     registration_rollback_error = error
-            self._remove_unowned(snapshot_path, self._root / "runs" / run_id)
+            self._remove_unowned(snapshot_path, self._run_root(run_id))
             if registration_rollback_error is not None:
                 raise WorkflowRunError(
                     "ARTIFACT_ROLLBACK_FAILED",
@@ -1172,7 +1182,7 @@ class WorkflowArtifactStore:
                     backup_path = None
                 except (OSError, WorkflowRunError) as error:
                     registration_rollback_error = error
-            self._remove_unowned(snapshot_path, self._root / "runs" / run_id)
+            self._remove_unowned(snapshot_path, self._run_root(run_id))
             if registration_rollback_error is not None:
                 raise WorkflowRunError(
                     "ARTIFACT_ROLLBACK_FAILED",

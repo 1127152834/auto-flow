@@ -191,3 +191,14 @@ it('presents a safe specific failure summary and locates its log', async () => {
   await userEvent.click(screen.getByRole('button', { name: '定位对应日志' }))
   expect(onLocateLog).toHaveBeenCalledWith('node-02')
 })
+
+
+it('labels successful node screenshots separately and opens the registered result', async () => {
+  const onOpenArtifact = vi.fn()
+  const result = { ...artifact, purpose: 'result' as const }
+  render(<TaskEvidence {...base} mode="io" artifacts={artifactPage([result])} onOpenArtifact={onOpenArtifact}/>)
+  const action = screen.getByRole('button', { name: /查看节点截图/ })
+  expect(screen.queryByRole('button', { name: /查看失败截图/ })).not.toBeInTheDocument()
+  await userEvent.click(action)
+  expect(onOpenArtifact).toHaveBeenCalledWith(result)
+})

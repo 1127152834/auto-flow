@@ -54,6 +54,8 @@ def test_available_artifact_keeps_only_controlled_relative_file_metadata() -> No
         "/tmp/secret.png",
         "runs/id/../../secret.png",
         "runs\\secret.png",
+        "runs/run/generation-2/artifacts//capture.png",
+        "runs/run/generation-2/artifacts/./capture.png",
     ],
 )
 def test_available_artifact_rejects_directory_escape(relative_path: str) -> None:

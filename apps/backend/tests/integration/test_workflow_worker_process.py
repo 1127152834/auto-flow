@@ -338,3 +338,27 @@ async def test_spawn_failure_and_directory_failure_can_retry_after_task_finished
     fail = False
     await instance.force_stop('a088a638-5afb-4b4b-8d83-45410a3cab42')
     assert not instance.busy()
+
+
+def test_result_cleanup_is_confined_to_current_generation_artifacts(tmp_path):
+    instance, _ = manager(tmp_path)
+    directory = tmp_path / 'workspace' / 'runs' / 'run' / 'generation-1'
+    result = directory / 'artifacts' / 'nested' / 'capture.png'
+    result.parent.mkdir(parents=True)
+    result.write_bytes(b'png')
+    other = tmp_path / 'other.png'
+    other.write_bytes(b'keep')
+    (directory / 'artifacts' / 'linked.png').symlink_to(other)
+    instance._worker = SimpleNamespace(
+        run_id='run', generation=1, artifact_directory=directory,
+        relative_artifact_directory='runs/run/generation-1',
+    )
+    for path in ['runs/run/generation-2/artifacts/nested/capture.png',
+                 'runs/run/generation-1/artifacts/linked.png',
+                 'runs/run/generation-1/artifacts/../../../other.png']:
+        instance.discard_uncommitted_artifact('run', 1, 'new-id', path)
+    assert result.read_bytes() == b'png'
+    assert other.read_bytes() == b'keep'
+    instance.discard_uncommitted_artifact('run', 1, 'new-id', 'runs/run/generation-1/artifacts/nested/capture.png')
+    assert not result.exists()
+    assert other.read_bytes() == b'keep'

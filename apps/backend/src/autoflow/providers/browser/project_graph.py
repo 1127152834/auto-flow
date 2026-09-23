@@ -13,7 +13,7 @@ from autoflow.application.workflows.executors.production import (
 )
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
-from autoflow.domain.workflows.execution import ExecutionContext
+from autoflow.domain.workflows.execution import ArtifactWriter, ExecutionContext
 
 from .workflow_executor import WorkflowExecutor
 from .workflow_session import CloakBrowserWorkflowSession
@@ -73,7 +73,7 @@ class _LegacyBrowserNode(ModuleExecutor):
 
 
 class _ProjectRegistry(ExecutorRegistry):
-    def __init__(self, legacy: WorkflowExecutor) -> None:
+    def __init__(self, legacy: WorkflowExecutor | None) -> None:
         super().__init__()
         self.source = build_production_executor_registry()
         self.legacy = legacy
@@ -83,7 +83,7 @@ class _ProjectRegistry(ExecutorRegistry):
 
     def get(self, module_type: str) -> ModuleExecutor | None:
         executor: ModuleExecutor | None
-        if module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
+        if self.legacy is not None and module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
             executor = _LegacyBrowserNode(module_type, self.legacy)
         else:
             executor = self.source.get(module_type)
@@ -96,6 +96,7 @@ class ProjectGraphExecutor:
         emit: Callable[[str, str, str, dict[str, object]], Awaitable[None]],
         should_stop: Callable[[], bool],
         capture_failure: Callable[[Any, str, str], Awaitable[dict[str, object]]] | None = None,
+        artifact_writer: Callable[[str, str], ArtifactWriter] | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
@@ -104,12 +105,15 @@ class ProjectGraphExecutor:
         self.legacy.variables = self.context.variables
         self.emit = emit
         self.capture_failure = capture_failure
+        self.artifact_writer = artifact_writer
+        self.graph_adapter = False
         self.nodes: dict[str, Any] = {}
         self.started: dict[str, float] = {}
         self.error: dict[str, str] | None = None
 
     async def run(self, plan: Mapping[str, Any]) -> dict[str, object]:
         document = plan.get('document')
+        self.graph_adapter = isinstance(document, dict)
         if not isinstance(document, dict):
             # Previously frozen chain/v1 content remains executable without a migration.
             identities = plan['orderedNodeIds']
@@ -118,7 +122,7 @@ class ProjectGraphExecutor:
                 'edges': [{'id': f'edge-{index}', 'source': source, 'target': target} for index, (source, target) in enumerate(pairwise(identities))],
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
-        result = await WorkflowRuntime(_ProjectRegistry(self.legacy)).execute(document, self.context)
+        result = await WorkflowRuntime(_ProjectRegistry(None if self.graph_adapter else self.legacy)).execute(document, self.context)
         if not result.success and self.error is None:
             self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
         return {'status': 'succeeded' if result.success else 'failed', 'error': self.error}
@@ -127,6 +131,8 @@ class ProjectGraphExecutor:
         node_id, visit = event['nodeId'], event['executionId']
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
+            if self.artifact_writer is not None and self.nodes[node_id].get("moduleType") == "screenshot":
+                self.context.artifacts = self.artifact_writer(node_id, visit)
             await self.emit('nodeAttempt', node_id, visit, {'status': 'started'})
             self.cancellation.raise_if_cancelled()
             await self.emit('log', node_id, visit, {'level': 'info', 'message': '开始执行节点'})
@@ -152,7 +158,7 @@ class ProjectGraphExecutor:
         await self.emit('nodeAttempt', node_id, visit, payload)
         if not success and self.capture_failure is not None:
             try:
-                page = self.legacy.page
+                page = self.browser.current_page()._raw if self.graph_adapter and self.browser is not None else self.legacy.page
             except Exception:  # noqa: BLE001 -- absence of a page is valid failure evidence.
                 page = None
             await self.emit('artifact', node_id, visit, await self.capture_failure(page, node_id, visit))

@@ -165,7 +165,9 @@ class WorkflowRuntimeService:
                 details={"capabilities": missing},
             )
         execution_plan = _execution_plan(prepared.document, prepared.node_ids)
-        adapter_version = "webrpa-chain/v1"
+        adapter_version = "webrpa-graph/v1" if prepared.graph_adapter else "webrpa-chain/v1"
+        if prepared.graph_adapter:
+            execution_plan["document"] = prepared.document["content"]
         checksum = _digest(
             {
                 "document": prepared.document,

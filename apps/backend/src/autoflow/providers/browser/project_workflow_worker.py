@@ -10,9 +10,12 @@ from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from threading import Event, Thread
-from typing import Any, TextIO
+from typing import Any, Protocol, TextIO
 from uuid import uuid4
 
+from autoflow.infrastructure.filesystem.project_workflow_artifacts import (
+    ProjectScreenshotWriter,
+)
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
@@ -20,6 +23,7 @@ from autoflow.providers.browser.worker import _optional_proxy, browser_launch_op
 PROTOCOL_VERSION = 1
 MAX_JSONL_BYTES = 1024 * 1024
 MAX_SCREENSHOT_BYTES = 20 * 1024 * 1024
+FAILURE_SCREENSHOT_TIMEOUT_SECONDS = 5.0
 
 
 class ProtocolFailure(Exception):
@@ -63,10 +67,67 @@ class _Input:
             self.messages.put(exc)
 
     async def next(self) -> dict[str, Any]:
-        item = await asyncio.to_thread(self.messages.get)
+        # The stdin reader remains the only blocking thread. Cancelling a
+        # to_thread(queue.get) would leave an abandoned consumer stealing ACKs.
+        while True:
+            try:
+                item = self.messages.get_nowait()
+                break
+            except queue.Empty:
+                await asyncio.sleep(0.01)
         if isinstance(item, BaseException):
             raise ProtocolFailure from item
         return item
+
+
+class _Incoming(Protocol):
+    async def next(self) -> dict[str, Any]: ...
+
+
+class _Control:
+    """One async reader dispatches control and ACKs independently of actions."""
+
+    def __init__(self, incoming: _Incoming, generation: int, stopped: Event) -> None:
+        self.incoming, self.generation, self.stopped = incoming, generation, stopped
+        self.stop_requested = False
+        self.failure: ProtocolFailure | None = None
+        self.pending: dict[str, asyncio.Future[None]] = {}
+
+    @property
+    def cancelled(self) -> bool:
+        return self.stop_requested or self.stopped.is_set() or self.failure is not None
+
+    async def read(self) -> None:
+        try:
+            while True:
+                message = await self.incoming.next()
+                if message.get("executionGeneration") != self.generation:
+                    raise ProtocolFailure
+                if message.get("type") == "stop":
+                    self.stop_requested = True
+                    continue
+                event_id = message.get("eventId")
+                if message.get("type") != "event_committed" or event_id not in self.pending:
+                    raise ProtocolFailure
+                waiter = self.pending.pop(event_id)
+                if not waiter.done():
+                    waiter.set_result(None)
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:  # noqa: BLE001 -- EOF and invalid control fail closed.
+            self.failure = error if isinstance(error, ProtocolFailure) else ProtocolFailure()
+            for waiter in self.pending.values():
+                if not waiter.done():
+                    waiter.set_result(None)
+            self.pending.clear()
+
+    async def wait_cancelled(self) -> None:
+        while not self.cancelled:
+            await asyncio.sleep(0.01)
+
+    def check_parent(self) -> None:
+        if self.failure is not None:
+            raise self.failure
 
 
 def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> int:
@@ -80,7 +141,7 @@ def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.s
         return 1
 
 
-async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout: TextIO) -> int:
+async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, stdout: TextIO) -> int:
     run_id, generation = _validate_start(command)
     executable = Path(_required_env("CLOAKBROWSER_BINARY_PATH"))
     cache = Path(_required_env("CLOAKBROWSER_CACHE_DIR"))
@@ -89,12 +150,12 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
     browser = command["browser"]
     launch = browser_launch_options(browser, headless=_boolean(browser, "headless"))
     relay_context = BrowserProxyRelay(proxy) if (proxy := _optional_proxy(browser)) else nullcontext()
-    stop_requested = stopped.is_set()
+    control = _Control(incoming, generation, stopped)
+    control_task = asyncio.create_task(control.read())
     context = None
     relay_guard = _CleanupGuard(relay_context)
 
     async def emit(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
-        nonlocal stop_requested
         event_id = uuid4().hex
         event = {
             "eventId": event_id, "runId": run_id, "executionGeneration": generation,
@@ -113,21 +174,16 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                 },
             }
             message = _envelope(command, "event", event=event)
+        control.check_parent()
+        waiter = asyncio.get_running_loop().create_future()
+        control.pending[event_id] = waiter
         _write(stdout, message)
-        while True:
-            message = await incoming.next()
-            if message.get("type") == "stop" and message.get("executionGeneration") == generation:
-                stop_requested = True
-                continue
-            if (
-                message.get("type") != "event_committed"
-                or message.get("eventId") != event_id
-                or message.get("executionGeneration") != generation
-            ):
-                raise ProtocolFailure
-            if output_too_large:
-                raise ProtocolFailure("WORKFLOW_OUTPUT_TOO_LARGE")
-            return
+        # A timed-out artifact may still be committed. Keep its ACK identity
+        # until the sole reader confirms it; it must never satisfy a newer event.
+        await asyncio.shield(waiter)
+        control.check_parent()
+        if output_too_large:
+            raise ProtocolFailure("WORKFLOW_OUTPUT_TOO_LARGE")
 
     result: dict[str, object] = {"status": "failed", "error": {"code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"}}
     cleanup_failed = False
@@ -140,12 +196,27 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                     launch_persistent_context_async,
                 )
                 user_data_dir = browser.get("userDataDir")
-                if isinstance(user_data_dir, str) and user_data_dir:
-                    context = await launch_persistent_context_async(
-                        user_data_dir=user_data_dir, **launch
+                launching = asyncio.create_task(
+                    launch_persistent_context_async(user_data_dir=user_data_dir, **launch)
+                    if isinstance(user_data_dir, str) and user_data_dir
+                    else launch_context_async(**launch)
+                )
+                launch_cancel = asyncio.create_task(control.wait_cancelled())
+                try:
+                    done, _ = await asyncio.wait(
+                        {launching, launch_cancel}, return_when=asyncio.FIRST_COMPLETED
                     )
-                else:
-                    context = await launch_context_async(**launch)
+                    if launching not in done:
+                        launching.cancel()
+                    context = await launching
+                    control.check_parent()
+                    if control.cancelled:
+                        raise asyncio.CancelledError
+                finally:
+                    launch_cancel.cancel()
+                    if not launching.done():
+                        launching.cancel()
+                    await asyncio.gather(launch_cancel, launching, return_exceptions=True)
                 context.set_default_timeout(0)
                 context.set_default_navigation_timeout(0)
                 _write(stdout, _envelope(command, "ready"))
@@ -155,14 +226,22 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
                     context,
                     variables,
                     emit,
-                    lambda: stop_requested or stopped.is_set(),
+                    lambda: control.cancelled,
                     lambda page, node_id, visit: _capture_failure_screenshot(
-                        command, page, node_id, visit
+                        command, page, node_id, visit, control=control
+                    ),
+                    lambda node_id, visit: ProjectScreenshotWriter(
+                        _artifact_directory(command)[0].parents[2], run_id, generation,
+                        node_id, visit, emit,
                     ),
                 )
                 result = await executor.run(command["executionPlan"])
+                control.check_parent()
     except asyncio.CancelledError:
-        result = {"status": "cancelled", "error": None}
+        if control.failure is not None:
+            result = {"status": "failed", "error": {"code": control.failure.code, "message": "父进程通信中断"}}
+        else:
+            result = {"status": "cancelled", "error": None}
     except ProtocolFailure as exc:
         message = "工作流输出超过协议限制" if exc.code == "WORKFLOW_OUTPUT_TOO_LARGE" else "父进程通信中断"
         result = {"status": "failed", "error": {"code": exc.code, "message": message}}
@@ -176,6 +255,8 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Input, stdout
             cleanup_failed = relay_guard.failed
         except Exception:  # noqa: BLE001
             cleanup_failed = True
+    control_task.cancel()
+    await asyncio.gather(control_task, return_exceptions=True)
     if cleanup_failed:
         _write(
             stdout,
@@ -203,7 +284,8 @@ def _validate_start(command: dict[str, Any]) -> tuple[str, int]:
 
 
 async def _capture_failure_screenshot(
-    command: dict[str, Any], page: Any, _node_id: str, _visit: str
+    command: dict[str, Any], page: Any, _node_id: str, _visit: str,
+    *, control: _Control | None = None,
 ) -> dict[str, object]:
     artifact_id = str(uuid4())
     unavailable = {
@@ -222,7 +304,23 @@ async def _capture_failure_screenshot(
         if page is None or page.is_closed() or not hasattr(page, "screenshot"):
             return {**unavailable, "unavailableReason": "SCREENSHOT_PAGE_UNAVAILABLE"}
         directory, relative_directory = _artifact_directory(command)
-        content = await page.screenshot(type="png")
+        capture = asyncio.create_task(page.screenshot(type="png"))
+        cancellation = asyncio.create_task(control.wait_cancelled()) if control is not None else None
+        tasks = {capture, cancellation} if cancellation is not None else {capture}
+        try:
+            done, _ = await asyncio.wait(
+                tasks, timeout=FAILURE_SCREENSHOT_TIMEOUT_SECONDS,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if control is not None:
+                control.check_parent()
+            if capture not in done or (control is not None and control.cancelled):
+                return {**unavailable, "unavailableReason": "SCREENSHOT_CAPTURE_FAILED"}
+            content = capture.result()
+        finally:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
         if not isinstance(content, bytes) or not content or len(content) > MAX_SCREENSHOT_BYTES:
             raise ValueError
         directory.mkdir(parents=True, exist_ok=True)
@@ -244,6 +342,8 @@ async def _capture_failure_screenshot(
             "sha256": hashlib.sha256(content).hexdigest(),
             "unavailableReason": None,
         }
+    except ProtocolFailure:
+        raise
     except Exception:  # noqa: BLE001 -- screenshot failures become safe evidence.
         if temporary is not None:
             try:

@@ -160,14 +160,14 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
   const finalOutputs = outputs?.items.filter(item => !item.nodeId) ?? []
   const nodeOutputs = outputs?.items.filter(item => item.nodeId) ?? []
   const inlineArtifact = artifacts?.items.find(item => item.availability === 'available')
-  const enlargementLabel = inlineScreenshotLabel.startsWith('失败截图：')
+  const enlargementLabel = /^(失败截图|节点截图)：/.test(inlineScreenshotLabel)
     ? `放大${inlineScreenshotLabel}`
-    : `放大失败截图：${inlineScreenshotLabel}`
+    : `放大${inlineArtifact?.purpose === 'result' ? '节点截图' : '失败截图'}：${inlineScreenshotLabel}`
   const renderArtifacts = (items: Artifact[]) => <div className="grid gap-3">{items.map(item => <article className="rounded-control border border-line p-3" key={item.artifactId}>
     <strong className="block truncate">{nodeName(detail, item.nodeId, item.nodeName)}</strong>
-    <p className="my-1 text-sm text-muted">失败截图 · {time(item.createdAt)} · {size(item.byteSize)}</p>
+    <p className="my-1 text-sm text-muted">{item.purpose === 'result' ? '节点截图' : '失败截图'} · {time(item.createdAt)} · {size(item.byteSize)}</p>
     {item.availability === 'available'
-      ? onOpenArtifact ? <Button size="sm" onClick={() => onOpenArtifact(item)} aria-label={`查看失败截图：${nodeName(detail, item.nodeId, item.nodeName)}`}>查看截图</Button> : <span className="text-sm text-muted">截图已保存</span>
+      ? onOpenArtifact ? <Button size="sm" onClick={() => onOpenArtifact(item)} aria-label={`查看${item.purpose === 'result' ? '节点截图' : '失败截图'}：${nodeName(detail, item.nodeId, item.nodeName)}`}>查看截图</Button> : <span className="text-sm text-muted">截图已保存</span>
       : <span className="text-sm text-warning">{artifactReasons[item.unavailableReason ?? ''] ?? '截图不可用'}</span>}
   </article>)}</div>
   return <div className="grid min-w-0 items-start gap-4 lg:grid-cols-2">
@@ -187,7 +187,7 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
             : <img className="max-h-[32rem] w-full rounded-control border border-line object-contain" src={inlineScreenshotUrl} alt={inlineScreenshotLabel}/>}
           {inlineArtifact ? <p className="m-0 text-sm text-muted">{nodeName(detail, inlineArtifact.nodeId, inlineArtifact.nodeName)} · {time(inlineArtifact.createdAt)} · {size(inlineArtifact.byteSize)}</p> : null}
           {artifacts?.items.filter(item => item.artifactId !== inlineArtifact?.artifactId).length ? renderArtifacts(artifacts.items.filter(item => item.artifactId !== inlineArtifact?.artifactId)) : null}
-        </div> : artifacts?.items.length ? renderArtifacts(artifacts.items) : <p className="text-muted">{artifacts ? '本次运行未生成失败截图。' : '失败截图尚未读取。'}</p>}
+        </div> : artifacts?.items.length ? renderArtifacts(artifacts.items) : <p className="text-muted">{artifacts ? '本次运行未生成截图。' : '运行截图尚未读取。'}</p>}
         {artifacts && artifacts.items.length < artifacts.total && onLoadMoreArtifacts ? <Button className="mt-3" disabled={loading} onClick={onLoadMoreArtifacts}>加载更多截图</Button> : null}
       </section>
       <div className="grid min-w-0 gap-4">
