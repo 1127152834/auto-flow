@@ -4290,7 +4290,7 @@
           "kind": "automated_rule_or_integration",
           "report": "docs/project-management/implementation/pm9/partial-source-follow-through.json",
           "scope": "空缓存身份校验前移；第二视图失败与必要/可选输入、真实批次首次断网拒绝",
-          "limitations": "全量与新打包原生验证进行中；真实Google/完整身份联合组合未验收",
+          "limitations": "本机全量3493/ARM桌面22截图已通过；该报告先于新同行用例，当前新三平台/实网UI联合仍待验收",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         },
@@ -4300,6 +4300,15 @@
           "report": "docs/project-management/implementation/pm9/peer-outage-follow-through.json",
           "scope": "同行异常观察移除后断网不恢复旧信任；完整修复来源后显式新批次真实worker恢复",
           "limitations": "受控Google transport；非完整改绑/全部代次组合或打包实网验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/peer-rebind-follow-through.json",
+          "scope": "公开同行身份列A→B→A改绑、断网/完整拉取均拒绝异namespace、修复后两真实worker仅使用各自当前代次执行",
+          "limitations": "受控Google transport；打包实网/UI联合和新增三平台场景仍待验收",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
@@ -4368,13 +4377,15 @@
             "symbol": "test_real_shared_sheet_peer_removal_requires_fresh_proof_after_source_outage",
             "scope": "真实HTTP/SQLite/worker：同行完整扫描发现重复身份→公开移除同行绑定→本表拉取失败仍配置错误零Task；修复来源完整拉取后新批次冻结原值执行，本地写入/一条pending意图保留，旧失败批次不重启。",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_shared_sheet_rebinding_requires_current_peer_namespace_and_generation",
+            "scope": "公开改绑产生新代次/epoch；异namespace在断网及完整本地拉取后均零Task，修复完整拉取后两真实worker冻结各自当前ref/版本/原值并各写一版本、一pending意图；旧失败批次不重启，远端无写入。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
-          {
-            "kind": "test_missing",
-            "detail": "同行坏身份观察→移除绑定→读取失败→完整修复拉取→显式新批次已补真实worker联合链；完整改绑/本表代次替换及同行namespace组合仍缺同一真实worker证据。"
-          },
           {
             "kind": "production_evidence_missing",
             "detail": "本机真实 worker 的缓存可靠/重复身份失效断网场景已通过；新来源时间/失败提示与真实 Sheets 的打包完整联合链、Windows/Intel 同场景仍待完成。"
@@ -17440,5 +17451,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-23: 251 条覆盖账本，248 条有范围断言 / 3 条未定位，204 partially_verified / 47 planned / 0 verified。DATA-WRITE-13 源码真实 worker 补两条 Sheets pending 意图保留，打包/真实 Google/跨平台仍待验收。原 73 条失效预定路径已有逐条映射；releaseAccepted=false。"
+  "pm9_note": "2026-09-24: 251条覆盖账本，249条有范围断言/2条未定位，206 partially_verified/45 planned/0 verified。73条失效预定路径已有逐条范围映射。DATA-CLAIM-09已补同行移除/改绑/namespace和当前代次真实worker链，仅移除该项test_missing；打包实网和新增三平台证据保留，releaseAccepted=false。"
 }

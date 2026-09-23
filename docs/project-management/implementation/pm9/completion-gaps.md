@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-24 同行改绑补证（confirmed局部）：公开A→B→A身份列替换产生新代次/epoch；异namespace时断网和完整本地拉取均拒绝领取。修复完整拉取后两真实worker各冻结正确当前代次/原值，人工继续各写一版本和一pending意图，零远端写入、旧失败批次不重启。最终相关3 passed/7 deselected/2 warnings（32.46秒），Ruff通过；CI原选择collect34/45且含新用例（非运行）。仅关闭DATA-CLAIM-09已列明的test_missing，保留生产/外部缺口；总计249/2、206partial/45planned/0verified，缺口计数241生产/16实现/9测试/24外部（可重叠）。本片无生产修改、不重复全量和打包；新原生运行仍待认证，releaseAccepted=false。详见peer-rebind-follow-through.json。
+
 2026-09-24 同行来源补证（confirmed局部）：新增真实HTTP/SQLite/worker验证坏身份同行解除绑定后、剩余表拉取失败仍拒绝领取；修复完整拉取后显式新批次才执行，旧失败批次不重启。最终1 passed/10.63秒，CI原选择已收集新用例（33/44，非运行结果）；无生产变更，不重复全量/打包。见peer-outage-follow-through.json；新原生验证仍受认证阻断，releaseAccepted=false。
 
 2026-09-24 当前补丁1c676965（confirmed本机全量/ARM打包，原生新矩阵待验）：首次来源读取失败的空缓存被误报noMatch，已将共享来源身份校验前移至候选扫描，必要/可选输入均明确configurationError。42相关、6边界、2真实worker及Ruff/mypy408通过；完整后端串行3493 passed/80 skipped/2 warnings（778.49秒）；后端构建/ARM打包及完整桌面22截图通过。该生产补丁不在35902129697/35895754111中，两轮旧CI继续保留。详见partial-source-follow-through.json；releaseAccepted=false。

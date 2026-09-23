@@ -587,11 +587,10 @@
         {
           "id": "DATA-CLAIM-09",
           "status": "partially_verified",
-          "evidenceCount": 4,
+          "evidenceCount": 5,
           "plannedTestExists": false,
-          "reviewedCheckCount": 7,
+          "reviewedCheckCount": 8,
           "gapKinds": [
-            "test_missing",
             "production_evidence_missing",
             "external_acceptance_pending"
           ]

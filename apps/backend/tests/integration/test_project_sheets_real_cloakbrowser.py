@@ -728,6 +728,116 @@ def test_real_shared_sheet_peer_removal_requires_fresh_proof_after_source_outage
         assert not app.state.project_workflow_worker_manager.busy()
 
 
+def test_real_shared_sheet_rebinding_requires_current_peer_namespace_and_generation(
+    tmp_path, valid_profile_values, real_cloak_page,
+):
+    from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
+    from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.fixtures.sheets import binding_impact
+    from tests.integration.test_project_sheets_sync import sync_operations
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith("chromium-"))
+    shutil.copytree(source, tmp_path / "data" / "kernels" / source.name, symlinks=True)
+    with shared_tables(tmp_path) as (first, second):
+        app, transport = first.client.app, first.transport
+        originals = [bound.records()[0] for bound in (first, second)]
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, "headless": True, "browser_version": source.name.removeprefix("chromium-"),
+        }))
+
+        def rebind(column):
+            body = {
+                "connectionId": second.connection, "spreadsheetId": transport.spreadsheet_id, "sheetId": 1000,
+                "identityStrategy": {"kind": "column", "columnId": column}, "mapping": second.binding["mapping"],
+                "expectedTableRevision": second.table_revision(), "expectedBindingEpoch": second.binding["bindingEpoch"],
+            }
+            accepted = second.client.put(second.url("/sheets/binding"), headers=new_key(), json=binding_impact(
+                second.client, second.project, second.table, body,
+            ))
+            assert accepted.status_code == 202, accepted.text
+            second.binding = accepted.json()["operation"]["result"]
+            assert second.records() == []
+
+        rebind("B")
+        incompatible_generation = second.dataset_generation()
+        assert incompatible_generation != originals[1]["ref"]["datasetGeneration"]
+        assert second.binding["bindingEpoch"] == 2
+        pull(second)
+        assert second.records()[0]["ref"]["recordKey"]["value"] == "original"
+        transport.fail_next = SheetsApiError(-1, "offline", "controlled outage after peer rebind")
+        failed = first.client.post(first.url("/sync/pull"), headers=new_key(), json={
+            "expectedTableRevision": first.table_revision(),
+        })
+        assert failed.status_code == 502, failed.text
+        assert failed.json()["error"]["code"] == "SHEETS_API_FAILED"
+
+        blocked_batches = []
+        # Even a new complete local scan cannot reconcile different identity columns.
+        for refresh in (False, True):
+            if refresh:
+                pull(first)
+            calls = len(transport.calls)
+            batch = start_real(first, profile, url, f"incompatible peer namespace {refresh}")
+            blocked_batches.append(batch)
+            wait_for(lambda batch=batch: batch_detail(first, batch)["batch"]["status"] == "failed", "incompatible namespace blocks input")
+            blocked = batch_detail(first, batch)
+            assert blocked["taskCount"] == 0
+            assert blocked["batch"]["selectionOutcome"]["status"] == "configurationError"
+            assert first.records()[0] == originals[0]
+            assert len(transport.calls) == calls and requests.count("/fixture") == 0
+            with app.state.session_factory() as session:
+                assert not session.scalars(select(ProjectTaskRow)).all()
+                assert not session.scalars(select(ProjectRecordLeaseRow)).all()
+            assert not app.state.project_workflow_worker_manager.busy()
+
+        rebind("A")
+        assert second.binding["bindingEpoch"] == 3
+        assert second.dataset_generation() not in {incompatible_generation, originals[1]["ref"]["datasetGeneration"]}
+        pull(second)
+        pull(first)
+        with app.state.session_factory() as session:
+            bindings = [session.get(SheetsBindingRow, bound.table) for bound in (first, second)]
+            assert all(binding.identity_verification["valid"] for binding in bindings)
+            assert bindings[0].identity_verification["namespace"] == bindings[1].identity_verification["namespace"]
+            assert bindings[0].identity_verification["bindingPeers"] == sorted([[binding.table_id, binding.binding_epoch] for binding in bindings])
+        calls = len(transport.calls)
+        for index, bound in enumerate((first, second)):
+            before = bound.records()[0]
+            assert before["ref"]["datasetGeneration"] == bound.dataset_generation()
+            assert {cell["fieldId"]: cell["value"] for cell in before["values"]} == {
+                cell["fieldId"]: cell["value"] for cell in originals[index]["values"]
+            }
+            label = f"current generation {index}"
+            batch = start_real(bound, profile, url, label)
+            item = wait_for(lambda bound=bound: manual_item(bound), "current namespace reaches real worker")
+            captured = bound.client.get(f"/api/v1/projects/{bound.project}/tasks/{item['taskId']}").json()["inputSnapshot"]["inputs"][0]
+            assert captured["recordRef"] == before["ref"]
+            assert captured["contentRevision"] == before["contentRevision"]
+            assert {cell["fieldId"]: cell["value"] for cell in captured["values"]} == {
+                cell["fieldId"]: cell["value"] for cell in before["values"]
+            }
+            assert captured["sourceIdentity"]["bindingEpoch"] == (1 if index == 0 else 3)
+            resume(bound, item)
+            wait_for(lambda bound=bound, batch=batch: batch_detail(bound, batch)["batch"]["status"] == "completed", "current generation completes")
+            assert batch_detail(bound, batch)["statusCounts"]["succeeded"] == 1
+            after = bound.records()[0]
+            assert after["ref"] == before["ref"]
+            assert after["contentRevision"] == before["contentRevision"] + 1
+            assert {cell["fieldId"]: cell["value"] for cell in after["values"]}[bound.field_id("title")] == label
+            pending = sync_operations(bound, "pending")
+            assert len(pending) == 1 and pending[0]["targetContentRevision"] == after["contentRevision"]
+        assert len(transport.calls) == calls and transport.changes() == 0
+        assert requests.count("/fixture") == 2
+        for batch in blocked_batches:
+            assert batch_detail(first, batch)["batch"]["status"] == "failed"
+            assert batch_detail(first, batch)["taskCount"] == 0
+        with app.state.session_factory() as session:
+            assert len(session.scalars(select(ProjectTaskRow)).all()) == 2
+            assert not session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.state.in_(("held", "reconciling")))).all()
+        assert not app.state.project_workflow_worker_manager.busy()
+
+
 def test_real_opposing_writes_enter_manual_branch_without_stealing_leases(
     tmp_path, valid_profile_values, real_cloak_page,
 ):
