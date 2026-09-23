@@ -561,7 +561,7 @@ class AndroidConsole:
             else:
                 command = {"launch": "android_launch_app", "stop": "android_stop_app", "uninstall": "android_uninstall_app", "clearData": "android_clear_app_data"}[operation]
                 try:
-                    await context.runtime.command(command, {"packageName": value}, 30)
+                    await context.runtime.command(command, {"packageName": value}, 30, retain_completion=True)
                 except asyncio.CancelledError:
                     self._app_operation_unknown(session, request_id, asyncio.CancelledError())
                     raise
@@ -581,8 +581,13 @@ class AndroidConsole:
                 "APK 已安装" if operation == "install" else {"launch": "应用已启动", "stop": "应用已停止", "uninstall": "应用已卸载", "clearData": "应用数据已清除"}[operation]
             )
             if request_id:
+                marker = context.device.get("pendingCommand")
+                if marker:
+                    receipts[request_id]["commandMarker"] = marker
                 receipts[request_id]["state"] = "succeeded"
                 self._persist_session(session)
+                if marker:
+                    await context.runtime.acknowledge_pending_command(marker)
             return session["view"]
 
     async def verify_app(self, identifier: str, generation: int, request_id: str) -> dict[str, Any]:

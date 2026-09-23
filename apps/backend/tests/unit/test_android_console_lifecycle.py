@@ -41,7 +41,7 @@ class _AppRuntime:
     def window_open(self):
         return False
 
-    async def command(self, operation, args, timeout):
+    async def command(self, operation, args, timeout, *, retain_completion=False):
         self.calls.append((operation, args, timeout))
         if self.console is not None:
             receipt = next(iter(self.console.sessions["s"].get("appReceipts", {}).values()), None)
@@ -126,6 +126,49 @@ async def test_app_operation_records_running_before_side_effect_and_succeeded_af
     }
     assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "succeeded"
     assert view["latestOperation"] == "应用已启动"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("fail_terminal_save", [False, True])
+async def test_successful_app_command_acknowledges_marker_after_terminal_receipt(fail_terminal_save):
+    console, runtime, resources = _app_console()
+    expect_save_failure = fail_terminal_save
+    marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
+    device = console.sessions["s"]["context"].device
+    original_command = runtime.command
+    original_save = resources.save
+    acknowledged = []
+
+    async def command(*args, **kwargs):
+        device["pendingCommand"] = marker
+        return await original_command(*args, **kwargs)
+
+    async def acknowledge(value):
+        assert value == marker
+        assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "succeeded"
+        acknowledged.append(value)
+        device.pop("pendingCommand")
+
+    def save(kind, item):
+        nonlocal fail_terminal_save
+        if fail_terminal_save and item.get("appReceipts", {}).get("req", {}).get("state") == "succeeded":
+            fail_terminal_save = False
+            raise OSError("receipt write failed")
+        original_save(kind, item)
+
+    runtime.command = command
+    runtime.acknowledge_pending_command = acknowledge
+    resources.save = save
+    if expect_save_failure:
+        with pytest.raises(OSError, match="receipt write failed"):
+            await console.app_operation("s", 3, "stop", "com.example.app", "req")
+        assert device["pendingCommand"] == marker
+        assert acknowledged == []
+        await console.verify_app("s", 3, "req")
+    else:
+        await console.app_operation("s", 3, "stop", "com.example.app", "req")
+    assert acknowledged == [marker]
+    assert "pendingCommand" not in device
 
 
 @pytest.mark.asyncio
@@ -228,9 +271,9 @@ async def test_unknown_app_action_can_be_reconciled_by_marker_without_replay():
     runtime.acknowledge_pending_command = AsyncMock()
     original_command = runtime.command
 
-    async def marked_command(*args):
+    async def marked_command(*args, **kwargs):
         console.sessions["s"]["context"].device["pendingCommand"] = "completion-marker"
-        return await original_command(*args)
+        return await original_command(*args, **kwargs)
 
     runtime.command = marked_command
     with pytest.raises(AndroidError) as error:

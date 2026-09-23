@@ -2,7 +2,9 @@
 
 [24 项验收校准](2026-09-23-acceptance-matrix.md)逐项区分通过、部分完成与外部阻塞；不把局部自动化或真实单链推断为四阶段全部完成。
 
-最新 AM1 前端增量见[管理操作历史](2026-09-23-operation-history-verification.md)：独立历史入口、游标分页、原请求核实和断线只读经 RED→GREEN；此前的[控制会话与详情入口](2026-09-23-control-session-verification.md)覆盖迟到打开、旧输入、结束未知、路由离开、原生归属及已回收会话核实。人工输入/切端与完整重启仍未验收。
+最新 AM1 [真实控制、应用与保留卷验收](2026-09-23-am1-real-control-retention.md)覆盖中文输入、原生/嵌入式切换、30 秒失联回收、HTTP 重启、真实 APK 操作及同卷数据恢复；本轮 RED→GREEN 接通了原本缺失的保留数据 `restore` 入口。此前的[管理操作历史](2026-09-23-operation-history-verification.md)与[控制会话竞态](2026-09-23-control-session-verification.md)分别保留自身证据。桌面长名称/200% 缩放、真实网络断开及受控硬中断仍未验收。
+
+最新 T19 [应用操作标记](2026-09-23-command-marker-verification.md)修复成功回执落盘前丢失客体完成证据的问题；真实 APK 链重跑后客体标记保持 `5→5`，旧残留和中断上传的 APK 临时文件仍待安全清理。
 
 最新 T05/T17/T18 增量见[原生窗口、恢复归属与持久数据属性](2026-09-23-persistent-metadata-verification.md)：118 项最终定向测试与真实 Mac 原生窗口、卷根及扩展属性/ACL、链接保留、部分失败隔离和正常恢复通过；[完整门槛](2026-09-23-full-gates.md)后端 3964 passed、26 skipped。全阶段仍 `partial`。前一增量见[恢复清单与目标身份](2026-09-23-restore-manifest-verification.md)。
 
@@ -16,9 +18,9 @@
 
 | 阶段 | 任务 | 证据 | 状态 |
 | --- | --- | --- | --- |
-| AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T04 自动验证；T05 原生窗口进程已真实验证，人工输入/切端、重启和受控中断仍缺证据 |
+| AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T04 自动验证；T05/T07 真实输入、切端、租约回收、HTTP 重启及保留卷恢复已验，桌面边界与硬中断仍缺证据 |
 | AM2 | T08–T12 | [am2-verification.md](am2-verification.md) | 镜像/模板自动化已通过；网络拉取、候选镜像和 GApps 条件不足 |
-| AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；批量压力与破坏性应用动作未验收 |
+| AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；单实例真实应用安装/启动/停止/清数据/卸载已验，批量压力仍未验收 |
 | AM4 | T17–T20 | [am4-verification.md](am4-verification.md) | 备份/恢复/清理自动化和基础卷证据存在；完整失败演练与最终交付未完成 |
 | GApps | T11 | [gapps-validation.md](gapps-validation.md) | `blocked` / `not_tested` |
 

@@ -354,7 +354,7 @@ class MacAndroidRuntime:
             raise AndroidError("ANDROID_DISCONNECTED", "安卓设备未连接", 503)
         return await run(["adb", "-s", self.serial, *args], timeout)
 
-    async def command(self, operation: str, args: dict[str, Any], timeout: float) -> bytes:
+    async def command(self, operation: str, args: dict[str, Any], timeout: float, *, retain_completion: bool = False) -> bytes:
         if operation == "android_screenshot":
             data = await self._adb("exec-out", "screencap", "-p", timeout=timeout)
             png_size(data)
@@ -419,8 +419,9 @@ class MacAndroidRuntime:
             raise AndroidError("ANDROID_LAUNCH_FAILED", "Android 未确认应用启动成功", 502)
         if operation in {"android_uninstall_app", "android_clear_app_data"} and b"Success" not in data:
             raise AndroidError("ANDROID_APP_OPERATION_FAILED", "Android 未确认应用操作成功", 502)
-        self.device.pop("pendingCommand", None)
-        self.save()
+        if not retain_completion:
+            self.device.pop("pendingCommand", None)
+            self.save()
         return data
 
     async def app_info(self) -> dict[str, Any]:
@@ -486,8 +487,6 @@ class MacAndroidRuntime:
             script = completion_script(["pm", "install", "-r", remote], marker, "case \"$output\" in Success) ;; Failure*|Failed*) rc=1;; *) rc=124;; esac; ")
             script += f"; rm -f {remote}; exit $rc"
             result = await self._adb("shell", "sh", "-c", shlex.quote(script), timeout=120)
-            self.device.pop("pendingCommand", None)
-            self.save()
             if b"Success" not in result:
                 raise AndroidError("ANDROID_INSTALL_FAILED", "Android 未确认 APK 安装成功", 422)
 

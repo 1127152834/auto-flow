@@ -498,3 +498,23 @@ async def test_lost_app_response_marker_records_semantic_result(tmp_path, monkey
     else:
         assert (await runtime.verify_pending_command() == 0) is successful
     assert "pendingCommand" in runtime.device
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("operation", ["android_stop_app", "install"])
+async def test_successful_app_response_keeps_marker_until_receipt_acknowledgement(tmp_path, operation):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    runtime.device = {"containerId": "container"}
+
+    async def adb(*args, **_kwargs):
+        if args[0] == "push":
+            return b""
+        return b"Success\n" if operation == "install" else b""
+
+    runtime._adb = adb
+    if operation == "install":
+        from tests.unit.test_android_apk import _apk, _manifest
+        await runtime.install_apk(_apk(_manifest()))
+    else:
+        await runtime.command(operation, {"packageName": "com.example.app"}, 1, retain_completion=True)
+    assert runtime.device["pendingCommand"].startswith("/data/local/tmp/autoflow-operation-")
