@@ -581,15 +581,27 @@ def test_real_worker_uses_reliable_cache_during_source_outage_but_rejects_invali
             assert failed.status_code == 502, failed.text
             assert failed.json()["error"]["code"] == "SHEETS_API_FAILED"
 
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, "headless": True, "browser_version": source.name.removeprefix("chromium-"),
+        }))
+        fail_pull()
+        initial_batch = start_real(bound, profile, url, "incomplete cache must block")
+        wait_for(lambda: batch_detail(bound, initial_batch)["batch"]["status"] == "failed", "initial source outage blocks input")
+        initial = batch_detail(bound, initial_batch)
+        assert initial["taskCount"] == 0
+        assert initial["batch"]["selectionOutcome"]["status"] == "configurationError"
+        assert bound.records() == [] and requests.count("/fixture") == 0
+        with app.state.session_factory() as session:
+            assert not session.scalars(select(ProjectTaskRow)).all()
+            assert not session.scalars(select(ProjectRecordLeaseRow)).all()
+        assert not app.state.project_workflow_worker_manager.busy()
+        transport.offline = False
         pull(bound)
         before = bound.records()[0]
         verified = proof()
         assert verified["valid"] is True
         fail_pull()
         assert proof() == verified and bound.records()[0] == before
-        profile = app.state.profile_service.create(ProfileSpec.from_values({
-            **valid_profile_values, "headless": True, "browser_version": source.name.removeprefix("chromium-"),
-        }))
         calls = len(transport.calls)
         batch = start_real(bound, profile, url, "committed while offline")
         item = wait_for(lambda: manual_item(bound), "offline cached input checkpoint")

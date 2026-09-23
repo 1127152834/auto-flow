@@ -163,6 +163,90 @@ def test_prepared_input_rechecks_field_validation_before_claim(tmp_path):
             assert not session.scalars(select(ProjectTaskRow)).all()
 
 
+
+@pytest.mark.parametrize("has_complete_cache", [False, True])
+@pytest.mark.parametrize("required", [False, True])
+def test_second_view_outage_never_promotes_partial_source_to_claimable_cache(tmp_path, has_complete_cache, required):
+    from autoflow.providers.data.google_sheets import SheetsApiError
+
+    class SecondViewOutage(FakeSheetsTransport):
+        offline_values = False
+        views = None
+
+        def send(self, method, url, *, params=None, json=None):
+            view = (params or {}).get("valueRenderOption")
+            if self.views is not None and view:
+                self.views.append(view)
+            if self.offline_values and view == "UNFORMATTED_VALUE":
+                self.fail_next = SheetsApiError(-1, "offline", "controlled second-view outage")
+            return super().send(method, url, params=params, json=json)
+
+    transport = SecondViewOutage({"数据": [["编号", "标题"], ["A-1", "original"]]})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as bound:
+        factory = bound.client.app.state.session_factory
+        plan = plan_for(bound)
+        plan["inputs"][0]["required"] = required
+        if has_complete_cache:
+            pull(bound)
+        before = bound.records()
+        source_time = bound.client.get(bound.url("/sync")).json()["summary"].get("lastPulledAt")
+        assert bool(before) is has_complete_cache
+        assert bool(source_time) is has_complete_cache
+        with factory() as session:
+            proof = session.get(SheetsBindingRow, bound.table).identity_verification
+        # A partial new observation must neither publish changed values nor
+        # validate/revoke identity before both views have completed.
+        transport.grid("数据")[1][1] = "uncommitted source value"
+        transport.grid("数据").append(["A-1", "duplicate identity"])
+        transport.offline_values = True
+        transport.views = []
+        failed = bound.client.post(bound.url("/sync/pull"), headers=new_key(), json={
+            "expectedTableRevision": bound.table_revision(),
+        })
+        assert failed.status_code == 502, failed.text
+        assert failed.json()["error"]["code"] == "SHEETS_API_FAILED"
+        assert transport.views == ["FORMULA", "UNFORMATTED_VALUE"]
+        assert bound.records() == before
+        state = bound.client.get(bound.url("/sync")).json()
+        assert state["summary"].get("lastPulledAt") == source_time
+        assert state["latestPull"]["status"] == "failed"
+        with factory() as session:
+            assert session.get(SheetsBindingRow, bound.table).identity_verification == proof
+            selected = SqlAlchemyProjectInputGroups(session).select_required(bound.project, plan)
+            assert selected.status == ("ready" if has_complete_cache else "configurationError")
+            if not has_complete_cache:
+                assert selected.issue_input_ids == (plan["inputs"][0]["inputId"],)
+                assert "来源身份尚未完整验证" in dict(selected.issue_details)[plan["inputs"][0]["inputId"]]
+            if has_complete_cache:
+                assert selected.inputs[0].record_ref.record_key.value == "A-1"
+            assert not session.scalars(select(ProjectTaskRow)).all()
+            assert not session.scalars(select(ProjectRecordLeaseRow)).all()
+        assert transport.changes() == 0
+        # Only a complete observation can discover and persist the duplicate.
+        transport.offline_values = False
+        pull(bound)
+        with factory() as session:
+            assert session.get(SheetsBindingRow, bound.table).identity_verification["valid"] is False
+            assert SqlAlchemyProjectInputGroups(session).select_required(bound.project, plan).status == "configurationError"
+        assert transport.changes() == 0
+
+
+
+@pytest.mark.parametrize("required", [False, True])
+def test_completely_read_empty_sheet_is_a_valid_empty_input(tmp_path, required):
+    with open_sheets_table(tmp_path, FakeSheetsTransport({"数据": [["编号", "标题"]]}), COLUMNS) as bound:
+        pull(bound)
+        plan = plan_for(bound)
+        plan["inputs"][0]["required"] = required
+        with bound.client.app.state.session_factory() as session:
+            assert session.get(SheetsBindingRow, bound.table).identity_verification["valid"] is True
+            selected = SqlAlchemyProjectInputGroups(session).select_required(bound.project, plan)
+            assert selected.status == ("noMatch" if required else "ready")
+            assert not selected.inputs
+        assert bound.records() == []
+        assert bound.client.get(bound.url("/sync")).json()["summary"]["lastPulledAt"]
+
+
 def test_shared_sheet_lease_keys(tmp_path):
     with (
         shared_tables(tmp_path) as (first, second),

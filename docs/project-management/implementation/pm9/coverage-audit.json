@@ -587,9 +587,9 @@
         {
           "id": "DATA-CLAIM-09",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": false,
-          "reviewedCheckCount": 4,
+          "reviewedCheckCount": 6,
           "gapKinds": [
             "test_missing",
             "production_evidence_missing",
@@ -599,9 +599,9 @@
         {
           "id": "DATA-CLAIM-10",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]

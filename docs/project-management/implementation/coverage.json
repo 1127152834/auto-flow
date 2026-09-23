@@ -4284,6 +4284,15 @@
           "limitations": "仅明确子范围；实网、打包联合链及完整身份组合仍待验收",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/partial-source-follow-through.json",
+          "scope": "空缓存身份校验前移；第二视图失败与必要/可选输入、真实批次首次断网拒绝",
+          "limitations": "全量与新打包原生验证进行中；真实Google/完整身份联合组合未验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -4318,7 +4327,7 @@
           {
             "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
             "symbol": "test_real_worker_uses_reliable_cache_during_source_outage_but_rejects_invalid_identity",
-            "scope": "真实 worker/浏览器使用已核验缓存，在持续 Google transport 断网下人工继续并提交本地值/待推送意图；完整扫描发现重复身份后再断网，零 Task/无浏览器/无活动 lease，失败读取不重置信任。",
+            "scope": "公开批次首次来源断网且无完整缓存时配置错误/零Task浏览器lease；完整读取后真实worker在持续断网时人工继续并提交本地值/待推送意图；完整重复身份扫描后再断网仍拒绝。",
             "level": "automated_integration"
           },
           {
@@ -4332,12 +4341,24 @@
             "testName": "keeps successful source time beside persisted pull failure independently of the push queue",
             "scope": "拉取卡同时显示成功来源时间和持久失败提示，即使出站队列读取失败；不自动重发，不展示原始上游诊断。组件 mock 不是实际打包 Sheets UI 验收。",
             "level": "automated_component"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_second_view_outage_never_promotes_partial_source_to_claimable_cache",
+            "scope": "真实HTTP/SQLite：公式视图成功但值视图断网，必要/可选输入的首次不完整缓存明确配置错误；已有可靠缓存数据/身份/来源时间不变，后续完整重复身份扫描撤销信任。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_completely_read_empty_sheet_is_a_valid_empty_input",
+            "scope": "完整读取的空表保持有效身份；必要输入无匹配、可选输入为空可运行，不把合法空表误阻断。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "未曾完整读取、第二次值视图读取失败、绑定/同行代次变化等缓存信任组合仍缺同一真实 worker 联合场景；不推断或新增固定缓存有效期。"
+            "detail": "第二视图失败已补HTTP/SQLite必要与可选输入断言；首次读取失败已补公开批次零Task。绑定/同行代次变化等缓存信任组合仍缺同一真实worker联合场景；不新增固定缓存有效期。"
           },
           {
             "kind": "production_evidence_missing",
@@ -4371,6 +4392,15 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/partial-source-follow-through.json",
+          "scope": "空缓存身份校验前移；第二视图失败与必要/可选输入、真实批次首次断网拒绝",
+          "limitations": "全量与新打包原生验证进行中；真实Google/完整身份联合组合未验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -4400,6 +4430,12 @@
             "file": "apps/backend/tests/integration/test_project_input_groups.py",
             "symbol": "test_invalid_optional_input_is_a_configuration_error",
             "scope": "可选配置无效仍为 configurationError，不吞为空",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
+            "symbol": "test_second_view_outage_never_promotes_partial_source_to_claimable_cache",
+            "scope": "真实HTTP/SQLite：公式视图成功但值视图断网，必要/可选输入的首次不完整缓存明确配置错误；已有可靠缓存数据/身份/来源时间不变，后续完整重复身份扫描撤销信任。",
             "level": "automated_integration"
           }
         ],

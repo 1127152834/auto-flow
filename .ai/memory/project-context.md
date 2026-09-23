@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-24 当前补丁（confirmed定向，全量待验）：首次来源读取失败的空缓存被误报noMatch，已将共享来源身份校验前移至候选扫描，必要/可选输入均明确configurationError。42相关、6边界、2真实worker及Ruff/mypy408通过；完整后端串行回归进行中。当前工作树新生产补丁不在35902129697/35895754111中，两轮旧CI继续保留。详见partial-source-follow-through.json；releaseAccepted=false。
+
 2026-09-24 旧候选 ARM CI 产物复核（confirmed 局部）：35895754111@25bb8ab2 的 artifact10769571016 已下载并校验 SHA256；打包 API、business-combinations、完整桌面均 passed，22截图中必填提示/紧凑重开/恢复文档3张已目视核对。真实 worker1004条/38623ms（1560条/分钟），万行67095ms、0busy，固定合成1000条/60189ms；均为该次观测。详见 ci-metadata-click-follow-through.json。该证据不覆盖新生产51e8991e或新增两个 worker 场景；新矩阵35902129697仍进行中，台账状态不变，releaseAccepted=false。
 
 2026-09-24 最新CI（confirmed调度，验收pending）：已推送a317e1f8，实际新矩阵35902129697同headSha、生产51e8991e，包含断网与反向写两个新增真实worker案例，三平台in_progress。旧35895754111@25bb8ab2继续，ARM job107299145250已success，Windows/Intel仍运行。新候选稳定后单次调度，取代此前等待旧矩阵全部结束的安排，无取消、无相同源码重复。PR仍草稿、releaseAccepted=false。

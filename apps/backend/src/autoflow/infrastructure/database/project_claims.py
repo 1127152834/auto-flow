@@ -464,6 +464,8 @@ class SqlAlchemyProjectInputGroups:
         statuses = {row.id for row in status_rows}
         status_order = {row.id: (row.position, row.id) for row in status_rows}
         try:
+            if table.source_kind == "sheets":
+                _verified_sheets_source(self.session, table)
             filter_value = validate_filter(item.get("filter"), field_types, statuses)
             order_value = validate_order(item.get("orderBy"), field_types)
         except ProjectError as error:  # validated management data may become stale
@@ -767,26 +769,11 @@ def _snapshot_input(
     }
 
 
-def resolve_record_lease(
-    session: Session, ref: RecordRef, *, allow_unseen: bool = False
-) -> tuple[SourceLeaseKey, dict[str, Any]]:
-    """Keep local permissions/cursors separate from physical source exclusion."""
-    table = session.get(DataTableRow, ref.table_id)
-    if (
-        table is None
-        or table.project_id != ref.project_id
-        or table.current_generation != ref.dataset_generation
-    ):
-        raise ProjectError("DATASET_GENERATION_GONE", "Dataset identity changed", 410)
-    if table.source_kind != "sheets":
-        return LeaseKey(
-            "local",
-            ref.project_id,
-            ref.table_id,
-            ref.dataset_generation,
-            ref.record_key,
-        ), {}
-    binding = session.get(SheetsBindingRow, ref.table_id)
+def _verified_sheets_source(
+    session: Session, table: DataTableRow,
+) -> tuple[SheetsBindingRow, dict[str, Any], SheetsBindingRow, dict[str, Any]]:
+    """Require a complete current source proof even when no records match."""
+    binding = session.get(SheetsBindingRow, table.id)
     if binding is not None:
         require_source_idle(session, binding.spreadsheet_id)
     proof = binding.identity_verification if binding is not None else None
@@ -795,7 +782,7 @@ def resolve_record_lease(
         or not proof
         or not proof.get("valid")
         or proof.get("bindingEpoch") != binding.binding_epoch
-        or proof.get("datasetGeneration") != ref.dataset_generation
+        or proof.get("datasetGeneration") != table.current_generation
     ):
         raise ProjectError(
             "SHEETS_IDENTITY_UNVERIFIED",
@@ -827,6 +814,29 @@ def resolve_record_lease(
     source_proof = latest.identity_verification or {}
     if not source_proof.get("valid"):
         raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "最近来源验证失败，请修复后重新拉取。", 409)
+    return binding, proof, latest, source_proof
+
+
+def resolve_record_lease(
+    session: Session, ref: RecordRef, *, allow_unseen: bool = False
+) -> tuple[SourceLeaseKey, dict[str, Any]]:
+    """Keep local permissions/cursors separate from physical source exclusion."""
+    table = session.get(DataTableRow, ref.table_id)
+    if (
+        table is None
+        or table.project_id != ref.project_id
+        or table.current_generation != ref.dataset_generation
+    ):
+        raise ProjectError("DATASET_GENERATION_GONE", "Dataset identity changed", 410)
+    if table.source_kind != "sheets":
+        return LeaseKey(
+            "local",
+            ref.project_id,
+            ref.table_id,
+            ref.dataset_generation,
+            ref.record_key,
+        ), {}
+    binding, proof, latest, source_proof = _verified_sheets_source(session, table)
     if not allow_unseen:
         for local, observed in ((binding, proof), (latest, source_proof)):
             kind = "uuid" if local.identity_strategy.get("kind") == "system" else ("text" if ref.record_key.type == "uuid" else ref.record_key.type)

@@ -508,14 +508,10 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
-    "sourceCommit": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
-    "report": "studio-metadata-follow-through.json",
-    "ciRunId": 35886627514,
-    "status": "local_full_and_packaged_passed_three_platform_ci_in_progress",
-    "previousCompleteCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
-    "supersededRun": 35881272086,
-    "supersededStatus": "cancelled",
-    "releaseAccepted": false
+    "status": "targeted_passed_full_backend_in_progress",
+    "source": "working tree after080e010c; source hashes in partial-source-follow-through.json",
+    "report": "partial-source-follow-through.json",
+    "scope": "Source identity gate now runs for empty input tables; existing matrices exclude this production fix."
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -541,7 +537,7 @@
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35902129697",
     "status": "in_progress",
     "report": "source-outage-follow-through.json",
-    "scope": "New stable source and both supplemental real-worker cases; single three-platform dispatch. Prior matrix continues without cancellation."
+    "scope": "Prior source51e8991e plus both worker cases; remains live, excludes newer partial-source guard and enhanced initial-outage assertion."
   },
   "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json",
   "sourceOutageFollowThrough": {
@@ -570,5 +566,6 @@
     "report": "opposing-writes-follow-through.json",
     "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
     "releaseAccepted": false
-  }
+  },
+  "partialSourceFollowThrough": "partial-source-follow-through.json"
 }

@@ -1,0 +1,57 @@
+{
+  "date": "2026-09-24",
+  "status": "targeted_passed_full_backend_in_progress",
+  "releaseAccepted": false,
+  "requirements": [
+    "DATA-CLAIM-09",
+    "DATA-CLAIM-10"
+  ],
+  "parentCommit": "080e010c659275b4666ea88530ca098a95fa9f4b",
+  "rootCause": "Source proof was checked only while converting existing records into lease candidates. An empty never-pulled cache bypassed that check and returned noMatch after a failed second-view pull.",
+  "change": "Reuse the existing source-level identity/epoch/peer/send-idle checks before scanning candidates and when resolving individual record leases; per-record membership checks remain unchanged. No new TTL, executor, API schema or UI behavior.",
+  "evidenceRoot": ".tmp-tests/pm9-partial-source-2026-09-24",
+  "red": "Initial targeted run: 1 failed/1 passed; never-complete cache returned noMatch instead of configurationError. Original log retained.",
+  "checks": {
+    "related": "42 passed /2 warnings /48.89s (claims and system identity, before adding two healthy-empty controls)",
+    "targetedFinal": "6 passed /20 deselected /2 warnings /7.00s (required/optional x absent/complete cache plus healthy empty sheet)",
+    "realWorker": "2 passed /6 deselected /2 warnings /21.68s; current outage chain and opposing writes",
+    "ruff": "changed source and tests passed",
+    "mypy": "408 source files passed",
+    "backendFull": {
+      "status": "in_progress",
+      "log": ".tmp-tests/pm9-partial-source-2026-09-24/backend-full.log",
+      "scope": "serial complete backend regression; no concurrent local frontend/build/smoke from this task"
+    }
+  },
+  "assertions": [
+    "FORMULA succeeds then UNFORMATTED_VALUE fails: no row/proof/source timestamp publication; latestPull records failure.",
+    "Never-complete cache returns configurationError identifying the input, for required and optional inputs; no task or lease.",
+    "Previously complete cache remains ready with original records/proof/time after failed partial observation.",
+    "Subsequent complete duplicate scan invalidates identity and blocks selection.",
+    "Complete empty sheet remains noMatch for required input, or ready without inputs for optional input.",
+    "Public HTTP batch after initial outage fails as configurationError with zero Task/browser/lease; successful complete pull then offline real worker can continue and commit.",
+    "Real opposing workers retain original snapshots and previous committed changes while conflicting writes enter manual error branches."
+  ],
+  "sourceSha256": {
+    "apps/backend/src/autoflow/infrastructure/database/project_claims.py": "8422fa411b0affdde20f62eff2873f6b1351babf8b84c4b927786c2b6cfd30e9",
+    "apps/backend/tests/integration/test_project_sheets_claims.py": "d85e09921a35c9aa92eb48e9245c549923a7df9f069f4e4fd71ce6b57d39c23f",
+    "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py": "e961fcc1856298826d8e27b64074b9a190ee17b79f04eefe11ec2390a07331b9"
+  },
+  "evidenceSha256": {
+    ".tmp-tests/pm9-partial-source-2026-09-24/red.log": "41442997cdc0bcc4e74b3f60c5fa112228323b963f19b1874adad32fa4caa9b7",
+    ".tmp-tests/pm9-partial-source-2026-09-24/related.log": "81dd0c08f2fc986deff968098b564aa72f08eba506f2f4ab084097fa665c90a1",
+    ".tmp-tests/pm9-partial-source-2026-09-24/final-targeted.log": "abbbf3147e1a5bb573c02b4d9379864dd9cafa7c61ab913f8d3fc62db8b44e92",
+    ".tmp-tests/pm9-partial-source-2026-09-24/real-worker.log": "fdf525bd72ae77b87e4fb9fe39f67a7145005e427354361789dd83b2acd19d34",
+    ".tmp-tests/pm9-partial-source-2026-09-24/mypy.log": "144062ad850da376abb58cfac6c1a147a5b0cd760c85c8739f96db58cf8d92e9"
+  },
+  "ci": {
+    "status": "not_dispatched",
+    "scope": "Existing35902129697@a317e1f8 and35895754111@25bb8ab2 do not include this production fix. Preserve both live runs; validate final new candidate once stable."
+  },
+  "remaining": [
+    "Complete backend result and rebuilt package/native matrix for this production change.",
+    "Binding/peer-generation cache trust combinations in one actual worker chain remain unproved.",
+    "Controlled Google transport/credentials do not replace current packaged live Sheets/OAuth or physical/signing acceptance."
+  ],
+  "coverage": "No status promotions;251 requirements/206 partial/45 planned/0 verified."
+}
