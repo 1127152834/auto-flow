@@ -32,6 +32,7 @@ _RUNNABLE_MODULES = (
     ("api_request", "HTTP请求"),
     ("api_trigger", "API触发器"),
     ("file_watcher_trigger", "文件监控触发器"),
+    ("element_change_trigger", "子元素变化触发器"),
     ("webhook_request", "Webhook请求"),
     ("notify_webhook", "Webhook通知"),
     ("wait", "等待"),

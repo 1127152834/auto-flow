@@ -1,0 +1,33 @@
+{
+  "evidenceId": "BE-project-element-change-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T20:43:54.618Z",
+  "gitHead": "dff623196b546cd5a81d05f39072f82efc8ec68e",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "1946f709-03a1-4aae-b726-9690bacd3630",
+  "workflowId": "07wkJer44c15um-xhK2k7",
+  "tasks": [
+    {
+      "action": "mutation",
+      "batchId": "629144f5-2e70-45ef-b43b-92ce96c13395",
+      "taskId": "8c1aaf34-aede-45a0-a099-3e593c0ba514"
+    },
+    {
+      "action": "stop",
+      "batchId": "8453d8f7-a0ec-4a16-80f2-81bffa0cc907",
+      "taskId": "4eb75e01-4a7d-40d2-bfe8-d6a17d9f7cda"
+    }
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 编排网页、元素变化监听和后继变量日志，保存后正常关窗",
+    "项目真实 CloakBrowser 监听 DOM 变化并持久化双输出和后继日志；再次运行监听中真实 UI 停止、无后继且浏览器清理"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "real CloakBrowser, project default Profile",
+    "interaction": "formal UI mouse/keyboard; local controlled page; API setup and evidence reads only"
+  }
+}

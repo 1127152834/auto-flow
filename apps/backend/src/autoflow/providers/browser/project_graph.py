@@ -291,6 +291,15 @@ class ProjectGraphExecutor:
                     output_name = config.get(key) or default
                     if isinstance(output_name, str) and output_name in current.variables and output_name not in current.sensitive_variables:
                         await emit('output', {'name': output_name, 'value': current.variables[output_name]})
+            if data['moduleType'] == 'element_change_trigger':
+                for key, default in (
+                    ('saveNewElementSelector', 'new_element_selector'),
+                    ('saveChangeInfo', 'element_change_info'),
+                ):
+                    # This executor treats an explicit empty field as disabled.
+                    output_name = config.get(key, default)
+                    if isinstance(output_name, str) and output_name and output_name in current.variables and output_name not in current.sensitive_variables:
+                        await emit('output', {'name': output_name, 'value': current.variables[output_name]})
             name = (config.get('resultVariable') or config.get('variableName')
                     or config.get('saveResult') or config.get('saveMessage'))
             if data['moduleType'] in {'json_parse', 'base64', 'run_command', 'table_get_cell', 'table_export', 'extract_table_data', 'api_request', 'network_capture'}:

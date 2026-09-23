@@ -14866,7 +14866,13 @@
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-element-change-trigger.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-element-change-trigger.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/element-change-2026-09-24/README.md",
+        "boundary": "原版MutationObserver三类DOM变化及双输出；真实项目HTTP/SQLite/CloakBrowser成功、超时和停止，开发/macOS arm64包真实UI通过。独立环境实例清理状态问题单列未关闭；Windows/Intel未验收。"
+      }
     }
   },
   {

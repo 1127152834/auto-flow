@@ -29,7 +29,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "firecrawl_failure", "firecrawl_stop"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "firecrawl_failure", "firecrawl_stop", "element_change", "element_timeout", "element_stop"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -186,6 +186,31 @@ async def test_real_project_batch_http(
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
+        elif scenario.startswith("element_"):
+            fixture = tmp_path / "project-elements.html"
+            fixture.write_text('<!doctype html><style>div{min-height:30px}</style><div id="list"></div><div id="flag"></div><div id="text">旧内容</div>', encoding="utf-8")
+            steps = [("open_page", {"url": fixture.as_uri(), "openMode": "current_tab"})]
+            for kind, selector, change in [
+                ("childList", "#list", "const p=document.createElement('p'); p.id='added'; p.textContent='新增内容'; document.querySelector('#list').appendChild(p)"),
+                ("attributes", "#flag", "document.querySelector('#flag').setAttribute('data-count', String(++window.count))"),
+                ("characterData", "#text", "document.querySelector('#text').firstChild.data='新内容'+(++window.count)"),
+            ]:
+                steps.extend([
+                    ("inject_javascript", {"javascriptCode": "clearInterval(window.timer); window.count=0; window.timer=setInterval(()=>{"+change+"},300); return true", "injectMode": "current"}),
+                    ("element_change_trigger", {"selector": selector, "observeType": kind, "timeout": 5,
+                     "saveNewElementSelector": kind+"_selector", "saveChangeInfo": kind+"_info"}),
+                ])
+            if scenario != "element_change":
+                steps = [steps[0], ("element_change_trigger", {"selector": "#list", "timeout": 1 if scenario == "element_timeout" else 0})]
+            document["content"]["nodes"] = [
+                {"id": f"mutation-{index}", "type": module_type, "position": {"x": index*100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"mutation-edge-{index}", "source": f"mutation-{index}", "target": f"mutation-{index+1}"}
+                for index in range(len(steps)-1)
+            ]
+            document["content"]["variables"] = []
         elif scenario.startswith("firecrawl"):
             crawl_url = url.replace("/fixture", "/crawl/start")
             steps = [
@@ -278,7 +303,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl"}:
+            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "element_change"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -307,7 +332,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl"} else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "element_change"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -350,7 +375,13 @@ async def test_real_project_batch_http(
                 response = await client.get(prefix + f"/batches/{batch_id}")
                 assert response.status_code == 200, response.text
                 detail = response.json()
-                if (scenario == "stop" or (scenario == "firecrawl_stop" and "/crawl/start" in requests)) and detail["batch"]["status"] == "running":
+                element_waiting = False
+                if scenario == "element_stop" and detail["batch"]["status"] == "running":
+                    current_tasks = (await client.get(prefix + "/tasks", params={"batchId": batch_id})).json()["items"]
+                    for current_task in current_tasks:
+                        current_attempts = (await client.get(prefix + f"/tasks/{current_task['taskId']}/node-attempts")).json()["items"]
+                        element_waiting |= any(item["nodeId"] == "mutation-1" and item["status"] == "running" for item in current_attempts)
+                if (scenario == "stop" or element_waiting or (scenario == "firecrawl_stop" and "/crawl/start" in requests)) and detail["batch"]["status"] == "running":
                     stopped = await client.post(
                         prefix + f"/batches/{batch_id}/stop",
                         headers={"Idempotency-Key": str(uuid4())},
@@ -390,7 +421,21 @@ async def test_real_project_batch_http(
                 json=payload,
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
-            if scenario == "firecrawl":
+            if scenario == "element_change":
+                assert detail["statusCounts"]["succeeded"] == 2, detail
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    outputs = (await client.get(task_path + "/outputs")).json()
+                    values = {item["name"]: item["value"] for item in outputs["items"]}
+                    assert set(values) == {"childList_selector", "childList_info", "attributes_info", "characterData_info"}
+                    assert values["childList_selector"] == "#added"
+                    assert values["childList_info"]["addedCount"] == 1
+                    assert values["childList_info"]["newElementText"] == "新增内容"
+                    assert values["attributes_info"]["changes"][0]["attributeName"] == "data-count"
+                    assert values["characterData_info"]["changes"][0]["newValue"].startswith("新内容")
+                    attempts = (await client.get(task_path + "/node-attempts")).json()
+                    assert attempts["total"] == len(steps)
+            elif scenario == "firecrawl":
                 assert detail["statusCounts"]["succeeded"] == 2, detail
                 for task in tasks:
                     task_path = prefix + f"/tasks/{task['taskId']}"
@@ -557,7 +602,7 @@ async def test_real_project_batch_http(
                     assert [event.sequence for event in events] == list(
                         range(1, len(events) + 1)
                     )
-            elif scenario in {"stop", "firecrawl_stop"}:
+            elif scenario in {"stop", "firecrawl_stop", "element_stop"}:
                 assert scenario_stopped and detail["batch"]["status"] == "stopped"
                 assert detail["statusCounts"]["cancelled"] == 2
             elif scenario == "budget":
@@ -581,6 +626,10 @@ async def test_real_project_batch_http(
                 expected_request = "/crawl/unavailable" if scenario == "firecrawl_failure" else "/crawl/start"
                 assert expected_request in requests
                 assert "/crawl/child" not in requests
+                for task in tasks:
+                    outputs = await client.get(prefix + f"/tasks/{task['taskId']}/outputs")
+                    assert outputs.json()["items"] == []
+            if scenario in {"element_timeout", "element_stop"}:
                 for task in tasks:
                     outputs = await client.get(prefix + f"/tasks/{task['taskId']}/outputs")
                     assert outputs.json()["items"] == []

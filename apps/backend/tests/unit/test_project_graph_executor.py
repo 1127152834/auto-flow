@@ -2,6 +2,7 @@ import asyncio
 from time import monotonic
 
 import pytest
+
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 
 
@@ -86,6 +87,34 @@ async def test_switch_tab_outputs_each_variable_without_publishing_sensitive_url
     assert [(payload['name'], payload['value']) for kind, _, _, payload in events if kind == 'output'] == [
         ('index', 1), ('title', '受控页面'),
     ]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('config,sensitive,expected', [
+    ({}, False, ['new_element_selector', 'element_change_info']),
+    ({'saveNewElementSelector': 'selector', 'saveChangeInfo': 'change'}, False, ['selector', 'change']),
+    ({'saveNewElementSelector': '', 'saveChangeInfo': ''}, False, []),
+    ({}, True, ['new_element_selector']),
+])
+async def test_element_change_outputs_preserve_disabled_and_sensitive_fields(config, sensitive, expected):
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    executor.nodes = {'observe': {'moduleType': 'element_change_trigger', 'config': config}}
+    for name in ('new_element_selector', 'selector'):
+        executor.context.set_variable(name, '#added')
+    for name in ('element_change_info', 'change'):
+        executor.context.set_variable(name, {'addedCount': 1}, sensitive=sensitive)
+    executor.started['visit'] = monotonic()
+    await executor.publish({
+        'type': 'execution:node_complete', 'nodeId': 'observe',
+        'executionId': 'visit', 'success': True,
+        'data': {'newElementSelector': '#added', 'addedCount': 1},
+    })
+    assert [payload['name'] for kind, _, _, payload in events if kind == 'output'] == expected
 
 
 @pytest.mark.asyncio
