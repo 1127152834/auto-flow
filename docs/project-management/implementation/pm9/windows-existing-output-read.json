@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "windows_native_read_passed_final_candidate_pending",
+  "status": "windows_native_read_and_absolute_new_export_passed_full_candidate_pending",
   "releaseAccepted": false,
   "scope": "S4 existing ordinary-file read for Base64 input and Excel pre-read; existing-file overwrite and append remain refused with 501.",
   "codeCandidate": "2fe33528d211022855bb7f91840a0ba992954e25",
@@ -33,9 +33,16 @@
     "result": "127 passed, 28 skipped in 24.73s",
     "scope": "Native Windows existing binary read, missing-parent no-side-effect, cancellation, Base64 worker, table-family Excel worker, and relative new-file CSV/XLSX tests passed. The absolute-drive-path table test remains skipped."
   },
+  "absoluteOutputFollowUp": {
+    "runId": "35832925704",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35832925704",
+    "headSha": "680fd0ca4cc7cd50f23d6bf3f550761ad2b7c931",
+    "result": "131 passed, 29 skipped in 24.49s",
+    "scope": "Windows absolute-drive table export passed through the application path, safe new-file adapter and real worker; relative CSV/XLSX, existing binary read, Base64 worker, and ambiguous-path rejection also passed. One Windows skip is the POSIX-only rejection of a valid Windows absolute path. This scoped run is not a three-platform packaged result."
+  },
   "limits": [
     "This scoped native job did not include the later read-only parent fix and did not run the three-platform full regression or packaged desktop chain for the final code.",
-    "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement. Table export also still rejects Windows absolute drive paths at its application layer.",
+    "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement.",
     "Physical Windows installation, native dialogs, current packaged Sheets/OAuth and signing remain separate acceptance conditions."
   ]
 }
