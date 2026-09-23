@@ -6244,12 +6244,16 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [],
         "gaps": [
           {
             "kind": "test_missing",
             "detail": "本轮审查未定位完整场景的直接断言：同账号重授权验证主体和目标、先核验未知操作再恢复；不据邻近测试推定覆盖"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "现有 connections 仅 list/create/delete，无原位重授权命令和稳定主体/凭据修订；新连接+普通改绑不能证明同账号恢复。见 2026-09-23 连接恢复规格 L1，尚未批准。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -6284,7 +6288,7 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_sheets_recovery.py",
@@ -6295,8 +6299,16 @@
         ],
         "gaps": [
           {
-            "kind": "production_evidence_missing",
-            "detail": "同物理表换账号/非身份映射保留代次、活动 lease 阻断分别尚需断言"
+            "kind": "implementation_missing",
+            "detail": "put_binding 无条件创建新 datasetGeneration；更换账号但保持同物理来源时保留身份的路径未实现。原测试仅证明换工作表后旧意图退役；新增 L2 规格尚未批准。"
+          },
+          {
+            "kind": "test_missing",
+            "detail": "同物理来源主体变更后身份/状态/关联保留的正向联合断言仍缺失。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "新的连接恢复完整链还需当前真实 Google 授权和打包专项。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -6543,8 +6555,17 @@
       "primary_package": "PM6-C",
       "planned_test_file": "apps/backend/tests/integration/test_project_sheets_recovery.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_integration",
+          "report": "docs/project-management/implementation/pm9/lifecycle-fence-follow-through.json",
+          "scope": "L0 pending value sends block new binding previews and stale-preview rebind/unbind commits; not isolation completion",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "data-source",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -6563,12 +6584,27 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_recovery.py",
+            "symbol": "test_unknown_value_send_blocks_binding_change_and_unbind",
+            "scope": "4 个 HTTP/SQLite 受控网络反例：旧值写 unknown 时，同物理目标改绑/解绑的新预览以及此前有效预览的提交均409；记录/代次/绑定/未知操作保留且无新云写。仅L0禁止绕过，不包含发送者停止证明和隔离正向。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "永久失权的发送者退出证明、未知上下文隔离和保留本地管理入口尚未实现；L0暂时安全拒绝不能替代L3，新增规格尚未批准。"
+          },
+          {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：永久失权后隔离旧未知写，并确认旧发送进程停止后才允许目标新写；不据邻近测试推定覆盖"
+            "detail": "确认发送者停止后隔离、跨项目/重启同目标冲突保留、不同来源管理的正向联合链待实现后验证。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "L0当前仅受控Google transport的HTTP/SQLite；新候选完整原生矩阵仍需运行。"
           }
         ],
         "statusBeforeReview": "planned"

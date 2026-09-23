@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_full_regression_passed_native_ci_in_progress",
+  "status": "local_full_regression_passed_native_ci_superseded_by_lifecycle_fence",
   "releaseAccepted": false,
   "parentCommit": "1eeeafffe687568e1f61fabba90ad393f1491c29",
   "candidateCommit": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
@@ -25,7 +25,7 @@
     "nativeCI": {
       "runId": "35806853292",
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35806853292",
-      "status": "in_progress",
+      "status": "cancelled_superseded_by_lifecycle_fence",
       "headSha": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
       "scope": "one manual full three-platform matrix; includes new D1 worker test"
     },

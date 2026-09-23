@@ -1,6 +1,6 @@
 # PM9 assertion mapping review
 
-2026-09-23 最新机器统计：251 条，242 有范围断言/9 未定位，201 partial/50 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
+2026-09-23 最新机器统计：251 条，243 有范围断言/8 未定位，202 partial/49 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
 
 日期：2026-09-21。状态：confirmed（映射审查），完整产品验收仍未完成。来源：原始设计各需求编号、现有测试函数断言及本轮运行记录。
 
@@ -87,3 +87,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 2026-09-23 FLOW-A05：同一自动化两个独立单任务批次的可选输入从有到无，真实 worker 验收 1 passed/31 deselected（37.63 秒）。第二次两次 inputs capability 输出与持久快照均空，零 lease，首次快照保持且资源回收；不是同批次、变量表达式或打包 UI 证据。独立复审无 P1/P2。最新 241 有断言/10 未定位、201 partial/50 planned/0 verified。
 
 2026-09-23 XE-A01：parameter-single 真实 worker 场景 1 passed/32 deselected（38.06 秒）；无表、参数 first 网页填写/读取、同键重放后唯一 Batch/Task/Run、零 lease 和资源回收联合通过。仅本机源码证据，不扩大为打包 UI/三平台或 XE-G02 全部门禁。当前 242 有断言/9 未定位、201 partial/50 planned/0 verified。
+
+2026-09-23 生命周期补审：LIFE-01/02 不能再仅写缺测试——连接无原位重授权/稳定主体契约，普通改绑无条件新建数据代次。LIFE-07 临时真实 HTTP 探针复现旧 unknown 仍在时重绑并再次云写；L0 在改绑新/旧目标及解绑复用持久值发送围栏，4 个直接反例 RED→GREEN。L0只拒绝绕过，不完成永久失权隔离；L1→L2→L3 具体规格/计划已保存，新增能力尚待批准。最新 243 有范围断言/8 未定位、202 partial/49 planned/0 verified。生产候选已改变，旧 c2 矩阵不能证明此修复，新完整矩阵见 verification.json。

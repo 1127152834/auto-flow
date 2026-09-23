@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
@@ -303,6 +304,52 @@ def test_an_unknown_send_stays_unknown_across_a_restart(tmp_path):
         assert decided["result"]["evidence"]["outcome"] == "notMatched", decided
         assert client.post(path, json=body, headers=key).json() == reconciled.json()
         assert {item["status"] for item in operations(client, project, table)} == {"failed"}
+
+
+@pytest.mark.parametrize('action', ['changeSheetsBinding', 'removeSheetsBinding'])
+@pytest.mark.parametrize('preview_before_send', [True, False])
+def test_unknown_value_send_blocks_binding_change_and_unbind(
+    tmp_path, action, preview_before_send,
+):
+    transport = FakeSheetsTransport({'数据': GRID['数据'], '第二表': SECOND})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        client, project, table = sheets.client, sheets.project, sheets.table
+        pull(client, project, table, sheets.table_revision())
+        edit_title(client, project, table, sheets.records()[0], sheets.field_id('title'), 'old unknown')
+        change = {'mode': 'remove'} if action == 'removeSheetsBinding' else {
+            'connectionId': sheets.connection,
+            'spreadsheetId': transport.spreadsheet_id,
+            'sheetId': transport.ids['数据'],
+            'identityStrategy': {'kind': 'column', 'columnId': 'A'},
+            'mapping': [{'fieldId': sheets.field_id(key), 'columnId': column, 'direction': 'both', 'formula': False}
+                        for key, column in [('code', 'A'), ('title', 'B')]],
+        }
+        payload = {'action': action, 'target': {'type': 'table', 'projectId': project, 'tableId': table}, 'change': change}
+        if preview_before_send:
+            preview = client.post(f'/api/v1/projects/{project}/mutation-impact', json=payload)
+            assert preview.status_code == 200, preview.text
+        transport.fail_writes.append(SheetsApiError(0, 'timeout', 'response lost'))
+        push(client, project, table, sheets.binding['bindingEpoch'])
+        unknown, = operations(client, project, table, 'unknown')
+        before_rows, before_table = sheets.records(), table_detail(client, project, table)
+        before_binding = client.get(url(project, table, '/sheets/binding')).json()
+        before_writes = transport.changes()
+        if preview_before_send:
+            body = {'impactRevision': preview.json()['impactRevision'], 'expectedTableRevision': sheets.table_revision()}
+            if action == 'changeSheetsBinding':
+                body.update(change, expectedBindingEpoch=sheets.binding['bindingEpoch'])
+            rejected = client.request('PUT' if action == 'changeSheetsBinding' else 'DELETE',
+                url(project, table, '/sheets/binding'), json=body, headers=new_key())
+        else:
+            rejected = client.post(f'/api/v1/projects/{project}/mutation-impact', json=payload)
+        assert rejected.status_code == 409, rejected.text
+        assert rejected.json()['error']['code'] == 'SHEETS_SOURCE_SEND_IN_PROGRESS'
+        assert sheets.records() == before_rows
+        assert table_detail(client, project, table) == before_table
+        assert client.get(url(project, table, '/sheets/binding')).json() == before_binding
+        assert operations(client, project, table, 'unknown') == [unknown]
+        assert transport.changes() == before_writes
+        assert transport.grid('数据')[1] == ['A-1', '第一行']
 
 
 def test_a_rebind_retires_the_previous_epochs_intent(tmp_path):

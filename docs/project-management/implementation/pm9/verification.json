@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_regression_passed_native_ci_in_progress_release_acceptance_incomplete",
+  "status": "lifecycle_fence_targeted_passed_native_ci_pending_release_acceptance_incomplete",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -8,9 +8,10 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "9 of 251 requirements still have no located assertion; 201 partial / 50 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
+    "8 of 251 requirements still have no located assertion; 202 partial / 49 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
+    "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
-    "Independent claim-validation review found no P1/P2; local full backend and build passed. Current three-platform validation remains in progress.",
+    "L0 independent review found no P1/P2; targeted and related checks completed. New source requires a fresh complete three-platform matrix; c2 matrix was cancelled as superseded.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
@@ -29,7 +30,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
+  "codeCandidate": "working_tree_L0",
   "checks": {
     "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -142,12 +143,10 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Production candidate c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5: local full backend 3460 passed / 68 skipped; 89 targeted and 4 Sheets real-worker scenarios passed. PyInstaller built. Actions 35806853292 still in progress. Additional loop/parameter assertions are later test-only evidence.",
+  "workingCandidate": "L0 adds three existing pending-send fence calls after c2d91c5d; 4 new cases passed, initial related group 109 passed/1 outdated setup failure, corrected precise case passed. New full three-platform matrix will replace cancelled c2 run.",
   "finalCICandidate": {
-    "codeCandidate": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
-    "runId": "35806853292",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35806853292",
-    "status": "in_progress",
+    "codeCandidate": "working_tree_L0",
+    "status": "pending_dispatch",
     "platforms": {
       "win32-x64": {
         "status": "pending"
@@ -162,7 +161,7 @@
     "physicalInstallation": "pending"
   },
   "codeCandidateScope": "Current production candidate includes selected declared-input validation at preparation and commit. Historical CI candidates are preserved separately and do not validate this change.",
-  "testCandidate": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
+  "testCandidate": "working_tree_L0",
   "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -230,6 +229,25 @@
       "nativeProbe": "skipped",
       "workerProbe": "skipped",
       "physicalInstallation": "pending"
+    },
+    {
+      "codeCandidate": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
+      "runId": "35806853292",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35806853292",
+      "status": "cancelled_superseded_by_lifecycle_fence_fix",
+      "platforms": {
+        "win32-x64": {
+          "status": "cancelled"
+        },
+        "darwin-x64": {
+          "status": "cancelled"
+        },
+        "darwin-arm64": {
+          "status": "cancelled"
+        }
+      },
+      "physicalInstallation": "pending",
+      "reason": "L0 production bug discovered while matrix ran; full matrix cancelled to avoid finishing stale candidate."
     }
   ],
   "historicalD1Verification": {
@@ -251,5 +269,6 @@
     "result": "1 passed, 32 deselected in 38.06s",
     "scope": "No project tables/inputs; first typed and read through real browser, one Batch/Task/Run after idempotent command replay, no DataLease, resource cleanup",
     "limits": "macOS ARM source only; added after running native CI candidate"
-  }
+  },
+  "lifecycleFenceFollowThrough": "lifecycle-fence-follow-through.json"
 }

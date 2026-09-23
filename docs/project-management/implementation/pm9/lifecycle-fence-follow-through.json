@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-23",
+  "status": "targeted_and_related_checks_passed_new_native_ci_pending",
+  "releaseAccepted": false,
+  "parentCommit": "5985e49d",
+  "sourceFile": "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py",
+  "sourceSha256": "0e88c90d7a3de4745a16974ea2a8b5ad396f60671ecd9f40d9c7f7eb144c3e81",
+  "probe": {
+    "scope": "isolated real HTTP/SQLite with fake Google transport",
+    "unknownBefore": 1,
+    "rebindStatus": 202,
+    "generationChanged": true,
+    "unknownAfter": 1,
+    "newPush": {
+      "status": "unknown",
+      "pendingCount": 0,
+      "unknownCount": 1,
+      "lastConfirmedAt": "2026-09-23T02:10:19.978493Z"
+    },
+    "remoteTitle": "new after rebind"
+  },
+  "red": "4 failed: late unknown did not stop new impact previews (200) or old-preview rebind/unbind commits (202).",
+  "fix": "Three existing lifecycle impact calls now request structural=True, reusing durable sending/verifying/unknown value-send fences for both source and destination. Read/claim/ordinary send paths unchanged.",
+  "checks": {
+    "focused": "4 passed / 8 deselected / 2 warnings in 5.69s",
+    "lateIdentityInitialization": "1 passed / 17 deselected / 2 warnings in 2.52s; preview obtained before the unknown send so commit refusal remains directly tested",
+    "related": "Initial six-file run: 109 passed, 1 failed, 2 warnings in 371.44s. Failure was older system-identity test expecting impact preview after unknown; moved valid preview before unknown and reran precise case: 1 passed in 2.52s. No second production change or hidden skip.",
+    "ruff": "passed",
+    "mypy": "407 source files passed",
+    "nativeCI": "New production candidate required; c2 matrix cancelled as superseded, not accepted as current."
+  },
+  "review": "Independent read-only review found no P1/P2; confirmed own structural-operation exemption and source/destination transaction revalidation. Different-new-target refusal is code-reviewed, not directly asserted by these four cases.",
+  "remaining": [
+    "L1 original connection reauthorization with verified principal is not implemented.",
+    "L2 change principal on same physical source while preserving dataset identity is not implemented.",
+    "L3 verified sender stop plus isolation/local management is not implemented.",
+    "All three are proposed in the new spec/plan, awaiting explicit confirmation; L0 is a safety refusal, not full LIFE07."
+  ],
+  "spec": "docs/superpowers/specs/2026-09-23-pm9-sheets-connection-recovery.md",
+  "plan": "docs/superpowers/plans/2026-09-23-pm9-sheets-connection-recovery.md",
+  "coverage": {
+    "requirements": 251,
+    "withAssertions": 243,
+    "withNoLocatedAssertion": 8,
+    "statuses": {
+      "partially_verified": 202,
+      "planned": 49
+    }
+  }
+}

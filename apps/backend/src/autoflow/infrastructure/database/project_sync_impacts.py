@@ -209,10 +209,10 @@ class SqlAlchemySheetsImpacts:
         epoch = existing.binding_epoch if existing else 0
         columns = {str(entry["columnId"]).upper() for entry in change["mapping"]}
         overlaps = _overlaps(session, project_id, table_id, change, columns)
-        require_source_idle(session, change["spreadsheetId"], own=own)
+        require_source_idle(session, change["spreadsheetId"], own=own, structural=True)
         targets = {(change["spreadsheetId"], change["sheetId"])}
         if existing is not None:
-            require_source_idle(session, existing.spreadsheet_id, own=own)
+            require_source_idle(session, existing.spreadsheet_id, own=own, structural=True)
             targets.add((existing.spreadsheet_id, existing.sheet_id))
         leases = {lease.id: lease for spreadsheet, sheet in targets for lease in source_record_leases(session, spreadsheet, sheet)}
         blockers: list[dict[str, Any]] = _source_blockers(project_id, table_id, bool(leases))
@@ -305,7 +305,7 @@ class SqlAlchemySheetsImpacts:
             raise ProjectError(
                 "SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404
             )
-        require_source_idle(session, binding.spreadsheet_id)
+        require_source_idle(session, binding.spreadsheet_id, structural=True)
         open_rows = session.scalars(
             select(SyncOperationRow).where(
                 SyncOperationRow.table_id == table_id,

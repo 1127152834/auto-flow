@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 134,
-        "planned": 44
+        "partially_verified": 135,
+        "planned": 43
       },
       "items": [
         {
@@ -921,7 +921,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 0,
           "gapKinds": [
-            "test_missing"
+            "test_missing",
+            "implementation_missing"
           ]
         },
         {
@@ -931,7 +932,9 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "production_evidence_missing"
+            "implementation_missing",
+            "test_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -976,12 +979,14 @@
         },
         {
           "id": "DATA-LIFE-07",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "implementation_missing",
+            "test_missing",
+            "production_evidence_missing"
           ]
         },
         {
@@ -2609,11 +2614,11 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 242,
-    "withNoLocatedAssertion": 9,
+    "withAssertions": 243,
+    "withNoLocatedAssertion": 8,
     "statuses": {
-      "partially_verified": 201,
-      "planned": 50
+      "partially_verified": 202,
+      "planned": 49
     }
   }
 }

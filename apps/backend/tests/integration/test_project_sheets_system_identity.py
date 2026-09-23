@@ -283,13 +283,15 @@ def test_value_send_unknown_blocks_system_initialization_before_any_column_write
     with open_sheets_table(tmp_path, transport, COLUMNS) as first:
         client, project = first.client, first.project
         pull(first); edit_title(first, first.records()[0], 'pending')
-        transport.fail_writes = [SheetsApiError(0, 'responseLost', 'lost')]
-        assert push(first).status_code == 202
         table = new_table(client, project, 'initializing')
         identity = new_field(client, project, table['tableId'], 'id', '编号', expectedTableRevision=1)
         title = new_field(client, project, table['tableId'], 'title', '标题', expectedTableRevision=2)
         body = {**inspection_body({'connectionId':first.connection}, identity, title), 'identityStrategy':{'kind':'system','columnId':'C'}, 'expectedTableRevision':3}
-        response = client.post(base(client, project, table) + '/sheets/system-identity', json=binding_impact(client, project, table['tableId'], body), headers=new_key())
+        body = binding_impact(client, project, table['tableId'], body)
+        # The late unknown send must invalidate an otherwise valid old preview.
+        transport.fail_writes = [SheetsApiError(0, 'responseLost', 'lost')]
+        assert push(first).status_code == 202
+        response = client.post(base(client, project, table) + '/sheets/system-identity', json=body, headers=new_key())
         assert response.status_code == 409, response.text
         assert response.json()['error']['code'] == 'SHEETS_SOURCE_SEND_IN_PROGRESS'
         assert transport.changes() == 1 and transport.grid('数据')[0] == ['编号','标题']
