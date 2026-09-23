@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "targeted_and_related_checks_passed_new_native_ci_pending",
+  "status": "targeted_and_related_checks_passed_native_ci_in_progress",
   "releaseAccepted": false,
   "parentCommit": "5985e49d",
   "sourceFile": "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py",
@@ -27,7 +27,14 @@
     "related": "Initial six-file run: 109 passed, 1 failed, 2 warnings in 371.44s. Failure was older system-identity test expecting impact preview after unknown; moved valid preview before unknown and reran precise case: 1 passed in 2.52s. No second production change or hidden skip.",
     "ruff": "passed",
     "mypy": "407 source files passed",
-    "nativeCI": "New production candidate required; c2 matrix cancelled as superseded, not accepted as current."
+    "nativeCI": {
+      "runId": "35810132035",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35810132035",
+      "headSha": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
+      "status": "in_progress",
+      "selection": "26 selected / 37 collected, 11 deselected; no pass claim from collection"
+    },
+    "coverageVerifier": "251 mappings valid; 4 verifier tests passed"
   },
   "review": "Independent read-only review found no P1/P2; confirmed own structural-operation exemption and source/destination transaction revalidation. Different-new-target refusal is code-reviewed, not directly asserted by these four cases.",
   "remaining": [
@@ -46,5 +53,6 @@
       "partially_verified": 202,
       "planned": 49
     }
-  }
+  },
+  "candidateCommit": "c9e2da7867994447bd3fe4d45f2686476e7bd67c"
 }

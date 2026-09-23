@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "lifecycle_fence_targeted_passed_native_ci_pending_release_acceptance_incomplete",
+  "status": "lifecycle_fence_targeted_passed_native_ci_in_progress_release_acceptance_incomplete",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -30,7 +30,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "working_tree_L0",
+  "codeCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
   "checks": {
     "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -143,25 +143,28 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "L0 adds three existing pending-send fence calls after c2d91c5d; 4 new cases passed, initial related group 109 passed/1 outdated setup failure, corrected precise case passed. New full three-platform matrix will replace cancelled c2 run.",
+  "workingCandidate": "Production candidate c9e2da7867994447bd3fe4d45f2686476e7bd67c: L0 three-call lifecycle fence fix; 4 new counterexamples passed; related group 109 passed/1 outdated setup failure then the corrected precise case passed. Actions 35810132035 is the single replacement full matrix, including four later worker scenarios. Earlier c2 local full backend 3460/68 remains historical evidence, not a new full regression.",
   "finalCICandidate": {
-    "codeCandidate": "working_tree_L0",
-    "status": "pending_dispatch",
+    "codeCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
+    "status": "in_progress",
     "platforms": {
       "win32-x64": {
-        "status": "pending"
+        "status": "in_progress"
       },
       "darwin-x64": {
-        "status": "pending"
+        "status": "in_progress"
       },
       "darwin-arm64": {
-        "status": "pending"
+        "status": "in_progress"
       }
     },
-    "physicalInstallation": "pending"
+    "physicalInstallation": "pending",
+    "runId": "35810132035",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35810132035",
+    "realWorkerSelection": "26 selected / 37 collected; includes new four worker scenarios and D1 dedicated test"
   },
-  "codeCandidateScope": "Current production candidate includes selected declared-input validation at preparation and commit. Historical CI candidates are preserved separately and do not validate this change.",
-  "testCandidate": "working_tree_L0",
+  "codeCandidateScope": "Includes C/R/D1 selected input validation and L0 unresolved value-send fencing for binding/unbinding. L1-L3 recovery protocols remain proposed.",
+  "testCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
   "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -172,7 +175,8 @@
     "scripts": "101 passed",
     "fullBackend": "3460 passed, 68 skipped, 2 warnings in 1360.57s on production candidate c2d91c5d; later two opt-in cases are separate evidence",
     "threePlatformCI": "35806853292 in_progress",
-    "backendBuild": "passed"
+    "backendBuild": "passed",
+    "nativeCI": "Current full matrix 35810132035 in progress; old c2 run cancelled as superseded."
   },
   "inputValidationFollowThrough": "input-validation-follow-through.json",
   "laterCIEvidence": [
