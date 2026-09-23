@@ -158,7 +158,7 @@ def test_statistics_counts_persisted_executions_once_and_pages_without_foreign_d
         {"workflowId": "flow", "name": "真实统计流程", "count": 4}
     ]
     assert value["byTrigger"] == {"unknown": 4}
-    assert value["recordingCount"] is None and value["recordingUnavailableReason"]
+    assert value["recordingCount"] == 0 and value["recordingUnavailableReason"] is None
     assert [item["runId"] for item in value["items"]] == ["run-4", "run-3"] and value[
         "nextCursor"
     ] == 2
@@ -236,7 +236,7 @@ def test_statistics_http_contract_and_project_filter(studio_stats):
             body["projectId"] == own
             and body["totalRuns"] == 4
             and len(body["items"]) == 1
-            and body["recordingCount"] is None
+            and body["recordingCount"] == 0
         )
         other_body = client.get(
             f"/api/v1/projects/{other}/statistics/studio", params=query
@@ -385,7 +385,7 @@ def test_statistics_refreshes_active_terminal_and_rebuilt_service_from_sqlite(
             value["items"][0]["finishedAt"]
         ) == BASE + timedelta(seconds=3)
         assert "sensitive-do-not-expose" not in str(value)
-        assert value["recordingCount"] is None
+        assert value["recordingCount"] == 0
     assert service.studio(own, **window, status="paused")["totalRuns"] == 0
 
 
@@ -630,7 +630,7 @@ def test_statistics_thousand_iterations_count_all_persisted_events_across_pages(
     assert value["totalRuns"] == 1 and value["byStatus"] == {"completed": 1}
     assert value["nodeExecutionCount"] == value["extractionExecutionCount"] == 1000
     assert value["artifactCount"] == value["diagnosticCount"] == 0
-    assert value["recordingCount"] is None and value["nextCursor"] is None
+    assert value["recordingCount"] == 0 and value["nextCursor"] is None
     assert len(str(value)) < 3000
 
 
@@ -732,6 +732,103 @@ async def test_statistics_counts_actual_worker_published_node_starts(
         )
         assert result["totalRuns"] == 1 and result["byStatus"] == {"completed": 1}
         assert result["nodeExecutionCount"] == 2
-        assert result["recordingCount"] is None
+        assert result["recordingCount"] == 0
     finally:
         await manager.shutdown()
+
+
+def test_statistics_counts_owned_recording_sessions_not_commands_or_legacy_guesses(
+    studio_stats,
+):
+    from autoflow.infrastructure.database.workflow_recordings import (
+        SqlAlchemyWorkflowRecordings,
+    )
+
+    factory, own, other = studio_stats
+    repo = SqlAlchemyWorkflowRecordings(factory)
+    records = [
+        ("own-a", own, "draft-a", BASE + timedelta(minutes=10)),
+        ("own-b", own, "draft-b", BASE + timedelta(minutes=20)),
+        ("foreign-a", other, "draft-a", BASE + timedelta(minutes=30)),
+        ("legacy-unbound", None, "draft-a", BASE + timedelta(minutes=40)),
+        ("outside-before", own, "draft-a", BASE - timedelta(seconds=1)),
+        ("outside-after", own, "draft-a", BASE + timedelta(hours=2)),
+    ]
+    for session_id, project, document_id, started in records:
+        first = repo.start(
+            session_id, now=started, project_id=project, document_id=document_id
+        )
+        assert (
+            repo.start(
+                session_id, now=started, project_id=project, document_id=document_id
+            )
+            == first
+        )
+        for action in ("start", "pause", "resume", "stop"):
+            kwargs = {
+                "session_id": session_id,
+                "action": action,
+                "request_hash": action,
+                "now": started,
+                "project_id": project,
+            }
+            command_id = f"{session_id}-{action}"
+            assert repo.begin_command(command_id, **kwargs) is None
+            assert repo.begin_command(command_id, **kwargs)["status"] == "pending"
+            repo.finish_command(
+                command_id,
+                status="completed",
+                payload={"success": True},
+                http_status=200,
+                now=started,
+            )
+        repo.append(
+            session_id,
+            [
+                {"type": "click", "selector": "#a"},
+                {"type": "input", "selector": "#b", "value": "两步不是两次录制"},
+            ],
+            now=started,
+        )
+        repo.stop(session_id, now=started + timedelta(seconds=7))
+    service = ProjectStatisticsService(factory)
+    window = {"from_": BASE, "to": BASE + timedelta(hours=1)}
+    value = service.studio(own, **window)
+    assert value["recordingCount"] == 2 and value["recordingUnavailableReason"] is None
+    assert value["totalRuns"] == 4
+    assert datetime.fromisoformat(value["latestActivityAt"]) == BASE + timedelta(
+        minutes=20, seconds=7
+    )
+    scoped = service.studio(own, **window, workflow_id="draft-a")
+    assert scoped["recordingCount"] == 1 and scoped["totalRuns"] == 0
+    assert datetime.fromisoformat(scoped["latestActivityAt"]) == BASE + timedelta(
+        minutes=10, seconds=7
+    )
+    assert service.studio(other, **window)["recordingCount"] == 1
+    assert service.studio(own, **window, workflow_id="missing")["recordingCount"] == 0
+    assert (
+        service.studio(
+            own, from_=BASE + timedelta(minutes=15), to=BASE + timedelta(minutes=25)
+        )["recordingCount"]
+        == 1
+    )
+    filtered = service.studio(own, **window, status="failed")
+    assert filtered["recordingCount"] is None
+    assert filtered["recordingUnavailableReason"] == "运行状态筛选不适用于录制次数"
+    rebuilt = ProjectStatisticsService(factory).studio(own, **window)
+    assert rebuilt["recordingCount"] == 2
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(project_statistics_router(ProjectStatisticsService(factory)))
+    with TestClient(app) as client:
+        response = client.get(
+            f"/api/v1/projects/{own}/statistics/studio",
+            params={
+                "from": BASE.isoformat(),
+                "to": (BASE + timedelta(hours=1)).isoformat(),
+                "workflowId": "draft-a",
+            },
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["recordingCount"] == 1
+        assert response.json()["recordingUnavailableReason"] is None
