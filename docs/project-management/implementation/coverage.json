@@ -7038,8 +7038,8 @@
           "milestone": "PM9",
           "kind": "automated_rule_or_integration",
           "report": "docs/project-management/implementation/pm9/link-boundary-follow-through.json",
-          "scope": "真实 HTTP/SQLite 保存和修复命令拒绝跨项目实例、环境身份及伪造 projectId 的记录引用；整组关联失败不部分提交，修复复用原保存结果；本机真实浏览器 worker 的 data-link-race 通过",
-          "limitations": "跨项目伪造目标的真实 worker End 尚无直接场景；当前打包应用及三平台最终源码链仍需复验",
+          "scope": "生产 HTTP/SQLite 保存和修复拒绝跨项目身份；真实 worker 的 data-link-race 证明保存后整组冲突与仅修复关联，data-link-forged-end 证明混合合法/伪造目标在保存前被拒、已写数据保留且占用释放",
+          "limitations": "当前生产源码 c16532d7 三平台与 ARM 隔离打包链已通过；新增伪造 End 反向场景仅在本机源码 worker 运行，尚未在三平台或打包应用直接执行；完整用户验收仍待完成",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
         }
@@ -7093,14 +7093,14 @@
           {
             "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
             "symbol": "test_real_project_batch_http",
-            "scope": "data-link-race 场景通过真实 HTTP/worker/浏览器证明 End 关联整组失败不部分写、仅修复关联且不重复保存或重跑",
+            "scope": "data-link-race：实际 End 保存后整组回滚、伪造修复拒绝及正确修复不重存/重跑；data-link-forged-end：真实 worker 发出合法+伪造项目 RecordRef，End 以 CAPABILITY_SCOPE_DENIED 失败、零保存/关联、两条已成功数据保留、lease 释放",
             "level": "automated_real_worker"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "真实 worker 的 End 联合跨项目伪造目标，以及当前最终源码打包/三平台链尚未直接运行；本机 data-link-race 只证明并发版本冲突下整组回滚与修复"
+            "detail": "新增 data-link-forged-end 反向场景只在本机源码 HTTP/SQLite/worker/浏览器运行；尚无该场景三平台、打包应用与完整用户业务验收。生产源码既有三平台和 ARM 安装成功证据另见 ci-link-boundary-final-follow-through.json，不能把新增测试计入此前 CI。"
           }
         ],
         "statusBeforeReview": "planned"

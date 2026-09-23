@@ -6,9 +6,9 @@
   "productionChange": "Association preflight and commit both require recordRef.projectId to equal the authoritative project ID, in addition to checking the stored row's project/table identity and link revision.",
   "red": "With valid local table/generation/key but a foreign projectId in recordRef, the repair HTTP command incorrectly returned completed and linked the local row. The new test expected saved_unlinked and failed before the shared repository guard.",
   "green": {
-    "contractAndRules": "33 passed, 2 dependency warnings",
-    "realWorker": "test_real_project_batch_http[data-link-race]: 1 passed in 13.26s with a real local public CloakBrowser; End saved one environment after an atomic group conflict, a forged projectId repair kept it saved_unlinked with both rows untouched, and correct repair linked the original environment without task rerun",
-    "ruff": "passed for changed source and contract test",
+    "contractAndRules": "33 passed / 2 existing dependency warnings in 31.08s; repeated after the new worker assertion",
+    "realWorker": "data-link-race and data-link-forged-end: 2 passed / 33 deselected in 64.70s on local macOS ARM, real public CloakBrowser 145. New scenario invokes the real parent capability service unchanged; no synthetic Run, lease, output or End result.",
+    "ruff": "passed for the modified real-worker test file; production source unchanged",
     "mypy": "passed for 407 source files",
     "coverageReferences": "251 valid references; planned paths still absent for 73 historical entries, 72 with located assertions and XE-G07 with an explicit test gap",
     "fullBackend": "3479 passed / 77 skipped / 2 dependency deprecation warnings in 802.95s on macOS ARM source checkout",
@@ -22,7 +22,8 @@
     "A group containing two local records and one foreign-project record saves the environment but links none of the records.",
     "Repair with a forged foreign projectId on an otherwise local record remains saved_unlinked and changes no link revision; repair with the correct two records links both to the original saved environment without another save.",
     "Commit rechecks project ID and concurrent link revision; either conflict leaves the complete group unchanged.",
-    "After an actual browser worker End saves the environment with a group conflict, forged-project repair leaves the saved environment and all records unchanged; correct repair then links without rerunning the task."
+    "After an actual browser worker End saves the environment with a group conflict, forged-project repair leaves the saved environment and all records unchanged; correct repair then links without rerunning the task.",
+    "A real worker resolves a mixed legal/forged-project End group from its two createRecord outputs. The parent denies it before saving: one failed End with CAPABILITY_SCOPE_DENIED, zero end-save operations/environments in either project, both committed values and linkRevision=1 preserved, both leases released and worker cleaned up."
   ],
   "coverage": {
     "total": 251,
@@ -33,10 +34,17 @@
     "verified": 0
   },
   "limits": [
-    "The forged target was exercised through the production HTTP repair route after an actual worker End save, but a worker-generated End target carrying a foreign projectId was not exercised.",
+    "The worker-generated forged End and post-save forged repair were exercised locally. The new direct-End assertion is added after CI source c16532d7; its inclusion in the existing CI selection is updated, but no new three-platform or packaged run of that assertion is claimed.",
     "Current c16532d7 three-platform CI succeeded after an Intel-only retry; attempt 1 Intel DMG detach failure retained. Current ARM isolated installed full desktop smoke passed. Windows and Intel physical installation and complete release gates remain pending.",
     "The historical planned test path remains absent; current concrete assertions are mapped to the existing contract, rule and real-worker files."
   ],
   "ciReport": "ci-link-boundary-final-follow-through.json",
-  "installedArmReport": "installed-arm-link-guard-candidate.json"
+  "installedArmReport": "installed-arm-link-guard-candidate.json",
+  "testDevelopment": "First new test run reached all business assertions but failed its final URL-count assertion: the existing data fixture opens /login, not /fixture. Corrected the assertion to the actual fixture contract; no production defect or fix claimed.",
+  "commands": [
+    "AUTOFLOW_TEST_CLOAKBROWSER=<public-145-executable> uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py -k data-link --tb=short",
+    "uv run --directory apps/backend pytest -q tests/contract/test_project_environments.py tests/unit/test_project_environment_rules.py --tb=short",
+    "uv run --directory apps/backend ruff check tests/integration/test_project_batch_real_cloakbrowser.py",
+    "node scripts/verify-pm9-coverage.mjs"
+  ]
 }

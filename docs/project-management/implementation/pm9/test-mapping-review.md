@@ -112,3 +112,6 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 2026-09-23 生命周期补审：LIFE-01/02 不能再仅写缺测试——连接无原位重授权/稳定主体契约，普通改绑无条件新建数据代次。LIFE-07 临时真实 HTTP 探针复现旧 unknown 仍在时重绑并再次云写；L0 在改绑新/旧目标及解绑复用持久值发送围栏，4 个直接反例 RED→GREEN。L0只拒绝绕过，不完成永久失权隔离；L1→L2→L3 具体规格/计划已保存，新增能力尚待批准。最新 243 有范围断言/8 未定位、202 partial/49 planned/0 verified。生产候选已改变，旧 c2 矩阵不能证明此修复，新完整矩阵见 verification.json。
 2026-09-23 DATA-WRITE-13（confirmed 局部）：新增真实 worker + 受控 Sheets 来源第二表循环场景，直接断言前两条数据修改与 pending 意图在第三次字段失败后保留，动态 lease 释放、End 未运行。源码变量解析缺陷已修复，单独 Sheets 6 项与变量差异 20 项通过。该条由 planned 升为 partially_verified；仍缺打包 UI、真实 Google 送达核验和三平台该组合。现 251 条中 248 有范围断言、3 未定位，204 partial/47 planned/0 verified；releaseAccepted=false。详见 sheets-loop-partial-follow-through.json。
+
+
+2026-09-23 真实 worker 伪造 End 补证（confirmed，仅本机源码）：新增 `data-link-forged-end`，由实际两次 createRecord 输出生成一条合法目标和一条仅替换 projectId 的伪造目标。原 worker/父进程能力服务拒绝整组：End 为 CAPABILITY_SCOPE_DENIED、两个项目均零环境、零 end-save 操作；两条已写数据及 linkRevision=1 保留、两条 lease 释放、进程/临时目录清理完成。与原 data-link-race 共 2 passed/33 deselected（64.70 秒）；契约/规则 33 passed、Ruff 通过。首次测试仅末尾错误的 /fixture 计数断言失败，既有数据场景实际打开 /login，修正测试后通过，无新增生产修复。CI 选择已纳入新场景；生产源码仍 c16532d7，此次新增断言不计入历史三平台结果。DATA-LINK-02 仍 partial，完整打包/跨平台反向场景及用户验收保留。251 条结构复核无未分类项，73 条预定路径缺失中 72 条已有范围映射，205 partial/46 planned/0 verified；`releaseAccepted=false`。

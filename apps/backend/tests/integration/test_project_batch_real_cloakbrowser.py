@@ -135,7 +135,7 @@ async def test_optional_input_does_not_leak_between_real_tasks(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "parameter-single", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-evidence-reconnect", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "parameter-single", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-link-forged-end", "data-old-candidate", "manual-resume", "manual-evidence-reconnect", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -158,11 +158,22 @@ async def test_real_project_batch_http(
     app = create_app(settings)
     event_server = event_server_task = event_socket = None
     lost_command = None
+    end_requests = []
     link_race_injected = False
     race_commands = []
     late_resume = None
     subflow_source_edited = False
     cancelled_child_writes = []
+    if scenario == 'data-link-forged-end':
+        manager = app.state.project_workflow_worker_manager
+        original_capability = manager._on_capability
+
+        async def observe_end_request(run_id, generation, request):
+            if request.get('operation') == 'end':
+                end_requests.append(request)
+            return await original_capability(run_id, generation, request)
+
+        monkeypatch.setattr(manager, '_on_capability', observe_end_request)
     if scenario == 'manual-expire-race':
         repository = app.state.environment_service.environments
         accept, transition = repository.accept_operation, repository.transition_manual
@@ -357,7 +368,7 @@ async def test_real_project_batch_http(
                 ])
                 nodes.append({'id': 'end', 'type': 'project_end', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': True, 'mode': 'saveAs',  'name': "{saved['ref']['recordKey']['value']}", 'recordTargets': [{'recordRef': "{saved['ref']}", 'expectedLinkRevision': "{saved['linkRevision']}", 'replaceAllowed': False}]}}})
                 document['content']['edges'].append({'id': 'end-task', 'source': 'write', 'target': 'end'})
-                if scenario == 'data-link-race':
+                if scenario in {'data-link-race', 'data-link-forged-end'}:
                     from copy import deepcopy
                     second = deepcopy(next(node for node in nodes if node['id'] == 'write'))
                     second['id'] = 'second-write'
@@ -366,6 +377,14 @@ async def test_real_project_batch_http(
                     document['content']['edges'][-1]['target'] = 'second-write'
                     document['content']['edges'].append({'id': 'second-end', 'source': 'second-write', 'target': 'end'})
                     next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{second_saved['ref']}", 'expectedLinkRevision': "{second_saved['linkRevision']}", 'replaceAllowed': False})
+                    if scenario == 'data-link-forged-end':
+                        foreign = await client.post('/api/v1/projects', headers={'Idempotency-Key': str(uuid4())}, json={'name': '无权关联的外部项目'})
+                        assert foreign.status_code == 201, foreign.text
+                        foreign_project_id = foreign.json()['projectId']
+                        next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'][1]['recordRef'] = {
+                            'projectId': foreign_project_id, 'tableId': table['tableId'], 'datasetGeneration': table['datasetGeneration'],
+                            'recordKey': "{second_saved['ref']['recordKey']}",
+                        }
             if scenario.startswith('data-delete-field'):
                 for identity, operation in [('preview-deletion', 'previewFieldDeletion'), ('delete-field', 'deleteField')]:
                     nodes.append({'id': identity, 'type': 'project_data', 'position': {'x': 100, 'y': 880}, 'data': {
@@ -940,6 +959,41 @@ async def test_real_project_batch_http(
                     writes = [e for e in events if e.kind == 'nodeAttempt' and e.node_id == 'write' and e.payload['status'] == 'started']
                     assert len(writes) == 2 and writes[0].node_visit_id != writes[1].node_visit_id
                     assert [e.payload['executionContext']['scopes'][0]['callNodeId'] for e in writes] == ['first-call', 'second-call']
+            elif scenario == 'data-link-forged-end':
+                from sqlalchemy import select
+
+                from autoflow.infrastructure.database.project_run_models import (
+                    ProjectRecordLeaseRow,
+                )
+
+                assert detail['statusCounts']['failed'] == detail['statusCounts']['cancelled'] == 1, detail
+                failed = next(task for task in tasks if task['status'] == 'failed')
+                task_path = prefix + f"/tasks/{failed['taskId']}"
+                outputs = (await client.get(task_path + '/outputs')).json()['items']
+                created_refs = [output['value']['ref'] for output in outputs if output['nodeId'] in {'write', 'second-write'}]
+                assert len(created_refs) == 2 and all(ref['projectId'] == project_id for ref in created_refs)
+                assert len(end_requests) == 1
+                targets = end_requests[0]['arguments']['retainEnvironment']['recordTargets']
+                assert targets == [
+                    {'recordRef': created_refs[0], 'expectedLinkRevision': 1, 'replaceAllowed': False},
+                    {'recordRef': {**created_refs[1], 'projectId': foreign_project_id}, 'expectedLinkRevision': 1, 'replaceAllowed': False},
+                ]
+                assert end_requests[0]['browserClosed'] is True
+                attempts = (await client.get(task_path + '/node-attempts')).json()['items']
+                end_attempts = [attempt for attempt in attempts if attempt['nodeId'] == 'end']
+                assert len(end_attempts) == 1 and end_attempts[0]['status'] == 'failed'
+                assert end_attempts[0]['error']['code'] == 'CAPABILITY_SCOPE_DENIED'
+                rows = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert len(rows) == 2 and all(row['values'][0]['value'] == 'before-真实参数-001' for row in rows)
+                assert all(row['currentEnvironmentId'] is None and row['linkRevision'] == 1 for row in rows)
+                assert (await client.get(prefix + '/environments')).json()['total'] == 0
+                assert (await client.get(f'/api/v1/projects/{foreign_project_id}/environments')).json()['total'] == 0
+                operations = (await client.get(prefix + '/operations', params={'pageSize': 200})).json()['items']
+                assert not any(operation['idempotencyKey'].startswith('end-save:') for operation in operations)
+                with app.state.session_factory() as session:
+                    leases = session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.task_id == failed['taskId'])).all()
+                    assert len(leases) == 2 and all(lease.state == 'released' for lease in leases)
+                assert requests.count('/login') == 1
             elif scenario == 'data-link-race':
                 assert link_race_injected
                 assert detail['statusCounts']['failed'] == 1, detail

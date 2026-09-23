@@ -183,7 +183,7 @@
     "physicalInstallation": "ARM isolated command-line install passed; Windows/Intel physical installation, Finder/Gatekeeper/native panels/signing/notarization pending"
   },
   "codeCandidateScope": "Prior PM9 production runtime/data/Windows capabilities plus shared environment association project-identity guard.",
-  "testCandidate": "Post-c165 test-only real-worker forged-repair assertion, passed locally in 13.26s; not part of Actions 35846519367 source snapshot. Production source remains c16532d79fe8db87a8f9b371d9045a02fb89e362.",
+  "testCandidate": "Post-c165 test-only direct forged-End and forged-repair scenarios: local real worker 2 passed/33 deselected in 64.70s, contract/rules33 and Ruff passed. Existing CI selection now includes data-link-forged-end, but new assertions were not part of Actions 35846519367. Production source remains c16532d79fe8db87a8f9b371d9045a02fb89e362.",
   "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -472,5 +472,6 @@
     "runId": "35833223498",
     "report": "ci-s4-final-follow-through.json",
     "note": "Succeeded before DATA-LINK-02 project identity guard; retained as historical source-specific evidence."
-  }
+  },
+  "workerLinkBoundaryFollowThrough": "link-boundary-follow-through.json"
 }
