@@ -96,6 +96,38 @@ try {
   await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 0", 'new empty workflow')
   checkpoint('通过正式新建入口创建空工作流')
 
+  if (process.env.AUTOFLOW_B1_METADATA === '1') {
+    const metadata = await api(runtime, '/system/module-required-fields')
+    assert.equal(metadata.coveredModules.length, 213)
+    assert.equal(metadata.coveredModules.includes('notify_discord'), false)
+    const missing = "document.body.innerText.includes('个必填项未填写')"
+    const loaded = "!document.body.innerText.includes('正在读取必填字段规则') && !document.body.innerText.includes('必填字段规则未加载') && !document.body.innerText.includes('此节点尚未提供必填字段规则')"
+    await addFromQuickPicker(studio, 0, '打开网页')
+    await click(studio, '', '.react-flow__node')
+    await waitFor(studio, `${loaded} && ${missing}`, 'empty URL source rule')
+    await setInput(studio, '[placeholder="https://example.com"]', pageUrl)
+    await waitFor(studio, `${loaded} && !(${missing})`, 'URL rule resolved')
+    await addFromQuickPicker(studio, 1, '固定等待')
+    await click(studio, '固定等待', '.react-flow__node')
+    await waitFor(studio, `${loaded} && !(${missing})`, 'default duration is not required')
+    await click(studio, '', '#waitType')
+    await click(studio, '等待元素', '[role="option"]')
+    await waitFor(studio, `${loaded} && ${missing}`, 'selector mode requires selector')
+    await setInput(studio, '[placeholder="例如: #element, .class"]', '#workflow-output')
+    await waitFor(studio, `${loaded} && !(${missing})`, 'selector rule resolved')
+    await click(studio, '', '#waitType')
+    await click(studio, '等待导航', '[role="option"]')
+    await waitFor(studio, `${loaded} && !(${missing})`, 'navigation mode has no selector requirement')
+    await addFromQuickPicker(studio, 2, '发送邮件')
+    await click(studio, '发送邮件', '.react-flow__node')
+    await waitFor(studio, `${loaded} && document.body.innerText.includes('有 3 个必填项未填写')`, 'previously uncovered email rule')
+    await capture(studio, join(evidenceDir, 'required-field-rules.png'))
+    checkpoint('真实字段接口覆盖213：空URL/填写、等待三模式及邮件源规则经实际UI核验；未执行外部邮件')
+    await click(studio, '新建')
+    await click(studio, '放弃修改')
+    await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 0", 'new workflow after metadata checks')
+  }
+
   await setInput(studio, 'input[placeholder="工作流名称"]', 'B1 五节点正式闭环')
   const modules = [
     ['打开网页', 'open_page', { placeholder: 'https://example.com', value: pageUrl }],

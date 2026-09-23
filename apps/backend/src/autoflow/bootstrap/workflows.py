@@ -18,6 +18,7 @@ from autoflow.adapters.http.workflow_ai import workflow_ai_router
 from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
 from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
 from autoflow.adapters.http.workflow_mcp import workflow_mcp_router
+from autoflow.adapters.http.workflow_metadata import workflow_metadata_router
 from autoflow.adapters.http.workflow_runs import (
     WorkflowRunCommands,
     project_workflow_assets_router,
@@ -417,6 +418,7 @@ def build_workflow_services(
 
 
 def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
+    app.include_router(workflow_metadata_router())
     # Static workflow commands must be registered before the dynamic document ID.
     app.include_router(workflow_trigger_router(services.commands))
     if services.gestures is not None:
