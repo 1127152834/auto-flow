@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 import pytest
+
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
@@ -8,7 +9,6 @@ from autoflow.domain.workflows.catalog import node_catalog
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.domain.workflows.run_validation import prepare_run
 from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
-
 from tests.fixtures.workflows import workflow_payload
 
 
@@ -182,7 +182,7 @@ def test_prepare_accepts_zero_timeout_as_no_limit_for_every_worker_node():
 
 
 @pytest.mark.parametrize(
-    "module_type", ["wait_element", "future_node", "group"]
+    "module_type", ["list_export", "future_node", "group"]
 )
 def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
     payload = workflow_payload()

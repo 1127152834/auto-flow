@@ -1,7 +1,9 @@
 """Opt-in real HTTP/SQLite/CloakBrowser batch chain; no Studio or synthetic Run facts."""
 
 import asyncio
+import inspect
 import shutil
+from pathlib import Path
 from uuid import uuid4
 
 import httpx
@@ -24,7 +26,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -83,6 +85,36 @@ async def test_real_project_batch_http(
         document["content"]["edges"].append(
             {"id": "edge-input-read", "source": "read", "target": "read-input"}
         )
+        if scenario == "web_basic":
+            fixture_dir = Path(__file__).parents[1] / "fixtures"
+            first_page = (fixture_dir / "workflow-page.html").resolve().as_uri()
+            second_page = (fixture_dir / "workflow-b2-web-actions.html").resolve().as_uri()
+            steps = [
+                ("open_page", {"url": first_page, "openMode": "current_tab"}),
+                ("use_opened_page", {"pageIdentifier": "AutoFlow B1 受控页面", "matchMode": "title"}),
+                ("wait_element", {"selector": "#workflow-input", "waitCondition": "visible"}),
+                ("hover_element", {"selector": "#workflow-submit", "hoverDuration": 0}),
+                ("inject_javascript", {"javascriptCode": "setTimeout(() => alert('AutoFlow dialog'), 100); return document.title", "injectMode": "current", "saveResult": "injected_title"}),
+                ("handle_dialog", {"dialogAction": "accept", "saveMessage": "dialog_message"}),
+                ("refresh_page", {"waitUntil": "load"}),
+                ("open_page", {"url": second_page, "openMode": "current_tab"}),
+                ("go_back", {"waitUntil": "load"}),
+                ("go_forward", {"waitUntil": "load"}),
+                ("go_back", {"waitUntil": "load"}),
+                ("switch_iframe", {"locateBy": "selector", "iframeSelector": "#workflow-frame"}),
+                ("wait_element", {"selector": "#frame-value", "waitCondition": "visible"}),
+                ("switch_to_main", {}),
+                ("close_page", {}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"web-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"web-edge-{index}", "source": f"web-{index}", "target": f"web-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            document["content"]["variables"] = []
         service = WorkflowService(
             SqlAlchemyWorkflowRepository(app.state.session_factory)
         )
@@ -102,6 +134,17 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
+            if scenario == "web_basic":
+                project = created.json()
+                defaulted = await client.patch(
+                    prefix,
+                    headers={"Idempotency-Key": str(uuid4())},
+                    json={
+                        "expectedManagementRevision": project["managementRevision"],
+                        "defaultResources": {**project["defaultResources"], "profileId": profile.id},
+                    },
+                )
+                assert defaulted.status_code == 200, defaulted.text
             response = await client.post(
                 prefix + "/automations",
                 headers={"Idempotency-Key": str(uuid4())},
@@ -120,7 +163,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                        "profileId": profile.id,
+                        **({} if scenario == "web_basic" else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -203,7 +246,21 @@ async def test_real_project_batch_http(
                 json=payload,
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
-            if scenario == "success":
+            if scenario == "web_basic":
+                assert detail["statusCounts"]["succeeded"] == 2
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    attempts = await client.get(task_path + "/node-attempts", params={"pageSize": 100})
+                    outputs = await client.get(task_path + "/outputs")
+                    assert attempts.status_code == outputs.status_code == 200
+                    assert attempts.json()["total"] == 15
+                    assert {item["status"] for item in attempts.json()["items"]} == {"succeeded"}
+                    assert {item["name"]: item["value"] for item in outputs.json()["items"]} == {
+                        "injected_title": "AutoFlow B1 受控页面",
+                        "dialog_message": "AutoFlow dialog",
+                    }
+                assert not app.state.project_workflow_worker_manager.busy()
+            elif scenario == "success":
                 assert detail["statusCounts"]["succeeded"] == 2 and requests, {
                     "batch": detail,
                     "tasks": [(await client.get(prefix + f"/tasks/{task['taskId']}")).json() for task in tasks],
@@ -256,4 +313,7 @@ async def test_real_project_batch_http(
             assert (workspace / "tmp").is_dir()
             assert not list((workspace / "tmp").glob("**/generation-*"))
     finally:
-        await app.router.on_shutdown[-1]()
+        for callback in app.router.on_shutdown:
+            result = callback()
+            if inspect.isawaitable(result):
+                await result

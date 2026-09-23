@@ -1,0 +1,24 @@
+{
+  "evidenceId": "BE-project-web-basic-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T14:36:28.275Z",
+  "gitHead": "04d22267f6f7998ce4a6c3d2bafe0ed753eb9ed8",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "ade27c10-b804-4792-8895-af5bfd73cdcb",
+  "workflowId": "12N_QYj9OQUx6XNyyzNIQ",
+  "batchId": "2456cfa8-cac4-4f07-8fb9-d57cf87d5b92",
+  "taskId": "35a85ac1-3c28-4970-aa4c-f6adcf09b0cc",
+  "sawCloakBrowser": true,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存网页打开、匹配、等待、悬停和提取顺序流程",
+    "正式项目任务使用项目默认 Profile 启动 CloakBrowser、执行网页动作、持久化输出并清理进程"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

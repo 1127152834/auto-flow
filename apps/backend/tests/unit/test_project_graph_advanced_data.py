@@ -14,17 +14,18 @@ import random
 import subprocess
 import sys
 from pathlib import Path
+from time import monotonic
 from types import ModuleType
 from typing import Any
 
 import pytest
+
 from autoflow.domain.workflows.catalog import node_catalog
 from autoflow.domain.workflows.run_validation import prepare_run
 from autoflow.providers.browser.project_graph import (
     ProjectGraphExecutor,
     _ProjectRegistry,
 )
-
 from tests.fixtures.workflows import workflow_payload
 
 FIVE_NODE_BRIDGE = frozenset(
@@ -203,6 +204,28 @@ def test_existing_project_chain_format_remains_compatible() -> None:
         "click_element",
         "get_element_info",
     ]
+
+
+@pytest.mark.asyncio
+async def test_project_browser_result_does_not_publish_sensitive_variable() -> None:
+    events: list[tuple[str, dict[str, object]]] = []
+
+    async def emit(kind: str, _node_id: str, _visit: str, payload: dict[str, object]) -> None:
+        events.append((kind, payload))
+
+    executor = ProjectGraphExecutor(None, {"secret": "hidden"}, emit, lambda: False)
+    executor.context.sensitive_variables.add("secret")
+    executor.nodes = {
+        "script": {"moduleType": "inject_javascript", "config": {"saveResult": "secret"}}
+    }
+    executor.started["visit"] = monotonic()
+    await executor.publish({
+        "type": "execution:node_complete", "nodeId": "script", "executionId": "visit",
+        "success": True, "data": {"results": [{"result": "hidden"}]},
+    })
+
+    assert not any(kind == "output" for kind, _ in events)
+    assert any(kind == "nodeAttempt" and payload["status"] == "succeeded" for kind, payload in events)
 
 
 @pytest.mark.asyncio

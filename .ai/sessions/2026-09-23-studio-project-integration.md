@@ -314,3 +314,9 @@
 - 项目目录接入冻结 WebRPA 实用工具源码已批准的九个现有执行器，真实项目 worker 和原版差分／关联回归共 166 项通过；项目目录为 111 个，Studio 批准范围 213 不变。Ruff、mypy、OpenAPI 检查通过。
 - 正式 Electron 开发入口及 macOS arm64 本地未签名包以真实 UI 保存并运行 URL 编码→MD5→SHA，输出、节点记录与清理正确；共享验收脚本下拉选择操作调整后，数学链路在同一新包复验通过。完整证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/utility-family-2026-09-23/README.md`。
 - `list_export` 项目任务仍受文本产物发布与 SQLite ACK 不确定性安全边界阻塞；该问题源于 `ProjectScreenshotWriter.write_text` 尚未接通，不能用截图删除规则处理已发布的用户输出文件。其余工具族、Intel/Windows 和正式用户数据未据此验收。
+
+## 项目任务基础网页节点族（2026-09-23，confirmed）
+
+- 冻结 WebRPA `basic.py` 已迁入 Studio 的 11 类网页节点复用项目图执行器及 CloakBrowser 会话；项目目录从 111 增至 122，Studio 批准范围 213 不变。项目默认 Profile＋任务显式覆盖规则已由用户确认，无资源白名单。
+- 真实项目批次两项任务逐项执行十五节点链，核验导航历史、悬停、弹窗、脚本变量、iframe、输出与 worker 清理。关联回归 274 项、真实批次 5 项、敏感输出专项 2 项，Ruff/mypy/OpenAPI/构建通过。
+- 正式 macOS arm64 开发入口及本地 unsigned 包经真实 UI 编排、保存关窗、项目自动化运行、CloakBrowser 启动与清理通过。包内哈希、证据和未核销边界见 `docs/migration/studio-backend-migration/evidence/project-integration/web-basic-family-2026-09-23/README.md`。其他项目节点族、Intel/Windows 和用户数据库未因此关闭。
