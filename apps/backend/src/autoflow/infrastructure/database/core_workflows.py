@@ -21,8 +21,14 @@ from autoflow.domain.workflows.validation import (
     SOURCE_PRODUCT,
 )
 
+from .projects import guard_project
 from .workflow_core_models import WorkflowDocumentOperationRow
 from .workflow_models import WorkflowDocumentRow
+from .workflow_project_scope import (
+    readable_workflow_project,
+    workflow_project_expression,
+    workflow_project_id,
+)
 
 
 class SqlAlchemyWorkflowRepository:
@@ -31,12 +37,12 @@ class SqlAlchemyWorkflowRepository:
 
     def list(self) -> list[WorkflowRecord]:
         with self._session_factory() as session:
-            rows = session.scalars(
-                select(WorkflowDocumentRow).order_by(
+            rows = session.execute(
+                select(WorkflowDocumentRow, workflow_project_expression()).where(readable_workflow_project()).order_by(
                     WorkflowDocumentRow.updated_at.desc(), WorkflowDocumentRow.id
                 )
             ).all()
-            return [_record(row) for row in rows if _current_document(row.document)]
+            return [_record(row, project_id) for row, project_id in rows if _current_document(row.document)]
 
     def list_legacy(self) -> builtins.list[LegacyWorkflowRecord]:
         with self._session_factory() as session:
@@ -54,7 +60,12 @@ class SqlAlchemyWorkflowRepository:
     def get(self, workflow_id: str) -> WorkflowRecord | None:
         with self._session_factory() as session:
             row = session.get(WorkflowDocumentRow, workflow_id)
-            return _record(row) if row is not None else None
+            if row is None:
+                return None
+            project_id = workflow_project_id(session, workflow_id)
+            if project_id is not None:
+                guard_project(session, project_id, writable=False)
+            return _record(row, project_id)
 
     def get_legacy(self, workflow_id: str) -> LegacyWorkflowRecord | None:
         with self._session_factory() as session:
@@ -74,6 +85,11 @@ class SqlAlchemyWorkflowRepository:
         workflow_id = str(document["id"])
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            project_id = workflow_project_id(session, workflow_id)
+            if project_id is not None:
+                guard_project(session, project_id)
+                document = deepcopy(document)
+                document["content"]["projectId"] = project_id
             existing = session.get(
                 WorkflowDocumentOperationRow, save_operation_id
             )
@@ -138,7 +154,7 @@ class SqlAlchemyWorkflowRepository:
             return _operation(row) if row is not None else None
 
 
-def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
+def _record(row: WorkflowDocumentRow, project_id: str | None = None) -> WorkflowRecord:
     document = _canonical_document(row)
     if document is None:
         raise WorkflowError(
@@ -156,6 +172,7 @@ def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
         row.revision,
         _aware(row.created_at),
         _aware(row.updated_at),
+        project_id or document["content"].get("projectId"),
     )
 
 
@@ -249,6 +266,7 @@ def _operation_row(
             "revision": record.revision,
             "createdAt": record.created_at.isoformat(),
             "updatedAt": record.updated_at.isoformat(),
+            "projectId": record.project_id,
         },
         created_at=now,
     )
@@ -261,6 +279,7 @@ def _operation(row: WorkflowDocumentOperationRow) -> WorkflowSaveOperation:
         int(result["revision"]),
         datetime.fromisoformat(result["createdAt"]),
         datetime.fromisoformat(result["updatedAt"]),
+        result.get("projectId") or result["document"]["content"].get("projectId"),
     )
     return WorkflowSaveOperation(
         row.save_operation_id,

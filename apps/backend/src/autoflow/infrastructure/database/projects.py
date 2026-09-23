@@ -14,6 +14,16 @@ from autoflow.domain.projects.models import (
 from .models import ProjectOperationRow, ProjectRow
 
 
+def guard_project(session: Session, project_id: str, writable: bool = True) -> None:
+    row = session.get(ProjectRow, project_id)
+    if row is None or row.lifecycle_state == "deleted":
+        raise ProjectError("PROJECT_NOT_FOUND", "Project was not found", 404)
+    if writable and row.lifecycle_state == "closing":
+        raise ProjectError("PROJECT_CLOSING", "Project is closing", 423)
+    if writable and row.lifecycle_state != "active":
+        raise ProjectError("LIFECYCLE_CONFLICT", "Project cannot be edited", 409)
+
+
 class SqlAlchemyProjects:
     def __init__(self, session_factory: sessionmaker[Session]):
         self._session_factory = session_factory

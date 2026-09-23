@@ -68,7 +68,7 @@ def workflows_router(service: WorkflowDocumentService) -> APIRouter:
     @router.get("/{workflow_id}")
     def get_workflow(workflow_id: str, projectId: str | None = Query(default=None, min_length=1, max_length=200)) -> dict[str, Any]:
         saved = service.get(workflow_id)
-        if projectId is not None and saved.document.get("projectId") != projectId:
+        if projectId is not None and saved.project_id != projectId:
             raise WorkflowDocumentError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
         return saved.to_payload()
 
@@ -78,7 +78,7 @@ def workflows_router(service: WorkflowDocumentService) -> APIRouter:
     ) -> dict[str, Any]:
         current = service.get(workflow_id)
         project_id = request.model_dump(by_alias=True).get("projectId")
-        if project_id is not None and current.document.get("projectId") != project_id:
+        if project_id is not None and current.project_id != project_id:
             raise WorkflowDocumentError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
         saved = service.update(
             workflow_id,

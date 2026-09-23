@@ -60,13 +60,13 @@ def workflow_catalog_router(service: WorkflowService) -> APIRouter:
     def list_workflows(projectId: str | None = Query(default=None, min_length=1, max_length=200)) -> WorkflowCatalogList:
         records = service.list()
         if projectId is not None:
-            records = [record for record in records if record.document["content"].get("projectId") == projectId]
+            records = [record for record in records if record.project_id == projectId]
         return WorkflowCatalogList(items=[_item(record) for record in records])
 
     @router.get("/{workflowId}", response_model=WorkflowCatalogDetail)
     def get_workflow(workflowId: str, projectId: str | None = Query(default=None, min_length=1, max_length=200)) -> WorkflowCatalogDetail:
         record = service.get(workflowId)
-        if projectId is not None and record.document["content"].get("projectId") != projectId:
+        if projectId is not None and record.project_id != projectId:
             raise WorkflowError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
         return WorkflowCatalogDetail.model_validate(_item(record).model_dump())
 

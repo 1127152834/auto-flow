@@ -46,6 +46,7 @@ class WorkflowRecord:
     revision: int
     created_at: datetime
     updated_at: datetime
+    project_id: str | None = None
 
     @property
     def workflow_id(self) -> str:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -13,8 +14,11 @@ from autoflow.adapters.http.workflows import workflows_router
 from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.errors import WorkflowDocumentError
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.infrastructure.database.core_workflows import SqlAlchemyWorkflowRepository
+from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
@@ -45,6 +49,15 @@ def _payload(name: str = "项目工作流", project_id: str | None = None) -> di
     if project_id is not None:
         payload["projectId"] = project_id
     return payload
+
+
+def _project(factory, project_id: str, state: str = "active") -> None:
+    now = datetime.now(UTC)
+    with factory() as session:
+        session.add(ProjectRow(id=project_id, name=project_id, name_key=project_id,
+            description="", search_text=project_id, default_resources={},
+            management_revision=1, lifecycle_state=state, created_at=now, updated_at=now))
+        session.commit()
 
 
 @pytest.mark.parametrize("workflow_id", [str(uuid4()), "V1StGXR8_Z5jdHi6B-myT"])
@@ -96,6 +109,8 @@ def test_studio_workflow_routes_keep_project_scopes_separate(tmp_path: Path) -> 
     migrate_database(database)
     factory = create_session_factory(database)
     documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    _project(factory, "project-a")
+    _project(factory, "project-b")
     first = documents.create(_payload("甲流程", "project-a"), client_request_id="a")
     second = documents.create(_payload("乙流程", "project-b"), client_request_id="b")
     app = FastAPI()
@@ -119,6 +134,119 @@ def test_studio_workflow_routes_keep_project_scopes_separate(tmp_path: Path) -> 
     )
     assert update.status_code == 404
     assert documents.get(second.id).name == "乙流程"
+    factory.dispose()
+
+
+@pytest.mark.parametrize("action", ["create", "update", "delete", "catalog_save"])
+def test_project_lifecycle_guards_studio_document_writes(tmp_path: Path, action: str) -> None:
+    database = tmp_path / "archive.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    _project(factory, "project")
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    saved = documents.create(_payload(project_id="project"), client_request_id="create")
+    with factory() as session:
+        session.get(ProjectRow, "project").lifecycle_state = "archived"
+        session.commit()
+    with pytest.raises(ProjectError) as raised:
+        if action == "create":
+            documents.create(_payload(project_id="project"), client_request_id="other")
+        elif action == "update":
+            # Omitting caller context cannot bypass the stored owner's lifecycle.
+            payload = saved.to_payload()
+            payload.pop("projectId")
+            payload["name"] = "试图写入归档项目"
+            documents.update(saved.id, payload, expected_revision=1, client_request_id="update")
+        elif action == "delete":
+            documents.delete(saved.id, expected_revision=1)
+        else:
+            catalog = WorkflowService(SqlAlchemyWorkflowRepository(factory))
+            record = catalog.get(saved.id)
+            catalog.save(saved.id, record.document, 1, str(uuid4()))
+    assert raised.value.code == "LIFECYCLE_CONFLICT"
+    assert documents.get(saved.id).revision == 1
+    factory.dispose()
+
+
+def test_project_filter_is_applied_before_pagination(tmp_path: Path) -> None:
+    database = tmp_path / "pages.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    _project(factory, "a")
+    _project(factory, "b")
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    expected = []
+    for index in range(5):
+        saved = documents.create(_payload(project_id="a"), client_request_id=f"a-{index}")
+        expected.insert(0, saved.id)
+        documents.create(_payload(project_id="b"), client_request_id=f"b-{index}")
+    first = documents.list_summaries(project_id="a", limit=2)
+    second = documents.list_summaries(project_id="a", limit=2, cursor=first.next_cursor)
+    third = documents.list_summaries(project_id="a", limit=2, cursor=second.next_cursor)
+    assert [item.id for page in (first, second, third) for item in page.items] == expected
+    assert third.next_cursor is None
+    factory.dispose()
+
+
+def test_workflow_project_is_preserved_when_save_omits_context(tmp_path: Path) -> None:
+    database = tmp_path / "owner.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    _project(factory, "project")
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    saved = documents.create(_payload(project_id="project"), client_request_id="create")
+    payload = saved.to_payload()
+    payload.pop("projectId")
+    documents.update(saved.id, payload, expected_revision=1, client_request_id="update")
+    assert documents.get(saved.id).to_payload()["projectId"] == "project"
+    assert [item.id for item in documents.list_summaries(project_id="project").items] == [saved.id]
+    factory.dispose()
+
+
+def test_new_workflow_rejects_missing_project(tmp_path: Path) -> None:
+    database = tmp_path / "missing-project.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    with pytest.raises(ProjectError) as raised:
+        documents.create(_payload(project_id="missing"), client_request_id="create")
+    assert raised.value.code == "PROJECT_NOT_FOUND"
+    assert documents.list_summaries().items == ()
+    factory.dispose()
+
+
+@pytest.mark.parametrize("invalid", [[], {}, False, 1, "", " " * 3, "x" * 201])
+def test_malformed_project_reference_is_a_document_error(tmp_path: Path, invalid) -> None:
+    database = tmp_path / "invalid-owner.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    payload = _payload()
+    payload["projectId"] = invalid
+    with pytest.raises(WorkflowDocumentError) as raised:
+        documents.create(payload, client_request_id="create")
+    assert raised.value.status == 422
+    assert raised.value.details["path"] == "projectId"
+    factory.dispose()
+
+
+def test_deleted_project_is_hidden_from_both_catalogs(tmp_path: Path) -> None:
+    database = tmp_path / "deleted.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    _project(factory, "project")
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    saved = documents.create(_payload(project_id="project"), client_request_id="create")
+    catalog = WorkflowService(SqlAlchemyWorkflowRepository(factory))
+    with factory() as session:
+        session.get(ProjectRow, "project").lifecycle_state = "deleted"
+        session.commit()
+    assert documents.list_summaries().items == ()
+    assert catalog.list() == []
+    for service in (documents, catalog):
+        with pytest.raises(ProjectError) as raised:
+            service.get(saved.id)
+        assert raised.value.code == "PROJECT_NOT_FOUND"
     factory.dispose()
 
 
