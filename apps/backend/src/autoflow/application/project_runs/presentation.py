@@ -19,6 +19,13 @@ def prepared_node_names(prepared: PreparedContent | None) -> dict[str, str]:
                 for node in snapshot["workflow"].get("nodes", ())
                 if isinstance(node, Mapping)
             )
+    for snapshot in prepared.execution_plan.get("workflowDependencies", {}).values():
+        if isinstance(snapshot, Mapping):
+            items.extend(
+                {"nodeId": node.get("id"), "data": node.get("data")}
+                for node in snapshot.get("nodes", ())
+                if isinstance(node, Mapping)
+            )
     for item in items:
         if not isinstance(item, Mapping):
             continue

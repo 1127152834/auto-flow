@@ -500,7 +500,7 @@ class _WorkerNestedWorkflows:
         registry: Any,
         parent: ExecutionContext,
         sink: _WorkerEventSink,
-        command_bus: _WorkerCommandBus,
+        command_bus: _WorkerCommandBus | None,
     ) -> None:
         self._snapshots = (
             {str(key): copy.deepcopy(value) for key, value in snapshots.items()}
@@ -609,12 +609,13 @@ class _WorkerNestedWorkflows:
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        interactive = self._command_bus.for_context(child)
-        child.input_prompts = interactive
-        child.browser_scripts = interactive
-        child.speech = interactive
-        child.desktop_actions = interactive
-        child.webhook_triggers = interactive
+        if self._command_bus is not None:
+            interactive = self._command_bus.for_context(child)
+            child.input_prompts = interactive
+            child.browser_scripts = interactive
+            child.speech = interactive
+            child.desktop_actions = interactive
+            child.webhook_triggers = interactive
         child.nested_workflows = self
         if self.custom_modules is not None:
             child.custom_modules = self.custom_modules.for_context(child, child_sink)

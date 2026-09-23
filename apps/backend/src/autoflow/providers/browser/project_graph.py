@@ -31,6 +31,7 @@ from .workflow_worker import (
     _WorkerCanvasSubflows,
     _WorkerCredentialReader,
     _WorkerCustomModules,
+    _WorkerNestedWorkflows,
 )
 
 
@@ -146,6 +147,7 @@ class ProjectGraphExecutor:
         self.graph_adapter = False
         self.nodes: dict[str, Any] = {}
         self.module_nodes: dict[str, dict[str, Any]] = {}
+        self.workflow_nodes: dict[str, dict[str, Any]] = {}
         self.started: dict[str, float] = {}
         self.error: dict[str, str] | None = None
 
@@ -161,6 +163,20 @@ class ProjectGraphExecutor:
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
         registry = _ProjectRegistry(None if self.graph_adapter else self.legacy)
+        workflows = plan.get('workflowDependencies')
+        nested = _WorkerNestedWorkflows(
+            workflows, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
+            command_bus=None,
+        )
+        self.context.nested_workflows = nested
+        if isinstance(workflows, Mapping):
+            self.workflow_nodes = {
+                str(snapshot.get('id') or reference): {
+                    node['id']: node['data'] for node in snapshot.get('nodes', ())
+                    if isinstance(node, dict) and isinstance(node.get('data'), dict)
+                }
+                for reference, snapshot in workflows.items() if isinstance(snapshot, dict)
+            }
         modules = plan.get('customModuleDependencies')
         if isinstance(modules, Mapping):
             self.module_nodes = {
@@ -174,16 +190,21 @@ class ProjectGraphExecutor:
             }
             self.context.custom_modules = _WorkerCustomModules(
                 modules, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
-                command_bus=None, nested_workflows=None,
+                command_bus=None, nested_workflows=nested,
             )
+            nested.custom_modules = self.context.custom_modules
         if self.graph_adapter:
             canvas_subflows = _WorkerCanvasSubflows(
                 document, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
-                command_bus=None, nested_workflows=None,
+                command_bus=None, nested_workflows=nested,
             )
             self.context.canvas_subflows = canvas_subflows
             document = canvas_subflows.top_level_document()
         result = await WorkflowRuntime(registry).execute(document, self.context)
+        await nested.drain()
+        if result.success:
+            # A child may fail while run_workflow_file explicitly continues.
+            self.error = None
         if not result.success and self.error is None:
             self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
         return {'status': 'succeeded' if result.success else 'failed', 'error': self.error}
@@ -192,6 +213,8 @@ class ProjectGraphExecutor:
         return _ProjectEventSink(self, context)
 
     async def publish(self, event: Mapping[str, Any], *, context: ExecutionContext | None = None) -> None:
+        if event['type'] in {'subflow:started', 'subflow:completed'}:
+            return
         current = context or self.context
         node_id, visit = event['nodeId'], event['executionId']
         execution_context = execution_context_snapshot(current)
@@ -201,9 +224,14 @@ class ProjectGraphExecutor:
                 payload = {**payload, 'executionContext': execution_context}
             await self.emit(kind, node_id, visit, payload)
 
-        module_id = next((scope.get('id') for scope in reversed(current.execution_scopes) if scope.get('kind') == 'customModule'), None)
-        node_data = self.module_nodes.get(str(module_id), {}).get(node_id) if module_id else None
-        node_data = node_data or self.nodes[node_id]
+        node_data = None
+        for scope in reversed(current.execution_scopes):
+            collection = self.module_nodes if scope.get('kind') == 'customModule' else self.workflow_nodes
+            node_data = collection.get(str(scope.get('id')), {}).get(node_id)
+            if node_data is not None:
+                break
+        if node_data is None:
+            node_data = self.nodes[node_id]
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
             if self.artifact_writer is not None and node_data.get("moduleType") == "screenshot":

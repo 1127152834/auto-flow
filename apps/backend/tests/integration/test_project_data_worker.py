@@ -21,6 +21,7 @@ from typing import Any, NoReturn
 from uuid import uuid4
 
 import pytest
+
 from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
@@ -54,7 +55,6 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
-
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_start import setup, start_payload
 
@@ -141,6 +141,8 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
             if item["capability"] == "browser.cloakbrowser"
         )
         assert browser["required"] is False
+        from sqlalchemy import select
+
         from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
         from autoflow.application.project_runs.resources import (
             ProjectRunResourceResolver,
@@ -148,7 +150,6 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
         from autoflow.infrastructure.database.environment_models import (
             ProjectEnvironmentInstanceRow,
         )
-        from sqlalchemy import select
 
         runner = ProjectRunCoordinator(
             factory, runtime,
@@ -891,6 +892,159 @@ def test_project_detects_browser_requirement_inside_custom_module(tmp_path: Path
 
 
 @pytest.mark.asyncio
+async def test_project_task_runs_frozen_nested_workflow_in_real_worker(tmp_path: Path) -> None:
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    worker = ProjectWorkflowWorkerManager(tmp_path / "nested-workflow-worker", start_timeout=10)
+    dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+    try:
+        child = _studio_payload(str(uuid4()))
+        child.update(
+            projectId=project.project_id, name="项目子工作流", schemaVersion=3,
+            nodes=[{"id": "child-set", "type": "set_variable", "position": {"x": 0, "y": 0}, "data": {
+                "moduleType": "set_variable", "config": {
+                    "variableName": "child_value", "variableValue": "42",
+                },
+            }}], edges=[], variables=[],
+        )
+        saved_child = documents.create(child, client_request_id=str(uuid4()))
+        parent = _studio_payload(automation.workflow_id)
+        parent.update(schemaVersion=3, nodes=[
+            {"id": "call", "type": "run_workflow_file", "position": {"x": 0, "y": 0}, "data": {
+                "moduleType": "run_workflow_file", "config": {
+                    "workflowFile": saved_child.id, "resultVariable": "summary",
+                },
+            }},
+            {"id": "root-output", "type": "set_variable", "position": {"x": 200, "y": 0}, "data": {
+                "moduleType": "set_variable", "config": {
+                    "variableName": "result", "variableValue": "{child_value}",
+                },
+            }},
+        ], edges=[{"id": "after-call", "source": "call", "target": "root-output"}], variables=[])
+        documents.update(
+            automation.workflow_id, parent, expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+        coordinator._core = runtime
+        batch, _, _ = coordinator.start(
+            project.project_id, automation.automation_id, str(uuid4()), start_payload(automation),
+        )
+        task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert run is not None
+        prepared = runtime.query_prepared_content(prepared_content_id=run.prepared_content_id)
+        assert prepared is not None
+        assert prepared.execution_plan["workflowDependencies"][saved_child.id]["nodes"][0]["id"] == "child-set"
+        child["nodes"][0]["data"]["config"]["variableValue"] = "99"
+        documents.update(
+            saved_child.id, child, expected_revision=saved_child.revision,
+            client_request_id=str(uuid4()),
+        )
+        await dispatcher.dispatch(
+            run.run_id, expected_status_revision=run.status_revision,
+            execution_generation=run.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=run.run_id)
+            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded", [
+            (event.kind, event.node_id, dict(event.payload)) for event in events
+        ]
+        assert any(
+            event.node_id == "child-set" and event.kind == "nodeAttempt"
+            and event.payload.get("status") == "succeeded"
+            and event.payload["executionContext"]["scopes"][-1]["id"] == saved_child.id
+            for event in events
+        )
+        assert any(
+            event.node_id == "root-output" and event.kind == "output"
+            and event.payload.get("value") == 42 for event in events
+        )
+        attempts, _ = ProjectRunEvidence(factory).node_attempts(project.project_id, task.task_id)
+        assert next(item for item in attempts if item["nodeId"] == "child-set")["nodeName"] == "设置变量"
+        assert not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+def test_project_nested_workflow_rejects_other_project_reference(tmp_path: Path) -> None:
+    factory, projects, _, coordinator, _, project, automation = setup(tmp_path)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    try:
+        other, _, _ = projects.create(str(uuid4()), {"name": "其他项目", "description": ""})
+        child = _studio_payload(str(uuid4()))
+        child.update(projectId=other.project_id, name="其他项目工作流", schemaVersion=3)
+        saved_child = documents.create(child, client_request_id=str(uuid4()))
+        parent = _studio_payload(automation.workflow_id)
+        parent.update(schemaVersion=3, nodes=[{"id": "call", "type": "run_workflow_file", "position": {"x": 0, "y": 0}, "data": {
+            "moduleType": "run_workflow_file", "config": {"workflowFile": saved_child.id},
+        }}], edges=[], variables=[])
+        documents.update(
+            automation.workflow_id, parent, expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        coordinator._core = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+        with pytest.raises(WorkflowRuntimeError) as rejected:
+            coordinator.start(
+                project.project_id, automation.automation_id, str(uuid4()), start_payload(automation),
+            )
+        assert rejected.value.code == "WORKFLOW_DEPENDENCY_MISSING"
+        assert rejected.value.details["reference"] == saved_child.id
+    finally:
+        factory.dispose()
+
+
+@pytest.mark.parametrize(
+    ("node_type", "config", "expected_code"),
+    [
+        ("open_page", {"url": "http://127.0.0.1/"}, "CAPABILITY_MISSING"),
+        ("notify_wecom", {}, "WORKFLOW_PREFLIGHT_FAILED"),
+    ],
+)
+def test_project_nested_workflow_checks_frozen_child_before_start(
+    tmp_path: Path, node_type: str, config: dict[str, Any], expected_code: str,
+) -> None:
+    factory, _, _, _, _, project, automation = setup(tmp_path)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    try:
+        child = _studio_payload(str(uuid4()))
+        child.update(
+            projectId=project.project_id, name="待校验子工作流", schemaVersion=3,
+            nodes=[{"id": "child-node", "type": node_type, "position": {"x": 0, "y": 0},
+                    "data": {"moduleType": node_type, "config": config}}],
+            edges=[], variables=[],
+        )
+        saved_child = documents.create(child, client_request_id=str(uuid4()))
+        parent = _studio_payload(automation.workflow_id)
+        parent.update(schemaVersion=3, nodes=[{
+            "id": "call", "type": "run_workflow_file", "position": {"x": 0, "y": 0},
+            "data": {"moduleType": "run_workflow_file", "config": {"workflowFile": saved_child.id}},
+        }], edges=[], variables=[])
+        saved_parent = documents.update(
+            automation.workflow_id, parent, expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+        if node_type == "open_page":
+            assert runtime.requires_browser(automation.workflow_id)
+        with pytest.raises(WorkflowRuntimeError) as rejected:
+            runtime.prepare_content(
+                prepare_operation_id=str(uuid4()), workflow_id=automation.workflow_id,
+                source_revision=saved_parent.revision, available_capabilities=[],
+            )
+        assert rejected.value.code == expected_code
+        if node_type == "notify_wecom":
+            assert rejected.value.details["workflowId"] == saved_child.id
+            assert rejected.value.details["issues"][0]["nodeId"] == "child-node"
+    finally:
+        factory.dispose()
+
+
+@pytest.mark.asyncio
 async def test_project_batch_runs_condition_and_loop_in_real_worker(tmp_path: Path) -> None:
     factory, _, _, coordinator, runtime, project, automation = setup(tmp_path)
     worker = ProjectWorkflowWorkerManager(tmp_path / "control-worker", start_timeout=10)
@@ -1112,9 +1266,10 @@ async def test_stop_cancels_browser_free_worker_and_confirms_cleanup(
 
 @pytest.mark.asyncio
 async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_path: Path) -> None:
+    from fastapi import FastAPI
+
     from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
     from autoflow.bootstrap.workflows import configure_project_workflow_runtime
-    from fastapi import FastAPI
 
     factory, queued = _queued_pure_data_run(tmp_path, values=[1, 2, 3])
     runtime = WorkflowRuntimeService(factory)

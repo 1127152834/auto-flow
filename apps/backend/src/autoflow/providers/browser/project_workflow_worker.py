@@ -182,6 +182,9 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
     for snapshot in plan.get("customModuleDependencies", {}).values():
         if isinstance(snapshot, dict) and isinstance(snapshot.get("workflow"), dict):
             requires_browser = requires_browser or browser_runtime.requires_browser(snapshot["workflow"])
+    for snapshot in plan.get("workflowDependencies", {}).values():
+        if isinstance(snapshot, dict):
+            requires_browser = requires_browser or browser_runtime.requires_browser(snapshot)
     browser = command["browser"]
     launch = {}
     proxy = None

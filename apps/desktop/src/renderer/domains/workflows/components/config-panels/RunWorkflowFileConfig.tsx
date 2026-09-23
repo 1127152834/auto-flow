@@ -6,7 +6,8 @@ import { Switch } from '../controls/switch'
 import { SelectNative as Select } from '../controls/select-native'
 import { VariableInput } from '../controls/variable-input'
 import { VariableNameInput } from '../controls/variable-name-input'
-import { localWorkflowApi } from '../../api'
+import { localWorkflowApi, workflowApi } from '../../api'
+import { getStudioOpenContext } from '../../api/config'
 
 interface Props {
   data: NodeData
@@ -21,22 +22,25 @@ interface Props {
  * 同时保留手填输入框，支持用变量动态指定要跑哪条工作流。
  */
 export function RunWorkflowFileConfig({ data, onChange }: Props) {
+  const projectId = getStudioOpenContext().projectId
   const [workflows, setWorkflows] = useState<Array<{ filename: string; name: string }>>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     let alive = true
     setLoading(true)
-    localWorkflowApi.list()
+    const request = projectId ? workflowApi.list() : localWorkflowApi.list()
+    request
       .then((res) => {
-        const list = (res as { data?: { workflows?: Array<{ filename: string; name: string }> } })
-          ?.data?.workflows || []
+        const list = projectId
+          ? (Array.isArray(res.data) ? res.data.map((item: { id: string; name: string }) => ({ filename: item.id, name: item.name })) : [])
+          : ((res as { data?: { workflows?: Array<{ filename: string; name: string }> } })?.data?.workflows || [])
         if (alive) setWorkflows(list)
       })
       .catch(() => { /* 列表拉取失败不阻塞手填 */ })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
-  }, [])
+  }, [projectId])
 
   const current = String(data.workflowFile || '')
   const waitComplete = data.waitComplete === undefined ? true : Boolean(data.waitComplete)
@@ -44,13 +48,13 @@ export function RunWorkflowFileConfig({ data, onChange }: Props) {
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
-        <Label htmlFor="workflowFile">要运行的工作流</Label>
+        <Label htmlFor="workflowFilePicker">要运行的工作流</Label>
         <Select
           id="workflowFilePicker"
           value={workflows.some((w) => w.filename === current) ? current : ''}
           onChange={(e) => { if (e.target.value) onChange('workflowFile', e.target.value) }}
         >
-          <option value="">{loading ? '加载工作流列表中…' : '— 从当前工作流文件夹选择 —'}</option>
+          <option value="">{loading ? '加载工作流列表中…' : projectId ? '— 从当前项目选择 —' : '— 从当前工作流文件夹选择 —'}</option>
           {workflows.map((w) => (
             <option key={w.filename} value={w.filename}>
               {w.name || w.filename}
@@ -60,10 +64,12 @@ export function RunWorkflowFileConfig({ data, onChange }: Props) {
         <VariableInput
           value={current}
           onChange={(v) => onChange('workflowFile', v)}
-          placeholder="工作流文件名，如 数据采集.json，支持 {变量名}"
+          placeholder={projectId ? '项目工作流 ID 或名称，支持 {变量名}' : '工作流文件名，如 数据采集.json，支持 {变量名}'}
         />
         <p className="text-xs text-muted-foreground">
-          从「工作流保存文件夹」中读取，可带或不带 .json 后缀，也可填工作流名称或绝对路径。
+          {projectId
+            ? '从当前项目中选择工作流，或填写当前项目中的工作流 ID 或名称。'
+            : '从「工作流保存文件夹」中读取，可带或不带 .json 后缀，也可填工作流名称或绝对路径。'}
         </p>
       </div>
 

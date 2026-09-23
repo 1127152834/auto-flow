@@ -229,14 +229,34 @@ try {
     await click(studio, '保存')
     const moduleCall = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === moduleCallName), 'project module call saved', 15_000)
     assert.equal(moduleCall.nodes.find(node => node.id === moduleCallId)?.data.customModuleId, projectModule.id)
+    const nestedChildName = 'B3 项目被调用工作流'
+    await newWorkflow(studio, nestedChildName)
+    await showBlockView(studio)
+    await addBlock(studio, '添加模块', '打开网页')
+    await setInput(studio, '[placeholder="https://example.com"]', pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href)
+    await addBlock(studio, '添加模块', '设置变量')
+    await setInput(studio, '[placeholder="变量名"]', 'child_value')
+    await setInput(studio, '[placeholder="变量的值"]', '42')
+    await click(studio, '保存')
+    const nestedChild = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === nestedChildName), 'project child workflow saved', 15_000)
+    const nestedCallerName = 'B3 项目跨工作流调用'
+    await newWorkflow(studio, nestedCallerName)
+    await showBlockView(studio)
+    const nestedCallId = await addBlock(studio, '添加模块', '运行其它工作流')
+    await selectNative(studio, '#workflowFilePicker', nestedChildName)
+    const nestedTailId = await addBlock(studio, '添加模块', '设置变量')
+    await setInput(studio, '[placeholder="变量名"]', 'project_nested_result')
+    await setInput(studio, '[placeholder="变量的值"]', '{child_value}')
+    await click(studio, '保存')
+    const nestedCaller = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === nestedCallerName), 'project caller workflow saved', 15_000)
+    assert.equal(nestedCaller.nodes.find(node => node.id === nestedCallId)?.data.workflowFile, nestedChild.id)
     checkpoint('正式项目 Studio 真实界面创建自定义模块、声明输出、拖入项目流程并持久化')
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
     await click(main, '新建自动化')
     await setInput(main, '[aria-label="自动化名称"]', '控制流项目自动化')
-    await click(main, '关联工作流', '[role="combobox"]')
-    await click(main, workflowName, '[role="option"]')
+    await selectAutomationWorkflow(main, workflowName, saved.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'control automation')
     await click(main, '启动运行')
@@ -265,8 +285,7 @@ try {
     await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
     await click(main, '新建自动化')
     await setInput(main, '[aria-label="自动化名称"]', '项目遍历与循环控制自动化')
-    await click(main, '关联工作流', '[role="combobox"]')
-    await click(main, extendedName, '[role="option"]')
+    await selectAutomationWorkflow(main, extendedName, extended.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'extended control automation')
     await click(main, '启动运行')
@@ -300,8 +319,7 @@ try {
     await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
     await click(main, '新建自动化')
     await setInput(main, '[aria-label="自动化名称"]', '项目画布子流程自动化')
-    await click(main, '关联工作流', '[role="combobox"]')
-    await click(main, subflowName, '[role="option"]')
+    await selectAutomationWorkflow(main, subflowName, subflow.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project subflow automation')
     await click(main, '启动运行')
@@ -328,8 +346,7 @@ try {
     await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
     await click(main, '新建自动化')
     await setInput(main, '[aria-label="自动化名称"]', '项目自定义模块自动化')
-    await click(main, '关联工作流', '[role="combobox"]')
-    await click(main, moduleCallName, '[role="option"]')
+    await selectAutomationWorkflow(main, moduleCallName, moduleCall.id)
     await click(main, '保存配置')
     await click(main, '启动运行')
     await click(main, '启动 1 个任务')
@@ -349,7 +366,30 @@ try {
     await capture(main, join(evidenceDir, 'project-custom-module-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
     checkpoint('正式项目任务使用冻结自定义模块独立执行，子节点上下文、输出和资源清理持久化')
-    const report = { evidenceId: 'BE-project-control-flow-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowIds: [saved.id, extended.id, subflow.id, moduleCall.id], batchIds: [batch.batchId, extendedBatch.batchId, subflowBatch.batchId, moduleBatch.batchId], taskIds: [task.taskId, extendedTask.taskId, subflowTask.taskId, moduleTask.taskId], checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: true, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '项目跨工作流自动化')
+    await selectAutomationWorkflow(main, nestedCallerName, nestedCaller.id)
+    await click(main, '保存配置')
+    await click(main, '启动运行')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project nested workflow batch')
+    const nestedBatch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const nestedTerminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${nestedBatch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project nested workflow terminal', 60_000)
+    assert.equal(nestedTerminal.statusCounts.succeeded, 1, JSON.stringify(nestedTerminal))
+    const nestedTask = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${nestedBatch.batchId}`)).items[0]
+    const nestedAttempts = await api(runtime, `/v1/projects/${projectId}/tasks/${nestedTask.taskId}/node-attempts?pageSize=100`)
+    assert.ok(nestedAttempts.items.some(item => item.nodeId === nestedCallId && item.status === 'succeeded'))
+    assert.ok(nestedAttempts.items.some(item => item.nodeId !== nestedCallId && item.nodeId !== nestedTailId && item.status === 'succeeded' && item.executionContext?.scopes.some(scope => scope.kind === 'workflow' && scope.id === nestedChild.id)))
+    const nestedOutputs = await api(runtime, `/v1/projects/${projectId}/tasks/${nestedTask.taskId}/outputs?pageSize=100`)
+    assert.ok(nestedOutputs.items.some(item => item.name === 'project_nested_result' && item.value === 42), JSON.stringify(nestedOutputs))
+    await click(main, '查看任务')
+    await click(main, '输入与输出', '[role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('project_nested_result')", 'project nested workflow output')
+    await capture(main, join(evidenceDir, 'project-nested-workflow-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    checkpoint('正式项目 Studio 选择项目内子工作流并保存，项目任务独立运行、回收变量和子节点上下文，worker 清理完成')
+    const report = { evidenceId: 'BE-project-control-flow-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowIds: [saved.id, extended.id, subflow.id, moduleCall.id, nestedChild.id, nestedCaller.id], batchIds: [batch.batchId, extendedBatch.batchId, subflowBatch.batchId, moduleBatch.batchId, nestedBatch.batchId], taskIds: [task.taskId, extendedTask.taskId, subflowTask.taskId, moduleTask.taskId, nestedTask.taskId], checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: true, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()
@@ -927,6 +967,9 @@ try {
   if (studio) {
     await capture(studio, join(evidenceDir, 'blocked-studio.png')).catch(() => {})
     await writeFile(join(evidenceDir, 'blocked-studio.txt'), await studio.evaluate('document.body.innerText').catch(() => 'unavailable')).catch(() => {})
+  } else if (main) {
+    await capture(main, join(evidenceDir, 'blocked-main.png')).catch(() => {})
+    await writeFile(join(evidenceDir, 'blocked-main.txt'), await main.evaluate('document.body.innerText').catch(() => 'unavailable')).catch(() => {})
   }
   const ui = studio ? await studio.evaluate("[...document.querySelectorAll('button')].filter(e=>e.textContent.trim()==='模块条').map(e=>({html:e.outerHTML.slice(0,500),visible:Boolean(e.getClientRects().length),rect:(()=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()}))").catch(() => []) : []
   await writeFile(join(evidenceDir, 'blocked.json'), JSON.stringify({ checkedAt: new Date().toISOString(), gitHead, checks, observedEvents, ui, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
@@ -1156,6 +1199,16 @@ async function selectNative(cdp, selector, expectedText) {
   await press(cdp, 'Enter', { code: 'Enter', keyCode: 13 })
 }
 
+async function selectAutomationWorkflow(cdp, name, id) {
+  const selected = `[role="combobox"][aria-label="关联工作流"][data-choice-value=${JSON.stringify(id)}]`
+  await click(cdp, '关联工作流', '[role="combobox"]')
+  const target = await waitFor(cdp, `(()=>{const items=[...document.querySelectorAll('[role="option"]')].filter(e=>e.getClientRects().length);const index=items.findIndex(e=>e.textContent.trim()===${JSON.stringify(name)});return index>=0?index+1:null})()`, `workflow option ${name}`)
+  await press(cdp, 'Home', { code: 'Home', keyCode: 36 })
+  for (let index = 1; index < target; index++) await press(cdp, 'ArrowDown', { code: 'ArrowDown', keyCode: 40 })
+  await press(cdp, 'Enter', { code: 'Enter', keyCode: 13 })
+  await waitFor(cdp, `Boolean(document.querySelector(${JSON.stringify(selected)}))`, `selected workflow ${name}`)
+}
+
 async function press(cdp, key, { code = key, keyCode = 0 } = {}) {
   await cdp.command('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: keyCode })
   await cdp.command('Input.dispatchKeyEvent', { type: 'keyUp', key, code, windowsVirtualKeyCode: keyCode })
@@ -1164,7 +1217,7 @@ async function press(cdp, key, { code = key, keyCode = 0 } = {}) {
 
 async function addBlock(cdp, slotText, label) {
   const before = await cdp.evaluate("[...document.querySelectorAll('[data-block-id]')].map(e=>e.getAttribute('data-block-id'))")
-  await click(cdp, slotText, 'div')
+  if (!await cdp.evaluate("Boolean(document.querySelector('input[placeholder=\"搜索模块（支持拼音）\"]')?.getClientRects().length)")) await click(cdp, slotText, 'div')
   await setInput(cdp, 'input[placeholder="搜索模块（支持拼音）"]', label)
   await click(cdp, label)
   const nodeId = await waitFor(cdp, `(()=>{const before=new Set(${JSON.stringify(before)});return[...document.querySelectorAll('[data-block-id]')].map(e=>e.getAttribute('data-block-id')).find(id=>!before.has(id))||null})()`, `new ${label} block`)

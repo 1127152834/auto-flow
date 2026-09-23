@@ -2074,11 +2074,13 @@ def _workflow_dependency_snapshots(
     *,
     modules: CustomModuleService | None = None,
     custom_modules: dict[str, dict[str, object]] | None = None,
+    project_id: str | None = None,
+    require_resolved: bool = False,
 ) -> dict[str, dict[str, Any]]:
     available: dict[str, dict[str, Any]] = {}
     cursor = 0
     while True:
-        page = documents.list_summaries(cursor=cursor, limit=200)
+        page = documents.list_summaries(cursor=cursor, limit=200, project_id=project_id)
         for summary in page.items:
             saved = documents.get(summary.id)
             payload = saved.to_payload()
@@ -2099,7 +2101,11 @@ def _workflow_dependency_snapshots(
 
     snapshots: dict[str, dict[str, Any]] = {}
     frozen_modules = custom_modules if custom_modules is not None else {}
-    queue = [("root", root)]
+    queue = [("root", root), *(
+        (f"module:{module_id}", dict(workflow))
+        for module_id, snapshot in frozen_modules.items()
+        if isinstance((workflow := snapshot.get("workflow")), Mapping)
+    )]
     visited: set[str] = set()
     while queue:
         identity, document = queue.pop(0)
@@ -2136,6 +2142,13 @@ def _workflow_dependency_snapshots(
                 None,
             )
             if dependency is None:
+                if require_resolved:
+                    raise WorkflowRunError(
+                        "WORKFLOW_DEPENDENCY_MISSING",
+                        f"找不到工作流依赖：{reference}",
+                        422,
+                        {"reference": reference},
+                    )
                 continue
             for key, value in available.items():
                 if value is dependency:

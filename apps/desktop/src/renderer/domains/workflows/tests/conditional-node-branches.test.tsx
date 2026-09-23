@@ -12,7 +12,7 @@ vi.hoisted(() => {
 })
 
 import { ConfigPanel } from '../components/ConfigPanel'
-import { localWorkflowApi } from '../api'
+import { localWorkflowApi, workflowApi } from '../api'
 import { useWorkflowStore as store } from '../editor-store'
 import { useGlobalConfigStore as globalConfig } from '../hooks/stores/globalConfigStore'
 import type { ModuleType } from '../types/workflow'
@@ -192,6 +192,25 @@ it('NODE.run_workflow_file.conditional-ui: loads choices and hides dependent res
   expect(screen.queryByText('回收它产生的变量')).toBeNull()
   expect(screen.queryByText('它失败时中断当前工作流')).toBeNull()
   expect(nodeData(id).waitComplete).toBe(false)
+})
+
+it('NODE.run_workflow_file.project: selects only project workflows by stable id', async () => {
+  window.history.replaceState({}, '', '/studio.html?projectId=project-a')
+  const local = vi.spyOn(localWorkflowApi, 'list')
+  vi.spyOn(workflowApi, 'list').mockResolvedValue({
+    success: true,
+    data: [{ id: 'child-a', name: '项目子流程' }],
+  } as Awaited<ReturnType<typeof workflowApi.list>>)
+  try {
+    const { id } = open('run_workflow_file')
+    await waitFor(() => expect(workflowApi.list).toHaveBeenCalled())
+    fireEvent.click(screen.getByRole('combobox', { name: '要运行的工作流' }))
+    fireEvent.click(await screen.findByRole('option', { name: '项目子流程' }))
+    expect(nodeData(id).workflowFile).toBe('child-a')
+    expect(local).not.toHaveBeenCalled()
+  } finally {
+    window.history.replaceState({}, '', '/studio.html')
+  }
 })
 
 it('NODE.string_replace.conditional-ui: changes the search contract for regular expressions', () => {

@@ -7,6 +7,9 @@ from pathlib import Path
 from typing import Any, Protocol
 from uuid import uuid4
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session, sessionmaker
+
 from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.coordinator import _model_references
@@ -23,8 +26,6 @@ from autoflow.infrastructure.database.workflow_runtime import (
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 from autoflow.infrastructure.process.project_workflow_worker import WorkerOutcome
-from sqlalchemy import select
-from sqlalchemy.orm import Session, sessionmaker
 
 
 class WorkerPort(Protocol):
@@ -538,6 +539,10 @@ class WorkflowRunDispatcher:
         for snapshot in plan.get("customModuleDependencies", {}).values():
             if isinstance(snapshot, dict) and isinstance(snapshot.get("workflow"), dict):
                 documents.append(snapshot["workflow"])
+        documents.extend(
+            snapshot for snapshot in plan.get("workflowDependencies", {}).values()
+            if isinstance(snapshot, dict)
+        )
         default_model_id: str | None = None
         for node in (node for item in documents for node in item["nodes"]):
             data = node["data"]
@@ -594,6 +599,12 @@ class WorkflowRunDispatcher:
             if isinstance(snapshot, Mapping) and isinstance(snapshot.get("workflow"), Mapping):
                 known.update(
                     node["id"] for node in snapshot["workflow"].get("nodes", ())
+                    if isinstance(node, Mapping) and isinstance(node.get("id"), str)
+                )
+        for snapshot in content.execution_plan.get("workflowDependencies", {}).values():
+            if isinstance(snapshot, Mapping):
+                known.update(
+                    node["id"] for node in snapshot.get("nodes", ())
                     if isinstance(node, Mapping) and isinstance(node.get("id"), str)
                 )
         if node_id is not None and node_id not in known:
