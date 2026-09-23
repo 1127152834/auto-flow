@@ -2,8 +2,9 @@ import sys
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from autoflow.__main__ import main
 from fastapi.testclient import TestClient
+
+from autoflow.__main__ import main
 
 
 @pytest.mark.parametrize("host", ["0.0.0.0", "192.168.1.10"])
@@ -84,3 +85,15 @@ def test_app_shutdown_stops_kernel_workers(monkeypatch, tmp_path):
 
     shutdown.assert_awaited_once_with()
     close_proxies.assert_called_once_with()
+
+
+def test_main_runs_python_script_with_arguments_and_local_imports_without_http(monkeypatch, tmp_path):
+    import json
+    output = tmp_path / 'output.json'
+    script = tmp_path / 'script.py'
+    (tmp_path / 'helper.py').write_text('value = 42\n')
+    script.write_text('import sys, json\nfrom helper import value\nfrom pathlib import Path\nPath(sys.argv[1]).write_text(json.dumps([value, sys.argv[2:]]))\n')
+    monkeypatch.setattr(sys, 'argv', ['autoflow', '--python-script', str(script), str(output), '--flag', '甲'])
+    monkeypatch.setattr('autoflow.__main__.create_app', lambda _settings: pytest.fail('script must not start HTTP or migrate a database'))
+    main()
+    assert json.loads(output.read_text()) == [42, ['--flag', '甲']]

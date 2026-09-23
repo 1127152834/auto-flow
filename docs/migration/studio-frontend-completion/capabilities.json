@@ -8225,7 +8225,13 @@
       "evidenceConfidence": "高：原版字段行为、真实 worker、停止清理和 macOS 正式 UI 已通过；Windows CMD/PowerShell 与 POSIX pwsh 不推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-run-command-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/process-family-2026-09-24/README.md",
+        "boundary": "原版命令及Python执行器，真实子进程成功/失败/超时/停止和大输出；共享进程树清理、worker令牌与stdin隔离。开发及macOS arm64目录包真实UI通过，使用随包解释器；Windows/Intel未验收。"
+      }
     }
   },
   {
@@ -46426,7 +46432,13 @@
       "evidenceConfidence": "高：原版变量/返回值行为、真实 worker、命令幂等、敏感值隔离和 macOS arm64 正式 UI 已通过；Windows 平台不推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-python-script-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scripts-electron-Ig5LHP/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scripts-electron-Ig5LHP/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/process-family-2026-09-24/README.md",
+        "boundary": "原版命令及Python执行器，真实子进程成功/失败/超时/停止和大输出；共享进程树清理、worker令牌与stdin隔离。开发及macOS arm64目录包真实UI通过，使用随包解释器；Windows/Intel未验收。"
+      }
     }
   },
   {

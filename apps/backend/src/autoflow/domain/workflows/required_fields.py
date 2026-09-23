@@ -498,7 +498,8 @@ MODULE_REQUIRED_FIELDS: dict[str, Any] = {'schemaRevision': 'WebRPA@5ccb900e8dcf
                                                     '值`(脚本结束后整套 vars 会自动 sync 回工作流);',
                                    'resultVariable': '脚本 return 的值会写入这个工作流变量',
                                    'scriptMode': 'content(直接写代码) 或 file(从文件读取)',
-                                   'useBuiltinPython': 'True 用内置 Python313;False 用系统 Python',
+                                   'useBuiltinPython': 'True 使用 AutoFlow 随包 Python；False 可通过 '
+                                                       'pythonPath 指定已安装的 Python',
                                    'timeout': '超时秒数'},
                  'random_number': {'variableName': '结果变量'},
                  'regex_extract': {'inputText': '要匹配的文本(支持 {var})',

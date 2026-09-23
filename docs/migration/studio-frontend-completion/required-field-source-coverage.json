@@ -18,7 +18,8 @@
   },
   "modifications": [
     "Read final literal groups in frozen merge order, including AUTOFIX and later manual overrides.",
-    "Filter all metadata to the approved 213-node scope; add explicit revision and coverage."
+    "Filter all metadata to the approved 213-node scope; add explicit revision and coverage.",
+    "Describe AutoFlow bundled Python instead of the source Python313 environment."
   ],
   "mergeOrder": [
     "BROWSER_SCHEMAS",

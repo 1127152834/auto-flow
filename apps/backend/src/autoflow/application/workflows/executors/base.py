@@ -23,6 +23,15 @@ class ModuleResult:
 class ModuleExecutor(ABC):
     requires_browser = False
 
+    @staticmethod
+    async def stop_process(process: Any, context: ExecutionContext) -> None:
+        if context.process_cleanup is not None:
+            await context.process_cleanup(process)
+        else:
+            if process.returncode is None:
+                process.kill()
+            await process.wait()
+
     def requires_browser_for(self, config: dict[str, Any]) -> bool:
         del config
         return self.requires_browser

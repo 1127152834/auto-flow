@@ -182,7 +182,7 @@ def test_prepare_accepts_zero_timeout_as_no_limit_for_every_worker_node():
 
 
 @pytest.mark.parametrize(
-    "module_type", ["list_export", "future_node", "group"]
+    "module_type", ["future_node", "group"]
 )
 def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
     payload = workflow_payload()
@@ -199,6 +199,19 @@ def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
             "message": "展示节点不能接入执行链" if module_type == "group" else f"服务端尚不支持运行节点 {module_type}",
         }
     ]
+
+
+def test_migrated_list_export_is_admitted_with_its_real_fields():
+    payload = workflow_payload()
+    payload["content"]["nodes"] = [{
+        "id": "export", "type": "list_export", "position": {"x": 0, "y": 0},
+        "data": {"moduleType": "list_export", "listVariable": "items", "outputPath": "exports/items.txt"},
+    }]
+    payload["content"]["edges"] = []
+    payload["content"]["variables"] = [{"name": "items", "type": "array", "value": ["甲"], "scope": "global"}]
+    prepared = prepare_run(payload)
+    assert prepared.document["content"]["nodes"] == payload["content"]["nodes"]
+    assert prepared.document["content"]["variables"] == payload["content"]["variables"]
 
 
 def test_visual_only_graph_cannot_start_project_run():

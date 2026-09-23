@@ -25,6 +25,7 @@ from autoflow.domain.workflows.variables import CredentialReader
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
 )
+from autoflow.infrastructure.process.workflow_subprocess import terminate_subprocess
 from autoflow.providers.model import WorkflowModelGateway
 
 from .workflow_executor import WorkflowExecutor
@@ -141,7 +142,7 @@ class ProjectGraphExecutor:
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
+        self.context = ExecutionContext(process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
         self.legacy = WorkflowExecutor(browser_context, variables, emit, should_stop)
         self.legacy.variables = self.context.variables
         self.emit = emit
@@ -278,18 +279,21 @@ class ProjectGraphExecutor:
                         output_name = config.get(key) or default
                         if isinstance(output_name, str) and output_name in current.variables and output_name not in current.sensitive_variables:
                             await emit('output', {'name': output_name, 'value': current.variables[output_name]})
-            if data['moduleType'] == 'ssh_execute_command':
-                for key, default in (
+            if data['moduleType'] in {'ssh_execute_command', 'python_script'}:
+                fields = (
                     ('outputVariable', 'ssh_output'),
                     ('errorVariable', 'ssh_error'),
                     ('exitCodeVariable', 'ssh_exit_code'),
-                ):
+                ) if data['moduleType'] == 'ssh_execute_command' else (
+                    ('stdoutVariable', ''), ('stderrVariable', ''), ('returnCodeVariable', ''),
+                )
+                for key, default in fields:
                     output_name = config.get(key) or default
                     if isinstance(output_name, str) and output_name in current.variables and output_name not in current.sensitive_variables:
                         await emit('output', {'name': output_name, 'value': current.variables[output_name]})
             name = (config.get('resultVariable') or config.get('variableName')
                     or config.get('saveResult') or config.get('saveMessage'))
-            if data['moduleType'] in {'json_parse', 'base64', 'table_get_cell', 'table_export', 'extract_table_data', 'api_request', 'network_capture'}:
+            if data['moduleType'] in {'json_parse', 'base64', 'run_command', 'table_get_cell', 'table_export', 'extract_table_data', 'api_request', 'network_capture'}:
                 name = config.get('variableName')
             if data['moduleType'] == 'api_trigger':
                 name = config.get('saveToVariable', 'api_request')
@@ -298,7 +302,7 @@ class ProjectGraphExecutor:
             if data['moduleType'] == 'page_load_complete':
                 name = config.get('saveToVariable', 'page_loaded')
             if isinstance(name, str) and name and name not in current.sensitive_variables:
-                if data['moduleType'] in {'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop'}:
+                if data['moduleType'] in {'run_command', 'python_script', 'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop'}:
                     if name in current.variables:
                         await emit('output', {'name': name, 'value': current.variables[name]})
                 elif event.get('data') is not None or (

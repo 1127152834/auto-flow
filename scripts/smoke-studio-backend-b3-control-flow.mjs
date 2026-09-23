@@ -31,16 +31,17 @@ const projectHttpOnly = process.env.AUTOFLOW_PROJECT_HTTP_TASK === '1'
 const projectControlPrimitivesOnly = process.env.AUTOFLOW_PROJECT_CONTROL_PRIMITIVES_TASK === '1'
 const projectNetworkOnly = process.env.AUTOFLOW_PROJECT_NETWORK_TASK === '1'
 const projectAllureOnly = process.env.AUTOFLOW_PROJECT_ALLURE_TASK === '1'
+const projectProcessOnly = process.env.AUTOFLOW_PROJECT_PROCESS_TASK === '1'
 const projectFirecrawlOnly = process.env.AUTOFLOW_PROJECT_FIRECRAWL_TASK === '1'
 const projectBase64Only = process.env.AUTOFLOW_PROJECT_BASE64_TASK === '1'
 const projectTimingOnly = process.env.AUTOFLOW_PROJECT_TIMING_TASK === '1'
 const projectSshOnly = process.env.AUTOFLOW_PROJECT_SSH_TASK === '1'
 const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly || projectNetworkOnly || projectAllureOnly
-const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly || projectTimingOnly || projectBase64Only || projectFirecrawlOnly
+const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly || projectTimingOnly || projectBase64Only || projectFirecrawlOnly || projectProcessOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectFirecrawlOnly ? 'formal-project-firecrawl-electron-' : projectBase64Only ? 'formal-project-base64-electron-' : projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectProcessOnly ? 'formal-project-process-electron-' : projectFirecrawlOnly ? 'formal-project-firecrawl-electron-' : projectBase64Only ? 'formal-project-base64-electron-' : projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -237,6 +238,66 @@ try {
     }, 'SSH connections and remote command cleanup', 5_000)
     checkpoint('项目任务真实 SSH 命令和 SFTP 文件往返完成；下载产物、变量与日志可查，连接及进程已清理')
     const report = { evidenceId: 'BE-project-ssh-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, sshCleanup, sha256: createHash('sha256').update(content).digest('hex'), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, server: 'real loopback SSH/SFTP', interaction: 'formal Electron mouse/keyboard; APIs only fixture setup and evidence reads' } }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
+  if (projectProcessOnly) {
+    const name = '项目命令与 Python 任务验收'
+    const code = "import sys, os\nprint('脚本乙')\nprint('诊断丙', file=sys.stderr)\nreturn dict(command=vars.command_output, value=42, stdin=sys.stdin.read(), inherited=[name for name in ['AUTOFLOW_INSTANCE_TOKEN', 'AUTOFLOW_HOST_TOKEN'] if name in os.environ])"
+    await newWorkflow(studio, name)
+    await showBlockView(studio)
+    await addBlock(studio, '添加模块', '执行命令')
+    await setInput(studio, '[placeholder="要执行的命令，支持 {变量名}"]', "printf '命令甲'")
+    await setVariableNameInput(studio, '[placeholder="存储命令输出的变量名"]', 'command_output')
+    await addBlock(studio, '添加模块', 'Python脚本')
+    await click(studio, '打开代码编辑器', 'div')
+    await waitFor(studio, "document.body?.innerText.includes('Python 代码编辑器')", 'Python code editor')
+    await click(studio, '', '.monaco-editor .view-lines')
+    await studio.command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 4, commands: ['selectAll'] })
+    await studio.command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 4 })
+    await studio.command('Input.insertText', { text: code })
+    await click(studio, '保存', 'div.fixed button')
+    await waitFor(studio, "!document.body?.innerText.includes('Python 代码编辑器')", 'Python editor saved')
+    for (const [field, variable] of [['result', 'answer'], ['stdout', 'stdout'], ['stderr', 'stderr'], ['return_code', 'exit_code']]) {
+      await setVariableNameInput(studio, `input[placeholder="${field}"]`, variable)
+    }
+    await click(studio, '保存')
+    const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project process saved', 15_000)
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), ['run_command', 'python_script'])
+    assert.equal(saved.nodes[1].data.scriptContent, code)
+    assert.notEqual(saved.nodes[1].data.useBuiltinPython, false)
+    assert.equal(saved.edges.length, 1)
+    await closeWindowThroughOs()
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    checkpoint('正式 Studio 真实 UI 编排命令和内置 Python，代码编辑器输入及保存内容一致，正常关闭工作台')
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '项目脚本自动化')
+    await selectAutomationWorkflow(main, name, saved.id)
+    await click(main, '保存配置')
+    await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project process automation')
+    await click(main, '启动运行')
+    await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'project process batch dialog')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project process batch')
+    const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project process terminal', 90_000)
+    const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
+    const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
+    assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, task, attempts }))
+    assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, 2)
+    const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+    assert.deepEqual(Object.fromEntries(outputs.items.map(item => [item.name, item.value])), { command_output: '命令甲', stdout: '脚本乙', stderr: '诊断丙', exit_code: 0, answer: { command: '命令甲', value: 42, stdin: '', inherited: [] } })
+    await click(main, '查看任务')
+    await click(main, '输入与输出', '[role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('脚本乙') && document.body.innerText.includes('诊断丙')", 'project persisted script outputs')
+    await main.command('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 1150, y: 800, deltaX: 0, deltaY: 380 })
+    await wait(150)
+    await capture(main, join(evidenceDir, 'project-process-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    checkpoint('真实命令输出传入内置 Python；stdout、stderr、退出码和返回对象完整持久化，任务页可查')
+    const report = { evidenceId: 'BE-project-process-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, python: 'built-in runtime, no external interpreter path', interaction: 'formal UI mouse/keyboard; API fixture setup and evidence reads only' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()

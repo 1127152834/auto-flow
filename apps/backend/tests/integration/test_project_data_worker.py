@@ -1792,3 +1792,109 @@ async def test_project_base64_large_result_keeps_configured_name_and_full_value(
     finally:
         await dispatcher.shutdown()
         factory.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(('config', 'expected'), [
+    ({'moduleType': 'run_command', 'command': "printf '命令甲'", 'shell': 'cmd', 'variableName': 'command_output'}, {'command_output': '命令甲'}),
+    ({'moduleType': 'python_script', 'scriptContent': "print('脚本乙')\nreturn 42", 'stdoutVariable': 'stdout', 'stderrVariable': 'stderr', 'returnCodeVariable': 'exit_code', 'resultVariable': 'answer'}, {'stdout': '脚本乙', 'stderr': '', 'exit_code': 0, 'answer': 42}),
+    ({'moduleType': 'python_script', 'scriptContent': "print('甲' * 70000)", 'stdoutVariable': 'stdout'}, {'stdout': '甲' * 70000}),
+    ({'moduleType': 'python_script', 'scriptContent': "import sys\nreturn sys.stdin.read()", 'timeout': 1, 'resultVariable': 'input'}, {'input': ''}),
+    ({'moduleType': 'run_command', 'command': 'exit 7', 'shell': 'cmd', 'variableName': 'command_output'}, None),
+    ({'moduleType': 'python_script', 'scriptContent': "raise ValueError('controlled failure')", 'stdoutVariable': 'stdout', 'resultVariable': 'answer'}, None),
+])
+async def test_project_process_family_persists_actual_output_variables(tmp_path: Path, config: dict[str, Any], expected: dict[str, Any] | None) -> None:
+    assert config['moduleType'] in runnable_module_types()
+    factory, queued = _queued_pure_data_run(tmp_path, node_data=config)
+    worker = ProjectWorkflowWorkerManager(tmp_path / 'worker')
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=queued.run_id)
+            events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == ('succeeded' if expected is not None else 'failed')
+        assert {event.payload['name']: event.payload['value'] for event in events if event.kind == 'output'} == (expected or {})
+        assert not resources.requests and not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('module_type', ['run_command', 'python_script'])
+@pytest.mark.parametrize('action', ['cancel', 'timeout'])
+async def test_project_process_family_cleans_spawned_children(tmp_path: Path, module_type: str, action: str) -> None:
+    import os
+    import shlex
+    import signal
+    import sys
+
+    from autoflow.infrastructure.process.project_browser_processes import process_birth
+    pid_file = tmp_path / 'owned-child.pid'
+    body = ('import subprocess, sys, time\nfrom pathlib import Path\n'
+            f'p = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", {str(pid_file)!r}])\n'
+            f'Path({str(pid_file)!r}).write_text(str(p.pid))\ntime.sleep(60)')
+    config = {'moduleType': module_type, 'timeout': 1 if action == 'timeout' else 60}
+    if module_type == 'run_command':
+        config.update(command=shlex.join([sys.executable, '-c', body]), shell='cmd')
+    else:
+        config.update(scriptContent=body)
+    factory, queued = _queued_pure_data_run(tmp_path, node_data=config)
+    worker = ProjectWorkflowWorkerManager(tmp_path / 'worker')
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    child = None
+    try:
+        running = await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+        async with asyncio.timeout(20):
+            while not pid_file.exists():
+                await asyncio.sleep(.01)
+        pid = int(pid_file.read_text())
+        child = (pid, process_birth(pid))
+        assert child[1] is not None
+        if action == 'cancel':
+            await dispatcher.cancel(running.run_id, expected_status_revision=running.status_revision, execution_generation=running.execution_generation)
+        async with asyncio.timeout(15):
+            await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=queued.run_id)
+            events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == ('cancelled' if action == 'cancel' else 'failed')
+        assert process_birth(child[0]) != child[1]
+        assert not any(event.kind == 'output' for event in events)
+        assert not resources.requests and not worker.busy()
+    finally:
+        if child is not None and process_birth(child[0]) == child[1]:
+            os.kill(child[0], signal.SIGKILL)
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_project_script_does_not_inherit_host_credentials(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv('AUTOFLOW_INSTANCE_TOKEN', 'test-only-instance-secret')
+    monkeypatch.setenv('AUTOFLOW_HOST_TOKEN', 'test-only-host-secret')
+    factory, queued = _queued_pure_data_run(tmp_path, node_data={
+        'moduleType': 'python_script',
+        'scriptContent': "import os\nreturn [name for name in ['AUTOFLOW_INSTANCE_TOKEN', 'AUTOFLOW_HOST_TOKEN'] if name in os.environ]",
+        'resultVariable': 'inherited_names',
+    })
+    worker = ProjectWorkflowWorkerManager(tmp_path / 'worker')
+    dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+    try:
+        await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=queued.run_id)
+            events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == 'succeeded'
+        assert [tuple(event.payload['value']) for event in events if event.kind == 'output'] == [()]
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()

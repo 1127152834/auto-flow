@@ -24,6 +24,7 @@ from autoflow.infrastructure.process.browser_processes import (
     process_identity_is_alive,
 )
 from autoflow.infrastructure.process.test_browser_worker import stop_process_tree
+from autoflow.infrastructure.process.workflow_subprocess import workflow_environment
 
 _SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
 
@@ -155,8 +156,7 @@ class WorkflowWorkerManager:
         registered: asyncio.Event | None = None
         try:
             directory.mkdir(parents=True, exist_ok=False)
-            env = os.environ.copy()
-            env.update(self._worker_env)
+            env = workflow_environment({**os.environ, **self._worker_env})
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
             if executable is None:
                 env.pop("CLOAKBROWSER_BINARY_PATH", None)

@@ -95,12 +95,14 @@ def extract():
         condition = schema.get('conditional_required')
         if isinstance(condition, dict) and condition.get('map'):
             result['conditionalRequired'][name] = {'field': condition['field'], 'default': condition.get('default'), 'map': {key: [field for field in fields if field not in defaults] for key, fields in condition['map'].items()}}
+    result['fieldLabels']['python_script']['useBuiltinPython'] = 'True 使用 AutoFlow 随包 Python；False 可通过 pythonPath 指定已安装的 Python'
     sources = [{'source': path.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()} for path in (SOURCE, AUTOFIX)]
     manifest = {
         **sources[0], 'sources': sources, 'sourceRevision': REVISION,
         'license': {'path': LICENSE.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(LICENSE.read_bytes()).hexdigest()},
         'modifications': ['Read final literal groups in frozen merge order, including AUTOFIX and later manual overrides.',
-                          'Filter all metadata to the approved 213-node scope; add explicit revision and coverage.'],
+                          'Filter all metadata to the approved 213-node scope; add explicit revision and coverage.',
+                          'Describe AutoFlow bundled Python instead of the source Python313 environment.'],
         'mergeOrder': merge_order, 'approvedCount': len(retained), 'coveredCount': len(covered),
         'covered': covered, 'uncovered': missing,
         'boundary': 'Source metadata coverage only, not complete node configuration validation.',

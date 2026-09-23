@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import pytest
+
 from autoflow.application.workflows.executors.python_script import (
     PythonScriptExecutor,
     _local_no_proxy_env,
@@ -122,3 +123,20 @@ def test_python_no_proxy_preserves_existing_hosts() -> None:
         "NO_PROXY": "internal.test,localhost,127.0.0.1,::1,0.0.0.0",
         "no_proxy": "internal.test,localhost,127.0.0.1,::1,0.0.0.0",
     }
+
+
+@pytest.mark.asyncio
+async def test_frozen_builtin_python_uses_script_entry_instead_of_sidecar_cli(monkeypatch):
+    from unittest.mock import AsyncMock
+
+    from autoflow.application.workflows.executors.base import ModuleResult
+    monkeypatch.setattr(sys, 'frozen', True, raising=False)
+    executor = PythonScriptExecutor()
+    run = AsyncMock(return_value=ModuleResult(success=True))
+    monkeypatch.setattr(executor, '_run', run)
+    result = await executor.execute({'scriptContent': 'return 42', 'scriptArgs': '--flag 甲'}, ExecutionContext())
+    assert result.success
+    command = run.call_args.args[0]
+    assert command[:2] == [sys.executable, '--python-script']
+    assert command[2].endswith('.py')
+    assert command[3:] == ['--flag', '甲']

@@ -38,6 +38,7 @@ class RunCommandExecutor(ModuleExecutor):
         try:
             process = await asyncio.create_subprocess_exec(
                 *argv,
+                stdin=asyncio.subprocess.DEVNULL,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -46,13 +47,10 @@ class RunCommandExecutor(ModuleExecutor):
                     process.communicate(), timeout=timeout
                 )
             except TimeoutError:
-                process.kill()
-                await process.wait()
+                await self.stop_process(process, context)
                 return ModuleResult(success=False, error=f"命令执行超时 ({timeout}秒)")
             except BaseException:
-                if process.returncode is None:
-                    process.kill()
-                    await process.wait()
+                await self.stop_process(process, context)
                 raise
             stdout = _decode(stdout_bytes)
             stderr = _decode(stderr_bytes)

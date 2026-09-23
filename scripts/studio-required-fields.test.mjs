@@ -50,6 +50,7 @@ function projectRules(schemas, approved) {
       }
     }
   }
+  result.fieldLabels.python_script.useBuiltinPython = 'True 使用 AutoFlow 随包 Python；False 可通过 pythonPath 指定已安装的 Python'
   return result
 }
 
@@ -139,4 +140,10 @@ assert node.target.id=='MODULE_REQUIRED_FIELDS'
 print(json.dumps(ast.literal_eval(node.value),ensure_ascii=False))
 `)
   assert.deepEqual(data, metadata())
+})
+
+test('Python runtime description preserves the explicit AutoFlow adaptation', () => {
+  assert.match(sourceOracle().python_script.desc.useBuiltinPython, /Python313/)
+  assert.match(metadata().fieldLabels.python_script.useBuiltinPython, /AutoFlow 随包 Python/)
+  assert.doesNotMatch(metadata().fieldLabels.python_script.useBuiltinPython, /313/)
 })

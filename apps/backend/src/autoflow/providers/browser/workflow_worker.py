@@ -34,6 +34,7 @@ from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifa
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
 )
+from autoflow.infrastructure.process.workflow_subprocess import terminate_subprocess
 from autoflow.providers.integrations import WorkflowIntegrationGateway
 from autoflow.providers.model import WorkflowModelGateway
 
@@ -114,6 +115,7 @@ async def _run_in_session(
         artifacts = _WorkerArtifactRepository(stdout)
         integrations = WorkflowIntegrationGateway()
         context = ExecutionContext(
+            process_cleanup=terminate_subprocess,
             variables=_initial_variables(document),
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
@@ -610,6 +612,7 @@ class _WorkerNestedWorkflows:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            process_cleanup=self._parent.process_cleanup,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
             debug=self._parent.debug,
@@ -788,6 +791,7 @@ class _WorkerCustomModules:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            process_cleanup=self._parent.process_cleanup,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
             debug=self._parent.debug,
@@ -939,6 +943,7 @@ class _WorkerCanvasSubflows:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            process_cleanup=self._parent.process_cleanup,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
             debug=self._parent.debug,

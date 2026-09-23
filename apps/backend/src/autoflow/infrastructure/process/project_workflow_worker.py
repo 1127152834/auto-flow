@@ -18,6 +18,7 @@ from autoflow.infrastructure.process.project_test_browser_worker import (
     force_process_tree,
     wait_for_cleanup,
 )
+from autoflow.infrastructure.process.workflow_subprocess import workflow_environment
 
 MAX_MESSAGE_BYTES = 1024 * 1024
 MAX_EVENT_BYTES = 16 * 1024 * 1024
@@ -115,8 +116,7 @@ class ProjectWorkflowWorkerManager:
             worker.created_directory = True
             worker.artifact_directory.mkdir(parents=True, exist_ok=True)
             worker.artifact_directory.resolve(strict=True).relative_to(self._artifact_root)
-            env = os.environ.copy()
-            env.update(self._worker_env)
+            env = workflow_environment({**os.environ, **self._worker_env})
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
             env.pop("CLOAKBROWSER_BINARY_PATH", None)
             if worker.executable is not None:

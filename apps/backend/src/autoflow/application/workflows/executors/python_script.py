@@ -64,7 +64,11 @@ class PythonScriptExecutor(ModuleExecutor):
             environment["WEBRPA_VARS"] = json.dumps(
                 context.variables, ensure_ascii=False, default=str
             )
-            command = [interpreter, script_file]
+            command = [interpreter]
+            # Frozen AutoFlow is a sidecar executable, not a Python CLI.
+            if getattr(sys, "frozen", False) and interpreter == sys.executable:
+                command.append("--python-script")
+            command.append(script_file)
             if script_args:
                 command.extend(str(script_args).split())
             cwd = (
@@ -142,7 +146,7 @@ class PythonScriptExecutor(ModuleExecutor):
     ) -> ModuleResult:
         pipe = asyncio.subprocess.PIPE if capture_output else None
         process = await asyncio.create_subprocess_exec(
-            *command, stdout=pipe, stderr=pipe, cwd=cwd, env=environment
+            *command, stdin=asyncio.subprocess.DEVNULL, stdout=pipe, stderr=pipe, cwd=cwd, env=environment
         )
         stdout_lines: list[str] = []
         stderr_lines: list[str] = []
@@ -160,18 +164,15 @@ class PythonScriptExecutor(ModuleExecutor):
         )
         try:
             await asyncio.wait_for(process.wait(), timeout=timeout)
-            await asyncio.gather(*pumps, return_exceptions=True)
+            await asyncio.gather(*pumps)
         except TimeoutError:
-            process.kill()
-            await process.wait()
+            await self.stop_process(process, context)
             for task in pumps:
                 task.cancel()
             await asyncio.gather(*pumps, return_exceptions=True)
             return ModuleResult(success=False, error=f"脚本执行超时（{timeout}秒）")
         except BaseException:
-            if process.returncode is None:
-                process.kill()
-                await process.wait()
+            await self.stop_process(process, context)
             for task in pumps:
                 task.cancel()
             await asyncio.gather(*pumps, return_exceptions=True)
@@ -215,8 +216,19 @@ async def _pump(
 ) -> None:
     if stream is None:
         return
-    while line := await stream.readline():
-        text = line.decode("utf-8", errors="replace").rstrip("\r\n")
+    pending = bytearray()
+    finished = False
+    while not finished:
+        try:
+            pending.extend(await stream.readuntil(b"\n"))
+        except asyncio.LimitOverrunError as error:
+            pending.extend(await stream.readexactly(error.consumed))
+            continue
+        except asyncio.IncompleteReadError as error:
+            pending.extend(error.partial)
+            finished = True
+        text = pending.decode("utf-8", errors="replace").rstrip("\r\n")
+        pending.clear()
         if text:
             chunks.append(text)
             try:

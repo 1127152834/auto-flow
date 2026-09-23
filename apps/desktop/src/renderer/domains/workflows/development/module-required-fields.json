@@ -875,7 +875,7 @@
       "scriptContent": "Python 代码字符串。**重要规则**:(1) 用户代码会被自动包装在 def _user_script(): 函数里,所以使用 `return 值` 把结果回传给 resultVariable;(2) 想读取上游工作流变量,**必须用 `vars.变量名`**(例如 `vars.user_input` 而不是直接 `user_input`);(3) 想写入工作流变量,直接 `vars.变量名 = 值`(脚本结束后整套 vars 会自动 sync 回工作流);",
       "resultVariable": "脚本 return 的值会写入这个工作流变量",
       "scriptMode": "content(直接写代码) 或 file(从文件读取)",
-      "useBuiltinPython": "True 用内置 Python313;False 用系统 Python",
+      "useBuiltinPython": "True 使用 AutoFlow 随包 Python；False 可通过 pythonPath 指定已安装的 Python",
       "timeout": "超时秒数"
     },
     "random_number": {

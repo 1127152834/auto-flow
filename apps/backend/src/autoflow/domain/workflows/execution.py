@@ -297,6 +297,7 @@ class ExecutionContext:
     credentials: CredentialReader | None = None
     models: ModelGateway | None = None
     external_integrations: ExternalIntegrationGateway | None = None
+    process_cleanup: Callable[[Any], Awaitable[None]] | None = None
     events: WorkflowEventSink | None = None
     input_prompts: InputPromptGateway | None = None
     browser_scripts: BrowserScriptGateway | None = None

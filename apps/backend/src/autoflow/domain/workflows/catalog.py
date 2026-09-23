@@ -15,6 +15,8 @@ _RUNNABLE_MODULES = (
     ("increment_decrement", "自增自减"),
     ("json_parse", "JSON解析"),
     ("base64", "Base64编解码"),
+    ("run_command", "执行命令"),
+    ("python_script", "Python脚本"),
     ("random_number", "生成随机数"),
     ("get_time", "获取时间"),
     ("print_log", "打印日志"),
