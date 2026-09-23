@@ -67,8 +67,14 @@ async def test_image_registration_returns_server_inspected_metadata() -> None:
                 "reference": "redroid/redroid:13",
             },
         )
+        listed = client.get("/api/v1/android/management/images")
 
     assert response.status_code == 201, response.text
+    assert listed.status_code == 200, listed.text
+    assert len(listed.json()["items"]) == 1
+    assert listed.json()["items"][0]["imageId"] == "sha256:" + "a" * 64
+    assert "workspaceId" not in listed.json()["items"][0]
+    assert "requestId" not in listed.json()["items"][0]
     body = response.json()
     assert body["sourceDigest"] == "sha256:" + "b" * 64
     assert body["architecture"] == "arm64"

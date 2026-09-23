@@ -1,9 +1,11 @@
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.android_management import android_management_router
 from autoflow.application.android.diagnostics import EnvironmentCheckService
 
@@ -102,3 +104,26 @@ def test_capabilities_report_configured_bulk_service() -> None:
     assert capabilities.status_code == 200
     assert capabilities.json()["bulk"] is True
     assert capabilities.json()["backups"] is False
+
+
+def test_legacy_environment_route_projects_extended_runtime_checks() -> None:
+    service = SimpleNamespace(environment=AsyncMock(return_value={
+        "available": True,
+        "platformSupported": True,
+        "runtimeId": "autoflow-redroid",
+        "message": "可用",
+        "images": [{"id": "sha256:" + "a" * 64, "name": "Android", "reference": "redroid/redroid:13"}],
+        "cpuCount": 6,
+        "memoryMb": 8192,
+        "checks": {"adb": {"status": "pass"}},
+    }))
+    app = FastAPI()
+    app.include_router(android_router(service))
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/environment")
+
+    assert response.status_code == 200, response.text
+    assert response.json()["available"] is True
+    assert response.json()["cpuCount"] == 6
+    assert "checks" not in response.json()

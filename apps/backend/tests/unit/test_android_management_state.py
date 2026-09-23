@@ -36,6 +36,12 @@ def test_retained_device_requires_restore() -> None:
     assert display_state(facts) == "数据已保留"
 
 
+def test_normal_lifecycle_states_have_no_attention_blockers() -> None:
+    for state in ("ready", "stopped", "retained"):
+        policy = policy_for(DeviceFacts(device_id="device", runtime_state=state))
+        assert policy.blocked_reasons == {}, state
+
+
 def test_management_device_schema_uses_camel_case_without_runtime_secrets() -> None:
     result = ManagementDeviceRead(
         device_id="device",

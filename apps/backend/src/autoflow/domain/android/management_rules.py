@@ -66,9 +66,9 @@ def policy_for(facts: DeviceFacts) -> ActionPolicy:
     if facts.owner_kind == "manualSession" or facts.control in {"manual", "opening_manual", "closing_manual"}:
         return ActionPolicy(("return_to_console", "end_control"), _blocked(("start", "stop", "restart", "delete", "restore"), "请先结束当前控制会话"))
     if facts.runtime_state == "retained" or facts.retained:
-        return ActionPolicy(("restore", "delete"), _blocked(("start", "open", "stop", "restart"), "保留数据实例必须先恢复"))
+        return ActionPolicy(("restore", "delete"), {})
     if facts.runtime_state == "stopped":
-        return ActionPolicy(("start", "delete"), {"open": "设备尚未启动", "restore": "设备没有待恢复数据"})
+        return ActionPolicy(("start", "delete"), {})
     if facts.runtime_state == "ready":
-        return ActionPolicy(("open", "stop", "restart", "delete"), {"restore": "设备没有待恢复数据"})
+        return ActionPolicy(("open", "stop", "restart", "delete"), {})
     return ActionPolicy(("verify",), _blocked(all_mutations, "设备状态不支持管理操作"))

@@ -111,7 +111,9 @@ def android_router(service: AndroidDeviceService) -> APIRouter:
 
     @router.get("/environment", response_model=AndroidEnvironment)
     async def environment() -> AndroidEnvironment:
-        return AndroidEnvironment.model_validate(await service.environment())
+        observed = await service.environment()
+        public_fields = {field.alias for field in AndroidEnvironment.model_fields.values()}
+        return AndroidEnvironment.model_validate({key: value for key, value in observed.items() if key in public_fields})
 
     @router.get("/devices", response_model=list[AndroidDeviceRead])
     async def devices() -> list[AndroidDeviceRead]:

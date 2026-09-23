@@ -17,6 +17,7 @@ from autoflow.application.android.diagnostics import (
     EnvironmentCheckService,
 )
 from autoflow.application.android.diagnostics_export import diagnostic_snapshot
+from autoflow.application.android.images import AndroidImageService
 from autoflow.application.android.verification import verify_lifecycle_operation
 from autoflow.domain.android.management_models import DeviceFacts
 from autoflow.domain.android.management_rules import policy_for, restore_pending
@@ -466,7 +467,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if images is None:
             return ImagePageRead(items=[], next_cursor=None, total=0)
         items = images.list()
-        return ImagePageRead(items=[ImageRead.model_validate(item) for item in items], next_cursor=None, total=len(items))
+        return ImagePageRead(items=[ImageRead.model_validate(AndroidImageService._public(item)) for item in items], next_cursor=None, total=len(items))
 
     @router.post("/images", response_model=ImageRead, status_code=201)
     async def register_image(body: ImageRegister) -> ImageRead:

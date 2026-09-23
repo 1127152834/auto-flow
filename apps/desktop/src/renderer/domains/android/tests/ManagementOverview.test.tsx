@@ -164,6 +164,14 @@ it('does not offer to open a stopped instance', async () => {
   expect(await screen.findByRole('button', { name: '打开已停止设备' })).toBeDisabled()
 })
 
+it('keeps the state label readable beside a long device name at high zoom', async () => {
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'long', revision: 1, name: '超长实例名称'.repeat(7), runtimeState: 'stopped', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} }] })),
+  } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} /></QueryClientProvider>)
+  expect(await screen.findByText('已停止', { selector: 'span' })).toHaveClass('shrink-0', 'whitespace-nowrap')
+})
+
 it('shows the owned manual session in the list with return and explicit end actions', async () => {
   const onOpen = vi.fn(), onEndControl = vi.fn()
   const api = { devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '原生窗口设备', runtimeState: 'ready', owner: { kind: 'manualSession', id: 'session-1' }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['return_to_console', 'end_control'], blockedReasons: {} }] })) } as unknown as AndroidManagementApi
