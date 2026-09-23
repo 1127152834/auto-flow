@@ -14,4 +14,4 @@
 
 独立只读审查发现两个P2：多目标逐个冲突会回退之前已确认的版本；child已保存但parent outcome仍空时仍显示保存入口。分别以组件RED复现（1失败/4通过、2失败/5通过），以按记录身份累计revision及当前child phase判定修复；未知/失败查询也禁止保存。复审无新P1/P2。第一次相关回归13通过/1失败是Task页面公共夹具漏新增GET产生第二alert；补null契约后原断言不变，最终14通过/2文件/3.40秒，类型与lint通过。
 
-最终前端显式build/package已完成；后端完整回归仍运行，前端全量/最终桌面重验继续。GitHub CLI Actions访问恢复，旧35902129697仍是旧源码结果；将在固定候选后单次调度新矩阵。251条212partial/39planned/0verified，249有断言/2未定位；releaseAccepted=false。当前专项报告end-link-repair-follow-through.json记录精确范围和未完成检查。
+最终前端显式build/package已完成；后端完整回归仍运行，前端全量/最终桌面重验继续。GitHub公开Actions读取成功，但后续dispatch仍401，认证恢复判断已纠正；未登录浏览器也无调度入口。生产ee2524af已推送。现有push与PR会重复跑同仓库草稿矩阵，checks条件仅跳过同仓库draft PR，保留push、ready PR、fork PR、手动全量和两个独立probe。原有js-yaml解析实际YAML，七种事件条件及全部103脚本测试通过；无新依赖、无删检查，用正常push提交触发现有三平台。251条212partial/39planned/0verified，249有断言/2未定位；releaseAccepted=false。当前专项报告end-link-repair-follow-through.json记录精确范围和未完成检查。

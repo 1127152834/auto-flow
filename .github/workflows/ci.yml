@@ -64,7 +64,8 @@ jobs:
           AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
           AUTOFLOW_TEST_WORKER_DIAGNOSTICS: '1'
   checks:
-    if: github.event_name != 'workflow_dispatch' || (!inputs.pm9NativeProbe && !inputs.pm9WorkerProbe)
+    # Same-repository draft branches are checked on push; ready/fork PRs keep their merge checks.
+    if: (github.event_name != 'pull_request' || !github.event.pull_request.draft || github.event.pull_request.head.repo.full_name != github.repository) && (github.event_name != 'workflow_dispatch' || (!inputs.pm9NativeProbe && !inputs.pm9WorkerProbe))
     strategy:
       fail-fast: false
       matrix:
