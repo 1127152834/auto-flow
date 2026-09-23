@@ -14,7 +14,8 @@ from copy import deepcopy
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from threading import Thread
+from threading import Event, Thread
+from time import monotonic
 from types import SimpleNamespace
 from typing import Any, NoReturn
 from uuid import uuid4
@@ -552,6 +553,127 @@ async def test_real_worker_runs_without_cloak_and_persists_output(
     finally:
         await dispatcher.shutdown()
         factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_project_task_uses_studio_http_gateway_in_real_worker(tmp_path: Path) -> None:
+    requests: list[dict[str, Any]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            body = json.loads(self.rfile.read(int(self.headers["content-length"])))
+            requests.append({"path": self.path, "body": body})
+            payload = json.dumps({"accepted": body["value"]}, ensure_ascii=False).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    factory, queued = _queued_pure_data_run(
+        tmp_path,
+        node_data={
+            "moduleType": "api_request",
+            "requestUrl": f"http://127.0.0.1:{server.server_port}/project",
+            "requestMethod": "POST",
+            "requestBody": '{"value":"项目真实请求"}',
+            "variableName": "api_result",
+        },
+    )
+    worker = ProjectWorkflowWorkerManager(tmp_path / "worker-temp", start_timeout=10)
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        await dispatcher.dispatch(
+            queued.run_id,
+            expected_status_revision=queued.status_revision,
+            execution_generation=queued.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=queued.run_id)
+            events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded"
+        assert requests == [{"path": "/project", "body": {"value": "项目真实请求"}}]
+        assert any(
+            event.kind == "output"
+            and event.payload.get("name") == "api_result"
+            and event.payload["value"]["response"] == {"accepted": "项目真实请求"}
+            for event in events
+        )
+        assert not resources.requests and not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+@pytest.mark.asyncio
+async def test_project_task_stops_in_flight_external_request(tmp_path: Path) -> None:
+    entered, release = Event(), Event()
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            entered.set()
+            release.wait(5)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    factory, queued = _queued_pure_data_run(
+        tmp_path,
+        node_data={
+            "moduleType": "api_request",
+            "requestUrl": f"http://127.0.0.1:{server.server_port}/slow",
+            "requestMethod": "POST",
+            "requestBody": '{"value":"must not complete"}',
+            "requestTimeout": 30,
+            "variableName": "api_result",
+        },
+    )
+    worker = ProjectWorkflowWorkerManager(tmp_path / "worker-temp", start_timeout=10)
+    dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+    try:
+        running = await dispatcher.dispatch(
+            queued.run_id,
+            expected_status_revision=queued.status_revision,
+            execution_generation=queued.execution_generation,
+        )
+        assert await asyncio.to_thread(entered.wait, 5)
+        started = monotonic()
+        await dispatcher.cancel(
+            queued.run_id,
+            expected_status_revision=running.status_revision,
+            execution_generation=running.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        assert monotonic() - started < 3
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=queued.run_id)
+            events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "cancelled"
+        assert not any(event.kind == "output" for event in events)
+        assert not worker.busy()
+    finally:
+        release.set()
+        await dispatcher.shutdown()
+        factory.dispose()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
 
 
 @pytest.mark.asyncio

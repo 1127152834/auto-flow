@@ -13,7 +13,11 @@ from autoflow.application.workflows.executors.production import (
 )
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
-from autoflow.domain.workflows.execution import ArtifactWriter, ExecutionContext
+from autoflow.domain.workflows.execution import (
+    ArtifactWriter,
+    ExecutionContext,
+    ExternalIntegrationGateway,
+)
 from autoflow.domain.workflows.variables import CredentialReader
 from autoflow.providers.model import WorkflowModelGateway
 
@@ -114,10 +118,11 @@ class ProjectGraphExecutor:
         artifact_writer: Callable[[str, str], ArtifactWriter] | None = None,
         *, credentials: CredentialReader | None = None,
         models: WorkflowModelGateway | None = None,
+        external_integrations: ExternalIntegrationGateway | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models)
+        self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations)
         self.legacy = WorkflowExecutor(browser_context, variables, emit, should_stop)
         self.legacy.variables = self.context.variables
         self.emit = emit

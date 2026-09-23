@@ -24,6 +24,7 @@ from autoflow.providers.browser.project_graph import (
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
 from autoflow.providers.browser.workflow_worker import _WorkerCredentialReader
+from autoflow.providers.integrations.gateway import WorkflowIntegrationGateway
 from autoflow.providers.model import WorkflowModelGateway
 
 PROTOCOL_VERSION = 1
@@ -191,6 +192,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
     control = _Control(incoming, generation, stopped)
     control_task = asyncio.create_task(control.read())
     context = None
+    integrations = WorkflowIntegrationGateway()
     relay_guard = _CleanupGuard(relay_context)
 
     async def emit(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
@@ -275,6 +277,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     ),
                     credentials=incoming.credentials if isinstance(incoming, _Input) else None,
                     models=WorkflowModelGateway(command.pop("modelBindings", [])),
+                    external_integrations=integrations,
                 )
                 result = await executor.run(command["executionPlan"])
                 control.check_parent()
@@ -293,9 +296,13 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
             if context is not None:
                 with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):  # noqa: ASYNC230
                     await context.close()
-            cleanup_failed = relay_guard.failed
         except Exception:  # noqa: BLE001
             cleanup_failed = True
+        try:
+            await integrations.close()
+        except Exception:  # noqa: BLE001 -- retained as unconfirmed cleanup.
+            cleanup_failed = True
+        cleanup_failed = cleanup_failed or relay_guard.failed
     control_task.cancel()
     await asyncio.gather(control_task, return_exceptions=True)
     if cleanup_failed:

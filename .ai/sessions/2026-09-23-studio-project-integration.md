@@ -263,3 +263,9 @@
 - 项目预检保留未连线的可视定义区，拒绝可视节点参与执行连线及只有可视节点的流程；项目图执行器复用原Studio的`_WorkerCanvasSubflows`，子上下文沿已有事件与变量通道，不新造子流程算法。项目目录新增批准的`subflow`调用入口。
 - 单元与真实项目worker验证组内变量仅在调用时产生，尾节点获得42。关联156项、Ruff/mypy/OpenAPI通过；PyInstaller重构建与macOS arm64本地unsigned包均通过。正式UI开发`formal-project-control-electron-Ipn9Fb`、包内`formal-project-control-electron-rOVoqM`从项目页建流程、保存、关联自动化并运行，组内CloakBrowser打开本地受控网页，结束后无浏览器残留。包哈希与失败脚本尝试见原`project-integration/control-project-2026-09-23/result.json`。
 - 尚未核销历史`subflow_header`定义、自定义模块冻结依赖、其他嵌套组合、业务数据写回、Intel/Windows及17个环境执行槽位；213节点总范围不变。
+
+## 项目任务外部服务共享入口（2026-09-23，confirmed）
+
+- 来源：项目图执行器原未装配`external_integrations`，使Studio已迁入的API/邮件/SSH等节点在项目批次中无法使用；项目worker现在复用现有`WorkflowIntegrationGateway`并在所有退出路径关闭，不新增执行器。
+- 临时工作区真实worker向本地HTTP服务发送中文JSON、写入输出事件，另验证在途请求取消后无输出且worker空闲；关联17项通过，Ruff/mypy通过。证据：`docs/migration/studio-backend-migration/evidence/project-integration/external-gateway-2026-09-23/README.md`。
+- 正式项目UI及各外部供应商独有分支仍待验收；自定义模块冻结依赖和项目数据写回不在本块中核销。
