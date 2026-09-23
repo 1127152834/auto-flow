@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "final_local_desktop_passed_three_platform_followup_queued",
+  "status": "source_outage_slice_committed_serial_full_regression_pending",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -41,14 +41,15 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+  "codeCandidate": "51e8991e198f782030b678e8decce9a424decaf5",
   "checks": {
-    "currentLocal": "lifecycle-restart-follow-through.json",
+    "currentLocal": "source-outage-follow-through.json",
     "priorFixes": "follow-through.json",
     "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json",
     "capabilityNativeArmInstall": "install-capabilities-darwin-arm64.json",
     "priorNativeArmInstall": "install-final-candidate-darwin-arm64.json",
-    "currentNativeArmInstall": "install-shared-data-final-darwin-arm64.json"
+    "currentNativeArmInstall": "install-shared-data-final-darwin-arm64.json",
+    "priorLocal": "lifecycle-restart-follow-through.json"
   },
   "platforms": {
     "win32-x64": {
@@ -534,18 +535,25 @@
   "subflowPackagedFollowThrough": "subflow-packaged-follow-through.json",
   "resourceFreezeFollowThrough": "resource-freeze-follow-through.json",
   "currentCICandidate": {
-    "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
-    "testAndHarnessCandidate": "25bb8ab236becc1ee0fe64f79422455101a71f69",
-    "runId": "35895754111",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
-    "status": "queued",
-    "report": "ci-metadata-click-follow-through.json",
-    "previousRun": "35886627514: all three packaged desktop jobs failed; preserved, not accepted"
+    "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
+    "status": "not_started_pending_serial_local_regression_and_existing_matrix",
+    "report": "source-outage-follow-through.json",
+    "scope": "No prior CI result validates this new source-outage production change."
   },
   "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json",
   "sourceOutageFollowThrough": {
     "status": "targeted_and_packaged_passed_serial_full_regression_pending",
     "report": "source-outage-follow-through.json",
-    "releaseAccepted": false
+    "releaseAccepted": false,
+    "codeCandidate": "51e8991e198f782030b678e8decce9a424decaf5"
+  },
+  "previousCICandidate": {
+    "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
+    "testAndHarnessCandidate": "25bb8ab236becc1ee0fe64f79422455101a71f69",
+    "runId": "35895754111",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
+    "status": "in_progress",
+    "report": "ci-metadata-click-follow-through.json",
+    "previousRun": "35886627514: all three packaged desktop jobs failed; preserved, not accepted"
   }
 }

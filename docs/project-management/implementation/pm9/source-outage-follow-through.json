@@ -123,5 +123,6 @@
   "packageSha256": {
     "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "8c378cabf3ae4444c83e7eee588e6b883a6dbf44e482256d8bf46beb8d563629",
     "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "b4880d9b014f453ad863165281cf1c784a2acb0eefbd62f16a78a1605cce78bb"
-  }
+  },
+  "codeCandidate": "51e8991e198f782030b678e8decce9a424decaf5"
 }

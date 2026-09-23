@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "original_three_failures_retained_followup_queued",
+  "status": "original_three_failures_retained_followup_in_progress",
   "releaseAccepted": false,
   "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
   "runId": "35886627514",
@@ -27,7 +27,7 @@
     "desktopEvidence": ".tmp-tests/pm9-parallel-desktop-2026-09-24/project-desktop.json"
   },
   "followUp": {
-    "status": "queued",
+    "status": "in_progress",
     "platform": "all",
     "scope": "All three original jobs are terminal failures. One new matrix will validate updated harness and supplemental assertions; production remains69baeeb2. No live job cancelled and no stale-code retry.",
     "runId": "35895754111",
