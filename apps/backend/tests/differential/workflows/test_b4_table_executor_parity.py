@@ -640,7 +640,6 @@ def test_export_rejects_paths_outside_the_managed_artifact_root(save_path: str) 
     assert artifacts.text_calls == []
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="Native workflow file output is explicitly unsupported on Windows")
 def test_csv_export_allows_explicit_absolute_path(tmp_path: Path) -> None:
     artifacts = _RecordingArtifacts()
     context = ExecutionContext(
@@ -985,7 +984,6 @@ class _ArtifactRepository:
         return object()
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="Native workflow file output is explicitly unsupported on Windows")
 def test_csv_export_uses_the_real_atomic_artifact_writer(tmp_path: Path) -> None:
     repository = _ArtifactRepository()
     store = WorkflowArtifactStore(tmp_path / "workspace", repository)
@@ -1026,7 +1024,6 @@ def test_csv_export_uses_the_real_atomic_artifact_writer(tmp_path: Path) -> None
     assert context.variables["path"] == str(target)
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="Native workflow file output is explicitly unsupported on Windows")
 def test_table_exports_formula_like_text_as_literal_data(tmp_path: Path) -> None:
     repository = _ArtifactRepository()
     store = WorkflowArtifactStore(tmp_path / "workspace", repository)

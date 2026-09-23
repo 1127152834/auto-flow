@@ -6,7 +6,7 @@
   "codeCandidate": "2fe33528d211022855bb7f91840a0ba992954e25",
   "implementation": "Validate Windows path, pin each parent directory without delete sharing, open the existing target with FILE_FLAG_OPEN_REPARSE_POINT and read-only sharing, reject reparse/non-file/final-path mismatch, read in binary mode, and compare handle/path identity after reading. Shared size, cancellation and conflict checks remain in WorkflowArtifactStore.",
   "checks": {
-    "local": "After the read-only parent fix, test_workflow_artifacts.py: 34 passed, 17 Windows-only skipped; Ruff passed; mypy passed for 407 source files. The new no-directory-creation assertion failed before the fix and passed after it. This change and cancellation-before-open assertion are not in the earlier native probe.",
+    "local": "After the read-only parent fix, artifact + worker contract + table parity tests: 127 passed, 17 Windows-only skipped. Ruff passed; mypy passed for 407 source files. The no-directory-creation assertion failed before the fix and passed after it.",
     "windowsNative": {
       "runId": "35829751668",
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35829751668",
@@ -17,6 +17,13 @@
         "test_actual_windows_worker_reads_existing_binary_output passed: production worker Base64 node read the existing PNG bytes."
       ]
     }
+  },
+  "followUpNativeFailure": {
+    "runId": "35830710429",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35830710429",
+    "headSha": "0bac3886ce3338e68590d14b8a73c1b2ae599902",
+    "result": "Windows platform-boundary step: 250 passed, 28 skipped, 1 failed. New existing-file read, missing-parent and real-worker tests passed; one older table-family test still asserted Windows must fail with 501, while the worker now correctly succeeded. The other matrix jobs were cancelled and this run is not counted as a passing candidate.",
+    "correction": "Remove the obsolete platform-failure assertion and three obsolete Windows skips for new-file table exports; include worker contract and table parity in the bounded native probe. Final candidate recheck pending."
   },
   "limits": [
     "This scoped native job did not include the later read-only parent fix and did not run the three-platform full regression or packaged desktop chain for the final code.",

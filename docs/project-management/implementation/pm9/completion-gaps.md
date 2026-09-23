@@ -266,3 +266,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 2026-09-23 S4 现有普通文件读取子片（confirmed，限定 2fe33528）：Windows 原生专项 [35829751668](https://github.com/1127152834/auto-flow/actions/runs/35829751668) 102 passed/28 skipped，含父目录 junction 拒绝、持有目标句柄时写/删被拒、父目录改名被拒及真实 worker 的 Base64 PNG 读取。公共读取仍检查大小、取消和读前/读后身份；后补的读取前取消断言尚待最终候选验证。详见 [证据](windows-existing-output-read.json)。既有文件覆盖/追加继续 501，S4 整体和 PM9 release 均未完成；三平台完整回归及打包链需针对最终候选复验。
 
 同日最终候选前补审：读缺失路径原会沿写入入口创建父目录，新增直接测试先失败后通过；POSIX/Windows 读取均改为只打开现存父目录，缺失返回 `missing`。本机定向 34 passed/17 Windows-only skipped，Ruff/mypy（407）通过。Actions 35830250231/35830254336 因该已知副作用主动取消，均不计最终候选通过；下一矩阵必须覆盖这个补丁。
+
+Actions 35830710429 @0bac3886 的 Windows 原生边界步骤 250 passed/28 skipped/1 failed：新读取、缺失路径、真实 worker 全部通过，唯一失败为旧表格 worker 用例仍断言 Windows 必须返回 501，实际新文件 Excel 已成功（result 0）。其他两个平台作业因该失败取消，不计通过。移除过时拒绝断言，并让新文件 CSV/XLSX 的三个差分用例在 Windows 真跑；本机相关 127 passed/17 Windows-only skipped，Ruff 通过。原生专项扩大覆盖后再运行完整矩阵。
