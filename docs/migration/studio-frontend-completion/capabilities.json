@@ -41518,7 +41518,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -41575,7 +41575,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "macOS arm64 正式开发窗口通过真实 UI 配置、保存、重开和独立运行；文件与屏幕共享真实访问及停止清理已核验。未测平台、权限拒绝、第二台局域网设备和冻结包单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41604,7 +41604,7 @@
         },
         {
           "id": "BE.share_folder.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -41612,12 +41612,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 share_folder，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：文件夹网络共享模块执行器 - 将指定文件夹通过HTTP共享到局域网",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；macOS Intel、Windows、macOS 屏幕录制权限拒绝、第二台局域网设备及冻结包仍待单独验收。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产执行器、真实 worker/HTTP 服务及正式 Electron UI 闭环均有证据；不代表未测平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json"
     }
   },
   {
@@ -41737,7 +41742,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -41792,7 +41797,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "macOS arm64 正式开发窗口通过真实 UI 配置、保存、重开和独立运行；文件与屏幕共享真实访问及停止清理已核验。未测平台、权限拒绝、第二台局域网设备和冻结包单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41821,7 +41826,7 @@
         },
         {
           "id": "BE.share_file.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -41829,12 +41834,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 share_file，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：文件网络共享模块执行器 - 将指定文件通过HTTP共享到局域网",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；macOS Intel、Windows、macOS 屏幕录制权限拒绝、第二台局域网设备及冻结包仍待单独验收。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产执行器、真实 worker/HTTP 服务及正式 Electron UI 闭环均有证据；不代表未测平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json"
     }
   },
   {
@@ -41914,7 +41924,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -41963,7 +41973,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "macOS arm64 正式开发窗口通过真实 UI 配置、保存、重开和独立运行；文件与屏幕共享真实访问及停止清理已核验。未测平台、权限拒绝、第二台局域网设备和冻结包单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41992,7 +42002,7 @@
         },
         {
           "id": "BE.stop_share.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -42000,12 +42010,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 stop_share，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：停止网络共享模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；macOS Intel、Windows、macOS 屏幕录制权限拒绝、第二台局域网设备及冻结包仍待单独验收。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产执行器、真实 worker/HTTP 服务及正式 Electron UI 闭环均有证据；不代表未测平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json"
     }
   },
   {
@@ -42129,7 +42144,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -42185,7 +42200,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "macOS arm64 正式开发窗口通过真实 UI 配置、保存、重开和独立运行；文件与屏幕共享真实访问及停止清理已核验。未测平台、权限拒绝、第二台局域网设备和冻结包单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -42214,7 +42229,7 @@
         },
         {
           "id": "BE.start_screen_share.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -42222,12 +42237,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 start_screen_share，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：开始屏幕共享模块执行器 - 启动局域网屏幕共享服务",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；macOS Intel、Windows、macOS 屏幕录制权限拒绝、第二台局域网设备及冻结包仍待单独验收。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产执行器、真实 worker/HTTP 服务及正式 Electron UI 闭环均有证据；不代表未测平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json"
     }
   },
   {
@@ -42307,7 +42327,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -42356,7 +42376,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "macOS arm64 正式开发窗口通过真实 UI 配置、保存、重开和独立运行；文件与屏幕共享真实访问及停止清理已核验。未测平台、权限拒绝、第二台局域网设备和冻结包单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -42385,7 +42405,7 @@
         },
         {
           "id": "BE.stop_screen_share.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -42393,12 +42413,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 stop_screen_share，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：停止屏幕共享模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；macOS Intel、Windows、macOS 屏幕录制权限拒绝、第二台局域网设备及冻结包仍待单独验收。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产执行器、真实 worker/HTTP 服务及正式 Electron UI 闭环均有证据；不代表未测平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-network-sharing.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-network-sharing-electron-aqaFMT/result.json"
     }
   },
   {
