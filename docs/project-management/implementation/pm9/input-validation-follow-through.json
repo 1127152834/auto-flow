@@ -33,8 +33,8 @@
   },
   "coverage": {
     "requirements": 251,
-    "withAssertions": 241,
-    "withNoLocatedAssertion": 10,
+    "withAssertions": 242,
+    "withNoLocatedAssertion": 9,
     "partiallyVerified": 201,
     "planned": 50,
     "verified": 0,
@@ -72,6 +72,12 @@
       "scope": "Two separate one-task batches of the same automation: optional record first present, then absent after real HTTP edit; both worker capability reads empty on second task, no lease, prior snapshot unchanged, resources reclaimed",
       "limits": "macOS ARM source only; new test not in c2d91c5d CI; does not prove variable-expression access or same-batch transition",
       "review": "Independent read-only review: no P1/P2; scope mapping accepted, high confidence"
+    },
+    "singleParameter": {
+      "result": "1 passed, 32 deselected in 38.06s",
+      "scope": "No project tables/inputs; first typed and read through real browser, one Batch/Task/Run after idempotent command replay, no DataLease, resource cleanup",
+      "limits": "macOS ARM source only; added after running native CI candidate",
+      "review": "Independent read-only review: no P1/P2; XE-A01 source scope and unchanged existing success branch confirmed"
     }
   }
 }

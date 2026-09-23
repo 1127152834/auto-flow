@@ -12926,6 +12926,14 @@
           "scope": "PM3当前交付包或规则已在管理界面与真实CloakBrowser链验证。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "real_worker",
+          "report": "docs/project-management/implementation/pm9/input-validation-follow-through.json",
+          "scope": "XE-A01 parameter-single: no tables, first read from real browser, one Batch/Task/Run, zero DataLease, resources reclaimed",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-runs",
@@ -12951,12 +12959,19 @@
         "PM3-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "仅 parameter-single 参数：零表/零项目输入、参数 first 固定、maxTasks=1；真实浏览器填写并读回 first，5 节点成功和连续事件序号；同键重放后数据库仍各 1 Batch/Task/Run、零 DataLease、一次实际页面访问；worker/dispatcher/scheduler 无 blocker，临时 generation 目录回收。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：参数网页真实读取、无 lease、资源回收的同一场景联合断言；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "此精确场景仅本机 macOS ARM 源码链；打包 UI 和三平台仍缺该组联合断言。"
           }
         ],
         "statusBeforeReview": "verified"

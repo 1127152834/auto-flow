@@ -8,7 +8,7 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "10 of 251 requirements still have no located assertion; 201 partial / 50 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
+    "9 of 251 requirements still have no located assertion; 201 partial / 50 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
     "Independent claim-validation review found no P1/P2; local full backend and build passed. Current three-platform validation remains in progress.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
@@ -139,7 +139,7 @@
       "R4"
     ],
     "report": "runtime-capabilities-follow-through.json",
-    "status": "C/R and approved D1 implemented; local and current three-platform regression passed; external acceptance and release remain incomplete."
+    "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
   "workingCandidate": "Production candidate c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5: local full backend 3460 passed / 68 skipped; 89 targeted and 4 Sheets real-worker scenarios passed. PyInstaller built. Actions 35806853292 still in progress. Additional loop/parameter assertions are later test-only evidence.",
@@ -246,5 +246,10 @@
     "scope": "Two separate one-task batches of the same automation: optional record first present, then absent after real HTTP edit; both worker capability reads empty on second task, no lease, prior snapshot unchanged, resources reclaimed",
     "limits": "macOS ARM source only; new test not in c2d91c5d CI; does not prove variable-expression access or same-batch transition",
     "review": "Independent read-only review: no P1/P2; scope mapping accepted, high confidence"
+  },
+  "additionalSingleParameterEvidence": {
+    "result": "1 passed, 32 deselected in 38.06s",
+    "scope": "No project tables/inputs; first typed and read through real browser, one Batch/Task/Run after idempotent command replay, no DataLease, resource cleanup",
+    "limits": "macOS ARM source only; added after running native CI candidate"
   }
 }

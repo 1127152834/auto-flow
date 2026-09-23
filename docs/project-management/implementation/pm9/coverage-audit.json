@@ -2050,11 +2050,11 @@
         {
           "id": "XE-A01",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2609,8 +2609,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 241,
-    "withNoLocatedAssertion": 10,
+    "withAssertions": 242,
+    "withNoLocatedAssertion": 9,
     "statuses": {
       "partially_verified": 201,
       "planned": 50

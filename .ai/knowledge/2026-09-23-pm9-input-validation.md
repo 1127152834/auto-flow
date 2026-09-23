@@ -23,3 +23,5 @@ DATA-WRITE-12 新增两任务各持一条动态 lease、并发反向单记录写
 两项新增场景在完整回归结束后启用 worker diagnostics 联合复验：2 passed / 29 deselected，24.20 秒。此次未复现退出超时；原超时根因仍未确认，不标已修复。
 
 FLOW-A05 追加本机源码真实 worker 证据：同一自动化两个独立批次各一任务，可选记录存在→HTTP 改值后 no_match。第二次快照和两次 capability 读取皆为空引用/空值，零 lease，第一次快照不变且浏览器资源回收。1 passed/31 deselected，37.63 秒；独立复审无 P1/P2。范围不包含同批次、变量表达式读取、打包 UI 或该场景三平台。机器统计 241 有断言/10 未定位、201 partial/50 planned/0 verified。
+
+XE-A01 参数无数据联合场景新增真实 worker 证据：parameter-single 1 passed/32 deselected，38.06 秒；无表、first 网页读回、重放仍唯一 Batch/Task/Run、零 lease、资源清理。现有 partial 状态不升级 verified。最新机器统计 242 有断言/9 未定位、201 partial/50 planned/0 verified；不计入 c2d91c5d CI。

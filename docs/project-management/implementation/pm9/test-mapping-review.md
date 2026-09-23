@@ -1,6 +1,6 @@
 # PM9 assertion mapping review
 
-2026-09-23 最新机器统计：251 条，241 有范围断言/10 未定位，201 partial/50 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
+2026-09-23 最新机器统计：251 条，242 有范围断言/9 未定位，201 partial/50 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
 
 日期：2026-09-21。状态：confirmed（映射审查），完整产品验收仍未完成。来源：原始设计各需求编号、现有测试函数断言及本轮运行记录。
 
@@ -85,3 +85,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 2026-09-23 后续参数场景：parameter-isolation 在真实 HTTP/SQLite/worker/CloakBrowser 本机运行通过（1 passed/30 deselected，28.56s）。两个 Task 的 taskLocal 初值均为 0，前一任务写入不进入第二任务；结果可查询，无 DataLease；同名项目结果列的原记录及版本完全不变。FLOW-A01 增加范围断言，FLOW-A10 由 planned 升为 partial；当前 240 有断言/11 未定位、200 partial/51 planned/0 verified。此前一次退出 TimeoutError 已保留，根因未确认；本机最终通过不代替该场景的打包/三平台证据。
 
 2026-09-23 FLOW-A05：同一自动化两个独立单任务批次的可选输入从有到无，真实 worker 验收 1 passed/31 deselected（37.63 秒）。第二次两次 inputs capability 输出与持久快照均空，零 lease，首次快照保持且资源回收；不是同批次、变量表达式或打包 UI 证据。独立复审无 P1/P2。最新 241 有断言/10 未定位、201 partial/50 planned/0 verified。
+
+2026-09-23 XE-A01：parameter-single 真实 worker 场景 1 passed/32 deselected（38.06 秒）；无表、参数 first 网页填写/读取、同键重放后唯一 Batch/Task/Run、零 lease 和资源回收联合通过。仅本机源码证据，不扩大为打包 UI/三平台或 XE-G02 全部门禁。当前 242 有断言/9 未定位、201 partial/50 planned/0 verified。

@@ -131,7 +131,7 @@ async def test_optional_input_does_not_leak_between_real_tasks(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "parameter-single", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -250,11 +250,12 @@ async def test_real_project_batch_http(
             )
         )
         parameter_id = str(uuid4())
+        parameter_value = "first" if scenario == "parameter-single" else "-真实参数"
         document = workflow_payload(str(uuid4()))
         nodes = document["content"]["nodes"]
         nodes[0]["data"]["url"] = url.replace("/fixture", "/login") if scenario.startswith("data") else url
         nodes[1]["data"].update(
-            selector="#field", text="{" + parameter_id + "}", clearBefore=False
+            selector="#field", text="{" + parameter_id + "}", clearBefore=scenario == "parameter-single"
         )
         nodes[2]["data"]["selector"] = "#button"
         if scenario == "failure":
@@ -481,7 +482,7 @@ async def test_real_project_batch_http(
                         "modelProviderId": None,
                     },
                     "runPolicy": {
-                        "maxTasks": 1 if scenario in {"data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
+                        "maxTasks": 1 if scenario in {"parameter-single", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                         "concurrency": 1,
                         "maxLiveInstances": 1,
                         "continueAfterFailure": False,
@@ -533,8 +534,8 @@ async def test_real_project_batch_http(
             key = str(uuid4())
             payload = {
                 "expectedAutomationRevision": automation["managementRevision"],
-                "parameters": {parameter_id: "-真实参数"},
-                "maxTasks": 1 if scenario in {"data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
+                "parameters": {parameter_id: parameter_value},
+                "maxTasks": 1 if scenario in {"parameter-single", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                 "concurrency": 1,
             }
             response = await client.post(
@@ -653,12 +654,12 @@ async def test_real_project_batch_http(
             tasks = (
                 await client.get(prefix + "/tasks", params={"batchId": batch_id})
             ).json()["items"]
-            assert len(tasks) == (1 if scenario in {"data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2)
+            assert len(tasks) == (1 if scenario in {"parameter-single", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2)
             for task in tasks:
                 viewed = await client.get(prefix + f"/tasks/{task['taskId']}")
                 assert viewed.status_code == 200, viewed.text
                 assert viewed.json()["inputSnapshot"]["parameters"] == {
-                    parameter_id: "-真实参数"
+                    parameter_id: parameter_value
                 }
                 assert (
                     "frozenConfiguration" not in viewed.json()["run"]["resourceRequest"]
@@ -669,8 +670,9 @@ async def test_real_project_batch_http(
                 json=payload,
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
-            if scenario == "success":
-                assert detail["statusCounts"]["succeeded"] == 2 and requests, {
+            if scenario in {"success", "parameter-single"}:
+                expected_outputs = ["yes", "first" if scenario == "parameter-single" else "before-真实参数"]
+                assert detail["statusCounts"]["succeeded"] == len(tasks) and requests, {
                     "batch": detail,
                     "tasks": [(await client.get(prefix + f"/tasks/{task['taskId']}")).json() for task in tasks],
                 }
@@ -683,7 +685,7 @@ async def test_real_project_batch_http(
                     assert len(logs.json()["items"]) == 10
                     assert attempts.json()["total"] == 5
                     assert {item["status"] for item in attempts.json()["items"]} == {"succeeded"}
-                    assert [item["value"] for item in outputs.json()["items"]] == ["yes", "before-真实参数"]
+                    assert [item["value"] for item in outputs.json()["items"]] == expected_outputs
                     with app.state.session_factory() as session:
                         events = SqlAlchemyWorkflowRuntimeRepository(
                             session
@@ -692,10 +694,28 @@ async def test_real_project_batch_http(
                         event.payload["value"]
                         for event in events
                         if event.kind == "output"
-                    ] == ["yes", "before-真实参数"]
+                    ] == expected_outputs
                     assert [event.sequence for event in events] == list(
                         range(1, len(events) + 1)
                     )
+                if scenario == 'parameter-single':
+                    from sqlalchemy import func, select
+
+                    from autoflow.infrastructure.database.project_run_models import (
+                        ProjectBatchRow,
+                        ProjectRecordLeaseRow,
+                        ProjectTaskRow,
+                    )
+                    from autoflow.infrastructure.database.workflow_runtime_models import (
+                        WorkflowRunRow,
+                    )
+
+                    with app.state.session_factory() as session:
+                        for model in (ProjectBatchRow, ProjectTaskRow, WorkflowRunRow):
+                            assert session.scalar(select(func.count()).select_from(model)) == 1
+                        assert session.scalar(select(func.count()).select_from(ProjectRecordLeaseRow)) == 0
+                    assert requests.count('/fixture') == 1
+                    assert (await client.get(prefix + '/tables')).json()['items'] == []
             elif scenario == 'parameter-isolation':
                 from sqlalchemy import select
 
