@@ -112,7 +112,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables", "control_primitives"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables", "control_primitives", "allure"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -183,7 +183,17 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("stop", "stop_workflow", {"stopReason": "业务结束"}, None),
         ("tail", "set_variable", {"variableName": "must_not_run", "variableValue": "unexpected"}, None),
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps, "control_primitives": control_steps}[family]
+    attachment = tmp_path / "allure-attachment.txt"
+    attachment.write_text("项目任务附件内容", encoding="utf-8")
+    allure_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("init", "allure_init", {"testSuite": "项目验收套件"}, None),
+        ("start", "allure_start_test", {"name": "项目任务用例"}, None),
+        ("step", "allure_add_step", {"stepName": "报告步骤"}, None),
+        ("attach", "allure_add_attachment", {"filePath": str(attachment), "name": "任务附件"}, None),
+        ("stop", "allure_stop_test", {"status": "passed"}, None),
+        ("report", "allure_generate_report", {"reportDir": "reports"}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps, "control_primitives": control_steps, "allure": allure_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert node_types <= set(build_production_executor_registry().get_all_types())
@@ -302,6 +312,16 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             assert outputs == {"assert": True}
             assert {event.payload["name"] for event in events if event.kind == "output"} == {"checked"}
             assert not any(event.node_id == "tail" for event in events)
+        elif family == "allure":
+            evidence = ProjectRunEvidence(factory, tmp_path / "workspace")
+            artifacts, total = evidence.artifacts(project.project_id, task.task_id)
+            assert total == 1 and artifacts[0].kind == "file"
+            report, _ = evidence.artifact_content(project.project_id, task.task_id, artifacts[0].artifact_id)
+            assert b"<html" in report.lower()
+            assert "项目验收套件" in report.decode()
+            assert "项目任务用例" in report.decode()
+            assert "报告步骤" in report.decode()
+            assert outputs == {}
         else:
             assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
         assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps) - (family == "control_primitives")

@@ -177,6 +177,35 @@ async def test_project_workbook_output_waits_for_ack_and_preserves_prior_snapsho
 
 
 @pytest.mark.asyncio
+async def test_project_allure_html_waits_for_ack_and_rejects_escape(tmp_path):
+    from autoflow.domain.workflows.runs import WorkflowRunError
+
+    arrived, confirmed = asyncio.Event(), asyncio.Event()
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+        arrived.set()
+        await confirmed.wait()
+
+    writer = ProjectArtifactWriter(tmp_path, "run", 2, "report", "visit", "file", emit)
+    pending = asyncio.create_task(writer.write_binary_output(
+        output_path="reports/result.html", content=b"<html>ready</html>", mime_type="text/html",
+    ))
+    await asyncio.wait_for(arrived.wait(), 3)
+    assert not pending.done()
+    assert (tmp_path / events[0][3]["relativePath"]).read_bytes() == b"<html>ready</html>"
+    confirmed.set()
+    assert Path(await pending).read_bytes() == b"<html>ready</html>"
+
+    with pytest.raises(WorkflowRunError, match="产物路径无效"):
+        await writer.write_binary_output(
+            output_path="../escape.html", content=b"<html>bad</html>", mime_type="text/html",
+        )
+    assert not (tmp_path / "escape.html").exists()
+
+
+@pytest.mark.asyncio
 async def test_screenshot_paths_and_existing_files_keep_shared_store_rules(tmp_path):
     events = []
 

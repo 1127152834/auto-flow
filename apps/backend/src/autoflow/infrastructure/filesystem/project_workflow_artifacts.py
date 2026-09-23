@@ -168,11 +168,11 @@ class ProjectArtifactWriter:
     ) -> str:
         if (
             self._kind != "file"
-            or mime_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            or mime_type not in {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/html"}
             or not content
             or len(content) > 64 * 1024 * 1024
         ):
-            raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目表格产物类型或大小无效", 422)
+            raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目文件产物类型或大小无效", 422)
         writing = asyncio.create_task(self._writer.write_binary_output(
             output_path=output_path, content=content, mime_type=mime_type,
             expected_identity=expected_identity,

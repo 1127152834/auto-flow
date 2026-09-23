@@ -380,3 +380,8 @@
 - 冻结 WebRPA 的 `network_capture`、`network_monitor_start`、`network_monitor_wait`、`network_monitor_stop` 通过现有 CloakBrowser 监听器接入项目任务目录 157→161；项目输出读取执行器实际变量，worker 输入维持 1 MiB、输出事件上限 16 MiB。大输出回执、网络差分及项目关联回归通过。
 - 正式 Electron 开发入口与 macOS arm64 未签名包均以真实 UI 保存六节点网络流程，项目任务在临时工作区捕获两次受控请求并展示三个脱敏输出，浏览器完成清理。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/network-family-2026-09-24/README.md`。Studio 的 213 节点范围未变，项目任务目录余下 52 个。
 - 网络抓包面板移除 Web 范围外的系统／代理模式；旧文档显示明确修正提示。等待请求超时按执行器实际秒单位呈现。扩大字段台账时发现 14 个已排除通知节点历史用例在加载阶段崩溃，现以单独测试提交 `0103fdfc` 显式核对排除范围；完整字段台账另有 28 个 AI 面板清单差异，未据此宣称全量通过。Intel/Windows、用户数据库及真实公网服务未实测。
+
+## 项目任务 Allure 报告节点族（2026-09-24，confirmed）
+
+- 冻结 WebRPA 的六个 Allure 节点与单文件 HTML 生成器接入项目目录 161→167。项目运行器为报告节点分配现有文件写入器；共享文件边界准入 HTML，保留路径防逃逸、64 MiB 上限和持久回执。项目真实 worker、报告内容、产物回执与路径失败专项通过。
+- 正式 Electron 开发入口与 macOS arm64 本地未签名包均由真实 UI 编排六节点、保存、正常关窗后运行项目任务；产物 HTML 包含套件、用例、步骤和附件，任务页下载与 SHA-256 核对通过。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md`。Studio 批准范围仍为 213，项目目录余下 46 个入口；Intel/Windows、用户数据库未实测。

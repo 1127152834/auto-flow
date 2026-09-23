@@ -46809,9 +46809,15 @@
           "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实项目 worker、正式 Electron 开发与 macOS arm64 包内 UI 链路及报告产物哈希均已通过；Intel/Windows 未实测。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的冻结 WebRPA Allure 六节点和单文件报告生成器；项目真实 worker、正式 Electron 开发入口与本地 macOS arm64 包验证 HTML 文件、附件、持久事件及下载入口。"
+      }
     }
   },
   {
@@ -47028,9 +47034,15 @@
           "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实项目 worker、正式 Electron 开发与 macOS arm64 包内 UI 链路及报告产物哈希均已通过；Intel/Windows 未实测。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的冻结 WebRPA Allure 六节点和单文件报告生成器；项目真实 worker、正式 Electron 开发入口与本地 macOS arm64 包验证 HTML 文件、附件、持久事件及下载入口。"
+      }
     }
   },
   {
@@ -47237,9 +47249,15 @@
           "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实项目 worker、正式 Electron 开发与 macOS arm64 包内 UI 链路及报告产物哈希均已通过；Intel/Windows 未实测。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的冻结 WebRPA Allure 六节点和单文件报告生成器；项目真实 worker、正式 Electron 开发入口与本地 macOS arm64 包验证 HTML 文件、附件、持久事件及下载入口。"
+      }
     }
   },
   {
@@ -47457,9 +47475,15 @@
           "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实项目 worker、正式 Electron 开发与 macOS arm64 包内 UI 链路及报告产物哈希均已通过；Intel/Windows 未实测。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的冻结 WebRPA Allure 六节点和单文件报告生成器；项目真实 worker、正式 Electron 开发入口与本地 macOS arm64 包验证 HTML 文件、附件、持久事件及下载入口。"
+      }
     }
   },
   {
@@ -47657,9 +47681,15 @@
           "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实项目 worker、正式 Electron 开发与 macOS arm64 包内 UI 链路及报告产物哈希均已通过；Intel/Windows 未实测。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的冻结 WebRPA Allure 六节点和单文件报告生成器；项目真实 worker、正式 Electron 开发入口与本地 macOS arm64 包验证 HTML 文件、附件、持久事件及下载入口。"
+      }
     }
   },
   {
@@ -47852,9 +47882,15 @@
           "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、真实项目 worker、正式 Electron 开发与 macOS arm64 包内 UI 链路及报告产物哈希均已通过；Intel/Windows 未实测。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-allure-family.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的冻结 WebRPA Allure 六节点和单文件报告生成器；项目真实 worker、正式 Electron 开发入口与本地 macOS arm64 包验证 HTML 文件、附件、持久事件及下载入口。"
+      }
     }
   },
   {
