@@ -111,5 +111,60 @@
     },
     "twoFramesMs": 8,
     "scope": "single ARM observation; synthetic input and worker throughput are separate, no new performance threshold"
+  },
+  "finalViewportFollowUp": {
+    "status": "passed",
+    "evidence": ".tmp-tests/pm9-parallel-desktop-viewport-2026-09-24/project-desktop.json",
+    "sha256": "9cd557606aa63a6041e35f7cc7e2620fc9d553d14179f5f39db4649181bb0d54",
+    "screenshots": 22,
+    "parallel": {
+      "status": "passed",
+      "loopTaskId": "e52143b0-cbfa-4248-aacf-0fb0def2a90c",
+      "manualTaskId": "95ec009a-a957-4512-9f4f-b8d7cb69eab3",
+      "stoppedTaskId": "00887db0-2b84-4974-8da5-bfc30c4a4b44",
+      "loopValues": [
+        "A-0",
+        "A-1",
+        "B-0",
+        "B-1",
+        "B-2"
+      ],
+      "linkedValues": [
+        "A-1",
+        "B-2"
+      ],
+      "manualItems": 2,
+      "retainedPreForkWrites": 2,
+      "checks": [
+        "same-name loop variables isolated; exact 2/3 values and distinct public event visit IDs",
+        "only declared last outputs linked by one End",
+        "two live manual checkpoints serialized before ordinary branch work and join runs once",
+        "stop discards queued manual, prevents branch/join/End and retains committed pre-fork record"
+      ]
+    },
+    "observations": {
+      "realWorkerLogs": {
+        "logCount": 1004,
+        "logPages": 6,
+        "elapsedMs": 34299,
+        "logsPerMinute": 1756,
+        "scope": "real worker throughput and server pagination; no renderer memory claim"
+      },
+      "recordWrites": {
+        "elapsedMs": 44493,
+        "status": "passed",
+        "producers": 5,
+        "records": 10000,
+        "busyRetries": 0
+      },
+      "synthetic": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60099,
+        "maxBatchLagMs": 99
+      },
+      "twoFramesMs": 7
+    }
   }
 }

@@ -146,6 +146,18 @@ async function checkAutomationDeletion(browserVersion) {
   } finally { cdp.socket.removeEventListener('message', observe) }
 }
 
+async function prepareStudioView() {
+  await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
+  await waitFor(studio, "Boolean(document.querySelector('.react-flow__pane'))", 'Studio canvas ready', 30_000)
+  // A small native window may collapse panels before the CDP override arrives.
+  // Widening preserves that user state, so expand through the existing controls.
+  for (const title of ['展开模块列表', '展开配置面板']) {
+    const selector = `button[title="${title}"],button[data-tip="${title}"]`
+    if (await studio.evaluate(`Boolean(document.querySelector(${JSON.stringify(selector)}))`)) await click('', selector, studio)
+  }
+  await waitFor(studio, "document.body.innerText.includes('模块库') && document.body.innerText.includes('配置面板')", 'Studio panels ready', 30_000)
+}
+
 async function checkStudioWindowLifecycle(document, run) {
   const windowExpression = "pm9Electron.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('view=automation-studio'))"
   const originalId = await native.evaluate(`${windowExpression}.id`)
@@ -181,7 +193,10 @@ async function checkStudioWindowLifecycle(document, run) {
   await click('工作流工作台编排并运行浏览器自动化流程')
   const target = await poll(async () => (await (await fetch(`${desktop.debugOrigin}/json/list`)).json()).find(target => target.type === 'page' && target.url.includes('view=automation-studio')), 'reopened Studio target')
   studio = await connectCdp(target.webSocketDebuggerUrl)
-  await waitFor(studio, "document.body.innerText.includes('模块库')", 'reopened Studio ready', 30_000)
+  await studio.command('Emulation.setDeviceMetricsOverride', { width: 1008, height: 662, deviceScaleFactor: 1, mobile: false })
+  await waitFor(studio, `Boolean(document.querySelector('button[data-tip="展开模块列表"],button[title="展开模块列表"]'))`, 'compact reopened Studio is loaded', 30_000)
+  await capture('studio-reopened-compact', studio)
+  await prepareStudioView()
   assert.notEqual(await native.evaluate(`${windowExpression}.id`), originalId)
   assert.equal(await studio.evaluate('(async()=> (await window.autoflow.getRuntimeContext()).sidecar.instanceId)()'), sidecar.instanceId)
   await click('打开', 'button', studio)
@@ -192,7 +207,7 @@ async function checkStudioWindowLifecycle(document, run) {
   assert.equal((await api('/api/v1/projects')).total, 0)
   await capture('studio-reopened-document', studio)
   return { status: 'passed', originalWindowId: originalId, reopenedWindowId: await native.evaluate(`${windowExpression}.id`), savedRevision: saved.revision,
-    checks: ['Manager repeated opens restore one minimized native Studio and keep its identity', 'Studio renderer cannot call Manager-only open authority', 'dirty native close can be cancelled without saving or discarding edits', 'save-and-close increments the existing document once and retains project configuration', 'reopened window shares the service; explicitly reopening the document retains edits, with zero Project and exactly the original completed Run'],
+    checks: ['Manager repeated opens restore one minimized native Studio and keep its identity', 'Studio renderer cannot call Manager-only open authority', 'dirty native close can be cancelled without saving or discarding edits', 'save-and-close increments the existing document once and retains project configuration', 'compact reopened viewport has a live canvas; widening plus explicit panel expansion restores controls', 'reopened window shares the service; explicitly reopening the document retains edits, with zero Project and exactly the original completed Run'],
     limits: ['Electron native close/minimize API; not physical OS keyboard or window-manager gesture acceptance', 'explicit document reopen only; no automatic session restoration, project automation binding, docking or active-task dual-window proof'] }
 }
 
@@ -220,8 +235,7 @@ async function checkStandaloneStudio(browserVersion) {
   const studioTarget = await poll(async () => (await (await fetch(`${desktop.debugOrigin}/json/list`)).json()).find(target => target.type === 'page' && target.url.includes('view=automation-studio')), 'standalone Studio window')
   studio = await connectCdp(studioTarget.webSocketDebuggerUrl)
   try {
-    await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
-    await waitFor(studio, "document.body.innerText.includes('模块库')", 'production Studio ready', 30_000)
+    await prepareStudioView()
     assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
     await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value===${JSON.stringify(profile.id)}`, 'independent browser profile')
     await click('打开', 'button', studio)

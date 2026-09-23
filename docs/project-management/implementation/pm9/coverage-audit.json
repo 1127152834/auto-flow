@@ -2570,7 +2570,7 @@
         {
           "id": "XE-G07",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false,
           "reviewedCheckCount": 3,
           "gapKinds": [

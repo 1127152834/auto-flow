@@ -16362,6 +16362,14 @@
           "scope": "本机ARM真实打包窗口复用/最小化恢复、Manager权限、脏草稿取消/保存关闭、显式重开保留文档及原Run；非项目会话关联或停靠完成。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/ci-metadata-click-follow-through.json",
+          "scope": "实际ARM包窗口重新打开后模拟Windows CI的1008x662紧凑视口，再恢复1440x1024并通过既有控件展开面板；窗口/文档状态断言继续。属CDP视口验收，不是物理Windows窗口验收。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM9-C",
@@ -16394,12 +16402,12 @@
         "PM9-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-23",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "scripts/smoke-project-management-desktop.mjs",
             "symbol": "checkStudioWindowLifecycle",
-            "scope": "当前ARM包：重复主窗口打开复用最小化Studio，Studio自身打开越权被拒；同sidecar；脏稿原生close取消不保存，保存关闭修订只+1；新窗口手动重开同文档保留grant/参数，项目0/只原completed Run。Electron窗口API，不是OS手势或停靠。",
+            "scope": "当前ARM包：重复主窗口打开复用最小化Studio，Studio自身打开越权被拒；同sidecar；脏稿原生close取消不保存，保存关闭修订只+1；新窗口手动重开同文档保留grant/参数，项目0/只原completed Run。Electron窗口API，不是OS手势或停靠。；新增1008x662紧凑重开后恢复统一视口/显式展开面板，不把隐藏文字当未加载。",
             "level": "automated_real_application"
           },
           {
