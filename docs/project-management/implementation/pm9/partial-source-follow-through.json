@@ -53,5 +53,6 @@
     "Binding/peer-generation cache trust combinations in one actual worker chain remain unproved.",
     "Controlled Google transport/credentials do not replace current packaged live Sheets/OAuth or physical/signing acceptance."
   ],
-  "coverage": "No status promotions;251 requirements/206 partial/45 planned/0 verified."
+  "coverage": "No status promotions;251 requirements/206 partial/45 planned/0 verified.",
+  "codeCandidate": "1c676965fb581ea3e33882b3ecb300b3abc99368"
 }
