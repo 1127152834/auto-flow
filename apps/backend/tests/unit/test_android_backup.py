@@ -240,3 +240,57 @@ async def test_restore_rejects_unsupported_archive_attributes_before_runtime_wri
         )
 
     runtime.restore_volume.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_restore_writes_the_exact_bytes_that_passed_digest_validation(tmp_path, monkeypatch):
+    payload = io.BytesIO()
+    with tarfile.open(fileobj=payload, mode="w") as archive:
+        archive.addfile(tarfile.TarInfo("data/file"))
+    resources = _Resources()
+    service = AndroidBackupService(resources, tmp_path)
+    record = await service.create_with_runtime(
+        {"deviceId": "source", "imageId": "image", "control": "idle"},
+        {"androidStatus": "stopped"}, _Runtime(payload.getvalue()),
+    )
+    original_read = Path.read_bytes
+    reads = 0
+
+    def changing_read(path):
+        nonlocal reads
+        if path.name == "data.tar":
+            reads += 1
+            if reads > 1:
+                return b"changed after validation"
+        return original_read(path)
+
+    monkeypatch.setattr(Path, "read_bytes", changing_read)
+    runtime = type("Runtime", (), {"restore_volume": AsyncMock()})()
+    await service.restore_data(record["id"], {"deviceId": "new", "imageId": "image"}, runtime)
+    assert runtime.restore_volume.await_args.args[1] == payload.getvalue()
+    assert reads == 1
+
+
+@pytest.mark.asyncio
+async def test_backup_rechecks_live_state_even_when_caller_supplies_stopped_snapshot(tmp_path):
+    service = AndroidBackupService(_Resources(), tmp_path)
+    runtime = type("Runtime", (), {"inspect": AsyncMock(return_value={"androidStatus": "ready"}), "backup_volume": AsyncMock()})()
+    with pytest.raises(AndroidError, match="停止"):
+        await service.create_with_runtime(
+            {"deviceId": "source", "imageId": "image", "control": "idle"},
+            {"androidStatus": "stopped"}, runtime,
+        )
+    runtime.inspect.assert_awaited_once()
+    runtime.backup_volume.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_restore_cannot_overwrite_its_source_device(tmp_path):
+    resources = _Resources()
+    resources.save("backup", {"id": "backup", "deviceId": "source", "imageId": "image", "state": "available"})
+    service = AndroidBackupService(resources, tmp_path)
+    runtime = type("Runtime", (), {"restore_volume": AsyncMock()})()
+    with pytest.raises(AndroidError) as error:
+        await service.restore_data("backup", {"deviceId": "source", "imageId": "image"}, runtime)
+    assert error.value.code == "ANDROID_RESTORE_TARGET_INVALID"
+    runtime.restore_volume.assert_not_awaited()

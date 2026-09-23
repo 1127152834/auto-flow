@@ -214,7 +214,7 @@ class MacAndroidRuntime:
                                   "--label", "io.autoflow.android.device=" + device["deviceId"],
                                   "-v", f"{volume_id}:/data", device["imageId"], timeout=30)).decode().strip()
         try:
-            await docker("cp", "-", container + ":/", timeout=600, input_data=data)
+            await docker("cp", "-a", "-", container + ":/", timeout=600, input_data=data)
         finally:
             await docker("rm", container, timeout=30)
 

@@ -1,6 +1,8 @@
 import os
 import re
 import shutil
+import tarfile
+from collections import deque
 from pathlib import Path, PurePosixPath
 
 _SAFE_ID = re.compile(r"^[A-Za-z0-9-]{1,80}$")
@@ -9,8 +11,72 @@ _SAFE_ID = re.compile(r"^[A-Za-z0-9-]{1,80}$")
 def validate_archive_path(path: PurePosixPath, entry_type: str = "file") -> None:
     if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
         raise ValueError("archive entry escapes its root")
-    if entry_type in {"char", "block", "fifo", "device", "link", "symlink", "hardlink"}:
+    if entry_type not in {"file", "directory"}:
         raise ValueError("special archive entries are not supported")
+
+
+def validate_archive_members(members: list[tarfile.TarInfo]) -> None:
+    """Validate the whole graph before Docker can extract any member."""
+    entries: dict[str, tarfile.TarInfo] = {}
+    for member in members:
+        path = PurePosixPath(member.name)
+        validate_archive_path(path)
+        if (
+            not path.parts or path.parts[0] != "data"
+            or member.name.rstrip("/") != str(path)
+            or str(path) in entries
+            or (str(path) == "data" and not member.isdir())
+            or member.type not in {tarfile.REGTYPE, tarfile.AREGTYPE, tarfile.DIRTYPE, tarfile.SYMTYPE, tarfile.LNKTYPE}
+            or member.sparse is not None
+        ):
+            raise ValueError("unsupported or ambiguous archive member")
+        if member.islnk():
+            # Docker extracts in archive order. Hard links must refer to an
+            # already materialized regular file, never a directory or symlink.
+            target = entries.get(member.linkname)
+            if target is None or not target.isreg():
+                raise ValueError("hard link target is not a preceding regular file")
+        entries[str(path)] = member
+
+    for name, member in entries.items():
+        for parent in PurePosixPath(name).parents:
+            ancestor = entries.get(str(parent))
+            if ancestor is not None and not ancestor.isdir():
+                raise ValueError("archive would write through a non-directory")
+        if not member.issym():
+            continue
+        if not member.linkname or "\0" in member.linkname:
+            raise ValueError("invalid symbolic link target")
+        # Resolve components in filesystem order: normalize '..' only after
+        # expanding intervening links, otherwise chained links can escape /data.
+        parts: list[str] = []
+        pending = deque(name.split("/"))
+        hops = 0
+        while pending:
+            part = pending.popleft()
+            if part in {"", "."}:
+                continue
+            if part == "..":
+                if len(parts) <= 1:
+                    raise ValueError("link escapes data root")
+                parts.pop()
+                continue
+            parts.append(part)
+            if parts[0] != "data":
+                raise ValueError("link escapes data root")
+            target = entries.get("/".join(parts))
+            if target is not None and target.issym():
+                hops += 1
+                if hops > 40 or not target.linkname:
+                    raise ValueError("cyclic or excessive symbolic link chain")
+                parts.pop()
+                if target.linkname.startswith("/"):
+                    parts.clear()
+                pending.extendleft(reversed(target.linkname.split("/")))
+            elif pending and target is not None and not target.isdir():
+                raise ValueError("link traverses a non-directory")
+        if not parts or parts[0] != "data":
+            raise ValueError("link escapes data root")
 
 
 class BackupStorage:

@@ -430,3 +430,26 @@ async def test_lost_app_response_marker_records_semantic_result(tmp_path, monkey
     else:
         assert (await runtime.verify_pending_command() == 0) is successful
     assert "pendingCommand" in runtime.device
+
+
+@pytest.mark.asyncio
+async def test_restore_copy_preserves_source_ownership(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    calls = []
+
+    async def docker(*args, **kwargs):
+        calls.append((args, kwargs))
+        if args[:2] == ("volume", "inspect"):
+            return json.dumps([{"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "device"}}]).encode()
+        if args[0] == "create":
+            return b"restore-helper"
+        return b""
+
+    monkeypatch.setattr(mac, "docker", docker)
+    await runtime.restore_volume(
+        {"deviceId": "device", "workspaceId": runtime.workspace_id, "volumeId": "volume", "imageId": "image", "androidStatus": "stopped", "control": "idle"},
+        b"archive",
+    )
+    copy = next(call for call in calls if call[0][0] == "cp")
+    assert copy[0] == ("cp", "-a", "-", "restore-helper:/")
+    assert copy[1]["input_data"] == b"archive"

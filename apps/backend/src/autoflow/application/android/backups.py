@@ -6,14 +6,14 @@ import os
 import tarfile
 from contextlib import contextmanager
 from datetime import UTC, datetime
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 from autoflow.domain.android.ports import AndroidError
 from autoflow.providers.android.backup_storage import (
     BackupStorage,
-    validate_archive_path,
+    validate_archive_members,
 )
 
 
@@ -56,16 +56,9 @@ class AndroidBackupService:
             raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份数据不是受支持的归档", 409)
         try:
             with tarfile.open(fileobj=io.BytesIO(data), mode="r:") as archive:
-                for member in archive.getmembers():
-                    if member.isreg() or member.isdir():
-                        kind = "file"
-                    elif member.issym() or member.islnk():
-                        kind = "link"
-                    elif member.isdev() or member.isfifo():
-                        kind = "device"
-                    else:
-                        kind = "special"
-                    validate_archive_path(PurePosixPath(member.name), kind)
+                members = archive.getmembers()
+                validate_archive_members(members)
+                for member in members:
                     if not (0 <= member.uid <= 0xFFFFFFFF and 0 <= member.gid <= 0xFFFFFFFF and 0 <= member.mode <= 0o7777):
                         raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份包含不受支持的文件属性", 409)
                     # Docker's tar copy path does not provide a safe contract
@@ -127,7 +120,7 @@ class AndroidBackupService:
             operation = self.operations.transition(operation.operation_id, "queued", "running", {"stage_code": "checking"})
         try:
             with self._runtime_lock(runtime):
-                if observed is None and hasattr(runtime, "inspect"):
+                if hasattr(runtime, "inspect"):
                     observed = await runtime.inspect(device)
                 if (observed or {}).get("androidStatus") not in {"stopped", "retained"} or device.get("control") != "idle" or device.get("ownerRunId"):
                     raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "备份前必须停止实例并释放控制会话", 409)
@@ -213,6 +206,8 @@ class AndroidBackupService:
             raise AndroidError("ANDROID_BACKUP_NOT_FOUND", "备份不存在或不可恢复", 404)
         if device.get("imageId") != backup.get("imageId"):
             raise AndroidError("ANDROID_BACKUP_IMAGE_MISMATCH", "备份必须使用完全相同的镜像摘要", 409)
+        if device.get("deviceId") == backup.get("deviceId"):
+            raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复必须使用新的目标实例，不能覆盖备份源", 409)
         # Restore writes the target volume; a retained target already owns
         # data and must not be overwritten.  The HTTP flow creates a fresh
         # stopped target before reaching this method.
@@ -237,17 +232,19 @@ class AndroidBackupService:
             raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份缺少可恢复的数据卷归档", 409)
         digest = hashlib.sha256()
         size = 0
+        data = b""
         for path in sorted(backup_path.iterdir()):
             if path.is_symlink():
                 raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含链接条目", 409)
             if not path.is_file():
                 raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含不支持的条目", 409)
             chunk = path.read_bytes()
+            if path == data_path:
+                data = chunk
             digest.update(chunk)
             size += len(chunk)
         if backup.get("sha256") != digest.hexdigest() or backup.get("bytes") != size:
             raise AndroidError("ANDROID_BACKUP_CORRUPT", "备份摘要或字节数不匹配", 409)
-        data = data_path.read_bytes()
         self._validate_archive(data)
         with self._runtime_lock(runtime):
             await runtime.restore_volume(device, data)
