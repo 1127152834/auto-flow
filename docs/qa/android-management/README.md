@@ -4,7 +4,7 @@
 
 [真实恢复空间不足与取消](2026-09-24-restore-cancel-and-disk-full.md)发现并修复命令取消后 SSH 子进程继续写入：4 项真实子进程 RED→GREEN，运行时 63 项通过，Android 聚焦 451 项通过。[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验证首项删除不被误判为全成功；本轮全后端4035 passed/26 skipped，命令与终态见同一故障报告。T18/T19 已列功能通过，完整目标仍 partial。
 
-[任务逐项证据审计](2026-09-24-task-evidence-audit.md)已核对当前 102 项计划步骤：84 项 passed、15 项 not_run、3 项 blocked；not_run 包含没有找到原始历史 RED 输出的步骤，不用当前 GREEN 追认。代码、契约、迁移、前端、各层测试和真实命令已按 T01–T20 映射。
+[任务逐项证据审计](2026-09-24-task-evidence-audit.md)已核对当前 102 项计划步骤：85 项 passed、14 项 not_run、3 项 blocked；not_run 包含没有找到原始历史 RED 输出的步骤，不用当前 GREEN 追认。代码、契约、迁移、前端、各层测试和真实命令已按 T01–T20 映射。
 
 [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)新增独立 64 MiB 映像的 ENOSPC 与真实在途取消证据，源数据未变且资源已清理；补齐备份未加密/恢复能力边界的可访问说明。
 
@@ -80,3 +80,5 @@
 - 2026-09-24 桌面控制增量：[真实断线、原生往返及根因修复](2026-09-24-desktop-control.md)：已完成自建设备真实控制/导航/SSH断线/重新连接与清理，补ADB后台服务、切端输入/心跳身份和离线清理回归；最终后端4041passed/26skipped、前端5631passed，类型/lint/OpenAPI/build通过；T05/AC05/AC06关闭，总目标仍partial。
 
 - 2026-09-24 APK执行中断：[真实ADB断线、HTTP强杀与数据保留](2026-09-24-app-interruption.md)完成两种覆盖安装故障，重启后旧包/数据存在仍保持结果未知并锁定控制，三轮5台自建资源清理。生产代码未变，应用回归32项通过；T07.3通过，当前步骤84passed/15not_run/3blocked，桌面确认流仍未验。
+
+- 2026-09-24 隐藏页与观察增量（confirmed 软件/真实后端，整体partial）：批次状态GET隐藏时暂停、可见恢复，一行修复经RED 1 failed→GREEN 69 passed；1/5台真实API P95为6.177/12.495ms，列表内inspect均0，后台间隔3.23–3.34/4.15–4.21秒，停机约15.8秒；5台自建资源均核实missing。Mac锁屏继续阻塞桌面隐藏页/前台/新批次入口，十台及GApps条件未变。完整前端424文件/5651项（722.44s）及类型/lint/OpenAPI/build全部exit0；结构4/脚本95/迁移6项通过，当前102步骤85passed/14not_run/3blocked不虚增。见[完整证据](2026-09-24-observation.md)。

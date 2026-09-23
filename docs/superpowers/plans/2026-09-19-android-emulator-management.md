@@ -566,7 +566,7 @@ async def test_input_never_reaches_another_device(console, session_a, stream_a, 
 
 - [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_multi_device.py -q)`及MultiDeviceManagement.test.tsx。（状态：not_run；当前 GREEN 已验证；该步骤独立历史 RED 输出未找到，不追认通过；[证据 T16.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t16)）
 - [ ] 获授权后实测至少两台独立实例。记录1/5/10台规模；硬件不足写blocked，不删除其他设备来满足测试。（状态：blocked；至少两台及五台已实测；十台最低 8192 MiB 超出 Lima 7921 MiB；[证据 T16.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t16)）
-- [ ] 记录聚合API延迟、后台探测、预览并发、隐藏页行为与内存；执行完整发布门槛，确定性规则不得被平均性能掩盖。（状态：not_run；API/双预览/五台内存已记录；探测次数、隐藏页同链和前台交互指标未完整记录；[证据 T16.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t16)）
+- [ ] 记录聚合API延迟、后台探测、预览并发、隐藏页行为与内存；执行完整发布门槛，确定性规则不得被平均性能掩盖。（状态：not_run；API/双预览/五台内存及1/5台探测次数已记录，批次隐藏页暂停有RED→GREEN；真实桌面隐藏页同链和前台交互因Mac锁屏blocked；[证据 T16.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t16)）
 - [ ] 提交 `test(android): verify multi-instance isolation and responsiveness`；停在AM3验收点。（状态：not_run；软件与局部规模证据已提交；完整 T16 验收未结束；[证据 T16.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t16)）
 
 ## 5. AM4：数据与维护

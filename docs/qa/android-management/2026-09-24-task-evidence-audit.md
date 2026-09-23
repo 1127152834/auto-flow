@@ -79,9 +79,9 @@
 | <a id="t11"></a>T11 | `blocked` | [GApps](gapps-validation.md)：缺专用镜像/账号/商店下载链；本地 APK 已可用，不能再称测试 APK 缺失。 |
 | <a id="t12"></a>T12 | `not_run` | 基础镜像/模板链已验；[可启动自定义候选](2026-09-24-custom-image.md)及固定ID重启/备份恢复/引用阻删通过；阶段回退演练及历史RED缺证仍未关闭。 |
 | <a id="t13"></a>T13 | `passed` | [真实批次](2026-09-24-bulk-failure-cancel.md)部分失败、修订冲突重试、容量取消通过；[真实容器消失失败与回执前强杀](2026-09-24-bulk-runtime-fault.md)补足恢复后重试、未知项不重放及重启后核实。 |
-| <a id="t14"></a>T14 | `not_run` | [五台/双预览](2026-09-23-final-review-remediation.md)通过；后台探测次数、隐藏页面同链与前台延迟未记录完整。 |
+| <a id="t14"></a>T14 | `not_run` | [五台/双预览](2026-09-23-final-review-remediation.md)通过；[1/5台后台观察](2026-09-24-observation.md)已记录计数/间隔/停机降频，隐藏页批次GET暂停已补RED→GREEN；桌面隐藏页面同链与前台延迟仍blocked。 |
 | <a id="t15"></a>T15 | `not_run` | [真实 APK 动作](2026-09-23-am1-real-control-retention.md)及[跨重建版本核实](2026-09-24-final-branch-review.md)通过；[真实覆盖安装执行中断](2026-09-24-app-interruption.md)与数据保留已验；[桌面确认、执行与备份恢复](2026-09-24-desktop-apps-layout.md)已验；本轮焦点增量有RED→GREEN，但原后端步骤历史RED缺证仍保留。 |
-| <a id="t16"></a>T16 | `not_run` / 十台 `blocked` | 1/5 台 API、双实例隔离有证据；[7921 MiB < 8192 MiB](2026-09-24-advanced-logs-and-capacity.md)阻塞十台，其他规模缺的前台/探测指标仍可继续。 |
+| <a id="t16"></a>T16 | `not_run` / 十台 `blocked` | 1/5 台 API、双实例隔离有证据；[7921 MiB < 8192 MiB](2026-09-24-advanced-logs-and-capacity.md)阻塞十台，[1/5台API/内存/后台计数](2026-09-24-observation.md)已补；真实桌面前台/隐藏页受Mac锁屏blocked。 |
 | <a id="t17"></a>T17 | `passed`（已列功能） | [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)补足 AC19；归档/权限/摘要/发布回归通过。[传输中进程树 SIGKILL](2026-09-24-restore-cancel-and-disk-full.md)已补；真实权限拒绝仍作扩展故障 `not_run`。 |
 | <a id="t18"></a>T18 | `passed`（已列功能） | [新卷属性读回](2026-09-23-persistent-metadata-verification.md)与[写入后硬中断](2026-09-23-restore-hard-interruption-verification.md)通过；[真实解包中 SIGKILL](2026-09-24-restore-transfer-interruption.md)已验；[目标 ENOSPC/取消恢复](2026-09-24-restore-cancel-and-disk-full.md)已验，源与备份保留，进程树回收通过。 |
 | <a id="t19"></a>T19 | `passed`（已列功能） | [真实清理](2026-09-23-cleanup-verification.md)、[高级诊断](2026-09-24-advanced-logs-and-capacity.md)通过；[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验；无归属记录的旧文件保持排除，不据此推断可删除。 |

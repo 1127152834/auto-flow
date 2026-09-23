@@ -11,7 +11,7 @@ import type { ManagementDevicePage } from '../management-api'
 
 const device: ManagementDevicePage['items'][number] = { deviceId: 'd1', revision: 2, name: '设备一', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start', 'stop', 'restart', 'delete'], blockedReasons: {} }
 
-afterEach(() => { cleanup(); vi.useRealTimers() })
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks() })
 
 it('freezes selected revisions when submitting a bulk action', async () => {
   const bulk = vi.fn(async (body: Record<string, unknown>) => ({ id: 'b', requestId: body.requestId as string, action: 'start', deleteData: false, state: 'queued', items: [], createdAt: '' }))
@@ -38,6 +38,30 @@ it('reads active batch progress through to its terminal state without replaying 
   expect(screen.getByLabelText('批次结果')).toHaveTextContent('succeeded')
   await act(async () => { await vi.advanceTimersByTimeAsync(9000) })
   expect(bulkStatus).toHaveBeenCalledTimes(2)
+  expect(bulk).toHaveBeenCalledTimes(1)
+  expect(bulkAction).not.toHaveBeenCalled()
+})
+
+it('pauses new batch status reads while the page is hidden and resumes without replaying actions', async () => {
+  vi.useFakeTimers()
+  const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
+  const running = { id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ deviceId: 'd1', state: 'queued' }], createdAt: '' }
+  const bulk = vi.fn().mockResolvedValue(running)
+  const bulkStatus = vi.fn().mockResolvedValue({ ...running, state: 'succeeded', items: [{ deviceId: 'd1', state: 'succeeded' }] })
+  const bulkAction = vi.fn()
+  render(<BulkActions api={{ bulk, bulkStatus, bulkAction }} devices={[device]} />)
+  fireEvent.click(screen.getByLabelText('设备一'))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
+  visibility.mockReturnValue('hidden')
+  act(() => { document.dispatchEvent(new Event('visibilitychange')) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(15000) })
+  expect(bulkStatus).not.toHaveBeenCalled()
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('running')
+  visibility.mockReturnValue('visible')
+  act(() => { document.dispatchEvent(new Event('visibilitychange')) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+  expect(bulkStatus).toHaveBeenCalledTimes(1)
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('succeeded')
   expect(bulk).toHaveBeenCalledTimes(1)
   expect(bulkAction).not.toHaveBeenCalled()
 })

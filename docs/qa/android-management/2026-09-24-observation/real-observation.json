@@ -1,0 +1,298 @@
+{
+  "status": "passed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-observation-real-z3gflinj",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "measurements": [
+    {
+      "scale": 1,
+      "windowSeconds": 18.0011,
+      "configuration": {
+        "memoryMbEach": 1024,
+        "cpuEach": 1
+      },
+      "apiSamples": 20,
+      "apiMinMs": 2.541,
+      "apiMedianMs": 2.973,
+      "apiP95Ms": 6.177,
+      "apiMaxMs": 8.903,
+      "inlineInspectCount": 0,
+      "observerCallsAfterClientReadsStop": 4,
+      "observerCadence": {
+        "273893c2-7352-4d8d-b0eb-0cda734ea853": {
+          "count": 5,
+          "startIntervalsSeconds": [
+            3.3318,
+            3.2503,
+            3.2305,
+            3.2557
+          ],
+          "durationsSeconds": [
+            0.3271,
+            0.2459,
+            0.2256,
+            0.2515,
+            0.5128
+          ]
+        }
+      },
+      "allProbeSources": {
+        "android-observations": 5
+      },
+      "dockerMemory": [
+        {
+          "BlockIO": "848kB / 17.9MB",
+          "CPUPerc": "2.30%",
+          "Container": "1e02972974bb0caa6852754896d2d23c3c503f1c6e7d19b77f0ef8b8603da7e2",
+          "ID": "1e02972974bb",
+          "MemPerc": "61.24%",
+          "MemUsage": "627.1MiB / 1GiB",
+          "Name": "autoflow-android-273893c2-7352-4d8d-b0eb-0cda734ea853",
+          "NetIO": "25.3kB / 15.8kB",
+          "PIDs": "1121"
+        }
+      ]
+    },
+    {
+      "scale": 5,
+      "windowSeconds": 18.001,
+      "configuration": {
+        "memoryMbEach": 1024,
+        "cpuEach": 1
+      },
+      "apiSamples": 20,
+      "apiMinMs": 2.808,
+      "apiMedianMs": 3.507,
+      "apiP95Ms": 12.495,
+      "apiMaxMs": 14.554,
+      "inlineInspectCount": 0,
+      "observerCallsAfterClientReadsStop": 15,
+      "observerCadence": {
+        "273893c2-7352-4d8d-b0eb-0cda734ea853": {
+          "count": 4,
+          "startIntervalsSeconds": [
+            4.1633,
+            4.1653,
+            4.1796
+          ],
+          "durationsSeconds": [
+            0.2426,
+            0.2295,
+            0.2656,
+            0.2673
+          ]
+        },
+        "ce8cd51a-a885-4c5e-9fc9-7a1f4746a829": {
+          "count": 4,
+          "startIntervalsSeconds": [
+            4.1511,
+            4.2004,
+            4.1813
+          ],
+          "durationsSeconds": [
+            0.2303,
+            0.2304,
+            0.2132,
+            0.2333
+          ]
+        },
+        "bb8e3982-7ee1-4f4b-a729-9941373ee819": {
+          "count": 4,
+          "startIntervalsSeconds": [
+            4.1514,
+            4.1842,
+            4.2004
+          ],
+          "durationsSeconds": [
+            0.2175,
+            0.2215,
+            0.2261,
+            0.2115
+          ]
+        },
+        "0e1363d3-2d5f-446c-b300-a062c710982f": {
+          "count": 4,
+          "startIntervalsSeconds": [
+            4.1564,
+            4.1894,
+            4.1851
+          ],
+          "durationsSeconds": [
+            0.2278,
+            0.2403,
+            0.2329,
+            0.223
+          ]
+        },
+        "8ababb65-e1f6-46f4-9ed0-92ade19b67f3": {
+          "count": 4,
+          "startIntervalsSeconds": [
+            4.1679,
+            4.1824,
+            4.1762
+          ],
+          "durationsSeconds": [
+            0.2274,
+            0.2263,
+            0.2207,
+            0.2239
+          ]
+        }
+      },
+      "allProbeSources": {
+        "android-observations": 20
+      },
+      "dockerMemory": [
+        {
+          "BlockIO": "848kB / 30.4MB",
+          "CPUPerc": "0.54%",
+          "Container": "1e02972974bb0caa6852754896d2d23c3c503f1c6e7d19b77f0ef8b8603da7e2",
+          "ID": "1e02972974bb",
+          "MemPerc": "58.00%",
+          "MemUsage": "593.9MiB / 1GiB",
+          "Name": "autoflow-android-273893c2-7352-4d8d-b0eb-0cda734ea853",
+          "NetIO": "62.5kB / 18.9kB",
+          "PIDs": "1038"
+        },
+        {
+          "BlockIO": "4.1kB / 36MB",
+          "CPUPerc": "0.59%",
+          "Container": "647f44ef648844852e4ef8ddd36137ca7282fa247ba40748d04529e13a3f34d2",
+          "ID": "647f44ef6488",
+          "MemPerc": "58.14%",
+          "MemUsage": "595.4MiB / 1GiB",
+          "Name": "autoflow-android-ce8cd51a-a885-4c5e-9fc9-7a1f4746a829",
+          "NetIO": "51.9kB / 18.8kB",
+          "PIDs": "1122"
+        },
+        {
+          "BlockIO": "0B / 41.5MB",
+          "CPUPerc": "0.06%",
+          "Container": "1b2549f61b033b1becfb8c7cfb20ecdfb8c75de4a5824aacb71f9cb42f19fde9",
+          "ID": "1b2549f61b03",
+          "MemPerc": "57.69%",
+          "MemUsage": "590.7MiB / 1GiB",
+          "Name": "autoflow-android-bb8e3982-7ee1-4f4b-a729-9941373ee819",
+          "NetIO": "45.8kB / 17.7kB",
+          "PIDs": "1119"
+        },
+        {
+          "BlockIO": "0B / 30.2MB",
+          "CPUPerc": "0.17%",
+          "Container": "8c81716ded655c480b818fa05906494eb7942c4c573c4603e5933d6de40bba8f",
+          "ID": "8c81716ded65",
+          "MemPerc": "58.85%",
+          "MemUsage": "602.7MiB / 1GiB",
+          "Name": "autoflow-android-0e1363d3-2d5f-446c-b300-a062c710982f",
+          "NetIO": "38.4kB / 17.4kB",
+          "PIDs": "1115"
+        },
+        {
+          "BlockIO": "0B / 31MB",
+          "CPUPerc": "1.60%",
+          "Container": "e6e6c908f4c4088ad4d418ccb52f971d47cdd11658b17bb6ae5f51244276bd36",
+          "ID": "e6e6c908f4c4",
+          "MemPerc": "60.92%",
+          "MemUsage": "623.8MiB / 1GiB",
+          "Name": "autoflow-android-8ababb65-e1f6-46f4-9ed0-92ade19b67f3",
+          "NetIO": "31.5kB / 16.6kB",
+          "PIDs": "1115"
+        }
+      ]
+    }
+  ],
+  "cleanup": [
+    {
+      "deviceId": "273893c2-7352-4d8d-b0eb-0cda734ea853",
+      "state": "missing"
+    },
+    {
+      "deviceId": "ce8cd51a-a885-4c5e-9fc9-7a1f4746a829",
+      "state": "missing"
+    },
+    {
+      "deviceId": "bb8e3982-7ee1-4f4b-a729-9941373ee819",
+      "state": "missing"
+    },
+    {
+      "deviceId": "0e1363d3-2d5f-446c-b300-a062c710982f",
+      "state": "missing"
+    },
+    {
+      "deviceId": "8ababb65-e1f6-46f4-9ed0-92ade19b67f3",
+      "state": "missing"
+    }
+  ],
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "twoRealPreviews": {
+    "bytes": [
+      654581,
+      654581
+    ],
+    "elapsedSeconds": 0.9104,
+    "note": "Two direct real HTTP requests; frontend concurrency ceiling is separately tested."
+  },
+  "stoppedCadence": {
+    "windowSeconds": 45.0013,
+    "devices": {
+      "273893c2-7352-4d8d-b0eb-0cda734ea853": {
+        "count": 3,
+        "startIntervalsSeconds": [
+          15.8331,
+          15.8086
+        ],
+        "durationsSeconds": [
+          0.1629,
+          0.1662,
+          0.1488
+        ]
+      },
+      "ce8cd51a-a885-4c5e-9fc9-7a1f4746a829": {
+        "count": 3,
+        "startIntervalsSeconds": [
+          15.833,
+          15.8208
+        ],
+        "durationsSeconds": [
+          0.1602,
+          0.1627,
+          0.1558
+        ]
+      },
+      "bb8e3982-7ee1-4f4b-a729-9941373ee819": {
+        "count": 3,
+        "startIntervalsSeconds": [
+          15.8333,
+          15.8014
+        ],
+        "durationsSeconds": [
+          0.1574,
+          0.1528,
+          0.1637
+        ]
+      },
+      "0e1363d3-2d5f-446c-b300-a062c710982f": {
+        "count": 3,
+        "startIntervalsSeconds": [
+          15.8359,
+          15.7923
+        ],
+        "durationsSeconds": [
+          0.1301,
+          0.1303,
+          0.1402
+        ]
+      },
+      "8ababb65-e1f6-46f4-9ed0-92ade19b67f3": {
+        "count": 2,
+        "startIntervalsSeconds": [
+          15.8218
+        ],
+        "durationsSeconds": [
+          0.1664,
+          0.1697
+        ]
+      }
+    }
+  }
+}

@@ -16,6 +16,7 @@ export function BulkActions({ api, devices }: { api: Pick<AndroidManagementApi, 
     let timer: number
     const poll = async () => {
       try {
+        if (document.visibilityState === 'hidden') return
         const next = await read(batchId, controller.signal)
         if (!disposed) { setResult(next); setStatusUnavailable(false) }
       } catch {

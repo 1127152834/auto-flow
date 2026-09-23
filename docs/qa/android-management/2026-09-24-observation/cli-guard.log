@@ -1,0 +1,2 @@
+usage: observation-smoke.py [-h] [--allow-device-mutation] --output OUTPUT
+observation-smoke.py: error: --allow-device-mutation is required for owned real test devices
