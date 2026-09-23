@@ -9,3 +9,5 @@
 边界：一条失败命令直接走错误边；不证明配置自动重试、有限多记录组原子提交、打包/原生三平台或Google实网。DATA-WRITE-12仍partially_verified。CI选择纳入real_opposing_writes，当前35895754111不包含新增测试；待新候选一次验证。源码51e8991e串行完整3487/79skip已通过，新增测试单独执行，不冒充该次完整收集的一部分。releaseAccepted=false。
 
 CI命令按实际工作流提取并collect-only确认32/43选择、11排除；不是32项执行通过。新增测试的语法/Ruff、251引用和4项映射检查通过。
+
+最新原生验证：本机候选与测试补证稳定后，单次发起35902129697，实际headSha=a317e1f87c9b775940a8faa45713c884007ce6ad，生产仍51e8991e，三平台in_progress。此前等待旧矩阵全部结束的安排被这次不同源码的一次必要验证取代；旧35895754111继续，ARM job已success，Windows/Intel仍在跑，不取消或重跑旧job。旧ARM日志需整run结束才能读取，不据job状态编造测试计数。

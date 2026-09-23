@@ -30,5 +30,15 @@
     "Windows/Intel and packaged same-scenario evidence pending; selected for next native CI, not included in active35895754111",
     "Full source51e8991e serial backend3487/79skip predates this added test collection; this test was executed separately"
   ],
-  "testSha256": "43df276cf80728d34547b20fb11259586df7369ff8187089a2981a44c28d9865"
+  "testSha256": "43df276cf80728d34547b20fb11259586df7369ff8187089a2981a44c28d9865",
+  "testCandidate": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+  "ci": {
+    "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
+    "testAndHarnessCandidate": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+    "runId": "35902129697",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35902129697",
+    "status": "in_progress",
+    "report": "source-outage-follow-through.json",
+    "scope": "New stable source and both supplemental real-worker cases; single three-platform dispatch. Prior matrix continues without cancellation."
+  }
 }

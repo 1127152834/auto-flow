@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "local_full_and_packaged_passed_native_followup_pending",
+  "status": "local_full_and_packaged_passed_current_three_platform_in_progress",
   "releaseAccepted": false,
   "requirement": "DATA-CLAIM-09",
   "parentCommit": "6c1167cd47039987d3f03697dc8b50261b00d497",
@@ -107,10 +107,13 @@
     "HTTP then exposed mistaken assumption that sync-operations lists pulls; corrected production state latestPull and frontend test payload to actual endpoint responsibility; final HTTP passed"
   ],
   "ci": {
-    "runId": "35895754111",
-    "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69",
+    "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
+    "testAndHarnessCandidate": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+    "runId": "35902129697",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35902129697",
     "status": "in_progress",
-    "scope": "prior production69baeeb2 plus harness; does not validate this source-outage production change"
+    "report": "source-outage-follow-through.json",
+    "scope": "New stable source and both supplemental real-worker cases; single three-platform dispatch. Prior matrix continues without cancellation."
   },
   "remaining": [
     "Same packaged UI + live Google source-outage scenario needs authorized resource; controlled transport is not internet acceptance",
@@ -137,5 +140,17 @@
     ".tmp-tests/pm9-source-outage-2026-09-24/frontend-full.log": "27af81c45dcf5102225a1010d47c8bbf03ee5cca29c41d1f44d7d4e89adf6d54",
     ".tmp-tests/pm9-source-outage-2026-09-24/targeted-real-worker.log": "612f3488b0addb9d2874c0f32edad1de449e4df3c1e60b2e4eefd287f134fa03",
     ".tmp-tests/pm9-source-outage-2026-09-24/process-boundaries-recheck.log": "5729eb149f48c2948672de5db697d9fe1ccdd76abd2cce3b61b9c98aafc0dec9"
-  }
+  },
+  "priorCi": {
+    "runId": "35895754111",
+    "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69",
+    "status": "in_progress",
+    "scope": "prior production69baeeb2 plus harness; does not validate this source-outage production change",
+    "platforms": {
+      "darwin-arm64": "success (job metadata); whole-run logs unavailable until other jobs finish",
+      "darwin-x64": "in_progress",
+      "win32-x64": "in_progress"
+    }
+  },
+  "dispatchDecision": "After stable local full regression and test supplement, dispatch new code once while prior matrix continues. Earlier wait-for-prior-matrix plan superseded; different source and new assertions require their own run, no active run cancelled or same-source rerun."
 }

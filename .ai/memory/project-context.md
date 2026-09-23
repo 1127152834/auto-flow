@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-24 最新CI（confirmed调度，验收pending）：已推送a317e1f8，实际新矩阵35902129697同headSha、生产51e8991e，包含断网与反向写两个新增真实worker案例，三平台in_progress。旧35895754111@25bb8ab2继续，ARM job107299145250已success，Windows/Intel仍运行。新候选稳定后单次调度，取代此前等待旧矩阵全部结束的安排，无取消、无相同源码重复。PR仍草稿、releaseAccepted=false。
+
 2026-09-24 DATA-WRITE-12补证（confirmed子范围）：新增两真实worker固定A/B先写，再反向query/update均LEASE_BUSY进入人工错误分支；冻结原输入v1、当前值/游标v2、双方lease及A/B两条pending意图不变，stop后释放。最终1项12.89秒通过；首次未声明筛选字段422夹具问题保留并改用既有fixedRecord。无生产改动，仍51e8991e；CI选择32/43包含本轮两新增案例。组原子性/配置重试/打包/Windows/Intel仍待验，opposing-writes-follow-through.json。
 
 2026-09-24 来源断网切片（confirmed 定向/打包，本机完整复验通过、原生后续未收口；supersedes 下文“当前”候选）：生产51e8991e、证据669c01c0已推送草稿PR #1。lastPulledAt/latestPull修复来源拉取卡从出站列表推断拉取的错误；受控Google断网可靠缓存真实worker成功、重复身份后再断网零Task通过。全前端5474/409、102脚本、4映射/251引用、类型/lint/OpenAPI/构建和新ARM完整桌面22截图通过。首轮全后端3483通过/79跳过/4项进程时限失败保留，原样6项复查通过，串行全量3487通过/79跳过（836.98秒）；不据复跑推断根因修复。旧矩阵35895754111@25bb8ab2仍在运行，不包含51e8991e生产修复。详见source-outage-follow-through.json。251条249有断言/2未定位，206partial/45planned/0verified；releaseAccepted=false。

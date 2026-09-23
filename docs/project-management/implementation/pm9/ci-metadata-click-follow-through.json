@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "original_three_failures_retained_followup_in_progress",
+  "status": "original_failures_retained_followup_arm_success_others_running",
   "releaseAccepted": false,
   "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
   "runId": "35886627514",
@@ -32,7 +32,20 @@
     "scope": "All three original jobs are terminal failures. One new matrix will validate updated harness and supplemental assertions; production remains69baeeb2. No live job cancelled and no stale-code retry.",
     "runId": "35895754111",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
-    "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69"
+    "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69",
+    "platforms": {
+      "darwin-arm64": {
+        "status": "success",
+        "jobId": "107299145250",
+        "scope": "Job terminal success including prior failing packaged desktop; exact counts/artifacts await whole-run log availability."
+      },
+      "darwin-x64": {
+        "status": "in_progress"
+      },
+      "win32-x64": {
+        "status": "in_progress"
+      }
+    }
   },
   "platforms": {
     "darwin-arm64": "failure: required URL guidance; metadata API assertions passed and screenshot node unselected",

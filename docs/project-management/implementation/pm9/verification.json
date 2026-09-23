@@ -1,12 +1,12 @@
 {
   "date": "2026-09-24",
-  "status": "source_outage_local_full_and_packaged_passed_native_followup_pending",
+  "status": "source_outage_local_passed_current_three_platform_in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "DATA-CLAIM-09 source outage: current binding successful read time and separate latest pull state implemented; controlled-Google real worker reliable-cache success and invalid-identity zero-Task refusal passed. Local frontend5474/409, scripts102, types/lint/OpenAPI/build and full ARM desktop22screens passed. Initial full backend3483 passed/79 skipped/4 process timing failures retained; unchanged isolated6 and serial full3487 passed/79 skipped; original failures and unknown cause retained. Prior CI35895754111@25bb8ab2 excludes this production change. See source-outage-follow-through.json; releaseAccepted=false.",
+    "DATA-CLAIM-09 source outage: current binding successful read time and separate latest pull state implemented; controlled-Google real worker reliable-cache success and invalid-identity zero-Task refusal passed. Local frontend5474/409, scripts102, types/lint/OpenAPI/build and full ARM desktop22screens passed. Initial full backend3483 passed/79 skipped/4 process timing failures retained; unchanged isolated6 and serial full3487 passed/79 skipped; original failures and unknown cause retained. Prior CI35895754111@25bb8ab2 excludes this production change. See source-outage-follow-through.json; releaseAccepted=false. Current new matrix35902129697@a317e1f8 includes source51e8991e and the two new real-worker cases; in progress. Prior25bb8ab2 ARM job succeeded, other two remain running.",
     "Current69baeeb2 CI35886627514 completed with three failures in packaged desktop harness: both Macs required-URL guidance (metadata API passed, screenshots node unselected); Windows loaded compact reopened Studio but text readiness failed. Covered-target click RED→GREEN and viewport/panel restoration diagnosis recorded; final full local ARM desktop with compact viewport regression passed; new matrix35895754111 @25bb8ab2 queued; production remains69baeeb2. Supplemental parallel packaged API and ARM desktop passed; no release acceptance.",
     "ARM packaged Profile/root-document freeze passed with actual browser seed observations old/old/new; full ARM desktop smoke also passed. Proxy candidate/endpoints are confirmed implementation gaps, P1–P3 proposed awaiting approval. Added script assertions are supplemental, absent from running69baeeb2 CI35886627514; releaseAccepted=false.",
     "Supplemental ARM packaged public-HTTP subflow freeze/isolation/End association, parent stop at child checkpoint and narrowed child field permission all passed, including full desktop smoke. Production remains69baeeb2; additional script assertions are not in current35886627514. Full Profile/proxy/asset combinations and Windows/Intel same-scenario packaged evidence remain open. Ledger statuses unchanged.",
@@ -536,9 +536,12 @@
   "resourceFreezeFollowThrough": "resource-freeze-follow-through.json",
   "currentCICandidate": {
     "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
-    "status": "not_started_waiting_previous_matrix",
+    "testAndHarnessCandidate": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+    "runId": "35902129697",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35902129697",
+    "status": "in_progress",
     "report": "source-outage-follow-through.json",
-    "scope": "No prior CI result validates this new source-outage production change."
+    "scope": "New stable source and both supplemental real-worker cases; single three-platform dispatch. Prior matrix continues without cancellation."
   },
   "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json",
   "sourceOutageFollowThrough": {
@@ -554,7 +557,12 @@
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
     "status": "in_progress",
     "report": "ci-metadata-click-follow-through.json",
-    "previousRun": "35886627514: all three packaged desktop jobs failed; preserved, not accepted"
+    "previousRun": "35886627514: all three packaged desktop jobs failed; preserved, not accepted",
+    "platforms": {
+      "darwin-arm64": "success; job107299145250",
+      "darwin-x64": "in_progress",
+      "win32-x64": "in_progress"
+    }
   },
   "opposingWritesFollowThrough": {
     "status": "local_real_two_workers_passed",
