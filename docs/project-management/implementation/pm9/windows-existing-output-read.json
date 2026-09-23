@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-23",
+  "status": "windows_native_read_passed_final_candidate_pending",
+  "releaseAccepted": false,
+  "scope": "S4 existing ordinary-file read for Base64 input and Excel pre-read; existing-file overwrite and append remain refused with 501.",
+  "codeCandidate": "2fe33528d211022855bb7f91840a0ba992954e25",
+  "implementation": "Validate Windows path, pin each parent directory without delete sharing, open the existing target with FILE_FLAG_OPEN_REPARSE_POINT and read-only sharing, reject reparse/non-file/final-path mismatch, read in binary mode, and compare handle/path identity after reading. Shared size, cancellation and conflict checks remain in WorkflowArtifactStore.",
+  "checks": {
+    "local": "test_workflow_artifacts.py: 33 passed, 17 Windows-only skipped; Ruff passed; mypy passed for 407 source files. A later cancellation-before-open assertion is included in the final candidate, not in this native run.",
+    "windowsNative": {
+      "runId": "35829751668",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35829751668",
+      "headSha": "2fe33528d211022855bb7f91840a0ba992954e25",
+      "result": "102 passed, 28 skipped in 21.68s",
+      "specific": [
+        "test_native_windows_reads_existing_output_without_following_reparse_points passed: binary content, missing file, size limit, held-target delete/write denial, held-parent rename denial, junction rejection.",
+        "test_actual_windows_worker_reads_existing_binary_output passed: production worker Base64 node read the existing PNG bytes."
+      ]
+    }
+  },
+  "limits": [
+    "This scoped native job did not run the three-platform full regression or packaged desktop chain for the new code.",
+    "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement.",
+    "Physical Windows installation, native dialogs, current packaged Sheets/OAuth and signing remain separate acceptance conditions."
+  ]
+}

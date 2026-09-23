@@ -891,6 +891,7 @@ class WorkflowArtifactStore:
             raise WorkflowRunError(
                 "ARTIFACT_SIZE_INVALID", "读取容量限制必须为正数", 422
             )
+        self._raise_if_cancelled(cancellation)
         if sys.platform == "win32":
             from .windows_output import output_target, pinned_parent, readable_output
 
@@ -903,7 +904,6 @@ class WorkflowArtifactStore:
                 )
         target, directory_fd = self._open_output_parent(run_id, output_path)
         try:
-            self._raise_if_cancelled(cancellation)
             try:
                 descriptor = os.open(
                     target.name,

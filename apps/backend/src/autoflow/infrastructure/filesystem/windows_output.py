@@ -161,7 +161,7 @@ def readable_output(target: Path):
         ):
             raise _invalid()
         descriptor = msvcrt.open_osfhandle(  # type: ignore[attr-defined]
-            handle, os.O_RDONLY | os.O_BINARY
+            handle, os.O_RDONLY | getattr(os, "O_BINARY", 0)
         )
     except BaseException:
         kernel.CloseHandle(handle)

@@ -25,7 +25,7 @@ from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifa
 
 requires_posix_output = pytest.mark.skipif(
     sys.platform == "win32",
-    reason="Native Windows workflow output is unsupported; refusal is tested separately",
+    reason="Native Windows existing-file overwrite/append is unsupported",
 )
 
 
@@ -1370,6 +1370,17 @@ async def test_native_windows_reads_existing_output_without_following_reparse_po
     with pytest.raises(WorkflowRunError) as too_large:
         await writer.read_binary_output(output_path='input.bin', max_bytes=len(content) - 1)
     assert too_large.value.code == 'ARTIFACT_TOO_LARGE'
+
+    class Cancelled:
+        def raise_if_cancelled(self):
+            raise asyncio.CancelledError()
+
+    cancelled_writer = store.writer(
+        run_id='run-artifacts', node_id='read', execution_id='cancelled',
+        purpose='result', cancellation=Cancelled(),
+    )
+    with pytest.raises(asyncio.CancelledError):
+        await cancelled_writer.read_binary_output(output_path='input.bin', max_bytes=100)
 
     with pinned_parent(target), readable_output(target) as descriptor:
         assert descriptor is not None
