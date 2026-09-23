@@ -12613,7 +12613,13 @@
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-file-watcher-trigger.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-file-watcher-trigger.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/file-watcher-2026-09-24/README.md",
+        "boundary": "复用原版文件监控算法，真实项目worker创建/修改/删除/超时/停止/缺失路径；开发及macOS arm64目录包真实UI编排、保存、文件事件和停止通过。无需浏览器；Windows/Intel及用户数据库未验收。"
+      }
     }
   },
   {

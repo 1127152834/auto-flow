@@ -31,6 +31,7 @@ _RUNNABLE_MODULES = (
     ("extract_table_data", "提取表格数据"),
     ("api_request", "HTTP请求"),
     ("api_trigger", "API触发器"),
+    ("file_watcher_trigger", "文件监控触发器"),
     ("webhook_request", "Webhook请求"),
     ("notify_webhook", "Webhook通知"),
     ("wait", "等待"),

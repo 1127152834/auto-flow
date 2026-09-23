@@ -1,0 +1,33 @@
+{
+  "evidenceId": "BE-project-file-watcher-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T20:29:15.460Z",
+  "gitHead": "3c5cd15e156ba23beea697b40ee72c0b52766e20",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "72e7f538-0aeb-41b9-936f-254d3d93a5a2",
+  "workflowId": "Me0UQoRAU3sSg2dcLTtIS",
+  "tasks": [
+    {
+      "action": "created",
+      "batchId": "2ed40ea5-e06e-4949-bf97-9d84f033a311",
+      "taskId": "06a73447-97a9-4b55-9496-1e011b736270"
+    },
+    {
+      "action": "stop",
+      "batchId": "20ed683d-36ea-4490-8e89-9efffa7e8984",
+      "taskId": "f08ed774-7186-4a56-9141-7fe0f2f9a8b6"
+    }
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 编排监控路径、文件模式、输出变量和后继日志，保存后正常关闭",
+    "项目真实文件事件持久化并执行后继日志，通配符排除无关文件；再次运行经真实 UI 停止且无后继输出"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal UI mouse/keyboard; filesystem events are local fixtures; API setup and evidence reads only"
+  }
+}

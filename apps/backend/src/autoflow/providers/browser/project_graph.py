@@ -297,6 +297,8 @@ class ProjectGraphExecutor:
                 name = config.get('variableName')
             if data['moduleType'] == 'api_trigger':
                 name = config.get('saveToVariable', 'api_request')
+            if data['moduleType'] == 'file_watcher_trigger':
+                name = config.get('saveToVariable', 'file_event')
             if data['moduleType'] == 'webhook_request':
                 name = None
             if data['moduleType'] == 'page_load_complete':
