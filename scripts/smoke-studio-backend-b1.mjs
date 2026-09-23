@@ -166,10 +166,35 @@ try {
   if (projectMode) assert.equal(saved.projectId, projectId)
   checkpoint('正式保存经真实 HTTP 写入 SQLite，返回修订 1')
 
+  if (process.env.AUTOFLOW_B1_HOTKEYS === '1') {
+    assert.equal(process.platform, 'darwin')
+    await click(studio, '更多操作')
+    await click(studio, '全局配置', '[role="menuitem"]')
+    await click(studio, '', '[aria-label="保存工作流快捷键"]')
+    await press(studio, 'F9', {code:'F9',keyCode:120,modifiers:3})
+    await waitFor(studio, "document.querySelector('[aria-label=\"保存工作流快捷键\"]')?.value === 'Ctrl+Alt+F9'", 'shortcut configured by keyboard')
+    await waitForValue(() => native.evaluate("qaElectron.globalShortcut.isRegistered('Control+Alt+F9')"), 'native shortcut registered')
+    await click(studio, '关闭全局配置')
+    for (const background of [false, true]) {
+      await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[0])}]`)
+      await setInput(studio, '[placeholder="https://example.com"]', background ? pageUrl : `${pageUrl}#hotkey`)
+      const previous = (await api(runtime, `/workflows/${saved.id}`)).revision
+      const titleTest = background ? "!w.getTitle().includes('工作流工作台')" : "w.getTitle().includes('工作流工作台')"
+      await native.evaluate(`(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>${titleTest});qaElectron.app.focus({steal:true});w.show();w.focus();return true})()`)
+      await wait(200)
+      execFileSync('osascript', ['-e', 'tell application "System Events" to key code 101 using {control down, option down}'])
+      await waitForValue(async () => (await api(runtime, `/workflows/${saved.id}`)).revision === previous + 1, 'native save applied exactly once')
+      await wait(600)
+      assert.equal((await api(runtime, `/workflows/${saved.id}`)).revision, previous + 1)
+    }
+    checkpoint('设置界面真实按键绑定快捷键，macOS系统按键前台/后台各保存一次，无本地重复触发')
+  }
+
   if (projectTaskMode) {
     await closeWindowThroughOs(desktop.child.pid)
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
+    if (process.env.AUTOFLOW_B1_HOTKEYS === '1') assert.equal(await native.evaluate("qaElectron.globalShortcut.isRegistered('Control+Alt+F9')"), false)
     studio = await openStudioFromMain(main, desktop.debugOrigin)
     await waitFor(studio, "document.body?.innerText.includes('模块库')", 'project workflow reopen', 30_000)
     if (!await studio.evaluate("document.querySelectorAll('.react-flow__node').length === 5")) {
@@ -178,6 +203,18 @@ try {
     }
     await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 5", 'five nodes restored')
     assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__edge').length"), 4)
+    if (process.env.AUTOFLOW_B1_HOTKEYS === '1') {
+      await waitForValue(() => native.evaluate("qaElectron.globalShortcut.isRegistered('Control+Alt+F9')"), 'saved shortcut restored on reopen')
+      const revision = (await api(runtime, `/workflows/${saved.id}`)).revision
+      await wait(500)
+      assert.equal((await api(runtime, `/workflows/${saved.id}`)).revision, revision)
+      await click(studio, '更多操作')
+      await click(studio, '全局配置', '[role="menuitem"]')
+      await click(studio, '清除保存工作流快捷键')
+      await waitForValue(async () => !await native.evaluate("qaElectron.globalShortcut.isRegistered('Control+Alt+F9')"), 'clear unregisters native shortcut')
+      await click(studio, '关闭全局配置')
+      checkpoint('正常关窗注销原生键；重开恢复配置但不重放保存；实际点击清除后注销')
+    }
     await closeWindowThroughOs(desktop.child.pid)
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)

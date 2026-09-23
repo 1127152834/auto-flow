@@ -44,6 +44,7 @@ export function useStudioIntegration() {
     }
   },[])
   const hotkeyError = useRef<string | null>(null)
+  const nativeShortcuts = useRef(new Set<string>())
   const shortcuts=useGlobalConfigStore(s=>s.config.shortcuts)
   const theme=useGlobalConfigStore(s=>s.config.display?.theme || 'default')
   useEffect(()=>{
@@ -91,6 +92,7 @@ export function useStudioIntegration() {
       const target=event.target
       if(target instanceof Element && target.closest('input,textarea,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))return
       const combo=eventToCombo(event)
+      if(nativeShortcuts.current.has(combo))return
       const id=Object.entries(shortcuts || {}).find(([,value])=>value===combo)?.[0]
       if(event.repeat)return
       if(id && SHORTCUT_ACTION_MAP[id]){event.preventDefault();SHORTCUT_ACTION_MAP[id].run()}
@@ -108,6 +110,8 @@ export function useStudioIntegration() {
         const result = await systemApi.setCustomHotkeys(shortcuts || {})
         if (!isCurrent()) return
         if (!result.success) throw new Error(result.error || '服务未确认注册')
+        nativeShortcuts.current = window.autoflow?.setStudioHotkeys
+          ? new Set(Object.values(shortcuts || {}).filter(Boolean)) : new Set()
         if (hotkeyError.current) {
           useWorkflowStore.getState().addLog({ level: 'info', message: '全局快捷键注册已恢复' })
           hotkeyError.current = null
@@ -129,6 +133,9 @@ export function useStudioIntegration() {
     }
   }, [shortcuts])
   useEffect(() => {
+    const unsubscribeNative = window.autoflow?.onStudioHotkey?.(actionId => {
+      if (Object.hasOwn(SHORTCUT_ACTION_MAP, actionId)) SHORTCUT_ACTION_MAP[actionId].run()
+    })
     const handler = (event: Event) => {
       const actionId: unknown = (event as CustomEvent<{ actionId?: unknown }>).detail?.actionId
       if (typeof actionId === 'string' && Object.hasOwn(SHORTCUT_ACTION_MAP, actionId)) {
@@ -136,7 +143,7 @@ export function useStudioIntegration() {
       }
     }
     window.addEventListener('hotkey:custom_action', handler)
-    return () => window.removeEventListener('hotkey:custom_action', handler)
+    return () => { unsubscribeNative?.(); window.removeEventListener('hotkey:custom_action', handler) }
   }, [])
 
 }

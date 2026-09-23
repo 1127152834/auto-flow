@@ -29,6 +29,37 @@ beforeEach(() => {
   useGlobalConfigStore.setState(state => ({ config: { ...state.config, shortcuts: { run_workflow: 'Alt+R' } } }))
 })
 afterEach(cleanup)
+it('uses native live actions once, suppresses duplicate local keys, and unsubscribes', async () => {
+  const previous = window.autoflow
+  let receive: ((actionId: string) => void) | undefined
+  const remove = vi.fn()
+  window.autoflow = { ...previous, setStudioHotkeys: vi.fn(), onStudioHotkey: handler => { receive = handler; return remove } }
+  try {
+    const { unmount } = renderHook(useStudioIntegration)
+    await waitFor(() => expect(services.register).toHaveBeenCalledOnce())
+    await act(async () => {})
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', altKey: true }))
+      receive?.('run_workflow')
+      receive?.('unapproved_action')
+    })
+    expect(services.run).toHaveBeenCalledOnce()
+    unmount()
+    expect(remove).toHaveBeenCalledOnce()
+  } finally { window.autoflow = previous }
+})
+
+it('keeps local shortcut behavior when native registration fails', async () => {
+  const previous = window.autoflow
+  window.autoflow = { ...previous, setStudioHotkeys: vi.fn(), onStudioHotkey: () => () => {} }
+  services.register.mockResolvedValue({success:false,error:'组合键已占用'})
+  try {
+    renderHook(useStudioIntegration)
+    await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.level === 'error')).toBe(true))
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', altKey: true })))
+    expect(services.run).toHaveBeenCalledOnce()
+  } finally { cleanup(); window.autoflow = previous }
+})
 it('recovers browser occupancy on mount and reconnect, removing the listener on unmount',()=>{
  const {unmount}=renderHook(useStudioIntegration)
  expect(services.browserStatus).toHaveBeenCalledOnce()

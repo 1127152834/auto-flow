@@ -144,3 +144,10 @@
 - 2红15绿的真实合同基线修复后17绿；源213逐项差分5项、前端加载/协议38项、结构/类型/lint/OpenAPI通过。首次UI误用“等待”搜索命中wait_page_load，按实际入口“固定等待”修正测试，保留失败证据；产品规则未变。
 - 开发formal-electron-LFZSMd及本次unsigned包（路径见shared-services/required-fields-2026-09-23/result.json）均实际验证URL/模式/邮件配置提示，再回归项目五节点/停止/失败/恢复。未执行邮件，Intel/Windows未测。
 - 旧源规则69覆盖结论superseded，F1.required-fields四能力ID引用新后端证据，历史Mock503证据仍独立保留。源元数据自身边界不擅改，不等同全节点执行验收。下一块已定位为原生快捷键404与set_verbose_log/set_current_workflow两命令501；按宿主身份/不可重放动作边界适配，禁止假ACK。
+
+## Studio 原生快捷键 confirmed
+
+- 原版九动作接现有Electron globalShortcut，注册只接受Studio主frame及就绪sidecar；旧窗口/服务回调失效。一次注册失败保留同owner旧映射，不unregisterAll、不影响计划热键。清理在窗口失效、服务停用及退出边界执行。
+- 子任务先红测发现owner接管复用旧回调的问题；修复为跨owner重新注册，同owner继续原子更新。关联78项、TypeScript/ESLint/构建通过。
+- formal-electron-Lg6un9及本地包formal-electron-3Jp5q2实际OS快捷键前台/后台各保存一次，精确revision+1，AXClose注销、重开恢复但不重放、清除注销。继续项目五节点/停止/失败/恢复通过。汇总shared-services/native-hotkeys-2026-09-23。
+- 旧快捷键404结论superseded，不等同hotkey_trigger节点实测，622/17不变。两条启动501下一块按冻结源真实消费者核销：当前workflow仅供原版后端热键定向，现由受控窗口持有；verbose是每连接日志推送偏好，不能全局改动持久历史。

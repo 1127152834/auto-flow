@@ -18,10 +18,12 @@ import { ProjectFilesController } from './project-files/controller'
 import { SettingsController } from './settings/controller'
 import type { UiPreferences } from '../shared/settings'
 import { ScheduledHotkeyController } from './scheduled-hotkeys'
+import { StudioHotkeyController } from './studio-hotkeys'
 
 let mainWindow: BrowserWindow | undefined
 let settings: SettingsController | undefined
 let scheduledHotkeys: ScheduledHotkeyController | undefined
+let studioHotkeys: StudioHotkeyController | undefined
 
 function runSystemCommand(file:string,args:string[]):Promise<string>{
   return new Promise(resolve=>execFile(file,args,{windowsHide:true},error=>resolve(error?.message??'')))
@@ -43,6 +45,7 @@ const qaGoogleConfigPath = !app.isPackaged ? process.env.AUTOFLOW_QA_GOOGLE_CONF
 const qaExcelInput = !app.isPackaged ? process.env.AUTOFLOW_QA_EXCEL_INPUT : undefined
 const qaXlsxOutputDir = !app.isPackaged ? process.env.AUTOFLOW_QA_XLSX_OUTPUT : undefined
 const studio = new StudioWindowController({
+  onInvalidated: () => studioHotkeys?.clear(),
   mainSenderId: () => mainWindow?.webContents.id,
   workspacePartition:()=>{
     const path=settings?.getRuntimeContext().workspaceKey
@@ -185,6 +188,7 @@ app.whenReady().then(async () => {
   settings = new SettingsController({
     store: new DesktopSettingsStore(app.getPath('userData')),
     createSidecar: dataDir => new SidecarSupervisor({
+      onStatus: status => { if (status.state !== 'ready' && settings?.getPublicStatus().state !== 'ready') studioHotkeys?.clear() },
       instanceId: `${process.pid}-${Date.now()}`,
       dataDir,
       backendDirectory: join(__dirname, '../../../backend'),
@@ -217,6 +221,18 @@ app.whenReady().then(async () => {
     getSidecarStatus: () => settings?.getPublicStatus() ?? { state: 'stopped' },
   })
   scheduledHotkeys.start()
+  const studioHotkeyOwner = () => {
+    const status = settings?.getPublicStatus()
+    const windowId = studio.senderId()
+    return status?.state === 'ready' && windowId !== undefined ? { windowId, instanceId: status.instanceId } : null
+  }
+  studioHotkeys = new StudioHotkeyController({shortcuts: globalShortcut, getOwner: studioHotkeyOwner, dispatch: actionId => studio.sendHotkey(actionId)})
+  ipcMain.handle('autoflow:studio-hotkeys', (event, shortcuts: unknown) => {
+    if (!studio.isStudioSender(event)) return {success: false, error: '此窗口不能注册工作台快捷键'}
+    const owner = studioHotkeyOwner()
+    if (!owner) return {success: false, error: '工作台或本地服务尚未就绪'}
+    return studioHotkeys!.update(shortcuts, owner)
+  })
 
   ipcMain.handle('autoflow:open-automation-studio', (event, context: unknown) => studio.open(event, context))
   ipcMain.handle('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
@@ -242,6 +258,7 @@ app.on('before-quit', event => {
     try {
       if (!await studio.closeForQuit()) { isQuitting = false; return }
       scheduledHotkeys?.stop()
+      studioHotkeys?.clear()
       await settings?.shutdown()
       stoppedForQuit = true
       app.quit()

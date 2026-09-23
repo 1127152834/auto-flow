@@ -12,6 +12,14 @@ import type { DesktopRuntimeContext } from '../shared/runtime'
 import type { StudioPlatformBridge } from '../shared/studio-platform'
 
 const automationStudioBridge: AutomationStudioBridge = {
+  setStudioHotkeys: shortcuts => ipcRenderer.invoke('autoflow:studio-hotkeys', shortcuts),
+  onStudioHotkey: handler => {
+    const listener = (_event: Electron.IpcRendererEvent, actionId: unknown) => {
+      if (typeof actionId === 'string') handler(actionId)
+    }
+    ipcRenderer.on('autoflow:studio-hotkey', listener)
+    return () => ipcRenderer.removeListener('autoflow:studio-hotkey', listener)
+  },
   openAutomationStudio: (context?: StudioOpenContext) => context === undefined
     ? ipcRenderer.invoke('autoflow:open-automation-studio')
     : ipcRenderer.invoke('autoflow:open-automation-studio', context),

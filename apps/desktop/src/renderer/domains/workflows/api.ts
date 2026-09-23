@@ -152,7 +152,9 @@ export const systemApi = {
   openUrl: (url: string) =>
     apiRequest('/system/open-url', { method: 'POST', body: JSON.stringify({ url }) }),
   setCustomHotkeys: (shortcuts: Record<string, string>) =>
-    apiRequest('/system/custom-hotkeys', { method: 'POST', body: JSON.stringify({ shortcuts }) }),
+    window.autoflow?.setStudioHotkeys
+      ? window.autoflow.setStudioHotkeys(shortcuts)
+      : apiRequest('/system/custom-hotkeys', { method: 'POST', body: JSON.stringify({ shortcuts }) }),
   getMousePosition: () => apiRequest('/system/mouse-position'),
   /** 写入系统剪贴板（焦点无关，供元素选择器自动复制选择器使用） */
   setClipboard: (text: string) =>

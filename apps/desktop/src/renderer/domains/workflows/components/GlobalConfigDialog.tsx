@@ -476,6 +476,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                           <span className="text-[13px] text-gray-600 flex-1 min-w-0 truncate">{act.label}</span>
                           <input
                             readOnly
+                            aria-label={`${act.label}快捷键`}
                             value={combo}
                             placeholder="点击后按组合键"
                             onKeyDown={(e) => {
@@ -488,6 +489,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                           />
                           <button
                             type="button"
+                            aria-label={`清除${act.label}快捷键`}
                             onClick={() => updateShortcuts({ [act.id]: '' })}
                             className="text-[11px] text-gray-400 hover:text-red-500 px-1"
                           >清除</button>

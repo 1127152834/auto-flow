@@ -78,7 +78,7 @@
 - 17 个节点的待真实执行槽位，以及对应平台、凭据、硬件环境；用户删除的 14 个通知节点保持排除。
 - Studio 与项目执行/权限/资源、数据资产、统计、活动及导航的完整接入；项目管理的原运行表与 Studio 运行表尚未统一消费，目录可读不代表项目批次可运行全部迁入节点。
 - 项目范围内 Debug、拾取、录制和宿主切换的完整生命周期矩阵；文档正常关闭证据不能代替其他活跃会话验收。
-- 必填字段规则404已由完整213源规则及真实HTTP/正式包证据核销；全局快捷键404和两条启动命令501仍待接入，不能以文档保存成功掩盖。
+- 必填字段规则404已由完整213源规则及真实HTTP/正式包证据核销；全局快捷键404已由受控Electron原生注册核销；两条启动命令501仍待接入，不能以文档保存成功掩盖。
 - 真实模型、秘密存储、外部集成与跨平台正式包各自独立记账，以对应能力证据为准。
 
 所有缺口按实际入口追踪；不能将未实现的前端业务归入真实后端外部等待，也不能使用 Mock 通过关闭真实执行槽位。
@@ -134,3 +134,9 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 `GET /api/system/module-required-fields` 使用现有严格DTO、共享鉴权与错误包，返回冻结WebRPA最终合并的213节点规则；生产不读reference或development目录。已有导出器遗漏后续AUTOFIX/人工覆盖的根因已修正，旧69覆盖结论由源逐项差分替代。源摘要、许可与改动见 required-field-source-coverage.json；全部映射过滤排除节点，不恢复14通知。
 
 正式开发入口及本地unsigned包实际点击验证空URL、填写、wait三模式及原未覆盖邮件字段；仅配置提示测试、不发送邮件。共享加载/失败/重试/连接隔离原测试保留。证据：[`required-fields-2026-09-23/result.json`](../studio-backend-migration/evidence/shared-services/required-fields-2026-09-23/result.json)。规则元数据完整不等于全部节点执行器行为已验收。
+
+### Studio 自定义快捷键原生接入（2026-09-23 confirmed）
+
+保留原版九项动作及配置持久化，生产Electron经已登记Studio主frame注册到globalShortcut，窗口/sidecar身份变化注销；同宿主修改原子替换，失败保留旧映射。回调只发给当前就绪窗口，不写入可续读SSE。前端确认原生注册后抑制同组合本地重复处理。计划任务快捷键注册不受影响。
+
+78项关联测试、类型/lint/构建通过。开发和本地unsigned正式包实际系统按键分别在Studio及主窗口前台保存一次；AXClose注销、重开恢复不重放、实际清除后注销均通过，并回归项目五节点/停止/失败/恢复。证据：[native-hotkeys-2026-09-23/result.json](../studio-backend-migration/evidence/shared-services/native-hotkeys-2026-09-23/result.json)。这是Studio配置能力，不核销hotkey_trigger节点槽位；Intel/Windows未测。

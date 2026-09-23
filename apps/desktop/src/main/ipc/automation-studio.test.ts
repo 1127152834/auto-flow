@@ -88,6 +88,38 @@ it('rejects other renderers and subframes without creating a window', async () =
   expect(FakeWindow.instances).toHaveLength(0)
 })
 
+it('delivers shortcuts only to the ready current Studio outside pending leave', async () => {
+  const invalidate = vi.fn()
+  studio = new (await import('./automation-studio')).StudioWindowController({
+    mainSenderId: () => mainId, preferences: () => ({ zoom: 100, motion: 'reduce' }),
+    preloadPath: '/preload/index.js', rendererFile: '/renderer/studio.html', onInvalidated: invalidate,
+  })
+  expect(studio.senderId()).toBeUndefined()
+  await studio.open(event())
+  const window = FakeWindow.instances[0]!
+  const sender = { sender: window.webContents, senderFrame: window.webContents.mainFrame }
+  expect(studio.senderId()).toBe(window.webContents.id)
+  studio.sendHotkey('save_workflow')
+  expect(window.webContents.send).not.toHaveBeenCalledWith('autoflow:studio-hotkey', 'save_workflow')
+  studio.registerLeaveReady(sender)
+  studio.sendHotkey('save_workflow')
+  expect(window.webContents.send).toHaveBeenCalledWith('autoflow:studio-hotkey', 'save_workflow')
+  window.webContents.send.mockClear()
+  const leaving = studio.prepareLeave('close')
+  studio.sendHotkey('run_workflow')
+  expect(window.webContents.send).not.toHaveBeenCalledWith('autoflow:studio-hotkey', 'run_workflow')
+  const request = window.webContents.send.mock.calls[0]![1]
+  studio.completeLeave(sender, { id: request.id, allowed: false })
+  expect(await leaving).toBe(false)
+  studio.sendHotkey('run_workflow')
+  expect(window.webContents.send).toHaveBeenCalledWith('autoflow:studio-hotkey', 'run_workflow')
+  window.webContents.emit('did-start-loading')
+  window.webContents.emit('render-process-gone')
+  window.destroy()
+  expect(invalidate).toHaveBeenCalledTimes(3)
+  expect(studio.senderId()).toBeUndefined()
+})
+
 it('rejects malformed project context instead of silently opening an unscoped window', async () => {
   for (const context of [null, [], 'project', { projectId: 7 }, { projectId: '' }, { workflowId: ' '.repeat(3) }, { workspaceKey: 'x'.repeat(201) }]) {
     await expect(studio.open(event(), context)).rejects.toThrow('工作台上下文无效')

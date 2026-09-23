@@ -16,6 +16,7 @@ type StudioWindowOptions = {
   rendererFile: string
   rendererUrl?: string
   workspacePartition?():string
+  onInvalidated?(): void
 }
 
 /** Owns the single independent Studio window. */
@@ -72,9 +73,10 @@ export class StudioWindowController {
       event.preventDefault()
       void this.prepareLeave('close').then(allowed=>{if(allowed&&!window.isDestroyed())window.destroy()})
     })
-    window.webContents.on('render-process-gone',()=>{this.ready=false;this.finishLeave(false)})
-    window.webContents.on('did-start-loading',()=>{this.ready=false;this.finishLeave(false)})
+    window.webContents.on('render-process-gone',()=>{this.ready=false;this.finishLeave(false);this.options.onInvalidated?.()})
+    window.webContents.on('did-start-loading',()=>{this.ready=false;this.finishLeave(false);this.options.onInvalidated?.()})
     window.once('closed', () => {
+      this.options.onInvalidated?.()
       if (this.window === window) this.window = undefined
       this.finishLeave(false)
       this.closeResult?.(true); this.closeResult = undefined
@@ -105,6 +107,14 @@ export class StudioWindowController {
 
   isStudioSender(event:DesktopIpcEvent):boolean {
     return isWindowMainFrame(event,this.window?.webContents.id)
+  }
+  senderId(): number | undefined {
+    return this.window && !this.window.isDestroyed() ? this.window.webContents.id : undefined
+  }
+  sendHotkey(actionId: string): void {
+    if (this.ready && !this.pendingLeave && this.window && !this.window.isDestroyed()) {
+      this.window.webContents.send('autoflow:studio-hotkey', actionId)
+    }
   }
   registerLeaveReady(event:DesktopIpcEvent):void {
     if(!this.isStudioSender(event))throw new Error('此窗口不能注册工作台离开协调')
