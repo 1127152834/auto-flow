@@ -104,11 +104,17 @@ async def exercise(output):
         record = expect(await client.get(f'/api/v1/android/management/operations/by-request/{request_id}'), 200)
         assert record['state'] == 'needs_verification', record
         report['afterRestart'] = record
+        history = expect(await client.get('/api/v1/android/management/operations?action=pull&state=needs_verification&limit=50'), 200)
+        assert history['total'] == 1 and history['items'][0]['operationId'] == record['operationId'], history
+        report['discoveredAfterRestart'] = history
         replay = expect(await client.post('/api/v1/android/management/image-pulls', json=body), 202)
         assert replay['operationId'] == record['operationId'] and replay['state'] == 'needs_verification'
         verified = expect(await client.post(f"/api/v1/android/management/operations/{record['operationId']}/verify", json={'requestId': request_id}), 200)
         assert verified['state'] == 'succeeded' and verified['resultCode'] == 'IMAGE_PULL_VERIFIED', verified
         report['verified'] = verified
+        history = expect(await client.get('/api/v1/android/management/operations?action=pull&state=needs_verification&limit=50'), 200)
+        assert history['total'] == 0 and not history['items'], history
+        report['unknownHistoryAfterVerify'] = history
         assert (workspace / 'pull-calls.txt').read_text().splitlines() == [reference]
         report['actualCatalogPullCalls'] = 1
         after = json.loads(await docker('image', 'inspect', 'redroid/redroid:13.0.0_64only-latest'))[0]['Id']

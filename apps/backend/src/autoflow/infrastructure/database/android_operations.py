@@ -116,27 +116,35 @@ class SqlAlchemyAndroidOperationRepository:
                 raise AndroidError("ANDROID_OPERATION_NOT_FOUND", "安卓操作不存在", 404)
             return OperationRecord(row)
 
-    def page(self, device_id: str | None = None, cursor: str | None = None, limit: int = 50, workspace_identity: str | None = None) -> list[OperationRecord]:
+    def page(self, device_id: str | None = None, cursor: str | None = None, limit: int = 50, workspace_identity: str | None = None, *, action: str | None = None, state: str | None = None) -> list[OperationRecord]:
         with self.sessions() as session:
             query = select(AndroidOperationRow).order_by(AndroidOperationRow.created_at.desc(), AndroidOperationRow.id.desc()).limit(min(max(limit, 1), 201))
             if workspace_identity is not None:
                 query = query.where(AndroidOperationRow.workspace_identity == workspace_identity)
             if device_id:
                 query = query.where(AndroidOperationRow.target_id == device_id)
+            if action:
+                query = query.where(AndroidOperationRow.action == action)
+            if state:
+                query = query.where(AndroidOperationRow.state == state)
             if cursor:
                 boundary = session.get(AndroidOperationRow, cursor)
-                if boundary is None or (workspace_identity is not None and boundary.workspace_identity != workspace_identity) or (device_id and boundary.target_id != device_id):
+                if boundary is None or (workspace_identity is not None and boundary.workspace_identity != workspace_identity) or (device_id and boundary.target_id != device_id) or (action and boundary.action != action) or (state and boundary.state != state):
                     raise AndroidError("ANDROID_OPERATION_CURSOR_INVALID", "分页位置无效", 422)
                 query = query.where(or_(AndroidOperationRow.created_at < boundary.created_at, and_(AndroidOperationRow.created_at == boundary.created_at, AndroidOperationRow.id < cursor)))
             return [OperationRecord(row) for row in session.scalars(query)]
 
-    def count(self, device_id: str | None = None, workspace_identity: str | None = None) -> int:
+    def count(self, device_id: str | None = None, workspace_identity: str | None = None, *, action: str | None = None, state: str | None = None) -> int:
         with self.sessions() as session:
             query = select(func.count()).select_from(AndroidOperationRow)
             if workspace_identity is not None:
                 query = query.where(AndroidOperationRow.workspace_identity == workspace_identity)
             if device_id:
                 query = query.where(AndroidOperationRow.target_id == device_id)
+            if action:
+                query = query.where(AndroidOperationRow.action == action)
+            if state:
+                query = query.where(AndroidOperationRow.state == state)
             return int(session.scalar(query) or 0)
 
     def transition(self, operation_id: str, expected_state: str, next_state: str, changes: dict[str, Any]) -> OperationRecord:

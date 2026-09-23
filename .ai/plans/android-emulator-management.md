@@ -97,3 +97,5 @@
 - 2026-09-24 镜像拉取回执窗口（confirmed）：真实pull提交目录回执后强杀自有服务，HTTP断开；重启原编号needs_verification，重提不重放，显式核实成功且pull仅1次。两轮仅取消自有登记、保留基础镜像；38项回归通过。首次脚本409及恢复有记录。见[实测](../../docs/qa/android-management/2026-09-24-image-pull-interruption.md)。桌面删除/下载途中断网仍未验；独立规格审查另确认批次逐项结果与镜像页面POST核实两项Important，继续RED→GREEN补齐，不能用完整测试通过替代。
 
 - 2026-09-24 规格复核修复（confirmed软件定向，真实桌面blocked）：原T13.4逐项结果证据范围过宽，本轮直接渲染冻结result.items的全部状态/错误/重试来源，accepted不再误报未知但继续冻结；镜像未知拉取补现有POST核实、原编号重试及A成功/B响应丢失的身份栅栏。4项初始RED加1项连续请求RED后，Android166项/类型/lint通过，最终增量复审无Critical/Important；完整前端424文件/5656项通过（750.46s），类型/lint/OpenAPI/build均exit0，真实UI仍受Mac锁屏阻塞。见[实际证据](../../docs/qa/android-management/2026-09-24-item-results-image-recovery.md)。
+
+- 2026-09-24 持久拉取恢复（confirmed 软件/真实HTTP，桌面blocked）：重启后按工作区分页发现未知拉取、原编号显式核实、新拉取冻结及422前置拒绝恢复输入已实现；后端34项、Android171项及类型/lint/OpenAPI/build通过，增量审查无C/I。真实强杀重启列表total1→核实→0，pull仅1次，基础镜像保留；未创建用户设备。AM-R12磁盘预检仍待实现，不能归为外部blocked。见[证据](../../docs/qa/android-management/2026-09-24-persistent-pull.md)。

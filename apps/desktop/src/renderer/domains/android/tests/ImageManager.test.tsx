@@ -23,6 +23,7 @@ const image = {
 
 function renderManager(overrides: Record<string, unknown> = {}) {
   const api = {
+    operations: vi.fn(async () => ({ items: [], nextCursor: null, total: 0 })),
     images: vi.fn(async () => ({ items: [image], nextCursor: null, total: 1 })),
     registerImage: vi.fn(async () => image),
     pullImage: vi.fn(async (body: { requestId: string }) => ({ operationId: 'op-1', requestId: body.requestId, targetId: 'image-1', action: 'pull', state: 'running', stageCode: 'pulling', stageLabel: '正在拉取', attempt: 1, createdAt: '' })),
@@ -31,7 +32,7 @@ function renderManager(overrides: Record<string, unknown> = {}) {
     verifyImage: vi.fn(async () => ({ ...image, verification: { state: 'passed', records: [{ check: 'boot', result: 'passed' }] } })),
     ...overrides,
   } as unknown as AndroidManagementApi
-  render(<QueryClientProvider client={new QueryClient()}><ImageManager api={api} /></QueryClientProvider>)
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ImageManager instanceId="test-instance" api={api} /></QueryClientProvider>)
   return api
 }
 
@@ -53,6 +54,7 @@ it('retries a pull with the same request id and can verify by request id', async
   await userEvent.type(reference, 'redroid/redroid:13')
   await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('连接中断')
+  expect(reference).toBeDisabled()
   await userEvent.click(screen.getByRole('button', { name: '按原编号重试' }))
   await vi.waitFor(() => expect(pullImage).toHaveBeenCalledTimes(2))
   expect(pullImage.mock.calls[0][0].requestId).toBe(pullImage.mock.calls[1][0].requestId)
@@ -158,4 +160,94 @@ it('keeps the second pull identity after a lost response instead of verifying th
   expect(operationByRequest).toHaveBeenLastCalledWith(second)
   expect(verify).toHaveBeenLastCalledWith(`op-${second}`, { requestId: second })
   expect(pullImage).toHaveBeenCalledTimes(2)
+})
+
+
+it('rediscovers an older unknown pull after remount and verifies the original receipt without replay', async () => {
+  const unknown = (requestId: string) => ({ operationId: `op-${requestId}`, requestId, targetId: 'pull-target', action: 'pull', state: 'needs_verification', stageCode: 'verify', stageLabel: '待核实', attempt: 1, createdAt: '', allowedActions: ['verify'] })
+  let saved: ReturnType<typeof unknown> | null = null
+  let recovered = false
+  const pullImage = vi.fn(async (body: { requestId: string }) => { saved = unknown(body.requestId); return saved })
+  const operations = vi.fn(async (query = '') => !saved || recovered ? { items: [], nextCursor: null, total: 0 } : query.includes('cursor=')
+    ? { items: [saved], nextCursor: null, total: 2 }
+    : { items: [unknown('newer-request')], nextCursor: 'newer-op', total: 2 })
+  const verify = vi.fn(async (_id: string, body: { requestId: string }) => { recovered = true; return { ...unknown(body.requestId), state: 'succeeded', stageLabel: '已完成' } })
+  renderManager({ pullImage, operations, verify, operationByRequest: vi.fn(async (requestId: string) => unknown(requestId)) })
+  await userEvent.type(within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用'), 'redroid/redroid:13')
+  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+  await vi.waitFor(() => expect(pullImage).toHaveBeenCalledTimes(1))
+  const requestId = pullImage.mock.calls[0][0].requestId
+  cleanup()
+  renderManager({ pullImage, operations, verify, operationByRequest: vi.fn(async (requestId: string) => unknown(requestId)) })
+  const history = await screen.findByRole('region', { name: '待核实的镜像拉取' })
+  expect(await within(history).findByText('newer-request', { exact: false })).toBeVisible()
+  expect(screen.getByRole('button', { name: '开始拉取' })).toBeDisabled()
+  expect(verify).not.toHaveBeenCalled()
+  await userEvent.click(within(history).getByRole('button', { name: '下一页拉取记录' }))
+  await vi.waitFor(() => expect(operations).toHaveBeenLastCalledWith('?action=pull&state=needs_verification&limit=50&cursor=newer-op'))
+  await userEvent.click(await within(history).findByRole('button', { name: `核实拉取 ${requestId}` }))
+  await vi.waitFor(() => expect(verify).toHaveBeenCalledWith(`op-${requestId}`, { requestId }))
+  expect(pullImage).toHaveBeenCalledTimes(1)
+  await vi.waitFor(() => expect(within(history).getByText('没有待核实的拉取。')).toBeVisible())
+})
+
+it('blocks a new pull when persistent history cannot be read', async () => {
+  const api = renderManager({ operations: vi.fn(async () => { throw new Error('history unavailable') }) })
+  await userEvent.type(within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用'), 'redroid/redroid:13')
+  expect(await screen.findByText('拉取记录暂不可用，请重新读取后再拉取。')).toBeVisible()
+  expect(screen.getByRole('button', { name: '开始拉取' })).toBeDisabled()
+  expect(api.pullImage).not.toHaveBeenCalled()
+})
+
+
+it('isolates recovered pull records when the backend instance changes', async () => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const api = (requestId: string) => ({
+    images: vi.fn(async () => ({ items: [], total: 0, nextCursor: null })),
+    operations: vi.fn(async () => ({ items: [{ operationId: `op-${requestId}`, requestId, action: 'pull', state: 'needs_verification', stageLabel: '待核实' }], total: 1, nextCursor: null })),
+    verify: vi.fn(), pullImage: vi.fn(),
+  }) as unknown as AndroidManagementApi
+  const oldApi = api('workspace-old')
+  const nextApi = api('workspace-next')
+  const view = render(<QueryClientProvider client={queryClient}><ImageManager key="old" instanceId="old" api={oldApi} /></QueryClientProvider>)
+  expect(await screen.findByRole('button', { name: '核实拉取 workspace-old' })).toBeVisible()
+  view.rerender(<QueryClientProvider client={queryClient}><ImageManager key="next" instanceId="next" api={nextApi} /></QueryClientProvider>)
+  expect(screen.queryByRole('button', { name: '核实拉取 workspace-old' })).not.toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: '核实拉取 workspace-next' })).toBeVisible()
+  expect(oldApi.verify).not.toHaveBeenCalled()
+  expect(nextApi.verify).not.toHaveBeenCalled()
+  expect(nextApi.pullImage).not.toHaveBeenCalled()
+})
+
+it('releases a definitively rejected pull so its invalid reference can be corrected', async () => {
+  const pullImage = vi.fn().mockRejectedValueOnce(new ApiClientError('镜像引用无效', 422, 'VALIDATION_ERROR')).mockImplementationOnce(async (body: { requestId: string }) => ({ operationId: 'accepted', requestId: body.requestId, state: 'succeeded', stageLabel: '已完成' }))
+  renderManager({ pullImage })
+  const input = within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用')
+  await userEvent.type(input, 'redroid/redroid:bad value')
+  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('镜像引用无效')
+  expect(input).toBeEnabled()
+  await userEvent.clear(input)
+  await userEvent.type(input, 'redroid/redroid:13')
+  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+  await vi.waitFor(() => expect(pullImage).toHaveBeenCalledTimes(2))
+  expect(pullImage.mock.calls[1][0]).toEqual({ reference: 'redroid/redroid:13', requestId: expect.any(String) })
+  expect(pullImage.mock.calls[1][0].requestId).not.toBe(pullImage.mock.calls[0][0].requestId)
+})
+
+
+it('returns to the first page after a verification invalidates the pagination cursor', async () => {
+  const record = { operationId: 'newer-op', requestId: 'newer-request', action: 'pull', state: 'needs_verification', stageLabel: '待核实' }
+  const operations = vi.fn(async (query = '') => {
+    if (query.includes('cursor=')) throw new ApiClientError('分页位置无效', 422, 'ANDROID_OPERATION_CURSOR_INVALID')
+    return { items: [record], nextCursor: 'newer-op', total: 2 }
+  })
+  renderManager({ operations })
+  const history = await screen.findByRole('region', { name: '待核实的镜像拉取' })
+  await userEvent.click(await within(history).findByRole('button', { name: '下一页拉取记录' }))
+  expect(await within(history).findByRole('alert')).toHaveTextContent('拉取记录暂不可用')
+  await userEvent.click(within(history).getByRole('button', { name: '重新读取拉取记录' }))
+  expect(await within(history).findByRole('button', { name: '核实拉取 newer-request' })).toBeVisible()
+  await vi.waitFor(() => expect(operations).toHaveBeenLastCalledWith('?action=pull&state=needs_verification&limit=50'))
+  expect(within(history).queryByRole('alert')).not.toBeInTheDocument()
 })

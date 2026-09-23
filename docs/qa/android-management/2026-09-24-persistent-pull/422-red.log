@@ -1,0 +1,45 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ImageManager.test.tsx -t definitively rejected
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ImageManager.test.tsx (12 tests | 1 failed | 11 skipped) 268ms
+   × releases a definitively rejected pull so its invalid reference can be corrected 266ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ImageManager.test.tsx > releases a definitively rejected pull so its invalid reference can be corrected
+Error: expect(element).toBeEnabled()
+
+Received element is not enabled:
+  <input
+  aria-label="拉取镜像引用"
+  disabled=""
+  placeholder="redroid/redroid:13 或 redroid/redroid@sha256:…"
+  value="redroid/redroid:bad value"
+/>
+ ❯ src/renderer/domains/android/tests/ImageManager.test.tsx:228:17
+    226|   await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+    227|   expect(await screen.findByRole('alert')).toHaveTextContent('镜像引用无效')
+    228|   expect(input).toBeEnabled()
+       |                 ^
+    229|   await userEvent.clear(input)
+    230|   await userEvent.type(input, 'redroid/redroid:13')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 skipped (12)
+   Start at  07:47:55
+   Duration  1.17s (transform 203ms, setup 198ms, import 151ms, tests 268ms, environment 443ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ImageManager.test.tsx -t 'definitively rejected'

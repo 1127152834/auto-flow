@@ -27117,6 +27117,8 @@ export interface operations {
                 deviceId?: string | null;
                 cursor?: string | null;
                 limit?: number;
+                action?: string | null;
+                state?: string | null;
             };
             header?: never;
             path?: never;

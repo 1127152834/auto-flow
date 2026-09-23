@@ -19,6 +19,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mocks.instanceId = 'instance'
   mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path.startsWith('/api/v1/android/management/operations?')) return { items: [], total: 0, nextCursor: null }
     if (path.endsWith('/cleanup/resources')) return { items: [] }
     if (path === '/api/v1/android/management/devices?limit=50') return { items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['open', 'stop'], blockedReasons: {} }], total: 1, nextCursor: null }
     return path.endsWith('/environment') ? environment : path.endsWith('/devices') ? [devices[0]] : path.endsWith('/profiles') ? [profile] : path.endsWith('/management/images') ? { items: [], total: 0, nextCursor: null } : path.endsWith('/sessions') && init?.method === 'POST' ? fixtureSession(true) : path.endsWith('/sessions/fixture') ? fixtureSession(true) : path.endsWith('/heartbeat') ? fixtureSession(true) : path.endsWith('/apps') ? { packages: [], currentPackage: null, shellRoot: 'unknown', applicationRoot: 'unknown' } : path.endsWith('/actions') ? { ...fixtureSession(true), state: 'closed' } : []
@@ -330,6 +331,7 @@ it('marks a heartbeat failure as unknown and exposes no connected control state'
     if (path === '/api/v1/android/management/devices?limit=50') return { items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['open', 'stop'], blockedReasons: {} }], total: 1, nextCursor: null }
     if (path.endsWith('/sessions') && init?.method === 'POST') return fixtureSession(true)
     if (path.endsWith('/apps')) return { packages: ['org.example.notes'], applications: [{ packageName: 'org.example.notes', versionCode: 1, versionName: null, system: false, protected: false }], currentPackage: null, shellRoot: 'unknown', applicationRoot: 'unknown' }
+    if (path.startsWith('/api/v1/android/management/operations?action=pull')) return { items: [], total: 0, nextCursor: null }
     if (path.endsWith('/images')) return { items: [], total: 0, nextCursor: null }
     return path.endsWith('/environment') ? environment : path.endsWith('/profiles') ? [profile] : path.endsWith('/sessions/fixture') ? fixtureSession(true) : []
   })
@@ -376,6 +378,7 @@ it('verifies a management operation with its original request id', async () => {
     if (path === '/api/v1/android/management/operations/operation-1/verify') return { operationId: 'operation-1', requestId, targetId: devices[0].deviceId, action: 'start', state: 'succeeded', stageCode: 'verified', stageLabel: '已核实', attempt: 1, retryOf: null, createdAt: '', startedAt: '', finishedAt: '', resultCode: 'STATE_VERIFIED', message: null, allowedActions: [] }
     if (path.endsWith('/environment')) return environment
     if (path.endsWith('/profiles')) return [profile]
+    if (path.startsWith('/api/v1/android/management/operations?action=pull')) return { items: [], total: 0, nextCursor: null }
     if (path.endsWith('/images')) return { items: [], total: 0, nextCursor: null }
     if (path.endsWith('/backups')) return []
     if (path.endsWith('/capabilities')) return { management: true, control: true, images: true, bulk: true, backups: true, workflow: false, reasons: {} }
@@ -419,6 +422,7 @@ it('cleanup preview includes registered backups while diagnostics remain device 
       expect(init?.body?.deviceIds).toEqual([devices[0].deviceId])
       return { id: 'diagnostic-1', state: 'ready', createdAt: '' }
     }
+    if (path.startsWith('/api/v1/android/management/operations?action=pull')) return { items: [], total: 0, nextCursor: null }
     if (path.endsWith('/images')) return { items: [], total: 0, nextCursor: null }
     if (path.endsWith('/environment')) return environment
     if (path.endsWith('/devices')) return [devices[0]]

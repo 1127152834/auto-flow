@@ -17,3 +17,5 @@
 - 这是前向发布源码/构建演练，UI为组件测试，Mac锁屏下不冒称真实桌面点击。已存数据前向迁移与真实旧实例重启/镜像固定由已有独立验收交叉支持。
 
 T12演练结果confirmed：[前端补丁报告](../../docs/qa/android-management/2026-09-24-forward-entry.md)；首次因临时checkout漏desktop局部依赖TS2307，保留失败并清理后重跑。启用GREEN→停用预期RED→源码补丁GREEN/类型/build→恢复源码GREEN/类型/build通过；44份原有migration Python内容、4份候选文件及AndroidPage恢复哈希一致，两次自有checkout均移除。没有DB/设备访问、没有真实Electron，不单独关闭T12.4。
+
+- 2026-09-24 持久拉取恢复（confirmed 软件/真实HTTP，桌面blocked）：重启后按工作区分页发现未知拉取、原编号显式核实、新拉取冻结及422前置拒绝恢复输入已实现；后端34项、Android171项及类型/lint/OpenAPI/build通过，增量审查无C/I。真实强杀重启列表total1→核实→0，pull仅1次，基础镜像保留；未创建用户设备。AM-R12磁盘预检仍待实现，不能归为外部blocked。见[证据](../../docs/qa/android-management/2026-09-24-persistent-pull.md)。

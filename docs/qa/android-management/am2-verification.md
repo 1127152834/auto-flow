@@ -34,3 +34,5 @@ cd apps/backend && uv run pytest tests/contract/test_android_{images,templates}.
 2026-09-24：[自定义候选完整实测](2026-09-24-custom-image.md)补足 T12.3，定向镜像/模板40项通过；Google validation保持not_tested。阶段入口停用与向前回退仍未运行，AM2保持partial。
 
 2026-09-24：[入口停用/恢复补丁演练](2026-09-24-forward-entry.md)完成临时checkout组件RED→GREEN、停用和恢复两版类型/build及内容核对；无DB或设备访问，不等于同一发布链的真实数据保留或桌面验收，T12.4继续partial。
+
+- 2026-09-24 持久拉取恢复（confirmed 软件/真实HTTP，桌面blocked）：重启后按工作区分页发现未知拉取、原编号显式核实、新拉取冻结及422前置拒绝恢复输入已实现；后端34项、Android171项及类型/lint/OpenAPI/build通过，增量审查无C/I。真实强杀重启列表total1→核实→0，pull仅1次，基础镜像保留；未创建用户设备。AM-R12磁盘预检仍待实现，不能归为外部blocked。见[证据](2026-09-24-persistent-pull.md)。

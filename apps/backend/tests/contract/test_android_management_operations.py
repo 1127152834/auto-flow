@@ -658,3 +658,44 @@ def test_verify_delete_accepts_the_observed_post_delete_state(tmp_path, delete_d
     assert response.json()["state"] == "succeeded"
     assert operations.get(record.operation_id).state == "succeeded"
     sessions.dispose()
+
+
+def test_unknown_pull_history_survives_restart_with_scoped_filtered_pagination(tmp_path):
+    database = tmp_path / "pull-history.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    records = []
+    for workspace, action, state in [
+        ("default", "pull", "running"),
+        ("default", "pull", "needs_verification"),
+        ("foreign", "pull", "needs_verification"),
+        ("default", "stop", "needs_verification"),
+        ("default", "pull", "succeeded"),
+    ]:
+        record = operations.accept(workspace, f"request-{len(records)}", f"target-{len(records)}", action, "digest", {})
+        operations.transition(record.operation_id, "queued", "running", {})
+        if state != "running":
+            operations.transition(record.operation_id, "running", state, {})
+        records.append(record)
+    sessions.dispose()
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    operations.recover_running("default")
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations))
+    query = "/api/v1/android/management/operations?action=pull&state=needs_verification&limit=1"
+    with TestClient(app) as client:
+        first = client.get(query)
+        assert first.status_code == 200, first.text
+        assert first.json()["total"] == 2
+        assert [item["operationId"] for item in first.json()["items"]] == [records[1].operation_id]
+        second = client.get(f"{query}&cursor={first.json()['nextCursor']}")
+        assert second.status_code == 200, second.text
+        assert [item["operationId"] for item in second.json()["items"]] == [records[0].operation_id]
+        assert second.json()["nextCursor"] is None
+        assert second.json()["total"] == 2
+        for other in records[2:]:
+            assert client.get(f"{query}&cursor={other.operation_id}").status_code == 422
+    sessions.dispose()
