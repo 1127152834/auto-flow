@@ -1,12 +1,28 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { createServer } from 'node:http'
+import { observeInstanceSeed } from './smoke-profile-test-browser.mjs'
 
 // Real Studio HTTP -> project batch -> child worker -> browser -> data/End.
 export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks = {}) {
   const server = createServer((request, response) => {
     if (request.url === '/login') response.setHeader('Set-Cookie', 'pm9=logged-in; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax')
     response.setHeader('Content-Type', 'text/html; charset=utf-8')
+    if (request.url === '/profile') {
+      response.end(`<!doctype html><body><script>
+        (async()=>{
+          const canvas=document.createElement('canvas');canvas.width=320;canvas.height=80;
+          const context=canvas.getContext('2d');context.fillStyle='#d7c8b6';context.fillRect(0,0,320,80);
+          context.fillStyle='#3d3027';context.font='17px Arial';context.fillText('AutoFlow fingerprint 0123456789',8,32);
+          context.beginPath();context.arc(260,42,23,0,Math.PI*2);context.stroke();
+          const bytes=new TextEncoder().encode(canvas.toDataURL());
+          const canvasHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+          const output=document.createElement('output');output.id='profile-observation';
+          output.textContent=JSON.stringify({userAgent:navigator.userAgent,language:navigator.language,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,canvasHash});document.body.append(output);
+        })();
+      </script></body>`)
+      return
+    }
     response.end(`<output id="account">001</output><output id="auth">${request.headers.cookie?.includes('pm9=logged-in') ? 'signed-in' : 'signed-out'}</output>`)
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
@@ -108,6 +124,45 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     const failureWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 失败后续', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: `{${selectorParameter}}`, attribute: 'text', variableName: 'account', timeout: .3 }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'read'), edge('read', 'end')] })
     const inputPlan = { inputs: [{ inputId: randomUUID(), alias: '来源', tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, mode: 'independent', required: true, fieldBindings: [{ inputFieldId: randomUUID(), inputFieldAlias: '编号', fieldRef: { projectId: project.projectId, tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, fieldId: source.fieldId } }], filter: { type: 'all', items: [] }, orderBy: [{ systemField: 'recordKey', direction: 'asc' }] }] }
     const environment = { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }
+    const profileSpec = { name: 'PM9 身份冻结', browserVersion, headless: true, userAgent: 'AutoFlow-PM9-frozen', locale: 'en-US', timezone: 'UTC' }
+    const frozenProfile = await api('/api/v1/profiles', profileSpec)
+    const profileEnvironment = { ...environment, profileId: frozenProfile.id }
+    const profileDocument = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 Profile冻结', variables: [], nodes: [node('open', 'open_page', { url: site + '/profile' }), node('observe', 'get_element_info', { selector: '#profile-observation', attribute: 'text', variableName: 'observation' }), node('pause-profile', 'project_manual', { reason: '首个Task等待时编辑Profile与根文档', timeoutSeconds: 60 }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'observe'), edge('observe', 'pause-profile'), edge('pause-profile', 'end')] })
+    let newSeed
+    const seedObservations = []
+    const profileBatch = await run(profileDocument.id, profileEnvironment, [], {}, 'succeeded', { inputs: [] }, null, { maxTasks: 2, beforeResume: async item => {
+      const observation = await observeInstanceSeed(item.instanceId)
+      if (observation) assert.equal(observation.seed, frozenProfile.fingerprintSeed)
+      seedObservations.push(observation)
+      if (newSeed !== undefined) return
+      await api(`/api/v1/profiles/${frozenProfile.id}`, { ...profileSpec, userAgent: 'AutoFlow-PM9-edited', locale: 'fr-FR', timezone: 'Europe/Paris' }, 'PUT')
+      newSeed = (await api(`/api/v1/profiles/${frozenProfile.id}/regenerate-fingerprint`, {})).fingerprintSeed
+      assert.notEqual(newSeed, frozenProfile.fingerprintSeed)
+      const changed = structuredClone(profileDocument)
+      changed.nodes.find(node => node.id === 'observe').data.variableName = 'newObservation'
+      await api(`/api/workflows/${changed.id}`, { ...changed, expectedRevision: changed.revision, clientRequestId: randomUUID() }, 'PUT')
+    } })
+    const observed = []
+    for (const task of profileBatch.tasks) {
+      const outputs = (await api(`${prefix}/tasks/${task.taskId}/outputs`)).items
+      assert.equal(outputs.some(output => output.name === 'newObservation'), false, 'new root content must not enter old batch')
+      observed.push(JSON.parse(outputs.find(output => output.name === 'observation').value))
+    }
+    assert.equal(observed.length, 2)
+    assert.deepEqual(observed[0], observed[1], 'same frozen profile has identical browser-visible identity')
+    assert.equal(observed[0].userAgent, profileSpec.userAgent)
+    assert.equal(observed[0].language, 'en-US')
+    assert.equal(observed[0].timezone, 'UTC')
+    const freshProfileBatch = await run(profileDocument.id, profileEnvironment, [], {}, 'succeeded', { inputs: [] }, null, { automation: profileBatch.automation, beforeResume: async item => {
+      const observation = await observeInstanceSeed(item.instanceId)
+      if (observation) assert.equal(observation.seed, newSeed)
+      seedObservations.push(observation)
+    } })
+    const freshObservation = JSON.parse(freshProfileBatch.outputs.find(output => output.name === 'newObservation').value)
+    assert.equal(freshObservation.userAgent, 'AutoFlow-PM9-edited')
+    assert.equal(freshObservation.language, 'fr-FR')
+    assert.equal(freshObservation.timezone, 'Europe/Paris')
+    const profileFreeze = { status: 'passed', taskIds: profileBatch.tasks.map(task => task.taskId), freshTaskId: freshProfileBatch.task.taskId, originalSeed: frozenProfile.fingerprintSeed, newSeed, seedObservations, seedObservationScope: process.platform === 'darwin' ? 'actual disposable instance browser argv at manual barrier' : 'native argv seed proof pending on this platform', canvasChanged: freshObservation.canvasHash !== observed[0].canvasHash, frozenObservation: observed[0], freshObservation, checks: ['old batch second Task preserves original root document and browser-visible UA/locale/timezone/canvas after public Profile edit and seed reset', 'fresh explicit batch observes new root document and changed Profile identity'] }
     // Freeze is observed through a real manual barrier after prepare. No in-process worker hooks.
     const childTable = await table('子流程冻结结果')
     const childWrite = id => node(id, 'project_data', { operation: 'createRecord', variableName: 'saved', tableGrant: grant(childTable, 'createRecord'), arguments: { tableId: childTable.table.tableId, datasetGeneration: childTable.table.datasetGeneration, values: { [childTable.fieldId]: '{value}' } } })
@@ -327,7 +382,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       await new Promise(resolve => setTimeout(resolve, 500))
     }
     assert.equal((await api(prefix)).lifecycleState, 'active')
-    return { projectId: project.projectId, environmentId, subflows, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
+    return { projectId: project.projectId, environmentId, subflows, profileFreeze, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
   } finally {
     await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
   }

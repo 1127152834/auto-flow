@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-23",
+  "date": "2026-09-24",
   "status": "mapping_reviewed_acceptance_incomplete",
   "source": "docs/project-management/implementation/coverage.json",
   "scope": "All 251 requirement IDs have assertion scopes or explicit gaps. Reference validation is not release acceptance.",
@@ -447,11 +447,11 @@
         {
           "id": "ENV-05",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": false,
-          "reviewedCheckCount": 4,
+          "reviewedCheckCount": 5,
           "gapKinds": [
-            "production_evidence_missing",
+            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -2254,11 +2254,11 @@
         {
           "id": "XE-A20",
           "status": "planned",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false,
-          "reviewedCheckCount": 4,
+          "reviewedCheckCount": 5,
           "gapKinds": [
-            "production_evidence_missing",
+            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -2334,12 +2334,13 @@
         {
           "id": "XE-C02",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": true,
-          "reviewedCheckCount": 4,
+          "reviewedCheckCount": 5,
           "gapKinds": [
-            "test_missing",
-            "production_evidence_missing"
+            "implementation_missing",
+            "production_evidence_missing",
+            "test_missing"
           ]
         },
         {

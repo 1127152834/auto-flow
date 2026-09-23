@@ -3397,6 +3397,14 @@
           "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/resource-freeze-follow-through.json",
+          "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM5-A",
@@ -3446,16 +3454,22 @@
             "symbol": "checkProjectRuntime",
             "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
             "level": "automated_real_application"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
-            "kind": "production_evidence_missing",
-            "detail": "完整 Profile/代理/子流程冻结后第二 Task 的真实行为尚未全部覆盖"
+            "kind": "implementation_missing",
+            "detail": "代理快照仅保存pool ID，真实资源/SQLite诊断证实新成员及改动端点可进入旧批次；固定候选、分配复验和失效停止领取需P1–P3补充方案，尚待批准。"
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "ARM打包子流程冻结/隔离/输出子范围通过；新增打包断言尚无Windows/Intel同场景证据，其他资产/Profile/代理完整冻结条件保留。"
+            "detail": "ARM新建Profile及子流程冻结子范围通过；fixed/input环境、其他资产组合和Windows/Intel同场景打包证据仍缺，真实代理worker链尚未验收。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -14325,6 +14339,14 @@
           "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/resource-freeze-follow-through.json",
+          "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "environments",
@@ -14372,16 +14394,22 @@
             "symbol": "checkProjectRuntime",
             "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
             "level": "automated_real_application"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
-            "kind": "production_evidence_missing",
-            "detail": "完整 Profile/代理/子流程冻结后第二 Task 的真实行为尚未全部覆盖"
+            "kind": "implementation_missing",
+            "detail": "代理快照仅保存pool ID，真实资源/SQLite诊断证实新成员及改动端点可进入旧批次；固定候选、分配复验和失效停止领取需P1–P3补充方案，尚待批准。"
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "ARM打包子流程冻结/隔离/输出子范围通过；新增打包断言尚无Windows/Intel同场景证据，其他资产/Profile/代理完整冻结条件保留。"
+            "detail": "ARM新建Profile及子流程冻结子范围通过；fixed/input环境、其他资产组合和Windows/Intel同场景打包证据仍缺，真实代理worker链尚未验收。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -14782,6 +14810,14 @@
           "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/resource-freeze-follow-through.json",
+          "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-B",
@@ -14834,16 +14870,26 @@
             "symbol": "checkProjectRuntime",
             "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
             "level": "automated_real_application"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "冻结子流程内容、调用环/深度已有断言；全部其他资产依赖、Profile/代理组合仍未逐项定位直接断言。"
+            "kind": "implementation_missing",
+            "detail": "代理快照仅保存pool ID，真实资源/SQLite诊断证实新成员及改动端点可进入旧批次；固定候选、分配复验和失效停止领取需P1–P3补充方案，尚待批准。"
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "ARM打包子流程冻结/隔离/输出子范围通过；新增打包断言尚无Windows/Intel同场景证据，其他资产/Profile/代理完整冻结条件保留。"
+            "detail": "ARM新建Profile及子流程冻结子范围通过；fixed/input环境、其他资产组合和Windows/Intel同场景打包证据仍缺，真实代理worker链尚未验收。"
+          },
+          {
+            "kind": "test_missing",
+            "detail": "其他资产依赖冻结及全部Profile/代理组合仍未逐项定位直接断言。"
           }
         ],
         "statusBeforeReview": "partially_verified"

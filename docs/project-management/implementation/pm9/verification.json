@@ -6,6 +6,7 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "ARM packaged Profile/root-document freeze passed with actual browser seed observations old/old/new; full ARM desktop smoke also passed. Proxy candidate/endpoints are confirmed implementation gaps, P1–P3 proposed awaiting approval. Added script assertions are supplemental, absent from running69baeeb2 CI35886627514; releaseAccepted=false.",
     "Supplemental ARM packaged public-HTTP subflow freeze/isolation/End association, parent stop at child checkpoint and narrowed child field permission all passed, including full desktop smoke. Production remains69baeeb2; additional script assertions are not in current35886627514. Full Profile/proxy/asset combinations and Windows/Intel same-scenario packaged evidence remain open. Ledger statuses unchanged.",
     "Current metadata production404 fixed:17 targeted backend/45 frontend/3486 full backend and full ARM packaged desktop passed;69 of227 source nodes covered,project metadata remains uncovered. Foreground frame-measurement harness fixed after visibility=hidden diagnosis; both negative runs retained. Previous632caf6d matrix does not validate this route; new source69baeeb2 matrix35886627514 in progress. ReleaseAccepted remains false.",
     "Current source632caf6d fixes actual standalone Studio feedback hiding and open/save identity conflict. Final frontend5473/409 files,50 targeted,101 scripts,typecheck/lint/build/ARM full desktop passed. New three-platform35881272086 is in progress; prior eb50 run35874897768 cancelled because it lacks these fixes. Its metadata404 has been superseded by the newer local fix; full external gates remain; releaseAccepted=false.",
@@ -528,5 +529,6 @@
   },
   "studioWindowFollowThrough": "studio-window-follow-through.json",
   "studioMetadataFollowThrough": "studio-metadata-follow-through.json",
-  "subflowPackagedFollowThrough": "subflow-packaged-follow-through.json"
+  "subflowPackagedFollowThrough": "subflow-packaged-follow-through.json",
+  "resourceFreezeFollowThrough": "resource-freeze-follow-through.json"
 }
