@@ -238,7 +238,7 @@ class ProjectGraphExecutor:
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
             module_type = node_data.get("moduleType")
-            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report", "ssh_connect", "ssh_upload_file", "ssh_download_file", "base64"}:
+            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report", "ssh_connect", "ssh_upload_file", "ssh_download_file", "base64", "firecrawl_scrape"}:
                 current.artifacts = self.artifact_writer(node_id, visit, module_type)
             await emit('nodeAttempt', {'status': 'started'})
             self.cancellation.raise_if_cancelled()

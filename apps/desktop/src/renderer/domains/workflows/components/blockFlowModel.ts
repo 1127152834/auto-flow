@@ -10,7 +10,7 @@ import { nanoid } from 'nanoid'
 import type { Node, Edge } from '@xyflow/react'
 import type { NodeData } from '../editor-store'
 import { moduleTypeLabels } from '../editor-store'
-import { getModuleAllDefaultVars } from '../lib/moduleDefaultVars'
+import { getModuleAllDefaultVars, getModuleConfigDefaults } from '../lib/moduleDefaultVars'
 import type { ModuleType } from '../types/index'
 
 export type Block =
@@ -311,7 +311,7 @@ export function createBlock(type: ModuleType, extraData?: Partial<NodeData>): Bl
     id,
     type: type === 'subflow_header' ? 'subflowHeaderNode' : 'moduleNode',
     position: { x: 0, y: 0 },
-    data: { label: moduleTypeLabels[type] || type, moduleType: type, ...(defVars as Partial<NodeData>), ...(extraData || {}) } as NodeData,
+    data: { label: moduleTypeLabels[type] || type, moduleType: type, ...(defVars as Partial<NodeData>), ...getModuleConfigDefaults(type), ...(extraData || {}) } as NodeData,
   }
   if (CONDITION_TYPES.has(type)) return { kind: 'if', id, node, then: [], els: [] }
   if (LOOP_TYPES.has(type)) return { kind: 'loop', id, node, body: [] }

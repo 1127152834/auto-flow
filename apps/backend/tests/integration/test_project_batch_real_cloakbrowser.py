@@ -10,6 +10,8 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from openpyxl import load_workbook
+
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
@@ -18,8 +20,6 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
-from openpyxl import load_workbook
-
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
@@ -29,7 +29,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl", "firecrawl_failure", "firecrawl_stop"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -186,6 +186,26 @@ async def test_real_project_batch_http(
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
+        elif scenario.startswith("firecrawl"):
+            crawl_url = url.replace("/fixture", "/crawl/start")
+            steps = [
+                ("firecrawl_scrape", {"url": crawl_url, "variableName": "scraped", "formats": ["markdown", "html", "screenshot"], "onlyMainContent": True}),
+                ("firecrawl_map", {"url": crawl_url, "variableName": "links", "search": "/crawl/", "ignoreSitemap": False, "limit": 10}),
+                ("firecrawl_crawl", {"url": crawl_url, "variableName": "pages", "maxDepth": 1, "limit": 2, "formats": ["text"], "onlyMainContent": True, "ignoreSitemap": True}),
+            ]
+            if scenario == "firecrawl_failure":
+                steps[0][1]["url"] = crawl_url.replace('/start', '/unavailable')
+            elif scenario == "firecrawl_stop":
+                steps[0][1].update(waitFor="#never-present", timeout=60000)
+            document["content"]["nodes"] = [
+                {"id": f"crawl-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"crawl-edge-{index}", "source": f"crawl-{index}", "target": f"crawl-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            document["content"]["variables"] = []
         elif scenario == "network_capture":
             network_url = url.replace("/fixture", "/network-monitor")
             steps = [
@@ -258,7 +278,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture"}:
+            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -287,7 +307,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture"} else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture", "firecrawl"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -330,7 +350,7 @@ async def test_real_project_batch_http(
                 response = await client.get(prefix + f"/batches/{batch_id}")
                 assert response.status_code == 200, response.text
                 detail = response.json()
-                if scenario == "stop" and detail["batch"]["status"] == "running":
+                if (scenario == "stop" or (scenario == "firecrawl_stop" and "/crawl/start" in requests)) and detail["batch"]["status"] == "running":
                     stopped = await client.post(
                         prefix + f"/batches/{batch_id}/stop",
                         headers={"Idempotency-Key": str(uuid4())},
@@ -370,7 +390,30 @@ async def test_real_project_batch_http(
                 json=payload,
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
-            if scenario == "network_capture":
+            if scenario == "firecrawl":
+                assert detail["statusCounts"]["succeeded"] == 2, detail
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    attempts = await client.get(task_path + "/node-attempts")
+                    outputs = await client.get(task_path + "/outputs")
+                    assert attempts.json()["total"] == 3
+                    assert {item["status"] for item in attempts.json()["items"]} == {"succeeded"}
+                    values = {item["name"]: item["value"] for item in outputs.json()["items"]}
+                    assert set(values) == {"scraped", "links", "pages"}
+                    assert "项目采集正文" in values["scraped"]["markdown"]
+                    assert "must-not-be-extracted" not in values["scraped"]["html"]
+                    assert "不属于正文的导航" not in values["scraped"]["html"]
+                    assert values["links"] == [crawl_url.replace('/start', '/child'), crawl_url.replace('/start', '/from-map')]
+                    assert [item["url"] for item in values["pages"]] == [crawl_url, crawl_url.replace('/start', '/child')]
+                    artifact_path = task_path + "/artifacts"
+                    artifacts = (await client.get(artifact_path)).json()
+                    assert artifacts["total"] == 1
+                    artifact = artifacts["items"][0]
+                    screenshot = await client.get(artifact_path + f"/{artifact['artifactId']}/content")
+                    assert screenshot.status_code == 200 and screenshot.content.startswith(b"\x89PNG\r\n\x1a\n")
+                    assert hashlib.sha256(screenshot.content).hexdigest() == artifact["sha256"]
+                assert '/sitemap.xml' in requests and '/crawl/child' in requests
+            elif scenario == "network_capture":
                 assert detail["statusCounts"]["succeeded"] == 2 and len([path for path in requests if path.startswith('/api/orders')]) >= 4
                 for task in tasks:
                     task_path = prefix + f"/tasks/{task['taskId']}"
@@ -514,7 +557,7 @@ async def test_real_project_batch_http(
                     assert [event.sequence for event in events] == list(
                         range(1, len(events) + 1)
                     )
-            elif scenario == "stop":
+            elif scenario in {"stop", "firecrawl_stop"}:
                 assert scenario_stopped and detail["batch"]["status"] == "stopped"
                 assert detail["statusCounts"]["cancelled"] == 2
             elif scenario == "budget":
@@ -534,6 +577,13 @@ async def test_real_project_batch_http(
                 assert screenshot.status_code == 200
                 assert screenshot.headers["content-type"] == "image/png"
                 assert screenshot.content.startswith(b"\x89PNG\r\n\x1a\n")
+            if scenario in {"firecrawl_failure", "firecrawl_stop"}:
+                expected_request = "/crawl/unavailable" if scenario == "firecrawl_failure" else "/crawl/start"
+                assert expected_request in requests
+                assert "/crawl/child" not in requests
+                for task in tasks:
+                    outputs = await client.get(prefix + f"/tasks/{task['taskId']}/outputs")
+                    assert outputs.json()["items"] == []
             assert not app.state.project_workflow_worker_manager.busy()
             assert app.state.project_workflow_dispatcher.blockers() == []
             assert app.state.project_run_scheduler.blockers() == []

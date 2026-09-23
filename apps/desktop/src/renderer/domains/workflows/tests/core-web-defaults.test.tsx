@@ -11,6 +11,7 @@ vi.hoisted(() => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 })
 })
 
+import { createBlock } from '../components/blockFlowModel'
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
@@ -81,4 +82,14 @@ it('NODE.wait.defaults-and-constraints: defaults to an empty time wait without f
   renderNode('wait')
   expect(screen.getByRole('combobox', { name: '等待类型' }).textContent).toContain('等待时间')
   expect(value(screen.getByPlaceholderText('例如: 1 或 2.5'))).toBe('')
+})
+
+it.each(['firecrawl_map', 'firecrawl_crawl'] as const)('NODE.%s: new nodes persist the displayed Sitemap choice in both views', type => {
+  const node = renderNode(type)
+  expect(screen.getByRole('combobox', { name: '忽略 Sitemap' }).textContent).toContain('否')
+  expect(node.data.ignoreSitemap).toBe(false)
+  expect(createBlock(type).node.data.ignoreSitemap).toBe(false)
+  store.getState().blockInsertNode(null, type)
+  expect(store.getState().nodes.at(-1)?.data.ignoreSitemap).toBe(false)
+  expect(createBlock(type, { ignoreSitemap: true }).node.data.ignoreSitemap).toBe(true)
 })

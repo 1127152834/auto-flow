@@ -9,6 +9,7 @@ from threading import Thread
 from uuid import uuid4
 
 import pytest
+
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 from autoflow.infrastructure.process.project_test_browser_worker import (
     browser_worker_payload,
@@ -31,8 +32,17 @@ def real_cloak_page():
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             requests.append(self.path)
+            if self.path == '/crawl/unavailable':
+                self.close_connection = True
+                return
             if self.path.startswith('/api/orders'):
                 content, content_type = b'{"ok":true}', 'application/json'
+            elif self.path == '/sitemap.xml':
+                content = f'<urlset><url><loc>http://127.0.0.1:{self.server.server_port}/crawl/from-map</loc></url></urlset>'.encode()
+                content_type = 'application/xml'
+            elif self.path.startswith('/crawl/'):
+                content = (page.parents[1] / 'workflow-project-crawl.html').read_bytes()
+                content_type = 'text/html; charset=utf-8'
             elif self.path.startswith('/network-monitor'):
                 content, content_type = network_page.read_bytes(), 'text/html; charset=utf-8'
             else:
@@ -121,7 +131,6 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         SqlAlchemyWorkflowRuntimeRepository,
     )
     from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
-
     from tests.fixtures.workflows import workflow_payload
 
     executable, url, _ = real_cloak_page

@@ -31,15 +31,16 @@ const projectHttpOnly = process.env.AUTOFLOW_PROJECT_HTTP_TASK === '1'
 const projectControlPrimitivesOnly = process.env.AUTOFLOW_PROJECT_CONTROL_PRIMITIVES_TASK === '1'
 const projectNetworkOnly = process.env.AUTOFLOW_PROJECT_NETWORK_TASK === '1'
 const projectAllureOnly = process.env.AUTOFLOW_PROJECT_ALLURE_TASK === '1'
+const projectFirecrawlOnly = process.env.AUTOFLOW_PROJECT_FIRECRAWL_TASK === '1'
 const projectBase64Only = process.env.AUTOFLOW_PROJECT_BASE64_TASK === '1'
 const projectTimingOnly = process.env.AUTOFLOW_PROJECT_TIMING_TASK === '1'
 const projectSshOnly = process.env.AUTOFLOW_PROJECT_SSH_TASK === '1'
 const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly || projectNetworkOnly || projectAllureOnly
-const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly || projectTimingOnly || projectBase64Only
+const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly || projectTimingOnly || projectBase64Only || projectFirecrawlOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectBase64Only ? 'formal-project-base64-electron-' : projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectFirecrawlOnly ? 'formal-project-firecrawl-electron-' : projectBase64Only ? 'formal-project-base64-electron-' : projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -95,6 +96,18 @@ try {
       const api = request.url?.startsWith('/api/orders')
       const body = api ? Buffer.from('{"ok":true}') : page
       response.writeHead(200, { 'content-type': api ? 'application/json' : 'text/html; charset=utf-8', 'content-length': body.length })
+      response.end(body)
+    })
+    await new Promise(resolve => httpFixture.listen(0, '127.0.0.1', resolve))
+    httpOrigin = `http://127.0.0.1:${httpFixture.address().port}`
+  }
+  if (projectFirecrawlOnly) {
+    const page = await readFile(join(root, 'apps/backend/tests/fixtures/workflow-project-crawl.html'))
+    httpFixture = createServer((request, response) => {
+      httpRequests.push([request.method, request.url])
+      const sitemap = request.url === '/sitemap.xml'
+      const body = sitemap ? Buffer.from(`<urlset><url><loc>${httpOrigin}/crawl/from-map</loc></url></urlset>`) : page
+      response.writeHead(200, { 'content-type': sitemap ? 'application/xml' : 'text/html; charset=utf-8', 'content-length': body.length })
       response.end(body)
     })
     await new Promise(resolve => httpFixture.listen(0, '127.0.0.1', resolve))
@@ -224,6 +237,83 @@ try {
     }, 'SSH connections and remote command cleanup', 5_000)
     checkpoint('项目任务真实 SSH 命令和 SFTP 文件往返完成；下载产物、变量与日志可查，连接及进程已清理')
     const report = { evidenceId: 'BE-project-ssh-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, sshCleanup, sha256: createHash('sha256').update(content).digest('hex'), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, server: 'real loopback SSH/SFTP', interaction: 'formal Electron mouse/keyboard; APIs only fixture setup and evidence reads' } }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
+  if (projectFirecrawlOnly) {
+    const name = '项目网页采集任务验收'
+    await newWorkflow(studio, name)
+    await showBlockView(studio)
+    for (const [label, variable] of [['AI单页数据抓取', 'scraped'], ['AI网站链接抓取', 'links'], ['AI全站数据抓取', 'pages']]) {
+      await addBlock(studio, '添加模块', label)
+      await setInput(studio, '[placeholder="https://example.com，支持 {变量名}"]', `${httpOrigin}/crawl/start`)
+      await setVariableNameInput(studio, '#variableName', variable)
+      if (variable === 'scraped') {
+        await setInput(studio, '#timeout', '60000')
+        await click(studio, 'HTML', 'span')
+        await click(studio, 'Screenshot', 'span')
+      } else if (variable === 'links') {
+        await setInput(studio, '[placeholder="只返回包含关键词的链接，支持 {变量名}"]', '/crawl/')
+        await selectNative(studio, '#ignoreSitemap', '否')
+      } else {
+        await setInput(studio, '#maxDepth', '1')
+        await setInput(studio, '#limit', '2')
+        await selectNative(studio, '#ignoreSitemap', '是')
+      }
+    }
+    await click(studio, '保存')
+    const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project crawl saved', 15_000)
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), ['firecrawl_scrape', 'firecrawl_map', 'firecrawl_crawl'])
+    assert.equal(saved.nodes[1].data.ignoreSitemap, false)
+    assert.equal(saved.nodes[2].data.ignoreSitemap, true)
+    assert.equal(saved.edges.length, 2)
+    checkpoint('正式 Studio 真实 UI 配置三类网页采集，保存到项目并正常关闭工作台')
+    await closeWindowThroughOs()
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '项目网页采集自动化')
+    await selectAutomationWorkflow(main, name, saved.id)
+    await click(main, '保存配置')
+    await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project crawl automation')
+    await click(main, '启动运行')
+    await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'project crawl batch dialog')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project crawl batch')
+    const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    let sawBrowser = false
+    const terminal = await waitForValue(async () => {
+      sawBrowser ||= cloakProcesses(userData).length > 0
+      const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`)
+      return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null
+    }, 'project crawl terminal', 120_000)
+    const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
+    const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
+    assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, task, attempts }))
+    assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, 3)
+    assert.ok(sawBrowser)
+    const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+    const values = Object.fromEntries(outputs.items.map(item => [item.name, item.value]))
+    assert.ok(values.scraped.markdown.includes('项目采集正文'))
+    assert.ok(!values.scraped.html.includes('<nav>'))
+    assert.ok(!values.scraped.html.includes('must-not-be-extracted'))
+    assert.deepEqual(values.links, [`${httpOrigin}/crawl/child`, `${httpOrigin}/crawl/from-map`])
+    assert.deepEqual(values.pages.map(item => item.url), [`${httpOrigin}/crawl/start`, `${httpOrigin}/crawl/child`])
+    const artifacts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/artifacts?pageSize=100`)
+    assert.equal(artifacts.total, 1)
+    const response = await fetch(`${runtime.sidecar.baseUrl}${artifacts.items[0].contentUrl}`, { headers: { 'x-autoflow-token': runtime.sidecar.token } })
+    assert.equal(response.status, 200)
+    const bytes = Buffer.from(await response.arrayBuffer())
+    assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10])
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), artifacts.items[0].sha256)
+    assert.ok(httpRequests.some(item => item[1] === '/sitemap.xml'))
+    await click(main, '查看任务')
+    await click(main, '异常与证据', '[role="tab"]')
+    await capture(main, join(evidenceDir, 'project-firecrawl-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    checkpoint('项目默认 Profile 启动真实 CloakBrowser；三类结果及 PNG 完整登记，浏览器清理完成')
+    const report = { evidenceId: 'BE-project-firecrawl-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, httpRequests, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'real CloakBrowser', interaction: 'formal UI mouse/keyboard; API fixture setup and evidence reads only' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()

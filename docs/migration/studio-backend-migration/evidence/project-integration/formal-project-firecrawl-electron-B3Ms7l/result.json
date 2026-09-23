@@ -1,0 +1,65 @@
+{
+  "evidenceId": "BE-project-firecrawl-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T19:47:10.111Z",
+  "gitHead": "732984a420f0d3820fc6a1714385b60a6bec0cd9",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "1eec4342-b50a-4671-91b2-0539c7c79ff3",
+  "workflowId": "TmpSnyrz_IIGN0xTrZaVC",
+  "batchId": "93f77bcf-6058-4d8b-a60d-ee0bb34de73b",
+  "taskId": "21b9f1be-9a79-4d56-9416-f7811ff8b98b",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 配置三类网页采集，保存到项目并正常关闭工作台",
+    "项目默认 Profile 启动真实 CloakBrowser；三类结果及 PNG 完整登记，浏览器清理完成"
+  ],
+  "httpRequests": [
+    [
+      "GET",
+      "/crawl/start"
+    ],
+    [
+      "GET",
+      "/favicon.ico"
+    ],
+    [
+      "GET",
+      "/crawl/start"
+    ],
+    [
+      "GET",
+      "/favicon.ico"
+    ],
+    [
+      "GET",
+      "/sitemap.xml"
+    ],
+    [
+      "GET",
+      "/favicon.ico"
+    ],
+    [
+      "GET",
+      "/crawl/start"
+    ],
+    [
+      "GET",
+      "/favicon.ico"
+    ],
+    [
+      "GET",
+      "/crawl/child"
+    ],
+    [
+      "GET",
+      "/favicon.ico"
+    ]
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "real CloakBrowser",
+    "interaction": "formal UI mouse/keyboard; API fixture setup and evidence reads only"
+  }
+}

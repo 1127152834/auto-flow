@@ -37628,7 +37628,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/firecrawl-family-2026-09-24/README.md",
+        "boundary": "原版本地页面采集逻辑，真实 CloakBrowser 项目任务与 PNG；开发及 macOS arm64 目录包真实 UI 通过，项目默认 Profile 可覆盖。共享任务页截图标题/清理展示缺口另列；Intel、Windows 未验收。"
+      }
     }
   },
   {
@@ -37890,7 +37896,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/firecrawl-family-2026-09-24/README.md",
+        "boundary": "原版本地页面采集逻辑，真实 CloakBrowser 项目任务与 PNG；开发及 macOS arm64 目录包真实 UI 通过，项目默认 Profile 可覆盖。共享任务页截图标题/清理展示缺口另列；Intel、Windows 未验收。"
+      }
     }
   },
   {
@@ -38206,7 +38218,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产注册、真实worker、正式Electron真实UI结果、模型边界、PNG产物和资源清理均有证据；未实测平台与真实第三方服务未推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/firecrawl-family-2026-09-24/README.md",
+        "boundary": "原版本地页面采集逻辑，真实 CloakBrowser 项目任务与 PNG；开发及 macOS arm64 目录包真实 UI 通过，项目默认 Profile 可覆盖。共享任务页截图标题/清理展示缺口另列；Intel、Windows 未验收。"
+      }
     }
   },
   {

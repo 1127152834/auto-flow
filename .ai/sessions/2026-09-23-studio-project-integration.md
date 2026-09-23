@@ -403,3 +403,10 @@
 - 既有 Base64 执行器进入项目目录 174→175，通过现有文件端口读写；保留原文编解码、Data URI、路径及持久回执行为。正式 UI 首轮发现旧 `resultVariable=base64_result` 遮蔽 `variableName`，真实 worker 先复现再修复输出登记，未改变执行算法。
 - 关联差分与项目节点族 19 项通过；追加大值后 Base64 专项 5 项通过，覆盖四模式、非法编码、路径逃逸和 70 Ki 汉字的完整编码值。开发与 macOS arm64 本地包真实 UI 编排/保存/关窗/项目运行/产物下载通过。证据：`docs/migration/studio-backend-migration/evidence/project-integration/base64-family-2026-09-24/README.md`。
 - 仍有 38 个项目目录入口待核销；整体目标保持 active。下一依赖就绪模块为 Firecrawl 三节点：现有 CloakBrowser 临时页和 PNG 端口可复用，尚未开始项目生产接入。未测平台、用户数据库、原生设备和外部供应商证据继续单列。
+
+## 项目任务 Firecrawl 三节点（2026-09-24，confirmed）
+
+- 既有单页抓取、站点映射、爬取执行器接入项目目录 175→178；只增加注册和 PNG 端口，不新增远程 Firecrawl 服务或第二执行器。真实页面、输出、Sitemap、截图内容和清理完成。
+- 正式 UI 发现忽略 Sitemap 字段缺省与页面显示不一致；新节点在现有公共默认值边界持久化 false，显式 true 保留，历史文档不改写。两个新增前端用例先失败后通过；231 项前端相关用例、10 项源差分/单测、13 项项目共享回归通过。真实成功、导航失败、停止均有证据。
+- 正式开发窗口和 macOS arm64 未签名目录包通过项目编排/保存/正常关窗/任务启动/产物查看链路；冻结后端 285.9 秒。证据见 `docs/migration/studio-backend-migration/evidence/project-integration/firecrawl-family-2026-09-24/README.md`，保留首轮失败，不误报其他平台。
+- 截图复核的共享展示问题已排队：结果截图标题仍称失败截图，终态任务仍称待清理；实际 worker、占用和进程清理断言通过，但尚未修复展示。现余 35 个项目目录入口（含画布工具），整体目标 active。下一块命令执行与 Python 脚本，复用既有进程执行器，重点核验输出及子进程停止；尚未修改生产接入。项目默认值＋显式覆盖继续生效，14 通知排除不变。

@@ -501,3 +501,8 @@ export function collectNodeVarNames(moduleType: string, data?: Record<string, un
   }
   return Array.from(names)
 }
+
+/** Persist the displayed Sitemap choice on creation; legacy documents keep source defaults. */
+export function getModuleConfigDefaults(type: string): { ignoreSitemap?: boolean } {
+  return type === 'firecrawl_map' || type === 'firecrawl_crawl' ? { ignoreSitemap: false } : {}
+}
