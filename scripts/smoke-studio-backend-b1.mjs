@@ -17,7 +17,8 @@ const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const failedPauseOnly = process.env.AUTOFLOW_B8_FAILED_PAUSE_ONLY === '1'
 const runToOnly = process.env.AUTOFLOW_B8_RUN_TO_ONLY === '1'
 const b8Only = failedPauseOnly || runToOnly
-const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${b8Only ? 'b8' : 'b1'}`)
+const projectMode = process.env.AUTOFLOW_B1_PROJECT === '1'
+const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectMode ? 'project-integration' : b8Only ? 'b8' : 'b1'}`)
 const evidencePrefix = failedPauseOnly ? 'formal-failed-pause-electron-' : runToOnly ? 'formal-run-to-electron-' : 'formal-electron-'
 const evidenceDir = await mkdtemp(join(evidenceRoot, evidencePrefix))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b1-'))
@@ -38,6 +39,7 @@ let studio
 let native
 let eventAbort
 let kernelMoved = false
+let projectId = null
 
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 await mkdir(join(userData, 'data', 'kernels'), { recursive: true })
@@ -66,6 +68,21 @@ try {
     },
   })
   checkpoint('主应用真实服务在临时工作区创建 CloakBrowser Profile')
+
+  if (projectMode) {
+    await click(main, '项目', 'a, button')
+    await click(main, '新建项目')
+    await setInput(main, '#project-name', 'Studio 五节点项目验收')
+    await click(main, '创建项目')
+    await waitFor(main, "document.body?.innerText.includes('Studio 五节点项目验收')", 'project created')
+    if (!await main.evaluate('Boolean(document.querySelector(\'[aria-label="项目功能"]\'))')) await click(main, 'Studio 五节点项目验收', '[role="button"],button')
+    await waitFor(main, 'Boolean(document.querySelector(\'[aria-label="项目功能"]\'))', 'project page')
+    projectId = (await main.evaluate('location.hash')).match(/projects\/([^/]+)/)?.[1]
+    assert.ok(projectId)
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('还没有自动化')", 'empty project automation directory')
+    checkpoint('正式项目 UI 新建项目，由项目自动化目录进入 Studio')
+  }
 
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
@@ -113,6 +130,7 @@ try {
   assert.equal(saved.revision, 1)
   assert.equal(saved.nodes.length, 5)
   assert.equal(saved.edges.length, 4)
+  if (projectMode) assert.equal(saved.projectId, projectId)
   checkpoint('正式保存经真实 HTTP 写入 SQLite，返回修订 1')
 
   if (runToOnly) {
@@ -149,7 +167,7 @@ try {
   assert.equal(await hasStudioTarget(desktop.debugOrigin), true)
   assert.equal(await studio.evaluate("document.querySelector('input[placeholder=\"工作流名称\"]')?.value"), 'B1 五节点正式闭环 · 关窗保存')
   assert.equal((await api(runtime, `/workflows/${encodeURIComponent(saved.id)}`)).revision, 1)
-  checkpoint('通过 macOS 系统级 Cmd+W 触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变')
+  checkpoint(`通过 macOS ${projectMode ? '原生窗口关闭按钮' : '系统级 Cmd+W'}触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变`)
 
   await closeWindowThroughOs(desktop.child.pid)
   await waitFor(studio, "document.body?.innerText.includes('保存当前工作流？')", 'second normal-close draft prompt')
@@ -160,7 +178,7 @@ try {
     const value = await api(runtime, `/workflows/${encodeURIComponent(saved.id)}`)
     return value.revision === 2 && value.name === 'B1 五节点正式闭环 · 关窗保存' ? value : null
   }, 'normal-close saved revision', 10_000)
-  checkpoint('再次通过系统级 Cmd+W 并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增')
+  checkpoint('再次正常关闭并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增')
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库')", 'reopened Studio', 30_000)
@@ -185,7 +203,9 @@ try {
     return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.status) ? value : null
   }, 'workflow terminal persistence', 120_000)
   assert.equal(terminalRun.status, 'completed')
+  if (projectMode) assert.equal(terminalRun.projectId, projectId)
   await waitForValue(async () => observedEvents.find(event => event.name === 'execution:completed' && event.data?.runId === startedRun.runId) ?? null, 'raw SSE terminal event', 10_000)
+  await click(studio, '执行日志')
   await waitFor(studio, "document.body?.innerText.includes('执行完成')", 'rendered SSE terminal event', 10_000)
   const runId = startedRun.runId
   const results = await api(runtime, `/workflow-runs/${encodeURIComponent(runId)}/results?cursor=0&limit=50`)
@@ -235,6 +255,11 @@ try {
     return value.status === 'stopped' ? value : null
   }, 'normal-close stopped run cleanup', 30_000)
   assert.equal(stopped.status, 'stopped')
+  if (projectMode) {
+    assert.equal(stopped.projectId, projectId)
+    assert.equal((await api(runtime, `/workflow-runs/${encodeURIComponent(failedRunId)}`)).projectId, projectId)
+    checkpoint('成功、失败调试及停止运行均持久化同一个项目归属')
+  }
   assert.equal((await api(runtime, `/workflows/${encodeURIComponent(saved.id)}`)).revision, 2)
   await waitForValue(async () => {
     const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
@@ -273,10 +298,10 @@ try {
     buildGitHead: process.env.AUTOFLOW_B1_BUILD_GIT_HEAD ?? null,
     sourceTreeSha256: process.env.AUTOFLOW_B1_SOURCE_TREE_SHA256 ?? null,
     buildSha256: buildArtifacts?.appAsarSha256 ?? await buildHash(), buildArtifacts,
-    workflowId: saved.id, profileId: profile.id, runId, failedRunId, stoppedRunId: stoppedRun.runId,
+    projectId, workflowId: saved.id, profileId: profile.id, runId, failedRunId, stoppedRunId: stoppedRun.runId,
     result: 'passed', checks, platform: `${process.platform}-${process.arch}`,
     entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary,
-    boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse and keyboard plus macOS system-level Command-W close shortcut; no Store access' },
+    boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: `CDP mouse and keyboard plus macOS ${projectMode ? 'native window close button' : 'system-level Command-W close shortcut'}; no Store access` },
   }
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
@@ -476,6 +501,10 @@ async function closeWindowThroughOs(pid) {
   assert.equal(process.platform, 'darwin', '原生窗口关闭验收目前只在 macOS 实机执行；其他平台必须单独记录')
   assert.equal(await native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>w.getTitle().includes('工作流工作台'));if(!w)return false;qaElectron.app.focus({steal:true});w.show();w.focus();return true})()"), true)
   await wait(250)
+  if (projectMode) {
+    execFileSync('osascript', ['-e', 'tell application "System Events"', '-e', `tell (first application process whose unix id is ${pid})`, '-e', 'click (first button of (first window whose name contains "工作流工作台") whose subrole is "AXCloseButton")', '-e', 'end tell', '-e', 'end tell'])
+    return
+  }
   execFileSync('osascript', [
     '-e', 'tell application "System Events"',
     '-e', `set targetProcess to first application process whose unix id is ${pid}`,

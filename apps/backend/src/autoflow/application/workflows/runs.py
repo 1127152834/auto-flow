@@ -154,6 +154,12 @@ class WorkflowRunService:
             )
         if start.mode not in {"run", "debug"}:
             raise WorkflowRunError("RUN_REQUEST_INVALID", "运行模式无效", 422)
+        if start.project_id is not None and (
+            not isinstance(start.project_id, str)
+            or not start.project_id.strip()
+            or len(start.project_id) > 200
+        ):
+            raise WorkflowRunError("RUN_REQUEST_INVALID", "项目标识无效", 422)
         sanitized = WorkflowRunStart(
             run_id=start.run_id,
             workflow_id=start.workflow_id,
@@ -165,6 +171,7 @@ class WorkflowRunService:
             profile_snapshot=_sanitize_profile(start.profile_snapshot),
             mode=start.mode,
             custom_module_snapshots=copy.deepcopy(start.custom_module_snapshots),
+            project_id=start.project_id,
         )
         return self._repository.create(
             sanitized,

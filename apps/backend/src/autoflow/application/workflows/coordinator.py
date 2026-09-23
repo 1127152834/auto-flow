@@ -331,6 +331,7 @@ class WorkflowRunCoordinator:
                 },
                 mode=cast(Any, mode),
                 custom_module_snapshots=copy.deepcopy(custom_module_dependencies),
+                project_id=request.get("projectId"),
             )
             run = self._runs.start(start)
             if run.status != "starting" or self._resources.owner_id == run_id:
@@ -2040,6 +2041,7 @@ def _summary(run: WorkflowRun) -> dict[str, Any]:
         "runId": run.run_id,
         "workflowId": run.workflow_id,
         "documentId": run.document_id,
+        "projectId": run.project_id,
         "workflowName": run.workflow_name,
         "status": run.status,
         "startedAt": run.started_at.isoformat(),

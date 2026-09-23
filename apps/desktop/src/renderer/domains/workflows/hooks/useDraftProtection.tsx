@@ -15,6 +15,8 @@ export function useDraftProtection(save: () => Promise<boolean>) {
   const [leaveError, setLeaveError] = useState('')
   const [dialog, setDialog] = useState({ title: '保存当前工作流？', message: '当前工作流有未保存的修改，请选择如何处理。', confirmText: '保存后继续', secondaryText: '放弃修改' })
   const pending = useRef<((choice: Choice) => void) | null>(null)
+  const resolvedSessionPrompt = useRef<(() => boolean) | null>(null)
+  const executionStatus = useWorkflowStore(state => state.executionStatus)
   const busy = useRef(false)
   const mounted = useRef(true)
   const choose = useCallback((choice: Choice) => {
@@ -22,6 +24,11 @@ export function useDraftProtection(save: () => Promise<boolean>) {
     pending.current = null
     setOpen(false)
   }, [])
+  useEffect(() => {
+    // A completed run (including restored terminal events) no longer needs a stop decision.
+    // Continue the original request only if it never needed a draft decision.
+    if (open && resolvedSessionPrompt.current?.()) choose('save')
+  }, [open, executionStatus, choose])
   useEffect(() => {
     mounted.current = true
     return () => { mounted.current = false; pending.current?.('cancel'); pending.current = null }
@@ -49,6 +56,9 @@ export function useDraftProtection(save: () => Promise<boolean>) {
     const captured = readResources()
     const dirty = !options?.sessionsOnly && state.hasUnsavedChanges
     if (!dirty && !captured.length) return true
+    resolvedSessionPrompt.current = captured.length && !dirty
+      ? () => !useWorkflowStore.getState().hasUnsavedChanges && readResources().length === 0
+      : null
     const resourcesUnchanged = () => readResources().every(resource => captured.some(original => original.id === resource.id))
     setDialog(captured.length ? {
       title: '结束活跃会话后离开？',
@@ -97,7 +107,7 @@ export function useDraftProtection(save: () => Promise<boolean>) {
       useWorkflowStore.getState().addLog({ level: 'error', message })
       if (mounted.current) setLeaveError(message)
       return false
-    } finally { busy.current = false }
+    } finally { busy.current = false; resolvedSessionPrompt.current = null }
   }, [save])
 
   useEffect(() => registerDocumentLeaveHandler(confirmLeave), [confirmLeave])

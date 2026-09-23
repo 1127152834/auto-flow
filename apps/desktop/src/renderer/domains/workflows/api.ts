@@ -247,8 +247,10 @@ export const workflowApi = {
     const expectedRevision = workflowRevisions.get(id) ?? 1
     return apiRequest(`/workflows/${id}?expectedRevision=${expectedRevision}`, { method: 'DELETE' })
   },
-  execute: (id: string, params?: any) =>
-    apiRequest(`/workflows/${id}/execute`, { method: 'POST', body: JSON.stringify(params || {}) }),
+  execute: (id: string, params?: any) => {
+    const projectId = getStudioOpenContext().projectId
+    return apiRequest(`/workflows/${id}/execute`, { method: 'POST', body: JSON.stringify({ ...params, ...(projectId ? { projectId } : {}) }) })
+  },
   stop: (id: string, runId?:string) =>
     apiRequest(`/workflows/${id}/stop`, { method: 'POST', body:JSON.stringify({runId}) }),
   getRun: (runId:string) => apiRequest<components['schemas']['StudioWorkflowRunSummary']>(`/workflow-runs/${encodeURIComponent(runId)}`),

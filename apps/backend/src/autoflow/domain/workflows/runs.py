@@ -45,6 +45,7 @@ class WorkflowRunStart:
     profile_snapshot: dict[str, Any]
     mode: RunMode
     custom_module_snapshots: dict[str, Any] = field(default_factory=dict)
+    project_id: str | None = None
 
     def request_payload(self) -> dict[str, Any]:
         return {
@@ -58,6 +59,8 @@ class WorkflowRunStart:
             "profileSnapshot": self.profile_snapshot,
             "mode": self.mode,
             "customModuleSnapshots": self.custom_module_snapshots,
+            # Keep existing unscoped command hashes stable across upgrades.
+            **({"projectId": self.project_id} if self.project_id is not None else {}),
         }
 
 
@@ -83,6 +86,7 @@ class WorkflowRun:
     stop_requested: bool
     error: dict[str, Any] | None
     custom_module_snapshots: dict[str, Any] = field(default_factory=dict)
+    project_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

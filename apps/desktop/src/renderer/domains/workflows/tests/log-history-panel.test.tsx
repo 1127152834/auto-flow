@@ -131,8 +131,8 @@ it('restores the latest persisted run when the live execution identity is absent
 
 it('refreshes the persisted run summary after a lifecycle event',async()=>{
   const list=vi.spyOn(workflowApi,'listRuns')
-    .mockResolvedValueOnce({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,workflowName:'状态刷新',status:'running',startedAt:'2026-09-14T00:00:00Z',finishedAt:null,logCount:650}],total:1,nextCursor:null}})
-    .mockResolvedValue({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,workflowName:'状态刷新',status:'completed',startedAt:'2026-09-14T00:00:00Z',finishedAt:'2026-09-14T00:00:01Z',logCount:650}],total:1,nextCursor:null}})
+    .mockResolvedValueOnce({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,projectId:null,workflowName:'状态刷新',status:'running',startedAt:'2026-09-14T00:00:00Z',finishedAt:null,logCount:650}],total:1,nextCursor:null}})
+    .mockResolvedValue({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,projectId:null,workflowName:'状态刷新',status:'completed',startedAt:'2026-09-14T00:00:00Z',finishedAt:'2026-09-14T00:00:01Z',logCount:650}],total:1,nextCursor:null}})
   render(<LogPanel/>);await waitFor(()=>expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('running'))
   window.dispatchEvent(new CustomEvent('studio:run-history-changed',{detail:{runId:'run-history',status:'completed'}}))
   await waitFor(()=>expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('completed'))
@@ -140,7 +140,7 @@ it('refreshes the persisted run summary after a lifecycle event',async()=>{
 })
 
 it('loads older run pages and retains the explicitly selected older run after refresh',async()=>{
- const rows=Array.from({length:1000},(_,index)=>({runId:`paged-${index}`,workflowId:'flow',documentId:'doc',workflowName:`分页运行${index}`,status:'completed' as const,startedAt:new Date().toISOString(),finishedAt:null,logCount:0}))
+ const rows=Array.from({length:1000},(_,index)=>({runId:`paged-${index}`,workflowId:'flow',documentId:'doc',projectId:null,workflowName:`分页运行${index}`,status:'completed' as const,startedAt:new Date().toISOString(),finishedAt:null,logCount:0}))
  const list=vi.spyOn(workflowApi,'listRuns').mockImplementation(async(_doc,cursor=0,limit=50)=>({success:true,data:{items:rows.slice(cursor,cursor+limit),total:1000,nextCursor:cursor+limit<1000?cursor+limit:null}}))
  vi.spyOn(workflowApi,'getRunLogs').mockImplementation(async runId=>({success:true,data:{runId,workflowId:'flow',items:[],total:0,nextCursor:null}}))
  render(<LogPanel/>);fireEvent.click(await screen.findByText('更早运行'))

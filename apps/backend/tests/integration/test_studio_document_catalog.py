@@ -13,16 +13,19 @@ from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.adapters.http.workflows import workflows_router
 from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
 from autoflow.application.workflows.documents import WorkflowDocumentService
+from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.errors import WorkflowDocumentError
 from autoflow.domain.workflows.models import WorkflowError
+from autoflow.domain.workflows.runs import WorkflowRunError, WorkflowRunStart
 from autoflow.infrastructure.database.core_workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
 from tests.fixtures.workflows import workflow_payload
 
@@ -58,6 +61,70 @@ def _project(factory, project_id: str, state: str = "active") -> None:
             description="", search_text=project_id, default_resources={},
             management_revision=1, lifecycle_state=state, created_at=now, updated_at=now))
         session.commit()
+
+
+@pytest.mark.parametrize("state,code", [("archived", "LIFECYCLE_CONFLICT"), ("closing", "PROJECT_CLOSING"), ("deleted", "PROJECT_NOT_FOUND")])
+def test_studio_run_admission_checks_stored_owner_without_client_scope(tmp_path, state, code):
+    database = tmp_path / "run-project.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    _project(factory, "owner")
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    saved = documents.create(_payload(project_id="owner"), client_request_id="create")
+    with factory() as session:
+        session.get(ProjectRow, "owner").lifecycle_state = state
+        session.commit()
+    runs = WorkflowRunService(SqlAlchemyWorkflowRuns(factory))
+    # The editor rebuilds its draft snapshot without project metadata. Stored
+    # ownership must still stop archived/deleting projects from starting work.
+    request = WorkflowRunStart("run", saved.id, saved.id, saved.name, {"nodes": []}, {}, "profile", {}, "run")
+    with pytest.raises(WorkflowRunError) as failure:
+        runs.start(request)
+    assert failure.value.code == code
+    assert runs.list_runs(document_id=None, cursor=0, limit=20)[1] == 0
+
+
+def test_studio_run_resolves_owner_and_rejects_cross_project_snapshot(tmp_path):
+    database = tmp_path / "run-owner.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    for owner in ("owner", "other"):
+        _project(factory, owner)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    saved = documents.create(_payload(project_id="owner"), client_request_id="create")
+    runs = WorkflowRunService(SqlAlchemyWorkflowRuns(factory))
+    from dataclasses import replace
+    request = WorkflowRunStart("run", saved.id, saved.id, saved.name, {"nodes": []}, {}, "profile", {}, "run")
+    other = documents.create(_payload(project_id="other"), client_request_id="other")
+    for conflicting in (
+        replace(request, project_id="other"),
+        replace(request, document_snapshot={"nodes": [], "projectId": "other"}),
+        replace(request, document_id=other.id),
+    ):
+        with pytest.raises(WorkflowRunError) as failure:
+            runs.start(conflicting)
+        assert failure.value.code == "WORKFLOW_PROJECT_MISMATCH"
+    created = runs.start(request)
+    assert created.project_id == "owner"
+    assert WorkflowRunService(SqlAlchemyWorkflowRuns(factory)).get("run").project_id == "owner"
+    assert runs.start(request) == created
+
+
+def test_unsaved_project_run_keeps_identity_without_creating_a_workflow(tmp_path):
+    database = tmp_path / "run-unsaved.sqlite3"
+    migrate_database(database)
+    factory = create_session_factory(database)
+    _project(factory, "owner")
+    runs = WorkflowRunService(SqlAlchemyWorkflowRuns(factory))
+    request = WorkflowRunStart("run", "unsaved", "unsaved", "未保存", {"nodes": []}, {}, "profile", {}, "debug", project_id="owner")
+    assert runs.start(request).project_id == "owner"
+    assert WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).list_summaries().items == ()
+    runs.finish("run", status="stopped", cleanup_completed=True)
+    with factory() as session:
+        session.get(ProjectRow, "owner").lifecycle_state = "archived"
+        session.commit()
+    # Query/replay of the identical admitted command is not a second start.
+    assert runs.start(request).status == "stopped"
 
 
 @pytest.mark.parametrize("workflow_id", [str(uuid4()), "V1StGXR8_Z5jdHi6B-myT"])

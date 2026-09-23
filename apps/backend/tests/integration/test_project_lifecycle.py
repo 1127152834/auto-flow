@@ -21,7 +21,9 @@ from autoflow.application.projects.lifecycle import (
 )
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate
+from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.runs import WorkflowRunStart
 from autoflow.infrastructure.database.environment_models import (
     ProjectEnvironmentInstanceRow,
     ProjectManualItemRow,
@@ -47,10 +49,45 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
+from autoflow.infrastructure.database.workflow_models import (
+    WorkflowRunRow as StudioRunRow,
+)
+from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 
 
 def key() -> str:
     return str(uuid4())
+
+
+@pytest.mark.parametrize("status", ["starting", "running", "paused", "failed_paused"])
+def test_archive_waits_for_studio_run_cleanup(tmp_path, status):
+    ctx = Context(tmp_path)
+    repository = SqlAlchemyWorkflowRuns(ctx.factory)
+    runs = WorkflowRunService(repository)
+    runs.start(WorkflowRunStart("studio-run", "draft", "draft", "Studio 活跃流程", {"nodes": []}, {}, "profile", {}, "debug", project_id=ctx.project_id))
+    repository.append_event("studio-run", "execution:state", {}, now=datetime.now(UTC), run_patch={"status": status})
+    impact = ctx.service.impact(ctx.project_id, "archive")
+    assert any(row["code"] == "STUDIO_RUN_ACTIVE" and row["state"] == status for row in impact["blockers"])
+    ctx.archive()
+    ctx.repository.advance(ctx.project_id)
+    assert ctx.state() == "closing"
+    runs.finish("studio-run", status="stopped", cleanup_completed=True)
+    ctx.repository.advance(ctx.project_id)
+    assert ctx.state() == "archived"
+
+
+def test_archive_resolves_older_active_studio_run_through_saved_document(tmp_path):
+    ctx = Context(tmp_path)
+    now = datetime.now(UTC)
+    with ctx.factory() as session:
+        session.add(WorkflowDocumentRow(id="old-document", name="旧项目流程", document={"projectId": ctx.project_id}, layout={}, revision=1, created_at=now, updated_at=now))
+        session.add(StudioRunRow(id="old-run", workflow_id="old-document", request_hash="old-hash", started_at=now.isoformat(), active_slot=2, payload={"status": "paused", "workflowName": "旧项目流程", "cleanupState": "pending"}))
+        session.commit()
+    impact = ctx.service.impact(ctx.project_id, "archive")
+    assert any(row["code"] == "STUDIO_RUN_ACTIVE" for row in impact["blockers"])
+    with ctx.factory() as session:
+        assert "projectId" not in session.get(StudioRunRow, "old-run").payload
 
 
 class Context:

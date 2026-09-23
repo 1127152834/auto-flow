@@ -8,6 +8,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.runs import (
     RunMode,
     RunStatus,
@@ -19,12 +20,15 @@ from autoflow.domain.workflows.runs import (
     WorkflowRunStart,
 )
 
+from .projects import guard_project
 from .workflow_models import (
     WorkflowDebugCommandRow,
+    WorkflowDocumentRow,
     WorkflowRunArtifactRow,
     WorkflowRunEventRow,
     WorkflowRunRow,
 )
+from .workflow_project_scope import workflow_project_id
 
 
 def _iso(value: datetime) -> str:
@@ -60,6 +64,7 @@ def _run(row: WorkflowRunRow) -> WorkflowRun:
         custom_module_snapshots=copy.deepcopy(
             value.get("customModuleSnapshots", {})
         ),
+        project_id=value.get("projectId"),
     )
 
 
@@ -112,6 +117,38 @@ class SqlAlchemyWorkflowRuns:
                 result = _run(previous)
                 session.rollback()
                 return result
+            # Admission and the active slot are committed together. Resolve
+            # saved ownership even when the editor sends only an unsaved graph.
+            project_id = start.project_id
+            snapshot_project = start.document_snapshot.get("projectId")
+            if snapshot_project is not None:
+                if (
+                    not isinstance(snapshot_project, str)
+                    or not snapshot_project.strip()
+                    or len(snapshot_project) > 200
+                ):
+                    raise WorkflowRunError("RUN_REQUEST_INVALID", "项目标识无效", 422)
+                if project_id is not None and project_id != snapshot_project:
+                    raise WorkflowRunError("WORKFLOW_PROJECT_MISMATCH", "工作流不属于当前项目", 404)
+                project_id = snapshot_project
+            owners = {
+                workflow_project_id(session, identifier)
+                for identifier in {start.workflow_id, start.document_id}
+                if session.get(WorkflowDocumentRow, identifier) is not None
+            }
+            if len(owners) > 1 or (
+                owners and project_id is not None and project_id not in owners
+            ):
+                raise WorkflowRunError("WORKFLOW_PROJECT_MISMATCH", "工作流不属于当前项目", 404)
+            if owners:
+                project_id = next(iter(owners))
+            if project_id is not None:
+                try:
+                    guard_project(session, project_id)
+                except ProjectError as error:
+                    raise WorkflowRunError(
+                        error.code, error.message, error.status, error.details
+                    ) from error
             row = WorkflowRunRow(
                 id=start.run_id,
                 workflow_id=start.workflow_id,
@@ -123,6 +160,7 @@ class SqlAlchemyWorkflowRuns:
                 active_slot=2,
                 payload={
                     "documentId": start.document_id,
+                    "projectId": project_id,
                     "workflowName": start.workflow_name,
                     "documentSnapshot": copy.deepcopy(start.document_snapshot),
                     "layoutSnapshot": copy.deepcopy(start.layout_snapshot),

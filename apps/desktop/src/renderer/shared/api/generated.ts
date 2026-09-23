@@ -11945,6 +11945,8 @@ export type components = {
             documentId: string;
             /** Profileid */
             profileId: string;
+            /** Projectid */
+            projectId?: string | null;
             /**
              * Headless
              * @default false
@@ -12466,6 +12468,11 @@ export type components = {
             workflowId: string;
             /** Documentid */
             documentId: string;
+            /**
+             * Projectid
+             * @default null
+             */
+            projectId: string | null;
             /** Workflowname */
             workflowName: string;
             /**

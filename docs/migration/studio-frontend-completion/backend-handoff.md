@@ -1,6 +1,6 @@
 # Studio 正式后端交接合同
 
-状态：前端服务消费合同已冻结；当前实现可在 memory 与 HTTP/SSE Mock 两种传输上运行。本文描述正式后端必须实现的边界，不把 Mock 行为当作自动化执行结果。
+状态（2026-09-23 核销）：前端服务消费合同与真实后端迁入并行演进。正式文档、迁入执行器和 worker 已存在；Mock 只用于合同测试。下述节点槽位和项目集成证据分开记录，不能据此宣称全部后端或全部平台已完成。
 
 ## 后端迁入准备入口（2026-09-15）
 
@@ -9,22 +9,24 @@
 | 文档 | 权威内容 | 当前状态 |
 |---|---|---|
 | [后端全局约束](../../automation-studio/BACKEND_GLOBAL_CONSTRAINTS.md) | 仅 CloakBrowser、仅批准节点、AutoFlow 分层、小助手使用 LangGraph | 用户确认，实施必须遵守 |
-| [后端迁入设计规格](../../superpowers/specs/2026-09-15-studio-backend-webrpa-migration-design.md) | 架构、执行语义、合同、持久化、生命周期和数据库兼容 | B0 已实施，B1 实施中 |
-| [后端迁入实施计划](../../superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md) | B0–B9 任务、文件、接口、测试、退出门槛和估计 | B0 检查项已核销；从 B1 继续 |
-| [213 节点能力台账](capabilities.json) | 每节点冻结源码、符号、业务字段、目标模块和三条后端验收用例 | 213 项已映射；639 条后端验收槽位中 570 条已通过、69 条待验收 |
-| [共享后端能力映射](backend-support-mapping.json) | 文档、执行器、浏览器、运行、拾取、录制、Debug、模型/MCP、LangGraph 小助手、凭据、触发器和数据库兼容 | 13 个共享能力已映射，真实实现待迁入 |
-| [后端验收矩阵](../studio-backend-migration-validation.md) | 跨节点链路、故障、容量、平台与正式包验收 | 静态基线已核实，其余待真实实施 |
+| [后端迁入设计规格](../../superpowers/specs/2026-09-15-studio-backend-webrpa-migration-design.md) | 架构、执行语义、合同、持久化、生命周期和数据库兼容 | 按已批准范围迁入，具体闭合状态见证据 |
+| [后端迁入实施计划](../../superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md) | B0–B9 任务、文件、接口、测试、退出门槛和估计 | 按依赖并行推进，不再沿用准备时的 B1 单阶段结论 |
+| [213 节点能力台账](capabilities.json) | 每节点冻结源码、符号、业务字段、目标模块和三条后端验收用例 | 639 条槽位中 617 条标记已验收、22 条待真实执行；槽位不等同全部平台完成 |
+| [共享后端能力映射](backend-support-mapping.json) | 文档、执行器、浏览器、运行、拾取、录制、Debug、模型/MCP、LangGraph 小助手、凭据、触发器和数据库兼容 | 13 个共享能力集中登记，按各自实际证据核销，不以节点通过代替 |
+| [后端验收矩阵](../studio-backend-migration-validation.md) | 跨节点链路、故障、容量、平台与正式包验收 | 保留已有真实证据和未测平台，继续补齐剩余交付 |
 
 已核实基线：
 
 - 有效范围为 213 个节点，类型集合以 [范围文档](scope-database-dp-cloakbrowser.md) 为准；中文单语言，不恢复排除节点及专属配套。
 - 冻结源码位于 `reference/WebRPA`，commit 为 `5ccb900e8dcf1530aae66f676d87593c416c7ebb`，产品版本 3.2.0。213 项均找到执行器入口，212 项由装饰器注册，`subflow` 手动注册。
 - [上游许可证副本](../../../LICENSE.WebRPA) 与冻结仓库 LICENSE 哈希一致。项目负责人已确认在本项目范围内获准使用并迁入源码；不把该确认扩写为具体商业授权或公开发布授权。
-- 前端功能与 Mock 消费协议已经验收；真实后端目前只有 Studio DTO/OpenAPI schema 以及可复用的 Profile、CloakBrowser、模型、凭据、进程和工作区基础设施。`domain/workflows` 与 `application/workflows` 尚无生产实现。
-- 数据库代码已逐字恢复提交 `f573a44` 中的四个历史 revision，并用空操作 `0011_merge_android_project_data` 合并为唯一 head。临时历史库、故障回滚及只读副本检查器已通过；正式用户数据库副本仍为外部等待，本轮未读取或修改真实用户数据库。
+- 准备阶段“只有 DTO、没有生产 workflows”的结论已被迁入实现替代。正式入口现有 `/api/workflows`、`/api/workflow-runs` 及项目目录 `/api/v1/workflows`；生产边界分别为 `application/workflows/documents.py`、`coordinator.py`、`runtime.py` 及数据库/worker 适配器，不能重新恢复已弃用的历史执行器。
+- B0 历史记录：恢复 `f573a44` 中四个历史 revision，并以 `0011_merge_android_project_data` 合并；这个编号不是当前数据库 head 的声明。新增迁移按现有链继续。本轮仅使用隔离临时数据库，不修改真实用户数据。
 - Studio 小助手按最新用户决定使用 LangGraph 管理真实多轮状态、工具、权限、取消和恢复；普通工作流仍迁入 WebRPA 确定性执行器。
 
-当前阶段是 B1 五节点真实闭环。B1 通过标准是：正式 Studio 通过真实 UI 保存并重开五节点流程，读取主应用 Profile，在 CloakBrowser 执行真实网页动作，持久化日志/提取值/PNG，并在成功、失败或停止后完成 worker、浏览器和锁清理。B1 不会提前核销其余 208 个节点。
+当前工作为剩余节点真实验收及已批准的项目管理深度接入。项目文档入口、真实保存重开和正常关窗已具备 [macOS arm64 正式窗口证据](../studio-backend-migration/evidence/project-integration/formal-documents-electron-HMKavH/result.json)。实现、校验和明确剩余边界集中记录于 [当前会话记录](../../../.ai/sessions/2026-09-23-studio-project-integration.md)。节点聚合状态仍为 180 项已验收、33 项待验收，其中 11 项的三个槽位均已有通过记录；必须结合其平台限制核销，不能将其视为新增缺实现，也不能直接将平台限制抹掉。
+
+项目运行归属、归档等待清理及五节点真实运行已补 [正式窗口证据](../studio-backend-migration/evidence/project-integration/formal-electron-RnPj0V/result.json)：普通运行、失败调试、原生关闭中的取消/放弃停止、重开、内核缺失启动失败均覆盖。运行请求和详情包含可选 `projectId`，已存文档归属在数据库事务中校验，未保存草稿不顺带创建文档。这里的通过限 macOS arm64 开发入口；不表示项目运行读权限、资源授权、数据资产及统计已完成。
 
 当前没有需要用户决定的产品冲突，源码使用授权不再是实施阻塞。正式数据库副本、跨平台机器和第三方凭据属于后续验收环境等待。
 
@@ -67,16 +69,17 @@
 - 凭据字段管理前端已提供独立改名、批量改名/删除、原子命令、修订冲突和响应丢失恢复；正式秘密存储仍由后端负责。
 - 文件与产物读取必须验证其登记归属，不能接受任意路径穿越。
 
-## 正式后端未交付项
+## 正式后端剩余交付边界
 
-当前仓库已经移除旧 Automation 后端，OpenAPI 中没有 `/api/v1/workflows` 路由。以下能力仍需后端实现：
+本节替代准备阶段“仓库没有真实后端”的旧清单。当前剩余要求继续沿用既有能力台账及矩阵，不能重新笼统判定整族未实现：
 
-- CloakBrowser 的真实网页执行、调试 worker、暂停变量写入与进程树清理。
-- 真实拾取、定位、相似元素和录制采集。
-- 工作流、运行、日志、诊断、产物、录制草稿的 SQLite/Alembic 持久化。
-- Studio AI 节点对现有 ModelService 的适配、LangGraph 小助手、MCP、WebDAV、凭据秘密消费和计划任务的真实服务实现。
+- 22 个节点的待真实执行槽位，以及对应平台、凭据、硬件环境；用户删除的 14 个通知节点保持排除。
+- Studio 与项目执行/权限/资源、数据资产、统计、活动及导航的完整接入；项目管理的原运行表与 Studio 运行表尚未统一消费，目录可读不代表项目批次可运行全部迁入节点。
+- 项目范围内 Debug、拾取、录制和宿主切换的完整生命周期矩阵；文档正常关闭证据不能代替其他活跃会话验收。
+- 正式窗口观察到的必填字段规则、全局快捷键 404 和部分启动命令 501，需按原合同继续核销；不能以文档保存成功掩盖。
+- 真实模型、秘密存储、外部集成与跨平台正式包各自独立记账，以对应能力证据为准。
 
-这些缺口不能解释为前端缺失；正式实现必须按现有合同替换 Mock 服务，并通过相同合同测试与正式浏览器验收。
+所有缺口按实际入口追踪；不能将未实现的前端业务归入真实后端外部等待，也不能使用 Mock 通过关闭真实执行槽位。
 
 ## 接入退出条件
 

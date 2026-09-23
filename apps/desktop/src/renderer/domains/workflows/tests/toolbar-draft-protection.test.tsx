@@ -14,6 +14,7 @@ vi.mock('../hooks/stores/aiPermissionStore', () => ({ actionNeedsApproval: () =>
 import { executeClientAction, emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { setStudioTransport } from '../api/transport'
 import { mockRequest } from '../api/mock-server'
+import { registerDocumentLeaveResource } from '../lib/documentLeave'
 let saved: Record<string, unknown>[]
 const isDocumentCreate = (input: RequestInfo | URL, init?: RequestInit) =>
   new URL(String(input)).pathname === '/api/workflows' && init?.method === 'POST'
@@ -29,6 +30,43 @@ beforeEach(() => {
   })
 })
 afterEach(() => { cleanup(); setStudioTransport(mockRequest) })
+it.each([false, true])('rechecks a naturally finished run without discarding a dirty draft (%s)', async dirty => {
+  const state = useWorkflowStore.getState()
+  if (!dirty) state.markAsSaved()
+  state.setCurrentExecutionWorkflowId('completed-before-open')
+  state.setCurrentExecutionRunId('completed-before-open-run')
+  state.setExecutionStatus('running')
+  render(<Toolbar />)
+  fireEvent.click(screen.getByRole('button', { name: '新建' }))
+  expect(await screen.findByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+  await act(async () => useWorkflowStore.getState().setExecutionStatus('stopped'))
+  if (dirty) {
+    expect(screen.getByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+    expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  } else {
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(useWorkflowStore.getState().variables).toEqual([])
+  }
+  expect(saved).toEqual([])
+})
+it('keeps the leave decision while another session remains active', async () => {
+  useWorkflowStore.getState().markAsSaved()
+  useWorkflowStore.getState().setExecutionStatus('running')
+  const release = vi.fn(async () => true)
+  const unregister = registerDocumentLeaveResource(() => ({ id: 'inspection-still-active', label: '拾取', release }))
+  try {
+    render(<Toolbar />)
+    fireEvent.click(screen.getByRole('button', { name: '新建' }))
+    expect(await screen.findByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+    await act(async () => useWorkflowStore.getState().setExecutionStatus('stopped'))
+    expect(screen.getByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+    expect(release).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+  } finally { unregister() }
+})
 it('saves a variable-only document without requiring a canvas node', async () => {
   render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '保存' }))

@@ -79,6 +79,7 @@ class WorkflowExecuteRequest(ApiModel):
     run_id: str = Field(alias="runId", min_length=1, max_length=128)
     document_id: str = Field(alias="documentId", min_length=1)
     profile_id: str = Field(alias="profileId", min_length=1)
+    project_id: str | None = Field(default=None, alias="projectId", min_length=1, max_length=200)
     headless: bool = False
     document: dict[str, Any] | None = None
     debug: bool | None = None
@@ -101,6 +102,7 @@ def run_summary(run: WorkflowRun) -> dict[str, Any]:
         "runId": run.run_id,
         "workflowId": run.workflow_id,
         "documentId": run.document_id,
+        "projectId": run.project_id,
         "workflowName": run.workflow_name,
         "status": run.status,
         "startedAt": run.started_at.isoformat(),
