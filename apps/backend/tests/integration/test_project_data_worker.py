@@ -971,6 +971,81 @@ async def test_project_task_runs_frozen_nested_workflow_in_real_worker(tmp_path:
         factory.dispose()
 
 
+@pytest.mark.asyncio
+async def test_project_module_keeps_scope_when_calling_child_workflow(tmp_path: Path) -> None:
+    from autoflow.application.workflows.modules import CustomModuleService
+    from autoflow.infrastructure.database.workflow_modules import (
+        SqlAlchemyWorkflowModules,
+    )
+
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+    worker = ProjectWorkflowWorkerManager(tmp_path / "module-child-worker", start_timeout=10)
+    dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+    try:
+        child = _studio_payload(str(uuid4()))
+        child.update(
+            projectId=project.project_id, name="模块内子工作流", schemaVersion=3,
+            nodes=[{"id": "child-set", "type": "set_variable", "position": {"x": 0, "y": 0}, "data": {
+                "moduleType": "set_variable", "config": {
+                    "variableName": "answer", "variableValue": "42",
+                },
+            }}], edges=[], variables=[],
+        )
+        saved_child = documents.create(child, client_request_id=str(uuid4()))
+        module = modules.create({
+            "name": "calls_child", "display_name": "调用子工作流", "parameters": [],
+            "outputs": [{"name": "answer"}],
+            "workflow": {"nodes": [{"id": "module-child-call", "type": "run_workflow_file", "data": {
+                "moduleType": "run_workflow_file", "config": {"workflowFile": saved_child.id},
+            }}], "edges": [], "variables": []},
+        }, client_request_id=str(uuid4()))
+        parent = _studio_payload(automation.workflow_id)
+        parent.update(schemaVersion=3, nodes=[
+            {"id": "module-call", "type": "custom_module", "position": {"x": 0, "y": 0}, "data": {
+                "moduleType": "custom_module", "config": {"customModuleId": module.id},
+            }},
+            {"id": "root-output", "type": "set_variable", "position": {"x": 200, "y": 0}, "data": {
+                "moduleType": "set_variable", "config": {
+                    "variableName": "result", "variableValue": "{answer}",
+                },
+            }},
+        ], edges=[{"id": "after-module", "source": "module-call", "target": "root-output"}])
+        documents.update(
+            automation.workflow_id, parent, expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory), modules=modules)
+        coordinator._core = runtime
+        batch, _, _ = coordinator.start(
+            project.project_id, automation.automation_id, str(uuid4()), start_payload(automation),
+        )
+        task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert run is not None
+        prepared = runtime.query_prepared_content(prepared_content_id=run.prepared_content_id)
+        assert prepared is not None
+        assert saved_child.id in prepared.execution_plan["workflowDependencies"]
+        await dispatcher.dispatch(
+            run.run_id, expected_status_revision=run.status_revision,
+            execution_generation=run.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=run.run_id)
+            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded"
+        child_attempt = next(event for event in events if event.node_id == "child-set" and event.kind == "nodeAttempt")
+        assert [scope["id"] for scope in child_attempt.payload["executionContext"]["scopes"]] == [module.id, saved_child.id]
+        assert any(event.node_id == "root-output" and event.kind == "output" and event.payload.get("value") == 42 for event in events)
+        assert not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
 def test_project_nested_workflow_rejects_other_project_reference(tmp_path: Path) -> None:
     factory, projects, _, coordinator, _, project, automation = setup(tmp_path)
     documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))

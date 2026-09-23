@@ -517,6 +517,14 @@ class _WorkerNestedWorkflows:
         self._background: set[asyncio.Task[NestedWorkflowResult]] = set()
         self.custom_modules: _WorkerCustomModules | None = None
 
+    def for_context(
+        self, parent: ExecutionContext, sink: _WorkerEventSink
+    ) -> _WorkerNestedWorkflows:
+        scoped = copy.copy(self)
+        scoped._parent = parent
+        scoped._sink = sink
+        return scoped
+
     async def run_workflow(
         self,
         reference: str,
@@ -616,7 +624,7 @@ class _WorkerNestedWorkflows:
             child.speech = interactive
             child.desktop_actions = interactive
             child.webhook_triggers = interactive
-        child.nested_workflows = self
+        child.nested_workflows = self.for_context(child, child_sink)
         if self.custom_modules is not None:
             child.custom_modules = self.custom_modules.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
@@ -625,7 +633,7 @@ class _WorkerNestedWorkflows:
             parent=child,
             sink=child_sink,
             command_bus=self._command_bus,
-            nested_workflows=self,
+            nested_workflows=child.nested_workflows,
         )
         child.canvas_subflows = canvas_subflows
         await child_sink.publish(
@@ -698,7 +706,10 @@ class _WorkerCustomModules:
             parent=context,
             sink=sink,
             command_bus=self._command_bus,
-            nested_workflows=self._nested_workflows,
+            nested_workflows=(
+                self._nested_workflows.for_context(context, sink)
+                if self._nested_workflows is not None else None
+            ),
             stack=self._stack,
         )
 
@@ -791,7 +802,10 @@ class _WorkerCustomModules:
             child.speech = interactive
             child.desktop_actions = interactive
             child.webhook_triggers = interactive
-        child.nested_workflows = self._nested_workflows
+        child.nested_workflows = (
+            self._nested_workflows.for_context(child, child_sink)
+            if self._nested_workflows is not None else None
+        )
         child.custom_modules = self.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
             document,
@@ -799,7 +813,7 @@ class _WorkerCustomModules:
             parent=child,
             sink=child_sink,
             command_bus=self._command_bus,
-            nested_workflows=self._nested_workflows,
+            nested_workflows=child.nested_workflows,
         )
         child.canvas_subflows = canvas_subflows
         try:
@@ -860,7 +874,10 @@ class _WorkerCanvasSubflows:
             parent=parent,
             sink=sink,
             command_bus=self._command_bus,
-            nested_workflows=self._nested_workflows,
+            nested_workflows=(
+                self._nested_workflows.for_context(parent, sink)
+                if self._nested_workflows is not None else None
+            ),
             stack=self._stack,
         )
 
@@ -936,7 +953,10 @@ class _WorkerCanvasSubflows:
             child.speech = interactive
             child.desktop_actions = interactive
             child.webhook_triggers = interactive
-        child.nested_workflows = self._nested_workflows
+        child.nested_workflows = (
+            self._nested_workflows.for_context(child, child_sink)
+            if self._nested_workflows is not None else None
+        )
         if isinstance(self._parent.custom_modules, _WorkerCustomModules):
             child.custom_modules = self._parent.custom_modules.for_context(
                 child, child_sink
