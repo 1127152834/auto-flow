@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "lifecycle_restart_focused_passed_full_regression_in_progress_native_ci_prior_candidate",
+  "status": "local_full_lifecycle_passed_binary_followup_targeted_passed_final_native_ci_in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -11,7 +11,7 @@
     "3 of 251 requirements still have no located assertion; 203 partial / 48 planned / 0 verified. XE-G06 now has source real-worker archive/restore/delete/service-restart assertions; full Workspace/G01–G05 and packaged gates remain open.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
-    "Current lifecycle follow-up candidate94f8e0a8 complete three-platform matrix35816258910 is in_progress; local full regression in_progress. Prior9a5a80aa matrix35815127474 is still historical source relative to new deletion fix.",
+    "Final defa1955 three-platform matrix35816693045 in_progress. Lifecycle94f8 source full local3472 passed/74 skipped; binary follow-up16 evidence+1 real Mac worker passed separately. Superseded35815127474/35816258910 cancelled; old14df matrix35811305102 MacARM/Intel success, Windows screenshot failure. None is current three-platform completion.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
@@ -30,7 +30,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "94f8e0a823467f548232b7a4f61adf718ee66f9b",
+  "codeCandidate": "defa1955be915022dc30e3309159affb28d30ae0",
   "checks": {
     "currentLocal": "lifecycle-restart-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -143,10 +143,9 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Lifecycle94f8 source full local regression in_progress; additional Windows managed artifact binary-read flag fix locally verified by16 contract/integration and1 real Mac worker. Native final follow-up pending; no current all-green matrix claim.",
+  "workingCandidate": "Lifecycle production source94f8e0a8 full local backend:3472 passed /74 skipped /2 warnings in796.74s. Run started before O_BINARY follow-up; defa1955 separately passed16 evidence tests and1 real Mac worker, plus Ruff/mypy/build/sidecar. No single final-source local full-run claim. Final complete native matrix35816693045 atdefa1955 is in_progress.",
   "finalCICandidate": {
-    "codeCandidate": "9a5a80aabe01e98abd9d1af2d343fcc565e7b93d",
-    "productionSourceCommit": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
+    "codeCandidate": "defa1955be915022dc30e3309159affb28d30ae0",
     "status": "in_progress",
     "platforms": {
       "win32-x64": {
@@ -160,12 +159,12 @@
       }
     },
     "physicalInstallation": "pending",
-    "runId": "35815127474",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35815127474",
-    "realWorkerSelection": "Includes real_archive plus existing suite; no result inferred."
+    "runId": "35816693045",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35816693045",
+    "realWorkerSelection": "Existing real_archive now includes restore/delete/two app restarts; manual-evidence-reconnect validates real PNG read on Windows. No native result inferred."
   },
-  "codeCandidateScope": "Archive settlement: unknown write blockers/reconcile-only closing, worker outbound intents, cancellation-safe retention, atomic acceptance and terminal instance cleanup.",
-  "testCandidate": "9a5a80aabe01e98abd9d1af2d343fcc565e7b93d",
+  "codeCandidateScope": "Lifecycle deletion includes owned Run directories, on top of archive settlement; managed artifact HTTP reads add O_BINARY on Windows.",
+  "testCandidate": "defa1955be915022dc30e3309159affb28d30ae0",
   "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -276,23 +275,19 @@
     },
     {
       "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
-      "status": "in_progress",
+      "status": "failure",
       "platforms": {
-        "win32-x64": {
-          "status": "in_progress"
-        },
-        "darwin-x64": {
-          "status": "in_progress"
-        },
-        "darwin-arm64": {
-          "status": "success"
-        }
+        "darwin-arm64": "success",
+        "darwin-x64": "success",
+        "win32-x64": "failure"
       },
       "physicalInstallation": "pending",
       "runId": "35811305102",
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35811305102",
       "realWorkerSelection": "Existing selection plus manual-evidence-reconnect; counts must be read from run logs, not inferred.",
-      "scope": "Historical checkpoint candidate; excludes archive settlement fixes."
+      "scope": "Historical checkpoint candidate; excludes archive settlement fixes.",
+      "headSha": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
+      "reason": "Windows real manual-evidence-reconnect screenshot content GET409; missing O_BINARY fixed later, awaiting35816693045."
     },
     {
       "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
@@ -313,6 +308,33 @@
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35814591659",
       "realWorkerSelection": "Existing native worker suite plus real_archive; results must be read, not inferred.",
       "reason": "Superseded by corrected admission assertions; wait for local full-regression remainder before one replacement matrix."
+    },
+    {
+      "codeCandidate": "9a5a80aabe01e98abd9d1af2d343fcc565e7b93d",
+      "productionSourceCommit": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
+      "status": "cancelled",
+      "platforms": {
+        "win32-x64": {
+          "status": "cancelled"
+        },
+        "darwin-x64": {
+          "status": "cancelled"
+        },
+        "darwin-arm64": {
+          "status": "cancelled"
+        }
+      },
+      "physicalInstallation": "pending",
+      "runId": "35815127474",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35815127474",
+      "realWorkerSelection": "Includes real_archive plus existing suite; no result inferred.",
+      "reason": "Superseded by lifecycle directory cleanup and native Windows screenshot binary-read fix; cancellation not due to observation timeout."
+    },
+    {
+      "runId": "35816258910",
+      "headSha": "94f8e0a823467f548232b7a4f61adf718ee66f9b",
+      "status": "cancelled",
+      "reason": "Historical Windows failure identified missing O_BINARY; superseded by fixed defa1955 before wasting full matrix on known defect."
     }
   ],
   "historicalD1Verification": {
@@ -345,14 +367,15 @@
   "archiveSettlementFollowThrough": "archive-settlement-follow-through.json",
   "lifecycleRestartFollowThrough": {
     "report": "lifecycle-restart-follow-through.json",
-    "status": "focused_passed_full_regression_in_progress",
+    "status": "local_full_lifecycle_passed_final_native_ci_in_progress",
     "releaseAccepted": false,
     "codeCandidate": "94f8e0a823467f548232b7a4f61adf718ee66f9b",
-    "nativeCI": "35816258910"
+    "nativeCI": "35816693045"
   },
   "windowsArtifactBinaryRead": {
     "report": "windows-artifact-binary-read.json",
     "status": "local_passed_windows_native_recheck_pending",
-    "releaseAccepted": false
+    "releaseAccepted": false,
+    "nativeCI": "35816693045"
   }
 }

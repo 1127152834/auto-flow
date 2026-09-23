@@ -10,7 +10,8 @@
     "jobId": "107023291046",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35811305102/job/107023291046",
     "test": "test_real_project_batch_http[manual-evidence-reconnect]",
-    "observation": "Screenshot artifact metadata available, HTTP content request returned409 instead of200; test line824. Native binary read recheck still pending."
+    "observation": "Screenshot artifact metadata available, HTTP content request returned409 instead of200; test line824. Native binary read recheck still pending.",
+    "matrixConclusion": "failure; macos-15 and macos-15-intel succeeded, windows-2022 failed the listed real screenshot case."
   },
   "rootCause": "Shared artifact_content used os.open without O_BINARY. Windows text-mode CRLF/0x1A conversion invalidates persisted PNG byte size/hash. Prior ASCII-only b-png fixture missed the platform behavior.",
   "source": "https://docs.python.org/3.11/library/os.html#os.open",
@@ -20,13 +21,21 @@
     "realManualEvidence": "macOS ARM source real worker/TCP/SSE/screenshot:1 passed /33 deselected in17.49s; not Windows proof.",
     "ruff": "passed",
     "mypy": "407 source files passed",
-    "fullRegression": "Lifecycle94f8 source full local run remains in_progress; started before binary-only follow-up.",
-    "nativeWindows": "pending"
+    "fullRegression": "Lifecycle production source94f8e0a8 full local backend:3472 passed /74 skipped /2 warnings in796.74s. Run started before O_BINARY follow-up; defa1955 separately passed16 evidence tests and1 real Mac worker, plus Ruff/mypy/build/sidecar. No single final-source local full-run claim.",
+    "nativeWindows": {
+      "runId": "35816693045",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35816693045",
+      "headSha": "defa1955be915022dc30e3309159affb28d30ae0",
+      "status": "in_progress"
+    },
+    "backendBuild": "PyInstaller passed on defa1955",
+    "packagedSidecar": "Original unchanged15-second smoke passed on defa1955; not a fix claim for earlier initial-start timeout."
   },
   "review": "Independent read-only review no P1/P2; native Windows not yet reverified.",
   "remaining": [
     "Final native Windows contract and real screenshot read recheck.",
     "Windows arbitrary-path existing-file safe overwrite/append/read S4 remains refused and is not enabled by this fix.",
     "Release acceptance remains incomplete."
-  ]
+  ],
+  "codeCandidate": "defa1955be915022dc30e3309159affb28d30ae0"
 }

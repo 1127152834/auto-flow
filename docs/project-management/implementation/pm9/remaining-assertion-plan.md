@@ -1,5 +1,9 @@
 # PM9 剩余断言与能力补齐计划
 
+2026-09-23 本机回归收口（confirmed）：生命周期源码94f8e0a8完整后端3472 passed/74 skipped/2 warnings，796.74秒；之后defa1955二进制读取补丁单独16项+真实worker1项、Ruff/mypy407/构建/原15秒sidecar通过，未宣称同一最终本机全量快照。最终三平台35816693045进行中。已完成源生产恢复/删除/服务重启补证及运行目录清理修复；Windows真实PNG409的读取修复待原生确认。旧14df矩阵35811305102两种Mac成功、Windows失败；所有旧状态以此按hash区分。releaseAccepted=false。
+
+2026-09-23 最新候选 defa1955（局部 confirmed，完整验收 pending）：已修复项目删除遗漏 Run 目录；源生产联合链归档→服务重建→恢复不重放→清理残留→服务重建自动续跑1项通过。随后从历史Windows真实PNG GET409定位并修复O_BINARY缺失，二进制契约/证据16项、Mac真实worker1项通过。三平台35816693045进行中；35815127474/35816258910因新缺陷修复取代而取消，不计通过。下文旧候选/计数/状态仅为历史；248/251有范围断言，203partial/48planned/0verified，releaseAccepted=false。
+
 2026-09-23 Windows 截图后续：旧14df候选原生真实截图内容GET409，公共读取缺少O_BINARY；已修复并强化二进制fixture，本机16项与真实worker1项通过，Windows修复后复验待完成。详见 windows-artifact-binary-read.json；未开放S4既有文件能力，不提升覆盖状态。
 
 2026-09-23 生命周期重启补证（confirmed 局部）：真实 worker 联合归档→重建服务→恢复→删除残留→再次重启沿原命令清理已通过（最终仅等待后台自动推进，1 passed/15.15秒）；修复删除遗漏项目运行目录，相关21项、Ruff/mypy407、OpenAPI、构建与原15秒sidecar通过；独立审查无P1/P2。Google/凭据与权限失败仍为受控 fixture，运行目录内文件为已知 fixture。完整回归进行中，旧矩阵35815127474不含本次补丁。PM-04/PM-05/XE-G06补断言但不升 verified；Workspace/G01–G05及外部验收保留。详见 lifecycle-restart-follow-through.json。下列旧轮次结论只对应其历史候选。

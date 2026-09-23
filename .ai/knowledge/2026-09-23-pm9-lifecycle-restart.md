@@ -7,3 +7,5 @@
 - 限制：Google/凭据/权限故障和受管目录内证据文件为 fixture；不等同操作系统原生权限故障或实网、打包 UI、Workspace 切换与用户验收。248/251有范围断言，0 verified，releaseAccepted=false。
 
 - 最终测试移除重建后的手动 advance，只等待 startup coordinator 自行完成（1 passed/15.15秒）；相关21项、Ruff/mypy407、OpenAPI、PyInstaller、原15秒 sidecar smoke通过。独立审查无P1/P2；完整回归仍进行中。
+
+- 后续完整回归：生命周期源码94f8e0a8，3472 passed/74 skipped/2 warnings（796.74秒）。其后Windows O_BINARY一行修复另有16项与真实worker1项证据；最终原生矩阵35816693045@defa1955进行中。

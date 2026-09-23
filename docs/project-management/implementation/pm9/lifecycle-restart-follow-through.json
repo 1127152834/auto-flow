@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "focused_passed_full_regression_in_progress",
+  "status": "local_full_lifecycle_passed_final_native_ci_in_progress",
   "releaseAccepted": false,
   "parentCommit": "0341bf261d40f30ab4fceb0048c919ba7533c5d8",
   "requirements": [
@@ -17,13 +17,14 @@
     "focused": "21 passed / 2 warnings in 8.15s; lifecycle/crash-recovery/resource-reference tests",
     "ruff": "passed",
     "mypy": "407 source files passed",
-    "fullBackend": "in_progress",
+    "fullBackend": "Lifecycle production source94f8e0a8 full local backend:3472 passed /74 skipped /2 warnings in796.74s. Run started before O_BINARY follow-up; defa1955 separately passed16 evidence tests and1 real Mac worker, plus Ruff/mypy/build/sidecar. No single final-source local full-run claim.",
     "backendBuild": "PyInstaller passed",
     "nativeCI": {
-      "runId": "35816258910",
-      "headSha": "94f8e0a823467f548232b7a4f61adf718ee66f9b",
-      "url": "https://github.com/1127152834/auto-flow/actions/runs/35816258910",
-      "status": "in_progress"
+      "runId": "35816693045",
+      "headSha": "defa1955be915022dc30e3309159affb28d30ae0",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35816693045",
+      "status": "in_progress",
+      "supersededRun": "35816258910 cancelled because later Windows PNG binary-read fix changed source"
     },
     "packagedSidecar": "Original unchanged 15-second smoke passed; historical first-start timeout cause remains unresolved.",
     "openapi": "passed",
