@@ -1340,6 +1340,13 @@
           "scope": "当前cb040daf ARM打包：修改原独立文档并真实执行，项目归档停止后永久删除，通过工作区恢复原删除命令，保留原ID/版本/节点/边并重新关联新项目；不覆盖Studio占用/文档所有权/持久文件清理。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "contract_counterexample",
+          "report": "docs/project-management/implementation/pm9/binding-destination-audit.json",
+          "scope": "重复绑定409且保留唯一自动化，但details没有原项目/自动化定位，destinationProvided=false；不是定位验收通过。",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-A",
@@ -1416,7 +1423,7 @@
         "gaps": [
           {
             "kind": "implementation_missing",
-            "detail": "项目自建工作流所有权未持久化，deleteOwned仍以WORKFLOW_OWNERSHIP_UNKNOWN拒绝；AU-08 proposed所有权机制未实现，不以安全拒绝算接通。 实际失败截图在自动化删除成功后仍留workspace/runs，持久文件清理与失败/重启恢复缺失；AD1–AD3规格/计划待确认。"
+            "detail": "项目自建工作流所有权未持久化，deleteOwned仍以WORKFLOW_OWNERSHIP_UNKNOWN拒绝；AU-08 proposed所有权机制未实现，不以安全拒绝算接通。 实际失败截图在自动化删除成功后仍留workspace/runs，持久文件清理与失败/重启恢复缺失；AD1–AD3规格/计划待确认。 HTTP/SQLite反例确认WORKFLOW_ALREADY_BOUND未返回原项目/自动化去向，页面也无定位入口；W1c已补入待确认W方案，不能仅归为缺测试。"
           },
           {
             "kind": "test_missing",

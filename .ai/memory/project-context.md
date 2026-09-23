@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-24 AU-08已有绑定去向勘误（confirmed实现缺失，W1c proposed）：HTTP/真实SQLite诊断证明重复关联409且仅保留原自动化，但错误未给出原projectId/automationId，前端也无定位入口；不是只有缺测试。既有11项契约/仓库测试通过（2依赖警告/1.62秒）不证明该条件。新增可重复诊断、错误分类及W1c契约/界面/并发与失效目标验收切片，随现有W方案等待确认；未修改生产代码，不重跑全量/打包/流水线。251条状态、241生产/19实现/8测试/24外部计数不变，releaseAccepted=false。见binding-destination-audit.json。
+
 2026-09-24 AU-08项目删除解除关联补证（confirmed本机子范围）：当前cb040daf未签名ARM包中，同一独立文档公开编辑后由真实worker执行，项目归档停止并取消Task，再精确名称删除项目；工作区原命令查询/重放一致，项目级查询404、冻结快照清空，原文档ID/版本/节点/边保留并在新项目关联。完整桌面passed/23截图，新关联画面已目视核对；102脚本、4映射/251引用通过。两次查询地址/可选DTO默认值夹具错误保留，非产品修复。仅补测试与证据，不重跑无改动生产全量/构建；CLI401仍阻断新矩阵。AU-08 Studio占用/绑定去向/文档所有权/持久文件清理及持久身份反例仍保留；251状态和241生产/19实现/8测试/24外部缺口计数不变，releaseAccepted=false。详见project-unlink-follow-through.json。
 
 2026-09-24 持久环境身份反例（confirmed实现缺失，I1–I3 proposed）：当前cb040daf ARM打包真实HTTP/SQLite/worker在保存登录后修改Profile与重置seed，固定和输入关联恢复均signed-in，但UA/locale/timezone变为新Profile，原生seed由21807变42845。identityPreserved/seedPreserved均false，不是验收通过。仓库未保存实际身份包，恢复与维护读取当前Profile；维护仅代码证据。34项原资源/环境测试通过仍不覆盖此条件；4映射/251引用通过。XE-C02/C11/G04/A20补implementation_missing，249有断言/2未定位、206partial/45planned/0verified不变，按需求去重缺口241生产/19实现/8测试/24外部。新增I1–I3规格与计划待确认；保留首轮重复绑定409夹具错误。无生产修改、不重复全量/构建；releaseAccepted=false。详见persistent-identity-audit.json。

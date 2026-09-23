@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-24",
+  "status": "confirmed_implementation_gap_design_proposed",
+  "releaseAccepted": false,
+  "sourceCommit": "b43c5ec38fbd5d241d8dd649985ff4ff2ccfd75a",
+  "requirement": "AU-08",
+  "observation": {
+    "scope": "HTTP router/service/real SQLite contract fixture; not production bootstrap or packaged browser",
+    "originalProjectId": "00000000-0000-0000-0000-000000000010",
+    "originalAutomationId": "6d86cef4-d885-4074-b58f-a8e43e63c55e",
+    "duplicateResponse": {
+      "error": {
+        "code": "WORKFLOW_ALREADY_BOUND",
+        "message": "Automation identity is already in use",
+        "details": {
+          "fields": {
+            "workflowId": "Already in use"
+          },
+          "domainCode": "workflow_already_bound",
+          "retryable": false
+        },
+        "requestId": "0767ce04-af3c-4e1c-bfeb-0f470bd27ddf"
+      }
+    },
+    "destinationProvided": false,
+    "retainedAutomationCount": 1
+  },
+  "rootCause": "Unique constraint prevents duplicate workflow association, but repository only returns a field error and domainCode. No stable original binding destination reaches the creation page.",
+  "sourceEvidence": [
+    "apps/backend/src/autoflow/infrastructure/database/project_automations.py::SqlAlchemyProjectAutomations.create",
+    "apps/desktop/src/renderer/domains/project-automations/pages/AutomationDetailPage.tsx",
+    "docs/project-management/design/functional-structure.md::AU-08"
+  ],
+  "command": "uv run --directory apps/backend python -c 'import runpy; runpy.run_path(\"../../docs/project-management/implementation/pm9/probes/binding-destination.py\")'",
+  "probeMeaning": "Exit0 confirms the diagnostic ran, not acceptance. destinationProvided=false contradicts the AU-08 location requirement.",
+  "existingTests": "11 passed /2 warnings /1.62s; existing automation contract/repository tests do not prove destination navigation.",
+  "fixtureCorrections": [
+    "First diagnostic assumed create200; actual new-create contract201. Corrected without production changes.",
+    "Direct external script lacked tests package on sys.path; canonical runpy command from backend interpreter resolves existing fixture without adding dependencies."
+  ],
+  "proposedSlice": "W1c added to existing W1–W3 proposed spec/plan: readable stable existingBinding IDs in conflict, no duplication or ownership change, preserve draft, revalidate navigation, privacy and concurrency contract checks plus packaged UI. Not approved or implemented.",
+  "scope": "Real SQLite/router/service controlled fixture and code inspection. No production bootstrap/browser/packaged destination navigation or platform evidence.",
+  "coverage": "AU-08 location classified implementation_missing as well as lacking positive test; status and total unique requirement gap counts unchanged.",
+  "evidenceSha256": {
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/coverage.log": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/committed-probe-stderr.log": "b742d26bf76ccb103c901b3b340475b510aafff2c10746bccfdde7d0df134c3e",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/coverage-tests.log": "89c240f8310de96f65347039b23936d943036bacbdbdf6e7bf85462611ec4546",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/committed-probe.json": "f27a9e019e011c8bce28a1fa4d1fc0e85c3493238fa70e2b9489119b3439ef41",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/binding-probe.json": "e46141d530d74acde0b9227c42db706e86013ba267a37ad99c87adf98d57f0eb",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/probe-stderr.log": "0b7dd3ad0b4d8d17cbdeba84983d036bc68e8f376b4fb0e51c44e3e43becd618",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/probe-final-stderr.log": "b742d26bf76ccb103c901b3b340475b510aafff2c10746bccfdde7d0df134c3e",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/existing-tests.log": "83b1303e82023455603c76639f8e3dcc8e0aa65957372a44f3049f111521022a",
+    ".tmp-tests/pm9-remaining-audit-2026-09-24/binding_probe.py": "7764f0f27237d397955ab88c5bf5f3d106894d9696740abd50e78ea15a161dab"
+  },
+  "sourceSha256": {
+    "docs/project-management/implementation/pm9/probes/binding-destination.py": "f49533c3ff17cde76d2fdc885de85a247c67da60eca6c18511c36866108199df",
+    "apps/backend/src/autoflow/infrastructure/database/project_automations.py": "b4a262c199461572f2908960a644dec09c0583c264b4289b02a5f3f721411a4e",
+    "apps/desktop/src/renderer/domains/project-automations/pages/AutomationDetailPage.tsx": "95e0a3d332300674f7b89bbcdff1046f88d95a3f36943c89417a8cc55b11728b"
+  },
+  "validation": "Ruff passed after sorting imports; canonical formatted probe rerun;4 mapping checks and251 references passed."
+}

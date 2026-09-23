@@ -6,6 +6,7 @@
 |---|---|---|---|
 | W1a | 可选项目目标与单会话打开/确认契约 | shared/automation-studio、preload、StudioWindowController、现有project automation及workflow读取服务 | 先反例：重复打开/迟到回执/错误项目或workflow/工作区更换；主进程和契约检查 |
 | W1b | 项目详情编辑入口、关联抬头和返回、带未保存保护的载入 | AutomationDetailPage、StudioApp、WorkflowOpenDialog、现有draft protection | 组件→页面；真实打包Manager选指定自动化、编辑并条件保存；失败保留旧草稿；验证独立文档所有权不改变 |
+| W1c | 重复关联冲突返回可读取的原项目/自动化，并提供保留草稿的定位入口（2026-09-24新增proposed） | SqlAlchemyProjectAutomations.create、既有结构化错误/客户端类型、AutomationDetailPage及离开保护 | 同/跨项目、并发、名称冲突及不可读取目标契约；组件保留草稿/失效目标；正式包定位原自动化，不复制或改变所有权 |
 | W2a | 绑定会话复用项目批次启动和原操作恢复 | 现有project automation运行配置、批次HTTP、操作账本 | 保存失败不启动；响应丢失查原键；权限/冻结版本不由renderer替代；真实worker只一次执行 |
 | W2b | 两窗口共用Task证据与人工状态 | TaskDetail及证据/人工组件、现有API/事件游标 | 实际waiting→同Run继续→End；两窗口相同ID/终态，关闭重开不新增Run，不扩展跨进程恢复 |
 | W3a | 单一会话presentation切换与失败回退 | 原窗口控制器、离开协调、现有Studio组件/主题作用域 | 同文档CSS共存先验证；明确快照字段和代次；取消/装载失败/过期确认保持原会话可编辑 |

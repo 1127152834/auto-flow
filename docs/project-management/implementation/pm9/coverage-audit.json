@@ -164,7 +164,7 @@
         {
           "id": "AU-08",
           "status": "partially_verified",
-          "evidenceCount": 4,
+          "evidenceCount": 5,
           "plannedTestExists": true,
           "reviewedCheckCount": 7,
           "gapKinds": [

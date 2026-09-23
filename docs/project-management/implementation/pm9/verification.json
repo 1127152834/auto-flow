@@ -671,5 +671,6 @@
     ]
   },
   "persistentIdentityAudit": "persistent-identity-audit.json",
-  "projectUnlinkFollowThrough": "project-unlink-follow-through.json"
+  "projectUnlinkFollowThrough": "project-unlink-follow-through.json",
+  "bindingDestinationAudit": "binding-destination-audit.json"
 }
