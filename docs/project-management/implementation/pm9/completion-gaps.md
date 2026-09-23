@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-23 XE-G07窗口子范围（confirmed）：当前ARM包实际窗口复用/恢复、越权打开拒绝、脏稿取消/保存关闭、显式重新打开同文档且Run不重复通过；主进程11、脚本101、映射4通过。AU-06/XE-G01/XE-G07项目会话关联与停靠明确为实现缺失，W1–W3规格/计划待确认；新增窗口断言后的完整ARM桌面脚本通过，详见 studio-window-follow-through.json。249/251有范围断言、2未定位，206partial/45planned/0verified；73条缺预定文件全部已有子范围映射，不等于完整覆盖。生产仍632caf6d，新断言不在现有CI35881272086，不重复流水线，releaseAccepted=false。
+
 2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。源码632caf6d新三平台35881272086进行中；旧35874897768不含此修复，已确认取消，不计完整通过。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。
 
 2026-09-23 eb50e1ef本机收口（confirmed本机范围）：终态人工事项清理与未决人工阻断修复完整后端3483 passed/78 skipped/2依赖警告（792.43秒）；38相关后端、最终11删除契约、6前端、101脚本、Ruff/mypy407、前端typecheck/lint、后端构建/应用打包通过。新ARM包完整桌面smoke passed，取消后删除无人工残留，独立文档/原命令恢复保持；五路10000行56381ms/0busy、真实worker1004条31665ms、固定1000条合成输入60019ms/最大滞后51ms分别记录。实际resolved事项清理也由另一真实worker探针证明，但同一PNG文件仍残留，该负向报告保持failed。AD1–AD3等待确认，不用本片成功覆盖文件缺口。新三平台35874897768运行中，旧5346矩阵35871462256已取消；[专项报告](automation-deletion-follow-through.json)按候选保存。251条205partial/46planned/0verified不变，releaseAccepted=false。
@@ -273,7 +275,7 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 2026-09-23 当前 ARM DMG 隔离安装补证（confirmed，本机限定）：生产源码 6d1f1d83 的 ARM DMG 校验、只读挂载、临时目录复制安装、包内 sidecar 和完整桌面运行通过。运行脚本修正终态 `cleaned`/`retained_unsaved` 处置：前者由调度器回收，后者才显式放弃。当前本机完整重跑包含真实浏览器 worker、人工输入、失败保留、归档/恢复、五路万行写入（53560 ms，0 次 busy 重试）、固定 60 秒合成日志 1000 条（最大批次滞后 40 ms）、21 页记录分页、200% 缩放及应用重启。此前一次合成写入期间分页等待超时根因未知，已保留失败并补诊断，不能称为长期稳定。详见 installed-arm-dmg-follow-through.json。旧矩阵 35819716149 ARM 在未修脚本的源码冒烟发多余 End，403 后失败；新脚本本机通过，旧 Windows/Intel 未完作业随后取消、不计通过。未证明 Finder/Gatekeeper、签名公证、其他平台实机、当前打包 Sheets 实网与 OAuth；`releaseAccepted=false`。
 
-覆盖台账当前尚无直接断言定位的 3 项分别是 DATA-LIFE-01（L1 同主体重授权功能未获批实施）、DATA-SH-03（M1 云端并发新增行功能未获批实施）和 XE-G07（完整双窗口与三平台实机门禁）。本机 ARM 的缩放、第二窗口及隔离安装只是 XE-G07 子范围，仍缺原生窗口停靠、文件面板/凭据和其他平台实机证据；不能仅凭 smoke 文件名或安装包构建将整项改为 verified。
+历史c165台账尚无直接断言定位的 3 项分别是 DATA-LIFE-01（L1 同主体重授权功能未获批实施）、DATA-SH-03（M1 云端并发新增行功能未获批实施）和 XE-G07（完整双窗口与三平台实机门禁）。本机 ARM 的缩放、第二窗口及隔离安装只是 XE-G07 子范围，仍缺原生窗口停靠、文件面板/凭据和其他平台实机证据；不能仅凭 smoke 文件名或安装包构建将整项改为 verified。
 
 2026-09-23 当前三平台 CI 收口（confirmed，来源：Actions 35822065171 @1b2979ea）：Windows x64、macOS Intel、Apple Silicon 的 checks job 均 success；各自全量后端/前端、29 项真实 worker、源码及打包生产链、万行写入、固定千条合成日志与安装包构建均通过。Windows 后端 3462 passed/87 skipped、前端 5471 passed、五路万行 670182 ms/0 busy 重试；实际 worker 1004 日志/100723 ms，观察 598 条/分钟，不能用合成 1000 条/60 秒替代。两种 Mac 后端各 3474 passed/75 skipped、前端各 5471 passed；具体数据及原生 probe skipped 见 ci-final-follow-through.json。此为 CI 平台链而非三平台物理安装、原生面板/凭据、Google/OAuth、签名公证验收；S4、L1–L3、M1–M3 和 251 条完整条件仍未闭合，`releaseAccepted=false`，草稿 PR 不合并、不发布。
 

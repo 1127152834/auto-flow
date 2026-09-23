@@ -147,7 +147,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "implementation_missing"
           ]
         },
         {
@@ -450,6 +451,7 @@
           "plannedTestExists": false,
           "reviewedCheckCount": 3,
           "gapKinds": [
+            "production_evidence_missing",
             "production_evidence_missing"
           ]
         },
@@ -1137,8 +1139,9 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
+            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -1147,7 +1150,7 @@
           "status": "partially_verified",
           "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -1211,7 +1214,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 2,
           "gapKinds": [
-            "test_missing"
+            "implementation_missing",
+            "production_evidence_missing"
           ]
         },
         {
@@ -1387,6 +1391,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 2,
           "gapKinds": [
+            "production_evidence_missing",
             "production_evidence_missing"
           ]
         },
@@ -1589,6 +1594,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 2,
           "gapKinds": [
+            "production_evidence_missing",
             "production_evidence_missing"
           ]
         },
@@ -2030,6 +2036,7 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
+            "implementation_missing",
             "production_evidence_missing"
           ]
         },
@@ -2251,6 +2258,7 @@
           "plannedTestExists": false,
           "reviewedCheckCount": 3,
           "gapKinds": [
+            "production_evidence_missing",
             "production_evidence_missing"
           ]
         },
@@ -2309,8 +2317,8 @@
     "execution_contracts_and_gates": {
       "count": 25,
       "statuses": {
-        "partially_verified": 19,
-        "planned": 6
+        "partially_verified": 20,
+        "planned": 5
       },
       "items": [
         {
@@ -2502,7 +2510,8 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "implementation_missing"
           ]
         },
         {
@@ -2559,13 +2568,15 @@
         },
         {
           "id": "XE-G07",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 3,
           "gapKinds": [
-            "external_acceptance_pending",
-            "test_missing"
+            "implementation_missing",
+            "test_missing",
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         }
       ]
@@ -2580,7 +2591,7 @@
       "apps/backend/tests/integration/test_project_full_scenarios.py": 7,
       "apps/backend/tests/integration/test_project_manual_actions.py": 4
     },
-    "meaning": "Historical intended paths remain absent. All 73 entries now have actual assertion references or explicit unlocated-test gaps in coverage.json.",
+    "meaning": "Historical intended paths remain absent for73 entries; all73 now have located scoped assertions. This is not full requirement coverage or release acceptance.",
     "mappedEntries": 73
   },
   "directEvidenceReconciled": [
@@ -2619,11 +2630,11 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 248,
-    "withNoLocatedAssertion": 3,
+    "withAssertions": 249,
+    "withNoLocatedAssertion": 2,
     "statuses": {
-      "partially_verified": 205,
-      "planned": 46
+      "partially_verified": 206,
+      "planned": 45
     }
   }
 }

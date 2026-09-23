@@ -147,6 +147,56 @@ async function checkAutomationDeletion(browserVersion) {
   } finally { cdp.socket.removeEventListener('message', observe) }
 }
 
+async function checkStudioWindowLifecycle(document, run) {
+  const windowExpression = "pm9Electron.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('view=automation-studio'))"
+  const originalId = await native.evaluate(`${windowExpression}.id`)
+  assert.equal(await studio.evaluate('(async()=> (await window.autoflow.getRuntimeContext()).sidecar.instanceId)()'), sidecar.instanceId)
+  const denied = await studio.evaluate("window.autoflow.openAutomationStudio().then(()=>null,error=>String(error))")
+  assert.ok(denied?.includes('此窗口不能打开工作流工作台'), 'Studio cannot impersonate the Manager opening authority')
+  await native.evaluate(`${windowExpression}.minimize()`)
+  await waitFor(native, `${windowExpression}.isMinimized()`, 'Studio minimized')
+  await cdp.evaluate('Promise.all([window.autoflow.openAutomationStudio(),window.autoflow.openAutomationStudio()])')
+  await waitFor(native, `${windowExpression}.id===${originalId} && !${windowExpression}.isMinimized()`, 'Manager restores original Studio')
+  assert.equal(await native.evaluate("pm9Electron.BrowserWindow.getAllWindows().filter(w=>w.webContents.getURL().includes('view=automation-studio')).length"), 1)
+  assert.equal((await api(`/api/workflow-runs/${run.runId}`)).status, 'completed')
+  await fill('#project-data-result', 'close_saved_record', studio)
+  await native.evaluate(`${windowExpression}.close()`)
+  await waitFor(studio, "document.querySelector('[role=dialog]')?.innerText.includes('保存当前工作流')", 'native close protects unsaved draft')
+  await capture('studio-close-dirty', studio)
+  await click('取消', '[role=dialog] button', studio)
+  await waitFor(studio, "!document.querySelector('[role=dialog]')", 'close cancelled')
+  assert.equal(await native.evaluate(`${windowExpression}.id`), originalId)
+  assert.equal(await studio.evaluate("document.querySelector('#project-data-result').value"), 'close_saved_record')
+  assert.equal((await api(`/api/workflows/${document.id}`)).revision, document.revision, 'cancel does not save implicitly')
+  await native.evaluate(`${windowExpression}.close()`)
+  await click('保存后继续', '[role=dialog] button', studio)
+  await waitFor(native, `!${windowExpression}`, 'save acknowledged before Studio closes')
+  studio.close()
+  studio = undefined
+  const saved = await api(`/api/workflows/${document.id}`)
+  assert.equal(saved.revision, document.revision + 1)
+  const previous = document.nodes.find(node => node.id === 'write-project')
+  const current = saved.nodes.find(node => node.id === 'write-project')
+  assert.equal(current.data.variableName, 'close_saved_record')
+  for (const key of ['moduleType', 'operation', 'tableGrant', 'arguments']) assert.deepEqual(current.data[key], previous.data[key])
+  await click('工作流工作台编排并运行浏览器自动化流程')
+  const target = await poll(async () => (await (await fetch(`${desktop.debugOrigin}/json/list`)).json()).find(target => target.type === 'page' && target.url.includes('view=automation-studio')), 'reopened Studio target')
+  studio = await connectCdp(target.webSocketDebuggerUrl)
+  await waitFor(studio, "document.body.innerText.includes('模块库')", 'reopened Studio ready', 30_000)
+  assert.notEqual(await native.evaluate(`${windowExpression}.id`), originalId)
+  assert.equal(await studio.evaluate('(async()=> (await window.autoflow.getRuntimeContext()).sidecar.instanceId)()'), sidecar.instanceId)
+  await click('打开', 'button', studio)
+  await click('打开工作流 ' + document.name, '[role=button]', studio)
+  await click('', '.react-flow__node[data-id="write-project"]', studio)
+  await waitFor(studio, "document.querySelector('#project-data-result')?.value==='close_saved_record'", 'reopened document retains saved edit')
+  assert.deepEqual((await api('/api/workflow-runs?cursor=0&limit=20')).items.map(item => item.runId), [run.runId], 'window transitions must not duplicate the completed run')
+  assert.equal((await api('/api/v1/projects')).total, 0)
+  await capture('studio-reopened-document', studio)
+  return { status: 'passed', originalWindowId: originalId, reopenedWindowId: await native.evaluate(`${windowExpression}.id`), savedRevision: saved.revision,
+    checks: ['Manager repeated opens restore one minimized native Studio and keep its identity', 'Studio renderer cannot call Manager-only open authority', 'dirty native close can be cancelled without saving or discarding edits', 'save-and-close increments the existing document once and retains project configuration', 'reopened window shares the service; explicitly reopening the document retains edits, with zero Project and exactly the original completed Run'],
+    limits: ['Electron native close/minimize API; not physical OS keyboard or window-manager gesture acceptance', 'explicit document reopen only; no automatic session restoration, project automation binding, docking or active-task dual-window proof'] }
+}
+
 async function checkStandaloneStudio(browserVersion) {
   assert.equal((await api('/api/v1/projects')).total, 0)
   const profile = await api('/api/v1/profiles', { name: '独立 Studio 配置', browserVersion, browserEdition: 'public', headless: true })
@@ -211,12 +261,13 @@ async function checkStandaloneStudio(browserVersion) {
     assert.equal((await api('/api/v1/projects')).total, 0)
     assert.equal((await api('/api/workflow-runs?cursor=0&limit=20')).items.length, 1)
     await capture('studio-project-document-saved', studio)
-    return { status: 'passed', standaloneWorkflowId: standalone.id, projectWorkflowId: document.id, runId: run.runId, refusal, checks: ['zero Project before and after independent real browser run', 'actual Studio displays project context guidance; existing standalone admission returns HTTP 422 unsupported node, creates no run and leaves the document unchanged', 'actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project'], limits: [`one ${process.platform}/${process.arch} application window; full Studio module/physical platform gates remain separate`] }
+    const windows = await checkStudioWindowLifecycle(edited, run)
+    return { status: 'passed', windows, standaloneWorkflowId: standalone.id, projectWorkflowId: document.id, runId: run.runId, refusal, checks: ['zero Project before and after independent real browser run', 'actual Studio displays project context guidance; existing standalone admission returns HTTP 422 unsupported node, creates no run and leaves the document unchanged', 'actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project'], limits: [`one ${process.platform}/${process.arch} application window; full Studio module/physical platform gates remain separate`] }
   } catch (error) {
     await capture('studio-failure', studio).catch(() => {})
     throw error
   } finally {
-    studio.close()
+    studio?.close()
     await native.evaluate("pm9Electron.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('view=automation-studio'))?.close()")
     studio = undefined
   }

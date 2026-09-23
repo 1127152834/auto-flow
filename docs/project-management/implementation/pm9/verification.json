@@ -12,7 +12,7 @@
     "DATA-LINK-02 forged recordRef.projectId acceptance fixed at shared association preflight and commit boundary; local full backend 3479 passed/77 skipped, contract/rule 33 passed, and actual browser-worker End followed by forged repair refusal/correct repair-only association passed. Current c16532d7 three-platform CI succeeded after Intel-only retry. DATA-LINK-02 remains partial because complete packaged/cross-platform reverse-target and full business acceptance are open; local actual worker-generated forged End target now passed in link-boundary-follow-through.json.",
     "S4 Windows existing ordinary-file read and absolute-drive new-file table export passed bounded native probe 35832925704 and final three-platform matrix 35833223498 at dadb24a1. Existing output overwrite/append remain refused with 501.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "3 of 251 requirements still have no located assertion (DATA-LIFE-01, DATA-SH-03, XE-G07); DATA-LINK-02 now has direct scoped evidence, so 205 partial / 46 planned / 0 verified. DATA-WRITE-13 real-worker partial Sheets intent preservation passed the earlier selected three-platform CI; packaged real-Google and full business acceptance remain open.",
+    "2 of251 requirements still have no located assertion (DATA-LIFE-01,DATA-SH-03); XE-G07 now has actual independent-window scoped evidence, so206 partial/45 planned/0 verified. AU-06/XE-G01/XE-G07 have confirmed missing project session/docking implementation; W1-W3 proposed. DATA-WRITE-13 real-worker partial Sheets intent preservation passed the earlier selected three-platform CI; packaged real-Google and full business acceptance remain open.",
     "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6 and variable parity20/20 passed. Earlier 1b2979ea matrix backend3474/75 on Mac is historical; current full backend counts are in finalCICandidate.",
     "Old ARM data-response-loss failure reproduced locally: Chromium owner PID exited but stale SingletonSocket target remained; ownership-checked macOS lock fix passed source real worker and unit tests. Current c16532d7 ARM DMG isolated local installation/full desktop smoke passed; Finder/Gatekeeper, native panels and other physical release gates remain pending.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
@@ -488,6 +488,16 @@
       "status": "confirmed",
       "detail": "Creating/ensuring a new field does not grant a later record write to its returned field ID; static pregrant fails before creation. Current ARM packaged actual-worker failures retained; explicit result-source contract FR1–FR3 is proposed, not approved.",
       "report": "created-field-results-follow-through.json"
+    },
+    {
+      "requirements": [
+        "AU-06",
+        "XE-G01",
+        "XE-G07"
+      ],
+      "status": "confirmed",
+      "detail": "No specified project automation Studio opening/return/session contract or docking implementation; existing single independent window is not this capability. W1-W3 contract/plan proposed, user decision pending.",
+      "report": "studio-window-follow-through.json"
     }
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
@@ -512,5 +522,6 @@
     "supersededCancelledRun": 35871462256,
     "releaseAccepted": false,
     "supersededByRun": 35881272086
-  }
+  },
+  "studioWindowFollowThrough": "studio-window-follow-through.json"
 }

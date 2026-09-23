@@ -1,0 +1,90 @@
+{
+  "date": "2026-09-23",
+  "status": "local_packaged_full_script_passed_project_session_design_pending",
+  "releaseAccepted": false,
+  "sourceCommit": "632caf6dfbf5034f6bee0d48fe0662a53417f85e",
+  "parentCommit": "4b3a85d27b8d11572a3d37e8a3c6015eb4789297",
+  "scope": "Tests, mapping and proposed design only; production implementation unchanged.",
+  "requirement": "XE-G07",
+  "checks": {
+    "targetedMainIpc": "11 passed in1.19s; fake Electron contract, not native acceptance",
+    "packagedWindowProbe": {
+      "status": "passed",
+      "originalWindowId": 2,
+      "reopenedWindowId": 3,
+      "savedRevision": 3,
+      "checks": [
+        "Manager repeated opens restore one minimized native Studio and keep its identity",
+        "Studio renderer cannot call Manager-only open authority",
+        "dirty native close can be cancelled without saving or discarding edits",
+        "save-and-close increments the existing document once and retains project configuration",
+        "reopened window shares the service; explicitly reopening the document retains edits, with zero Project and exactly the original completed Run"
+      ],
+      "limits": [
+        "Electron native close/minimize API; not physical OS keyboard or window-manager gesture acceptance",
+        "explicit document reopen only; no automatic session restoration, project automation binding, docking or active-task dual-window proof"
+      ]
+    },
+    "fullPackagedDesktop": "passed: new native window lifecycle scope plus standalone Studio, project management/deletion/manual/real runtime, volume,200%zoom,second window and restart",
+    "scripts": "101 passed",
+    "coverage": "251 references checked;4 verifier tests passed; explicit scope review separate"
+  },
+  "implementationFindings": [
+    {
+      "requirements": [
+        "AU-06",
+        "XE-G01",
+        "XE-G07"
+      ],
+      "evidence": [
+        "apps/desktop/src/shared/automation-studio.ts: openAutomationStudio() accepts no project/workflow target",
+        "apps/desktop/src/main/ipc/automation-studio.ts: StudioWindowController owns only one independent window; no docking/session target contract",
+        "apps/desktop/src/renderer/domains/project-automations/pages/AutomationDetailPage.tsx: configuration editing only; no linked Studio entry"
+      ],
+      "result": "confirmed implementation gaps, not only missing production or physical evidence"
+    }
+  ],
+  "designStatus": "W1-W3 proposed; user question pending; no implementation before confirmation",
+  "spec": "docs/superpowers/specs/2026-09-23-pm9-studio-session-handoff.md",
+  "plan": "docs/superpowers/plans/2026-09-23-pm9-studio-session-handoff.md",
+  "evidence": "qa-runs/2026-09-23-studio-window-lifecycle/project-desktop.json",
+  "coverage": {
+    "requirements": 251,
+    "withAssertions": 249,
+    "withNoLocatedAssertion": 2,
+    "statuses": {
+      "partially_verified": 206,
+      "planned": 45
+    }
+  },
+  "ci": {
+    "runId": 35881272086,
+    "sourceCommit": "632caf6dfbf5034f6bee0d48fe0662a53417f85e",
+    "scope": "Existing in-progress matrix does not include these newly added window assertions; no restart for a test-only increment."
+  },
+  "remaining": [
+    "Two requirements with no direct assertion remain DATA-LIFE-01 and DATA-SH-03; their L1/M1 implementations await confirmation.",
+    "Window proof is Electron API plus actual rendered UI, not physical OS close/minimize gestures; reopen is explicit document selection, not automatic session restoration.",
+    "Project-bound dual-window running/manual/End facts and docking require W1-W3 implementation and dedicated evidence.",
+    "Current Studio required-field metadata404, AD/FR/L/M/S4 pending contracts, Google/OAuth, physical platforms, signatures and full release gates remain."
+  ],
+  "observations": {
+    "realWorker": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 32944,
+      "logsPerMinute": 1829,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "fiveWriterTenThousandRecordsMs": 55424,
+    "busyRetries": 0,
+    "synthetic": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60026,
+      "maxBatchLagMs": 35
+    },
+    "scope": "single ARM run; not cross-platform performance thresholds"
+  }
+}

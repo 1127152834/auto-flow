@@ -1,5 +1,7 @@
 # PM9 剩余断言与能力补齐计划
 
+2026-09-23 XE-G07窗口子范围（confirmed）：当前ARM包实际窗口复用/恢复、越权打开拒绝、脏稿取消/保存关闭、显式重新打开同文档且Run不重复通过；主进程11、脚本101、映射4通过。AU-06/XE-G01/XE-G07项目会话关联与停靠明确为实现缺失，W1–W3规格/计划待确认；新增窗口断言后的完整ARM桌面脚本通过，详见 studio-window-follow-through.json。249/251有范围断言、2未定位，206partial/45planned/0verified；73条缺预定文件全部已有子范围映射，不等于完整覆盖。生产仍632caf6d，新断言不在现有CI35881272086，不重复流水线，releaseAccepted=false。
+
 2026-09-23 本机回归收口（confirmed）：生命周期源码94f8e0a8完整后端3472 passed/74 skipped/2 warnings，796.74秒；之后defa1955二进制读取补丁单独16项+真实worker1项、Ruff/mypy407/构建/原15秒sidecar通过，未宣称同一最终本机全量快照。最终三平台35816693045进行中。已完成源生产恢复/删除/服务重启补证及运行目录清理修复；Windows真实PNG409的读取修复待原生确认。旧14df矩阵35811305102两种Mac成功、Windows失败；所有旧状态以此按hash区分。releaseAccepted=false。
 
 2026-09-23 最新候选 defa1955（局部 confirmed，完整验收 pending）：已修复项目删除遗漏 Run 目录；源生产联合链归档→服务重建→恢复不重放→清理残留→服务重建自动续跑1项通过。随后从历史Windows真实PNG GET409定位并修复O_BINARY缺失，二进制契约/证据16项、Mac真实worker1项通过。三平台35816693045进行中；35815127474/35816258910因新缺陷修复取代而取消，不计通过。下文旧候选/计数/状态仅为历史；248/251有范围断言，203partial/48planned/0verified，releaseAccepted=false。

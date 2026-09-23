@@ -1202,7 +1202,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_automation_repository.py",
@@ -1215,6 +1215,10 @@
           {
             "kind": "production_evidence_missing",
             "detail": "正式 Studio 打开/保存/返回上下文仍需逐项链接双窗口证据"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "已确认项目自动化详情/目录没有打开指定文档和返回关联入口；openAutomationStudio()仅无参数通用窗口，未保存管理草稿/项目编辑会话衔接未接通。现有后端唯一父项目断言不证明此UI能力。W1–W3为待确认补充规格。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -15819,7 +15823,7 @@
         "PM3-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_automation_repository.py",
@@ -15832,6 +15836,10 @@
           {
             "kind": "production_evidence_missing",
             "detail": "正式 Studio 打开/保存/返回上下文仍需逐项链接双窗口证据"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "已确认项目自动化详情/目录没有打开指定文档和返回关联入口；openAutomationStudio()仅无参数通用窗口，未保存管理草稿/项目编辑会话衔接未接通。现有后端唯一父项目断言不证明此UI能力。W1–W3为待确认补充规格。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -16191,8 +16199,17 @@
       "source_line": 414,
       "first_implementation": "PM9",
       "complete_acceptance": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/studio-window-follow-through.json",
+          "scope": "本机ARM真实打包窗口复用/最小化恢复、Manager权限、脏草稿取消/保存关闭、显式重开保留文档及原Run；非项目会话关联或停靠完成。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "primary_package": "PM9-C",
       "owner": "verification",
       "planned_test_file": "apps/backend/tests/integration/test_project_full_scenarios.py",
@@ -16223,16 +16240,43 @@
         "PM9-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "scripts/smoke-project-management-desktop.mjs",
+            "symbol": "checkStudioWindowLifecycle",
+            "scope": "当前ARM包：重复主窗口打开复用最小化Studio，Studio自身打开越权被拒；同sidecar；脏稿原生close取消不保存，保存关闭修订只+1；新窗口手动重开同文档保留grant/参数，项目0/只原completed Run。Electron窗口API，不是OS手势或停靠。",
+            "level": "automated_real_application"
+          },
+          {
+            "file": "apps/desktop/src/main/ipc/automation-studio.test.ts",
+            "testName": "opens one independent formal renderer, restores it, and allows reopening after close",
+            "scope": "受控Electron适配：并发打开只建一窗、无parent、沙箱/隔离、最小化恢复、关闭后重建。",
+            "level": "automated_unit"
+          },
+          {
+            "file": "apps/desktop/src/main/ipc/automation-studio.test.ts",
+            "testName": "protects native close and rejects another window or child-frame acknowledgement",
+            "scope": "受控主进程：注册离开协调后原生close等待，非Studio主frame或旧确认不准离开。",
+            "level": "automated_unit"
+          }
+        ],
         "gaps": [
           {
-            "kind": "external_acceptance_pending",
-            "detail": "CI 双窗口及安装包已有证据；完整原生窗口停靠/实机安装/文件面板/凭据行为需实际平台验收"
+            "kind": "implementation_missing",
+            "detail": "现有openAutomationStudio无目标参数，单窗口无project/automation会话及presentationMode；项目详情缺指定流程编辑入口，停靠/弹出未实现，不是仅缺实机。W1–W3规格/切片proposed待确认，见2026-09-23-pm9-studio-session-handoff。"
           },
           {
             "kind": "test_missing",
-            "detail": "尚未将完整 Studio 窗口/平台门禁各子条件映射到单独断言；不能用项目 smoke 一个总通过替代"
+            "detail": "项目绑定打开/返回、运行中双窗口同一Task事实、展示交接/失败回退尚无直接场景；现有关闭后的显式重开不能代替这些断言。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "新增窗口断言在本机当前ARM包通过，但不包含于已启动632caf6d矩阵35881272086；全部项目消费窗口链和其他平台新断言尚未验收。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "Electron close/minimize不是物理OS手势；Windows/Intel实机、原生面板/凭据、安装及签名等需对应平台与身份。"
           }
         ],
         "statusBeforeReview": "planned"
