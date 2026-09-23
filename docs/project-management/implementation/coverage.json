@@ -3925,8 +3925,17 @@
       "primary_package": "PM4-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_claims.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/startup-failure-follow-through.json",
+          "scope": "Production HTTP handlers through in-process ASGI, real SQLite, real worker subprocess with deliberately invalid browser executable on first Task, actual CloakBrowser on second Task. Not a packaged startup-failure UI or live Google check.",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -3948,19 +3957,31 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_data_scheduler.py",
             "symbol": "test_failure_closes_only_new_claims_unless_explicitly_continued",
             "scope": "首 Task 失败仍留任务事实，并决定是否继续领取",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_browser_startup_failure_counts_task_and_releases_record",
+            "scope": "真实子进程启动失败计任务名额；非空业务状态和值/版本不变，清理释放后同记录第二Task成功，停止继续与同键重放无重复。",
+            "level": "automated_real_application"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_workflow_worker_process.py",
+            "symbol": "test_pre_ready_terminal_requires_failure_cleanup_and_valid_exit",
+            "scope": "启动前终态必须failed/cancelled且确认清理、退出合法；拒绝成功、超时、事件与能力请求。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "真实派发启动失败后的任务名额与状态保持联合断言待补"
+            "detail": "本机源码真实启动失败联合链已通过；Windows/Intel新候选、打包启动失败界面及系统性资源故障受阻完整组合仍待验收。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -17587,5 +17608,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-24: 251条覆盖账本，249条有范围断言/2条未定位，206 partially_verified/45 planned/0 verified。73条失效预定路径已有逐条范围映射。DATA-CLAIM-09已补同行移除/改绑/namespace和当前代次真实worker链，仅移除该项test_missing；打包实网和新增三平台证据保留，releaseAccepted=false。 DATA-WRITE-12组原子写从缺测试纠正为实现缺失，G1–G3待确认；既有单写冲突证据保留。"
+  "pm9_note": "2026-09-24 DATA-CLAIM-03启动失败根因修复（confirmed本机源码子范围）：真实子进程在浏览器启动失败时返回finished/failed，旧父进程仅接受ready并误报interrupted。共用协议入口现接受启动前failed/cancelled，仍核验消息身份、清理证明、退出码和进程所有权；启动前成功、事件与能力请求继续拒绝。真实生产路由/SQLite/子进程及恢复后的CloakBrowser联合验证：失败计入2个任务上限，业务值/非空状态及版本不变，原lease释放，允许继续时同一记录由第二Task成功执行，关闭继续时只有失败Task；同键重放无新增。专项8项通过，相关81 passed/3 skipped；新增两个早期非法消息反例及完整后端/新包验证继续中。该项仅planned→partial，251合计208partial/43planned/0verified；249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。新三平台、打包启动失败界面、系统性启动资源故障受阻组合仍保留，releaseAccepted=false。见startup-failure-follow-through.json。"
 }

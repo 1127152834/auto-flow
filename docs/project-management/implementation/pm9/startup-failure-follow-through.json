@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-24",
+  "status": "targeted_passed_full_candidate_validation_running",
+  "releaseAccepted": false,
+  "requirement": "DATA-CLAIM-03",
+  "base": "9ed95a24e765af42618ac0ec20abff86e2e686c0",
+  "productionSource": "pending code commit",
+  "scope": "Production HTTP handlers through in-process ASGI, real SQLite, real worker subprocess with deliberately invalid browser executable on first Task, actual CloakBrowser on second Task. Not a packaged startup-failure UI or live Google check.",
+  "rootCause": "Child emits finished/failed after browser launch failure before ready; parent rejected it as protocol-invalid, producing interrupted/unknown instead of failed.",
+  "change": "Move ready admission into shared exchange; pre-ready only finished failed/cancelled proceeds to unchanged identity/cleanup/exit/ownership validation.",
+  "assertions": [
+    "Task and held record lease committed before first external start",
+    "Real first child emits only finished/failed/cleanupConfirmed; no ready or node attempts",
+    "Failure consumes maxTasks=2 slot; continue=true yields failed,succeeded and exactly two Tasks/Runs; false yields failed and exactly one",
+    "Same physical record lease released before next Task acquisition; final all leases released",
+    "Record values, non-null business status, content/status/link revisions unchanged",
+    "Recovery child opens actual fixture once; failed child never navigates",
+    "Original start operation replay preserves Batch and complete ordered Task projections",
+    "No worker/dispatcher/scheduler blockers or generation directories remain",
+    "Early succeeded/timed_out/event/capability rejected; absent cleanup proof and abnormal child exit rejected"
+  ],
+  "checks": {
+    "redReal": "2 failed,37 deselected,16.98s; interrupted != failed in both configurations",
+    "redProtocol": "4 failed,2 passed,28 deselected,1.75s",
+    "targeted": "8 passed,65 deselected,20.54s",
+    "related": "81 passed,3 skipped,35.88s",
+    "mypy": "408 source files; 2 existing annotation-unchecked notes",
+    "ruff": "passed after sorting new local imports",
+    "fullBackend": "running",
+    "packaged": "pending"
+  },
+  "fixtureFailures": [
+    "Settings instance_id omitted",
+    "AppPaths root includes data/kernels",
+    "Workflow create clientRequestId/content flattening/id DTO",
+    "Batch operation envelope/task query/task snapshot DTO",
+    "Task query reverse order and dispatcher blockers API"
+  ],
+  "artifacts": {
+    "red": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/red.log",
+      "sha256": "6ce778ebb99f56a6ddbccb56a47af326b3648a1a675c7cb68a5cdeea14ae52fb"
+    },
+    "protocol-red": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/protocol-red.log",
+      "sha256": "e83a9dc0927b30137f5fad2ee4897c31a19425ecd189ff92559713b0cb278314"
+    },
+    "green": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/green.log",
+      "sha256": "7754e418a107fe001a8a097c06552fddad7f1a2b4548870280f948ade1d3ee54"
+    },
+    "related": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/related.log",
+      "sha256": "424601959a51e6e7727124426bebcdab7b3fbd656fb1367fe318bc0e7ae8d006"
+    },
+    "mypy": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/mypy.log",
+      "sha256": "144062ad850da376abb58cfac6c1a147a5b0cd760c85c8739f96db58cf8d92e9"
+    },
+    "ruff": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  },
+  "remaining": [
+    "Current Windows/Intel/ARM CI including new scenarios; CLI authentication was unavailable on previous attempt",
+    "Packaged UI showing browser-start failure and failure continuation",
+    "Systemic startup resource outage visibly blocked rather than candidate exhaustion; not established by invalid per-Task executable test",
+    "All other PM9 implementation/external gaps remain; no release acceptance"
+  ]
+}

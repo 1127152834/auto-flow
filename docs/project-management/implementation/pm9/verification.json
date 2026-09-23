@@ -10,7 +10,7 @@
     "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
     "Current source7b896163 adds cleaned Task UI fix and no-save acceptance; backend remains cb040daf. New all-platform validation still requires CLI authentication/manual trigger. Historical35902129697 covers production51e8991e only; completed logs403 and artifact contents not newly inspected.",
     "Implementation proposals awaiting approval: G1-G3 finite-group atomic writes; L1-L3 verified-principal reauthorization/sender isolation; M1-M3 remote Sheets rows/formulas; S4 Windows existing-file overwrite/append (still501); FR1-FR3 new-field result authorization; AD1-AD3 persistent Run file deletion; W1-W3 including W1c project Studio session/docking/binding destination; separate AU-08 project-owned workflow ownership; P1-P3 frozen proxy membership/endpoints. See implementationGaps and completion-gaps.md for contracts and evidence.",
-    "251 requirements remain207 partially_verified/44 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/19 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
+    "251 requirements remain208 partially_verified/43 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/19 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
     "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
     "Current7b896163 ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel x86_64 image verification remain scoped to those artifacts; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain external.",
@@ -40,7 +40,8 @@
     "currentNativeArmInstall": "install-shared-data-final-darwin-arm64.json",
     "priorLocal": "lifecycle-restart-follow-through.json",
     "previousLocal": "source-outage-follow-through.json",
-    "currentNativeArmInstallScope": "Historical artifact-specific evidence only; latest7b896163 package:dir smoke is not a new physical installer acceptance."
+    "currentNativeArmInstallScope": "Historical artifact-specific evidence only; latest7b896163 package:dir smoke is not a new physical installer acceptance.",
+    "startupFailure": "startup-failure-follow-through.json"
   },
   "platforms": {
     "win32-x64": {
@@ -684,5 +685,10 @@
       "scope": "same cb040daf ARM package; edited independent workflow survives whole-project deletion and re-association; persistent identity counterexample remains unresolved"
     }
   },
-  "noAutoSaveFollowThrough": "no-auto-save-follow-through.json"
+  "noAutoSaveFollowThrough": "no-auto-save-follow-through.json",
+  "startupFailureValidation": {
+    "status": "targeted_passed_full_candidate_running",
+    "report": "startup-failure-follow-through.json",
+    "releaseAccepted": false
+  }
 }

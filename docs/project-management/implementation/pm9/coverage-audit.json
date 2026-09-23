@@ -500,8 +500,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 139,
-        "planned": 39
+        "partially_verified": 140,
+        "planned": 38
       },
       "items": [
         {
@@ -526,10 +526,10 @@
         },
         {
           "id": "DATA-CLAIM-03",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 3,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2633,8 +2633,8 @@
     "withAssertions": 249,
     "withNoLocatedAssertion": 2,
     "statuses": {
-      "partially_verified": 207,
-      "planned": 44
+      "partially_verified": 208,
+      "planned": 43
     }
   }
 }

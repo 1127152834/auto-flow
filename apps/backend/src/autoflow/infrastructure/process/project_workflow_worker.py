@@ -164,12 +164,6 @@ class ProjectWorkflowWorkerManager:
                 "executionPlan": execution_plan, "parameters": parameters,
                 "variables": variables, "browser": browser,
             })
-            message = await asyncio.wait_for(self._read(worker), self._start_timeout)
-            if message.get("type") != "ready":
-                raise _protocol_error()
-            worker.ready = True
-            if worker.stop_requested:
-                await self._send_stop(worker)
             outcome = await self._exchange(worker, on_event)
             assert worker.process is not None
             await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
@@ -211,7 +205,21 @@ class ProjectWorkflowWorkerManager:
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
     ) -> WorkerOutcome:
         while True:
-            message = await self._read(worker)
+            message = (
+                await self._read(worker) if worker.ready else
+                await asyncio.wait_for(self._read(worker), self._start_timeout)
+            )
+            if not worker.ready:
+                if message.get("type") == "ready":
+                    worker.ready = True
+                    if worker.stop_requested:
+                        await self._send_stop(worker)
+                    continue
+                # Browser launch can fail before ready. Still require the normal
+                # terminal cleanup proof, child exit and owned-process cleanup.
+                if (message.get("type") != "finished"
+                    or message.get("status") not in {"failed", "cancelled"}):
+                    raise _protocol_error()
             if message.get("type") == "event":
                 event = message.get("event")
                 if (not isinstance(event, dict) or type(event.get("executionGeneration")) is not int

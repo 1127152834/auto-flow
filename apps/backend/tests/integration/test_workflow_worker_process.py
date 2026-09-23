@@ -96,6 +96,44 @@ def start(instance, executable, on_event):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('kind, status, cleanup, exit_code, error_code', [
+    ('finished', 'failed', True, 1, None),
+    ('finished', 'cancelled', True, 0, None),
+    ('finished', 'succeeded', True, 0, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+    ('finished', 'timed_out', True, 1, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+    ('finished', 'failed', False, 1, 'WORKFLOW_CLEANUP_FAILED'),
+    ('finished', 'failed', True, 17, 'WORKFLOW_WORKER_LOST'),
+    ('event', 'failed', True, 1, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+    ('capability', 'failed', True, 1, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+])
+async def test_pre_ready_terminal_requires_failure_cleanup_and_valid_exit(
+    tmp_path, kind, status, cleanup, exit_code, error_code,
+):
+    instance, executable = manager(tmp_path)
+    child = CHILD[:CHILD.index("send('ready')")] + (
+        f"send({kind!r},status={status!r},cleanupConfirmed={cleanup!r})\n"
+        f"raise SystemExit({exit_code})\n"
+    )
+    instance._command = (sys.executable, '-c', child)
+    events = []
+
+    async def persist(event):
+        events.append(event)
+
+    if error_code:
+        with pytest.raises(WorkflowWorkerError) as caught:
+            await asyncio.wait_for(start(instance, executable, persist), 10)
+        assert caught.value.code == error_code
+    else:
+        outcome = await asyncio.wait_for(start(instance, executable, persist), 10)
+        assert outcome.status == status
+        assert outcome.cleanup_confirmed
+    assert events == []
+    assert not instance.busy()
+    assert not list((tmp_path / 'temp' / 'workflow-runs').glob('*/generation-*'))
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("spawn_delay", [0, 3.2])
 async def test_worker_waits_for_durable_callback_before_ack_and_completion(tmp_path, monkeypatch, spawn_delay):
     instance, executable = manager(tmp_path)

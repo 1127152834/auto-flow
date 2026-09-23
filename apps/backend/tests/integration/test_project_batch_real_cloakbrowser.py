@@ -30,6 +30,141 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('continue_after_failure', [False, True])
+async def test_browser_startup_failure_counts_task_and_releases_record(
+    tmp_path, valid_profile_values, real_cloak_page, monkeypatch, continue_after_failure,
+):
+    from sqlalchemy import select
+
+    from autoflow.domain.project_data.identity import RecordKey, encode_record_key
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectRecordLeaseRow,
+        ProjectTaskRow,
+    )
+    from tests.integration.test_project_run_data_start import _input, _table
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
+    data = tmp_path / 'data'
+    shutil.copytree(source, data / 'kernels' / source.name)
+    app = create_app(Settings(data_dir=str(tmp_path), instance_token='startup-failure-test', instance_id='startup-failure-test'))
+    manager = app.state.project_workflow_worker_manager
+    real_run, real_read = manager.run, manager._read
+    launches, messages = [], []
+    invalid_binary = tmp_path / 'invalid-browser.exe'
+    invalid_binary.write_bytes(b'not an executable browser')
+
+    async def fail_first_browser_launch(**kwargs):
+        # Only the browser executable is faulty; the real child and protocol run.
+        with app.state.session_factory() as session:
+            task = session.scalar(select(ProjectTaskRow).where(ProjectTaskRow.run_id == kwargs['run_id']))
+            assert task is not None  # Committed before the external start.
+            leases = list(session.scalars(select(ProjectRecordLeaseRow).order_by(ProjectRecordLeaseRow.created_at)))
+            assert [lease.state for lease in leases] == ['released'] * len(launches) + ['held']
+            launches.append((task.id, task.run_id))
+        if len(launches) == 1:
+            kwargs['executable'] = invalid_binary
+        return await real_run(**kwargs)
+
+    async def observe_protocol(worker):
+        message = await real_read(worker)
+        messages.append((worker.run_id, message))
+        return message
+
+    monkeypatch.setattr(manager, 'run', fail_first_browser_launch)
+    monkeypatch.setattr(manager, '_read', observe_protocol)
+    try:
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, 'headless': True,
+            'browser_version': source.name.removeprefix('chromium-'),
+        }))
+        await app.state.project_workflow_dispatcher.startup()
+        await app.state.project_run_scheduler.startup()
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test', headers={'x-autoflow-token': 'startup-failure-test'}) as client:
+            created = await client.post('/api/v1/projects', headers={'Idempotency-Key': str(uuid4())}, json={'name': '启动失败后再领取', 'description': ''})
+            assert created.status_code == 201, created.text
+            project_id = created.json()['projectId']
+            prefix = f'/api/v1/projects/{project_id}'
+            table, field = _table(app.state.session_factory, project_id, '保持业务状态', 'unchanged')
+            input_spec = _input(project_id, table, field, 'source')
+            records_path = prefix + f"/tables/{table['tableId']}/records"
+            query = {'datasetGeneration': table['datasetGeneration']}
+            before = (await client.get(records_path, params=query)).json()['items']
+            assert len(before) == 1
+            status = await client.post(prefix + f"/tables/{table['tableId']}/statuses", headers={'Idempotency-Key': str(uuid4())}, json={
+                'name': '待处理', 'color': '#123456', 'order': 0, 'expectedTableRevision': 2,
+            })
+            assert status.status_code == 201, status.text
+            encoded = encode_record_key(RecordKey(**before[0]['ref']['recordKey']))
+            changed = await client.put(records_path + f'/{encoded}/status', headers={'Idempotency-Key': str(uuid4())}, json={
+                'datasetGeneration': table['datasetGeneration'], 'recordKeyType': 'uuid',
+                'statusId': status.json()['statusId'], 'expectedStatusRevision': 1,
+            })
+            assert changed.status_code == 200, changed.text
+            before = (await client.get(records_path, params=query)).json()['items']
+            assert before[0]['statusId'] == status.json()['statusId']
+            assert before[0]['statusRevision'] == 2
+            document = workflow_payload(str(uuid4()))
+            document['content'].update(nodes=[{'id': 'open', 'type': 'open_page', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'open_page', 'url': url}}], edges=[])
+            saved = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
+            assert saved.status_code == 201, saved.text
+            response = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json={
+                'name': '失败占用名额', 'description': '', 'workflowId': saved.json()['id'],
+                'inputPlan': {'inputs': [input_spec]}, 'parameterSchema': [],
+                'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
+                'runPolicy': {'maxTasks': 2, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': continue_after_failure, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
+            })
+            assert response.status_code == 201, response.text
+            automation = response.json()
+            start_path = prefix + f"/automations/{automation['automationId']}/batches"
+            key = str(uuid4())
+            body = {'expectedAutomationRevision': automation['managementRevision'], 'parameters': {}, 'maxTasks': 2, 'concurrency': 1}
+            started = await client.post(start_path, headers={'Idempotency-Key': key}, json=body)
+            assert started.status_code == 202, started.text
+            batch_id = started.json()['operation']['result']['batch']['batchId']
+            batch_path = prefix + f'/batches/{batch_id}'
+            async with asyncio.timeout(90):
+                while True:
+                    batch = (await client.get(batch_path)).json()['batch']
+                    if batch['status'] in {'completed', 'failed', 'interrupted', 'stopped'}:
+                        break
+                    await asyncio.sleep(.05)
+            tasks = (await client.get(prefix + '/tasks', params={'batchId': batch_id})).json()['items']
+            tasks.sort(key=lambda task: task['taskOrdinal'])
+            expected_count = 2 if continue_after_failure else 1
+            assert batch['status'] == 'failed', batch
+            assert batch['createdTaskCount'] == expected_count
+            assert batch['activeTaskCount'] == 0
+            assert [task['status'] for task in tasks] == (['failed', 'succeeded'] if continue_after_failure else ['failed'])
+            assert len(launches) == len(set(launches)) == expected_count
+            assert (await client.get(prefix + f"/tasks/{tasks[0]['taskId']}/node-attempts")).json()['items'] == []
+            first_messages = [message for run_id, message in messages if run_id == tasks[0]['runId']]
+            assert len(first_messages) == 1
+            assert first_messages[0]['type'] == 'finished'
+            assert first_messages[0]['status'] == 'failed'
+            assert first_messages[0]['cleanupConfirmed'] is True
+            assert requests.count('/fixture') == (1 if continue_after_failure else 0)
+            assert (await client.get(records_path, params=query)).json()['items'] == before
+            with app.state.session_factory() as session:
+                leases = list(session.scalars(select(ProjectRecordLeaseRow)))
+                assert len(leases) == expected_count
+                assert len({lease.lease_key for lease in leases}) == 1
+                assert all(lease.state == 'released' and lease.released_at is not None for lease in leases)
+            snapshots = [(await client.get(prefix + f"/tasks/{task['taskId']}")).json()['inputSnapshot'] for task in tasks]
+            assert all(snapshot['inputs'][0]['recordRef'] == snapshots[0]['inputs'][0]['recordRef'] for snapshot in snapshots)
+            replay = await client.post(start_path, headers={'Idempotency-Key': key}, json=body)
+            assert replay.status_code in {200, 202}, replay.text
+            assert replay.json()['operation']['result']['batch']['batchId'] == batch_id
+            assert sorted((await client.get(prefix + '/tasks', params={'batchId': batch_id})).json()['items'], key=lambda task: task['taskOrdinal']) == tasks
+            assert not manager.busy()
+            assert app.state.project_workflow_dispatcher.blockers() == []
+            assert not app.state.project_run_scheduler.blockers()
+            assert not list((tmp_path / 'tmp' / 'workflow-runs').glob('*/generation-*'))
+    finally:
+        await app.router.on_shutdown[-1]()
+
+
+@pytest.mark.asyncio
 async def test_optional_input_does_not_leak_between_real_tasks(
     tmp_path, valid_profile_values, real_cloak_page,
 ):
