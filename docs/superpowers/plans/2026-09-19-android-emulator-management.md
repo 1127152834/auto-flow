@@ -494,7 +494,7 @@ def test_reservations_count_towards_capacity():
 - [x] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_bulk.py tests/integration/test_android_capacity_reservations.py -q)`。（状态：passed；批次修订号/容量栅栏 RED→GREEN 见最终审查及容量 QA；[证据 T13.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t13)）
 - [x] 复用Operation执行器，初始生命周期并发仍1。按规格计入512MiB保留量和待启动预留；停止未经核实不能提前释放预算。CPU为配额，不声称独占核。跨workspace/取消/进程重建、文件损坏、发布失败和真实限额漂移已验证；证据见9月23日容量记录。（状态：passed；512 MiB 保留、持久预留、未知占用和跨工作区真实容量已验；[证据 T13.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t13)）
 - [x] UI确认冻结目标、破坏范围及阻塞项，逐项显示成功/失败/未知；取消不撤销已执行项，未知项不得retryFailed。（状态：passed；UI 冻结与逐项结果、未知禁止重试回归通过；[证据 T13.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t13)）
-- [x] GREEN后提交 `feat(android): add safe bulk operations and capacity admission`。（状态：passed；软件切片已提交；运行时瞬时故障真实核实仍未验；[证据 T13.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t13)）
+- [x] GREEN后提交 `feat(android): add safe bulk operations and capacity admission`。（状态：passed；软件切片已提交；真实容器消失故障重试与回执前强杀后的只读核实已通过；[证据 T13.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t13)）
 
 ### T14：后台观察、聚合查询和可见预览
 

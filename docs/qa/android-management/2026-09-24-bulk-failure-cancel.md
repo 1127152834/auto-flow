@@ -9,3 +9,5 @@
 最终分支复审又发现两个软件边界：容量异步探测返回后旧批次可越过已更新设备版本；真实运行时失败推进 generation 后，`retryFailed` 沿用旧版本必定冲突。两项先有失败回归，再改为容量返回复读、管理器持运行时锁核对 `expectedRevision`，以及显式重试冻结新的内部修订号。上述真实脚本在这两项修复后重跑，并进一步对修订冲突的失败项执行 `retryFailed`，exit 0，输出 `partial=[succeeded,failed]`、`retried=[succeeded,succeeded]`、`cancelled=cancelled`、`capacityItem=cancelled`。重试项拥有 `retryOf` 持久关联，两台最终均停机。随后用生产 `MacAndroidRuntime.verify_deleted` 对本轮三台设备及其归属容器/卷只读核实，输出 `realDeletedDevices=3`、`states=[missing,missing,missing]`。
 
 这是明确的乐观并发冲突、该冲突的显式重试和容量等待取消演练，不代表已验证运行时中途崩溃、ADB 断连、未知结果重试或取消已开始的副作用。真实运行时瞬时失败后的重试仍未演练。
+
+后续[真实批次运行时故障](2026-09-24-bulk-runtime-fault.md)已补容器消失失败、恢复后重试和停止回执前进程强杀后的核实；上文未覆盖范围仅描述本历史实验，不再表示这些场景当前缺证。

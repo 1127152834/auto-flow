@@ -12,9 +12,11 @@
 
 [隔离桌面真机链](2026-09-23-desktop-ui-verification.md)新增镜像登记、模板、长名称实例创建/启动/停止/保留/恢复与历史页面证据，修复镜像/旧环境 500、正常设备误报及高缩放状态竖排。应用 125% 和原生五档高缩放已实测；精确 200% 数值、真实网络断开与桌面原生控制同链仍未验收。
 
-[AM2 镜像增量](am2-verification.md)已在真实 Mac/Lima 按固定摘要拉取官方 ReDroid 镜像，并通过认证 HTTP 登记/删除自建 ARM64 测试镜像内容；拉取前来源边界经 RED→GREEN。候选 GApps 账号链、真实断线核实和桌面内容删除仍未验收。[AM3 双实例批量链](2026-09-23-am3-real-bulk-verification.md)完成 start/stop/delete 三批各两项成功、最终容器与卷消失，同时修复真实 HTTP 批次记录泄漏内部字段引起的 500；[审查修复与五实例真实链](2026-09-23-final-review-remediation.md)另覆盖五台 ready、20 次快照、并发预览、文件流备份/恢复和跨重建应用回执核实。十台本机容量阻塞，真实故障后重试及外部条件仍未验收。
+[AM2 镜像增量](am2-verification.md)已在真实 Mac/Lima 按固定摘要拉取官方 ReDroid 镜像，并通过认证 HTTP 登记/删除自建 ARM64 测试镜像内容；拉取前来源边界经 RED→GREEN。候选 GApps 账号链、真实断线核实和桌面内容删除仍未验收。[AM3 双实例批量链](2026-09-23-am3-real-bulk-verification.md)完成 start/stop/delete 三批各两项成功、最终容器与卷消失，同时修复真实 HTTP 批次记录泄漏内部字段引起的 500；[审查修复与五实例真实链](2026-09-23-final-review-remediation.md)另覆盖五台 ready、20 次快照、并发预览、文件流备份/恢复和跨重建应用回执核实。十台本机容量阻塞，外部 GApps 条件仍未验收。
 
 [高级日志与十实例容量](2026-09-24-advanced-logs-and-capacity.md)记录单次确认、受限 logcat 元数据导出及真实 ReDroid 196 条结果；十台最低配置加保留需 8192 MiB，本机 Lima 仅 7921 MiB，因此十台真实规模标记 `blocked`。默认诊断继续只含白名单字段。
+
+[批次运行时失败与未知结果](2026-09-24-bulk-runtime-fault.md)新增真实 Docker 容器消失失败、恢复后重试、回执前 SIGKILL、重启核实和未知项不重放；两台数据保留且资源已清理，T13/AM-AC15 通过。
 
 [批次部分失败、重试与取消](2026-09-24-bulk-failure-cancel.md)修复新设备公开修订号与执行比较不一致；两台真实批量停止先得 `[succeeded, failed]`，对修订冲突项显式重试后两项均成功；容量等待子项取消后设备仍停机，三台自建资源最终均清理并只读核实。
 
@@ -46,7 +48,7 @@
 | --- | --- | --- | --- |
 | AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T04 自动验证；T05/T07 真实输入、切端、租约回收、HTTP 重启及保留卷恢复已验，桌面边界与硬中断仍缺证据 |
 | AM2 | T08–T12 | [am2-verification.md](am2-verification.md) | 镜像/模板自动化、固定摘要网络拉取及真实 HTTP 内容删除通过；候选 GApps 镜像/账号链缺条件 |
-| AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；真实五实例规模、批量 start/stop/delete、部分失败及容量等待取消已验；十台本机容量 blocked，真实未知结果/失败后重试仍缺 |
+| AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；真实五实例规模、批量 start/stop/delete、部分失败及容量等待取消已验；真实运行时失败后重试与未知项核实也已通过；十台本机容量 blocked，前台/探测指标未完整记录 |
 | AM4 | T17–T20 | [am4-verification.md](am4-verification.md) | 备份/恢复/清理与高级日志自动化、真实文件流读回及 logcat 摘要已验；完整失败演练与最终交付未完成 |
 | GApps | T11 | [gapps-validation.md](gapps-validation.md) | `blocked` / `not_tested` |
 
