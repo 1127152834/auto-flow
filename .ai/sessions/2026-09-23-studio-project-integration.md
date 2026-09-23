@@ -282,3 +282,9 @@
 - 后端32项、前端28项及Ruff/mypy/TypeScript/ESLint/OpenAPI/构建通过；正式 Electron 开发入口真实 UI 创建模块并运行项目任务，输出42、子节点作用域和清理通过。详见`docs/migration/studio-backend-migration/evidence/project-integration/custom-module-task-2026-09-23/README.md`。
 - 冻结包、其他平台、运行期交互命令与跨工作流文件调用仍未核销，不能视作完整项目模块族关闭。
 - 在`9b256a25`提交后重建PyInstaller和Electron目录包；正式macOS arm64包从真实UI重跑控制流、画布子流程和项目自定义模块任务全部通过。包内app.asar、backend和Electron可执行文件哈希及独立工作区结果见`formal-project-control-electron-HSqFSS/`。Windows／Intel及运行期交互模块仍待验收。
+
+## 项目任务跨工作流调用（2026-09-23）
+
+- `06171cd2` 复用 Studio 的工作流依赖冻结及嵌套执行器；项目范围内解析 `run_workflow_file`，由项目 Studio 选择稳定工作流 ID。子工作流的浏览器/模型需求、子节点事件和变量回收随运行快照传入项目 worker，跨项目缺失引用在启动前拒绝。无资源白名单；项目默认值与显式覆盖规则保持不变。
+- 后端关联 28 项、前端专项 51 项、Ruff/mypy/TypeScript/ESLint/OpenAPI、renderer/main/preload 和 PyInstaller 构建通过。正式 Electron 开发入口 `formal-project-control-electron-IVC9bC` 与 macOS arm64 本地未签名包 `formal-project-control-electron-IHRniA` 均以真实 UI 保存并运行子工作流，受控网页、子节点日志、输出 42 和进程清理通过。证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/project-workflow-task-2026-09-23/README.md`。
+- 开发入口执行时代码尚未提交，`result.json.gitHead` 指向父提交；包内复验在 `06171cd2` 后重建并记录该提交。旧项目运行广域回归有四项冻结默认值断言与当前 v3 不改写快照行为不一致，单独登记，未计通过。运行期交互子流程、macOS Intel/Windows 与用户真实数据仍未核销。
