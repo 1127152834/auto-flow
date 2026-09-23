@@ -8,3 +8,4 @@
 - 项目资源遵循用户确认的项目默认值＋任务显式覆盖，不增加白名单。`list_export` 仍需项目文本产物持久化和 ACK 边界，未开放。
 - 本记录只核销该节点族的开发和 macOS arm64 本地未签名包入口；macOS Intel、Windows 及其他节点族未据此标通过。
 - 两份 `result.json` 的 `gitHead` 是测试启动时的父提交 `e6c9bbd9`；本轮改动在工作树内完成后才构建和验收，正式包哈希标识本次实际二进制。未将父提交误报为已包含本轮代码。
+- 后续项目实用工具包调整了正式验收脚本的下拉框等待操作；同一新 macOS arm64 包的[数学链路回归](../formal-project-math-electron-1aj0nL/result.json)再次通过。该回归对应的新后端包哈希见[实用工具证据](../utility-family-2026-09-23/README.md)。

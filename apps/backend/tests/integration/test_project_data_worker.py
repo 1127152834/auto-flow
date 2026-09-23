@@ -18,7 +18,7 @@ from threading import Event, Thread
 from time import monotonic
 from types import SimpleNamespace
 from typing import Any, NoReturn
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -110,7 +110,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -139,7 +139,18 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         }, None)
         for case in MATH_CASES
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps}[family]
+    utility_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("password", "random_password_generator", {"length": 12, "includeSymbols": False, "resultVariable": "password"}, None),
+        ("url", "url_encode_decode", {"inputText": "中文 A", "resultVariable": "encoded"}, "%E4%B8%AD%E6%96%87%20A"),
+        ("md5", "md5_encrypt", {"inputText": "abc", "resultVariable": "md5"}, "900150983cd24fb0d6963f7d28e17f72"),
+        ("sha", "sha_encrypt", {"inputText": "abc", "resultVariable": "sha"}, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"),
+        ("time", "timestamp_converter", {"operation": "to_timestamp", "inputValue": "2020-01-01 00:00:00", "resultVariable": "timestamp"}, None),
+        ("hsv", "rgb_to_hsv", {"r": 255, "g": 0, "b": 0, "resultVariable": "hsv"}, None),
+        ("rgb-cmyk", "rgb_to_cmyk", {"r": 255, "g": 0, "b": 0, "resultVariable": "rgb_cmyk"}, None),
+        ("hex-cmyk", "hex_to_cmyk", {"hexColor": "#ff0000", "resultVariable": "hex_cmyk"}, None),
+        ("uuid", "uuid_generator", {"uuidVersion": 5, "namespace": "dns", "name": "autoflow.cn", "resultVariable": "uuid"}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert "list_export" not in runnable_module_types()  # Project artifacts are not wired yet.
@@ -196,6 +207,16 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             assert outputs["list_sum"] == 9
             assert outputs["math_power"] == 1024
             assert outputs["stat_median"] == 2.5
+        elif family == "utility":
+            assert set(outputs) == {node_id for node_id, _, _, _ in steps}
+            assert len(outputs["password"]) == 12
+            assert isinstance(outputs["time"], int)
+            assert outputs["hsv"]["s"] == 100
+            assert outputs["rgb-cmyk"]["m"] == outputs["hex-cmyk"]["m"] == 100
+            assert UUID(outputs["uuid"]).version == 5
+            for node_id, _, _, expected in steps:
+                if expected is not None:
+                    assert outputs[node_id] == expected
         else:
             assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
         assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)

@@ -308,3 +308,9 @@
 - 沿用用户确认的项目默认资源＋任务显式覆盖，无资源白名单。项目目录新增 31 个现有 Studio 数学／统计节点，项目真实 worker 31 节点串联输出及持久尝试通过；冻结差分与关联测试共 270 项通过。Studio 批准范围 213 不变，项目目录为 102。
 - 正式 Electron 开发入口以真实 UI 保存三节点流程，关闭 Studio 后运行项目自动化，输出 6、6、7 且无浏览器残留。首次正式验收发现数学节点可见的默认输出名未写入工作流文档；在节点创建共用入口补齐 31 类默认值，专项 14 项、类型、lint、构建及正式链路复验通过。
 - PyInstaller 冻结后端与 macOS arm64 本地未签名 Electron 目录包构建后，同一真实 UI 链路包内复验通过；哈希、开发及包内证据见 `docs/migration/studio-backend-migration/evidence/project-integration/math-family-2026-09-23/README.md`。Intel/Windows 和 `list_export` 项目产物链尚未核销。
+
+## 项目任务实用数据工具节点族（2026-09-23，confirmed）
+
+- 项目目录接入冻结 WebRPA 实用工具源码已批准的九个现有执行器，真实项目 worker 和原版差分／关联回归共 166 项通过；项目目录为 111 个，Studio 批准范围 213 不变。Ruff、mypy、OpenAPI 检查通过。
+- 正式 Electron 开发入口及 macOS arm64 本地未签名包以真实 UI 保存并运行 URL 编码→MD5→SHA，输出、节点记录与清理正确；共享验收脚本下拉选择操作调整后，数学链路在同一新包复验通过。完整证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/utility-family-2026-09-23/README.md`。
+- `list_export` 项目任务仍受文本产物发布与 SQLite ACK 不确定性安全边界阻塞；该问题源于 `ProjectScreenshotWriter.write_text` 尚未接通，不能用截图删除规则处理已发布的用户输出文件。其余工具族、Intel/Windows 和正式用户数据未据此验收。

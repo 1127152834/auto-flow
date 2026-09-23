@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
@@ -17,11 +17,13 @@ const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const complexDebugOnly = process.env.AUTOFLOW_B8_COMPLEX_DEBUG_ONLY === '1'
 const restartRecoveryOnly = process.env.AUTOFLOW_B8_RESTART_RECOVERY_ONLY === '1'
 const projectMathOnly = process.env.AUTOFLOW_PROJECT_MATH_TASK === '1'
-const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectMathOnly
+const projectUtilityOnly = process.env.AUTOFLOW_PROJECT_UTILITY_TASK === '1'
+const projectDataOnly = projectMathOnly || projectUtilityOnly
+const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectDataOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -81,32 +83,44 @@ try {
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
-  if (projectMathOnly) {
-    const name = '项目列表与数学任务验收'
+  if (projectDataOnly) {
+    const name = projectMathOnly ? '项目列表与数学任务验收' : '项目实用工具任务验收'
     await newWorkflow(studio, name)
-    await addGlobalVariable(studio, 'items', 'array', '[1,2,3]')
+    if (projectMathOnly) await addGlobalVariable(studio, 'items', 'array', '[1,2,3]')
     await showBlockView(studio)
-    await addBlock(studio, '添加模块', '列表求和')
-    await setInput(studio, '[placeholder="输入列表变量名"]', 'items')
-    await setInput(studio, '[placeholder="保存结果的变量名"]', 'sum_value')
-    await addBlock(studio, '添加模块', '四舍五入')
-    await setInput(studio, '[placeholder="输入数值或变量"]', '{sum_value}')
-    await setInput(studio, '[placeholder="保存结果的变量名"]', 'rounded')
-    await addBlock(studio, '添加模块', '绝对值')
-    await setInput(studio, '[placeholder="输入数值或变量"]', '-7')
-    await setInput(studio, '[placeholder="保存结果的变量名"]', 'absolute')
+    if (projectMathOnly) {
+      await addBlock(studio, '添加模块', '列表求和')
+      await setInput(studio, '[placeholder="输入列表变量名"]', 'items')
+      await setInput(studio, '[placeholder="保存结果的变量名"]', 'sum_value')
+      await addBlock(studio, '添加模块', '四舍五入')
+      await setInput(studio, '[placeholder="输入数值或变量"]', '{sum_value}')
+      await setInput(studio, '[placeholder="保存结果的变量名"]', 'rounded')
+      await addBlock(studio, '添加模块', '绝对值')
+      await setInput(studio, '[placeholder="输入数值或变量"]', '-7')
+      await setInput(studio, '[placeholder="保存结果的变量名"]', 'absolute')
+    } else {
+      await addBlock(studio, '添加模块', 'URL编解码')
+      await setInput(studio, '[placeholder="要编码或解码的文本"]', '中文 A')
+      await setInput(studio, '[placeholder="url_result"]', 'encoded')
+      await addBlock(studio, '添加模块', 'MD5加密')
+      await setInput(studio, '[placeholder="要加密的文本"]', '{encoded}')
+      await setInput(studio, '[placeholder="md5_hash"]', 'digest')
+      await addBlock(studio, '添加模块', 'SHA加密')
+      await setInput(studio, '[placeholder="要加密的文本"]', '{digest}')
+      await setInput(studio, '[placeholder="sha_hash"]', 'final_sha')
+    }
     await click(studio, '保存')
     const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project math saved', 15_000)
     assert.ok(saved && saved.projectId === projectId)
-    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), ['list_sum', 'math_round', 'math_abs'])
-    assert.equal(saved.nodes[1].data.resultVariable, 'rounded')
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), projectMathOnly ? ['list_sum', 'math_round', 'math_abs'] : ['url_encode_decode', 'md5_encrypt', 'sha_encrypt'])
+    if (projectMathOnly) assert.equal(saved.nodes[1].data.resultVariable, 'rounded')
     assert.equal(saved.edges.length, 2)
-    checkpoint('正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程')
+    checkpoint(projectMathOnly ? '正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程' : '正式项目 Studio 通过真实 UI 配置并保存 URL 编码、MD5 和 SHA 顺序流程')
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
     await click(main, '新建自动化')
-    await setInput(main, '[aria-label="自动化名称"]', '项目纯数据节点自动化')
+    await setInput(main, '[aria-label="自动化名称"]', projectMathOnly ? '项目纯数据节点自动化' : '项目工具节点自动化')
     await selectAutomationWorkflow(main, name, saved.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project math automation')
@@ -121,16 +135,19 @@ try {
     assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, task, attempts, variables: saved.variables, nodes: saved.nodes }))
     assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, 3)
     const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
-    for (const [variable, expected] of [['sum_value', 6], ['rounded', 6], ['absolute', 7]]) {
-      assert.ok(outputs.items.some(item => item.name === variable && item.value === expected), `${variable} output missing`)
+    const encoded = encodeURIComponent('中文 A')
+    const digest = createHash('md5').update(encoded).digest('hex')
+    const outputExpectations = projectMathOnly ? [['sum_value', 6], ['rounded', 6], ['absolute', 7]] : [['encoded', encoded], ['digest', digest], ['final_sha', createHash('sha256').update(digest).digest('hex')]]
+    for (const [variable, expected] of outputExpectations) {
+      assert.ok(outputs.items.some(item => item.name === variable && item.value === expected), JSON.stringify({ variable, expected, outputs: outputs.items, nodes: saved.nodes }))
     }
     await click(main, '查看任务')
     await click(main, '输入与输出', '[role="tab"]')
-    await waitFor(main, "document.body?.innerText.includes('absolute')", 'project math output')
-    await capture(main, join(evidenceDir, 'project-math-task.png'))
+    await waitFor(main, `document.body?.innerText.includes(${JSON.stringify(projectMathOnly ? 'absolute' : 'final_sha')})`, 'project data output')
+    await capture(main, join(evidenceDir, projectMathOnly ? 'project-math-task.png' : 'project-utility-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
-    checkpoint('正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser')
-    const report = { evidenceId: 'BE-project-math-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+    checkpoint(projectMathOnly ? '正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser' : '正式项目任务真实 worker 产出编码与摘要并持久化节点记录，未启动 CloakBrowser')
+    const report = { evidenceId: projectMathOnly ? 'BE-project-math-formal-electron' : 'BE-project-utility-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()
@@ -1247,19 +1264,36 @@ async function setInputAt(cdp, selector, index, value) {
 }
 
 async function selectNative(cdp, selector, expectedText) {
-  if (!await cdp.evaluate(`document.querySelector(${JSON.stringify(selector)})?.getAttribute('data-state')==='open'`)) await click(cdp, '', selector)
-  await click(cdp, expectedText, '[role="option"]')
-  await waitFor(cdp, `document.querySelector(${JSON.stringify(selector)})?.textContent.includes(${JSON.stringify(expectedText)})`, `${selector} selected`)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (!await cdp.evaluate(`document.querySelector(${JSON.stringify(selector)})?.getAttribute('data-state')==='open'`)) await click(cdp, '', selector)
+    try {
+      await waitFor(cdp, `Boolean([...document.querySelectorAll('[role="option"]')].some(e=>e.getClientRects().length&&e.textContent.includes(${JSON.stringify(expectedText)})))`, `${selector} option`, 3_000)
+      await click(cdp, expectedText, '[role="option"]')
+      await waitFor(cdp, `document.querySelector(${JSON.stringify(selector)})?.textContent.includes(${JSON.stringify(expectedText)})`, `${selector} selected`, 3_000)
+      return
+    } catch {
+      continue // A surrounding form refresh can close the select before the option is applied.
+    }
+  }
+  throw new Error(`${selector} could not select ${expectedText}`)
 }
 
 async function selectAutomationWorkflow(cdp, name, id) {
   const selected = `[role="combobox"][aria-label="关联工作流"][data-choice-value=${JSON.stringify(id)}]`
-  await click(cdp, '关联工作流', '[role="combobox"]')
-  const target = await waitFor(cdp, `(()=>{const items=[...document.querySelectorAll('[role="option"]')].filter(e=>e.getClientRects().length);const index=items.findIndex(e=>e.textContent.trim()===${JSON.stringify(name)});return index>=0?index+1:null})()`, `workflow option ${name}`)
-  await press(cdp, 'Home', { code: 'Home', keyCode: 36 })
-  for (let index = 1; index < target; index++) await press(cdp, 'ArrowDown', { code: 'ArrowDown', keyCode: 40 })
-  await press(cdp, 'Enter', { code: 'Enter', keyCode: 13 })
-  await waitFor(cdp, `Boolean(document.querySelector(${JSON.stringify(selected)}))`, `selected workflow ${name}`)
+  const combo = '[role="combobox"][aria-label="关联工作流"]'
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (!await cdp.evaluate(`document.querySelector(${JSON.stringify(combo)})?.getAttribute('data-state')==='open'`)) await click(cdp, '', combo)
+    try {
+      await waitFor(cdp, `Boolean([...document.querySelectorAll('[role="option"]')].some(e=>e.getClientRects().length&&e.textContent.trim()===${JSON.stringify(name)}))`, `workflow option ${name}`, 4_000)
+    } catch {
+      continue // Loading the project workflow list can replace and close the open select.
+    }
+    await click(cdp, name, '[role="option"]')
+    await waitFor(cdp, `Boolean(document.querySelector(${JSON.stringify(selected)}))`, `selected workflow ${name}`)
+    return
+  }
+  const state = await cdp.evaluate(`({open:document.querySelector(${JSON.stringify(combo)})?.getAttribute('data-state'),options:[...document.querySelectorAll('[role="option"]')].map(e=>e.textContent.trim())})`)
+  throw new Error(`workflow option ${name} unavailable: ${JSON.stringify(state)}`)
 }
 
 async function press(cdp, key, { code = key, keyCode = 0 } = {}) {
