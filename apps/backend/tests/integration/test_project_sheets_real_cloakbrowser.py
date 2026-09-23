@@ -545,3 +545,87 @@ def test_real_loop_keeps_two_sheet_intents_when_third_write_fails(
             leases = session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.task_id == task['taskId'])).all()
             assert all(lease.state == 'released' for lease in leases)
         assert not app.state.project_workflow_worker_manager.busy()
+
+
+def test_real_worker_uses_reliable_cache_during_source_outage_but_rejects_invalid_identity(
+    tmp_path, valid_profile_values, real_cloak_page,
+):
+    from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
+    from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.integration.test_project_sheets_sync import sync_operations
+
+    class OutageTransport(FakeSheetsTransport):
+        offline = False
+
+        def send(self, *args, **kwargs):
+            if self.offline:
+                self.fail_next = SheetsApiError(-1, "offline", "controlled source outage")
+            return super().send(*args, **kwargs)
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith("chromium-"))
+    shutil.copytree(source, tmp_path / "data" / "kernels" / source.name, symlinks=True)
+    transport = OutageTransport({"数据": [["编号", "标题"], ["A-1", "cached input"]]})
+    with open_sheets_table(tmp_path, transport, [("code", "编号", "string"), ("title", "标题", "string")]) as bound:
+        app = bound.client.app
+
+        def proof():
+            with app.state.session_factory() as session:
+                return session.get(SheetsBindingRow, bound.table).identity_verification
+
+        def fail_pull():
+            transport.offline = True
+            failed = bound.client.post(bound.url("/sync/pull"), headers=new_key(), json={
+                "expectedTableRevision": bound.table_revision(),
+            })
+            assert failed.status_code == 502, failed.text
+            assert failed.json()["error"]["code"] == "SHEETS_API_FAILED"
+
+        pull(bound)
+        before = bound.records()[0]
+        verified = proof()
+        assert verified["valid"] is True
+        fail_pull()
+        assert proof() == verified and bound.records()[0] == before
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, "headless": True, "browser_version": source.name.removeprefix("chromium-"),
+        }))
+        calls = len(transport.calls)
+        batch = start_real(bound, profile, url, "committed while offline")
+        item = wait_for(lambda: manual_item(bound), "offline cached input checkpoint")
+        task = bound.client.get(f"/api/v1/projects/{bound.project}/tasks/{item['taskId']}").json()
+        captured = task["inputSnapshot"]["inputs"][0]
+        assert captured["recordRef"] == before["ref"]
+        assert captured["contentRevision"] == before["contentRevision"]
+        assert {cell["fieldId"]: cell["value"] for cell in captured["values"]}[bound.field_id("title")] == "cached input"
+        resume(bound, item)
+        wait_for(lambda: batch_detail(bound, batch)["batch"]["status"] == "completed", "offline cached input completion")
+        assert batch_detail(bound, batch)["statusCounts"]["succeeded"] == 1
+        after = bound.records()[0]
+        assert {cell["fieldId"]: cell["value"] for cell in after["values"]}[bound.field_id("title")] == "committed while offline"
+        assert after["contentRevision"] == before["contentRevision"] + 1
+        assert after["ref"] == before["ref"]
+        assert any(op["kind"] == "push" and op["status"] == "pending" for op in sync_operations(bound))
+        assert len(transport.calls) == calls and transport.changes() == 0
+
+        # A completed scan can revoke identity trust; a later outage cannot restore it.
+        transport.offline = False
+        transport.grid("数据").append(["A-1", "duplicate identity"])
+        pull(bound)
+        invalid = proof()
+        assert invalid["valid"] is False
+        fail_pull()
+        assert proof() == invalid
+        calls = len(transport.calls)
+        rejected_batch = start_real(bound, profile, url, "must not run")
+        wait_for(lambda: batch_detail(bound, rejected_batch)["batch"]["status"] == "failed", "invalid cached identity rejection")
+        rejected = batch_detail(bound, rejected_batch)
+        assert rejected["taskCount"] == 0
+        assert rejected["batch"]["selectionOutcome"]["status"] == "configurationError"
+        assert bound.records()[0] == after
+        with app.state.session_factory() as session:
+            assert len(session.scalars(select(ProjectTaskRow)).all()) == 1
+            assert not session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.state.in_(("held", "reconciling")))).all()
+        assert not app.state.project_workflow_worker_manager.busy()
+        assert requests.count("/fixture") == 1
+        assert len(transport.calls) == calls and transport.changes() == 0

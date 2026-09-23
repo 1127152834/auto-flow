@@ -1119,6 +1119,17 @@ class SqlAlchemyProjectSync:
         }
         if last is not None:
             summary["lastConfirmedAt"] = instant(_aware(last) or datetime.now(UTC))
+        # Read freshness must not move forward on a push, failed attempt or old binding.
+        pulled = session.scalar(
+            select(func.max(SyncOperationRow.confirmed_at)).where(
+                SyncOperationRow.table_id == table,
+                SyncOperationRow.binding_epoch == binding.binding_epoch,
+                SyncOperationRow.kind == "pull",
+                SyncOperationRow.status == "confirmed",
+            )
+        )
+        if pulled is not None:
+            summary["lastPulledAt"] = instant(_aware(pulled) or datetime.now(UTC))
         return summary
 
     def set_paused(

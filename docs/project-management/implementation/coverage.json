@@ -4275,6 +4275,15 @@
           "limitations": "未覆盖子条件逐项保留；受控 transport 不代替实网或打包验收",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/source-outage-follow-through.json",
+          "scope": "受控 Google 断网的真实 worker 缓存领取与重复身份拒绝，来源时间/拉取状态生产接口及组件显示",
+          "limitations": "仅明确子范围；实网、打包联合链及完整身份组合仍待验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -4298,27 +4307,45 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-22",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_sheets_claims.py",
             "symbol": "test_rejected_value_push_keeps_identity_claimable_and_peer_pull_independent",
             "scope": "受控 Google 拒绝普通值写后，本地值/失败意图保留；双方拉取仍可执行，真实 SQLite Task 领取冻结本地新值且共享占用仍排他",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_worker_uses_reliable_cache_during_source_outage_but_rejects_invalid_identity",
+            "scope": "真实 worker/浏览器使用已核验缓存，在持续 Google transport 断网下人工继续并提交本地值/待推送意图；完整扫描发现重复身份后再断网，零 Task/无浏览器/无活动 lease，失败读取不重置信任。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_sync.py",
+            "symbol": "test_source_read_time_survives_push_and_failed_pull_and_excludes_retired_binding",
+            "scope": "真实 HTTP/SQLite 的当前代次 lastPulledAt 不被推送和失败拉取推进，latestPull 提供独立失败事实；旧绑定时间/尝试不泄漏为当前来源事实。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/project-data/components/SheetsSync.test.tsx",
+            "testName": "keeps successful source time beside persisted pull failure independently of the push queue",
+            "scope": "拉取卡同时显示成功来源时间和持久失败提示，即使出站队列读取失败；不自动重发，不展示原始上游诊断。组件 mock 不是实际打包 Sheets UI 验收。",
+            "level": "automated_component"
           }
         ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "来源完全读取失败时的缓存身份有效期，以及界面同时显示来源时间/同步异常仍缺联合断言。"
+            "detail": "未曾完整读取、第二次值视图读取失败、绑定/同行代次变化等缓存信任组合仍缺同一真实 worker 联合场景；不推断或新增固定缓存有效期。"
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "本组合未在真实 worker/打包完整链执行。"
+            "detail": "本机真实 worker 的缓存可靠/重复身份失效断网场景已通过；新来源时间/失败提示与真实 Sheets 的打包完整联合链、Windows/Intel 同场景仍待完成。"
           },
           {
             "kind": "external_acceptance_pending",
-            "detail": "实际 Sheets 网络/权限异常需要授权测试资源。"
+            "detail": "实际 Sheets 网络/权限异常需要授权测试资源；历史 PM6 实网证据保留，不代表当前 PM9 打包完整链。"
           }
         ],
         "statusBeforeReview": "planned"

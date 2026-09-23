@@ -1,0 +1,127 @@
+{
+  "date": "2026-09-24",
+  "status": "targeted_and_packaged_passed_serial_full_regression_pending",
+  "releaseAccepted": false,
+  "requirement": "DATA-CLAIM-09",
+  "parentCommit": "6c1167cd47039987d3f03697dc8b50261b00d497",
+  "sourceSha256": {
+    "apps/backend/src/autoflow/adapters/http/project_data_schemas.py": "4a06f048c5bff623f0bb60c950dfab468b800c8465620d371c96567d29c7e285",
+    "apps/backend/src/autoflow/adapters/http/project_sheets_schemas.py": "a234f427f256f9643a4f70b8b8d8e801ac3829c0a9f5433d77daa2839237a020",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "bd222cb2b857e32eeaae889945862fc853e526a80166a517975bd6902d086acc",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "9c4e7f505d116a39845a91cc0aba72a2968a40a7b8b33a079489f2c6218fd637",
+    "apps/desktop/src/renderer/domains/project-data/components/SyncOperationPanel.tsx": "dbd941c022e9dd4290a73111c76a05d66048384bb7c1305545bf82c9796b2769",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "d888444290f196fb6fe500fac8ef34b788e01eb2fcbc1845cea29fcbe713aae7"
+  },
+  "changes": [
+    "当前绑定的成功来源读取时间 lastPulledAt 不被推送、失败读取或旧代次推进",
+    "同步状态提供 latestPull，修复从仅出站变化队列寻找拉取记录的死分支",
+    "页面同时保留成功来源时间和安全失败提示，不直接展示上游原始错误",
+    "CI 真实 worker 选择新增 source_outage，现有运行不包含此断言"
+  ],
+  "evidenceRoot": ".tmp-tests/pm9-source-outage-2026-09-24",
+  "checks": {
+    "realWorkerAndHttp": "2 passed /2 warnings /13.00s; real browser/worker, controlled Google transport and credentials",
+    "priorTargetedSync": "38 existing sync cases plus new real worker passed; initial new HTTP timestamp test failed until fixed and separately passed",
+    "frontendTargeted": "12 passed",
+    "frontendFull": "409 files /5474 passed /246.92s",
+    "backendFull": {
+      "status": "failed",
+      "passed": 3483,
+      "failed": 4,
+      "skipped": 79,
+      "warnings": 2,
+      "seconds": 1072.44,
+      "evidence": ".tmp-tests/pm9-source-outage-2026-09-24/backend-full.log",
+      "failures": [
+        "kernel worker download startup timeout 5s",
+        "kernel worker arbitrary command startup timeout 5s",
+        "host shutdown with open SSE timed out 3s (no active worker)",
+        "closed browser status not removed within 2s"
+      ],
+      "cause": "not established; resource pressure is a hypothesis, deadlines unchanged; isolated and serial full follow-up pending"
+    },
+    "scripts": "102 passed",
+    "mapping": "4 tests passed;251 valid references; no status promotions",
+    "ruff": "passed changed backend sources/tests",
+    "mypy": "408 source files passed",
+    "frontendTypecheck": "passed",
+    "frontendLint": "passed",
+    "openapi": "generate and check passed",
+    "build": "frontend/backend/ARM package passed",
+    "packagedContract": {
+      "status": "passed",
+      "platform": "darwin",
+      "arch": "arm64",
+      "checkedAt": "2026-09-23T17:49:23.551Z",
+      "assertions": [
+        "bundled sidecar serves lastPulledAt in sync and table summaries",
+        "bundled sidecar serves latestPull as separate sync-state fact"
+      ],
+      "limitations": [
+        "OpenAPI packaging only; no real Google authorization or combined Sheets UI acceptance"
+      ]
+    },
+    "packagedDesktop": {
+      "status": "passed",
+      "evidence": ".tmp-tests/pm9-source-outage-2026-09-24/desktop/project-desktop.json",
+      "sha256": "a185f87cb83dfcc615e22e4d06f8cde08c76f9d291c71ba671ed35e50ea80bb3",
+      "screenshots": 22,
+      "scope": "existing full production desktop/worker/Studio/runtime/volume chain; Sheets source-outage UI itself not exercised",
+      "volume": {
+        "worker": {
+          "logCount": 1004,
+          "logPages": 6,
+          "elapsedMs": 33629,
+          "logsPerMinute": 1791,
+          "scope": "real worker throughput and server pagination; no renderer memory claim"
+        },
+        "records": 10000,
+        "recordWriteMs": 64397,
+        "busyRetries": 0,
+        "synthetic": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60020,
+          "maxBatchLagMs": 33
+        },
+        "twoFramesMs": 7
+      }
+    },
+    "kernelEntrypointIsolated": "4 passed /10.30s after two full-run failures; original trace pending, not proof full regression passed",
+    "processBoundariesFollowUp": "6 passed /9.84s, original tests and deadlines unchanged; cannot erase original full-run failures",
+    "backendFullSerial": {
+      "status": "in_progress",
+      "evidence": ".tmp-tests/pm9-source-outage-2026-09-24/backend-full-serial.log",
+      "scope": "same source, no concurrent frontend/build/package/smoke workload from this task"
+    }
+  },
+  "redGreen": [
+    "HTTP initially KeyError lastPulledAt; UI initially missing successful read timestamp",
+    "HTTP then exposed mistaken assumption that sync-operations lists pulls; corrected production state latestPull and frontend test payload to actual endpoint responsibility; final HTTP passed"
+  ],
+  "ci": {
+    "runId": "35895754111",
+    "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69",
+    "status": "in_progress",
+    "scope": "prior production69baeeb2 plus harness; does not validate this source-outage production change"
+  },
+  "remaining": [
+    "Same packaged UI + live Google source-outage scenario needs authorized resource; controlled transport is not internet acceptance",
+    "Additional cache trust combinations and Windows/Intel new real-worker scenario remain pending",
+    "No new TTL or identity-validity promise derived from lastPulledAt; existing epoch/generation/peer/record proof gates remain",
+    "Proposed P/L/M/FR/AD/W and existing-file overwrite/append remain unimplemented pending decisions; physical/signing/OAuth gates remain external"
+  ],
+  "coverage": {
+    "requirements": 251,
+    "withAssertions": 249,
+    "unlocated": 2,
+    "partiallyVerified": 206,
+    "planned": 45,
+    "verified": 0
+  },
+  "packageSha256": {
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "8c378cabf3ae4444c83e7eee588e6b883a6dbf44e482256d8bf46beb8d563629",
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "b4880d9b014f453ad863165281cf1c784a2acb0eefbd62f16a78a1605cce78bb"
+  }
+}

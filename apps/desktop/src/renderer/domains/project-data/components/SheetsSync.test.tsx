@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, expect, it, vi } from 'vitest'
@@ -167,4 +167,25 @@ it('offers reconciliation for an unknown send and never pushes again on its own'
   await userEvent.click(screen.getByRole('button', { name: /核对结果/ }))
   await waitFor(() => expect(api.reconcile).toHaveBeenCalledWith('t', 's1', 4, expect.any(String), expect.any(Function)))
   expect(api.push).not.toHaveBeenCalled()
+})
+
+
+it('keeps successful source time beside persisted pull failure independently of the push queue', async () => {
+  const sourceTime = '2026-09-18T02:00:00Z', attemptTime = '2026-09-24T02:00:00Z'
+  const api = apiWith({
+    state: vi.fn().mockResolvedValue({
+      summary: { status: 'failed', pendingCount: 0, unknownCount: 0, lastPulledAt: sourceTime, lastConfirmedAt: attemptTime },
+      binding: { connectionId: 'c1', spreadsheetId: 'abc', sheetId: 0, bindingEpoch: 2, identityStrategy: { kind: 'column', columnId: 'A' }, mapping: [], syncPaused: false },
+      latestPull: { syncOperationId: 's1', projectId: 'p', tableId: 't', kind: 'pull', bindingEpoch: 2, status: 'failed', statusRevision: 2, error: { code: 'SHEETS_API_FAILED', message: 'secret upstream diagnostic' }, createdAt: attemptTime, updatedAt: attemptTime },
+    }),
+    operations: vi.fn().mockRejectedValue(new Error('push queue unavailable')),
+  })
+  wrap(<SyncOperationPanel api={api} tableId="t" scopeKey="ws:p" tableRevision={3} binding={null} />)
+  const section = within(await screen.findByRole('region', { name: '拉取新增' }))
+  const formatted = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(sourceTime))
+  expect(await section.findByText(`来源最近成功读取 ${formatted}`)).toBeVisible()
+  expect(section.getByRole('alert')).toHaveTextContent('来源读取失败，请检查网络和账号权限后重试')
+  expect(section.getByText('未发送')).toBeVisible()
+  expect(screen.queryByText(/secret upstream diagnostic/)).toBeNull()
+  expect(api.pull).not.toHaveBeenCalled()
 })

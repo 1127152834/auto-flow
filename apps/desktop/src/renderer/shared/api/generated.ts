@@ -8827,6 +8827,7 @@ export type components = {
         /** SyncStateView */
         SyncStateView: {
             summary: components["schemas"]["SyncSummary"];
+            latestPull?: components["schemas"]["SyncOperation"] | null;
             binding?: components["schemas"]["SheetsBinding"] | null;
         };
         /** SyncStatusRevisionRequest */
@@ -8847,6 +8848,11 @@ export type components = {
             unknownCount: number;
             /** Lastconfirmedat */
             lastConfirmedAt?: string | null;
+            /**
+             * Lastpulledat
+             * @description Last completed source pull for the current binding epoch; not a claim-validity guarantee.
+             */
+            lastPulledAt?: string | null;
         };
         /** SystemExcelIdentity */
         SystemExcelIdentity: {
@@ -8900,6 +8906,11 @@ export type components = {
             unknownCount: number;
             /** Lastconfirmedat */
             lastConfirmedAt?: string | null;
+            /**
+             * Lastpulledat
+             * @description Last completed source pull for the current binding epoch; not a claim-validity guarantee.
+             */
+            lastPulledAt?: string | null;
         };
         /** TaskCurrentInputView */
         TaskCurrentInputView: {

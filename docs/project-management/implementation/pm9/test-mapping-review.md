@@ -136,3 +136,6 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 
 2026-09-23 新字段结果写回缺口（confirmed，当前 ARM 打包实测）：DATA-SCHEMA-02/09、FLOW-A14 从“仅缺测试/生产证据”纠正为 implementation_missing。T1 新增字段后写新 fieldId 被 CAPABILITY_SCOPE_DENIED 拒绝；提前静态授予未存在字段则批次 409 CAPABILITY_FACTS_INCOMPLETE。两个失败报告及可重放补丁均保留，清理通过，不计验收成功。现有打包业务脚本新增同定义复用、异型同键冲突、原结构/值不变及 T2 旧契约兼容并通过；脚本101项通过。具体字段结果来源授权、调用/分支/循环隔离及动态字段键契约见 FR1–FR3 规格/计划，尚未批准，未放宽现有权限。详见 [报告](created-field-results-follow-through.json)。251 条状态仍205 partial/46 planned/0 verified，releaseAccepted=false。
+
+
+2026-09-24 DATA-CLAIM-09：新增已核验缓存断网下真实 worker 领取/人工继续/本地提交、重复身份扫描后再断网零领取，及 HTTP 来源成功时间与组件失败提示断言。发现并修复拉取卡错误读取出站队列的问题；lastPulledAt/latestPull 按当前绑定提供事实。其余缓存信任组合、三平台新断言、打包实网联合 UI 保留缺口；时间不是 TTL 或身份可靠保证。249/2、206partial/45planned/0verified不变。完整回归/打包和本轮精确候选以 source-outage-follow-through.json 为准；releaseAccepted=false。

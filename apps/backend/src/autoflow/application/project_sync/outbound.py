@@ -81,7 +81,11 @@ class SheetsSyncService:
                     "unknownCount": 0,
                 }
             }
-        return {"summary": self._runs.summary(project_id, table_id), "binding": binding}
+        result = {"summary": self._runs.summary(project_id, table_id), "binding": binding}
+        pulls = self._sync.sync_operations(table_id, None, 1, 1, kind="pull")["items"]
+        if pulls and pulls[0]["bindingEpoch"] == binding["bindingEpoch"]:
+            result["latestPull"] = pulls[0]
+        return result
 
     def source_observations(
         self, project: str, table: str, generation: str, encoded: str, key_type: str,

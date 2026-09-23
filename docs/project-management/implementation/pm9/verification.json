@@ -6,6 +6,7 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "DATA-CLAIM-09 source outage: current binding successful read time and separate latest pull state implemented; controlled-Google real worker reliable-cache success and invalid-identity zero-Task refusal passed. Local frontend5474/409, scripts102, types/lint/OpenAPI/build and full ARM desktop22screens passed. Initial full backend3483 passed/79 skipped/4 process timing failures retained; unchanged isolated6 passed, serial full rerun pending. Prior CI35895754111@25bb8ab2 excludes this production change. See source-outage-follow-through.json; releaseAccepted=false.",
     "Current69baeeb2 CI35886627514 completed with three failures in packaged desktop harness: both Macs required-URL guidance (metadata API passed, screenshots node unselected); Windows loaded compact reopened Studio but text readiness failed. Covered-target click RED→GREEN and viewport/panel restoration diagnosis recorded; final full local ARM desktop with compact viewport regression passed; new matrix35895754111 @25bb8ab2 queued; production remains69baeeb2. Supplemental parallel packaged API and ARM desktop passed; no release acceptance.",
     "ARM packaged Profile/root-document freeze passed with actual browser seed observations old/old/new; full ARM desktop smoke also passed. Proxy candidate/endpoints are confirmed implementation gaps, P1–P3 proposed awaiting approval. Added script assertions are supplemental, absent from running69baeeb2 CI35886627514; releaseAccepted=false.",
     "Supplemental ARM packaged public-HTTP subflow freeze/isolation/End association, parent stop at child checkpoint and narrowed child field permission all passed, including full desktop smoke. Production remains69baeeb2; additional script assertions are not in current35886627514. Full Profile/proxy/asset combinations and Windows/Intel same-scenario packaged evidence remain open. Ledger statuses unchanged.",
@@ -541,5 +542,10 @@
     "report": "ci-metadata-click-follow-through.json",
     "previousRun": "35886627514: all three packaged desktop jobs failed; preserved, not accepted"
   },
-  "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json"
+  "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json",
+  "sourceOutageFollowThrough": {
+    "status": "targeted_and_packaged_passed_serial_full_regression_pending",
+    "report": "source-outage-follow-through.json",
+    "releaseAccepted": false
+  }
 }

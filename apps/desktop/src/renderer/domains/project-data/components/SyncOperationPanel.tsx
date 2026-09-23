@@ -97,7 +97,7 @@ export function SyncOperationPanel({ api, tableId, scopeKey, tableRevision, bind
   const items = operations.data?.items ?? []
   const pendingCount = summary ? summary.pendingCount : null
   const unknownCount = summary ? summary.unknownCount : null
-  const lastPull = items.find((item) => item.kind === 'pull')
+  const lastPull = state.data?.latestPull
   const unknownItem = items.find((item) => item.status === 'unknown')
   const pendingItem = items.find((item) => item.status === 'pending')
 
@@ -111,8 +111,10 @@ export function SyncOperationPanel({ api, tableId, scopeKey, tableRevision, bind
         <Button variant="secondary" disabled={locked || Boolean(busy)} onClick={() => void pull()}><ArrowDown size={16} aria-hidden="true" />拉取来源（含公式）</Button>
       </header>
       <p className="m-0 text-sm text-muted">
-        {operations.isPending ? '正在读取拉取记录…' : operations.error ? '拉取记录暂时无法读取。' : lastPull ? <>最近一次 {when(lastPull.updatedAt)} · <span className={tone(lastPull.status)}>{statusLabels[lastPull.status]}</span></> : '还没有拉取记录。'}
+        {state.isPending ? '正在读取拉取记录…' : state.error ? '拉取记录暂时无法读取。' : lastPull ? <>最近一次 {when(lastPull.updatedAt)} · <span className={tone(lastPull.status)}>{statusLabels[lastPull.status]}</span></> : '还没有拉取记录。'}
       </p>
+      {summary?.lastPulledAt ? <p className="m-0 text-sm text-muted">来源最近成功读取 {when(summary.lastPulledAt)}</p> : null}
+      {lastPull?.status === 'failed' ? <p role="alert" className="m-0 text-sm text-danger">来源读取失败，请检查网络和账号权限后重试。已有本地数据保留；领取时仍会校验身份。</p> : null}
       <p className="m-0 text-sm text-muted">新记录加入本地；已有普通字段保留本地值，公式列按来源刷新。来源已删除的行不会自动删除本地记录。</p>
     </section>
 

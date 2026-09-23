@@ -807,3 +807,29 @@ def test_pull_rejects_late_invalid_identity_without_partial_materialization(tmp_
         assert response.status_code == 422, response.text
         assert response.json()['error']['code'] == 'INVALID_PROJECT_DATA'
         assert sheets.records() == []
+
+
+def test_source_read_time_survives_push_and_failed_pull_and_excludes_retired_binding(tmp_path):
+    from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
+
+    with open_sheets_table(tmp_path, FakeSheetsTransport(GRID), COLUMNS) as sheets:
+        pull(sheets)
+        source_time = sheets.client.get(sheets.url("/sync")).json()["summary"]["lastPulledAt"]
+        edit_title(sheets, sheets.records()[0], "local edit")
+        assert push(sheets).status_code == 202
+        sheets.transport.fail_next = SheetsApiError(-1, "offline", "controlled source outage")
+        failed = sheets.client.post(sheets.url("/sync/pull"), headers=new_key(), json={
+            "expectedTableRevision": sheets.table_revision(),
+        })
+        assert failed.status_code == 502, failed.text
+        summary = sheets.client.get(sheets.url("/sync")).json()["summary"]
+        assert summary["lastPulledAt"] == source_time
+        assert summary["lastConfirmedAt"] > source_time
+        assert sheets.client.get(sheets.url("")).json()["syncSummary"]["lastPulledAt"] == source_time
+        latest = sheets.client.get(sheets.url("/sync")).json()["latestPull"]
+        assert (latest["kind"], latest["status"], latest["error"]["code"]) == ("pull", "failed", "SHEETS_API_FAILED")
+        # Isolate the summary query's epoch boundary; public rebind has its own tests.
+        with sheets.client.app.state.session_factory.begin() as session:
+            session.get(SheetsBindingRow, sheets.table).binding_epoch += 1
+        retired = sheets.client.get(sheets.url("/sync")).json()
+        assert "lastPulledAt" not in retired["summary"] and "latestPull" not in retired

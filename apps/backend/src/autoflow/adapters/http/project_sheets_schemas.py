@@ -218,6 +218,10 @@ class SyncSummary(ApiModel):
     last_confirmed_at: datetime | None = Field(
         default=None, exclude_if=lambda value: value is None
     )
+    last_pulled_at: datetime | None = Field(
+        default=None, exclude_if=lambda value: value is None,
+        description="Last completed source pull for the current binding epoch; not a claim-validity guarantee.",
+    )
 
 
 class SyncOperation(ApiModel):
@@ -254,6 +258,7 @@ class SyncOperationPage(ApiModel):
 
 class SyncStateView(ApiModel):
     summary: SyncSummary
+    latest_pull: SyncOperation | None = Field(default=None, exclude_if=lambda value: value is None)
     binding: SheetsBinding | None = Field(
         default=None, exclude_if=lambda value: value is None
     )
