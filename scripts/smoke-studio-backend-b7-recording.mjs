@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { createHash, randomUUID } from 'node:crypto'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
@@ -207,7 +207,8 @@ try {
   const report = {
     evidenceId: 'BE-B7-recording-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-    result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+    result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged' : 'development-build',
+    studioHtmlSha256: createHash('sha256').update(await readFile(join(root, 'apps/desktop/out/renderer/studio.html'))).digest('hex'),
     projectId, workflowId: saved.id, profileId: profile.id, runId: started.runId, generatedCount, clickCount, clickedBodies, checks,
     boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'formal Studio UI through CDP plus macOS trusted keyboard events in CloakBrowser; no Store access', windowClose: 'macOS AXCloseButton; no BrowserWindow close/destroy bypass' },
   }
