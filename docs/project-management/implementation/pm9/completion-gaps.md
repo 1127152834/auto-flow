@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-23 AU-08候选5346ceca本机收口（confirmed，本机范围）：完整后端3479 passed/78 skipped/2依赖警告（793.08秒），Ruff/mypy407、101脚本、34相关后端和6删除对话框通过。新重建ARM打包应用完整桌面passed，实际UI删除后批次/任务404、只读SQLite确认本流程冻结快照归零、独立文档保留并重关联；原键仍返回同一成功命令。五路万行51959ms/0busy、真实worker1004条32035ms、固定1000条合成输入60021ms分别记录。78个skip比旧77多出新增选择性真实worker场景，不算全量已执行浏览器验收。三平台35871462256仍in_progress；旧c165矩阵不替代此修复。历史孤儿快照无归属证明不自动清理，运行产物目录清理未由本片证明。详见[报告](automation-deletion-follow-through.json)，releaseAccepted=false。
+
 2026-09-23 AU-08 独立流程删除（confirmed 子范围；新候选回归进行中）：c16532d7 ARM 已安装应用的真实 worker/UI 通过重复关联拒绝、人工等待阻断、停止后旧影响清单拒绝并清空名称、精确名称删除、原命令恢复、独立文档不变且可重新关联。随后补充 SQLite 断言发现两个真实缺陷：影响数混入同工作流独立快照；删除批次后才查询该批次快照导致残留。已限定本自动化批次引用并调整同事务删除顺序，两次 RED→GREEN；34 项相关后端和6项前端通过，Ruff/mypy407通过。完整后端、重建打包桌面和新三平台验证继续。项目自建工作流所有权未持久化，deleteOwned仍拒绝，归为 implementation_missing；Studio联合编辑占用/已有绑定去向和项目级解除关联仍保留缺证。AU-08保持partial；251条205 partial/46 planned/0 verified，releaseAccepted=false。见[专项报告](automation-deletion-follow-through.json)。
 
 2026-09-23 新字段结果写回缺口（confirmed，当前 ARM 打包实测）：DATA-SCHEMA-02/09、FLOW-A14 从“仅缺测试/生产证据”纠正为 implementation_missing。T1 新增字段后写新 fieldId 被 CAPABILITY_SCOPE_DENIED 拒绝；提前静态授予未存在字段则批次 409 CAPABILITY_FACTS_INCOMPLETE。两个失败报告及可重放补丁均保留，清理通过，不计验收成功。现有打包业务脚本新增同定义复用、异型同键冲突、原结构/值不变及 T2 旧契约兼容并通过；脚本101项通过。具体字段结果来源授权、调用/分支/循环隔离及动态字段键契约见 FR1–FR3 规格/计划，尚未批准，未放宽现有权限。详见 [报告](created-field-results-follow-through.json)。251 条状态仍205 partial/46 planned/0 verified，releaseAccepted=false。

@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_snapshot_fix_passed_full_candidate_validation_in_progress",
+  "status": "local_full_and_packaged_desktop_passed_three_platform_ci_in_progress",
   "releaseAccepted": false,
   "requirements": [
     "AU-08"
@@ -27,13 +27,48 @@
     "frontend": "AutomationDeleteDialog: 6 passed, 6.65 seconds; existing UI source unchanged",
     "scripts": "npm run test:scripts: 101 passed / 0 failed / 0 skipped, 3024.03ms after final SQLite assertions",
     "static": "Ruff passed; mypy407 passed",
-    "fullBackend": "in progress",
-    "newPackagedDesktop": "in progress",
-    "threePlatformCI": "pending stable source commit"
+    "fullBackend": "uv run pytest -q --maxfail=5: 3479 passed / 78 skipped / 2 dependency warnings, 793.08 seconds; opt-in actual-browser test remains a separate run (one more opt-in skipped case than prior c165 suite)",
+    "newPackagedDesktop": {
+      "status": "passed",
+      "productionSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+      "backendSha256": "bc7344d854babb0c3defbf342e9563dd4c74a99b32bba7e7b4913efd8821fd61",
+      "report": "qa-runs/2026-09-23-automation-delete/fixed/project-desktop.json",
+      "scope": "New local packaged ARM application, actual worker and read-only SQLite: deletion removes task/batch/frozen snapshot; original workflow remains and relinks. Full desktop business/volume/zoom/second-window/restart also passed. Four deletion screenshots archived; other generic screenshots retained in temporary local output.",
+      "runtimeLogLoad": {
+        "logCount": 1004,
+        "logPages": 6,
+        "elapsedMs": 32035,
+        "logsPerMinute": 1880,
+        "scope": "real worker throughput and server pagination; no renderer memory claim"
+      },
+      "synthetic": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60021,
+        "maxBatchLagMs": 84
+      },
+      "recordSeedMs": 51959,
+      "concurrentWrites": {
+        "status": "passed",
+        "producers": 5,
+        "records": 10000,
+        "busyRetries": 0
+      }
+    },
+    "threePlatformCI": {
+      "runId": 35871462256,
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35871462256",
+      "status": "in_progress",
+      "sourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+      "scope": "one workflow_dispatch full Windows x64 / macOS Intel / Apple Silicon matrix; standalone native/worker probes skipped"
+    }
   },
   "limits": [
     "AU-08 remains partially_verified. Project-owned workflow deletion is still refused with WORKFLOW_OWNERSHIP_UNKNOWN because ownership is not persisted; that proposed design scope is an implementation gap.",
     "This automated UI slice does not prove Studio simultaneous-edit ownership, existing-association navigation, project-level unlink, or complete Windows/Intel physical installation acceptance.",
-    "The earlier c165 CI cannot validate the new snapshot fix. No merge or release."
-  ]
+    "The earlier c165 CI cannot validate the new snapshot fix. No merge or release.",
+    "This fix prevents new owned-snapshot residue; preexisting orphan snapshots without batch ownership are not swept because ownership can no longer be established safely. Filesystem artifact cleanup is not asserted by this deletion slice."
+  ],
+  "productionSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e"
 }

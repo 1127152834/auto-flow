@@ -1,6 +1,6 @@
 # 项目上下文
 
-2026-09-23 AU-08删除补证与修复（confirmed局部，最终验证进行中）：ARM真实已安装包的独立文档保留、人工等待阻断、旧影响清单拒绝和原键恢复通过；随后直接SQLite断言发现并修复快照影响范围过宽及先删批次导致快照残留。34后端/6前端/Ruff/mypy407通过，完整后端/新打包/三平台按 `pm9/automation-deletion-follow-through.json` 更新。项目所有权deleteOwned仍未实现；AU-08保持partial，releaseAccepted=false。
+2026-09-23 AU-08删除补证与修复（confirmed局部，本机完整通过、三平台进行中）：ARM真实已安装包的独立文档保留、人工等待阻断、旧影响清单拒绝和原键恢复通过；随后直接SQLite断言发现并修复快照影响范围过宽及先删批次导致快照残留。34后端/6前端/Ruff/mypy407通过，5346ceca完整后端3479/78skip、新ARM打包全桌面通过；三平台35871462256运行中，按 `pm9/automation-deletion-follow-through.json` 更新。项目所有权deleteOwned仍未实现；AU-08保持partial，releaseAccepted=false。
 
 2026-09-23 当前字段能力勘误（confirmed）：c16532d7 ARM 打包真实 worker 证明创建新字段后写入受 frozen grant 阻断，预先授权未存在 fieldId 也被拒。DATA-SCHEMA-02/09、FLOW-A14确属实现缺失；同定义复用/异型冲突/T2兼容已补打包证据通过，不能代替新字段写入。新增 FR1–FR3 字段结果权限规格/计划为 proposed，见 `.ai/knowledge/2026-09-23-pm9-created-field-results.md`。此前“已批准功能均有实现”不能覆盖该新反例；releaseAccepted=false。
 
