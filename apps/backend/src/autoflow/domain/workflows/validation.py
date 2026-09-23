@@ -5,6 +5,7 @@ from typing import Any, NoReturn
 
 from .models import WorkflowError, WorkflowIssue
 from .references import is_workflow_id
+from .variables import _CREDENTIAL_REFERENCE
 
 SOURCE_PRODUCT = "WebRPA"
 SOURCE_COMMIT = "5ccb900e8dcf1530aae66f676d87593c416c7ebb"
@@ -283,6 +284,11 @@ def _project_config(
         for key, item in value.items():
             item_path = [*path, str(key)]
             if key in _SECRET_FIELDS:
+                if isinstance(item, str) and (
+                    match := _CREDENTIAL_REFERENCE.fullmatch(item)
+                ) and match.group(1).strip():
+                    projected[key] = item
+                    continue
                 if item not in ("", None):
                     issue(
                         "SECRET_FIELD_FORBIDDEN",

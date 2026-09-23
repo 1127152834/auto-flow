@@ -2,6 +2,7 @@ import asyncio
 from pathlib import Path
 
 import pytest
+
 from autoflow.infrastructure.filesystem.project_workflow_artifacts import (
     ProjectArtifactWriter,
 )
@@ -203,6 +204,28 @@ async def test_project_allure_html_waits_for_ack_and_rejects_escape(tmp_path):
             output_path="../escape.html", content=b"<html>bad</html>", mime_type="text/html",
         )
     assert not (tmp_path / "escape.html").exists()
+
+
+@pytest.mark.asyncio
+async def test_project_ssh_download_keeps_empty_file_and_rejects_escape(tmp_path):
+    from autoflow.domain.workflows.runs import WorkflowRunError
+
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    writer = ProjectArtifactWriter(tmp_path, "run", 2, "ssh-download", "visit", "file", emit)
+    target = Path(await writer.write_binary_output(
+        output_path="downloads/empty.bin", content=b"", mime_type="application/octet-stream",
+    ))
+    assert target.read_bytes() == b""
+    assert (tmp_path / events[0][3]["relativePath"]).read_bytes() == b""
+    assert events[0][3]["byteSize"] == 0
+    with pytest.raises(WorkflowRunError, match="产物路径无效"):
+        await writer.write_binary_output(
+            output_path="../escape.bin", content=b"bad", mime_type="application/octet-stream",
+        )
 
 
 @pytest.mark.asyncio

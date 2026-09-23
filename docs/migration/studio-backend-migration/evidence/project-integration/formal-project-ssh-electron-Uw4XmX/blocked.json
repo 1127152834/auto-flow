@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-09-23T18:59:24.577Z",
+  "gitHead": "f027ded4cf5639c8cac122803c292ec0089447cf",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程"
+  ],
+  "observedEvents": [],
+  "ui": [
+    {
+      "html": "<button class=\"flex items-center gap-1.5 px-3 py-1.5 rounded-control text-[12px] font-medium transition-all text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--brand-50))]\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-layout-list w-3.5 h-3.5\" aria-hidden=\"true\"><rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"3",
+      "visible": true,
+      "rect": {
+        "x": 689,
+        "y": 718,
+        "width": 80,
+        "height": 30
+      }
+    }
+  ],
+  "error": "Error: POST /api/credentials: 503 {\"error\":{\"code\":\"CREDENTIAL_STORE_UNAVAILABLE\",\"message\":\"系统凭据库当前不可用\",\"details\":{},\"requestId\":\"52b18ca8-f9ef-45b8-9aa0-5e665b109e34\"}}\n    at api (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1507:27)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:151:5"
+}

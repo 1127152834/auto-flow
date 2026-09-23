@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-23T18:51:05.679Z",
+  "gitHead": "f027ded4cf5639c8cac122803c292ec0089447cf",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实输入五个 SSH 节点并保存项目文档；密码字段仅持久化主应用凭据引用"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "Error: timed out waiting for Studio window close: null\n    at waitForValue (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1676:9)\n    at async waitForNoStudio (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1544:3)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:177:5"
+}

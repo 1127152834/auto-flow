@@ -168,8 +168,8 @@ class ProjectArtifactWriter:
     ) -> str:
         if (
             self._kind != "file"
-            or mime_type not in {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/html"}
-            or not content
+            or mime_type not in {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/html", "application/octet-stream"}
+            or (not content and mime_type != "application/octet-stream")
             or len(content) > 64 * 1024 * 1024
         ):
             raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目文件产物类型或大小无效", 422)
@@ -197,7 +197,7 @@ class ProjectArtifactWriter:
         self, *, output_path: str, max_bytes: int
     ) -> BinaryOutputSnapshot:
         if self._kind != "file" or not 0 < max_bytes <= 64 * 1024 * 1024:
-            raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目表格读取范围无效", 422)
+            raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目文件读取范围无效", 422)
         return await self._writer.read_binary_output(
             output_path=output_path, max_bytes=max_bytes,
         )

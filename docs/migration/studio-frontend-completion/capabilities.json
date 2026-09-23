@@ -40690,7 +40690,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
-      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/ssh-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA SSH 五节点与 Paramiko 服务；项目真实 worker 验证命令、SFTP往返、空文件、失败及取消清理。正式 Electron 开发与 macOS arm64 本地包验证真实 UI 保存和项目任务执行、系统凭据引用、下载产物。外部主机、Intel/Windows 未实测。"
+      }
     }
   },
   {
@@ -40934,7 +40940,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
-      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/ssh-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA SSH 五节点与 Paramiko 服务；项目真实 worker 验证命令、SFTP往返、空文件、失败及取消清理。正式 Electron 开发与 macOS arm64 本地包验证真实 UI 保存和项目任务执行、系统凭据引用、下载产物。外部主机、Intel/Windows 未实测。"
+      }
     }
   },
   {
@@ -41142,7 +41154,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
-      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/ssh-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA SSH 五节点与 Paramiko 服务；项目真实 worker 验证命令、SFTP往返、空文件、失败及取消清理。正式 Electron 开发与 macOS arm64 本地包验证真实 UI 保存和项目任务执行、系统凭据引用、下载产物。外部主机、Intel/Windows 未实测。"
+      }
     }
   },
   {
@@ -41350,7 +41368,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
-      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/ssh-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA SSH 五节点与 Paramiko 服务；项目真实 worker 验证命令、SFTP往返、空文件、失败及取消清理。正式 Electron 开发与 macOS arm64 本地包验证真实 UI 保存和项目任务执行、系统凭据引用、下载产物。外部主机、Intel/Windows 未实测。"
+      }
     }
   },
   {
@@ -41527,7 +41551,13 @@
       "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
-      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/ssh-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA SSH 五节点与 Paramiko 服务；项目真实 worker 验证命令、SFTP往返、空文件、失败及取消清理。正式 Electron 开发与 macOS arm64 本地包验证真实 UI 保存和项目任务执行、系统凭据引用、下载产物。外部主机、Intel/Windows 未实测。"
+      }
     }
   },
   {

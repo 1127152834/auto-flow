@@ -142,6 +142,7 @@ class _LocalSSHServer:
         self.port = self.socket.getsockname()[1]
         self.host_key = paramiko.RSAKey.generate(2048)
         self.transports: list[paramiko.Transport] = []
+        self.channels: list[paramiko.Channel] = []
         self.thread = Thread(target=self._serve, daemon=True)
 
     def start(self) -> None:
@@ -177,7 +178,9 @@ class _LocalSSHServer:
             try:
                 transport.start_server(server=_SSHServerInterface(self))
                 while transport.is_active() and not self.stop.wait(0.05):
-                    transport.accept(0.05)
+                    channel = transport.accept(0.05)
+                    if channel is not None:
+                        self.channels.append(channel)
             finally:
                 transport.close()
 

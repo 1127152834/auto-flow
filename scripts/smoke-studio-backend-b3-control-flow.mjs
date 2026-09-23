@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
@@ -31,12 +31,13 @@ const projectHttpOnly = process.env.AUTOFLOW_PROJECT_HTTP_TASK === '1'
 const projectControlPrimitivesOnly = process.env.AUTOFLOW_PROJECT_CONTROL_PRIMITIVES_TASK === '1'
 const projectNetworkOnly = process.env.AUTOFLOW_PROJECT_NETWORK_TASK === '1'
 const projectAllureOnly = process.env.AUTOFLOW_PROJECT_ALLURE_TASK === '1'
+const projectSshOnly = process.env.AUTOFLOW_PROJECT_SSH_TASK === '1'
 const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly || projectNetworkOnly || projectAllureOnly
-const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly
+const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -49,10 +50,26 @@ let eventAbort
 let projectId
 let httpFixture
 let httpOrigin
+let sshFixture
+let sshFixtureError = ''
+let sshCredential
+let runtime
 const httpRequests = []
 class EvidenceComplete extends Error {}
 
 try {
+  let sshServer
+  if (projectSshOnly) {
+    const statusPath = join(userData, 'ssh-status.json')
+    sshFixture = spawn(join(root, 'apps/backend/.venv/bin/python'), ['tests/integration/test_b6_ssh_worker.py', '--root', join(userData, 'remote-host'), '--status', statusPath], {
+      cwd: join(root, 'apps/backend'), env: { ...process.env, PYTHONPATH: 'src' }, stdio: ['pipe', 'ignore', 'pipe'],
+    })
+    sshFixture.stderr.on('data', data => { sshFixtureError += data.toString() })
+    sshServer = await waitForValue(async () => {
+      if (sshFixture.exitCode !== null) throw new Error(`SSH fixture exited: ${sshFixtureError}`)
+      return readFile(statusPath, 'utf8').then(JSON.parse).catch(() => null)
+    }, 'project loopback SSH server', 10_000)
+  }
   if (projectHttpOnly) {
     httpFixture = createServer(async (request, response) => {
       const body = []
@@ -93,7 +110,7 @@ try {
   await native.evaluate("globalThis.qaElectron=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');true")
   await main.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(main, "document.body?.innerText.includes('本地服务正常')", 'main service readiness', 30_000)
-  const runtime = await main.evaluate('window.autoflow.getRuntimeContext()')
+  runtime = await main.evaluate('window.autoflow.getRuntimeContext()')
   eventAbort = new AbortController()
   void collectEvents(runtime, eventAbort.signal, observedEvents)
   const profile = await api(runtime, '/v1/profiles', {
@@ -127,6 +144,88 @@ try {
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
+  if (projectSshOnly) {
+    const name = '项目 SSH 文件往返任务验收'
+    const credentialName = `项目SSH验收-${randomUUID()}`
+    const credentialReference = `{{cred:${credentialName}.password}}`
+    const uploadPath = join(userData, 'ssh-upload.bin')
+    const downloadPath = join(userData, 'ssh-download.bin')
+    const content = Buffer.from(`项目 SSH 文件往返\n${randomUUID()}\n`)
+    await writeFile(uploadPath, content)
+    await api(runtime, '/credentials', { method: 'POST', body: { name: credentialName, fields: { password: 'secret' } } })
+    sshCredential = credentialName
+    await newWorkflow(studio, name)
+    await showBlockView(studio)
+    await addBlock(studio, '添加模块', 'SSH连接')
+    await setInput(studio, '[placeholder="192.168.1.100"]', '127.0.0.1')
+    await setInput(studio, 'input[inputmode="numeric"]', String(sshServer.port))
+    await setInput(studio, '[placeholder="root"]', 'tester')
+    await setInput(studio, '[placeholder="请输入密码（或使用密钥文件）"]', credentialReference)
+    await addBlock(studio, '添加模块', 'SSH执行命令')
+    await setInput(studio, 'textarea[placeholder="ls -la"]', 'printf ok')
+    await addBlock(studio, '添加模块', 'SSH上传文件')
+    await setInput(studio, '[placeholder="C:/data/file.txt"]', uploadPath)
+    await setInput(studio, '[placeholder="/home/user/file.txt"]', '/remote/roundtrip.bin')
+    await addBlock(studio, '添加模块', 'SSH下载文件')
+    await setInput(studio, '[placeholder="/home/user/file.txt"]', '/remote/roundtrip.bin')
+    await setInput(studio, '[placeholder="C:/data/file.txt"]', downloadPath)
+    await addBlock(studio, '添加模块', 'SSH断开连接')
+    await click(studio, '保存')
+    const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project SSH saved', 15_000)
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), ['ssh_connect', 'ssh_execute_command', 'ssh_upload_file', 'ssh_download_file', 'ssh_disconnect'])
+    assert.equal(saved.edges.length, 4)
+    assert.ok(JSON.stringify(saved).includes(credentialReference))
+    assert.ok(!JSON.stringify(saved).includes('"password":"secret"'))
+    checkpoint('正式 Studio 真实输入五个 SSH 节点并保存项目文档；密码字段仅持久化主应用凭据引用')
+    await closeWindowThroughOs()
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '项目 SSH 自动化')
+    await selectAutomationWorkflow(main, name, saved.id)
+    await click(main, '保存配置')
+    await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project SSH automation')
+    await click(main, '启动运行')
+    await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'project SSH batch dialog')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project SSH batch')
+    const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project SSH terminal', 90_000)
+    const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
+    const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
+    assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, task, attempts }))
+    assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, 5)
+    const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+    assert.equal(outputs.items.find(item => item.name === 'ssh_output')?.value, 'ok\n')
+    assert.equal(outputs.items.find(item => item.name === 'ssh_exit_code')?.value, 0)
+    assert.deepEqual(await readFile(join(userData, 'remote-host/remote/roundtrip.bin')), content)
+    assert.deepEqual(await readFile(downloadPath), content)
+    const artifacts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/artifacts?pageSize=100`)
+    assert.equal(artifacts.total, 1)
+    const response = await fetch(`${runtime.sidecar.baseUrl}${artifacts.items[0].contentUrl}`, { headers: { 'x-autoflow-token': runtime.sidecar.token } })
+    const bytes = Buffer.from(await response.arrayBuffer())
+    assert.equal(response.status, 200)
+    assert.deepEqual(bytes, content)
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), artifacts.items[0].sha256)
+    const logs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/logs?pageSize=100`)
+    assert.ok(!JSON.stringify(logs).includes('secret'))
+    await click(main, '查看任务')
+    await click(main, '异常与证据', '[role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('文件与图片产物')", 'project SSH artifact')
+    await capture(main, join(evidenceDir, 'project-ssh-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    await api(runtime, `/credentials/${encodeURIComponent(credentialName)}`, { method: 'DELETE' })
+    sshCredential = undefined
+    const sshCleanup = await waitForValue(async () => {
+      const state = JSON.parse(await readFile(join(userData, 'ssh-status.json'), 'utf8'))
+      return state.connections > 0 && state.activeConnections === 0 && state.commands.length === 1 && state.commands.every(code => code === 0) ? state : null
+    }, 'SSH connections and remote command cleanup', 5_000)
+    checkpoint('项目任务真实 SSH 命令和 SFTP 文件往返完成；下载产物、变量与日志可查，连接及进程已清理')
+    const report = { evidenceId: 'BE-project-ssh-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, sshCleanup, sha256: createHash('sha256').update(content).digest('hex'), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, server: 'real loopback SSH/SFTP', interaction: 'formal Electron mouse/keyboard; APIs only fixture setup and evidence reads' } }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
   if (projectFamilyOnly) {
     const name = projectMathOnly ? '项目列表与数学任务验收' : projectUtilityOnly ? '项目实用工具任务验收' : projectWebBasicOnly ? '项目基础网页任务验收' : projectAdvancedOnly ? '项目高级网页与产物任务验收' : projectTabSwitchOnly ? '项目标签页切换任务验收' : projectVariableOnly ? '项目变量处理任务验收' : projectListExportOnly ? '项目列表导出任务验收' : projectLogOnly ? '项目日志任务验收' : projectTableOnly ? '项目表格提取与导出任务验收' : projectHttpOnly ? '项目HTTP节点任务验收' : projectControlPrimitivesOnly ? '项目等待断言停止任务验收' : projectNetworkOnly ? '项目网页网络采集任务验收' : projectAllureOnly ? '项目Allure报告任务验收' : '项目页面加载任务验收'
     await newWorkflow(studio, name)
@@ -1398,7 +1497,11 @@ try {
   throw error
   }
 } finally {
+  if (sshCredential && runtime) {
+    await api(runtime, `/credentials/${encodeURIComponent(sshCredential)}`, { method: 'DELETE' }).catch(error => console.error('SSH fixture credential cleanup failed', error.message))
+  }
   eventAbort?.abort(); studio?.close(); main?.close(); native?.close(); await stop(desktop?.child)
+  sshFixture?.stdin.end(); await stop(sshFixture)
   await rm(userData, { recursive: true, force: true })
   if (httpFixture) {
     httpFixture.closeAllConnections()
@@ -1573,6 +1676,10 @@ async function closeWindowThroughOs() {
       await click(studio, '保存后继续')
       await wait(700)
     }
+  }
+  if (await native.evaluate("qaElectron.BrowserWindow.getAllWindows().some(w=>w.getTitle().includes('工作流工作台'))")) {
+    execFileSync('osascript', ['-e', 'tell application "System Events"', '-e', `tell (first application process whose unix id is ${desktop.child.pid})`, '-e', 'click (first button of (first window whose name contains "工作流工作台") whose subrole is "AXCloseButton")', '-e', 'end tell', '-e', 'end tell'])
+    await wait(500)
   }
 }
 

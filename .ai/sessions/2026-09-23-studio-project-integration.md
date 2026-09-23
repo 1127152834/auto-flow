@@ -385,3 +385,9 @@
 
 - 冻结 WebRPA 的六个 Allure 节点与单文件 HTML 生成器接入项目目录 161→167。项目运行器为报告节点分配现有文件写入器；共享文件边界准入 HTML，保留路径防逃逸、64 MiB 上限和持久回执。项目真实 worker、报告内容、产物回执与路径失败专项通过。
 - 正式 Electron 开发入口与 macOS arm64 本地未签名包均由真实 UI 编排六节点、保存、正常关窗后运行项目任务；产物 HTML 包含套件、用例、步骤和附件，任务页下载与 SHA-256 核对通过。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/allure-family-2026-09-24/README.md`。Studio 批准范围仍为 213，项目目录余下 46 个入口；Intel/Windows、用户数据库未实测。
+
+## 项目任务 SSH 节点族（2026-09-24，confirmed）
+
+- 延续用户确认的项目默认资源＋显式覆盖。五个既有 SSH 执行器进入项目目录 167→172；项目文档允许精确托管凭据引用，仍拒绝密码原文。复用现有文件端口、Paramiko 服务和运行清理，没有第二套 SSH 实现。
+- 真实项目 worker 成功、空文件、非零退出和停止；SSH/SFTP、产物及文档关联 60 项通过。正式 Electron 开发入口和 macOS arm64 本地包真实 UI 主链通过，活动 SSH 连接归零，命令进程退出，下载内容及 SHA-256 一致。证据：`docs/migration/studio-backend-migration/evidence/project-integration/ssh-family-2026-09-24/README.md`。
+- 测试服务修复已接受通道被回收导致的偶发断开；正式包凭据使用唯一测试名，保存原固定名失败证据。没有改系统凭据实现，没有用 Mock 替代。项目目录仍有 41 个入口待核销，Intel/Windows、用户数据库及外部主机未实测。

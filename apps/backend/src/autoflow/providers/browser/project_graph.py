@@ -238,7 +238,7 @@ class ProjectGraphExecutor:
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
             module_type = node_data.get("moduleType")
-            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report"}:
+            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report", "ssh_connect", "ssh_upload_file", "ssh_download_file"}:
                 current.artifacts = self.artifact_writer(node_id, visit, module_type)
             await emit('nodeAttempt', {'status': 'started'})
             self.cancellation.raise_if_cancelled()
@@ -278,6 +278,15 @@ class ProjectGraphExecutor:
                         output_name = config.get(key) or default
                         if isinstance(output_name, str) and output_name in current.variables and output_name not in current.sensitive_variables:
                             await emit('output', {'name': output_name, 'value': current.variables[output_name]})
+            if data['moduleType'] == 'ssh_execute_command':
+                for key, default in (
+                    ('outputVariable', 'ssh_output'),
+                    ('errorVariable', 'ssh_error'),
+                    ('exitCodeVariable', 'ssh_exit_code'),
+                ):
+                    output_name = config.get(key) or default
+                    if isinstance(output_name, str) and output_name in current.variables and output_name not in current.sensitive_variables:
+                        await emit('output', {'name': output_name, 'value': current.variables[output_name]})
             name = (config.get('resultVariable') or config.get('variableName')
                     or config.get('saveResult') or config.get('saveMessage'))
             if data['moduleType'] in {'json_parse', 'table_get_cell', 'table_export', 'extract_table_data', 'api_request', 'network_capture'}:
