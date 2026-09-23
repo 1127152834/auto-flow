@@ -281,3 +281,4 @@
 - 项目任务证据查询现在能返回冻结模块子节点名称和执行作用域，任务详情展示模块与轮次。首次正式验收暴露循环头前后上下文变化被误判为历史损坏，改为使用节点完成时上下文并加回归断言。
 - 后端32项、前端28项及Ruff/mypy/TypeScript/ESLint/OpenAPI/构建通过；正式 Electron 开发入口真实 UI 创建模块并运行项目任务，输出42、子节点作用域和清理通过。详见`docs/migration/studio-backend-migration/evidence/project-integration/custom-module-task-2026-09-23/README.md`。
 - 冻结包、其他平台、运行期交互命令与跨工作流文件调用仍未核销，不能视作完整项目模块族关闭。
+- 在`9b256a25`提交后重建PyInstaller和Electron目录包；正式macOS arm64包从真实UI重跑控制流、画布子流程和项目自定义模块任务全部通过。包内app.asar、backend和Electron可执行文件哈希及独立工作区结果见`formal-project-control-electron-HSqFSS/`。Windows／Intel及运行期交互模块仍待验收。

@@ -1,0 +1,9 @@
+{
+  "entry": "packaged-directory",
+  "platform": "darwin-arm64",
+  "gitHead": "9b256a2501ad4e5737e565b56ca3316f0bb70218",
+  "appAsarSha256": "7809de59c1a70a6a350b66f73b0c371d6f4c29cd1be849658138f781d7997d27",
+  "backendExecutableSha256": "d291def57ee4fcdd221a84f0251cbf5176b7089be1329f96f99089538c2fb68d",
+  "electronExecutableSha256": "afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7",
+  "signing": "local unsigned directory; no notarization claim"
+}
