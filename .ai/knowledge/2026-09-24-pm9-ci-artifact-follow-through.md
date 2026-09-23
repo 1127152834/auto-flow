@@ -8,3 +8,11 @@
 - 截图仍有未接入Studio命令与404/501提示；不扩展为全部Studio能力通过，不在本切片扩展节点接入。
 - 当前生产51e8991e、测试a317e1f8的新矩阵35902129697进行中。旧产物不涵盖当前来源时间API修复、断网/双worker反向写新场景。完整回归计数尚未从本运行日志读取，不从步骤成功猜测数量。
 - 没有业务代码变更或新流水线；coverage状态不变，releaseAccepted=false。实网、签名和实机验收仍按既有清单保留。
+
+## 三平台完成补证
+
+状态：confirmed，仅25bb8ab2 / 生产69baeeb2。35895754111已整体success；完整日志及三平台ZIP已读取并校验，哈希与断言见ci-metadata-click-follow-through.json。Mac后端均3486/78skip，Windows3478/86skip；三平台前端409文件/5473项、真实worker30/11deselected，均成功。Windows打包重开文档截图已目视核对展开面板和保存节点。
+
+Windows桌面实际worker1004条/99662ms（604条/分钟），万行582160ms/0busy；API独立测量1004条/97517ms（618条/分钟）。Intel桌面1004条/34914ms（1725条/分钟），万行125601ms/0busy。固定合成1000条分别60098ms/60085ms；不把合成输入速度当worker吞吐，不新增性能达标条件。
+
+旧business-combinations的sharedPersonChain.scope字符串误写固定ARM，实际platform/arch和job平台正确；已修复后续脚本按运行平台出说明，旧ZIP不改。当前1c676965全后端3493/80skip通过、新ARM包构建通过，桌面验收仍在运行；旧三平台不能证明后续两次生产改动，releaseAccepted=false。

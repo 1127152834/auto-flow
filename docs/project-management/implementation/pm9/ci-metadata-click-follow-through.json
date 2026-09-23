@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "original_failures_retained_followup_arm_success_others_running",
+  "status": "original_failures_retained_followup_three_platform_success",
   "releaseAccepted": false,
   "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
   "runId": "35886627514",
@@ -27,9 +27,9 @@
     "desktopEvidence": ".tmp-tests/pm9-parallel-desktop-2026-09-24/project-desktop.json"
   },
   "followUp": {
-    "status": "in_progress",
+    "status": "success",
     "platform": "all",
-    "scope": "All three original jobs are terminal failures. One new matrix will validate updated harness and supplemental assertions; production remains69baeeb2. No live job cancelled and no stale-code retry.",
+    "scope": "One updated harness matrix completed successfully on all three platforms at25bb8ab2 / production69baeeb2. Original failures preserved; later production51e8991e and1c676965 are not covered.",
     "runId": "35895754111",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
     "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69",
@@ -37,7 +37,7 @@
       "darwin-arm64": {
         "status": "success",
         "jobId": "107299145250",
-        "scope": "Terminal job success; downloaded artifact reports and three key UI screenshots inspected. Full regression counts await whole-run logs; no count inferred from step success.",
+        "scope": "Terminal job and downloaded packaged API/business/desktop reports passed; scoped assertions only, no physical/live Google acceptance.",
         "artifact": {
           "id": "10769571016",
           "name": "pm9-macos-15",
@@ -288,14 +288,282 @@
             "Profile canvas hash did not change after seed reset; actual process argv proves old/old/new seed only.",
             "No live Sheets/OAuth, physical installer, signing, project Studio ownership/docking or proxy-freeze acceptance."
           ]
+        },
+        "backend": {
+          "passed": 3486,
+          "skipped": 78,
+          "warnings": 2,
+          "seconds": 942.01
+        },
+        "frontend": "409 files /5473 passed",
+        "realWorker": {
+          "passed": 30,
+          "deselected": 11,
+          "warnings": 2,
+          "seconds": 337.61
         }
       },
       "darwin-x64": {
-        "status": "in_progress"
+        "status": "success",
+        "jobId": "107299145136",
+        "scope": "Terminal job and downloaded packaged API/business/desktop reports passed; scoped assertions only, no physical/live Google acceptance.",
+        "backend": {
+          "passed": 3486,
+          "skipped": 78,
+          "warnings": 2,
+          "seconds": 1831.8
+        },
+        "frontend": "409 files /5473 passed",
+        "realWorker": {
+          "passed": 30,
+          "deselected": 11,
+          "warnings": 2,
+          "seconds": 556.24
+        },
+        "artifact": {
+          "id": "10771310534",
+          "bytes": 275666118,
+          "zipSha256": "eb0cf437cf7cd0c826f90133d083d9f96889894ef29172ec88ac3befecd55c78",
+          "evidenceRoot": ".tmp-tests/pm9-ci-35895754111-intel",
+          "reports": [
+            {
+              "path": "artifacts/pm9/packaged/project-api.json",
+              "sha256": "66543d70e762c3fd88e6f515a3453cb36c41b88180a8b4c5699961e979f76078",
+              "status": "passed"
+            },
+            {
+              "path": "artifacts/pm9/packaged/project-desktop.json",
+              "sha256": "a94507733bdd5de7389152ccf56aa53982b718dacef2fabc5f94a6a8eebe6a9c",
+              "status": "passed"
+            },
+            {
+              "path": "artifacts/pm9/packaged/business-combinations.json",
+              "sha256": "a4fdcc969e43c98b7d99cd92b5df1294218606346766519fc132a69698340708",
+              "status": "passed"
+            }
+          ]
+        },
+        "packagedEvidence": {
+          "screenshots": 22,
+          "metadata": {
+            "schemaRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+            "coveredCount": 69,
+            "emptyUrlGuidance": "passed",
+            "projectNodeUncovered": true
+          },
+          "windows": {
+            "status": "passed",
+            "originalWindowId": 2,
+            "reopenedWindowId": 3,
+            "savedRevision": 3,
+            "checks": [
+              "Manager repeated opens restore one minimized native Studio and keep its identity",
+              "Studio renderer cannot call Manager-only open authority",
+              "dirty native close can be cancelled without saving or discarding edits",
+              "save-and-close increments the existing document once and retains project configuration",
+              "compact reopened viewport has a live canvas; widening plus explicit panel expansion restores controls",
+              "reopened window shares the service; explicitly reopening the document retains edits, with zero Project and exactly the original completed Run"
+            ],
+            "limits": [
+              "Electron native close/minimize API; not physical OS keyboard or window-manager gesture acceptance",
+              "explicit document reopen only; no automatic session restoration, project automation binding, docking or active-task dual-window proof"
+            ]
+          },
+          "runtimeChecks": {
+            "subflows": {
+              "status": "passed",
+              "checks": [
+                "two tasks use frozen child after public document edit at live manual barrier",
+                "two calls export separate records and keep parent private variable",
+                "root End links both outputs for each task",
+                "public parent batch stop cancels child checkpoint, prevents later write/End and retains committed record",
+                "child cannot borrow parent field permission; parent committed record survives the denied child write"
+              ]
+            },
+            "parallel": {
+              "status": "passed",
+              "checks": [
+                "same-name loop variables isolated; exact 2/3 values and distinct public event visit IDs",
+                "only declared last outputs linked by one End",
+                "two live manual checkpoints serialized before ordinary branch work and join runs once",
+                "stop discards queued manual, prevents branch/join/End and retains committed pre-fork record"
+              ]
+            },
+            "profileFreeze": {
+              "status": "passed",
+              "checks": [
+                "old batch second Task preserves original root document and browser-visible UA/locale/timezone/canvas after public Profile edit and seed reset",
+                "fresh explicit batch observes new root document and changed Profile identity"
+              ]
+            }
+          },
+          "workerLogLoad": {
+            "logCount": 1004,
+            "logPages": 6,
+            "elapsedMs": 34914,
+            "logsPerMinute": 1725,
+            "scope": "real worker throughput and server pagination; no renderer memory claim"
+          },
+          "apiWorkerLogLoad": {
+            "logCount": 1004,
+            "logPages": 6,
+            "elapsedMs": 33721,
+            "logsPerMinute": 1786,
+            "scope": "real worker throughput and server pagination; no renderer memory claim"
+          },
+          "records": {
+            "status": "passed",
+            "producers": 5,
+            "records": 10000,
+            "busyRetries": 0
+          },
+          "recordWriteMs": 125601,
+          "syntheticProducer": {
+            "targetLogsPerMinute": 1000,
+            "seconds": 60,
+            "emitted": 1000,
+            "elapsedMs": 60085,
+            "maxBatchLagMs": 189
+          },
+          "businessStatus": "passed",
+          "scopeErratum": "sharedPersonChain.scope hardcodes ARM in old script; actual report platform/arch and native job establish this platform. Correct future report text; do not alter original artifacts."
+        }
       },
       "win32-x64": {
-        "status": "in_progress"
+        "status": "success",
+        "jobId": "107299145574",
+        "scope": "Terminal job and downloaded packaged API/business/desktop reports passed; scoped assertions only, no physical/live Google acceptance.",
+        "backend": {
+          "passed": 3478,
+          "skipped": 86,
+          "warnings": 2,
+          "seconds": 1452.58
+        },
+        "frontend": "409 files /5473 passed",
+        "realWorker": {
+          "passed": 30,
+          "deselected": 11,
+          "warnings": 2,
+          "seconds": 482.07
+        },
+        "artifact": {
+          "id": "10770622902",
+          "bytes": 212270720,
+          "zipSha256": "4cda987d628394e28f96d1f5a3a41349d4e5c679714a489d46776e94b14c17bb",
+          "evidenceRoot": ".tmp-tests/pm9-ci-35895754111-windows",
+          "reports": [
+            {
+              "path": "artifacts/pm9/packaged/project-api.json",
+              "sha256": "34152958e91f2fb826d71a0ce399e156dc0011edf5a648f42765ed4ff73f444a",
+              "status": "passed"
+            },
+            {
+              "path": "artifacts/pm9/packaged/project-desktop.json",
+              "sha256": "3f7636ea99aa2d58e1530bd8ab19aebb18303a9109cedeae70b39e6777b982bb",
+              "status": "passed"
+            },
+            {
+              "path": "artifacts/pm9/packaged/business-combinations.json",
+              "sha256": "5dfacaed383aefcfda3c4d60cded55e2ddf61dd192ea486cd91c00dfd90c13b7",
+              "status": "passed"
+            }
+          ]
+        },
+        "packagedEvidence": {
+          "screenshots": 22,
+          "metadata": {
+            "schemaRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+            "coveredCount": 69,
+            "emptyUrlGuidance": "passed",
+            "projectNodeUncovered": true
+          },
+          "windows": {
+            "status": "passed",
+            "originalWindowId": 2,
+            "reopenedWindowId": 3,
+            "savedRevision": 3,
+            "checks": [
+              "Manager repeated opens restore one minimized native Studio and keep its identity",
+              "Studio renderer cannot call Manager-only open authority",
+              "dirty native close can be cancelled without saving or discarding edits",
+              "save-and-close increments the existing document once and retains project configuration",
+              "compact reopened viewport has a live canvas; widening plus explicit panel expansion restores controls",
+              "reopened window shares the service; explicitly reopening the document retains edits, with zero Project and exactly the original completed Run"
+            ],
+            "limits": [
+              "Electron native close/minimize API; not physical OS keyboard or window-manager gesture acceptance",
+              "explicit document reopen only; no automatic session restoration, project automation binding, docking or active-task dual-window proof"
+            ]
+          },
+          "runtimeChecks": {
+            "subflows": {
+              "status": "passed",
+              "checks": [
+                "two tasks use frozen child after public document edit at live manual barrier",
+                "two calls export separate records and keep parent private variable",
+                "root End links both outputs for each task",
+                "public parent batch stop cancels child checkpoint, prevents later write/End and retains committed record",
+                "child cannot borrow parent field permission; parent committed record survives the denied child write"
+              ]
+            },
+            "parallel": {
+              "status": "passed",
+              "checks": [
+                "same-name loop variables isolated; exact 2/3 values and distinct public event visit IDs",
+                "only declared last outputs linked by one End",
+                "two live manual checkpoints serialized before ordinary branch work and join runs once",
+                "stop discards queued manual, prevents branch/join/End and retains committed pre-fork record"
+              ]
+            },
+            "profileFreeze": {
+              "status": "passed",
+              "checks": [
+                "old batch second Task preserves original root document and browser-visible UA/locale/timezone/canvas after public Profile edit and seed reset",
+                "fresh explicit batch observes new root document and changed Profile identity"
+              ]
+            }
+          },
+          "workerLogLoad": {
+            "logCount": 1004,
+            "logPages": 6,
+            "elapsedMs": 99662,
+            "logsPerMinute": 604,
+            "scope": "real worker throughput and server pagination; no renderer memory claim"
+          },
+          "apiWorkerLogLoad": {
+            "logCount": 1004,
+            "logPages": 6,
+            "elapsedMs": 97517,
+            "logsPerMinute": 618,
+            "scope": "real worker throughput and server pagination; no renderer memory claim"
+          },
+          "records": {
+            "status": "passed",
+            "producers": 5,
+            "records": 10000,
+            "busyRetries": 0
+          },
+          "recordWriteMs": 582160,
+          "syntheticProducer": {
+            "targetLogsPerMinute": 1000,
+            "seconds": 60,
+            "emitted": 1000,
+            "elapsedMs": 60098,
+            "maxBatchLagMs": 213
+          },
+          "businessStatus": "passed",
+          "scopeErratum": "sharedPersonChain.scope hardcodes ARM in old script; actual report platform/arch and native job establish this platform. Correct future report text; do not alter original artifacts.",
+          "visualInspection": {
+            "image": "project-studio-reopened-document.png",
+            "sha256": "c1ae067528ab89a86ab1e32046569fd1c51ee01015b6044f5ec853ac7f480eb7",
+            "result": "Expanded module/configuration panels and saved project node/result identity visible after compact reopen."
+          }
+        }
       }
+    },
+    "logEvidence": {
+      "path": ".tmp-tests/pm9-ci-35895754111-arm/full-run.log",
+      "sha256": "edabc8257f88da7afa5719b094d146f427c8545ca84f6b33a37e3d21b786c476"
     }
   },
   "platforms": {

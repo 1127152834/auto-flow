@@ -144,12 +144,12 @@
   "priorCi": {
     "runId": "35895754111",
     "headSha": "25bb8ab236becc1ee0fe64f79422455101a71f69",
-    "status": "in_progress",
+    "status": "success",
     "scope": "prior production69baeeb2 plus harness; does not validate this source-outage production change",
     "platforms": {
-      "darwin-arm64": "success (job metadata); whole-run logs unavailable until other jobs finish",
-      "darwin-x64": "in_progress",
-      "win32-x64": "in_progress"
+      "darwin-arm64": "success; exact logs/artifacts in ci-metadata-click-follow-through.json",
+      "darwin-x64": "success; exact logs/artifacts in ci-metadata-click-follow-through.json",
+      "win32-x64": "success; exact logs/artifacts in ci-metadata-click-follow-through.json"
     }
   },
   "dispatchDecision": "After stable local full regression and test supplement, dispatch new code once while prior matrix continues. Earlier wait-for-prior-matrix plan superseded; different source and new assertions require their own run, no active run cancelled or same-source rerun."

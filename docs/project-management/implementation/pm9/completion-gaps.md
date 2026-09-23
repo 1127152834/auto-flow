@@ -1,6 +1,8 @@
 # PM9 剩余工作复核
 
-2026-09-24 当前补丁（confirmed定向，全量待验）：首次来源读取失败的空缓存被误报noMatch，已将共享来源身份校验前移至候选扫描，必要/可选输入均明确configurationError。42相关、6边界、2真实worker及Ruff/mypy408通过；完整后端串行回归进行中。当前工作树新生产补丁不在35902129697/35895754111中，两轮旧CI继续保留。详见partial-source-follow-through.json；releaseAccepted=false。
+2026-09-24 当前补丁1c676965（confirmed本机全量/ARM打包，原生新矩阵待验）：首次来源读取失败的空缓存被误报noMatch，已将共享来源身份校验前移至候选扫描，必要/可选输入均明确configurationError。42相关、6边界、2真实worker及Ruff/mypy408通过；完整后端串行3493 passed/80 skipped/2 warnings（778.49秒）；后端构建/ARM打包及完整桌面22截图通过。该生产补丁不在35902129697/35895754111中，两轮旧CI继续保留。详见partial-source-follow-through.json；releaseAccepted=false。
+
+2026-09-24 旧候选三平台完成：35895754111@25bb8ab2整体success，日志和三个原生产物已核对。Mac后端3486/78skip、Windows3478/86skip；三平台前端5473/409文件、真实worker30/11deselected。Windows桌面worker604条/分钟，万行582160ms；Intel1725条/分钟，万行125601ms，均0busy；固定合成负载另列，不声明新性能门槛。该结果仅覆盖生产69baeeb2；不覆盖51e8991e和1c676965。详见ci-metadata-click-follow-through.json，releaseAccepted=false。
 
 2026-09-24 旧候选 ARM CI 产物复核（confirmed 局部）：35895754111@25bb8ab2 的 artifact10769571016 已下载并校验 SHA256；打包 API、business-combinations、完整桌面均 passed，22截图中必填提示/紧凑重开/恢复文档3张已目视核对。真实 worker1004条/38623ms（1560条/分钟），万行67095ms、0busy，固定合成1000条/60189ms；均为该次观测。详见 ci-metadata-click-follow-through.json。该证据不覆盖新生产51e8991e或新增两个 worker 场景；新矩阵35902129697仍进行中，台账状态不变，releaseAccepted=false。
 

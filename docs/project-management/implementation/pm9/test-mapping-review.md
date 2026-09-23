@@ -142,4 +142,4 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 
 2026-09-24 DATA-WRITE-12：两真实worker反向动态写分别得到LEASE_BUSY并进入声明人工错误分支，保持已提交值、lease/游标/原输入/待推送意图；停止后释放。新增一个精确映射，不把两个单记录命令当作组原子性，也不宣称配置自动重试。有限多记录组、打包、Windows/Intel及实网仍保留；249/2、206partial/45planned/0verified不变，详见opposing-writes-follow-through.json。
 
-2026-09-24 DATA-CLAIM-09/10 不完整来源补证：新增HTTP/SQLite第二视图失败、必要/可选输入、有无完整缓存与合法空表6项断言；真实公开批次首次断网明确configurationError/零Task，再完整读取后worker断网执行仍通过。反例暴露空缓存绕过逐记录身份校验，已复用同一来源校验前移修复；42相关/6最终边界/2真实worker、Ruff/mypy408通过。完整后端仍运行，新补丁不在已有两轮CI中；同worker绑定/同行变化与打包实网联合证据仍缺，249/2、206partial/45planned/0verified不变，releaseAccepted=false。见partial-source-follow-through.json。
+2026-09-24 DATA-CLAIM-09/10 不完整来源补证：新增HTTP/SQLite第二视图失败、必要/可选输入、有无完整缓存与合法空表6项断言；真实公开批次首次断网明确configurationError/零Task，再完整读取后worker断网执行仍通过。反例暴露空缓存绕过逐记录身份校验，已复用同一来源校验前移修复；42相关/6最终边界/2真实worker、Ruff/mypy408通过。串行完整后端3493 passed/80 skipped/2 warnings（778.49秒），新ARM包完整桌面通过22截图；补丁不在已有两轮CI中；同worker绑定/同行变化与打包实网联合证据仍缺，249/2、206partial/45planned/0verified不变，releaseAccepted=false。见partial-source-follow-through.json。

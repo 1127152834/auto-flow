@@ -6,7 +6,7 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "Current1c676965 fixes first-source-outage empty cache being mistaken for noMatch.42 related/6 boundary/2 real-worker tests and Ruff/mypy408 passed; serial full backend in progress. Current live matrices exclude this source. See partial-source-follow-through.json; releaseAccepted=false.",
+    "Current1c676965 fixes first-source-outage empty cache being mistaken for noMatch.42 related/6 boundary/2 real-worker tests and Ruff/mypy408 passed; serial full backend3493 passed/80 skipped/2 warnings/778.49s; rebuilt ARM full desktop passed22screenshots; native matrix pending. Current live matrices exclude this source. See partial-source-follow-through.json; releaseAccepted=false.",
     "DATA-CLAIM-09 source outage: current binding successful read time and separate latest pull state implemented; controlled-Google real worker reliable-cache success and invalid-identity zero-Task refusal passed. Local frontend5474/409, scripts102, types/lint/OpenAPI/build and full ARM desktop22screens passed. Initial full backend3483 passed/79 skipped/4 process timing failures retained; unchanged isolated6 and serial full3487 passed/79 skipped; original failures and unknown cause retained. Prior CI35895754111@25bb8ab2 excludes this production change. See source-outage-follow-through.json; releaseAccepted=false. Current new matrix35902129697@a317e1f8 includes source51e8991e and the two new real-worker cases; in progress. Prior25bb8ab2 ARM job succeeded, other two remain running.",
     "Current69baeeb2 CI35886627514 completed with three failures in packaged desktop harness: both Macs required-URL guidance (metadata API passed, screenshots node unselected); Windows loaded compact reopened Studio but text readiness failed. Covered-target click RED→GREEN and viewport/panel restoration diagnosis recorded; final full local ARM desktop with compact viewport regression passed; new matrix35895754111 @25bb8ab2 queued; production remains69baeeb2. Supplemental parallel packaged API and ARM desktop passed; no release acceptance.",
     "ARM packaged Profile/root-document freeze passed with actual browser seed observations old/old/new; full ARM desktop smoke also passed. Proxy candidate/endpoints are confirmed implementation gaps, P1–P3 proposed awaiting approval. Added script assertions are supplemental, absent from running69baeeb2 CI35886627514; releaseAccepted=false.",
@@ -509,10 +509,12 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
-    "status": "targeted_passed_full_backend_in_progress",
+    "status": "local_full_and_packaged_passed_native_matrix_pending",
     "source": "1c676965fb581ea3e33882b3ecb300b3abc99368",
     "report": "partial-source-follow-through.json",
-    "scope": "Source identity gate now runs for empty input tables; existing matrices exclude this production fix."
+    "scope": "Source identity gate now runs for empty input tables; existing matrices exclude this production fix.",
+    "backendFull": "3493 passed /80 skipped /2 warnings /778.49s",
+    "packagedDesktop": "Rebuilt unsigned ARM app full desktop passed;22 screenshots; no live Google outage UI."
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -552,15 +554,15 @@
     "testAndHarnessCandidate": "25bb8ab236becc1ee0fe64f79422455101a71f69",
     "runId": "35895754111",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35895754111",
-    "status": "in_progress",
+    "status": "success",
     "report": "ci-metadata-click-follow-through.json",
     "previousRun": "35886627514: all three packaged desktop jobs failed; preserved, not accepted",
     "platforms": {
-      "darwin-arm64": "success; job107299145250",
-      "darwin-x64": "in_progress",
-      "win32-x64": "in_progress"
+      "darwin-arm64": "success",
+      "darwin-x64": "success",
+      "win32-x64": "success"
     },
-    "artifactEvidence": "ci-metadata-click-follow-through.json: followUp.platforms.darwin-arm64; artifact10769571016 downloaded/hash-verified; packaged API/business/desktop reports passed,22screenshots and3 key images inspected. Applies only to25bb8ab2."
+    "artifactEvidence": "ci-metadata-click-follow-through.json: complete native logs and all three artifact reports downloaded/hash-verified. Scope25bb8ab2 / production69baeeb2 only."
   },
   "opposingWritesFollowThrough": {
     "status": "local_real_two_workers_passed",

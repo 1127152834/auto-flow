@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "targeted_passed_full_backend_in_progress",
+  "status": "local_full_and_packaged_passed_native_matrix_pending",
   "releaseAccepted": false,
   "requirements": [
     "DATA-CLAIM-09",
@@ -18,10 +18,46 @@
     "ruff": "changed source and tests passed",
     "mypy": "408 source files passed",
     "backendFull": {
-      "status": "in_progress",
+      "status": "passed",
       "log": ".tmp-tests/pm9-partial-source-2026-09-24/backend-full.log",
-      "scope": "serial complete backend regression; no concurrent local frontend/build/smoke from this task"
-    }
+      "scope": "serial complete backend regression; no concurrent local frontend/build/smoke from this task",
+      "passed": 3493,
+      "skipped": 80,
+      "warnings": 2,
+      "seconds": 778.49,
+      "sha256": "97329aef147fb042d0994130f372d4345b0835147372034ce060aaa7d3ceab63"
+    },
+    "build": "backend:build and package:dir passed; no valid signing identity, unsigned ARM app",
+    "packagedDesktop": {
+      "status": "passed",
+      "evidence": ".tmp-tests/pm9-partial-source-2026-09-24/desktop/project-desktop.json",
+      "sha256": "9adcff551d79f37289d951461d6d33d3c8c3be834e1fcc6fb0cec9c1eec839d6",
+      "screenshots": 22,
+      "scope": "Full existing management/runtime/Studio/volume chain on rebuilt ARM app; no live Sheets outage UI acceptance.",
+      "workerLogLoad": {
+        "logCount": 1004,
+        "logPages": 6,
+        "elapsedMs": 32391,
+        "logsPerMinute": 1860,
+        "scope": "real worker throughput and server pagination; no renderer memory claim"
+      },
+      "recordWriteMs": 46428,
+      "concurrentWrites": {
+        "status": "passed",
+        "producers": 5,
+        "records": 10000,
+        "busyRetries": 0
+      },
+      "syntheticProducer": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60027,
+        "maxBatchLagMs": 303
+      }
+    },
+    "mapping": "4 passed /251 references valid; no status promotion",
+    "reportScriptSyntax": "passed after replacing hardcoded ARM scope text with actual platform/arch"
   },
   "assertions": [
     "FORMULA succeeds then UNFORMATTED_VALUE fails: no row/proof/source timestamp publication; latestPull records failure.",
@@ -49,10 +85,14 @@
     "scope": "Existing35902129697@a317e1f8 and35895754111@25bb8ab2 do not include this production fix. Preserve both live runs; validate final new candidate once stable."
   },
   "remaining": [
-    "Complete backend result and rebuilt package/native matrix for this production change.",
+    "Necessary new native matrix for production1c676965; local full backend and ARM package acceptance passed.",
     "Binding/peer-generation cache trust combinations in one actual worker chain remain unproved.",
     "Controlled Google transport/credentials do not replace current packaged live Sheets/OAuth or physical/signing acceptance."
   ],
   "coverage": "No status promotions;251 requirements/206 partial/45 planned/0 verified.",
-  "codeCandidate": "1c676965fb581ea3e33882b3ecb300b3abc99368"
+  "codeCandidate": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+  "packageSha256": {
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "a6d47aed954b87b68d7f90acf29442fc58298b6238bad413ee1f968b4037517a",
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "b4880d9b014f453ad863165281cf1c784a2acb0eefbd62f16a78a1605cce78bb"
+  }
 }
