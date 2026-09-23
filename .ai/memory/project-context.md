@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-23 XE-A17 最终本机核对（confirmed）：源码f6a5023e、测试快照9a5a80aa；完整回归3471 passed/74 skipped/1旧准入顺序断言失败（857.72秒），修正后所在文件16 passed（4.33秒）。不称为一次全绿。新三平台35815127474进行中；旧断言矩阵35814591659已取消。真实联合最终1 passed，Sheets worker五项及相关79项通过；Ruff/mypy407/OpenAPI/构建/原15秒sidecar通过。XE-G06仅补归档blocker子范围，248/251有范围断言、3未定位、203partial/48planned/0verified；其余生命周期和外部验收继续保留，releaseAccepted=false。
+
 2026-09-23 XE-A17（confirmed，当前修复取代前段候选）：归档联合场景通过，本机真实两 worker/浏览器/HTTP/SQLite，Google transport 受控；保存仅一次、取消清理、unknown 原核验、pending 不补发。相关79 passed/3 skipped；真实Sheets5passed、人工到期竞争复测1passed；完整回归与新矩阵尚未闭合。248/251有范围断言，3未定位，203partial/48planned/0verified。详见 docs/project-management/implementation/pm9/archive-settlement-follow-through.json。L1–L3/M1–M3未经批准，Windows既有文件安全输出仍缺失，releaseAccepted=false。
 
 2026-09-23 本轮回归收尾（confirmed）：生产候选14dfae7c；本机后端完整3465 passed/73 skipped/2 warnings（966.88秒），前端5471通过，类型/lint/OpenAPI/Ruff/mypy407/前后端构建通过。产物sidecar首次15秒就绪超时；诊断3545ms且健康200，原15秒复测通过，但首发原因未明，不能声称修复。单次新三平台35811305102仍运行，旧c9矩阵因新增checkpoint修复取消。后续aef0f412仅测试/记录，与候选生产源码一致但其新增断言不在该矩阵。releaseAccepted=false。

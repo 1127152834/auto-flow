@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_full_run_completed_one_stale_assertion_fixed_native_replacement_pending",
+  "status": "local_full_run_completed_stale_assertion_fixed_final_native_ci_in_progress",
   "releaseAccepted": false,
   "parentCommit": "816969953cc30270aef57b1caa8ee609335cef08",
   "plan": "docs/superpowers/plans/2026-09-23-pm9-archive-settlement.md",
@@ -21,24 +21,24 @@
     "mypy": "407 source files passed",
     "openapi": "passed: npm run openapi:check",
     "nativeCI": {
-      "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
-      "status": "cancelled",
+      "codeCandidate": "9a5a80aabe01e98abd9d1af2d343fcc565e7b93d",
+      "productionSourceCommit": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
+      "status": "in_progress",
       "platforms": {
         "win32-x64": {
-          "status": "cancelled"
+          "status": "in_progress"
         },
         "darwin-x64": {
-          "status": "cancelled"
+          "status": "in_progress"
         },
         "darwin-arm64": {
-          "status": "cancelled"
+          "status": "in_progress"
         }
       },
       "physicalInstallation": "pending",
-      "runId": "35814591659",
-      "url": "https://github.com/1127152834/auto-flow/actions/runs/35814591659",
-      "realWorkerSelection": "Existing native worker suite plus real_archive; results must be read, not inferred.",
-      "reason": "Full local regression located stale admission error-order assertion in test_project_run_start; production guard is intentional. Cancelled known-failing test snapshot before replacement."
+      "runId": "35815127474",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35815127474",
+      "realWorkerSelection": "Includes real_archive plus existing suite; no result inferred."
     },
     "coverageVerifier": "251 references valid; 4 verifier tests passed. Not acceptance.",
     "finalJoint": "Final source: 1 passed / 4 deselected / 2 warnings in 26.26s after retained-candidate admission refinement.",
@@ -64,5 +64,26 @@
     "Three requirements still lack located direct assertions: DATA-LIFE-01, DATA-SH-03, XE-G07; scoped mappings do not prove all other subconditions.",
     "Historical sidecar initial 15s readiness timeout root cause remains unresolved."
   ],
-  "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b"
+  "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
+  "testCandidate": "9a5a80aabe01e98abd9d1af2d343fcc565e7b93d",
+  "supersededNativeCI": {
+    "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
+    "status": "cancelled",
+    "platforms": {
+      "win32-x64": {
+        "status": "cancelled"
+      },
+      "darwin-x64": {
+        "status": "cancelled"
+      },
+      "darwin-arm64": {
+        "status": "cancelled"
+      }
+    },
+    "physicalInstallation": "pending",
+    "runId": "35814591659",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35814591659",
+    "realWorkerSelection": "Existing native worker suite plus real_archive; results must be read, not inferred.",
+    "reason": "Full local regression located stale admission error-order assertion in test_project_run_start; production guard is intentional. Cancelled known-failing test snapshot before replacement."
+  }
 }
