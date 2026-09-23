@@ -96,7 +96,7 @@ class AndroidCreate(AndroidRename):
 
 class AndroidDeviceCommand(ApiModel):
     request_id: UUID
-    action: Literal["start", "stop", "restart", "delete", "recover"]
+    action: Literal["start", "stop", "restart", "restore", "delete", "recover"]
     delete_data: bool = False
 
     @model_validator(mode="after")

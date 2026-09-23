@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from autoflow.adapters.http.android import AndroidDeviceCommand
 from autoflow.adapters.http.android_management import android_management_router
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.application.android.diagnostics import EnvironmentCheckService
@@ -24,6 +25,15 @@ class _Devices:
             "profileId": "22222222-2222-4222-8222-222222222222", "dataRetained": False,
             "deleted": False, "creationConfig": {"imageId": "sha256:" + "a" * 64},
         }]})()
+
+
+def test_retained_restore_is_a_public_device_operation() -> None:
+    command = AndroidDeviceCommand.model_validate({
+        "requestId": "11111111-1111-4111-8111-111111111111",
+        "action": "restore",
+        "deleteData": False,
+    })
+    assert command.action == "restore"
 
 
 def test_management_device_list_is_a_snapshot_page_and_does_not_inspect_inline():

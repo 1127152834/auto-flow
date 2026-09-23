@@ -85,6 +85,10 @@ class AndroidManagement:
             raise AndroidError("ANDROID_RECOVERY_REQUIRED", "请先核实上一次设备操作")
         if restore_pending(device) and (request["action"] not in {"recover", "delete"} or (request["action"] == "delete" and not request.get("deleteData"))):
             require_restored(device)
+        if device.get("dataRetained") and request["action"] in {"start", "stop", "restart"}:
+            raise AndroidError("ANDROID_DATA_RETAINED", "保留数据实例必须先恢复", 409)
+        if request["action"] == "restore" and not device.get("dataRetained"):
+            raise AndroidError("ANDROID_DATA_NOT_RETAINED", "设备没有待恢复的保留数据", 409)
         durable = self._accept_operation(device_id, request)
         if durable is not None and durable.state not in {"queued", "running"}:
             if durable.state == "needs_verification":

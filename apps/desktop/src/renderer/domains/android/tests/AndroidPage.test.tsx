@@ -390,6 +390,22 @@ it('verifies a management operation with its original request id', async () => {
   await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/operations/operation-1/verify', expect.objectContaining({ body: { requestId } })))
 })
+
+it('submits retained-volume restoration through the public device operation', async () => {
+  const retained = { ...devices[0], androidStatus: 'retained', dataRetained: true }
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [{ deviceId: retained.deviceId, revision: retained.generation, name: retained.name, runtimeState: 'retained', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: retained, latestOperation: null, allowedActions: ['restore', 'delete'], blockedReasons: {} }], total: 1, nextCursor: null })
+    if (path === '/api/v1/android/devices') return Promise.resolve([retained])
+    if (path.endsWith('/operations') && init?.method === 'POST') return Promise.resolve(retained)
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '恢复实例' }))
+  expect(screen.getByRole('heading', { name: '恢复保留数据' })).toBeVisible()
+  await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith(`/api/v1/android/devices/${retained.deviceId}/operations`, expect.objectContaining({ body: expect.objectContaining({ action: 'restore', deleteData: false }) })))
+})
 it('cleanup preview includes registered backups while diagnostics remain device scoped', async () => {
   const backup = { id: 'backup-1', deviceId: devices[0].deviceId, bytes: 12, imageId: profile.imageId, sha256: 'digest', formatVersion: 1, state: 'ready', createdAt: '' }
   mocks.client.request.mockImplementation(async (path: string, init?: { method?: string; body?: { resourceIds?: string[]; deviceIds?: string[] } }) => {

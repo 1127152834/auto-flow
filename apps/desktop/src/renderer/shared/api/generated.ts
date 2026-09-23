@@ -5674,7 +5674,7 @@ export type components = {
              * Action
              * @enum {string}
              */
-            action: "start" | "stop" | "restart" | "delete" | "recover";
+            action: "start" | "stop" | "restart" | "restore" | "delete" | "recover";
             /**
              * Deletedata
              * @default false

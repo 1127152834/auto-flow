@@ -56,6 +56,8 @@ class Runtime:
         if request['action'] == 'delete':
             device['deleted'] = request['deleteData']
             device['dataRetained'] = not request['deleteData']
+        if request['action'] == 'restore':
+            device['dataRetained'] = False
         save()
 
 
@@ -112,6 +114,44 @@ async def test_partial_failure_stays_reviewable_and_requires_explicit_recovery()
     assert repo.get(c['deviceId'])['deleted']
     with pytest.raises(AndroidError):
         service.operate(c['deviceId'], request('start'))
+
+
+@pytest.mark.asyncio
+async def test_retained_device_only_restarts_through_explicit_restore():
+    repo, runtime = Repository(), Runtime()
+    c = config()
+    repo.save({**runtime.new_device(c), 'androidStatus': 'retained', 'dataRetained': True})
+    service = AndroidManagement(repo, runtime)
+
+    with pytest.raises(AndroidError) as blocked:
+        service.operate(c['deviceId'], request('start'))
+    assert blocked.value.code == 'ANDROID_DATA_RETAINED'
+    assert runtime.calls == []
+
+    service.operate(c['deviceId'], request('restore'))
+    await service.task
+    assert runtime.calls == ['restore']
+
+    with pytest.raises(AndroidError) as rejected:
+        service.operate(c['deviceId'], request('restore'))
+    assert rejected.value.code == 'ANDROID_DATA_NOT_RETAINED'
+
+
+@pytest.mark.asyncio
+async def test_retained_restore_with_missing_volume_never_creates_blank_data(tmp_path, monkeypatch):
+    runtime = MacAndroidRuntime(tmp_path, tmp_path / 'workspace')
+    device = runtime.new_device(config())
+    device.update(androidStatus='retained', dataRetained=True)
+    monkeypatch.setattr(android_management_runtime, 'verify', AsyncMock(return_value=([], [])))
+    monkeypatch.setattr(android_management_runtime, '_admit_image', AsyncMock())
+    mutation = AsyncMock()
+    monkeypatch.setattr(android_management_runtime, 'mutation', mutation)
+
+    with pytest.raises(AndroidError) as error:
+        await manage(runtime, device, request('restore'), lambda _stage: None, lambda: None)
+
+    assert error.value.code == 'ANDROID_DATA_MISSING'
+    mutation.assert_not_awaited()
 
 
 @pytest.mark.asyncio

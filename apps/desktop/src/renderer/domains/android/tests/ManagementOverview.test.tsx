@@ -207,6 +207,16 @@ it('shows status totals and filters by template and retained data', async () => 
   expect(screen.getByText('保留停止')).toBeVisible()
 })
 
+it('offers an explicit restore action only for a retained device', async () => {
+  const onManage = vi.fn()
+  const api = { devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'retained', revision: 4, name: '保留数据实例', runtimeState: 'retained', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: { dataRetained: true }, latestOperation: null, allowedActions: ['restore', 'delete'], blockedReasons: { start: '请先恢复实例' } }] })) } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
+  expect(await screen.findByText('保留数据实例')).toBeVisible()
+  expect(screen.queryByRole('button', { name: '启动设备' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '恢复实例' }))
+  expect(onManage).toHaveBeenCalledWith('retained', 'restore', undefined, undefined)
+})
+
 it('keeps the last snapshot and marks it stale when refresh disconnects', async () => {
   let disconnected = false
   const api = { devices: vi.fn(async () => disconnected ? Promise.reject(new Error('offline')) : { total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 1, name: '缓存设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} }] }) } as unknown as AndroidManagementApi

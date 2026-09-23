@@ -8,9 +8,9 @@
 | T02 状态与动作策略 | `passed` | `management_models.py`、`management_rules.py`；unknown/stale、retained、delete 状态测试；前端 `ManagementState.test.ts`。 |
 | T03 环境诊断 | `passed` | `test_android_management_environment.py`、`test_android_runtime.py`；逐项 platform/ADB/Lima/SSH/scrcpy/VM/Docker/binder/images/capacity/disk 检查；真实 `environment()` 返回 `available: true`。 |
 | T04 持久操作与迁移 | `passed` | `test_android_management_operations.py` 与契约测试覆盖幂等、摘要冲突、状态栅栏、needs_verification、compact；新增 `transition_with_device` 以同一 SQLAlchemy 事务提交操作状态和设备投影；迁移 head 为 `am01_management_operations`，父节点为当前 `0019_recording_commands`。旧 1000 条回执上限已移除，Android 聚焦集合 `235 passed, 2 warnings`。 |
-| T05 控制会话 | `partial` | ConsoleController、heartbeat 和 generation 身份测试存在；[原生 scrcpy 手动/只读窗口进程](2026-09-23-persistent-metadata-verification.md)已真实验证且关闭不停止实例。[本轮页面竞态](2026-09-23-control-session-verification.md)补齐迟到响应、旧输入、路由守卫、原生归属及回收核实的 RED→GREEN；人工输入/切换写端、30 秒失联、完整重启和中断恢复没有真实端到端证据。 |
-| T06 管理首页 | `partial` | AndroidPage/ManagementOverview 使用 management devices 快照，不再轮询旧 `/api/v1/android/devices` 或详情 `/runs`；[控制会话测试](2026-09-23-control-session-verification.md)确认退役入口移除及原生归属/显式结束可见。[操作历史增量](2026-09-23-operation-history-verification.md)提供正确设备过滤、分页、原请求核实、键盘焦点及模拟断线只读；长名称/200% 缩放/真实断线/保留数据完整流程仍缺证据。 |
-| T07 AM1 真实链 | `not_run`（整任务） | smoke 参数保护 `3 passed`；guarded smoke 真实完成停止、启动、移除运行环境和清理独立数据，应用清单 `102/102`、截图 `553476` bytes；测试 APK、中文输入、AutoFlow 重启、中断恢复仍未执行，原生窗口进程另有真实证据。 |
+| T05 控制会话 | `partial` | ConsoleController、heartbeat 和 generation 身份测试存在；[原生窗口与真实会话链](2026-09-23-am1-real-control-retention.md)已验证中文输入、切原生/切回、结束后重进、30 秒租约回收及完整 HTTP 进程重启后的旧会话 410/新会话可用。[页面竞态](2026-09-23-control-session-verification.md)经 RED→GREEN；桌面 UI 与真实网络断开同链仍需补验。 |
+| T06 管理首页 | `partial` | AndroidPage/ManagementOverview 使用管理快照，不再轮询旧 `/api/v1/android/devices` 或详情 `/runs`；[操作历史](2026-09-23-operation-history-verification.md)覆盖设备过滤、分页、原请求核实、键盘焦点和模拟断线。本轮补公开 `restore`、保留实例按钮与普通 `start` 服务端拒绝；[同卷真实读回](2026-09-23-am1-real-control-retention.md)通过。长名称/200% 缩放/真实断线旧快照仍缺证据。 |
+| T07 AM1 真实链 | `partial` | [本轮真实链](2026-09-23-am1-real-control-retention.md)已执行自建实例创建、测试 APK 安装与应用动作、中文输入与截图、返回重进、切原生/切回、停机启动、HTTP 重启、保留卷恢复，以及双实例中永久删除一台后另一台不变；较早 guarded smoke 已按标签清理另一自建实例。当前实例的受控硬中断及最终清理仍未执行。 |
 
 ## 已执行命令摘要
 
@@ -22,4 +22,4 @@ cd apps/backend && uv run pytest tests/contract/test_android*.py tests/unit/test
 235 passed, 2 warnings
 ```
 
-真实 Lima/ReDroid 细节、镜像 digest、设备和截图数据见总记录；未提供测试 APK 或人工窗口结果，不标记为通过。
+上表是 `3ee61947` 时点的历史自动化输出，不代表当前 HEAD 的完整门槛。最新真实 Lima/ReDroid、测试 APK、原生窗口和保留卷读回见[本轮记录](2026-09-23-am1-real-control-retention.md)；当前切片完整回归以该记录的最终门槛为准。
