@@ -1,6 +1,7 @@
 """Route worker requests through authoritative Task/Run capability facts."""
 from __future__ import annotations
 
+import asyncio
 from dataclasses import fields, replace
 from datetime import datetime
 from typing import Any
@@ -29,6 +30,7 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
     WorkflowRunEventRow,
     WorkflowRunRow,
 )
+from autoflow.infrastructure.process.project_test_browser_worker import wait_for_cleanup
 
 DATA_COMMANDS = {
     'readRecord': ('read_record', commands.ReadProjectRecordRequest),
@@ -45,6 +47,15 @@ DATA_COMMANDS = {
     'modifyField': ('modify_field', commands.ModifyProjectFieldCommand),
     'previewFieldChange': ('preview_field_change', commands.PreviewProjectFieldChangeRequest),
 }
+
+
+async def _finish_retention(callback, *args):
+    task = asyncio.create_task(asyncio.to_thread(callback, *args))
+    try:
+        return await asyncio.shield(task)
+    finally:
+        # An accepted filesystem save owns its work copy until publication settles.
+        await wait_for_cleanup(task)
 
 
 def _denied() -> ProjectError:
@@ -127,11 +138,11 @@ class ProjectWorkerCapabilities:
             request = {**request, 'arguments': {**arguments, 'timeoutSeconds': min(arguments['timeoutSeconds'], manual_limit)}}
             return await self.manual.wait(project_id, task_id, run_id, generation, request)
         if request['operation'] == 'manualComplete' and self.manual is not None:
-            return json_value(self.manual.complete(project_id, task_id, run_id, generation, request))
+            return json_value(await _finish_retention(self.manual.complete, project_id, task_id, run_id, generation, request))
         if request['operation'] == 'end':
             if set(arguments) != {'retainEnvironment'}:
                 raise _denied()
-            return self.end(project_id, task_id, run_id, generation, request, arguments['retainEnvironment'])
+            return await _finish_retention(self.end, project_id, task_id, run_id, generation, request, arguments['retainEnvironment'])
         selected = DATA_COMMANDS.get(request['operation'])
         if selected is None:
             raise _denied()

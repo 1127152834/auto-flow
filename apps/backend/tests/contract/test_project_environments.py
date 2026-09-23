@@ -793,6 +793,56 @@ def _end_body(instance, *, name="登录环境"):
     }
 
 
+def test_accepted_end_can_save_after_archive_closes_ingress_and_replay(tmp_path, monkeypatch):
+    from autoflow.application.projects.lifecycle import (
+        ProjectLifecycleCoordinator,
+        ProjectLifecycleService,
+    )
+    from autoflow.application.settings.runtime import QuiesceGate
+    from autoflow.infrastructure.database.project_lifecycle import (
+        SqlAlchemyProjectLifecycle,
+    )
+
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'accepted-before-closing')
+    repository = SqlAlchemyProjectLifecycle(service.environments._session_factory)
+    lifecycle = ProjectLifecycleService(projects.projects, repository, ProjectLifecycleCoordinator(repository, QuiesceGate()))
+    original = service.quiesce_instance
+    archive_operations = []
+
+    def archive_after_quiescence(*args):
+        value = original(*args)
+        if not archive_operations:
+            preview = lifecycle.impact(project_id, 'archive')
+            assert any(item['code'] == 'ENVIRONMENT_SAVE_ACTIVE' for item in preview['blockers'])
+            accepted = lifecycle.archive(project_id, str(uuid4()), {
+                'impactRevision': preview['impactRevision'],
+                'expectedManagementRevision': projects.get(project_id).management_revision,
+            })
+            archive_operations.append(accepted)
+            repository.advance(project_id)
+            assert projects.get(project_id).lifecycle_state == 'closing'
+        return value
+
+    monkeypatch.setattr(service, 'quiesce_instance', archive_after_quiescence)
+    url = f'/api/v1/projects/{project_id}/tasks/{instance.active_task_id}/end'
+    headers = {'Idempotency-Key': str(uuid4())}
+    body = _end_body(instance)
+    completed = client.post(url, headers=headers, json=body)
+    assert completed.status_code == 202, completed.text
+    assert completed.json()['outcome']['complete'] is True
+    assert client.post(url, headers={'Idempotency-Key': str(uuid4())}, json=body).status_code == 423
+    replay = client.post(url, headers=headers, json=body)
+    assert replay.status_code == 202
+    assert replay.json()['outcome'] == completed.json()['outcome']
+    assert replay.json()['operation']['operationId'] == completed.json()['operation']['operationId']
+    repository.advance(project_id)
+    assert projects.get(project_id).lifecycle_state == 'archived'
+    assert client.post(url, headers=headers, json=body).json()['outcome'] == completed.json()['outcome']
+    assert client.post(url, headers=headers, json=_end_body(instance, name='different')).status_code == 409
+
+
 def test_production_environment_operations_are_readable_in_project_ledger(tmp_path):
     from autoflow.adapters.http.projects import projects_router
     from autoflow.application.projects.overview import ProjectOverviewService

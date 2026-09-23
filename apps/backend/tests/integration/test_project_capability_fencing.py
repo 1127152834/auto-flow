@@ -607,3 +607,49 @@ def test_typed_identity_updates_only_text_one_when_integer_one_exists(
             rows["integer"].values_json[field["ref"]["fieldId"]] == "integer-original"
         )
         assert rows["integer"].content_revision == 1
+
+
+@pytest.mark.parametrize('retain', [False, True])
+@pytest.mark.parametrize('accepted_first', [False, True])
+def test_end_admission_fences_revoked_run_but_settles_accepted_command(capability_context, tmp_path, monkeypatch, retain, accepted_first):
+    from autoflow.application.environments.service import EnvironmentService
+    from autoflow.application.projects.service import ProjectService
+    from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+    from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+    from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
+    from tests.contract.test_project_environments import PROFILE, _end_body
+
+    factory, project, task, _table, _field, _record = capability_context
+
+    def lookup(run_id):
+        with factory() as session:
+            return session.get(WorkflowRunRow, run_id)
+
+    service = EnvironmentService(ProjectService(SqlAlchemyProjects(factory)), SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / 'end-store'), execution_generation_lookup=lookup)
+    instance = service.reserve(project, service.resolve(project, {'source': 'newFromProfile', 'profileId': PROFILE}), task_id=task.task_id, run_id=task.run_id, holder_kind='task', holder_id=task.task_id)
+    service.environments.set_instance_state(instance.instance_id, 'closed')
+    body = {**_end_body(instance), 'retainEnvironment': {'enabled': retain, 'mode': 'saveAs', 'name': 'accepted'}}
+    original = service.quiesce_instance
+
+    def revoke():
+        with factory.begin() as session:
+            run = session.get(WorkflowRunRow, task.run_id)
+            run.execution_generation = 2
+            run.status = 'reconciling'
+
+    def after_accept(*args):
+        revoke()
+        return original(*args)
+
+    if accepted_first:
+        monkeypatch.setattr(service, 'quiesce_instance', after_accept)
+        result, operation, _ = service.end(project, uid(), body)
+        assert result['complete'] is True
+        assert operation.status == 'succeeded'
+    else:
+        revoke()
+        with pytest.raises(ProjectError, match='运行代次') as error:
+            service.end(project, uid(), body)
+        assert error.value.code == 'CAPABILITY_SCOPE_DENIED'
+        with factory() as session:
+            assert session.scalar(select(func.count()).select_from(ProjectOperationRow).where(ProjectOperationRow.kind == 'saveEnvironment')) == 0

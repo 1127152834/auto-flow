@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from autoflow.domain.project_data.identity import RecordKey, RecordKeyType
 from autoflow.domain.projects.models import ProjectError
 
-from .models import ProjectOperationRow
+from .models import ProjectOperationRow, ProjectRow
 from .project_data_models import (
     DataFieldRow,
     DataGenerationRow,
@@ -603,7 +603,9 @@ class SqlAlchemyProjectSync:
                     },
                     True,
                 )
-            _guard_project_write(session, project)
+            project_row = session.get(ProjectRow, project)
+            if not (kind == "reconcileSync" and project_row is not None and project_row.lifecycle_state == "closing"):
+                _guard_project_write(session, project)
             operation = ProjectOperationRow(
                 id=operation_id,
                 project_id=project,

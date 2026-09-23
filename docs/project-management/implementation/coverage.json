@@ -6701,6 +6701,15 @@
           "limitations": "不代表活动 worker/未知写/保存的完整联合场景或真实 Google",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/archive-settlement-follow-through.json",
+          "scope": "真实生产 HTTP/SQLite/两 worker/浏览器：归档关闭新入口，已受理保存仅一次，活动人工任务取消和环境清理；unknown 阻止完成，原目标核验 matched 后归档；pending 值/身份/版本不变且不补发。Google 传输受控。",
+          "platform": "darwin/arm64",
+          "user_acceptance": "pending",
+          "limitations": "不代表当前 Google 实网、打包 UI 或三平台实机。"
         }
       ],
       "owner": "integration",
@@ -6725,23 +6734,29 @@
       ],
       "pm8_note": "归档不借核验重发写入在本地路径验证；未推送本地数据与 Sheets 停止新发送没有真实同步证据。",
       "testMapping": {
-        "reviewedAt": "2026-09-22",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_sheets_recovery.py",
             "symbol": "test_archive_preserves_unsent_local_data_and_refuses_new_source_writes",
             "scope": "真实 HTTP 影响确认与归档收尾后，待推送本地值及原意图完整保留；新推送返回 409，远端零新增写入",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_archive_waits_for_run_save_and_unknown_sheet_outcome",
+            "scope": "真实生产 HTTP/SQLite/两 worker/浏览器：归档关闭新入口，已受理保存仅一次，活动人工任务取消和环境清理；unknown 阻止完成，原目标核验 matched 后归档；pending 值/身份/版本不变且不补发。Google 传输受控。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "归档包含活动 worker/已接受保存/未知写的联合场景及当前打包完整 Sheets 归档链仍待验证。"
+            "detail": "本机真实 HTTP/worker 联合通过；当前新候选三平台、打包 renderer 联合归档链仍需验收。"
           },
           {
             "kind": "external_acceptance_pending",
-            "detail": "真实 Sheets 归档时网络行为需要授权资源，受控 transport 不代替实网。"
+            "detail": "当前真实授权 Google/完整打包链仍待验收；受控 transport 不代替实网，历史 PM6 实网证据保留。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -13907,6 +13922,15 @@
           "limitations": "归档期间收尾：活动批次/任务阻断与收尾后收敛已验证；「已接受环境保存 + 未知 Sheets 推送」未同时进入真实链。",
           "platform": "darwin/arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/archive-settlement-follow-through.json",
+          "scope": "真实生产 HTTP/SQLite/两 worker/浏览器：归档关闭新入口，已受理保存仅一次，活动人工任务取消和环境清理；unknown 阻止完成，原目标核验 matched 后归档；pending 值/身份/版本不变且不补发。Google 传输受控。",
+          "platform": "darwin/arm64",
+          "user_acceptance": "pending",
+          "limitations": "不代表当前 Google 实网、打包 UI 或三平台实机。"
         }
       ],
       "owner": "integration",
@@ -13931,12 +13955,23 @@
       ],
       "pm8_note": "归档期间收尾：活动批次/任务阻断与收尾后收敛已验证；「已接受环境保存 + 未知 Sheets 推送」未同时进入真实链。",
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_archive_waits_for_run_save_and_unknown_sheet_outcome",
+            "scope": "真实生产 HTTP/SQLite/两 worker/浏览器：归档关闭新入口，已受理保存仅一次，活动人工任务取消和环境清理；unknown 阻止完成，原目标核验 matched 后归档；pending 值/身份/版本不变且不补发。Google 传输受控。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：活动 Run/已接受保存/未知 Sheets 推送同时归档的收尾；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "本机真实 HTTP/worker 联合通过；当前新候选三平台、打包 renderer 联合归档链仍需验收。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "当前真实授权 Google/完整打包链仍待验收；受控 transport 不代替实网，历史 PM6 实网证据保留。"
           }
         ],
         "statusBeforeReview": "partially_verified"

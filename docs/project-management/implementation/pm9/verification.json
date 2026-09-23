@@ -8,7 +8,7 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "8 of 251 requirements still have no located assertion; 202 partial / 49 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
+    "4 of 251 requirements still have no located assertion; 203 partial / 48 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
     "L0 independent review found no P1/P2; targeted and related checks completed. New source requires a fresh complete three-platform matrix; c2 matrix was cancelled as superseded.",
@@ -143,7 +143,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "14dfae7c production checkpoint fix; later aef0f412 is standalone-core test/evidence only. Full local backend 3465 passed/73 skipped/2 warnings; frontend5471 and typecheck/lint/build; Ruff,mypy407,OpenAPI,PyInstaller passed. Packaged sidecar initial15s timeout remains unresolved despite 3545ms diagnostic and unchanged-window repeat passing. Replacement full three-platform run35811305102 remains in progress. Later standalone-core test is not in that matrix.",
+  "workingCandidate": "XE-A17 archive settlement production fix in working tree after81696995; local real Sheets workers5 passed, focused/full regression in progress;14df CI remains historical source and cannot certify this change.",
   "finalCICandidate": {
     "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
     "status": "in_progress",
@@ -300,5 +300,6 @@
     "testCommit": "aef0f412a28cea41eb360df7e5bfa228ff8db2b6",
     "result": "1 passed/3 deselected in11.65s",
     "ciScope": "local-only assertion additions after14df matrix source; production code identical"
-  }
+  },
+  "archiveSettlementFollowThrough": "archive-settlement-follow-through.json"
 }

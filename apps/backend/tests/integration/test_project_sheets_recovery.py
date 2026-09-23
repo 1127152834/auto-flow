@@ -694,3 +694,41 @@ def test_archive_preserves_unsent_local_data_and_refuses_new_source_writes(tmp_p
         assert sync_operations(sheets, 'pending') == [pending]
         assert transport.changes() == writes
         assert transport.grid('数据')[1] == ['A-1', '第一行']
+
+
+def test_archive_waits_for_unknown_value_send_and_allows_original_reconciliation(tmp_path):
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        client, project, table = sheets.client, sheets.project, sheets.table
+        pull(client, project, table, sheets.table_revision())
+        edit_title(client, project, table, sheets.records()[0], sheets.field_id('title'), 'unconfirmed')
+        epoch = state(client, project, table)['binding']['bindingEpoch']
+        transport.fail_writes.append(SheetsApiError(0, 'timeout', 'lost response'))
+        push(client, project, table, epoch)
+        unknown, = operations(client, project, table, 'unknown')
+        base = f'/api/v1/projects/{project}'
+        preview = client.get(base + '/lifecycle-impact', params={'action': 'archive'}).json()
+        assert any(item['code'] == 'SYNC_UNCONFIRMED' for item in preview['blockers']), preview
+        accepted = client.post(base + '/archive', headers=new_key(), json={
+            'expectedManagementRevision': client.get(base).json()['managementRevision'],
+            'impactRevision': preview['impactRevision'],
+        })
+        assert accepted.status_code == 202, accepted.text
+        archive = accepted.json()['operation']['operationId']
+        repository = client.app.state.project_lifecycle.repository
+        repository.advance(project)
+        assert client.get(base).json()['lifecycleState'] == 'closing'
+        assert client.get(base + f'/operations/{archive}').json()['status'] == 'running'
+        assert push_response(client, project, table, epoch).status_code == 423
+        writes = transport.changes()
+        target = url(project, table, f"/sync-operations/{unknown['syncOperationId']}/reconcile")
+        key = new_key()
+        body = {'expectedStatusRevision': unknown['statusRevision']}
+        reconciled = client.post(target, headers=key, json=body)
+        assert reconciled.status_code == 202, reconciled.text
+        assert reconciled.json()['operation']['result']['evidence']['outcome'] == 'notMatched'
+        repository.advance(project)
+        assert client.get(base).json()['lifecycleState'] == 'archived'
+        assert client.get(base + f'/operations/{archive}').json()['status'] == 'succeeded'
+        assert client.post(target, headers=key, json=body).json() == reconciled.json()
+        assert transport.changes() == writes

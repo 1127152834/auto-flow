@@ -54,6 +54,7 @@ class _Worker:
     cleanup: asyncio.Task[None] | None = None
     created_directory: bool = False
     ready: bool = False
+    capability: asyncio.Future[Any] | None = None
 
 
 def project_workflow_worker_command() -> tuple[str, ...]:
@@ -258,6 +259,7 @@ class ProjectWorkflowWorkerManager:
     async def _capability_while_alive(self, worker: _Worker, message: dict[str, Any]) -> Any:
         assert self._on_capability is not None and worker.process is not None
         capability = asyncio.ensure_future(self._on_capability(worker.run_id, worker.generation, message))
+        worker.capability = capability
         exited = asyncio.create_task(worker.process.wait())
         try:
             done, _ = await asyncio.wait({capability, exited}, return_when=asyncio.FIRST_COMPLETED)
@@ -386,6 +388,10 @@ class ProjectWorkflowWorkerManager:
                 worker.directory, worker.executable, worker.birth,
                 strict_ownership=True,
             )
+        if worker.capability is not None:
+            if not worker.capability.done():
+                worker.capability.cancel()
+            await asyncio.gather(worker.capability, return_exceptions=True)
         if worker.created_directory:
             try:
                 shutil.rmtree(worker.directory)

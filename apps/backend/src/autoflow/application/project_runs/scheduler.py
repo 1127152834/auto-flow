@@ -24,6 +24,9 @@ from autoflow.domain.workflows.runtime import (
     WorkflowRuntimeError,
     thaw_json,
 )
+from autoflow.infrastructure.database.environment_models import (
+    ProjectEnvironmentInstanceRow,
+)
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_claims import (
     SqlAlchemyProjectInputGroups,
@@ -187,6 +190,7 @@ class ProjectBatchScheduler:
                     await self._advance(project_id, batch_id)
 
     async def _advance(self, project_id: str, batch_id: str) -> None:
+        await self._cleanup_terminal_instances(project_id, batch_id)
         self._release_terminal_leases(project_id, batch_id)
         with self._factory() as session:
             repository = SqlAlchemyProjectRuns(session)
@@ -266,6 +270,8 @@ class ProjectBatchScheduler:
                 if any(task.status != "succeeded" for task in tasks)
                 else "completed"
             )
+            await self._cleanup_terminal_instances(project_id, batch_id)
+            self._release_terminal_leases(project_id, batch_id)
             self._set_status(project_id, batch_id, result)
             return
         if stopping or (failed and not continue_after_failure):
@@ -436,6 +442,8 @@ class ProjectBatchScheduler:
             )
             if not tasks and selection_status == "noMatch":
                 result = "completed"
+            await self._cleanup_terminal_instances(project_id, batch_id)
+            self._release_terminal_leases(project_id, batch_id)
             self._set_status(project_id, batch_id, result)
             return
         if stopping:
@@ -933,6 +941,23 @@ class ProjectBatchScheduler:
             if selection_status is not None:
                 row.selection_outcome = {"status": selection_status}
             self._commit(session)
+
+    async def _cleanup_terminal_instances(self, project_id: str, batch_id: str) -> None:
+        if self._environments is None:
+            return
+        with self._factory() as session:
+            instances = list(session.scalars(select(ProjectEnvironmentInstanceRow)
+                .join(ProjectTaskRow, ProjectTaskRow.id == ProjectEnvironmentInstanceRow.active_task_id)
+                .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
+                .where(ProjectTaskRow.project_id == project_id, ProjectTaskRow.batch_id == batch_id,
+                       ProjectEnvironmentInstanceRow.project_id == project_id,
+                       ProjectEnvironmentInstanceRow.active_run_id == WorkflowRunRow.id,
+                       WorkflowRunRow.status.in_(TERMINAL_STATUSES),
+                       ProjectEnvironmentInstanceRow.state.in_(['reserved', 'starting', 'active', 'waiting_manual', 'closing', 'closed', 'cleaning']))))
+        for instance in instances:
+            # Terminal Run means worker cleanup was confirmed; the environment
+            # service still verifies native ownership before deleting its copy.
+            await asyncio.to_thread(self._environments.close_instance, project_id, instance.id, instance.environment_id)
 
     def _release_terminal_leases(self, project_id: str, batch_id: str) -> None:
         with self._factory() as session:

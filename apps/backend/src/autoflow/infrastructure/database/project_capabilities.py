@@ -89,6 +89,7 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectTaskRecordReadRow,
     ProjectTaskRow,
 )
+from autoflow.infrastructure.database.project_sync import enqueue_intent
 from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 
@@ -645,7 +646,8 @@ class SqlAlchemyProjectDataCapabilities:
                 )
             canonical = records._validate(fields, dict(command.changes), False)
             before = records._snapshot(row, fields)
-            merged = {**row.values_json, **canonical}
+            old_values = row.values_json
+            merged = {**old_values, **canonical}
             if merged != row.values_json:
                 row.values_json = merged
                 row.content_revision += 1
@@ -664,6 +666,10 @@ class SqlAlchemyProjectDataCapabilities:
             session.add(_operation_row(operation))
             session.flush()
             if before != after:
+                enqueue_intent(session, table, command.record_ref.record_key, row.content_revision, {
+                    field_id: value for field_id, value in canonical.items()
+                    if field_id not in old_values or old_values[field_id] != value
+                })
                 session.add(_change(operation, before, after))
             self._commit(session)
             return after, False

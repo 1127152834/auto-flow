@@ -399,6 +399,56 @@ async def test_worker_exit_interrupts_pending_manual_capability(tmp_path):
     assert not instance.busy()
 
 
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform == 'win32', reason='POSIX process-tree completion barrier')
+async def test_force_stop_keeps_capacity_and_directory_until_accepted_capability_settles(tmp_path, monkeypatch):
+    from autoflow.infrastructure.process import project_workflow_worker as module
+    from autoflow.infrastructure.process.project_test_browser_worker import (
+        wait_for_cleanup,
+    )
+
+    instance, executable = manager(tmp_path)
+    instance._command = (sys.executable, '-c', CHILD[:CHILD.index("\ne=dict")] + "\nsend('capability', commandId='end')\nsys.stdin.readline()\n")
+    entered, release, cancelled = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    killed = asyncio.Event()
+    original_force = module.force_process_tree
+
+    async def force(*args, **kwargs):
+        await original_force(*args, **kwargs)
+        killed.set()
+
+    monkeypatch.setattr(module, 'force_process_tree', force)
+
+    async def capability(*_args):
+        entered.set()
+        accepted = asyncio.create_task(release.wait())
+        try:
+            return await asyncio.shield(accepted)
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+        finally:
+            await wait_for_cleanup(accepted)
+
+    instance._on_capability = capability
+    run = asyncio.create_task(start(instance, executable, lambda _event: asyncio.sleep(0)))
+    await asyncio.wait_for(entered.wait(), 5)
+    worker, = instance._workers.values()
+    stopping = asyncio.create_task(instance.force_stop(worker.run_id))
+    try:
+        await asyncio.wait_for(cancelled.wait(), 5)
+        await asyncio.wait_for(killed.wait(), 5)
+        assert not stopping.done()
+        assert instance.busy(worker.run_id)
+        assert worker.directory.exists()
+    finally:
+        release.set()
+        await stopping
+        await asyncio.gather(run, return_exceptions=True)
+    assert not instance.busy()
+    assert not worker.directory.exists()
+
+
 def test_worker_protocol_is_utf8_even_with_legacy_pipe_encoding():
     import os
     import subprocess
@@ -421,7 +471,7 @@ async def test_windows_cleanup_confirms_exit_after_kill_access_denied(tmp_path, 
             nonlocal exited
             exited = True
             return 0
-    worker = SimpleNamespace(run_id='test-run', process=Process(), created_directory=False, ready=False, job=None)
+    worker = SimpleNamespace(run_id='test-run', process=Process(), created_directory=False, ready=False, job=None, capability=None)
     instance._workers[worker.run_id] = worker
     monkeypatch.setattr(module.sys, 'platform', 'win32')
     await instance._cleanup_owned(worker)

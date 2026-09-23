@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-23 XE-A17（confirmed，当前修复取代前段候选）：归档联合场景通过，本机真实两 worker/浏览器/HTTP/SQLite，Google transport 受控；保存仅一次、取消清理、unknown 原核验、pending 不补发。相关79 passed/3 skipped；真实Sheets5passed、人工到期竞争复测1passed；完整回归与新矩阵尚未闭合。247/251有范围断言，4未定位，203partial/48planned/0verified。详见 docs/project-management/implementation/pm9/archive-settlement-follow-through.json。L1–L3/M1–M3未经批准，Windows既有文件安全输出仍缺失，releaseAccepted=false。
+
 2026-09-23 本轮回归收尾（confirmed）：生产候选14dfae7c；本机后端完整3465 passed/73 skipped/2 warnings（966.88秒），前端5471通过，类型/lint/OpenAPI/Ruff/mypy407/前后端构建通过。产物sidecar首次15秒就绪超时；诊断3545ms且健康200，原15秒复测通过，但首发原因未明，不能声称修复。单次新三平台35811305102仍运行，旧c9矩阵因新增checkpoint修复取消。后续aef0f412仅测试/记录，与候选生产源码一致但其新增断言不在该矩阵。releaseAccepted=false。
 
 2026-09-23 XE-G02 子范围复核（confirmed）：本机真实 success/manual-stop 两场景 2 passed/32 deselected（25.21 秒），分别证明有限两次参数运行/日志输出/同键重放/资源回收，以及实际人工等待后的取消和清理；独立通用核心场景证明准备内容不被后续文档编辑替换。强停、归属不明的退出核验与安装包/三平台整组门禁仍未闭合。当前 246 有范围断言/5 未定位、203 partial/48 planned/0 verified，不按数量判断完成率。

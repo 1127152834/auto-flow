@@ -29,8 +29,7 @@ from autoflow.domain.projects.models import ProjectError
 END_TERMINAL_PHASES = frozenset({"completed", "saved_unlinked", "failed"})
 
 
-def save_environment(service, project_id: str, key: str, payload: dict[str, Any]):
-    service._writable(project_id)
+def save_environment(service, project_id: str, key: str, payload: dict[str, Any], *, parent_end=None):
     now = datetime.now(UTC)
     instance_id = payload["instanceId"]
     mode = payload["mode"]
@@ -49,16 +48,18 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
         "request": payload,
     }
     operation = service._command(key, "saveEnvironment", project_id, instance.environment_id, canonical, now)
-    accepted, replayed = service.environments.accept_operation(operation)
+    authoritative_generation = service.execution_generation_of(instance)
+    accepted, replayed = service.environments.accept_operation(operation, retention_request=payload, parent_end=parent_end)
     if replayed and accepted.result is not None:
         if accepted.result.get('phase') in {'completed', 'saved_unlinked'} and instance.state == 'closed' and instance.environment_id:
             service.environments.release_occupancy(instance.environment_id, instance_id)
         return accepted.result, accepted, True
     _reject_replayed_failure(accepted)
-    authoritative_generation = service.execution_generation_of(instance)
     claimed_generation = payload.get("currentExecutionGeneration")
     live_generation = (
-        authoritative_generation
+        payload['executionGeneration']
+        if replayed or parent_end is not None
+        else authoritative_generation
         if authoritative_generation is not None
         else (
             claimed_generation
@@ -296,7 +297,6 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
     and never answers with an empty outcome.
     """
 
-    service._writable(project_id)
     now = datetime.now(UTC)
     retain = payload.get("retainEnvironment") or {"enabled": False}
     wants_retain = bool(retain.get("enabled"))
@@ -305,7 +305,7 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
     operation = service._command(
         key, "saveEnvironment", project_id, payload.get("instanceId"), canonical, now
     )
-    accepted, replayed = service.environments.accept_operation(operation)
+    accepted, replayed = service.environments.accept_operation(operation, retention_request=payload)
     if replayed and accepted.result is not None:
         return accepted.result, accepted, True
     _reject_replayed_failure(accepted)
@@ -378,7 +378,7 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
         }
         save_key = f"end-save:{accepted.operation_id}"
         outcome, save_operation, _save_replayed = save_environment(
-            service, project_id, save_key, save_payload
+            service, project_id, save_key, save_payload, parent_end=accepted
         )
         ledger["saveId"] = save_operation.operation_id
         if outcome is None:

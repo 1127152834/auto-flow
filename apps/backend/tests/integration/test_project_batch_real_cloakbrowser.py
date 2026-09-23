@@ -168,8 +168,8 @@ async def test_real_project_batch_http(
         accept, transition = repository.accept_operation, repository.transition_manual
         expired = threading.Event()
 
-        def pending_resume_until_expiry(operation):
-            result = accept(operation)
+        def pending_resume_until_expiry(operation, **kwargs):
+            result = accept(operation, **kwargs)
             if operation.kind == 'resumeManual':
                 assert expired.wait(8), 'expiry must win while the HTTP command is in flight'
             return result

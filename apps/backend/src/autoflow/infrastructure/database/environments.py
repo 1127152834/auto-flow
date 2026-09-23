@@ -670,7 +670,7 @@ class SqlAlchemyEnvironments:
                 "operationId": row.operation_id,
             }
 
-    def accept_operation(self, operation: ProjectOperation):
+    def accept_operation(self, operation: ProjectOperation, *, retention_request=None, parent_end: ProjectOperation | None = None):
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             existing = session.scalar(
@@ -682,6 +682,37 @@ class SqlAlchemyEnvironments:
                 self._match(existing, operation)
                 session.rollback()
                 return _operation(existing), True
+            if retention_request is not None:
+                from .project_data import SqlAlchemyProjectData
+
+                if operation.project_id is None or operation.kind != 'saveEnvironment':
+                    raise ProjectError('CAPABILITY_SCOPE_DENIED', '保存缺少项目身份', 403)
+                project = SqlAlchemyProjectData._guard_project_read(session, operation.project_id)
+                instance = session.get(ProjectEnvironmentInstanceRow, retention_request['instanceId'])
+                if instance is None or instance.project_id != operation.project_id:
+                    raise ProjectError('INSTANCE_NOT_FOUND', '环境实例不存在', 404)
+                if parent_end is not None:
+                    parent = session.get(ProjectOperationRow, parent_end.operation_id)
+                    ledger = session.scalar(select(ProjectEndOperationRow).where(ProjectEndOperationRow.operation_id == parent_end.operation_id))
+                    if (parent is None or parent.project_id != operation.project_id or parent.kind != 'saveEnvironment'
+                        or parent.status not in {'accepted', 'running', 'reconciling'}
+                        or parent.resource.get('environmentId') != instance.id
+                        or operation.idempotency_key != f'end-save:{parent.id}'
+                        or ledger is None or ledger.phase != 'saving' or not ledger.retain_environment
+                        or ledger.task_id != instance.active_task_id or ledger.run_id != instance.active_run_id):
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', '保存缺少已受理的 End 操作', 403)
+                    self._match(parent, parent_end)
+                if not (parent_end is not None and project.lifecycle_state == 'closing'):
+                    SqlAlchemyProjectData._guard_project_write(session, operation.project_id)
+                if parent_end is None:
+                    run = session.get(WorkflowRunRow, instance.active_run_id) if instance.active_run_id else None
+                    if run is not None and (run.execution_generation != retention_request['executionGeneration']
+                        or (run.status not in {'running', 'waiting_manual'} and instance.state != 'retained_unsaved')):
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', '运行代次已撤销，不能接受新保存', 403)
+                    if 'taskId' in retention_request and (retention_request['taskId'] != instance.active_task_id or retention_request['runId'] != instance.active_run_id):
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', 'End 与当前环境任务不一致', 403)
+                    if instance.instance_use_generation != retention_request['expectedUseGeneration']:
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', '环境使用代次已变化', 403)
             session.add(_operation_row(operation))
             session.commit()
             return operation, False
@@ -1086,7 +1117,8 @@ class SqlAlchemyEnvironments:
         return row
 
     def _match(self, existing: ProjectOperationRow, operation: ProjectOperation) -> None:
-        if existing.request_digest != operation.request_digest:
+        if (existing.project_id != operation.project_id or existing.kind != operation.kind
+            or existing.request_digest != operation.request_digest):
             raise ProjectError(
                 "OPERATION_PAYLOAD_MISMATCH",
                 "Idempotent command payload does not match",
