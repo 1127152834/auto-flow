@@ -9,7 +9,6 @@ from threading import Thread
 from uuid import uuid4
 
 import pytest
-
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 from autoflow.infrastructure.process.project_test_browser_worker import (
     browser_worker_payload,
@@ -26,14 +25,20 @@ def real_cloak_page():
         pytest.skip('set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable')
     executable = Path(configured).resolve(strict=True)
     page = Path(__file__).parents[1] / 'fixtures' / 'project-management' / 'index.html'
+    network_page = Path(__file__).parents[1] / 'fixtures' / 'workflow-project-network-monitor.html'
     requests = []
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             requests.append(self.path)
-            content = page.read_bytes()
+            if self.path.startswith('/api/orders'):
+                content, content_type = b'{"ok":true}', 'application/json'
+            elif self.path.startswith('/network-monitor'):
+                content, content_type = network_page.read_bytes(), 'text/html; charset=utf-8'
+            else:
+                content, content_type = page.read_bytes(), 'text/html; charset=utf-8'
             self.send_response(200)
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Type', content_type)
             self.send_header('Content-Length', str(len(content)))
             self.end_headers()
             self.wfile.write(content)
@@ -116,6 +121,7 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         SqlAlchemyWorkflowRuntimeRepository,
     )
     from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+
     from tests.fixtures.workflows import workflow_payload
 
     executable, url, _ = real_cloak_page

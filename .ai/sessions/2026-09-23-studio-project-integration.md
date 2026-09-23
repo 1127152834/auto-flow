@@ -374,3 +374,9 @@
 - 已迁入的冻结 WebRPA `wait`、`assert_checkpoint`、`stop_workflow` 执行器接入项目目录 154→157。项目输出边界读取断言写入的布尔变量，停止节点后的步骤不会执行。
 - 项目真实 worker、两任务 CloakBrowser 元素等待与断言、原版差分及关联回归通过；正式 Electron 开发入口和 macOS arm64 本地未签名包经真实 UI 配置、保存、正常关窗、项目运行及任务结果验收。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/control-primitives-2026-09-24/README.md`。
 - Studio 有效范围 213 不变，项目目录余下 56 个节点。项目网络采集尚需核实大输出事件合同；Intel/Windows 与用户数据库未实测。
+
+## 项目任务网页网络采集节点族（2026-09-24，confirmed）
+
+- 冻结 WebRPA 的 `network_capture`、`network_monitor_start`、`network_monitor_wait`、`network_monitor_stop` 通过现有 CloakBrowser 监听器接入项目任务目录 157→161；项目输出读取执行器实际变量，worker 输入维持 1 MiB、输出事件上限 16 MiB。大输出回执、网络差分及项目关联回归通过。
+- 正式 Electron 开发入口与 macOS arm64 未签名包均以真实 UI 保存六节点网络流程，项目任务在临时工作区捕获两次受控请求并展示三个脱敏输出，浏览器完成清理。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/network-family-2026-09-24/README.md`。Studio 的 213 节点范围未变，项目任务目录余下 52 个。
+- 网络抓包面板移除 Web 范围外的系统／代理模式；旧文档显示明确修正提示。等待请求超时按执行器实际秒单位呈现。扩大字段台账时发现 14 个已排除通知节点历史用例在加载阶段崩溃，现以单独测试提交 `0103fdfc` 显式核对排除范围；完整字段台账另有 28 个 AI 面板清单差异，未据此宣称全量通过。Intel/Windows、用户数据库及真实公网服务未实测。

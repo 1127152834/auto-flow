@@ -75,16 +75,35 @@ it('NODE.download_file.conditional-ui: swaps selector and direct URL without los
   expect(nodeData(id).downloadMode).toBe('url')
 })
 
-it.each([
-  ['browser', '浏览器抓包', '模糊匹配URL', '过滤类型'],
-  ['system', '全局系统抓包', '模糊匹配IP/进程名', '目标进程名（可选）'],
-  ['proxy', '代理抓包（模拟器/手机）', '模糊匹配URL，如: .m3u8', '代理端口'],
-] as const)('NODE.network_capture.conditional-ui: renders %s mode fields', (mode, option, placeholder, marker) => {
-  const { id } = open('network_capture', { captureMode: mode === 'browser' ? 'system' : 'browser' })
-  choose('抓包模式', option)
-  expect(screen.getByPlaceholderText(placeholder)).toBeDefined()
-  expect(screen.getByText(marker)).toBeDefined()
-  expect(nodeData(id).captureMode).toBe(mode)
+it('NODE.network_capture.conditional-ui: configures approved browser mode only', () => {
+  const { id } = open('network_capture')
+  expect(screen.getByPlaceholderText('模糊匹配URL')).toBeDefined()
+  expect(screen.getByText('过滤类型')).toBeDefined()
+  fireEvent.keyDown(screen.getByRole('combobox', { name: '抓包模式' }), { key: 'ArrowDown' })
+  expect(screen.getByRole('option', { name: '浏览器抓包' })).toBeDefined()
+  expect(screen.queryByRole('option', { name: '全局系统抓包' })).toBeNull()
+  expect(screen.queryByRole('option', { name: '代理抓包（模拟器/手机）' })).toBeNull()
+  expect(nodeData(id).captureMode).toBeUndefined()
+})
+
+it.each(['system', 'proxy'] as const)('NODE.network_capture.conditional-ui: legacy %s mode requires explicit browser selection', (mode) => {
+  const { id } = open('network_capture', { captureMode: mode })
+  expect(screen.getByRole('alert').textContent).toContain('不属于当前 Web 自动化范围')
+  expect(screen.queryByText('目标进程名（可选）')).toBeNull()
+  expect(screen.queryByText('代理端口')).toBeNull()
+  choose('抓包模式', '浏览器抓包')
+  expect(nodeData(id).captureMode).toBe('browser')
+})
+
+it('NODE.network_monitor_wait.timeout-ui: uses seconds and flags old millisecond values', () => {
+  const current = open('network_monitor_wait')
+  expect(screen.getByText('超时时间（秒）')).toBeDefined()
+  expect((document.querySelector('#timeout') as HTMLInputElement).value).toBe('30')
+  current.unmount()
+  const legacy = open('network_monitor_wait', { timeout: 30000 })
+  expect(screen.getByRole('alert').textContent).toContain('30000 改为 30')
+  fireEvent.change(document.querySelector('#timeout')!, { target: { value: '30' } })
+  expect(nodeData(legacy.id).timeout).toBe(30)
 })
 
 it('NODE.set_clipboard.conditional-ui: swaps literal text and image picker branches', () => {

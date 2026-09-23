@@ -1,0 +1,43 @@
+{
+  "evidenceId": "BE-project-network-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T18:08:25.788Z",
+  "gitHead": "b7f2bbb3991768bf5c73183d7d15399c51f2c7c8",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "17af39f0-f5e2-41f0-b40c-eacfa7766199",
+  "workflowId": "ZAiCyO311GzF7Cw7g04Qr",
+  "batchId": "1fa2eedd-03bd-4a0d-b85c-3e9ebfd1d929",
+  "taskId": "89b7cf11-d448-413d-b815-d77b08967dab",
+  "sawCloakBrowser": true,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 经真实 UI 配置并保存网页打开、网络监听、点击、请求等待、停止监听及抓包流程",
+    "项目任务在真实 CloakBrowser 中捕获两次受控请求，三个变量和脱敏内容均可持久读取",
+    "正式项目任务页展示网络采集输出，CloakBrowser 已关闭，临时工作区未触碰用户数据"
+  ],
+  "requestTrace": [
+    [
+      "GET",
+      "/network-monitor"
+    ],
+    [
+      "GET",
+      "/favicon.ico"
+    ],
+    [
+      "GET",
+      "/api/orders?token=fixture-secret"
+    ],
+    [
+      "GET",
+      "/api/orders?token=fixture-secret"
+    ]
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

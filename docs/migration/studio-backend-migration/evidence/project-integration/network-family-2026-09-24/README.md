@@ -1,0 +1,8 @@
+# 项目任务网页网络采集节点族（2026-09-24）
+
+- `network_capture`、`network_monitor_start`、`network_monitor_wait`、`network_monitor_stop` 复用已迁入的冻结 WebRPA 执行器，进入项目任务目录 157→161；批准的 Studio 213 节点范围不变，项目任务目录余下 52 个。共享 CloakBrowser 请求监听器负责当前页面、10,000 条／8 MiB 上限和敏感字段脱敏。项目 worker 的输入仍限 1 MiB，输出事件放宽到 16 MiB，以容纳真实抓包结果，不扩大命令输入边界。
+- [项目真实 CloakBrowser 双任务测试](../../../../../../apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py)验证主应用默认 Profile、两次受控请求、首条／全部请求和 URL 列表三项输出及进程清理；[进程协议测试](../../../../../../apps/backend/tests/integration/test_workflow_worker_process.py)验证大于旧 1 MiB 的输出在持久化回执后完成，超过 16 MiB 明确拒绝。关联后端 71 项、前端网络配置 52 项与字段专项 9 项通过；Ruff、mypy、TypeScript、ESLint、OpenAPI、目录检查及 renderer/main/preload 构建通过。
+- 正式 Electron [开发入口](../formal-project-network-electron-vA1eRE/result.json)及[本地未签名 macOS arm64 包](../formal-project-network-electron-3wdotI/result.json)均由主窗口真实点击进入 Studio，配置六节点、保存、正常关窗并运行项目任务；项目任务页显示三个网络输出，受控网页的两次请求与运行记录一致，CloakBrowser 已清理。测试使用独立临时工作区，未修改用户数据库。
+- `network_capture` 属性面板仅展示批准的浏览器抓包模式。旧文档中的系统／代理模式不静默转换，提示用户明确选择；这两个模式的专属参数不再显示。`network_monitor_wait.timeout` 前后端统一按秒，默认 30；旧毫秒数显示修正提示。上述为 AutoFlow Web 范围及冻结源码单位冲突的必要适配，其余执行器算法保持原版。
+- 包内 `app.asar` SHA-256：`6e7de4e80636aa7bb855a9dcaa19ec0a38708d615ecb278a3cc5fff08eb10127`；冻结后端：`f88a46640983d680c7caecd4d022f4ffa3dec18a2397586e58387aca00fec664`；Electron：`afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7`。验收脚本在源码提交前启动，JSON 中的 `gitHead` 是其启动基线；以上哈希标识实际包内容。
+- 扩大前端字段台账测试时，14 个已排除通知节点的历史用例由[显式范围断言](../../../../../../apps/desktop/src/renderer/domains/workflows/tests/catalog-field-contract.test.ts)覆盖。完整字段台账仍有 28 个 AI 配置字段因另一批尚未整合的组件清单与当前面板不一致而失败；本族 9 项专项通过，不能把完整台账宣称通过。macOS Intel、Windows、用户数据库与真实公网服务未实测。

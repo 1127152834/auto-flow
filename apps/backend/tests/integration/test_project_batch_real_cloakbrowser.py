@@ -29,7 +29,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -186,6 +186,25 @@ async def test_real_project_batch_http(
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
+        elif scenario == "network_capture":
+            network_url = url.replace("/fixture", "/network-monitor")
+            steps = [
+                ("open_page", {"url": network_url, "openMode": "current_tab"}),
+                ("network_monitor_start", {"monitorId": "orders", "filterType": "api", "urlPattern": "/api/"}),
+                ("click_element", {"selector": "#request-orders"}),
+                ("network_monitor_wait", {"monitorId": "orders", "urlPattern": "/api/orders", "timeout": 5, "captureMode": "first", "variableName": "first_request"}),
+                ("network_monitor_stop", {"monitorId": "orders", "variableName": "all_requests"}),
+                ("network_capture", {"captureMode": "browser", "captureDuration": 4, "searchKeyword": "/api/orders", "variableName": "captured_urls"}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"network-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"network-edge-{index}", "source": f"network-{index}", "target": f"network-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            document["content"]["variables"] = []
         elif scenario == "advanced_browser":
             upload = tmp_path / "project-upload.txt"
             upload.write_text("AutoFlow 上传", encoding="utf-8")
@@ -239,7 +258,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives"}:
+            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -268,7 +287,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives"} else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives", "network_capture"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -351,7 +370,23 @@ async def test_real_project_batch_http(
                 json=payload,
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
-            if scenario == "control_primitives":
+            if scenario == "network_capture":
+                assert detail["statusCounts"]["succeeded"] == 2 and len([path for path in requests if path.startswith('/api/orders')]) >= 4
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    attempts = await client.get(task_path + "/node-attempts", params={"pageSize": 100})
+                    outputs = await client.get(task_path + "/outputs")
+                    assert attempts.status_code == outputs.status_code == 200
+                    assert attempts.json()["total"] == len(steps)
+                    values = {item["name"]: item["value"] for item in outputs.json()["items"]}
+                    assert set(values) == {"first_request", "all_requests", "captured_urls"}
+                    assert values["first_request"]["method"] == "GET"
+                    assert values["first_request"]["headers"]["authorization"] == "[已隐藏]"
+                    assert len(values["all_requests"]) == 1
+                    assert len(values["captured_urls"]) == 1
+                    assert "/api/orders" in values["captured_urls"][0]
+                    assert "fixture-secret" not in str(values)
+            elif scenario == "control_primitives":
                 assert detail["statusCounts"]["succeeded"] == 2
                 for task in tasks:
                     task_path = prefix + f"/tasks/{task['taskId']}"

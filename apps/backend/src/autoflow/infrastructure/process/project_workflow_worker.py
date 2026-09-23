@@ -20,6 +20,7 @@ from autoflow.infrastructure.process.project_test_browser_worker import (
 )
 
 MAX_MESSAGE_BYTES = 1024 * 1024
+MAX_EVENT_BYTES = 16 * 1024 * 1024
 WorkerStatus = Literal["succeeded", "failed", "cancelled", "timed_out"]
 
 
@@ -134,7 +135,7 @@ class ProjectWorkflowWorkerManager:
             spawn = asyncio.create_task(asyncio.create_subprocess_exec(
                 *self._command, stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
-                env=env, limit=MAX_MESSAGE_BYTES, **group,
+                env=env, limit=MAX_EVENT_BYTES, **group,
             ))
             try:
                 worker.process = await asyncio.shield(spawn)
@@ -224,7 +225,7 @@ class ProjectWorkflowWorkerManager:
             raw = await worker.process.stdout.readline()
             if not raw:
                 raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程失联，运行结果待核验")
-            if len(raw) > MAX_MESSAGE_BYTES or not raw.endswith(b"\n"):
+            if len(raw) > MAX_EVENT_BYTES or not raw.endswith(b"\n"):
                 raise _protocol_error()
             value = json.loads(raw)
         except (ValueError, UnicodeError):

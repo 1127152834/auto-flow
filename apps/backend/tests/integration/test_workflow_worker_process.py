@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import asyncio
 import sys
+from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
     WorkflowWorkerError,
+)
+from autoflow.providers.browser.project_workflow_worker import (
+    MAX_EVENT_JSONL_BYTES,
+    ProtocolFailure,
+    _write,
 )
 
 CHILD = r'''
@@ -22,6 +27,9 @@ def send(type, **data):
  print(json.dumps(value), flush=True)
 send('ready')
 e=dict(eventId='event-1',runId=c['runId'],executionGeneration=c['executionGeneration'],kind='nodeAttempt',nodeId='open',nodeVisitId='visit-1',attempt=1,occurredAt='2026-09-15T00:00:00+00:00',payload={'status':'running'})
+if os.environ.get('MODE')=='large-output':
+ e['kind']='output'
+ e['payload']={'name':'captured','value':['x'*2048]*1024}
 if os.environ.get('MODE')=='wrong-run': e['runId']='other'
 if os.environ.get('MODE')=='unterminated':
  sys.stdout.write(json.dumps(dict(type='event',protocolVersion=1,runId=c['runId'],executionGeneration=c['executionGeneration'],event=e)))
@@ -91,6 +99,31 @@ def start(instance, executable, on_event):
         parameters={}, variables={}, browser={'headless': True},
         executable=executable, on_event=on_event,
     )
+
+
+@pytest.mark.asyncio
+async def test_large_project_output_reaches_durable_callback_before_ack(tmp_path):
+    instance, executable = manager(tmp_path, 'large-output')
+    received = []
+
+    async def persist(event):
+        received.append(event)
+
+    outcome = await start(instance, executable, persist)
+    assert outcome.status == 'succeeded'
+    assert len(received) == 1
+    assert len(received[0]['payload']['value']) == 1024
+    assert all(len(item) == 2048 for item in received[0]['payload']['value'])
+    assert (tmp_path / 'proof').read_text() == 'after-ack'
+    assert not instance.busy()
+
+
+def test_worker_event_limit_accepts_captured_results_but_rejects_unbounded_output():
+    stream = StringIO()
+    _write(stream, {'type': 'event', 'value': 'x' * (2 * 1024 * 1024)})
+    assert len(stream.getvalue()) > 2 * 1024 * 1024
+    with pytest.raises(ProtocolFailure, match='WORKFLOW_OUTPUT_TOO_LARGE'):
+        _write(StringIO(), {'type': 'event', 'value': 'x' * MAX_EVENT_JSONL_BYTES})
 
 
 @pytest.mark.asyncio

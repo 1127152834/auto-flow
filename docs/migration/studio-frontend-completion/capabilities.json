@@ -6699,9 +6699,9 @@
       },
       {
         "id": "NODE.network_capture.field.proxyPort",
-        "status": "已实现且已验收",
-        "level": "catalog mapping + Store export/import",
-        "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/catalog-field-contract.test.ts"
+        "status": "明确排除",
+        "level": "仅属于系统/代理抓包，旧文档保留原值但当前 Web 自动化不提供配置入口",
+        "evidencePath": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md"
       },
       {
         "id": "NODE.network_capture.field.searchKeyword",
@@ -6711,15 +6711,15 @@
       },
       {
         "id": "NODE.network_capture.field.targetPorts",
-        "status": "已实现且已验收",
-        "level": "catalog mapping + Store export/import",
-        "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/catalog-field-contract.test.ts"
+        "status": "明确排除",
+        "level": "仅属于系统/代理抓包，旧文档保留原值但当前 Web 自动化不提供配置入口",
+        "evidencePath": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md"
       },
       {
         "id": "NODE.network_capture.field.targetProcess",
-        "status": "已实现且已验收",
-        "level": "catalog mapping + Store export/import",
-        "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/catalog-field-contract.test.ts"
+        "status": "明确排除",
+        "level": "仅属于系统/代理抓包，旧文档保留原值但当前 Web 自动化不提供配置入口",
+        "evidencePath": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md"
       },
       {
         "id": "NODE.network_capture.field.variableName",
@@ -6812,10 +6812,7 @@
         "captureDuration",
         "captureMode",
         "filterType",
-        "proxyPort",
         "searchKeyword",
-        "targetPorts",
-        "targetProcess",
         "variableName"
       ],
       "verifiedTextFields": [],
@@ -6935,7 +6932,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser动作及正式Electron UI保存、恢复、执行、Excel产物哈希、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/network-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的 WebRPA 网页网络执行器；项目真实 worker、正式 Electron 开发入口和本地 macOS arm64 包均验证两次请求捕获、变量输出、脱敏及资源清理。"
+      }
     }
   },
   {
@@ -7145,7 +7148,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser请求捕获及正式Electron UI保存、恢复、执行、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/network-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的 WebRPA 网页网络执行器；项目真实 worker、正式 Electron 开发入口和本地 macOS arm64 包均验证两次请求捕获、变量输出、脱敏及资源清理。"
+      }
     }
   },
   {
@@ -7403,7 +7412,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser请求捕获及正式Electron UI保存、恢复、执行、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/network-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的 WebRPA 网页网络执行器；项目真实 worker、正式 Electron 开发入口和本地 macOS arm64 包均验证两次请求捕获、变量输出、脱敏及资源清理。"
+      }
     }
   },
   {
@@ -7598,7 +7613,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser请求捕获及正式Electron UI保存、恢复、执行、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/network-family-2026-09-24/README.md",
+        "boundary": "复用已迁入的 WebRPA 网页网络执行器；项目真实 worker、正式 Electron 开发入口和本地 macOS arm64 包均验证两次请求捕获、变量输出、脱敏及资源清理。"
+      }
     }
   },
   {

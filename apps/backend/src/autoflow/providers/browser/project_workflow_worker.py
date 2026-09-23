@@ -29,6 +29,7 @@ from autoflow.providers.model import WorkflowModelGateway
 
 PROTOCOL_VERSION = 1
 MAX_JSONL_BYTES = 1024 * 1024
+MAX_EVENT_JSONL_BYTES = 16 * 1024 * 1024
 MAX_SCREENSHOT_BYTES = 20 * 1024 * 1024
 FAILURE_SCREENSHOT_TIMEOUT_SECONDS = 5.0
 
@@ -210,7 +211,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
             "occurredAt": datetime.now(UTC).isoformat().replace("+00:00", "Z"), "payload": payload,
         }
         message = _envelope(command, "event", event=event)
-        output_too_large = _jsonl_size(message) > MAX_JSONL_BYTES
+        output_too_large = _jsonl_size(message) > MAX_EVENT_JSONL_BYTES
         if output_too_large:
             event["kind"] = "nodeAttempt"
             event["payload"] = {
@@ -450,7 +451,7 @@ def _read_jsonl(stdin: TextIO) -> dict[str, Any]:
 
 def _write(stdout: TextIO, message: dict[str, object]) -> None:
     raw = json.dumps(message, ensure_ascii=False, separators=(",", ":")) + "\n"
-    if len(raw.encode("utf-8")) > MAX_JSONL_BYTES:
+    if len(raw.encode("utf-8")) > MAX_EVENT_JSONL_BYTES:
         raise ProtocolFailure("WORKFLOW_OUTPUT_TOO_LARGE")
     stdout.write(raw)
     stdout.flush()

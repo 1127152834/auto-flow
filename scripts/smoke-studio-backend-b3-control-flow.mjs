@@ -29,12 +29,13 @@ const projectLogOnly = process.env.AUTOFLOW_PROJECT_LOG_TASK === '1'
 const projectTableOnly = process.env.AUTOFLOW_PROJECT_TABLE_TASK === '1'
 const projectHttpOnly = process.env.AUTOFLOW_PROJECT_HTTP_TASK === '1'
 const projectControlPrimitivesOnly = process.env.AUTOFLOW_PROJECT_CONTROL_PRIMITIVES_TASK === '1'
-const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly
+const projectNetworkOnly = process.env.AUTOFLOW_PROJECT_NETWORK_TASK === '1'
+const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly || projectNetworkOnly
 const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -63,6 +64,18 @@ try {
       const bytes = Buffer.from(JSON.stringify(result))
       response.writeHead(200, { 'content-type': 'application/json', 'content-length': bytes.length })
       response.end(bytes)
+    })
+    await new Promise(resolve => httpFixture.listen(0, '127.0.0.1', resolve))
+    httpOrigin = `http://127.0.0.1:${httpFixture.address().port}`
+  }
+  if (projectNetworkOnly) {
+    const page = await readFile(join(root, 'apps/backend/tests/fixtures/workflow-project-network-monitor.html'))
+    httpFixture = createServer((request, response) => {
+      httpRequests.push([request.method, request.url])
+      const api = request.url?.startsWith('/api/orders')
+      const body = api ? Buffer.from('{"ok":true}') : page
+      response.writeHead(200, { 'content-type': api ? 'application/json' : 'text/html; charset=utf-8', 'content-length': body.length })
+      response.end(body)
     })
     await new Promise(resolve => httpFixture.listen(0, '127.0.0.1', resolve))
     httpOrigin = `http://127.0.0.1:${httpFixture.address().port}`
@@ -114,7 +127,7 @@ try {
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   if (projectFamilyOnly) {
-    const name = projectMathOnly ? '项目列表与数学任务验收' : projectUtilityOnly ? '项目实用工具任务验收' : projectWebBasicOnly ? '项目基础网页任务验收' : projectAdvancedOnly ? '项目高级网页与产物任务验收' : projectTabSwitchOnly ? '项目标签页切换任务验收' : projectVariableOnly ? '项目变量处理任务验收' : projectListExportOnly ? '项目列表导出任务验收' : projectLogOnly ? '项目日志任务验收' : projectTableOnly ? '项目表格提取与导出任务验收' : projectHttpOnly ? '项目HTTP节点任务验收' : projectControlPrimitivesOnly ? '项目等待断言停止任务验收' : '项目页面加载任务验收'
+    const name = projectMathOnly ? '项目列表与数学任务验收' : projectUtilityOnly ? '项目实用工具任务验收' : projectWebBasicOnly ? '项目基础网页任务验收' : projectAdvancedOnly ? '项目高级网页与产物任务验收' : projectTabSwitchOnly ? '项目标签页切换任务验收' : projectVariableOnly ? '项目变量处理任务验收' : projectListExportOnly ? '项目列表导出任务验收' : projectLogOnly ? '项目日志任务验收' : projectTableOnly ? '项目表格提取与导出任务验收' : projectHttpOnly ? '项目HTTP节点任务验收' : projectControlPrimitivesOnly ? '项目等待断言停止任务验收' : projectNetworkOnly ? '项目网页网络采集任务验收' : '项目页面加载任务验收'
     await newWorkflow(studio, name)
     if (projectMathOnly) await addGlobalVariable(studio, 'items', 'array', '[1,2,3]')
     if (projectVariableOnly) await addGlobalVariable(studio, 'payload', 'string', '{"items":[{"name":"甲"},{"name":"乙"}]}')
@@ -273,6 +286,24 @@ try {
       await addBlock(studio, '添加模块', '设置变量')
       await setInput(studio, '[placeholder="变量名"]', 'must_not_run')
       await setInput(studio, '[placeholder="变量的值"]', 'unexpected')
+    } else if (projectNetworkOnly) {
+      await addBlock(studio, '添加模块', '打开网页')
+      await setInput(studio, '[placeholder="https://example.com"]', `${httpOrigin}/network-monitor`)
+      await addBlock(studio, '添加模块', '开始网络监听')
+      await setInput(studio, '[placeholder="监听器唯一标识，默认: default"]', 'orders')
+      await addBlock(studio, '添加模块', '点击元素')
+      await setInput(studio, '[placeholder="例如: #button, .submit"]', '#request-orders')
+      await addBlock(studio, '添加模块', '等待API请求')
+      await setInput(studio, '[placeholder="监听器唯一标识，默认: default"]', 'orders')
+      await setInput(studio, '[placeholder^="如: /api/user"]', '/api/orders')
+      await setVariableNameInput(studio, '[placeholder="存储请求信息的变量名"]', 'first_request')
+      await addBlock(studio, '添加模块', '停止网络监听')
+      await setInput(studio, '[placeholder="监听器唯一标识，默认: default"]', 'orders')
+      await setVariableNameInput(studio, '[placeholder="存储所有捕获请求的变量名"]', 'all_requests')
+      await addBlock(studio, '添加模块', '网络抓包')
+      await setInput(studio, '[placeholder="模糊匹配URL"]', '/api/orders')
+      await setInput(studio, '#captureDuration', '4')
+      await setVariableNameInput(studio, '[placeholder="存储捕获结果的变量名"]', 'captured_urls')
     } else {
       await addBlock(studio, '添加模块', '打开网页')
       await setInput(studio, '[placeholder="https://example.com"]', pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href)
@@ -283,21 +314,23 @@ try {
     await click(studio, '保存')
     const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project math saved', 15_000)
     assert.ok(saved && saved.projectId === projectId)
-    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), projectMathOnly ? ['list_sum', 'math_round', 'math_abs'] : projectUtilityOnly ? ['url_encode_decode', 'md5_encrypt', 'sha_encrypt'] : projectWebBasicOnly ? ['open_page', 'use_opened_page', 'wait_element', 'hover_element', 'get_element_info'] : projectAdvancedOnly ? ['open_page', 'select_dropdown', 'set_checkbox', 'save_image', 'download_file', 'get_child_elements'] : projectTabSwitchOnly ? ['open_page', 'open_page', 'switch_tab', 'get_element_info', 'switch_tab', 'get_element_info'] : projectVariableOnly ? ['json_parse', 'random_number', 'get_time'] : projectListExportOnly ? ['list_export', 'list_export'] : projectLogOnly ? ['print_log', 'export_log'] : projectTableOnly ? ['open_page', 'extract_table_data', 'table_add_row', 'table_add_column', 'table_set_cell', 'table_get_cell', 'table_export', 'table_export', 'table_delete_row', 'table_clear'] : projectHttpOnly ? ['api_trigger', 'api_request', 'webhook_request', 'notify_webhook'] : projectControlPrimitivesOnly ? ['wait', 'assert_checkpoint', 'stop_workflow', 'set_variable'] : ['open_page', 'wait_page_load', 'page_load_complete'])
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), projectMathOnly ? ['list_sum', 'math_round', 'math_abs'] : projectUtilityOnly ? ['url_encode_decode', 'md5_encrypt', 'sha_encrypt'] : projectWebBasicOnly ? ['open_page', 'use_opened_page', 'wait_element', 'hover_element', 'get_element_info'] : projectAdvancedOnly ? ['open_page', 'select_dropdown', 'set_checkbox', 'save_image', 'download_file', 'get_child_elements'] : projectTabSwitchOnly ? ['open_page', 'open_page', 'switch_tab', 'get_element_info', 'switch_tab', 'get_element_info'] : projectVariableOnly ? ['json_parse', 'random_number', 'get_time'] : projectListExportOnly ? ['list_export', 'list_export'] : projectLogOnly ? ['print_log', 'export_log'] : projectTableOnly ? ['open_page', 'extract_table_data', 'table_add_row', 'table_add_column', 'table_set_cell', 'table_get_cell', 'table_export', 'table_export', 'table_delete_row', 'table_clear'] : projectHttpOnly ? ['api_trigger', 'api_request', 'webhook_request', 'notify_webhook'] : projectControlPrimitivesOnly ? ['wait', 'assert_checkpoint', 'stop_workflow', 'set_variable'] : projectNetworkOnly ? ['open_page', 'network_monitor_start', 'click_element', 'network_monitor_wait', 'network_monitor_stop', 'network_capture'] : ['open_page', 'wait_page_load', 'page_load_complete'])
     if (projectTabSwitchOnly) {
       assert.equal(saved.nodes[2].data.switchMode, 'title')
       assert.equal(saved.nodes[4].data.switchMode, 'last')
     }
     if (projectVariableOnly) assert.deepEqual(saved.nodes.map(node => node.data.variableName), ['parsed', 'pick', 'today'])
     if (projectMathOnly) assert.equal(saved.nodes[1].data.resultVariable, 'rounded')
-    assert.equal(saved.edges.length, projectTableOnly ? 9 : projectHttpOnly || projectControlPrimitivesOnly ? 3 : projectListExportOnly || projectLogOnly ? 1 : projectAdvancedOnly || projectTabSwitchOnly ? 5 : projectWebBasicOnly ? 4 : 2)
+    assert.equal(saved.edges.length, projectTableOnly ? 9 : projectNetworkOnly || projectAdvancedOnly || projectTabSwitchOnly ? 5 : projectHttpOnly || projectControlPrimitivesOnly ? 3 : projectListExportOnly || projectLogOnly ? 1 : projectWebBasicOnly ? 4 : 2)
     if (projectListExportOnly) assert.deepEqual(saved.nodes.map(node => node.data.appendMode ?? false), [false, true])
+    if (projectNetworkOnly) checkpoint('正式项目 Studio 经真实 UI 配置并保存网页打开、网络监听、点击、请求等待、停止监听及抓包流程')
+    else
     checkpoint(projectMathOnly ? '正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程' : projectUtilityOnly ? '正式项目 Studio 通过真实 UI 配置并保存 URL 编码、MD5 和 SHA 顺序流程' : projectWebBasicOnly ? '正式项目 Studio 通过真实 UI 配置并保存网页打开、匹配、等待、悬停和提取顺序流程' : projectAdvancedOnly ? '正式项目 Studio 通过真实 UI 配置并保存下拉选择、勾选、图片、下载和子元素流程' : projectTabSwitchOnly ? '正式项目 Studio 通过真实 UI 配置并保存打开两个页面、按标题和最后一页切换、分别提取元素的流程' : projectVariableOnly ? '正式项目 Studio 通过真实 UI 声明变量并保存 JSON解析、随机数和时间流程' : projectListExportOnly ? '正式项目 Studio 通过真实 UI 声明列表变量并保存覆盖、追加两个列表导出节点' : projectLogOnly ? '正式项目 Studio 通过真实 UI 配置并保存打印日志与导出日志流程' : projectTableOnly ? '正式项目 Studio 通过真实 UI 配置并保存网页表格提取、数据表操作与文件导出流程' : projectHttpOnly ? '正式项目 Studio 通过真实 UI 配置并保存 API 轮询、HTTP 请求、Webhook 请求与通知流程' : projectControlPrimitivesOnly ? '正式项目 Studio 通过真实 UI 配置并保存等待、断言检查点、停止流程及停止后的步骤' : '正式项目 Studio 通过真实 UI 配置并保存页面加载等待与状态检查流程')
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
     await click(main, '新建自动化')
-    await setInput(main, '[aria-label="自动化名称"]', projectMathOnly ? '项目纯数据节点自动化' : projectUtilityOnly ? '项目工具节点自动化' : projectWebBasicOnly ? '项目基础网页节点自动化' : projectAdvancedOnly ? '项目高级网页节点自动化' : projectTabSwitchOnly ? '项目标签页节点自动化' : projectVariableOnly ? '项目变量节点自动化' : projectListExportOnly ? '项目列表导出节点自动化' : projectLogOnly ? '项目日志节点自动化' : projectTableOnly ? '项目表格节点自动化' : projectHttpOnly ? '项目HTTP节点自动化' : projectControlPrimitivesOnly ? '项目等待断言停止节点自动化' : '项目页面加载节点自动化')
+    await setInput(main, '[aria-label="自动化名称"]', projectMathOnly ? '项目纯数据节点自动化' : projectUtilityOnly ? '项目工具节点自动化' : projectWebBasicOnly ? '项目基础网页节点自动化' : projectAdvancedOnly ? '项目高级网页节点自动化' : projectTabSwitchOnly ? '项目标签页节点自动化' : projectVariableOnly ? '项目变量节点自动化' : projectListExportOnly ? '项目列表导出节点自动化' : projectLogOnly ? '项目日志节点自动化' : projectTableOnly ? '项目表格节点自动化' : projectHttpOnly ? '项目HTTP节点自动化' : projectControlPrimitivesOnly ? '项目等待断言停止节点自动化' : projectNetworkOnly ? '项目网页网络采集节点自动化' : '项目页面加载节点自动化')
     await selectAutomationWorkflow(main, name, saved.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project math automation')
@@ -305,17 +338,17 @@ try {
     await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'project math batch dialog')
     await click(main, '启动 1 个任务')
     await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project math batch')
-    const sawCloakBrowser = (projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectTableOnly) ? await waitForValue(async () => cloakProcesses(userData).length > 0 ? true : null, 'project CloakBrowser process', 30_000) : false
+    const sawCloakBrowser = (projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectTableOnly || projectNetworkOnly) ? await waitForValue(async () => cloakProcesses(userData).length > 0 ? true : null, 'project CloakBrowser process', 30_000) : false
     const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
     const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project family terminal', 90_000)
     const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
     const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
     assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, task, attempts, variables: saved.variables, nodes: saved.nodes }))
-    assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, projectTableOnly ? 10 : projectHttpOnly ? 4 : projectControlPrimitivesOnly ? 3 : projectListExportOnly || projectLogOnly ? 2 : projectAdvancedOnly || projectTabSwitchOnly ? 6 : projectWebBasicOnly ? 5 : 3)
+    assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, projectTableOnly ? 10 : projectHttpOnly ? 4 : projectControlPrimitivesOnly ? 3 : projectListExportOnly || projectLogOnly ? 2 : projectAdvancedOnly || projectTabSwitchOnly || projectNetworkOnly ? 6 : projectWebBasicOnly ? 5 : 3)
     const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
     const encoded = encodeURIComponent('中文 A')
     const digest = createHash('md5').update(encoded).digest('hex')
-    const outputExpectations = projectMathOnly ? [['sum_value', 6], ['rounded', 6], ['absolute', 7]] : projectUtilityOnly ? [['encoded', encoded], ['digest', digest], ['final_sha', createHash('sha256').update(digest).digest('hex')]] : projectWebBasicOnly ? [['button_label', '确认']] : projectAdvancedOnly ? [['children', ['#child-a', '#child-b']]] : projectTabSwitchOnly ? [['first_title', 'AutoFlow B1 受控页面'], ['first_button', '确认'], ['last_title', 'AutoFlow B2 网页动作受控页面'], ['last_child', '甲']] : projectVariableOnly ? [['parsed', '乙'], ['pick', 7]] : projectControlPrimitivesOnly ? [['checked', true]] : projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly ? [] : [['page_ready', true]]
+    const outputExpectations = projectMathOnly ? [['sum_value', 6], ['rounded', 6], ['absolute', 7]] : projectUtilityOnly ? [['encoded', encoded], ['digest', digest], ['final_sha', createHash('sha256').update(digest).digest('hex')]] : projectWebBasicOnly ? [['button_label', '确认']] : projectAdvancedOnly ? [['children', ['#child-a', '#child-b']]] : projectTabSwitchOnly ? [['first_title', 'AutoFlow B1 受控页面'], ['first_button', '确认'], ['last_title', 'AutoFlow B2 网页动作受控页面'], ['last_child', '甲']] : projectVariableOnly ? [['parsed', '乙'], ['pick', 7]] : projectControlPrimitivesOnly ? [['checked', true]] : projectNetworkOnly ? [] : projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly ? [] : [['page_ready', true]]
     for (const [variable, expected] of outputExpectations) {
       assert.ok(outputs.items.some(item => item.name === variable && (Array.isArray(expected) ? JSON.stringify(item.value) === JSON.stringify(expected) : item.value === expected)), JSON.stringify({ variable, expected, outputs: outputs.items, nodes: saved.nodes }))
     }
@@ -368,6 +401,18 @@ try {
       assert.ok(!outputs.items.some(item => item.name === 'must_not_run'))
       checkpoint('断言结果持久化为布尔值；停止节点后的变量写入没有执行')
     }
+    if (projectNetworkOnly) {
+      const captured = outputs.items.find(item => item.name === 'captured_urls')?.value
+      const first = outputs.items.find(item => item.name === 'first_request')?.value
+      const all = outputs.items.find(item => item.name === 'all_requests')?.value
+      assert.ok(Array.isArray(captured) && captured.length === 1 && captured[0].includes('/api/orders'))
+      assert.ok(Array.isArray(all) && all.length === 1)
+      assert.equal(first?.method, 'GET')
+      assert.equal(first?.headers?.authorization, '[已隐藏]')
+      assert.ok(httpRequests.filter(item => item[1]?.startsWith('/api/orders')).length >= 2)
+      assert.ok(!JSON.stringify(outputs.items).includes('fixture-secret'))
+      checkpoint('项目任务在真实 CloakBrowser 中捕获两次受控请求，三个变量和脱敏内容均可持久读取')
+    }
     if (projectLogOnly) {
       const logs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/logs?level=success`)
       assert.ok(logs.items.some(item => item.message === '业务完成' && item.isUserLog === true))
@@ -404,7 +449,7 @@ try {
     }
     await click(main, '查看任务')
     await click(main, projectListExportOnly || projectTableOnly ? '异常与证据' : projectLogOnly ? '日志' : '输入与输出', '[role="tab"]')
-    await waitFor(main, `document.body?.innerText.includes(${JSON.stringify(projectListExportOnly || projectTableOnly ? '文件与图片产物' : projectLogOnly ? '业务完成' : projectHttpOnly ? 'api_result' : outputExpectations.at(-1)[0])})`, 'project family output')
+    await waitFor(main, `document.body?.innerText.includes(${JSON.stringify(projectListExportOnly || projectTableOnly ? '文件与图片产物' : projectLogOnly ? '业务完成' : projectHttpOnly ? 'api_result' : projectNetworkOnly ? 'captured_urls' : outputExpectations.at(-1)[0])})`, 'project family output')
     if (projectListExportOnly || projectTableOnly) assert.equal(await main.evaluate("[...document.querySelectorAll('button')].filter(button => button.getAttribute('aria-label')?.startsWith('下载文件：')).length"), projectTableOnly ? 3 : 2)
     if (projectLogOnly) {
       await selectNative(main, '[aria-label="筛选日志级别"]', '成功')
@@ -415,10 +460,12 @@ try {
       await click(main, '查看图片')
       await waitFor(main, "Boolean(document.querySelector('[role=dialog] img[alt*=保存图片]'))", 'project saved image preview')
     }
-    await capture(main, join(evidenceDir, projectMathOnly ? 'project-math-task.png' : projectUtilityOnly ? 'project-utility-task.png' : projectWebBasicOnly ? 'project-web-basic-task.png' : projectAdvancedOnly ? 'project-advanced-browser-task.png' : projectTabSwitchOnly ? 'project-tab-switch-task.png' : projectVariableOnly ? 'project-variable-task.png' : projectListExportOnly ? 'project-list-export-task.png' : projectLogOnly ? 'project-log-task.png' : projectTableOnly ? 'project-table-task.png' : projectHttpOnly ? 'project-http-task.png' : projectControlPrimitivesOnly ? 'project-control-primitives-task.png' : 'project-page-load-task.png'))
+    await capture(main, join(evidenceDir, projectMathOnly ? 'project-math-task.png' : projectUtilityOnly ? 'project-utility-task.png' : projectWebBasicOnly ? 'project-web-basic-task.png' : projectAdvancedOnly ? 'project-advanced-browser-task.png' : projectTabSwitchOnly ? 'project-tab-switch-task.png' : projectVariableOnly ? 'project-variable-task.png' : projectListExportOnly ? 'project-list-export-task.png' : projectLogOnly ? 'project-log-task.png' : projectTableOnly ? 'project-table-task.png' : projectHttpOnly ? 'project-http-task.png' : projectControlPrimitivesOnly ? 'project-control-primitives-task.png' : projectNetworkOnly ? 'project-network-task.png' : 'project-page-load-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
+    if (projectNetworkOnly) checkpoint('正式项目任务页展示网络采集输出，CloakBrowser 已关闭，临时工作区未触碰用户数据')
+    else
     checkpoint(projectMathOnly ? '正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser' : projectUtilityOnly ? '正式项目任务真实 worker 产出编码与摘要并持久化节点记录，未启动 CloakBrowser' : projectWebBasicOnly ? '正式项目任务使用项目默认 Profile 启动 CloakBrowser、执行网页动作、持久化输出并清理进程' : projectAdvancedOnly ? '正式项目任务使用默认 Profile 完成高级网页动作、下载和图片产物，正式任务页可预览且浏览器已清理' : projectTabSwitchOnly ? '正式项目任务使用默认 Profile 在真实 CloakBrowser 切换标签页，分别读取元素并清理进程' : projectVariableOnly ? '正式项目任务真实 worker 产出JSON、数值与日期，未启动 CloakBrowser' : projectListExportOnly ? '正式项目任务完成两次列表导出，任务页列出两个可下载产物且未启动 CloakBrowser' : projectLogOnly ? '正式项目任务持久化用户日志和导出文件，任务页可筛选成功日志且未启动 CloakBrowser' : projectTableOnly ? '正式项目任务通过默认 Profile 真实提取网页表格并导出三份可下载文件，浏览器已清理' : projectHttpOnly ? '正式项目任务真实调用本地网络服务、持久化两项响应变量及四节点状态，未启动 CloakBrowser' : projectControlPrimitivesOnly ? '正式项目任务真实执行等待和断言，在停止节点终止后继步骤，记录仍可查看且无浏览器残留' : '正式项目任务真实 CloakBrowser 等待页面并持久化加载状态，清理进程')
-    const report = { evidenceId: projectMathOnly ? 'BE-project-math-formal-electron' : projectUtilityOnly ? 'BE-project-utility-formal-electron' : projectWebBasicOnly ? 'BE-project-web-basic-formal-electron' : projectAdvancedOnly ? 'BE-project-advanced-browser-formal-electron' : projectTabSwitchOnly ? 'BE-project-tab-switch-formal-electron' : projectVariableOnly ? 'BE-project-variable-formal-electron' : projectListExportOnly ? 'BE-project-list-export-formal-electron' : projectLogOnly ? 'BE-project-log-formal-electron' : projectTableOnly ? 'BE-project-table-formal-electron' : projectHttpOnly ? 'BE-project-http-formal-electron' : projectControlPrimitivesOnly ? 'BE-project-control-primitives-formal-electron' : 'BE-project-page-load-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, sawCloakBrowser, checks, ...(projectHttpOnly ? { requestTrace: httpRequests } : {}), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: sawCloakBrowser, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+    const report = { evidenceId: projectMathOnly ? 'BE-project-math-formal-electron' : projectUtilityOnly ? 'BE-project-utility-formal-electron' : projectWebBasicOnly ? 'BE-project-web-basic-formal-electron' : projectAdvancedOnly ? 'BE-project-advanced-browser-formal-electron' : projectTabSwitchOnly ? 'BE-project-tab-switch-formal-electron' : projectVariableOnly ? 'BE-project-variable-formal-electron' : projectListExportOnly ? 'BE-project-list-export-formal-electron' : projectLogOnly ? 'BE-project-log-formal-electron' : projectTableOnly ? 'BE-project-table-formal-electron' : projectHttpOnly ? 'BE-project-http-formal-electron' : projectControlPrimitivesOnly ? 'BE-project-control-primitives-formal-electron' : projectNetworkOnly ? 'BE-project-network-formal-electron' : 'BE-project-page-load-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, sawCloakBrowser, checks, ...(projectHttpOnly || projectNetworkOnly ? { requestTrace: httpRequests } : {}), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: sawCloakBrowser, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()

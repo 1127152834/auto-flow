@@ -1047,6 +1047,7 @@ export const moduleDefaultTimeouts: Partial<Record<ModuleType, number>> = {
   wait_element: 60,     // 60秒，等待元素可能需要较长时间
   wait_image: 60,       // 60秒，等待图像可能需要较长时间
   wait_page_load: 60,   // 60秒，等待页面加载
+  network_monitor_wait: 30, // 与请求监听执行器的秒单位默认值一致
   page_load_complete: 10, // 10秒，检查页面是否加载完成
   close_page: 10,       // 10秒
   refresh_page: 60,     // 60秒
