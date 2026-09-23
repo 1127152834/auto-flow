@@ -2,12 +2,12 @@
 
 - 日期：2026-09-24（校准；原计划 2026-09-19）
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
-- 当前实施基线：`codex/android-management-complete@0c67bffc` 加真实批次故障验收增量；原起点 `a92f0688`。
+- 当前实施基线：`codex/android-management-complete@471b816f` 加自定义候选镜像验收增量；原起点 `a92f0688`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
 
 ## 2026-09-23 全分支审查后增量
 
-- 2026-09-24 续行：[真实备份 ENOSPC 与传输取消](../../docs/qa/android-management/2026-09-24-backup-failure-verification.md)通过，无可用备份/暂存残留，原请求不重放，源探针保持；补备份本机未加密和恢复登录/DRM/私钥边界说明（RED 1 failed → GREEN 26 passed）。[任务逐项审计](../../docs/qa/android-management/2026-09-24-task-evidence-audit.md)将当前 102 步全部附证据：82 passed、17 not_run、3 blocked；部分 not_run 为历史 RED 缺证，未追认。
+- 2026-09-24 续行：[真实备份 ENOSPC 与传输取消](../../docs/qa/android-management/2026-09-24-backup-failure-verification.md)通过，无可用备份/暂存残留，原请求不重放，源探针保持；补备份本机未加密和恢复登录/DRM/私钥边界说明（RED 1 failed → GREEN 26 passed）。[任务逐项审计](../../docs/qa/android-management/2026-09-24-task-evidence-audit.md)将当前 102 步全部附证据：83 passed、16 not_run、3 blocked；部分 not_run 为历史 RED 缺证，未追认。
 - 2026-09-24 最终只读复审已覆盖运行时、Operation、镜像、批次、备份恢复、清理、诊断及前端，未发现剩余 Critical/Important。修复和先 RED 后 GREEN 的证据见[最终分支审查](../../docs/qa/android-management/2026-09-24-final-branch-review.md)；未完成真实环境矩阵不因代码审查通过而转为通过。
 
 - 状态：`confirmed`（以下定向/真实证据）；完整目标仍 `partial`。来源：[审查修复与真实验收](../../docs/qa/android-management/2026-09-23-final-review-remediation.md)。以下结论覆盖本页下方较早的规模及自动化快照。
@@ -75,3 +75,5 @@
 - 最新 AM2 镜像增量：[固定摘要网络拉取、HTTP 内容删除及来源边界](../../docs/qa/android-management/am2-verification.md)。
 
 - 最新 AM3 实例批次：[真实双实例 start/stop/delete 与 HTTP DTO 修复](../../docs/qa/android-management/2026-09-23-am3-real-bulk-verification.md)。
+
+- 2026-09-24 自定义候选镜像：[真实报告](../../docs/qa/android-management/2026-09-24-custom-image.md)完成基础/A启动、tag与模板改指B后旧实例固定A、候选备份恢复及三类引用阻删；T12.3通过，T12回退演练/GApps仍未验。生产代码未改，镜像模板定向40项通过。

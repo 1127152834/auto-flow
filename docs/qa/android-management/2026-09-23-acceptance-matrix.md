@@ -15,7 +15,7 @@
 | AM-AC08 | `passed`（真实与自动化） | [同一自建实例](2026-09-23-am1-real-control-retention.md)写探针→停机/启动读回→移除容器保留卷→明确 `restore` 重建后同卷读回；缺卷回归返回 `ANDROID_DATA_MISSING` 且无新卷写入。 |
 | AM-AC09 | `passed`（真实与自动化） | [真实双实例隔离](2026-09-23-am1-real-control-retention.md)已核实第二台自建实例独立容器/卷，永久删除第二台后第一台仍 `ready` 且原容器/卷身份不变；另有不同 ADB serial、资源标签及丢响应 `needs_verification` 自动化。外部资源未纳入删除目标。 |
 | AM-AC10 | `partial` | 默认单台、模板与空态前端自动化；[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)验证长名称、应用 125% 和相对 100% 基准约 207.36% 的原生高缩放，修复状态竖排和正常设备误报；历史面板焦点已实测。应用设置无精确 200% 档位，两种指定窗口尺寸和真实断线旧数据仍未完整验收。 |
-| AM-AC11 | `partial` | tag 漂移/固定 imageId/引用阻删集成通过；[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)完成固定摘要镜像登记；[AM2 本机实验](am2-verification.md)通过生产 Mac/Lima 和认证 HTTP 对自建 ARM64 镜像登记、按摘要删除和实际不存在确认，固定摘要官方仓库网络拉取返回相同 imageId/sourceDigest 且原 tag 未变。[审查修复](2026-09-23-final-review-remediation.md)补备份引用保护与每次拉取独立持久回执；桌面内容删除及真实断线核实仍未验收。 |
+| AM-AC11 | `partial` | tag 漂移/固定 imageId/引用阻删集成通过；[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)完成固定摘要镜像登记；[AM2 本机实验](am2-verification.md)通过生产 Mac/Lima 和认证 HTTP 对自建 ARM64 镜像登记、按摘要删除和实际不存在确认，固定摘要官方仓库网络拉取返回相同 imageId/sourceDigest 且原 tag 未变。[审查修复](2026-09-23-final-review-remediation.md)补备份引用保护与每次拉取独立持久回执；[可启动候选镜像](2026-09-24-custom-image.md)补固定ID、模板/tag漂移重启、备份恢复与三类引用阻删直接证据；桌面内容删除及真实断线核实仍未验收。 |
 | AM-AC12 | `passed`（自动化） | 模板 revision 冲突及已有实例配置快照不变集成，见 [AM2](am2-verification.md)。 |
 | AM-AC13 | `passed`（自动化） | [审查修复](2026-09-23-final-review-remediation.md)使镜像元数据核验与 `validation` 谷歌验收单列，缺六项时不报通过，界面也分别标示；见 [GApps](gapps-validation.md)。 |
 | AM-AC14 | `blocked` | 无专用候选镜像、测试账号和商店下载链；登录/下载/重启/隔离均 `not_tested`，见 [GApps](gapps-validation.md)。 |

@@ -1,8 +1,10 @@
 # 安卓模拟器管理验收证据
 
+[自定义候选镜像实测](2026-09-24-custom-image.md)完成基础/候选启动、模板与tag漂移后的固定imageId重启、候选备份恢复，以及模板/实例/备份分别阻止删除。T12.3通过；Google仍not_tested，回退演练和桌面链仍未完成。
+
 [真实恢复空间不足与取消](2026-09-24-restore-cancel-and-disk-full.md)发现并修复命令取消后 SSH 子进程继续写入：4 项真实子进程 RED→GREEN，运行时 63 项通过，Android 聚焦 451 项通过。[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验证首项删除不被误判为全成功；本轮全后端4035 passed/26 skipped，命令与终态见同一故障报告。T18/T19 已列功能通过，完整目标仍 partial。
 
-[任务逐项证据审计](2026-09-24-task-evidence-audit.md)已核对当前 102 项计划步骤：82 项 passed、17 项 not_run、3 项 blocked；not_run 包含没有找到原始历史 RED 输出的步骤，不用当前 GREEN 追认。代码、契约、迁移、前端、各层测试和真实命令已按 T01–T20 映射。
+[任务逐项证据审计](2026-09-24-task-evidence-audit.md)已核对当前 102 项计划步骤：83 项 passed、16 项 not_run、3 项 blocked；not_run 包含没有找到原始历史 RED 输出的步骤，不用当前 GREEN 追认。代码、契约、迁移、前端、各层测试和真实命令已按 T01–T20 映射。
 
 [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)新增独立 64 MiB 映像的 ENOSPC 与真实在途取消证据，源数据未变且资源已清理；补齐备份未加密/恢复能力边界的可访问说明。
 

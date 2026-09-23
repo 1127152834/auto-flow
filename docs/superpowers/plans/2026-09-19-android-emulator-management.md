@@ -465,7 +465,7 @@ def test_tag_change_does_not_upgrade_existing_instance(scenario):
 ```
 
 - [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_images_templates.py -q)`及ImagesTemplatesFlow.test.tsx。（状态：not_run；当前 GREEN 已验证；该步骤独立历史 RED 输出未找到，不追认通过；[证据 T12.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
-- [ ] 真实验证基础与一个候选自定义镜像；谷歌失败不阻塞基础镜像交付，但状态必须保留failed/blocked/not_tested。（状态：not_run；基础镜像与独立小镜像登记删除已验；可启动自定义 Android 候选实例链未运行；[证据 T12.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
+- [x] 真实验证基础与一个候选自定义镜像；谷歌失败不阻塞基础镜像交付，但状态必须保留failed/blocked/not_tested。（状态：passed；基础与自定义 ReDroid 均ready；模板/tag变化后旧实例固定ID、备份恢复和三类引用阻删实测通过；Google仍not_tested；[证据 T12.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
 - [ ] 完整发布命令、迁移回归、旧实例恢复、镜像引用和回退检查；记录未覆盖条件。（状态：not_run；完整软件门禁通过；阶段停用入口及向前回退演练尚未运行；[证据 T12.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
 - [x] 提交 `test(android): verify image and template lifecycle`；停在AM2验收点。（状态：passed；生命周期代码/证据已入历史；阶段仍有真实未验项；[证据 T12.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
 

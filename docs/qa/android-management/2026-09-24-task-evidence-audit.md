@@ -77,7 +77,7 @@
 | <a id="t09"></a>T09 | `not_run` | [AM2](am2-verification.md)真实固定摘要网络 pull、认证 HTTP 内容删除；桌面内容删除与真实断线核实未验。 |
 | <a id="t10"></a>T10 | `passed` | 后端生命周期集成与[桌面标准模板](2026-09-23-desktop-ui-verification.md)；已有实例固定快照由集成测试证明。 |
 | <a id="t11"></a>T11 | `blocked` | [GApps](gapps-validation.md)：缺专用镜像/账号/商店下载链；本地 APK 已可用，不能再称测试 APK 缺失。 |
-| <a id="t12"></a>T12 | `not_run` | 基础镜像/模板链已验；独立自定义 Android 候选实例链与阶段回退演练尚未运行。 |
+| <a id="t12"></a>T12 | `not_run` | 基础镜像/模板链已验；[可启动自定义候选](2026-09-24-custom-image.md)及固定ID重启/备份恢复/引用阻删通过；阶段回退演练及历史RED缺证仍未关闭。 |
 | <a id="t13"></a>T13 | `passed` | [真实批次](2026-09-24-bulk-failure-cancel.md)部分失败、修订冲突重试、容量取消通过；[真实容器消失失败与回执前强杀](2026-09-24-bulk-runtime-fault.md)补足恢复后重试、未知项不重放及重启后核实。 |
 | <a id="t14"></a>T14 | `not_run` | [五台/双预览](2026-09-23-final-review-remediation.md)通过；后台探测次数、隐藏页面同链与前台延迟未记录完整。 |
 | <a id="t15"></a>T15 | `not_run` | [真实 APK 动作](2026-09-23-am1-real-control-retention.md)及[跨重建版本核实](2026-09-24-final-branch-review.md)通过；桌面破坏性确认同链、真实 ADB 断连未验。 |
@@ -97,3 +97,5 @@
 命令树修复轮文档核验：102 个勾选与状态逐一一致（82 passed / 17 not_run / 3 blocked），67 个显式实现路径存在，277 个修改文档的本地链接存在；`git diff --check` exit 0。三份本轮新增/修改真实 QA 脚本 Ruff 通过，`--help` exit 0，缺少 `--allow-device-mutation` 时均 exit 2。三个 Studio 文件 SHA-256 与本轮开始一致。
 
 批次故障续行文档核验：步骤统计仍82/17/3；本次修改文档278个本地链接存在，QA Ruff与git diff --check通过，三个Studio文件哈希仍与保护基线一致。T13任务状态通过不新增checkbox：其软件步骤早已通过，本次补足真实验收证据。
+
+自定义镜像续行：T12.3补直接实测后，当前102个步骤为83 passed / 16 not_run / 3 blocked；此前82/17/3保留为各轮历史快照。
