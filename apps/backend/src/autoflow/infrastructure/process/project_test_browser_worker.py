@@ -424,6 +424,7 @@ async def force_process_tree(
     process: asyncio.subprocess.Process, termination_timeout: float,
     directory: Path | None = None, executable: Path | None = None, birth: int | None = None,
     owned: OwnedProcesses | None = None, *, strict_ownership: bool = False,
+    graceful: bool = True,
 ) -> None:
     if sys.platform == "win32":
         killer = await asyncio.create_subprocess_exec(
@@ -436,12 +437,13 @@ async def force_process_tree(
             await process.wait()
         return
     owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
-    await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
-    if process.returncode is None:
-        try:
-            await asyncio.wait_for(asyncio.shield(process.wait()), termination_timeout)
-        except TimeoutError:
-            pass
+    if graceful:
+        await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
+        if process.returncode is None:
+            try:
+                await asyncio.wait_for(asyncio.shield(process.wait()), termination_timeout)
+            except TimeoutError:
+                pass
     owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
     await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
     if process.returncode is None:

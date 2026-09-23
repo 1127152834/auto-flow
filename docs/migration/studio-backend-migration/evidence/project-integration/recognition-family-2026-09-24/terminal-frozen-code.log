@@ -1,0 +1,9 @@
+autoflow.infrastructure.process.project_workflow_worker: complete frozen module matches source
+autoflow.infrastructure.process.project_test_browser_worker: complete frozen module matches source
+autoflow.domain.workflows.catalog: complete frozen module matches source
+autoflow.providers.browser.project_graph: complete frozen module matches source
+autoflow.providers.browser.project_workflow_worker: complete frozen module matches source
+autoflow.application.workflows.executors.media_recognition: complete frozen module matches source
+autoflow.application.workflows.executors.captcha: complete frozen module matches source
+craft_mlt_25k.pth: 4a5efbfb48b4081100544e75e1e2b57f8de3d84f213004b14b85fd4b3748db17
+zh_sim_g2.pth: cb678fdef09d651e7763ca551ad790dc89f0b2e3d2a640484330e338fb574c7a

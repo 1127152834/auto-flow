@@ -47,3 +47,21 @@ AUTOFLOW_TEST_CLOAKBROWSER=/path/to/Chromium apps/backend/.venv/bin/python -m py
 - `frozen-worker-final.log`：同代码同断言全四场景 19.96 秒通过。首次超时仍作为稳定性观察项保留；不能仅凭复跑就称已根治。
 - `packaged-captcha.log`：直接使用正式包内后端，真实项目/CloakBrowser三场景全部通过，47.35秒。这是包内worker证据，不是启动正式Electron后的UI验收。
 - 后续共享构建与真实模型/浏览器验证串行安排，避免重负载争用干扰结果。正式UI解锁后仍须跑原生及项目闭环，不用本页证据代替。
+
+## 取消／超时终态收口（2026-09-24，后续真实回归）
+
+新增 `ocr_stop` 在OCR节点开始后等待0.2秒再停止，新增 `ocr_timeout` 使用0.5秒节点预算；两项均使用真实项目worker和原识别器。`ocr-stop-red.log`、`ocr-timeout-red.log`分别证明旧终态从期望cancelled/failed变成interrupted。
+
+明确根因：取消 `asyncio.to_thread` 不能终止底层计算线程。worker已完成调度和浏览器/provider清理并发送 `finished(cleanupConfirmed=true)`，但 `asyncio.run` 等待线程池退出；父进程额外等待自然退出超时，丢掉已确认的业务终态。
+
+修复位于现有项目进程边界：对已确认的非成功终态立即清理受管进程树，再返回原失败/取消结果。POSIX沿既有出生身份/目录/可执行文件核验直接SIGKILL，Windows继续使用原进程句柄与Job清理；不向未经核验PID发信号。正常成功仍校验自然退出码。没收到终态确认、清理失败或归属不明继续保留待核验及占用，不据HTTP接受就报告已停止。
+
+- `ocr-stop-green.log`：新增真实OCR取消通过，4.60秒含启动/人脸步骤；停止至清理断言仍严格小于3秒。
+- `cancel-regression.log`：取消修复后的共享进程/调度/真实数据节点98项通过，152.44秒，早于最终超时失败分支扩展。
+- `terminal-green.log`：最终六场景全部通过，24.47秒；验证超时节点错误码WORKFLOW_NODE_TIMEOUT、停止不再执行后继、两种分支及空资源占用。
+- `terminal-regression.log`：最终34项相关失败、停止、取消、超时、未知归属、清理回归通过，26.48秒。新进程测试启动忽略SIGTERM的实际子进程，验证确认取消时小于1秒清理，仅POSIX实测，Windows未冒称通过。
+- `terminal-ruff.log`、`terminal-mypy.log`：受影响文件检查通过。
+
+该根因证明并修复了**已确认终态后的退出误判**；不能据此宣称上一批首次冻结OCR的100秒超时已完全解释。原生扩展导入占用GIL/冷启动性能仍保留观察，正式项目UI依然受Mac锁定影响。
+
+最终冻结构建156.10秒、unsigned arm64目录包完成。`terminal-frozen-code.log`/`terminal-packaged-code.log`核对7个完整模块（新增父进程管理与清理helper）和两个模型一致；`terminal-build-artifacts.json`保留本次摘要，旧构建摘要不覆盖。`terminal-packaged-worker.log`使用正式包内worker通过六个真实识别场景，33.43秒，含OCR动作中停止与节点超时后的正确终态/清理。本测试父进程由当前源码运行；冻结父进程代码已核对，不宣称等价于完整正式Electron/冻结sidecar入口验收。

@@ -1,0 +1,10 @@
+[
+  {
+    "path": "apps/backend/dist/autoflow-backend/autoflow-backend",
+    "sha256": "1c23c82a9d11ca4d4c87b4a3fa8943bb5b7cf228e7375fd55b8621e14efd5505"
+  },
+  {
+    "path": "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend",
+    "sha256": "1c23c82a9d11ca4d4c87b4a3fa8943bb5b7cf228e7375fd55b8621e14efd5505"
+  }
+]

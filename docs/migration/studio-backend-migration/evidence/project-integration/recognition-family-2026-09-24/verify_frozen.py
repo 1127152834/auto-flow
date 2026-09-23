@@ -9,6 +9,8 @@ executable = Path(sys.argv[1])
 source_root = Path(sys.argv[2])
 archive = CArchiveReader(str(executable)).open_embedded_archive("PYZ.pyz")
 for module in [
+    "autoflow.infrastructure.process.project_workflow_worker",
+    "autoflow.infrastructure.process.project_test_browser_worker",
     "autoflow.domain.workflows.catalog",
     "autoflow.providers.browser.project_graph",
     "autoflow.providers.browser.project_workflow_worker",

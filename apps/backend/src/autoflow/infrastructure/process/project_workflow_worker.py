@@ -164,6 +164,13 @@ class ProjectWorkflowWorkerManager:
             # sole stdin reader before waiting for interpreter/process shutdown.
             worker.ready = False
             worker.process.stdin.close()
+            if outcome.status != "succeeded":
+                # Cancelled/timed-out native to_thread work can outlive asyncio.run. The
+                # terminal envelope confirms browser/provider cleanup; verify the
+                # owned process tree is gone before retaining the reported failure/cancellation.
+                worker.stop_requested = True
+                await self._cleanup(worker)
+                return outcome
             await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
             if (worker.process.returncode not in {0, 1}
                 or (outcome.status == "succeeded" and worker.process.returncode != 0)):
@@ -404,7 +411,7 @@ class ProjectWorkflowWorkerManager:
                 await force_process_tree(
                     process, self._termination_timeout,
                     worker.directory, worker.executable, worker.birth,
-                    strict_ownership=True,
+                    strict_ownership=True, graceful=not worker.stop_requested,
                 )
         if worker.created_directory:
             try:

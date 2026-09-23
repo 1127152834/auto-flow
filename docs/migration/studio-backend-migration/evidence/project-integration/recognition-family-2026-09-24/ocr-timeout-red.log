@@ -1,0 +1,73 @@
+F
+=================================== FAILURES ===================================
+_ test_project_recognition_uses_real_models_files_branches_and_cleanup[ocr_timeout] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-186/test_project_recognition_uses_0')
+scenario = 'ocr_timeout'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('scenario', ['match', 'no_face', 'missing', 'stop', 'ocr_stop', 'ocr_timeout'])
+    async def test_project_recognition_uses_real_models_files_branches_and_cleanup(tmp_path: Path, scenario: str):
+        assert {'image_ocr', 'face_recognition', 'ocr_captcha', 'slider_captcha'} <= runnable_module_types()
+        face, text = _write_fixtures(tmp_path)
+        factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+        source = tmp_path / 'missing.png' if scenario == 'missing' else text if scenario == 'no_face' else face
+        steps = [
+            ('face', 'face_recognition', {'sourceImage': str(source), 'targetImage': str(face), 'timeout': 60}),
+            ('ocr', 'image_ocr', {'imagePath': str(text), 'ocrType': 'general', 'timeout': .5 if scenario == 'ocr_timeout' else 60}),
+            ('matched', 'print_log', {'logMessage': '识别文本:{ocr_text}'}),
+            ('empty', 'print_log', {'logMessage': '没有检测到人脸'}),
+        ]
+        document = _studio_payload(automation.workflow_id)
+        document.update(schemaVersion=3,
+            nodes=[{'id': node, 'type': kind, 'position': {'x': i * 160, 'y': 0}, 'data': {'moduleType': kind, 'config': config}}
+                   for i, (node, kind, config) in enumerate(steps)],
+            edges=[{'id': 'yes', 'source': 'face', 'sourceHandle': 'true', 'target': 'ocr'},
+                   {'id': 'no', 'source': 'face', 'sourceHandle': 'false', 'target': 'empty'},
+                   {'id': 'next', 'source': 'ocr', 'target': 'matched'}], variables=[])
+        WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id, document, expected_revision=1, client_request_id=str(uuid4()))
+        runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+        coordinator._core = runtime
+        frozen = os.environ.get('AUTOFLOW_TEST_PROJECT_WORKER')
+        worker = ProjectWorkflowWorkerManager(tmp_path / 'recognition-worker',
+            **({'command': (str(Path(frozen).resolve(strict=True)), '--project-workflow-worker')} if frozen else {}))
+        resources = _NoBrowserResources()
+        dispatcher = _dispatcher(factory, worker, resources)
+        try:
+            batch, _, _ = coordinator.start(project.project_id, automation.automation_id, str(uuid4()), start_payload(automation))
+            task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+            run = runtime.query_run(run_id=task.run_id)
+            assert run is not None
+            running = await dispatcher.dispatch(run.run_id, expected_status_revision=run.status_revision, execution_generation=run.execution_generation)
+            if scenario in {'stop', 'ocr_stop'}:
+                async with asyncio.timeout(15):
+                    while True:
+                        with factory() as session:
+                            events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(run.run_id, after_sequence=0, limit=100)
+                        if any(e.kind == 'nodeAttempt' and e.node_id == ('ocr' if scenario == 'ocr_stop' else 'face') for e in events):
+                            break
+                        await asyncio.sleep(.01)
+                if scenario == 'ocr_stop':
+                    # Let the real recognition thread enter its import/inference work.
+                    await asyncio.sleep(.2)
+                started = monotonic()
+                await dispatcher.cancel(run.run_id, expected_status_revision=running.status_revision, execution_generation=running.execution_generation)
+            await asyncio.wait_for(dispatcher.wait_idle(), 100)
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                final = repository.get_run(run_id=run.run_id)
+                events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+            expected = {'missing': 'failed', 'stop': 'cancelled', 'ocr_stop': 'cancelled', 'ocr_timeout': 'failed'}.get(scenario, 'succeeded')
+>           assert final is not None and final.status == expected, (final, events)
+E           AssertionError: (CoreRun(run_id='02a8668b-a18a-463e-8f69-029a82f591f3', run_request_id='bbac7b3b-804b-4388-b3f3-e9dc46a16804', request...4, 54, 773773, tzinfo=datetime.timezone.utc), payload=mappingproxy({'status': 'succeeded', 'durationMs': 1051})), ...])
+E           assert (CoreRun(run_id='02a8668b-a18a-463e-8f69-029a82f591f3', run_request_id='bbac7b3b-804b-4388-b3f3-e9dc46a16804', request_...e.utc), error=mappingproxy({'code': 'WORKFLOW_RESULT_UNKNOWN', 'message': '执行结果不明确，已撤销旧执行写入权限'}), _event_identities=()) is not None and 'interrupted' == 'failed'
+E
+E             - failed
+E             + interrupted)
+
+apps/backend/tests/integration/test_project_recognition_worker.py:88: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_recognition_worker.py::test_project_recognition_uses_real_models_files_branches_and_cleanup[ocr_timeout]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 5 deselected in 7.71s

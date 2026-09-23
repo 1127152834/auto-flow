@@ -8,7 +8,6 @@ from threading import Event
 from types import SimpleNamespace
 
 import pytest
-
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 
 
@@ -226,3 +225,30 @@ async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
                 await module.force_process_tree(process, 0.01)
     finally:
         exited.set()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX owned process tree; Windows retains native handle/Job cleanup")
+async def test_project_confirmed_cancellation_kills_owned_native_work_without_term_grace(tmp_path):
+    from autoflow.infrastructure.process.project_browser_processes import process_birth
+    from autoflow.infrastructure.process.project_test_browser_worker import (
+        force_process_tree,
+    )
+
+    process = await asyncio.create_subprocess_exec(
+        sys.executable, '-c',
+        'import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print("ready",flush=True); time.sleep(60)',
+        stdout=asyncio.subprocess.PIPE, start_new_session=True,
+    )
+    birth = process_birth(process.pid)
+    try:
+        assert await asyncio.wait_for(process.stdout.readline(), 3) == b'ready\n'
+        started = time.monotonic()
+        await force_process_tree(process, 3, birth=birth, strict_ownership=True, graceful=False)
+        assert time.monotonic() - started < 1
+        assert process.returncode is not None
+        assert process_birth(process.pid) != birth
+    finally:
+        if process.returncode is None:
+            process.kill()
+            await process.wait()
