@@ -1,0 +1,11 @@
+{
+  "heads": [
+    "am01_management_operations"
+  ],
+  "parent": "0019_recording_commands",
+  "protectedFileHashes": {
+    "docs/migration/studio-frontend-completion/component-tools.json": "48cad0b65b70fc9fa43f57f03fb9e3f22a8031179d05be854b3a6443e358e7d0",
+    "docs/migration/studio-frontend-completion/contract-matrix.md": "6044837c598e5a0ebdafbfc9eff828f3d608299addacdda795f8fe5a418c8334",
+    "docs/migration/studio-frontend-completion/service-inventory.json": "812d4a8b8c5d0695438e3ca30291a1fb74042f4b62b7ac4b6f974f2a3ee66dcf"
+  }
+}

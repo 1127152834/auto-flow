@@ -71,7 +71,7 @@
 | <a id="t03"></a>T03 | `passed` | 生产 environment 检查 Mac/Lima/ADB/binder，真实 `available=true`，见 AM1 QA；负向无副作用由契约测试证明。 |
 | <a id="t04"></a>T04 | `passed` | [真实 HTTP 重启和历史查询](2026-09-23-operation-history-verification.md)，SQL 事务/幂等/迁移负向由集成测试证明。 |
 | <a id="t05"></a>T05 | `passed` | [控制链](2026-09-23-am1-real-control-retention.md)已验输入/切端/租约/HTTP 重启；[真实桌面控制](2026-09-24-desktop-control.md)补原生跨模块保留、切回、SSH/ADB断线锁定、结束清理与重连。最终构建再次完成往返，两个自建实例均核实missing。 |
-| <a id="t06"></a>T06 | `not_run` | [桌面链](2026-09-23-desktop-ui-verification.md)已验创建/生命周期/长名/高缩放；精确 200%、指定两窗口尺寸、旧 temporary 同链未验。 |
+| <a id="t06"></a>T06 | `passed`（所列步骤） | [桌面链](2026-09-23-desktop-ui-verification.md)已验创建/生命周期；[精确窗口与焦点](2026-09-24-desktop-apps-layout.md)补1280×800/1440×900、100%/200%、长名、真实不可达旧快照与恢复。旧 temporary 自动化覆盖拒绝/旧编号重放，历史实例真实同链未验，保留风险。 |
 | <a id="t07"></a>T07 | `not_run` | `scripts/smoke-android-management.py` 与 AM1 QA 已有自建实例、APK/中文输入/数据/双实例删除隔离；[真实APK中断](2026-09-24-app-interruption.md)补ADB断线/HTTP进程树强杀及重启安全核实、应用数据保留；T07.3通过，T07.2历史RED缺证保留。 |
 | <a id="t08"></a>T08 | `passed` | [AM2](am2-verification.md)固定基础 imageId、真实登记与按摘要删除；引用变化自动化有明确保护。 |
 | <a id="t09"></a>T09 | `not_run` | [AM2](am2-verification.md)真实固定摘要网络 pull、认证 HTTP 内容删除；桌面内容删除与真实断线核实未验。 |
@@ -80,7 +80,7 @@
 | <a id="t12"></a>T12 | `not_run` | 基础镜像/模板链已验；[可启动自定义候选](2026-09-24-custom-image.md)及固定ID重启/备份恢复/引用阻删通过；阶段回退演练及历史RED缺证仍未关闭。 |
 | <a id="t13"></a>T13 | `passed` | [真实批次](2026-09-24-bulk-failure-cancel.md)部分失败、修订冲突重试、容量取消通过；[真实容器消失失败与回执前强杀](2026-09-24-bulk-runtime-fault.md)补足恢复后重试、未知项不重放及重启后核实。 |
 | <a id="t14"></a>T14 | `not_run` | [五台/双预览](2026-09-23-final-review-remediation.md)通过；后台探测次数、隐藏页面同链与前台延迟未记录完整。 |
-| <a id="t15"></a>T15 | `not_run` | [真实 APK 动作](2026-09-23-am1-real-control-retention.md)及[跨重建版本核实](2026-09-24-final-branch-review.md)通过；[真实覆盖安装执行中断](2026-09-24-app-interruption.md)与数据保留已验；桌面破坏性确认同链仍未验，历史RED缺证保留。 |
+| <a id="t15"></a>T15 | `not_run` | [真实 APK 动作](2026-09-23-am1-real-control-retention.md)及[跨重建版本核实](2026-09-24-final-branch-review.md)通过；[真实覆盖安装执行中断](2026-09-24-app-interruption.md)与数据保留已验；[桌面确认、执行与备份恢复](2026-09-24-desktop-apps-layout.md)已验；本轮焦点增量有RED→GREEN，但原后端步骤历史RED缺证仍保留。 |
 | <a id="t16"></a>T16 | `not_run` / 十台 `blocked` | 1/5 台 API、双实例隔离有证据；[7921 MiB < 8192 MiB](2026-09-24-advanced-logs-and-capacity.md)阻塞十台，其他规模缺的前台/探测指标仍可继续。 |
 | <a id="t17"></a>T17 | `passed`（已列功能） | [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)补足 AC19；归档/权限/摘要/发布回归通过。[传输中进程树 SIGKILL](2026-09-24-restore-cancel-and-disk-full.md)已补；真实权限拒绝仍作扩展故障 `not_run`。 |
 | <a id="t18"></a>T18 | `passed`（已列功能） | [新卷属性读回](2026-09-23-persistent-metadata-verification.md)与[写入后硬中断](2026-09-23-restore-hard-interruption-verification.md)通过；[真实解包中 SIGKILL](2026-09-24-restore-transfer-interruption.md)已验；[目标 ENOSPC/取消恢复](2026-09-24-restore-cancel-and-disk-full.md)已验，源与备份保留，进程树回收通过。 |
@@ -101,3 +101,5 @@
 自定义镜像续行：T12.3补直接实测后，当前102个步骤为83 passed / 16 not_run / 3 blocked；此前82/17/3保留为各轮历史快照。
 
 APK中断续行：T07.3补安装执行中ADB断线/HTTP强杀、重启核实隔离及应用数据保留后，当前102步骤84passed/15not_run/3blocked。各旧轮计数保留历史范围。
+
+桌面布局与应用确认续行：T06.4补精确两尺寸/两缩放、键盘焦点和不可达旧快照，当前102步骤85passed/14not_run/3blocked；T15历史RED缺证未追认。全量门禁结果以本轮报告最终输出为准。

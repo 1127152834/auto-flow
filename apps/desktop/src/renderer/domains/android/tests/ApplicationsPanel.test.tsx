@@ -21,6 +21,53 @@ function setup() {
   return { api, onSession, onRefresh }
 }
 
+it.each(['清除数据', '卸载'])('keeps keyboard focus inside %s confirmation and restores it on cancel', async (action) => {
+  const { api } = setup()
+  const user = userEvent.setup()
+  const trigger = within(screen.getByText('org.example.notes').closest('article')!).getByRole('button', { name: action })
+  await user.click(trigger)
+  const dialog = screen.getByRole('dialog')
+  const cancel = within(dialog).getByRole('button', { name: '取消' })
+  expect(cancel).toHaveFocus()
+  expect(dialog).toHaveAccessibleName(`确认${action}`)
+  await user.tab({ shift: true })
+  expect(dialog.contains(document.activeElement)).toBe(true)
+  await user.tab()
+  expect(cancel).toHaveFocus()
+  await user.keyboard('{Escape}')
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  expect(trigger).toHaveFocus()
+  expect(api.appAction).not.toHaveBeenCalled()
+})
+
+it('keeps focus on search when a successful uninstall refresh removes its row after the dialog closes', async () => {
+  const api = { appAction: vi.fn().mockResolvedValue(fixtureSession(true)), launch: vi.fn() }
+  const props = { api, session: fixtureSession(true), onSession: vi.fn(), onRefresh: vi.fn() }
+  const view = render(<ApplicationsPanel {...props} apps={apps} />)
+  await userEvent.click(within(screen.getByText('org.example.notes').closest('article')!).getByRole('button', { name: '卸载' }))
+  await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '确认卸载' }))
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  await waitFor(() => expect(props.onRefresh).toHaveBeenCalledTimes(1))
+  view.rerender(<ApplicationsPanel {...props} apps={{ ...apps, packages: [], applications: [] }} />)
+  expect(screen.getByRole('searchbox', { name: '搜索应用' })).toHaveFocus()
+  expect(api.appAction).toHaveBeenCalledTimes(1)
+})
+
+it('moves focus off a removed app when uninstall finishes after the user closes its confirmation', async () => {
+  let resolve!: (session: ReturnType<typeof fixtureSession>) => void
+  const api = { appAction: vi.fn().mockImplementation(() => new Promise((done) => { resolve = done })), launch: vi.fn() }
+  const props = { api, session: fixtureSession(true), onSession: vi.fn(), onRefresh: vi.fn() }
+  const view = render(<ApplicationsPanel {...props} apps={apps} />)
+  await userEvent.click(within(screen.getByText('org.example.notes').closest('article')!).getByRole('button', { name: '卸载' }))
+  await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '确认卸载' }))
+  await userEvent.keyboard('{Escape}')
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  await act(async () => resolve(fixtureSession(true)))
+  view.rerender(<ApplicationsPanel {...props} apps={{ ...apps, packages: [], applications: [] }} />)
+  expect(screen.getByRole('searchbox', { name: '搜索应用' })).toHaveFocus()
+  expect(api.appAction).toHaveBeenCalledTimes(1)
+})
+
 it('shows versions, searches packages, and disables destructive actions for system apps', async () => {
   setup()
   expect(screen.getByText(/版本 42/)).toBeVisible()
@@ -43,6 +90,19 @@ it('requires confirmation for data loss and refreshes metadata after an unknown 
   expect(await screen.findByRole('alert')).toHaveTextContent('连接中断')
   await userEvent.click(screen.getByRole('button', { name: '刷新应用状态' }))
   await waitFor(() => expect(onRefresh).toHaveBeenCalledTimes(1))
+  expect(api.appAction).toHaveBeenCalledTimes(1)
+})
+
+it('returns focus to app search when an unknown result disables the confirmation trigger', async () => {
+  const { api } = setup()
+  api.appAction.mockRejectedValueOnce(new Error('连接中断，结果未知'))
+  const user = userEvent.setup()
+  await user.click(within(screen.getByText('org.example.notes').closest('article')!).getByRole('button', { name: '清除数据' }))
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: '确认清除数据' }))
+  await screen.findByRole('alert')
+  await user.keyboard('{Escape}')
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  expect(screen.getByRole('searchbox', { name: '搜索应用' })).toHaveFocus()
   expect(api.appAction).toHaveBeenCalledTimes(1)
 })
 

@@ -1,0 +1,78 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ApplicationsPanel.test.tsx -t finishes after
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ApplicationsPanel.test.tsx (22 tests | 1 failed | 21 skipped) 269ms
+   × moves focus off a removed app when uninstall finishes after the user closes its confirmation 268ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ApplicationsPanel.test.tsx > moves focus off a removed app when uninstall finishes after the user closes its confirmation
+Error: expect(element).toHaveFocus()
+
+Expected element with focus:
+  <input
+  aria-label="搜索应用"
+  class="mt-3"
+  placeholder="搜索包名"
+  role="searchbox"
+  value=""
+/>
+Received element with focus:
+  <body
+  style=""
+>
+  <div>
+    <section
+      aria-label="应用管理"
+      class="rounded-card border border-line bg-surface p-5"
+    >
+      <h2
+        class="font-semibold"
+      >
+        应用管理
+      </h2>
+      <input
+        aria-label="搜索应用"
+        class="mt-3"
+        placeholder="搜索包名"
+        role="searchbox"
+        value=""
+      />
+      <div
+        class="mt-3 grid gap-2"
+      />
+      <p
+        class="mt-3 text-sm text-muted"
+      >
+        没有匹配的应用。
+      </p>
+    </section>
+  </div>
+</body>
+ ❯ src/renderer/domains/android/tests/ApplicationsPanel.test.tsx:67:59
+     65|   await act(async () => resolve(fixtureSession(true)))
+     66|   view.rerender(<ApplicationsPanel {...props} apps={{ ...apps, package…
+     67|   expect(screen.getByRole('searchbox', { name: '搜索应用' })).toHaveFocus()
+       |                                                           ^
+     68|   expect(api.appAction).toHaveBeenCalledTimes(1)
+     69| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 21 skipped (22)
+   Start at  05:36:59
+   Duration  3.30s (transform 396ms, setup 335ms, import 1.93s, tests 269ms, environment 577ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ApplicationsPanel.test.tsx -t 'finishes after'

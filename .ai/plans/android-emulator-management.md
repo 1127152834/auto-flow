@@ -2,12 +2,16 @@
 
 - 日期：2026-09-24（校准；原计划 2026-09-19）
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
-- 当前实施基线：`codex/android-management-complete@471b816f` 加自定义候选镜像验收增量；原起点 `a92f0688`。
+- 当前实施基线：`codex/android-management-complete@b89ea597` 加桌面布局与应用确认增量；原起点 `a92f0688`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
 
-## 2026-09-23 全分支审查后增量
+## 当前续行（2026-09-24）
 
-- 2026-09-24 续行：[真实备份 ENOSPC 与传输取消](../../docs/qa/android-management/2026-09-24-backup-failure-verification.md)通过，无可用备份/暂存残留，原请求不重放，源探针保持；补备份本机未加密和恢复登录/DRM/私钥边界说明（RED 1 failed → GREEN 26 passed）。[任务逐项审计](../../docs/qa/android-management/2026-09-24-task-evidence-audit.md)将当前 102 步全部附证据：84 passed、15 not_run、3 blocked；部分 not_run 为历史 RED 缺证，未追认。
+桌面精确窗口/缩放、应用确认/执行/恢复、不可达旧快照保护已补；步骤当前85passed/14not_run/3blocked。最终全量单worker门禁424文件/5636项通过（824.25s），输出见[本轮报告](../../docs/qa/android-management/2026-09-24-desktop-apps-layout.md)。下节各次计数与输出保留历史范围，不能代替当前源码验证。
+
+## 2026-09-23 全分支审查后增量（历史快照）
+
+- 2026-09-24 续行：[真实备份 ENOSPC 与传输取消](../../docs/qa/android-management/2026-09-24-backup-failure-verification.md)通过，无可用备份/暂存残留，原请求不重放，源探针保持；补备份本机未加密和恢复登录/DRM/私钥边界说明（RED 1 failed → GREEN 26 passed）。[任务逐项审计](../../docs/qa/android-management/2026-09-24-task-evidence-audit.md)将当时 102 步全部附证据：84 passed、15 not_run、3 blocked；部分 not_run 为历史 RED 缺证，未追认。
 - 2026-09-24 最终只读复审已覆盖运行时、Operation、镜像、批次、备份恢复、清理、诊断及前端，未发现剩余 Critical/Important。修复和先 RED 后 GREEN 的证据见[最终分支审查](../../docs/qa/android-management/2026-09-24-final-branch-review.md)；未完成真实环境矩阵不因代码审查通过而转为通过。
 
 - 状态：`confirmed`（以下定向/真实证据）；完整目标仍 `partial`。来源：[审查修复与真实验收](../../docs/qa/android-management/2026-09-23-final-review-remediation.md)。以下结论覆盖本页下方较早的规模及自动化快照。
@@ -81,3 +85,5 @@
 - 2026-09-24 桌面控制增量：[真实断线、原生往返及根因修复](../../docs/qa/android-management/2026-09-24-desktop-control.md)：已完成自建设备真实控制/导航/SSH断线/重新连接与清理，补ADB后台服务、切端输入/心跳身份和离线清理回归；最终后端4041passed/26skipped、前端5631passed，类型/lint/OpenAPI/build通过；T05/AC05/AC06关闭，总目标仍partial。
 
 - 2026-09-24 APK执行中断：[真实ADB断线、HTTP强杀与数据保留](../../docs/qa/android-management/2026-09-24-app-interruption.md)完成两种覆盖安装故障，重启后旧包/数据存在仍保持结果未知并锁定控制，三轮5台自建资源清理。生产代码未变，应用回归32项通过；T07.3通过，当前步骤84passed/15not_run/3blocked，桌面确认流仍未验。
+
+- 2026-09-24 桌面布局与应用确认：两尺寸/100%及200%真实断言、长名换行、共享Dialog焦点、清除/卸载与备份恢复、sidecar不可达旧快照保护均通过；本轮自建实例/备份清理完成。T06.4通过，当前102步骤85passed/14not_run/3blocked。22项应用面板测试通过，最终全量单worker门禁424文件/5636项通过（824.25s）；四worker失败原始输出保留，不能据局部通过替代全量。见[证据](../../docs/qa/android-management/2026-09-24-desktop-apps-layout.md)。

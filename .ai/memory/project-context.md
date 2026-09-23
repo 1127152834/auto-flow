@@ -163,3 +163,12 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - 生产源码/打包 HTTP 与 Electron 管理链、万行数据测量通过；后端 3159 passed / 15 skipped、前端 5445 passed、脚本 94 passed；真实 CloakBrowser 四节点/批次/重建测试 8 passed。
 - PM9 仍 in_progress；生产项目执行器尚未接入完整图、项目数据节点、End 和人工检查点。已提交 R1–R4 架构规格等待用户确认，不能将管理侧/四节点证据扩写为完整执行通过。
 - 用户指定 Windows x64/macOS Intel 使用现有 GitHub Actions，缺少的实机证据明确待验收。本机 arm64 DMG 已构建但无签名、公证或手工安装证据；CI 实际状态见 PM9 报告。
+
+
+## 安卓桌面布局与确认焦点（2026-09-24，confirmed，隔离分支）
+
+来源：`codex/android-management-complete` 的 `docs/qa/android-management/2026-09-24-desktop-apps-layout.md`，真实Electron/Lima/ReDroid与22项组件回归。
+
+- 安卓创建页在1280×800/1440×900、100%/200%通过真实布局断言；长设备名标题使用最小高度与换行，避免覆盖详情标签。
+- 应用破坏性确认复用共享Dialog；取消初始焦点与键盘圈定，未知结果触发器禁用时回搜索框。卸载请求提交时选择搜索框作为恢复目标，避免异步列表移除按钮后焦点丢失。
+- 真实清除/卸载与备份恢复读回已完成，自建资源已清理。本条只确认该有界切片；最终全量门禁与整个AM1–AM4验收状态以QA报告为准。

@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ApplicationsPanel.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  05:33:02
+   Duration  10.36s (transform 989ms, setup 778ms, import 5.02s, tests 1.88s, environment 2.25s)

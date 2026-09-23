@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { isCurrentConsoleResponse, isVerifiedAppFailure, type Apps, type ConsoleSession, type FleetApi } from '../fleet-api'
 import { Action } from './PrototypeControls'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../../shared/components/ui/dialog'
 
 type DestructiveAction = 'uninstall' | 'clearData'
 type RequestId = ReturnType<typeof crypto.randomUUID>
 type Props = { api?: Pick<FleetApi, 'launch' | 'appAction'> & Partial<Pick<FleetApi, 'verifyApp'>>; apps?: Apps; session: ConsoleSession | null; onSession(s: ConsoleSession): void; onRefresh(): void }
 
 export function ApplicationsPanel({ api, apps, session, onSession, onRefresh }: Props) {
+  const confirmationTrigger = useRef<HTMLButtonElement | null>(null)
+  const cancelButton = useRef<HTMLButtonElement | null>(null)
+  const searchInput = useRef<HTMLInputElement | null>(null)
   const sessionRef = useRef(session)
   sessionRef.current = session
   useEffect(() => {
@@ -25,6 +29,7 @@ export function ApplicationsPanel({ api, apps, session, onSession, onRefresh }: 
     const metadataKnown = apps?.applications?.some((record) => record.packageName === packageName && record.system === false && record.protected === false) === true
     if ((action === 'uninstall' || action === 'clearData') && (!app || !metadataKnown)) return
     setError('')
+    if (action === 'uninstall') confirmationTrigger.current = null
     try {
       const next = action === 'launch' ? await api.launch(session, packageName, requestId) : await api.appAction(session, action, packageName, requestId)
       if (!isCurrentConsoleResponse(sessionRef.current, session)) return
@@ -63,15 +68,23 @@ export function ApplicationsPanel({ api, apps, session, onSession, onRefresh }: 
       setError(cause instanceof Error ? cause.message : '应用操作仍未核实')
     }
   }
+  const feedback = error && <div role="alert" className="mt-3 text-sm text-danger">{error}{unknownRequest && api?.verifyApp && <button type="button" onClick={() => void verifyUnknown()}>按原请求核实</button>}<button type="button" onClick={refreshUnknown}>刷新应用状态</button></div>
   return <section aria-label="应用管理" className="rounded-card border border-line bg-surface p-5">
     <h2 className="font-semibold">应用管理</h2>
-    <input aria-label="搜索应用" role="searchbox" placeholder="搜索包名" value={search} onChange={(event) => setSearch(event.target.value)} className="mt-3" />
+    <input ref={searchInput} aria-label="搜索应用" role="searchbox" placeholder="搜索包名" value={search} onChange={(event) => setSearch(event.target.value)} className="mt-3" />
     <div className="mt-3 grid gap-2">{visible.map((app) => {
       const appMetadataKnown = apps?.applications?.some((record) => record.packageName === app.packageName && record.system === false && record.protected === false) === true
-      return <article key={app.packageName} className="rounded-control border border-line p-3"><div className="flex items-start justify-between gap-3"><div><strong>{app.packageName}</strong><p className="text-xs text-muted">{app.protected ? '受保护应用' : app.system ? '系统应用' : appMetadataKnown ? '用户应用' : '应用类型待核实'} · {app.versionName ?? (app.versionCode == null ? '版本待核实' : `版本 ${app.versionCode}`)}</p></div><div className="flex flex-wrap gap-2"><Action disabled={!canWrite} onClick={() => void run('launch', app.packageName)}>启动</Action><Action disabled={!canWrite} onClick={() => void run('stop', app.packageName)}>停止</Action><Action disabled={!canWrite || !appMetadataKnown} onClick={() => setPending({ action: 'clearData', packageName: app.packageName, requestId: crypto.randomUUID() })}>清除数据</Action><Action disabled={!canWrite || !appMetadataKnown} onClick={() => setPending({ action: 'uninstall', packageName: app.packageName, requestId: crypto.randomUUID() })}>卸载</Action></div></div></article>
+      return <article key={app.packageName} className="rounded-control border border-line p-3"><div className="flex items-start justify-between gap-3"><div><strong>{app.packageName}</strong><p className="text-xs text-muted">{app.protected ? '受保护应用' : app.system ? '系统应用' : appMetadataKnown ? '用户应用' : '应用类型待核实'} · {app.versionName ?? (app.versionCode == null ? '版本待核实' : `版本 ${app.versionCode}`)}</p></div><div className="flex flex-wrap gap-2"><Action disabled={!canWrite} onClick={() => void run('launch', app.packageName)}>启动</Action><Action disabled={!canWrite} onClick={() => void run('stop', app.packageName)}>停止</Action><Action disabled={!canWrite || !appMetadataKnown} onClick={(event) => { confirmationTrigger.current = event.currentTarget; setPending({ action: 'clearData', packageName: app.packageName, requestId: crypto.randomUUID() }) }}>清除数据</Action><Action disabled={!canWrite || !appMetadataKnown} onClick={(event) => { confirmationTrigger.current = event.currentTarget; setPending({ action: 'uninstall', packageName: app.packageName, requestId: crypto.randomUUID() }) }}>卸载</Action></div></div></article>
     })}</div>
     {!visible.length && <p className="mt-3 text-sm text-muted">没有匹配的应用。</p>}
-    {error && <div role="alert" className="mt-3 text-sm text-danger">{error}{unknownRequest && api?.verifyApp && <button type="button" onClick={() => void verifyUnknown()}>按原请求核实</button>}<button type="button" onClick={refreshUnknown}>刷新应用状态</button></div>}
-    {pending && <div role="dialog" aria-modal="true" className="mt-4 rounded-control border border-line bg-surface-subtle p-4"><h3 className="font-semibold">确认{pending.action === 'clearData' ? '清除数据' : '卸载'}</h3><p className="mt-2 text-sm">将对 {pending.packageName} 执行不可逆操作。</p><div className="mt-3 flex gap-2"><button type="button" onClick={() => setPending(null)}>取消</button><button type="button" disabled={!canWrite || !apps?.applications?.some((record) => record.packageName === pending.packageName && record.system === false && record.protected === false)} onClick={() => void run(pending.action, pending.packageName, pending.requestId)}>确认{pending.action === 'clearData' ? '清除数据' : '卸载'}</button></div></div>}
+    {!pending && feedback}
+    <Dialog open={Boolean(pending)} onOpenChange={(open) => { if (!open) setPending(null) }}>
+      {pending && <DialogContent onOpenAutoFocus={(event) => { event.preventDefault(); cancelButton.current?.focus() }} onCloseAutoFocus={(event) => { event.preventDefault(); const trigger = confirmationTrigger.current; (trigger?.isConnected && !trigger.disabled ? trigger : searchInput.current)?.focus() }}>
+        <DialogTitle>确认{pending.action === 'clearData' ? '清除数据' : '卸载'}</DialogTitle>
+        <DialogDescription>将对 {pending.packageName} 执行不可逆操作。</DialogDescription>
+        {feedback}
+        <div className="flex gap-2"><button ref={cancelButton} type="button" onClick={() => setPending(null)}>取消</button><button type="button" disabled={!canWrite || !apps?.applications?.some((record) => record.packageName === pending.packageName && record.system === false && record.protected === false)} onClick={() => void run(pending.action, pending.packageName, pending.requestId)}>确认{pending.action === 'clearData' ? '清除数据' : '卸载'}</button></div>
+      </DialogContent>}
+    </Dialog>
   </section>
 }

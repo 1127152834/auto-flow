@@ -57,9 +57,9 @@
 
 | 阶段 | 任务当前状态 | 下一验收门槛 |
 | --- | --- | --- |
-| AM1 | T01–T05 `passed`；T06/T07 `partial` | 精确 200%/两种窗口尺寸、旧 temporary 兼容与桌面应用确认流程 |
+| AM1 | T01–T06 所列功能 `passed`；T07 历史 RED 缺证 | 精确 200%/两种窗口尺寸、键盘焦点、不可达旧快照与桌面应用确认已补；旧 temporary 契约已验，历史实例真实同链另列风险 |
 | AM2 | T08/T10 功能 `passed`；T09/T12 `partial`；T11 检测规则 `passed`、专用 GApps 账号链 `blocked` | 固定摘要网络拉取和认证 HTTP 内容删除已实测；待桌面删除、断线核实、候选镜像/账号下载链与阶段回退 |
-| AM3 | T13–T16 `partial` | 双实例/五实例、部分失败、修订冲突项重试和容量等待取消已验；十台容量 blocked，运行时瞬时故障/未知结果、桌面前台/探测指标、应用确认与真实 ADB 断连仍未验 |
+| AM3 | T13–T16 `partial` | 双实例/五实例、部分失败、修订冲突项重试和容量等待取消已验；十台容量 blocked，运行时瞬时故障/未知结果、应用确认与真实 ADB 断连已补；桌面前台/探测指标仍未完整记录 |
 | AM4 | T17–T19 已列功能 `passed`；T20 `partial` | 文件流备份恢复、真实 ENOSPC/传输取消、受限高级日志与全分支审查修复已验；恢复解包中 SIGKILL 已补；目标磁盘不足/取消恢复、多对象清理硬中断已补；备份传输硬中断和完整负向矩阵见后续验证记录 |
 
 本轮各次自建 QA 实例和备份均记录清理及归属核实；这不赋予无来源旧文件可删除资格。Node 22、全量后端与最终审查按实际输出单独登记。102 个步骤的状态、文件映射和缺证原因见[逐项审计](../../qa/android-management/2026-09-24-task-evidence-audit.md)；功能通过与历史 RED 证据是否完备分开记录。
@@ -322,7 +322,7 @@ expect(requests.some(p => /workflows|allocations|\/runs/.test(p))).toBe(false);
 
 - [x] RED：管理页测试按当前代码位置执行 `AndroidPage.test.tsx` 和 `ManagementOverview.test.tsx`，后端执行管理设备/操作契约与集成测试。（状态：passed；历史查询/焦点/过滤 RED→GREEN 见 operation-history-verification QA；[证据 T06.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t06)）
 - [x] 先共享控件组成状态/卡片/表格/确认框，再挂页面；新temporary请求后端拒绝，旧同编号回执优先返回。生产入口不导入测试数据，不删除历史数据和迁移。（状态：passed；页面复用控件，保留历史数据；禁止新 temporary 回归通过；[证据 T06.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t06)）
-- [ ] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。（状态：not_run；同卷恢复、长名称、高缩放已验；精确 200%、指定窗口尺寸和真实断线尚未运行；[证据 T06.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t06)）
+- [x] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。（状态：passed；同卷恢复与默认配置已有证据；本轮精确1280×800/1440×900、100%/200%、长名、键盘确认与sidecar不可达旧快照均真实通过；[证据 T06.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t06)）
 - [x] GREEN后提交有界 T06 增量；旧三列原型断言改为新行为，不删安全回归。（状态：passed；4f612d53、57fb391c、c3f9d94e 等有界提交；阶段真实验收未关闭；[证据 T06.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t06)）
 
 ### T07：AM1真实链与交付验收
@@ -540,7 +540,7 @@ def test_readonly_session_cannot_clear_app_data(client, readonly_session):
 - [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_apps.py -q)`及ApplicationsPanel.test.tsx。（状态：not_run；当前 GREEN 已验证；该步骤独立历史 RED 输出未找到，不追认通过；[证据 T15.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t15)）
 - [x] 受控临时文件增量读取并计算摘要，256MiB上限，绑定幂等ID和目标；安装后核实版本，不重复执行未知结果；安全包名argv不拼任意shell。（状态：passed；受控上传/摘要/幂等/版本核对/命令标记恢复已实现并真实 APK 读回；[证据 T15.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t15)）
 - [x] UI列表/搜索/启动/停止，卸载与清数据独立确认；刷新不隐式启动应用。系统与保护包不开放普通卸载，禁用原因可读。（状态：passed；列表搜索/动作/确认/禁用原因回归通过；[证据 T15.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t15)）
-- [x] GREEN后提交 `feat(android): complete everyday application management`。（状态：passed；软件切片已入历史；桌面真实确认与 ADB 断连仍未验；[证据 T15.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t15)）
+- [x] GREEN后提交 `feat(android): complete everyday application management`。（状态：passed；软件切片已入历史；9月24日桌面真实确认/执行/备份恢复与 ADB 断连已补；[证据 T15.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t15)）
 - [x] 2026-09-23 增量：完成标记先验证语义，启动等待超时及旧零标记保持unknown；最终Android后端271项通过，真实单实例启动/停止与人工丢响应读回通过。真实APK/卸载/清数据、完整HTTP重启仍未关闭。证据：`docs/qa/android-management/2026-09-23-command-verification.md`。（状态：passed；历史命令语义增量保留；后续真实 APK 全动作和 HTTP 重启已补；[证据 T15.6](../../qa/android-management/2026-09-24-task-evidence-audit.md#t15)）
 
 ### T16：AM3隔离与性能验收

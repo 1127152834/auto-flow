@@ -1,0 +1,18 @@
+{
+  "deviceId": "df7fd086-a8cb-5e14-8ab1-3922db919248",
+  "receipts": [
+    {
+      "5ecb85dd-ddba-44e5-acf8-0002d8f9d111": {
+        "request": {
+          "generation": 3,
+          "operation": "uninstall",
+          "value": "moe.shizuku.privileged.api"
+        },
+        "state": "succeeded",
+        "commandMarker": "/data/local/tmp/autoflow-operation-22203c5ae664470f83d472b9dd5d2f24"
+      }
+    }
+  ],
+  "package": "",
+  "passed": true
+}
