@@ -179,10 +179,10 @@ class RunArtifact:
     purpose: Literal["error", "result"]
     event_sequence: int
     execution_generation: int
-    kind: Literal["screenshot"]
+    kind: Literal["screenshot", "image", "file"]
     availability: ArtifactAvailability
     relative_path: str | None
-    media_type: Literal["image/png"] | None
+    media_type: str | None
     byte_size: int | None
     sha256: str | None
     created_at: datetime
@@ -225,18 +225,23 @@ def create_run_artifact(
         or event_sequence < 1
         or type(execution_generation) is not int
         or execution_generation < 0
-        or kind != "screenshot"
+        or kind not in {"screenshot", "image", "file"}
         or availability not in {"available", "unavailable"}
     )
     if invalid:
         raise _artifact_invalid()
     if availability == "available":
         if (
-            not _controlled_artifact_path(relative_path, run_id, execution_generation)
-            or media_type != "image/png"
+            not _controlled_artifact_path(relative_path, run_id, execution_generation, kind)
+            or not isinstance(media_type, str)
+            or not media_type
+            or len(media_type) > 120
+            or (kind == "screenshot" and media_type != "image/png")
+            or (kind == "image" and not media_type.startswith("image/"))
+            or (kind == "file" and media_type != "application/octet-stream")
             or type(byte_size) is not int
             or byte_size < 1
-            or byte_size > MAX_ARTIFACT_BYTES
+            or byte_size > (MAX_ARTIFACT_BYTES if kind == "screenshot" else 64 * 1024 * 1024)
             or not isinstance(sha256, str)
             or len(sha256) != 64
             or any(character not in "0123456789abcdef" for character in sha256)
@@ -262,10 +267,10 @@ def create_run_artifact(
         cast(Literal["error", "result"], purpose),
         event_sequence,
         execution_generation,
-        "screenshot",
+        cast(Literal["screenshot", "image", "file"], kind),
         cast(ArtifactAvailability, availability),
         relative_path,
-        cast(Literal["image/png"] | None, media_type),
+        media_type,
         byte_size,
         sha256,
         created_at,
@@ -274,7 +279,7 @@ def create_run_artifact(
 
 
 def _controlled_artifact_path(
-    value: str | None, run_id: str, execution_generation: int
+    value: str | None, run_id: str, execution_generation: int, kind: str
 ) -> bool:
     if not value or "\\" in value:
         return False
@@ -285,7 +290,12 @@ def _controlled_artifact_path(
         and "." not in path.parts
         and ".." not in path.parts
         and path.parts[:3] == ("runs", run_id, f"generation-{execution_generation}")
-        and path.suffix == ".png"
+        and len(path.parts) >= 4
+        and (
+            path.suffix == ".png"
+            if kind == "screenshot"
+            else len(path.parts) >= 5 and path.parts[3] == "artifacts"
+        )
     )
 
 

@@ -9835,9 +9835,9 @@ export type components = {
             artifactId: string;
             /**
              * Kind
-             * @constant
+             * @enum {string}
              */
-            kind: "screenshot";
+            kind: "screenshot" | "image" | "file";
             /**
              * Purpose
              * @enum {string}
@@ -9859,7 +9859,9 @@ export type components = {
             /** Executiongeneration */
             executionGeneration: number;
             /** Mediatype */
-            mediaType?: "image/png" | null;
+            mediaType?: string | null;
+            /** Filename */
+            fileName?: string | null;
             /** Bytesize */
             byteSize?: number | null;
             /** Sha256 */

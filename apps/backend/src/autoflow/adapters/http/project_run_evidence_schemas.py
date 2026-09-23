@@ -73,7 +73,7 @@ class RunOutputPage(ApiModel):
 
 class RunArtifactView(ApiModel):
     artifact_id: str
-    kind: Literal["screenshot"]
+    kind: Literal["screenshot", "image", "file"]
     purpose: Literal["error", "result"]
     availability: Literal["available", "unavailable"]
     node_id: str
@@ -81,7 +81,8 @@ class RunArtifactView(ApiModel):
     node_visit_id: str | None = None
     event_sequence: int
     execution_generation: int
-    media_type: Literal["image/png"] | None = None
+    media_type: str | None = None
+    file_name: str | None = None
     byte_size: int | None = None
     sha256: str | None = None
     created_at: datetime

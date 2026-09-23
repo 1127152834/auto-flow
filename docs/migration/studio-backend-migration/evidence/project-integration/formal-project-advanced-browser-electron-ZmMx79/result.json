@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-advanced-browser-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T15:30:34.765Z",
+  "gitHead": "8325688662c30cfdeb460e57e066836a48f72561",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "56f74f47-bdc5-47c5-b511-89f8460b363a",
+  "workflowId": "yKgI9GRYVM3rjr14vcSTP",
+  "batchId": "a2ed99d6-3066-4ae8-8f99-7a0ccccca6a5",
+  "taskId": "a2cc23e6-d269-4aff-a31b-fe2dc243ccac",
+  "sawCloakBrowser": true,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存下拉选择、勾选、图片、下载和子元素流程",
+    "项目任务的下载文件和保存图片以登记产物的类型、文件名、哈希和内容接口完整读取",
+    "正式项目任务使用默认 Profile 完成高级网页动作、下载和图片产物，正式任务页可预览且浏览器已清理"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

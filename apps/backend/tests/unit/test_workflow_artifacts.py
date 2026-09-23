@@ -2,7 +2,6 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-
 from autoflow.domain.workflows.runtime import (
     WorkflowRuntimeError,
     create_run_artifact,
@@ -23,7 +22,7 @@ def artifact(**overrides):
         purpose="error",
         event_sequence=overrides.pop("event_sequence", 4),
         execution_generation=generation,
-        kind="screenshot",
+        kind=overrides.pop("kind", "screenshot"),
         availability=overrides.pop("availability", "available"),
         relative_path=overrides.pop(
             "relative_path",
@@ -77,3 +76,26 @@ def test_unavailable_artifact_has_no_file_claim() -> None:
 
     assert value.relative_path is None
     assert value.unavailable_reason == "SCREENSHOT_CAPTURE_FAILED"
+
+
+@pytest.mark.parametrize("kind,media_type,name", [
+    ("file", "application/octet-stream", "download.txt"),
+    ("image", "image/png", "saved-image.png"),
+    ("image", "image/jpeg", "saved-image.jpg"),
+])
+def test_approved_binary_artifacts_retain_type_and_controlled_path(kind, media_type, name):
+    run_id = str(uuid4())
+    value = artifact(
+        run_id=run_id,
+        kind=kind,
+        media_type=media_type,
+        relative_path=f"runs/{run_id}/generation-2/artifacts/{name}",
+    )
+    assert (value.kind, value.media_type) == (kind, media_type)
+
+
+def test_binary_artifact_rejects_path_or_media_type_mismatch():
+    with pytest.raises(WorkflowRuntimeError, match="产物元数据无效"):
+        artifact(kind="file", media_type="application/octet-stream")
+    with pytest.raises(WorkflowRuntimeError, match="产物元数据无效"):
+        artifact(kind="image", media_type="text/html")

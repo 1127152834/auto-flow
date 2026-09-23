@@ -1,4 +1,4 @@
-"""Use the shared PNG store, then confirm the durable project event separately."""
+"""Use the shared artifact store, then confirm the durable project event separately."""
 
 import asyncio
 from collections.abc import Awaitable, Callable
@@ -26,7 +26,7 @@ class _WriteCancellation:
             raise asyncio.CancelledError
 
 
-class ProjectScreenshotWriter:
+class ProjectArtifactWriter:
     def __init__(
         self,
         root: Path,
@@ -34,9 +34,11 @@ class ProjectScreenshotWriter:
         generation: int,
         node_id: str,
         execution_id: str,
+        kind: str,
         emit: Callable[[str, str, str, dict[str, object]], Awaitable[None]],
     ) -> None:
         self._node_id, self._execution_id, self._emit = node_id, execution_id, emit
+        self._kind = kind
         self._pending: WorkflowArtifact | None = None
         self._cancellation = _WriteCancellation()
         self._run_id = run_id
@@ -56,9 +58,16 @@ class ProjectScreenshotWriter:
         return artifact
 
     async def write_bytes(self, *, name: str, content: bytes, mime_type: str) -> str:
-        if mime_type != "image/png" or not content or len(content) > 20 * 1024 * 1024:
+        valid_media = (
+            mime_type == "image/png" if self._kind == "screenshot"
+            else mime_type.startswith("image/") if self._kind == "image"
+            else mime_type == "application/octet-stream" if self._kind == "file"
+            else False
+        )
+        limit = 20 * 1024 * 1024 if self._kind == "screenshot" else 64 * 1024 * 1024
+        if not valid_media or not content or len(content) > limit or len(mime_type) > 120:
             raise WorkflowRunError(
-                "RUN_ARTIFACT_INVALID", "项目截图必须是有效大小的 PNG", 422
+                "RUN_ARTIFACT_INVALID", "项目产物的类型或大小无效", 422
             )
         writing = asyncio.create_task(
             self._writer.write_bytes(name=name, content=content, mime_type=mime_type)
@@ -86,7 +95,7 @@ class ProjectScreenshotWriter:
             self._execution_id,
             {
                 "artifactId": artifact.artifact_id,
-                "kind": "screenshot",
+                "kind": self._kind,
                 "purpose": "result",
                 "availability": "available",
                 "relativePath": artifact.relative_path,

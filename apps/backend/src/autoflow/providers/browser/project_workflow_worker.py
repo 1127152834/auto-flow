@@ -15,7 +15,7 @@ from uuid import uuid4
 
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.infrastructure.filesystem.project_workflow_artifacts import (
-    ProjectScreenshotWriter,
+    ProjectArtifactWriter,
 )
 from autoflow.providers.browser.project_graph import (
     ProjectGraphExecutor,
@@ -278,9 +278,11 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     lambda page, node_id, visit: _capture_failure_screenshot(
                         command, page, node_id, visit, control=control
                     ),
-                    lambda node_id, visit: ProjectScreenshotWriter(
+                    lambda node_id, visit, module_type: ProjectArtifactWriter(
                         _artifact_directory(command)[0].parents[2], run_id, generation,
-                        node_id, visit, emit,
+                        node_id, visit,
+                        {"screenshot": "screenshot", "download_file": "file", "save_image": "image"}[module_type],
+                        emit,
                     ),
                     credentials=incoming.credentials if isinstance(incoming, _Input) else None,
                     models=WorkflowModelGateway(command.pop("modelBindings", [])),

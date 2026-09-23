@@ -1,3 +1,4 @@
+from pathlib import PurePosixPath
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -146,6 +147,7 @@ def _artifact_view(
         "eventSequence": item.event_sequence,
         "executionGeneration": item.execution_generation,
         "mediaType": item.media_type,
+        "fileName": PurePosixPath(item.relative_path).name if item.relative_path else None,
         "byteSize": item.byte_size,
         "sha256": item.sha256,
         "createdAt": item.created_at,

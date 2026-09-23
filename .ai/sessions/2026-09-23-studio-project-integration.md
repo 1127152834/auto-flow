@@ -326,3 +326,9 @@
 - 继续复用已迁入的 WebRPA `basic.py` 两种页面加载节点；项目目录由 122 增至 124。项目事件适配按原字段 `saveToVariable` 输出真实布尔值，缺省 `page_loaded`；未产生变量时不构造节点输出。
 - 真实项目批次两项任务均执行打开网页、等待加载、状态探测，`page_ready=true`，输出与进程清理通过；关联回归 202 项、真实 CloakBrowser 项目批次 2 项、专项 2 项、Ruff/mypy/OpenAPI 通过。正式 macOS arm64 开发入口真实 UI 闭环通过，临时工作区且无用户数据库改动。详情见 `docs/migration/studio-backend-migration/evidence/project-integration/page-load-family-2026-09-23/README.md`。
 - 冻结后端和本地 unsigned Electron 包重建并通过相同正式 UI 链路；上一网页基础族在同一包的回归也通过。包哈希、两份项目任务结果及未实测平台见页面加载节点族证据 README。现有高级网页节点的下载、图片产物需要共享项目产物写入边界，未因此开放。
+
+## 项目任务高级网页节点族（2026-09-23，confirmed）
+
+- 冻结 WebRPA `advanced_browser.py` 的 11 个批准执行器一次接入项目目录，124→135；Studio 有效范围仍为 213。仅扩展共享项目产物适配，截图、下载文件和保存图片均经原子写入、持久事件确认、受控路径及哈希读取；旧截图保持兼容。
+- 两条真实 CloakBrowser 项目任务各执行 13 节点链，项目默认 Profile、下载、图片、变量、尝试与清理通过；关联后端 209 项、项目真实批次 7 项、前端项目运行 156 项通过。Ruff、mypy、TypeScript、ESLint、OpenAPI、构建通过。
+- 正式 Electron 开发入口和 macOS arm64 本地 unsigned 包均经真实 UI 保存关窗、项目任务运行、产物读取和图片预览；证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/advanced-browser-family-2026-09-23/README.md`。Intel/Windows、用户数据库与余下项目节点族不据此关闭。

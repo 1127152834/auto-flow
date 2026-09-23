@@ -8,7 +8,6 @@ from uuid import uuid4
 
 import httpx
 import pytest
-
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
@@ -17,6 +16,7 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
@@ -26,7 +26,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -130,6 +130,40 @@ async def test_real_project_batch_http(
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
+        elif scenario == "advanced_browser":
+            upload = tmp_path / "project-upload.txt"
+            upload.write_text("AutoFlow 上传", encoding="utf-8")
+            fixture = (Path(__file__).parents[1] / "fixtures" / "workflow-b2-web-actions.html").resolve().as_uri()
+            steps = [
+                ("open_page", {"url": fixture, "openMode": "current_tab"}),
+                ("select_dropdown", {"selector": "#choice", "selectBy": "value", "value": "second"}),
+                ("set_checkbox", {"selector": "#enabled", "checked": True}),
+                ("drag_element", {"sourceSelector": "#drag-source", "targetSelector": "#drag-target"}),
+                ("scroll_page", {"direction": "down", "distance": 300, "scrollMode": "wheel"}),
+                ("upload_file", {"selector": "#upload", "filePath": str(upload)}),
+                ("download_file", {"downloadMode": "click", "triggerSelector": "#download-link", "variableName": "downloaded_file"}),
+                ("save_image", {"selector": "#fixture-image", "savePath": "fixture-image.png", "variableName": "saved_image"}),
+                ("get_child_elements", {"parentSelector": "#children", "variableName": "children"}),
+                ("get_sibling_elements", {"elementSelector": "#sibling-target", "siblingType": "all", "variableName": "siblings"}),
+                ("element_exists", {"selector": "#bottom-marker"}),
+                ("element_visible", {"selector": "#enabled"}),
+                ("page_load_complete", {"checkState": "domcontentloaded", "saveToVariable": "page_ready"}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"advanced-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"advanced-edge-{index}", "source": f"advanced-{index}", "target": f"advanced-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            for index in (10, 11):
+                document["content"]["edges"][index]["sourceHandle"] = "true"
+                document["content"]["edges"].append({
+                    "id": f"advanced-false-{index}", "source": f"advanced-{index}",
+                    "sourceHandle": "false", "target": f"advanced-{index + 1}",
+                })
+            document["content"]["variables"] = []
         service = WorkflowService(
             SqlAlchemyWorkflowRepository(app.state.session_factory)
         )
@@ -149,7 +183,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario == "web_basic":
+            if scenario in {"web_basic", "advanced_browser"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -178,7 +212,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                        **({} if scenario == "web_basic" else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -275,6 +309,30 @@ async def test_real_project_batch_http(
                         "dialog_message": "AutoFlow dialog",
                     }
                 assert not app.state.project_workflow_worker_manager.busy()
+            elif scenario == "advanced_browser":
+                assert detail["statusCounts"]["succeeded"] == 2
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    attempts = await client.get(task_path + "/node-attempts", params={"pageSize": 100})
+                    outputs = await client.get(task_path + "/outputs")
+                    artifacts = await client.get(task_path + "/artifacts")
+                    assert attempts.status_code == outputs.status_code == artifacts.status_code == 200
+                    assert attempts.json()["total"] == len(steps)
+                    assert {item["status"] for item in attempts.json()["items"]} == {"succeeded"}
+                    output_values = {item["name"]: item["value"] for item in outputs.json()["items"]}
+                    assert output_values["children"] == ["#child-a", "#child-b"]
+                    assert output_values["siblings"] == ["#sibling-a", "#sibling-b"]
+                    assert {item["kind"] for item in artifacts.json()["items"]} == {"file", "image"}
+                    assert artifacts.json()["total"] == 2
+                    for item in artifacts.json()["items"]:
+                        content = await client.get(task_path + f"/artifacts/{item['artifactId']}/content")
+                        assert content.status_code == 200
+                        if item["kind"] == "file":
+                            assert content.content == "AutoFlow 下载".encode()
+                            assert item["fileName"] == "fixture-download.txt"
+                        else:
+                            assert content.content.startswith(b"\x89PNG")
+                            assert item["fileName"] == "fixture-image.png"
             elif scenario == "page_load":
                 assert detail["statusCounts"]["succeeded"] == 2 and len(requests) >= 2
                 for task in tasks:

@@ -9,10 +9,10 @@ export function createTaskArtifactApi(client: StreamingApiClient, projectId: str
   return {
     list: (page: number, signal?: AbortSignal) => client.request<Schema['RunArtifactPage']>(`${base}?page=${page}&pageSize=100`, { signal }),
     get: (artifactId: string, signal?: AbortSignal) => client.request<Schema['RunArtifactView']>(`${base}/${encode(artifactId)}`, { signal }),
-    content: async (artifactId: string, signal?: AbortSignal): Promise<Blob> => {
+    content: async (artifactId: string, signal?: AbortSignal, expectedMediaType = 'image/png'): Promise<Blob> => {
       const response = await client.stream(`${base}/${encode(artifactId)}/content`, { signal })
-      if (response.headers.get('content-type')?.split(';', 1)[0].trim() !== 'image/png') {
-        throw new Error('截图响应格式无效')
+      if (response.headers.get('content-type')?.split(';', 1)[0].trim() !== expectedMediaType) {
+        throw new Error('产物响应格式无效')
       }
       return response.blob()
     },

@@ -2,9 +2,8 @@ import asyncio
 from pathlib import Path
 
 import pytest
-
 from autoflow.infrastructure.filesystem.project_workflow_artifacts import (
-    ProjectScreenshotWriter,
+    ProjectArtifactWriter,
 )
 
 
@@ -18,7 +17,7 @@ async def test_project_screenshot_returns_only_after_ack_and_keeps_filename(tmp_
         arrived.set()
         await confirmed.wait()
 
-    writer = ProjectScreenshotWriter(tmp_path, "run", 2, "shot", "visit", emit)
+    writer = ProjectArtifactWriter(tmp_path, "run", 2, "shot", "visit", "screenshot", emit)
     pending = asyncio.create_task(
         writer.write_bytes(
             name="nested/capture.png", content=b"png", mime_type="image/png"
@@ -38,19 +37,47 @@ async def test_project_screenshot_returns_only_after_ack_and_keeps_filename(tmp_
 
 
 @pytest.mark.asyncio
-async def test_uncertain_ack_does_not_delete_possible_committed_screenshot(tmp_path):
+@pytest.mark.parametrize("kind,mime_type,name", [
+    ("screenshot", "image/png", "capture.png"),
+    ("image", "image/jpeg", "picture.jpg"),
+    ("file", "application/octet-stream", "report.txt"),
+])
+async def test_uncertain_ack_does_not_delete_possible_committed_artifact(
+    tmp_path, kind, mime_type, name
+):
     events = []
 
     async def emit(*event):
         events.append(event)
         raise RuntimeError("ACK connection lost after SQL commit")
 
-    writer = ProjectScreenshotWriter(tmp_path, "run", 1, "shot", "visit", emit)
+    writer = ProjectArtifactWriter(tmp_path, "run", 1, "shot", "visit", kind, emit)
     with pytest.raises(RuntimeError, match="ACK connection lost"):
         await writer.write_bytes(
-            name="capture.png", content=b"png", mime_type="image/png"
+            name=name, content=b"png", mime_type=mime_type
         )
     assert (tmp_path / events[0][3]["relativePath"]).read_bytes() == b"png"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("kind,mime_type,name,content", [
+    ("file", "application/octet-stream", "downloads/report.txt", b"hello"),
+    ("image", "image/png", "images/picture.png", b"\x89PNG"),
+])
+async def test_project_binary_output_waits_for_durable_event(
+    tmp_path, kind, mime_type, name, content
+):
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    writer = ProjectArtifactWriter(tmp_path, "run", 2, "binary", "visit", kind, emit)
+    target = await writer.write_bytes(name=name, content=content, mime_type=mime_type)
+    assert Path(target).read_bytes() == content
+    assert events[0][3]["kind"] == kind
+    assert events[0][3]["mediaType"] == mime_type
+    assert events[0][3]["relativePath"] == f"runs/run/generation-2/artifacts/{name}"
 
 
 @pytest.mark.asyncio
@@ -60,7 +87,7 @@ async def test_screenshot_paths_and_existing_files_keep_shared_store_rules(tmp_p
     async def emit(*event):
         events.append(event)
 
-    writer = ProjectScreenshotWriter(tmp_path, "run", 1, "shot", "visit", emit)
+    writer = ProjectArtifactWriter(tmp_path, "run", 1, "shot", "visit", "screenshot", emit)
     from autoflow.domain.workflows.runs import WorkflowRunError
 
     with pytest.raises(WorkflowRunError, match="产物路径无效"):
@@ -96,7 +123,7 @@ async def test_generation_symlink_is_rejected_before_any_external_file_is_writte
 
     failure = None
     try:
-        writer = ProjectScreenshotWriter(root, "run", 3, "shot", "visit", emit)
+        writer = ProjectArtifactWriter(root, "run", 3, "shot", "visit", "screenshot", emit)
         await writer.write_bytes(
             name="capture.png", content=b"png", mime_type="image/png"
         )
@@ -139,7 +166,7 @@ async def test_cancel_during_blocked_file_write_waits_for_cleanup_without_unregi
     async def emit(*event):
         events.append(event)
 
-    writer = ProjectScreenshotWriter(tmp_path, "run", 4, "shot", "visit", emit)
+    writer = ProjectArtifactWriter(tmp_path, "run", 4, "shot", "visit", "screenshot", emit)
     pending = asyncio.create_task(
         writer.write_bytes(name="cancelled.png", content=b"png", mime_type="image/png")
     )

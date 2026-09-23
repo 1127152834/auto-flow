@@ -339,7 +339,7 @@ class ProjectWorkflowWorkerManager:
             return
         suffix = relative.relative_to(prefix)
         legacy = suffix == PurePosixPath(f"{artifact_id}.png")
-        if not legacy and (len(suffix.parts) < 2 or suffix.parts[0] != "artifacts" or suffix.suffix.lower() != ".png"):
+        if not legacy and (len(suffix.parts) < 2 or suffix.parts[0] != "artifacts"):
             return
         candidate = worker.artifact_directory / Path(*suffix.parts)
         if candidate.resolve() != candidate.absolute():

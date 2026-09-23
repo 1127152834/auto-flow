@@ -131,7 +131,7 @@ class ProjectGraphExecutor:
         emit: Callable[[str, str, str, dict[str, object]], Awaitable[None]],
         should_stop: Callable[[], bool],
         capture_failure: Callable[[Any, str, str], Awaitable[dict[str, object]]] | None = None,
-        artifact_writer: Callable[[str, str], ArtifactWriter] | None = None,
+        artifact_writer: Callable[[str, str, str], ArtifactWriter] | None = None,
         *, credentials: CredentialReader | None = None,
         models: WorkflowModelGateway | None = None,
         external_integrations: ExternalIntegrationGateway | None = None,
@@ -234,8 +234,9 @@ class ProjectGraphExecutor:
             node_data = self.nodes[node_id]
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
-            if self.artifact_writer is not None and node_data.get("moduleType") == "screenshot":
-                current.artifacts = self.artifact_writer(node_id, visit)
+            module_type = node_data.get("moduleType")
+            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image"}:
+                current.artifacts = self.artifact_writer(node_id, visit, module_type)
             await emit('nodeAttempt', {'status': 'started'})
             self.cancellation.raise_if_cancelled()
             await emit('log', {'level': 'info', 'message': '开始执行节点'})

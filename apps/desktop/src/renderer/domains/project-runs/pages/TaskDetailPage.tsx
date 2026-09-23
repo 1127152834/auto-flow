@@ -42,7 +42,7 @@ export function TaskDetailPage({ workspaceKey, instanceId, projectId, taskId, ta
     },
     onError: setEventError,
   })
-  const inlineArtifact = artifacts.data?.pages.flatMap(page => page.items).find(item => item.availability === 'available')
+  const inlineArtifact = artifacts.data?.pages.flatMap(page => page.items).find(item => item.kind === 'screenshot' && item.availability === 'available')
   useEffect(() => {
     if (tab !== 'evidence' || !inlineArtifact) return
     const controller = new AbortController()
@@ -78,22 +78,33 @@ export function TaskDetailPage({ workspaceKey, instanceId, projectId, taskId, ta
     const controller = new AbortController()
     artifactRequest.current = controller
     try {
-      const blob = await artifactApi.content(artifact.artifactId, controller.signal)
+      const blob = await artifactApi.content(artifact.artifactId, controller.signal, artifact.mediaType ?? 'image/png')
       if (controller.signal.aborted) return
+      if (artifact.kind === 'file') {
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = artifact.fileName || artifact.artifactId
+        document.body.append(link)
+        link.click()
+        link.remove()
+        window.setTimeout(() => URL.revokeObjectURL(url), 30_000)
+        return
+      }
       if (artifactPreviewUrl.current) URL.revokeObjectURL(artifactPreviewUrl.current)
       const url = URL.createObjectURL(blob)
       artifactPreviewUrl.current = url
-      setArtifactPreview({ url, label: `${artifact.purpose === 'result' ? '节点截图' : '失败截图'}：${artifact.nodeName}` })
-    } catch (caught) { if (!controller.signal.aborted) setArtifactError(presentRunFailure(caught, '截图读取失败，请重试')) }
+      setArtifactPreview({ url, label: `${artifact.kind === 'image' ? '保存图片' : artifact.purpose === 'result' ? '节点截图' : '失败截图'}：${artifact.nodeName}` })
+    } catch (caught) { if (!controller.signal.aborted) setArtifactError(presentRunFailure(caught, '产物读取失败，请重试')) }
   }
   const followUp = detail.data.run.status === 'failed' && detail.data.inputSnapshot.inputs.length > 0
     ? <FailedRunFollowup key={taskId} client={client} workspaceKey={workspaceKey} instanceId={instanceId} projectId={projectId} taskId={taskId} statusRevision={detail.data.task.statusRevision} disabled={disabled} onOpenBatch={batchId => onNavigate({ projectId, tab: 'runs', runView: 'batches', batchId })}/>
     : undefined
   return <>
     {eventError ? <div role="alert" className="mb-3 flex items-center justify-between gap-3 rounded-control border border-warning/30 bg-surface p-3 text-sm"><span>实时更新暂时中断：{eventError}。页面会从持久记录继续补读。</span><Button size="sm" onClick={() => { setEventError(undefined); void queryClient.invalidateQueries({ queryKey: prefix }) }}>立即补读</Button></div> : null}
-    {artifactError ? <div role="alert" className="mb-3 rounded-control border border-danger/30 bg-danger/10 p-3 text-sm">截图读取失败：{artifactError}</div> : null}
+    {artifactError ? <div role="alert" className="mb-3 rounded-control border border-danger/30 bg-danger/10 p-3 text-sm">产物读取失败：{artifactError}</div> : null}
     <TaskEndPanel workspaceKey={workspaceKey} instanceId={instanceId} projectId={projectId} taskId={taskId} runId={detail.data.run.runId} executionGeneration={detail.data.run.executionGeneration} inputs={detail.data.inputSnapshot.inputs} client={client} disabled={disabled} />
     <TaskDetail followUp={followUp} detail={detail.data} attempts={attemptsPage ? { ...attemptsPage, items: attemptItems } : undefined} logs={logPage ? { ...logPage, items: logItems } : undefined} outputs={outputPage ? { ...outputPage, items: outputItems } : undefined} artifacts={artifactPage ? { ...artifactPage, items: artifactItems } : undefined} inlineScreenshotUrl={inlineScreenshot?.url} inlineScreenshotLabel={inlineScreenshot?.label} selectedTab={tab} selectedNode={nodeId} level={level} query={query} loading={attempts.isLoading || (tab === 'logs' ? logs.isLoading : outputs.isLoading || artifacts.isLoading)} error={errorMessage} onTabChange={next => onNavigate({ projectId, tab: 'runs', taskId, taskTab: next })} onNodeChange={setNodeId} onLevelChange={setLevel} onQueryChange={setQuery} onOpenArtifact={artifact => void openArtifact(artifact)} onOpenRecord={target => onNavigate({ projectId, tab: 'data', tableId: target.tableId, dataTab: 'records', record: { mode: 'detail', datasetGeneration: target.datasetGeneration, recordKey: { type: target.keyType as 'text' | 'integer' | 'uuid', value: target.keyValue } } })} onLocateLog={nextNodeId => { setNodeId(nextNodeId); onNavigate({ projectId, tab: 'runs', taskId, taskTab: 'logs' }) }} onLoadMoreArtifacts={() => void artifacts.fetchNextPage()} onLoadMoreLogs={() => void logs.fetchNextPage()} onLoadMoreAttempts={() => void attempts.fetchNextPage()} onLoadMoreOutputs={() => void outputs.fetchNextPage()} onRetry={() => { void detail.refetch(); void attempts.refetch(); if (tab === 'logs') void logs.refetch(); else { void outputs.refetch(); void artifacts.refetch() } }} onBack={() => onNavigate({ projectId, tab: 'runs', runView: 'batches', batchId: detail.data.task.batchId })}/>
-    <Dialog open={Boolean(artifactPreview)} onOpenChange={open => { if (!open) closePreview() }}><DialogContent className="max-w-5xl"><DialogTitle>{artifactPreview?.label ?? '运行截图'}</DialogTitle><DialogDescription>截图来自本次运行保存的本地证据。</DialogDescription>{artifactPreview ? <img className="max-h-[70vh] w-full rounded-control border border-line object-contain" src={artifactPreview.url} alt={artifactPreview.label}/> : null}</DialogContent></Dialog>
+    <Dialog open={Boolean(artifactPreview)} onOpenChange={open => { if (!open) closePreview() }}><DialogContent className="max-w-5xl"><DialogTitle>{artifactPreview?.label ?? '运行图片'}</DialogTitle><DialogDescription>图片来自本次运行保存的本地产物。</DialogDescription>{artifactPreview ? <img className="max-h-[70vh] w-full rounded-control border border-line object-contain" src={artifactPreview.url} alt={artifactPreview.label}/> : null}</DialogContent></Dialog>
   </>
 }

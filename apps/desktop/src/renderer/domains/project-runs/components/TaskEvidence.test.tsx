@@ -44,6 +44,21 @@ it('states when capture is unavailable and does not invent an attachment action'
   expect(screen.queryByRole('button', { name: /查看失败截图/ })).not.toBeInTheDocument()
 })
 
+it('keeps download and saved image distinct from failure screenshots', async () => {
+  const onOpenArtifact = vi.fn()
+  const downloaded = { ...artifact, artifactId: 'download', kind: 'file' as const, purpose: 'result' as const, mediaType: 'application/octet-stream', fileName: 'report.txt' }
+  const image = { ...artifact, artifactId: 'image', kind: 'image' as const, purpose: 'result' as const, fileName: 'image.png' }
+  render(<TaskEvidence {...base} artifacts={artifactPage([downloaded, image])} onOpenArtifact={onOpenArtifact}/>)
+
+  expect(screen.getByText(/report.txt/)).toBeVisible()
+  expect(screen.getByText(/image.png/)).toBeVisible()
+  expect(screen.getByText('本次运行未生成截图。')).toBeVisible()
+  await userEvent.click(screen.getByRole('button', { name: '下载文件：打开页面' }))
+  await userEvent.click(screen.getByRole('button', { name: '查看保存图片：打开页面' }))
+  expect(onOpenArtifact).toHaveBeenNthCalledWith(1, downloaded)
+  expect(onOpenArtifact).toHaveBeenNthCalledWith(2, image)
+})
+
 it('keeps final output, node output and evidence attachments as separate fixed regions', () => {
   const finalOutput = { outputId: 'final', kind: 'value' as const, name: '最终结果', value: '已完成', runId: 'run', sequence: 4, createdAt: '' } satisfies Schema['RunOutputView']
   const nodeOutput = { ...finalOutput, outputId: 'node-output', name: '页面标题', value: 'AutoFlow', nodeId: 'node-02', nodeName: '旧节点名' } satisfies Schema['RunOutputView']

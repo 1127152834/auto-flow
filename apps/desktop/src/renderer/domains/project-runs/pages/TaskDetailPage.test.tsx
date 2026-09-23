@@ -152,3 +152,26 @@ it('loads authenticated failure evidence and opens the screenshot preview', asyn
   view.unmount()
   expect(revokeObjectURL).toHaveBeenCalledWith('blob:failure')
 })
+
+it('downloads a registered file with its original name without treating it as a screenshot', async () => {
+  const artifact = { artifactId: 'download-1', kind: 'file', purpose: 'result', availability: 'available', nodeId: 'node-submit', nodeName: '点击提交', nodeVisitId: 'visit-1', eventSequence: 9, executionGeneration: 1, mediaType: 'application/octet-stream', fileName: 'report.txt', byteSize: 5, sha256: 'hash', createdAt: '2026-09-15T01:00:02Z', contentUrl: '/content' }
+  const request = vi.fn(async (path: string) => {
+    if (path.endsWith('/tasks/task-1')) return detail
+    if (path.includes('node-attempts')) return { items: [], page: 1, pageSize: 100, total: 0, sort: 'createdAt' }
+    if (path.includes('/outputs')) return { items: [], page: 1, pageSize: 100, total: 0, sort: 'createdAt' }
+    if (path.includes('/artifacts?')) return { items: [artifact], page: 1, pageSize: 100, total: 1, sort: 'createdAt' }
+    throw new Error(`unexpected ${path}`)
+  }) as StreamingApiClient['request']
+  const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:download')
+  const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+    expect(this.download).toBe('report.txt')
+    expect(this.href).toContain('blob:download')
+  })
+  const stream = vi.fn().mockResolvedValue(new Response('hello', { headers: { 'content-type': 'application/octet-stream' } }))
+  renderPage(request, { tab: 'io' }, stream)
+
+  await userEvent.click(await screen.findByRole('button', { name: '下载文件：点击提交' }))
+  await waitFor(() => expect(click).toHaveBeenCalledOnce())
+  expect(createObjectURL).toHaveBeenCalledOnce()
+  expect(screen.queryByRole('img', { name: /report.txt/ })).not.toBeInTheDocument()
+})
