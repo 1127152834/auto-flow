@@ -391,3 +391,9 @@
 - 延续用户确认的项目默认资源＋显式覆盖。五个既有 SSH 执行器进入项目目录 167→172；项目文档允许精确托管凭据引用，仍拒绝密码原文。复用现有文件端口、Paramiko 服务和运行清理，没有第二套 SSH 实现。
 - 真实项目 worker 成功、空文件、非零退出和停止；SSH/SFTP、产物及文档关联 60 项通过。正式 Electron 开发入口和 macOS arm64 本地包真实 UI 主链通过，活动 SSH 连接归零，命令进程退出，下载内容及 SHA-256 一致。证据：`docs/migration/studio-backend-migration/evidence/project-integration/ssh-family-2026-09-24/README.md`。
 - 测试服务修复已接受通道被回收导致的偶发断开；正式包凭据使用唯一测试名，保存原固定名失败证据。没有改系统凭据实现，没有用 Mock 替代。项目目录仍有 41 个入口待核销，Intel/Windows、用户数据库及外部主机未实测。
+
+## 项目任务定时与概率节点族（2026-09-24，confirmed）
+
+- 既有 `timing_probability.py` 两节点进入项目目录 172→174；没有重写时钟、随机或图执行器。真实 worker 验证两个分支、日期/延迟、错误和停止；原版差分与 SSH 关联共 19 项通过。
+- 正式 Electron 开发入口和 macOS arm64 本地包真实 UI 编排分支、保存、正常关闭后运行项目任务均通过；未选分支无日志和尝试记录。证据：`docs/migration/studio-backend-migration/evidence/project-integration/timing-family-2026-09-24/README.md`。
+- E2E 首轮画布落点被遮挡，快速点击缩放尝试又出现收藏选择器，保留两个失败现场。后者根因未确定，排队核实，未宣称修复；正常可见区域编排闭环已通过。未改用户数据库、未恢复通知节点；项目目录余下 39 个入口。下一块 Base64 全模式所需文件端口已由 SSH 批次提供。

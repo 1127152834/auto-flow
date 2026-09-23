@@ -11005,7 +11005,13 @@
       "evidenceConfidence": "高：原版日期/延迟字段、可取消等待、真实 worker 和 macOS arm64 正式 UI 已通过；平台时钟差异不推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-timing-probability-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scheduled-task-electron-KLgP7F/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scheduled-task-electron-KLgP7F/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/timing-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 定时与概率执行器；项目真实 worker 验证延迟、过期、0/100分支、错误及停止；正式 Electron 开发与 macOS arm64 本地包由真实 UI 保存并运行分支图。未测平台与休眠/时钟调整仍保留。"
+      }
     }
   },
   {
@@ -15021,7 +15027,13 @@
       "evidenceConfidence": "高：原版概率算法、分支副作用隔离、真实 worker 和 macOS arm64 正式 UI 已通过；统计分布不由两次确定性运行推定。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-timing-probability-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-probability-electron-bzefbQ/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-probability-electron-bzefbQ/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/timing-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 定时与概率执行器；项目真实 worker 验证延迟、过期、0/100分支、错误及停止；正式 Electron 开发与 macOS arm64 本地包由真实 UI 保存并运行分支图。未测平台与休眠/时钟调整仍保留。"
+      }
     }
   },
   {

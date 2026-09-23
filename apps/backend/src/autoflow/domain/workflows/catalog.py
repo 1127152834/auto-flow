@@ -31,6 +31,8 @@ _RUNNABLE_MODULES = (
     ("webhook_request", "Webhook请求"),
     ("notify_webhook", "Webhook通知"),
     ("wait", "等待"),
+    ("scheduled_task", "定时任务"),
+    ("probability_trigger", "概率触发器"),
     ("assert_checkpoint", "断言检查点"),
     ("stop_workflow", "停止工作流"),
     ("network_capture", "浏览器网络抓包"),
