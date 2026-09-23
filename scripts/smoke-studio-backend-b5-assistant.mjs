@@ -6,13 +6,14 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
-import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, wait, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
-const evidenceRoot = join(root, 'docs/migration/studio-backend-migration/evidence/b5')
+const projectMode = process.argv.includes('--project')
+const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectMode ? 'project-integration' : 'b5'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, 'formal-assistant-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectMode ? 'formal-project-assistant-electron-' : 'formal-assistant-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b5-assistant-'))
 const workflowName = 'B5 小助手正式闭环'
 const mcpSecret = `B5-mcp-${randomUUID()}`
@@ -21,6 +22,7 @@ const packagedExecutable = executableIndex === -1 ? null : process.argv[executab
 const checks = []
 const model = await startAssistantModel()
 let desktop, main, studio, native
+let projectId
 
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 
@@ -42,7 +44,30 @@ try {
   const modelId = provider.models[0].id
   checkpoint('主应用模型管理保存本地受控模型；Studio 仅取得稳定 modelId，未保存第二套地址或密钥')
 
+  if (projectMode) {
+    await click(main, '项目', 'a, button')
+    await click(main, '新建项目')
+    await setInput(main, '#project-name', '小助手归属正式验收')
+    await click(main, '创建项目')
+    await waitFor(main, "document.body?.innerText.includes('小助手归属正式验收')", 'created project')
+    if (!await main.evaluate('Boolean(document.querySelector(\'[aria-label="项目功能"]\'))')) await click(main, '小助手归属正式验收', '[role="button"],button')
+    await waitForProjectPage(main)
+    projectId = (await main.evaluate('location.hash')).match(/projects\/([^/]+)/)?.[1]
+    assert.ok(projectId)
+    const project = await api(runtime, `/v1/projects/${projectId}`)
+    await api(runtime, `/v1/projects/${projectId}`, {
+      method: 'PATCH',
+      body: {
+        defaultResources: { ...project.defaultResources, modelProviderId: provider.id },
+        expectedManagementRevision: project.managementRevision,
+      },
+    })
+    checkpoint('独立测试项目由公开项目接口设置默认模型提供方；正式Studio从所属项目继承模型')
+    await click(main, '自动化', '[aria-label="项目功能"] button, [aria-label="项目功能"] [role="tab"]')
+  }
+
   studio = await openStudioFromMain(main, desktop.debugOrigin)
+  if (projectMode) assert.equal(await studio.evaluate("new URL(location.href).searchParams.get('projectId')"), projectId)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 2560, height: 1600, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库')", 'formal Studio', 30_000)
   await click(studio, '更多操作', 'button')
@@ -69,7 +94,7 @@ try {
   checkpoint('通过正式 MCP 配置界面保存并重连真实 stdio 服务，发现 echo 工具且秘密不进 SQLite')
   await click(studio, '', 'button[aria-label="关闭全局配置"]')
   await click(studio, 'AI 小助手', 'button')
-  await waitFor(studio, `!document.querySelector('textarea[placeholder^="告诉我你想做什么"]')?.disabled`, 'configured assistant panel')
+  await waitFor(studio, `(()=>{const e=document.querySelector('textarea[placeholder^="告诉我你想做什么"]');return !!e && !e.disabled})()`, 'configured assistant panel')
   checkpoint('通过正式 Toolbar 入口打开小助手，并在真实设置界面选择主应用模型和逐项确认权限')
 
   await setInput(studio, 'input[placeholder="工作流名称"]', workflowName)
@@ -133,6 +158,11 @@ try {
 
   const sessionBeforeClose = (await api(runtime, '/ai-assistant/sessions')).find(item => item.title.startsWith('ADD'))
   assert.ok(sessionBeforeClose)
+  if (projectMode) {
+    const unscoped = await fetch(`${runtime.sidecar.baseUrl}/api/ai-assistant/sessions`, { headers: { 'x-autoflow-token': runtime.sidecar.token } })
+    assert.deepEqual(await unscoped.json(), [])
+    checkpoint('项目小助手历史只在所属项目可见，独立Studio列表不包含该会话')
+  }
   await closeStudioWindow()
   studio.close(); studio = undefined
   await waitForNoStudio(desktop.debugOrigin)
@@ -163,7 +193,7 @@ try {
     result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build',
     smokeScriptSha256: createHash('sha256').update(await readFile(new URL(import.meta.url))).digest('hex'),
     ...(packagedExecutable ? { executableSha256: createHash('sha256').update(await readFile(packagedExecutable)).digest('hex') } : {}),
-    workflowId: saved.id, modelId, assistantSessionId: sessionBeforeClose.id,
+    workflowId: saved.id, modelId, assistantSessionId: sessionBeforeClose.id, ...(projectId ? { projectId } : {}),
     checks, providerRequestCount: commandEvents.length,
     boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, model: 'local controlled OpenAI-compatible HTTP fixture', interaction: 'formal Electron through CDP mouse/keyboard plus BrowserWindow normal close; public API only for fixture setup and evidence reads; no Store or page-internal business function access' },
   }, null, 2) + '\n')
@@ -237,7 +267,9 @@ function streamTool(response, id, action, payload, clientAction = true) {
 }
 
 async function api(runtime, path, options = {}) {
-  const response = await fetch(`${runtime.sidecar.baseUrl}/api${path}`, { method: options.method ?? 'GET', headers: { 'x-autoflow-token': runtime.sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': randomUUID() }, body: options.body === undefined ? undefined : JSON.stringify(options.body) })
+  const url = new URL(`${runtime.sidecar.baseUrl}/api${path}`)
+  if (projectId && (/^\/(?:ai-assistant|workflows)(?:\/|$)/.test(path))) url.searchParams.set('projectId', projectId)
+  const response = await fetch(url, { method: options.method ?? 'GET', headers: { 'x-autoflow-token': runtime.sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': randomUUID() }, body: options.body === undefined ? undefined : JSON.stringify(options.body) })
   if (!response.ok) throw new Error(`${options.method ?? 'GET'} /api${path}: ${response.status} ${await response.text()}`)
   return response.status === 204 ? undefined : response.json()
 }

@@ -238,4 +238,4 @@
 
 - 0021增量迁移将新会话绑定项目，旧会话保留独立入口；HTTP会话、附件、命令、SSE和前端项目Store按归属隔离，活跃会话接入项目归档预检。
 - 专项31后端及21前端测试、Ruff/mypy/TypeScript/ESLint/OpenAPI通过，详见 `docs/migration/studio-backend-migration/evidence/project-integration/assistant-project-2026-09-23/result.json`。
-- 正式Electron UI及新包验收尚未完成，213节点622/17槽位不变。下一步完成正式UI链路及剩余项目集成，不将受控模型夹具算作真实外部模型。
+- 正式Electron开发入口与本次macOS arm64本地unsigned包均以真实鼠标键盘完成项目小助手会话、工具批准/拒绝、MCP、取消、保存、正常关窗重开恢复和独立入口隔离。PyInstaller冻结与包内启动通过。夹具由公开项目接口设置默认模型；外部真实模型、Intel/Windows及其余项目集成未核销。213节点622/17槽位不变。

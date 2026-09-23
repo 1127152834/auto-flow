@@ -1,0 +1,35 @@
+{
+  "evidenceId": "BE-B5-assistant-formal-electron",
+  "checkedAt": "2026-09-23T09:14:56.132Z",
+  "gitHead": "f4e08326fe2141787672ce898af15dda07134f54",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "smokeScriptSha256": "9e7d368092ea6e9502726a5546e263f71e60a6f90c392a44e1d808bcd8f5c426",
+  "workflowId": "EK2vQcbHOFGTk57Gu_sL4",
+  "modelId": "f2acbedc-2329-422d-ab64-76cd077d8446",
+  "assistantSessionId": "web-1790154892386-vikba9",
+  "projectId": "9e267597-a3d4-4d3e-a90b-1072b02e5b10",
+  "checks": [
+    "主应用模型管理保存本地受控模型；Studio 仅取得稳定 modelId，未保存第二套地址或密钥",
+    "通过正式 MCP 配置界面保存并重连真实 stdio 服务，发现 echo 工具且秘密不进 SQLite",
+    "通过正式 Toolbar 入口打开小助手，并在真实设置界面选择主应用模型和逐项确认权限",
+    "模型工具调用先暂停在权限界面；批准前画布无变化且未宣称完成，批准后才添加节点并继续 LangGraph",
+    "同一会话第二轮修改节点，经独立 commandId 授权后继续模型回合",
+    "拒绝操作作为真实工具结果返回模型；会话继续，节点保持不变",
+    "已排除节点在后端 LangGraph 校验边界拒绝，未进入权限请求且未改变画布",
+    "MCP 工具即使已连接仍先显示授权；批准后后端真实调用 stdio 工具并将结果送回 LangGraph",
+    "停止按钮取消正在流式调用的真实 HTTP 请求；迟到内容未写入，持久化会话状态为 cancelled",
+    "小助手添加和修改的草稿通过真实保存入口写入 SQLite；拒绝与排除请求没有残留副作用",
+    "项目小助手历史只在所属项目可见，独立Studio列表不包含该会话",
+    "通过正式 BrowserWindow 正常关闭并重开 Studio；历史列表从 SQLite 恢复多轮会话，未重放任何画布副作用"
+  ],
+  "providerRequestCount": 10,
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "model": "local controlled OpenAI-compatible HTTP fixture",
+    "interaction": "formal Electron through CDP mouse/keyboard plus BrowserWindow normal close; public API only for fixture setup and evidence reads; no Store or page-internal business function access"
+  }
+}

@@ -217,4 +217,4 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 
 新增0021增量迁移为小助手会话保存可空项目标识，历史会话仍归独立入口。项目甲、项目乙与独立入口的会话读取、修改、聊天、附件下载、工具命令确认和查询均按归属隔离；共享SSE保留连续游标，跨项目帧不含原数据。小助手运行或等待工具确认时，项目归档预检报告活跃会话，结束后解除。前端沿用现有项目URL边界，切换项目时清空会话状态、取消待审批动作并中止旧请求。
 
-[本批专项证据](../studio-backend-migration/evidence/project-integration/assistant-project-2026-09-23/result.json)包含真实SQLite迁移、HTTP命令及产物、生命周期和前端请求测试。正式Electron真实UI、冻结/打包入口及外部真实模型效果仍单列；不据此核销节点执行槽位。
+[本批专项证据](../studio-backend-migration/evidence/project-integration/assistant-project-2026-09-23/result.json)包含真实SQLite迁移、HTTP命令及产物、生命周期和前端请求测试。正式Electron开发入口与本次macOS arm64本地unsigned包均从项目页真实操作小助手、保存及正常关窗重开，独立入口不显示项目会话；PyInstaller和包内后端实际启动通过。项目默认模型由公开接口作为测试前置数据设置，本批模型服务是受控本地夹具；外部真实模型效果及Intel/Windows仍单列，不据此核销节点执行槽位。

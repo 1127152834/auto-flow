@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-09-23T09:13:30.436Z",
+  "checks": [
+    "主应用模型管理保存本地受控模型；Studio 仅取得稳定 modelId，未保存第二套地址或密钥",
+    "通过正式 MCP 配置界面保存并重连真实 stdio 服务，发现 echo 工具且秘密不进 SQLite"
+  ],
+  "error": "Error: timed out waiting for unobscured button[title=\"切换模型\"]: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-assistant.mjs:297:13)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-assistant.mjs:89:5"
+}
