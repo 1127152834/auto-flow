@@ -421,6 +421,7 @@ class SqlAlchemyEnvironments:
                 )
                 if (
                     row is None
+                    or record_ref.get("projectId") != project_id
                     or row.project_id != project_id
                     or row.table_id != record_ref["tableId"]
                     or row.deleted
@@ -516,6 +517,7 @@ class SqlAlchemyEnvironments:
                 )
                 if (
                     row is None
+                    or record_ref.get("projectId") != project_id
                     or row.project_id != project_id
                     or row.table_id != record_ref["tableId"]
                     or row.deleted

@@ -200,9 +200,9 @@ def make(tmp_path, **kwargs):
     return TestClient(app), projects, service
 
 
-def _project(projects):
+def _project(projects, name="环境项目"):
     record, _operation, _replayed = projects.create(
-        str(uuid4()), {"name": "环境项目", "description": ""}
+        str(uuid4()), {"name": name, "description": ""}
     )
     return record.project_id
 
@@ -523,6 +523,122 @@ def test_save_links_record_and_repair_does_not_rerun(tmp_path):
     }
 
 
+def test_cross_project_environment_and_instance_cannot_enter_another_project(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id, other_project_id = _project(projects), _project(projects, "外部项目")
+    foreign_instance = _closed_instance(service, other_project_id, b"other-login")
+
+    response = client.post(
+        f"/api/v1/projects/{project_id}/environment-saves",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "instanceId": foreign_instance.instance_id,
+            "mode": "saveAs",
+            "expectedUseGeneration": 1,
+            "executionGeneration": 1,
+            "name": "wrong-project",
+        },
+    )
+
+    assert response.status_code == 404
+    assert client.get(f"/api/v1/projects/{project_id}/environments").json()["total"] == 0
+    assert client.get(f"/api/v1/projects/{other_project_id}/environments").json()["total"] == 0
+    assert service.environments.get_instance(other_project_id, foreign_instance.instance_id).state == "closed"
+
+    owned = client.post(
+        f"/api/v1/projects/{other_project_id}/environment-saves",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "instanceId": foreign_instance.instance_id,
+            "mode": "saveAs",
+            "expectedUseGeneration": 1,
+            "executionGeneration": 1,
+            "name": "foreign-owned",
+        },
+    )
+    assert owned.status_code == 202
+    foreign_environment_id = owned.json()["outcome"]["saved"]["environmentId"]
+    with pytest.raises(ProjectError) as error:
+        service.resolve(project_id, {"source": "fixedEnvironment", "environmentId": foreign_environment_id})
+    assert error.value.status == 404
+    assert client.get(f"/api/v1/projects/{project_id}/environments").json()["total"] == 0
+    assert client.get(f"/api/v1/projects/{other_project_id}/environments").json()["total"] == 1
+
+
+def test_mixed_project_targets_never_partially_link_and_repair_uses_original_save(tmp_path):
+    from copy import deepcopy
+
+    from autoflow.infrastructure.database.project_data_models import DataRecordRow
+
+    client, projects, service = make(tmp_path)
+    project_id, other_project_id = _project(projects), _project(projects, "外部项目")
+    first = _account_record(service, project_id, "本地一")
+    second = _account_record(service, project_id, "本地二")
+    foreign = _account_record(service, other_project_id, "外部")
+    instance = _closed_instance(service, project_id, b"login-group")
+
+    def target(record):
+        return {
+            "recordRef": record["recordRef"],
+            "expectedLinkRevision": 1,
+            "replaceAllowed": False,
+        }
+    save = client.post(
+        f"/api/v1/projects/{project_id}/environment-saves",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "instanceId": instance.instance_id,
+            "mode": "saveAs",
+            "expectedUseGeneration": 1,
+            "executionGeneration": 1,
+            "name": "关联整组",
+            "recordTargets": [target(first), target(second), target(foreign)],
+        },
+    )
+    assert save.status_code == 202
+    outcome = save.json()["outcome"]
+    assert outcome["phase"] == "saved_unlinked" and outcome["complete"] is False
+    environment_id = outcome["saved"]["environmentId"]
+    saved_content = service.store.generation_dir(environment_id, 1) / "Default" / "Cookies"
+    assert saved_content.read_bytes() == b"login-group"
+    factory = service.environments._session_factory
+
+    def assert_unlinked(*records):
+        with factory() as session:
+            for record in records:
+                row = session.get(DataRecordRow, (record["datasetGeneration"], "uuid", record["key"]))
+                assert row.current_environment_id is None and row.link_revision == 1
+
+    assert_unlinked(first, second, foreign)
+
+    forged = deepcopy(first)
+    forged["recordRef"]["projectId"] = other_project_id
+    rejected = client.post(
+        f"/api/v1/projects/{project_id}/environment-operations/{save.json()['operation']['operationId']}/repair",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={"recordTargets": [target(forged), target(second)]},
+    )
+    assert rejected.status_code == 202
+    assert rejected.json()["outcome"]["phase"] == "saved_unlinked"
+    assert_unlinked(first, second, foreign)
+
+    repaired = client.post(
+        f"/api/v1/projects/{project_id}/environment-operations/{save.json()['operation']['operationId']}/repair",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={"recordTargets": [target(first), target(second)]},
+    )
+    assert repaired.status_code == 202
+    assert repaired.json()["outcome"]["phase"] == "completed"
+    assert repaired.json()["outcome"]["saved"]["environmentId"] == environment_id
+    assert client.get(f"/api/v1/projects/{project_id}/environments").json()["total"] == 1
+    assert saved_content.read_bytes() == b"login-group"
+    with factory() as session:
+        for record in (first, second):
+            row = session.get(DataRecordRow, (record["datasetGeneration"], "uuid", record["key"]))
+            assert row.current_environment_id == environment_id and row.link_revision == 2
+    assert_unlinked(foreign)
+
+
 def test_binding_rechecks_revision_before_overwriting_concurrent_link(tmp_path):
     from copy import deepcopy
 
@@ -548,6 +664,16 @@ def test_binding_rechecks_revision_before_overwriting_concurrent_link(tmp_path):
                   "replaceAllowed": True} for record in (first, second)]
     results = bind_targets(target, service.environments.load_bind_targets(project_id, requested))
     factory = service.environments._session_factory
+    results[0].record_ref["projectId"] = str(uuid4())
+    with pytest.raises(ProjectError) as foreign:
+        service.environments.bind_records(project_id, target, results)
+    assert foreign.value.code == "ASSOCIATION_TARGET_MISSING"
+    results[0].record_ref["projectId"] = project_id
+    with factory() as session:
+        for record in (first, second):
+            row = session.get(DataRecordRow, (record["datasetGeneration"], "uuid", record["key"]))
+            assert row.current_environment_id is None and row.link_revision == 1
+    results = bind_targets(target, service.environments.load_bind_targets(project_id, requested))
     concurrent_environment = str(uuid4())
     with factory() as session:
         row = session.get(DataRecordRow, (second["datasetGeneration"], "uuid", second["key"]))

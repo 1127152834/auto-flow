@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 137,
-        "planned": 41
+        "partially_verified": 138,
+        "planned": 40
       },
       "items": [
         {
@@ -1052,12 +1052,12 @@
         },
         {
           "id": "DATA-LINK-02",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 5,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing"
           ]
         },
         {
@@ -2621,8 +2621,8 @@
     "withAssertions": 248,
     "withNoLocatedAssertion": 3,
     "statuses": {
-      "partially_verified": 204,
-      "planned": 47
+      "partially_verified": 205,
+      "planned": 46
     }
   }
 }

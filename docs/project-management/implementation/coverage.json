@@ -7032,8 +7032,18 @@
       "primary_package": "PM5-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_environment_retention.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/link-boundary-follow-through.json",
+          "scope": "真实 HTTP/SQLite 保存和修复命令拒绝跨项目实例、环境身份及伪造 projectId 的记录引用；整组关联失败不部分提交，修复复用原保存结果；本机真实浏览器 worker 的 data-link-race 通过",
+          "limitations": "跨项目伪造目标的真实 worker End 尚无直接场景；当前打包应用及三平台最终源码链仍需复验",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "environments",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -7054,19 +7064,43 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/unit/test_project_environment_rules.py",
             "symbol": "test_bind_same_environment_is_idempotent_and_replace_needs_authorization",
             "scope": "同环境重复关联不增版本，未授权替换拒绝",
             "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_environments.py",
+            "symbol": "test_cross_project_environment_and_instance_cannot_enter_another_project",
+            "scope": "生产 HTTP 保存拒绝别的项目实例；固定环境源拒绝别的项目环境 ID",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_environments.py",
+            "symbol": "test_mixed_project_targets_never_partially_link_and_repair_uses_original_save",
+            "scope": "本地两记录与外部记录整组预检失败无部分关联；伪造项目 ID 拒绝；原环境仅修复关联不重复保存",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_environments.py",
+            "symbol": "test_binding_rechecks_revision_before_overwriting_concurrent_link",
+            "scope": "提交前再验伪造项目 ID 与并发链接版本，组内任何失败均无部分持久化",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "data-link-race 场景通过真实 HTTP/worker/浏览器证明 End 关联整组失败不部分写、仅修复关联且不重复保存或重跑",
+            "level": "automated_real_worker"
           }
         ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "跨项目环境 ID 与完整关联组原子性需补直接断言"
+            "kind": "production_evidence_missing",
+            "detail": "真实 worker 的 End 联合跨项目伪造目标，以及当前最终源码打包/三平台链尚未直接运行；本机 data-link-race 只证明并发版本冲突下整组回滚与修复"
           }
         ],
         "statusBeforeReview": "planned"

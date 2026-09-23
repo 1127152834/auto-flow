@@ -1,26 +1,27 @@
 {
   "date": "2026-09-23",
-  "status": "current_three_platform_ci_passed_release_not_accepted",
+  "status": "new_link_boundary_candidate_regression_pending_release_not_accepted",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "DATA-LINK-02 forged recordRef.projectId acceptance fixed at the shared association preflight and commit boundary; local contract/rule 33 passed and real browser worker data-link-race passed. New production source needs full regression and three-platform/packaged verification; historical dadb24a1 CI does not cover this guard.",
     "S4 Windows existing ordinary-file read and absolute-drive new-file table export passed bounded native probe 35832925704 and final three-platform matrix 35833223498 at dadb24a1. Existing output overwrite/append remain refused with 501.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "3 of 251 requirements still have no located assertion (DATA-LIFE-01, DATA-SH-03, XE-G07); 204 partial / 47 planned / 0 verified. DATA-WRITE-13 real-worker partial Sheets intent preservation passed selected three-platform CI; packaged real-Google and full business acceptance remain open.",
+    "3 of 251 requirements still have no located assertion (DATA-LIFE-01, DATA-SH-03, XE-G07); DATA-LINK-02 now has direct scoped evidence, so 205 partial / 46 planned / 0 verified. DATA-WRITE-13 real-worker partial Sheets intent preservation passed the earlier selected three-platform CI; packaged real-Google and full business acceptance remain open.",
     "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6 and variable parity20/20 passed. Earlier 1b2979ea matrix backend3474/75 on Mac is historical; current full backend counts are in finalCICandidate.",
     "Old ARM data-response-loss failure reproduced locally: Chromium owner PID exited but stale SingletonSocket target remained; ownership-checked macOS lock fix passed source real worker and unit tests. Current dadb24a1 ARM DMG isolated local installation/full desktop smoke passed using the public 145 kernel; other physical release gates remain pending.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local and selected three-platform real-worker scenario passed. Current packaged real-Google acceptance remains separate.",
-    "Historical defa1955 matrix35816693045: ARM data-response-loss failed; Windows/Intel cancelled. Matrix35819716149 @3df7700c ARM real worker passed but stale source smoke failed; Windows/Intel cancelled. Earlier passed matrix35822065171 @1b2979ea is superseded by current matrix35833223498 @dadb24a1: Windows x64, macOS Intel and Apple Silicon checks succeeded; separate native probe and worker probe jobs skipped. CI success is not complete PM9 release acceptance.",
+    "Historical defa1955 matrix35816693045: ARM data-response-loss failed; Windows/Intel cancelled. Matrix35819716149 @3df7700c ARM real worker passed but stale source smoke failed; Windows/Intel cancelled. Matrix35833223498 @dadb24a1 succeeded on Windows x64, macOS Intel and Apple Silicon, but predates the DATA-LINK-02 production guard; it is historical for the new candidate. CI success is not complete PM9 release acceptance.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Current dadb24a1 ARM CI DMG was checksum-verified, copied to an isolated local installation and ran full desktop smoke. Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain incomplete. Earlier ARM native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
-    "status": "candidate_regression_passed_release_incomplete",
+    "status": "new_candidate_regression_pending_release_incomplete",
     "plan": "docs/superpowers/plans/2026-09-21-pm9-follow-through.md",
     "mappingReview": "test-mapping-review.md",
     "newProductionChanges": true,
@@ -32,7 +33,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "dadb24a146bc6cb7635ee4725447724f14ee543e",
+  "codeCandidate": "pending_link_boundary_commit",
   "checks": {
     "currentLocal": "lifecycle-restart-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -43,17 +44,17 @@
   },
   "platforms": {
     "win32-x64": {
-      "status": "current_full_ci_success_physical_acceptance_pending",
+      "status": "previous_full_ci_success_new_guard_pending_physical_acceptance_pending",
       "physicalInstaller": "pending native physical machine acceptance",
       "scopedCiReport": "ci-capabilities-win32-x64.json"
     },
     "darwin-x64": {
-      "status": "current_full_ci_success_physical_acceptance_pending",
+      "status": "previous_full_ci_success_new_guard_pending_physical_acceptance_pending",
       "physicalInstaller": "pending native physical machine acceptance",
       "scopedCiReport": "ci-capabilities-darwin-x64.json"
     },
     "darwin-arm64": {
-      "status": "current_full_ci_success_physical_acceptance_pending",
+      "status": "previous_full_ci_success_new_guard_pending_physical_acceptance_pending",
       "physicalInstaller": "current dadb24a1 CI DMG checksum/mount/isolated copy/full installed desktop smoke passed locally; installed-arm-current-candidate.json. Finder/Gatekeeper and native panels pending",
       "priorCiReport": "ci-capabilities-82c067c9-darwin-arm64.json",
       "scopedCiReport": "ci-capabilities-darwin-arm64.json",
@@ -145,11 +146,11 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Current source dadb24a1 passed three-platform matrix35833223498: Windows native boundary251/28, full backend3469/85, Mac backends3477/77 each, frontend5471 each, selected real worker29/11 deselected each, source/packaged smoke and installer builds. Its CI ARM DMG also passed a separate local isolated install/full desktop smoke. Exact scopes and measurements in ci-s4-final-follow-through.json and installed-arm-current-candidate.json.",
+  "workingCandidate": "Post-dadb24a1 DATA-LINK-02 project-identity guard has local contract/rule33, Ruff/mypy407 and actual browser worker data-link-race1 passed; full backend, three-platform and packaged candidate checks are pending. The prior dadb24a1 matrix35833223498 and isolated ARM DMG remain historical source-specific evidence; exact old measurements remain in ci-s4-final-follow-through.json and installed-arm-current-candidate.json.",
   "finalCICandidate": {
     "codeCandidate": "dadb24a146bc6cb7635ee4725447724f14ee543e",
     "productionSourceCommit": "dadb24a146bc6cb7635ee4725447724f14ee543e",
-    "status": "three_platform_checks_success",
+    "status": "historical_three_platform_checks_success_before_link_guard",
     "platforms": {
       "win32-x64": {
         "status": "success",
@@ -178,8 +179,8 @@
     "report": "ci-s4-final-follow-through.json",
     "nativeProbeJobs": "pm9-native-probe and pm9-worker-probe skipped"
   },
-  "codeCandidateScope": "Prior PM9 production runtime and data capabilities, lifecycle/Chromium fixes, Windows existing ordinary-file binary read, no-side-effect missing read, and native absolute new-file table export.",
-  "testCandidate": "dadb24a1",
+  "codeCandidateScope": "Prior PM9 production runtime/data/Windows capabilities plus shared environment association project-identity guard.",
+  "testCandidate": "pending_link_boundary_commit",
   "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -432,8 +433,13 @@
   },
   "installedArmCurrentCandidate": {
     "report": "installed-arm-current-candidate.json",
-    "status": "current_candidate_arm_isolated_install_full_desktop_smoke_passed_release_pending",
+    "status": "dadb24a1_candidate_arm_isolated_install_full_desktop_smoke_passed_new_guard_not_in_artifact",
     "sourceRun": "35833223498",
+    "releaseAccepted": false
+  },
+  "linkBoundaryFollowThrough": {
+    "report": "link-boundary-follow-through.json",
+    "status": "local_contract_and_real_worker_passed_full_candidate_pending",
     "releaseAccepted": false
   },
   "windowsExistingOutputRead": {

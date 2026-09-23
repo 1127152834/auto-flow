@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-23",
+  "status": "local_contract_and_real_worker_passed_full_candidate_pending",
+  "releaseAccepted": false,
+  "requirement": "DATA-LINK-02",
+  "productionChange": "Association preflight and commit both require recordRef.projectId to equal the authoritative project ID, in addition to checking the stored row's project/table identity and link revision.",
+  "red": "With valid local table/generation/key but a foreign projectId in recordRef, the repair HTTP command incorrectly returned completed and linked the local row. The new test expected saved_unlinked and failed before the shared repository guard.",
+  "green": {
+    "contractAndRules": "33 passed, 2 dependency warnings",
+    "realWorker": "test_real_project_batch_http[data-link-race]: 1 passed in 11.19s with a real local public CloakBrowser; this existing scenario verifies an End group conflict, saved environment, repair-only association and no task rerun",
+    "ruff": "passed for changed source and contract test",
+    "mypy": "passed for 407 source files",
+    "coverageReferences": "251 valid references; planned paths still absent for 73 historical entries, 72 with located assertions and XE-G07 with an explicit test gap"
+  },
+  "directAssertions": [
+    "Saving under project A with a project B instance returns 404 and publishes no environment in either project.",
+    "Project A cannot select project B's saved environment ID as a fixed source.",
+    "A group containing two local records and one foreign-project record saves the environment but links none of the records.",
+    "Repair with a forged foreign projectId on an otherwise local record remains saved_unlinked and changes no link revision; repair with the correct two records links both to the original saved environment without another save.",
+    "Commit rechecks project ID and concurrent link revision; either conflict leaves the complete group unchanged."
+  ],
+  "coverage": {
+    "total": 251,
+    "withScopedAssertions": 248,
+    "unlocated": 3,
+    "partiallyVerified": 205,
+    "planned": 46,
+    "verified": 0
+  },
+  "limits": [
+    "The cross-project forged target was exercised through the production HTTP adapter and SQLite repository, but not as an actual worker-generated End target.",
+    "The previous dadb24a1 three-platform CI and ARM isolated installer predate this production guard; a new full candidate is required before claiming platform and packaged verification.",
+    "The historical planned test path remains absent; current concrete assertions are mapped to the existing contract, rule and real-worker files."
+  ]
+}
