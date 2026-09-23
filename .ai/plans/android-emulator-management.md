@@ -93,3 +93,5 @@
 - 2026-09-24 批次取消增量（confirmed 软件与真实 HTTP；完整 UI partial）：取消未准入项、冻结动作重试、确认终态后的新批次入口及筛选零匹配保留已实现；修复容量 await/跨批次旧快照/核实 await 覆盖取消和幂等回执。前端160项、后端47项定向通过；独立最终复审无Critical/Important；真实ReDroid容量等待取消、服务重启原编号重放保持cancelled且自建资源清理missing。最终全量后端4048passed/26skipped/2warnings、前端424文件/5650项及工程门禁通过；Mac锁屏阻塞真实UI，进度隐藏页检查与T14/T16等剩余项未关闭。见[报告](../../docs/qa/android-management/2026-09-24-bulk-actions.md)。
 
 - 2026-09-24 隐藏页与观察增量（confirmed 软件/真实后端，整体partial）：批次状态GET隐藏时暂停、可见恢复，一行修复经RED 1 failed→GREEN 69 passed；1/5台真实API P95为6.177/12.495ms，列表内inspect均0，后台间隔3.23–3.34/4.15–4.21秒，停机约15.8秒；5台自建资源均核实missing。Mac锁屏继续阻塞桌面隐藏页/前台/新批次入口，十台及GApps条件未变。完整前端424文件/5651项（722.44s）及类型/lint/OpenAPI/build全部exit0；结构4/脚本95/迁移6项通过，当前102步骤85passed/14not_run/3blocked不虚增。见[完整证据](../../docs/qa/android-management/2026-09-24-observation.md)。
+
+- 2026-09-24 镜像拉取回执窗口（confirmed）：真实pull提交目录回执后强杀自有服务，HTTP断开；重启原编号needs_verification，重提不重放，显式核实成功且pull仅1次。两轮仅取消自有登记、保留基础镜像；38项回归通过。首次脚本409及恢复有记录。见[实测](../../docs/qa/android-management/2026-09-24-image-pull-interruption.md)。桌面删除/下载途中断网仍未验；独立规格审查另确认批次逐项结果与镜像页面POST核实两项Important，继续RED→GREEN补齐，不能用完整测试通过替代。
