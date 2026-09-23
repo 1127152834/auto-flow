@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "windows_native_read_and_absolute_new_export_passed_full_candidate_pending",
+  "status": "windows_native_and_three_platform_full_candidate_passed_release_pending",
   "releaseAccepted": false,
   "scope": "S4 existing ordinary-file read for Base64 input and Excel pre-read; existing-file overwrite and append remain refused with 501.",
   "codeCandidate": "2fe33528d211022855bb7f91840a0ba992954e25",
@@ -23,7 +23,7 @@
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35830710429",
     "headSha": "0bac3886ce3338e68590d14b8a73c1b2ae599902",
     "result": "Windows platform-boundary step: 250 passed, 28 skipped, 1 failed. New existing-file read, missing-parent and real-worker tests passed; one older table-family test still asserted Windows must fail with 501, while the worker now correctly succeeded. The other matrix jobs were cancelled and this run is not counted as a passing candidate.",
-    "correction": "Remove the obsolete platform-failure assertion and two obsolete Windows skips for relative new-file table exports; retain the absolute-drive-path skip until its application contract is implemented. Include worker contract and those two table cases in the bounded native probe. Final candidate recheck pending."
+    "correction": "The obsolete platform-failure assertion and two obsolete Windows skips for relative new-file table exports were removed. The absolute-drive-path contract was then implemented and verified by later scoped and full runs; this failed run remains historical evidence."
   },
   "scopedProbeAdjustment": "35831675395 @bde396de passed the corrected worker contract and existing-file read cases, but its broad differential file selection failed 32 frozen-source cases because the bounded job does not check out reference/WebRPA; the remaining absolute-drive-path fake case is still deliberately rejected by TableExportExecutor. This is not a Windows read regression. The next probe selects only the two applicable relative new-file table tests.",
   "finalScopedNative": {
@@ -40,8 +40,16 @@
     "result": "131 passed, 29 skipped in 24.49s",
     "scope": "Windows absolute-drive table export passed through the application path, safe new-file adapter and real worker; relative CSV/XLSX, existing binary read, Base64 worker, and ambiguous-path rejection also passed. One Windows skip is the POSIX-only rejection of a valid Windows absolute path. This scoped run is not a three-platform packaged result."
   },
+  "fullCandidate": {
+    "runId": "35833223498",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35833223498",
+    "headSha": "dadb24a146bc6cb7635ee4725447724f14ee543e",
+    "status": "windows_x64_darwin_x64_darwin_arm64_checks_success",
+    "windowsNativeBoundary": "251 passed / 28 skipped; includes existing read, no-side-effect missing read, absolute XLSX real worker and path rejection",
+    "fullReport": "ci-s4-final-follow-through.json"
+  },
   "limits": [
-    "This scoped native job did not include the later read-only parent fix and did not run the three-platform full regression or packaged desktop chain for the final code.",
+    "The early 35829751668 scoped job predates the read-only parent and absolute export fixes; final source and three-platform packaged chain passed separately at 35833223498.",
     "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement.",
     "Physical Windows installation, native dialogs, current packaged Sheets/OAuth and signing remain separate acceptance conditions."
   ]

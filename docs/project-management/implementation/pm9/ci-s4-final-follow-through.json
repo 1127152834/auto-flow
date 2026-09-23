@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-23",
+  "status": "three_platform_ci_passed_release_not_accepted",
+  "releaseAccepted": false,
+  "runId": "35833223498",
+  "url": "https://github.com/1127152834/auto-flow/actions/runs/35833223498",
+  "headSha": "dadb24a146bc6cb7635ee4725447724f14ee543e",
+  "sourceScope": "Final S4 Windows existing ordinary-file read, missing-parent no-side-effect, native absolute new-file table export, corrected native scenario coverage, and prior PM9 production changes.",
+  "jobs": {
+    "win32-x64": {
+      "status": "success",
+      "nativeBoundary": "251 passed / 28 skipped / 2 warnings",
+      "backend": "3469 passed / 85 skipped / 2 warnings",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected / 2 warnings",
+      "sourceAndPackagedSmoke": "passed",
+      "installer": "AutoFlow Setup 0.1.0.exe built and uploaded",
+      "packagedDesktopVolume": {
+        "records": 10000,
+        "producers": 5,
+        "seedMs": 834889,
+        "busyRetries": 1,
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 128882,
+        "realWorkerLogsPerMinuteObserved": 467,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60120,
+        "syntheticMaxBatchLagMs": 143
+      }
+    },
+    "darwin-x64": {
+      "status": "success",
+      "backend": "3477 passed / 77 skipped / 2 warnings",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected / 2 warnings",
+      "sourceAndPackagedSmoke": "passed",
+      "installer": "AutoFlow-0.1.0.dmg built and uploaded",
+      "packagedDesktopVolume": {
+        "records": 10000,
+        "producers": 5,
+        "seedMs": 135580,
+        "busyRetries": 0,
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 37522,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60089,
+        "syntheticMaxBatchLagMs": 253
+      }
+    },
+    "darwin-arm64": {
+      "status": "success",
+      "backend": "3477 passed / 77 skipped / 2 warnings",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected / 2 warnings",
+      "sourceAndPackagedSmoke": "passed",
+      "installer": "AutoFlow-0.1.0-arm64.dmg built and uploaded",
+      "packagedDesktopVolume": {
+        "records": 10000,
+        "producers": 5,
+        "seedMs": 64143,
+        "busyRetries": 0,
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 39023,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60040,
+        "syntheticMaxBatchLagMs": 191
+      }
+    }
+  },
+  "separateJobs": {
+    "pm9-native-probe": "skipped; scoped Windows native run 35832925704 passed separately",
+    "pm9-worker-probe": "skipped"
+  },
+  "interpretation": "All three CI runner chains passed on this exact source hash. Synthetic 1000-log input is a separate load path from real worker throughput. The 10000-row durations are observations, not a newly inferred performance target. Installer builds and packaged smoke do not establish physical installation, signing identity, notarization, native dialogs, credentials or live Google/OAuth acceptance.",
+  "remaining": [
+    "Windows existing-file overwrite and append still return 501; the conditional atomic replacement contract is unproven. The proposed alternative is not approved.",
+    "L1-L3 reauthorization/identity continuity and M1-M3 cloud-row capabilities remain proposed implementation gaps.",
+    "Current packaged complete live Sheets/OAuth and system UUID/remote-column live Google chains need authorization; PM6 historical service-account Sheets and system credential evidence remains valid.",
+    "Windows/Intel physical installation, native file and credential panels, complete import/export/uninstall, release signing identity and notarization remain outside CI evidence.",
+    "Coverage ledger remains 251 total, 248 scoped assertions, 3 unlocated; 204 partial, 47 planned, 0 fully verified."
+  ]
+}
