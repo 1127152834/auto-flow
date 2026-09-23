@@ -4,6 +4,15 @@ from typing import Any
 # Project tasks reuse the approved browser bridge and pure-data executors.
 # Families with additional resource ports stay gated until those ports are wired.
 _RUNNABLE_MODULES = (
+    ("condition", "条件判断"),
+    ("loop", "循环"),
+    ("foreach", "遍历列表"),
+    ("foreach_dict", "遍历字典"),
+    ("infinite_loop", "无限循环"),
+    ("break_loop", "退出循环"),
+    ("continue_loop", "跳过本轮"),
+    ("set_variable", "设置变量"),
+    ("increment_decrement", "自增自减"),
     ("ai_chat", "AI对话"),
     ("ai_classify", "AI文本分类"),
     ("ai_dedup_semantic", "AI语义去重"),

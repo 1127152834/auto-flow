@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .catalog import runnable_module_types
+from .graph import WorkflowDefinition
 from .models import WorkflowError, WorkflowIssue
 from .validation import project_document
 
@@ -80,7 +81,16 @@ def prepare_run(document: object) -> PreparedWorkflow:
             422,
             config_issues,
         )
-    node_ids = _ordered_chain(nodes, projected["content"]["edges"])
+    if graph_adapter:
+        valid, errors = WorkflowDefinition.from_raw(projected["content"]).validate()
+        if not valid:
+            raise WorkflowError(
+                "WORKFLOW_NOT_RUNNABLE", "工作流执行图不受支持", 422,
+                [WorkflowIssue(None, ["content", "edges"], "INVALID_EXECUTION_GRAPH", message) for message in errors],
+            )
+        node_ids = [node["id"] for node in nodes]
+    else:
+        node_ids = _ordered_chain(nodes, projected["content"]["edges"])
     return PreparedWorkflow(
         deepcopy(document) if graph_adapter else projected,
         node_ids,

@@ -244,3 +244,9 @@
 
 - 在既有项目模型端口证据中追加正式Electron开发入口 `formal-project-ai-task-electron-AArRkj` 与macOS arm64本地unsigned包 `formal-project-ai-task-electron-IrOiVg`：真实UI从项目进入Studio、编排并保存AI摘要，关联项目自动化；两次批次真实受管worker分别使用项目默认与节点显式覆盖模型，日志、输出、清理及持久文档均核验。
 - 模型来自主应用管理，项目默认提供方由公开项目接口仅作为测试前置数据设置；模型服务是本地受控HTTP夹具。项目任务外部真实模型、其余项目节点族/业务数据桥、Intel/Windows仍未验收。213节点622/17槽位不变。
+
+## 项目任务条件与循环图（confirmed）
+
+- 根因是项目准备层仍强制顺序链，虽然项目worker已复用正式WebRPA图执行器。现对v3图保留原拓扑并使用现有图验证；旧chain/v1路径不变。项目目录放行九个批准且真实注册的基础控制/变量类型，无新执行器或迁移。
+- 后端153项关联与54项冻结差分/运行时测试、Ruff/mypy/OpenAPI及PyInstaller通过。正式Electron开发 `formal-project-control-electron-IgPlCr` 和macOS arm64本地unsigned包 `formal-project-control-electron-uL7WoF` 真实UI完成三轮循环、条件真分支、假分支无副作用、输出及清理；包哈希和边界见 `project-integration/control-project-2026-09-23/result.json`。
+- 项目UI其余控制分支、子流程/模块依赖、业务数据桥和未测平台仍待核销；普通Studio既有B3源码差分不冒充项目端到端。213节点622/17槽位不变。

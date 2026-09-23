@@ -555,6 +555,71 @@ async def test_real_worker_runs_without_cloak_and_persists_output(
 
 
 @pytest.mark.asyncio
+async def test_project_batch_runs_condition_and_loop_in_real_worker(tmp_path: Path) -> None:
+    factory, _, _, coordinator, runtime, project, automation = setup(tmp_path)
+    worker = ProjectWorkflowWorkerManager(tmp_path / "control-worker", start_timeout=10)
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        document = workflow_payload(automation.workflow_id)
+        document["content"]["schemaVersion"] = 3
+        document["content"]["nodes"] = [
+            {
+                "id": node_id, "type": module_type,
+                "position": {"x": index * 120, "y": 0},
+                "data": {"moduleType": module_type, "config": config},
+            }
+            for index, (node_id, module_type, config) in enumerate([
+                ("gate", "condition", {"conditionType": "boolean", "leftValue": True}),
+                ("repeat", "loop", {"loopType": "count", "loopCount": 3}),
+                ("body", "set_variable", {"variableName": "last", "variableValue": "{index}"}),
+                ("done", "set_variable", {"variableName": "finished", "variableValue": "完成"}),
+                ("skipped", "set_variable", {"variableName": "skipped", "variableValue": "跳过"}),
+            ])
+        ]
+        document["content"]["edges"] = [
+            {"id": "true", "source": "gate", "sourceHandle": "true", "target": "repeat"},
+            {"id": "false", "source": "gate", "sourceHandle": "false", "target": "skipped"},
+            {"id": "body", "source": "repeat", "sourceHandle": "loop", "target": "body"},
+            {"id": "done", "source": "repeat", "sourceHandle": "done", "target": "done"},
+        ]
+        saved = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id,
+            {**document["content"], "id": automation.workflow_id},
+            expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        batch, _, _ = coordinator.start(
+            project.project_id, automation.automation_id, str(uuid4()), start_payload(automation)
+        )
+        task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert saved.revision == 2 and run is not None
+        prepared = runtime.query_prepared_content(prepared_content_id=run.prepared_content_id)
+        assert prepared is not None and prepared.adapter_version == "webrpa-graph/v1"
+        assert [dict(edge) for edge in prepared.execution_plan["document"]["edges"]] == document["content"]["edges"]
+        await dispatcher.dispatch(
+            run.run_id,
+            expected_status_revision=run.status_revision,
+            execution_generation=run.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=run.run_id)
+            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded"
+        attempts = [event for event in events if event.kind == "nodeAttempt" and event.payload["status"] == "succeeded"]
+        assert [event.node_id for event in attempts].count("body") == 3
+        assert not any(event.node_id == "skipped" for event in attempts)
+        assert any(event.kind == "output" and event.payload.get("name") == "finished" and event.payload.get("value") == "完成" for event in events)
+        assert resources.requests == [] and not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.asyncio
 async def test_real_worker_persists_present_json_null_output_without_browser(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -18,13 +18,13 @@ from types import ModuleType
 from typing import Any
 
 import pytest
-
 from autoflow.domain.workflows.catalog import node_catalog
 from autoflow.domain.workflows.run_validation import prepare_run
 from autoflow.providers.browser.project_graph import (
     ProjectGraphExecutor,
     _ProjectRegistry,
 )
+
 from tests.fixtures.workflows import workflow_payload
 
 FIVE_NODE_BRIDGE = frozenset(
@@ -203,6 +203,49 @@ def test_existing_project_chain_format_remains_compatible() -> None:
         "click_element",
         "get_element_info",
     ]
+
+
+@pytest.mark.asyncio
+async def test_project_graph_reuses_condition_loop_and_variable_executors() -> None:
+    document = workflow_payload()
+    document["content"]["schemaVersion"] = 3
+    document["content"]["nodes"] = [
+        {
+            "id": node_id,
+            "type": module_type,
+            "position": {"x": index * 150, "y": 0},
+            "data": {"moduleType": module_type, "config": config},
+        }
+        for index, (node_id, module_type, config) in enumerate(
+            [
+                ("gate", "condition", {"conditionType": "boolean", "leftValue": True}),
+                ("repeat", "loop", {"loopType": "count", "loopCount": 3}),
+                ("body", "set_variable", {"variableName": "last", "variableValue": "{index}"}),
+                ("done", "set_variable", {"variableName": "finished", "variableValue": "完成"}),
+                ("skipped", "set_variable", {"variableName": "skipped", "variableValue": "跳过"}),
+            ]
+        )
+    ]
+    document["content"]["edges"] = [
+        {"id": "true", "source": "gate", "sourceHandle": "true", "target": "repeat"},
+        {"id": "false", "source": "gate", "sourceHandle": "false", "target": "skipped"},
+        {"id": "body", "source": "repeat", "sourceHandle": "loop", "target": "body"},
+        {"id": "done", "source": "repeat", "sourceHandle": "done", "target": "done"},
+    ]
+    prepared = prepare_run(document)
+    visits: list[tuple[str, str, str, dict[str, object]]] = []
+
+    async def emit(kind: str, node_id: str, visit: str, body: dict[str, object]) -> None:
+        visits.append((kind, node_id, visit, body))
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    outcome = await executor.run({"document": prepared.document["content"]})
+    assert outcome == {"status": "succeeded", "error": None}, [item for item in visits if item[3].get("status") == "failed"]
+    completed = [node_id for kind, node_id, _visit, data in visits if kind == "nodeAttempt" and data["status"] == "succeeded"]
+    assert completed.count("gate") == completed.count("repeat") == completed.count("done") == 1
+    assert completed.count("body") == 3
+    assert "skipped" not in completed
+    assert executor.context.variables["finished"] == "完成"
 
 
 def test_core_runtime_and_bootstrap_import_in_fresh_process() -> None:

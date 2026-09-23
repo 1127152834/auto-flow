@@ -218,3 +218,9 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 新增0021增量迁移为小助手会话保存可空项目标识，历史会话仍归独立入口。项目甲、项目乙与独立入口的会话读取、修改、聊天、附件下载、工具命令确认和查询均按归属隔离；共享SSE保留连续游标，跨项目帧不含原数据。小助手运行或等待工具确认时，项目归档预检报告活跃会话，结束后解除。前端沿用现有项目URL边界，切换项目时清空会话状态、取消待审批动作并中止旧请求。
 
 [本批专项证据](../studio-backend-migration/evidence/project-integration/assistant-project-2026-09-23/result.json)包含真实SQLite迁移、HTTP命令及产物、生命周期和前端请求测试。正式Electron开发入口与本次macOS arm64本地unsigned包均从项目页真实操作小助手、保存及正常关窗重开，独立入口不显示项目会话；PyInstaller和包内后端实际启动通过。项目默认模型由公开接口作为测试前置数据设置，本批模型服务是受控本地夹具；外部真实模型效果及Intel/Windows仍单列，不据此核销节点执行槽位。
+
+## 项目任务基础控制流（2026-09-23）
+
+[本批证据](../studio-backend-migration/evidence/project-integration/control-project-2026-09-23/result.json)把已迁入的WebRPA图调度和控制执行器接入项目预检：v3图文档保留条件、循环端口与真实拓扑，旧链式文档继续使用原顺序合同。项目目录登记九个已批准且已有执行器的控制／变量节点，不增加第二套调度器或数据库迁移。无入口的纯环在启动前拒绝。
+
+正式Electron开发入口与本次macOS arm64本地unsigned包均从项目页用模块条编排、保存并启动批次，真实受管worker完成三轮增减和条件真分支，假分支不执行；任务输出与尝试记录可查，纯数据运行无浏览器进程。项目正式UI的foreach、字典／无限循环、break／continue及子流程／自定义模块仍按项目集成台账保留，不能用共享源码差分代替；业务数据写回、Intel/Windows和17个实际环境槽位亦未核销。

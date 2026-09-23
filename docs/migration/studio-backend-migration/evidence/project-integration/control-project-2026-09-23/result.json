@@ -1,0 +1,52 @@
+{
+  "capabilityId": "BE-B3-001/002 project-task adapter",
+  "slice": "project-condition-loop-variable-graph",
+  "classification": "AutoFlow必要适配",
+  "status": "backend-and-macos-arm64-formal-ui-passed-for-condition-count-loop",
+  "scope": 213,
+  "admittedTypes": [
+    "condition",
+    "loop",
+    "foreach",
+    "foreach_dict",
+    "infinite_loop",
+    "break_loop",
+    "continue_loop",
+    "set_variable",
+    "increment_decrement"
+  ],
+  "sourceReuse": [
+    "已迁入的WebRPA控制与变量执行器及图调度器",
+    "既有项目ProjectGraphExecutor和受管worker",
+    "旧webrpa-chain/v1文档继续执行原顺序链"
+  ],
+  "checks": {
+    "projectContractAndWorker": "153 passed: catalog, preparation, graph adapter, real project worker and advanced-data regressions",
+    "sourceDifferentialAndRuntime": "54 passed",
+    "ruff": "changed backend source and tests passed",
+    "mypy": "2 changed source files passed",
+    "openapi": "check passed",
+    "frozenBackend": "PyInstaller build passed",
+    "formalElectron": "development and local unsigned macOS arm64 package passed",
+    "diffCheck": "passed"
+  },
+  "actualEvidence": [
+    "项目运行预检对v3图文档保留条件和循环端口，旧顺序文档仍按原链路校验；无入口的纯环在启动前拒绝",
+    "九个批准控制与变量节点在项目目录登记，并逐项确认已批准且有真实执行器",
+    "真实项目worker执行三轮循环、条件真分支、变量更新和结束路径；假分支未执行，无浏览器依赖和残留进程",
+    "正式Electron开发入口与本次unsigned包从项目页进入Studio，真实模块条编排、保存、关联自动化、启动批次并在任务页查看输出",
+    "全部使用临时SQLite和工作区，未修改用户数据库"
+  ],
+  "formalEvidence": {
+    "development": "formal-project-control-electron-IgPlCr/result.json",
+    "packaged": "formal-project-control-electron-uL7WoF/result.json",
+    "packagedAppAsarSha256": "fdf9939f917f5221b58610188dd9ef5c2ea42566c958a63b68eb2f6f812992f2",
+    "frozenBackendExecutableSha256": "bd839c1e8a5fb00e2cb9e57441b045ef18753a1b4a3712d6c4d1cab6f9ff03f1"
+  },
+  "notYetAccepted": [
+    "项目正式UI本次只实测条件真假分支和次数循环；foreach、字典/无限循环、break/continue的项目UI独有分支仍待核销，源码差分和共享项目适配测试不冒充该证据",
+    "子流程、自定义模块依赖和业务数据写回仍属于后续项目集成块",
+    "macOS Intel与Windows未实机验收"
+  ],
+  "nodeExecutionLedger": "213 approved, 622 of 639 execution slots passed, 17 pending; project bridge does not relabel node slots"
+}

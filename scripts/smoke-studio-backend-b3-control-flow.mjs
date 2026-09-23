@@ -15,10 +15,11 @@ const sourceKernel = process.env.AUTOFLOW_B1_KERNEL_DIR
 const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const complexDebugOnly = process.env.AUTOFLOW_B8_COMPLEX_DEBUG_ONLY === '1'
 const restartRecoveryOnly = process.env.AUTOFLOW_B8_RESTART_RECOVERY_ONLY === '1'
+const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1'
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
-const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${focusedB8 ? 'b8' : 'b3'}`)
+const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -28,6 +29,7 @@ let main
 let native
 let studio
 let eventAbort
+let projectId
 class EvidenceComplete extends Error {}
 
 try {
@@ -57,6 +59,21 @@ try {
   })
   assert.deepEqual(cloakProcesses(userData), [])
   checkpoint('真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程')
+
+  if (projectTaskOnly) {
+    await click(main, '项目', 'a, button')
+    await click(main, '新建项目')
+    await setInput(main, '#project-name', '控制流项目任务验收')
+    await click(main, '创建项目')
+    await waitFor(main, "document.body?.innerText.includes('控制流项目任务验收')", 'control project')
+    if (!await main.evaluate('Boolean(document.querySelector(\'[aria-label="项目功能"]\'))')) await click(main, '控制流项目任务验收', '[role="button"],button')
+    await waitFor(main, 'Boolean(document.querySelector(\'[aria-label="项目功能"]\'))', 'project page')
+    projectId = (await main.evaluate('location.hash')).match(/projects\/([^/]+)/)?.[1]
+    assert.ok(projectId)
+    const project = await api(runtime, `/v1/projects/${projectId}`)
+    await api(runtime, `/v1/projects/${projectId}`, { method: 'PATCH', body: { expectedManagementRevision: project.managementRevision, defaultResources: { ...project.defaultResources, profileId: profile.id } } })
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+  }
 
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
@@ -95,6 +112,52 @@ try {
   await setInput(studio, '[placeholder="变量名"]', 'finished')
   await setInput(studio, '[placeholder="变量的值"]', '1')
   checkpoint('通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点')
+
+  if (projectTaskOnly) {
+    await click(studio, '保存')
+    await waitFor(studio, `document.body?.innerText.includes(${JSON.stringify(`工作流已保存: ${workflowName}`)})`, 'project control saved')
+    const saved = (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === workflowName)
+    assert.ok(saved && saved.projectId === projectId)
+    assert.ok(saved.edges.some(edge => edge.sourceHandle === 'true'))
+    assert.ok(saved.edges.some(edge => edge.sourceHandle === 'false'))
+    assert.ok(saved.edges.some(edge => edge.sourceHandle === 'loop'))
+    assert.ok(saved.edges.some(edge => edge.sourceHandle === 'done'))
+    await closeWindowThroughOs()
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '控制流项目自动化')
+    await click(main, '关联工作流', '[role="combobox"]')
+    await click(main, workflowName, '[role="option"]')
+    await click(main, '保存配置')
+    await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'control automation')
+    await click(main, '启动运行')
+    await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'control batch dialog')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'control batch')
+    const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'control task terminal', 60_000)
+    assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify(terminal))
+    const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
+    const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
+    const names = Object.fromEntries(saved.nodes.map(node => [node.id, node.data.moduleType]))
+    const succeeded = attempts.items.filter(item => item.status === 'succeeded')
+    assert.equal(succeeded.filter(item => names[item.nodeId] === 'increment_decrement').length, 3)
+    assert.equal(succeeded.filter(item => names[item.nodeId] === 'condition').length, 1)
+    const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+    assert.ok(outputs.items.some(item => item.name === 'outcome' && item.value === 'passed'))
+    assert.ok(!outputs.items.some(item => item.name === 'outcome' && item.value === 'failed'))
+    await click(main, '查看任务')
+    await click(main, '输入与输出', '[role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('passed')", 'project control output')
+    await capture(main, join(evidenceDir, 'project-control-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    checkpoint('正式项目批次真实worker执行三轮循环与条件真分支，假分支无副作用；输出、尝试记录和进程清理通过')
+    const report = { evidenceId: 'BE-project-control-flow-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
 
   await click(studio, '流程图')
   const subflowInnerId = await addCanvasNode(studio, '设置变量', { xRatio: 0.82, yRatio: 0.12 })
