@@ -316,7 +316,7 @@ async def test_app_verification_releases_marker_only_after_durable_receipt(tmp_p
             assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "succeeded"
             return b""
         assert args == ("exec", "container", "cat", marker)
-        return b"0\n"
+        return b"v2:0\n"
 
     monkeypatch.setattr(mac, "docker", docker)
     if fail_receipt_save:

@@ -76,6 +76,17 @@ def package_inventory(data: bytes) -> dict[str, int | None]:
     return packages
 
 
+def completion_script(argv: list[str], marker: str, confirmation: str = "") -> str:
+    # Persist semantic success before the ADB response can be lost; do not store raw output.
+    check = "if [ \"$rc\" -eq 0 ]; then " + confirmation + "fi; " if confirmation else ""
+    return (
+        "output=$(" + shlex.join(argv) + " 2>&1); rc=$?; "
+        + check
+        + "printf '%s\\n' \"$output\"; printf 'v2:%s\\n' \"$rc\" > "
+        + shlex.quote(marker)
+    )
+
+
 class MacAndroidRuntime:
     def __init__(self, root: Path, workspace: Path) -> None:
         self.root = root
@@ -379,7 +390,14 @@ class MacAndroidRuntime:
         marker = "/data/local/tmp/autoflow-operation-" + uuid4().hex
         self.device["pendingCommand"] = marker
         self.save()  # A crash or cancellation cannot make the device silently reusable.
-        script = shlex.join(argv) + "; rc=$?; echo $rc > " + marker + "; exit $rc"
+        confirmation = ""
+        if operation == "android_launch_app":
+            confirmation = "case \"$output\" in *'Error:'*) rc=1;; *'Status: timeout'*) rc=124;; *'Status: ok'*) ;; *) rc=124;; esac; "
+        elif operation in {"android_uninstall_app", "android_clear_app_data"}:
+            confirmation = "case \"$output\" in Success) ;; Failure*|Failed*) rc=1;; *) rc=124;; esac; "
+        elif operation == "android_stop_app":
+            confirmation = "case \"$output\" in '') ;; *'Error:'*) rc=1;; *) rc=124;; esac; "
+        script = completion_script(argv, marker, confirmation) + "; exit $rc"
         data = await self._adb("shell", "sh", "-c", shlex.quote(script), timeout=timeout)
         if operation == "android_launch_app" and (b"Error:" in data or b"Status: ok" not in data):
             raise AndroidError("ANDROID_LAUNCH_FAILED", "Android 未确认应用启动成功", 502)
@@ -410,7 +428,13 @@ class MacAndroidRuntime:
             raise AndroidError("ANDROID_RECOVERY_REQUIRED", "设备操作标记无效", 503)
         await self.inspect(self.device)
         result = await docker("exec", self.device["containerId"], "cat", marker, timeout=5)
-        if not re.fullmatch(rb"[0-9]+\s*", result):
+        match = re.fullmatch(rb"v2:([0-9]+)\s*", result)
+        if match:
+            if int(match[1]) == 124:
+                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "Android 应用操作结果仍未核实", 503)
+            return int(match[1])
+        # Old nonzero codes prove failure; zero proves only shell completion.
+        if not re.fullmatch(rb"[0-9]+\s*", result) or int(result) == 0:
             raise AndroidError("ANDROID_OPERATION_UNKNOWN", "Android 操作完成状态仍未知", 503)
         return int(result.strip())
 
@@ -443,7 +467,8 @@ class MacAndroidRuntime:
             marker = "/data/local/tmp/autoflow-operation-" + uuid4().hex
             self.device["pendingCommand"] = marker
             self.save()
-            script = f"pm install -r {remote}; rc=$?; rm -f {remote}; echo $rc > {marker}; exit $rc"
+            script = completion_script(["pm", "install", "-r", remote], marker, "case \"$output\" in Success) ;; Failure*|Failed*) rc=1;; *) rc=124;; esac; ")
+            script += f"; rm -f {remote}; exit $rc"
             result = await self._adb("shell", "sh", "-c", shlex.quote(script), timeout=120)
             self.device.pop("pendingCommand", None)
             self.save()
@@ -551,7 +576,7 @@ class MacAndroidRuntime:
                 raise AndroidError("ANDROID_RECOVERY_REQUIRED", "设备操作标记无效", 503)
             await self.inspect(device)
             result = await docker("exec", device["containerId"], "cat", marker, timeout=5)
-            if not re.fullmatch(rb"[0-9]+\s*", result):
+            if not re.fullmatch(rb"(?:v2:)?[0-9]+\s*", result):
                 raise AndroidError("ANDROID_RECOVERY_REQUIRED", "Android 操作结束状态未知", 503)
         device.pop("pendingCommand", None)
         device["processes"] = {}

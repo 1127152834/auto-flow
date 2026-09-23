@@ -1,6 +1,6 @@
 # 安卓模拟器管理验收证据
 
-状态：`partial`，完整开发与验收目标仍 active。最新证据见 [后端增量](2026-09-23-validation.md)和[前端增量](2026-09-23-frontend-validation.md)。仍有可继续修复的软件缺口及全量门槛失败；只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
+状态：`partial`，完整开发与验收目标仍 active。最新证据见 [后端增量](2026-09-23-validation.md)、[前端增量](2026-09-23-frontend-validation.md)及[应用命令语义/真实验证](2026-09-23-command-verification.md)。仍有可继续修复的软件缺口及全量门槛失败；只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
 
 实施计划的旧 checkbox 状态未完成逐项重新审计，不能作为当前完成率；以最新验收记录中的实际命令、输出和剩余工作为准。
 
@@ -18,7 +18,7 @@
 
 ## 全局自动验证
 
-以下为 `2026-09-22-validation.md` 的历史输出；9 月 23 日后端聚焦（含 migration heads）已更新为 `253 passed, 2 warnings`，完整后端及 Ruff 仍失败。历史前端和构建结果不冒充本轮重跑：
+以下为 `2026-09-22-validation.md` 的历史输出；9 月 23 日早一轮后端聚焦（含 migration heads）为 `253 passed, 2 warnings`，最新命令语义增量已达到 `271 passed, 2 warnings`，完整后端及 Ruff 仍失败。历史前端和构建结果不冒充本轮重跑：
 
 - Android 后端聚焦集合：`235 passed, 2 warnings`。
 - Android 前端：`13 files, 81 passed`（含旧设备列表轮询、未知操作核实、stale/unknown 打开保护、镜像服务端验证/删除核实、批量失败项重试）；typecheck、lint、OpenAPI check、structure 和 build 通过。

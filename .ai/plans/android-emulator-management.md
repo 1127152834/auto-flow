@@ -4,7 +4,7 @@
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
 - 当前实施基线：`codex/android-management-complete@1399f07b`；原起点 `a92f0688`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
-- 当前阶段：完整目标 active/partial；后端 Android+迁移 head 最近验证 253 passed，前端核验/预览边界已修复，指定 Node22 的 Android 14文件/100项、类型/lint/OpenAPI/结构/build已通过；全量前端及脚本仍失败。逐项命令与剩余工作以最新 QA 记录为准，不用聚焦通过代表完整交付。
+- 当前阶段：完整目标 active/partial；后端 Android+迁移 head 最近验证 271 passed，前端核验/预览边界已修复，指定 Node22 的 Android 14文件/100项、类型/lint/OpenAPI/结构/build已通过；全量前端及脚本仍失败。逐项命令与剩余工作以最新 QA 记录为准，不用聚焦通过代表完整交付。
 
 正文保存在以下文件，不维护第二份规格：
 

@@ -518,6 +518,7 @@ def test_readonly_session_cannot_clear_app_data(client, readonly_session):
 - [ ] 受控临时文件增量读取并计算摘要，256MiB上限，绑定幂等ID和目标；安装后核实版本，不重复执行未知结果；安全包名argv不拼任意shell。（状态：blocked）
 - [ ] UI列表/搜索/启动/停止，卸载与清数据独立确认；刷新不隐式启动应用。系统与保护包不开放普通卸载，禁用原因可读。（状态：blocked）
 - [ ] GREEN后提交 `feat(android): complete everyday application management`。（状态：blocked）
+- [x] 2026-09-23 增量：完成标记先验证语义，启动等待超时及旧零标记保持unknown；最终Android后端271项通过，真实单实例启动/停止与人工丢响应读回通过。真实APK/卸载/清数据、完整HTTP重启仍未关闭。证据：`docs/qa/android-management/2026-09-23-command-verification.md`。（状态：passed）
 
 ### T16：AM3隔离与性能验收
 

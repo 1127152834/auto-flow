@@ -1,4 +1,5 @@
 import json
+import shlex
 import struct
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import AsyncMock
@@ -343,7 +344,7 @@ async def test_verify_pending_command_preserves_evidence_until_receipt_is_durabl
     runtime.device = {"containerId": "container", "pendingCommand": marker}
     runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
     runtime.save = lambda: None
-    docker = AsyncMock(side_effect=[b"0\n", b""])
+    docker = AsyncMock(side_effect=[b"v2:0\n", b""])
     monkeypatch.setattr(mac, "docker", docker)
     assert await runtime.verify_pending_command() == 0
     assert runtime.device["pendingCommand"] == marker
@@ -358,3 +359,74 @@ async def test_missing_command_marker_is_not_evidence_of_success(tmp_path):
     with pytest.raises(AndroidError) as error:
         await runtime.verify_pending_command()
     assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
+
+
+@pytest.mark.asyncio
+async def test_legacy_zero_exit_marker_does_not_prove_app_success(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    runtime.device = {"containerId": "container", "pendingCommand": "/data/local/tmp/autoflow-operation-" + "a" * 32}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    monkeypatch.setattr(mac, "docker", AsyncMock(return_value=b"0\n"))
+    with pytest.raises(AndroidError) as error:
+        await runtime.verify_pending_command()
+    assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("operation", "output", "exit_code", "successful"), [
+    ("android_launch_app", "Error: Activity not started\n", 0, False),
+    ("android_launch_app", "Status: timeout\n", 0, None),
+    ("android_uninstall_app", "Failure [DELETE_FAILED_INTERNAL_ERROR]\n", 0, False),
+    ("android_clear_app_data", "Failed\n", 0, False),
+    ("android_stop_app", "Error: Permission Denial\n", 0, False),
+    ("android_launch_app", "Status: ok\n", 1, False),
+    ("android_launch_app", "Status: ok\n", 0, True),
+    ("android_uninstall_app", "Success\n", 0, True),
+    ("android_clear_app_data", "Success\n", 0, True),
+    ("android_stop_app", "", 0, True),
+    ("install", "Failure [INSTALL_FAILED_INVALID_APK]\n", 0, False),
+    ("install", "Success\n", 0, True),
+    ("android_launch_app", "Starting: Intent {}\n", 0, None),
+    ("android_stop_app", "Unexpected response\n", 0, None),
+    ("android_uninstall_app", "Unexpected response\n", 0, None),
+    ("android_clear_app_data", "Unexpected response\n", 0, None),
+    ("install", "Unexpected response\n", 0, None),
+])
+async def test_lost_app_response_marker_records_semantic_result(tmp_path, monkeypatch, operation, output, exit_code, successful):
+    # Execute the production shell script, replacing only Android IO and its marker path.
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    runtime.device = {"containerId": "container"}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    marker_file = tmp_path / "completion"
+
+    async def adb(*args, **_kwargs):
+        if args[0] == "push":
+            return b""
+        if args[:3] == ("shell", "cmd", "package"):
+            return b"com.example.app/.MainActivity\n"
+        if args[:4] == ("shell", "pm", "list", "packages"):
+            return b"" if args[-1] == "-s" else b"package:com.example.app\n"
+        assert args[:3] == ("shell", "sh", "-c")
+        script = shlex.split(args[3])[0].replace(runtime.device["pendingCommand"], shlex.quote(str(marker_file)))
+        stub = "() { printf '%s' " + shlex.quote(output) + "; return " + str(exit_code) + "; }; "
+        try:
+            await mac.run(["sh", "-c", "am" + stub + "pm" + stub + script])
+        except AndroidError:
+            pass  # The transport loses either success or failure, after execution.
+        raise TimeoutError("response lost")
+
+    runtime._adb = adb
+    with pytest.raises(TimeoutError):
+        if operation == "install":
+            from tests.unit.test_android_apk import _apk, _manifest
+            await runtime.install_apk(_apk(_manifest()))
+        else:
+            await runtime.command(operation, {"packageName": "com.example.app"}, 1)
+    monkeypatch.setattr(mac, "docker", AsyncMock(return_value=marker_file.read_bytes()))
+    if successful is None:
+        with pytest.raises(AndroidError) as error:
+            await runtime.verify_pending_command()
+        assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
+    else:
+        assert (await runtime.verify_pending_command() == 0) is successful
+    assert "pendingCommand" in runtime.device
