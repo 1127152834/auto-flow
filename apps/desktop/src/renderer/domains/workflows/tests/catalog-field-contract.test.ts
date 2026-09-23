@@ -4,6 +4,7 @@ import componentTools from '../../../../../../../docs/migration/studio-frontend-
 import fieldCases from '../../../../../../../docs/migration/studio-frontend-completion/evidence/f2-node-fields/cases.json'
 import reconciliation from '../../../../../../../docs/migration/studio-frontend-completion/evidence/f2-node-reconcile/reconciliation.json'
 import { useWorkflowStore as store } from '../editor-store'
+import { excludedModuleTypes } from '../lib/moduleCatalog'
 import type { ModuleType } from '../types/workflow'
 
 type Capability = { id: string; type: ModuleType }
@@ -25,8 +26,11 @@ const explicitInlineFields = new Map<string, string>([
 ])
 
 const capabilityById = new Map((capabilities as Capability[]).map(capability => [capability.id, capability]))
-const entries = (fieldCases as FieldCase[])
+const fieldEntries = (fieldCases as FieldCase[])
   .filter(testCase => testCase.id.includes('.field.') && testCase.preconditions?.field)
+const excludedEntries = fieldEntries.filter(testCase => !capabilityById.has(testCase.capability))
+const entries = fieldEntries
+  .filter(testCase => capabilityById.has(testCase.capability))
   .map(testCase => ({
     id: testCase.id,
     capabilityId: testCase.capability,
@@ -36,6 +40,15 @@ const entries = (fieldCases as FieldCase[])
 
 beforeEach(() => store.getState().clearWorkflow())
 afterEach(() => store.getState().clearWorkflow())
+
+it('historical field cases outside the current catalog belong only to the 14 excluded notification nodes', () => {
+  const missingTypes = new Set(excludedEntries.map(testCase => testCase.capability.replace(/^node:/, '')))
+  expect(missingTypes.size).toBe(14)
+  for (const type of missingTypes) {
+    expect(type.startsWith('notify_')).toBe(true)
+    expect(excludedModuleTypes.has(type as ModuleType)).toBe(true)
+  }
+})
 
 it.each(entries)('$id remains mapped by the current panel inventory and document contract', ({ id, capabilityId, type, field }) => {
   const reconciled = reconciliationById.get(capabilityId)
