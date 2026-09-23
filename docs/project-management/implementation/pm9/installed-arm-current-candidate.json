@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-23",
+  "status": "current_candidate_arm_isolated_install_full_desktop_smoke_passed_release_pending",
+  "releaseAccepted": false,
+  "sourceRun": "35833223498",
+  "sourceHeadSha": "dadb24a146bc6cb7635ee4725447724f14ee543e",
+  "platform": "darwin-arm64",
+  "os": "macOS 26.4.1",
+  "artifact": {
+    "name": "AutoFlow-0.1.0-arm64.dmg",
+    "sha256": "61b6ff8b20058acf231db8087cffee42f9bff1ace802956a156967761d0a7d3f",
+    "origin": "GitHub Actions run 35833223498 artifact pm9-macos-15",
+    "verification": "hdiutil verify VALID; read-only mount; ditto copied AutoFlow.app into an isolated temporary installation directory; DMG detached before executing copied application"
+  },
+  "browser": {
+    "edition": "public",
+    "version": "145.0.7632.109.2",
+    "origin": "CloakHQ/cloakbrowser GitHub release chromium-v145.0.7632.109.2",
+    "archiveSha256": "505582aa1bd3971c577f70e0cbbe016431702bdb693529abfd943b5bd9120c1c",
+    "archiveVerification": "SHA256 matches release SHA256SUMS"
+  },
+  "smoke": {
+    "script": "scripts/smoke-project-management-desktop.mjs",
+    "result": "passed",
+    "report": "qa-runs/2026-09-23-arm-current/project-desktop.json",
+    "checks": [
+      "production HTTP project/table/field/record CRUD, typed identity, CAS, original-command recovery, archive and project isolation",
+      "Electron UI and authenticated packaged sidecar open six settled project tabs",
+      "real browser worker and declared manual input continue the selected successor",
+      "five concurrent HTTP writers insert exactly 10000 records; renderer pages records",
+      "real worker log pagination and separate 60-second synthetic repository input",
+      "200% native window zoom and second Studio window",
+      "application and production sidecar restart retain project data"
+    ],
+    "measurements": {
+      "realWorkerLogs": 1004,
+      "realWorkerElapsedMs": 32709,
+      "realWorkerLogsPerMinuteObserved": 1842,
+      "concurrentProducers": 5,
+      "records": 10000,
+      "seedMs": 53884,
+      "busyRetries": 0,
+      "syntheticLogs": 1000,
+      "syntheticElapsedMs": 60017,
+      "syntheticMaxBatchLagMs": 25
+    }
+  },
+  "priorAttempts": [
+    "The first local run copied a 151.0.7922.108.3-pro browser while the unchanged smoke created a public profile; profile creation returned KERNEL_NOT_INSTALLED after the six project tabs passed.",
+    "A temporary smoke-only adjustment selected the licensed edition, then the worker interrupted before any node attempt with LICENSE_INVALID. That adjustment was reverted; this is not a passing worker result.",
+    "A direct public-binary download failed at TLS connection. The matching GitHub release archive was downloaded and checksum-verified before the unchanged script passed."
+  ],
+  "limits": [
+    "One isolated command-line DMG copy on this Mac; Finder/Gatekeeper, quarantine handling, native file panels, credential lifecycle, complete import/export/uninstall, Developer ID signing and notarization remain pending.",
+    "Windows and Intel physical installer acceptance remain pending.",
+    "Current packaged live Google Sheets/OAuth and system UUID/remote-column real Google chains remain pending; historical PM6 service-account Sheets and system credential evidence is unaffected.",
+    "The measured real-worker and synthetic log rates are distinct; no long-duration stability or invented performance threshold is claimed."
+  ]
+}

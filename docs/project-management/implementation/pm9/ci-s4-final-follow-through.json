@@ -76,7 +76,7 @@
     "Windows existing-file overwrite and append still return 501; the conditional atomic replacement contract is unproven. The proposed alternative is not approved.",
     "L1-L3 reauthorization/identity continuity and M1-M3 cloud-row capabilities remain proposed implementation gaps.",
     "Current packaged complete live Sheets/OAuth and system UUID/remote-column live Google chains need authorization; PM6 historical service-account Sheets and system credential evidence remains valid.",
-    "Windows/Intel physical installation, native file and credential panels, complete import/export/uninstall, release signing identity and notarization remain outside CI evidence.",
+    "Current ARM CI DMG subsequently passed a separate local isolated installation/full desktop smoke (installed-arm-current-candidate.json). Windows/Intel physical installation, Finder/Gatekeeper, native file and credential panels, complete import/export/uninstall, release signing identity and notarization remain outside this CI evidence.",
     "Coverage ledger remains 251 total, 248 scoped assertions, 3 unlocated; 204 partial, 47 planned, 0 fully verified."
   ]
 }
