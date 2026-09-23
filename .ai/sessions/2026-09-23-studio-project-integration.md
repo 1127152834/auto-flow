@@ -239,3 +239,8 @@
 - 0021增量迁移将新会话绑定项目，旧会话保留独立入口；HTTP会话、附件、命令、SSE和前端项目Store按归属隔离，活跃会话接入项目归档预检。
 - 专项31后端及21前端测试、Ruff/mypy/TypeScript/ESLint/OpenAPI通过，详见 `docs/migration/studio-backend-migration/evidence/project-integration/assistant-project-2026-09-23/result.json`。
 - 正式Electron开发入口与本次macOS arm64本地unsigned包均以真实鼠标键盘完成项目小助手会话、工具批准/拒绝、MCP、取消、保存、正常关窗重开恢复和独立入口隔离。PyInstaller冻结与包内启动通过。夹具由公开项目接口设置默认模型；外部真实模型、Intel/Windows及其余项目集成未核销。213节点622/17槽位不变。
+
+## 项目AI任务正式UI与模型端口（confirmed）
+
+- 在既有项目模型端口证据中追加正式Electron开发入口 `formal-project-ai-task-electron-AArRkj` 与macOS arm64本地unsigned包 `formal-project-ai-task-electron-IrOiVg`：真实UI从项目进入Studio、编排并保存AI摘要，关联项目自动化；两次批次真实受管worker分别使用项目默认与节点显式覆盖模型，日志、输出、清理及持久文档均核验。
+- 模型来自主应用管理，项目默认提供方由公开项目接口仅作为测试前置数据设置；模型服务是本地受控HTTP夹具。项目任务外部真实模型、其余项目节点族/业务数据桥、Intel/Windows仍未验收。213节点622/17槽位不变。

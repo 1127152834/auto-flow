@@ -2,7 +2,7 @@
   "capabilityId": "BE.SUPPORT.models-ai-mcp",
   "slice": "project-task-managed-model-port",
   "classification": "AutoFlow必要适配",
-  "status": "backend-passed-ui-pending",
+  "status": "backend-and-macos-arm64-formal-ui-passed",
   "scope": 213,
   "decision": "沿用项目默认模型提供方并允许任务或节点显式覆盖，不增加资源白名单",
   "sourceReuse": [
@@ -26,13 +26,18 @@
     "模型密钥仅进入私有启动管道；测试数据库字节中不存在密钥",
     "缺少默认模型及无效显式模型ID在worker启动前以具体错误结束",
     "纯数据任务不因未使用且已失效的项目模型提供方而无法运行",
-    "15个AI入口全部属于批准范围并有真实执行器注册"
+    "15个AI入口全部属于批准范围并有真实执行器注册",
+    "正式Electron从项目页进入Studio编排并保存AI摘要，项目批次分别继承默认模型和显式覆盖模型；真实受管worker调用受控HTTP模型，任务输出、日志及清理已验证"
   ],
+  "formalEvidence": {
+    "development": "formal-project-ai-task-electron-AArRkj/result.json",
+    "packaged": "formal-project-ai-task-electron-IrOiVg/result.json",
+    "packagedAppAsarSha256": "fdf9939f917f5221b58610188dd9ef5c2ea42566c958a63b68eb2f6f812992f2",
+    "frozenBackendExecutableSha256": "30f32d608f3fee3a9c45e7528cedfb531fc80c57b0c720da9ef15be27859f9f3"
+  },
   "notYetAccepted": [
-    "项目任务AI的正式Electron真实UI完整链尚未实测",
-    "项目任务模型端口尚未通过新构建的PyInstaller与Electron打包入口实测",
     "本批模型HTTP服务是受控本地夹具，先前真实OpenRouter调用只覆盖Studio直接运行，不冒充项目任务真实模型测试",
-    "助手会话、命令及附件的后端项目归属独立待做",
+    "本批正式UI覆盖AI摘要继承与覆盖；其余已批准AI入口的项目批次独有分支继续按项目集成台账验收",
     "macOS Intel与Windows未实机验收"
   ],
   "nodeExecutionLedger": "213 approved, 622 of 639 execution slots passed, 17 pending; this project integration evidence does not relabel node slots",

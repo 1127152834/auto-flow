@@ -1,0 +1,45 @@
+{
+  "evidenceId": "BE-project-ai-task-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T09:26:39.321Z",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "gitHead": "6476280cce2446a9228fb68f4405cb121eeae5ec",
+  "projectId": "8370aa2e-2a59-42af-a4ee-cef2937b4923",
+  "workflowId": "L7yf9_7aWr0sHJIAsLJJV",
+  "batchIds": [
+    "445e243f-6a06-48ac-9f55-1d8714d86fec",
+    "481f12de-4044-4803-a237-69e735753486"
+  ],
+  "taskIds": [
+    "82bb7672-db4d-4292-939e-bb2e847c9a98",
+    "b0b66758-58ad-4215-9d37-53149258a61b"
+  ],
+  "modelRequests": [
+    {
+      "model": "default-model",
+      "prompt": "[{\"role\":\"system\",\"content\":\"你是一个专业的摘要助手。请用中文把文本浓缩成不超过 200 字的摘要，保留关键信息与结论，去掉冗余。只输出摘要正文，不要前缀、不要解释。\"},{\"role\":\"user\",\"content\":\"项目任务原文\"}]"
+    },
+    {
+      "model": "explicit-model",
+      "prompt": "[{\"role\":\"system\",\"content\":\"你是一个专业的摘要助手。请用中文把文本浓缩成不超过 200 字的摘要，保留关键信息与结论，去掉冗余。只输出摘要正文，不要前缀、不要解释。\"},{\"role\":\"user\",\"content\":\"项目任务原文\"}]"
+    }
+  ],
+  "checks": [
+    "主应用模型管理建立两个受控模型；项目默认提供方通过公开项目接口设置为测试前置数据",
+    "正式 Studio 真实界面添加 AI 摘要、填写参数并保存项目工作流；继承模型未写入文档",
+    "项目 UI 启动真实受管 worker；继承默认模型调用受控 HTTP 服务，输出与日志持久化并显示在任务页",
+    "节点显式覆盖模型后再次真实运行，仅第二次请求使用覆盖模型；两次任务输出独立持久化"
+  ],
+  "packageHashes": {
+    "app.asar": "fdf9939f917f5221b58610188dd9ef5c2ea42566c958a63b68eb2f6f812992f2",
+    "autoflow-backend": "30f32d608f3fee3a9c45e7528cedfb531fc80c57b0c720da9ef15be27859f9f3"
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "model": "local controlled OpenAI-compatible HTTP fixture",
+    "interaction": "formal Electron CDP mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}
