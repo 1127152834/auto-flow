@@ -99,7 +99,7 @@ def _open(kernel, path: Path, access: int, share: int, creation: int, flags: int
 
 
 @contextmanager
-def pinned_parent(target: Path):
+def pinned_parent(target: Path, *, create: bool = True):
     kernel = _api()
     handles = []
     try:
@@ -107,7 +107,8 @@ def pinned_parent(target: Path):
         for part in [None, *target.parts[1:-1]]:
             if part is not None:
                 path /= part
-                path.mkdir(exist_ok=True)
+                if create:
+                    path.mkdir(exist_ok=True)
             handle = _open(kernel, path, 0x80, 1, 3, 0x02000000 | 0x00200000)
             handles.append(handle)
             # FILE_ATTRIBUTE_TAG_INFO: reject every reparse point, including junctions.

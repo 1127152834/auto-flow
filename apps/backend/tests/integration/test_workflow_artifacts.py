@@ -276,6 +276,23 @@ async def test_binary_export_writes_relative_output_and_xlsx_snapshot(
 
 
 @pytest.mark.asyncio
+async def test_missing_binary_read_does_not_create_parent_directories(
+    artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns], tmp_path: Path,
+) -> None:
+    store, _ = artifacts
+    writer = store.writer(
+        run_id="run-artifacts", node_id="read", execution_id="missing", purpose="result"
+    )
+    for output_path, parent in (
+        ("absent/nested/input.bin", store._root / "runs/run-artifacts/outputs/absent"),
+        (str(tmp_path / "absolute-absent/input.bin"), tmp_path / "absolute-absent"),
+    ):
+        snapshot = await writer.read_binary_output(output_path=output_path, max_bytes=1)
+        assert snapshot.content is None and snapshot.identity == "missing"
+        assert not parent.exists()
+
+
+@pytest.mark.asyncio
 @requires_posix_output
 async def test_binary_export_failure_keeps_existing_target_and_registers_nothing(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],

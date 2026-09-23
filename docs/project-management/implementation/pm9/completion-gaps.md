@@ -264,3 +264,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 2026-09-23 当前三平台 CI 收口（confirmed，来源：Actions 35822065171 @1b2979ea）：Windows x64、macOS Intel、Apple Silicon 的 checks job 均 success；各自全量后端/前端、29 项真实 worker、源码及打包生产链、万行写入、固定千条合成日志与安装包构建均通过。Windows 后端 3462 passed/87 skipped、前端 5471 passed、五路万行 670182 ms/0 busy 重试；实际 worker 1004 日志/100723 ms，观察 598 条/分钟，不能用合成 1000 条/60 秒替代。两种 Mac 后端各 3474 passed/75 skipped、前端各 5471 passed；具体数据及原生 probe skipped 见 ci-final-follow-through.json。此为 CI 平台链而非三平台物理安装、原生面板/凭据、Google/OAuth、签名公证验收；S4、L1–L3、M1–M3 和 251 条完整条件仍未闭合，`releaseAccepted=false`，草稿 PR 不合并、不发布。
 
 2026-09-23 S4 现有普通文件读取子片（confirmed，限定 2fe33528）：Windows 原生专项 [35829751668](https://github.com/1127152834/auto-flow/actions/runs/35829751668) 102 passed/28 skipped，含父目录 junction 拒绝、持有目标句柄时写/删被拒、父目录改名被拒及真实 worker 的 Base64 PNG 读取。公共读取仍检查大小、取消和读前/读后身份；后补的读取前取消断言尚待最终候选验证。详见 [证据](windows-existing-output-read.json)。既有文件覆盖/追加继续 501，S4 整体和 PM9 release 均未完成；三平台完整回归及打包链需针对最终候选复验。
+
+同日最终候选前补审：读缺失路径原会沿写入入口创建父目录，新增直接测试先失败后通过；POSIX/Windows 读取均改为只打开现存父目录，缺失返回 `missing`。本机定向 34 passed/17 Windows-only skipped，Ruff/mypy（407）通过。Actions 35830250231/35830254336 因该已知副作用主动取消，均不计最终候选通过；下一矩阵必须覆盖这个补丁。

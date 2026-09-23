@@ -6,7 +6,7 @@
   "codeCandidate": "2fe33528d211022855bb7f91840a0ba992954e25",
   "implementation": "Validate Windows path, pin each parent directory without delete sharing, open the existing target with FILE_FLAG_OPEN_REPARSE_POINT and read-only sharing, reject reparse/non-file/final-path mismatch, read in binary mode, and compare handle/path identity after reading. Shared size, cancellation and conflict checks remain in WorkflowArtifactStore.",
   "checks": {
-    "local": "test_workflow_artifacts.py: 33 passed, 17 Windows-only skipped; Ruff passed; mypy passed for 407 source files. A later cancellation-before-open assertion is included in the final candidate, not in this native run.",
+    "local": "After the read-only parent fix, test_workflow_artifacts.py: 34 passed, 17 Windows-only skipped; Ruff passed; mypy passed for 407 source files. The new no-directory-creation assertion failed before the fix and passed after it. This change and cancellation-before-open assertion are not in the earlier native probe.",
     "windowsNative": {
       "runId": "35829751668",
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35829751668",
@@ -19,7 +19,7 @@
     }
   },
   "limits": [
-    "This scoped native job did not run the three-platform full regression or packaged desktop chain for the new code.",
+    "This scoped native job did not include the later read-only parent fix and did not run the three-platform full regression or packaged desktop chain for the final code.",
     "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement.",
     "Physical Windows installation, native dialogs, current packaged Sheets/OAuth and signing remain separate acceptance conditions."
   ]

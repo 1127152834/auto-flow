@@ -240,7 +240,9 @@ class WorkflowArtifactStore:
         if cancellation is not None:
             cancellation.raise_if_cancelled()
 
-    def _open_output_parent(self, run_id: str, output_path: str) -> tuple[Path, int]:
+    def _open_output_parent(
+        self, run_id: str, output_path: str, *, create: bool = True
+    ) -> tuple[Path, int]:
         if not isinstance(output_path, str) or not output_path:
             raise WorkflowRunError("ARTIFACT_PATH_INVALID", "输出文件路径无效", 422)
         if sys.platform == "win32":
@@ -251,22 +253,25 @@ class WorkflowArtifactStore:
             )
         raw = Path(output_path)
         if raw.is_absolute():
-            raw.parent.mkdir(parents=True, exist_ok=True)
+            if create:
+                raw.parent.mkdir(parents=True, exist_ok=True)
             parent = raw.parent.resolve()
             return parent / raw.name, self._open_directory(parent)
 
         relative = self._relative_name(output_path)
         output_root = self._root / "runs" / run_id / "outputs"
-        output_root.mkdir(parents=True, exist_ok=True)
+        if create:
+            output_root.mkdir(parents=True, exist_ok=True)
         output_root = output_root.resolve()
         directory_fd = self._open_directory(output_root)
         parent = output_root
         try:
             for part in relative.parts[:-1]:
-                try:
-                    os.mkdir(part, dir_fd=directory_fd)
-                except FileExistsError:
-                    pass
+                if create:
+                    try:
+                        os.mkdir(part, dir_fd=directory_fd)
+                    except FileExistsError:
+                        pass
                 try:
                     child_fd = os.open(
                         part,
@@ -274,6 +279,8 @@ class WorkflowArtifactStore:
                         dir_fd=directory_fd,
                     )
                 except OSError as error:
+                    if not create and isinstance(error, FileNotFoundError):
+                        raise
                     raise WorkflowRunError(
                         "ARTIFACT_PATH_INVALID", "输出目录不能是符号链接", 422
                     ) from error
@@ -896,13 +903,21 @@ class WorkflowArtifactStore:
             from .windows_output import output_target, pinned_parent, readable_output
 
             target = output_target(self._root / "runs" / run_id / "outputs", output_path)
-            with pinned_parent(target), readable_output(target) as descriptor:
-                if descriptor is None:
-                    return BinaryOutputSnapshot(content=None, identity="missing")
-                return self._read_output_descriptor(
-                    descriptor, target, max_bytes, cancellation
-                )
-        target, directory_fd = self._open_output_parent(run_id, output_path)
+            try:
+                with pinned_parent(target, create=False), readable_output(target) as descriptor:
+                    if descriptor is None:
+                        return BinaryOutputSnapshot(content=None, identity="missing")
+                    return self._read_output_descriptor(
+                        descriptor, target, max_bytes, cancellation
+                    )
+            except FileNotFoundError:
+                return BinaryOutputSnapshot(content=None, identity="missing")
+        try:
+            target, directory_fd = self._open_output_parent(
+                run_id, output_path, create=False
+            )
+        except FileNotFoundError:
+            return BinaryOutputSnapshot(content=None, identity="missing")
         try:
             try:
                 descriptor = os.open(
