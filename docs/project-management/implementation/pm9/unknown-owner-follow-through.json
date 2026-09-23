@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "local_targeted_passed_full_and_packaged_running",
+  "status": "local_full_and_packaged_passed_native_dispatch_pending",
   "releaseAccepted": false,
   "requirement": "XE-G02",
   "parentCommit": "5b79028a549a930be1f73193f8bd253bb09c57a7",
@@ -20,8 +20,49 @@
     "realWorker": "3 passed /34 deselected /92.10s",
     "ruff": "passed",
     "mypy": "408 source files passed",
-    "fullBackend": "running",
-    "packagedDesktop": "pending rebuild/full acceptance"
+    "fullBackend": {
+      "passed": 3497,
+      "skipped": 84,
+      "warnings": 2,
+      "seconds": 900.44,
+      "command": "uv run --directory apps/backend pytest -q --maxfail=20",
+      "scope": "Full suite without optional real-browser environment; dedicated real worker3-case run recorded separately."
+    },
+    "packagedDesktop": {
+      "status": "passed",
+      "evidence": ".tmp-tests/pm9-unknown-owner-2026-09-24/desktop/project-desktop.json",
+      "sha256": "99b4a9fb83837c51135d1c7faae5daabc67151e3f3f223e893c645e6376ef09a",
+      "screenshots": 22,
+      "scope": "Full existing management/runtime/Studio/volume chain on rebuilt unsigned ARM app, sequential after full backend. This does not simulate native proof failure in packaged UI.",
+      "workerLogLoad": {
+        "logCount": 1004,
+        "logPages": 6,
+        "elapsedMs": 31410,
+        "logsPerMinute": 1918,
+        "scope": "real worker throughput and server pagination; no renderer memory claim"
+      },
+      "recordWriteMs": 43624,
+      "concurrentWrites": {
+        "status": "passed",
+        "producers": 5,
+        "records": 10000,
+        "busyRetries": 0
+      },
+      "syntheticProducer": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60016,
+        "maxBatchLagMs": 40
+      },
+      "visualReview": [
+        "project-manual-declared-input.png",
+        "project-automation-delete-stale.png",
+        "project-studio-project-document-saved.png"
+      ]
+    },
+    "build": "backend:build and package:dir passed, unsigned ARM app",
+    "coverage": "4 tests passed;251 valid references. XE-C06/XE-G02 mappings narrowed with unchanged requirement statuses."
   },
   "remaining": [
     "Windows Job proof-unavailable public batch scenario and packaged UI reconciliation remain unproved.",
@@ -29,11 +70,58 @@
     "Live Sheets/OAuth/signing/physical platform acceptance and separately proposed architecture remain pending."
   ],
   "evidenceSha256": {
-    ".tmp-tests/pm9-unknown-owner-2026-09-24/scheduler-red.log": "c81d6af4cd27186022ce615386f40e580442df3df99cf51f05236c6f2df0b554",
-    ".tmp-tests/pm9-unknown-owner-2026-09-24/scheduler-green.log": "b793cce6b5e553ab4804beefcbe1a38de570ef4c17192db437ae345e84484c65",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/backend-full.log": "ca6b042a9a16c26c4933384c7690064572e7eb31473cbacee05b9610c99804a5",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/build.log": "019231894ec329cb166b4d94a46558cfbb7d3b3e3d5c03e736b0ecfac125afd5",
     ".tmp-tests/pm9-unknown-owner-2026-09-24/ci-selection.log": "88ff9fa5e079f5698c4a8143bb7c32b85db9001817ff6b5bf6d56c6a3d757c33",
-    ".tmp-tests/pm9-unknown-owner-2026-09-24/real-worker-green.log": "476c0e1521365f9acf87bbd152be4b56aa451920a9c4e22f88906d17360bdceb",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/coverage-tests.log": "51d012fb1c9d1114bfabf862989b8456b9885038fffadcbad69e0a345284fe80",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/coverage.log": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/desktop.log": "54c84e8a52dad55b3b502a89c7d1f2df3ea5ae3e99192bf8fce221f1530e2e1d",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/initial.log": "fe9f4239d98d2285829a2900e6db1eeca67d1115a8866d05baf19d7178bf5e4e",
     ".tmp-tests/pm9-unknown-owner-2026-09-24/mypy.log": "144062ad850da376abb58cfac6c1a147a5b0cd760c85c8739f96db58cf8d92e9",
-    ".tmp-tests/pm9-unknown-owner-2026-09-24/initial.log": "fe9f4239d98d2285829a2900e6db1eeca67d1115a8866d05baf19d7178bf5e4e"
-  }
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/package.log": "e6e0b318eaa59d1245899b1c2c62de9a1cb48448d8d8093abd58d272b7ba1c44",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/prior-ci-logs-error.log": "8a1e11184eeeb732b03c2b3e6c3c4c5b27c3467f3e5ea044a6ff2faddc2f7a99",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/real-worker-green.log": "476c0e1521365f9acf87bbd152be4b56aa451920a9c4e22f88906d17360bdceb",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/scheduler-green.log": "b793cce6b5e553ab4804beefcbe1a38de570ef4c17192db437ae345e84484c65",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/scheduler-red.log": "c81d6af4cd27186022ce615386f40e580442df3df99cf51f05236c6f2df0b554"
+  },
+  "productionSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+  "sourceSha256": {
+    "apps/backend/src/autoflow/application/project_runs/scheduler.py": "5d58d8ea484abd49074e121106a510a7a0ffae333b5aebc8595cdf30f5523a7b",
+    "apps/backend/tests/integration/test_project_data_scheduler.py": "2f6ab71e57864bad77d8dc861353de2da8219bf656c2c0a13bb568a8a0b3ccbf",
+    "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py": "ff027ca91a7595599634a52c9dce51eb03a01ccfa4569e36b6550dfa983b1aa0"
+  },
+  "coverage": {
+    "requirements": 251,
+    "partiallyVerified": 206,
+    "planned": 45,
+    "verified": 0,
+    "gapRequirementCounts": {
+      "production_evidence_missing": 241,
+      "implementation_missing": 17,
+      "test_missing": 8,
+      "external_acceptance_pending": 24
+    },
+    "note": "Gap categories overlap. All states unchanged; narrowed XE-G02 missing test to Windows Job-specific ownership proof."
+  },
+  "priorCI": {
+    "runId": 35902129697,
+    "head": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+    "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
+    "status": "all_three_jobs_success",
+    "jobs": [
+      "windows-2022",
+      "macos-15-intel",
+      "macos-15"
+    ],
+    "scope": "Public API confirms job success. Excludes1c676965 empty-source guard and currentcb040daf stop fix. Completed run log download403 (Must have admin rights to Repository); artifact contents not newly inspected."
+  },
+  "relatedRequirements": [
+    "XE-C06"
+  ],
+  "packageSha256": {
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow": "afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7",
+    "apps/backend/dist/autoflow-backend/autoflow-backend": "eb6cd1e2dba7129ab72750d763724980d2084d7fc3aec32ce4f9b0f4762e5abd"
+  },
+  "buildProvenance": "Built the unchanged working-tree source later committed as cb040daf; scheduler SHA256 matches that commit. Build started before the commit was created; artifact hashes identify the exact checked binaries."
 }

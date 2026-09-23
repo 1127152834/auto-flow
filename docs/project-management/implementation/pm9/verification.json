@@ -1,36 +1,19 @@
 {
   "date": "2026-09-24",
-  "status": "unknown_owner_targeted_passed_full_and_packaged_running",
+  "status": "local_full_and_packaged_passed_native_dispatch_pending",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "2026-09-24 XE-G02归属不明核验修复（confirmed定向子范围，完整回归进行中）：真实worker证明缺失时Task已reconciling而Batch错误stopping。参数/数据调度器现在优先投影核验事实，并从同项目同批次running停止操作保留停止意图，避免后续重新领取或状态版本抖动。四个反例先失败，相关50项通过；真实普通/已知/未知归属强停3项通过（92.10秒），Ruff与mypy408通过。POSIX受控探针失败期间保留真实进程、目录、容量和原命令，恢复证明后原命令结束清理。Windows Job与打包UI联合门禁仍缺；251条状态不升级，releaseAccepted=false。详见unknown-owner-follow-through.json。",
-    "XE-G02 known-owner force-stop after controlled graceful IPC loss passed local real parameter HTTP/SQLite/browser/worker with actual30s grace, generation revocation and terminal original-command replay. Final2 passed/34deselected74.42s; unknown-owner reconciliation, packaged/native new case remain pending. No product change; see force-stop-follow-through.json.",
-    "DATA-WRITE-12 finite-group atomic update is an implementation gap, not just missing tests. Current domain rejects RecordRef arrays and worker has no group operation; existing single-write conflict/replay2 tests passed. G1–G3 spec and plan await confirmation. See group-write-audit.json.",
-    "DATA-CLAIM-09 public peer replacement/namespace/current-generation recovery passed actual HTTP/SQLite/browser/worker locally. Together with peer removal, closes the specifically named missing-test cases only; packaged live-Google/UI and new native evidence remain pending. Status remains partial; see peer-rebind-follow-through.json.",
-    "Current1c676965 fixes first-source-outage empty cache being mistaken for noMatch.42 related/6 boundary/2 real-worker tests and Ruff/mypy408 passed; serial full backend3493 passed/80 skipped/2 warnings/778.49s; rebuilt ARM full desktop passed22screenshots; native matrix pending. Current live matrices exclude this source. See partial-source-follow-through.json; releaseAccepted=false.",
-    "DATA-CLAIM-09 source outage: current binding successful read time and separate latest pull state implemented; controlled-Google real worker reliable-cache success and invalid-identity zero-Task refusal passed. Local frontend5474/409, scripts102, types/lint/OpenAPI/build and full ARM desktop22screens passed. Initial full backend3483 passed/79 skipped/4 process timing failures retained; unchanged isolated6 and serial full3487 passed/79 skipped; original failures and unknown cause retained. Prior CI35895754111@25bb8ab2 excludes this production change. See source-outage-follow-through.json; releaseAccepted=false. Current new matrix35902129697@a317e1f8 includes source51e8991e and the two new real-worker cases; in progress. Prior25bb8ab2 matrix35895754111 completed successfully on all three platforms; its artifacts/logs were checked separately.",
-    "Current69baeeb2 CI35886627514 completed with three failures in packaged desktop harness: both Macs required-URL guidance (metadata API passed, screenshots node unselected); Windows loaded compact reopened Studio but text readiness failed. Covered-target click RED→GREEN and viewport/panel restoration diagnosis recorded; final full local ARM desktop with compact viewport regression passed; new matrix35895754111 @25bb8ab2 queued; production remains69baeeb2. Supplemental parallel packaged API and ARM desktop passed; no release acceptance.",
-    "ARM packaged Profile/root-document freeze passed with actual browser seed observations old/old/new; full ARM desktop smoke also passed. Proxy candidate/endpoints are confirmed implementation gaps, P1–P3 proposed awaiting approval. Added script assertions are supplemental, absent from running69baeeb2 CI35886627514; releaseAccepted=false.",
-    "Supplemental ARM packaged public-HTTP subflow freeze/isolation/End association, parent stop at child checkpoint and narrowed child field permission all passed, including full desktop smoke. Production remains69baeeb2; additional script assertions are not in current35886627514. Full Profile/proxy/asset combinations and Windows/Intel same-scenario packaged evidence remain open. Ledger statuses unchanged.",
-    "Current metadata production404 fixed:17 targeted backend/45 frontend/3486 full backend and full ARM packaged desktop passed;69 of227 source nodes covered,project metadata remains uncovered. Foreground frame-measurement harness fixed after visibility=hidden diagnosis; both negative runs retained. Previous632caf6d matrix does not validate this route; new source69baeeb2 matrix35886627514 in progress. ReleaseAccepted remains false.",
-    "Current source632caf6d fixes actual standalone Studio feedback hiding and open/save identity conflict. Final frontend5473/409 files,50 targeted,101 scripts,typecheck/lint/build/ARM full desktop passed. New three-platform35881272086 is in progress; prior eb50 run35874897768 cancelled because it lacks these fixes. Its metadata404 has been superseded by the newer local fix; full external gates remain; releaseAccepted=false.",
-    "Actual5346 packaged manual resume then browser failure proves automatic deletion leaves resolved manual item and registered PNG in workspace/runs. Manual item cleanup/pending-manual blocker fixed locally (38 targeted passed); eb50e1ef full local backend3483/78 skipped and rebuilt ARM complete desktop passed. Historical three-platform35874897768 was cancelled for the later Studio fixes; current632caf6d matrix35881272086 is in progress. Persistent filesystem cleanup is missing with AD1-AD3 spec/plan proposed; no release acceptance. Prior5346 CI35871462256 cancelled for superseding known defect.",
-    "AU-08 real ARM installed UI unlink/worker blocker/original-key replay passed on c165, but SQLite inspection exposed owned snapshot purge ordering and overbroad impact count. Both fixed with direct RED→GREEN; 5346ceca full local backend3479/78 skipped and rebuilt packaged desktop passed; three-platform35871462256 is in progress. Project-owned workflow ownership/deletion remains missing, not merely missing tests.",
-    "DATA-LINK-02 forged recordRef.projectId acceptance fixed at shared association preflight and commit boundary; local full backend 3479 passed/77 skipped, contract/rule 33 passed, and actual browser-worker End followed by forged repair refusal/correct repair-only association passed. Current c16532d7 three-platform CI succeeded after Intel-only retry. DATA-LINK-02 remains partial because complete packaged/cross-platform reverse-target and full business acceptance are open; local actual worker-generated forged End target now passed in link-boundary-follow-through.json.",
-    "S4 Windows existing ordinary-file read and absolute-drive new-file table export passed bounded native probe 35832925704 and final three-platform matrix 35833223498 at dadb24a1. Existing output overwrite/append remain refused with 501.",
-    "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "2 of251 requirements still have no located assertion (DATA-LIFE-01,DATA-SH-03); XE-G07 now has actual independent-window scoped evidence, so206 partial/45 planned/0 verified. AU-06/XE-G01/XE-G07 have confirmed missing project session/docking implementation; W1-W3 proposed. DATA-WRITE-13 real-worker partial Sheets intent preservation passed the earlier selected three-platform CI; packaged real-Google and full business acceptance remain open.",
-    "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6 and variable parity20/20 passed. Earlier 1b2979ea matrix backend3474/75 on Mac is historical; current full backend counts are in finalCICandidate.",
-    "Old ARM data-response-loss failure reproduced locally: Chromium owner PID exited but stale SingletonSocket target remained; ownership-checked macOS lock fix passed source real worker and unit tests. Current c16532d7 ARM DMG isolated local installation/full desktop smoke passed; Finder/Gatekeeper, native panels and other physical release gates remain pending.",
-    "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
-    "D1 declared-input bad-value claim bypass fixed; dedicated local and selected three-platform real-worker scenario passed. Current packaged real-Google acceptance remains separate.",
-    "Historical defa1955 matrix35816693045: ARM data-response-loss failed; Windows/Intel cancelled. Matrix35819716149 @3df7700c ARM real worker passed but stale source smoke failed; Windows/Intel cancelled. Prior matrix35833223498 @dadb24a1 succeeded on Windows, Intel and ARM but predates DATA-LINK-02 guard. Current matrix35846519367 @c16532d7 succeeded on Windows/ARM attempt 1 and Intel attempt 2; Intel attempt 1 DMG build failed Resource busy after tests and packaged smoke passed. CI success is not complete PM9 release acceptance.",
-    "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
-    "Current c16532d7 ARM CI DMG was checksum-verified, copied to an isolated local installation and ran full desktop smoke. Current Intel DMG checksum and x86_64 image contents were verified on ARM, but no Intel physical run. Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain incomplete. Earlier dadb24a1 ARM native-dialog evidence retains its historical hash.",
-    "No merge or release is authorized; releaseAccepted=false."
+    "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
+    "Current production cb040daf includes the1c676965 empty-source guard and stop-reconciliation fix. New all-platform validation is pending CLI authentication/manual dispatch. Historical35902129697@a317e1f8 (production51e8991e) has three successful jobs; completed logs returned403 and contents were not re-inspected. CLI identity endpoint still401.",
+    "Implementation proposals awaiting approval: G1-G3 finite-group atomic writes; L1-L3 verified-principal reauthorization/sender isolation; M1-M3 remote Sheets rows/formulas; S4 Windows existing-file overwrite/append (still501); FR1-FR3 new-field result authorization; AD1-AD3 persistent Run file deletion; W1-W3 project Studio session/docking/ownership; P1-P3 frozen proxy membership/endpoints. See implementationGaps and completion-gaps.md for contracts and evidence.",
+    "251 requirements remain206 partially_verified/45 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/17 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
+    "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
+    "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
+    "Current cb040daf ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel x86_64 image verification remain scoped to those artifacts; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain external.",
+    "No merge or release is authorized. Do not add cross-process manual recovery or all Studio nodes. releaseAccepted=false."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
@@ -46,33 +29,63 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+  "codeCandidate": "cb040daf2393860b6435a340ce236b0a0f784f55",
   "checks": {
-    "currentLocal": "source-outage-follow-through.json",
+    "currentLocal": "unknown-owner-follow-through.json",
     "priorFixes": "follow-through.json",
     "historicalNativeArmInstall": "install-follow-through-darwin-arm64.json",
     "capabilityNativeArmInstall": "install-capabilities-darwin-arm64.json",
     "priorNativeArmInstall": "install-final-candidate-darwin-arm64.json",
     "currentNativeArmInstall": "install-shared-data-final-darwin-arm64.json",
-    "priorLocal": "lifecycle-restart-follow-through.json"
+    "priorLocal": "lifecycle-restart-follow-through.json",
+    "previousLocal": "source-outage-follow-through.json",
+    "currentNativeArmInstallScope": "Historical artifact-specific evidence only; latest cb040daf package:dir smoke is not a new physical installer acceptance."
   },
   "platforms": {
     "win32-x64": {
-      "status": "current_c165_full_ci_success_physical_acceptance_pending",
+      "status": "prior_ci_success_current_candidate_native_ci_pending_physical_acceptance_pending",
       "physicalInstaller": "pending native physical machine acceptance",
-      "scopedCiReport": "ci-capabilities-win32-x64.json"
+      "scopedCiReport": "ci-capabilities-win32-x64.json",
+      "historicalStatus": "current_c165_full_ci_success_physical_acceptance_pending",
+      "currentSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+      "latestCompletedCI": {
+        "runId": 35902129697,
+        "head": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+        "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
+        "jobConclusion": "success",
+        "artifactInspection": "pending permissions"
+      }
     },
     "darwin-x64": {
-      "status": "current_c165_full_ci_success_after_intel_only_retry_physical_acceptance_pending",
+      "status": "prior_ci_success_current_candidate_native_ci_pending_physical_acceptance_pending",
       "physicalInstaller": "current c16532d7 DMG hdiutil verify VALID and mounted x86_64 app checked on ARM; Intel physical installation remains pending",
-      "scopedCiReport": "ci-capabilities-darwin-x64.json"
+      "scopedCiReport": "ci-capabilities-darwin-x64.json",
+      "historicalStatus": "current_c165_full_ci_success_after_intel_only_retry_physical_acceptance_pending",
+      "currentSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+      "latestCompletedCI": {
+        "runId": 35902129697,
+        "head": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+        "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
+        "jobConclusion": "success",
+        "artifactInspection": "pending permissions"
+      }
     },
     "darwin-arm64": {
-      "status": "current_c165_full_ci_and_isolated_install_success_physical_release_gates_pending",
+      "status": "prior_ci_success_current_candidate_native_ci_pending_physical_acceptance_pending",
       "physicalInstaller": "Current c16532d7 CI DMG checksum/mount/isolated copy/full installed desktop smoke passed locally; installed-arm-link-guard-candidate.json. Finder/Gatekeeper and native panels pending",
       "priorCiReport": "ci-capabilities-82c067c9-darwin-arm64.json",
       "scopedCiReport": "ci-capabilities-darwin-arm64.json",
-      "priorNativePanels": "install-read-fix-darwin-arm64.json (historical hash, not current panel evidence)"
+      "priorNativePanels": "install-read-fix-darwin-arm64.json (historical hash, not current panel evidence)",
+      "historicalStatus": "current_c165_full_ci_and_isolated_install_success_physical_release_gates_pending",
+      "currentSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+      "latestCompletedCI": {
+        "runId": 35902129697,
+        "head": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+        "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
+        "jobConclusion": "success",
+        "artifactInspection": "pending permissions"
+      },
+      "currentCandidatePackagedDesktop": "cb040daf unsigned app full desktop passed/22 screenshots;unknown-owner-follow-through.json. Not current physical install or native dialog acceptance."
     }
   },
   "ci": {
@@ -160,7 +173,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "New scheduler fix on parent5b79028a: targeted50 and real-worker3 passed, Ruff/mypy408 passed. Full backend and rebuilt ARM validation running; native dispatch still authentication pending. Prior1c676965 checks are historical.",
+  "workingCandidate": "Production cb040daf:50 targeted/3 real-worker/full backend3497 passed/84 skipped/2 warnings;Ruff/mypy408,build,unsigned ARM complete desktop22screens passed. Current native dispatch awaits CLI authentication/manual trigger; historical35902129697 all three jobs success excludes this source.",
   "finalCICandidate": {
     "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
@@ -197,7 +210,7 @@
     "physicalInstallation": "ARM isolated command-line install passed; Windows/Intel physical installation, Finder/Gatekeeper/native panels/signing/notarization pending"
   },
   "codeCandidateScope": "Empty Sheets input proof guard plus prior source-outage/runtime fixes; targeted, serial full backend3493 and rebuilt ARM desktop22screens passed. Existing matrices are earlier production snapshots; newest native dispatch pending authentication.",
-  "testCandidate": "Unknown-owner POSIX fault scenario added to existing real parameter harness; existing CI manual-force-stop selector includes it. Windows skipped explicitly; no native all-matrix evidence for new scheduler source.",
+  "testCandidate": "cb040daf includes ordinary/force stop x parameter/data state tests and POSIX unknown-owner real-worker scenario; existing CI selector includes it, Windows skips the POSIX probe. Full/targeted results in unknown-owner-follow-through.json.",
   "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -521,13 +534,14 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
-    "status": "local_targeted_passed_full_and_packaged_running",
+    "status": "local_full_and_packaged_passed_native_dispatch_pending",
     "parentCommit": "5b79028a549a930be1f73193f8bd253bb09c57a7",
     "productionSourceSha256": "5d58d8ea484abd49074e121106a510a7a0ffae333b5aebc8595cdf30f5523a7b",
     "report": "unknown-owner-follow-through.json",
-    "backendFull": "running",
-    "packagedDesktop": "rebuild in progress",
-    "nativeDispatch": "Authentication restoration/manual trigger pending; old35902129697 excludes current source."
+    "backendFull": "3497 passed /84 skipped /2 warnings /900.44s",
+    "packagedDesktop": "Rebuilt unsigned ARM complete desktop passed/22 screenshots;3 visually checked. Not packaged unknown-owner fault or physical installer acceptance.",
+    "nativeDispatch": "Authentication restoration/manual trigger pending; old35902129697 excludes current source.",
+    "source": "cb040daf2393860b6435a340ce236b0a0f784f55"
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -551,9 +565,9 @@
     "testAndHarnessCandidate": "a317e1f87c9b775940a8faa45713c884007ce6ad",
     "runId": "35902129697",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35902129697",
-    "status": "in_progress",
+    "status": "all_three_jobs_success_artifacts_not_reinspected",
     "report": "source-outage-follow-through.json",
-    "scope": "Prior source51e8991e plus both worker cases; remains live, excludes newer partial-source guard and enhanced initial-outage assertion."
+    "scope": "Historical source51e8991e only; excludes1c676965 andcb040daf. Public API confirms Windows/Intel/ARM job success; completed log download403. No new artifact inspection."
   },
   "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json",
   "sourceOutageFollowThrough": {
@@ -604,5 +618,36 @@
       "fallback": "GitHub connector updated draft PR successfully; no Actions dispatch tool available. Ego browser space1 shows signed-out Actions page and has been handed off for user login/dispatch.",
       "scope": "Existing35902129697@a317e1f8 excludes this fix;35895754111@25bb8ab2 completed success and is historical. Recheck runs before any dispatch after credentials are restored."
     }
+  },
+  "historicalRemainingNotes": {
+    "status": "superseded_as_current_status",
+    "note": "Retained dated progress notes; currentCandidateValidation and remaining govern current state. Original candidate failures and evidence are preserved in linked reports.",
+    "notes": [
+      "2026-09-24 XE-G02归属不明核验修复（confirmed定向子范围，完整回归进行中）：真实worker证明缺失时Task已reconciling而Batch错误stopping。参数/数据调度器现在优先投影核验事实，并从同项目同批次running停止操作保留停止意图，避免后续重新领取或状态版本抖动。四个反例先失败，相关50项通过；真实普通/已知/未知归属强停3项通过（92.10秒），Ruff与mypy408通过。POSIX受控探针失败期间保留真实进程、目录、容量和原命令，恢复证明后原命令结束清理。Windows Job与打包UI联合门禁仍缺；251条状态不升级，releaseAccepted=false。详见unknown-owner-follow-through.json。",
+      "XE-G02 known-owner force-stop after controlled graceful IPC loss passed local real parameter HTTP/SQLite/browser/worker with actual30s grace, generation revocation and terminal original-command replay. Final2 passed/34deselected74.42s; unknown-owner reconciliation, packaged/native new case remain pending. No product change; see force-stop-follow-through.json.",
+      "DATA-WRITE-12 finite-group atomic update is an implementation gap, not just missing tests. Current domain rejects RecordRef arrays and worker has no group operation; existing single-write conflict/replay2 tests passed. G1–G3 spec and plan await confirmation. See group-write-audit.json.",
+      "DATA-CLAIM-09 public peer replacement/namespace/current-generation recovery passed actual HTTP/SQLite/browser/worker locally. Together with peer removal, closes the specifically named missing-test cases only; packaged live-Google/UI and new native evidence remain pending. Status remains partial; see peer-rebind-follow-through.json.",
+      "Current1c676965 fixes first-source-outage empty cache being mistaken for noMatch.42 related/6 boundary/2 real-worker tests and Ruff/mypy408 passed; serial full backend3493 passed/80 skipped/2 warnings/778.49s; rebuilt ARM full desktop passed22screenshots; native matrix pending. Current live matrices exclude this source. See partial-source-follow-through.json; releaseAccepted=false.",
+      "DATA-CLAIM-09 source outage: current binding successful read time and separate latest pull state implemented; controlled-Google real worker reliable-cache success and invalid-identity zero-Task refusal passed. Local frontend5474/409, scripts102, types/lint/OpenAPI/build and full ARM desktop22screens passed. Initial full backend3483 passed/79 skipped/4 process timing failures retained; unchanged isolated6 and serial full3487 passed/79 skipped; original failures and unknown cause retained. Prior CI35895754111@25bb8ab2 excludes this production change. See source-outage-follow-through.json; releaseAccepted=false. Current new matrix35902129697@a317e1f8 includes source51e8991e and the two new real-worker cases; in progress. Prior25bb8ab2 matrix35895754111 completed successfully on all three platforms; its artifacts/logs were checked separately.",
+      "Current69baeeb2 CI35886627514 completed with three failures in packaged desktop harness: both Macs required-URL guidance (metadata API passed, screenshots node unselected); Windows loaded compact reopened Studio but text readiness failed. Covered-target click RED→GREEN and viewport/panel restoration diagnosis recorded; final full local ARM desktop with compact viewport regression passed; new matrix35895754111 @25bb8ab2 queued; production remains69baeeb2. Supplemental parallel packaged API and ARM desktop passed; no release acceptance.",
+      "ARM packaged Profile/root-document freeze passed with actual browser seed observations old/old/new; full ARM desktop smoke also passed. Proxy candidate/endpoints are confirmed implementation gaps, P1–P3 proposed awaiting approval. Added script assertions are supplemental, absent from running69baeeb2 CI35886627514; releaseAccepted=false.",
+      "Supplemental ARM packaged public-HTTP subflow freeze/isolation/End association, parent stop at child checkpoint and narrowed child field permission all passed, including full desktop smoke. Production remains69baeeb2; additional script assertions are not in current35886627514. Full Profile/proxy/asset combinations and Windows/Intel same-scenario packaged evidence remain open. Ledger statuses unchanged.",
+      "Current metadata production404 fixed:17 targeted backend/45 frontend/3486 full backend and full ARM packaged desktop passed;69 of227 source nodes covered,project metadata remains uncovered. Foreground frame-measurement harness fixed after visibility=hidden diagnosis; both negative runs retained. Previous632caf6d matrix does not validate this route; new source69baeeb2 matrix35886627514 in progress. ReleaseAccepted remains false.",
+      "Current source632caf6d fixes actual standalone Studio feedback hiding and open/save identity conflict. Final frontend5473/409 files,50 targeted,101 scripts,typecheck/lint/build/ARM full desktop passed. New three-platform35881272086 is in progress; prior eb50 run35874897768 cancelled because it lacks these fixes. Its metadata404 has been superseded by the newer local fix; full external gates remain; releaseAccepted=false.",
+      "Actual5346 packaged manual resume then browser failure proves automatic deletion leaves resolved manual item and registered PNG in workspace/runs. Manual item cleanup/pending-manual blocker fixed locally (38 targeted passed); eb50e1ef full local backend3483/78 skipped and rebuilt ARM complete desktop passed. Historical three-platform35874897768 was cancelled for the later Studio fixes; current632caf6d matrix35881272086 is in progress. Persistent filesystem cleanup is missing with AD1-AD3 spec/plan proposed; no release acceptance. Prior5346 CI35871462256 cancelled for superseding known defect.",
+      "AU-08 real ARM installed UI unlink/worker blocker/original-key replay passed on c165, but SQLite inspection exposed owned snapshot purge ordering and overbroad impact count. Both fixed with direct RED→GREEN; 5346ceca full local backend3479/78 skipped and rebuilt packaged desktop passed; three-platform35871462256 is in progress. Project-owned workflow ownership/deletion remains missing, not merely missing tests.",
+      "DATA-LINK-02 forged recordRef.projectId acceptance fixed at shared association preflight and commit boundary; local full backend 3479 passed/77 skipped, contract/rule 33 passed, and actual browser-worker End followed by forged repair refusal/correct repair-only association passed. Current c16532d7 three-platform CI succeeded after Intel-only retry. DATA-LINK-02 remains partial because complete packaged/cross-platform reverse-target and full business acceptance are open; local actual worker-generated forged End target now passed in link-boundary-follow-through.json.",
+      "S4 Windows existing ordinary-file read and absolute-drive new-file table export passed bounded native probe 35832925704 and final three-platform matrix 35833223498 at dadb24a1. Existing output overwrite/append remain refused with 501.",
+      "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
+      "2 of251 requirements still have no located assertion (DATA-LIFE-01,DATA-SH-03); XE-G07 now has actual independent-window scoped evidence, so206 partial/45 planned/0 verified. AU-06/XE-G01/XE-G07 have confirmed missing project session/docking implementation; W1-W3 proposed. DATA-WRITE-13 real-worker partial Sheets intent preservation passed the earlier selected three-platform CI; packaged real-Google and full business acceptance remain open.",
+      "Nested loop-indexed RecordRef type preservation fixed; local real Sheets worker suite6/6 and variable parity20/20 passed. Earlier 1b2979ea matrix backend3474/75 on Mac is historical; current full backend counts are in finalCICandidate.",
+      "Old ARM data-response-loss failure reproduced locally: Chromium owner PID exited but stale SingletonSocket target remained; ownership-checked macOS lock fix passed source real worker and unit tests. Current c16532d7 ARM DMG isolated local installation/full desktop smoke passed; Finder/Gatekeeper, native panels and other physical release gates remain pending.",
+      "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
+      "D1 declared-input bad-value claim bypass fixed; dedicated local and selected three-platform real-worker scenario passed. Current packaged real-Google acceptance remains separate.",
+      "Historical defa1955 matrix35816693045: ARM data-response-loss failed; Windows/Intel cancelled. Matrix35819716149 @3df7700c ARM real worker passed but stale source smoke failed; Windows/Intel cancelled. Prior matrix35833223498 @dadb24a1 succeeded on Windows, Intel and ARM but predates DATA-LINK-02 guard. Current matrix35846519367 @c16532d7 succeeded on Windows/ARM attempt 1 and Intel attempt 2; Intel attempt 1 DMG build failed Resource busy after tests and packaged smoke passed. CI success is not complete PM9 release acceptance.",
+      "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
+      "Current c16532d7 ARM CI DMG was checksum-verified, copied to an isolated local installation and ran full desktop smoke. Current Intel DMG checksum and x86_64 image contents were verified on ARM, but no Intel physical run. Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain incomplete. Earlier dadb24a1 ARM native-dialog evidence retains its historical hash.",
+      "No merge or release is authorized; releaseAccepted=false."
+    ]
   }
 }

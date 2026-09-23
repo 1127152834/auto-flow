@@ -1,6 +1,6 @@
 # PM9 剩余工作复核
 
-2026-09-24 XE-G02归属不明核验修复（confirmed定向子范围，完整回归进行中）：真实worker证明缺失时Task已reconciling而Batch错误stopping。参数/数据调度器现在优先投影核验事实，并从同项目同批次running停止操作保留停止意图，避免后续重新领取或状态版本抖动。四个反例先失败，相关50项通过；真实普通/已知/未知归属强停3项通过（92.10秒），Ruff与mypy408通过。POSIX受控探针失败期间保留真实进程、目录、容量和原命令，恢复证明后原命令结束清理。Windows Job与打包UI联合门禁仍缺；251条状态不升级，releaseAccepted=false。详见unknown-owner-follow-through.json。
+2026-09-24 XE-C06/XE-G02归属不明核验修复（confirmed本机源码/新包子范围，三平台pending）：生产cb040daf修复参数/数据批次在Task核验中仍显示stopping，并通过既有停止操作保留停止意图，避免重新领取及状态版本抖动。四个反例先失败，相关50项通过；真实普通/已知/未知归属强停3项通过（92.10秒），Ruff/mypy408及映射4项/251引用通过。串行完整后端3497 passed/84 skipped/2 warnings（900.44秒）；新未签名ARM包完整桌面passed/22截图，已目视核对3张。真实worker1004条/31410ms、万行43624ms/0busy、固定1000条合成输入60016ms均为单次本机观察。归属证明缺失期间保留进程/目录/容量/原命令，恢复后原命令完成。Windows Job和打包核验UI仍缺；旧35902129697三平台job成功但不含当前源码，CLI401/日志403仍阻断新矩阵与产物复核。251条状态不升级，releaseAccepted=false。详见unknown-owner-follow-through.json。
 
 2026-09-24 XE-G02强停补证（confirmed本机子范围）：参数真实worker在普通停止后模拟下行通道丢失，实际30秒宽限期内409，公开门禁到期才强停；原生birth身份/进程退出、执行代次撤销、interrupted未知结果、人工取消、临时目录/容量回收及原命令终态查询重放通过，无后续节点/额外Task。最终普通停止+强停2 passed/34 deselected（74.42秒），Ruff通过；既有CI选择新增场景并collect35/46（非运行）。早期夹具/终态/DTO时间比较错误全部保留，不称产品修复。归属不明核验、打包UI与新增三平台仍待验；无生产改动，251条状态不变，releaseAccepted=false。详见force-stop-follow-through.json。
 

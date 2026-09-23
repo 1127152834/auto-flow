@@ -15228,6 +15228,15 @@
           "scope": "PM3管理端已交付子范围；complete_acceptance指向后续里程碑的能力保持未验收。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/unknown-owner-follow-through.json",
+          "scope": "POSIX真实worker归属证明不可用时保留核验/资源/原命令，恢复证明后原强停命令完成；两类批次普通/强停保持停止意图。",
+          "limitations": "受控身份探针失败，Windows Job与打包UI联合验收仍缺；不升级整个要求。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-C",
@@ -15255,19 +15264,25 @@
         "PM8-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
             "symbol": "test_real_project_batch_http",
-            "scope": "stop/manual-stop 通过生产 scheduler/worker 停止真实浏览器",
+            "scope": "stop/manual-stop 通过生产 scheduler/worker 停止真实浏览器；manual-force-stop(-unknown)在实际30秒宽限期后通过公开强停升级，原命令查询/重放；POSIX归属证明不可用时保留真实worker/目录/容量与reconciling，恢复证明后原操作成功。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_data_scheduler.py",
+            "symbol": "test_stop_preserves_reconciliation_and_stop_intent",
+            "scope": "参数/数据批次×普通/强停四个反例；三次tick状态版本稳定、停止意图不丢失、不领取/派发，恢复后原操作成功且批次stopped。合成worker，不替代平台原生证据。",
             "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "强停升级、未确认停止时资源不释放与 UI 时限还需联合验证"
+            "detail": "源码POSIX真实worker强停升级/归属证明不可用及原命令恢复已验证；打包UI时限/状态和Windows Job证明失败的联合验收仍缺。"
           }
         ],
         "statusBeforeReview": "partially_verified"
