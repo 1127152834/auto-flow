@@ -397,3 +397,9 @@
 - 既有 `timing_probability.py` 两节点进入项目目录 172→174；没有重写时钟、随机或图执行器。真实 worker 验证两个分支、日期/延迟、错误和停止；原版差分与 SSH 关联共 19 项通过。
 - 正式 Electron 开发入口和 macOS arm64 本地包真实 UI 编排分支、保存、正常关闭后运行项目任务均通过；未选分支无日志和尝试记录。证据：`docs/migration/studio-backend-migration/evidence/project-integration/timing-family-2026-09-24/README.md`。
 - E2E 首轮画布落点被遮挡，快速点击缩放尝试又出现收藏选择器，保留两个失败现场。后者根因未确定，排队核实，未宣称修复；正常可见区域编排闭环已通过。未改用户数据库、未恢复通知节点；项目目录余下 39 个入口。下一块 Base64 全模式所需文件端口已由 SSH 批次提供。
+
+## 项目任务 Base64 全模式（2026-09-24，confirmed）
+
+- 既有 Base64 执行器进入项目目录 174→175，通过现有文件端口读写；保留原文编解码、Data URI、路径及持久回执行为。正式 UI 首轮发现旧 `resultVariable=base64_result` 遮蔽 `variableName`，真实 worker 先复现再修复输出登记，未改变执行算法。
+- 关联差分与项目节点族 19 项通过；追加大值后 Base64 专项 5 项通过，覆盖四模式、非法编码、路径逃逸和 70 Ki 汉字的完整编码值。开发与 macOS arm64 本地包真实 UI 编排/保存/关窗/项目运行/产物下载通过。证据：`docs/migration/studio-backend-migration/evidence/project-integration/base64-family-2026-09-24/README.md`。
+- 仍有 38 个项目目录入口待核销；整体目标保持 active。下一依赖就绪模块为 Firecrawl 三节点：现有 CloakBrowser 临时页和 PNG 端口可复用，尚未开始项目生产接入。未测平台、用户数据库、原生设备和外部供应商证据继续单列。

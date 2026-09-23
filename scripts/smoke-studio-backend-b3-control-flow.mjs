@@ -31,14 +31,15 @@ const projectHttpOnly = process.env.AUTOFLOW_PROJECT_HTTP_TASK === '1'
 const projectControlPrimitivesOnly = process.env.AUTOFLOW_PROJECT_CONTROL_PRIMITIVES_TASK === '1'
 const projectNetworkOnly = process.env.AUTOFLOW_PROJECT_NETWORK_TASK === '1'
 const projectAllureOnly = process.env.AUTOFLOW_PROJECT_ALLURE_TASK === '1'
+const projectBase64Only = process.env.AUTOFLOW_PROJECT_BASE64_TASK === '1'
 const projectTimingOnly = process.env.AUTOFLOW_PROJECT_TIMING_TASK === '1'
 const projectSshOnly = process.env.AUTOFLOW_PROJECT_SSH_TASK === '1'
 const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly || projectNetworkOnly || projectAllureOnly
-const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly || projectTimingOnly
+const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly || projectTimingOnly || projectBase64Only
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectBase64Only ? 'formal-project-base64-electron-' : projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -223,6 +224,71 @@ try {
     }, 'SSH connections and remote command cleanup', 5_000)
     checkpoint('项目任务真实 SSH 命令和 SFTP 文件往返完成；下载产物、变量与日志可查，连接及进程已清理')
     const report = { evidenceId: 'BE-project-ssh-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, sshCleanup, sha256: createHash('sha256').update(content).digest('hex'), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, server: 'real loopback SSH/SFTP', interaction: 'formal Electron mouse/keyboard; APIs only fixture setup and evidence reads' } }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
+  if (projectBase64Only) {
+    const name = '项目 Base64 全模式任务验收'
+    const inputPath = join(userData, 'base64-input.txt')
+    const outputPath = join(userData, 'decoded')
+    await writeFile(inputPath, '文件甲')
+    await newWorkflow(studio, name)
+    await showBlockView(studio)
+    for (const [mode, valueField, value, variable] of [
+      ['文本编码为Base64', '要编码的文本，支持 {变量名}', '文本乙', 'encoded'],
+      ['Base64解码为文本', '要解码的Base64字符串，支持 {变量名}', '{encoded}', 'decoded'],
+      ['文件转Base64', '选择要转换的文件，支持 {变量名}', inputPath, 'file_data'],
+      ['Base64转文件', 'Base64编码的数据，支持 {变量名}', '{file_data}', 'file_path'],
+    ]) {
+      await addBlock(studio, '添加模块', 'Base64编解码')
+      await selectNative(studio, '#operation', mode)
+      await setInput(studio, `[placeholder="${valueField}"]`, value)
+      await setVariableNameInput(studio, '#variableName', variable)
+      if (variable === 'file_path') {
+        await setInput(studio, '[placeholder="文件保存目录，支持 {变量名}"]', outputPath)
+        await setInput(studio, '[placeholder="output.png，支持 {变量名}"]', 'output.txt')
+      }
+    }
+    await click(studio, '保存')
+    const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project base64 saved', 15_000)
+    assert.equal(saved.nodes.length, 4)
+    assert.equal(saved.edges.length, 3)
+    assert.deepEqual(saved.nodes.map(node => node.data.operation ?? 'encode'), ['encode', 'decode', 'file_to_base64', 'base64_to_file'])
+    checkpoint('正式 Studio 真实 UI 配置 Base64 文本编码、解码、文件读取和文件写入四模式并保存')
+    await closeWindowThroughOs()
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '项目 Base64 自动化')
+    await selectAutomationWorkflow(main, name, saved.id)
+    await click(main, '保存配置')
+    await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project base64 automation')
+    await click(main, '启动运行')
+    await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'project base64 batch dialog')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project base64 batch')
+    const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project base64 terminal', 30_000)
+    const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
+    assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, task }))
+    const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+    const values = Object.fromEntries(outputs.items.map(item => [item.name, item.value]))
+    assert.equal(values.encoded, Buffer.from('文本乙').toString('base64'))
+    assert.equal(values.decoded, '文本乙')
+    assert.equal(values.file_data, 'data:text/plain;base64,' + Buffer.from('文件甲').toString('base64'))
+    assert.equal(await readFile(values.file_path, 'utf8'), '文件甲')
+    const artifacts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/artifacts?pageSize=100`)
+    assert.equal(artifacts.total, 1)
+    const response = await fetch(`${runtime.sidecar.baseUrl}${artifacts.items[0].contentUrl}`, { headers: { 'x-autoflow-token': runtime.sidecar.token } })
+    assert.equal(response.status, 200)
+    assert.equal(await response.text(), '文件甲')
+    await click(main, '查看任务')
+    await click(main, '异常与证据', '[role="tab"]')
+    await capture(main, join(evidenceDir, 'project-base64-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    checkpoint('项目任务真实完成四模式，文本往返一致，文件产物和下载内容一致，无浏览器占用')
+    const report = { evidenceId: 'BE-project-base64-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, interaction: 'formal UI mouse/keyboard; API fixture setup and evidence reads only' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()

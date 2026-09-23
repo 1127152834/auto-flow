@@ -15958,7 +15958,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/base64-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA Base64 全模式；项目真实 worker 验证文本/文件往返、非法编码、路径拒绝及大值完整输出；正式 Electron 开发与 macOS arm64 本地包真实 UI 保存运行四模式，用户变量名和产物内容一致。"
+      }
     }
   },
   {

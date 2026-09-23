@@ -14,6 +14,7 @@ _RUNNABLE_MODULES = (
     ("set_variable", "设置变量"),
     ("increment_decrement", "自增自减"),
     ("json_parse", "JSON解析"),
+    ("base64", "Base64编解码"),
     ("random_number", "生成随机数"),
     ("get_time", "获取时间"),
     ("print_log", "打印日志"),

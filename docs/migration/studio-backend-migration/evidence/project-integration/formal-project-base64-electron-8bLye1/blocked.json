@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-23T19:26:42.172Z",
+  "gitHead": "59329daa77acdabacd7024b51ac39ff19887b525",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 配置 Base64 文本编码、解码、文件读取和文件写入四模式并保存"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- '5paH5pys5LmZ'\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:277:12\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

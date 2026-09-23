@@ -8,6 +8,7 @@ must keep the same durable event/stop contract without acquiring browser state.
 from __future__ import annotations
 
 import asyncio
+import base64
 import io
 import json
 from collections.abc import Mapping
@@ -22,6 +23,8 @@ from typing import Any, NoReturn
 from uuid import UUID, uuid4
 
 import pytest
+from openpyxl import load_workbook
+
 from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
@@ -59,8 +62,6 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
-from openpyxl import load_workbook
-
 from tests.differential.workflows.test_b4_math_family_executor_parity import (
     VALID_CASES as MATH_CASES,
 )
@@ -112,7 +113,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables", "control_primitives", "allure"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables", "control_primitives", "allure", "base64"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -193,7 +194,18 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("stop", "allure_stop_test", {"status": "passed"}, None),
         ("report", "allure_generate_report", {"reportDir": "reports"}, None),
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps, "control_primitives": control_steps, "allure": allure_steps}[family]
+    base64_input = tmp_path / "base64-input.txt"
+    if family == "base64":
+        base64_input.write_text("文件甲", encoding="utf-8")
+    encoded_text = base64.b64encode("文本乙".encode()).decode()
+    encoded_file = "data:text/plain;base64," + base64.b64encode("文件甲".encode()).decode()
+    base64_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("encode", "base64", {"operation": "encode", "inputText": "文本乙", "variableName": "encoded"}, encoded_text),
+        ("decode", "base64", {"operation": "decode", "inputBase64": "{encoded}", "variableName": "decoded"}, "文本乙"),
+        ("read-file", "base64", {"operation": "file_to_base64", "filePath": str(base64_input), "variableName": "file_data"}, encoded_file),
+        ("write-file", "base64", {"operation": "base64_to_file", "inputBase64": "{file_data}", "outputPath": str(tmp_path / "decoded"), "fileName": "output.txt", "variableName": "file_path"}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps, "control_primitives": control_steps, "allure": allure_steps, "base64": base64_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert node_types <= set(build_production_executor_registry().get_all_types())
@@ -202,7 +214,7 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         schemaVersion=3,
         nodes=[{
             "id": node_id, "type": module_type, "position": {"x": index * 160, "y": 0},
-            "data": {"moduleType": module_type, "config": config},
+            "data": {"moduleType": module_type, "config": {"resultVariable": "base64_result", **config} if family == "base64" else config},
         } for index, (node_id, module_type, config, _) in enumerate(steps)],
         edges=[{
             "id": f"edge-{index}", "source": steps[index][0], "target": steps[index + 1][0],
@@ -274,6 +286,16 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             assert total == 3 and [item.kind for item in artifacts] == ["file"] * 3
             assert [evidence.artifact_content(project.project_id, task.task_id, item.artifact_id)[0].decode() for item in artifacts] == ["甲\n乙", "甲\n乙\n甲\n乙", ""]
             assert outputs == {}
+        elif family == "base64":
+            assert {event.payload["name"] for event in events if event.kind == "output"} == {"encoded", "decoded", "file_data", "file_path"}
+            assert outputs["encode"] == encoded_text
+            assert outputs["decode"] == "文本乙"
+            assert outputs["read-file"] == encoded_file
+            assert Path(outputs["write-file"]).read_text(encoding="utf-8") == "文件甲"
+            evidence = ProjectRunEvidence(factory, tmp_path / "workspace")
+            artifacts, total = evidence.artifacts(project.project_id, task.task_id)
+            assert total == 1 and artifacts[0].kind == "file"
+            assert evidence.artifact_content(project.project_id, task.task_id, artifacts[0].artifact_id)[0] == "文件甲".encode()
         elif family == "logging":
             evidence = ProjectRunEvidence(factory, tmp_path / "workspace")
             artifacts, total = evidence.artifacts(project.project_id, task.task_id)
@@ -370,6 +392,8 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
             if item["capability"] == "browser.cloakbrowser"
         )
         assert browser["required"] is False
+        from sqlalchemy import select
+
         from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
         from autoflow.application.project_runs.resources import (
             ProjectRunResourceResolver,
@@ -377,7 +401,6 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
         from autoflow.infrastructure.database.environment_models import (
             ProjectEnvironmentInstanceRow,
         )
-        from sqlalchemy import select
 
         runner = ProjectRunCoordinator(
             factory, runtime,
@@ -1671,9 +1694,10 @@ async def test_stop_cancels_browser_free_worker_and_confirms_cleanup(
 
 @pytest.mark.asyncio
 async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_path: Path) -> None:
+    from fastapi import FastAPI
+
     from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
     from autoflow.bootstrap.workflows import configure_project_workflow_runtime
-    from fastapi import FastAPI
 
     factory, queued = _queued_pure_data_run(tmp_path, values=[1, 2, 3])
     runtime = WorkflowRuntimeService(factory)
@@ -1705,6 +1729,66 @@ async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_pat
         assert not app.state.project_workflow_worker_manager.busy()
         await dispatcher.startup()
         assert runtime.query_run(run_id=queued.run_id) == run
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("config", [
+    {"operation": "decode", "inputBase64": "a"},
+    {"operation": "base64_to_file", "inputBase64": "YQ==", "outputPath": "../escape", "fileName": "outside.bin"},
+    {"operation": "file_to_base64", "filePath": "../outside.bin"},
+])
+async def test_project_base64_invalid_input_or_escape_is_rejected(
+    tmp_path: Path, config: dict[str, Any],
+) -> None:
+    factory, queued = _queued_pure_data_run(
+        tmp_path, node_data={"moduleType": "base64", **config, "variableName": "encoded"},
+    )
+    worker = ProjectWorkflowWorkerManager(tmp_path / "worker")
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=queued.run_id)
+            events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            artifacts, _ = repository.list_artifacts(queued.run_id, offset=0, limit=100)
+        assert finished is not None and finished.status == "failed"
+        assert not any(event.kind == "output" for event in events)
+        assert not any(artifact.availability == "available" for artifact in artifacts)
+        assert not list(tmp_path.rglob("outside.bin"))
+        assert not resources.requests and not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_project_base64_large_result_keeps_configured_name_and_full_value(tmp_path: Path) -> None:
+    content = "甲" * (70 * 1024)
+    factory, queued = _queued_pure_data_run(tmp_path, node_data={
+        "moduleType": "base64", "operation": "encode", "inputText": content,
+        "resultVariable": "base64_result", "variableName": "encoded",
+    })
+    worker = ProjectWorkflowWorkerManager(tmp_path / "worker")
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=queued.run_id)
+            events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded"
+        outputs = [event.payload for event in events if event.kind == "output"]
+        assert len(outputs) == 1 and outputs[0]["name"] == "encoded"
+        assert outputs[0]["value"] == base64.b64encode(content.encode()).decode()
+        assert not resources.requests and not worker.busy()
     finally:
         await dispatcher.shutdown()
         factory.dispose()

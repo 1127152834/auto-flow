@@ -1,0 +1,23 @@
+{
+  "evidenceId": "BE-project-base64-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T19:29:00.597Z",
+  "gitHead": "59329daa77acdabacd7024b51ac39ff19887b525",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "43b704f8-b90a-4f3f-853a-9017a83f457b",
+  "workflowId": "4RKBA0QiZQ3Y1FOhSKSYB",
+  "batchId": "919311d1-c172-4993-8833-a9e07dec0d63",
+  "taskId": "c52e0ea4-4487-4acc-a078-51d4a60c89ea",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 配置 Base64 文本编码、解码、文件读取和文件写入四模式并保存",
+    "项目任务真实完成四模式，文本往返一致，文件产物和下载内容一致，无浏览器占用"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal UI mouse/keyboard; API fixture setup and evidence reads only"
+  }
+}
