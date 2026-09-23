@@ -1,6 +1,6 @@
 # PM9 assertion mapping review
 
-2026-09-23 XE-A17 收尾补证（confirmed，本段取代此前当前统计）：本机真实 HTTP/SQLite/两 worker/浏览器联合归档通过，已受理保存仅一次，未知写核验前不完成，pending 不重发；同文件 5 passed（60.11秒）。修复归档/核验门禁、任务更新缺同步意图、End 阻塞与取消清理竞态、终态实例残留；新完整回归/三平台仍在推进。台账为 247 有范围断言/4 未定位、203 partial/48 planned/0 verified；没有升级 verified。计划及详细边界见 archive-settlement-follow-through.json，releaseAccepted=false。此前候选与结果均为历史范围。
+2026-09-23 XE-A17 收尾补证（confirmed，本段取代此前当前统计）：本机真实 HTTP/SQLite/两 worker/浏览器联合归档通过，已受理保存仅一次，未知写核验前不完成，pending 不重发；同文件 5 passed（60.11秒）。修复归档/核验门禁、任务更新缺同步意图、End 阻塞与取消清理竞态、终态实例残留；新完整回归/三平台仍在推进。台账为 248 有范围断言/3 未定位、203 partial/48 planned/0 verified；没有升级 verified。计划及详细边界见 archive-settlement-follow-through.json，releaseAccepted=false。此前候选与结果均为历史范围。
 
 2026-09-23 本轮回归收尾（confirmed）：生产候选14dfae7c；本机后端完整3465 passed/73 skipped/2 warnings（966.88秒），前端5471通过，类型/lint/OpenAPI/Ruff/mypy407/前后端构建通过。产物sidecar首次15秒就绪超时；诊断3545ms且健康200，原15秒复测通过，但首发原因未明，不能声称修复。单次新三平台35811305102仍运行，旧c9矩阵因新增checkpoint修复取消。后续aef0f412仅测试/记录，与候选生产源码一致但其新增断言不在该矩阵。releaseAccepted=false。
 

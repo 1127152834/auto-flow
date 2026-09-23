@@ -2549,11 +2549,12 @@
         {
           "id": "XE-G06",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "production_evidence_missing",
+            "external_acceptance_pending"
           ]
         },
         {
@@ -2618,8 +2619,8 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 247,
-    "withNoLocatedAssertion": 4,
+    "withAssertions": 248,
+    "withNoLocatedAssertion": 3,
     "statuses": {
       "partially_verified": 203,
       "planned": 48

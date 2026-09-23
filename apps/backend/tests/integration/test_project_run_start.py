@@ -221,7 +221,8 @@ async def test_project_run_acquires_its_reserved_persistent_directory(tmp_path, 
     with pytest.raises(ProjectError) as revoked:
         await browser.acquire(running.resource_request, running.run_request_id)
     assert revoked.value.code == "END_ACCESS_REVOKED"
-    # A still-open instance must not be savable: quiescence precedes generation checks.
+    # A cancelled Run is refused atomically before accepting a new save,
+    # even when its work copy has not yet become quiescent.
     with pytest.raises(ProjectError) as not_quiescent:
         environment_service.save(
             project.project_id,
@@ -232,9 +233,9 @@ async def test_project_run_acquires_its_reserved_persistent_directory(tmp_path, 
                 "name": "未静止环境",
             },
         )
-    assert not_quiescent.value.code == "INSTANCE_NOT_QUIESCENT"
+    assert not_quiescent.value.code == "CAPABILITY_SCOPE_DENIED"
     environment_service.environments.set_instance_state(instance.instance_id, "closed")
-    # Once quiescent, a revoked execution generation cannot publish the environment.
+    # Closing the copy does not restore the cancelled Run's save capability.
     with pytest.raises(ProjectError) as stale_save:
         environment_service.save(
             project.project_id,
@@ -246,7 +247,9 @@ async def test_project_run_acquires_its_reserved_persistent_directory(tmp_path, 
                 "name": "旧执行代次",
             },
         )
-    assert stale_save.value.code == "EXECUTION_GENERATION_REVOKED"
+    assert stale_save.value.code == "CAPABILITY_SCOPE_DENIED"
+    with factory() as session:
+        assert session.scalar(select(ProjectOperationRow).where(ProjectOperationRow.kind == 'saveEnvironment')) is None
     factory.dispose()
     factory.dispose()
 

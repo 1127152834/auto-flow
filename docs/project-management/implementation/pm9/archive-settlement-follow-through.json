@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_real_scenarios_passed_full_regression_in_progress",
+  "status": "local_full_run_completed_one_stale_assertion_fixed_native_replacement_pending",
   "releaseAccepted": false,
   "parentCommit": "816969953cc30270aef57b1caa8ee609335cef08",
   "plan": "docs/superpowers/plans/2026-09-23-pm9-archive-settlement.md",
@@ -16,19 +16,41 @@
     "realSheetsWorkers": "5 passed / 2 warnings in 60.11s, macOS ARM; real workers/browser/HTTP/SQLite, controlled Google transport and credential fixture",
     "focused": "79 passed / 3 skipped / 2 warnings in 44.73s; environment/capability/Sheets/archive/process integration. Three platform-specific skips are not passes.",
     "realRetention": "5 passed / 1 test wrapper TypeError in initial101.43s run; wrapper now forwards retention kwargs. Failed manual-expire-race rerun1 passed/33 deselected15.13s. Old candidate update-conflict/saveAs, association-only repair and other race branches passed in initial run.",
-    "fullBackend": "in progress",
+    "fullBackend": "3471 passed / 74 skipped / 1 failed / 2 warnings in857.72s. Sole failure was old INSTANCE_NOT_QUIESCENT expectation after cancelled Run; corrected earlier atomic CAPABILITY_SCOPE_DENIED and zero-accepted-operation assertion. Entire affected file16 passed4.33s afterward. Full run began before retained_unsaved exception refinement, verified separately by final-source real old-candidate and related tests. No claim of a single all-green final local snapshot; replacement native matrix runs complete final snapshot.",
     "ruff": "passed",
     "mypy": "407 source files passed",
     "openapi": "passed: npm run openapi:check",
-    "nativeCI": "Pending single manual full matrix on committed stable source;14df run35811305102 is historical source (ARM passed, Intel/Windows running at observation).",
+    "nativeCI": {
+      "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
+      "status": "cancelled",
+      "platforms": {
+        "win32-x64": {
+          "status": "cancelled"
+        },
+        "darwin-x64": {
+          "status": "cancelled"
+        },
+        "darwin-arm64": {
+          "status": "cancelled"
+        }
+      },
+      "physicalInstallation": "pending",
+      "runId": "35814591659",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35814591659",
+      "realWorkerSelection": "Existing native worker suite plus real_archive; results must be read, not inferred.",
+      "reason": "Full local regression located stale admission error-order assertion in test_project_run_start; production guard is intentional. Cancelled known-failing test snapshot before replacement."
+    },
     "coverageVerifier": "251 references valid; 4 verifier tests passed. Not acceptance.",
-    "finalJoint": "Final source: 1 passed / 4 deselected / 2 warnings in 26.26s after retained-candidate admission refinement."
+    "finalJoint": "Final source: 1 passed / 4 deselected / 2 warnings in 26.26s after retained-candidate admission refinement.",
+    "backendBuild": "PyInstaller passed",
+    "packagedSidecar": "Original unchanged15s smoke passed on newly built candidate. Earlier14df first-start timeout remains unresolved; this pass is not a fix for that incident.",
+    "admissionRegression": "16 passed in4.33s after expecting earlier atomic refusal; additionally asserts no save operation was accepted. No production guard relaxed."
   },
   "review": "Independent read-only review: retained_unsaved terminal-Run regression found and fixed; latest review no unresolved P1/P2. No review-run tests.",
   "coverage": {
     "requirements": 251,
-    "withAssertions": 247,
-    "withNoLocatedAssertion": 4,
+    "withAssertions": 248,
+    "withNoLocatedAssertion": 3,
     "statuses": {
       "partially_verified": 203,
       "planned": 48
@@ -39,7 +61,8 @@
     "Current authorized Google/OAuth, signing identities and physical installers remain external; historical PM6 evidence retained.",
     "Windows existing-file safe overwrite/append/read remains refused.",
     "L1-L3 connection recovery and M1-M3 cloud row mutations await approval.",
-    "Four requirements still lack located direct assertions: DATA-LIFE-01, DATA-SH-03, XE-G06, XE-G07; scoped mappings do not prove all other subconditions.",
+    "Three requirements still lack located direct assertions: DATA-LIFE-01, DATA-SH-03, XE-G07; scoped mappings do not prove all other subconditions.",
     "Historical sidecar initial 15s readiness timeout root cause remains unresolved."
-  ]
+  ],
+  "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b"
 }

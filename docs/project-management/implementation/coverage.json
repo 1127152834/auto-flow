@@ -15930,6 +15930,15 @@
           "limitations": "归档/恢复/删除与工作区阻断一致；完整重启与 Workspace 切换一致性只有后端集成证据（test_project_crash_recovery.py），没有真实应用重启截图。",
           "platform": "darwin/arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/archive-settlement-follow-through.json",
+          "scope": "G06 的真实同步/保存/清理 blocker 和归档子范围：活动 worker 取消且环境清理、已受理保存、unknown核验和pending不重发；不覆盖恢复/永久删除/重启/Workspace切换全闭环。",
+          "platform": "darwin/arm64",
+          "user_acceptance": "pending",
+          "limitations": "不代表当前 Google 实网、打包 UI 或三平台实机。"
         }
       ],
       "primary_package": "PM8-C",
@@ -15956,12 +15965,23 @@
       ],
       "pm8_note": "归档/恢复/删除与工作区阻断一致；完整重启与 Workspace 切换一致性只有后端集成证据（test_project_crash_recovery.py），没有真实应用重启截图。",
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_archive_waits_for_run_save_and_unknown_sheet_outcome",
+            "scope": "G06 的真实同步/保存/清理 blocker 和归档子范围：活动 worker 取消且环境清理、已受理保存、unknown核验和pending不重发；不覆盖恢复/永久删除/重启/Workspace切换全闭环。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：真实同步/保存/清理 blocker 与归档恢复删除/Workspace 切换闭环；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "本次仅归档与真实同步/保存/清理阻塞子范围；恢复、永久删除、重启、Workspace切换、历史聚合及G01–G05整组门禁尚未联合闭合。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "当前Google实网/三平台打包与实机证据不由本机受控传输测试替代。"
           }
         ],
         "statusBeforeReview": "partially_verified"

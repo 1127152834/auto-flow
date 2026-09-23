@@ -8,10 +8,10 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "4 of 251 requirements still have no located assertion; 203 partial / 48 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
+    "3 of 251 requirements still have no located assertion; 203 partial / 48 planned / 0 verified. XE-G06 now maps only real archive/blocker scope, not its remaining restore/delete/restart/Workspace gates.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
-    "L0 independent review found no P1/P2; targeted and related checks completed. New source requires a fresh complete three-platform matrix; c2 matrix was cancelled as superseded.",
+    "Current source candidate f6a5023e requires its own full regression and three-platform matrix35814591659; historical or partial jobs do not establish release acceptance.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
@@ -30,7 +30,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
+  "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
   "checks": {
     "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -143,28 +143,29 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "XE-A17 archive settlement production fix in working tree after81696995; local real Sheets workers5 passed, focused/full regression in progress;14df CI remains historical source and cannot certify this change.",
+  "workingCandidate": "f6a5023e production stable. Local full run3471 passed/74 skipped/1 stale error-order assertion failed; corrected affected file16 passed. Related79 passed/3 skipped and real joint final1 passed. No claim of all-green local full snapshot. Matrix35814591659 cancelled as known-failing old test snapshot; one final replacement will run complete corrected snapshot.",
   "finalCICandidate": {
-    "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
-    "status": "in_progress",
+    "codeCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
+    "status": "cancelled",
     "platforms": {
       "win32-x64": {
-        "status": "in_progress"
+        "status": "cancelled"
       },
       "darwin-x64": {
-        "status": "in_progress"
+        "status": "cancelled"
       },
       "darwin-arm64": {
-        "status": "in_progress"
+        "status": "cancelled"
       }
     },
     "physicalInstallation": "pending",
-    "runId": "35811305102",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35811305102",
-    "realWorkerSelection": "Existing selection plus manual-evidence-reconnect; counts must be read from run logs, not inferred."
+    "runId": "35814591659",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35814591659",
+    "realWorkerSelection": "Existing native worker suite plus real_archive; results must be read, not inferred.",
+    "reason": "Superseded by corrected admission assertions; wait for local full-regression remainder before one replacement matrix."
   },
-  "codeCandidateScope": "Adds only public checkpoint event projection/schema/generated types after L0; private continuation data remains excluded.",
-  "testCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
+  "codeCandidateScope": "Archive settlement: unknown write blockers/reconcile-only closing, worker outbound intents, cancellation-safe retention, atomic acceptance and terminal instance cleanup.",
+  "testCandidate": "f6a5023e1758e2d49f30560257d3e132c7b1f98b",
   "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -272,6 +273,26 @@
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35810132035",
       "realWorkerSelection": "26 selected / 37 collected; includes new four worker scenarios and D1 dedicated test",
       "reason": "Real TCP manual Run exposed omitted public checkpoint; current-source replacement 35811305102. No prior partial job counts treated as passed."
+    },
+    {
+      "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
+      "status": "in_progress",
+      "platforms": {
+        "win32-x64": {
+          "status": "in_progress"
+        },
+        "darwin-x64": {
+          "status": "in_progress"
+        },
+        "darwin-arm64": {
+          "status": "success"
+        }
+      },
+      "physicalInstallation": "pending",
+      "runId": "35811305102",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35811305102",
+      "realWorkerSelection": "Existing selection plus manual-evidence-reconnect; counts must be read from run logs, not inferred.",
+      "scope": "Historical checkpoint candidate; excludes archive settlement fixes."
     }
   ],
   "historicalD1Verification": {
