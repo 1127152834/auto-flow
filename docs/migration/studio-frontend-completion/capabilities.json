@@ -5912,7 +5912,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、真实CloakBrowser动作及正式Electron UI保存、恢复、执行、Excel产物哈希、脱敏和资源清理均有实际证据；目录包及其他平台尚未完成。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {
@@ -30597,7 +30603,13 @@
         }
       ],
       "evidenceConfidence": "高：7节点冻结源码差分、生产注册、HTTP准入、worker执行和正式Electron UI完整链已有实际证据；目录包及macOS Intel/Windows结果仍待验收。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {
@@ -30778,7 +30790,13 @@
         }
       ],
       "evidenceConfidence": "高：7节点冻结源码差分、生产注册、HTTP准入、worker执行和正式Electron UI完整链已有实际证据；目录包及macOS Intel/Windows结果仍待验收。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {
@@ -30968,7 +30986,13 @@
         }
       ],
       "evidenceConfidence": "高：7节点冻结源码差分、生产注册、HTTP准入、worker执行和正式Electron UI完整链已有实际证据；目录包及macOS Intel/Windows结果仍待验收。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {
@@ -31179,7 +31203,13 @@
         }
       ],
       "evidenceConfidence": "高：7节点冻结源码差分、生产注册、HTTP准入、worker执行和正式Electron UI完整链已有实际证据；目录包及macOS Intel/Windows结果仍待验收。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {
@@ -31351,7 +31381,13 @@
         }
       ],
       "evidenceConfidence": "高：7节点冻结源码差分、生产注册、HTTP准入、worker执行和正式Electron UI完整链已有实际证据；目录包及macOS Intel/Windows结果仍待验收。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {
@@ -31503,7 +31539,13 @@
         }
       ],
       "evidenceConfidence": "高：7节点冻结源码差分、生产注册、HTTP准入、worker执行和正式Electron UI完整链已有实际证据；目录包及macOS Intel/Windows结果仍待验收。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {
@@ -31757,7 +31799,13 @@
         }
       ],
       "evidenceConfidence": "高：7节点冻结源码差分、生产注册、HTTP准入、worker执行和正式Electron UI完整链已有实际证据；目录包及macOS Intel/Windows结果仍待验收。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目默认 Profile 执行网页表格提取，数据表操作、XLSX/CSV 产物、任务输出与清理均有真实 worker 和正式 Electron 证据。"
+      }
     }
   },
   {

@@ -166,13 +166,38 @@ class ProjectArtifactWriter:
         mime_type: str,
         expected_identity: str | None = None,
     ) -> str:
-        raise WorkflowRunError(
-            "WORKFLOW_NOT_RUNNABLE", "项目任务尚未接入二进制输出", 422
-        )
+        if (
+            self._kind != "file"
+            or mime_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            or not content
+            or len(content) > 64 * 1024 * 1024
+        ):
+            raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目表格产物类型或大小无效", 422)
+        writing = asyncio.create_task(self._writer.write_binary_output(
+            output_path=output_path, content=content, mime_type=mime_type,
+            expected_identity=expected_identity,
+        ))
+        try:
+            target = await asyncio.shield(writing)
+        except asyncio.CancelledError:
+            self._cancellation.event.set()
+            target = await writing
+            artifact = self._pending
+            if artifact is not None:
+                self._pending = None
+                await self._emit_artifact(artifact)
+            raise
+        artifact = self._pending
+        assert artifact is not None
+        self._pending = None
+        await self._emit_artifact(artifact)
+        return target
 
     async def read_binary_output(
         self, *, output_path: str, max_bytes: int
     ) -> BinaryOutputSnapshot:
-        raise WorkflowRunError(
-            "WORKFLOW_NOT_RUNNABLE", "项目任务尚未接入二进制输出", 422
+        if self._kind != "file" or not 0 < max_bytes <= 64 * 1024 * 1024:
+            raise WorkflowRunError("RUN_ARTIFACT_INVALID", "项目表格读取范围无效", 422)
+        return await self._writer.read_binary_output(
+            output_path=output_path, max_bytes=max_bytes,
         )

@@ -22,6 +22,9 @@ from autoflow.domain.workflows.execution import (
     ExternalIntegrationGateway,
 )
 from autoflow.domain.workflows.variables import CredentialReader
+from autoflow.infrastructure.filesystem.workflow_table_workbook import (
+    OpenpyxlTableWorkbookRenderer,
+)
 from autoflow.providers.model import WorkflowModelGateway
 
 from .workflow_executor import WorkflowExecutor
@@ -138,7 +141,7 @@ class ProjectGraphExecutor:
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations)
+        self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
         self.legacy = WorkflowExecutor(browser_context, variables, emit, should_stop)
         self.legacy.variables = self.context.variables
         self.emit = emit
@@ -235,7 +238,7 @@ class ProjectGraphExecutor:
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
             module_type = node_data.get("moduleType")
-            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log"}:
+            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data"}:
                 current.artifacts = self.artifact_writer(node_id, visit, module_type)
             await emit('nodeAttempt', {'status': 'started'})
             self.cancellation.raise_if_cancelled()
@@ -266,12 +269,12 @@ class ProjectGraphExecutor:
                         await emit('output', {'name': output_name, 'value': current.variables[output_name]})
             name = (config.get('resultVariable') or config.get('variableName')
                     or config.get('saveResult') or config.get('saveMessage'))
-            if data['moduleType'] == 'json_parse':
+            if data['moduleType'] in {'json_parse', 'table_get_cell', 'table_export', 'extract_table_data'}:
                 name = config.get('variableName')
             if data['moduleType'] == 'page_load_complete':
                 name = config.get('saveToVariable', 'page_loaded')
             if isinstance(name, str) and name and name not in current.sensitive_variables:
-                if data['moduleType'] in {'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time'}:
+                if data['moduleType'] in {'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'table_export', 'extract_table_data'}:
                     if name in current.variables:
                         await emit('output', {'name': name, 'value': current.variables[name]})
                 elif event.get('data') is not None or (

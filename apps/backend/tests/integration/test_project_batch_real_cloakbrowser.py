@@ -1,7 +1,9 @@
 """Opt-in real HTTP/SQLite/CloakBrowser batch chain; no Studio or synthetic Run facts."""
 
 import asyncio
+import hashlib
 import inspect
+import io
 import shutil
 from pathlib import Path
 from uuid import uuid4
@@ -16,6 +18,7 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+from openpyxl import load_workbook
 
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_workflow_real_cloakbrowser import (
@@ -26,7 +29,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -151,6 +154,20 @@ async def test_real_project_batch_http(
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
+        elif scenario == "table_extract":
+            fixture = (Path(__file__).parents[1] / "fixtures" / "workflow-b2-remaining-browser.html").resolve().as_uri()
+            steps = [
+                ("open_page", {"url": fixture, "openMode": "current_tab"}),
+                ("extract_table_data", {"tableSelector": "#orders-table", "variableName": "orders", "exportToExcel": True, "excelPath": "reports/orders.xlsx"}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"table-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": "table-edge", "source": "table-0", "target": "table-1"}
+            ]
+            document["content"]["variables"] = []
         elif scenario == "advanced_browser":
             upload = tmp_path / "project-upload.txt"
             upload.write_text("AutoFlow 上传", encoding="utf-8")
@@ -204,7 +221,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario in {"web_basic", "advanced_browser", "tab_switch"}:
+            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -233,7 +250,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch"} else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -372,6 +389,31 @@ async def test_real_project_batch_http(
                         else:
                             assert content.content.startswith(b"\x89PNG")
                             assert item["fileName"] == "fixture-image.png"
+            elif scenario == "table_extract":
+                assert detail["statusCounts"]["succeeded"] == 2
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    outputs = await client.get(task_path + "/outputs")
+                    artifacts = await client.get(task_path + "/artifacts")
+                    assert outputs.status_code == artifacts.status_code == 200
+                    assert {item["name"]: item["value"] for item in outputs.json()["items"]} == {
+                        "orders": [["订单", "金额"], ["A-001", "88"], ["A-002", "99"]],
+                    }
+                    assert artifacts.json()["total"] == 1
+                    item = artifacts.json()["items"][0]
+                    assert item["kind"] == "file" and item["fileName"].endswith(".xlsx")
+                    content = await client.get(task_path + f"/artifacts/{item['artifactId']}/content")
+                    assert content.status_code == 200
+                    target = workspace / "workspace" / "runs" / task["runId"] / "generation-1" / "outputs" / "reports" / "orders.xlsx"
+                    assert target.read_bytes() == content.content
+                    assert hashlib.sha256(content.content).hexdigest() == item["sha256"]
+                    workbook = load_workbook(io.BytesIO(content.content), read_only=True)
+                    try:
+                        assert list(workbook.active.values) == [
+                            ("订单", "金额"), ("A-001", "88"), ("A-002", "99"),
+                        ]
+                    finally:
+                        workbook.close()
             elif scenario == "page_load":
                 assert detail["statusCounts"]["succeeded"] == 2 and len(requests) >= 2
                 for task in tasks:

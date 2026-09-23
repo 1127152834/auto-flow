@@ -8,6 +8,7 @@ must keep the same durable event/stop contract without acquiring browser state.
 from __future__ import annotations
 
 import asyncio
+import io
 import json
 from collections.abc import Mapping
 from copy import deepcopy
@@ -58,6 +59,7 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
+from openpyxl import load_workbook
 
 from tests.differential.workflows.test_b4_math_family_executor_parity import (
     VALID_CASES as MATH_CASES,
@@ -110,7 +112,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -165,7 +167,17 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("print-error", "print_log", {"logMessage": "需要人工复核", "logLevel": "error"}, None),
         ("export", "export_log", {"logFormat": "json", "outputPath": "logs/run.json", "resultVariable": "log_file"}, None),
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps}[family]
+    table_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("add", "table_add_row", {"rowData": '{"订单":"A-001","金额":88}'}, None),
+        ("column", "table_add_column", {"columnName": "状态", "defaultValue": "待处理"}, None),
+        ("set", "table_set_cell", {"rowIndex": "0", "columnName": "状态", "cellValue": "已完成"}, None),
+        ("get", "table_get_cell", {"rowIndex": "0", "columnName": "状态", "resultVariable": "cell_value", "variableName": "state"}, None),
+        ("csv", "table_export", {"exportFormat": "csv", "savePath": "reports/orders.csv", "variableName": "csv_path"}, None),
+        ("excel", "table_export", {"exportFormat": "excel", "savePath": "reports/orders.xlsx", "sheetName": "订单", "variableName": "excel_path"}, None),
+        ("delete", "table_delete_row", {"rowIndex": "0"}, None),
+        ("clear", "table_clear", {}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert node_types <= set(build_production_executor_registry().get_all_types())
@@ -263,6 +275,23 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             errors = evidence.logs(project.project_id, task.task_id, level="error")
             assert [item["message"] for item in errors["items"]] == ["需要人工复核"]
             assert errors["items"][0]["isUserLog"] is True
+        elif family == "tables":
+            evidence = ProjectRunEvidence(factory, tmp_path / "workspace")
+            artifacts, total = evidence.artifacts(project.project_id, task.task_id)
+            assert total == 2 and [item.kind for item in artifacts] == ["file", "file"]
+            contents = [evidence.artifact_content(project.project_id, task.task_id, item.artifact_id)[0] for item in artifacts]
+            assert contents[0].decode().splitlines() == ["订单,金额,状态", "A-001,88,已完成"]
+            workbook = load_workbook(io.BytesIO(contents[1]), read_only=True)
+            try:
+                assert list(workbook["订单"].values) == [("订单", "金额", "状态"), ("A-001", 88, "已完成")]
+            finally:
+                workbook.close()
+            assert outputs["get"] == "已完成"
+            assert isinstance(outputs["csv"], str) and outputs["csv"].endswith("orders.csv")
+            assert isinstance(outputs["excel"], str) and outputs["excel"].endswith("orders.xlsx")
+            assert {event.payload["name"] for event in events if event.kind == "output"} == {
+                "state", "csv_path", "excel_path",
+            }
         else:
             assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
         assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)

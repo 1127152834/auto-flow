@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-table-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T17:15:57.947Z",
+  "gitHead": "a1297931298042b6986cb66e157cbf1d04f503f2",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "f01f8201-7d74-4619-a20b-b93b9c7ae486",
+  "workflowId": "xwP-PgF87ByeRbswWtJpz",
+  "batchId": "432a5ff8-a623-4b4c-b71d-4ef09ac33f6e",
+  "taskId": "6600db88-f7dc-4561-9a4b-083d7b24f11b",
+  "sawCloakBrowser": true,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存网页表格提取、数据表操作与文件导出流程",
+    "真实 CloakBrowser 表格提取、数据表编辑及三份 XLSX/CSV 产物内容与 SHA-256 验证通过",
+    "正式项目任务通过默认 Profile 真实提取网页表格并导出三份可下载文件，浏览器已清理"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

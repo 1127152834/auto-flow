@@ -356,3 +356,9 @@
 - `print_log`、`export_log` 复用冻结源码执行器，项目目录 140→142；项目运行上下文记录节点日志，产物沿用已确认的安全文件写入与 ACK。用户主动打印错误级日志不把成功任务改判失败；日志证据增加 `isUserLog`，任务页按中文级别展示并保留用户原文。
 - 临时工作区真实 worker、项目日志筛选/事件补读、JSON 导出和不可变文件检查通过；正式 Electron 开发入口及 macOS arm64 本地未签名包均通过真实 UI 编排、保存、正常关窗、项目任务、级别筛选、TXT 产物内容与 SHA-256 核对。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/log-family-2026-09-24/README.md`。
 - 开发入口首次验收读取旧 renderer 构建而失败，重建后同一脚本通过，失败现场保留。Intel/Windows、用户数据库和项目目录余下 71 个批准节点未据此验收。
+
+## 项目任务表格节点族（2026-09-24，confirmed）
+
+- `extract_table_data` 和七个数据表节点复用已迁入的冻结 WebRPA 执行器，项目目录 142→150；项目文件端口支持受限 XLSX 二进制读写并等待产物持久回执。项目输出边界对这些节点按执行器实际写入的 `variableName` 登记，避免旧默认 `resultVariable` 遮蔽用户值。
+- 冻结源码差分 79 项、项目与共享产物关联回归 120 项、真实 CloakBrowser 双任务提取、Ruff/mypy/OpenAPI/目录检查通过。正式 Electron 开发入口和 macOS arm64 未签名包真实 UI 完成十节点链，三份 XLSX/CSV 文件、SHA-256、任务下载入口及浏览器清理通过；详见 `docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md`。
+- Studio 有效范围仍为 213，项目目录余下 63 个节点待接入。macOS Intel、Windows、用户数据库未实测；本轮只使用临时工作区。

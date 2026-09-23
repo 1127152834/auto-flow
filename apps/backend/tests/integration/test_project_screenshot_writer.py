@@ -128,6 +128,55 @@ async def test_project_text_export_waits_for_ack_and_preserves_snapshots(tmp_pat
 
 
 @pytest.mark.asyncio
+async def test_project_workbook_output_waits_for_ack_and_preserves_prior_snapshot(tmp_path):
+    from autoflow.domain.workflows.runs import WorkflowRunError
+
+    arrived, confirmed = asyncio.Event(), asyncio.Event()
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+        arrived.set()
+        await confirmed.wait()
+
+    writer = ProjectArtifactWriter(tmp_path, "run", 2, "table", "first", "file", emit)
+    missing = await writer.read_binary_output(output_path="tables/orders.xlsx", max_bytes=1024)
+    assert missing.content is None and missing.identity == "missing"
+    pending = asyncio.create_task(writer.write_binary_output(
+        output_path="tables/orders.xlsx", content=b"first workbook",
+        mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        expected_identity=missing.identity,
+    ))
+    await asyncio.wait_for(arrived.wait(), 3)
+    assert not pending.done()
+    first_snapshot = tmp_path / events[0][3]["relativePath"]
+    assert first_snapshot.read_bytes() == b"first workbook"
+    assert events[0][3]["mediaType"] == "application/octet-stream"
+    confirmed.set()
+    first_path = Path(await pending)
+    assert first_path.read_bytes() == b"first workbook"
+
+    observed = await writer.read_binary_output(output_path="tables/orders.xlsx", max_bytes=1024)
+    assert observed.content == b"first workbook" and observed.identity != "missing"
+    second = ProjectArtifactWriter(tmp_path, "run", 2, "table", "second", "file", emit)
+    second_path = Path(await second.write_binary_output(
+        output_path="tables/orders.xlsx", content=b"second workbook",
+        mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        expected_identity=observed.identity,
+    ))
+    assert second_path.read_bytes() == b"second workbook"
+    assert first_snapshot.read_bytes() == b"first workbook"
+    with pytest.raises(WorkflowRunError) as conflict:
+        await second.write_binary_output(
+            output_path="tables/orders.xlsx", content=b"stale",
+            mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            expected_identity=observed.identity,
+        )
+    assert conflict.value.code == "ARTIFACT_WRITE_CONFLICT"
+    assert second_path.read_bytes() == b"second workbook"
+
+
+@pytest.mark.asyncio
 async def test_screenshot_paths_and_existing_files_keep_shared_store_rules(tmp_path):
     events = []
 
