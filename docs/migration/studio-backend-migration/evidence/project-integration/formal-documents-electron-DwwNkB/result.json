@@ -1,0 +1,9 @@
+{
+  "result": "failed",
+  "checks": [
+    "通过主窗口真实点击新建项目并进入空自动化目录",
+    "空项目可直接打开绑定项目的 Studio；真实 UI 配置节点并保存到 SQLite"
+  ],
+  "error": "Error: timed out waiting for normal close guard: false\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-project-documents.mjs:67:3",
+  "platform": "darwin-arm64"
+}

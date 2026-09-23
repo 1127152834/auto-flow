@@ -1,0 +1,24 @@
+{
+  "result": "passed",
+  "checks": [
+    "通过主窗口真实点击新建项目并进入空自动化目录",
+    "空项目可直接打开绑定项目的 Studio；真实 UI 配置节点并保存到 SQLite",
+    "系统窗口关闭按钮触发正常关闭保护，取消保留项目草稿和原修订",
+    "保存成功后正常关闭；项目归属和修订 2 持久化",
+    "从项目入口重开并通过打开列表恢复名称、节点和参数",
+    "新建自动化选中项目流程后，可从配置页直接打开对应文档"
+  ],
+  "checkedAt": "2026-09-23T01:49:10.300Z",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "gitHead": "8e9d4a060be15663951854c927d3e3159f3cac8d",
+  "rendererSha256": "f9613a8556700d86d3f4e5c9a4f4ae4846c7b35ff66b755342fcdd56d141cf4a",
+  "projectId": "0b0067e6-d422-4127-ab98-e8ff3e8dc3a8",
+  "workflowId": "ddGafxiGa7UkyEviD0y8R",
+  "revision": 2,
+  "boundaries": [
+    "isolated temporary workspace; no user database touched",
+    "UI mouse/keyboard only; API reads assert persistence",
+    "document and normal-close acceptance only; no browser execution or project statistics claim"
+  ]
+}

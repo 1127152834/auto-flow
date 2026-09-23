@@ -45,3 +45,13 @@
 ## 台账核对备注
 
 - 当前 `capabilities.json` 的 639 条后端槽位为 617 条通过/22 条待真实执行；但 `backendMigration.status` 仍有 11 个“三槽位全部通过、聚合状态待验收”的条目，故聚合读数是 180/33，不能直接当成新增 11 个实现缺口。下一次核销引用这些已有证据，不重复运行节点族。
+
+## 空项目入口与正式窗口文档闭环
+
+- 来源：项目自动化创建依赖已有工作流，空目录此前没有打开项目 Studio 的入口，导致首个流程无法从项目内创建。
+- 修复：目录复用现有开窗 IPC，传当前 workspaceKey/instanceId/projectId；与详情页共用宿主回调；归档不显示编辑入口，刷新/停写期间禁用。
+- 验证：目录组件/页面 12 项、项目工作区 20 项、自动化详情 6 项通过；新增入口用例先失败后修复。TypeScript、修改文件 ESLint、renderer/main/preload 构建通过。
+- 正式证据：`docs/migration/studio-backend-migration/evidence/project-integration/formal-documents-electron-HMKavH/result.json` 及同目录截图；脚本 `scripts/smoke-studio-project-documents.mjs`。
+- macOS arm64 开发构建真实 UI：新建项目 → 空目录 Studio → 配置打开网页节点 → SQLite 保存及项目归属 → 正常关闭取消保留草稿 → 保存后关闭且 revision=2 → 项目入口重开及参数恢复 → 新建自动化选择流程并打开对应文档。未修改真实用户数据库。
+- 首次脚本读取旧版 `data.config.url` 失败，改为迁入版 `data.url`；第二次 Cmd+W 未触发预期关闭对话框，未标通过。最终使用 macOS 原生窗口的 AXCloseButton 真实点击通过正常关闭协调，未调用 BrowserWindow.destroy/内部 Store。前两次失败记录保留。
+- 已发现但非本块阻塞：正式窗口字段规则和全局快捷键接口返回 404、部分启动命令返回 501；后续服务合同核销时处理，不用当前保存闭环证据掩盖。此次不声明这些接口、项目运行/数据/统计或其他平台完成。

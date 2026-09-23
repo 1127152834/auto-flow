@@ -25,6 +25,7 @@ export type AutomationDirectoryProps = {
   onSortChange(value: AutomationDirectoryQuery['sort']): void
   onPageChange(page: number): void
   onCreate(): void
+  onOpenStudio?(): void
   onOpen(automation: Automation): void
   onEdit(automation: Automation): void
   /** Deletion carries its own impact confirmation, so it is optional for read-only hosts. */
@@ -82,7 +83,7 @@ function CenterState({ icon, title, detail, action }: { icon: React.ReactNode; t
   return <div className="grid min-h-96 place-items-center py-12 text-center"><div className="grid justify-items-center gap-3"><span className="flex h-24 w-24 items-center justify-center rounded-full bg-clay-soft text-muted">{icon}</span><h3 className="m-0 text-2xl font-semibold">{title}</h3><p className="m-0 text-muted">{detail}</p>{action}</div></div>
 }
 
-export function AutomationDirectory({ items, total, page, pageSize, query, sort, loading = false, errorMessage, refreshing = false, readOnly = false, validationById = {}, onQueryChange, onSortChange, onPageChange, onCreate, onOpen, onEdit, onDelete, onRetry }: AutomationDirectoryProps) {
+export function AutomationDirectory({ items, total, page, pageSize, query, sort, loading = false, errorMessage, refreshing = false, readOnly = false, validationById = {}, onQueryChange, onSortChange, onPageChange, onCreate, onOpenStudio, onOpen, onEdit, onDelete, onRetry }: AutomationDirectoryProps) {
   const [searchDraft, setSearchDraft] = useState(query)
   useEffect(() => { setSearchDraft(query) }, [query])
   const clearSearch = () => { setSearchDraft(''); onQueryChange('') }
@@ -99,6 +100,7 @@ export function AutomationDirectory({ items, total, page, pageSize, query, sort,
         <Select className="w-40 max-w-full" aria-label="自动化排序" value={sort} options={sortOptions} clearable={false} disabled={refreshing} onValueChange={value => value && onSortChange(value as AutomationDirectoryQuery['sort'])}/>
         {!readOnly ? <Button variant="primary" disabled={refreshing} onClick={onCreate}><Plus aria-hidden />新建自动化</Button> : null}
       </div> : null}
+      {!readOnly && onOpenStudio ? <Button disabled={refreshing} onClick={onOpenStudio}><FlowArrow aria-hidden />工作流工作台</Button> : null}
     </div>
     {errorMessage && items.length ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-warning/30 bg-warning/10 p-3 text-sm"><span>自动化列表刷新失败：{errorMessage}。当前显示上次读取的结果。</span><Button size="sm" onClick={onRetry}>重试读取</Button></div> : null}
     {initialLoading ? <LoadingCards /> : initialError ? <div role="alert"><CenterState icon={<FileText size={52}/>} title="自动化暂时无法加载" detail="搜索条件已保留，请重新读取" action={<Button variant="primary" onClick={onRetry}>重新加载</Button>}/></div>

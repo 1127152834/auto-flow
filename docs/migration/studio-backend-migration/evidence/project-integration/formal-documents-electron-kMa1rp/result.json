@@ -1,0 +1,8 @@
+{
+  "result": "failed",
+  "checks": [
+    "通过主窗口真实点击新建项目并进入空自动化目录"
+  ],
+  "error": "TypeError: Cannot read properties of undefined (reading 'url')\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-project-documents.mjs:61:43\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+  "platform": "darwin-arm64"
+}
