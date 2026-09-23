@@ -113,6 +113,45 @@ def test_operation_page_total_is_not_just_the_current_page(tmp_path):
     assert response.json()["total"] == 2
 
 
+@pytest.mark.parametrize(("limit", "count", "has_next"), [(50, 50, False), (50, 51, True), (200, 200, False), (200, 201, True)])
+def test_operation_page_has_next_only_when_another_device_operation_exists(tmp_path, limit, count, has_next):
+    database = tmp_path / "page-boundary.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    for index in range(count):
+        operations.accept("default", f"request-{index}", "device", "start", f"digest-{index}", {})
+    operations.accept("default", "other-device", "other", "start", "other", {})
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations))
+
+    with TestClient(app) as client:
+        response = client.get(f"/api/v1/android/management/operations?deviceId=device&limit={limit}")
+
+    assert response.status_code == 200, response.text
+    assert len(response.json()["items"]) == limit
+    assert response.json()["total"] == count
+    assert bool(response.json()["nextCursor"]) is has_next
+    sessions.dispose()
+
+
+def test_operation_cursor_must_belong_to_same_workspace_and_device(tmp_path):
+    database = tmp_path / "cursor-scope.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    operations.accept("default", "own", "device", "start", "own", {})
+    other_device = operations.accept("default", "other-device", "other", "start", "other", {})
+    other_workspace = operations.accept("foreign", "other-workspace", "device", "start", "foreign", {})
+
+    for cursor in (other_device.operation_id, other_workspace.operation_id):
+        with pytest.raises(AndroidError) as raised:
+            operations.page("device", cursor, 50, workspace_identity="default")
+        assert raised.value.code == "ANDROID_OPERATION_CURSOR_INVALID"
+    sessions.dispose()
+
+
 def test_operation_accept_rejects_target_ids_that_cannot_fit_migration(tmp_path):
     database = tmp_path / "target-length.sqlite3"
     migrate_database(database)

@@ -37,6 +37,17 @@ def test_management_device_list_is_a_snapshot_page_and_does_not_inspect_inline()
     assert response.json()["nextCursor"] is None
 
 
+def test_management_device_profile_filter_uses_public_camel_case_parameter():
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(_Devices().runtime), devices=_Devices()))
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/management/devices?profileId=another-profile")
+    assert response.status_code == 200
+    assert response.json()["items"] == []
+    assert response.json()["total"] == 0
+
+
 def test_manual_console_owner_is_projected_as_manual_session():
     class _ManualDevices:
         runtime = _Runtime()

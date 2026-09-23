@@ -509,6 +509,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
                   stop: '停止设备',
                   restart: '重启设备',
                   recover: '核实状态',
+                  verify: '核实状态',
                   delete: '删除实例',
                 } as Record<string, string>
               )[management?.action ?? '']

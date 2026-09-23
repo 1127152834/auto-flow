@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ManagementOverview } from '../components/ManagementOverview'
@@ -17,6 +17,109 @@ it('renders snapshot devices and available actions without workflow data', async
   expect(screen.getByText('可操作：open、stop')).toBeVisible()
   expect(screen.getByRole('button', { name: '创建实例' })).toBeVisible()
   expect(screen.getByRole('button', { name: '打开测试设备' })).toBeVisible()
+})
+
+it('shows device management operation history and verifies an unknown result by its original request', async () => {
+  const onManage = vi.fn()
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '测试设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['open'], blockedReasons: {} }] })),
+    operations: vi.fn(async () => ({ items: [{ operationId: 'operation-1', requestId: 'request-1', targetId: 'd', action: 'stop', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, retryOf: null, createdAt: '2026-09-23T00:00:00Z', startedAt: null, finishedAt: null, resultCode: null, message: '结果未知', allowedActions: ['verify'] }], total: 1, nextCursor: null })),
+  } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  expect(await screen.findByText('等待核实')).toBeVisible()
+  expect(api.operations).toHaveBeenCalledWith('?deviceId=d&limit=50')
+  await userEvent.click(screen.getByRole('button', { name: '核实操作 operation-1' }))
+  expect(onManage).toHaveBeenCalledWith('d', 'verify', 'operation-1', 'request-1')
+})
+
+it('pages device operation history with the backend cursor', async () => {
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '测试设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: [], blockedReasons: {} }] })),
+    operations: vi.fn(async (query: string) => query.includes('cursor=operation-1')
+      ? { items: [{ operationId: 'operation-2', requestId: 'request-2', targetId: 'd', action: 'start', state: 'succeeded', stageCode: 'done', stageLabel: '已完成', attempt: 1, createdAt: '2026-09-22T00:00:00Z', allowedActions: [] }], total: 2, nextCursor: null }
+      : { items: [{ operationId: 'operation-1', requestId: 'request-1', targetId: 'd', action: 'stop', state: 'succeeded', stageCode: 'done', stageLabel: '已完成', attempt: 1, createdAt: '2026-09-23T00:00:00Z', allowedActions: [] }], total: 2, nextCursor: 'operation-1' }),
+  } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ManagementOverview api={api} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  expect(await screen.findByText('stop', { selector: 'td' })).toBeVisible()
+  await userEvent.click(await screen.findByRole('button', { name: '下一页操作历史' }))
+  expect(api.operations).toHaveBeenCalledWith('?deviceId=d&limit=50&cursor=operation-1')
+  expect(await screen.findByText('start', { selector: 'td' })).toBeVisible()
+  expect(screen.queryByText('stop', { selector: 'td' })).not.toBeInTheDocument()
+  await userEvent.click(await screen.findByRole('button', { name: '上一页操作历史' }))
+  expect(await screen.findByText('stop', { selector: 'td' })).toBeVisible()
+})
+
+it('keeps cached operation history read-only after a failed refresh', async () => {
+  let disconnected = false
+  const onManage = vi.fn()
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '测试设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: [], blockedReasons: {} }] })),
+    operations: vi.fn(async () => disconnected ? Promise.reject(new Error('offline')) : { items: [{ operationId: 'operation-1', requestId: 'request-1', targetId: 'd', action: 'stop', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, createdAt: '2026-09-23T00:00:00Z', allowedActions: ['verify'] }], total: 1, nextCursor: null }),
+  } as unknown as AndroidManagementApi
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={client}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  expect(await screen.findByRole('button', { name: '核实操作 operation-1' })).toBeEnabled()
+  disconnected = true
+  await client.invalidateQueries({ queryKey: ['android-management', 'default', 'operations', 'd'] })
+  await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('操作历史暂不可用'))
+  expect(screen.getByText('等待核实')).toBeVisible()
+  expect(screen.getByRole('button', { name: '核实操作 operation-1' })).toBeDisabled()
+  expect(onManage).not.toHaveBeenCalled()
+})
+
+it('does not act on a cached receipt while its refresh is still in flight', async () => {
+  const operationPage = { items: [{ operationId: 'operation-1', requestId: 'request-1', targetId: 'd', action: 'stop', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, createdAt: '2026-09-23T00:00:00Z', allowedActions: ['verify'] }], total: 1, nextCursor: null }
+  let resolveRefresh: ((value: typeof operationPage) => void) | undefined
+  let refreshing = false
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '测试设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: [], blockedReasons: {} }] })),
+    operations: vi.fn(() => refreshing ? new Promise<typeof operationPage>(resolve => { resolveRefresh = resolve }) : Promise.resolve(operationPage)),
+  } as unknown as AndroidManagementApi
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={client}><ManagementOverview api={api} onManage={vi.fn()} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  const verify = await screen.findByRole('button', { name: '核实操作 operation-1' })
+  expect(verify).toBeEnabled()
+  refreshing = true
+  const invalidation = client.invalidateQueries({ queryKey: ['android-management', 'default', 'operations', 'd'] })
+  await waitFor(() => expect(api.operations).toHaveBeenCalledTimes(2))
+  expect(verify).toBeDisabled()
+  resolveRefresh?.(operationPage)
+  await invalidation
+  await waitFor(() => expect(verify).toBeEnabled())
+})
+
+it('moves keyboard focus into operation history and returns it to the device on close', async () => {
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '测试设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: [], blockedReasons: {} }] })),
+    operations: vi.fn(async () => ({ items: [], total: 0, nextCursor: null })),
+  } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} /></QueryClientProvider>)
+  const trigger = await screen.findByRole('button', { name: '查看测试设备操作历史' })
+  await userEvent.click(trigger)
+  const history = await screen.findByRole('region', { name: '测试设备操作历史' })
+  expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  expect(trigger).toHaveAttribute('aria-controls', history.id)
+  expect(within(history).getByRole('heading', { name: '测试设备 · 操作历史' })).toHaveFocus()
+  await userEvent.click(within(history).getByRole('button', { name: '关闭历史' }))
+  expect(trigger).toHaveFocus()
+  expect(trigger).toHaveAttribute('aria-expanded', 'false')
+})
+
+it('does not expose another device operation if the history response violates its device filter', async () => {
+  const onManage = vi.fn()
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '测试设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: [], blockedReasons: {} }] })),
+    operations: vi.fn(async () => ({ items: [{ operationId: 'foreign-operation', requestId: 'foreign-request', targetId: 'other', action: 'delete', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, createdAt: '2026-09-23T00:00:00Z', allowedActions: ['verify'] }], total: 1, nextCursor: null })),
+  } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('操作历史与设备不匹配')
+  expect(screen.queryByRole('button', { name: '核实操作 foreign-operation' })).not.toBeInTheDocument()
+  expect(onManage).not.toHaveBeenCalled()
 })
 
 it('renders blocked reasons and translated stale status', async () => {

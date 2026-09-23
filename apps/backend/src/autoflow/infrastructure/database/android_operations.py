@@ -118,14 +118,14 @@ class SqlAlchemyAndroidOperationRepository:
 
     def page(self, device_id: str | None = None, cursor: str | None = None, limit: int = 50, workspace_identity: str | None = None) -> list[OperationRecord]:
         with self.sessions() as session:
-            query = select(AndroidOperationRow).order_by(AndroidOperationRow.created_at.desc(), AndroidOperationRow.id.desc()).limit(min(max(limit, 1), 200))
+            query = select(AndroidOperationRow).order_by(AndroidOperationRow.created_at.desc(), AndroidOperationRow.id.desc()).limit(min(max(limit, 1), 201))
             if workspace_identity is not None:
                 query = query.where(AndroidOperationRow.workspace_identity == workspace_identity)
             if device_id:
                 query = query.where(AndroidOperationRow.target_id == device_id)
             if cursor:
                 boundary = session.get(AndroidOperationRow, cursor)
-                if boundary is None:
+                if boundary is None or (workspace_identity is not None and boundary.workspace_identity != workspace_identity) or (device_id and boundary.target_id != device_id):
                     raise AndroidError("ANDROID_OPERATION_CURSOR_INVALID", "分页位置无效", 422)
                 query = query.where(or_(AndroidOperationRow.created_at < boundary.created_at, and_(AndroidOperationRow.created_at == boundary.created_at, AndroidOperationRow.id < cursor)))
             return [OperationRecord(row) for row in session.scalars(query)]

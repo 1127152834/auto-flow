@@ -27037,7 +27037,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: string | null;
-                profile_id?: string | null;
+                profileId?: string | null;
                 retained?: boolean | null;
                 cursor?: string | null;
                 limit?: number;
@@ -27104,7 +27104,7 @@ export interface operations {
     operation_page_api_v1_android_management_operations_get: {
         parameters: {
             query?: {
-                device_id?: string | null;
+                deviceId?: string | null;
                 cursor?: string | null;
                 limit?: number;
             };

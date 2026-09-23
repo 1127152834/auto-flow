@@ -283,7 +283,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     @router.get("/devices", response_model=ManagementDevicePageRead)
     async def management_devices(
         status: str | None = Query(default=None),
-        profile_id: str | None = Query(default=None),
+        profile_id: str | None = Query(default=None, alias="profileId"),
         retained: bool | None = Query(default=None),
         cursor: str | None = Query(default=None),
         limit: int = Query(default=50, ge=1, le=200),
@@ -333,13 +333,13 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         return _operation_response(record)
 
     @router.get("/operations", response_model=OperationPageRead)
-    async def operation_page(device_id: str | None = Query(default=None), cursor: str | None = Query(default=None), limit: int = Query(default=50, ge=1, le=200)) -> OperationPageRead:
+    async def operation_page(device_id: str | None = Query(default=None, alias="deviceId"), cursor: str | None = Query(default=None), limit: int = Query(default=50, ge=1, le=200)) -> OperationPageRead:
         if operations is None:
             return OperationPageRead(items=[], next_cursor=None, total=0)
         workspace = workspace_identity()
-        items = operations.page(device_id, cursor, limit, workspace_identity=workspace)
+        items = operations.page(device_id, cursor, limit + 1, workspace_identity=workspace)
         total = operations.count(device_id, workspace_identity=workspace) if hasattr(operations, "count") else len(items)
-        return OperationPageRead(items=[_operation_response(item) for item in items], next_cursor=items[-1].operation_id if len(items) == limit else None, total=total)
+        return OperationPageRead(items=[_operation_response(item) for item in items[:limit]], next_cursor=items[limit - 1].operation_id if len(items) > limit else None, total=total)
 
     @router.get("/operations/by-request/{request_id}", response_model=OperationRead)
     async def operation_by_request(request_id: str) -> OperationRead:

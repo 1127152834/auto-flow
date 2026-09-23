@@ -372,6 +372,7 @@ it('verifies a management operation with its original request id', async () => {
       items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'unknown', owner: { kind: 'none', id: null }, observedAt: null, stale: true, specSnapshot: devices[0], latestOperation: { operationId: 'operation-1' }, allowedActions: ['verify'], blockedReasons: { state: '请核实设备状态' } }], total: 1, nextCursor: null,
     }
     if (path === '/api/v1/android/management/operations/operation-1') return { operationId: 'operation-1', requestId, targetId: devices[0].deviceId, action: 'start', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, retryOf: null, createdAt: '', startedAt: '', finishedAt: null, resultCode: null, message: null, allowedActions: ['verify'] }
+    if (path === `/api/v1/android/management/operations?deviceId=${devices[0].deviceId}&limit=50`) return { items: [{ operationId: 'operation-1', requestId, targetId: devices[0].deviceId, action: 'start', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, createdAt: '2026-09-23T00:00:00Z', allowedActions: ['verify'] }], total: 1, nextCursor: null }
     if (path === '/api/v1/android/management/operations/operation-1/verify') return { operationId: 'operation-1', requestId, targetId: devices[0].deviceId, action: 'start', state: 'succeeded', stageCode: 'verified', stageLabel: '已核实', attempt: 1, retryOf: null, createdAt: '', startedAt: '', finishedAt: '', resultCode: 'STATE_VERIFIED', message: null, allowedActions: [] }
     if (path.endsWith('/environment')) return environment
     if (path.endsWith('/profiles')) return [profile]
@@ -383,7 +384,9 @@ it('verifies a management operation with its original request id', async () => {
     return []
   })
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
-  await userEvent.click(await screen.findByRole('button', { name: '核实状态' }))
+  await userEvent.click(await screen.findByRole('button', { name: `查看${devices[0].name}操作历史` }))
+  await userEvent.click(await screen.findByRole('button', { name: '核实操作 operation-1' }))
+  expect(screen.getByRole('heading', { name: '核实状态' })).toBeVisible()
   await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/operations/operation-1/verify', expect.objectContaining({ body: { requestId } })))
 })

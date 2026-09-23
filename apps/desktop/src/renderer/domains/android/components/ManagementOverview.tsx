@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import type { AndroidManagementApi, ManagementDevicePage } from '../management-api'
 import type { AndroidApi, AndroidDevice } from '../api'
 import { BulkActions } from './BulkActions'
 import { DevicePreview } from './DevicePreview'
+import { OperationHistory } from './OperationHistory'
 
 const runtimeLabels: Record<ManagementDevicePage['items'][number]['runtimeState'], string> = {
   stopped: '已停止',
@@ -15,7 +16,7 @@ const runtimeLabels: Record<ManagementDevicePage['items'][number]['runtimeState'
 }
 
 type Props = {
-  api: Pick<AndroidManagementApi, 'devices' | 'bulk' | 'bulkAction'>
+  api: Pick<AndroidManagementApi, 'devices' | 'bulk' | 'bulkAction' | 'operations'>
   previewApi?: AndroidApi
   instanceId?: string
   onCreate?(): void
@@ -29,6 +30,9 @@ export function ManagementOverview({ api, previewApi, instanceId = 'default', on
   const [status, setStatus] = useState('')
   const [template, setTemplate] = useState('')
   const [retained, setRetained] = useState('')
+  const [historyDeviceId, setHistoryDeviceId] = useState<string | null>(null)
+  const historyPanelId = useId()
+  const historyTrigger = useRef<HTMLButtonElement>(null)
   const devices = useQuery({
     queryKey: ['android-management', instanceId, 'devices'],
     queryFn: async () => {
@@ -107,6 +111,6 @@ export function ManagementOverview({ api, previewApi, instanceId = 'default', on
       locale: 'zh-CN',
       timezone: 'Asia/Shanghai',
     } as unknown as AndroidDevice
-    return <article key={device.deviceId} className="rounded-control border border-line p-4"><div className="flex items-start justify-between gap-3"><strong className="break-words">{device.name}</strong><span className="text-xs text-muted">{statusLabel}</span></div><p className="mt-2 text-xs text-muted">修订 {device.revision} · {device.stale ? `状态陈旧 · ${statusLabel}` : staleSnapshot ? `快照陈旧 · ${statusLabel}` : '快照有效'}</p>{ownedSession && <p className="mt-2 text-xs">手动控制会话占用中</p>}{previewApi && <DevicePreview device={previewDevice} api={previewApi} revision={device.revision} enabled={operational && device.runtimeState === 'ready'} />}{blocked.length > 0 && <div className="mt-2 rounded-control bg-surface-subtle p-2 text-xs" role="status"><strong>已阻塞</strong>{blocked.map(reason => <p key={reason} className="mt-1">阻塞原因：{reason}</p>)}</div>}{device.allowedActions.length ? <p className="mt-2 text-xs">可操作：{device.allowedActions.join('、')}</p> : <p className="mt-2 text-xs text-muted">当前无可用操作</p>}<div className="mt-3 flex flex-wrap gap-2">{onOpen && <button type="button" disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={ownedSession ? `查看${device.name}控制会话` : `打开${device.name}`}>{ownedSession ? '查看控制会话' : `打开${device.name}`}</button>}{onEndControl && ownedSession && device.owner.id && device.allowedActions.includes('end_control') && <button type="button" onClick={() => onEndControl(device.deviceId, device.owner.id!)} aria-label={`结束${device.name}控制会话`}>结束控制</button>}{onManage && device.allowedActions.filter(action => ['start', 'stop', 'restart', 'delete', 'verify'].includes(action)).map(action => <button type="button" key={action} disabled={action !== 'verify' && !operational} onClick={() => onManage(device.deviceId, action, operationId, requestId)}>{action === 'verify' ? '核实状态' : action === 'start' ? '启动设备' : action === 'stop' ? '停止设备' : action === 'restart' ? '重启设备' : '删除实例'}</button>)}</div></article>
-  })}</div>{!visible.length && <p className="mt-4 text-sm text-muted">没有匹配的实例。</p>}{visible.length > 0 && <div className="mt-5"><BulkActions api={api} devices={visible} /></div>}</section>
+    return <article key={device.deviceId} className="rounded-control border border-line p-4"><div className="flex items-start justify-between gap-3"><strong className="break-words">{device.name}</strong><span className="text-xs text-muted">{statusLabel}</span></div><p className="mt-2 text-xs text-muted">修订 {device.revision} · {device.stale ? `状态陈旧 · ${statusLabel}` : staleSnapshot ? `快照陈旧 · ${statusLabel}` : '快照有效'}</p>{ownedSession && <p className="mt-2 text-xs">手动控制会话占用中</p>}{previewApi && <DevicePreview device={previewDevice} api={previewApi} revision={device.revision} enabled={operational && device.runtimeState === 'ready'} />}{blocked.length > 0 && <div className="mt-2 rounded-control bg-surface-subtle p-2 text-xs" role="status"><strong>已阻塞</strong>{blocked.map(reason => <p key={reason} className="mt-1">阻塞原因：{reason}</p>)}</div>}{device.allowedActions.length ? <p className="mt-2 text-xs">可操作：{device.allowedActions.join('、')}</p> : <p className="mt-2 text-xs text-muted">当前无可用操作</p>}<div className="mt-3 flex flex-wrap gap-2">{onOpen && <button type="button" disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={ownedSession ? `查看${device.name}控制会话` : `打开${device.name}`}>{ownedSession ? '查看控制会话' : `打开${device.name}`}</button>}<button type="button" aria-expanded={historyDeviceId === device.deviceId} aria-controls={historyPanelId} onClick={(event) => { historyTrigger.current = event.currentTarget; setHistoryDeviceId(device.deviceId) }} aria-label={`查看${device.name}操作历史`}>操作历史</button>{onEndControl && ownedSession && device.owner.id && device.allowedActions.includes('end_control') && <button type="button" onClick={() => onEndControl(device.deviceId, device.owner.id!)} aria-label={`结束${device.name}控制会话`}>结束控制</button>}{onManage && device.allowedActions.filter(action => ['start', 'stop', 'restart', 'delete', 'verify'].includes(action)).map(action => <button type="button" key={action} disabled={action !== 'verify' && !operational} onClick={() => onManage(device.deviceId, action, operationId, requestId)}>{action === 'verify' ? '核实状态' : action === 'start' ? '启动设备' : action === 'stop' ? '停止设备' : action === 'restart' ? '重启设备' : '删除实例'}</button>)}</div></article>
+  })}</div>{!visible.length && <p className="mt-4 text-sm text-muted">没有匹配的实例。</p>}{visible.length > 0 && <div className="mt-5"><BulkActions api={api} devices={visible} /></div>}{historyDeviceId && <div className="mt-5"><OperationHistory key={historyDeviceId} id={historyPanelId} api={api} instanceId={instanceId} deviceId={historyDeviceId} deviceName={page.items.find(device => device.deviceId === historyDeviceId)?.name ?? historyDeviceId} onVerify={onManage ? (operationId, requestId) => onManage(historyDeviceId, "verify", operationId, requestId) : undefined} onClose={() => { setHistoryDeviceId(null); historyTrigger.current?.focus() }} /></div>}</section>
 }

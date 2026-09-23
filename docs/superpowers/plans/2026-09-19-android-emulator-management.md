@@ -12,7 +12,7 @@
 
 **Status:** active（2026-09-22 已获用户授权执行 AM1–AM4；真实设备、网络和账号验证仍按条件记录 blocked，不以 mock 替代）。
 
-**Baseline:** 当前执行基线为 `codex/project-management-pm9@a92f0688f206d4339ff4468c1871f3ccdd6816dc`；实现 worktree 分支为 `codex/android-management-complete`。原 `5f07e2ad` 仅保留为规格编写时的历史基线。
+**Baseline:** 原执行起点为 `codex/project-management-pm9@a92f0688f206d4339ff4468c1871f3ccdd6816dc`；当前实现在隔离 worktree 分支 `codex/android-management-complete`，逐项现状以最新 QA 记录为准。原 `5f07e2ad` 仅保留为规格编写时的历史基线。
 
 ### 0.1 当前基线重新校准（2026-09-22）
 
@@ -47,7 +47,7 @@
 
 ### 0.4 2026-09-23 当前验收口径
 
-当前父 HEAD `fe2210dc` 加隔离工作树中的 T17/T18 增量；最终状态以 [24 项验收校准](../../qa/android-management/2026-09-23-acceptance-matrix.md)及[真实持久数据属性验收](../../qa/android-management/2026-09-23-persistent-metadata-verification.md)为准。旧 checklist 的 `blocked` 是各次执行时的快照，不再作为软件任务不能继续的结论。真实 Mac 已验证原生窗口、部分恢复写入失败隔离、正常新卷启动读回、1792 项持久条目与 417 项 xattrs/55 项 ACL 一致；卷根目录及硬/软链接另由客体实验验证。专用谷歌镜像/账号/网络链保持外部 `blocked`，高级日志、APK 遗留临时文件、完整交互/规模/硬中断及 T20 失败矩阵仍是可继续实施或未执行项。完整前端 5595 项、脚本 95 项和后端 3964 项已通过，见[完整门槛](../../qa/android-management/2026-09-23-full-gates.md)；通过代码门槛不代表整目标验收完成。
+当前隔离分支在 `52e1f6a6` 控制会话增量之后继续 T06 操作历史；最新状态以 [24 项验收校准](../../qa/android-management/2026-09-23-acceptance-matrix.md)、[操作历史增量](../../qa/android-management/2026-09-23-operation-history-verification.md)及[真实持久数据属性验收](../../qa/android-management/2026-09-23-persistent-metadata-verification.md)为准。旧 checklist 的 `blocked` 是各次执行时的快照，不再作为软件任务不能继续的结论。真实 Mac 已验证原生窗口、部分恢复写入失败隔离、正常新卷启动读回、1792 项持久条目与 417 项 xattrs/55 项 ACL 一致；卷根目录属性及硬/软链接另由客体实验验证。专用谷歌镜像/账号/网络链保持外部 `blocked`，高级日志、APK 遗留临时文件、完整交互/规模/硬中断及 T20 失败矩阵仍是可继续实施或未执行项。前一阶段完整门槛见[记录](../../qa/android-management/2026-09-23-full-gates.md)，本次 T06 增量的命令与实际输出见[新记录](../../qa/android-management/2026-09-23-operation-history-verification.md)；通过代码门槛不代表整目标验收完成。
 
 ## Global Constraints
 
@@ -297,7 +297,7 @@ it('does not replay old input after leaving', async () => {
 
 **接口：** GET management/devices返回ManagementDevice分页；AM1先聚合现有设备观察与持久操作，T14再换后台快照。UI只消费ActionPolicy。创建沿用batch/profile revision。
 
-- [ ] 新测试使用T01夹具和现有ApiProvider mock，验证默认一台、无工作流请求、stale、空态、筛选计数及历史temporary保留。（状态：not_run）
+- [ ] 新测试使用T01夹具和现有ApiProvider mock，验证默认一台、无工作流请求、stale、空态、筛选计数及历史temporary保留。（状态：partial；管理页/历史入口已有真实页面与仓储契约回归，历史temporary保留仍需同链验收）
 
 ```typescript
 expect(screen.getByRole('spinbutton', {name: '数量'})).toHaveValue(1);
@@ -305,10 +305,10 @@ expect(screen.queryByRole('button', {name: '分配给工作流'})).not.toBeInThe
 expect(requests.some(p => /workflows|allocations|\/runs/.test(p))).toBe(false);
 ```
 
-- [ ] RED：`npm --workspace @autoflow/desktop test -- src/renderer/domains/android/tests/DeviceManagementPage.test.tsx`。（状态：not_run）
-- [ ] 先共享控件组成状态/卡片/表格/确认框，再挂页面；新temporary请求后端拒绝，旧同编号回执优先返回。生产入口不导入测试数据，不删除历史数据和迁移。（状态：not_run）
-- [ ] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。（状态：not_run）
-- [ ] GREEN后提交 `feat(android): focus UI on standalone instance management`；旧三列原型断言改为新行为，不删安全回归。（状态：not_run）
+- [ ] RED：管理页测试按当前代码位置执行 `AndroidPage.test.tsx` 和 `ManagementOverview.test.tsx`，后端执行管理设备/操作契约与集成测试。（状态：partial；历史、焦点、跨设备、游标的 RED→GREEN 见[增量记录](../../qa/android-management/2026-09-23-operation-history-verification.md)，整 T06 仍未完成）
+- [ ] 先共享控件组成状态/卡片/表格/确认框，再挂页面；新temporary请求后端拒绝，旧同编号回执优先返回。生产入口不导入测试数据，不删除历史数据和迁移。（状态：partial；复用现有卡片、表格和确认框，新增历史控件与后端过滤/游标安全；temporary 历史链仍需验收）
+- [ ] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。（状态：partial；显式模板/默认单台/复制快照和历史焦点/模拟断线有自动化；200% 缩放、长名称、真实断线及保留数据恢复同链未验收）
+- [ ] GREEN后提交有界 T06 增量；旧三列原型断言改为新行为，不删安全回归。（状态：partial；操作历史切片全量后端与前端门槛已通过，待提交；整 T06 未完成）
 
 ### T07：AM1真实链与交付验收
 
