@@ -93,13 +93,14 @@ class Models:
         return self.provider
 
 
-def _query(defaults, profile=None, *, installed=True, proxies=None, models=None):
+def _query(defaults, profile=None, *, installed=True, proxies=None, models=None, workflow_runtime=None):
     return ProjectAutomationResourceQuery(
         Projects(defaults),
         Profiles(profile),
         Kernels(installed),
         proxies or Proxies(),
         models or Models(SimpleNamespace(enabled=True)),
+        workflow_runtime=workflow_runtime,
     )
 
 
@@ -250,3 +251,35 @@ def test_automation_model_none_suppresses_inheritance_and_selected_model_is_loca
         "type": "modelProvider",
         "modelProviderId": "automation-model",
     }
+
+
+def test_browser_free_task_still_validates_project_model_override():
+    query = _query(
+        {"profileId": "missing", "proxy": {"mode": "none"}, "modelProviderId": "project-model"},
+        models=Models(),
+        workflow_runtime=SimpleNamespace(
+            requires_browser=lambda _workflow_id: False,
+            requires_default_model=lambda _workflow_id: True,
+        ),
+    )
+
+    issues = query.inspect_resources(_automation())
+    override = query.inspect_resources(
+        _automation({"source": "newFromProfile", "modelProviderId": None})
+    )
+
+    assert [issue["code"] for issue in issues] == ["MODEL_PROVIDER_NOT_FOUND"]
+    assert issues[0]["path"] == ["defaultResources", "modelProviderId"]
+    assert override == []
+
+
+def test_browser_free_data_task_does_not_require_unused_project_model():
+    query = _query(
+        {"profileId": "missing", "proxy": {"mode": "none"}, "modelProviderId": "missing"},
+        models=Models(),
+        workflow_runtime=SimpleNamespace(
+            requires_browser=lambda _workflow_id: False,
+            requires_default_model=lambda _workflow_id: False,
+        ),
+    )
+    assert query.inspect_resources(_automation()) == []

@@ -212,6 +212,8 @@ def _config_issues(node: dict[str, Any], index: int, *, studio: bool = False) ->
         for name in ("savePath", "fileNamePattern", "variableName"):
             if name in data:
                 field(name, isinstance(data[name], str), "必须是字符串")
+    elif module_type.startswith("ai_") and data.get("modelId") is not None:
+        field("modelId", isinstance(data["modelId"], str), "必须是字符串")
     field("timeout", _nonnegative_number(data.get("timeout")), "必须是有限非负数")
     return issues
 

@@ -5,10 +5,6 @@ from datetime import UTC, datetime
 from typing import Any, Protocol
 from uuid import uuid4
 
-from sqlalchemy import text
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session, sessionmaker
-
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
@@ -26,6 +22,9 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
     _is_sqlite_contention,
 )
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session, sessionmaker
 
 
 class CoreRunPort(Protocol):
@@ -92,6 +91,24 @@ class WorkflowRuntimeService:
             return WorkflowRuntime(build_production_executor_registry()).requires_browser(
                 workflow_record(row).document["content"]
             )
+
+    def requires_default_model(self, workflow_id: str) -> bool:
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            if row is None:
+                return False
+            nodes = workflow_record(row).document["content"]["nodes"]
+        for node in nodes:
+            data = node.get("data", {})
+            if not str(data.get("moduleType", "")).startswith("ai_"):
+                continue
+            config = data.get("config", data)
+            if isinstance(config, dict) and (
+                config.get("modelId") is None
+                or isinstance(config.get("modelId"), str) and not config["modelId"].strip()
+            ):
+                return True
+        return False
 
     def prepare_content(
         self,

@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
 
 import pytest
-
 from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.project_runs.models import ProjectRunError
@@ -77,6 +76,29 @@ def test_freezes_project_defaults_and_automatic_timeout():
     ]
     assert request["automaticExecutionTimeoutSeconds"] == 12.5
     assert request["frozenConfiguration"] == {"safe": True}
+
+
+def test_browser_free_task_freezes_project_model_default_and_explicit_override():
+    class NoBrowserQuery(ResourceQuery):
+        def requires_browser(self, value):
+            return False
+
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(NoBrowserQuery(), browser)
+    inherited = resolver(automation({"source": "newFromProfile"}), DEFAULTS)
+    overridden = resolver(
+        automation({"source": "newFromProfile", "modelProviderId": "task-model"}),
+        DEFAULTS,
+    )
+    disabled = resolver(
+        automation({"source": "newFromProfile", "modelProviderId": None}),
+        DEFAULTS,
+    )
+
+    assert inherited == {"browser": "none", "modelProviderId": "project-model", "automaticExecutionTimeoutSeconds": 12.5}
+    assert overridden["modelProviderId"] == "task-model"
+    assert "modelProviderId" not in disabled
+    assert browser.calls == []
 
 
 @pytest.mark.parametrize(

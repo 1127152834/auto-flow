@@ -226,3 +226,10 @@
 - 开发Cy7fmp真实UI凭据+项目任务五节点成功，停止/失败/恢复、PNG、系统凭据UI删除与进程清理通过。1iu9Wz失败仅画布搜索栏遮挡节点中心，定位改实际未遮挡内部点；保留原断言与失败截图。
 - 最终166秒冻结及本地unsigned包vBd3bn覆盖全部同链，包含deadline修复。汇总project-integration/credential-runtime-2026-09-23。未修改用户数据，Intel/Windows未测；213及622/17不变。
 - 下一交付：项目任务模型端口，沿准备/派发/私有worker绑定接主应用ModelService；不能把秘密放入Batch/PreparedContent/CoreRun快照。依赖调查已确认纯数据resource_query/resources早退会丢模型规则，catalog当前只准入31已桥接节点；资源与执行上下文齐备后再放行相应AI族。助手会话项目隔离另有上节直接证据，未核销。
+
+## 项目任务模型端口（后端已验，正式UI待验）
+
+- 用户确认项目资源沿用默认值并允许显式覆盖。项目启动真实SQLite入口已核对：无浏览器AI任务冻结有效modelProviderId，不读取Profile；纯数据任务不因未使用的模型默认值阻塞。
+- 15个批准AI入口与实际执行器注册逐项一致。派发器从运行快照的执行副本补默认模型，显式modelId优先；复用ModelService绑定及WorkflowModelGateway，私有worker启动消息传递密钥，不写持久资源/文档/事件。模型错误在启动worker前明确失败。
+- 受控本地HTTP模型的真实项目worker调用、输出事件、密钥不落SQLite、缺默认/非法ID失败及项目任务回归通过。关联123项与新增目录注册1项、Ruff/mypy/OpenAPI/结构通过；证据project-integration/project-task-model-2026-09-23/result.json。
+- 本批尚无项目AI任务正式Electron UI、最新冻结包或项目任务外部真实模型验收；助手后端项目归属、其余任务节点族/数据桥及17个实际执行槽位仍待完成。下一块先做助手项目归属，正式UI可与此独立推进。

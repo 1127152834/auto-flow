@@ -4,6 +4,21 @@ from typing import Any
 # Project tasks reuse the approved browser bridge and pure-data executors.
 # Families with additional resource ports stay gated until those ports are wired.
 _RUNNABLE_MODULES = (
+    ("ai_chat", "AI对话"),
+    ("ai_classify", "AI文本分类"),
+    ("ai_dedup_semantic", "AI语义去重"),
+    ("ai_element_selector", "AI元素选择"),
+    ("ai_extract", "AI信息抽取"),
+    ("ai_generate_image", "AI生成图片"),
+    ("ai_generate_video", "AI生成视频"),
+    ("ai_normalize", "AI数据规整"),
+    ("ai_route", "AI智能路由"),
+    ("ai_sentiment", "AI情感分析"),
+    ("ai_smart_scraper", "AI智能爬虫"),
+    ("ai_summarize", "AI文本摘要"),
+    ("ai_translate", "AI翻译"),
+    ("ai_vision", "图像识别"),
+    ("ai_vision_act", "AI视觉操作"),
     ("open_page", "打开网页"),
     ("input_text", "输入文本"),
     ("click_element", "点击元素"),

@@ -1,0 +1,40 @@
+{
+  "capabilityId": "BE.SUPPORT.models-ai-mcp",
+  "slice": "project-task-managed-model-port",
+  "classification": "AutoFlow必要适配",
+  "status": "backend-passed-ui-pending",
+  "scope": 213,
+  "decision": "沿用项目默认模型提供方并允许任务或节点显式覆盖，不增加资源白名单",
+  "sourceReuse": [
+    "autoflow.application.models.service.ModelService.default_model_id",
+    "autoflow.application.models.service.ModelService.execution_binding",
+    "autoflow.providers.model.WorkflowModelGateway",
+    "autoflow.application.workflows.coordinator._model_references",
+    "已迁入的15个WebRPA AI执行器"
+  ],
+  "checks": {
+    "relatedBackend": "123 passed; subsequent approved-AI catalog registration test 1 passed",
+    "mypy": "8 changed source files passed",
+    "ruff": "changed source and test files passed",
+    "openapi": "passed",
+    "structure": "4 passed",
+    "diffCheck": "passed"
+  },
+  "actualEvidence": [
+    "项目任务正式启动入口从保存工作流生成PreparedContent、CoreRun及冻结modelProviderId，AI纯数据任务不占浏览器",
+    "真实独立项目worker连接本地受控OpenAI兼容HTTP服务，继承默认或显式模型分别调用并持久化输出",
+    "模型密钥仅进入私有启动管道；测试数据库字节中不存在密钥",
+    "缺少默认模型及无效显式模型ID在worker启动前以具体错误结束",
+    "纯数据任务不因未使用且已失效的项目模型提供方而无法运行",
+    "15个AI入口全部属于批准范围并有真实执行器注册"
+  ],
+  "notYetAccepted": [
+    "项目任务AI的正式Electron真实UI完整链尚未实测",
+    "项目任务模型端口尚未通过新构建的PyInstaller与Electron打包入口实测",
+    "本批模型HTTP服务是受控本地夹具，先前真实OpenRouter调用只覆盖Studio直接运行，不冒充项目任务真实模型测试",
+    "助手会话、命令及附件的后端项目归属独立待做",
+    "macOS Intel与Windows未实机验收"
+  ],
+  "nodeExecutionLedger": "213 approved, 622 of 639 execution slots passed, 17 pending; this project integration evidence does not relabel node slots",
+  "workspace": "isolated temporary SQLite and HTTP fixture; no user database writes"
+}

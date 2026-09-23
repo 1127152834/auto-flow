@@ -24,6 +24,7 @@ from autoflow.providers.browser.project_graph import (
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
 from autoflow.providers.browser.workflow_worker import _WorkerCredentialReader
+from autoflow.providers.model import WorkflowModelGateway
 
 PROTOCOL_VERSION = 1
 MAX_JSONL_BYTES = 1024 * 1024
@@ -273,6 +274,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                         node_id, visit, emit,
                     ),
                     credentials=incoming.credentials if isinstance(incoming, _Input) else None,
+                    models=WorkflowModelGateway(command.pop("modelBindings", [])),
                 )
                 result = await executor.run(command["executionPlan"])
                 control.check_parent()

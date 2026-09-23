@@ -52,10 +52,13 @@ class ProjectAutomationResourceQuery:
                     automation.project_id,
                 )
             ]
-        if not self.requires_browser(automation):
-            return []
         defaults = project.default_resources
         issues: list[dict[str, Any]] = []
+        if not self.requires_browser(automation):
+            return self._model_issues(automation, defaults) if (
+                self._workflow_runtime is not None
+                and self._workflow_runtime.requires_default_model(automation.workflow_id)
+            ) else []
         profile: Profile | None = None
         policy = automation.environment_policy
         source = policy.get("source")
@@ -142,6 +145,14 @@ class ProjectAutomationResourceQuery:
                     proxy.get("proxyPoolId"),
                 )
             )
+        if self._workflow_runtime is None or self._workflow_runtime.requires_default_model(automation.workflow_id):
+            issues.extend(self._model_issues(automation, defaults))
+        return issues
+
+    def _model_issues(
+        self, automation: AutomationRecord, defaults: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        issues: list[dict[str, Any]] = []
         if "modelProviderId" in automation.environment_policy:
             model_provider_id = automation.environment_policy["modelProviderId"]
             model_path = ["environmentPolicy", "modelProviderId"]

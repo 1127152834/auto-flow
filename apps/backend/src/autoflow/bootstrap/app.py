@@ -473,6 +473,7 @@ def create_app(
         gate=quiesce_gate,
         environment_directory=environment_service.run_work_directory,
         resolve_credential=studio_credentials.resolve,
+        models=model_service,
     )
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory),

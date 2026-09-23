@@ -90,6 +90,7 @@ class ProjectWorkflowWorkerManager:
         execution_plan: dict[str, Any], parameters: dict[str, Any],
         variables: dict[str, Any], browser: dict[str, Any], executable: Path | None,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
+        model_bindings: list[dict[str, Any]] | None = None,
     ) -> WorkerOutcome:
         if str(UUID(run_id)) != run_id or execution_generation < 1:
             raise _protocol_error()
@@ -147,6 +148,7 @@ class ProjectWorkflowWorkerManager:
                 "executionGeneration": execution_generation,
                 "executionPlan": execution_plan, "parameters": parameters,
                 "variables": variables, "browser": browser,
+                "modelBindings": model_bindings or [],
             })
             message = await asyncio.wait_for(self._read(worker), self._start_timeout)
             if message.get("type") != "ready":

@@ -1,21 +1,40 @@
 from copy import deepcopy
 
 import pytest
-
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
 from autoflow.domain.workflows.catalog import node_catalog
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.domain.workflows.run_validation import prepare_run
+from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
+
 from tests.fixtures.workflows import workflow_payload
 
 
-def test_project_catalog_admits_the_five_node_studio_bridge():
-    assert {item["moduleType"] for item in node_catalog() if item["runnable"]} == {
+def test_project_catalog_admits_studio_browser_data_and_managed_ai_nodes():
+    runnable = {item["moduleType"] for item in node_catalog() if item["runnable"]}
+    assert {
         "open_page",
         "input_text",
         "click_element",
         "get_element_info",
         "screenshot",
+        "list_reverse",
+        "dict_merge",
+    } <= runnable
+    assert {"ai_chat", "ai_extract", "ai_generate_image", "ai_vision_act"} <= runnable
+    assert "notification" not in runnable
+
+
+def test_project_ai_catalog_matches_approved_scope_and_real_executors():
+    project_ai = {
+        item["moduleType"] for item in node_catalog()
+        if item["moduleType"].startswith("ai_")
     }
+    assert project_ai == {node for node in APPROVED_NODE_TYPES if node.startswith("ai_")}
+    registry = build_production_executor_registry()
+    assert all(registry.get(module_type) is not None for module_type in project_ai)
 
 
 def test_prepared_document_is_projected_and_deeply_frozen_from_input_mutation():
@@ -163,7 +182,7 @@ def test_prepare_accepts_zero_timeout_as_no_limit_for_every_worker_node():
 
 
 @pytest.mark.parametrize(
-    "module_type", ["wait_element", "ai_chat", "condition", "group"]
+    "module_type", ["wait_element", "future_node", "condition", "group"]
 )
 def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
     payload = workflow_payload()

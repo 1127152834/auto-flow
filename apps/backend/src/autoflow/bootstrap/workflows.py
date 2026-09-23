@@ -477,6 +477,7 @@ def configure_project_workflow_runtime(
     gate: Any,
     environment_directory: Any | None = None,
     resolve_credential: Any | None = None,
+    models: Any | None = None,
 ) -> Any:
     """Compose the PM4 durable runtime beside the current Studio runtime."""
     from contextlib import contextmanager
@@ -544,7 +545,9 @@ def configure_project_workflow_runtime(
         raise KernelNotFound()
 
     dispatcher = WorkflowRunDispatcher(
-        session_factory, worker, resources, gate, recover
+        session_factory, worker, resources, gate, recover,
+        resolve_model=models.execution_binding if models is not None else None,
+        resolve_default_model=models.default_model_id if models is not None else None,
     )
     runtime = WorkflowRuntimeService(
         session_factory, SqlAlchemyWorkflowRepository(session_factory)

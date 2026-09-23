@@ -40,24 +40,25 @@ class ProjectRunResourceResolver:
                 {"issues": issues, "retryable": False},
             )
 
-        if not self._query.requires_browser(automation):
-            return {
-                "browser": "none",
-                "automaticExecutionTimeoutSeconds": automation.run_policy[
-                    "automaticExecutionTimeoutSeconds"
-                ],
-            }
-
         policy = automation.environment_policy
-        source = policy.get("source")
-        if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
-            raise _field_error("environmentPolicy.source", "无效的环境来源")
-        proxy = _effective_proxy(policy, project_defaults)
         model_provider_id = (
             policy["modelProviderId"]
             if "modelProviderId" in policy
             else project_defaults.get("modelProviderId")
         )
+        if not self._query.requires_browser(automation):
+            return {
+                "browser": "none",
+                **({"modelProviderId": model_provider_id} if model_provider_id else {}),
+                "automaticExecutionTimeoutSeconds": automation.run_policy[
+                    "automaticExecutionTimeoutSeconds"
+                ],
+            }
+
+        source = policy.get("source")
+        if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
+            raise _field_error("environmentPolicy.source", "无效的环境来源")
+        proxy = _effective_proxy(policy, project_defaults)
         profile_id = policy.get("profileId") or project_defaults.get("profileId")
         pinned = None
         if source == "fixedEnvironment":

@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Any, Protocol
 from uuid import uuid4
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session, sessionmaker
-
+from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.settings.runtime import QuiesceGate
+from autoflow.application.workflows.coordinator import _model_references
+from autoflow.domain.models.errors import ModelError
 from autoflow.domain.workflows.runtime import (
     TERMINAL_STATUSES,
     CoreRun,
@@ -23,6 +23,8 @@ from autoflow.infrastructure.database.workflow_runtime import (
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 from autoflow.infrastructure.process.project_workflow_worker import WorkerOutcome
+from sqlalchemy import select
+from sqlalchemy.orm import Session, sessionmaker
 
 
 class WorkerPort(Protocol):
@@ -39,6 +41,7 @@ class WorkerPort(Protocol):
         browser: dict[str, Any],
         executable: Path | None,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
+        model_bindings: list[dict[str, Any]],
     ) -> WorkerOutcome: ...
 
     async def stop(self, run_id: str) -> None: ...
@@ -84,6 +87,8 @@ class WorkflowRunDispatcher:
         gate: QuiesceGate,
         recover_orphan: Recovery,
         *,
+        resolve_model: Callable[[str], ModelExecutionBinding] | None = None,
+        resolve_default_model: Callable[[str], str] | None = None,
         force_stop_grace: timedelta = timedelta(seconds=30),
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
@@ -92,6 +97,8 @@ class WorkflowRunDispatcher:
         self._resources = resources
         self._gate = gate
         self._recover_orphan = recover_orphan
+        self._resolve_model = resolve_model
+        self._resolve_default_model = resolve_default_model
         self._force_stop_grace = force_stop_grace
         self._now = now
         self._task: asyncio.Task[None] | None = None
@@ -386,6 +393,22 @@ class WorkflowRunDispatcher:
                         "WORKFLOW_ADMISSION_CLOSED", "运行准入已关闭", 503
                     )
                 content = self._prepared(dispatched.prepared_content_id)
+                execution_plan = thaw_json(content.execution_plan)
+                try:
+                    model_bindings = self._model_bindings(
+                        execution_plan, dispatched.resource_request
+                    )
+                except ModelError as error:
+                    current = self._get_run(dispatched.run_id)
+                    if current.status == "stopping":
+                        self._transition_current(current.run_id, current.execution_generation, "cancelled")
+                    elif current.status == "running":
+                        finishing = self._transition(current, "finishing")
+                        self._transition_current(
+                            finishing.run_id, finishing.execution_generation, "failed",
+                            error={"code": error.code, "message": error.message},
+                        )
+                    return
                 if "browser.cloakbrowser" in content.capability_requirements:
                     lease = await self._resources.acquire(
                         dispatched.resource_request, dispatched.run_request_id
@@ -411,7 +434,7 @@ class WorkflowRunDispatcher:
                         outcome = await self._worker.run(
                             run_id=current.run_id,
                             execution_generation=current.execution_generation,
-                            execution_plan=thaw_json(content.execution_plan),
+                            execution_plan=execution_plan,
                             parameters=thaw_json(current.parameters),
                             variables=self._variables(content, current),
                             browser=dict(lease.browser) if lease else {},
@@ -419,6 +442,7 @@ class WorkflowRunDispatcher:
                             on_event=lambda event: self._commit_event(
                                 current, content, event
                             ),
+                            model_bindings=model_bindings,
                         )
                 except TimeoutError:
                     if not timeout.expired():
@@ -500,6 +524,56 @@ class WorkflowRunDispatcher:
                         self._run_id = None
             for listener in tuple(self._idle_listeners):
                 listener()
+
+    def _model_bindings(
+        self, plan: dict[str, Any], resource_request: Mapping[str, Any]
+    ) -> list[dict[str, Any]]:
+        document = plan.get("document")
+        if not isinstance(document, dict):
+            document = {"nodes": [
+                {"id": node["nodeId"], "data": node["data"]}
+                for node in plan["nodes"]
+            ]}
+        default_model_id: str | None = None
+        for node in document["nodes"]:
+            data = node["data"]
+            if not str(data.get("moduleType", "")).startswith("ai_"):
+                continue
+            config = data.get("config", data)
+            if not isinstance(config, dict):
+                continue
+            model_id = config.get("modelId")
+            if model_id is not None and not isinstance(model_id, str):
+                raise ModelError("MODEL_ID_INVALID", "模型标识必须是字符串", 422)
+            if isinstance(model_id, str) and model_id.strip():
+                continue
+            provider_id = resource_request.get("modelProviderId")
+            if not isinstance(provider_id, str) or not provider_id:
+                raise ModelError("PROJECT_DEFAULT_MODEL_MISSING", "项目未设置默认模型服务，请显式选择模型", 422)
+            if self._resolve_default_model is None:
+                raise ModelError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
+            if default_model_id is None:
+                default_model_id = self._resolve_default_model(provider_id)
+            config["modelId"] = default_model_id
+        references = _model_references([document])
+        if references and self._resolve_model is None:
+            raise ModelError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
+        bindings: dict[str, ModelExecutionBinding] = {}
+        for model_id, _node_id, _path in references:
+            if model_id not in bindings:
+                assert self._resolve_model is not None
+                bindings[model_id] = self._resolve_model(model_id)
+        return [
+            {
+                "modelId": binding.model_id,
+                "modelKey": binding.model_key,
+                "presetId": binding.connection.preset_id,
+                "providerKind": binding.connection.provider_kind,
+                "baseUrl": binding.connection.base_url,
+                "secret": binding.secret,
+            }
+            for binding in bindings.values()
+        ]
 
     async def _commit_event(
         self, run: CoreRun, content: Any, event: dict[str, Any]

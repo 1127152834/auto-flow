@@ -8,23 +8,30 @@ must keep the same durable event/stop contract without acquiring browser state.
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import Mapping
 from copy import deepcopy
 from datetime import UTC, datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from threading import Thread
+from types import SimpleNamespace
 from typing import Any, NoReturn
 from uuid import uuid4
 
 import pytest
-
+from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
 from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.settings.runtime import QuiesceGate
+from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.domain.models.models import ProviderConnection
+from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.project_automations import (
     SqlAlchemyProjectAutomations,
 )
@@ -44,6 +51,7 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
+
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_start import setup, start_payload
 
@@ -130,8 +138,6 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
             if item["capability"] == "browser.cloakbrowser"
         )
         assert browser["required"] is False
-        from sqlalchemy import select
-
         from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
         from autoflow.application.project_runs.resources import (
             ProjectRunResourceResolver,
@@ -139,6 +145,7 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
         from autoflow.infrastructure.database.environment_models import (
             ProjectEnvironmentInstanceRow,
         )
+        from sqlalchemy import select
 
         runner = ProjectRunCoordinator(
             factory, runtime,
@@ -200,6 +207,7 @@ def _queued_pure_data_run(
     values: list[int] | None = None,
     node_data: dict[str, Any] | None = None,
     variables: dict[str, Any] | None = None,
+    model_provider_id: str | None = None,
 ) -> tuple[Any, Any]:
     database = tmp_path / "project-data-worker.sqlite3"
     migrate_database(database)
@@ -286,6 +294,7 @@ def _queued_pure_data_run(
             resource_request={
                 "browser": "none",
                 "automaticExecutionTimeoutSeconds": 30,
+                **({"modelProviderId": model_provider_id} if model_provider_id else {}),
             },
             capability_bindings=[],
             created_at=NOW,
@@ -298,6 +307,9 @@ def _dispatcher(
     factory: Any,
     worker: ProjectWorkflowWorkerManager,
     resources: _NoBrowserResources,
+    *,
+    resolve_model: Any = None,
+    resolve_default_model: Any = None,
 ) -> WorkflowRunDispatcher:
     async def recover(_run: object) -> None:
         return None
@@ -308,7 +320,202 @@ def _dispatcher(
         resources,
         QuiesceGate(),
         recover,
+        resolve_model=resolve_model,
+        resolve_default_model=resolve_default_model,
     )
+
+
+@pytest.mark.asyncio
+async def test_project_ai_task_uses_project_default_or_explicit_model_without_persisting_secret(
+    tmp_path: Path,
+) -> None:
+    requests: list[dict[str, Any]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            body = json.loads(self.rfile.read(int(self.headers["content-length"])))
+            requests.append({"body": body, "authorization": self.headers.get("authorization")})
+            payload = json.dumps({"choices": [{"message": {"content": "模型响应"}}]}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        for selected in (None, "explicit-model"):
+            root = tmp_path / (selected or "project-default")
+            root.mkdir()
+            factory, queued = _queued_pure_data_run(
+                root,
+                node_data={
+                    "moduleType": "ai_summarize",
+                    "inputText": "项目任务原文",
+                    "maxWords": 30,
+                    "variableName": "summary",
+                    **({"modelId": selected} if selected else {}),
+                },
+                model_provider_id="project-provider",
+            )
+            worker = ProjectWorkflowWorkerManager(root / "worker-temp", start_timeout=10)
+            resources = _NoBrowserResources()
+            resolved: list[str] = []
+
+            def resolve(model_id: str, recorded: list[str] = resolved) -> ModelExecutionBinding:
+                recorded.append(model_id)
+                return ModelExecutionBinding(
+                    model_id,
+                    model_id,
+                    ProviderConnection("custom-openai-compatible", "openai-compatible", f"http://127.0.0.1:{server.server_port}/v1"),
+                    "private-model-secret",
+                )
+
+            dispatcher = _dispatcher(
+                factory, worker, resources,
+                resolve_model=resolve,
+                resolve_default_model=lambda provider_id: "default-model" if provider_id == "project-provider" else "wrong-provider",
+            )
+            try:
+                await dispatcher.dispatch(
+                    queued.run_id,
+                    expected_status_revision=queued.status_revision,
+                    execution_generation=queued.execution_generation,
+                )
+                await dispatcher.wait_idle()
+                with factory() as session:
+                    repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                    finished = repository.get_run(run_id=queued.run_id)
+                    events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+                assert finished is not None and finished.status == "succeeded"
+                assert resolved == [selected or "default-model"]
+                assert any(event.kind == "output" for event in events)
+                assert not resources.requests
+                assert "private-model-secret" not in (root / "project-data-worker.sqlite3").read_bytes().decode("utf-8", errors="ignore")
+            finally:
+                await dispatcher.shutdown()
+                factory.dispose()
+        assert [request["body"]["model"] for request in requests] == ["default-model", "explicit-model"]
+        assert all(request["authorization"] == "Bearer private-model-secret" for request in requests)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("model_id", "expected_code"),
+    [(None, "PROJECT_DEFAULT_MODEL_MISSING"), (42, "MODEL_ID_INVALID")],
+)
+async def test_project_ai_task_invalid_model_fails_before_worker_start(
+    tmp_path: Path,
+    model_id: object,
+    expected_code: str,
+) -> None:
+    factory, queued = _queued_pure_data_run(
+        tmp_path,
+        node_data={"moduleType": "ai_summarize", "inputText": "原文", "variableName": "summary", **({"modelId": model_id} if model_id is not None else {})},
+    )
+    worker = ProjectWorkflowWorkerManager(tmp_path / "worker-temp", start_timeout=10)
+    dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+    try:
+        await dispatcher.dispatch(
+            queued.run_id,
+            expected_status_revision=queued.status_revision,
+            execution_generation=queued.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            finished = SqlAlchemyWorkflowRuntimeRepository(session).get_run(run_id=queued.run_id)
+        assert finished is not None and finished.status == "failed"
+        assert finished.error is not None and finished.error["code"] == expected_code
+        assert not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.parametrize(
+    ("model_id", "requires_default"),
+    [(None, True), ("explicit-model", False), (42, False)],
+)
+def test_project_runtime_detects_only_missing_ai_model(
+    tmp_path: Path, model_id: object, requires_default: bool
+) -> None:
+    factory, queued = _queued_pure_data_run(
+        tmp_path,
+        node_data={"moduleType": "ai_summarize", "inputText": "原文", **({"modelId": model_id} if model_id is not None else {})},
+    )
+    try:
+        with factory() as session:
+            content = SqlAlchemyWorkflowRuntimeRepository(session).get_prepared_content(
+                prepared_content_id=queued.prepared_content_id
+            )
+        assert content is not None
+        assert WorkflowRuntimeService(factory).requires_default_model(content.workflow_id) is requires_default
+    finally:
+        factory.dispose()
+
+
+def test_project_task_start_freezes_model_provider_without_browser(
+    tmp_path: Path,
+) -> None:
+    from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+    from autoflow.application.project_runs.resources import ProjectRunResourceResolver
+
+    factory, _, _, _, runtime, project, automation = setup(tmp_path)
+    try:
+        document = _pure_data_document(automation.workflow_id)
+        document["content"]["nodes"] = [{
+            "id": "summary", "type": "ai_summarize", "position": {"x": 100, "y": 80},
+            "data": {"moduleType": "ai_summarize", "inputText": "项目任务原文", "variableName": "summary"},
+        }]
+        WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id,
+            {**document["content"], "id": automation.workflow_id},
+            expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        with factory() as session:
+            row = session.get(ProjectRow, project.project_id)
+            assert row is not None
+            row.default_resources = {**row.default_resources, "modelProviderId": "project-provider"}
+            session.commit()
+
+        class Models:
+            def get_provider(self, provider_id: str) -> Any:
+                assert provider_id == "project-provider"
+                return SimpleNamespace(enabled=True)
+
+        unused: Any = _UnexpectedBrowserDependency()
+        query = ProjectAutomationResourceQuery(
+            SqlAlchemyProjects(factory), unused, unused, unused, Models(),
+            workflow_runtime=runtime,
+        )
+        runner = ProjectRunCoordinator(
+            factory, runtime,
+            resolve_resources=ProjectRunResourceResolver(query, unused),
+            available_capabilities=[],
+        )
+        batch, _, replayed = runner.start(
+            project.project_id, automation.automation_id, str(uuid4()), start_payload(automation)
+        )
+        task = runner.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert not replayed and run is not None
+        assert run.resource_request["browser"] == "none"
+        assert run.resource_request["modelProviderId"] == "project-provider"
+        prepared = runtime.query_prepared_content(prepared_content_id=run.prepared_content_id)
+        assert prepared is not None and prepared.capability_requirements == ()
+        assert prepared.execution_plan["nodes"][0]["moduleType"] == "ai_summarize"
+    finally:
+        factory.dispose()
 
 
 @pytest.mark.asyncio
@@ -454,10 +661,9 @@ async def test_stop_cancels_browser_free_worker_and_confirms_cleanup(
 
 @pytest.mark.asyncio
 async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_path: Path) -> None:
-    from fastapi import FastAPI
-
     from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
     from autoflow.bootstrap.workflows import configure_project_workflow_runtime
+    from fastapi import FastAPI
 
     factory, queued = _queued_pure_data_run(tmp_path, values=[1, 2, 3])
     runtime = WorkflowRuntimeService(factory)
