@@ -50,6 +50,9 @@ datas = [
     *copy_metadata('ctranslate2'),
     *copy_metadata('huggingface-hub'),
     *copy_metadata('tokenizers'),
+    *copy_metadata('laya'),
+    *copy_metadata('transformers'),
+    *copy_metadata('safetensors'),
 ]
 hiddenimports = [
     'autoflow.bootstrap.kernel_worker',
@@ -70,6 +73,8 @@ hiddenimports = [
     *collect_submodules('face_recognition'),
     *collect_submodules('faster_whisper'),
     *collect_submodules('mediapipe'),
+    *collect_submodules('laya'),
+    *collect_submodules('transformers.models.modernbert'),
 ]
 
 

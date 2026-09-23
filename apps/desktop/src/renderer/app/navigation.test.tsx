@@ -1,5 +1,6 @@
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
+import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import { ApplicationHeader } from './ApplicationHeader'
 import { parseAppLocation, projectHash, useGuardedHashNavigation } from './navigation'
 
 beforeEach(() => { window.history.replaceState(null, '', '#/projects') })
@@ -12,6 +13,14 @@ it('parses project context and rejects malformed or unsupported project addresse
   expect(parseAppLocation(`#/projects/${id}/bogus`).error).toBeTruthy()
   expect(parseAppLocation('#/projects/not-an-id/overview').error).toBeTruthy()
   expect(parseAppLocation('#/profiles').section).toBe('profiles')
+  expect(parseAppLocation('#/lab').section).toBe('lab')
+})
+
+it('exposes the lab as a global navigation tab', () => {
+  const onNavigate = vi.fn()
+  render(<ApplicationHeader route="dashboard" onNavigate={onNavigate} status="connected" />)
+  screen.getByRole('button', { name: '实验室' }).click()
+  expect(onNavigate).toHaveBeenCalledWith('lab')
 })
 
 it('keeps the route and URL when a global navigation is declined', async () => {

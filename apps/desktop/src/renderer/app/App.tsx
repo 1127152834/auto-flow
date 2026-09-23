@@ -13,6 +13,7 @@ import { SettingsPage } from '../domains/settings/pages/SettingsPage'
 import { ProxyManagementPage } from '../domains/proxies/pages/ProxyManagementPage'
 import { BrowserManagementPage } from '../domains/profiles/pages/BrowserManagementPage'
 import { AndroidPage } from '../domains/android/pages/AndroidPage'
+import { LabPage } from '../domains/lab/pages/LabPage'
 import type { SettingsBridge } from '../../shared/settings'
 import { useDesktopSession } from './useDesktopSession'
 
@@ -58,6 +59,7 @@ export function App() {
             : route === 'proxies' ? <ProxyManagementPage api={session.client} />
             : route === 'android' ? <AndroidPage connected={status === 'connected' && !workspaceChanging} />
             : route === 'models' && modelApi ? <ModelManagementPage api={modelApi} instanceId={session.instanceId} />
+            : route === 'lab' ? <LabPage client={session.client} workspaceKey={session.workspaceKey} />
             : <BrowserManagementPage disabled={status !== 'connected'} onReconnect={() => void reconnect()} />}
         </div>
       </ApiProvider> : null}

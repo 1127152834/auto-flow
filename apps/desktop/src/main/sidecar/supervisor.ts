@@ -104,7 +104,7 @@ export class SidecarSupervisor {
         this.pendingStart = undefined
         reject(new Error('sidecar readiness timeout'))
         void this.stop()
-      }, this.options.timeoutMs ?? 15000)
+      }, this.options.timeoutMs ?? (this.options.production ? 90_000 : 15_000))
       this.pendingStart = { generation, timer, reject }
       child.stdout?.on('data', (chunk: Buffer | string) => {
         buffer += chunk.toString()
