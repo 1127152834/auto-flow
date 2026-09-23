@@ -4,7 +4,7 @@ import { ApiClientError } from '../../../shared/api/client'
 import type { AndroidManagementApi, Image, Operation } from '../management-api'
 
 type Props = {
-  api: Pick<AndroidManagementApi, 'images' | 'registerImage' | 'pullImage' | 'operationByRequest' | 'deleteImage' | 'verifyImage' | 'verifyImageDelete'>
+  api: Pick<AndroidManagementApi, 'images' | 'registerImage' | 'pullImage' | 'operationByRequest' | 'verify' | 'deleteImage' | 'verifyImage' | 'verifyImageDelete'>
 }
 type DeleteDraft = { id: string; content: boolean; requestId: string; revision: number }
 type VerifyDraft = { id: string; check: string; evidence: string }
@@ -58,9 +58,21 @@ export function ImageManager({ api }: Props) {
   }
 
   const verifyOperation = () => {
-    const requestId = operation?.requestId ?? pullRequest.current?.requestId
+    const requestId = pullRequest.current?.requestId ?? operation?.requestId
     if (!requestId) return
-    return run('verifyOperation', async () => { setOperation(await api.operationByRequest(requestId)); setMessage('已按原请求核实拉取状态') })
+    return run('verifyOperation', async () => {
+      let next = await api.operationByRequest(requestId)
+      setOperation(next)
+      if (next.state === 'needs_verification') {
+        next = await api.verify(next.operationId, { requestId })
+        setOperation(next)
+      }
+      if (next.state === 'succeeded') {
+        if (pullRequest.current?.requestId === requestId) pullRequest.current = null
+        await images.refetch()
+      }
+      setMessage('已按原请求核实拉取状态')
+    })
   }
 
   const remove = (draft: DeleteDraft) => run('delete', async () => { await api.deleteImage(draft.id, { requestId: draft.requestId, expectedRevision: draft.revision, deleteContent: draft.content }); setDeleteDraft(null); setMessage(draft.content ? '镜像内容已删除' : '镜像登记已取消'); await images.refetch() })

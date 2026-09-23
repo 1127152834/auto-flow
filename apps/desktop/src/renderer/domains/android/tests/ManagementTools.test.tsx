@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { BulkActions } from '../components/BulkActions'
@@ -185,7 +185,9 @@ it('cancels only pending batch items while admitted work remains observable', as
   expect(bulkAction).toHaveBeenCalledWith('b', { requestId: expect.any(String), action: 'cancelPending' })
   expect(screen.queryByRole('button', { name: '取消未开始项' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
-  expect(screen.getByLabelText('批次结果')).toHaveTextContent('结果未知')
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('running')
+  expect(screen.getByRole('list', { name: '批次逐项结果' })).toHaveTextContent('已准入，执行中')
+  expect(screen.getByRole('list', { name: '批次逐项结果' })).toHaveTextContent('已取消')
   expect(bulk).toHaveBeenCalledTimes(1)
 })
 
@@ -413,4 +415,35 @@ it('shows readable source references and irreversible impact in the frozen previ
   expect(await screen.findByLabelText('清理预览')).toHaveTextContent('源实例')
   expect(screen.getByLabelText('清理预览')).toHaveTextContent('永久删除')
   expect(screen.getByLabelText('清理预览')).not.toHaveTextContent('[object Object]')
+})
+
+
+it('keeps every frozen batch item and its outcome visible after filtering all devices out', async () => {
+  const states = ['succeeded', 'waiting_capacity', 'waiting_device', 'needs_verification', 'failed', 'cancelled', 'accepted']
+  const devices = states.map((state, index) => ({ ...device, deviceId: `d${index}`, name: `目标${index}` }))
+  const items = devices.map((target, index) => ({ deviceId: target.deviceId, name: target.name, state: states[index], operationId: `op${index}`, retryOf: index === 4 ? 'earlier-op' : null, error: index === 1 ? '内存预算不足' : index === 4 ? '修订号已变化' : null }))
+  const bulk = vi.fn().mockResolvedValue({ id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items, createdAt: '' })
+  const view = render(<BulkActions api={{ bulk }} devices={devices} />)
+  for (const target of devices) fireEvent.click(screen.getByLabelText(target.name))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
+  view.rerender(<BulkActions api={{ bulk }} devices={[]} />)
+  const rows = within(screen.getByRole('list', { name: '批次逐项结果' })).getAllByRole('listitem')
+  expect(rows).toHaveLength(7)
+  const labels = ['已完成', '等待容量', '等待设备', '结果未知，待核实', '失败', '已取消', '已准入，执行中']
+  rows.forEach((row, index) => { expect(row).toHaveTextContent(devices[index].name); expect(row).toHaveTextContent(labels[index]) })
+  expect(rows[1]).toHaveTextContent('内存预算不足')
+  expect(rows[4]).toHaveTextContent('修订号已变化')
+  expect(rows[4]).toHaveTextContent('earlier-op')
+  expect(bulk).toHaveBeenCalledTimes(1)
+})
+
+it('distinguishes admitted batch work from an unknown outcome without releasing the batch', async () => {
+  const bulk = vi.fn().mockResolvedValue({ id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ deviceId: 'd1', name: '设备一', state: 'accepted' }], createdAt: '' })
+  render(<BulkActions api={{ bulk }} devices={[device]} />)
+  fireEvent.click(screen.getByLabelText('设备一'))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
+  expect(screen.getByLabelText('批次结果')).not.toHaveTextContent('结果未知')
+  expect(screen.queryByRole('button', { name: '核实批次' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
 })

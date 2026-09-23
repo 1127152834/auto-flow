@@ -42,3 +42,5 @@ T13/T14/T16 后续[五实例真实链](2026-09-23-final-review-remediation.md)�
 状态partial，来源[本轮报告](2026-09-24-bulk-actions.md)。前端补取消未准入项、原动作幂等重试、终态后新批次，筛选零匹配仍保留回执并禁止提交空目标；后端容量/核实await及跨批次快照不再覆盖取消。聚焦前端160/后端47项通过；真实ReDroid容量等待取消、服务重启、原编号回执一致及资源清理通过。Mac锁屏阻塞最终UI，AC15整体partial；T14隐藏页与性能同链尚未完成，不以此增量关闭AM3。
 
 本轮最终完整门禁：后端4048passed/26skipped/2warnings（981.16s），前端424文件/5650项（802.11s），Ruff/compileall/类型/lint/OpenAPI/build全部exit0；前端采用Node22和单worker，未提高超时。真实UI仍blocked，完整阶段不因软件门禁转为完成。
+
+- 2026-09-24 规格复核修复（confirmed软件定向，真实桌面blocked）：原T13.4逐项结果证据范围过宽，本轮直接渲染冻结result.items的全部状态/错误/重试来源，accepted不再误报未知但继续冻结；镜像未知拉取补现有POST核实、原编号重试及A成功/B响应丢失的身份栅栏。4项初始RED加1项连续请求RED后，Android166项/类型/lint通过，最终增量复审无Critical/Important；完整前端424文件/5656项通过（750.46s），类型/lint/OpenAPI/build均exit0，真实UI仍受Mac锁屏阻塞。见[实际证据](2026-09-24-item-results-image-recovery.md)。

@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/forward-entry-rehearsal.py", line 109, in <module>
+    exercise(destination)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/forward-entry-rehearsal.py", line 78, in exercise
+    run('disabled-build', build)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/forward-entry-rehearsal.py", line 47, in run
+    assert completed.returncode == expected, (name, completed.returncode, expected)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('disabled-build', 2, 0)

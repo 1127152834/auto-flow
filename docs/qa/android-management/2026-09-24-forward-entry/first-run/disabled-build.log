@@ -1,0 +1,23 @@
+
+> typecheck
+> npm --workspace @autoflow/desktop run typecheck
+
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+src/renderer/domains/profiles/components/AdvancedFields.test.tsx(2,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+src/renderer/domains/profiles/components/ProfileFormDialog.tsx(1,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+src/renderer/domains/project-data/components/DataTableFormDialog.tsx(1,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+src/renderer/domains/project-data/components/FieldEditorDialog.tsx(1,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+src/renderer/domains/project-data/components/SchemaFieldDrawer.tsx(1,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+src/renderer/domains/project-data/components/StatusEditorDialog.tsx(1,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+src/renderer/domains/project-data/components/TableSettingsForm.tsx(1,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+src/renderer/domains/projects/components/ProjectFormDialog.tsx(2,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-h1ownogp/checkout/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-h1ownogp/checkout/apps/desktop
+npm error command failed
+npm error command sh -c tsc --noEmit

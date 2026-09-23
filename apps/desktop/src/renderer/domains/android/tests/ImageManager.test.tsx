@@ -96,3 +96,66 @@ it('separates image metadata verification from Google component validation', asy
   expect(screen.getByText(/谷歌组件验收 未测试/)).toBeVisible()
   expect(screen.getByText(/组件声明 detected/)).toBeVisible()
 })
+
+
+it.each([false, true])('explicitly reconciles an unknown pull using its original request id, retry=%s', async (retry) => {
+  const unknown = { operationId: 'pull-op', targetId: 'synthetic-pull-target', action: 'pull', state: 'needs_verification', stageCode: 'verify', stageLabel: '待核实', attempt: 1, createdAt: '', allowedActions: ['verify'] }
+  const pullImage = vi.fn(async (body: { requestId: string }) => ({ ...unknown, requestId: body.requestId }))
+  const operationByRequest = vi.fn(async (requestId: string) => ({ ...unknown, requestId }))
+  const verify = vi.fn().mockImplementation(async (_id: string, body: { requestId: string }) => ({ ...unknown, ...body, state: 'succeeded', stageLabel: '已完成' }))
+  if (retry) verify.mockRejectedValueOnce(new Error('暂时无法核实'))
+  const api = renderManager({ pullImage, operationByRequest, verify })
+  await userEvent.type(within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用'), 'redroid/redroid:13')
+  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+  const requestId = pullImage.mock.calls[0][0].requestId
+  await userEvent.click(screen.getByRole('button', { name: '按原编号核实拉取' }))
+  await vi.waitFor(() => expect(verify).toHaveBeenCalledWith('pull-op', { requestId }))
+  if (retry) {
+    expect(await screen.findByRole('alert')).toHaveTextContent('暂时无法核实')
+    expect(within(screen.getByRole('form', { name: '拉取镜像' })).getByRole('status')).toHaveTextContent('needs_verification')
+    await userEvent.click(screen.getByRole('button', { name: '按原编号重试' }))
+  }
+  await vi.waitFor(() => expect(within(screen.getByRole('form', { name: '拉取镜像' })).getByRole('status')).toHaveTextContent('已完成'))
+  expect(verify).toHaveBeenCalledTimes(retry ? 2 : 1)
+  expect(verify).toHaveBeenLastCalledWith('pull-op', { requestId })
+  expect(operationByRequest).toHaveBeenLastCalledWith(requestId)
+  expect(pullImage).toHaveBeenCalledTimes(1)
+  expect(api.images).toHaveBeenCalledTimes(2)
+  expect(api.verifyImage).not.toHaveBeenCalled()
+  if (!retry) {
+    await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+    expect(pullImage.mock.calls[1][0].requestId).not.toBe(requestId)
+  }
+})
+
+it('keeps the second pull identity after a lost response instead of verifying the previous success', async () => {
+  const unknown = (requestId: string) => ({ operationId: `op-${requestId}`, requestId, targetId: 'pull-target', action: 'pull', state: 'needs_verification', stageCode: 'verify', stageLabel: '待核实', attempt: 1, createdAt: '', allowedActions: ['verify'] })
+  const completed = new Set<string>()
+  const pullImage = vi.fn().mockImplementationOnce(async (body: { requestId: string }) => unknown(body.requestId)).mockRejectedValueOnce(new Error('第二次拉取响应丢失'))
+  const operationByRequest = vi.fn(async (requestId: string) => ({ ...unknown(requestId), ...(completed.has(requestId) ? { state: 'succeeded', stageLabel: '已完成' } : {}) }))
+  let failedVerification = false
+  const verify = vi.fn(async (_id: string, body: { requestId: string }) => {
+    if (completed.size && !failedVerification) { failedVerification = true; throw new Error('第二次核实暂不可用') }
+    completed.add(body.requestId)
+    return { ...unknown(body.requestId), state: 'succeeded', stageLabel: '已完成' }
+  })
+  renderManager({ pullImage, operationByRequest, verify })
+  await userEvent.type(within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用'), 'redroid/redroid:13')
+  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+  const first = pullImage.mock.calls[0][0].requestId
+  await userEvent.click(screen.getByRole('button', { name: '按原编号核实拉取' }))
+  await vi.waitFor(() => expect(completed.has(first)).toBe(true))
+  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
+  const second = pullImage.mock.calls[1][0].requestId
+  expect(second).not.toBe(first)
+  expect(await screen.findByRole('alert')).toHaveTextContent('第二次拉取响应丢失')
+  await userEvent.click(screen.getByRole('button', { name: '按原编号核实拉取' }))
+  expect(operationByRequest).toHaveBeenLastCalledWith(second)
+  expect(await screen.findByRole('alert')).toHaveTextContent('第二次核实暂不可用')
+  expect(verify).toHaveBeenLastCalledWith(`op-${second}`, { requestId: second })
+  await userEvent.click(screen.getByRole('button', { name: '按原编号重试' }))
+  await vi.waitFor(() => expect(completed.has(second)).toBe(true))
+  expect(operationByRequest).toHaveBeenLastCalledWith(second)
+  expect(verify).toHaveBeenLastCalledWith(`op-${second}`, { requestId: second })
+  expect(pullImage).toHaveBeenCalledTimes(2)
+})

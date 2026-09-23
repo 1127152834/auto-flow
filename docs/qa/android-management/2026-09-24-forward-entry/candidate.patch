@@ -1,0 +1,186 @@
+diff --git a/apps/desktop/src/renderer/domains/android/components/BulkActions.tsx b/apps/desktop/src/renderer/domains/android/components/BulkActions.tsx
+index 06b7d52f..e913dae1 100644
+--- a/apps/desktop/src/renderer/domains/android/components/BulkActions.tsx
++++ b/apps/desktop/src/renderer/domains/android/components/BulkActions.tsx
+@@ -44,9 +44,13 @@ export function BulkActions({ api, devices }: { api: Pick<AndroidManagementApi,
+   const newBatch = () => {
+     setSelected([]); setAction('start'); setDeleteData(false); setResult(null); setRequest(null); setPendingAction(null); setError(''); setStatusUnavailable(false)
+   }
+-  const unknown = result?.state === 'needs_verification' || result?.items.some(item => ['accepted', 'needs_verification'].includes(String(item.state)))
++  const unknown = result?.state === 'needs_verification' || result?.items.some(item => item.state === 'needs_verification')
+   const failedItems = result?.items.filter(item => String(item.state) === 'failed') ?? []
+   const cancellable = result?.items.some(item => ['queued', 'waiting_capacity', 'waiting_device'].includes(String(item.state)))
+   const settled = result && ['succeeded', 'failed', 'partially_failed', 'cancelled'].includes(result.state) && result.items.every(item => ['succeeded', 'failed', 'cancelled'].includes(String(item.state)))
+-  return <section aria-label="批量操作" aria-busy={busy} className="rounded-card border border-line bg-surface p-5"><header><h2 className="font-semibold">批量操作</h2><p className="mt-1 text-sm text-muted">目标在提交时冻结，单批最多 20 台。</p></header><div className="mt-3 grid gap-2">{devices.map(device => { const blocked = device.stale || device.runtimeState === 'unknown' || (device.owner?.kind ?? 'none') !== 'none' || !device.allowedActions.includes(action); return <label key={device.deviceId} className="flex items-center gap-2 text-sm"><input id={`bulk-${device.deviceId}`} aria-label={device.name} type="checkbox" checked={selected.includes(device.deviceId)} disabled={busy || Boolean(request) || blocked} onChange={event => setSelected(current => event.target.checked ? [...current, device.deviceId] : current.filter(id => id !== device.deviceId))} />{device.name} · 修订 {device.revision}{blocked && ' · 待核实或不可操作'}</label> })}</div><div className="mt-3 flex flex-wrap items-center gap-2"><select aria-label="批量动作" value={action} disabled={busy || Boolean(request)} onChange={event => { setAction(event.target.value as typeof action); setSelected(current => current.filter(id => { const device = devices.find(item => item.deviceId === id); return Boolean(device && device.allowedActions.includes(event.target.value) && !device.stale && device.runtimeState !== 'unknown' && (device.owner?.kind ?? 'none') === 'none') })); setDeleteData(false) }}><option value="start">启动</option><option value="stop">停止</option><option value="restart">重启</option><option value="delete">删除</option></select>{action === 'delete' && <label className="flex items-center gap-1 text-sm"><input type="checkbox" aria-label="同时删除数据（不可恢复）" checked={deleteData} disabled={busy || Boolean(request)} onChange={event => setDeleteData(event.target.checked)} />同时删除数据（不可恢复）</label>}{!error && <button type="button" disabled={busy || Boolean(request) || !targets.length || targets.length > 20} onClick={() => void submit()}>{busy && !result ? '正在提交…' : '提交批量操作'}</button>}</div>{error && <p role="alert" className="mt-3 text-sm">{error}<button type="button" disabled={busy} onClick={() => pendingAction ? void actOnBatch(pendingAction.action) : void submit()}>{pendingAction ? '重试批次动作' : '重试批量操作'}</button></p>}{active && statusUnavailable && <p role="status" className="mt-3 text-sm">批次状态暂不可读，将自动重试读取。</p>}{result && <p aria-label="批次结果" role={unknown ? 'alert' : 'status'} className="mt-3 text-sm">批次{unknown ? '结果未知' : ` ${result.state}`} · {result.items.length} 项{failedItems.length > 0 && <span> · 失败项：{failedItems.map(item => `${String(item.name ?? item.deviceId ?? '设备')}（重试自 ${String(item.retryOf ?? item.operationId ?? '原操作')}）`).join('、')}</span>}{unknown && <button type="button" disabled={busy || Boolean(pendingAction && pendingAction.action !== 'verify')} onClick={() => void actOnBatch('verify')}>核实批次</button>}{failedItems.length > 0 && api.bulkAction && <button type="button" disabled={busy || Boolean(pendingAction && pendingAction.action !== 'retryFailed')} onClick={() => void actOnBatch('retryFailed')}>重试失败项</button>}</p>}{cancellable && api.bulkAction && <div className="mt-3 text-sm"><p>仅取消尚未准入的项目，已开始项目继续执行。</p><button type="button" disabled={busy || Boolean(pendingAction && pendingAction.action !== 'cancelPending')} onClick={() => void actOnBatch('cancelPending')}>取消未开始项</button></div>}{result && <button type="button" className="mt-3" disabled={busy || Boolean(pendingAction) || !settled} onClick={newBatch}>开始新批次</button>}</section>
++  return <section aria-label="批量操作" aria-busy={busy} className="rounded-card border border-line bg-surface p-5"><header><h2 className="font-semibold">批量操作</h2><p className="mt-1 text-sm text-muted">目标在提交时冻结，单批最多 20 台。</p></header><div className="mt-3 grid gap-2">{devices.map(device => { const blocked = device.stale || device.runtimeState === 'unknown' || (device.owner?.kind ?? 'none') !== 'none' || !device.allowedActions.includes(action); return <label key={device.deviceId} className="flex items-center gap-2 text-sm"><input id={`bulk-${device.deviceId}`} aria-label={device.name} type="checkbox" checked={selected.includes(device.deviceId)} disabled={busy || Boolean(request) || blocked} onChange={event => setSelected(current => event.target.checked ? [...current, device.deviceId] : current.filter(id => id !== device.deviceId))} />{device.name} · 修订 {device.revision}{blocked && ' · 待核实或不可操作'}</label> })}</div><div className="mt-3 flex flex-wrap items-center gap-2"><select aria-label="批量动作" value={action} disabled={busy || Boolean(request)} onChange={event => { setAction(event.target.value as typeof action); setSelected(current => current.filter(id => { const device = devices.find(item => item.deviceId === id); return Boolean(device && device.allowedActions.includes(event.target.value) && !device.stale && device.runtimeState !== 'unknown' && (device.owner?.kind ?? 'none') === 'none') })); setDeleteData(false) }}><option value="start">启动</option><option value="stop">停止</option><option value="restart">重启</option><option value="delete">删除</option></select>{action === 'delete' && <label className="flex items-center gap-1 text-sm"><input type="checkbox" aria-label="同时删除数据（不可恢复）" checked={deleteData} disabled={busy || Boolean(request)} onChange={event => setDeleteData(event.target.checked)} />同时删除数据（不可恢复）</label>}{!error && <button type="button" disabled={busy || Boolean(request) || !targets.length || targets.length > 20} onClick={() => void submit()}>{busy && !result ? '正在提交…' : '提交批量操作'}</button>}</div>{error && <p role="alert" className="mt-3 text-sm">{error}<button type="button" disabled={busy} onClick={() => pendingAction ? void actOnBatch(pendingAction.action) : void submit()}>{pendingAction ? '重试批次动作' : '重试批量操作'}</button></p>}{active && statusUnavailable && <p role="status" className="mt-3 text-sm">批次状态暂不可读，将自动重试读取。</p>}{result && <p aria-label="批次结果" role={unknown ? 'alert' : 'status'} className="mt-3 text-sm">批次{unknown ? '结果未知' : ` ${result.state}`} · {result.items.length} 项{failedItems.length > 0 && <span> · 失败项：{failedItems.map(item => `${String(item.name ?? item.deviceId ?? '设备')}（重试自 ${String(item.retryOf ?? item.operationId ?? '原操作')}）`).join('、')}</span>}{unknown && <button type="button" disabled={busy || Boolean(pendingAction && pendingAction.action !== 'verify')} onClick={() => void actOnBatch('verify')}>核实批次</button>}{failedItems.length > 0 && api.bulkAction && <button type="button" disabled={busy || Boolean(pendingAction && pendingAction.action !== 'retryFailed')} onClick={() => void actOnBatch('retryFailed')}>重试失败项</button>}</p>}{result && <ul aria-label="批次逐项结果" className="mt-3 grid gap-2 text-sm">{result.items.map((item, index) => <li key={String(item.deviceId ?? index)} className="min-w-0 break-words rounded-control border border-line p-3">
++    <span className="font-medium">{String(item.name ?? item.deviceId ?? '设备')}</span> · {({ queued: '排队中', waiting_capacity: '等待容量', waiting_device: '等待设备', accepted: '已准入，执行中', succeeded: '已完成', failed: '失败', needs_verification: '结果未知，待核实', cancelled: '已取消' } as Record<string, string>)[String(item.state)] ?? String(item.state)}
++    {item.error != null && <p className="mt-1 text-muted">{String(item.error)}</p>}
++    {item.retryOf != null && <p className="mt-1 break-all text-xs text-muted">重试自 {String(item.retryOf)}</p>}
++  </li>)}</ul>}{cancellable && api.bulkAction && <div className="mt-3 text-sm"><p>仅取消尚未准入的项目，已开始项目继续执行。</p><button type="button" disabled={busy || Boolean(pendingAction && pendingAction.action !== 'cancelPending')} onClick={() => void actOnBatch('cancelPending')}>取消未开始项</button></div>}{result && <button type="button" className="mt-3" disabled={busy || Boolean(pendingAction) || !settled} onClick={newBatch}>开始新批次</button>}</section>
+ }
+diff --git a/apps/desktop/src/renderer/domains/android/components/ImageManager.tsx b/apps/desktop/src/renderer/domains/android/components/ImageManager.tsx
+index 63b43af5..66ba20c3 100644
+--- a/apps/desktop/src/renderer/domains/android/components/ImageManager.tsx
++++ b/apps/desktop/src/renderer/domains/android/components/ImageManager.tsx
+@@ -4,7 +4,7 @@ import { ApiClientError } from '../../../shared/api/client'
+ import type { AndroidManagementApi, Image, Operation } from '../management-api'
+ 
+ type Props = {
+-  api: Pick<AndroidManagementApi, 'images' | 'registerImage' | 'pullImage' | 'operationByRequest' | 'deleteImage' | 'verifyImage' | 'verifyImageDelete'>
++  api: Pick<AndroidManagementApi, 'images' | 'registerImage' | 'pullImage' | 'operationByRequest' | 'verify' | 'deleteImage' | 'verifyImage' | 'verifyImageDelete'>
+ }
+ type DeleteDraft = { id: string; content: boolean; requestId: string; revision: number }
+ type VerifyDraft = { id: string; check: string; evidence: string }
+@@ -58,9 +58,21 @@ export function ImageManager({ api }: Props) {
+   }
+ 
+   const verifyOperation = () => {
+-    const requestId = operation?.requestId ?? pullRequest.current?.requestId
++    const requestId = pullRequest.current?.requestId ?? operation?.requestId
+     if (!requestId) return
+-    return run('verifyOperation', async () => { setOperation(await api.operationByRequest(requestId)); setMessage('已按原请求核实拉取状态') })
++    return run('verifyOperation', async () => {
++      let next = await api.operationByRequest(requestId)
++      setOperation(next)
++      if (next.state === 'needs_verification') {
++        next = await api.verify(next.operationId, { requestId })
++        setOperation(next)
++      }
++      if (next.state === 'succeeded') {
++        if (pullRequest.current?.requestId === requestId) pullRequest.current = null
++        await images.refetch()
++      }
++      setMessage('已按原请求核实拉取状态')
++    })
+   }
+ 
+   const remove = (draft: DeleteDraft) => run('delete', async () => { await api.deleteImage(draft.id, { requestId: draft.requestId, expectedRevision: draft.revision, deleteContent: draft.content }); setDeleteDraft(null); setMessage(draft.content ? '镜像内容已删除' : '镜像登记已取消'); await images.refetch() })
+diff --git a/apps/desktop/src/renderer/domains/android/tests/ImageManager.test.tsx b/apps/desktop/src/renderer/domains/android/tests/ImageManager.test.tsx
+index af801588..198c9e22 100644
+--- a/apps/desktop/src/renderer/domains/android/tests/ImageManager.test.tsx
++++ b/apps/desktop/src/renderer/domains/android/tests/ImageManager.test.tsx
+@@ -96,3 +96,66 @@ it('separates image metadata verification from Google component validation', asy
+   expect(screen.getByText(/谷歌组件验收 未测试/)).toBeVisible()
+   expect(screen.getByText(/组件声明 detected/)).toBeVisible()
+ })
++
++
++it.each([false, true])('explicitly reconciles an unknown pull using its original request id, retry=%s', async (retry) => {
++  const unknown = { operationId: 'pull-op', targetId: 'synthetic-pull-target', action: 'pull', state: 'needs_verification', stageCode: 'verify', stageLabel: '待核实', attempt: 1, createdAt: '', allowedActions: ['verify'] }
++  const pullImage = vi.fn(async (body: { requestId: string }) => ({ ...unknown, requestId: body.requestId }))
++  const operationByRequest = vi.fn(async (requestId: string) => ({ ...unknown, requestId }))
++  const verify = vi.fn().mockImplementation(async (_id: string, body: { requestId: string }) => ({ ...unknown, ...body, state: 'succeeded', stageLabel: '已完成' }))
++  if (retry) verify.mockRejectedValueOnce(new Error('暂时无法核实'))
++  const api = renderManager({ pullImage, operationByRequest, verify })
++  await userEvent.type(within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用'), 'redroid/redroid:13')
++  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
++  const requestId = pullImage.mock.calls[0][0].requestId
++  await userEvent.click(screen.getByRole('button', { name: '按原编号核实拉取' }))
++  await vi.waitFor(() => expect(verify).toHaveBeenCalledWith('pull-op', { requestId }))
++  if (retry) {
++    expect(await screen.findByRole('alert')).toHaveTextContent('暂时无法核实')
++    expect(within(screen.getByRole('form', { name: '拉取镜像' })).getByRole('status')).toHaveTextContent('needs_verification')
++    await userEvent.click(screen.getByRole('button', { name: '按原编号重试' }))
++  }
++  await vi.waitFor(() => expect(within(screen.getByRole('form', { name: '拉取镜像' })).getByRole('status')).toHaveTextContent('已完成'))
++  expect(verify).toHaveBeenCalledTimes(retry ? 2 : 1)
++  expect(verify).toHaveBeenLastCalledWith('pull-op', { requestId })
++  expect(operationByRequest).toHaveBeenLastCalledWith(requestId)
++  expect(pullImage).toHaveBeenCalledTimes(1)
++  expect(api.images).toHaveBeenCalledTimes(2)
++  expect(api.verifyImage).not.toHaveBeenCalled()
++  if (!retry) {
++    await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
++    expect(pullImage.mock.calls[1][0].requestId).not.toBe(requestId)
++  }
++})
++
++it('keeps the second pull identity after a lost response instead of verifying the previous success', async () => {
++  const unknown = (requestId: string) => ({ operationId: `op-${requestId}`, requestId, targetId: 'pull-target', action: 'pull', state: 'needs_verification', stageCode: 'verify', stageLabel: '待核实', attempt: 1, createdAt: '', allowedActions: ['verify'] })
++  const completed = new Set<string>()
++  const pullImage = vi.fn().mockImplementationOnce(async (body: { requestId: string }) => unknown(body.requestId)).mockRejectedValueOnce(new Error('第二次拉取响应丢失'))
++  const operationByRequest = vi.fn(async (requestId: string) => ({ ...unknown(requestId), ...(completed.has(requestId) ? { state: 'succeeded', stageLabel: '已完成' } : {}) }))
++  let failedVerification = false
++  const verify = vi.fn(async (_id: string, body: { requestId: string }) => {
++    if (completed.size && !failedVerification) { failedVerification = true; throw new Error('第二次核实暂不可用') }
++    completed.add(body.requestId)
++    return { ...unknown(body.requestId), state: 'succeeded', stageLabel: '已完成' }
++  })
++  renderManager({ pullImage, operationByRequest, verify })
++  await userEvent.type(within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用'), 'redroid/redroid:13')
++  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
++  const first = pullImage.mock.calls[0][0].requestId
++  await userEvent.click(screen.getByRole('button', { name: '按原编号核实拉取' }))
++  await vi.waitFor(() => expect(completed.has(first)).toBe(true))
++  await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
++  const second = pullImage.mock.calls[1][0].requestId
++  expect(second).not.toBe(first)
++  expect(await screen.findByRole('alert')).toHaveTextContent('第二次拉取响应丢失')
++  await userEvent.click(screen.getByRole('button', { name: '按原编号核实拉取' }))
++  expect(operationByRequest).toHaveBeenLastCalledWith(second)
++  expect(await screen.findByRole('alert')).toHaveTextContent('第二次核实暂不可用')
++  expect(verify).toHaveBeenLastCalledWith(`op-${second}`, { requestId: second })
++  await userEvent.click(screen.getByRole('button', { name: '按原编号重试' }))
++  await vi.waitFor(() => expect(completed.has(second)).toBe(true))
++  expect(operationByRequest).toHaveBeenLastCalledWith(second)
++  expect(verify).toHaveBeenLastCalledWith(`op-${second}`, { requestId: second })
++  expect(pullImage).toHaveBeenCalledTimes(2)
++})
+diff --git a/apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx b/apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx
+index 9e058504..01047c3f 100644
+--- a/apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx
++++ b/apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx
+@@ -1,6 +1,6 @@
+ import '@testing-library/jest-dom/vitest'
+ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
++import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+ import userEvent from '@testing-library/user-event'
+ import { afterEach, expect, it, vi } from 'vitest'
+ import { BulkActions } from '../components/BulkActions'
+@@ -185,7 +185,9 @@ it('cancels only pending batch items while admitted work remains observable', as
+   expect(bulkAction).toHaveBeenCalledWith('b', { requestId: expect.any(String), action: 'cancelPending' })
+   expect(screen.queryByRole('button', { name: '取消未开始项' })).not.toBeInTheDocument()
+   expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+-  expect(screen.getByLabelText('批次结果')).toHaveTextContent('结果未知')
++  expect(screen.getByLabelText('批次结果')).toHaveTextContent('running')
++  expect(screen.getByRole('list', { name: '批次逐项结果' })).toHaveTextContent('已准入，执行中')
++  expect(screen.getByRole('list', { name: '批次逐项结果' })).toHaveTextContent('已取消')
+   expect(bulk).toHaveBeenCalledTimes(1)
+ })
+ 
+@@ -414,3 +416,34 @@ it('shows readable source references and irreversible impact in the frozen previ
+   expect(screen.getByLabelText('清理预览')).toHaveTextContent('永久删除')
+   expect(screen.getByLabelText('清理预览')).not.toHaveTextContent('[object Object]')
+ })
++
++
++it('keeps every frozen batch item and its outcome visible after filtering all devices out', async () => {
++  const states = ['succeeded', 'waiting_capacity', 'waiting_device', 'needs_verification', 'failed', 'cancelled', 'accepted']
++  const devices = states.map((state, index) => ({ ...device, deviceId: `d${index}`, name: `目标${index}` }))
++  const items = devices.map((target, index) => ({ deviceId: target.deviceId, name: target.name, state: states[index], operationId: `op${index}`, retryOf: index === 4 ? 'earlier-op' : null, error: index === 1 ? '内存预算不足' : index === 4 ? '修订号已变化' : null }))
++  const bulk = vi.fn().mockResolvedValue({ id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items, createdAt: '' })
++  const view = render(<BulkActions api={{ bulk }} devices={devices} />)
++  for (const target of devices) fireEvent.click(screen.getByLabelText(target.name))
++  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
++  view.rerender(<BulkActions api={{ bulk }} devices={[]} />)
++  const rows = within(screen.getByRole('list', { name: '批次逐项结果' })).getAllByRole('listitem')
++  expect(rows).toHaveLength(7)
++  const labels = ['已完成', '等待容量', '等待设备', '结果未知，待核实', '失败', '已取消', '已准入，执行中']
++  rows.forEach((row, index) => { expect(row).toHaveTextContent(devices[index].name); expect(row).toHaveTextContent(labels[index]) })
++  expect(rows[1]).toHaveTextContent('内存预算不足')
++  expect(rows[4]).toHaveTextContent('修订号已变化')
++  expect(rows[4]).toHaveTextContent('earlier-op')
++  expect(bulk).toHaveBeenCalledTimes(1)
++})
++
++it('distinguishes admitted batch work from an unknown outcome without releasing the batch', async () => {
++  const bulk = vi.fn().mockResolvedValue({ id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ deviceId: 'd1', name: '设备一', state: 'accepted' }], createdAt: '' })
++  render(<BulkActions api={{ bulk }} devices={[device]} />)
++  fireEvent.click(screen.getByLabelText('设备一'))
++  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
++  expect(screen.getByLabelText('批次结果')).not.toHaveTextContent('结果未知')
++  expect(screen.queryByRole('button', { name: '核实批次' })).not.toBeInTheDocument()
++  expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
++  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
++})
