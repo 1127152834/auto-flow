@@ -26,16 +26,12 @@ import { isCurrentConsoleResponse, isVerifiedAppFailure, type Apps, type Console
 import { Action, Badge, Dot, Phone, Toggle } from './PrototypeControls'
 import { AndroidVideo } from './AndroidVideo'
 import { ApplicationsPanel } from './ApplicationsPanel'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 export type ConsoleProps = {
   device: AndroidDevice
   session: ConsoleSession | null
   api?: FleetApi
   deviceApi?: AndroidApi
   run?: DeviceRun
-  history?: DeviceRun[]
-  historyPage?: number
-  onHistoryPage?(page: number): void
   apps?: Apps
   image?: string
   thumbnail?: string
@@ -44,7 +40,6 @@ export type ConsoleProps = {
   onSession(s: ConsoleSession): void
   onOpen(): void
   onManage(action: string): void
-  onAllocate(): void
   onRefresh(): void
 }
 export function DeviceConsole(p: ConsoleProps) {
@@ -99,27 +94,35 @@ export function DeviceConsole(p: ConsoleProps) {
       }
       queue.current = queue.current
         .then(async () => {
-          if (failed.current) return
+          if (failed.current || !isCurrentConsoleResponse(sessionRef.current, session)) return
           const updated = await p.api!.input(session.id, payload)
-          p.onSession(updated)
+          if (isCurrentConsoleResponse(sessionRef.current, session)) p.onSession(updated)
         })
-        .catch((e) => inputError(e instanceof Error ? e.message : '操作结果未知，请核实设备'))
+        .catch((e) => {
+          if (isCurrentConsoleResponse(sessionRef.current, session)) inputError(e instanceof Error ? e.message : '操作结果未知，请核实设备')
+        })
     },
     [p.api, p.onSession, inputError],
   )
   const action = async (kind: SessionAction) => {
     if (!p.api || !p.session || busy) return
+    const issued = p.session
+    const current = () => sessionRef.current?.id === issued.id && sessionRef.current.deviceId === issued.deviceId &&
+      sessionRef.current.generation === issued.generation && sessionRef.current.state === issued.state &&
+      sessionRef.current.access === issued.access && sessionRef.current.endpoint === issued.endpoint
     setBusy(true)
     switching.current = true
     setError('')
     try {
       await queue.current
-      const s = await p.api.action(p.session, kind)
+      if (!current()) return
+      const s = await p.api.action(issued, kind)
+      if (!current()) return
       p.onSession(s)
       failed.current = false
       p.onRefresh()
     } catch (e) {
-      setError(e instanceof Error ? e.message : '控制权切换结果未知，请刷新核实')
+      if (current()) setError(e instanceof Error ? e.message : '控制权切换结果未知，请刷新核实')
     } finally {
       setBusy(false)
       switching.current = false
@@ -364,7 +367,7 @@ export function DeviceConsole(p: ConsoleProps) {
       </header>
       <div className="ad-detail-surface">
         <nav className="ad-detail-tabs" aria-label="设备详情">
-          {['控制台', '应用', '环境配置', '运行记录'].map((label) => (
+          {['控制台', '应用', '环境配置'].map((label) => (
             <button key={label} aria-current={tab === label ? 'page' : undefined} onClick={() => setTab(label)}>
               {label}
             </button>
@@ -608,17 +611,6 @@ export function DeviceConsole(p: ConsoleProps) {
                     </section>
                     {application}
                     {information}
-                    <section className="ad-workflow-section">
-                      <h3>工作流</h3>
-                      <p>
-                        <Info size={18} />
-                        手动控制期间不可分配{' '}
-                        <Action disabled={!readonly} onClick={p.onAllocate}>
-                          分配给工作流
-                        </Action>
-                      </p>
-                      <small>结束控制后恢复可分配。</small>
-                    </section>
                   </>
                 )}
               </aside>
@@ -629,7 +621,7 @@ export function DeviceConsole(p: ConsoleProps) {
             {application}
             {p.api && <ApplicationsPanel api={p.api} apps={p.apps} session={p.session} onSession={p.onSession} onRefresh={p.onRefresh} />}
           </section>
-        ) : tab === '环境配置' ? (
+        ) : (
           <section className="ad-secondary">
             {information}
             <dl>
@@ -648,49 +640,6 @@ export function DeviceConsole(p: ConsoleProps) {
               ))}
             </dl>
             <Action onClick={() => p.onManage('copy')}>复制配置创建新实例</Action>
-          </section>
-        ) : (
-          <section className="ad-secondary">
-            <h2>运行记录</h2>
-            <TableScroll label="设备运行记录">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>工作流</TableHead>
-                  <TableHead>状态</TableHead>
-                  <TableHead>开始时间</TableHead>
-                  <TableHead>进度</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {p.history?.map((r) => (
-                  <TableRow key={r.runId}>
-                    <TableCell>{r.workflowName}</TableCell>
-                    <TableCell>{r.state}</TableCell>
-                    <TableCell>{new Date(r.startedAt).toLocaleString()}</TableCell>
-                    <TableCell>
-                      {r.currentStep}/{r.totalSteps}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            </TableScroll>
-            {!p.history?.length && <p>此页没有运行记录。</p>}
-            {p.onHistoryPage && (
-              <div className="ad-history-pages">
-                <Action disabled={!p.historyPage} onClick={() => p.onHistoryPage?.((p.historyPage ?? 0) - 1)}>
-                  上一页
-                </Action>
-                <span>第 {(p.historyPage ?? 0) + 1} 页</span>
-                <Action
-                  disabled={(p.history?.length ?? 0) < 50}
-                  onClick={() => p.onHistoryPage?.((p.historyPage ?? 0) + 1)}
-                >
-                  下一页
-                </Action>
-              </div>
-            )}
           </section>
         )}
       </div>

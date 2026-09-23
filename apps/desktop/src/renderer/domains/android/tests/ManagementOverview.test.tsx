@@ -61,6 +61,16 @@ it('does not offer to open a stopped instance', async () => {
   expect(await screen.findByRole('button', { name: '打开已停止设备' })).toBeDisabled()
 })
 
+it('shows the owned manual session in the list with return and explicit end actions', async () => {
+  const onOpen = vi.fn(), onEndControl = vi.fn()
+  const api = { devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '原生窗口设备', runtimeState: 'ready', owner: { kind: 'manualSession', id: 'session-1' }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['return_to_console', 'end_control'], blockedReasons: {} }] })) } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onOpen={onOpen} onEndControl={onEndControl} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '查看原生窗口设备控制会话' }))
+  expect(onOpen).toHaveBeenCalledWith('d')
+  await userEvent.click(screen.getByRole('button', { name: '结束原生窗口设备控制会话' }))
+  expect(onEndControl).toHaveBeenCalledWith('d', 'session-1')
+})
+
 it('renders a readonly preview card for ready management devices when preview API is provided', async () => {
   const api = {
     devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'ready', revision: 4, name: '就绪预览', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: { width: 720, height: 1280 }, latestOperation: null, allowedActions: [], blockedReasons: {} }] })),

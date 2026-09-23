@@ -8,8 +8,8 @@
 | T02 状态与动作策略 | `passed` | `management_models.py`、`management_rules.py`；unknown/stale、retained、delete 状态测试；前端 `ManagementState.test.ts`。 |
 | T03 环境诊断 | `passed` | `test_android_management_environment.py`、`test_android_runtime.py`；逐项 platform/ADB/Lima/SSH/scrcpy/VM/Docker/binder/images/capacity/disk 检查；真实 `environment()` 返回 `available: true`。 |
 | T04 持久操作与迁移 | `passed` | `test_android_management_operations.py` 与契约测试覆盖幂等、摘要冲突、状态栅栏、needs_verification、compact；新增 `transition_with_device` 以同一 SQLAlchemy 事务提交操作状态和设备投影；迁移 head 为 `am01_management_operations`，父节点为当前 `0019_recording_commands`。旧 1000 条回执上限已移除，Android 聚焦集合 `235 passed, 2 warnings`。 |
-| T05 控制会话 | `not_run`（整任务） | ConsoleController、heartbeat 和 generation 身份测试存在；[原生 scrcpy 手动/只读窗口进程](2026-09-23-persistent-metadata-verification.md)已真实验证且关闭不停止实例。人工输入/切换写端、30 秒失联、重启后会话和中断恢复没有完整真实证据。 |
-| T06 管理首页 | `not_run`（整任务） | AndroidPage/ManagementOverview 现使用 management devices 快照，不再轮询旧 `/api/v1/android/devices`；前端 Android 聚焦 `13 files, 81 passed` 是早期快照。计划指定的长名称/缩放/键盘/断线/保留数据完整流程无证据。 |
+| T05 控制会话 | `partial` | ConsoleController、heartbeat 和 generation 身份测试存在；[原生 scrcpy 手动/只读窗口进程](2026-09-23-persistent-metadata-verification.md)已真实验证且关闭不停止实例。[本轮页面竞态](2026-09-23-control-session-verification.md)补齐迟到响应、旧输入、路由守卫、原生归属及回收核实的 RED→GREEN；人工输入/切换写端、30 秒失联、完整重启和中断恢复没有真实端到端证据。 |
+| T06 管理首页 | `partial` | AndroidPage/ManagementOverview 使用 management devices 快照，不再轮询旧 `/api/v1/android/devices` 或详情 `/runs`；[本轮详情测试](2026-09-23-control-session-verification.md)确认退役分配/运行记录入口移除，原生会话的归属/查看/显式结束可见。管理操作历史可见列表、长名称/缩放/键盘/断线/保留数据完整流程尚缺证据或实现。 |
 | T07 AM1 真实链 | `not_run`（整任务） | smoke 参数保护 `3 passed`；guarded smoke 真实完成停止、启动、移除运行环境和清理独立数据，应用清单 `102/102`、截图 `553476` bytes；测试 APK、中文输入、AutoFlow 重启、中断恢复仍未执行，原生窗口进程另有真实证据。 |
 
 ## 已执行命令摘要

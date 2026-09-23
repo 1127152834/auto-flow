@@ -20,10 +20,11 @@ type Props = {
   instanceId?: string
   onCreate?(): void
   onOpen?(deviceId: string): void
+  onEndControl?(deviceId: string, sessionId: string): void
   onManage?(deviceId: string, action: string, operationId?: string, requestId?: string): void
 }
 
-export function ManagementOverview({ api, previewApi, instanceId = 'default', onCreate, onOpen, onManage }: Props) {
+export function ManagementOverview({ api, previewApi, instanceId = 'default', onCreate, onOpen, onEndControl, onManage }: Props) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [template, setTemplate] = useState('')
@@ -74,7 +75,8 @@ export function ManagementOverview({ api, previewApi, instanceId = 'default', on
     const statusLabel = device.restoreState === 'pending' ? '恢复数据待核实' : runtimeLabels[device.runtimeState]
     const blocked = [...new Set(Object.values(device.blockedReasons ?? {}).filter(Boolean))]
     const operational = !staleSnapshot && !device.stale && device.runtimeState !== 'unknown'
-    const openable = operational && device.runtimeState === 'ready' && device.allowedActions.includes('open')
+    const ownedSession = operational && device.owner.kind === 'manualSession' && Boolean(device.owner.id)
+    const openable = operational && device.runtimeState === 'ready' && (device.allowedActions.includes('open') || ownedSession && device.allowedActions.includes('return_to_console'))
     const operationId = typeof device.latestOperation?.operationId === 'string' ? device.latestOperation.operationId : typeof device.latestOperation?.operation_id === 'string' ? device.latestOperation.operation_id : typeof device.latestOperation?.id === 'string' ? device.latestOperation.id : undefined
     const requestId = typeof device.latestOperation?.requestId === 'string' ? device.latestOperation.requestId : typeof device.latestOperation?.request_id === 'string' ? device.latestOperation.request_id : undefined
     const spec = device.specSnapshot ?? {}
@@ -105,6 +107,6 @@ export function ManagementOverview({ api, previewApi, instanceId = 'default', on
       locale: 'zh-CN',
       timezone: 'Asia/Shanghai',
     } as unknown as AndroidDevice
-    return <article key={device.deviceId} className="rounded-control border border-line p-4"><div className="flex items-start justify-between gap-3"><strong className="break-words">{device.name}</strong><span className="text-xs text-muted">{statusLabel}</span></div><p className="mt-2 text-xs text-muted">修订 {device.revision} · {device.stale ? `状态陈旧 · ${statusLabel}` : staleSnapshot ? `快照陈旧 · ${statusLabel}` : '快照有效'}</p>{previewApi && <DevicePreview device={previewDevice} api={previewApi} revision={device.revision} enabled={operational && device.runtimeState === 'ready'} />}{blocked.length > 0 && <div className="mt-2 rounded-control bg-surface-subtle p-2 text-xs" role="status"><strong>已阻塞</strong>{blocked.map(reason => <p key={reason} className="mt-1">阻塞原因：{reason}</p>)}</div>}{device.allowedActions.length ? <p className="mt-2 text-xs">可操作：{device.allowedActions.join('、')}</p> : <p className="mt-2 text-xs text-muted">当前无可用操作</p>}<div className="mt-3 flex flex-wrap gap-2">{onOpen && <button type="button" disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={`打开${device.name}`}>打开{device.name}</button>}{onManage && device.allowedActions.filter(action => ['start', 'stop', 'restart', 'delete', 'verify'].includes(action)).map(action => <button type="button" key={action} disabled={action !== 'verify' && !operational} onClick={() => onManage(device.deviceId, action, operationId, requestId)}>{action === 'verify' ? '核实状态' : action === 'start' ? '启动设备' : action === 'stop' ? '停止设备' : action === 'restart' ? '重启设备' : '删除实例'}</button>)}</div></article>
+    return <article key={device.deviceId} className="rounded-control border border-line p-4"><div className="flex items-start justify-between gap-3"><strong className="break-words">{device.name}</strong><span className="text-xs text-muted">{statusLabel}</span></div><p className="mt-2 text-xs text-muted">修订 {device.revision} · {device.stale ? `状态陈旧 · ${statusLabel}` : staleSnapshot ? `快照陈旧 · ${statusLabel}` : '快照有效'}</p>{ownedSession && <p className="mt-2 text-xs">手动控制会话占用中</p>}{previewApi && <DevicePreview device={previewDevice} api={previewApi} revision={device.revision} enabled={operational && device.runtimeState === 'ready'} />}{blocked.length > 0 && <div className="mt-2 rounded-control bg-surface-subtle p-2 text-xs" role="status"><strong>已阻塞</strong>{blocked.map(reason => <p key={reason} className="mt-1">阻塞原因：{reason}</p>)}</div>}{device.allowedActions.length ? <p className="mt-2 text-xs">可操作：{device.allowedActions.join('、')}</p> : <p className="mt-2 text-xs text-muted">当前无可用操作</p>}<div className="mt-3 flex flex-wrap gap-2">{onOpen && <button type="button" disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={ownedSession ? `查看${device.name}控制会话` : `打开${device.name}`}>{ownedSession ? '查看控制会话' : `打开${device.name}`}</button>}{onEndControl && ownedSession && device.owner.id && device.allowedActions.includes('end_control') && <button type="button" onClick={() => onEndControl(device.deviceId, device.owner.id!)} aria-label={`结束${device.name}控制会话`}>结束控制</button>}{onManage && device.allowedActions.filter(action => ['start', 'stop', 'restart', 'delete', 'verify'].includes(action)).map(action => <button type="button" key={action} disabled={action !== 'verify' && !operational} onClick={() => onManage(device.deviceId, action, operationId, requestId)}>{action === 'verify' ? '核实状态' : action === 'start' ? '启动设备' : action === 'stop' ? '停止设备' : action === 'restart' ? '重启设备' : '删除实例'}</button>)}</div></article>
   })}</div>{!visible.length && <p className="mt-4 text-sm text-muted">没有匹配的实例。</p>}{visible.length > 0 && <div className="mt-5"><BulkActions api={api} devices={visible} /></div>}</section>
 }

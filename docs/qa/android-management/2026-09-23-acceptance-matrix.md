@@ -5,12 +5,12 @@
 
 | 验收 | 状态 | 已有证据与缺口 |
 | --- | --- | --- |
-| AM-AC01 | `partial` | Android 管理页已停止旧设备列表轮询及工作流主入口，Android UI 自动化通过；其他模块导航与完整真机 UI 链未专项验收。 |
+| AM-AC01 | `partial` | Android 管理页已停止旧设备列表和详情 `/runs` 轮询，移除退役分配/运行记录入口；[详情测试](2026-09-23-control-session-verification.md)覆盖受控顶栏导航，其他模块及完整真机 UI 链未专项验收。 |
 | AM-AC02 | `passed`（自动化） | 环境缺失/超时/不支持的只读契约测试；真实 Mac 环境 `available=true`，见 [AM1](am1-verification.md)。 |
 | AM-AC03 | `passed`（自动化） | 状态规则和前端状态测试覆盖 stop/delete/recover/unknown，见 [AM1](am1-verification.md)。 |
 | AM-AC04 | `passed`（自动化） | 持久操作幂等、冲突、generation、紧凑回执与同事务设备投影测试，见 [AM1](am1-verification.md)。 |
-| AM-AC05 | `partial` | 输入代次与旧队列自动化存在；打开→输入→返回→再输入的真人/真实窗口链未验收。 |
-| AM-AC06 | `partial` | 手动/只读原生 scrcpy 窗口进程保持存活、关闭不停止 Android，见 [原生窗口实测](2026-09-23-persistent-metadata-verification.md)；切换写端未实测。 |
+| AM-AC05 | `partial` | [本轮 RED→GREEN](2026-09-23-control-session-verification.md)覆盖迟到会话、旧输入、结束未知守卫、服务端回收后双重核实；打开→输入→返回→再输入与 30 秒失联的真实链未验收。 |
+| AM-AC06 | `partial` | 手动/只读原生 scrcpy 窗口进程保持存活、关闭不停止 Android，见 [原生窗口实测](2026-09-23-persistent-metadata-verification.md)；列表归属、显式结束与第二台不隐式结束已有前端自动化，切换写端未实测。 |
 | AM-AC07 | `passed`（自动化） | 旧 generation、重复 sequence、跨工作区 heartbeat 拒绝测试，见 [AM1](am1-verification.md)。 |
 | AM-AC08 | `partial` | 真实停止/启动和新卷恢复数据读回成功；完整保留卷恢复与缺卷错误路径尚需同链验收。 |
 | AM-AC09 | `partial` | 双实例不同 ADB serial、真实自建资源标签清理及丢响应 `needs_verification` 证据存在；同场景删除一台仍保留另一台和外部卷的完整真机链未验收。 |

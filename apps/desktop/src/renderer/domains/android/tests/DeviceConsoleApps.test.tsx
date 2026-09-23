@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApiClientError } from '../../../shared/api/client'
@@ -12,7 +12,7 @@ afterEach(cleanup)
 function props(api: Partial<FleetApi>): ConsoleProps {
   return {
     device: devices[0], session: fixtureSession(true), api: api as FleetApi, image: 'fixture.png',
-    onBack: vi.fn(), onSession: vi.fn(), onOpen: vi.fn(), onManage: vi.fn(), onAllocate: vi.fn(), onRefresh: vi.fn(),
+    onBack: vi.fn(), onSession: vi.fn(), onOpen: vi.fn(), onManage: vi.fn(), onRefresh: vi.fn(),
   }
 }
 
@@ -67,5 +67,20 @@ it('ignores an APK installation response after the session closes', async () => 
   await userEvent.upload(view.container.querySelector<HTMLInputElement>('input[type=file]')!, new File(['APK'], 'test.apk'))
   view.rerender(<DeviceConsole {...initial} session={{ ...initial.session!, state: 'closed' }} />)
   await act(async () => { finish(initial.session!) })
+  expect(initial.onSession).not.toHaveBeenCalled()
+})
+
+it('does not send queued text or publish an old input response after the session closes', async () => {
+  let finish!: (session: ReturnType<typeof fixtureSession>) => void
+  const first = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finish = resolve })
+  const api = { input: vi.fn().mockReturnValueOnce(first).mockResolvedValue(fixtureSession(true)) }
+  const initial = { ...props(api), initialText: '中文' }
+  const view = render(<DeviceConsole {...initial} />)
+  await userEvent.click(screen.getByRole('button', { name: '发送到设备' }))
+  await waitFor(() => expect(api.input).toHaveBeenCalledTimes(1))
+  await userEvent.click(screen.getByRole('button', { name: '发送到设备' }))
+  view.rerender(<DeviceConsole {...initial} session={null} />)
+  await act(async () => { finish(initial.session!); await first })
+  expect(api.input).toHaveBeenCalledTimes(1)
   expect(initial.onSession).not.toHaveBeenCalled()
 })

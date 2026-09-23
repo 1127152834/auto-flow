@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
@@ -8,14 +8,16 @@ import { ResourceBoard } from '../components/ResourceBoard'
 import { CreateInstances } from '../components/CreateInstances'
 import { DeviceConsole } from '../components/DeviceConsole'
 import type { BatchRequest } from '../fleet-api'
-const mocks = vi.hoisted(() => ({ client: { request: vi.fn(), stream: vi.fn() } }))
-vi.mock('../../../app/ApiProvider', () => ({ useApi: () => ({ client: mocks.client, instanceId: 'instance' }) }))
+import { ApiClientError } from '../../../shared/api/client'
+const mocks = vi.hoisted(() => ({ instanceId: 'instance', client: { request: vi.fn(), stream: vi.fn() } }))
+vi.mock('../../../app/ApiProvider', () => ({ useApi: () => ({ client: mocks.client, instanceId: mocks.instanceId }) }))
 vi.mock('../components/AndroidVideo', () => ({ AndroidVideo: () => <canvas aria-label="安卓触控画面" /> }))
 import { AndroidPage } from '../pages/AndroidPage'
 const noop = vi.fn()
 afterEach(cleanup)
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.instanceId = 'instance'
   mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
     if (path.endsWith('/cleanup/resources')) return { items: [] }
     if (path === '/api/v1/android/management/devices?limit=50') return { items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['open', 'stop'], blockedReasons: {} }], total: 1, nextCursor: null }
@@ -43,6 +45,259 @@ it('ends the control session before returning to the management list and stops h
   const heartbeatCount = mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST').length
   await new Promise((resolve) => setTimeout(resolve, 30))
   expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST')).toHaveLength(heartbeatCount)
+})
+
+it('ends a session whose open response arrives after returning to the management list', async () => {
+  let resolveOpen!: (value: ReturnType<typeof fixtureSession>) => void
+  const opening = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { resolveOpen = resolve })
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) =>
+    path.endsWith('/sessions') && init?.method === 'POST' ? opening : fallback(path, init))
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST')).toBe(true))
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  await act(async () => { resolveOpen(fixtureSession(true)); await opening })
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
+  expect(screen.queryByRole('heading', { name: '手动控制中' })).not.toBeInTheDocument()
+  await screen.findByText('实例管理')
+})
+
+it('keeps a late session visible for recovery when ending it is not confirmed', async () => {
+  let resolveOpen!: (value: ReturnType<typeof fixtureSession>) => void
+  const opening = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { resolveOpen = resolve })
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) => {
+    if (path.endsWith('/sessions') && init?.method === 'POST') return opening
+    if (path.endsWith('/actions')) throw new Error('end lost')
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path.endsWith('/sessions'))).toBe(true))
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  await act(async () => { resolveOpen(fixtureSession(true)); await opening })
+  await screen.findByText('控制会话状态未知', { selector: 'strong' })
+  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /返回资源看板/ })).toBeInTheDocument()
+})
+
+it('lets the user leave after a confirmed busy rejection creates no session', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) => {
+    if (path.endsWith('/sessions') && init?.method === 'POST')
+      throw new ApiClientError('控制台已占用', 409, 'ANDROID_CONSOLE_BUSY')
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(screen.getByText('控制台已占用')).toBeInTheDocument())
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  await screen.findByText('实例管理')
+})
+
+it('ends a late session after the Android page is unmounted', async () => {
+  let resolveOpen!: (value: ReturnType<typeof fixtureSession>) => void
+  const opening = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { resolveOpen = resolve })
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) =>
+    path.endsWith('/sessions') && init?.method === 'POST' ? opening : fallback(path, init))
+  const view = render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path.endsWith('/sessions'))).toBe(true))
+  view.unmount()
+  await act(async () => { resolveOpen(fixtureSession(true)); await opening })
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
+})
+
+it('ends an already connected session when navigating away from Android', async () => {
+  const view = render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  view.unmount()
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
+})
+
+it('blocks route navigation when ending embedded control is unconfirmed', async () => {
+  const registerLeaveGuard = vi.fn()
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { body?: { action?: string } }) => {
+    if (path.endsWith('/actions') && init?.body?.action === 'end') throw new Error('end lost')
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage registerLeaveGuard={registerLeaveGuard} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  const guard = registerLeaveGuard.mock.lastCall?.[0]
+  expect(typeof guard).toBe('function')
+  expect(await guard()).toBe(false)
+  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  await waitFor(() => expect(document.querySelector('.ad-console-status')).toHaveTextContent('控制会话状态未知'))
+})
+
+it('leaves after server lease expiry only when the session and device owner both confirm release', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { body?: { action?: string } }) => {
+    if (path.endsWith('/actions') && init?.body?.action === 'end') throw new ApiClientError('会话已回收', 409, 'ANDROID_SESSION_STALE')
+    if (path === '/api/v1/android/sessions/fixture' && !init?.body) return Promise.resolve({ ...fixtureSession(true), state: 'closed' })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  await screen.findByText('实例管理')
+  expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture')
+})
+
+it('keeps control unknown when the session says closed but ownership is still held', async () => {
+  let endAttempted = false
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { body?: { action?: string } }) => {
+    if (path.endsWith('/actions') && init?.body?.action === 'end') { endAttempted = true; throw new ApiClientError('会话已回收', 409, 'ANDROID_SESSION_STALE') }
+    if (path === '/api/v1/android/sessions/fixture' && !init?.body) return Promise.resolve({ ...fixtureSession(true), state: 'closed' })
+    if (endAttempted && path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [{ deviceId: devices[0].deviceId, revision: 1, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'manualSession', id: 'fixture' }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['return_to_console', 'end_control'], blockedReasons: {} }], total: 1, nextCursor: null })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture'))
+  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(document.querySelector('.ad-console-status')).toHaveTextContent('控制会话状态未知')
+})
+
+it('keeps an explicitly opened native window when navigating away', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { body?: { action?: string } }) => {
+    if (path.endsWith('/actions') && init?.body?.action === 'native')
+      return Promise.resolve({ ...fixtureSession(true), endpoint: 'native', generation: 2 })
+    return fallback(path, init)
+  })
+  const view = render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '独立 Mac 窗口' }))
+  await screen.findByText('正在独立 Mac 窗口操作')
+  view.unmount()
+  await act(async () => { await Promise.resolve() })
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/actions') && init?.body?.action === 'end')).toHaveLength(0)
+})
+
+it('recovers an owned native session from the management snapshot after route remount', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string; body?: { action?: string } }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [{ deviceId: devices[0].deviceId, revision: 2, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'manualSession', id: 'fixture' }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['return_to_console', 'end_control'], blockedReasons: {} }], total: 1, nextCursor: null })
+    if (path === '/api/v1/android/sessions/fixture' && !init?.method) return Promise.resolve({ ...fixtureSession(true), endpoint: 'native', generation: 2 })
+    return fallback(path, init)
+  })
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const first = render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+  await screen.findByText('实例管理')
+  first.unmount()
+  render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备 01控制会话' }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture'))
+  await screen.findByText('正在独立 Mac 窗口操作')
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST')).toHaveLength(0)
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  await screen.findByText('实例管理')
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/actions') && init?.body?.action === 'end')).toHaveLength(0)
+})
+
+it('ends a persisted native session from the management list only after an explicit click', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string; body?: { action?: string } }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [{ deviceId: devices[0].deviceId, revision: 2, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'manualSession', id: 'fixture' }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['return_to_console', 'end_control'], blockedReasons: {} }], total: 1, nextCursor: null })
+    if (path === '/api/v1/android/sessions/fixture' && !init?.method) return Promise.resolve({ ...fixtureSession(true), endpoint: 'native', generation: 2 })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await screen.findByRole('button', { name: '结束测试设备 01控制会话' })
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/actions') && init?.body?.action === 'end')).toHaveLength(0)
+  await userEvent.click(screen.getByRole('button', { name: '结束测试设备 01控制会话' }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
+})
+
+it('opening a second device does not close another device native window', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string; body?: { action?: string; deviceId?: string } }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: devices.slice(0, 2).map(device => ({ deviceId: device.deviceId, revision: device.generation, name: device.name, runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: device, latestOperation: null, allowedActions: ['open'], blockedReasons: {} })), total: 2, nextCursor: null })
+    if (path.endsWith('/sessions') && init?.method === 'POST' && init.body?.deviceId === devices[1].deviceId) return Promise.resolve({ ...fixtureSession(true), id: 'fixture-b', deviceId: devices[1].deviceId })
+    if (path.endsWith('/actions') && init?.body?.action === 'native') return Promise.resolve({ ...fixtureSession(true), endpoint: 'native', generation: 2 })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '独立 Mac 窗口' }))
+  await screen.findByText('正在独立 Mac 窗口操作')
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 02/ }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path, init]) => path.endsWith('/sessions') && init?.body?.deviceId === devices[1].deviceId)).toBe(true))
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/actions') && init?.body?.action === 'end')).toHaveLength(0)
+})
+
+it('does not restore connected control from a late native response after end became unknown', async () => {
+  let resolveNative!: (value: ReturnType<typeof fixtureSession>) => void
+  const native = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { resolveNative = resolve })
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { body?: { action?: string } }) => {
+    if (path.endsWith('/actions') && init?.body?.action === 'native') return native
+    if (path.endsWith('/actions') && init?.body?.action === 'end') throw new Error('end unknown')
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: '更多设备操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '独立 Mac 窗口' }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path, init]) => path.endsWith('/actions') && init?.body?.action === 'native')).toBe(true))
+  await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
+  await waitFor(() => expect(document.querySelector('.ad-console-status')).toHaveTextContent('控制会话状态未知'))
+  await act(async () => { resolveNative({ ...fixtureSession(true), endpoint: 'native', generation: 2 }); await native })
+  expect(document.querySelector('.ad-console-status')).toHaveTextContent('控制会话状态未知')
+  expect(document.querySelector('.ad-console-status')).not.toHaveTextContent('独立窗口')
+})
+
+it('does not adopt an old backend session after the instance changes', async () => {
+  let resolveOpen!: (value: ReturnType<typeof fixtureSession>) => void
+  const opening = new Promise<ReturnType<typeof fixtureSession>>((resolve) => { resolveOpen = resolve })
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) =>
+    path.endsWith('/sessions') && init?.method === 'POST' ? opening : fallback(path, init))
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const view = render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path.endsWith('/sessions'))).toBe(true))
+  mocks.instanceId = 'replacement'
+  view.rerender(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+  await act(async () => { resolveOpen(fixtureSession(true)); await opening })
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
+  expect(screen.queryByRole('heading', { name: '手动控制中' })).not.toBeInTheDocument()
+})
+
+it('ends a connected session before opening the copy form', async () => {
+  let resolveEnd!: () => void
+  const ending = new Promise<void>((resolve) => { resolveEnd = resolve })
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path.endsWith('/actions')) { await ending; return { ...fixtureSession(true), state: 'closed' } }
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  await userEvent.click(screen.getByRole('button', { name: '复制配置' }))
+  expect(screen.queryByRole('button', { name: '创建并启动' })).not.toBeInTheDocument()
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
+  resolveEnd()
+  await screen.findByRole('button', { name: '创建并启动' })
 })
 
 it('waits for a confirmed session end before returning to the management list', async () => {
@@ -92,6 +347,15 @@ it('management home does not request retired workflow, allocation, or run endpoi
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalled())
   expect(mocks.client.request.mock.calls.map(([path]) => path).filter((path) => /workflows|allocations|\/runs/.test(path))).toEqual([])
   expect(screen.queryByRole('button', { name: '分配给工作流' })).not.toBeInTheDocument()
+})
+
+it('manual device details do not offer retired workflow allocation', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  expect(screen.queryByRole('button', { name: '分配给工作流' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '运行记录' })).not.toBeInTheDocument()
+  expect(mocks.client.request.mock.calls.map(([path]) => path).filter((path) => /\/runs(?:\?|$)/.test(path))).toEqual([])
 })
 
 it('management home does not poll the retired device list endpoint', async () => {
@@ -201,7 +465,7 @@ it('clears source copy mode when selecting another template', async () => {
   expect(submit.mock.calls[0][0]).toMatchObject({ profileId: profile.id, sourceDeviceId: undefined, profileRevision: profile.revision })
 })
 it('readonly console never enables navigation or installation during workflow ownership', async () => {
-  render(<DeviceConsole device={devices[2]} session={fixtureSession(false)} run={runs[devices[2].deviceId]} image={images[devices[2].deviceId]} onBack={noop} onSession={noop} onOpen={noop} onManage={noop} onAllocate={noop} onRefresh={noop} />)
+  render(<DeviceConsole device={devices[2]} session={fixtureSession(false)} run={runs[devices[2].deviceId]} image={images[devices[2].deviceId]} onBack={noop} onSession={noop} onOpen={noop} onManage={noop} onRefresh={noop} />)
   expect(screen.getByRole('button', { name: '返回' })).toBeDisabled()
   expect(screen.getByRole('button', { name: '暂停并接管' })).toBeVisible()
   await userEvent.click(screen.getByRole('button', { name: '应用' }))

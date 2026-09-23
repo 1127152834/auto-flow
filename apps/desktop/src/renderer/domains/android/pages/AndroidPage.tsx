@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../../app/ApiProvider'
+import { ApiClientError } from '../../../shared/api/client'
 import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
 import { fleetApi, type ConsoleSession, type Profile } from '../fleet-api'
 import { androidManagementApi, type ManagementDevicePage } from '../management-api'
@@ -58,7 +59,7 @@ function managementDeviceToLegacy(device: ManagementDevicePage['items'][number])
   }
 }
 
-export function AndroidPage({ connected = true }: { connected?: boolean }) {
+export function AndroidPage({ connected = true, registerLeaveGuard }: { connected?: boolean; registerLeaveGuard?: (guard: (() => Promise<boolean>) | null) => void }) {
   const { client, instanceId } = useApi(),
     api = useMemo(() => androidApi(client), [client]),
     managementApi = useMemo(() => androidManagementApi(client), [client]),
@@ -76,16 +77,38 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
   const [management, setManagement] = useState<{ device: AndroidDevice; action: string; operationId?: string; requestId?: string } | null>(null),
     [name, setName] = useState(''),
     [deleteData, setDeleteData] = useState(false)
-  const [historyPage, setHistoryPage] = useState(0)
-  const detailHistory = useQuery({
-    queryKey: ['android', instanceId, 'device-history-page', selected, historyPage],
-    queryFn: () => fleet.history(selected!, historyPage * 50),
-    enabled: Boolean(connected && selected && page === 'detail'),
-    refetchInterval: 3000,
-  })
   const pendingManagement = useRef<DeviceCommand | null>(null),
     pendingOpen = useRef<{ deviceId: string; requestId: string } | null>(null),
-    endingSession = useRef<string | null>(null)
+    openingEpoch = useRef(0),
+    endingSession = useRef<string | null>(null),
+    pendingLeave = useRef<{ page: 'board' | 'create'; source?: AndroidDevice } | null>(null),
+    backend = useRef({ client, instanceId }),
+    active = useRef(true),
+    currentSession = useRef<ConsoleSession | null>(null),
+    leaveGuard = useRef<() => Promise<boolean>>(async () => true)
+  useEffect(() => { currentSession.current = session }, [session])
+  useEffect(() => {
+    if (backend.current.client !== client || backend.current.instanceId !== instanceId) {
+      backend.current = { client, instanceId }
+      pendingOpen.current = null
+      pendingLeave.current = null
+      currentSession.current = null
+      setSession(null)
+      setSelected(null)
+      setPage('board')
+      setBusy(false)
+      setError('本机服务已切换，旧控制会话需重新核实')
+    }
+    active.current = true
+    return () => {
+      active.current = false
+      openingEpoch.current += 1
+      const orphan = currentSession.current
+      if (orphan && orphan.endpoint === 'embedded' && orphan.state !== 'closed' && endingSession.current !== orphan.id)
+        void Promise.resolve().then(() => fleet.action(orphan, 'end')).catch(() => { /* The server lease still expires if navigation loses the response. */ })
+    }
+  }, [client, instanceId, fleet])
+  const isCurrentBackend = () => active.current && backend.current.client === client && backend.current.instanceId === instanceId
   const managementDevices = useQuery({
     queryKey: ['android-management', instanceId, 'devices'],
     queryFn: async () => {
@@ -128,10 +151,6 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     refetchInterval: 5000,
   })
   useEffect(() => {
-    void queryClient.removeQueries({ queryKey: ['android-management'] })
-    void queryClient.removeQueries({ queryKey: ['android', 'profiles'] })
-  }, [instanceId, queryClient])
-  useEffect(() => {
     if (sessionStatus.data)
       setSession((previous) =>
         previous &&
@@ -168,78 +187,182 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     setError('')
     try {
       await fn()
-      refresh()
+      if (isCurrentBackend()) refresh()
     } catch (e) {
-      setError(e instanceof Error ? e.message : '结果尚未确认，请刷新核实')
+      if (isCurrentBackend()) setError(e instanceof Error ? e.message : '结果尚未确认，请刷新核实')
     } finally {
-      setBusy(false)
+      if (isCurrentBackend()) setBusy(false)
+    }
+  }
+  const finishLeave = () => {
+    const target = pendingLeave.current
+    if (!target || !isCurrentBackend()) return
+    pendingLeave.current = null
+    currentSession.current = null
+    setSession(null)
+    if (target.page === 'create') setSource(target.source)
+    setPage(target.page)
+  }
+  const sessionReleased = async (candidate: ConsoleSession) => {
+    let closed = false
+    try {
+      const observed = await fleet.readSession(candidate.id)
+      closed = observed.deviceId === candidate.deviceId && observed.state === 'closed'
+    } catch (cause) {
+      closed = cause instanceof ApiClientError && cause.status === 410 && cause.code === 'ANDROID_SESSION_EXPIRED'
+    }
+    if (!closed) return false
+    try {
+      const snapshot = await managementDevices.refetch()
+      const record = snapshot.data?.items.find((item) => item.deviceId === candidate.deviceId)
+      return Boolean(snapshot.isSuccess && record && !record.stale && record.runtimeState !== 'unknown' &&
+        record.owner.kind !== 'unknown' && record.owner.id !== candidate.id &&
+        (record.owner.kind !== 'manualSession' || record.owner.id))
+    } catch {
+      return false
     }
   }
   const open = async (d: AndroidDevice) => {
+    if (busy) {
+      setError('当前操作尚未完成，请等待结果后再打开设备')
+      return
+    }
     if (d.androidStatus !== 'ready') {
       setError('设备尚未就绪，不能打开控制台')
       return
     }
-    if (selected !== d.deviceId) setHistoryPage(0)
+    const epoch = ++openingEpoch.current
+    pendingLeave.current = null
     setSelected(d.deviceId)
     setPage('detail')
     if (session?.deviceId === d.deviceId && session.state === 'connected') {
       await sessionStatus.refetch()
       return
     }
+    const owner = managementDevices.data?.items.find((item) => item.deviceId === d.deviceId)?.owner
+    if (owner?.kind === 'manualSession' && owner.id) {
+      await perform(async () => {
+        const existing = await fleet.readSession(owner.id!)
+        if (existing.deviceId !== d.deviceId) throw new Error('控制会话与设备不匹配，请刷新列表核实')
+        if (epoch !== openingEpoch.current) {
+          if (existing.endpoint === 'embedded' && existing.state !== 'closed') await fleet.action(existing, 'end')
+          return
+        }
+        currentSession.current = existing
+        setSession(existing)
+      })
+      return
+    }
     await perform(async () => {
-      if (session && session.state !== 'closed') await fleet.action(session, 'end')
+      if (session && session.state !== 'closed' && session.endpoint !== 'native') await fleet.action(session, 'end')
+      if (epoch !== openingEpoch.current) return
       if (pendingOpen.current?.deviceId !== d.deviceId)
         pendingOpen.current = { deviceId: d.deviceId, requestId: crypto.randomUUID() }
-      const next = await fleet.session(
-        d.deviceId,
-        d.ownerRunId || d.control !== 'idle' ? 'readonly' : 'manual',
-        pendingOpen.current.requestId,
-      )
+      const requestId = pendingOpen.current.requestId
+      let next: ConsoleSession
+      try {
+        next = await fleet.session(
+          d.deviceId,
+          d.ownerRunId || d.control !== 'idle' ? 'readonly' : 'manual',
+          requestId,
+        )
+      } catch (cause) {
+        if (cause instanceof ApiClientError && ['ANDROID_CONSOLE_BUSY', 'ANDROID_SESSION_EXPIRED', 'ANDROID_REQUEST_CONFLICT', 'ANDROID_WORKFLOW_OWNS_DEVICE'].includes(cause.code ?? '')) {
+          if (pendingOpen.current?.requestId === requestId) pendingOpen.current = null
+          finishLeave()
+        }
+        throw cause
+      }
+      if (epoch !== openingEpoch.current) {
+        try {
+          const closed = await fleet.action(next, 'end')
+          if (closed.state !== 'closed') throw new Error('过期控制会话结束结果待核实')
+          if (pendingOpen.current?.requestId === requestId) pendingOpen.current = null
+          finishLeave()
+        } catch (cause) {
+          if (isCurrentBackend()) {
+            if (pendingOpen.current?.requestId === requestId) pendingOpen.current = null
+            pendingLeave.current = null
+            currentSession.current = { ...next, state: 'unknown', latestOperation: '控制会话结束结果待核实' }
+            setSession(currentSession.current)
+          }
+          throw cause
+        }
+        return
+      }
+      currentSession.current = next
       setSession(next)
       pendingOpen.current = null
     })
   }
-  const leaveDetail = async () => {
+  const leaveDetail = async (destination: 'board' | 'create' = 'board', copySource?: AndroidDevice) => {
+    openingEpoch.current += 1
+    pendingLeave.current = { page: destination, source: copySource }
     const current = session
     if (!current) {
-      setPage('board')
-      return
+      if (pendingOpen.current) {
+        setError(busy ? '正在核实打开结果并结束控制会话，请等待确认' : '打开结果未知；请点击“打开设备”按原请求核实后再返回')
+        return false
+      }
+      finishLeave()
+      return true
     }
-    if (endingSession.current === current.id) return
+    if (current.endpoint === 'native' && current.state === 'connected') {
+      pendingLeave.current = null
+      if (destination === 'create') setSource(copySource)
+      setPage(destination)
+      return true
+    }
+    if (endingSession.current === current.id) return false
     endingSession.current = current.id
     setSession((previous) => previous?.id === current.id ? { ...previous, state: 'unknown', latestOperation: '正在结束控制会话' } : previous)
     await queryClient.cancelQueries({ queryKey: ['android', instanceId, 'session', current.id] })
     queryClient.removeQueries({ queryKey: ['android', instanceId, 'session', current.id] })
     if (current.state === 'closed') {
-      setSession(null)
-      setPage('board')
+      finishLeave()
       endingSession.current = null
-      return
+      return true
     }
     try {
       const closed = await fleet.action(current, 'end')
       if (closed.state === 'closed') {
-        setSession((previous) => previous?.id === current.id ? null : previous)
-        setPage('board')
+        finishLeave()
+        return true
       } else {
+        pendingLeave.current = null
         setSession((previous) => previous?.id === current.id ? { ...closed, state: 'unknown', latestOperation: '控制会话结束结果待核实' } : previous)
         setError('控制会话结束结果待核实，请留在详情页重试')
+        return false
       }
     } catch (cause) {
+      if (await sessionReleased(current)) {
+        finishLeave()
+        return true
+      }
+      pendingLeave.current = null
       setSession((previous) => previous?.id === current.id ? { ...previous, state: 'unknown', latestOperation: '控制会话结束结果待核实' } : previous)
       setError(cause instanceof Error ? `控制会话结束结果未知：${cause.message}` : '控制会话结束结果未知，请重新核实')
+      return false
     } finally {
       endingSession.current = null
     }
   }
+  leaveGuard.current = () => page === 'detail' ? leaveDetail() : Promise.resolve(true)
+  useEffect(() => {
+    registerLeaveGuard?.(() => leaveGuard.current())
+    return () => registerLeaveGuard?.(null)
+  }, [registerLeaveGuard])
+  const sessionEpoch = openingEpoch.current
   const onSession = useCallback((s: ConsoleSession) => {
-    setSession(s)
-  }, [])
+    if (sessionEpoch === openingEpoch.current && !endingSession.current && !pendingLeave.current &&
+      active.current && backend.current.client === client && backend.current.instanceId === instanceId) {
+      currentSession.current = s
+      setSession(s)
+    }
+  }, [client, instanceId, sessionEpoch])
   const manage = (d: AndroidDevice, action: string, operationId?: string, requestId?: string) => {
     if (action === 'copy') {
-      setSource(d)
-      setPage('create')
+      void leaveDetail('create', d)
       return
     }
     setError('')
@@ -247,6 +370,24 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
     setName(d.name)
     setDeleteData(false)
     pendingManagement.current = null
+  }
+  const endControl = async (deviceId: string, sessionId: string) => {
+    if (busy) {
+      setError('当前操作尚未完成，请等待结果后再结束控制')
+      return
+    }
+    await perform(async () => {
+      const existing = await fleet.readSession(sessionId)
+      if (existing.deviceId !== deviceId) throw new Error('控制会话与设备不匹配，请刷新列表核实')
+      if (existing.state !== 'closed') {
+        const closed = await fleet.action(existing, 'end')
+        if (closed.state !== 'closed') throw new Error('控制会话结束结果待核实')
+      }
+      if (currentSession.current?.id === sessionId) {
+        currentSession.current = null
+        setSession(null)
+      }
+    })
   }
   const confirmManage = async () => {
     if (!management) return
@@ -310,15 +451,11 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
           api={fleet}
           deviceApi={api}
           run={undefined}
-          history={detailHistory.data ?? []}
-          historyPage={historyPage}
-          onHistoryPage={setHistoryPage}
           apps={apps.data}
           onBack={() => void leaveDetail()}
           onSession={onSession}
           onOpen={() => void open(device)}
           onManage={(action) => manage(device, action)}
-          onAllocate={() => undefined}
           onRefresh={refresh}
         />
         <BackupPanel
@@ -346,6 +483,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
               setError('实例详情暂不可用，请刷新后重试')
             }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
+          onEndControl={(id, sessionId) => { void endControl(id, sessionId) }}
           onManage={(id, action, operationId, requestId) => {
             void loadDevice(id).then((target) => {
               if (target) return manage(target, action, operationId, requestId)
