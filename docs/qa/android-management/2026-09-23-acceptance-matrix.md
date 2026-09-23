@@ -21,7 +21,7 @@
 | AM-AC14 | `blocked` | 无专用候选镜像、测试账号和商店下载链；登录/下载/重启/隔离均 `not_tested`，见 [GApps](gapps-validation.md)。 |
 | AM-AC15 | `partial` | 批次部分失败/取消/重试规则与 UI 自动化存在；真实多实例批次未演练，见 [AM3](am3-verification.md)。 |
 | AM-AC16 | `passed`（自动化及真实容量实验） | 持久预留、未知预算拒绝、stop 丢响应后核实释放，见 [容量实测](2026-09-23-capacity-verification.md)。 |
-| AM-AC17 | `partial` | 聚合快照、陈旧规则及可见预览自动化通过；1/5/10 台延迟、前台/内存指标未实测。 |
+| AM-AC17 | `partial` | 聚合快照、陈旧规则及可见预览自动化通过；[单运行实例](am3-verification.md)真实认证 HTTP 快照 20 次 `median=1.91ms`、`p95=2.70ms`。5/10 台、前台/内存与预览并发指标未实测。 |
 | AM-AC18 | `partial` | APK 大小/Manifest/split、未知结果和保护包自动化；[真实自建实例](2026-09-23-am1-real-control-retention.md)已完成安装包/版本核实、启动、停止、清数据、卸载。桌面确认流与丢响应实机仍未演练。 |
 | AM-AC19 | `partial` | 运行中备份拒绝与原子发布自动化、真实停机备份成功；磁盘不足、取消、权限和硬中断未完整验收。 |
 | AM-AC20 | `partial` | [最终真实恢复](2026-09-23-persistent-metadata-verification.md)覆盖新 ID/卷、1792 持久条目及启动读回；损坏包/镜像不符/越界拒绝为自动化，硬中断未实测。 |
