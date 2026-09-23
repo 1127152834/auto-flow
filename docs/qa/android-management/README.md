@@ -6,7 +6,9 @@
 
 最新 T19 [应用操作标记](2026-09-23-command-marker-verification.md)修复成功回执落盘前丢失客体完成证据的问题；真实 APK 链重跑后客体标记保持 `5→5`，旧残留和中断上传的 APK 临时文件仍待安全清理。
 
-最新 T17 [真实备份发布前硬中断](2026-09-23-backup-hard-interruption-verification.md)在实际卷归档暂存后发送 `SIGKILL`：重启后原操作为 `needs_verification`，无假成功备份；公开清理删除孤立暂存，源卷探针读回一致。归档传输中断、磁盘不足及恢复写入中断仍未验收。
+最新 T17 [真实备份发布前硬中断](2026-09-23-backup-hard-interruption-verification.md)在实际卷归档暂存后发送 `SIGKILL`：重启后原操作为 `needs_verification`，无假成功备份；公开清理删除孤立暂存，源卷探针读回一致。归档传输中断及磁盘不足仍未验收。
+
+最新 T18 [真实恢复写入后发布前硬中断](2026-09-23-restore-hard-interruption-verification.md)在目标卷真实解包完成后发送 `SIGKILL`：重启后仍为待核实，启动/备份/控制被拒绝；目标可删除，同一备份可由新请求正常恢复。tar 解包过程中断仍未验收。
 
 最新 T05/T17/T18 增量见[原生窗口、恢复归属与持久数据属性](2026-09-23-persistent-metadata-verification.md)：118 项最终定向测试与真实 Mac 原生窗口、卷根及扩展属性/ACL、链接保留、部分失败隔离和正常恢复通过；[完整门槛](2026-09-23-full-gates.md)后端 3964 passed、26 skipped。全阶段仍 `partial`。前一增量见[恢复清单与目标身份](2026-09-23-restore-manifest-verification.md)。
 
