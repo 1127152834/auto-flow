@@ -186,3 +186,14 @@
 - 26入口81项测试、6项真实worker/保存/无Profile/停止/JSON null/bootstrap恢复，最终关联177项通过；另194广回归及46环境/批次专项保留。Ruff/mypy/OpenAPI/结构通过，冻结约270秒。
 - 正式开发IvwKrU及最终unsigned包V8a98L通过无Profile/无内核的CSV解析→扁平化→反转→CSV生成、保存/AXClose/重开、批次与四份持久输出。最终包7k2XEy回归原五节点/PNG/停止/失败/恢复。DQkSqy UI拖动遮挡、CJlcax纯数据仍预留环境的失败证据保留，未放宽断言。
 - 汇总project-integration/advanced-data-2026-09-23；26节点旧三槽位未重标，新增项目顺序桥证据，213与622/17不变。公共项目CredentialReader/models端口尚缺，不能把普通Studio凭据通过计到项目任务；控制流/业务表/其余节点族及平台仍保留。下一块依用户明确答复接项目默认Profile/模型且允许覆盖，不新增ACL。
+
+## 项目默认 Profile 与会话覆盖（confirmed）
+
+- 沿用户确认复用 `GET /api/v1/projects/{id}` 的 `defaultResources`；工作区/项目身份下的覆盖仅保留在会话，不混入全局持久配置。项目缺省为空时要求显式选择；已删默认报不可用，不退回全局第一项；非项目 Studio 保留旧第一项行为。
+- 工具栏运行、拾取/浏览器共用 `resolveProfile`。修正自动化浏览器显式传旧全局 ID，以及新建计划任务用旧全局 ID 初始化的旁路。已保存计划任务的显式 ID 保持不变。
+- 13项专项和六文件60项关联回归通过，类型/lint/OpenAPI/目录检查通过。新建任务通过实际组件选择流程、配置与提交请求核对；Mock只验证消费协议。
+- 最终开发证据 `formal-electron-abbWNN`：项目默认第二项、真实选择覆盖、刷新、交互浏览器启动/关闭、编排保存、原生关窗取消与保存、重开恢复默认并再次显式选择、独立CloakBrowser五节点/PNG、Debug失败保留/清理、运行中关窗取消/放弃停止、内核缺失与第二项目隔离全部通过。
+- 早期 `NBHTTk` 仅是补交互浏览器旁路之前的开发证据。原生HTML select不等同名字为SelectNative的Radix控件；最终使用焦点明确的WebContents与真实字符键选择，不直接写value/Store。15次失败保留于汇总，包含输入方式、错误断言字段、检查接口漏projectId，以及浏览器starting误认ready的测试脚本问题，不修改生产以掩盖。
+- 正式目录包正在验证最新构建；结果统一写入 `project-integration/profile-defaults-2026-09-23/result.json`。模型默认值、项目worker凭据/模型端口仍未完成；213节点及622/17不变。
+
+- 最终 unsigned macOS arm64 目录包 formal-electron-UxcAqm 已通过同一完整链和包内容边界；正式包前次 OZGyVg 的启动等待超时另存失败证据，总16次失败未删。开发/包均真CloakBrowser，Intel/Windows未测。

@@ -17,9 +17,10 @@ const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const failedPauseOnly = process.env.AUTOFLOW_B8_FAILED_PAUSE_ONLY === '1'
 const runToOnly = process.env.AUTOFLOW_B8_RUN_TO_ONLY === '1'
 const b8Only = failedPauseOnly || runToOnly
+const projectResourceMode = process.env.AUTOFLOW_PROJECT_RESOURCES === '1'
 const projectDataMode = process.env.AUTOFLOW_PROJECT_DATA === '1'
 const projectTaskMode = process.env.AUTOFLOW_B1_PROJECT_TASK === '1'
-const projectMode = projectDataMode || projectTaskMode || process.env.AUTOFLOW_B1_PROJECT === '1'
+const projectMode = projectResourceMode || projectDataMode || projectTaskMode || process.env.AUTOFLOW_B1_PROJECT === '1'
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectMode ? 'project-integration' : b8Only ? 'b8' : 'b1'}`)
 const evidencePrefix = failedPauseOnly ? 'formal-failed-pause-electron-' : runToOnly ? 'formal-run-to-electron-' : 'formal-electron-'
 const evidenceDir = await mkdtemp(join(evidenceRoot, evidencePrefix))
@@ -57,6 +58,7 @@ try {
   main = desktop.cdp
   native = await connectCdp(desktop.inspectorUrl)
   await native.evaluate("globalThis.qaElectron=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');true")
+  if(projectResourceMode)await native.evaluate('qaElectron.app.setAccessibilitySupportEnabled(true);true')
   await main.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(main, "document.body?.innerText.includes('本地服务正常')", 'main service readiness', 30_000)
   const runtime = await main.evaluate('window.autoflow.getRuntimeContext()')
@@ -64,16 +66,22 @@ try {
   eventAbort = new AbortController()
   void collectEvents(runtime, eventAbort.signal, observedEvents)
 
-  const profile = projectDataMode ? null : await api(runtime, '/v1/profiles', {
-    method: 'POST',
-    body: {
-      name: 'B1 正式验收配置', description: '隔离工作区中的 CloakBrowser 配置', startUrl: 'about:blank',
+  const profilePayload = {
+      name: projectResourceMode ? 'A 项目验收配置' : 'B1 正式验收配置', description: '隔离工作区中的 CloakBrowser 配置', startUrl: 'about:blank',
       locale: 'zh-CN', timezone: 'Asia/Shanghai', geoip: false, headless: false, humanize: false,
       humanPreset: 'default', userAgent: null, viewportJson: { width: 1280, height: 720 }, colorScheme: 'light',
       extensionPathsJson: [], expertArgsJson: [], browserVersion: kernelVersion, browserEdition: 'public',
       releaseChannel: 'stable', proxyMode: 'none', proxyId: null, proxyPoolId: null,
-    },
-  })
+  }
+  let profile = projectDataMode ? null : await api(runtime, '/v1/profiles', {method: 'POST', body: profilePayload})
+  let projectDefaultProfile = profile
+  if (projectResourceMode) {
+    await api(runtime, '/v1/profiles', {method:'POST', body:{...profilePayload, name:'B 项目另一配置'}})
+    const available = (await api(runtime, '/v1/profiles')).items
+    assert.equal(available.length, 2)
+    projectDefaultProfile = available[1]
+    profile = available[0]
+  }
   if (!projectDataMode) checkpoint('主应用真实服务在临时工作区创建 CloakBrowser Profile')
 
   if (projectMode) {
@@ -86,6 +94,10 @@ try {
     await waitFor(main, 'Boolean(document.querySelector(\'[aria-label="项目功能"]\'))', 'project page')
     projectId = (await main.evaluate('location.hash')).match(/projects\/([^/]+)/)?.[1]
     assert.ok(projectId)
+    if (projectDefaultProfile) {
+      const project = await api(runtime, `/v1/projects/${projectId}`)
+      await api(runtime, `/v1/projects/${projectId}`, {method:'PATCH', body:{expectedManagementRevision:project.managementRevision, defaultResources:{...project.defaultResources, profileId:projectDefaultProfile.id}}})
+    }
     await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
     await waitFor(main, "document.body?.innerText.includes('还没有自动化')", 'empty project automation directory')
     checkpoint('正式项目 UI 新建项目，由项目自动化目录进入 Studio')
@@ -95,7 +107,28 @@ try {
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
-  if (!projectDataMode) await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
+  if (!projectDataMode) await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(projectDefaultProfile.id)}`, 'managed Profile selection')
+  if (projectResourceMode) {
+    checkpoint('Studio 自动采用项目默认 Profile，确认为全局列表第二项')
+    // Native select: use its real popup and keyboard confirmation.
+    await native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>w.getTitle().includes('工作流工作台'));qaElectron.app.focus({steal:true});w.show();w.focus();w.webContents.focus();return true})()")
+    await wait(400)
+    await click(studio, '', '[aria-label="运行浏览器配置"]')
+    await selectProfileByName(profile.name)
+    await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'explicit project Profile override')
+    await click(studio, '刷新配置')
+    await waitFor(studio, `!document.querySelector('[aria-label="运行浏览器配置"]').disabled && document.querySelector('[aria-label="运行浏览器配置"]').value === ${JSON.stringify(profile.id)}`, 'override retained across refresh')
+    checkpoint('真实键盘选择其他 Profile，刷新仍保留显式覆盖')
+    await click(studio, '自动化浏览器')
+    await waitFor(studio, `document.querySelector('[aria-label="浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'inspection shares project selection')
+    await click(studio, '打开浏览器')
+    await waitForValue(async()=>{const status=await api(runtime, `/browser/status?projectId=${projectId}`);return status.isOpen&&status.phase==='ready'&&status.profileId===profile.id}, 'inspection uses selected Profile',120_000)
+    await waitFor(studio, "[...document.querySelectorAll('button')].some(e=>e.textContent.trim()==='关闭浏览器'&&!e.disabled)", 'inspection UI confirms ready',120_000)
+    await click(studio, '关闭浏览器')
+    await waitForValue(async()=>!(await api(runtime, `/browser/status?projectId=${projectId}`)).isOpen, 'inspection cleanup')
+    await click(studio, '关闭')
+    checkpoint('自动化浏览器使用同一显式 Profile，真实启动并清理后再编排运行')
+  }
   checkpoint('主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile')
   if (credentialMode) {
     await click(studio, '更多操作'); await click(studio, '全局配置', '[role="menuitem"]')
@@ -486,6 +519,15 @@ try {
   assert.equal(closedSaved.edges.length, 4)
   checkpoint('正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线')
 
+  if (projectResourceMode) {
+    await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(projectDefaultProfile.id)}`, 'project default restored in a new window')
+    await native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>w.getTitle().includes('工作流工作台'));qaElectron.app.focus({steal:true});w.show();w.focus();w.webContents.focus();return true})()")
+    await wait(400)
+    await click(studio, '', '[aria-label="运行浏览器配置"]')
+    await selectProfileByName(profile.name)
+    await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'explicit override before execution')
+  }
+
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
   const startedRun = await waitForValue(async () => {
@@ -497,6 +539,7 @@ try {
     return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.status) ? value : null
   }, 'workflow terminal persistence', 120_000)
   assert.equal(terminalRun.status, 'completed')
+  if (projectResourceMode) assert.equal(terminalRun.profileSnapshot.id, profile.id)
   if (projectMode) assert.equal(terminalRun.projectId, projectId)
   await waitForValue(async () => observedEvents.find(event => event.name === 'execution:completed' && event.data?.runId === startedRun.runId) ?? null, 'raw SSE terminal event', 10_000)
   await click(studio, '执行日志')
@@ -576,8 +619,9 @@ try {
     const candidate = page.items.find(item => item.runId !== runId && item.runId !== failedRunId)
     if (!candidate) return null
     const detail = await api(runtime, `/workflow-runs/${encodeURIComponent(candidate.runId)}`)
+    assert.ok(['starting', 'running'].includes(detail.status), `second run ended before close verification: ${JSON.stringify(detail)}`)
     return detail.status === 'running' ? detail : null
-  }, 'second active run', 20_000)
+  }, 'second active run after browser startup', 120_000)
   await closeWindowThroughOs(desktop.child.pid)
   await waitFor(studio, "document.body?.innerText.includes('结束活跃会话后离开？')", 'active-run normal-close prompt')
   await click(studio, '取消')
@@ -949,6 +993,14 @@ async function waitForNoStudio(origin, timeoutMs = 15_000) {
 async function hasStudioTarget(origin) {
   const targets = await (await fetch(`${origin}/json/list`)).json()
   return targets.some(target => target.type === 'page' && target.url.includes('studio.html'))
+}
+
+async function selectProfileByName(name) {
+  assert.match(name, /^[AB] /)
+  await studio.command('Input.dispatchKeyEvent',{type:'keyDown',key:name[0].toLowerCase(),code:'Key'+name[0],text:name[0].toLowerCase(),windowsVirtualKeyCode:name.charCodeAt(0)})
+  await studio.command('Input.dispatchKeyEvent',{type:'keyUp',key:name[0].toLowerCase(),code:'Key'+name[0],windowsVirtualKeyCode:name.charCodeAt(0)})
+  await press(studio,'Enter',{keyCode:13})
+  await wait(100)
 }
 
 async function closeWindowThroughOs(pid) {

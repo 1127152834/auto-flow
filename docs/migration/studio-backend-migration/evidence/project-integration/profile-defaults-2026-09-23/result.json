@@ -1,0 +1,99 @@
+{
+  "capabilityId": "BE.SUPPORT.browser-runtime",
+  "slice": "project-profile-default-and-explicit-override",
+  "classification": "AutoFlow必要适配",
+  "status": "passed",
+  "scope": 213,
+  "decision": "项目默认值加显式覆盖；不是资源白名单",
+  "frontendTests": {
+    "count": 60,
+    "result": "passed",
+    "evidence": "regression-final.log"
+  },
+  "development": "../formal-electron-abbWNN/result.json",
+  "failedAttempts": [
+    {
+      "path": "../formal-electron-HT6Us6/failure.json",
+      "reason": "native macOS select did not accept CDP keyboard selection"
+    },
+    {
+      "path": "../formal-electron-oFCKC8/failure.json",
+      "reason": "native popup still did not accept CDP keyboard selection"
+    },
+    {
+      "path": "../formal-electron-elp94H/failure.json",
+      "reason": "assertion read profileId instead of actual profileSnapshot.id contract; real workflow completed"
+    },
+    {
+      "path": "../formal-electron-V0oWRR/failure.json",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    },
+    {
+      "path": "../formal-electron-ZowuzE/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-oGztnQ/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-jimQjt/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-ZVSTIV/failure.json",
+      "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    },
+    {
+      "path": "../formal-electron-9kwyFv/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-XpJJt8/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-D78yd2/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-HsEUiT/failure.json",
+      "reason": "Error: timed out waiting for unobscured 关闭浏览器: null"
+    },
+    {
+      "path": "../formal-electron-V22dcN/failure.json",
+      "reason": "Error: GET /api/browser/status: 404 {\"error\":{\"code\":\"INSPECTION_NOT_FOUND\",\"message\":\"浏览器会话不属于当前项目\",\"details\":{},\"requestId\":\"1e687e9d-32c0-4bf8-adfd-b4dbdcb82aef\"}}"
+    },
+    {
+      "path": "../formal-electron-P51hx8/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-Qc3Ko6/failure.json",
+      "reason": "Error: timed out waiting for explicit project Profile override: false"
+    },
+    {
+      "path": "../formal-electron-OZGyVg/failure.json",
+      "reason": "20-second startup wait expired; persisted SSE subsequently proves node start. Use browser-startup budget with immediate assertion against terminal state; no product change."
+    }
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser",
+    "platform": "darwin-arm64",
+    "otherPlatforms": "untested",
+    "models": "pending separate implementation",
+    "projectWorkerCredentialAndModelContext": "pending",
+    "ui": "actual clicks, macOS keyboard, native window close; API only fixture setup and evidence"
+  },
+  "developmentIncludesInspection": true,
+  "priorDevelopment": "../formal-electron-NBHTTk/result.json",
+  "packaged": "../formal-electron-UxcAqm/result.json",
+  "checks": {
+    "typescript": "passed",
+    "eslint": "passed",
+    "openapi": "passed",
+    "structure": "passed",
+    "build": "passed"
+  }
+}

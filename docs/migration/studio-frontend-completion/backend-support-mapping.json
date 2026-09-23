@@ -138,6 +138,13 @@
         "completedSlice": "B1.3 CloakBrowser页面会话、worker和资源清理；B1.4五节点真实执行；B1.6主应用Profile到worker的运行装配；B1.7正式开发构建和目录包五节点主链",
         "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json",
         "remaining": "B1共享正常关窗/停止/异常离开矩阵；B2 iframe、拾取、弹窗、网络监听及其余网页节点"
+      },
+      "projectProfileDefaults20260923": {
+        "status": "implemented-development-and-packaged-accepted",
+        "classification": "AutoFlow必要适配",
+        "decision": "项目默认值且允许显式覆盖；不新增资源白名单",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/profile-defaults-2026-09-23/result.json",
+        "remaining": "模型默认与项目worker凭据/模型上下文独立保留；其他平台未测"
       }
     },
     {

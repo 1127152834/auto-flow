@@ -190,7 +190,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const handleOpenBrowser = async () => {
     if (!beginCommand()) return
     try {
-      const result = await browserApi.open(url || undefined, undefined, useGlobalConfigStore.getState().config.browserProfileId)
+      const result = await browserApi.open(url || undefined)
       if (result.error) {
         onLog('error', `打开浏览器失败: ${result.error}`)
         // 失败原因是「缺少功能模块包」时，直接把安装弹窗顶上来。

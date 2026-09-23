@@ -10,7 +10,7 @@ import { DatePicker, TimePicker } from '../controls/date-time-picker'
 import { useScheduledTaskStore, type ScheduledTaskTrigger, type NotifyChannel } from '../../hooks/stores/scheduledTaskStore'
 import { useGlobalConfigStore } from '../../hooks/stores/globalConfigStore'
 import { localWorkflowApi } from '../../api'
-import { getBackendBaseUrl } from '../../api/config'
+import { getBackendBaseUrl, getStudioOpenContext } from '../../api/config'
 import { Clock, Zap, Power, Repeat, X, Webhook } from 'lucide-react'
 import { DialogPortal } from '../controls/dialog-portal'
 import { NotificationConfigEditor } from './NotificationConfigEditor'
@@ -23,7 +23,8 @@ interface TaskCreateDialogProps {
 
 export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
   const { createTask } = useScheduledTaskStore()
-  const globalProfileId = useGlobalConfigStore(state => state.config.browserProfileId)
+  const savedProfileId = useGlobalConfigStore(state => state.config.browserProfileId)
+  const globalProfileId = getStudioOpenContext().projectId ? '' : savedProfileId
   // Webhook 触发地址前缀：取当前后端真实地址（历史上写死 localhost:8000，与实际端口 5241 不符导致用户按说明调用必失败）
   const webhookBaseUrl = `${getBackendBaseUrl()}/api/scheduled-tasks/webhook`
 

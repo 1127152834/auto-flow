@@ -181,10 +181,17 @@ it('does not copy a pending pick result once a stop command has begun',async()=>
 it('passes the selected AutoFlow profile without mixing source launch settings',async()=>{
  vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:false,phase:'closed',pickerActive:false}})
  vi.spyOn(browserApi,'profiles').mockResolvedValue({success:true,data:{items:[{id:'profile-1',name:'验收配置'}] as never,total:1}})
- const open=vi.spyOn(browserApi,'open').mockResolvedValue({success:true})
- render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
- await screen.findByRole('option',{name:'验收配置'})
- fireEvent.change(screen.getByLabelText('浏览器配置'),{target:{value:'profile-1'}})
- fireEvent.click(screen.getByRole('button',{name:'打开浏览器'}))
- await waitFor(()=>expect(open).toHaveBeenCalledWith(undefined,undefined,'profile-1'))
+ const bodies:unknown[]=[]
+ const restore=configureStudioConnection('http://profile-lifecycle.test',async(input,init)=>{
+   expect(new URL(String(input)).pathname).toBe('/api/browser/open')
+   bodies.push(JSON.parse(String(init?.body)))
+   return Response.json({success:true})
+ })
+ try {
+   render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
+   await screen.findByRole('option',{name:'验收配置'})
+   fireEvent.change(screen.getByLabelText('浏览器配置'),{target:{value:'profile-1'}})
+   fireEvent.click(screen.getByRole('button',{name:'打开浏览器'}))
+   await waitFor(()=>expect(bodies).toEqual([{profileId:'profile-1'}]))
+ } finally {cleanup();restore()}
 })

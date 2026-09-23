@@ -10,7 +10,7 @@ import type {DebugControlRequest,DebugVariablesRequest} from './lib/debugControl
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { getStudioTransportRevision, studioFetch } from './api/transport'
-import { getBackendBaseUrl, getStudioOpenContext, scopeStudioUrl } from './api/config'
+import { getBackendBaseUrl, getStudioOpenContext, getStudioResourceScope, scopeStudioUrl } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
 // 获取后端 API 基础地址
@@ -455,6 +455,24 @@ async function browserPagesRequest(options?:RequestInit):Promise<ApiResponse<Bro
   return result
 }
 
+/** Existing project defaults are shared by browser and model consumers. Overrides are session-only. */
+export const projectResourceApi = {
+  defaults: async (): Promise<ApiResponse<components['schemas']['ProjectDefaultResources'] | null>> => {
+    useGlobalConfigStore.getState().syncProjectResourceScope()
+    const scope = getStudioResourceScope()
+    if (!scope) return {success: true, data: null}
+    const revision = getStudioTransportRevision()
+    const projectId = getStudioOpenContext().projectId!
+    const result = await apiRequest<components['schemas']['ProjectSummary']>(`/v1/projects/${encodeURIComponent(projectId)}`)
+    if (scope !== getStudioResourceScope() || revision !== getStudioTransportRevision()) return {success: false, error: '项目或服务已变更，未采用旧资源配置'}
+    if (!result.success) return {success: false, error: result.error, httpStatus: result.httpStatus}
+    const defaults = result.data?.defaultResources
+    if (!defaults || ![defaults.profileId, defaults.modelProviderId].every(value => value === null || (typeof value === 'string' && value.length > 0))) return {success: false, error: '项目默认资源响应无效'}
+    useGlobalConfigStore.setState(state => ({projectResources: {...state.projectResources, defaults}}))
+    return {success: true, data: defaults}
+  },
+}
+
 export const browserApi = {
   profiles: async () => {
     const result=await apiRequest<components['schemas']['ProfileList']>('/v1/profiles')
@@ -464,12 +482,15 @@ export const browserApi = {
   },
   resolveProfile: async (requestedId?:string) => {
     const revision=getStudioTransportRevision()
-    const selected=requestedId??useGlobalConfigStore.getState().config.browserProfileId
-    const result=await browserApi.profiles()
-    if(revision!==getStudioTransportRevision())return {success:false,error:'服务已变更，未采用旧配置'} as ApiResponse<components['schemas']['ProfileRead']>
+    const scope=getStudioResourceScope()
+    const [result, defaults]=await Promise.all([browserApi.profiles(), projectResourceApi.defaults()])
+    if(!defaults.success)return {success:false,error:defaults.error,httpStatus:defaults.httpStatus} as ApiResponse<components['schemas']['ProfileRead']>
+    const state=useGlobalConfigStore.getState()
+    const selected=requestedId??(scope ? state.projectResources.profileId??defaults.data?.profileId : state.config.browserProfileId)
+    if(scope!==getStudioResourceScope()||revision!==getStudioTransportRevision())return {success:false,error:'服务已变更，未采用旧配置'} as ApiResponse<components['schemas']['ProfileRead']>
     if(!result.success||!result.data)return {success:false,error:result.error||'浏览器配置读取失败'} as ApiResponse<components['schemas']['ProfileRead']>
-    const profile=selected?result.data.items.find(item=>item.id===selected):result.data.items[0]
-    if(!profile)return {success:false,httpStatus:selected?404:422,error:selected?'所选浏览器配置已不可用，请重新选择':'请先在管理端创建 CloakBrowser 配置'} as ApiResponse<components['schemas']['ProfileRead']>
+    const profile=selected?result.data.items.find(item=>item.id===selected):scope?undefined:result.data.items[0]
+    if(!profile)return {success:false,httpStatus:selected?404:422,error:selected?'所选浏览器配置已不可用，请重新选择':scope?'项目未设置默认浏览器配置，请显式选择 CloakBrowser 配置':'请先在管理端创建 CloakBrowser 配置'} as ApiResponse<components['schemas']['ProfileRead']>
     return {success:true,data:profile} as ApiResponse<components['schemas']['ProfileRead']>
   },
   pages: () => browserPagesRequest(),

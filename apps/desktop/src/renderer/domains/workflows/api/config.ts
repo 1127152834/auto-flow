@@ -32,6 +32,12 @@ export function getStudioOpenContext(): StudioOpenContext {
   return context
 }
 
+/** Resource overrides belong to a workspace/project, and survive its service reconnect. */
+export function getStudioResourceScope(): string | null {
+  const {projectId, workspaceKey} = getStudioOpenContext()
+  return projectId ? JSON.stringify([workspaceKey ?? getBackendBaseUrl(), projectId]) : null
+}
+
 /** Keep document, run, control and event requests on the registered window's project. */
 export function scopeStudioUrl(url: string, projectId = getStudioOpenContext().projectId): string {
   if (!projectId) return url

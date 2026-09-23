@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, store/globalConfigStore.ts; see SOURCE.md for license and adaptation boundaries.
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import {getStudioResourceScope} from '../../api/config'
+import type {components} from '../../../../shared/api/generated'
 
 // 浏览器类型
 export type BrowserType = 'msedge' | 'chrome' | 'chromium' | 'firefox'
@@ -167,6 +169,12 @@ export interface GlobalConfig {
 
 interface GlobalConfigState {
   config: GlobalConfig
+  projectResources: {
+    scope: string | null
+    defaults?: components['schemas']['ProjectDefaultResources']
+    profileId?: string
+  }
+  syncProjectResourceScope: () => void
   updateSystemConfig: (config: Partial<GlobalConfig['system']>) => void
   updateAIConfig: (config: Partial<GlobalConfig['ai']>) => void
   updateAIScraperConfig: (config: Partial<GlobalConfig['aiScraper']>) => void
@@ -322,6 +330,11 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
   persist(
     (set, get) => ({
       config: defaultConfig,
+      projectResources: {scope: null},
+      syncProjectResourceScope: () => {
+        const scope = getStudioResourceScope()
+        if (get().projectResources.scope !== scope) set({projectResources: {scope}})
+      },
 
       updateSystemConfig: (systemConfig) => {
         set({
@@ -452,7 +465,12 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
         })
       },
 
-      setBrowserProfileId: (id) => set({config:{...get().config,browserProfileId:id}}),
+      setBrowserProfileId: (id) => {
+        get().syncProjectResourceScope()
+        const resources = get().projectResources
+        if (resources.scope) set({projectResources: {...resources, profileId: id}})
+        else set({config: {...get().config, browserProfileId: id}})
+      },
       updateBrowserConfig: (browserConfig) => {
         set({
           config: {
@@ -510,6 +528,7 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
     }),
     {
       name: 'autoflow-studio-mock-global-config',
+      partialize: (state) => ({config: state.config}),
       // 数据迁移：确保旧数据兼容新结构
       merge: (persistedState, currentState) => {
         const persisted = persistedState as GlobalConfigState
