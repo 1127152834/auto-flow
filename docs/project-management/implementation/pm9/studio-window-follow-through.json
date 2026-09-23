@@ -60,7 +60,9 @@
   "ci": {
     "runId": 35881272086,
     "sourceCommit": "632caf6dfbf5034f6bee0d48fe0662a53417f85e",
-    "scope": "Existing in-progress matrix does not include these newly added window assertions; no restart for a test-only increment."
+    "scope": "Historical632caf6d matrix omitted these window assertions and was later cancelled for the production metadata fix. Current69baeeb2/35886627514 includes the window and metadata assertions; in progress.",
+    "status": "cancelled",
+    "supersededByRun": 35886627514
   },
   "remaining": [
     "Two requirements with no direct assertion remain DATA-LIFE-01 and DATA-SH-03; their L1/M1 implementations await confirmation.",

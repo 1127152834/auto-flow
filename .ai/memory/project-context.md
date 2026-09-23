@@ -1,6 +1,6 @@
 # 项目上下文
 
-2026-09-24 必填规则生产修复（confirmed本机）：正式metadata404已由共用DTO路由和随包冻结资源修复，实际ARM空网址提示/项目规则未覆盖提示通过；来源227仅69有规则。17后端定向、45前端、3486全后端/78skipped、101脚本、4映射、Ruff/mypy408/typecheck/lint/OpenAPI/构建与完整ARM桌面通过。原后台页面两帧测量两次失败，诊断hidden后前置显示并确认可见，保留5秒阈值，最终5ms；负向报告保留。见studio-metadata-follow-through.json。249有断言/2未定位、206partial/45planned/0verified不变，等待新源码三平台；releaseAccepted=false。
+2026-09-24 必填规则生产修复（confirmed本机）：正式metadata404已由共用DTO路由和随包冻结资源修复，实际ARM空网址提示/项目规则未覆盖提示通过；来源227仅69有规则。17后端定向、45前端、3486全后端/78skipped、101脚本、4映射、Ruff/mypy408/typecheck/lint/OpenAPI/构建与完整ARM桌面通过。原后台页面两帧测量两次失败，诊断hidden后前置显示并确认可见，保留5秒阈值，最终5ms；负向报告保留。见studio-metadata-follow-through.json。249有断言/2未定位、206partial/45planned/0verified不变，生产69baeeb2的三平台35886627514已触发、结果待完成；releaseAccepted=false。
 
 2026-09-23 XE-G07窗口子范围（confirmed）：当前ARM包实际窗口复用/恢复、越权打开拒绝、脏稿取消/保存关闭、显式重新打开同文档且Run不重复通过；主进程11、脚本101、映射4通过。AU-06/XE-G01/XE-G07项目会话关联与停靠明确为实现缺失，W1–W3规格/计划待确认；新增窗口断言后的完整ARM桌面脚本通过，详见 studio-window-follow-through.json。249/251有范围断言、2未定位，206partial/45planned/0verified；73条缺预定文件全部已有子范围映射，不等于完整覆盖。生产仍632caf6d，新断言不在现有CI35881272086，不重复流水线，releaseAccepted=false。
 

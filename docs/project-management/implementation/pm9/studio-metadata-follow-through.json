@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_full_and_packaged_passed_new_three_platform_candidate_pending",
+  "status": "local_full_and_packaged_passed_three_platform_ci_in_progress",
   "releaseAccepted": false,
   "parentCommit": "3fb223a3638c2c7c10d646589f34ed46c0b254fd",
   "defect": {
@@ -92,5 +92,21 @@
     "scope": "single ARM observation while local regression also ran; not Windows throughput, not a general hardware target"
   },
   "evidenceSha256": "0e5c77bf50d33ea6c776a9025610d14e936dce4a869a045f8d53462dd794b5be",
-  "screenshots": 21
+  "screenshots": 21,
+  "sourceCommit": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
+  "ci": {
+    "runId": 35886627514,
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35886627514",
+    "sourceCommit": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
+    "status": "in_progress",
+    "supersededRun": 35881272086,
+    "supersededStatus": "cancelled",
+    "reason": "Older632caf6d does not contain the production metadata fix or window/metadata/foreground acceptance assertions.",
+    "dispatchCorrection": {
+      "runId": 35886555555,
+      "sourceCommit": "3fb223a3638c2c7c10d646589f34ed46c0b254fd",
+      "status": "cancelled",
+      "reason": "Dispatch raced the pending push; checked returned head SHA and cancelled before accepting any result. Correct final candidate dispatched after push completed."
+    }
+  }
 }

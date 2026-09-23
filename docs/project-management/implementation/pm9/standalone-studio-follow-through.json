@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_full_frontend_and_packaged_passed_three_platform_ci_in_progress",
+  "status": "historical_local_passed_ci_cancelled_superseded_by_metadata_fix",
   "releaseAccepted": false,
   "requirement": "XE-A19",
   "parentCommit": "b4edb7ecc88d22744e7d39dcd0ad11a98aa095e9",
@@ -51,7 +51,7 @@
     "Current Studio refusal is existing HTTP422 unsupported-node admission, not shared-core CAPABILITY_MISSING; project configuration explicitly says to run from project automation batch. No admission whitelist expanded.",
     "The existing required-field metadata endpoint returns404 in this package; no claim of full Studio configuration or all node support. Project grant/arguments and result-variable edit are directly checked.",
     "One rebuilt ARM application; not Finder/Gatekeeper, signed installer, Windows/Intel physical acceptance or Google/OAuth.",
-    "Previous CI35874897768 does not include these frontend fixes or new script assertions. New final candidate35881272086 is in progress; no complete result claimed.",
+    "Previous CI35874897768 does not include these frontend fixes or new script assertions. Matrix35881272086 was cancelled because the later production metadata fix requires new candidate69baeeb2/35886627514; no complete result claimed.",
     "AD1-AD3/FR1-FR3/L1-L3/M1-M3 and existing-file replacement remain separate pending decisions; releaseAccepted=false."
   ],
   "artifacts": {
@@ -85,9 +85,11 @@
     "runId": 35881272086,
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35881272086",
     "sourceCommit": "632caf6dfbf5034f6bee0d48fe0662a53417f85e",
-    "status": "in_progress",
+    "status": "cancelled",
     "supersededRun": 35874897768,
     "supersededStatus": "cancelled",
-    "reason": "Earlier eb50 run cannot verify newly reproduced and fixed Studio identity/feedback defects; not a full pass."
+    "reason": "Earlier eb50 run cannot verify newly reproduced and fixed Studio identity/feedback defects; not a full pass.",
+    "supersededByRun": 35886627514,
+    "supersededBySource": "69baeeb295d3cf2e10ceba945d00bfd138907a50"
   }
 }

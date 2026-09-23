@@ -15,3 +15,5 @@
 2026-09-24 验收脚本诊断（confirmed）：两次完整 ARM smoke 在已通过真实 worker 链后，卡于两帧测量。补错误上下文后实际记录 `visibility=hidden, focused=true`，属于原测量没有要求原生窗口可见而等待后台 requestAnimationFrame。脚本在同一测量前调用 `Page.bringToFront` 并断言可见，原 5 秒响应阈值、请求超时与万行规模不变。两份负向报告单独保留；修正后完整结果见专项 JSON，不把早期失败改成成功。
 
 最终本机：完整后端3486 passed/78 skipped/1010.08秒；完整ARM桌面通过，前置显示后的两帧5ms。实际10000行五路单条写入76475ms/0busy，1004真实worker日志37234ms；固定1000条合成输入60038ms/最大滞后92ms，分别记录。原始报告和21张成功截图保留于 `.tmp-tests/pm9-studio-metadata-2026-09-23/`，两次负向报告在其negative目录。前端app.asar与632caf6d逐字节哈希相同，复用其5473全量结果并重跑45定向及生成类型检查。
+
+最终生产候选 `69baeeb2` 已推送；三平台 Actions 35886627514 指向该 SHA，三个原生job均in_progress。旧632caf6d矩阵35881272086不含本片，已确认cancelled；误在push完成前触发的35886555555已核对为旧3fb223a3并取消，未计入通过。
