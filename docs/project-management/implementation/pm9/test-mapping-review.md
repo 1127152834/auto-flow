@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-24 子流程打包补证（confirmed子范围）：正式ARM应用/sidecar公开HTTP与真实worker完成准备后改文档、两个Task各两次冻结调用、变量隔离与声明输出、根End双记录关联；子流程等待后公开stop父批次保留首条记录/取消人工项/不执行后续写及End；父节点较宽字段权限不能被受限子节点借用，返回CAPABILITY_SCOPE_DENIED且保留父提交。完整API/桌面均通过，101脚本/4映射通过。生产仍69baeeb2，运行中35886627514不包含新增脚本断言，不重启；其他资产/Profile/代理组合与Windows/Intel同场景打包证据保留。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见subflow-packaged-follow-through.json。
+
 2026-09-23 XE-G07窗口子范围（confirmed）：当前ARM包实际窗口复用/恢复、越权打开拒绝、脏稿取消/保存关闭、显式重新打开同文档且Run不重复通过；主进程11、脚本101、映射4通过。AU-06/XE-G01/XE-G07项目会话关联与停靠明确为实现缺失，W1–W3规格/计划待确认；新增窗口断言后的完整ARM桌面脚本通过，详见 studio-window-follow-through.json。249/251有范围断言、2未定位，206partial/45planned/0verified；73条缺预定文件全部已有子范围映射，不等于完整覆盖。生产仍632caf6d，新断言不在现有CI35881272086，不重复流水线，releaseAccepted=false。
 
 2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。源码632caf6d新三平台35881272086进行中；旧35874897768不含此修复，已确认取消，不计完整通过。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。

@@ -54,14 +54,22 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       const started = followUp ? await api(`${prefix}/tasks/${followUp.taskId}/follow-up-batches`, { mode: 'originalInputGroup', expectedTaskStatusRevision: followUp.statusRevision, parameterOverrides: parameters }) : await api(`${prefix}/automations/${automation.automationId}/batches`, { expectedAutomationRevision: automation.managementRevision, parameters, maxTasks, concurrency: 1 })
       const batchId = started.operation.result.batch.batchId
       const handled = new Set()
+      let resumed = 0
       for (let attempt = 0; attempt < 1200; attempt++) {
         const manual = await api(prefix + '/manual-items')
         for (const item of manual.items.filter(item => item.status === 'waiting' && !handled.has(item.manualItemId))) {
+          if (options.stopAtManual) {
+            const batch = await api(`${prefix}/batches/${batchId}`)
+            await api(`${prefix}/batches/${batchId}/stop`, { expectedStatusRevision: batch.batch.statusRevision, reason: '验证父批次停止撤销子流程后续写入' })
+            handled.add(item.manualItemId)
+            continue
+          }
           await options.beforeResume?.(item)
           const body = { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision, ...(item.inputSchema?.length ? { inputs: { confirmation: 'verified' }, targetNodeId: 'accepted' } : {}) }
           if (item.inputSchema?.length && hooks.resumeManual) await hooks.resumeManual(project.projectId, item, body)
           else await api(`${prefix}/manual-items/${item.manualItemId}/resume`, body)
           handled.add(item.manualItemId)
+          resumed++
         }
         const state = await api(`${prefix}/batches/${batchId}`)
         if (['completed', 'failed', 'interrupted', 'stopped'].includes(state.batch.status)) {
@@ -72,8 +80,13 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
             const events = await api(`${prefix}/tasks/${task.taskId}/events?afterSequence=0&pageSize=200`).catch(error => ({ error: String(error) }))
             throw new Error(JSON.stringify({ batch: state.batch, counts: state.statusCounts, task, attempts: { total: attempts.total, latest: attempts.items.at(-1) }, events: events.error ? events : { lastSequence: events.lastSequence, statuses: events.items.filter(event => event.kind === 'runStatus') } }))
           }
-          if (handled.size) assert.equal(new Set(attempts.items.map(item => item.nodeId)).size, attempts.total, 'completed nodes must not replay across manual continuation')
-          return { task, automation, tasks: tasks.items, attempts: attempts.items, resumedManualItems: handled.size, outputs: (await api(`${prefix}/tasks/${task.taskId}/outputs`)).items }
+          if (handled.size) {
+            const counts = new Map()
+            for (const item of attempts.items) counts.set(item.nodeId, (counts.get(item.nodeId) ?? 0) + 1)
+            for (const [id, count] of Object.entries(options.expectedVisits ?? {})) assert.equal(counts.get(id), count, `missing declared visits: ${id}`)
+            for (const [id, count] of counts) assert.equal(count, options.expectedVisits?.[id] ?? 1, `unexpected replay or missing subflow visit: ${id}`)
+          }
+          return { task, automation, tasks: tasks.items, attempts: attempts.items, resumedManualItems: resumed, outputs: (await api(`${prefix}/tasks/${task.taskId}/outputs`)).items }
         }
         await new Promise(resolve => setTimeout(resolve, 500))
       }
@@ -95,6 +108,75 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     const failureWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 失败后续', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: `{${selectorParameter}}`, attribute: 'text', variableName: 'account', timeout: .3 }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('open', 'read'), edge('read', 'end')] })
     const inputPlan = { inputs: [{ inputId: randomUUID(), alias: '来源', tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, mode: 'independent', required: true, fieldBindings: [{ inputFieldId: randomUUID(), inputFieldAlias: '编号', fieldRef: { projectId: project.projectId, tableId: source.table.tableId, datasetGeneration: source.table.datasetGeneration, fieldId: source.fieldId } }], filter: { type: 'all', items: [] }, orderBy: [{ systemField: 'recordKey', direction: 'asc' }] }] }
     const environment = { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }
+    // Freeze is observed through a real manual barrier after prepare. No in-process worker hooks.
+    const childTable = await table('子流程冻结结果')
+    const childWrite = id => node(id, 'project_data', { operation: 'createRecord', variableName: 'saved', tableGrant: grant(childTable, 'createRecord'), arguments: { tableId: childTable.table.tableId, datasetGeneration: childTable.table.datasetGeneration, values: { [childTable.fieldId]: '{value}' } } })
+    const childDocument = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 打包冻结子流程', variables: [], nodes: [
+      node('open', 'open_page', { url: site + '/account' }),
+      node('private', 'set_variable', { variableName: 'privateValue', variableValue: 'parent-only' }),
+      node('freeze-barrier', 'project_manual', { reason: '准备后编辑源子流程', timeoutSeconds: 60 }),
+      node('first-call', 'subflow', { subflowGroupId: 'child', inputs: { value: 'frozen-first' }, outputs: { saved: 'firstSaved' } }),
+      node('second-call', 'subflow', { subflowGroupId: 'child', inputs: { value: 'frozen-second' }, outputs: { saved: 'secondSaved' } }),
+      node('inspect-parent', 'set_variable', { variableName: 'parentAfterCalls', variableValue: '{privateValue}' }),
+      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: "{firstSaved['ref']['recordKey']['value']}", recordTargets: ['firstSaved', 'secondSaved'].map(name => ({ recordRef: `{${name}['ref']}`, expectedLinkRevision: `{${name}['linkRevision']}`, replaceAllowed: false })) } }),
+      node('child', 'subflow_header', { subflowName: '冻结子图' }),
+      node('child-private', 'set_variable', { variableName: 'privateValue', variableValue: 'child-only' }), childWrite('child-write'),
+    ], edges: [edge('open', 'private'), edge('private', 'freeze-barrier'), edge('freeze-barrier', 'first-call'), edge('first-call', 'second-call'), edge('second-call', 'inspect-parent'), edge('inspect-parent', 'end'), edge('child', 'child-private'), edge('child-private', 'child-write')] })
+    let editedChild = false
+    const subflow = await run(childDocument.id, environment, [], {}, 'succeeded', { inputs: [] }, null, { maxTasks: 2, expectedVisits: { 'child-private': 2, 'child-write': 2 }, beforeResume: async () => {
+      if (editedChild) return
+      const changed = structuredClone(childDocument)
+      changed.nodes.find(node => node.id === 'child-write').data.arguments.values[childTable.fieldId] = 'must-not-replace-frozen-content'
+      const saved = await api(`/api/workflows/${changed.id}`, { ...changed, expectedRevision: changed.revision, clientRequestId: randomUUID() }, 'PUT')
+      assert.equal(saved.revision, changed.revision + 1)
+      editedChild = true
+    } })
+    assert.equal(editedChild, true)
+    assert.equal(subflow.resumedManualItems, 2)
+    const childRecords = await api(`${prefix}/tables/${childTable.table.tableId}/records?datasetGeneration=${childTable.table.datasetGeneration}`)
+    assert.deepEqual(childRecords.items.map(record => record.values[0].value).sort(), ['frozen-first', 'frozen-first', 'frozen-second', 'frozen-second'])
+    assert.ok(childRecords.items.every(record => record.currentEnvironmentId))
+    assert.equal(new Set(childRecords.items.map(record => record.currentEnvironmentId)).size, 2)
+    for (const task of subflow.tasks) {
+      const outputs = (await api(`${prefix}/tasks/${task.taskId}/outputs`)).items
+      assert.equal(outputs.find(output => output.name === 'parentAfterCalls')?.value, 'parent-only')
+      const attempts = (await api(`${prefix}/tasks/${task.taskId}/node-attempts`)).items
+      const writes = attempts.filter(attempt => attempt.nodeId === 'child-write')
+      assert.equal(writes.length, 2)
+      assert.equal(new Set(writes.map(attempt => attempt.nodeVisitId)).size, 2)
+      assert.ok(writes.every(attempt => attempt.status === 'succeeded'))
+    }
+    const cancelTable = await table('子流程取消保留')
+    const cancelWrite = (id, value) => node(id, 'project_data', { operation: 'createRecord', variableName: id, tableGrant: grant(cancelTable, 'createRecord'), arguments: { tableId: cancelTable.table.tableId, datasetGeneration: cancelTable.table.datasetGeneration, values: { [cancelTable.fieldId]: value } } })
+    const cancelDocument = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 打包子流程取消', variables: [], nodes: [
+      node('open', 'open_page', { url: site + '/account' }), node('call', 'subflow', { subflowGroupId: 'child', inputs: {}, outputs: {} }), node('end', 'project_end', { retainEnvironment: { enabled: false } }),
+      node('child', 'subflow_header', { subflowName: '取消子图' }), cancelWrite('committed', 'before-cancel'), node('cancel-barrier', 'project_manual', { reason: '子流程内取消父批次', timeoutSeconds: 60 }), cancelWrite('forbidden-later', 'must-not-write'),
+    ], edges: [edge('open', 'call'), edge('call', 'end'), edge('child', 'committed'), edge('committed', 'cancel-barrier'), edge('cancel-barrier', 'forbidden-later')] })
+    const cancelledSubflow = await run(cancelDocument.id, environment, [], {}, 'cancelled', { inputs: [] }, null, { stopAtManual: true })
+    assert.equal(cancelledSubflow.resumedManualItems, 0)
+    const retained = await api(`${prefix}/tables/${cancelTable.table.tableId}/records?datasetGeneration=${cancelTable.table.datasetGeneration}`)
+    assert.deepEqual(retained.items.map(record => record.values[0].value), ['before-cancel'])
+    assert.equal(retained.items[0].currentEnvironmentId, null)
+    assert.equal(cancelledSubflow.attempts.some(attempt => ['forbidden-later', 'end'].includes(attempt.nodeId)), false)
+    const cancelledManual = (await api(prefix + '/manual-items')).items.filter(item => item.taskId === cancelledSubflow.task.taskId)
+    assert.equal(cancelledManual.length, 1)
+    assert.equal(cancelledManual[0].status, 'cancelled')
+    // A broader parent grant must not be inherited by a narrower child declaration.
+    const scopedTable = await table('子流程字段权限')
+    const parentField = (await api(`${prefix}/tables/${scopedTable.table.tableId}/fields`, { definition: { key: 'parent', name: '仅父流程', type: 'string', required: false, validation: {} }, sourceColumnPolicy: 'localOnly', expectedTableRevision: (await api(`${prefix}/tables/${scopedTable.table.tableId}`)).tableRevision })).field.ref.fieldId
+    const scopedWrite = (id, declaredFields, value) => node(id, 'project_data', { operation: 'createRecord', variableName: id, tableGrant: { ...grant(scopedTable, 'createRecord'), fieldIds: declaredFields }, arguments: { tableId: scopedTable.table.tableId, datasetGeneration: scopedTable.table.datasetGeneration, values: { [parentField]: value } } })
+    const scopedDocument = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 打包子流程权限收窄', variables: [], nodes: [
+      node('open', 'open_page', { url: site + '/account' }), scopedWrite('parent-write', [parentField], 'parent-owned'), node('call', 'subflow', { subflowGroupId: 'child', inputs: {}, outputs: {} }), node('end', 'project_end', { retainEnvironment: { enabled: false } }),
+      node('child', 'subflow_header', { subflowName: '受限子图' }), scopedWrite('child-denied', [scopedTable.fieldId], 'must-not-borrow-parent-field'),
+    ], edges: [edge('open', 'parent-write'), edge('parent-write', 'call'), edge('call', 'end'), edge('child', 'child-denied')] })
+    const deniedSubflow = await run(scopedDocument.id, environment, [], {}, 'failed')
+    assert.equal(deniedSubflow.attempts.find(attempt => attempt.nodeId === 'parent-write')?.status, 'succeeded')
+    assert.equal(deniedSubflow.attempts.find(attempt => attempt.nodeId === 'child-denied')?.error?.code, 'CAPABILITY_SCOPE_DENIED')
+    assert.equal(deniedSubflow.attempts.some(attempt => attempt.nodeId === 'end'), false)
+    const scopedRecords = await api(`${prefix}/tables/${scopedTable.table.tableId}/records?datasetGeneration=${scopedTable.table.datasetGeneration}`)
+    assert.equal(scopedRecords.total, 1)
+    assert.equal(scopedRecords.items[0].values.find(value => value.fieldId === parentField)?.value, 'parent-owned')
+    const subflows = { status: 'passed', frozenTaskIds: subflow.tasks.map(task => task.taskId), cancelledTaskId: cancelledSubflow.task.taskId, deniedTaskId: deniedSubflow.task.taskId, deniedCode: 'CAPABILITY_SCOPE_DENIED', sourceEditedAfterPrepare: editedChild, recordsAfterTwoTasks: childRecords.total, retainedAfterCancel: retained.total, checks: ['two tasks use frozen child after public document edit at live manual barrier', 'two calls export separate records and keep parent private variable', 'root End links both outputs for each task', 'public parent batch stop cancels child checkpoint, prevents later write/End and retains committed record', 'child cannot borrow parent field permission; parent committed record survives the denied child write'] }
     const failed = await run(failureWorkflow.id, environment, [{ parameterId: selectorParameter, name: '定位', type: 'string', required: true }], { [selectorParameter]: '#missing' }, 'failed', inputPlan)
     const failedDetail = await api(`${prefix}/tasks/${failed.task.taskId}`)
     const followed = await run(null, null, [], { [selectorParameter]: '#account' }, 'succeeded', inputPlan, { taskId: failed.task.taskId, statusRevision: failedDetail.run.statusRevision })
@@ -212,7 +294,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.ok(drilldown.items.some(item => item.taskId === loaded.task.taskId), 'statistics must link to real terminal tasks')
     // The scheduler cleans terminal instances unless a failed save preserved
     // the work copy. Explicitly discard only that retained copy.
-    for (const terminal of [failed, conflicted, partial, staleSave]) {
+    for (const terminal of [failed, conflicted, partial, staleSave, cancelledSubflow, deniedSubflow]) {
       let instance
       for (let attempt = 0; attempt < 100; attempt++) {
         instance = (await api(`${prefix}/environment-instances?taskId=${terminal.task.taskId}`)).items[0]
@@ -245,7 +327,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       await new Promise(resolve => setTimeout(resolve, 500))
     }
     assert.equal((await api(prefix)).lifecycleState, 'active')
-    return { projectId: project.projectId, environmentId, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
+    return { projectId: project.projectId, environmentId, subflows, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
   } finally {
     await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
   }

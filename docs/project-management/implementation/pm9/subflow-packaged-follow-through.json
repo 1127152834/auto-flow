@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-24",
+  "status": "packaged_http_and_full_arm_desktop_passed_supplemental_assertions",
+  "releaseAccepted": false,
+  "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
+  "requirements": [
+    "ENV-05",
+    "FLOW-A11",
+    "XE-A20",
+    "XE-C02"
+  ],
+  "scope": "Added actual packaged HTTP/worker assertions to the existing runtime smoke; no production implementation change",
+  "checks": {
+    "packagedSidecar": "full production API smoke passed including three new subflow scenarios and service restart",
+    "subflows": {
+      "status": "passed",
+      "frozenTaskIds": [
+        "b956eb45-87e7-488e-83ec-6c0e56df5159",
+        "1a85afe2-4f54-4479-98d4-c838fb215a05"
+      ],
+      "cancelledTaskId": "64cf6880-1b29-456b-ab30-6aa2728a6f8e",
+      "deniedTaskId": "0f276749-6fc3-4414-94f9-37eb62a722aa",
+      "deniedCode": "CAPABILITY_SCOPE_DENIED",
+      "sourceEditedAfterPrepare": true,
+      "recordsAfterTwoTasks": 4,
+      "retainedAfterCancel": 1,
+      "checks": [
+        "two tasks use frozen child after public document edit at live manual barrier",
+        "two calls export separate records and keep parent private variable",
+        "root End links both outputs for each task",
+        "public parent batch stop cancels child checkpoint, prevents later write/End and retains committed record",
+        "child cannot borrow parent field permission; parent committed record survives the denied child write"
+      ]
+    },
+    "scripts": "101 passed",
+    "fullDesktop": "passed: final visit-count assertions, three subflow scenarios, existing project/Studio/window/runtime/volume/zoom/restart acceptance",
+    "desktopSubflows": {
+      "status": "passed",
+      "frozenTaskIds": [
+        "794c401d-5b35-441d-b31d-487c09dfde6a",
+        "5fc02ff7-2200-4c94-b33d-1abb01e5d5b2"
+      ],
+      "cancelledTaskId": "94f70669-d7f5-4c70-9a85-985ca6d55652",
+      "deniedTaskId": "e1a2af76-1d8c-421a-bdbe-695b56db7004",
+      "deniedCode": "CAPABILITY_SCOPE_DENIED",
+      "sourceEditedAfterPrepare": true,
+      "recordsAfterTwoTasks": 4,
+      "retainedAfterCancel": 1,
+      "checks": [
+        "two tasks use frozen child after public document edit at live manual barrier",
+        "two calls export separate records and keep parent private variable",
+        "root End links both outputs for each task",
+        "public parent batch stop cancels child checkpoint, prevents later write/End and retains committed record",
+        "child cannot borrow parent field permission; parent committed record survives the denied child write"
+      ]
+    },
+    "mapping": "251 valid references and4 verifier tests passed; no status promotions"
+  },
+  "evidence": ".tmp-tests/pm9-packaged-subflows-final-2026-09-24/project-api.json",
+  "evidenceSha256": "e856257a42c52d5f30b6b85a6f6f3fda46f10c89787edb7c1a841af2e83fc24b",
+  "backendSha256": "c446fdbaf73a68fcfc1a11d3695b21f9a86df6f357dfd5cb3b5b676b7dffffac",
+  "limits": [
+    "Current three-platform35886627514 production candidate continues; these new test assertions are supplemental ARM evidence and not part of that running SHA.",
+    "Public stop is checked at a live child manual barrier; old source handler-interception test remains the separate evidence for rejected in-flight late requests.",
+    "Complete other asset/Profile/proxy dependency freezing and physical installation acceptance remain open.",
+    "No new Studio session/docking or subflow UI entry capability is claimed; releaseAccepted=false."
+  ],
+  "desktopEvidence": ".tmp-tests/pm9-desktop-subflows-2026-09-24/project-desktop.json",
+  "desktopEvidenceSha256": "aa9eb6ec831c9111a549cf1451e66720cfe3db2f5b73da536e1abb187b0980b7",
+  "desktopScreenshots": 21,
+  "observations": {
+    "realWorkerLogs": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 31669,
+      "logsPerMinute": 1902,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "recordWrites": {
+      "records": 10000,
+      "elapsedMs": 60713,
+      "status": "passed",
+      "producers": 5,
+      "busyRetries": 0
+    },
+    "synthetic": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60021,
+      "maxBatchLagMs": 41
+    },
+    "twoFramesMs": 2,
+    "scope": "single ARM observation; synthetic log cadence is separate from real worker throughput, no new performance target"
+  }
+}

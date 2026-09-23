@@ -3389,6 +3389,14 @@
           "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/subflow-packaged-follow-through.json",
+          "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM5-A",
@@ -3413,7 +3421,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/unit/test_project_environment_rules.py",
@@ -3432,6 +3440,12 @@
             "symbol": "test_frozen_subflow_twice_isolates_inputs_and_exports_only_declared_outputs",
             "scope": "声明输入、父子变量隔离、仅声明输出、独立 visit 与调用路径",
             "level": "automated_unit"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
@@ -3441,7 +3455,7 @@
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "S1 当前 Mac 源运行链证据；新候选三平台打包回归尚未完成；其他资产/Profile/代理完整冻结条件按原验收保留。"
+            "detail": "ARM打包子流程冻结/隔离/输出子范围通过；新增打包断言尚无Windows/Intel同场景证据，其他资产/Profile/代理完整冻结条件保留。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -12768,7 +12782,16 @@
       "planned_test_file": "apps/backend/tests/integration/test_project_node_writes.py",
       "release_regression": "PM9",
       "status": "planned",
-      "evidence": [],
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/subflow-packaged-follow-through.json",
+          "scope": "ARM正式打包HTTP/worker：子流程人工等待后公开stop父批次，已提交首条保留、后续写与End未运行、人工项取消；父字段授权较宽时子节点仍按自己声明拒绝越权字段，CAPABILITY_SCOPE_DENIED。迟到在途写的直接拒绝仍是另列源码测试。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -12790,7 +12813,7 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_node_writes.py",
@@ -12815,12 +12838,18 @@
             "symbol": "test_child_capability_requires_live_frozen_parent_call",
             "scope": "[other-table/other-field/no-grant/other-operation] 同一 Task 的其他授权不能被当前子节点使用；合法声明可写，父撤销和无存活调用拒绝",
             "level": "automated_integration"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/worker：子流程人工等待后公开stop父批次，已提交首条保留、后续写与End未运行、人工项取消；父字段授权较宽时子节点仍按自己声明拒绝越权字段，CAPABILITY_SCOPE_DENIED。迟到在途写的直接拒绝仍是另列源码测试。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "S1 当前 Mac 真实 worker 已补，三平台新候选及打包撤销链仍待验收；不升级为 verified。"
+            "detail": "ARM打包公开stop等待子流程/字段收窄链通过；在途迟到写仍由源码RPC直接断言支持，新打包断言尚无Windows/Intel同场景证据；不升级verified。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -14288,7 +14317,16 @@
       "planned_test_file": "apps/backend/tests/integration/test_project_environment_retention.py",
       "release_regression": "PM9",
       "status": "planned",
-      "evidence": [],
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/subflow-packaged-follow-through.json",
+          "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "environments",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -14309,7 +14347,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/unit/test_project_environment_rules.py",
@@ -14328,6 +14366,12 @@
             "symbol": "test_frozen_subflow_twice_isolates_inputs_and_exports_only_declared_outputs",
             "scope": "声明输入、父子变量隔离、仅声明输出、独立 visit 与调用路径",
             "level": "automated_unit"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
@@ -14337,7 +14381,7 @@
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "S1 当前 Mac 源运行链证据；新候选三平台打包回归尚未完成；其他资产/Profile/代理完整冻结条件按原验收保留。"
+            "detail": "ARM打包子流程冻结/隔离/输出子范围通过；新增打包断言尚无Windows/Intel同场景证据，其他资产/Profile/代理完整冻结条件保留。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -14730,6 +14774,14 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/subflow-packaged-follow-through.json",
+          "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-B",
@@ -14757,7 +14809,7 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
@@ -14776,6 +14828,12 @@
             "symbol": "test_sensitive_values_keep_taint_across_explicit_outputs",
             "scope": "显式子输入使用合成凭据、子流程和并行具名输出保持敏感标记；内部值正确且事件不泄露合成秘密",
             "level": "automated_unit"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/worker：首Task人工等待后公开编辑子流程文档，两个Task两次调用仍用冻结子图，四条原内容记录、独立visit、父私有变量保持，根End关联每Task两个声明输出。不覆盖完整Profile/代理/资产组合。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
@@ -14785,7 +14843,7 @@
           },
           {
             "kind": "production_evidence_missing",
-            "detail": "S1 Mac 源真实链通过；当前候选三平台打包和其他依赖的完整冻结验收仍缺。"
+            "detail": "ARM打包子流程冻结/隔离/输出子范围通过；新增打包断言尚无Windows/Intel同场景证据，其他资产/Profile/代理完整冻结条件保留。"
           }
         ],
         "statusBeforeReview": "partially_verified"

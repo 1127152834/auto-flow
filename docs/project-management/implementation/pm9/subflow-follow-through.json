@@ -31,5 +31,7 @@
     "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "e210c80d0b00e56779c5b97341d2857ebe333e479a4d437887c705971bcf84ff",
     "apps/backend/src/autoflow/application/workflows/runtime.py": "2ab9d9eaa5ec56bcf88533a2f8bebf52cd4600330d04141475aed6ab6fd9cf60",
     "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "2755d43888a9dbe950feee8c7507b920fcb0bcbeb0588dfeca0f616919170130"
-  }
+  },
+  "followUp20260924": "subflow-packaged-follow-through.json",
+  "historicalBoundary": "This report describes the2026-09-21 source slice. Subsequent S3 support supersedes the historical parallel rejection, and2026-09-24 adds scoped actual ARM packaged public HTTP evidence; not full release acceptance."
 }

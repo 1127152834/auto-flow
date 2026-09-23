@@ -447,9 +447,9 @@
         {
           "id": "ENV-05",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": false,
-          "reviewedCheckCount": 3,
+          "reviewedCheckCount": 4,
           "gapKinds": [
             "production_evidence_missing",
             "production_evidence_missing"
@@ -2002,9 +2002,9 @@
         {
           "id": "FLOW-A11",
           "status": "planned",
-          "evidenceCount": 0,
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 4,
+          "reviewedCheckCount": 5,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2254,9 +2254,9 @@
         {
           "id": "XE-A20",
           "status": "planned",
-          "evidenceCount": 0,
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 3,
+          "reviewedCheckCount": 4,
           "gapKinds": [
             "production_evidence_missing",
             "production_evidence_missing"
@@ -2334,9 +2334,9 @@
         {
           "id": "XE-C02",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 3,
+          "reviewedCheckCount": 4,
           "gapKinds": [
             "test_missing",
             "production_evidence_missing"

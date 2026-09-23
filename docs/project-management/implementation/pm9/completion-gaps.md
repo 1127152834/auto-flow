@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-24 子流程打包补证（confirmed子范围）：正式ARM应用/sidecar公开HTTP与真实worker完成准备后改文档、两个Task各两次冻结调用、变量隔离与声明输出、根End双记录关联；子流程等待后公开stop父批次保留首条记录/取消人工项/不执行后续写及End；父节点较宽字段权限不能被受限子节点借用，返回CAPABILITY_SCOPE_DENIED且保留父提交。完整API/桌面均通过，101脚本/4映射通过。生产仍69baeeb2，运行中35886627514不包含新增脚本断言，不重启；其他资产/Profile/代理组合与Windows/Intel同场景打包证据保留。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见subflow-packaged-follow-through.json。
+
 2026-09-24 必填规则生产修复（confirmed本机）：正式metadata404已由共用DTO路由和随包冻结资源修复，实际ARM空网址提示/项目规则未覆盖提示通过；来源227仅69有规则。17后端定向、45前端、3486全后端/78skipped、101脚本、4映射、Ruff/mypy408/typecheck/lint/OpenAPI/构建与完整ARM桌面通过。原后台页面两帧测量两次失败，诊断hidden后前置显示并确认可见，保留5秒阈值，最终5ms；负向报告保留。见studio-metadata-follow-through.json。249有断言/2未定位、206partial/45planned/0verified不变，等待新源码三平台；releaseAccepted=false。
 
 2026-09-23 XE-G07窗口子范围（confirmed）：当前ARM包实际窗口复用/恢复、越权打开拒绝、脏稿取消/保存关闭、显式重新打开同文档且Run不重复通过；主进程11、脚本101、映射4通过。AU-06/XE-G01/XE-G07项目会话关联与停靠明确为实现缺失，W1–W3规格/计划待确认；新增窗口断言后的完整ARM桌面脚本通过，详见 studio-window-follow-through.json。249/251有范围断言、2未定位，206partial/45planned/0verified；73条缺预定文件全部已有子范围映射，不等于完整覆盖。生产仍632caf6d，新断言不在现有CI35881272086，不重复流水线，releaseAccepted=false。
