@@ -1,0 +1,116 @@
+{
+  "date": "2026-09-24",
+  "status": "confirmed_implementation_gap_not_acceptance",
+  "releaseAccepted": false,
+  "requirements": [
+    "XE-C02",
+    "XE-C11",
+    "XE-G04",
+    "XE-A20"
+  ],
+  "auditParent": "1ad92af487efb6f385ed15e49a04656498fcd3f5",
+  "productionSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+  "probe": "docs/project-management/implementation/pm9/probes/persistent-identity.mjs",
+  "probeCommand": "node docs/project-management/implementation/pm9/probes/persistent-identity.mjs --executable <packaged-sidecar> --runtime-kernel <pinned-browser> --output-dir <disposable-evidence-directory>",
+  "observations": {
+    "status": "observed_not_acceptance",
+    "projectId": "2d89c971-277d-435b-91cf-dc8699e9be66",
+    "environmentId": "8c3f49d9-4015-5e45-9e30-c4f93324ea1a",
+    "profileId": "51f700b2-0f9f-4f3c-8a10-f32150e66052",
+    "originalSeed": 21807,
+    "newSeed": 42845,
+    "originalIdentity": {
+      "userAgent": "AutoFlow-PM9-saved-identity",
+      "language": "en-US",
+      "timezone": "UTC",
+      "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+    },
+    "seedObservations": [
+      {
+        "pid": 16333,
+        "seed": 21807
+      },
+      {
+        "pid": 17321,
+        "seed": 42845
+      },
+      {
+        "pid": 17370,
+        "seed": 42845
+      }
+    ],
+    "fixedEnvironment": {
+      "taskId": "22f6ebaf-986d-4e4b-ba89-dd064568d486",
+      "identity": {
+        "userAgent": "AutoFlow-PM9-current-profile",
+        "language": "fr-FR",
+        "timezone": "Europe/Paris",
+        "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+      },
+      "login": "signed-in"
+    },
+    "inputEnvironment": {
+      "taskId": "5b2216d5-8a01-45da-bc2c-c1d7db6e510d",
+      "identity": {
+        "userAgent": "AutoFlow-PM9-current-profile",
+        "language": "fr-FR",
+        "timezone": "Europe/Paris",
+        "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+      },
+      "login": "signed-in"
+    },
+    "identityPreserved": false,
+    "seedPreserved": false,
+    "boundary": "Actual packaged HTTP/SQLite/browser/worker, public Profile edit/reset, own local fixture site; no current Google or cross-platform claim."
+  },
+  "rootCause": [
+    "Saved environment row contains profile_id but no actual identity snapshot. Instance identity_package stores only source/profileId.",
+    "Both resource resolver persistent paths call _freeze_profile against current Profile. WorkflowBrowserResources.acquire builds the browser from that current frozenConfiguration, not the original saved identity.",
+    "Maintenance opener independently reads current Profile too; this path is source-confirmed, not executed by this probe."
+  ],
+  "scope": "Real packaged sidecar/SQLite/browser/worker and own local fixture. Two successful restorations retain login but violate identity preservation; probe exit0 means measurement completed, not product accepted. No product changes.",
+  "initialFixtureFailure": "Initial probe tried to bind one workflow to two automations and correctly received409 WORKFLOW_ALREADY_BOUND. Final probe creates a separate input workflow via public API. Initial error preserved, not a product defect.",
+  "proposal": {
+    "status": "proposed_approval_pending",
+    "spec": "docs/superpowers/specs/2026-09-24-pm9-persistent-environment-identity.md",
+    "plan": "docs/superpowers/plans/2026-09-24-pm9-persistent-environment-identity.md",
+    "sequence": [
+      "I1 versioned identity persistence and legacy/UI contract",
+      "I2 authoritative task/maintenance identity and same-generation binding",
+      "I3 real worker/packaged/native acceptance"
+    ]
+  },
+  "checks": {
+    "probeSyntax": "node --check passed",
+    "baselineResourceTests": "34 passed /1.76s; existing assertions do not cover preserved saved identity",
+    "coverage": "4 mapping tests passed;251 references valid; no status promotion"
+  },
+  "evidenceSha256": {
+    ".tmp-tests/pm9-persistent-identity-2026-09-24/initial-fixture.log": "ffc3b07589695b4b5484c921be1c6a814c8d948321d3b30bbcf827dd0ea4b639",
+    ".tmp-tests/pm9-persistent-identity-2026-09-24/probe.log": "f7b19b121e3bb1e4183b5c83aa0cf19d41cd3d1b0ed55c3c3258c8e01ff42d7c",
+    ".tmp-tests/pm9-persistent-identity-2026-09-24/committed-probe.log": "5432e34eeafa22fac9a68629b883e2cce5b46adedcddf67050c4473276aa1465",
+    ".tmp-tests/pm9-persistent-identity-2026-09-24/committed-probe/observations.json": "5432e34eeafa22fac9a68629b883e2cce5b46adedcddf67050c4473276aa1465",
+    "docs/project-management/implementation/pm9/probes/persistent-identity.mjs": "390af509add90933825b246d2a9f14ffc1641a30ae94bd42a6d5571c2b9d85c7",
+    ".tmp-tests/pm9-persistent-identity-2026-09-24/existing-tests.log": "10975a723e237c1e1feed355046846ebab98f061d0fbe567578c6cf6e65c3fbe",
+    ".tmp-tests/pm9-persistent-identity-2026-09-24/coverage-tests.log": "7ecd9363e8bb923ab9ae81a0debab145eefc47b6d21a15492092b7fa96b16bb5",
+    ".tmp-tests/pm9-persistent-identity-2026-09-24/coverage.log": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f"
+  },
+  "remaining": [
+    "Persistent identity implementation and legacy behavior require review of I1-I3 before changes.",
+    "Current native matrix/CI artifact reads remain authentication/permissions blocked; historical login-only CI cannot prove identity retention.",
+    "CurrentGoogle/OAuth/signing/physical acceptance and other proposed architecture gaps remain open."
+  ],
+  "coverageGapRequirements": {
+    "production_evidence_missing": 241,
+    "implementation_missing": 19,
+    "test_missing": 8,
+    "external_acceptance_pending": 24
+  },
+  "package": {
+    "platform": "darwin-arm64",
+    "binary": "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend",
+    "sha256": "eb6cd1e2dba7129ab72750d763724980d2084d7fc3aec32ce4f9b0f4762e5abd",
+    "browserSource": "local pinned chromium-145.0.7632.109.2",
+    "priorBuildEvidence": "unknown-owner-follow-through.json"
+  }
+}

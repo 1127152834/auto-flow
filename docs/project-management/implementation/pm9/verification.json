@@ -6,10 +6,11 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "Confirmed persistent identity defect on current cb040daf ARM package: fixed/input environment restores login but uses current edited Profile UA/locale/timezone/seed. I1-I3 durable identity/legacy compatibility/unified launch spec and plan await approval. Maintenance same defect is source-confirmed only. See persistent-identity-audit.json; prior passing smoke does not prove this invariant.",
     "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
     "Current production cb040daf includes the1c676965 empty-source guard and stop-reconciliation fix. New all-platform validation is pending CLI authentication/manual dispatch. Historical35902129697@a317e1f8 (production51e8991e) has three successful jobs; completed logs returned403 and contents were not re-inspected. CLI identity endpoint still401.",
     "Implementation proposals awaiting approval: G1-G3 finite-group atomic writes; L1-L3 verified-principal reauthorization/sender isolation; M1-M3 remote Sheets rows/formulas; S4 Windows existing-file overwrite/append (still501); FR1-FR3 new-field result authorization; AD1-AD3 persistent Run file deletion; W1-W3 project Studio session/docking/ownership; P1-P3 frozen proxy membership/endpoints. See implementationGaps and completion-gaps.md for contracts and evidence.",
-    "251 requirements remain206 partially_verified/45 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/17 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
+    "251 requirements remain206 partially_verified/45 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/19 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
     "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
     "Current cb040daf ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel x86_64 image verification remain scoped to those artifacts; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain external.",
@@ -530,6 +531,17 @@
       "status": "confirmed",
       "detail": "Finite record-group atomic writes have no workflow-facing command/service/worker/Studio contract. Existing update_record commits one record per transaction. Opposing single-record tests do not cover group atomicity. G1–G3 spec/plan proposed; approval pending.",
       "report": "group-write-audit.json"
+    },
+    {
+      "requirements": [
+        "XE-C02",
+        "XE-C11",
+        "XE-G04",
+        "XE-A20"
+      ],
+      "status": "confirmed",
+      "detail": "Actual saved identity is not persisted; real packaged fixed/input restore retains cookies but adopts edited current Profile and seed. Versioned persistence, legacy behavior and shared task/maintenance launch need I1-I3 approval.",
+      "report": "persistent-identity-audit.json"
     }
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
@@ -541,7 +553,8 @@
     "backendFull": "3497 passed /84 skipped /2 warnings /900.44s",
     "packagedDesktop": "Rebuilt unsigned ARM complete desktop passed/22 screenshots;3 visually checked. Not packaged unknown-owner fault or physical installer acceptance.",
     "nativeDispatch": "Authentication restoration/manual trigger pending; old35902129697 excludes current source.",
-    "source": "cb040daf2393860b6435a340ce236b0a0f784f55"
+    "source": "cb040daf2393860b6435a340ce236b0a0f784f55",
+    "additionalCounterexample": "persistent-identity-audit.json: fixed/input identityPreserved=false and seedPreserved=false. Earlier full suite/package checks remain passed for their own scopes; current production not fully acceptable."
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -649,5 +662,6 @@
       "Current c16532d7 ARM CI DMG was checksum-verified, copied to an isolated local installation and ran full desktop smoke. Current Intel DMG checksum and x86_64 image contents were verified on ARM, but no Intel physical run. Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization and full native credential/import/export/uninstall acceptance remain incomplete. Earlier dadb24a1 ARM native-dialog evidence retains its historical hash.",
       "No merge or release is authorized; releaseAccepted=false."
     ]
-  }
+  },
+  "persistentIdentityAudit": "persistent-identity-audit.json"
 }

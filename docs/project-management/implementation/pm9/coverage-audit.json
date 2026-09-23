@@ -1390,7 +1390,6 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 2,
           "gapKinds": [
-            "production_evidence_missing",
             "production_evidence_missing"
           ]
         },
@@ -1593,7 +1592,6 @@
           "plannedTestExists": true,
           "reviewedCheckCount": 2,
           "gapKinds": [
-            "production_evidence_missing",
             "production_evidence_missing"
           ]
         },
@@ -2253,7 +2251,7 @@
         {
           "id": "XE-A20",
           "status": "planned",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": false,
           "reviewedCheckCount": 5,
           "gapKinds": [
@@ -2333,7 +2331,7 @@
         {
           "id": "XE-C02",
           "status": "partially_verified",
-          "evidenceCount": 4,
+          "evidenceCount": 5,
           "plannedTestExists": true,
           "reviewedCheckCount": 5,
           "gapKinds": [
@@ -2426,11 +2424,12 @@
         {
           "id": "XE-C11",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "implementation_missing"
           ]
         },
         {
@@ -2538,11 +2537,12 @@
         {
           "id": "XE-G04",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false,
           "reviewedCheckCount": 1,
           "gapKinds": [
-            "production_evidence_missing"
+            "production_evidence_missing",
+            "implementation_missing"
           ]
         },
         {

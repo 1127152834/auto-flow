@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-24 持久环境身份反例（confirmed实现缺失，I1–I3 proposed）：当前cb040daf ARM打包真实HTTP/SQLite/worker在保存登录后修改Profile与重置seed，固定和输入关联恢复均signed-in，但UA/locale/timezone变为新Profile，原生seed由21807变42845。identityPreserved/seedPreserved均false，不是验收通过。仓库未保存实际身份包，恢复与维护读取当前Profile；维护仅代码证据。34项原资源/环境测试通过仍不覆盖此条件；4映射/251引用通过。XE-C02/C11/G04/A20补implementation_missing，249有断言/2未定位、206partial/45planned/0verified不变，按需求去重缺口241生产/19实现/8测试/24外部。新增I1–I3规格与计划待确认；保留首轮重复绑定409夹具错误。无生产修改、不重复全量/构建；releaseAccepted=false。详见persistent-identity-audit.json。
+
 2026-09-24 XE-C06/XE-G02归属不明核验修复（confirmed本机源码/新包子范围，三平台pending）：生产cb040daf修复参数/数据批次在Task核验中仍显示stopping，并通过既有停止操作保留停止意图，避免重新领取及状态版本抖动。四个反例先失败，相关50项通过；真实普通/已知/未知归属强停3项通过（92.10秒），Ruff/mypy408及映射4项/251引用通过。串行完整后端3497 passed/84 skipped/2 warnings（900.44秒）；新未签名ARM包完整桌面passed/22截图，已目视核对3张。真实worker1004条/31410ms、万行43624ms/0busy、固定1000条合成输入60016ms均为单次本机观察。归属证明缺失期间保留进程/目录/容量/原命令，恢复后原命令完成。Windows Job和打包核验UI仍缺；旧35902129697三平台job成功但不含当前源码，CLI401/日志403仍阻断新矩阵与产物复核。251条状态不升级，releaseAccepted=false。详见unknown-owner-follow-through.json。
 
 2026-09-24 XE-G02强停补证（confirmed本机子范围）：参数真实worker在普通停止后模拟下行通道丢失，实际30秒宽限期内409，公开门禁到期才强停；原生birth身份/进程退出、执行代次撤销、interrupted未知结果、人工取消、临时目录/容量回收及原命令终态查询重放通过，无后续节点/额外Task。最终普通停止+强停2 passed/34 deselected（74.42秒），Ruff通过；既有CI选择新增场景并collect35/46（非运行）。早期夹具/终态/DTO时间比较错误全部保留，不称产品修复。归属不明核验、打包UI与新增三平台仍待验；无生产改动，251条状态不变，releaseAccepted=false。详见force-stop-follow-through.json。

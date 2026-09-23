@@ -14472,6 +14472,14 @@
           "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_counterexample",
+          "report": "docs/project-management/implementation/pm9/persistent-identity-audit.json",
+          "scope": "ARM真实打包恢复固定/输入关联环境时Cookie仍signed-in，但UA/locale/timezone及原生seed跟随当前Profile修改。确认身份保留实现缺失，非通过证据。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "environments",
@@ -14535,6 +14543,10 @@
           {
             "kind": "production_evidence_missing",
             "detail": "ARM新建Profile及子流程冻结子范围通过；fixed/input环境、其他资产组合和Windows/Intel同场景打包证据仍缺，真实代理worker链尚未验收。"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "真实打包反例确认：固定/输入关联恢复读取当前Profile，保存身份包未持久化；Cookie恢复成功不能证明原身份保持。维护同类路径亦读当前Profile（代码证据）。I1–I3身份持久化/旧环境兼容/统一启动规格与计划proposed，待确认。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -14943,6 +14955,14 @@
           "scope": "ARM正式打包HTTP/真实worker：首Task人工等待后公开修改Profile、重置种子并修改根文档；本批第二Task保留原UA/en-US/UTC、根变量名和实际浏览器启动seed；显式新批次使用新UA/fr-FR/Europe/Paris、变量名及seed。Canvas实测不变，仅观察记录；无代理/其他资产完整验收结论。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_counterexample",
+          "report": "docs/project-management/implementation/pm9/persistent-identity-audit.json",
+          "scope": "ARM真实打包恢复固定/输入关联环境时Cookie仍signed-in，但UA/locale/timezone及原生seed跟随当前Profile修改。确认身份保留实现缺失，非通过证据。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-B",
@@ -15015,6 +15035,10 @@
           {
             "kind": "test_missing",
             "detail": "其他资产依赖冻结及全部Profile/代理组合仍未逐项定位直接断言。"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "真实打包反例确认：固定/输入关联恢复读取当前Profile，保存身份包未持久化；Cookie恢复成功不能证明原身份保持。维护同类路径亦读当前Profile（代码证据）。I1–I3身份持久化/旧环境兼容/统一启动规格与计划proposed，待确认。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -15570,6 +15594,14 @@
           "scope": "PM3管理端已交付子范围；complete_acceptance指向后续里程碑的能力保持未验收。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_counterexample",
+          "report": "docs/project-management/implementation/pm9/persistent-identity-audit.json",
+          "scope": "ARM真实打包恢复固定/输入关联环境时Cookie仍signed-in，但UA/locale/timezone及原生seed跟随当前Profile修改。确认身份保留实现缺失，非通过证据。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-B",
@@ -15597,7 +15629,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/contract/test_project_environments.py",
@@ -15610,6 +15642,10 @@
           {
             "kind": "production_evidence_missing",
             "detail": "内容固定代次与真实占用/不存在分类联合链待补"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "真实打包反例确认：固定/输入关联恢复读取当前Profile，保存身份包未持久化；Cookie恢复成功不能证明原身份保持。维护同类路径亦读当前Profile（代码证据）。I1–I3身份持久化/旧环境兼容/统一启动规格与计划proposed，待确认。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -16280,6 +16316,14 @@
           "testedCommit": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
           "scope": "三平台持久来源、End 保存关联及第二自动化恢复登录通过；发布冲突/独占维护/候选处置等完整门禁未关闭。",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "production_counterexample",
+          "report": "docs/project-management/implementation/pm9/persistent-identity-audit.json",
+          "scope": "ARM真实打包恢复固定/输入关联环境时Cookie仍signed-in，但UA/locale/timezone及原生seed跟随当前Profile修改。确认身份保留实现缺失，非通过证据。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM5-B",
@@ -16304,7 +16348,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_environment_real_browser_chain.py",
@@ -16317,6 +16361,10 @@
           {
             "kind": "production_evidence_missing",
             "detail": "整个门禁还包含身份优先级、发布冲突、独占维护和部分失败恢复"
+          },
+          {
+            "kind": "implementation_missing",
+            "detail": "真实打包反例确认：固定/输入关联恢复读取当前Profile，保存身份包未持久化；Cookie恢复成功不能证明原身份保持。维护同类路径亦读当前Profile（代码证据）。I1–I3身份持久化/旧环境兼容/统一启动规格与计划proposed，待确认。"
           }
         ],
         "statusBeforeReview": "partially_verified"
