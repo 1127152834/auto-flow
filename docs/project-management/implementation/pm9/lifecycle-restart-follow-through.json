@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-23",
+  "status": "focused_passed_full_regression_in_progress",
+  "releaseAccepted": false,
+  "parentCommit": "0341bf261d40f30ab4fceb0048c919ba7533c5d8",
+  "requirements": [
+    "PM-04",
+    "PM-05",
+    "XE-G06"
+  ],
+  "scope": "真实 HTTP/SQLite/worker/浏览器：活动任务与已受理保存/未知 Sheets 结果归档后，重建服务恢复项目，历史任务/记录/待发送意图不变且不重跑/不重发；删除环境清理失败保留 deleting/残留，再重启沿原删除幂等键完成；项目运行目录清理，外部文件、无归属运行目录、另一项目和全局 Profile 保留。",
+  "limitations": "macOS ARM 源码测试；Google/凭据为受控 transport/store，PermissionError 为定点注入，产物文件为真实 worker 管理目录内的已知文件 fixture。不是 Google 实网、操作系统真实拒绝权限、打包 UI 或 Workspace 切换证据。",
+  "defect": "Project deletion purged task/artifact database rows and environment directories but omitted owned workspace/runs/{runId} directories. Real restart/delete scenario failed at directory absence assertion before fix.",
+  "fix": "Configure existing workspace/runs root in the existing lifecycle repository; collect only ProjectTaskRow.run_id belonging to the deleted project, then reuse existing removal/residue/retry/purge flow. No new executor, public API or dependency.",
+  "checks": {
+    "realJoint": "Final test uses only startup coordinator after last app reconstruction, no manual advance: 1 passed / 4 deselected / 2 warnings in 15.15s. Previous manual-advance version 1 passed in 15.81s.",
+    "focused": "21 passed / 2 warnings in 8.15s; lifecycle/crash-recovery/resource-reference tests",
+    "ruff": "passed",
+    "mypy": "407 source files passed",
+    "fullBackend": "in_progress",
+    "backendBuild": "PyInstaller passed",
+    "nativeCI": "Existing run35815127474 at9a5a80aa is in_progress and does not contain this follow-up; no additional matrix yet.",
+    "packagedSidecar": "Original unchanged 15-second smoke passed; historical first-start timeout cause remains unresolved.",
+    "openapi": "passed",
+    "coverageVerifier": "251 references valid, 4 verifier tests passed; not acceptance."
+  },
+  "review": "Independent read-only review found no P1/P2. Its evidence limitation about manual advance was addressed by final automatic-startup assertion and passing real test; no production change after review.",
+  "remaining": [
+    "Workspace switching and full G01–G05 joint product acceptance.",
+    "Current three-platform packaged/native physical installation evidence.",
+    "Current Google/OAuth authorization and signing identities.",
+    "Windows existing-file overwrite/append/read safe output remains refused.",
+    "L1–L3 and M1–M3 await approval.",
+    "Historical first-start sidecar timeout cause unresolved."
+  ],
+  "coverage": "248/251 scoped assertions, 3 unlocated; 203 partial / 48 planned / 0 verified. No status promoted."
+}

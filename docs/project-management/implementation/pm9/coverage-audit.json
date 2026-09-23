@@ -43,9 +43,9 @@
         {
           "id": "PM-04",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -53,9 +53,9 @@
         {
           "id": "PM-05",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 3,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2549,7 +2549,7 @@
         {
           "id": "XE-G06",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
           "reviewedCheckCount": 1,
           "gapKinds": [

@@ -563,7 +563,8 @@ def create_app(
     )
     app.include_router(workflow_catalog_router(project_workflow_service))
     project_lifecycle_repository = SqlAlchemyProjectLifecycle(
-        session_factory, environment_root=environment_store.root
+        session_factory, environment_root=environment_store.root,
+        run_root=paths.workspace / "runs",
     )
     project_lifecycle_coordinator = ProjectLifecycleCoordinator(
         project_lifecycle_repository, quiesce_gate

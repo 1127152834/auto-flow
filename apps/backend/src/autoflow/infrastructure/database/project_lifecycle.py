@@ -84,8 +84,10 @@ class SqlAlchemyProjectLifecycle:
         session_factory: sessionmaker[Session],
         *,
         environment_root: Path | None = None,
+        run_root: Path | None = None,
     ) -> None:
         self._factory = session_factory
+        self._run_root = Path(run_root).absolute() if run_root else None
         self._environment_root = (
             Path(environment_root).absolute() if environment_root else None
         )
@@ -303,6 +305,15 @@ class SqlAlchemyProjectLifecycle:
                 session.rollback()
                 return
             targets = _local_targets(session, project_id, self._environment_root)
+            if self._run_root is not None:
+                targets.extend(
+                    self._run_root / run_id
+                    for run_id in session.scalars(
+                        select(ProjectTaskRow.run_id).where(
+                            ProjectTaskRow.project_id == project_id
+                        )
+                    )
+                )
             operation = _open_lifecycle_operation(session, project_id)
             if operation is None:
                 # Residue can clear without a new user command. Reuse the failed

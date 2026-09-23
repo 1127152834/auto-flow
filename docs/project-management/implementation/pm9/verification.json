@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_full_regression_passed_native_ci_in_progress_initial_startup_timeout_unresolved",
+  "status": "lifecycle_restart_focused_passed_full_regression_in_progress_native_ci_prior_candidate",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -8,7 +8,7 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "3 of 251 requirements still have no located assertion; 203 partial / 48 planned / 0 verified. XE-G06 now maps only real archive/blocker scope, not its remaining restore/delete/restart/Workspace gates.",
+    "3 of 251 requirements still have no located assertion; 203 partial / 48 planned / 0 verified. XE-G06 now has source real-worker archive/restore/delete/service-restart assertions; full Workspace/G01–G05 and packaged gates remain open.",
     "L1 verified-principal reauthorization, L2 same-source principal replacement preserving identity, and L3 sender-stop proof plus unknown isolation are implementation gaps with proposed spec/plan awaiting approval. L0 blocks bypass only.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
     "Current final snapshot9a5a80aa complete three-platform matrix35815127474 is in progress. Local full run and corrected targeted run are reported separately; cancelled35814591659 is not success.",
@@ -342,5 +342,10 @@
     "result": "1 passed/3 deselected in11.65s",
     "ciScope": "local-only assertion additions after14df matrix source; production code identical"
   },
-  "archiveSettlementFollowThrough": "archive-settlement-follow-through.json"
+  "archiveSettlementFollowThrough": "archive-settlement-follow-through.json",
+  "lifecycleRestartFollowThrough": {
+    "report": "lifecycle-restart-follow-through.json",
+    "status": "focused_passed_full_regression_in_progress",
+    "releaseAccepted": false
+  }
 }

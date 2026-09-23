@@ -10,3 +10,11 @@
 6. 定向验证归档、同步、环境、worker 取消与代次竞争；复跑真实旧候选冲突、仅关联修复、人工到期竞争。稳定后完整后端回归、构建和单次三平台候选矩阵，记录各自 hash，不据历史通过升级当前验收。
 
 本轮先复现的根因：未知值写未参与归档 blocker；closing 拒绝原结果核验；任务更新遗漏出站意图；同步 End 阻塞事件循环；force cleanup 不等已受理 callback；取消 Run 后实例遗留 waiting_manual。实现与验证进度见 `docs/project-management/implementation/pm9/archive-settlement-follow-through.json`。releaseAccepted=false。
+
+## 后续：既有 PM-04/PM-05/XE-G06 生命周期切片
+
+1. 沿同一真实 worker 联合场景重建服务，恢复后推进真实 scheduler，比较历史任务、记录和 pending 意图，确认浏览器/Sheets 没有重放。
+2. 删除前按原影响与修订确认；注入已知环境目录删除失败，保持故障至服务关闭，验证 deleting/原 Operation/残留。
+3. 再建服务清理并按 workspace 原幂等键查询完成结果；核对本项目环境/运行目录消失，另一项目、外部原文件、无归属目录和全局 Profile 保留。
+4. 复现删除遗漏运行目录后，在统一生命周期仓库按任务归属收集目录，复用已有清理及残留机制；定向、完整回归和稳定候选三平台验证。
+5. 只扩充实际断言范围；Workspace 切换、完整 G01–G05、真实文件权限错误、实网和打包 UI 不从此测试推断。

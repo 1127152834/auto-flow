@@ -466,6 +466,13 @@
           "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/lifecycle-restart-follow-through.json",
+          "scope": "真实 HTTP/SQLite/worker/浏览器：活动任务与已受理保存/未知 Sheets 结果归档后，重建服务恢复项目，历史任务/记录/待发送意图不变且不重跑/不重发；删除环境清理失败保留 deleting/残留，再重启沿原删除幂等键完成；项目运行目录清理，外部文件、无归属运行目录、另一项目和全局 Profile 保留。",
+          "limitations": "macOS ARM 源码测试；Google/凭据为受控 transport/store，PermissionError 为定点注入，产物文件为真实 worker 管理目录内的已知文件 fixture。不是 Google 实网、操作系统真实拒绝权限、打包 UI 或 Workspace 切换证据。"
         }
       ],
       "primary_package": "PM8-A",
@@ -492,19 +499,25 @@
       ],
       "pm8_note": "归档与恢复：真实界面归档 → 只读 → 恢复，历史任务逐字段不变、导出未重放。",
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_lifecycle.py",
             "symbol": "test_archived_is_read_only_and_can_be_restored_without_replay",
             "scope": "归档只读，恢复后原有历史事实不变",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_archive_waits_for_run_save_and_unknown_sheet_outcome",
+            "scope": "真实 HTTP/SQLite/worker/浏览器：活动任务与已受理保存/未知 Sheets 结果归档后，重建服务恢复项目，历史任务/记录/待发送意图不变且不重跑/不重发；删除环境清理失败保留 deleting/残留，再重启沿原删除幂等键完成；项目运行目录清理，外部文件、无归属运行目录、另一项目和全局 Profile 保留。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "实际活动运行/同步/环境保存混合时恢复不重放的生产交错仍需证据"
+            "detail": "混合运行/保存/同步后的服务重启恢复不重放已在本机源生产链补证；当前候选三平台打包 UI、Workspace 切换及用户验收仍待完成。"
           }
         ],
         "statusBeforeReview": "verified"
@@ -538,6 +551,13 @@
           "limitations": "未覆盖所有规格反例；实网 Sheets/物理验收和不支持图形仍明确保留",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/lifecycle-restart-follow-through.json",
+          "scope": "真实 HTTP/SQLite/worker/浏览器：活动任务与已受理保存/未知 Sheets 结果归档后，重建服务恢复项目，历史任务/记录/待发送意图不变且不重跑/不重发；删除环境清理失败保留 deleting/残留，再重启沿原删除幂等键完成；项目运行目录清理，外部文件、无归属运行目录、另一项目和全局 Profile 保留。",
+          "limitations": "macOS ARM 源码测试；Google/凭据为受控 transport/store，PermissionError 为定点注入，产物文件为真实 worker 管理目录内的已知文件 fixture。不是 Google 实网、操作系统真实拒绝权限、打包 UI 或 Workspace 切换证据。"
         }
       ],
       "primary_package": "PM8-A",
@@ -564,7 +584,7 @@
       ],
       "pm8_note": "永久删除：影响过期 412、确认名 422、删除后墓碑与邻居保留已验证；清理失败残留只有后端集成与组件测试证据，端到端未制造真实残留。",
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_lifecycle.py",
@@ -576,6 +596,12 @@
             "file": "apps/backend/tests/integration/test_project_lifecycle.py",
             "symbol": "test_delete_cleanup_failure_keeps_the_project_deleting_with_residue",
             "scope": "失败残留可查，解除后重试完成且非提前 deleted",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_archive_waits_for_run_save_and_unknown_sheet_outcome",
+            "scope": "真实 HTTP/SQLite/worker/浏览器：活动任务与已受理保存/未知 Sheets 结果归档后，重建服务恢复项目，历史任务/记录/待发送意图不变且不重跑/不重发；删除环境清理失败保留 deleting/残留，再重启沿原删除幂等键完成；项目运行目录清理，外部文件、无归属运行目录、另一项目和全局 Profile 保留。",
             "level": "automated_integration"
           }
         ],
@@ -15939,6 +15965,13 @@
           "platform": "darwin/arm64",
           "user_acceptance": "pending",
           "limitations": "不代表当前 Google 实网、打包 UI 或三平台实机。"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/lifecycle-restart-follow-through.json",
+          "scope": "真实 HTTP/SQLite/worker/浏览器：活动任务与已受理保存/未知 Sheets 结果归档后，重建服务恢复项目，历史任务/记录/待发送意图不变且不重跑/不重发；删除环境清理失败保留 deleting/残留，再重启沿原删除幂等键完成；项目运行目录清理，外部文件、无归属运行目录、另一项目和全局 Profile 保留。",
+          "limitations": "macOS ARM 源码测试；Google/凭据为受控 transport/store，PermissionError 为定点注入，产物文件为真实 worker 管理目录内的已知文件 fixture。不是 Google 实网、操作系统真实拒绝权限、打包 UI 或 Workspace 切换证据。"
         }
       ],
       "primary_package": "PM8-C",
@@ -15970,14 +16003,14 @@
           {
             "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
             "symbol": "test_real_archive_waits_for_run_save_and_unknown_sheet_outcome",
-            "scope": "G06 的真实同步/保存/清理 blocker 和归档子范围：活动 worker 取消且环境清理、已受理保存、unknown核验和pending不重发；不覆盖恢复/永久删除/重启/Workspace切换全闭环。",
+            "scope": "真实 HTTP/SQLite/worker/浏览器：活动任务与已受理保存/未知 Sheets 结果归档后，重建服务恢复项目，历史任务/记录/待发送意图不变且不重跑/不重发；删除环境清理失败保留 deleting/残留，再重启沿原删除幂等键完成；项目运行目录清理，外部文件、无归属运行目录、另一项目和全局 Profile 保留。",
             "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "本次仅归档与真实同步/保存/清理阻塞子范围；恢复、永久删除、重启、Workspace切换、历史聚合及G01–G05整组门禁尚未联合闭合。"
+            "detail": "归档/恢复/删除及服务重启已在源生产联合场景补证；完整 Workspace 切换、历史聚合、G01–G05 整组与打包 UI 门禁仍未闭合。"
           },
           {
             "kind": "external_acceptance_pending",

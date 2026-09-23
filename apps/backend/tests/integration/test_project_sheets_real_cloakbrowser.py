@@ -238,7 +238,13 @@ def test_real_shared_sheet_owner_handoff(tmp_path, valid_profile_values, real_cl
 def test_real_archive_waits_for_run_save_and_unknown_sheet_outcome(
     tmp_path, valid_profile_values, real_cloak_page, monkeypatch,
 ):
+    from dataclasses import replace
+    from pathlib import Path
+
     from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.fixtures.model_management import FakeCredentialStore
+    from tests.fixtures.sheets import new_project
+    from tests.integration.test_project_sheets_recovery import reconnect, restarted
     from tests.integration.test_project_sheets_sync import (
         edit_title,
         push,
@@ -259,7 +265,8 @@ def test_real_archive_waits_for_run_save_and_unknown_sheet_outcome(
     source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
     shutil.copytree(source, tmp_path / 'data' / 'kernels' / source.name, symlinks=True)
     transport = LostWriteReply({'数据': [['编号', '标题'], ['A', 'active'], ['B', 'remote-before'], ['C', 'save-before']]})
-    with open_sheets_table(tmp_path, transport, [('code', '编号', 'string'), ('title', '标题', 'string')]) as bound:
+    credentials = FakeCredentialStore()
+    with open_sheets_table(tmp_path, transport, [('code', '编号', 'string'), ('title', '标题', 'string')], credentials=credentials) as bound:
         pull(bound)
         app, client = bound.client.app, bound.client
         prefix = f'/api/v1/projects/{bound.project}'
@@ -362,3 +369,84 @@ def test_real_archive_waits_for_run_save_and_unknown_sheet_outcome(
         assert app.state.project_run_scheduler.blockers() == []
         assert app.state.project_lifecycle_coordinator.blockers() == []
         assert not list((tmp_path / 'tmp').glob('**/generation-*'))
+
+        original_tasks = client.get(prefix + '/tasks').json()['items']
+        run_ids = [item['runId'] for item in original_tasks]
+        artifact_dirs = [app.state.project_workflow_worker_manager._artifact_root / identity for identity in run_ids]
+        # Known owned file fixtures exercise content removal, not only empty dirs.
+        for directory in artifact_dirs:
+            (directory / 'owned-evidence.txt').write_text('owned artifact fixture', encoding='utf-8')
+        unowned_artifact = artifact_dirs[0].parent / uid() / 'unowned-evidence.txt'
+        unowned_artifact.parent.mkdir()
+        unowned_artifact.write_text('unowned artifact fixture', encoding='utf-8')
+        saved_root = app.state.environment_service.store.generation_dir(saved_environment, 1).parents[1]
+        assert saved_root.is_dir()
+        external = tmp_path / 'external-source.txt'
+        external.write_text('unowned source must survive', encoding='utf-8')
+        other_project = new_project(client, name='Unrelated project')
+
+    # Keep the injected cleanup failure active until the second app has stopped.
+    with monkeypatch.context() as cleanup_patch, restarted(reconnect(tmp_path, transport, credentials)) as client:
+        bound = replace(bound, client=client)
+        app = client.app
+        archived = client.get(prefix).json()
+        assert archived['lifecycleState'] == 'archived'
+        assert bound.records() == before_rows
+        assert sync_operations(bound, 'pending') == [pending]
+        assert client.get(prefix + '/tasks').json()['items'] == original_tasks
+        assert saved_root.is_dir()
+        restored = client.post(prefix + '/restore', headers=new_key(), json={'expectedManagementRevision': archived['managementRevision']})
+        assert restored.status_code in {200, 202}, restored.text
+        assert client.get(prefix).json()['lifecycleState'] == 'active'
+        # Explicit scheduler progress must not revive old batches or flush old intents.
+        client.portal.call(app.state.project_run_scheduler.tick)
+        assert client.get(prefix + '/tasks').json()['items'] == original_tasks
+        assert sync_operations(bound, 'pending') == [pending]
+        assert bound.records() == before_rows
+        assert transport.changes() == writes and requests.count('/fixture') == 2
+        preview = client.get(prefix + '/lifecycle-impact', params={'action': 'archive'}).json()
+        archived_again = client.post(prefix + '/archive', headers=new_key(), json={
+            'expectedManagementRevision': client.get(prefix).json()['managementRevision'], 'impactRevision': preview['impactRevision'],
+        })
+        assert archived_again.status_code in {200, 202}, archived_again.text
+        app.state.project_lifecycle.repository.advance(bound.project)
+        assert client.get(prefix).json()['lifecycleState'] == 'archived'
+        preview = client.get(prefix + '/lifecycle-impact', params={'action': 'delete'}).json()
+        assert preview['blockers'] == [] and preview['unsyncedCount'] == 1
+        deletion_body = {'confirmationName': archived['name'], 'expectedManagementRevision': client.get(prefix).json()['managementRevision'], 'impactRevision': preview['impactRevision']}
+        deletion_key = new_key()
+        original_remove = shutil.rmtree
+
+        def deny_owned_environment(path, *args, **kwargs):
+            if Path(path) == saved_root:
+                raise PermissionError('injected known owned directory cleanup failure')
+            return original_remove(path, *args, **kwargs)
+
+        cleanup_patch.setattr(shutil, 'rmtree', deny_owned_environment)
+        deletion = client.request('DELETE', prefix, headers=deletion_key, json=deletion_body)
+        assert deletion.status_code in {200, 202}, deletion.text
+        deletion_id = deletion.json()['operation']['operationId']
+        app.state.project_lifecycle.repository.advance(bound.project)
+        assert client.get(prefix).json()['lifecycleState'] == 'deleting'
+        failed = client.get(prefix + f'/operations/{deletion_id}').json()
+        assert failed['status'] == 'failed' and failed['error']['code'] == 'DELETE_CLEANUP_FAILED'
+        assert str(saved_root) in failed['error']['details']['cleanup']['residue']
+        assert sync_operations(bound, 'pending') == [pending]
+        assert saved_root.is_dir()
+
+    with restarted(reconnect(tmp_path, transport, credentials)) as client:
+        app = client.app
+        wait_for(lambda: client.get(prefix).status_code == 404, 'startup coordinator resumes original delete')
+        completed = client.get('/api/v1/workspace/operations/by-idempotency-key/' + deletion_key['Idempotency-Key'])
+        assert completed.status_code == 200 and completed.json()['status'] == 'succeeded', completed.text
+        assert completed.json()['operationId'] == deletion_id
+        assert not saved_root.exists()
+        assert all(not directory.exists() for directory in artifact_dirs)
+        assert unowned_artifact.read_text(encoding='utf-8') == 'unowned artifact fixture'
+        assert client.get(f'/api/v1/projects/{other_project}').status_code == 200
+        assert app.state.profile_service.get(profile.id).id == profile.id
+        assert external.read_text(encoding='utf-8') == 'unowned source must survive'
+        assert transport.changes() == writes and requests.count('/fixture') == 2
+        assert transport.grid('数据')[3] == ['C', 'save-before']
+        assert app.state.project_run_scheduler.blockers() == []
+        assert app.state.project_lifecycle_coordinator.blockers() == []
