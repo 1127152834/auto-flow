@@ -19,7 +19,12 @@
     "mypy": "407 source files passed",
     "fullBackend": "in_progress",
     "backendBuild": "PyInstaller passed",
-    "nativeCI": "Existing run35815127474 at9a5a80aa is in_progress and does not contain this follow-up; no additional matrix yet.",
+    "nativeCI": {
+      "runId": "35816258910",
+      "headSha": "94f8e0a823467f548232b7a4f61adf718ee66f9b",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35816258910",
+      "status": "in_progress"
+    },
     "packagedSidecar": "Original unchanged 15-second smoke passed; historical first-start timeout cause remains unresolved.",
     "openapi": "passed",
     "coverageVerifier": "251 references valid, 4 verifier tests passed; not acceptance."
@@ -33,5 +38,6 @@
     "L1–L3 and M1–M3 await approval.",
     "Historical first-start sidecar timeout cause unresolved."
   ],
-  "coverage": "248/251 scoped assertions, 3 unlocated; 203 partial / 48 planned / 0 verified. No status promoted."
+  "coverage": "248/251 scoped assertions, 3 unlocated; 203 partial / 48 planned / 0 verified. No status promoted.",
+  "codeCandidate": "94f8e0a823467f548232b7a4f61adf718ee66f9b"
 }

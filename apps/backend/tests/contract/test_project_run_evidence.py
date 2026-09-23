@@ -62,7 +62,7 @@ def add_artifact(factory, task, root, *, available=True):
     relative_path = (
         f"runs/{task.run_id}/generation-0/{artifact_id}.png" if available else None
     )
-    content = b"png" if available else None
+    content = b"\x89PNG\r\n\x1a\n\x00\xffbinary\r\n" if available else None
     if relative_path and content:
         path = root / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -250,8 +250,8 @@ def test_lists_and_reads_a_project_scoped_screenshot_without_exposing_a_path(tmp
         "eventSequence": 6,
         "executionGeneration": 0,
         "mediaType": "image/png",
-        "byteSize": 3,
-        "sha256": sha256(b"png").hexdigest(),
+        "byteSize": len(content),
+        "sha256": sha256(content).hexdigest(),
         "createdAt": NOW.isoformat().replace("+00:00", "Z"),
         "unavailableReason": None,
         "contentUrl": f"{prefix}/{artifact_id}/content",

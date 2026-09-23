@@ -2377,9 +2377,9 @@
         {
           "id": "XE-C07",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 3,
+          "reviewedCheckCount": 4,
           "gapKinds": [
             "production_evidence_missing",
             "external_acceptance_pending"

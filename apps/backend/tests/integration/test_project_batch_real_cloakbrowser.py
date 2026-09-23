@@ -821,7 +821,7 @@ async def test_real_project_batch_http(
                     artifact = artifacts[0]
                     assert artifact['artifactId'] in [event['payload'].get('artifactId') for event in events if event['kind'] == 'artifact']
                     screenshot = await observer.get(artifact['contentUrl'])
-                    assert screenshot.status_code == 200 and screenshot.headers['content-type'] == 'image/png'
+                    assert screenshot.status_code == 200 and screenshot.headers['content-type'] == 'image/png', screenshot.text if screenshot.status_code != 200 else screenshot.headers
                     assert screenshot.content.startswith(b'\x89PNG\r\n\x1a\n')
                     assert len(screenshot.content) == artifact['byteSize']
                     assert hashlib.sha256(screenshot.content).hexdigest() == artifact['sha256']

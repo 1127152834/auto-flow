@@ -14904,6 +14904,13 @@
           "scope": "仅明确列出的本机源码真实 TCP/worker 与独立前端恢复断言；整项仍 partial。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/windows-artifact-binary-read.json",
+          "scope": "已记录Windows真实截图GET409失败，公共二进制读标志修复和本机契约/真实worker验证。",
+          "limitations": "Windows修复后原生复验未完成；不是任意路径既有文件S4开放。"
         }
       ],
       "primary_package": "PM3-C",
@@ -14950,12 +14957,18 @@
             "testName": "repairs a disconnected stream from its last seen sequence without appending duplicates",
             "scope": "受控客户端收到重复 checkpoint 后连接 EOF，以最后已见序号补读并去重，持久终态停止观察；不是 renderer 与真实后端联合验收。",
             "level": "automated_unit"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_run_evidence.py",
+            "symbol": "test_lists_and_reads_a_project_scoped_screenshot_without_exposing_a_path",
+            "scope": "同项目/任务产物 HTTP 返回含PNG头、CRLF、0x1A、NUL/FF的完整字节，长度和SHA-256与持久元数据一致；Windows原生修复后复验待完成。",
+            "level": "automated_contract"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "本机 macOS ARM 源码真实 TCP/worker 与前端受控 EOF 测试分别通过；尚非安装包 renderer 真实断网重连联合验收，跨平台新场景等待候选 CI。"
+            "detail": "Windows旧候选真实截图GET409已定位为缺少二进制打开标志；修复后原生复验尚待完成。本机源TCP/worker和前端受控EOF分别通过，安装包renderer实际断网重连联合验收仍缺。"
           },
           {
             "kind": "external_acceptance_pending",

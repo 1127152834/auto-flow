@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-23",
+  "status": "local_passed_windows_native_recheck_pending",
+  "releaseAccepted": false,
+  "parentCommit": "94f8e0a823467f548232b7a4f61adf718ee66f9b",
+  "scope": "Project-scoped managed Run artifact HTTP content reads only; not arbitrary-path Windows existing-file operations.",
+  "nativeFailure": {
+    "runId": "35811305102",
+    "headSha": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
+    "jobId": "107023291046",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35811305102/job/107023291046",
+    "test": "test_real_project_batch_http[manual-evidence-reconnect]",
+    "observation": "Screenshot artifact metadata available, HTTP content request returned409 instead of200; test line824. Native binary read recheck still pending."
+  },
+  "rootCause": "Shared artifact_content used os.open without O_BINARY. Windows text-mode CRLF/0x1A conversion invalidates persisted PNG byte size/hash. Prior ASCII-only b-png fixture missed the platform behavior.",
+  "source": "https://docs.python.org/3.11/library/os.html#os.open",
+  "fix": "Add platform-provided O_BINARY flag or0 at shared read; keep ownership/path/regular-file/size/hash checks. Strengthen existing content fixture with PNG signature/CRLF/0x1A/NUL/FF; surface real-worker HTTP error on assertion failure.",
+  "checks": {
+    "contractAndIntegration": "16 passed / 2 warnings in4.63s",
+    "realManualEvidence": "macOS ARM source real worker/TCP/SSE/screenshot:1 passed /33 deselected in17.49s; not Windows proof.",
+    "ruff": "passed",
+    "mypy": "407 source files passed",
+    "fullRegression": "Lifecycle94f8 source full local run remains in_progress; started before binary-only follow-up.",
+    "nativeWindows": "pending"
+  },
+  "review": "Independent read-only review no P1/P2; native Windows not yet reverified.",
+  "remaining": [
+    "Final native Windows contract and real screenshot read recheck.",
+    "Windows arbitrary-path existing-file safe overwrite/append/read S4 remains refused and is not enabled by this fix.",
+    "Release acceptance remains incomplete."
+  ]
+}

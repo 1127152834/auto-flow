@@ -67,7 +67,7 @@ class ProjectRunEvidence:
         try:
             path = (self._workspace_root / artifact.relative_path).resolve(strict=True)
             path.relative_to(self._workspace_root)
-            flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+            flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
             descriptor = os.open(path, flags)
             try:
                 info = os.fstat(descriptor)
