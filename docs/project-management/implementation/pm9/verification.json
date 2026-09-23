@@ -509,12 +509,20 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
-    "status": "local_full_and_packaged_passed_native_matrix_pending",
+    "status": "local_full_and_packaged_passed_native_dispatch_authentication_required",
     "source": "1c676965fb581ea3e33882b3ecb300b3abc99368",
     "report": "partial-source-follow-through.json",
     "scope": "Source identity gate now runs for empty input tables; existing matrices exclude this production fix.",
     "backendFull": "3493 passed /80 skipped /2 warnings /778.49s",
-    "packagedDesktop": "Rebuilt unsigned ARM app full desktop passed;22 screenshots; no live Google outage UI."
+    "packagedDesktop": "Rebuilt unsigned ARM app full desktop passed;22 screenshots; no live Google outage UI.",
+    "nativeDispatch": {
+      "status": "not_dispatched_authentication_required",
+      "testAndHarnessCandidate": "b26e790874bbf1fd2f836db36c967990956b73db",
+      "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+      "observedFailure": "gh workflow run ci.yml --ref codex/project-management-pm9-runtime -f pm9Platform=all returned HTTP401 Requires authentication; subsequent run listing contains no matching head.",
+      "fallback": "GitHub connector updated draft PR successfully; no Actions dispatch tool available. Ego browser space1 shows signed-out Actions page and has been handed off for user login/dispatch.",
+      "scope": "Existing35902129697@a317e1f8 excludes this fix;35895754111@25bb8ab2 completed success and is historical. Recheck runs before any dispatch after credentials are restored."
+    }
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {

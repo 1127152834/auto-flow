@@ -81,8 +81,12 @@
     ".tmp-tests/pm9-partial-source-2026-09-24/mypy.log": "144062ad850da376abb58cfac6c1a147a5b0cd760c85c8739f96db58cf8d92e9"
   },
   "ci": {
-    "status": "not_dispatched",
-    "scope": "Existing35902129697@a317e1f8 and35895754111@25bb8ab2 do not include this production fix. Preserve both live runs; validate final new candidate once stable."
+    "status": "not_dispatched_authentication_required",
+    "testAndHarnessCandidate": "b26e790874bbf1fd2f836db36c967990956b73db",
+    "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+    "observedFailure": "gh workflow run ci.yml --ref codex/project-management-pm9-runtime -f pm9Platform=all returned HTTP401 Requires authentication; subsequent run listing contains no matching head.",
+    "fallback": "GitHub connector updated draft PR successfully; no Actions dispatch tool available. Ego browser space1 shows signed-out Actions page and has been handed off for user login/dispatch.",
+    "scope": "Existing35902129697@a317e1f8 excludes this fix;35895754111@25bb8ab2 completed success and is historical. Recheck runs before any dispatch after credentials are restored."
   },
   "remaining": [
     "Necessary new native matrix for production1c676965; local full backend and ARM package acceptance passed.",
