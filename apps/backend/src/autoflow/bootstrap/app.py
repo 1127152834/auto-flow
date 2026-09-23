@@ -398,7 +398,7 @@ def create_app(
     android_operations = SqlAlchemyAndroidOperationRepository(session_factory)
     android_images = AndroidImageService(android_resources, android, ImageCatalog(android.runtime))
     android.runtime.image_catalog = android_images
-    android_backups = AndroidBackupService(android_resources, paths.workspace)
+    android_backups = AndroidBackupService(android_resources, paths.workspace, android_operations)
     android_observations = DeviceObservationService(android.repository, android.runtime)
     android_bulk = AndroidBulkService(android_resources, android)
     android_cleanup = CleanupService(android_resources, android, android_backups, android_operations)

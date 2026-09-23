@@ -1,0 +1,36 @@
+import asyncio
+import io
+import json
+import tarfile
+from uuid import uuid4
+
+from autoflow.providers.android.mac_runtime import docker, run
+
+
+async def main():
+    volume = 'autoflow-xattr-probe-' + uuid4().hex
+    container = None
+    report = {'volume': volume}
+    try:
+        await docker('volume', 'create', '--name', volume)
+        image = 'sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b'
+        container = (await docker('create', '-v', f'{volume}:/data:ro', image)).decode().strip()
+        mount = json.loads(await docker('volume', 'inspect', volume))[0]['Mountpoint']
+        script = "import os,sys; p=sys.argv[1]+'/autoflow-xattr-probe'; open(p,'wb').write(b'proof'); os.setxattr(p,'user.autoflow_probe',b'metadata'); print(os.getxattr(p,'user.autoflow_probe').decode())"
+        set_result = (await run(['limactl', 'shell', '--workdir=/tmp', 'autoflow-redroid', 'sudo', 'python3', '-c', script, mount])).decode().strip()
+        archive_data = await docker('cp', container + ':/data', '-', timeout=60)
+        with tarfile.open(fileobj=io.BytesIO(archive_data)) as archive:
+            entry = next(member for member in archive if member.name.endswith('/autoflow-xattr-probe'))
+            report.update(sourceXattr=set_result, archivePax=entry.pax_headers, archiveBytes=len(archive_data))
+        report['status'] = 'observed'
+    except BaseException as error:
+        report.update(status='failed', error=repr(error))
+        raise
+    finally:
+        if container:
+            await docker('rm', '-f', container)
+        await docker('volume', 'rm', volume)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+
+
+asyncio.run(main())

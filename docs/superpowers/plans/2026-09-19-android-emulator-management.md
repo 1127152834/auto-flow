@@ -45,6 +45,10 @@
 - T18 恢复隔离增量以 `be067690` 为基线：恢复意图在IO前持久化，启动/控制/备份隔离，generation/请求/备份栅栏与成功原子发布；真实部分写入、普通recover仍隔离、正常HTTP恢复和重放通过。362项后端、105项前端聚焦通过；硬进程中断/xattrs/全量门槛仍待完成，见 `docs/qa/android-management/2026-09-23-restore-isolation-verification.md`。
 - 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
 
+### 0.4 2026-09-23 当前验收口径
+
+当前父 HEAD `fe2210dc` 加隔离工作树中的 T17/T18 增量；最终状态以 [24 项验收校准](../../qa/android-management/2026-09-23-acceptance-matrix.md)及[真实持久数据属性验收](../../qa/android-management/2026-09-23-persistent-metadata-verification.md)为准。旧 checklist 的 `blocked` 是各次执行时的快照，不再作为软件任务不能继续的结论。真实 Mac 已验证原生窗口、部分恢复写入失败隔离、正常新卷启动读回、1792 项持久条目与 417 项 xattrs/55 项 ACL 一致；卷根目录及硬/软链接另由客体实验验证。专用谷歌镜像/账号/网络链保持外部 `blocked`，高级日志、APK 遗留临时文件、完整交互/规模/硬中断及 T20 失败矩阵仍是可继续实施或未执行项。完整前端 5595 项、脚本 95 项和后端 3964 项已通过，见[完整门槛](../../qa/android-management/2026-09-23-full-gates.md)；通过代码门槛不代表整目标验收完成。
+
 ## Global Constraints
 
 - GC-01：本轮运行平台仅 Apple Silicon macOS + 现有 Lima/ReDroid；其他平台明确提示不支持，不影响主应用启动。
@@ -264,7 +268,7 @@ def test_request_id_cannot_change_target(repo):
 
 **接口：** 产出1.3节ConsoleController；新增heartbeat，GET不续租；原生进程按既有身份核实。T01的makeApi提供session/action/input日志与对应完整返回值。
 
-- [ ] 写返回重进、组件卸载、切设备/工作区/后端、旧输入、切原生、心跳失联和正常原生窗口不被误回收的测试。（状态：blocked）
+- [ ] 写返回重进、组件卸载、切设备/工作区/后端、旧输入、切原生、心跳失联和正常原生窗口不被误回收的测试。（状态：partial；单测和原生窗口进程实测见 2026-09-23-persistent-metadata-verification.md，人工输入/切端仍未验收）
 
 ```typescript
 it('does not replay old input after leaving', async () => {
@@ -280,10 +284,10 @@ it('does not replay old input after leaving', async () => {
 });
 ```
 
-- [ ] RED：运行ConsoleController.test.ts和`(cd apps/backend && uv run pytest tests/unit/test_android_console_lifecycle.py -q)`，先证明故障路径。（状态：blocked）
-- [ ] 输入队列绑定完整身份；leave停止新输入、释放、核实结束，不停止Android。新会话才初始化序号；切端先关闭旧写端并递增generation，不直接清零后端sequence。（状态：blocked）
-- [ ] 复用主应用关闭协调；嵌入式5秒心跳/30秒失联，原生端按进程存活。失败保持可见占用；普通详情/缩略图不claim。运行旧AndroidVideo/AndroidPage回归与typecheck。（状态：blocked）
-- [ ] GREEN后提交 `fix(android): manage console ownership independently of navigation`。（状态：blocked）
+- [ ] RED：运行ConsoleController.test.ts和`(cd apps/backend && uv run pytest tests/unit/test_android_console_lifecycle.py -q)`，先证明故障路径。（状态：partial；具体测试与未覆盖场景见 AM1 QA）
+- [ ] 输入队列绑定完整身份；leave停止新输入、释放、核实结束，不停止Android。新会话才初始化序号；切端先关闭旧写端并递增generation，不直接清零后端sequence。（状态：partial；静态/自动化已有，切端真机未验收）
+- [ ] 复用主应用关闭协调；嵌入式5秒心跳/30秒失联，原生端按进程存活。失败保持可见占用；普通详情/缩略图不claim。运行旧AndroidVideo/AndroidPage回归与typecheck。（状态：partial；原生进程实测通过，30秒失联真机未验收）
+- [ ] GREEN后提交 `fix(android): manage console ownership independently of navigation`。（状态：partial；整 T05 仍未验收）
 
 ### T06：管理首页、创建与保留数据入口
 
@@ -314,7 +318,7 @@ expect(requests.some(p => /workflows|allocations|\/runs/.test(p))).toBe(false);
 
 **接口：** smoke需要`--workspace <隔离目录>`、`--allow-device-mutation`；只操作本轮生成且标签匹配的资源。普通测试仅parser/fake runtime。
 
-- [ ] 写缺授权参数拒绝、`--help`无副作用、安装响应丢失不得假成功的测试。（状态：blocked）
+- [ ] 写缺授权参数拒绝、`--help`无副作用、安装响应丢失不得假成功的测试。（状态：partial；smoke 参数保护和安装未知结果自动化已有，测试 APK 真机缺条件）
 
 ```python
 import subprocess
@@ -327,10 +331,10 @@ def test_smoke_requires_explicit_permission():
     assert '--allow-device-mutation' in r.stderr
 ```
 
-- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/unit/test_android_management_smoke_args.py -q)`；CLI任何设备变更前先校验授权和范围。（状态：blocked）
-- [ ] 经授权在Mac隔离工作区验证：创建→安装测试应用/写入数据→中文输入/截图→返回重进→切原生/切回→停机重启→重启AutoFlow→中断恢复→删除隔离。（状态：blocked）
-- [ ] 执行1.4节完整门槛；证据包含平台、imageId、commit、命令、结果及未测项。无Mac时记录blocked，不宣称真实链完成。（状态：blocked）
-- [ ] 提交 `test(android): verify standalone management lifecycle`；停在AM1验收点。（状态：blocked）
+- [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/unit/test_android_management_smoke_args.py -q)`；CLI任何设备变更前先校验授权和范围。（状态：passed；3 passed，见 AM1 QA）
+- [ ] 经授权在Mac隔离工作区验证：创建→安装测试应用/写入数据→中文输入/截图→返回重进→切原生/切回→停机重启→重启AutoFlow→中断恢复→删除隔离。（状态：partial；创建/截图/停机重启/删除与原生窗口进程已有真机证据，完整串联未执行）
+- [ ] 执行1.4节完整门槛；证据包含平台、imageId、commit、命令、结果及未测项。无Mac时记录blocked，不宣称真实链完成。（状态：partial；Mac 可用，完整 AM1 场景未验收）
+- [ ] 提交 `test(android): verify standalone management lifecycle`；停在AM1验收点。（状态：partial；阶段未完成）
 
 ## 3. AM2：镜像、模板与谷歌组件验证
 

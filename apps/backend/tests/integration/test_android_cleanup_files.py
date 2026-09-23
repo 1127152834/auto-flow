@@ -6,6 +6,10 @@ import pytest
 from autoflow.application.android.backups import AndroidBackupService
 from autoflow.application.android.cleanup import CleanupService
 from autoflow.domain.android.ports import AndroidError
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
+from autoflow.infrastructure.database.android_operations import (
+    SqlAlchemyAndroidOperationRepository,
+)
 from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.session import (
     create_session_factory,
@@ -166,7 +170,16 @@ async def test_runtime_backup_and_restore_hold_the_cleanup_lease(tmp_path, actio
     workspace = str(tmp_path.resolve())
     preview = cleanup.preview(["staging:held"], workspace)
     runtime.blocked = True
-    call = backups.create_with_runtime(source, None, runtime) if action == "backup" else backups.restore_data(record["id"], {"deviceId": "new", "imageId": "image", "generation": 1, "restoreState": "pending", "restoreRequestId": "request", "restoreBackupId": record["id"], "creationConfig": {"restoreRequestId": "request", "restoreBackupId": record["id"], "start": False}}, runtime)
+    if action == "restore":
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        operation = operations.accept(workspace, "request", "new", "restore", "digest", {"backupId": record["id"], "newDeviceId": "new"})
+        operations.transition(operation.operation_id, "queued", "running", {})
+        target = {"deviceId": "new", "workspaceId": workspace, "imageId": "image", "volumeId": "new-volume", "generation": 1, "androidStatus": "stopped", "control": "idle", "restoreState": "pending", "restoreRequestId": "request", "restoreBackupId": record["id"], "restoreOperationId": operation.operation_id, "creationConfig": {"restoreRequestId": "request", "restoreBackupId": record["id"], "start": False}}
+        SqlAlchemyDeviceRepository(sessions).save(target)
+        backups.operations = operations
+        call = backups.restore_data(record["id"], target, runtime)
+    else:
+        call = backups.create_with_runtime(source, None, runtime)
     task = asyncio.create_task(call)
     try:
         await asyncio.wait_for(entered.wait(), 2)

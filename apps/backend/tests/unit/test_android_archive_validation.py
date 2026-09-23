@@ -54,3 +54,15 @@ def test_unsafe_or_ambiguous_entries_are_rejected(entries):
     with pytest.raises(AndroidError) as error:
         AndroidBackupService._validate_archive(archive_bytes(entries))
     assert error.value.code == "ANDROID_BACKUP_INCOMPATIBLE"
+
+
+def test_guest_tar_xattrs_and_acls_are_valid_archive_metadata():
+    stream = io.BytesIO()
+    with tarfile.open(fileobj=stream, mode="w", format=tarfile.PAX_FORMAT) as archive:
+        root = tarfile.TarInfo("data")
+        root.type = tarfile.DIRTYPE
+        archive.addfile(root)
+        member = tarfile.TarInfo("data/file")
+        member.pax_headers = {"SCHILY.xattr.user.autoflow_probe": "metadata", "SCHILY.acl.access": "user::rw-\ngroup::r--\nother::---\n"}
+        archive.addfile(member)
+    AndroidBackupService._validate_archive(stream.getvalue())

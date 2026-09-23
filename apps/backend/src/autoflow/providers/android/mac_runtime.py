@@ -185,14 +185,28 @@ class MacAndroidRuntime:
 
         await manage(self, device, request, stage, save)
 
-    async def backup_volume(self, device: dict[str, Any]) -> bytes:
-        container = (await docker("create", "--label", LABEL + "=" + self.workspace_id,
-                                  "--label", "io.autoflow.android.device=" + device["deviceId"],
-                                  "-v", f"{device['volumeId']}:/data:ro", device["imageId"], timeout=30)).decode().strip()
+    async def _owned_volume_mount(self, device: dict[str, Any]) -> str:
+        volume_id = device.get("volumeId")
+        if device.get("workspaceId") != self.workspace_id or not isinstance(volume_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,254}", volume_id):
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属校验失败", 403)
         try:
-            return await docker("cp", container + ":/data", "-", timeout=600)
-        finally:
-            await docker("rm", container, timeout=30)
+            volume = json.loads(await docker("volume", "inspect", volume_id, timeout=5))[0]
+        except (AndroidError, OSError, TimeoutError, ValueError, IndexError, KeyError, TypeError) as error:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属无法核实", 403) from error
+        labels = volume.get("Labels") or {}
+        mountpoint = volume.get("Mountpoint")
+        if labels.get(LABEL) != self.workspace_id or labels.get("io.autoflow.android.device") != device.get("deviceId") or not isinstance(mountpoint, str) or not mountpoint.startswith("/") or os.path.basename(mountpoint) != "_data":
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属标签不符", 403)
+        return mountpoint
+
+    async def backup_volume(self, device: dict[str, Any]) -> bytes:
+        mountpoint = await self._owned_volume_mount(device)
+        try:
+            return await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar",
+                              "--format=posix", "--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--numeric-owner",
+                              "--transform=s@^_data@data@S", "-C", os.path.dirname(mountpoint), "-cf", "-", "_data"], 600)
+        except AndroidError:
+            raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "数据卷归档失败，请核实实例", 503) from None
 
     async def restore_volume(self, device: dict[str, Any], data: bytes) -> None:
         if device.get("workspaceId") != self.workspace_id:
@@ -201,23 +215,18 @@ class MacAndroidRuntime:
             raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止目标实例", 409)
         if device.get("ownerRunId") or device.get("control") not in {None, "idle"}:
             raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止并释放目标实例控制会话", 409)
-        volume_id = device.get("volumeId")
-        if not isinstance(volume_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,254}", volume_id):
-            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷标识无效", 403)
+        mountpoint = await self._owned_volume_mount(device)
+        probe = "import os,sys\nwith os.scandir(sys.argv[1]) as entries:\n print('occupied' if next(entries,None) else 'empty')\n"
+        contents = await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c", probe, mountpoint], 30)
+        if contents.strip() != b"empty":
+            raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复目标数据卷不是空卷，禁止覆盖", 409)
         try:
-            volume = json.loads(await docker("volume", "inspect", volume_id, timeout=5))[0]
-        except (AndroidError, OSError, TimeoutError, ValueError, IndexError, KeyError, TypeError) as error:
-            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属无法核实", 403) from error
-        labels = volume.get("Labels") or {}
-        if labels.get(LABEL) != self.workspace_id or labels.get("io.autoflow.android.device") != device.get("deviceId"):
-            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属标签不符", 403)
-        container = (await docker("create", "--label", LABEL + "=" + self.workspace_id,
-                                  "--label", "io.autoflow.android.device=" + device["deviceId"],
-                                  "-v", f"{volume_id}:/data", device["imageId"], timeout=30)).decode().strip()
-        try:
-            await docker("cp", "-a", "-", container + ":/", timeout=600, input_data=data)
-        finally:
-            await docker("rm", container, timeout=30)
+            await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar", "--xattrs", "--xattrs-include=*",
+                       "--acls", "--selinux", "--numeric-owner", "--same-owner", "--same-permissions",
+                       "--transform=s@^data@_data@S", "-C", os.path.dirname(mountpoint), "-xf", "-"], 600, data)
+        except AndroidError:
+            # GNU tar may have written some members before reporting failure.
+            raise TimeoutError("恢复数据卷命令结果未确认") from None
 
     async def inspect_image(self, reference: str) -> dict[str, Any]:
         try:

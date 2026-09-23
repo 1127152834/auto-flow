@@ -44,7 +44,7 @@ def validate_archive_members(members: list[tarfile.TarInfo]) -> None:
         ):
             raise ValueError("unsupported or ambiguous archive member")
         if member.islnk():
-            # Docker extracts in archive order. Hard links must refer to an
+            # Tar extracts in archive order. Hard links must refer to an
             # already materialized regular file, never a directory or symlink.
             target = entries.get(member.linkname)
             if target is None or not target.isreg():

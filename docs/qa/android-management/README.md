@@ -1,8 +1,10 @@
 # 安卓模拟器管理验收证据
 
-最新 T18 增量见[恢复清单与目标身份](2026-09-23-restore-manifest-verification.md)：44 项定向测试与真实 Mac 部分写入/正常恢复重跑通过；全阶段仍 `partial`。
+[24 项验收校准](2026-09-23-acceptance-matrix.md)逐项区分通过、部分完成与外部阻塞；不把局部自动化或真实单链推断为四阶段全部完成。
 
-状态：`partial`，完整开发与验收目标仍 active。最新[清理目录与文件保护](2026-09-23-cleanup-verification.md)：后端346 passed、前端Android104 passed，真实HTTP目录/409/选择删除/恢复互斥通过；APK遗留临时文件与恢复中断等仍待完成。最新发布增量见[落盘与事务一致性](2026-09-23-publication-verification.md)：后端328 passed，真实新实例恢复启动通过；完整目标仍有待办。前一 AM4 增量见[归档安全与属性](2026-09-23-archive-verification.md)：后端314 passed，真实新实例恢复启动及 UID/GID/mode、安全链接通过；xattrs、硬中断恢复等仍待完成。最新容量增量见[持久预留与真实验证](2026-09-23-capacity-verification.md)：后端289 passed，跨工作区unknown预算与核实释放通过；仍不代表AM3整阶段完成。最新证据见 [后端增量](2026-09-23-validation.md)、[前端增量](2026-09-23-frontend-validation.md)及[应用命令语义/真实验证](2026-09-23-command-verification.md)。仍有可继续修复的软件缺口及全量门槛失败；只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
+最新 T05/T17/T18 增量见[原生窗口、恢复归属与持久数据属性](2026-09-23-persistent-metadata-verification.md)：118 项最终定向测试与真实 Mac 原生窗口、卷根及扩展属性/ACL、链接保留、部分失败隔离和正常恢复通过；[完整门槛](2026-09-23-full-gates.md)后端 3964 passed、26 skipped。全阶段仍 `partial`。前一增量见[恢复清单与目标身份](2026-09-23-restore-manifest-verification.md)。
+
+状态：`partial`，完整开发与验收目标仍 active。[清理目录与文件保护](2026-09-23-cleanup-verification.md)是前一阶段的 346 项后端快照，其后已补恢复中断隔离和数据属性；APK 遗留临时文件、硬中断等仍待完成。[落盘与事务一致性](2026-09-23-publication-verification.md)、[归档安全与属性](2026-09-23-archive-verification.md)、[持久预留与真实验证](2026-09-23-capacity-verification.md)保留各自执行时的历史结果。完整前端 424 files/5595 tests、脚本 95/95、类型/lint/OpenAPI/结构/build、后端全量与 Ruff 均通过，见[完整门槛](2026-09-23-full-gates.md)。只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
 
 实施计划的旧 checkbox 状态未完成逐项重新审计，不能作为当前完成率；以最新验收记录中的实际命令、输出和剩余工作为准。
 
@@ -12,7 +14,7 @@
 
 | 阶段 | 任务 | 证据 | 状态 |
 | --- | --- | --- | --- |
-| AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T03 自动验证；T04 自动化与同事务投影验证通过；T05–T07 仍有原生窗口、重启和受控中断缺口 |
+| AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T04 自动验证；T05 原生窗口进程已真实验证，人工输入/切端、重启和受控中断仍缺证据 |
 | AM2 | T08–T12 | [am2-verification.md](am2-verification.md) | 镜像/模板自动化已通过；网络拉取、候选镜像和 GApps 条件不足 |
 | AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；批量压力与破坏性应用动作未验收 |
 | AM4 | T17–T20 | [am4-verification.md](am4-verification.md) | 备份/恢复/清理自动化和基础卷证据存在；完整失败演练与最终交付未完成 |
@@ -20,7 +22,7 @@
 
 ## 全局自动验证
 
-以下为 `2026-09-22-validation.md` 的历史输出；9 月 23 日早一轮后端聚焦（含 migration heads）为 `253 passed, 2 warnings`，最新命令语义增量已达到 `271 passed, 2 warnings`，完整后端及 Ruff 仍失败。历史前端和构建结果不冒充本轮重跑：
+以下为 `2026-09-22-validation.md` 的历史输出；9 月 23 日已修复当时的后端与 Ruff 失败，最新完整结果见[完整门槛](2026-09-23-full-gates.md)。历史输出只作为当时快照，不冒充最新结果：
 
 - Android 后端聚焦集合：`235 passed, 2 warnings`。
 - Android 前端：`13 files, 81 passed`（含旧设备列表轮询、未知操作核实、stale/unknown 打开保护、镜像服务端验证/删除核实、批量失败项重试）；typecheck、lint、OpenAPI check、structure 和 build 通过。

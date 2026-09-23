@@ -203,6 +203,33 @@ class SqlAlchemyAndroidOperationRepository:
             session.refresh(row)
             return OperationRecord(row)
 
+    def verify_restore_target(self, workspace_identity: str, backup_id: str, device: dict[str, Any]) -> None:
+        """Check the durable restore intent immediately before writing a target volume."""
+        with self.sessions() as session:
+            operation = session.get(AndroidOperationRow, device.get("restoreOperationId"))
+            row = session.get(AndroidDeviceRow, device.get("deviceId"))
+            stored = row.payload if row is not None else {}
+            if (
+                operation is None
+                or operation.workspace_identity != workspace_identity
+                or operation.action != "restore"
+                or operation.state != "running"
+                or operation.target_id != device.get("deviceId")
+                or operation.request_id != device.get("restoreRequestId")
+                or operation.payload.get("backupId") != backup_id
+                or operation.payload.get("newDeviceId") != device.get("deviceId")
+                or stored.get("deleted")
+                or stored.get("restoreState") != "pending"
+                or stored.get("control") != "idle"
+                or stored.get("ownerRunId")
+                or stored.get("androidStatus") != "stopped"
+                or any(stored.get(key) != device.get(key) for key in (
+                    "deviceId", "workspaceId", "imageId", "volumeId", "generation",
+                    "restoreOperationId", "restoreRequestId", "restoreBackupId", "creationConfig",
+                ))
+            ):
+                raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复目标或操作已变化，禁止写入数据卷", 409)
+
     def complete_backup(self, operation_id: str, backup: dict[str, Any]) -> OperationRecord:
         """Publish the backup catalogue entry and success in one transaction."""
         with self.sessions.begin() as session:

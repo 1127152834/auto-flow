@@ -63,11 +63,10 @@ class AndroidBackupService:
                 for member in members:
                     if not (0 <= member.uid <= 0xFFFFFFFF and 0 <= member.gid <= 0xFFFFFFFF and 0 <= member.mode <= 0o7777):
                         raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份包含不受支持的文件属性", 409)
-                    # Docker's tar copy path does not provide a safe contract
-                    # for arbitrary extended attributes.  Refuse them rather
-                    # than silently dropping metadata needed by Android data.
+                    # The guest tar path preserves GNU tar xattrs and ACLs;
+                    # other exporters' xattr encodings are not supported.
                     if any(
-                        key.startswith(("SCHILY.xattr.", "LIBARCHIVE.xattr."))
+                        key.startswith("LIBARCHIVE.xattr.")
                         for key in (member.pax_headers or {})
                     ):
                         raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份包含不受支持的文件属性", 409)
@@ -309,5 +308,8 @@ class AndroidBackupService:
             ):
                 raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复只能写入本次请求新建且尚未发布的受控目标", 409)
             with self._runtime_lock(runtime):
+                if self.operations is None:
+                    raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复目标操作无法核实，禁止写入数据卷", 409)
+                self.operations.verify_restore_target(self.workspace_identity, backup_id, device)
                 await runtime.restore_volume(device, data)
             return {"deviceId": device["deviceId"], "backupId": backup_id, "state": "restored"}

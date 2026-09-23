@@ -22,7 +22,7 @@ uv run --project apps/backend python /tmp/autoflow-restore-manifest-20260923.py 
 # exit 0; JSON status=passed
 ```
 
-该脚本在独立工作区经真实 FastAPI 路由和 Docker 数据卷注入部分写入/连接超时；恢复操作进入 `needs_verification`。普通 recover 后目标保持 `pending`，start/restart/restore/control/backup 拒绝；原请求重放为 409。正常 HTTP 恢复与同请求重放为 202；目标启动后 ADB 读回 `restore-isolation-proof`，UID 10001、GID 2000、mode 0640 和源内容不变。三台自建实例最终均 `deleted=true`、容器 0、卷 0；Lima 已停止。受控连接超时并非 `kill -9` 或断电实验。
+该脚本在独立工作区经真实 FastAPI 路由和 Docker 数据卷注入部分写入/连接超时；恢复操作进入 `needs_verification`。普通 recover 后目标保持 `pending`，start/restart/restore/control/backup 拒绝；原请求重放为 409。正常 HTTP 恢复与同请求重放为 202；目标启动后 ADB 读回 `restore-isolation-proof`，UID 10001、GID 2000、mode 0640，源测试文件内容不变。原始结果中的 `sourceUnchanged=true` 仅指脚本比较的 `restore-proof` 文件，不代表源卷全量校验。仓库脚本与当时执行的 `/tmp/autoflow-restore-manifest-20260923.py` 的 SHA-256 均为 `e9045e83c4590fe347be03df5118f64e3109c9ed44c0d2522a76334e0aa4a5b3`。三台自建实例最终均 `deleted=true`、容器 0、卷 0；Lima 已停止。受控连接超时并非 `kill -9` 或断电实验。
 
 ## 仍未完成
 

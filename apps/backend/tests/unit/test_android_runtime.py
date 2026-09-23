@@ -206,24 +206,26 @@ async def test_destructive_app_command_requires_confirmed_user_package(tmp_path,
 
 
 @pytest.mark.asyncio
-async def test_backup_volume_uses_docker_copy_without_starting_android_image(tmp_path, monkeypatch):
+async def test_backup_volume_uses_guest_tar_with_metadata_without_starting_android_image(tmp_path, monkeypatch):
     runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
     calls = []
 
     async def fake_docker(*args, **kwargs):
         calls.append((args, kwargs))
-        if args[0] == "create":
-            return b"backup-container\n"
-        if args[0] == "cp":
-            return b"tar-bytes"
+        if args[:2] == ("volume", "inspect"):
+            return json.dumps([{"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "device"}, "Mountpoint": "/var/lib/docker/volumes/volume/_data"}]).encode()
         return b""
 
     monkeypatch.setattr(mac, "docker", fake_docker)
-    result = await runtime.backup_volume({"volumeId": "volume", "imageId": "image", "deviceId": "device"})
+    guest = AsyncMock(return_value=b"tar-bytes")
+    monkeypatch.setattr(mac, "run", guest)
+    result = await runtime.backup_volume({"volumeId": "volume", "imageId": "image", "deviceId": "device", "workspaceId": runtime.workspace_id})
     assert result == b"tar-bytes"
-    assert calls[0][0][0] == "create"
-    assert calls[1][0] == ("cp", "backup-container:/data", "-")
-    assert calls[-1][0] == ("rm", "backup-container")
+    assert [args for args, _ in calls] == [("volume", "inspect", "volume")]
+    command = guest.await_args.args[0]
+    assert {"--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--numeric-owner"} <= set(command)
+    assert "--transform=s@^_data@data@S" in command
+    assert command[-3:] == ["-cf", "-", "_data"]
 
 
 @pytest.mark.asyncio
@@ -268,6 +270,72 @@ async def test_restore_volume_rejects_running_target_before_docker_write(tmp_pat
         )
 
     docker.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_restore_volume_extracts_guest_archive_with_xattrs_into_empty_target(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    calls = []
+
+    async def fake_docker(*args, **_kwargs):
+        calls.append(args)
+        if args[:2] == ("volume", "inspect"):
+            return json.dumps([{"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "device"}, "Mountpoint": "/var/lib/docker/volumes/device-data/_data"}]).encode()
+        if args[0] == "create":
+            return b"restore-container\n"
+        return b""
+
+    guest = AsyncMock(side_effect=[b"empty\n", b""])
+    monkeypatch.setattr(mac, "docker", fake_docker)
+    monkeypatch.setattr(mac, "run", guest)
+    await runtime.restore_volume({"deviceId": "device", "workspaceId": runtime.workspace_id, "volumeId": "device-data", "imageId": "image", "androidStatus": "stopped", "control": "idle"}, b"archive")
+
+    assert calls == [("volume", "inspect", "device-data")]
+    assert guest.await_count == 2
+    extract = guest.await_args_list[1]
+    assert {"--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--transform=s@^data@_data@S"} <= set(extract.args[0])
+    assert "--strip-components=1" not in extract.args[0]
+    assert extract.args[2] == b"archive"
+
+
+@pytest.mark.asyncio
+async def test_restore_volume_refuses_nonempty_target_before_extraction(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    docker = AsyncMock(return_value=json.dumps([{"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "device"}, "Mountpoint": "/var/lib/docker/volumes/device-data/_data"}]).encode())
+    guest = AsyncMock(return_value=b"occupied\n")
+    monkeypatch.setattr(mac, "docker", docker)
+    monkeypatch.setattr(mac, "run", guest)
+
+    with pytest.raises(AndroidError) as rejected:
+        await runtime.restore_volume({"deviceId": "device", "workspaceId": runtime.workspace_id, "volumeId": "device-data", "imageId": "image", "androidStatus": "stopped", "control": "idle"}, b"archive")
+
+    assert rejected.value.code == "ANDROID_RESTORE_TARGET_INVALID"
+    guest.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("action", ["backup", "restore"])
+async def test_guest_tar_failure_never_exposes_private_path(tmp_path, monkeypatch, action):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    volume = {"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "device"}, "Mountpoint": "/var/lib/docker/volumes/device-data/_data"}
+    monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps([volume]).encode()))
+    failure = AndroidError("ANDROID_COMMAND_FAILED", "tar: data/private-account-name: read error", 502)
+    guest = AsyncMock(side_effect=[b"empty\n", failure] if action == "restore" else failure)
+    monkeypatch.setattr(mac, "run", guest)
+    device = {"deviceId": "device", "workspaceId": runtime.workspace_id, "volumeId": "device-data", "imageId": "image", "androidStatus": "stopped", "control": "idle"}
+
+    with pytest.raises((AndroidError, TimeoutError)) as rejected:
+        if action == "restore":
+            await runtime.restore_volume(device, b"archive")
+        else:
+            await runtime.backup_volume(device)
+
+    assert "private-account-name" not in str(rejected.value)
+    if action == "restore":
+        assert isinstance(rejected.value, TimeoutError)
+    else:
+        assert isinstance(rejected.value, AndroidError)
+        assert rejected.value.code == "ANDROID_BACKUP_UNAVAILABLE"
 
 
 @pytest.mark.asyncio
@@ -430,26 +498,3 @@ async def test_lost_app_response_marker_records_semantic_result(tmp_path, monkey
     else:
         assert (await runtime.verify_pending_command() == 0) is successful
     assert "pendingCommand" in runtime.device
-
-
-@pytest.mark.asyncio
-async def test_restore_copy_preserves_source_ownership(tmp_path, monkeypatch):
-    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
-    calls = []
-
-    async def docker(*args, **kwargs):
-        calls.append((args, kwargs))
-        if args[:2] == ("volume", "inspect"):
-            return json.dumps([{"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "device"}}]).encode()
-        if args[0] == "create":
-            return b"restore-helper"
-        return b""
-
-    monkeypatch.setattr(mac, "docker", docker)
-    await runtime.restore_volume(
-        {"deviceId": "device", "workspaceId": runtime.workspace_id, "volumeId": "volume", "imageId": "image", "androidStatus": "stopped", "control": "idle"},
-        b"archive",
-    )
-    copy = next(call for call in calls if call[0][0] == "cp")
-    assert copy[0] == ("cp", "-a", "-", "restore-helper:/")
-    assert copy[1]["input_data"] == b"archive"

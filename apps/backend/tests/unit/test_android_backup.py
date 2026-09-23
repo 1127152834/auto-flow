@@ -2,7 +2,7 @@ import hashlib
 import io
 import tarfile
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -210,7 +210,7 @@ async def test_restore_rejects_unsupported_archive_attributes_before_runtime_wri
     with tarfile.open(fileobj=payload, mode="w", format=tarfile.PAX_FORMAT) as archive:
         info = tarfile.TarInfo("data/settings.json")
         info.size = 2
-        info.pax_headers["SCHILY.xattr.security.selinux"] = "untrusted_u:object_r:app_data_file:s0"
+        info.pax_headers["LIBARCHIVE.xattr.security.selinux"] = "untrusted_u:object_r:app_data_file:s0"
         archive.addfile(info, io.BytesIO(b"{}"))
     resources = _Resources()
     service = AndroidBackupService(resources, tmp_path)
@@ -266,9 +266,12 @@ async def test_restore_writes_the_exact_bytes_that_passed_digest_validation(tmp_
 
     monkeypatch.setattr(Path, "read_bytes", changing_read)
     runtime = type("Runtime", (), {"restore_volume": AsyncMock()})()
+    operations = Mock()
+    service.operations = operations
     await service.restore_data(record["id"], {"deviceId": "new", "imageId": "image", "generation": 1, "restoreState": "pending", "restoreRequestId": "request", "restoreBackupId": record["id"], "creationConfig": {"restoreRequestId": "request", "restoreBackupId": record["id"], "start": False}}, runtime)
     assert runtime.restore_volume.await_args.args[1] == payload.getvalue()
     assert reads == 1
+    operations.verify_restore_target.assert_called_once()
 
 
 @pytest.mark.asyncio

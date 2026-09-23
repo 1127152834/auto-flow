@@ -118,6 +118,10 @@ async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path, mo
         await devices.management.task
         target = repository.get(target["deviceId"])
         assert target["control"] == "idle"
+        if fault in {"copy", "commit_before"}:
+            with pytest.raises(AndroidError) as rejected:
+                await backups.restore_data(backup["id"], target, runtime)
+            assert rejected.value.code == "ANDROID_RESTORE_TARGET_INVALID"
         with pytest.raises(AndroidError, match="恢复"):
             devices.management.operate(target["deviceId"], {"requestId": "start", "action": "start", "deleteData": False})
         with pytest.raises(AndroidError, match="恢复"):
@@ -137,6 +141,45 @@ async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path, mo
         operations.by_request(str(tmp_path.resolve()), "restore-request").state
         == "succeeded"
     )
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("change", ["missing", "generation", "volume", "deleted", "control", "completed", "no_operations"])
+async def test_direct_restore_checks_persisted_target_and_operation_before_writing(tmp_path: Path, change: str) -> None:
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    runtime = _Runtime(_tar(b"source"), IMAGE)
+    backups = AndroidBackupService(resources, tmp_path, operations)
+    source = {"deviceId": "source", "imageId": IMAGE, "control": "idle"}
+    backup = await backups.create_with_runtime(source, {"androidStatus": "stopped"}, runtime)
+    workspace = str(tmp_path.resolve())
+    target = {"deviceId": "target", "workspaceId": "workspace", "imageId": IMAGE, "volumeId": "target-volume", "generation": 1, "androidStatus": "stopped", "control": "idle", "restoreState": "pending", "restoreRequestId": "restore-request", "restoreBackupId": backup["id"], "creationConfig": {"restoreRequestId": "restore-request", "restoreBackupId": backup["id"], "start": False}}
+    operation = operations.accept(workspace, "restore-request", "target", "restore", "digest", {"backupId": backup["id"], "newDeviceId": "target"})
+    operations.transition(operation.operation_id, "queued", "running", {})
+    target["restoreOperationId"] = operation.operation_id
+    if change != "missing":
+        stored = dict(target)
+        if change == "generation":
+            stored["generation"] = 2
+        elif change == "volume":
+            stored["volumeId"] = "other-volume"
+        elif change == "deleted":
+            stored["deleted"] = True
+        elif change == "control":
+            stored["control"] = "manual"
+        repository.save(stored)
+    if change == "completed":
+        operations.transition(operation.operation_id, "running", "needs_verification", {})
+    elif change == "no_operations":
+        backups.operations = None
+
+    with pytest.raises(AndroidError) as rejected:
+        await backups.restore_data(backup["id"], target, runtime)
+    assert rejected.value.code == "ANDROID_RESTORE_TARGET_INVALID"
+    assert runtime.restore_calls == 0
     sessions.dispose()
 
 
