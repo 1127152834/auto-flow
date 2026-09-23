@@ -1,0 +1,93 @@
+{
+  "sourceDeviceId": "240402a1-83ba-44a1-884e-7bef621076c6",
+  "workspaceId": "683d1bdbf5db84a8d34a380279b45097c3ab46e44446f84bde979d590da6420a",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": [
+    {
+      "deviceId": "240402a1-83ba-44a1-884e-7bef621076c6",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    },
+    {
+      "deviceId": "194d09a0-0a44-4025-8579-8f60952a6a4f",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    }
+  ],
+  "backupId": "b6aa83e1-2bc8-4406-89a0-a5b6f5034935",
+  "backupBytes": 18274988,
+  "sourceMetadata": {
+    "data/local/tmp/autoflow-metadata/absolute": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "/data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/file": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "0",
+      "link": "",
+      "content": "metadata-proof"
+    },
+    "data/local/tmp/autoflow-metadata/hard": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "1",
+      "link": "data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/relative": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "file",
+      "content": null
+    }
+  },
+  "targetDeviceId": "194d09a0-0a44-4025-8579-8f60952a6a4f",
+  "restoredMetadata": {
+    "data/local/tmp/autoflow-metadata/absolute": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "/data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/file": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "0",
+      "link": "",
+      "content": "metadata-proof"
+    },
+    "data/local/tmp/autoflow-metadata/hard": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "1",
+      "link": "data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/relative": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "file",
+      "content": null
+    }
+  },
+  "bootedReadback": "metadata-proofmetadata-proofmetadata-proof",
+  "sourceUnchanged": true,
+  "status": "passed"
+}

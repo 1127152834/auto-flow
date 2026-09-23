@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.android.ports import AndroidError
 
-from .android_models import AndroidDeviceRow, AndroidOperationRow
+from .android_models import AndroidDeviceRow, AndroidOperationRow, AndroidResourceRow
 
 _LABELS = {"queued": "排队中", "running": "执行中", "waiting_capacity": "等待容量", "succeeded": "已完成", "failed": "失败", "cancelled": "已取消", "needs_verification": "待核实"}
 _TRANSITIONS = {
@@ -185,6 +185,26 @@ class SqlAlchemyAndroidOperationRepository:
                 raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "操作状态已变化，请先核实", 409)
             session.merge(AndroidDeviceRow(id=device["deviceId"], owner_run_id=device.get("ownerRunId"), payload=deepcopy(device)))
             session.refresh(row)
+            return OperationRecord(row)
+
+    def complete_backup(self, operation_id: str, backup: dict[str, Any]) -> OperationRecord:
+        """Publish the backup catalogue entry and success in one transaction."""
+        with self.sessions.begin() as session:
+            result = session.execute(update(AndroidOperationRow).where(
+                AndroidOperationRow.id == operation_id,
+                AndroidOperationRow.state == "running",
+                AndroidOperationRow.action == "backup",
+                AndroidOperationRow.workspace_identity == backup["workspaceId"],
+                AndroidOperationRow.target_id == backup["deviceId"],
+                AndroidOperationRow.request_id == backup["requestId"],
+                AndroidOperationRow.request_digest == backup["requestDigest"],
+            ).values(state="succeeded", stage_code="succeeded", stage_label=_LABELS["succeeded"],
+                     result_code="BACKUP_CREATED", finished_at=datetime.now(UTC)))
+            if cast(CursorResult, result).rowcount != 1:
+                raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "备份操作状态或归属已变化，请先核实", 409)
+            session.add(AndroidResourceRow(kind="backup", id=backup["id"], payload=deepcopy(backup)))
+            row = session.get(AndroidOperationRow, operation_id)
+            assert row is not None
             return OperationRecord(row)
 
     def recover_running(self, workspace_identity: str) -> int:

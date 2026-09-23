@@ -81,13 +81,14 @@ def validate_archive_members(members: list[tarfile.TarInfo]) -> None:
 
 class BackupStorage:
     def __init__(self, root: Path) -> None:
-        self.root = root.resolve()
+        self.root = root.absolute()
         self.staging = self.root / "staging"
         self.final = self.root / "final"
 
     def _path(self, directory: Path, identifier: str) -> Path:
         if not _SAFE_ID.fullmatch(identifier):
             raise ValueError("invalid backup storage identifier")
+        self._directory(self.root)
         directory = self._directory(directory)
         path = directory / identifier
         resolved = path.resolve()
@@ -104,14 +105,12 @@ class BackupStorage:
         return directory
 
     def stage(self, identifier: str) -> Path:
-        self._directory(self.staging)
         path = self._path(self.staging, identifier)
         path.mkdir(mode=0o700, exist_ok=False)
         os.chmod(path, 0o700)
         return path
 
     def finalize(self, identifier: str) -> Path:
-        self._directory(self.final)
         source = self._path(self.staging, identifier)
         target = self._path(self.final, identifier)
         if not source.is_dir() or source.is_symlink() or target.exists() or target.is_symlink():
@@ -120,9 +119,26 @@ class BackupStorage:
             if entry.is_symlink() or not entry.is_file():
                 raise ValueError("backup staging contains an unsupported entry")
             os.chmod(entry, 0o600)
+            self._sync(entry)
+        self._sync(source)
         os.replace(source, target)
-        os.chmod(target, 0o700)
+        try:
+            for directory in (self.staging, self.final, self.root, self.root.parent):
+                self._sync(directory)
+        except BaseException:
+            # This call created target; never remove a pre-existing backup.
+            shutil.rmtree(target)
+            self._sync(self.final)
+            raise
         return target
+
+    @staticmethod
+    def _sync(path: Path) -> None:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
 
     def discard(self, identifier: str) -> None:
         source = self._path(self.staging, identifier)

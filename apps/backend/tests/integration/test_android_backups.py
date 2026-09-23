@@ -143,3 +143,173 @@ class _Runtime:
         if self.backup_error:
             raise self.backup_error
         return self.payload
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure", ["write", "read", "file_sync", "rename", "directory_sync", "record"])
+async def test_failed_publication_is_not_available_after_repository_reconstruction(tmp_path, monkeypatch, failure):
+    import os
+    import stat
+
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    runtime = _Runtime(_tar(b"proof"))
+    service = AndroidBackupService(resources, tmp_path, operations)
+    original_write, original_read = Path.write_bytes, Path.read_bytes
+    original_sync, original_replace = os.fsync, os.replace
+
+    def write(path, data):
+        if failure == "write" and path.name == "data.tar":
+            raise OSError(28, "injected disk full")
+        return original_write(path, data)
+
+    def read(path):
+        if failure == "read" and path.name == "data.tar":
+            raise PermissionError("injected archive read denied")
+        return original_read(path)
+
+    def sync(fd):
+        if failure == "file_sync" and stat.S_ISREG(os.fstat(fd).st_mode):
+            raise OSError("injected file fsync failure")
+        if failure == "directory_sync" and list(service.storage.final.glob("*")):
+            raise OSError("injected parent fsync failure")
+        return original_sync(fd)
+
+    def replace(source, target):
+        if failure == "rename":
+            raise PermissionError("injected rename denied")
+        return original_replace(source, target)
+
+    def before_flush(session, _context, _instances):
+        from autoflow.infrastructure.database.android_models import AndroidResourceRow
+        if failure == "record" and any(isinstance(row, AndroidResourceRow) for row in session.new):
+            raise OSError("injected database write failure")
+
+    monkeypatch.setattr(Path, "write_bytes", write)
+    monkeypatch.setattr(Path, "read_bytes", read)
+    monkeypatch.setattr(os, "fsync", sync)
+    monkeypatch.setattr(os, "replace", replace)
+    from sqlalchemy import event
+    event.listen(sessions, "before_flush", before_flush)
+    with pytest.raises(AndroidError) as error:
+        await service.create_with_runtime(_device(), None, runtime, "publication-fault", 3)
+    assert error.value.code != "ANDROID_OPERATION_STATE_CONFLICT"
+    assert runtime.locked == 0
+    assert not list(service.storage.staging.glob("*"))
+    assert not list(service.storage.final.glob("*"))
+    fresh_resources = AndroidResourceRepository(sessions)
+    fresh_operations = SqlAlchemyAndroidOperationRepository(sessions)
+    fresh_service = AndroidBackupService(fresh_resources, tmp_path, fresh_operations)
+    assert fresh_resources.list("backup") == []
+    assert fresh_operations.by_request(str(tmp_path.resolve()), "publication-fault").state in {"failed", "needs_verification"}
+    with pytest.raises(AndroidError, match="已处理"):
+        await fresh_service.create_with_runtime(_device(), None, runtime, "publication-fault", 3)
+    assert runtime.backup_calls == 1
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_committed_backup_survives_lost_database_acknowledgement(tmp_path, monkeypatch):
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    service = AndroidBackupService(resources, tmp_path, operations)
+    runtime = _Runtime(_tar(b"committed"))
+    original = operations.complete_backup
+
+    def lost_ack(*args):
+        original(*args)
+        raise OSError("database commit acknowledgement lost")
+
+    monkeypatch.setattr(operations, "complete_backup", lost_ack)
+    record = await service.create_with_runtime(_device(), None, runtime, "committed-backup", 3)
+    assert record["state"] == "available"
+    assert (Path(record["path"]) / "data.tar").read_bytes() == runtime.payload
+    assert resources.get("backup", record["id"]) == record
+    assert operations.by_request(str(tmp_path.resolve()), "committed-backup").state == "succeeded"
+    replay = await service.create_with_runtime(_device(), None, runtime, "committed-backup", 3)
+    assert replay == record and runtime.backup_calls == 1
+    sessions.dispose()
+
+
+def test_backup_record_and_success_roll_back_together(tmp_path):
+    from sqlalchemy import event
+
+    from autoflow.infrastructure.database.android_models import AndroidResourceRow
+
+    sessions = _sessions(tmp_path)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    workspace = str(tmp_path.resolve())
+    operation = operations.accept(workspace, "atomic", "device", "backup", "digest", {})
+    operations.transition(operation.operation_id, "queued", "running", {})
+    record = {"id": "backup", "workspaceId": workspace, "deviceId": "device", "requestId": "atomic", "requestDigest": "digest", "state": "available"}
+
+    def before_flush(session, _context, _instances):
+        if any(isinstance(row, AndroidResourceRow) for row in session.new):
+            raise OSError("injected transaction rollback")
+
+    event.listen(sessions, "before_flush", before_flush)
+    with pytest.raises(OSError, match="transaction rollback"):
+        operations.complete_backup(operation.operation_id, record)
+    assert operations.get(operation.operation_id).state == "running"
+    assert AndroidResourceRepository(sessions).list("backup") == []
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_cancel_before_catalogue_commit_cleans_unpublished_backup(tmp_path):
+    from sqlalchemy import event
+
+    from autoflow.infrastructure.database.android_models import AndroidResourceRow
+
+    sessions = _sessions(tmp_path)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    service = AndroidBackupService(resources, tmp_path, operations)
+
+    def before_flush(session, _context, _instances):
+        if any(isinstance(row, AndroidResourceRow) for row in session.new):
+            raise asyncio.CancelledError()
+
+    event.listen(sessions, "before_flush", before_flush)
+    with pytest.raises(asyncio.CancelledError):
+        await service.create_with_runtime(_device(), None, _Runtime(_tar(b"cancel")), "cancel-commit", 3)
+    assert resources.list("backup") == []
+    assert not list(service.storage.final.glob("*"))
+    assert operations.by_request(str(tmp_path.resolve()), "cancel-commit").state == "needs_verification"
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_unverifiable_commit_preserves_archive_and_blocks_replay(tmp_path, monkeypatch):
+    sessions = _sessions(tmp_path)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    service = AndroidBackupService(resources, tmp_path, operations)
+    runtime = _Runtime(_tar(b"unknown"))
+    original_list = resources.list
+    attempted = False
+
+    def commit(*_args):
+        nonlocal attempted
+        attempted = True
+        raise OSError("commit status unknown")
+
+    def read(kind):
+        if attempted:
+            raise OSError("catalogue unavailable")
+        return original_list(kind)
+
+    monkeypatch.setattr(operations, "complete_backup", commit)
+    monkeypatch.setattr(resources, "list", read)
+    with pytest.raises(AndroidError) as error:
+        await service.create_with_runtime(_device(), None, runtime, "unverifiable", 3)
+    assert error.value.code == "ANDROID_BACKUP_RESULT_UNKNOWN"
+    assert len(list(service.storage.final.glob("*/data.tar"))) == 1
+    assert operations.by_request(str(tmp_path.resolve()), "unverifiable").state == "needs_verification"
+    fresh = AndroidBackupService(AndroidResourceRepository(sessions), tmp_path, SqlAlchemyAndroidOperationRepository(sessions))
+    with pytest.raises(AndroidError, match="已处理"):
+        await fresh.create_with_runtime(_device(), None, runtime, "unverifiable", 3)
+    assert runtime.backup_calls == 1
+    sessions.dispose()

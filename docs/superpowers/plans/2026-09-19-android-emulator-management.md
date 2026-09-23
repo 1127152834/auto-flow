@@ -40,6 +40,7 @@
 - T13 修复 Docker 未限额内存记零、容器枚举失败和不完整 inspect 被准入；该历史待办由9月23日持久预算增量覆盖，18项集成及真实双工作区证据见 `docs/qa/android-management/2026-09-23-capacity-verification.md`；整任务重审仍未完成。
 - T19 修复诊断设备归属使用路径而非 runtime hash，默认诊断字段改为白名单；高级日志采集仍未实现，不能以环境 blocked 代替。
 - T17/T18 归档安全增量以 `233c09dd` 为基线：内部安全链接、UID/GID/mode、摘要字节复用与源保护已完成；314项聚焦及真实新实例启动读回通过，xattrs/发布耐久性/中断仍待完成。证据见 `docs/qa/android-management/2026-09-23-archive-verification.md`。
+- T17 发布增量以 `715cdb16` 为基线：私有目录、staging 摘要、fsync/rename、备份目录记录与成功终态原子事务及回执未知保护已完成；328项聚焦与真实Mac新实例恢复通过，硬中断孤立文件核实/清理仍待完成。证据见 `docs/qa/android-management/2026-09-23-publication-verification.md`。
 - 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
 
 ## Global Constraints

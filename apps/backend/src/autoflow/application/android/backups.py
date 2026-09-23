@@ -48,6 +48,7 @@ class AndroidBackupService:
         if message is not None:
             changes["message"] = message[:480]
         self.operations.transition(record.operation_id, "running", state, changes)
+        record.state = state
 
     @staticmethod
     def _validate_archive(data: bytes) -> None:
@@ -138,27 +139,52 @@ class AndroidBackupService:
                     manifest_path = staged / "manifest.json"
                     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
                     os.chmod(manifest_path, 0o600)
+                    digest = hashlib.sha256()
+                    size = 0
+                    for path in sorted(staged.iterdir()):
+                        chunk = path.read_bytes()
+                        digest.update(chunk)
+                        size += len(chunk)
                     published = self.storage.finalize(backup_id)
                 except BaseException:
                     self.storage.discard(backup_id)
                     raise
-            digest = hashlib.sha256()
-            size = 0
-            for path in sorted(published.iterdir()):
-                chunk = path.read_bytes()
-                digest.update(chunk)
-                size += len(chunk)
             record = {"id": backup_id, "deviceId": device["deviceId"], "imageId": device["imageId"], "workspaceId": str(self.root.parent.resolve()), "formatVersion": 1, "path": str(published), "sha256": digest.hexdigest(), "bytes": size, "createdAt": datetime.now(UTC).isoformat(), "state": "available", "config": device.get("creationConfig", {}), "requestId": request_id, "requestDigest": self._digest("backup", payload)}
             try:
-                self.resources.save("backup", record)
+                if operation is None:
+                    self.resources.save("backup", record)
+                else:
+                    operation = self.operations.complete_backup(operation.operation_id, record)
             except BaseException as error:
+                # A commit may have succeeded before its acknowledgement was
+                # lost. Never remove files backing a persisted catalogue entry.
+                try:
+                    if operation is not None:
+                        operation = self.operations.get(operation.operation_id)
+                    stored = next((item for item in self.resources.list("backup") if item.get("id") == backup_id), None)
+                    completed = operation is None or operation.state == "succeeded"
+                except Exception as verification_error:
+                    self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(verification_error))
+                    raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份提交结果无法核实，已保留归档", 503) from verification_error
+                if stored is not None:
+                    if stored == record and completed:
+                        if isinstance(error, asyncio.CancelledError):
+                            raise
+                        return record
+                    self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="备份记录与操作结果尚未一致")
+                    raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份提交结果无法核实，已保留归档", 503) from error
+                if operation is not None and completed:
+                    raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "操作已完成但备份记录缺失，已保留归档", 503) from error
                 try:
                     self.storage.discard_final(backup_id)
                 except (OSError, ValueError) as cleanup_error:
                     self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(cleanup_error))
                     raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份结果未知，请先核实后重试", 503) from cleanup_error
+                if isinstance(error, asyncio.CancelledError):
+                    self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="备份提交已取消，未发布可用备份")
+                    raise
                 self._complete(operation, "failed", code="BACKUP_RECORD_FAILED", message=str(error))
-                raise
+                raise AndroidError("ANDROID_BACKUP_RECORD_FAILED", "备份记录未保存，未发布可用备份", 503) from error
             self._complete(operation, "succeeded", code="BACKUP_CREATED")
             return record
         except (TimeoutError, OSError) as error:
