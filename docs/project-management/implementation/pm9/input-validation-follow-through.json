@@ -33,12 +33,12 @@
   },
   "coverage": {
     "requirements": 251,
-    "withAssertions": 240,
-    "withNoLocatedAssertion": 11,
-    "partiallyVerified": 200,
-    "planned": 51,
+    "withAssertions": 241,
+    "withNoLocatedAssertion": 10,
+    "partiallyVerified": 201,
+    "planned": 50,
     "verified": 0,
-    "statusesUpgraded": "DATA-WRITE-13 and FLOW-A10 only: planned to partially_verified; no requirement verified"
+    "statusesUpgraded": "DATA-WRITE-13, FLOW-A10 and FLOW-A05 only: planned to partially_verified; no requirement verified"
   },
   "review": "Independent scoped review completed: no P1/P2 findings, high confidence; 7 precise tests passed / 36 deselected; diff check passed.",
   "limits": [
@@ -66,6 +66,12 @@
       "result": "2 passed, 29 deselected in 24.20s",
       "scope": "parameter-isolation and data-loop-partial with real worker diagnostics enabled after full backend regression finished",
       "limits": "No recurrence in this run; prior process-exit TimeoutError root cause remains unconfirmed. Source unchanged; new tests are outside c2d91c5d native CI."
+    },
+    "optionalInput": {
+      "result": "1 passed, 31 deselected in 37.63s",
+      "scope": "Two separate one-task batches of the same automation: optional record first present, then absent after real HTTP edit; both worker capability reads empty on second task, no lease, prior snapshot unchanged, resources reclaimed",
+      "limits": "macOS ARM source only; new test not in c2d91c5d CI; does not prove variable-expression access or same-batch transition",
+      "review": "Independent read-only review: no P1/P2; scope mapping accepted, high confidence"
     }
   }
 }

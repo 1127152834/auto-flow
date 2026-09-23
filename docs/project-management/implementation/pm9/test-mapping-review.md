@@ -1,6 +1,6 @@
 # PM9 assertion mapping review
 
-2026-09-23 最新机器统计：251 条，240 有范围断言/11 未定位，200 partial/51 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
+2026-09-23 最新机器统计：251 条，241 有范围断言/10 未定位，201 partial/50 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
 
 日期：2026-09-21。状态：confirmed（映射审查），完整产品验收仍未完成。来源：原始设计各需求编号、现有测试函数断言及本轮运行记录。
 
@@ -83,3 +83,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 `test_system_status_is_read_only_while_business_status_field_and_status_write_coexist` 以真实 SQLite 能力服务联合断言：结构查询返回固定 `statusId` 且 `writable=false`；普通 `status` 字段可以共存；伪造系统字段的改型、删除和来源映射分别被拒绝，失败操作不留下持久事实；同一条记录仍可通过正式状态命令写入业务状态。定向文件 15 passed；此证据仍属于本机能力服务集成，不替代真实 worker、打包应用、三平台原生交互或 Google 实网验收。
 
 2026-09-23 后续参数场景：parameter-isolation 在真实 HTTP/SQLite/worker/CloakBrowser 本机运行通过（1 passed/30 deselected，28.56s）。两个 Task 的 taskLocal 初值均为 0，前一任务写入不进入第二任务；结果可查询，无 DataLease；同名项目结果列的原记录及版本完全不变。FLOW-A01 增加范围断言，FLOW-A10 由 planned 升为 partial；当前 240 有断言/11 未定位、200 partial/51 planned/0 verified。此前一次退出 TimeoutError 已保留，根因未确认；本机最终通过不代替该场景的打包/三平台证据。
+
+2026-09-23 FLOW-A05：同一自动化两个独立单任务批次的可选输入从有到无，真实 worker 验收 1 passed/31 deselected（37.63 秒）。第二次两次 inputs capability 输出与持久快照均空，零 lease，首次快照保持且资源回收；不是同批次、变量表达式或打包 UI 证据。独立复审无 P1/P2。最新 241 有断言/10 未定位、201 partial/50 planned/0 verified。

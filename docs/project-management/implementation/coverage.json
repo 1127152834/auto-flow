@@ -12224,8 +12224,17 @@
       "primary_package": "PM4-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_node_writes.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "real_worker",
+          "report": "docs/project-management/implementation/pm9/input-validation-follow-through.json",
+          "scope": "FLOW-A05 same automation, two separate one-task batches; optional record present then no match",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -12247,12 +12256,19 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_optional_input_does_not_leak_between_real_tasks",
+            "scope": "同一自动化的两个独立单任务批次：首次可选记录命中并释放唯一 lease；HTTP 改值不再满足筛选后第二次 snapshot 与两次真实 inputs capability 输出均为空引用/空值、no_match 且零 lease。第一次快照不变，两次浏览器访问、独立 Task/Run 和资源回收。不是同批次或变量表达式读取证据。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：可选输入从有到无不读到上一任务记录；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "仅本机 macOS ARM 源码 worker 验收；打包 UI 和此场景三平台尚未验收。"
           }
         ],
         "statusBeforeReview": "planned"

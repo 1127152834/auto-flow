@@ -1,6 +1,6 @@
 # PM9 剩余工作复核
 
-最新状态（2026-09-23）：C1–C4、R1–R5、D1 已实现。D1 新真实 worker 场景发现并修复声明坏值仍领取的问题，准备与提交重验共享字段校验，未使用坏字段不阻断；本机专属场景和原共享交接共 4 项通过，新生产候选完整回归/三平台见 verification.json。DATA-TABLE-08 拒绝证据已强化，DATA-WRITE-12 已补直接单记录反向冲突；当前 240 条有范围断言、11 未定位、200 partial/51 planned/0 verified。S4 既有文件、未批准 M1–M3、其他未闭合子条件与外部验收仍保留。下文旧计数与“D1 worker 未命中”由本节 supersede；专属 worker 不再归入外部环境缺口。
+最新状态（2026-09-23）：C1–C4、R1–R5、D1 已实现。D1 新真实 worker 场景发现并修复声明坏值仍领取的问题，准备与提交重验共享字段校验，未使用坏字段不阻断；本机专属场景和原共享交接共 4 项通过，新生产候选完整回归/三平台见 verification.json。DATA-TABLE-08 拒绝证据已强化，DATA-WRITE-12 已补直接单记录反向冲突；当前 241 条有范围断言、10 未定位、201 partial/50 planned/0 verified。S4 既有文件、未批准 M1–M3、其他未闭合子条件与外部验收仍保留。下文旧计数与“D1 worker 未命中”由本节 supersede；专属 worker 不再归入外部环境缺口。
 
 2026-09-21 共享数据续作：两份方案已获批准，按 C1–C4→R1→R2→R5→R3→R4 实施。C1–C3 已接通公共身份、全部占用入口、独立本地游标、生命周期和旧锁阻断；29 项真实 worker 与最新独立状态 3 项、前端 5460 项通过。C4 后端全量发现 4 个历史迁移 head 断言过期，修正验证及新三平台继续。当前 227 条有范围断言 / 24 未定位，192 partial / 59 planned / 0 verified。R1 表结构查询和 R2 本地字段删除已接通并通过本机实际 worker；R5→R3→R4 继续实施；Windows 既有文件安全操作和外部验收仍未闭合。详见 shared-data-follow-through.json。下文 f580 及更早现状保留为对应候选历史，不代表当前 C1–C3 实现仍缺失。
 
@@ -226,3 +226,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 2026-09-22 DATA-TABLE-08 补证：新增真实 SQLite/能力服务联合场景，证明固定系统状态元数据只读、业务 `status` 字段共存、伪造改型/删除/来源映射拒绝且无半写，业务状态写入仍成功。`test_project_table_schema_capability.py` 15 项通过。该项只补本机直接断言，不改变生产 worker、打包、实网或三平台原生验收边界。
 
 2026-09-23 后续参数场景：parameter-isolation 在真实 HTTP/SQLite/worker/CloakBrowser 本机运行通过（1 passed/30 deselected，28.56s）。两个 Task 的 taskLocal 初值均为 0，前一任务写入不进入第二任务；结果可查询，无 DataLease；同名项目结果列的原记录及版本完全不变。FLOW-A01 增加范围断言，FLOW-A10 由 planned 升为 partial；当前 240 有断言/11 未定位、200 partial/51 planned/0 verified。此前一次退出 TimeoutError 已保留，根因未确认；本机最终通过不代替该场景的打包/三平台证据。
+
+2026-09-23 FLOW-A05：同一自动化两个独立单任务批次的可选输入从有到无，真实 worker 验收 1 passed/31 deselected（37.63 秒）。第二次两次 inputs capability 输出与持久快照均空，零 lease，首次快照保持且资源回收；不是同批次、变量表达式或打包 UI 证据。独立复审无 P1/P2。最新 241 有断言/10 未定位、201 partial/50 planned/0 verified。

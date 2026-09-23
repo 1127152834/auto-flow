@@ -2,7 +2,7 @@
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；C1–C4 和 R1–R5 设计已批准；M1–M3 仍 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 240 条有明确范围的断言，11 条尚无已定位断言；200 partially_verified / 51 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 241 条有明确范围的断言，10 条尚无已定位断言；201 partially_verified / 50 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 2026-09-23 执行更新：DATA-TABLE-08 已用充分字段权限和真实 Sheets 绑定请求替换宽泛拒绝证据；DATA-WRITE-12 已补双任务反向单记录冲突，保留多记录组和生产 worker 重试缺口。D1 真实 worker 场景暴露并修复声明坏值仍领取的缺陷：共享选择/提交重验只校验已选输入的声明字段，保留未使用坏值。专属 worker 及原共享交接 4 项通过，新场景加入既有 CI；完整回归/新三平台结果见 verification.json。后续继续 DATA-WRITE-13 真实循环部分成功、FLOW-A01/A05 参数与可选输入隔离；云端行变更 M1–M3 仍未批准。
 
@@ -134,7 +134,7 @@ R1/R2/R5/R3/R4 与 C1–C4 已有实现和分范围证据；最终整批独立�
 
 DATA-CLAIM-09、DATA-SCHEMA-08 仅新增上述范围映射，未证明的来源读取失败/界面提示、删除本地字段不删远端和生产端到端条件仍保留。当前 251 条中 231 有定位断言、20 未定位，196 partially_verified / 55 planned / 0 verified。完整前端 5469 passed / 409 文件 / 198.85 秒，前端源码之后未改；最终后端和三平台仍在验证。详见 shared-data-final-review.json。releaseAccepted=false。
 
-## 当前 16 条尚无定位断言：执行分组（2026-09-22，confirmed 现状）
+## 历史 16 条尚无定位断言：执行分组（2026-09-22；后续完成项由文末和 coverage.json 取代）
 
 仅下表列出尚无直接断言的条目；已有 partial 条目的未满足子条件仍以 coverage.json 为准。每项运行前读取原始 source/source_line，先写联合断言，失败后区分实现缺失与测试缺失；不得仅用测试总数关闭。复用既有 HTTP、SQLite、worker、浏览器和恢复脚本。
 
@@ -174,3 +174,7 @@ STATE-08 已有坏业务值 fixture 的真实 HTTP 状态标记、held/reconcili
 SH-02 新增两种写入顺序，逐次远端值/原历史 confirmed/双方完整本地快照/R5 观察/无多余写全部断言；完整同步文件 35 passed/39.99 秒。SYNC-09 复核既有拒绝推值后双拉取与真实 Task 领取冻结快照，映射到具体断言；它不证明 worker 全程执行。仅此两项从 planned 改 partial；原生/实网/完整 UI 条件保留。机器统计 235 有断言/16 未定位/198 partial/53 planned/0 verified。
 
 2026-09-23 后续参数场景：parameter-isolation 在真实 HTTP/SQLite/worker/CloakBrowser 本机运行通过（1 passed/30 deselected，28.56s）。两个 Task 的 taskLocal 初值均为 0，前一任务写入不进入第二任务；结果可查询，无 DataLease；同名项目结果列的原记录及版本完全不变。FLOW-A01 增加范围断言，FLOW-A10 由 planned 升为 partial；当前 240 有断言/11 未定位、200 partial/51 planned/0 verified。此前一次退出 TimeoutError 已保留，根因未确认；本机最终通过不代替该场景的打包/三平台证据。
+
+2026-09-23 FLOW-A05：同一自动化两个独立单任务批次的可选输入从有到无，真实 worker 验收 1 passed/31 deselected（37.63 秒）。第二次两次 inputs capability 输出与持久快照均空，零 lease，首次快照保持且资源回收；不是同批次、变量表达式或打包 UI 证据。独立复审无 P1/P2。最新 241 有断言/10 未定位、201 partial/50 planned/0 verified。
+
+当前未定位的 10 条：DATA-LIFE-01、DATA-LIFE-07、DATA-SH-03、XE-A01、XE-A17、XE-A19、XE-C07、XE-G02、XE-G06、XE-G07。以上仍按表中最小联合场景执行；已有部分断言的条目也保留其未闭合子条件。

@@ -24,6 +24,113 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
+async def test_optional_input_does_not_leak_between_real_tasks(
+    tmp_path, valid_profile_values, real_cloak_page,
+):
+    from sqlalchemy import select
+
+    from autoflow.domain.project_data.identity import RecordKey, encode_record_key
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectRecordLeaseRow,
+    )
+    from tests.integration.test_project_run_data_start import _input, _table
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
+    await asyncio.to_thread(shutil.copytree, source, tmp_path / 'data' / 'kernels' / source.name, symlinks=True)
+    app = create_app(Settings(data_dir=str(tmp_path), instance_id='optional-input-real', instance_token='isolated-test-token'))
+    try:
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, 'headless': True, 'browser_version': source.name.removeprefix('chromium-'),
+        }))
+        await app.state.project_workflow_dispatcher.startup()
+        await app.state.project_run_scheduler.startup()
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test', headers={'x-autoflow-token': 'isolated-test-token'}) as client:
+            created = await client.post('/api/v1/projects', headers={'Idempotency-Key': str(uuid4())}, json={'name': '可选输入隔离'})
+            assert created.status_code == 201, created.text
+            project_id = created.json()['projectId']
+            prefix = f'/api/v1/projects/{project_id}'
+            # Existing service fixture creates a real local table/record, no Run or lease facts.
+            table, field = _table(app.state.session_factory, project_id, '可选来源', 'first-only')
+            definition = _input(project_id, table, field, '可选输入')
+            definition.update(required=False, filter={'type': 'compare', 'fieldId': field['ref']['fieldId'], 'operator': 'eq', 'value': 'first-only'})
+            document = workflow_payload(str(uuid4()))
+            document['content']['nodes'] = [
+                {'id': 'inputs', 'type': 'project_data', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'project_data', 'operation': 'inputs', 'variableName': 'frozen', 'arguments': {}}},
+                {'id': 'open', 'type': 'open_page', 'position': {'x': 0, 'y': 100}, 'data': {'moduleType': 'open_page', 'url': url, 'timeout': 30}},
+                {'id': 'read', 'type': 'project_data', 'position': {'x': 0, 'y': 200}, 'data': {'moduleType': 'project_data', 'operation': 'inputs', 'variableName': 'observed', 'arguments': {}}},
+            ]
+            document['content']['edges'] = [
+                {'id': 'inputs-open', 'source': 'inputs', 'target': 'open'},
+                {'id': 'open-read', 'source': 'open', 'target': 'read'},
+            ]
+            saved = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
+            assert saved.status_code == 201, saved.text
+            configured = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json={
+                'name': '同一可选输入连续运行', 'description': '', 'workflowId': saved.json()['id'],
+                'inputPlan': {'inputs': [definition]}, 'parameterSchema': [],
+                'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
+                'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
+            })
+            assert configured.status_code == 201, configured.text
+            automation = configured.json()
+            observed_tasks = []
+            for present in (True, False):
+                accepted = await client.post(prefix + f"/automations/{automation['automationId']}/batches", headers={'Idempotency-Key': str(uuid4())}, json={
+                    'expectedAutomationRevision': automation['managementRevision'], 'parameters': {}, 'maxTasks': 1, 'concurrency': 1,
+                })
+                assert accepted.status_code == 202, accepted.text
+                batch_id = accepted.json()['operation']['result']['batch']['batchId']
+                for _ in range(300):
+                    detail = (await client.get(prefix + f'/batches/{batch_id}')).json()
+                    if detail['batch']['status'] == 'completed':
+                        break
+                    await asyncio.sleep(.1)
+                assert detail['statusCounts']['succeeded'] == 1, detail
+                listed = await client.get(prefix + '/tasks', params={'batchId': batch_id})
+                assert listed.status_code == 200, listed.text
+                tasks = listed.json()['items']
+                assert len(tasks) == 1
+                task = tasks[0]
+                observed_tasks.append(task)
+                task_path = prefix + f"/tasks/{task['taskId']}"
+                snapshot = (await client.get(task_path)).json()['inputSnapshot']['inputs'][0]
+                outputs = (await client.get(task_path + '/outputs')).json()['items']
+                expected_values = [{'fieldId': field['ref']['fieldId'], 'fieldName': '值', 'value': 'first-only'}] if present else []
+                assert snapshot['values'] == expected_values
+                assert len(outputs) == 2
+                assert all(output['value'][0]['values'] == expected_values for output in outputs), outputs
+                assert all(output['value'][0]['recordRef'] == snapshot['recordRef'] for output in outputs)
+                attempts = (await client.get(task_path + '/node-attempts')).json()['items']
+                assert len(attempts) == 3 and all(attempt['status'] == 'succeeded' for attempt in attempts)
+                with app.state.session_factory() as session:
+                    leases = session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.task_id == task['taskId'])).all()
+                    assert len(leases) == int(present)
+                    assert all(lease.state == 'released' for lease in leases)
+                if present:
+                    first_snapshot = snapshot
+                    assert snapshot['recordRef'] is not None
+                    encoded = encode_record_key(RecordKey(**snapshot['recordRef']['recordKey']))
+                    changed = await client.patch(prefix + f"/tables/{table['tableId']}/records/{encoded}", headers={'Idempotency-Key': str(uuid4())}, json={
+                        'datasetGeneration': table['datasetGeneration'], 'recordKeyType': 'uuid', 'expectedContentRevision': 1,
+                        'values': [{'fieldId': field['ref']['fieldId'], 'value': 'no-longer-matches'}],
+                    })
+                    assert changed.status_code == 200, changed.text
+                    assert changed.json()['contentRevision'] == 2
+                else:
+                    assert snapshot['recordRef'] is None and snapshot['unavailableReason'] == 'no_match'
+            assert len({task['taskId'] for task in observed_tasks}) == len({task['runId'] for task in observed_tasks}) == 2
+            assert (await client.get(prefix + f"/tasks/{observed_tasks[0]['taskId']}")).json()['inputSnapshot']['inputs'][0] == first_snapshot
+            assert requests.count('/fixture') == 2
+            assert not app.state.project_workflow_worker_manager.busy()
+            assert app.state.project_workflow_dispatcher.blockers() == []
+            assert app.state.project_run_scheduler.blockers() == []
+            assert not list((tmp_path / 'tmp').glob('**/generation-*'))
+    finally:
+        await app.router.on_shutdown[-1]()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("scenario", ["success", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch

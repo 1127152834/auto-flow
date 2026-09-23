@@ -21,3 +21,5 @@ DATA-WRITE-12 新增两任务各持一条动态 lease、并发反向单记录写
 随后 parameter-isolation 真实场景通过（1 passed/30 deselected，28.56s）：同一有限批次两个参数任务的 taskLocal 初值都为既有 set_variable 语义的 0，前次写入不泄漏；同名输出列存在但无项目写节点，原记录完整 DTO 不变，两个真实网页输出可分别查询，无 DataLease。FLOW-A01 补断言，FLOW-A10 升为 partial。最新 240 有范围断言/11 未定位，200 partial/51 planned/0 verified。一次早期运行在 7 个节点均完成后出现 worker 退出 TimeoutError；后续诊断正常退出 0、最终场景通过，根因尚未确认，不放宽退出超时。测试晚于 c2d91c5d，未包含在其 CI 矩阵。
 
 两项新增场景在完整回归结束后启用 worker diagnostics 联合复验：2 passed / 29 deselected，24.20 秒。此次未复现退出超时；原超时根因仍未确认，不标已修复。
+
+FLOW-A05 追加本机源码真实 worker 证据：同一自动化两个独立批次各一任务，可选记录存在→HTTP 改值后 no_match。第二次快照和两次 capability 读取皆为空引用/空值，零 lease，第一次快照不变且浏览器资源回收。1 passed/31 deselected，37.63 秒；独立复审无 P1/P2。范围不包含同批次、变量表达式读取、打包 UI 或该场景三平台。机器统计 241 有断言/10 未定位、201 partial/50 planned/0 verified。
