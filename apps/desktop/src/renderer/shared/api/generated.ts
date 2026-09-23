@@ -3589,6 +3589,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workflow-runs/{run_id}/results/{sequence}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Result */
+        get: operations["get_result_api_workflow_runs__run_id__results__sequence__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflow-runs/{run_id}/results/{sequence}/value": {
         parameters: {
             query?: never;
@@ -3717,6 +3734,23 @@ export type paths = {
         };
         /** Export Logs */
         get: operations["export_logs_api_workflow_runs__run_id__logs_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/run-assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Project Assets */
+        get: operations["list_project_assets_api_v1_projects__project_id__run_assets_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -11125,6 +11159,49 @@ export type components = {
             selected: boolean;
         } & {
             [key: string]: unknown;
+        };
+        /** StudioProjectRunAsset */
+        StudioProjectRunAsset: {
+            /** Assetid */
+            assetId: string;
+            /** Projectid */
+            projectId: string;
+            /** Runid */
+            runId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Workflowname */
+            workflowName: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "result" | "file" | "diagnostic";
+            /** Sequence */
+            sequence: number;
+            /** Nodeid */
+            nodeId: string;
+            /** Executionid */
+            executionId: string | null;
+            /** Createdat */
+            createdAt: string | null;
+            /** Artifactid */
+            artifactId: string | null;
+            /** Mimetype */
+            mimeType: string;
+            /** Size */
+            size: number | null;
+            /** Sha256 */
+            sha256: string | null;
+        };
+        /** StudioProjectRunAssetPage */
+        StudioProjectRunAssetPage: {
+            /** Items */
+            items: components["schemas"]["StudioProjectRunAsset"][];
+            /** Total */
+            total: number;
+            /** Nextcursor */
+            nextCursor: number | null;
         };
         /** StudioRecorderBatch */
         StudioRecorderBatch: {
@@ -25587,6 +25664,40 @@ export interface operations {
             };
         };
     };
+    get_result_api_workflow_runs__run_id__results__sequence__get: {
+        parameters: {
+            query?: {
+                projectId?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+                sequence: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioRunResultRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_result_value_api_workflow_runs__run_id__results__sequence__value_get: {
         parameters: {
             query: {
@@ -25858,6 +25969,43 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_project_assets_api_v1_projects__project_id__run_assets_get: {
+        parameters: {
+            query?: {
+                kind?: ("result" | "file" | "diagnostic") | null;
+                runId?: string | null;
+                nodeId?: string | null;
+                cursor?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioProjectRunAssetPage"];
+                };
             };
             /** @description Validation Error */
             422: {

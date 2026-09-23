@@ -102,3 +102,11 @@
 - 清理权限失败、路径越界或符号链接均保留 deleting、持久化索引与重试责任；障碍移除后再完成删除。宿主传现有 workspace 路径，不读取或改写用户数据库。
 - 证据：`docs/migration/studio-backend-migration/evidence/project-integration/delete-cleanup-2026-09-23/result.json`。旧实现实际对照 3 项失败；当前 18 项真实 SQLite/磁盘回归通过，Ruff/mypy 通过。新增测试的 residue 初始预期不匹配已更正为现有精确边界错误，失败日志保留；保护断言没有减少。
 - 这是基础设施与集成证据，不等同于正式 Electron 删除全链、项目统计、录制归属或跨平台验收。
+
+## 项目运行数据读取与正式 UI 验收
+
+- 复用现有运行事件与产物索引，在 SQL 按项目、运行、节点、类型过滤后计数/分页；不建立第二套资产表，不复制文件。新产物记录真实登记时间；旧产物只回退绑定事件时间，无证据时返回 null。
+- 数据目录增加自动化运行数据入口：分页、提取 JSON/文本和安全图片预览、完整下载、按 executionId 对应节点日志。大值按需读取，图片/文件校验登记大小与哈希；错误、空状态、迟到响应、Blob URL 回收均有测试。
+- 后端 41 项、前端 25 项，TypeScript/ESLint/Ruff/mypy/OpenAPI 和 renderer/main/preload 构建通过。正式证据 `evidence/project-integration/formal-electron-L5Kf5n/result.json`，汇总 `data-assets-2026-09-23/result.json`。macOS arm64 开发构建真实操作完成五节点与项目数据读取，原生保存 PNG 后与登记产物逐字节相等，失败调试/正常关闭停止/重开/第二项目隔离回归通过。
+- 失败证据全部保留。早期下载在等待 macOS 保存确认；后续连线失败经被动事件追踪确认是测试 helper 居中滚动返回临时坐标，鼠标点击落入画布。改为 nearest，并使用真实缩放按钮与可见节点落点检查；没有改 Store、产品缩放逻辑或四条连线断言。
+- 本块不等于所有数据管理完成：业务表写入桥接、统计、拾取/录制归属、正式包及其他平台仍保留。现有录制会话缺项目字段，不能凭审查文档或工作区总数伪造项目录制统计。节点槽位仍 622/17。

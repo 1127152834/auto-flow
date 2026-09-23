@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import copy
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, cast
 
-from sqlalchemy import func, select, text
+from sqlalchemy import String, func, literal, select, text, union_all
+from sqlalchemy import cast as sql_cast
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -275,6 +276,50 @@ class SqlAlchemyWorkflowRuns:
             session.commit()
             return _event(event_row)
 
+    def project_assets(
+        self, project_id: str, *, kind: str | None, run_id: str | None,
+        node_id: str | None, cursor: int, limit: int,
+    ) -> tuple[list[dict[str, Any]], int]:
+        run, event, artifact = WorkflowRunRow, WorkflowRunEventRow, WorkflowRunArtifactRow
+        identity = [run.id.label("runId"), run.workflow_id.label("workflowId"),
+                    run.payload["workflowName"].as_string().label("workflowName")]
+        result_rows = select(
+            (literal("result:") + run.id + literal(":") + sql_cast(event.seq, String)).label("assetId"),
+            *identity, literal("result").label("kind"), event.seq.label("sequence"),
+            event.payload["nodeId"].as_string().label("nodeId"),
+            event.payload["executionId"].as_string().label("executionId"),
+            event.payload["occurredAt"].as_string().label("createdAt"),
+            literal(None).label("artifactId"), literal("application/json").label("mimeType"),
+            literal(None).label("size"), literal(None).label("sha256"),
+        ).select_from(run).join(event, event.run_id == run.id).where(
+            event.payload["type"].as_string() == "execution:node-succeeded",
+            event.payload["nodeId"].as_string().is_not(None),
+            func.json_type(event.payload, "$.payload.result.data").not_in(("null",)),
+            studio_run_project_expression() == project_id, readable_studio_run_project(),
+        )
+        from sqlalchemy import case
+
+        file_rows = select(
+            (literal("file:") + run.id + literal(":") + artifact.id).label("assetId"),
+            *identity, case((artifact.purpose == "diagnostic", "diagnostic"), else_="file").label("kind"),
+            artifact.event_seq.label("sequence"), artifact.node_id.label("nodeId"), artifact.execution_id.label("executionId"),
+            func.coalesce(artifact.payload["registeredAt"].as_string(), event.payload["occurredAt"].as_string()).label("createdAt"),
+            artifact.id.label("artifactId"), artifact.payload["mimeType"].as_string().label("mimeType"),
+            artifact.payload["size"].as_integer().label("size"), artifact.payload["sha256"].as_string().label("sha256"),
+        ).select_from(run).join(artifact, artifact.run_id == run.id).outerjoin(
+            event, (event.run_id == run.id) & (event.seq == artifact.event_seq),
+        ).where(studio_run_project_expression() == project_id, readable_studio_run_project())
+        assets = union_all(result_rows, file_rows).subquery()
+        query = select(assets)
+        for column, value in ((assets.c.kind, kind), (assets.c.runId, run_id), (assets.c.nodeId, node_id)):
+            if value is not None:
+                query = query.where(column == value)
+        with self._session_factory() as session:
+            guard_project(session, project_id, writable=False)
+            total = session.scalar(select(func.count()).select_from(query.subquery())) or 0
+            page = session.execute(query.order_by(assets.c.createdAt.desc(), assets.c.assetId).offset(cursor).limit(limit)).mappings()
+            return [{"projectId": project_id, **dict(row)} for row in page], total
+
     def list_events(
         self, run_id: str, after_sequence: int, limit: int
     ) -> tuple[WorkflowRunEvent, ...]:
@@ -462,6 +507,7 @@ class SqlAlchemyWorkflowRuns:
                 execution_id=execution_id,
                 payload={
                     "relativePath": relative_path,
+                    "registeredAt": _iso(datetime.now(UTC)),
                     "size": size,
                     "sha256": sha256,
                     "mimeType": mime_type,

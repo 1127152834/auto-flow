@@ -222,6 +222,36 @@ try {
   assert.deepEqual(leaked, [])
   checkpoint('运行终态后 CloakBrowser 进程树和临时会话均已清理')
 
+  if (projectMode && process.env.AUTOFLOW_B1_ASSETS === '1') {
+    const assetPage = await api(runtime, `/v1/projects/${projectId}/run-assets?runId=${runId}&limit=50`)
+    const extracted = assetPage.items.find(item => item.kind === 'result' && item.nodeId === nodeIds[3])
+    const screenshot = assetPage.items.find(item => item.kind === 'file' && item.mimeType === 'image/png')
+    assert.ok(extracted && screenshot)
+    await click(main, '数据', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    await click(main, '自动化运行数据', 'summary')
+    await click(main, `预览 ${extracted.assetId}`, 'button')
+    await waitFor(main, "document.querySelector('[aria-label=运行数据详情]')?.innerText.includes('真实 CloakBrowser 五节点')", 'project result preview')
+    await capture(main, join(evidenceDir, 'project-result-preview.png'))
+    await click(main, `日志 ${extracted.assetId}`, 'button')
+    await waitFor(main, `document.querySelector('[aria-label=运行数据详情]')?.innerText.includes(${JSON.stringify(extracted.executionId)}) && document.querySelector('[aria-label=运行数据详情] pre')?.textContent.includes('message')`, 'originating node execution logs')
+    await click(main, `预览 ${screenshot.assetId}`, 'button')
+    await waitFor(main, "(()=>{const image=document.querySelector('[aria-label=运行数据详情] img');return image?.complete&&image.naturalWidth>0})()", 'project PNG preview')
+    await capture(main, join(evidenceDir, 'project-image-preview.png'))
+    const downloads = join(userData, 'asset-downloads')
+    await mkdir(downloads)
+    // Isolate the native download destination; the download itself is a real UI click.
+    await native.evaluate(`qaElectron.session.defaultSession.setDownloadPath(${JSON.stringify(downloads)});globalThis.qaDownloads=[];qaElectron.session.defaultSession.on('will-download',(_event,item)=>{const record={name:item.getFilename(),state:item.getState()};qaDownloads.push(record);item.on('done',(_event,state)=>{record.state=state;record.path=item.getSavePath()})});true`)
+    await click(main, `下载 ${screenshot.assetId}`, 'button')
+    execFileSync('osascript', ['-e', 'tell application "System Events"', '-e', `tell (first application process whose unix id is ${desktop.child.pid})`, '-e', 'repeat 50 times', '-e', 'if exists button "保存" of splitter group 1 of sheet 1 of window "AutoFlow" then exit repeat', '-e', 'delay 0.1', '-e', 'end repeat', '-e', 'click button "保存" of splitter group 1 of sheet 1 of window "AutoFlow"', '-e', 'end tell', '-e', 'end tell'])
+    const downloaded = await waitForValue(async () => {
+      const files = (await readdir(downloads)).filter(file => file.endsWith('.png'))
+      return files.length ? readFile(join(downloads, files[0])).catch(() => null) : null
+    }, 'native artifact download', 15000)
+    assert.deepEqual(downloaded, png)
+    checkpoint('项目数据页真实点击读取提取值、对应节点执行日志和 PNG 预览；下载文件与运行登记产物字节一致')
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+  }
+
   const failedRunId = await verifyFailedPause({
     studio, runtime, saved, nodeId: nodeIds[2], priorRunIds: [runId], userData, evidenceDir, observedEvents,
   })
@@ -341,6 +371,7 @@ try {
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
   }
 } catch (error) {
+  if (main) { await capture(main, join(evidenceDir, 'main-failure.png')).catch(() => undefined); await writeFile(join(evidenceDir, 'main-failure.txt'), String(await main.evaluate('document.body.innerText').catch(() => 'unavailable'))).catch(() => undefined) }
   if (studio) await capture(studio, join(evidenceDir, 'failure.png')).catch(() => undefined)
   await writeFile(join(evidenceDir, 'failure.json'), JSON.stringify({ checkedAt: new Date().toISOString(), checks, observedEvents, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
   throw error
@@ -561,7 +592,7 @@ async function waitForValue(read, description, timeoutMs) {
 }
 
 async function point(cdp, selector, text = '') {
-  return waitFor(cdp, `(()=>{const rows=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>e.getClientRects().length),text=${JSON.stringify(text)};const e=!text?rows[0]:rows.find(e=>e.getAttribute('aria-label')===text)||rows.find(e=>e.textContent.trim()===text)||rows.find(e=>e.textContent.includes(text));if(!e||e.disabled)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `unobscured ${text || selector}`)
+  return waitFor(cdp, `(()=>{const rows=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>e.getClientRects().length),text=${JSON.stringify(text)};const e=!text?rows[0]:rows.find(e=>e.getAttribute('aria-label')===text)||rows.find(e=>e.textContent.trim()===text)||rows.find(e=>e.textContent.includes(text));if(!e||e.disabled)return null;e.scrollIntoView({block:'nearest',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `unobscured ${text || selector}`)
 }
 
 async function click(cdp, text, selector = 'button') {
@@ -612,11 +643,21 @@ async function connectNodes(cdp, sourceId, targetId) {
 }
 
 async function arrangeNodes(cdp, nodeIds) {
+  // Use the real zoom controls before arranging: fit animations and oversized
+  // overlapping cards can otherwise make a drag hit a different node's handle.
+  await wait(500)
+  for (let index = 0; index < 10; index++) {
+    if (await cdp.evaluate("Math.max(...[...document.querySelectorAll('.react-flow__node')].map(e=>e.getBoundingClientRect().height)) < 65")) break
+    await click(cdp, '', '.react-flow__controls-zoomout')
+    await wait(250)
+  }
+  assert.ok(await cdp.evaluate("Math.max(...[...document.querySelectorAll('.react-flow__node')].map(e=>e.getBoundingClientRect().height)) < 65"), 'real zoom control makes cards small enough to avoid overlapping handles')
   const pane = await cdp.evaluate(`(()=>{const r=document.querySelector('.react-flow__pane').getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()`)
   const targets = nodeIds.map((_, index) => ({ x: pane.x + pane.width * .46, y: pane.y + 65 + index * ((pane.height - 130) / 4) }))
   for (let index = nodeIds.length - 1; index >= 0; index--) {
-    const from = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeIds[index])}]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, `node position ${nodeIds[index]}`)
+    const from = await waitFor(cdp, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeIds[index])}]');if(!e)return null;const r=e.getBoundingClientRect();for(const yf of [.5,.3,.7])for(const xf of [.5,.2,.8]){const x=r.x+r.width*xf,y=r.y+r.height*yf;const hit=document.elementFromPoint(x,y);if(hit?.closest('.react-flow__node')===e&&!hit.closest('.react-flow__handle'))return{x,y,dx:x-r.x-r.width/2,dy:y-r.y-r.height/2}}return null})()`, `unobscured node position ${nodeIds[index]}`)
     const to = targets[index]
+    to.x += from.dx; to.y += from.dy
     await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...from })
     await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...from, button: 'left', buttons: 1, clickCount: 1 })
     for (let step = 1; step <= 10; step++) await cdp.command('Input.dispatchMouseEvent', { type: 'mouseMoved', x: from.x + (to.x - from.x) * step / 10, y: from.y + (to.y - from.y) * step / 10, button: 'left', buttons: 1 })

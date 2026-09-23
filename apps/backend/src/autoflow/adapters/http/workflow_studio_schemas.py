@@ -1145,3 +1145,27 @@ class StudioRecordingReview(ApiModel):
     revision: int = Field(ge=1, le=9007199254740991)
     auto_wait: bool
     events: list[StudioRecorderEvent]
+
+
+class StudioProjectRunAsset(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    asset_id: str
+    project_id: str
+    run_id: str
+    workflow_id: str
+    workflow_name: str
+    kind: Literal["result", "file", "diagnostic"]
+    sequence: int
+    node_id: str
+    execution_id: str | None
+    created_at: str | None
+    artifact_id: str | None
+    mime_type: str
+    size: int | None
+    sha256: str | None
+
+
+class StudioProjectRunAssetPage(ApiModel):
+    items: list[StudioProjectRunAsset]
+    total: int
+    next_cursor: int | None

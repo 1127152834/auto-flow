@@ -59,6 +59,11 @@ class WorkflowRunRepository(Protocol):
         self, run_id: str, after_sequence: int, limit: int
     ) -> tuple[WorkflowRunEvent, ...]: ...
 
+    def project_assets(
+        self, project_id: str, *, kind: str | None, run_id: str | None,
+        node_id: str | None, cursor: int, limit: int,
+    ) -> tuple[list[dict[str, Any]], int]: ...
+
     def list_runs(
         self, *, document_id: str | None, cursor: int, limit: int,
         project_id: str | None = None,
@@ -198,6 +203,29 @@ class WorkflowRunService:
 
     def belongs_to_project(self, run_id: str, project_id: str) -> bool:
         return self._repository.belongs_to_project(run_id, project_id)
+
+    def project_assets(
+        self, project_id: str, *, kind: str | None = None, run_id: str | None = None,
+        node_id: str | None = None, cursor: int = 0, limit: int = 50,
+    ) -> dict[str, Any]:
+        if cursor < 0 or not 1 <= limit <= 200 or kind not in {None, "result", "file", "diagnostic"}:
+            raise WorkflowRunError("RUN_ASSET_QUERY_INVALID", "运行数据查询参数无效", 422)
+        items, total = self._repository.project_assets(project_id, kind=kind, run_id=run_id, node_id=node_id, cursor=cursor, limit=limit)
+        return {"items": items, "total": total, "nextCursor": cursor + limit if cursor + limit < total else None}
+
+    def result(self, run_id: str, sequence: int) -> dict[str, Any]:
+        self.get(run_id)
+        events = self._repository.list_events(run_id, sequence - 1, 1) if sequence > 0 else ()
+        if not events or events[0].sequence != sequence or events[0].type != "execution:node-succeeded" or not events[0].node_id:
+            raise WorkflowRunError("RUN_RESULT_NOT_FOUND", "运行结果不存在", 404)
+        event = events[0]
+        result = event.payload.get("result")
+        data = result.get("data") if isinstance(result, dict) else None
+        if data is None:
+            raise WorkflowRunError("RUN_RESULT_NOT_FOUND", "运行结果不存在", 404)
+        return {"sequence": sequence, "nodeId": event.node_id, "executionId": event.execution_id or f"{run_id}-{sequence}",
+                "values": copy.deepcopy(data) if isinstance(data, dict) else {"value": copy.deepcopy(data)},
+                "executionContext": copy.deepcopy(event.payload.get("executionContext"))}
 
     def list_runs(
         self, *, document_id: str | None, cursor: int, limit: int,

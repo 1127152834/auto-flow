@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "date": "2026-09-23",
+  "classification": "AutoFlow必要适配",
+  "checks": {
+    "backend": "41 passed",
+    "frontend": "25 passed",
+    "typescript": "passed",
+    "eslint": "passed",
+    "ruff": "passed",
+    "mypy": "7 production files passed",
+    "openapi": "passed",
+    "build": "renderer/main/preload passed",
+    "script": "node --check passed"
+  },
+  "formalElectron": "../formal-electron-L5Kf5n/result.json",
+  "capabilities": [
+    "project-filtered paginated result/file/diagnostic metadata from existing indexes",
+    "full result and registered-file reads; no inline large value in list",
+    "preview, checked download and execution-specific log navigation",
+    "archived history retained; deleted and foreign project inaccessible",
+    "late response and blob URL cleanup on project/service change"
+  ],
+  "failuresRetained": [
+    "../formal-electron-wmYi4C",
+    "../formal-electron-WFf8Ar",
+    "../formal-electron-3Q2EIS",
+    "../formal-electron-BQwGuE",
+    "../formal-electron-G9lmI3",
+    "../formal-electron-HcBBx0",
+    "../formal-electron-Ua4Oek"
+  ],
+  "corrections": [
+    "macOS native Save must be clicked before asserting downloaded file",
+    "test scrollIntoView(center) returned transient coordinates; passive pointer telemetry proved canvas hit; nearest keeps visible controls stationary; node/edge assertions retained"
+  ],
+  "boundaries": {
+    "platform": "macOS arm64 development build",
+    "userDatabaseTouched": false,
+    "mockExecution": false,
+    "notClaimed": [
+      "native project deletion UI",
+      "business-table write integration",
+      "project statistics",
+      "inspection/recording ownership",
+      "packaged build, Intel, Windows"
+    ]
+  }
+}

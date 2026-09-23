@@ -1,0 +1,20 @@
+
+> test
+> npm --workspace @autoflow/desktop test src/renderer/domains/project-data/components/ProjectRunAssets.test.tsx src/renderer/domains/project-data/pages/DataTableDirectoryPage.test.tsx
+
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/project-data/components/ProjectRunAssets.test.tsx src/renderer/domains/project-data/pages/DataTableDirectoryPage.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:5265) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5263) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  2 passed (2)
+      Tests  25 passed (25)
+   Start at  11:21:02
+   Duration  5.11s (transform 593ms, setup 331ms, import 3.19s, tests 2.96s, environment 1.31s)

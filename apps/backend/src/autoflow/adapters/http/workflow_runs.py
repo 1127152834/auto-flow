@@ -5,7 +5,7 @@ import hashlib
 import json
 from collections.abc import Iterator, Mapping
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
@@ -20,7 +20,9 @@ from .workflow_studio_schemas import (
     StudioDebugControlRequest,
     StudioDebugVariablesReceipt,
     StudioDebugVariablesRequest,
+    StudioProjectRunAssetPage,
     StudioRunResultPage,
+    StudioRunResultRow,
     StudioRunResultValue,
     StudioRunVariableTrackingCleared,
     StudioRunVariableTrackingPage,
@@ -429,6 +431,22 @@ def _tracking_value(
     return json.loads(content)
 
 
+def project_workflow_assets_router(service: WorkflowRunService) -> APIRouter:
+    router = APIRouter(prefix="/api/v1/projects/{project_id}/run-assets", tags=["project-data"])
+
+    @router.get("", response_model=StudioProjectRunAssetPage)
+    def list_project_assets(
+        project_id: str,
+        kind: Literal["result", "file", "diagnostic"] | None = None,
+        run_id: str | None = Query(default=None, alias="runId"),
+        node_id: str | None = Query(default=None, alias="nodeId"),
+        cursor: int = Query(default=0, ge=0), limit: int = Query(default=50, ge=1, le=200),
+    ) -> dict[str, Any]:
+        return service.project_assets(project_id, kind=kind, run_id=run_id, node_id=node_id, cursor=cursor, limit=limit)
+
+    return router
+
+
 def workflow_runs_router(
     service: WorkflowRunService, artifact_root: Path | None = None
 ) -> APIRouter:
@@ -591,12 +609,16 @@ def workflow_runs_router(
             through_sequence=through_sequence,
         )
 
+    @router.get("/{run_id}/results/{sequence:int}", response_model=StudioRunResultRow)
+    def get_result(run_id: str, sequence: int) -> dict[str, Any]:
+        return service.result(run_id, sequence)
+
     @router.get("/{run_id}/results/{sequence:int}/value", response_model=StudioRunResultValue)
     def get_result_value(run_id: str, sequence: int, key: str = Query()) -> dict[str, Any]:
         from autoflow.domain.workflows.runs import WorkflowRunError
 
-        row = next((item for item in service.results(run_id) if item["sequence"] == sequence), None)
-        if row is None or key not in row["values"]:
+        row = service.result(run_id, sequence)
+        if key not in row["values"]:
             raise WorkflowRunError("RUN_RESULT_NOT_FOUND", "运行结果值不存在", 404)
         return {"runId": run_id, "sequence": sequence, "key": key, "value": row["values"][key]}
 

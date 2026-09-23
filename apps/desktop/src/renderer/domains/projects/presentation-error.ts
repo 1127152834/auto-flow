@@ -1,5 +1,12 @@
 /** Project-owned errors are presented by code. Raw diagnostics never become UI copy. */
 const messages: Record<string, string> = {
+  RUN_ASSET_PROJECT_MISMATCH: '运行数据不属于当前项目',
+  RUN_ASSET_IDENTITY_MISMATCH: '结果身份不匹配，请重新读取',
+  RUN_ASSET_SIZE_MISMATCH: '产物大小不一致',
+  RUN_ASSET_HASH_MISMATCH: '产物内容校验失败',
+  ARTIFACT_FILE_MISSING: '运行产物文件缺失',
+  RUN_RESULT_NOT_FOUND: '运行结果不存在',
+
   REVISION_CONFLICT: '数据已更新，请读取最新内容后重试',
   VERSION_CONFLICT: '数据已更新，请读取最新内容后重试',
   RESOURCE_UNAVAILABLE: '所需资源暂不可用，请检查配置',

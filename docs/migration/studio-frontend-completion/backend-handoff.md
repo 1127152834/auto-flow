@@ -99,3 +99,9 @@
 
 
 SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json)，配套 [真实 worker 失败/停止证据](../studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json)。此批核销 5 个真实执行槽位；外部主机、Intel/Windows 和冻结入口仍按族证据的 remaining 保留。
+
+### 项目运行数据与删除合同（2026-09-23）
+
+`GET /api/v1/projects/{projectId}/run-assets` 以 kind、runId、nodeId、cursor/limit 查询现有索引投影，返回元数据、total/nextCursor，不包含完整值或磁盘路径。`GET /api/workflow-runs/{runId}/results/{sequence}` 按已登记事件读取完整结果；文件仍用原 artifact 地址，均带宿主 projectId。新文件有真实 registeredAt，旧文件无登记/事件时间时返回 null。数据目录可预览、下载并读取对应执行日志。
+
+证据：[数据入口及完整正式 UI](../studio-backend-migration/evidence/project-integration/data-assets-2026-09-23/result.json)、[项目删除清理集成](../studio-backend-migration/evidence/project-integration/delete-cleanup-2026-09-23/result.json)。永久删除先清受管运行目录，成功后清该项目运行/索引/文档/保存回执；失败保留 deleting 和重试责任，其他项目、共享资源及用户外部输出不删除。正式 UI 删除、业务数据表写入、统计与录制归属尚未在这两份证据中关闭。
