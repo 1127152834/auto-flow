@@ -26,7 +26,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -112,6 +112,21 @@ async def test_real_project_batch_http(
             ]
             document["content"]["edges"] = [
                 {"id": f"web-edge-{index}", "source": f"web-{index}", "target": f"web-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            document["content"]["variables"] = []
+        elif scenario == "page_load":
+            steps = [
+                ("open_page", {"url": url, "openMode": "current_tab"}),
+                ("wait_page_load", {"waitUntil": "load", "timeout": 5}),
+                ("page_load_complete", {"checkState": "domcontentloaded", "saveToVariable": "page_ready"}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"load-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"load-edge-{index}", "source": f"load-{index}", "target": f"load-{index + 1}"}
                 for index in range(len(steps) - 1)
             ]
             document["content"]["variables"] = []
@@ -260,6 +275,16 @@ async def test_real_project_batch_http(
                         "dialog_message": "AutoFlow dialog",
                     }
                 assert not app.state.project_workflow_worker_manager.busy()
+            elif scenario == "page_load":
+                assert detail["statusCounts"]["succeeded"] == 2 and len(requests) >= 2
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    attempts = await client.get(task_path + "/node-attempts")
+                    outputs = await client.get(task_path + "/outputs")
+                    assert attempts.status_code == outputs.status_code == 200
+                    assert attempts.json()["total"] == 3
+                    assert {item["status"] for item in attempts.json()["items"]} == {"succeeded"}
+                    assert [(item["name"], item["value"]) for item in outputs.json()["items"]] == [("page_ready", True)]
             elif scenario == "success":
                 assert detail["statusCounts"]["succeeded"] == 2 and requests, {
                     "batch": detail,

@@ -320,3 +320,9 @@
 - 冻结 WebRPA `basic.py` 已迁入 Studio 的 11 类网页节点复用项目图执行器及 CloakBrowser 会话；项目目录从 111 增至 122，Studio 批准范围 213 不变。项目默认 Profile＋任务显式覆盖规则已由用户确认，无资源白名单。
 - 真实项目批次两项任务逐项执行十五节点链，核验导航历史、悬停、弹窗、脚本变量、iframe、输出与 worker 清理。关联回归 274 项、真实批次 5 项、敏感输出专项 2 项，Ruff/mypy/OpenAPI/构建通过。
 - 正式 macOS arm64 开发入口及本地 unsigned 包经真实 UI 编排、保存关窗、项目自动化运行、CloakBrowser 启动与清理通过。包内哈希、证据和未核销边界见 `docs/migration/studio-backend-migration/evidence/project-integration/web-basic-family-2026-09-23/README.md`。其他项目节点族、Intel/Windows 和用户数据库未因此关闭。
+
+## 项目任务页面加载节点族（2026-09-23，confirmed）
+
+- 继续复用已迁入的 WebRPA `basic.py` 两种页面加载节点；项目目录由 122 增至 124。项目事件适配按原字段 `saveToVariable` 输出真实布尔值，缺省 `page_loaded`；未产生变量时不构造节点输出。
+- 真实项目批次两项任务均执行打开网页、等待加载、状态探测，`page_ready=true`，输出与进程清理通过；关联回归 202 项、真实 CloakBrowser 项目批次 2 项、专项 2 项、Ruff/mypy/OpenAPI 通过。正式 macOS arm64 开发入口真实 UI 闭环通过，临时工作区且无用户数据库改动。详情见 `docs/migration/studio-backend-migration/evidence/project-integration/page-load-family-2026-09-23/README.md`。
+- 冻结后端和本地 unsigned Electron 包重建并通过相同正式 UI 链路；上一网页基础族在同一包的回归也通过。包哈希、两份项目任务结果及未实测平台见页面加载节点族证据 README。现有高级网页节点的下载、图片产物需要共享项目产物写入边界，未因此开放。

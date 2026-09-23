@@ -19,12 +19,13 @@ const restartRecoveryOnly = process.env.AUTOFLOW_B8_RESTART_RECOVERY_ONLY === '1
 const projectMathOnly = process.env.AUTOFLOW_PROJECT_MATH_TASK === '1'
 const projectUtilityOnly = process.env.AUTOFLOW_PROJECT_UTILITY_TASK === '1'
 const projectWebBasicOnly = process.env.AUTOFLOW_PROJECT_WEB_BASIC_TASK === '1'
-const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly
+const projectPageLoadOnly = process.env.AUTOFLOW_PROJECT_PAGE_LOAD_TASK === '1'
+const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly
 const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -85,7 +86,7 @@ try {
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   if (projectFamilyOnly) {
-    const name = projectMathOnly ? '项目列表与数学任务验收' : projectUtilityOnly ? '项目实用工具任务验收' : '项目基础网页任务验收'
+    const name = projectMathOnly ? '项目列表与数学任务验收' : projectUtilityOnly ? '项目实用工具任务验收' : projectWebBasicOnly ? '项目基础网页任务验收' : '项目页面加载任务验收'
     await newWorkflow(studio, name)
     if (projectMathOnly) await addGlobalVariable(studio, 'items', 'array', '[1,2,3]')
     await showBlockView(studio)
@@ -109,7 +110,7 @@ try {
       await addBlock(studio, '添加模块', 'SHA加密')
       await setInput(studio, '[placeholder="要加密的文本"]', '{digest}')
       await setInput(studio, '[placeholder="sha_hash"]', 'final_sha')
-    } else {
+    } else if (projectWebBasicOnly) {
       await addBlock(studio, '添加模块', '打开网页')
       await setInput(studio, '[placeholder="https://example.com"]', pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href)
       await addBlock(studio, '添加模块', '操作已打开的网页')
@@ -122,19 +123,25 @@ try {
       await addBlock(studio, '添加模块', '提取数据')
       await setInput(studio, '[placeholder="例如: #title, .content"]', '#workflow-submit')
       await setInput(studio, '[placeholder="变量名"]', 'button_label')
+    } else {
+      await addBlock(studio, '添加模块', '打开网页')
+      await setInput(studio, '[placeholder="https://example.com"]', pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href)
+      await addBlock(studio, '添加模块', '等待页面加载完成')
+      await addBlock(studio, '添加模块', '网页是否加载完成')
+      await setInput(studio, '[placeholder="page_loaded"]', 'page_ready')
     }
     await click(studio, '保存')
     const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project math saved', 15_000)
     assert.ok(saved && saved.projectId === projectId)
-    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), projectMathOnly ? ['list_sum', 'math_round', 'math_abs'] : projectUtilityOnly ? ['url_encode_decode', 'md5_encrypt', 'sha_encrypt'] : ['open_page', 'use_opened_page', 'wait_element', 'hover_element', 'get_element_info'])
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), projectMathOnly ? ['list_sum', 'math_round', 'math_abs'] : projectUtilityOnly ? ['url_encode_decode', 'md5_encrypt', 'sha_encrypt'] : projectWebBasicOnly ? ['open_page', 'use_opened_page', 'wait_element', 'hover_element', 'get_element_info'] : ['open_page', 'wait_page_load', 'page_load_complete'])
     if (projectMathOnly) assert.equal(saved.nodes[1].data.resultVariable, 'rounded')
     assert.equal(saved.edges.length, projectWebBasicOnly ? 4 : 2)
-    checkpoint(projectMathOnly ? '正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程' : projectUtilityOnly ? '正式项目 Studio 通过真实 UI 配置并保存 URL 编码、MD5 和 SHA 顺序流程' : '正式项目 Studio 通过真实 UI 配置并保存网页打开、匹配、等待、悬停和提取顺序流程')
+    checkpoint(projectMathOnly ? '正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程' : projectUtilityOnly ? '正式项目 Studio 通过真实 UI 配置并保存 URL 编码、MD5 和 SHA 顺序流程' : projectWebBasicOnly ? '正式项目 Studio 通过真实 UI 配置并保存网页打开、匹配、等待、悬停和提取顺序流程' : '正式项目 Studio 通过真实 UI 配置并保存页面加载等待与状态检查流程')
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
     await click(main, '新建自动化')
-    await setInput(main, '[aria-label="自动化名称"]', projectMathOnly ? '项目纯数据节点自动化' : projectUtilityOnly ? '项目工具节点自动化' : '项目基础网页节点自动化')
+    await setInput(main, '[aria-label="自动化名称"]', projectMathOnly ? '项目纯数据节点自动化' : projectUtilityOnly ? '项目工具节点自动化' : projectWebBasicOnly ? '项目基础网页节点自动化' : '项目页面加载节点自动化')
     await selectAutomationWorkflow(main, name, saved.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project math automation')
@@ -142,7 +149,7 @@ try {
     await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'project math batch dialog')
     await click(main, '启动 1 个任务')
     await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project math batch')
-    const sawCloakBrowser = projectWebBasicOnly ? await waitForValue(async () => cloakProcesses(userData).length > 0 ? true : null, 'project CloakBrowser process', 30_000) : false
+    const sawCloakBrowser = (projectWebBasicOnly || projectPageLoadOnly) ? await waitForValue(async () => cloakProcesses(userData).length > 0 ? true : null, 'project CloakBrowser process', 30_000) : false
     const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
     const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project family terminal', 90_000)
     const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
@@ -152,17 +159,17 @@ try {
     const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
     const encoded = encodeURIComponent('中文 A')
     const digest = createHash('md5').update(encoded).digest('hex')
-    const outputExpectations = projectMathOnly ? [['sum_value', 6], ['rounded', 6], ['absolute', 7]] : projectUtilityOnly ? [['encoded', encoded], ['digest', digest], ['final_sha', createHash('sha256').update(digest).digest('hex')]] : [['button_label', '确认']]
+    const outputExpectations = projectMathOnly ? [['sum_value', 6], ['rounded', 6], ['absolute', 7]] : projectUtilityOnly ? [['encoded', encoded], ['digest', digest], ['final_sha', createHash('sha256').update(digest).digest('hex')]] : projectWebBasicOnly ? [['button_label', '确认']] : [['page_ready', true]]
     for (const [variable, expected] of outputExpectations) {
       assert.ok(outputs.items.some(item => item.name === variable && item.value === expected), JSON.stringify({ variable, expected, outputs: outputs.items, nodes: saved.nodes }))
     }
     await click(main, '查看任务')
     await click(main, '输入与输出', '[role="tab"]')
     await waitFor(main, `document.body?.innerText.includes(${JSON.stringify(outputExpectations.at(-1)[0])})`, 'project family output')
-    await capture(main, join(evidenceDir, projectMathOnly ? 'project-math-task.png' : projectUtilityOnly ? 'project-utility-task.png' : 'project-web-basic-task.png'))
+    await capture(main, join(evidenceDir, projectMathOnly ? 'project-math-task.png' : projectUtilityOnly ? 'project-utility-task.png' : projectWebBasicOnly ? 'project-web-basic-task.png' : 'project-page-load-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
-    checkpoint(projectMathOnly ? '正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser' : projectUtilityOnly ? '正式项目任务真实 worker 产出编码与摘要并持久化节点记录，未启动 CloakBrowser' : '正式项目任务使用项目默认 Profile 启动 CloakBrowser、执行网页动作、持久化输出并清理进程')
-    const report = { evidenceId: projectMathOnly ? 'BE-project-math-formal-electron' : projectUtilityOnly ? 'BE-project-utility-formal-electron' : 'BE-project-web-basic-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, sawCloakBrowser, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: sawCloakBrowser, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+    checkpoint(projectMathOnly ? '正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser' : projectUtilityOnly ? '正式项目任务真实 worker 产出编码与摘要并持久化节点记录，未启动 CloakBrowser' : projectWebBasicOnly ? '正式项目任务使用项目默认 Profile 启动 CloakBrowser、执行网页动作、持久化输出并清理进程' : '正式项目任务真实 CloakBrowser 等待页面并持久化加载状态，清理进程')
+    const report = { evidenceId: projectMathOnly ? 'BE-project-math-formal-electron' : projectUtilityOnly ? 'BE-project-utility-formal-electron' : projectWebBasicOnly ? 'BE-project-web-basic-formal-electron' : 'BE-project-page-load-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, sawCloakBrowser, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: sawCloakBrowser, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()

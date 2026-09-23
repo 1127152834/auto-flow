@@ -229,6 +229,30 @@ async def test_project_browser_result_does_not_publish_sensitive_variable() -> N
 
 
 @pytest.mark.asyncio
+async def test_project_browser_output_only_reports_written_variables() -> None:
+    events: list[tuple[str, dict[str, object]]] = []
+
+    async def emit(kind: str, _node_id: str, _visit: str, payload: dict[str, object]) -> None:
+        events.append((kind, payload))
+
+    executor = ProjectGraphExecutor(None, {"page_loaded": False}, emit, lambda: False)
+    executor.nodes = {
+        "dialog": {"moduleType": "handle_dialog", "config": {"saveMessage": "message"}},
+        "load": {"moduleType": "page_load_complete", "config": {}},
+    }
+    for node_id, data in (("dialog", {"waiting": True}), ("load", {"loaded": False})):
+        executor.started[node_id] = monotonic()
+        await executor.publish({
+            "type": "execution:node_complete", "nodeId": node_id,
+            "executionId": node_id, "success": True, "data": data,
+        })
+
+    assert [payload for kind, payload in events if kind == "output"] == [
+        {"name": "page_loaded", "value": False}
+    ]
+
+
+@pytest.mark.asyncio
 async def test_project_graph_reuses_condition_loop_and_variable_executors() -> None:
     document = workflow_payload()
     document["content"]["schemaVersion"] = 3

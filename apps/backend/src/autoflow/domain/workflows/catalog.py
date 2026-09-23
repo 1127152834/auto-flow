@@ -46,6 +46,8 @@ _RUNNABLE_MODULES = (
     ("handle_dialog", "处理弹窗"),
     ("inject_javascript", "注入 JavaScript"),
     ("wait_element", "等待元素"),
+    ("wait_page_load", "等待页面加载完成"),
+    ("page_load_complete", "网页是否加载完成"),
     ("csv_generate", "CSV生成"),
     ("csv_parse", "CSV解析"),
     ("dict_deep_copy", "字典深拷贝"),
