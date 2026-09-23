@@ -24,7 +24,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -169,6 +169,15 @@ async def test_real_project_batch_http(
         document["content"]["edges"].append(
             {"id": "edge-input-read", "source": "read", "target": "read-input"}
         )
+        if scenario == 'parameter-isolation':
+            nodes.extend([
+                {'id': 'prior-local', 'type': 'set_variable', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'set_variable', 'variableName': 'priorLocal', 'variableValue': '{taskLocal}'}},
+                {'id': 'write-local', 'type': 'set_variable', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'set_variable', 'variableName': 'taskLocal', 'variableValue': 'must-not-leak'}},
+            ])
+            document['content']['edges'].extend([
+                {'id': 'inspect-local', 'source': 'read-input', 'target': 'prior-local'},
+                {'id': 'set-local', 'source': 'prior-local', 'target': 'write-local'},
+            ])
         await app.state.project_workflow_dispatcher.startup()
         await app.state.project_run_scheduler.startup()
         async with httpx.AsyncClient(
@@ -184,12 +193,23 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
+            if scenario == 'parameter-isolation':
+                result_table_response = await client.post(prefix + '/tables', headers={'Idempotency-Key': str(uuid4())}, json={'name': '同名结果列', 'sourceKind': 'local'})
+                assert result_table_response.status_code == 201, result_table_response.text
+                result_table = result_table_response.json()
+                result_path = prefix + f"/tables/{result_table['tableId']}"
+                result_field_response = await client.post(result_path + '/fields', headers={'Idempotency-Key': str(uuid4())}, json={'definition': {'key': '实际输入', 'name': '实际输入', 'type': 'string', 'required': False, 'validation': {}}, 'sourceColumnPolicy': 'localOnly', 'expectedTableRevision': 1})
+                assert result_field_response.status_code == 200, result_field_response.text
+                result_field = result_field_response.json()['field']['ref']['fieldId']
+                original_response = await client.post(result_path + '/records', headers={'Idempotency-Key': str(uuid4())}, json={'datasetGeneration': result_table['datasetGeneration'], 'values': [{'fieldId': result_field, 'value': 'original'}]})
+                assert original_response.status_code == 201, original_response.text
+                original_result_rows = (await client.get(result_path + '/records', params={'datasetGeneration': result_table['datasetGeneration']})).json()['items']
             if scenario.startswith("data"):
                 table_response = await client.post(prefix + "/tables", headers={"Idempotency-Key": str(uuid4())}, json={"name": "真实写入", "sourceKind": "local"})
                 assert table_response.status_code == 201, table_response.text
                 table = table_response.json()
                 table_path = prefix + f"/tables/{table['tableId']}"
-                field_response = await client.post(table_path + "/fields", headers={"Idempotency-Key": str(uuid4())}, json={"definition": {"key": "result", "name": "结果", "type": "string", "required": False, "validation": {}}, "sourceColumnPolicy": "localOnly", "expectedTableRevision": table['tableRevision']})
+                field_response = await client.post(table_path + "/fields", headers={"Idempotency-Key": str(uuid4())}, json={"definition": {"key": "result", "name": "结果", "type": "string", "required": False, "validation": {"pattern": "^row-[01]$"} if scenario == 'data-loop-partial' else {}}, "sourceColumnPolicy": "localOnly", "expectedTableRevision": table['tableRevision']})
                 assert field_response.status_code == 200, field_response.text
                 field_id = field_response.json()['field']['ref']['fieldId']
                 nodes.append({'id': 'write', 'type': 'project_data', 'position': {'x': 100, 'y': 680}, 'data': {
@@ -266,6 +286,15 @@ async def test_real_project_batch_http(
                 document['content']['edges'].extend([
                     {'id': 'schema-check', 'source': 'schema', 'target': 'schema-check'},
                     {'id': 'schema-query', 'source': 'schema-check', 'target': 'query', 'sourceHandle': 'true'},
+                ])
+            if scenario == 'data-loop-partial':
+                nodes.append({'id': 'write-loop', 'type': 'loop', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'loop', 'count': 3, 'indexVariable': 'index'}})
+                next(n for n in nodes if n['id'] == 'write')['data']['arguments']['values'][field_id] = 'row-{index}'
+                next(e for e in document['content']['edges'] if e['id'] == 'save')['target'] = 'write-loop'
+                document['content']['edges'][:] = [e for e in document['content']['edges'] if e['source'] != 'write']
+                document['content']['edges'].extend([
+                    {'id': 'iteration-write', 'source': 'write-loop', 'target': 'write', 'sourceHandle': 'loop'},
+                    {'id': 'iteration-done', 'source': 'write-loop', 'target': 'end', 'sourceHandle': 'done'},
                 ])
             if scenario in {'data-subflow', 'data-subflow-cancel'}:
                 write = next(n for n in nodes if n['id'] == 'write')
@@ -560,6 +589,25 @@ async def test_real_project_batch_http(
                     assert [event.sequence for event in events] == list(
                         range(1, len(events) + 1)
                     )
+            elif scenario == 'parameter-isolation':
+                from sqlalchemy import select
+
+                from autoflow.infrastructure.database.project_run_models import (
+                    ProjectRecordLeaseRow,
+                )
+
+                assert detail['statusCounts']['succeeded'] == 2
+                assert len({task['taskId'] for task in tasks}) == len({task['runId'] for task in tasks}) == 2
+                for task in tasks:
+                    outputs = (await client.get(prefix + f"/tasks/{task['taskId']}/outputs")).json()['items']
+                    # The existing set_variable executor defaults an unset name to 0.
+                    assert [output['value'] for output in outputs] == ['yes', 'before-真实参数', 0, 'must-not-leak']
+                    attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
+                    assert len(attempts) == 7 and all(attempt['status'] == 'succeeded' for attempt in attempts)
+                with app.state.session_factory() as session:
+                    assert not session.scalars(select(ProjectRecordLeaseRow)).all()
+                assert requests.count('/fixture') == 2
+                assert (await client.get(result_path + '/records', params={'datasetGeneration': result_table['datasetGeneration']})).json()['items'] == original_result_rows
             elif scenario.startswith('manual-'):
                 if scenario in {'manual-race', 'manual-race-intent'}:
                     assert detail['statusCounts']['succeeded'] == 2, detail
@@ -603,6 +651,32 @@ async def test_real_project_batch_http(
                         assert rejected.json()['error']['code'] == 'MANUAL_TRANSITION_LOST'
                         items = (await client.get(prefix + '/manual-items')).json()['items']
                         assert len(items) == 1 and items[0]['status'] == 'expired'
+            elif scenario == 'data-loop-partial':
+                from sqlalchemy import select
+
+                from autoflow.infrastructure.database.models import ProjectOperationRow
+                from autoflow.infrastructure.database.project_run_models import (
+                    ProjectRecordLeaseRow,
+                )
+
+                assert detail['statusCounts']['failed'] == 1, detail
+                assert detail['statusCounts']['cancelled'] == 1, detail
+                records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
+                assert sorted(row['values'][0]['value'] for row in records) == ['row-0', 'row-1']
+                assert all(row['contentRevision'] == row['statusRevision'] == row['linkRevision'] == 1 for row in records)
+                assert all(row['statusId'] is None and row['currentEnvironmentId'] is None for row in records)
+                failed = next(task for task in tasks if task['status'] == 'failed')
+                attempts = (await client.get(prefix + f"/tasks/{failed['taskId']}/node-attempts")).json()['items']
+                writes = [attempt for attempt in attempts if attempt['nodeId'] == 'write']
+                assert sorted(attempt['status'] for attempt in writes) == ['failed', 'succeeded', 'succeeded']
+                assert not any(attempt['nodeId'] == 'end' for attempt in attempts)
+                with app.state.session_factory() as session:
+                    operations = session.scalars(select(ProjectOperationRow).where(ProjectOperationRow.project_id == project_id)).all()
+                    confirmed = [op for op in operations if op.kind == 'createRecord' and op.status == 'succeeded']
+                    # One source record plus the two committed loop outputs remain.
+                    assert len(confirmed) == 3
+                    leases = session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.task_id == failed['taskId'])).all()
+                    assert len(leases) == 2 and all(lease.state == 'released' for lease in leases)
             elif scenario == 'data-parallel-failure':
                 assert detail['statusCounts']['failed'] == 1, detail
                 records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']

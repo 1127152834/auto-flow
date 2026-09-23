@@ -1,9 +1,9 @@
 {
   "date": "2026-09-23",
-  "status": "local_worker_passed_full_regression_in_progress",
+  "status": "local_full_regression_passed_native_ci_in_progress",
   "releaseAccepted": false,
   "parentCommit": "1eeeafffe687568e1f61fabba90ad393f1491c29",
-  "candidateCommit": "pending_commit",
+  "candidateCommit": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
   "productionFile": "apps/backend/src/autoflow/infrastructure/database/project_claims.py",
   "problem": "A reliable Sheets row with a preserved invalid number could still become a declared input, creating a Task/lease and launching the real browser.",
   "fix": "Reuse validation_issues for declared fields on selected records in both preparation and commit revalidation; thaw frozen DateScalar values using existing _mutable. Unused invalid fields and unselected invalid rows remain allowed.",
@@ -21,17 +21,24 @@
     "openapi": "passed",
     "scripts": "101 passed",
     "coverageReferences": "251 mappings valid; verifier 4 passed",
-    "fullBackend": "running",
-    "nativeCI": "pending new candidate"
+    "fullBackend": "3460 passed, 68 skipped, 2 warnings in 1360.57s (0:22:40); collected before two later opt-in scenarios were added; production source unchanged",
+    "nativeCI": {
+      "runId": "35806853292",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35806853292",
+      "status": "in_progress",
+      "headSha": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
+      "scope": "one manual full three-platform matrix; includes new D1 worker test"
+    },
+    "backendBuild": "PyInstaller build passed locally"
   },
   "coverage": {
     "requirements": 251,
-    "withAssertions": 237,
-    "withNoLocatedAssertion": 14,
-    "partiallyVerified": 198,
-    "planned": 53,
+    "withAssertions": 240,
+    "withNoLocatedAssertion": 11,
+    "partiallyVerified": 200,
+    "planned": 51,
     "verified": 0,
-    "statusesUpgraded": false
+    "statusesUpgraded": "DATA-WRITE-13 and FLOW-A10 only: planned to partially_verified; no requirement verified"
   },
   "review": "Independent scoped review completed: no P1/P2 findings, high confidence; 7 precise tests passed / 36 deselected; diff check passed.",
   "limits": [
@@ -39,5 +46,26 @@
     "WRITE-12 uses two concurrent single-record capability commands and fixture-activated Tasks; no multi-record group atomicity or worker retry claim.",
     "No current packaged complete Sheets/Google/OAuth or signing/physical installation evidence; PM6 historical live evidence remains valid.",
     "S4 existing Windows files remain refused; M1-M3 are not approved; other unmapped/partial requirements remain open."
-  ]
+  ],
+  "sourceSha256": "1799cc5d238fdaeac8e84353d3787d5db9e9c072309a43e7694a078bbaac5f8b",
+  "additionalLocalEvidence": {
+    "dataLoopPartial": {
+      "result": "1 passed, 29 deselected in 12.56s",
+      "scope": "real HTTP/SQLite/worker/CloakBrowser 145 on macOS ARM; first two local writes and operations survive third iteration validation failure; leases released; no End; later task cancelled",
+      "limits": "test added after c2d91c5d; not part of running CI, no Sheets intent/UI/platform claim",
+      "review": "independent read-only review found no important issue for this scoped mapping"
+    },
+    "parameterIsolation": {
+      "result": "1 passed, 30 deselected in 28.56s",
+      "scope": "two real parameter Tasks have independent variables and queryable outputs; same-name table column is not implicitly written; records/versions unchanged, zero DataLease, two actual page visits",
+      "limits": "source on macOS ARM only; test added after running CI candidate",
+      "failedAttempt": "An earlier run completed all seven nodes then entered reconciliation on worker process termination TimeoutError; subsequent diagnostic run exited 0. Final assertion corrected for documented unset-variable default 0. Timeout root cause remains unconfirmed; no timeout widened.",
+      "review": "Independent read-only scope review: no important issue; FLOW-A01/FLOW-A10 subranges only; timeout root cause remains open."
+    },
+    "combinedRecheck": {
+      "result": "2 passed, 29 deselected in 24.20s",
+      "scope": "parameter-isolation and data-loop-partial with real worker diagnostics enabled after full backend regression finished",
+      "limits": "No recurrence in this run; prior process-exit TimeoutError root cause remains unconfirmed. Source unchanged; new tests are outside c2d91c5d native CI."
+    }
+  }
 }

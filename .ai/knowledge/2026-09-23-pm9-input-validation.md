@@ -15,3 +15,9 @@ DATA-TABLE-08 前一记录的“映射拒绝”范围过宽，相关叙述由本
 DATA-WRITE-12 新增两任务各持一条动态 lease、并发反向单记录写的直接集成证据：双方返回 LEASE_BUSY，原写入、版本、游标、输入快照和 lease 所有权不变。Task 激活为 fixture；不宣称真实 worker 重试或多记录组原子性。
 
 当前台账 251 条，237 有范围断言/14 未定位，198 partial/53 planned/0 verified。新增生产修复不能沿用 ae347de9 或 1eeeafff 的 CI 作为当前验证；既有推送矩阵 35704062667 全成功，PR 矩阵 35704068537 的 Intel DMG 因 hdiutil Resource busy 失败，其余两平台成功。两次运行分别保留。releaseAccepted=false。
+
+后续本地补证：生产修复 c2d91c5d 已推送，唯一新三平台矩阵 35806853292 运行中。新增 data-loop-partial 真实 worker 场景 1 passed/29 deselected（12.56s）：第二张本地表前两行成功、第三行被规则拒绝，前两行和操作保留、两个 lease 释放、无 End、后续任务取消。只将 DATA-WRITE-13 从 planned 改为 partial，当前 238 有断言/13 未定位、199 partial/52 planned/0 verified；无 Sheets 队列/UI/平台证明。该测试晚于 CI 候选，不能称已在该矩阵运行。独立只读审查确认范围，无重要问题。PyInstaller 本机构建通过。
+
+随后 parameter-isolation 真实场景通过（1 passed/30 deselected，28.56s）：同一有限批次两个参数任务的 taskLocal 初值都为既有 set_variable 语义的 0，前次写入不泄漏；同名输出列存在但无项目写节点，原记录完整 DTO 不变，两个真实网页输出可分别查询，无 DataLease。FLOW-A01 补断言，FLOW-A10 升为 partial。最新 240 有范围断言/11 未定位，200 partial/51 planned/0 verified。一次早期运行在 7 个节点均完成后出现 worker 退出 TimeoutError；后续诊断正常退出 0、最终场景通过，根因尚未确认，不放宽退出超时。测试晚于 c2d91c5d，未包含在其 CI 矩阵。
+
+两项新增场景在完整回归结束后启用 worker diagnostics 联合复验：2 passed / 29 deselected，24.20 秒。此次未复现退出超时；原超时根因仍未确认，不标已修复。

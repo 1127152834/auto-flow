@@ -9456,8 +9456,17 @@
       "primary_package": "PM4-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_node_writes.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "real_worker",
+          "report": "docs/project-management/implementation/pm9/input-validation-follow-through.json",
+          "scope": "data-loop-partial: first two local loop writes survive the third validation failure",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -11553,12 +11562,23 @@
         "PM6-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "仅 data-loop-partial 参数：macOS ARM 真实 HTTP/SQLite/worker/CloakBrowser 在第二张本地表循环创建 row-0/row-1 后第三次被规则拒绝；前两行/版本/成功操作保留，两个动态 lease 释放，End 不执行，后续参数任务取消。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：真实循环前两行成功第三行失败，前两行效果与队列保留；不据邻近测试推定覆盖"
+            "detail": "Sheets 来源的前两条出站意图在第三行失败后保留仍待联合断言。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "当前仅本机源码真实 worker，本例尚未在打包 UI 或三平台执行。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -11975,6 +11995,14 @@
           "scope": "PM3当前交付包或规则已在管理界面与真实CloakBrowser链验证。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "real_worker",
+          "report": "docs/project-management/implementation/pm9/input-validation-follow-through.json",
+          "scope": "FLOW-A01 parameter-isolation on real HTTP/SQLite/worker/CloakBrowser",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-runs",
@@ -12000,12 +12028,19 @@
         "PM3-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "仅 parameter-isolation 参数：同一有限批次两个真实参数 Task/Run 均成功；每次读取未设置 taskLocal 得到既有节点默认值 0，再写 must-not-leak，第二任务不继承前一任务值；两个运行输出与 7 次节点成功记录独立，无 DataLease，页面两次实际访问。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：两次真实参数任务的变量隔离；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "当前仅本机源码真实 worker 场景；打包 UI 与该场景的三平台验收仍缺证据。一次早期 worker 退出超时未复现，不能声明其根因已修复。"
           }
         ],
         "statusBeforeReview": "verified"
@@ -12452,8 +12487,17 @@
       "primary_package": "PM7-B",
       "planned_test_file": "apps/backend/tests/contract/test_project_runs.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "real_worker",
+          "report": "docs/project-management/implementation/pm9/input-validation-follow-through.json",
+          "scope": "FLOW-A10 parameter-isolation on real HTTP/SQLite/worker/CloakBrowser",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-runs",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -12473,12 +12517,19 @@
         "PM7-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "仅 parameter-isolation 参数：预先创建与实际输入输出同名的结果列和 original 记录；工作流无项目写节点，两个真实任务网页结果可查询，原记录完整 DTO/各版本与值不变。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：结果列存在但无项目写节点时表无变化；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "当前仅本机源码真实 worker 场景；打包 UI 与该场景的三平台验收仍缺证据。一次早期 worker 退出超时未复现，不能声明其根因已修复。"
           }
         ],
         "statusBeforeReview": "planned"

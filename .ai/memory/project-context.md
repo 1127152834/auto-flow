@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-23 最新 PM9 状态（confirmed；来源 `pm9/input-validation-follow-through.json`，较下文历史摘要优先）：实施仍在独立 pm9-runtime worktree/分支，草稿 PR #1。生产修复 c2d91c5d 补齐 D1 声明输入值的选择/提交校验；未使用坏字段不阻断。全后端 3460 passed/68 skipped，89 定向、4 Sheets 真实 worker、Ruff/mypy407/OpenAPI/101 脚本与后端构建通过；新矩阵 35806853292 仍进行中。后续独立本机 worker 补循环部分成功、参数变量隔离和同名结果不隐式写回，当前 240 有范围断言/11 未定位、200 partial/51 planned/0 verified。一次 worker 退出超时尚未查明，不以重跑成功宣称根因修复。S4 既有文件、未批准 M1–M3、打包完整 Sheets/Google/OAuth、签名及实机专项继续保留；PM6 历史实网有效。releaseAccepted=false，不合并发布。最新 CI 状态以 verification.json 为准。
+
 - 项目：AutoFlow
 - 目标平台：Windows、macOS
 - 目标：在新架构中迁移 browser-automation 的功能；项目管理已形成完整设计，PM1项目入口在独立实施分支交付；之后按用户验收逐阶段实施。

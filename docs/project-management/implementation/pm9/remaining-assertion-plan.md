@@ -2,11 +2,13 @@
 
 日期：2026-09-21。状态：confirmed（现状和已有验证）；C1–C4 和 R1–R5 设计已批准；M1–M3 仍 proposed。来源：原始设计、coverage.json、本轮生产候选及本轮直接断言复核。
 
-当前 251 条中 237 条有明确范围的断言，14 条尚无已定位断言；198 partially_verified / 53 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
+当前 251 条中 240 条有明确范围的断言，11 条尚无已定位断言；200 partially_verified / 51 planned / 0 verified。这个数量不衡量完成率，任一条的未闭合子条件继续保留。历史 73 条失效预定路径仍保留为原意，实际映射另列，未创建空测试文件冒充交付。
 
 2026-09-23 执行更新：DATA-TABLE-08 已用充分字段权限和真实 Sheets 绑定请求替换宽泛拒绝证据；DATA-WRITE-12 已补双任务反向单记录冲突，保留多记录组和生产 worker 重试缺口。D1 真实 worker 场景暴露并修复声明坏值仍领取的缺陷：共享选择/提交重验只校验已选输入的声明字段，保留未使用坏值。专属 worker 及原共享交接 4 项通过，新场景加入既有 CI；完整回归/新三平台结果见 verification.json。后续继续 DATA-WRITE-13 真实循环部分成功、FLOW-A01/A05 参数与可选输入隔离；云端行变更 M1–M3 仍未批准。
 
 ## 本轮已经执行的补证
+
+- 2026-09-23 DATA-WRITE-13：真实 worker 的 data-loop-partial 场景通过。第二张本地表循环前两行成功、第三行被字段规则拒绝；前两行/版本/成功操作仍保留，动态 lease 释放、无 End，后续任务取消。本地子范围由 planned 升为 partially_verified；Sheets 意图队列、UI 和跨平台未闭合，不改为 verified。
 
 - DATA-STATE-02：两个已有组件用例分别验证空状态目录的新增入口和 null/失效状态的区分，完整前端 5459 项已覆盖。
 - DATA-SCHEMA-09：已有真实并发业务脚本验证 T2 等待人工时 T1 完成兼容加列，T2 保留旧契约后继续写入；不包含新字段写回、异型冲突和删除依赖的所有条件。
@@ -170,3 +172,5 @@ STATE-08 已有坏业务值 fixture 的真实 HTTP 状态标记、held/reconcili
 ### 2026-09-22 共享重叠写与失败后领取映射
 
 SH-02 新增两种写入顺序，逐次远端值/原历史 confirmed/双方完整本地快照/R5 观察/无多余写全部断言；完整同步文件 35 passed/39.99 秒。SYNC-09 复核既有拒绝推值后双拉取与真实 Task 领取冻结快照，映射到具体断言；它不证明 worker 全程执行。仅此两项从 planned 改 partial；原生/实网/完整 UI 条件保留。机器统计 235 有断言/16 未定位/198 partial/53 planned/0 verified。
+
+2026-09-23 后续参数场景：parameter-isolation 在真实 HTTP/SQLite/worker/CloakBrowser 本机运行通过（1 passed/30 deselected，28.56s）。两个 Task 的 taskLocal 初值均为 0，前一任务写入不进入第二任务；结果可查询，无 DataLease；同名项目结果列的原记录及版本完全不变。FLOW-A01 增加范围断言，FLOW-A10 由 planned 升为 partial；当前 240 有断言/11 未定位、200 partial/51 planned/0 verified。此前一次退出 TimeoutError 已保留，根因未确认；本机最终通过不代替该场景的打包/三平台证据。

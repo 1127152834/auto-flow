@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "input_validation_fix_regression_in_progress",
+  "status": "local_regression_passed_native_ci_in_progress_release_acceptance_incomplete",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -8,9 +8,9 @@
   "remaining": [
     "S4 Windows existing output overwrite/append/read remains refused; native held-target replacement experiments did not meet approved guarantees.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 source-format diagnostics implemented with scoped evidence; M1-M3 remain outside approved scope.",
-    "14 of 251 requirements still have no located assertion; 198 partial / 53 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
+    "11 of 251 requirements still have no located assertion; 200 partial / 51 planned / 0 verified. Scoped assertions do not close unproven subconditions.",
     "D1 declared-input bad-value claim bypass fixed; dedicated local real-worker scenario passed. New candidate full regression/native CI and packaged/real-Google acceptance remain separate gates.",
-    "One independent whole C/R review completed; three Important findings fixed. New input-validation change has a separate scoped review and full regression in progress.",
+    "Independent claim-validation review found no P1/P2; local full backend and build passed. Current three-platform validation remains in progress.",
     "Historical PM6 service-account Sheets/system credential evidence remains valid. Current PM9 packaged complete Sheets chain, system UUID real Google tests and OAuth require current authorization.",
     "Physical installers/native dialogs across all three platforms, signing/notarization identities and full native credential/import/export/uninstall acceptance remain incomplete. Existing ARM isolated DMG/native-dialog evidence retains its historical hash.",
     "No merge or release is authorized; releaseAccepted=false."
@@ -29,7 +29,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+  "codeCandidate": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
   "checks": {
     "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -142,44 +142,38 @@
     "status": "C/R and approved D1 implemented; local and current three-platform regression passed; external acceptance and release remain incomplete."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Uncommitted D1 claim-validation fix on 1eeeafff; local bad-value real-worker scenario passed; full regression in progress. Historical ae347de9/1eeeafff CI does not validate this production change.",
+  "workingCandidate": "Production candidate c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5: local full backend 3460 passed / 68 skipped; 89 targeted and 4 Sheets real-worker scenarios passed. PyInstaller built. Actions 35806853292 still in progress. Additional loop/parameter assertions are later test-only evidence.",
   "finalCICandidate": {
-    "status": "passed_all_platforms",
-    "runId": 35677887974,
-    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+    "codeCandidate": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
+    "runId": "35806853292",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35806853292",
+    "status": "in_progress",
     "platforms": {
-      "darwin-arm64": {
-        "status": "passed",
-        "report": "ci-d1-final-darwin-arm64.json",
-        "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143792"
-      },
       "win32-x64": {
-        "status": "passed",
-        "report": "ci-d1-final-win32-x64.json",
-        "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143984"
+        "status": "pending"
       },
       "darwin-x64": {
-        "status": "passed",
-        "report": "ci-d1-final-darwin-x64.json",
-        "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143937"
+        "status": "pending"
+      },
+      "darwin-arm64": {
+        "status": "pending"
       }
     },
-    "nativeProbe": "skipped",
-    "workerProbe": "skipped",
     "physicalInstallation": "pending"
   },
-  "codeCandidateScope": "codeCandidate/finalCICandidate below identify the prior accepted CI source only; workingCandidate and inputValidationFollowThrough identify the newer change pending commit and native validation.",
-  "testCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+  "codeCandidateScope": "Current production candidate includes selected declared-input validation at preparation and commit. Historical CI candidates are preserved separately and do not validate this change.",
+  "testCandidate": "c2d91c5dbeb7fc9b19f9917b3356addb068c1aa5",
   "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
   "d1Verification": {
-    "backend": "138 scoped backend passed locally; current CI full backend: 3453 macOS / 3443 Windows passed, platform-specific skips retained",
-    "frontend": "5470 passed on each platform",
-    "typecheck": "passed",
-    "openapi": "passed",
-    "mypy": "407 source files passed",
+    "relatedBackend": "89 passed locally",
+    "realWorker": "4 passed locally: new dedicated D1 invalid-value scenario plus shared resume/stop/loss; Google and credentials controlled",
     "ruff": "passed",
-    "realWorker": "21 passed, 11 deselected on each platform; this is existing PM9 scenario coverage. Dedicated D1 bad-value worker filter did not select a test and remains unclaimed."
+    "mypy": "407 source files passed",
+    "openapi": "passed",
+    "scripts": "101 passed",
+    "fullBackend": "3460 passed, 68 skipped, 2 warnings in 1360.57s on production candidate c2d91c5d; later two opt-in cases are separate evidence",
+    "threePlatformCI": "35806853292 in_progress",
+    "backendBuild": "passed"
   },
   "inputValidationFollowThrough": "input-validation-follow-through.json",
   "laterCIEvidence": [
@@ -209,5 +203,42 @@
       "error": "dmgbuild.core.DMGError: Unable to detach device cleanly: hdiutil could not eject disk4 - Resource busy",
       "scope": "PR merge checkout; preserve independently from successful push matrix"
     }
-  ]
+  ],
+  "historicalCICandidates": [
+    {
+      "status": "passed_all_platforms",
+      "runId": 35677887974,
+      "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+      "platforms": {
+        "darwin-arm64": {
+          "status": "passed",
+          "report": "ci-d1-final-darwin-arm64.json",
+          "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143792"
+        },
+        "win32-x64": {
+          "status": "passed",
+          "report": "ci-d1-final-win32-x64.json",
+          "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143984"
+        },
+        "darwin-x64": {
+          "status": "passed",
+          "report": "ci-d1-final-darwin-x64.json",
+          "jobScope": "https://github.com/1127152834/auto-flow/actions/runs/35677887974/job/106588143937"
+        }
+      },
+      "nativeProbe": "skipped",
+      "workerProbe": "skipped",
+      "physicalInstallation": "pending"
+    }
+  ],
+  "historicalD1Verification": {
+    "backend": "138 scoped backend passed locally; current CI full backend: 3453 macOS / 3443 Windows passed, platform-specific skips retained",
+    "frontend": "5470 passed on each platform",
+    "typecheck": "passed",
+    "openapi": "passed",
+    "mypy": "407 source files passed",
+    "ruff": "passed",
+    "realWorker": "21 passed, 11 deselected on each platform; this is existing PM9 scenario coverage. Dedicated D1 bad-value worker filter did not select a test and remains unclaimed."
+  }
 }
