@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-23 XE-A19 共享核心补证（confirmed）：复用现有真实浏览器持久运行场景，SQL 核验零 Project/仅一 Run；仅 browser 能力准备项目 createRecord 文档被明确拒绝，原文档不变且随后可编辑保存，不隐式建项目。1 passed/3 deselected（11.65 秒）。仅 core/document/worker 子范围由 planned 改 partial；Studio 窗口提示/编辑体验、HTTP 联合和打包验收未完成，新断言不在已启动的14df矩阵中。最新 245 有范围断言/6 未定位、203 partial/48 planned/0 verified；先前计数为历史。
+
 2026-09-23 XE-C07 最新补证（confirmed，来源：event-reconnect-follow-through.json）（supersedes 此前 243/8 统计）：真实 TCP/worker 人工等待场景发现 checkpoint 未纳入公开事件投影，导致 JSON/SSE 补读 409；已补最小身份/版本契约及生成类型，内部续跑内容不公开。修复后真实断开/继续/缺口补读、8 次唯一节点访问、3 个输出、日志分页、失败截图摘要和资源回收通过；20 项后端契约/证据与25项相关前端通过，独立审查无 P1/P2。前端 EOF 去重是独立受控测试，尚非安装包 UI 断网联合证据。台账 244 有范围断言/7 未定位、202 partial/49 planned/0 verified；完整回归/新候选 CI 见 verification.json 与 event-reconnect-follow-through.json。releaseAccepted=false。
 
 2026-09-23 L0 最新补审（confirmed，优先于下文 c2 摘要）：旧未知值写可被改绑绕过已复现，三处共享发送围栏修复与4项反例通过，相关回归/新候选矩阵见 `pm9/lifecycle-fence-follow-through.json` 与 verification.json；原c2矩阵不覆盖新生产代码。台账243有断言/8未定位、202 partial/49 planned/0 verified。L1–L3连接恢复/保留身份/隔离新契约已写规格和计划，尚未批准；当前仅安全拒绝，不能声称永久失权处置完成。

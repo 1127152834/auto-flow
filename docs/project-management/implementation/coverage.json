@@ -13999,8 +13999,17 @@
       "primary_package": "PM4-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_node_writes.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/event-reconnect-follow-through.json",
+          "scope": "无 Project 的共享 core/document/真实 worker 子范围，不包含 Studio 窗口。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -14022,12 +14031,23 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_workflow_real_cloakbrowser.py",
+            "symbol": "test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
+            "scope": "已有真实通用网页 Run 成功与服务重建后事实保留；新增 SQL 零 Project/仅1Run，browser-only 准备 createRecord 文档返回 CAPABILITY_MISSING project.data，拒绝不改文档，随后编辑保存原项目节点，仍零 Project/仅1Run。直接 core/document 服务调用，不是 Studio 页面。",
+            "level": "automated_integration"
+          }
+        ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：无 Project 的 Studio 通用运行与项目写回文档明确缺能力；不据邻近测试推定覆盖"
+            "detail": "Studio 实际窗口加载项目写回文档、显示明确能力提示及编辑保留的前后端联合断言尚未完成。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "新增断言仅本机 macOS ARM 源码核心链，未纳入当前已启动的三平台候选，也不是安装包 Studio 验收。"
           }
         ],
         "statusBeforeReview": "planned"

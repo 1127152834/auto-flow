@@ -114,12 +114,17 @@ async def test_real_cloakbrowser_worker_lifecycle(tmp_path, valid_profile_values
 
 @pytest.mark.asyncio
 async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_path, valid_profile_values, real_cloak_page):
+    from sqlalchemy import func, select
+
     from autoflow.application.workflows.service import WorkflowService
     from autoflow.bootstrap.app import create_app
     from autoflow.bootstrap.config import Settings
+    from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+    from autoflow.infrastructure.database.models import ProjectRow
     from autoflow.infrastructure.database.workflow_runtime import (
         SqlAlchemyWorkflowRuntimeRepository,
     )
+    from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
     from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
     from tests.fixtures.workflows import workflow_payload
 
@@ -171,6 +176,33 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         assert [event.sequence for event in events] == list(range(1, len(events) + 1))
         assert events[-1].kind == 'status' and events[-1].payload['status'] == 'succeeded'
         assert app.state.project_workflow_dispatcher.blockers() == []
+        # No project service was invoked: generic content runs with browser capability only.
+        with app.state.session_factory() as session:
+            assert session.scalar(select(func.count()).select_from(ProjectRow)) == 0
+            assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 1
+        project_document = workflow_payload(str(uuid4()))
+        project_document['content']['nodes'] = [{
+            'id': 'write', 'type': 'project_data', 'position': {'x': 0, 'y': 0},
+            'data': {'moduleType': 'project_data', 'operation': 'createRecord', 'variableName': 'saved',
+                     'arguments': {'tableId': str(uuid4()), 'datasetGeneration': str(uuid4()), 'values': {}}},
+        }]
+        project_document['content']['edges'] = []
+        project_record = documents.create(project_document, str(uuid4()))
+        with pytest.raises(WorkflowRuntimeError) as missing:
+            app.state.project_workflow_runtime.prepare_content(
+                prepare_operation_id=str(uuid4()), workflow_id=project_record.workflow_id,
+                source_revision=project_record.revision, available_capabilities=['browser.cloakbrowser'],
+            )
+        assert missing.value.code == 'CAPABILITY_MISSING' and missing.value.status == 422
+        assert missing.value.details == {'capabilities': ['project.data']}
+        assert documents.get(project_record.workflow_id) == project_record
+        project_document['content']['nodes'][0]['data']['variableName'] = 'stillEditable'
+        edited = documents.save(project_record.workflow_id, project_document, project_record.revision, str(uuid4()))
+        assert edited.revision == project_record.revision + 1
+        assert documents.get(project_record.workflow_id).document['content']['nodes'] == project_document['content']['nodes']
+        with app.state.session_factory() as session:
+            assert session.scalar(select(func.count()).select_from(ProjectRow)) == 0
+            assert session.scalar(select(func.count()).select_from(WorkflowRunRow)) == 1
     finally:
         await app.router.on_shutdown[-1]()
     restored = create_app(settings)

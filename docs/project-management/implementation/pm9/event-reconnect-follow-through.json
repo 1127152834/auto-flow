@@ -14,23 +14,36 @@
     "mypy": "407 files passed",
     "openapi": "generation and check passed",
     "fullBackend": "in_progress",
-    "fullFrontend": "in_progress",
-    "nativeCI": "replacement candidate pending commit; c9 run does not contain this production fix"
+    "fullFrontend": "409 files / 5471 tests passed in 229.62s; typecheck, ESLint and build passed (existing Rollup annotation warnings)",
+    "nativeCI": {
+      "runId": "35811305102",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35811305102",
+      "headSha": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
+      "status": "in_progress",
+      "supersedes": "35810132035 cancelled after new checkpoint production fix, not success"
+    }
   },
   "review": "Independent read-only review: no actionable P1/P2, high confidence; explicitly separates real backend TCP test and controlled frontend EOF test.",
   "coverage": {
     "requirements": 251,
-    "withAssertions": 244,
-    "withNoLocatedAssertion": 7,
+    "withAssertions": 245,
+    "withNoLocatedAssertion": 6,
     "statuses": {
-      "partially_verified": 202,
-      "planned": 49
+      "partially_verified": 203,
+      "planned": 48
     }
   },
   "remaining": [
     "Packaged renderer + real backend disconnect/reconnect combined evidence is not provided by separate tests.",
     "New scenario must run in three-platform candidate matrix; physical acceptance remains external.",
-    "Seven requirements still have no located direct assertion; other partial requirements retain their unmet conditions.",
+    "Six requirements still have no located direct assertion; other partial requirements retain their unmet conditions.",
     "L1-L3 and M1-M3 unapproved; Windows existing-file operations remain refused."
-  ]
+  ],
+  "candidateCommit": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
+  "standaloneCoreEvidence": {
+    "check": "test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
+    "result": "1 passed / 3 deselected in 11.65s",
+    "scope": "2026-09-23 XE-A19 共享核心补证（confirmed）：复用现有真实浏览器持久运行场景，SQL 核验零 Project/仅一 Run；仅 browser 能力准备项目 createRecord 文档被明确拒绝，原文档不变且随后可编辑保存，不隐式建项目。1 passed/3 deselected（11.65 秒）。仅 core/document/worker 子范围由 planned 改 partial；Studio 窗口提示/编辑体验、HTTP 联合和打包验收未完成，新断言不在已启动的14df矩阵中。最新 245 有范围断言/6 未定位、203 partial/48 planned/0 verified；先前计数为历史。",
+    "candidateScope": "test-only follow-up after 14dfae7c; not contained in current matrix"
+  }
 }

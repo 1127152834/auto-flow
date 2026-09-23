@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 135,
-        "planned": 43
+        "partially_verified": 136,
+        "planned": 42
       },
       "items": [
         {
@@ -2234,12 +2234,13 @@
         },
         {
           "id": "XE-A19",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 0,
+          "reviewedCheckCount": 1,
           "gapKinds": [
-            "test_missing"
+            "test_missing",
+            "production_evidence_missing"
           ]
         },
         {
@@ -2615,11 +2616,11 @@
   ],
   "reviewTotals": {
     "requirements": 251,
-    "withAssertions": 244,
-    "withNoLocatedAssertion": 7,
+    "withAssertions": 245,
+    "withNoLocatedAssertion": 6,
     "statuses": {
-      "partially_verified": 202,
-      "planned": 49
+      "partially_verified": 203,
+      "planned": 48
     }
   }
 }

@@ -30,7 +30,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
+  "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
   "checks": {
     "currentLocal": "shared-data-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -143,9 +143,9 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Current worktree adds XE-C07 checkpoint event projection fix and real TCP/worker reconnect evidence after c9e2da78. Targeted checks passed; full local regression running; replacement CI must include this source. Prior c9 matrix is not current-source evidence.",
+  "workingCandidate": "14dfae7c checkpoint production fix pushed; focused real TCP/worker, 20 related backend, 25 related frontend, full frontend 5471, typecheck/lint/build, Ruff/mypy407/OpenAPI passed. Full backend and replacement three-platform matrix running. Later XE-A19 test-only local evidence is excluded from that matrix.",
   "finalCICandidate": {
-    "codeCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
+    "codeCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
     "status": "in_progress",
     "platforms": {
       "win32-x64": {
@@ -159,12 +159,12 @@
       }
     },
     "physicalInstallation": "pending",
-    "runId": "35810132035",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35810132035",
-    "realWorkerSelection": "26 selected / 37 collected; includes new four worker scenarios and D1 dedicated test"
+    "runId": "35811305102",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35811305102",
+    "realWorkerSelection": "Existing selection plus manual-evidence-reconnect; counts must be read from run logs, not inferred."
   },
-  "codeCandidateScope": "Includes C/R/D1 selected input validation and L0 unresolved value-send fencing for binding/unbinding. L1-L3 recovery protocols remain proposed.",
-  "testCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
+  "codeCandidateScope": "Adds only public checkpoint event projection/schema/generated types after L0; private continuation data remains excluded.",
+  "testCandidate": "14dfae7cd810c04e7bb183e5236c98e6df435a32",
   "d1": "Safe source business values remain preserved. Declared selected input fields are now validated before preparation and at claim commit; unused bad fields remain allowed. Local real worker passed; current packaged/real Google/platform acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -252,6 +252,26 @@
       },
       "physicalInstallation": "pending",
       "reason": "L0 production bug discovered while matrix ran; full matrix cancelled to avoid finishing stale candidate."
+    },
+    {
+      "codeCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
+      "status": "cancelled_superseded_by_checkpoint_fix",
+      "platforms": {
+        "win32-x64": {
+          "status": "cancelled"
+        },
+        "darwin-x64": {
+          "status": "cancelled"
+        },
+        "darwin-arm64": {
+          "status": "cancelled"
+        }
+      },
+      "physicalInstallation": "pending",
+      "runId": "35810132035",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35810132035",
+      "realWorkerSelection": "26 selected / 37 collected; includes new four worker scenarios and D1 dedicated test",
+      "reason": "Real TCP manual Run exposed omitted public checkpoint; current-source replacement 35811305102. No prior partial job counts treated as passed."
     }
   ],
   "historicalD1Verification": {
