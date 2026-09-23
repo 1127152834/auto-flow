@@ -28,12 +28,13 @@ const projectListExportOnly = process.env.AUTOFLOW_PROJECT_LIST_EXPORT_TASK === 
 const projectLogOnly = process.env.AUTOFLOW_PROJECT_LOG_TASK === '1'
 const projectTableOnly = process.env.AUTOFLOW_PROJECT_TABLE_TASK === '1'
 const projectHttpOnly = process.env.AUTOFLOW_PROJECT_HTTP_TASK === '1'
-const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly
+const projectControlPrimitivesOnly = process.env.AUTOFLOW_PROJECT_CONTROL_PRIMITIVES_TASK === '1'
+const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly
 const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -113,7 +114,7 @@ try {
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   if (projectFamilyOnly) {
-    const name = projectMathOnly ? '项目列表与数学任务验收' : projectUtilityOnly ? '项目实用工具任务验收' : projectWebBasicOnly ? '项目基础网页任务验收' : projectAdvancedOnly ? '项目高级网页与产物任务验收' : projectTabSwitchOnly ? '项目标签页切换任务验收' : projectVariableOnly ? '项目变量处理任务验收' : projectListExportOnly ? '项目列表导出任务验收' : projectLogOnly ? '项目日志任务验收' : projectTableOnly ? '项目表格提取与导出任务验收' : projectHttpOnly ? '项目HTTP节点任务验收' : '项目页面加载任务验收'
+    const name = projectMathOnly ? '项目列表与数学任务验收' : projectUtilityOnly ? '项目实用工具任务验收' : projectWebBasicOnly ? '项目基础网页任务验收' : projectAdvancedOnly ? '项目高级网页与产物任务验收' : projectTabSwitchOnly ? '项目标签页切换任务验收' : projectVariableOnly ? '项目变量处理任务验收' : projectListExportOnly ? '项目列表导出任务验收' : projectLogOnly ? '项目日志任务验收' : projectTableOnly ? '项目表格提取与导出任务验收' : projectHttpOnly ? '项目HTTP节点任务验收' : projectControlPrimitivesOnly ? '项目等待断言停止任务验收' : '项目页面加载任务验收'
     await newWorkflow(studio, name)
     if (projectMathOnly) await addGlobalVariable(studio, 'items', 'array', '[1,2,3]')
     if (projectVariableOnly) await addGlobalVariable(studio, 'payload', 'string', '{"items":[{"name":"甲"},{"name":"乙"}]}')
@@ -260,6 +261,18 @@ try {
       await addBlock(studio, '添加模块', 'Webhook通知')
       await setInput(studio, '[placeholder="Webhook URL"]', `${httpOrigin}/notify`)
       await setInput(studio, 'textarea[placeholder*="通知内容"]', '{"message":"完成"}')
+    } else if (projectControlPrimitivesOnly) {
+      await addBlock(studio, '添加模块', '固定等待')
+      await setInput(studio, '[placeholder="例如: 1 或 2.5"]', '0.01')
+      await addBlock(studio, '添加模块', '断言/检查点')
+      await setInput(studio, '[placeholder="要校验的值，支持 {变量名}"]', '42')
+      await setInput(studio, '[placeholder="期望对照的值，支持 {变量名}"]', '42')
+      await setVariableNameInput(studio, '[placeholder="存储断言结果布尔值，如 assert_passed"]', 'checked')
+      await addBlock(studio, '添加模块', '强制停止工作流执行')
+      await setInput(studio, '#stopReason', '业务结束')
+      await addBlock(studio, '添加模块', '设置变量')
+      await setInput(studio, '[placeholder="变量名"]', 'must_not_run')
+      await setInput(studio, '[placeholder="变量的值"]', 'unexpected')
     } else {
       await addBlock(studio, '添加模块', '打开网页')
       await setInput(studio, '[placeholder="https://example.com"]', pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href)
@@ -270,21 +283,21 @@ try {
     await click(studio, '保存')
     const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'project math saved', 15_000)
     assert.ok(saved && saved.projectId === projectId)
-    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), projectMathOnly ? ['list_sum', 'math_round', 'math_abs'] : projectUtilityOnly ? ['url_encode_decode', 'md5_encrypt', 'sha_encrypt'] : projectWebBasicOnly ? ['open_page', 'use_opened_page', 'wait_element', 'hover_element', 'get_element_info'] : projectAdvancedOnly ? ['open_page', 'select_dropdown', 'set_checkbox', 'save_image', 'download_file', 'get_child_elements'] : projectTabSwitchOnly ? ['open_page', 'open_page', 'switch_tab', 'get_element_info', 'switch_tab', 'get_element_info'] : projectVariableOnly ? ['json_parse', 'random_number', 'get_time'] : projectListExportOnly ? ['list_export', 'list_export'] : projectLogOnly ? ['print_log', 'export_log'] : projectTableOnly ? ['open_page', 'extract_table_data', 'table_add_row', 'table_add_column', 'table_set_cell', 'table_get_cell', 'table_export', 'table_export', 'table_delete_row', 'table_clear'] : projectHttpOnly ? ['api_trigger', 'api_request', 'webhook_request', 'notify_webhook'] : ['open_page', 'wait_page_load', 'page_load_complete'])
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), projectMathOnly ? ['list_sum', 'math_round', 'math_abs'] : projectUtilityOnly ? ['url_encode_decode', 'md5_encrypt', 'sha_encrypt'] : projectWebBasicOnly ? ['open_page', 'use_opened_page', 'wait_element', 'hover_element', 'get_element_info'] : projectAdvancedOnly ? ['open_page', 'select_dropdown', 'set_checkbox', 'save_image', 'download_file', 'get_child_elements'] : projectTabSwitchOnly ? ['open_page', 'open_page', 'switch_tab', 'get_element_info', 'switch_tab', 'get_element_info'] : projectVariableOnly ? ['json_parse', 'random_number', 'get_time'] : projectListExportOnly ? ['list_export', 'list_export'] : projectLogOnly ? ['print_log', 'export_log'] : projectTableOnly ? ['open_page', 'extract_table_data', 'table_add_row', 'table_add_column', 'table_set_cell', 'table_get_cell', 'table_export', 'table_export', 'table_delete_row', 'table_clear'] : projectHttpOnly ? ['api_trigger', 'api_request', 'webhook_request', 'notify_webhook'] : projectControlPrimitivesOnly ? ['wait', 'assert_checkpoint', 'stop_workflow', 'set_variable'] : ['open_page', 'wait_page_load', 'page_load_complete'])
     if (projectTabSwitchOnly) {
       assert.equal(saved.nodes[2].data.switchMode, 'title')
       assert.equal(saved.nodes[4].data.switchMode, 'last')
     }
     if (projectVariableOnly) assert.deepEqual(saved.nodes.map(node => node.data.variableName), ['parsed', 'pick', 'today'])
     if (projectMathOnly) assert.equal(saved.nodes[1].data.resultVariable, 'rounded')
-    assert.equal(saved.edges.length, projectTableOnly ? 9 : projectHttpOnly ? 3 : projectListExportOnly || projectLogOnly ? 1 : projectAdvancedOnly || projectTabSwitchOnly ? 5 : projectWebBasicOnly ? 4 : 2)
+    assert.equal(saved.edges.length, projectTableOnly ? 9 : projectHttpOnly || projectControlPrimitivesOnly ? 3 : projectListExportOnly || projectLogOnly ? 1 : projectAdvancedOnly || projectTabSwitchOnly ? 5 : projectWebBasicOnly ? 4 : 2)
     if (projectListExportOnly) assert.deepEqual(saved.nodes.map(node => node.data.appendMode ?? false), [false, true])
-    checkpoint(projectMathOnly ? '正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程' : projectUtilityOnly ? '正式项目 Studio 通过真实 UI 配置并保存 URL 编码、MD5 和 SHA 顺序流程' : projectWebBasicOnly ? '正式项目 Studio 通过真实 UI 配置并保存网页打开、匹配、等待、悬停和提取顺序流程' : projectAdvancedOnly ? '正式项目 Studio 通过真实 UI 配置并保存下拉选择、勾选、图片、下载和子元素流程' : projectTabSwitchOnly ? '正式项目 Studio 通过真实 UI 配置并保存打开两个页面、按标题和最后一页切换、分别提取元素的流程' : projectVariableOnly ? '正式项目 Studio 通过真实 UI 声明变量并保存 JSON解析、随机数和时间流程' : projectListExportOnly ? '正式项目 Studio 通过真实 UI 声明列表变量并保存覆盖、追加两个列表导出节点' : projectLogOnly ? '正式项目 Studio 通过真实 UI 配置并保存打印日志与导出日志流程' : projectTableOnly ? '正式项目 Studio 通过真实 UI 配置并保存网页表格提取、数据表操作与文件导出流程' : projectHttpOnly ? '正式项目 Studio 通过真实 UI 配置并保存 API 轮询、HTTP 请求、Webhook 请求与通知流程' : '正式项目 Studio 通过真实 UI 配置并保存页面加载等待与状态检查流程')
+    checkpoint(projectMathOnly ? '正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程' : projectUtilityOnly ? '正式项目 Studio 通过真实 UI 配置并保存 URL 编码、MD5 和 SHA 顺序流程' : projectWebBasicOnly ? '正式项目 Studio 通过真实 UI 配置并保存网页打开、匹配、等待、悬停和提取顺序流程' : projectAdvancedOnly ? '正式项目 Studio 通过真实 UI 配置并保存下拉选择、勾选、图片、下载和子元素流程' : projectTabSwitchOnly ? '正式项目 Studio 通过真实 UI 配置并保存打开两个页面、按标题和最后一页切换、分别提取元素的流程' : projectVariableOnly ? '正式项目 Studio 通过真实 UI 声明变量并保存 JSON解析、随机数和时间流程' : projectListExportOnly ? '正式项目 Studio 通过真实 UI 声明列表变量并保存覆盖、追加两个列表导出节点' : projectLogOnly ? '正式项目 Studio 通过真实 UI 配置并保存打印日志与导出日志流程' : projectTableOnly ? '正式项目 Studio 通过真实 UI 配置并保存网页表格提取、数据表操作与文件导出流程' : projectHttpOnly ? '正式项目 Studio 通过真实 UI 配置并保存 API 轮询、HTTP 请求、Webhook 请求与通知流程' : projectControlPrimitivesOnly ? '正式项目 Studio 通过真实 UI 配置并保存等待、断言检查点、停止流程及停止后的步骤' : '正式项目 Studio 通过真实 UI 配置并保存页面加载等待与状态检查流程')
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
     await click(main, '新建自动化')
-    await setInput(main, '[aria-label="自动化名称"]', projectMathOnly ? '项目纯数据节点自动化' : projectUtilityOnly ? '项目工具节点自动化' : projectWebBasicOnly ? '项目基础网页节点自动化' : projectAdvancedOnly ? '项目高级网页节点自动化' : projectTabSwitchOnly ? '项目标签页节点自动化' : projectVariableOnly ? '项目变量节点自动化' : projectListExportOnly ? '项目列表导出节点自动化' : projectLogOnly ? '项目日志节点自动化' : projectTableOnly ? '项目表格节点自动化' : projectHttpOnly ? '项目HTTP节点自动化' : '项目页面加载节点自动化')
+    await setInput(main, '[aria-label="自动化名称"]', projectMathOnly ? '项目纯数据节点自动化' : projectUtilityOnly ? '项目工具节点自动化' : projectWebBasicOnly ? '项目基础网页节点自动化' : projectAdvancedOnly ? '项目高级网页节点自动化' : projectTabSwitchOnly ? '项目标签页节点自动化' : projectVariableOnly ? '项目变量节点自动化' : projectListExportOnly ? '项目列表导出节点自动化' : projectLogOnly ? '项目日志节点自动化' : projectTableOnly ? '项目表格节点自动化' : projectHttpOnly ? '项目HTTP节点自动化' : projectControlPrimitivesOnly ? '项目等待断言停止节点自动化' : '项目页面加载节点自动化')
     await selectAutomationWorkflow(main, name, saved.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project math automation')
@@ -298,11 +311,11 @@ try {
     const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
     const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
     assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify({ terminal, task, attempts, variables: saved.variables, nodes: saved.nodes }))
-    assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, projectTableOnly ? 10 : projectHttpOnly ? 4 : projectListExportOnly || projectLogOnly ? 2 : projectAdvancedOnly || projectTabSwitchOnly ? 6 : projectWebBasicOnly ? 5 : 3)
+    assert.equal(attempts.items.filter(item => item.status === 'succeeded').length, projectTableOnly ? 10 : projectHttpOnly ? 4 : projectControlPrimitivesOnly ? 3 : projectListExportOnly || projectLogOnly ? 2 : projectAdvancedOnly || projectTabSwitchOnly ? 6 : projectWebBasicOnly ? 5 : 3)
     const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
     const encoded = encodeURIComponent('中文 A')
     const digest = createHash('md5').update(encoded).digest('hex')
-    const outputExpectations = projectMathOnly ? [['sum_value', 6], ['rounded', 6], ['absolute', 7]] : projectUtilityOnly ? [['encoded', encoded], ['digest', digest], ['final_sha', createHash('sha256').update(digest).digest('hex')]] : projectWebBasicOnly ? [['button_label', '确认']] : projectAdvancedOnly ? [['children', ['#child-a', '#child-b']]] : projectTabSwitchOnly ? [['first_title', 'AutoFlow B1 受控页面'], ['first_button', '确认'], ['last_title', 'AutoFlow B2 网页动作受控页面'], ['last_child', '甲']] : projectVariableOnly ? [['parsed', '乙'], ['pick', 7]] : projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly ? [] : [['page_ready', true]]
+    const outputExpectations = projectMathOnly ? [['sum_value', 6], ['rounded', 6], ['absolute', 7]] : projectUtilityOnly ? [['encoded', encoded], ['digest', digest], ['final_sha', createHash('sha256').update(digest).digest('hex')]] : projectWebBasicOnly ? [['button_label', '确认']] : projectAdvancedOnly ? [['children', ['#child-a', '#child-b']]] : projectTabSwitchOnly ? [['first_title', 'AutoFlow B1 受控页面'], ['first_button', '确认'], ['last_title', 'AutoFlow B2 网页动作受控页面'], ['last_child', '甲']] : projectVariableOnly ? [['parsed', '乙'], ['pick', 7]] : projectControlPrimitivesOnly ? [['checked', true]] : projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly ? [] : [['page_ready', true]]
     for (const [variable, expected] of outputExpectations) {
       assert.ok(outputs.items.some(item => item.name === variable && (Array.isArray(expected) ? JSON.stringify(item.value) === JSON.stringify(expected) : item.value === expected)), JSON.stringify({ variable, expected, outputs: outputs.items, nodes: saved.nodes }))
     }
@@ -348,6 +361,12 @@ try {
       assert.deepEqual(outputs.items.find(item => item.name === 'trigger_data')?.value, { data: { status: 'ready' } })
       assert.deepEqual(outputs.items.find(item => item.name === 'api_result')?.value, { accepted: '甲' })
       checkpoint('项目真实 worker 轮询本地 API 两次后执行 HTTP、Webhook 请求和通知，输出与服务接收请求一致')
+    }
+    if (projectControlPrimitivesOnly) {
+      assert.equal(attempts.total, 3)
+      assert.ok(!attempts.items.some(item => item.nodeId === saved.nodes[3].id))
+      assert.ok(!outputs.items.some(item => item.name === 'must_not_run'))
+      checkpoint('断言结果持久化为布尔值；停止节点后的变量写入没有执行')
     }
     if (projectLogOnly) {
       const logs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/logs?level=success`)
@@ -396,10 +415,10 @@ try {
       await click(main, '查看图片')
       await waitFor(main, "Boolean(document.querySelector('[role=dialog] img[alt*=保存图片]'))", 'project saved image preview')
     }
-    await capture(main, join(evidenceDir, projectMathOnly ? 'project-math-task.png' : projectUtilityOnly ? 'project-utility-task.png' : projectWebBasicOnly ? 'project-web-basic-task.png' : projectAdvancedOnly ? 'project-advanced-browser-task.png' : projectTabSwitchOnly ? 'project-tab-switch-task.png' : projectVariableOnly ? 'project-variable-task.png' : projectListExportOnly ? 'project-list-export-task.png' : projectLogOnly ? 'project-log-task.png' : projectTableOnly ? 'project-table-task.png' : projectHttpOnly ? 'project-http-task.png' : 'project-page-load-task.png'))
+    await capture(main, join(evidenceDir, projectMathOnly ? 'project-math-task.png' : projectUtilityOnly ? 'project-utility-task.png' : projectWebBasicOnly ? 'project-web-basic-task.png' : projectAdvancedOnly ? 'project-advanced-browser-task.png' : projectTabSwitchOnly ? 'project-tab-switch-task.png' : projectVariableOnly ? 'project-variable-task.png' : projectListExportOnly ? 'project-list-export-task.png' : projectLogOnly ? 'project-log-task.png' : projectTableOnly ? 'project-table-task.png' : projectHttpOnly ? 'project-http-task.png' : projectControlPrimitivesOnly ? 'project-control-primitives-task.png' : 'project-page-load-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
-    checkpoint(projectMathOnly ? '正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser' : projectUtilityOnly ? '正式项目任务真实 worker 产出编码与摘要并持久化节点记录，未启动 CloakBrowser' : projectWebBasicOnly ? '正式项目任务使用项目默认 Profile 启动 CloakBrowser、执行网页动作、持久化输出并清理进程' : projectAdvancedOnly ? '正式项目任务使用默认 Profile 完成高级网页动作、下载和图片产物，正式任务页可预览且浏览器已清理' : projectTabSwitchOnly ? '正式项目任务使用默认 Profile 在真实 CloakBrowser 切换标签页，分别读取元素并清理进程' : projectVariableOnly ? '正式项目任务真实 worker 产出JSON、数值与日期，未启动 CloakBrowser' : projectListExportOnly ? '正式项目任务完成两次列表导出，任务页列出两个可下载产物且未启动 CloakBrowser' : projectLogOnly ? '正式项目任务持久化用户日志和导出文件，任务页可筛选成功日志且未启动 CloakBrowser' : projectTableOnly ? '正式项目任务通过默认 Profile 真实提取网页表格并导出三份可下载文件，浏览器已清理' : projectHttpOnly ? '正式项目任务真实调用本地网络服务、持久化两项响应变量及四节点状态，未启动 CloakBrowser' : '正式项目任务真实 CloakBrowser 等待页面并持久化加载状态，清理进程')
-    const report = { evidenceId: projectMathOnly ? 'BE-project-math-formal-electron' : projectUtilityOnly ? 'BE-project-utility-formal-electron' : projectWebBasicOnly ? 'BE-project-web-basic-formal-electron' : projectAdvancedOnly ? 'BE-project-advanced-browser-formal-electron' : projectTabSwitchOnly ? 'BE-project-tab-switch-formal-electron' : projectVariableOnly ? 'BE-project-variable-formal-electron' : projectListExportOnly ? 'BE-project-list-export-formal-electron' : projectLogOnly ? 'BE-project-log-formal-electron' : projectTableOnly ? 'BE-project-table-formal-electron' : projectHttpOnly ? 'BE-project-http-formal-electron' : 'BE-project-page-load-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, sawCloakBrowser, checks, ...(projectHttpOnly ? { requestTrace: httpRequests } : {}), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: sawCloakBrowser, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+    checkpoint(projectMathOnly ? '正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser' : projectUtilityOnly ? '正式项目任务真实 worker 产出编码与摘要并持久化节点记录，未启动 CloakBrowser' : projectWebBasicOnly ? '正式项目任务使用项目默认 Profile 启动 CloakBrowser、执行网页动作、持久化输出并清理进程' : projectAdvancedOnly ? '正式项目任务使用默认 Profile 完成高级网页动作、下载和图片产物，正式任务页可预览且浏览器已清理' : projectTabSwitchOnly ? '正式项目任务使用默认 Profile 在真实 CloakBrowser 切换标签页，分别读取元素并清理进程' : projectVariableOnly ? '正式项目任务真实 worker 产出JSON、数值与日期，未启动 CloakBrowser' : projectListExportOnly ? '正式项目任务完成两次列表导出，任务页列出两个可下载产物且未启动 CloakBrowser' : projectLogOnly ? '正式项目任务持久化用户日志和导出文件，任务页可筛选成功日志且未启动 CloakBrowser' : projectTableOnly ? '正式项目任务通过默认 Profile 真实提取网页表格并导出三份可下载文件，浏览器已清理' : projectHttpOnly ? '正式项目任务真实调用本地网络服务、持久化两项响应变量及四节点状态，未启动 CloakBrowser' : projectControlPrimitivesOnly ? '正式项目任务真实执行等待和断言，在停止节点终止后继步骤，记录仍可查看且无浏览器残留' : '正式项目任务真实 CloakBrowser 等待页面并持久化加载状态，清理进程')
+    const report = { evidenceId: projectMathOnly ? 'BE-project-math-formal-electron' : projectUtilityOnly ? 'BE-project-utility-formal-electron' : projectWebBasicOnly ? 'BE-project-web-basic-formal-electron' : projectAdvancedOnly ? 'BE-project-advanced-browser-formal-electron' : projectTabSwitchOnly ? 'BE-project-tab-switch-formal-electron' : projectVariableOnly ? 'BE-project-variable-formal-electron' : projectListExportOnly ? 'BE-project-list-export-formal-electron' : projectLogOnly ? 'BE-project-log-formal-electron' : projectTableOnly ? 'BE-project-table-formal-electron' : projectHttpOnly ? 'BE-project-http-formal-electron' : projectControlPrimitivesOnly ? 'BE-project-control-primitives-formal-electron' : 'BE-project-page-load-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, batchId: batch.batchId, taskId: task.taskId, sawCloakBrowser, checks, ...(projectHttpOnly ? { requestTrace: httpRequests } : {}), boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: sawCloakBrowser, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()

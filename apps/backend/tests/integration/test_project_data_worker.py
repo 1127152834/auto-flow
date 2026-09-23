@@ -112,7 +112,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables", "control_primitives"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -177,7 +177,13 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("delete", "table_delete_row", {"rowIndex": "0"}, None),
         ("clear", "table_clear", {}, None),
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps}[family]
+    control_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("wait", "wait", {"waitType": "time", "duration": "0.001"}, None),
+        ("assert", "assert_checkpoint", {"actualValue": "42", "expectedValue": "42", "variableName": "checked"}, None),
+        ("stop", "stop_workflow", {"stopReason": "业务结束"}, None),
+        ("tail", "set_variable", {"variableName": "must_not_run", "variableValue": "unexpected"}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps, "control_primitives": control_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert node_types <= set(build_production_executor_registry().get_all_types())
@@ -292,9 +298,13 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             assert {event.payload["name"] for event in events if event.kind == "output"} == {
                 "state", "csv_path", "excel_path",
             }
+        elif family == "control_primitives":
+            assert outputs == {"assert": True}
+            assert {event.payload["name"] for event in events if event.kind == "output"} == {"checked"}
+            assert not any(event.node_id == "tail" for event in events)
         else:
             assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
-        assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)
+        assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps) - (family == "control_primitives")
         assert not resources.requests and not worker.busy()
     finally:
         await dispatcher.shutdown()

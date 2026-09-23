@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-control-primitives-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T17:42:31.077Z",
+  "gitHead": "bb4d87333ce465e56a9570e7afb68b4890b7717f",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "6a62b0dd-37fa-4fc4-99a1-a2023ad91e8a",
+  "workflowId": "rfmM1vOhXumiCl4zvXor8",
+  "batchId": "1190f154-c581-4af5-8293-4c2b3f7a130b",
+  "taskId": "e5fddb55-ef0e-4465-a0d2-de343448cbd8",
+  "sawCloakBrowser": false,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存等待、断言检查点、停止流程及停止后的步骤",
+    "断言结果持久化为布尔值；停止节点后的变量写入没有执行",
+    "正式项目任务真实执行等待和断言，在停止节点终止后继步骤，记录仍可查看且无浏览器残留"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

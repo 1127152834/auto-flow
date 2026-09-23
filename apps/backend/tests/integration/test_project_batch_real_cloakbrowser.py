@@ -29,7 +29,7 @@ real_cloak_page = cloak_fixture
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract"])
+@pytest.mark.parametrize("scenario", ["success", "stop", "budget", "failure", "web_basic", "page_load", "advanced_browser", "tab_switch", "table_extract", "control_primitives"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario
 ):
@@ -168,6 +168,24 @@ async def test_real_project_batch_http(
                 {"id": "table-edge", "source": "table-0", "target": "table-1"}
             ]
             document["content"]["variables"] = []
+        elif scenario == "control_primitives":
+            fixture = (Path(__file__).parents[1] / "fixtures" / "workflow-page.html").resolve().as_uri()
+            steps = [
+                ("open_page", {"url": fixture, "openMode": "current_tab"}),
+                ("wait", {"waitType": "selector", "selector": "#workflow-submit"}),
+                ("assert_checkpoint", {"checkType": "element", "selector": "#workflow-submit", "elementCheck": "visible", "variableName": "checked"}),
+                ("stop_workflow", {"stopReason": "业务结束"}),
+                ("get_element_info", {"selector": "#workflow-submit", "attribute": "text", "variableName": "must_not_run"}),
+            ]
+            document["content"]["nodes"] = [
+                {"id": f"control-{index}", "type": module_type, "position": {"x": index * 100, "y": 0}, "data": {"moduleType": module_type, "config": config}}
+                for index, (module_type, config) in enumerate(steps)
+            ]
+            document["content"]["edges"] = [
+                {"id": f"control-edge-{index}", "source": f"control-{index}", "target": f"control-{index + 1}"}
+                for index in range(len(steps) - 1)
+            ]
+            document["content"]["variables"] = []
         elif scenario == "advanced_browser":
             upload = tmp_path / "project-upload.txt"
             upload.write_text("AutoFlow 上传", encoding="utf-8")
@@ -221,7 +239,7 @@ async def test_real_project_batch_http(
             assert created.status_code == 201, created.text
             project_id = created.json()["projectId"]
             prefix = f"/api/v1/projects/{project_id}"
-            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract"}:
+            if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives"}:
                 project = created.json()
                 defaulted = await client.patch(
                     prefix,
@@ -250,7 +268,7 @@ async def test_real_project_batch_http(
                     ],
                     "environmentPolicy": {
                         "source": "newFromProfile",
-                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract"} else {"profileId": profile.id}),
+                    **({} if scenario in {"web_basic", "advanced_browser", "tab_switch", "table_extract", "control_primitives"} else {"profileId": profile.id}),
                         "proxyOverride": {"mode": "none"},
                         "modelProviderId": None,
                     },
@@ -333,7 +351,17 @@ async def test_real_project_batch_http(
                 json=payload,
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
-            if scenario == "web_basic":
+            if scenario == "control_primitives":
+                assert detail["statusCounts"]["succeeded"] == 2
+                for task in tasks:
+                    task_path = prefix + f"/tasks/{task['taskId']}"
+                    attempts = await client.get(task_path + "/node-attempts")
+                    outputs = await client.get(task_path + "/outputs")
+                    assert attempts.status_code == outputs.status_code == 200
+                    assert attempts.json()["total"] == 4
+                    assert {item["status"] for item in attempts.json()["items"]} == {"succeeded"}
+                    assert {item["name"]: item["value"] for item in outputs.json()["items"]} == {"checked": True}
+            elif scenario == "web_basic":
                 assert detail["statusCounts"]["succeeded"] == 2
                 for task in tasks:
                     task_path = prefix + f"/tasks/{task['taskId']}"

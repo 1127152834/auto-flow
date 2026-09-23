@@ -10321,7 +10321,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/control-primitives-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目真实 worker 和 CloakBrowser 验证等待、断言及停止后继步骤，正式 Electron 开发与包内 UI 链路通过。"
+      }
     }
   },
   {
@@ -10492,7 +10498,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/control-primitives-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目真实 worker 和 CloakBrowser 验证等待、断言及停止后继步骤，正式 Electron 开发与包内 UI 链路通过。"
+      }
     }
   },
   {
@@ -10712,7 +10724,13 @@
         }
       ],
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
-      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
+      "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/control-primitives-2026-09-24/README.md",
+        "boundary": "复用冻结 WebRPA 执行器；项目真实 worker 和 CloakBrowser 验证等待、断言及停止后继步骤，正式 Electron 开发与包内 UI 链路通过。"
+      }
     }
   },
   {

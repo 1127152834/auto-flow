@@ -368,3 +368,9 @@
 - 冻结源码 `external_http.py` 中依赖现有出站服务的 `api_trigger`、`api_request`、`webhook_request`、`notify_webhook` 进入项目目录 150→154。项目输出按执行器实际变量值登记，Webhook 多项响应变量逐项写入，避免节点结果包装对象或旧默认名称取代用户变量。
 - 独立临时工作区真实 worker、本地受控 HTTP 服务、取消和原版差分关联 66 项通过；Ruff/mypy/OpenAPI/目录检查通过。正式 Electron 开发入口和 macOS arm64 未签名包真实 UI 完成四节点顺序链；请求轨迹、输出、节点状态及无浏览器资源结果见 `docs/migration/studio-backend-migration/evidence/project-integration/http-family-2026-09-24/README.md`。
 - `webhook_trigger` 的被动触发依赖项目交互命令通道，未被出站服务证明；Studio 有效范围 213 不变，项目目录余下 59 个批准节点。Intel/Windows及用户数据库未实测。
+
+## 项目任务等待、断言与停止节点族（2026-09-24，confirmed）
+
+- 已迁入的冻结 WebRPA `wait`、`assert_checkpoint`、`stop_workflow` 执行器接入项目目录 154→157。项目输出边界读取断言写入的布尔变量，停止节点后的步骤不会执行。
+- 项目真实 worker、两任务 CloakBrowser 元素等待与断言、原版差分及关联回归通过；正式 Electron 开发入口和 macOS arm64 本地未签名包经真实 UI 配置、保存、正常关窗、项目运行及任务结果验收。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/control-primitives-2026-09-24/README.md`。
+- Studio 有效范围 213 不变，项目目录余下 56 个节点。项目网络采集尚需核实大输出事件合同；Intel/Windows 与用户数据库未实测。
