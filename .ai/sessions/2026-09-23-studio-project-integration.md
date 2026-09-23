@@ -291,3 +291,8 @@
 - 后续真实 worker 用例发现自定义模块内调用子工作流时子节点只保留工作流作用域，外层模块丢失。`7a4a10a0` 在共享嵌套执行器的现有上下文边界传递模块、画布子流程和工作流作用域，共享递归栈与后台任务，不重建调度器。关联项目 29 项、Studio 嵌套/模块针对性 6 项及节点执行器 3 项通过。
 - 针对 `7a4a10a0` 重建冻结后端及 macOS arm64 本地 unsigned 包，正式项目 UI 主链 `formal-project-control-electron-h1SA0V` 通过；组合作用域由真实项目 worker 集成用例验证，包内脚本覆盖两类入口的正常主链而未直接编排组合。哈希与边界见原项目跨工作流证据 README。动态运行期生成的子流程引用、交互命令、Intel/Windows 仍待单列。
 - `run_workflow_file` 的声明初值引用 `{child_ref}` 与直接 ID 在真实项目 worker 各通过一次；在运行过程中由前序节点才产生的引用仍未冻结，保持未验收，不把此两项覆盖扩大到完整动态分支。
+
+## 项目任务纯文本节点族（2026-09-23）
+
+- 现有八个 WebRPA 文本节点执行器已迁入 Studio，本轮只接入项目任务目录；不新建执行器或资源服务。八节点真实 worker 串联运行、输出及事件一致，浏览器资源请求为空；冻结差分 146 项、项目关联 47 项、Ruff/mypy 通过。证据见 `docs/migration/studio-backend-migration/evidence/project-integration/string-family-2026-09-23/README.md`。
+- 项目任务目录为 65 个已接入入口，Studio 批准范围仍为 213 个；最新冻结包与正式 Electron 中八节点组合尚未验收。其他纯数据族按已有执行器与资源依赖继续逐族接入。

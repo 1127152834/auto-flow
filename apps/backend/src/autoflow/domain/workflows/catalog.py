@@ -61,6 +61,14 @@ _RUNNABLE_MODULES = (
     ("list_shuffle", "列表随机打乱"),
     ("list_to_string_advanced", "列表转字符串（高级）"),
     ("list_union", "列表并集"),
+    ("regex_extract", "正则提取"),
+    ("string_replace", "替换文本"),
+    ("string_split", "分割文本"),
+    ("string_join", "连接文本"),
+    ("string_concat", "拼接文本"),
+    ("string_trim", "去除空白"),
+    ("string_case", "大小写"),
+    ("string_substring", "截取文本"),
 )
 
 

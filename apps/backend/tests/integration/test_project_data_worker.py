@@ -32,8 +32,12 @@ from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
 from autoflow.application.workflows.documents import WorkflowDocumentService
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.models.models import ProviderConnection
+from autoflow.domain.workflows.catalog import runnable_module_types
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.project_automations import (
@@ -100,6 +104,69 @@ class _UnexpectedBrowserDependency:
 def _studio_payload(workflow_id: str) -> dict[str, Any]:
     document = _pure_data_document(workflow_id)
     return {**document["content"], "id": workflow_id}
+
+
+@pytest.mark.asyncio
+async def test_project_task_executes_string_family_in_real_worker(tmp_path: Path) -> None:
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("regex", "regex_extract", {"inputText": "订单 A-42", "pattern": r"A-\d+", "variableName": "rx"}, "A-42"),
+        ("replace", "string_replace", {"inputText": "{rx}", "searchValue": "A-", "replaceValue": "B-", "variableName": "rep"}, "B-42"),
+        ("split", "string_split", {"inputText": "甲,乙,丙", "separator": ",", "variableName": "parts"}, ("甲", "乙", "丙")),
+        ("join", "string_join", {"listVariable": "parts", "separator": "|", "variableName": "joined"}, "甲|乙|丙"),
+        ("concat", "string_concat", {"string1": "{joined}", "string2": "!", "variableName": "combined"}, "甲|乙|丙!"),
+        ("trim", "string_trim", {"inputText": "  空 白  ", "trimMode": "all", "variableName": "trimmed"}, "空白"),
+        ("case", "string_case", {"inputText": "abC", "caseMode": "upper", "variableName": "upper"}, "ABC"),
+        ("substring", "string_substring", {"inputText": "{combined}", "startIndex": "2", "endIndex": "3", "variableName": "slice"}, "乙"),
+    ]
+    node_types = {module_type for _, module_type, _, _ in steps}
+    assert node_types <= runnable_module_types()
+    assert node_types <= set(build_production_executor_registry().get_all_types())
+    document = _studio_payload(automation.workflow_id)
+    document.update(
+        schemaVersion=3,
+        nodes=[{
+            "id": node_id, "type": module_type, "position": {"x": index * 160, "y": 0},
+            "data": {"moduleType": module_type, "config": config},
+        } for index, (node_id, module_type, config, _) in enumerate(steps)],
+        edges=[{
+            "id": f"edge-{index}", "source": steps[index][0], "target": steps[index + 1][0],
+        } for index in range(len(steps) - 1)],
+        variables=[],
+    )
+    WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+        automation.workflow_id, document, expected_revision=1,
+        client_request_id=str(uuid4()),
+    )
+    runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+    coordinator._core = runtime
+    worker = ProjectWorkflowWorkerManager(tmp_path / "string-family-worker", start_timeout=10)
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        batch, _, _ = coordinator.start(
+            project.project_id, automation.automation_id, str(uuid4()), start_payload(automation),
+        )
+        task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert run is not None
+        await dispatcher.dispatch(
+            run.run_id, expected_status_revision=run.status_revision,
+            execution_generation=run.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=run.run_id)
+            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded"
+        outputs = {event.node_id: event.payload["value"] for event in events if event.kind == "output"}
+        assert outputs == {node_id: expected for node_id, _, _, expected in steps}
+        assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)
+        assert not resources.requests and not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
 
 
 def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -> None:
