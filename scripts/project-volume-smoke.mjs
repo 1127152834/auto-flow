@@ -85,7 +85,12 @@ export async function checkProjectVolume(sidecar, cdp, click, runtime, workspace
       const readMs = performance.now() - started
       const interaction = performance.now()
       await click('下一页')
-      await waitFor(cdp, `${recordRows}===50 && document.body.innerText.includes('${(page - 1) * 50 + 1}–${page * 50} / 10000')`, 'record pagination during synthetic log ingestion')
+      try {
+        await waitFor(cdp, `${recordRows}===50 && document.body.innerText.includes('${(page - 1) * 50 + 1}–${page * 50} / 10000')`, 'record pagination during synthetic log ingestion')
+      } catch (error) {
+        const state = await cdp.evaluate(`({page:document.querySelector('[aria-label="当前页码"]')?.textContent,pagination:document.querySelector('[aria-label="分页"]')?.textContent,rows:${recordRows},alerts:[...document.querySelectorAll('[role="alert"]')].map(e=>e.textContent)})`)
+        throw new Error(`synthetic pagination failed at page ${page}: ${JSON.stringify(state)}`, { cause: error })
+      }
       synthetic.samples.push({ received: seen.size, logReadMs: Math.round(readMs), pageMs: Math.round(performance.now() - interaction), heapBytes: await heap() })
     }
     const outcome = await producer

@@ -256,3 +256,5 @@ D1 独立审查发现的三个重要问题已 RED→GREEN：Excel 身份字段�
 2026-09-23 XE-A01：parameter-single 真实 worker 场景 1 passed/32 deselected（38.06 秒）；无表、参数 first 网页填写/读取、同键重放后唯一 Batch/Task/Run、零 lease 和资源回收联合通过。仅本机源码证据，不扩大为打包 UI/三平台或 XE-G02 全部门禁。当前 242 有断言/9 未定位、201 partial/50 planned/0 verified。
 
 2026-09-23 生命周期补审：LIFE-01/02 不能再仅写缺测试——连接无原位重授权/稳定主体契约，普通改绑无条件新建数据代次。LIFE-07 临时真实 HTTP 探针复现旧 unknown 仍在时重绑并再次云写；L0 在改绑新/旧目标及解绑复用持久值发送围栏，4 个直接反例 RED→GREEN。L0只拒绝绕过，不完成永久失权隔离；L1→L2→L3 具体规格/计划已保存，新增能力尚待批准。最新 243 有范围断言/8 未定位、202 partial/49 planned/0 verified。生产候选已改变，旧 c2 矩阵不能证明此修复，新完整矩阵见 verification.json。
+
+2026-09-23 当前 ARM DMG 隔离安装补证（confirmed，本机限定）：生产源码 6d1f1d83 的 ARM DMG 校验、只读挂载、临时目录复制安装、包内 sidecar 和完整桌面运行通过。运行脚本修正终态 `cleaned`/`retained_unsaved` 处置：前者由调度器回收，后者才显式放弃。当前本机完整重跑包含真实浏览器 worker、人工输入、失败保留、归档/恢复、五路万行写入（53560 ms，0 次 busy 重试）、固定 60 秒合成日志 1000 条（最大批次滞后 40 ms）、21 页记录分页、200% 缩放及应用重启。此前一次合成写入期间分页等待超时根因未知，已保留失败并补诊断，不能称为长期稳定。详见 installed-arm-dmg-follow-through.json。旧矩阵 35819716149 ARM 在未修脚本的源码冒烟发多余 End，403 后失败；新脚本本机通过，Windows/Intel 旧作业仍保留各自结果。未证明 Finder/Gatekeeper、签名公证、其他平台实机、当前打包 Sheets 实网与 OAuth；`releaseAccepted=false`。

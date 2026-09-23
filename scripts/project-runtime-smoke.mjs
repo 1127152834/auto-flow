@@ -210,14 +210,23 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     const statistics = await api(prefix + '/statistics')
     const drilldown = await api(`${prefix}/statistics/${statistics.resultSetId}/tasks?result=succeeded`)
     assert.ok(drilldown.items.some(item => item.taskId === loaded.task.taskId), 'statistics must link to real terminal tasks')
-    // A failed run preserves its work copy for inspection; explicitly discard it
-    // through the same End command offered by the task page before archiving.
+    // The scheduler cleans terminal instances unless a failed save preserved
+    // the work copy. Explicitly discard only that retained copy.
     for (const terminal of [failed, conflicted, partial, staleSave]) {
-      const detail = await api(`${prefix}/tasks/${terminal.task.taskId}`)
-      const instance = (await api(`${prefix}/environment-instances?taskId=${terminal.task.taskId}`)).items[0]
-      assert.ok(instance)
-      const cleaned = await api(`${prefix}/tasks/${terminal.task.taskId}/end`, { taskId: terminal.task.taskId, runId: terminal.task.runId, instanceId: instance.instanceId, expectedUseGeneration: instance.instanceUseGeneration, executionGeneration: detail.run.executionGeneration, retainEnvironment: { enabled: false } })
-      assert.equal(cleaned.outcome.complete, true)
+      let instance
+      for (let attempt = 0; attempt < 100; attempt++) {
+        instance = (await api(`${prefix}/environment-instances?taskId=${terminal.task.taskId}`)).items[0]
+        if (['cleaned', 'retained_unsaved'].includes(instance?.state)) break
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      assert.ok(instance, `terminal task ${terminal.task.taskId} must have an instance`)
+      if (instance.state === 'retained_unsaved') {
+        const detail = await api(`${prefix}/tasks/${terminal.task.taskId}`)
+        const discarded = await api(`${prefix}/tasks/${terminal.task.taskId}/end`, { taskId: terminal.task.taskId, runId: terminal.task.runId, instanceId: instance.instanceId, expectedUseGeneration: instance.instanceUseGeneration, executionGeneration: detail.run.executionGeneration, retainEnvironment: { enabled: false } })
+        assert.equal(discarded.outcome.complete, true)
+        instance = (await api(`${prefix}/environment-instances?taskId=${terminal.task.taskId}`)).items[0]
+      }
+      assert.equal(instance.state, 'cleaned', `terminal task ${terminal.task.taskId} must be reclaimed before archive`)
     }
     const impact = await api(prefix + '/lifecycle-impact?action=archive')
     const archived = await api(prefix + '/archive', { impactRevision: impact.impactRevision, expectedManagementRevision: (await api(prefix)).managementRevision })

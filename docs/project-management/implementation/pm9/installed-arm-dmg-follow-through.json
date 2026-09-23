@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-23",
+  "status": "local_dmg_installed_app_smoke_passed_native_matrix_pending",
+  "platform": "macOS Apple Silicon",
+  "productionSource": "6d1f1d834803c124940ac8a25d007178a51c5f2d",
+  "artifact": {
+    "path": "apps/desktop/dist/AutoFlow-0.1.0-arm64.dmg",
+    "sha256": "2b98629d9d56da7506154493445b8f56b7a3913657c1844ff746901292d3fcf7",
+    "verification": "hdiutil verify VALID; read-only mounted, ditto copied AutoFlow.app into an isolated temporary installation directory, then unmounted",
+    "signature": "ad hoc only; no Developer ID team, notarization or Gatekeeper distribution acceptance"
+  },
+  "checks": [
+    "packaged backend sidecar startup and parent-exit smoke passed",
+    "installed Electron application and sidecar opened all six project tabs and submitted declared manual input",
+    "real worker project runtime, failed-task work-copy disposal, 1004 logs, archive/restore and original-command recovery passed",
+    "five concurrent HTTP writers inserted exactly 10000 records; renderer paginated 21 pages of 50 records",
+    "60-second fixed synthetic input emitted and read back 1000 logs; max batch lag 40 ms",
+    "200% zoom and second Studio window passed; app restart retained project data"
+  ],
+  "performanceObservation": {
+    "tenThousandWriteMs": 53560,
+    "busyRetries": 0,
+    "realWorkerLogs": 1004,
+    "realWorkerElapsedMs": 32813,
+    "realWorkerLogsPerMinuteObserved": 1836,
+    "syntheticEmitted": 1000,
+    "syntheticElapsedMs": 60026,
+    "syntheticMaxBatchLagMs": 40
+  },
+  "command": "node scripts/smoke-project-management-desktop.mjs --executable <isolated installed AutoFlow.app/Contents/MacOS/AutoFlow> --runtime-kernel <installed Chromium> --output-dir <isolated report dir>",
+  "firstAttempt": "The corrected runtime chain passed, but a record-page wait timed out during concurrent synthetic log ingestion. No page state was captured, so root cause is unknown. A second complete run passed; the script now captures pagination state if this recurs.",
+  "secondAttempt": "passed; local report /tmp/autoflow-pm9-follow/installed-smoke-v4/project-desktop.json",
+  "remaining": [
+    "This is one isolated Mac ARM command-line DMG installation, not a Finder/Gatekeeper, signed/notarized, uninstall or three-platform physical acceptance.",
+    "Native file picker, real Google/OAuth and current packaged Sheets end-to-end remain pending.",
+    "One earlier pagination timeout remains unexplained; repeat platform CI and preserve page diagnostics on recurrence."
+  ],
+  "releaseAccepted": false
+}
