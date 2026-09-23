@@ -107,9 +107,12 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-async def test_project_task_executes_string_family_in_real_worker(tmp_path: Path) -> None:
+@pytest.mark.parametrize("family", ["strings", "containers"])
+async def test_project_task_executes_pure_data_family_in_real_worker(
+    tmp_path: Path, family: str,
+) -> None:
     factory, _, _, coordinator, _, project, automation = setup(tmp_path)
-    steps: list[tuple[str, str, dict[str, Any], Any]] = [
+    string_steps: list[tuple[str, str, dict[str, Any], Any]] = [
         ("regex", "regex_extract", {"inputText": "订单 A-42", "pattern": r"A-\d+", "variableName": "rx"}, "A-42"),
         ("replace", "string_replace", {"inputText": "{rx}", "searchValue": "A-", "replaceValue": "B-", "variableName": "rep"}, "B-42"),
         ("split", "string_split", {"inputText": "甲,乙,丙", "separator": ",", "variableName": "parts"}, ("甲", "乙", "丙")),
@@ -119,8 +122,18 @@ async def test_project_task_executes_string_family_in_real_worker(tmp_path: Path
         ("case", "string_case", {"inputText": "abC", "caseMode": "upper", "variableName": "upper"}, "ABC"),
         ("substring", "string_substring", {"inputText": "{combined}", "startIndex": "2", "endIndex": "3", "variableName": "slice"}, "乙"),
     ]
+    container_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("append", "list_operation", {"listVariable": "items", "listAction": "append", "listValue": "甲"}, None),
+        ("list-get", "list_get", {"listVariable": "items", "listIndex": "0", "variableName": "item"}, "甲"),
+        ("list-length", "list_length", {"listVariable": "items", "variableName": "length"}, 1),
+        ("dict-set", "dict_operation", {"dictVariable": "record", "dictAction": "set", "dictKey": "first", "dictValue": "{item}"}, None),
+        ("dict-get", "dict_get", {"dictVariable": "record", "dictKey": "first", "variableName": "chosen"}, "甲"),
+        ("dict-keys", "dict_keys", {"dictVariable": "record", "keyType": "keys", "variableName": "keys"}, ("first",)),
+    ]
+    steps = string_steps if family == "strings" else container_steps
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
+    assert "list_export" not in runnable_module_types()  # Project artifacts are not wired yet.
     assert node_types <= set(build_production_executor_registry().get_all_types())
     document = _studio_payload(automation.workflow_id)
     document.update(
@@ -140,7 +153,7 @@ async def test_project_task_executes_string_family_in_real_worker(tmp_path: Path
     )
     runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
     coordinator._core = runtime
-    worker = ProjectWorkflowWorkerManager(tmp_path / "string-family-worker", start_timeout=10)
+    worker = ProjectWorkflowWorkerManager(tmp_path / "pure-data-family-worker")
     resources = _NoBrowserResources()
     dispatcher = _dispatcher(factory, worker, resources)
     try:
@@ -159,9 +172,12 @@ async def test_project_task_executes_string_family_in_real_worker(tmp_path: Path
             repository = SqlAlchemyWorkflowRuntimeRepository(session)
             finished = repository.get_run(run_id=run.run_id)
             events = repository.list_events(run.run_id, after_sequence=0, limit=100)
-        assert finished is not None and finished.status == "succeeded"
+        assert finished is not None and finished.status == "succeeded", (
+            finished.error if finished else None,
+            [(event.kind, event.node_id, dict(event.payload)) for event in events],
+        )
         outputs = {event.node_id: event.payload["value"] for event in events if event.kind == "output"}
-        assert outputs == {node_id: expected for node_id, _, _, expected in steps}
+        assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
         assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)
         assert not resources.requests and not worker.busy()
     finally:

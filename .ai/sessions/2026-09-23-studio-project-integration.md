@@ -296,3 +296,9 @@
 
 - 现有八个 WebRPA 文本节点执行器已迁入 Studio，本轮只接入项目任务目录；不新建执行器或资源服务。八节点真实 worker 串联运行、输出及事件一致，浏览器资源请求为空；冻结差分 146 项、项目关联 47 项、Ruff/mypy 通过。证据见 `docs/migration/studio-backend-migration/evidence/project-integration/string-family-2026-09-23/README.md`。
 - 项目任务目录为 65 个已接入入口，Studio 批准范围仍为 213 个；最新冻结包与正式 Electron 中八节点组合尚未验收。其他纯数据族按已有执行器与资源依赖继续逐族接入。
+
+## 项目任务基础列表与字典节点族（2026-09-23）
+
+- 在现有 `data_structure.py` 执行器之上，项目目录新增 `list_operation`、`list_get`、`list_length`、`dict_operation`、`dict_get`、`dict_keys` 六个批准入口；真实项目 worker 六节点串联输出和持久事件一致，没有浏览器资源请求，清理完成。项目目录为 71 个，Studio 批准范围仍为 213 个。
+- 冻结 WebRPA 差分及项目关联共 194 项通过；两族真实 worker 连续三轮通过，Ruff、生产目录 mypy、OpenAPI 一致性通过。测试中两族一度在无节点事件时被人为的 10 秒 worker 启动预算打断；捕获到 `TimeoutError` 后改用生产默认的 90 秒预算，未更改成功、输出及清理断言。
+- `list_export` 因项目产物登记尚未接通而继续禁用。六节点的项目正式 Electron UI 与最新冻结包未验收；证据及边界见 `docs/migration/studio-backend-migration/evidence/project-integration/container-family-2026-09-23/README.md`。
