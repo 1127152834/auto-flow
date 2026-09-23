@@ -5,7 +5,7 @@ import { promisify } from 'node:util'
 import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { connectCdp, launchElectron, waitFor, waitForProjectPage } from './electron-cdp.mjs'
+import { connectCdp, launchElectron, waitFor, waitForProjectPage, clickElement } from './electron-cdp.mjs'
 import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from './smoke-project-management.mjs'
 import { checkProjectRuntime } from './project-runtime-smoke.mjs'
 import { checkProjectVolume } from './project-volume-smoke.mjs'
@@ -33,8 +33,7 @@ async function launch() {
   return waitFor(cdp, `(async()=>{const r=await window.autoflow.getRuntimeContext(); return r.sidecar.state==='ready'?r.sidecar:null})()`, 'production sidecar ready', 60_000)
 }
 async function click(text, selector = 'button', target = cdp) {
-  const point = await waitFor(target, `(()=>{const elements=[...document.querySelectorAll(${JSON.stringify(selector)})];const e=elements.find(e=>e.getClientRects().length&&!e.disabled&&(!${JSON.stringify(text)}||e.textContent.trim()===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)}));if(!e)return null;e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`, `button ${text}`)
-  for (const type of ['mousePressed', 'mouseReleased']) await target.command('Input.dispatchMouseEvent', { type, ...point, button: 'left', clickCount: 1 })
+  return clickElement(target, text, selector)
 }
 async function fill(selector, value, target = cdp) {
   await waitFor(target, `Boolean(document.querySelector(${JSON.stringify(selector)}))`, selector)

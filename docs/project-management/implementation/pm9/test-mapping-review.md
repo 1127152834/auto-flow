@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-24 并行补证/CI诊断（confirmed局部）：ARM正式打包API通过2/3次循环变量隔离与精确五条写入、唯一End声明输出关联、并行人工串行交接和停止保留前写。公开事件不提供内部scope、同workflow重复绑定两次脚本错误已修正并保留失败报告。当前69baeeb2三平台35886627514的ARM在打包必填提示失败，截图节点未选中，metadata HTTP断言和后端3486/前端5473通过；旧点击helper对覆盖目标误点已由隔离Electron复现并修复，102脚本/4映射及完整ARM打包桌面通过。Windows/Intel继续，不取消矩阵；仅失败平台后续验证。详见parallel-packaged-follow-through.json和ci-metadata-click-follow-through.json。251条状态未升级，releaseAccepted=false。
+
 2026-09-24 Profile冻结补证与代理勘误（confirmed子范围）：ARM正式打包API/真实worker证明旧批次两个Task保留原根文档、UA/语言/时区及实际启动seed，新批次使用公开编辑后的新值。Canvas实测不变，错误的必变断言已更正并保留负向报告。现有资源类/SQLite诊断证实代理新成员与改动端点进入旧快照，ENV-05/XE-A20/XE-C02增加implementation_missing，P1–P3规格/计划待确认。完整打包API/ARM桌面、101脚本/4映射/251引用通过；生产仍69baeeb2，三平台35886627514继续且不含本次新脚本断言。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见resource-freeze-follow-through.json。
 
 2026-09-24 子流程打包补证（confirmed子范围）：正式ARM应用/sidecar公开HTTP与真实worker完成准备后改文档、两个Task各两次冻结调用、变量隔离与声明输出、根End双记录关联；子流程等待后公开stop父批次保留首条记录/取消人工项/不执行后续写及End；父节点较宽字段权限不能被受限子节点借用，返回CAPABILITY_SCOPE_DENIED且保留父提交。完整API/桌面均通过，101脚本/4映射通过。生产仍69baeeb2，运行中35886627514不包含新增脚本断言，不重启；其他资产/Profile/代理组合与Windows/Intel同场景打包证据保留。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见subflow-packaged-follow-through.json。

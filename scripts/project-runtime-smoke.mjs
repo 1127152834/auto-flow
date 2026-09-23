@@ -163,6 +163,55 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.equal(freshObservation.language, 'fr-FR')
     assert.equal(freshObservation.timezone, 'Europe/Paris')
     const profileFreeze = { status: 'passed', taskIds: profileBatch.tasks.map(task => task.taskId), freshTaskId: freshProfileBatch.task.taskId, originalSeed: frozenProfile.fingerprintSeed, newSeed, seedObservations, seedObservationScope: process.platform === 'darwin' ? 'actual disposable instance browser argv at manual barrier' : 'native argv seed proof pending on this platform', canvasChanged: freshObservation.canvasHash !== observed[0].canvasHash, frozenObservation: observed[0], freshObservation, checks: ['old batch second Task preserves original root document and browser-visible UA/locale/timezone/canvas after public Profile edit and seed reset', 'fresh explicit batch observes new root document and changed Profile identity'] }
+    const parallelTable = await table('并行循环结果')
+    const parallelWrite = (id, value) => node(id, 'project_data', { operation: 'createRecord', variableName: 'saved', tableGrant: grant(parallelTable, 'createRecord'), arguments: { tableId: parallelTable.table.tableId, datasetGeneration: parallelTable.table.datasetGeneration, values: { [parallelTable.fieldId]: value } } })
+    const parallelDocument = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 并行循环隔离', variables: [], nodes: [
+      node('fork', 'set_variable', { variableName: 'started', variableValue: 'yes', parallel: { joinNodeId: 'end', outputs: { left: { saved: 'leftSaved' }, right: { saved: 'rightSaved' } } } }),
+      node('left', 'loop', { count: 2, indexVariable: 'index' }), parallelWrite('left-write', 'A-{index}'),
+      node('right', 'loop', { count: 3, indexVariable: 'index' }), parallelWrite('right-write', 'B-{index}'),
+      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: '并行声明输出', recordTargets: ['leftSaved', 'rightSaved'].map(name => ({ recordRef: `{${name}['ref']}`, expectedLinkRevision: `{${name}['linkRevision']}`, replaceAllowed: false })) } }),
+    ], edges: [edge('fork', 'left'), edge('fork', 'right'), edge('left', 'left-write', 'loop'), edge('right', 'right-write', 'loop'), edge('left', 'end', 'done'), edge('right', 'end', 'done')] })
+    const parallelRun = await run(parallelDocument.id, environment)
+    const parallelRows = (await api(`${prefix}/tables/${parallelTable.table.tableId}/records?datasetGeneration=${parallelTable.table.datasetGeneration}`)).items
+    assert.deepEqual(parallelRows.map(row => row.values[0].value).sort(), ['A-0', 'A-1', 'B-0', 'B-1', 'B-2'])
+    assert.deepEqual(parallelRows.filter(row => row.currentEnvironmentId).map(row => row.values[0].value).sort(), ['A-1', 'B-2'], 'only declared final branch records are linked')
+    assert.equal(new Set(parallelRows.filter(row => row.currentEnvironmentId).map(row => row.currentEnvironmentId)).size, 1)
+    assert.equal(parallelRun.attempts.filter(item => item.nodeId === 'end').length, 1)
+    const parallelEvents = (await api(`${prefix}/tasks/${parallelRun.task.taskId}/events?afterSequence=0&pageSize=200`)).items
+    for (const [id, count] of [['left-write', 2], ['right-write', 3]]) {
+      const starts = parallelEvents.filter(event => event.kind === 'nodeAttempt' && event.nodeId === id && event.payload.status === 'started')
+      assert.equal(starts.length, count)
+      assert.equal(new Set(starts.map(event => event.nodeVisitId)).size, count, 'each loop side effect has its own visit')
+    }
+    const manualParallelDocument = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 并行人工队列', variables: [], nodes: [
+      parallelWrite('before-fork', 'before-manual'),
+      node('fork', 'set_variable', { variableName: 'started', variableValue: 'yes', parallel: { joinNodeId: 'joined', outputs: { 'manual-left': { local: 'leftResult' }, 'manual-right': { local: 'rightResult' } } } }),
+      node('manual-left', 'project_manual', { reason: '左分支', timeoutSeconds: 60 }), node('manual-right', 'project_manual', { reason: '右分支', timeoutSeconds: 60 }),
+      node('after-left', 'set_variable', { variableName: 'local', variableValue: 'left' }), node('after-right', 'set_variable', { variableName: 'local', variableValue: 'right' }),
+      node('joined', 'set_variable', { variableName: 'joined', variableValue: '{leftResult}/{rightResult}' }),
+      node('end', 'project_end', { retainEnvironment: { enabled: false } }),
+    ], edges: [edge('before-fork', 'fork'), edge('fork', 'manual-left'), edge('fork', 'manual-right'), edge('manual-left', 'after-left'), edge('manual-right', 'after-right'), edge('after-left', 'joined'), edge('after-right', 'joined'), edge('joined', 'end')] })
+    const manualOrder = []
+    const manualParallelRun = await run(manualParallelDocument.id, environment, [], {}, 'succeeded', { inputs: [] }, null, { beforeResume: async item => {
+      const items = (await api(prefix + '/manual-items')).items.filter(other => other.taskId === item.taskId)
+      assert.equal(items.filter(other => other.status === 'waiting').length, 1, 'one persistent live checkpoint per Task')
+      const attempts = (await api(`${prefix}/tasks/${item.taskId}/node-attempts`)).items
+      assert.equal(attempts.some(attempt => ['after-left', 'after-right', 'joined', 'end'].includes(attempt.nodeId)), false, 'queued manual handoff precedes ordinary branch work')
+      manualOrder.push(item.manualItemId)
+    } })
+    assert.equal(manualParallelRun.resumedManualItems, 2)
+    assert.equal(new Set(manualOrder).size, 2)
+    assert.equal(manualParallelRun.outputs.find(output => output.name === 'joined')?.value, 'left/right')
+    for (const id of ['after-left', 'after-right', 'joined', 'end']) assert.equal(manualParallelRun.attempts.filter(item => item.nodeId === id).length, 1)
+    const stoppedParallelRun = await run(manualParallelDocument.id, environment, [], {}, 'cancelled', { inputs: [] }, null, { stopAtManual: true, automation: manualParallelRun.automation })
+    assert.equal(stoppedParallelRun.attempts.some(attempt => ['after-left', 'after-right', 'joined', 'end'].includes(attempt.nodeId)), false)
+    const stoppedManualItems = (await api(prefix + '/manual-items')).items.filter(item => item.taskId === stoppedParallelRun.task.taskId)
+    assert.equal(stoppedManualItems.length, 1, 'stopping discards the queued checkpoint')
+    assert.equal(stoppedManualItems[0].status, 'cancelled')
+    const manualRows = (await api(`${prefix}/tables/${parallelTable.table.tableId}/records?datasetGeneration=${parallelTable.table.datasetGeneration}`)).items.filter(row => row.values[0].value === 'before-manual')
+    assert.equal(manualRows.length, 2, 'both pre-fork writes survive, including the cancelled Task')
+    assert.ok(manualRows.every(row => row.currentEnvironmentId === null))
+    const parallel = { status: 'passed', loopTaskId: parallelRun.task.taskId, manualTaskId: manualParallelRun.task.taskId, stoppedTaskId: stoppedParallelRun.task.taskId, loopValues: parallelRows.map(row => row.values[0].value).sort(), linkedValues: parallelRows.filter(row => row.currentEnvironmentId).map(row => row.values[0].value).sort(), manualItems: manualOrder.length, retainedPreForkWrites: manualRows.length, checks: ['same-name loop variables isolated; exact 2/3 values and distinct public event visit IDs', 'only declared last outputs linked by one End', 'two live manual checkpoints serialized before ordinary branch work and join runs once', 'stop discards queued manual, prevents branch/join/End and retains committed pre-fork record'] }
     // Freeze is observed through a real manual barrier after prepare. No in-process worker hooks.
     const childTable = await table('子流程冻结结果')
     const childWrite = id => node(id, 'project_data', { operation: 'createRecord', variableName: 'saved', tableGrant: grant(childTable, 'createRecord'), arguments: { tableId: childTable.table.tableId, datasetGeneration: childTable.table.datasetGeneration, values: { [childTable.fieldId]: '{value}' } } })
@@ -382,7 +431,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       await new Promise(resolve => setTimeout(resolve, 500))
     }
     assert.equal((await api(prefix)).lifecycleState, 'active')
-    return { projectId: project.projectId, environmentId, subflows, profileFreeze, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
+    return { projectId: project.projectId, environmentId, subflows, profileFreeze, parallel, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
   } finally {
     await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
   }

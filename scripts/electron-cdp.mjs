@@ -113,3 +113,21 @@ export async function waitForProjectPage(cdp, timeoutMs = 30_000) {
 }
 
 export function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
+
+// A visible element may still be moving with fitView or covered by a closing dialog.
+export async function clickElement(target, text, selector = 'button') {
+  await target.command('Page.bringToFront')
+  const expression = `(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.getClientRects().length&&!e.disabled&&(!${JSON.stringify(text)}||e.textContent.trim()===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)}));if(!e)return null;e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y,width:r.width,height:r.height}:null})()`
+  let previous = null
+  const deadline = Date.now() + 15_000
+  while (Date.now() < deadline) {
+    const point = await target.evaluate(expression)
+    if (point && previous && Object.keys(point).every(key => Math.abs(point[key] - previous[key]) < 0.5)) {
+      for (const type of ['mousePressed', 'mouseReleased']) await target.command('Input.dispatchMouseEvent', { type, x: point.x, y: point.y, button: 'left', clickCount: 1 })
+      return
+    }
+    previous = point
+    await wait(100)
+  }
+  throw new Error(`timed out waiting for stable uncovered target ${selector}: ${text}`)
+}

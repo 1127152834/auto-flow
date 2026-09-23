@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-24",
+  "status": "arm_failed_windows_intel_in_progress",
+  "releaseAccepted": false,
+  "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
+  "runId": "35886627514",
+  "url": "https://github.com/1127152834/auto-flow/actions/runs/35886627514",
+  "arm": {
+    "jobId": "107268307980",
+    "status": "failure",
+    "backend": "3486 passed /78 skipped /2 warnings",
+    "frontend": "409 files /5473 passed",
+    "failure": "packaged desktop required URL guidance timeout; captured node is not selected and panel requests selection",
+    "metadataApi": "before opening Studio, the same packaged smoke asserted69 covered modules and requiredFields.open_page=[url]; passed",
+    "artifactId": "10766050055",
+    "artifactZipSha256": "30c7fa4333bbf4708454eaa446f8d4c6d7146969c3e97748ab591257d766732b",
+    "evidenceRoot": ".tmp-tests/pm9-ci-35886627514-arm",
+    "failureImage": "artifacts/pm9/packaged/project-studio-failure.png"
+  },
+  "diagnosis": {
+    "confirmed": "Existing click helper dispatched to visible but covered targets. Actual isolated Electron fixture RED false, corrected helper GREEN true. Regression also checks geometry changes before one mouse press/release at final coordinates.",
+    "ciCauseConfidence": "medium: screenshot proves no selection and API metadata passed; exact original CI click coordinates/overlay timing were not recorded, so transient cause is not conclusively established.",
+    "change": "Existing CDP helper waits for center-point hit testing and two stable geometry samples, brings target forward, then dispatches one click; no product validation or timeout thresholds relaxed.",
+    "local": "102 script checks, real Electron covered-target RED→GREEN and full packaged ARM desktop passed (including required-URL guidance)",
+    "evidence": ".tmp-tests/pm9-click-diagnostics-2026-09-24",
+    "desktopEvidence": ".tmp-tests/pm9-parallel-desktop-2026-09-24/project-desktop.json"
+  },
+  "followUp": {
+    "status": "ready_for_arm_only_dispatch",
+    "platform": "macos-15",
+    "scope": "Follow up only failed platform via existing pm9Platform input; current Windows/Intel jobs continue. New test snapshot includes supplemental subflow/Profile/parallel assertions but production stays69baeeb2."
+  }
+}

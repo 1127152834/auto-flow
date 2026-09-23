@@ -2053,9 +2053,9 @@
         {
           "id": "FLOW-A16",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": false,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 3,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2437,9 +2437,9 @@
         {
           "id": "XE-C12",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false,
-          "reviewedCheckCount": 4,
+          "reviewedCheckCount": 5,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2549,9 +2549,9 @@
         {
           "id": "XE-G05",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": false,
-          "reviewedCheckCount": 4,
+          "reviewedCheckCount": 5,
           "gapKinds": [
             "production_evidence_missing"
           ]

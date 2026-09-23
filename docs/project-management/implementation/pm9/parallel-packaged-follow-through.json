@@ -1,0 +1,115 @@
+{
+  "date": "2026-09-24",
+  "status": "packaged_api_and_full_arm_desktop_passed",
+  "releaseAccepted": false,
+  "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
+  "requirements": [
+    "FLOW-08 (design section)",
+    "FLOW-A16",
+    "XE-C12",
+    "XE-G05"
+  ],
+  "checks": {
+    "parallel": {
+      "status": "passed",
+      "loopTaskId": "f9ea45b1-f2be-4388-8a69-787e96ceb518",
+      "manualTaskId": "b9f8389a-bd18-4b17-89dc-e63712c239a7",
+      "stoppedTaskId": "0003a3c6-3cf8-4bb6-9a97-ef8e9dc53067",
+      "loopValues": [
+        "A-0",
+        "A-1",
+        "B-0",
+        "B-1",
+        "B-2"
+      ],
+      "linkedValues": [
+        "A-1",
+        "B-2"
+      ],
+      "manualItems": 2,
+      "retainedPreForkWrites": 2,
+      "checks": [
+        "same-name loop variables isolated; exact 2/3 values and distinct public event visit IDs",
+        "only declared last outputs linked by one End",
+        "two live manual checkpoints serialized before ordinary branch work and join runs once",
+        "stop discards queued manual, prevents branch/join/End and retains committed pre-fork record"
+      ]
+    },
+    "scripts": "102 passed",
+    "mapping": "251 valid references and4 verifier tests passed; no status promotions",
+    "fullDesktop": "passed: new parallel cases and click helper, existing Studio/Profile/subflow/runtime/volume/zoom/restart checks"
+  },
+  "evidence": ".tmp-tests/pm9-parallel-packaged-verified-2026-09-24/project-api.json",
+  "evidenceSha256": "3fb746ef6160b3a26b03b17fc0f3de160d5b36b68206771f91e9a105a13f915c",
+  "negativeEvidence": [
+    {
+      "path": ".tmp-tests/pm9-parallel-packaged-2026-09-24/project-api.json",
+      "reason": "Harness tried reading internal executionContext from the public event API, which deliberately omits it; corrected to public distinct visit IDs and exact values/counts.",
+      "sha256": "4823c6368cf655b9935073ac390fc84e2dee0287608b78810938e6246b17d2a3"
+    },
+    {
+      "path": ".tmp-tests/pm9-parallel-packaged-final-2026-09-24/project-api.json",
+      "reason": "Harness attempted to bind the same workflow twice; corrected to start another batch on the existing automation, respecting WORKFLOW_ALREADY_BOUND.",
+      "sha256": "dfd295fb77787f5054a616779d1167d37598953562cb0c655ed17daf51d5811f"
+    }
+  ],
+  "limits": [
+    "No production code change; structured fork/loop/manual capability already authorized and implemented.",
+    "These packaged assertions do not verify internal scope payload: existing source integration asserts that using SQL events.",
+    "Manual checks cover resume and stop; finish/expiry/budget/in-flight cleanup variants retain their separate source evidence and remaining packaged gaps.",
+    "Current69baeeb2 matrix does not contain these new assertions. Windows/Intel same-scenario, physical acceptance and external Google/OAuth/signing remain open."
+  ],
+  "desktopEvidence": ".tmp-tests/pm9-parallel-desktop-2026-09-24/project-desktop.json",
+  "desktopEvidenceSha256": "b71b9ab50f65c7e82da4001b44301c00386dfd3da98cd4e4580cc07b0f4d535d",
+  "desktopParallel": {
+    "status": "passed",
+    "loopTaskId": "1677351f-56df-4b2e-99aa-89cd2e424856",
+    "manualTaskId": "29d189ec-a899-4960-92a6-be20c7a1f3fc",
+    "stoppedTaskId": "f3b08d91-a687-4078-8677-1c9f0e90c238",
+    "loopValues": [
+      "A-0",
+      "A-1",
+      "B-0",
+      "B-1",
+      "B-2"
+    ],
+    "linkedValues": [
+      "A-1",
+      "B-2"
+    ],
+    "manualItems": 2,
+    "retainedPreForkWrites": 2,
+    "checks": [
+      "same-name loop variables isolated; exact 2/3 values and distinct public event visit IDs",
+      "only declared last outputs linked by one End",
+      "two live manual checkpoints serialized before ordinary branch work and join runs once",
+      "stop discards queued manual, prevents branch/join/End and retains committed pre-fork record"
+    ]
+  },
+  "desktopScreenshots": 21,
+  "observations": {
+    "realWorkerLogs": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 32482,
+      "logsPerMinute": 1855,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "recordWrites": {
+      "elapsedMs": 46903,
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
+    "synthetic": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60019,
+      "maxBatchLagMs": 124
+    },
+    "twoFramesMs": 8,
+    "scope": "single ARM observation; synthetic input and worker throughput are separate, no new performance threshold"
+  }
+}

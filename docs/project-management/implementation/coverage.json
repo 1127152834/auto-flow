@@ -13114,7 +13114,15 @@
           "scope": "三平台 End 保存并关联本次新建记录、第二自动化恢复登录通过；初始输入与新建记录混合目标、关联部分失败仍需逐项证据。",
           "user_acceptance": "pending"
         },
-        "docs/project-management/implementation/pm9/follow-through.json"
+        "docs/project-management/implementation/pm9/follow-through.json",
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/parallel-packaged-follow-through.json",
+          "scope": "ARM正式打包HTTP/worker：同名index/saved的2/3次并行循环产生准确五条记录与独立公开visit；唯一End只关联各分支声明的最后记录A-1/B-2到同一环境。仅新增记录子范围，原输入混合关联保持独立证据。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
       ],
       "owner": "environments",
       "acceptance_methods": [
@@ -13136,7 +13144,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/contract/test_project_environments.py",
@@ -13150,6 +13158,12 @@
             "scope": "实际 End 将初始输入和本任务新建记录关联同一保存环境；未插入 Bind 节点",
             "level": "automated_production",
             "evidence": "docs/project-management/implementation/pm9/follow-through.json"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/worker：同名index/saved的2/3次并行循环产生准确五条记录与独立公开visit；唯一End只关联各分支声明的最后记录A-1/B-2到同一环境。仅新增记录子范围，原输入混合关联保持独立证据。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
@@ -15495,6 +15509,14 @@
           "testedCommit": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
           "scope": "三平台同一存活 worker 的人工继续、同 Run、已完成节点不重放通过；合法目标枚举/跳转、声明输入校验仍未实现。",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/parallel-packaged-follow-through.json",
+          "scope": "ARM正式打包HTTP/worker：并行两个人工项只串行持久化一个waiting，两个等待点均未执行普通后继；继续两项后分支声明输出left/right与join/End各一次；首项等待后stop只取消现有人工项、不创建队列第二项、不跑后继/End且保留已写记录。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM5-C",
@@ -15519,7 +15541,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/contract/test_project_environments.py",
@@ -15544,6 +15566,12 @@
             "symbol": "test_real_project_batch_http",
             "scope": "manual-parallel/manual-parallel-finish/manual-parallel-stop：真实 worker 并行人工串行创建、无后台节点操作、第二项 TTL 从创建算、终结或停止不创建第二项",
             "level": "automated_production_integration"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/worker：并行两个人工项只串行持久化一个waiting，两个等待点均未执行普通后继；继续两项后分支声明输出left/right与join/End各一次；首项等待后stop只取消现有人工项、不创建队列第二项、不跑后继/End且保留已写记录。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
@@ -16164,6 +16192,14 @@
           "testedCommit": "d59607f3d1a4da5e28a9cdcc6f7c7afb1d359972",
           "scope": "三平台正式人工节点等待后同 Run 继续且前序节点不重放通过；合法位置/声明输入与额度、期限竞态各自证据仍需闭合。",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/parallel-packaged-follow-through.json",
+          "scope": "ARM正式打包HTTP/worker：并行两个人工项只串行持久化一个waiting，两个等待点均未执行普通后继；继续两项后分支声明输出left/right与join/End各一次；首项等待后stop只取消现有人工项、不创建队列第二项、不跑后继/End且保留已写记录。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM5-C",
@@ -16188,7 +16224,7 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/contract/test_project_environments.py",
@@ -16213,6 +16249,12 @@
             "symbol": "test_real_project_batch_http",
             "scope": "manual-parallel/manual-parallel-finish/manual-parallel-stop：真实 worker 并行人工串行创建、无后台节点操作、第二项 TTL 从创建算、终结或停止不创建第二项",
             "level": "automated_production_integration"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "scope": "ARM正式打包HTTP/worker：并行两个人工项只串行持久化一个waiting，两个等待点均未执行普通后继；继续两项后分支声明输出left/right与join/End各一次；首项等待后stop只取消现有人工项、不创建队列第二项、不跑后继/End且保留已写记录。",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
