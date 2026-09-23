@@ -23,6 +23,7 @@ from autoflow.providers.browser.project_graph import (
 )
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
+from autoflow.providers.browser.workflow_worker import _WorkerCredentialReader
 
 PROTOCOL_VERSION = 1
 MAX_JSONL_BYTES = 1024 * 1024
@@ -56,6 +57,8 @@ class _Input:
     def __init__(self, stdin: TextIO) -> None:
         self.stdin = stdin
         self.messages: queue.Queue[dict[str, Any] | BaseException] = queue.Queue()
+        self.credentials: _WorkerCredentialReader | None = None
+        self.generation: int | None = None
 
     def first(self) -> dict[str, Any]:
         return _read_jsonl(self.stdin)
@@ -66,8 +69,19 @@ class _Input:
     def _read(self) -> None:
         try:
             while True:
-                self.messages.put(_read_jsonl(self.stdin))
+                message = _read_jsonl(self.stdin)
+                if self.credentials is not None:
+                    if type(message.get("executionGeneration")) is not int or message.get("executionGeneration") != self.generation:
+                        raise ProtocolFailure
+                    if message.get("type") == "credential:result":
+                        self.credentials.receive(message)
+                        continue
+                    if message.get("type") == "stop":
+                        self.credentials.close()
+                self.messages.put(message)
         except BaseException as exc:  # noqa: BLE001
+            if self.credentials is not None:
+                self.credentials.close()
             self.messages.put(exc)
 
     async def next(self) -> dict[str, Any]:
@@ -138,11 +152,20 @@ def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.s
     input_stream = _Input(stdin)
     try:
         command = input_stream.first()
+        run_id, generation = _validate_start(command)
+        input_stream.generation = generation
+        input_stream.credentials = _WorkerCredentialReader(
+            stopped, stdout, run_id,
+            protocol_metadata={"protocolVersion": PROTOCOL_VERSION, "executionGeneration": generation},
+        )
         input_stream.start()
         return asyncio.run(_run(command, stopped, input_stream, stdout))
     except BaseException:  # noqa: BLE001 -- stdout is a secret-free protocol.
         _write(stdout, {"type": "error", "code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"})
         return 1
+    finally:
+        if input_stream.credentials is not None:
+            input_stream.credentials.close()
 
 
 async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, stdout: TextIO) -> int:
@@ -249,6 +272,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                         _artifact_directory(command)[0].parents[2], run_id, generation,
                         node_id, visit, emit,
                     ),
+                    credentials=incoming.credentials if isinstance(incoming, _Input) else None,
                 )
                 result = await executor.run(command["executionPlan"])
                 control.check_parent()

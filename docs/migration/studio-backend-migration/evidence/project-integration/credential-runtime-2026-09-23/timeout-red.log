@@ -1,0 +1,54 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_project_sync_credential_read_obeys_node_timeout_without_output ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1993/test_project_sync_credential_r0')
+
+    @pytest.mark.asyncio
+    async def test_project_sync_credential_read_obeys_node_timeout_without_output(tmp_path):
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={
+                "moduleType": "dict_get_path",
+                "dictVariable": "record",
+                "path": "{{cred:账号.password}}",
+                "resultVariable": "out",
+                "timeout": 0.05,
+            },
+            variables={"record": {"lookup": "must-not-be-output"}},
+        )
+        reads = []
+        finished = Event()
+
+        def resolve(name):
+            reads.append(name)
+            try:
+                Event().wait(0.25)
+                return {"password": "lookup"}
+            finally:
+                finished.set()
+
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(
+                queued.run_id,
+                expected_status_revision=queued.status_revision,
+                execution_generation=queued.execution_generation,
+            )
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+>           assert run.status == "failed"
+E           AssertionError: assert 'succeeded' == 'failed'
+E
+E             - failed
+E             + succeeded
+
+tests/integration/test_project_credential_worker.py:162: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_credential_worker.py::test_project_sync_credential_read_obeys_node_timeout_without_output
+1 failed, 9 deselected in 3.37s

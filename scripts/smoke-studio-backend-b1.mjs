@@ -387,6 +387,11 @@ try {
     const attempts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/node-attempts?pageSize=100`)
     assert.equal(attempts.total, 5)
     assert.ok(attempts.items.every(item => item.status === 'succeeded'))
+    if (credentialMode) {
+      assert.equal(JSON.stringify([outputs, attempts, terminal, observedEvents]).includes(credentialSecret), false)
+      assert.equal(observedEvents.some(event => event.name === 'credential:read' || event.name === 'credential:result'), false)
+      checkpoint('项目受管worker从系统凭据读取字段并真实输入网页密码；页面校验成功，公开任务结果和事件无秘密或私有消息')
+    }
     const artifacts = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/artifacts?pageSize=100`)
     assert.equal(artifacts.total, 1)
     assert.equal(artifacts.items[0].purpose, 'result')
@@ -455,9 +460,24 @@ try {
       await capture(main, join(evidenceDir, `project-task-${scenario}.png`))
       checkpoint(`项目任务 ${scenario} 真实 UI 验收完成，后续节点与进程清理符合预期`)
     }
+    if (credentialMode) {
+      await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+      await click(main, '打开自动化 Studio 五节点项目任务')
+      await click(main, '打开 Studio')
+      studio = await connectStudio(desktop.debugOrigin)
+      await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 5", 'credential workflow reopened')
+      await click(studio, '更多操作'); await click(studio, '全局配置', '[role="menuitem"]')
+      await click(studio, '凭据库', 'nav button'); await click(studio, `删除凭据 ${credentialName}`)
+      await click(studio, '删除')
+      await waitForValue(async () => !(await api(runtime, '/credentials')).credentials.some(item => item.name === credentialName), 'project temporary credential deleted')
+      await click(studio, '关闭全局配置')
+      await closeWindowThroughOs(desktop.child.pid)
+      studio.close(); studio = undefined
+      checkpoint('项目任务恢复运行后真实UI删除临时凭据；已保存工作流保留引用，用户数据不受影响')
+    }
     const packageBoundary = desktop.packaged ? await verifyPackageBoundary() : null
     const buildArtifacts = desktop.packaged ? await packagedBuildHashes() : null
-    const report = { evidenceId: 'BE-project-studio-task-bridge', scenarioBatches, checkedAt: new Date().toISOString(), result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary, buildArtifacts, buildSha256: await buildHash(), projectId, workflowId: saved.id, profileId: profile.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'real UI mouse/keyboard; APIs only setup Profile and assert evidence' } }
+    const report = { evidenceId: credentialMode ? 'BE-project-studio-credential-runtime' : 'BE-project-studio-task-bridge', scenarioBatches, checkedAt: new Date().toISOString(), result: 'passed', platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary, buildArtifacts, buildSha256: await buildHash(), projectId, workflowId: saved.id, profileId: profile.id, batchId: batch.batchId, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'real UI mouse/keyboard; APIs only setup Profile and assert evidence' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
   } else if (runToOnly) {
@@ -1033,7 +1053,7 @@ async function waitForValue(read, description, timeoutMs = 15_000) {
 }
 
 async function point(cdp, selector, text = '') {
-  return waitFor(cdp, `(()=>{const rows=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>e.getClientRects().length),text=${JSON.stringify(text)};const e=!text?rows[0]:rows.find(e=>e.getAttribute('aria-label')===text)||rows.find(e=>e.textContent.trim()===text)||rows.find(e=>e.textContent.includes(text));if(!e||e.disabled)return null;e.scrollIntoView({block:'nearest',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `unobscured ${text || selector}`)
+  return waitFor(cdp, `(()=>{const rows=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>e.getClientRects().length),text=${JSON.stringify(text)};const e=!text?rows[0]:rows.find(e=>e.getAttribute('aria-label')===text)||rows.find(e=>e.textContent.trim()===text)||rows.find(e=>e.textContent.includes(text));if(!e||e.disabled)return null;e.scrollIntoView({block:'nearest',behavior:'instant'});const r=e.getBoundingClientRect();for(const [dx,dy] of [[.5,.5],[.25,.75],[.75,.75],[.25,.25],[.75,.25]]){const x=r.x+r.width*dx,y=r.y+r.height*dy;if(e.contains(document.elementFromPoint(x,y)))return {x,y}}return null})()`, `unobscured ${text || selector}`)
 }
 
 async function click(cdp, text, selector = 'button') {

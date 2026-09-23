@@ -1,0 +1,69 @@
+FFFFFFF......................................................            [100%]
+=================================== FAILURES ===================================
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e] _
+tests/integration/test_project_credential_worker.py:51: in test_project_worker_reads_private_credential_after_start_commit
+    assert outputs == ["resolved" if value else "preserved"]
+E   AssertionError: assert [None] == ['resolved']
+E
+E     At index 0 diff: None != 'resolved'
+E     Use -v to get more diff
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred] _
+tests/integration/test_project_credential_worker.py:51: in test_project_worker_reads_private_credential_after_start_commit
+    assert outputs == ["resolved" if value else "preserved"]
+E   AssertionError: assert [None] == ['resolved']
+E
+E     At index 0 diff: None != 'resolved'
+E     Use -v to get more diff
+_ test_project_worker_reads_private_credential_after_start_commit[-\u51ed\u636e] _
+tests/integration/test_project_credential_worker.py:48: in test_project_worker_reads_private_credential_after_start_commit
+    assert run.status == "succeeded"
+E   AssertionError: assert 'failed' == 'succeeded'
+E
+E     - succeeded
+E     + failed
+____ test_project_worker_reads_private_credential_after_start_commit[-cred] ____
+tests/integration/test_project_credential_worker.py:48: in test_project_worker_reads_private_credential_after_start_commit
+    assert run.status == "succeeded"
+E   AssertionError: assert 'failed' == 'succeeded'
+E
+E     - succeeded
+E     + failed
+_ test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e] _
+tests/integration/test_project_credential_worker.py:51: in test_project_worker_reads_private_credential_after_start_commit
+    assert outputs == ["resolved" if value else "preserved"]
+E   AssertionError: assert [None] == ['preserved']
+E
+E     At index 0 diff: None != 'preserved'
+E     Use -v to get more diff
+__ test_project_worker_reads_private_credential_after_start_commit[None-cred] __
+tests/integration/test_project_credential_worker.py:51: in test_project_worker_reads_private_credential_after_start_commit
+    assert outputs == ["resolved" if value else "preserved"]
+E   AssertionError: assert [None] == ['preserved']
+E
+E     At index 0 diff: None != 'preserved'
+E     Use -v to get more diff
+_ test_project_stop_unblocks_sync_credential_read_without_waiting_for_keychain _
+tests/integration/test_project_credential_worker.py:93: in test_project_stop_unblocks_sync_credential_read_without_waiting_for_keychain
+    assert "never-release-this-secret" not in json.dumps([event.payload for event in events])
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/__init__.py:231: in dumps
+    return _default_encoder.encode(obj)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py:200: in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py:258: in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py:180: in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+E   TypeError: Object of type mappingproxy is not JSON serializable
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_stop_unblocks_sync_credential_read_without_waiting_for_keychain
+7 failed, 54 passed in 30.97s

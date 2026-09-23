@@ -1,0 +1,46 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e] _
+tests/integration/test_project_credential_worker.py:38: in test_project_worker_reads_private_credential_after_start_commit
+    worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: ProjectWorkflowWorkerManager.__init__() got an unexpected keyword argument 'resolve_credential'
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred] _
+tests/integration/test_project_credential_worker.py:38: in test_project_worker_reads_private_credential_after_start_commit
+    worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: ProjectWorkflowWorkerManager.__init__() got an unexpected keyword argument 'resolve_credential'
+_ test_project_worker_reads_private_credential_after_start_commit[-\u51ed\u636e] _
+tests/integration/test_project_credential_worker.py:38: in test_project_worker_reads_private_credential_after_start_commit
+    worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: ProjectWorkflowWorkerManager.__init__() got an unexpected keyword argument 'resolve_credential'
+____ test_project_worker_reads_private_credential_after_start_commit[-cred] ____
+tests/integration/test_project_credential_worker.py:38: in test_project_worker_reads_private_credential_after_start_commit
+    worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: ProjectWorkflowWorkerManager.__init__() got an unexpected keyword argument 'resolve_credential'
+_ test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e] _
+tests/integration/test_project_credential_worker.py:38: in test_project_worker_reads_private_credential_after_start_commit
+    worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: ProjectWorkflowWorkerManager.__init__() got an unexpected keyword argument 'resolve_credential'
+__ test_project_worker_reads_private_credential_after_start_commit[None-cred] __
+tests/integration/test_project_credential_worker.py:38: in test_project_worker_reads_private_credential_after_start_commit
+    worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: ProjectWorkflowWorkerManager.__init__() got an unexpected keyword argument 'resolve_credential'
+_ test_project_stop_unblocks_sync_credential_read_without_waiting_for_keychain _
+tests/integration/test_project_credential_worker.py:76: in test_project_stop_unblocks_sync_credential_read_without_waiting_for_keychain
+    worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: ProjectWorkflowWorkerManager.__init__() got an unexpected keyword argument 'resolve_credential'
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_stop_unblocks_sync_credential_read_without_waiting_for_keychain
+7 failed in 1.97s

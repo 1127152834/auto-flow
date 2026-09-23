@@ -6,9 +6,10 @@ import os
 import shutil
 import subprocess
 import sys
-from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
+from collections.abc import Awaitable, Callable, Mapping
+from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
+from threading import Event, Thread
 from typing import Any, Literal, cast
 from uuid import UUID
 
@@ -51,6 +52,8 @@ class _Worker:
     cleanup: asyncio.Task[None] | None = None
     created_directory: bool = False
     ready: bool = False
+    write_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    credential_read: Event | None = None
 
 
 def project_workflow_worker_command() -> tuple[str, ...]:
@@ -66,6 +69,7 @@ class ProjectWorkflowWorkerManager:
         self, temp_dir: Path, *, command: tuple[str, ...] | None = None,
         worker_env: dict[str, str] | None = None, start_timeout: float = 90,
         termination_timeout: float = 3,
+        resolve_credential: Callable[[str], Mapping[str, str]] | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-runs").resolve()
         self._artifact_root = (temp_dir.parent / "workspace" / "runs").resolve()
@@ -73,6 +77,7 @@ class ProjectWorkflowWorkerManager:
         self._worker_env = worker_env or {}
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
+        self._resolve_credential = resolve_credential
         self._worker: _Worker | None = None
         self._closed = False
         self._lock = asyncio.Lock()
@@ -184,6 +189,16 @@ class ProjectWorkflowWorkerManager:
                     "type": "event_committed", "eventId": event["eventId"],
                     "executionGeneration": worker.generation,
                 })
+            elif message.get("type") == "credential:read":
+                request_id, name, field_name = (message.get(key) for key in ("requestId", "name", "field"))
+                if not isinstance(request_id, str) or not request_id or not isinstance(name, str) or not isinstance(field_name, str):
+                    raise _protocol_error()
+                value = await self._read_credential(worker, name, field_name)
+                await self._send(worker, {
+                    "type": "credential:result", "protocolVersion": 1,
+                    "runId": worker.run_id, "executionGeneration": worker.generation,
+                    "requestId": request_id, "value": value,
+                })
             elif message.get("type") == "finished":
                 if message.get("cleanupConfirmed") is not True:
                     raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "浏览器清理尚未确认")
@@ -220,7 +235,48 @@ class ProjectWorkflowWorkerManager:
             raise _protocol_error()
         return value
 
+    async def _read_credential(self, worker: _Worker, name: str, field_name: str) -> str | None:
+        resolver = self._resolve_credential
+        if not name or not field_name or resolver is None or worker.stop_requested or (worker.credential_read is not None and not worker.credential_read.is_set()):
+            return None
+        done, discard = Event(), Event()
+        result: list[str] = []
+        worker.credential_read = done
+
+        def read() -> None:
+            try:
+                value = resolver(name).get(field_name)
+                if isinstance(value, str) and not discard.is_set():
+                    result.append(value)
+            except Exception:  # noqa: BLE001 -- source leaves unavailable credential references intact.
+                result.clear()
+            finally:
+                done.set()
+
+        # Match Studio's existing native-keychain boundary: at most one blocked
+        # daemon read per owned run; stop/cleanup never waits for a system prompt.
+        Thread(target=read, daemon=True, name="project-workflow-credential-read").start()
+        try:
+            async with asyncio.timeout(3):
+                while not done.is_set():
+                    if self._worker is not worker or worker.stop_requested:
+                        return None
+                    await asyncio.sleep(.02)
+            return result[0] if result else None
+        except TimeoutError:
+            return None
+        finally:
+            discard.set()
+            if done.is_set():
+                worker.credential_read = None
+
     async def _send(self, worker: _Worker, message: dict[str, Any]) -> None:
+        async with worker.write_lock:
+            if message.get("type") == "credential:result" and (self._worker is not worker or worker.stop_requested or worker.cleanup is not None):
+                return
+            await self._write(worker, message)
+
+    async def _write(self, worker: _Worker, message: dict[str, Any]) -> None:
         assert worker.process is not None and worker.process.stdin is not None
         if worker.process.returncode is not None:
             raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程已退出")

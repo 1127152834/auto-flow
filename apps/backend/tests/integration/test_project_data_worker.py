@@ -8,10 +8,11 @@ must keep the same durable event/stop contract without acquiring browser state.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Mapping
 from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 from uuid import uuid4
 
 import pytest
@@ -100,7 +101,7 @@ def test_pure_data_project_saves_and_validates_without_profile(tmp_path: Path) -
             expected_revision=1,
             client_request_id=str(uuid4()),
         )
-        unexpected = _UnexpectedBrowserDependency()
+        unexpected: Any = _UnexpectedBrowserDependency()
         resources = ProjectAutomationResourceQuery(
             SqlAlchemyProjects(factory),
             unexpected,  # type: ignore[arg-type]
@@ -187,9 +188,9 @@ class _NoBrowserResources:
         self.requests: list[dict[str, Any]] = []
 
     async def acquire(
-        self, request: dict[str, Any], _run_request_id: str
-    ) -> None:
-        self.requests.append(deepcopy(request))
+        self, request: Mapping[str, Any], run_request_id: str
+    ) -> NoReturn:
+        self.requests.append(deepcopy(dict(request)))
         raise AssertionError("纯数据任务不应取得浏览器 lease")
 
 
@@ -468,7 +469,7 @@ async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_pat
     temporary = tmp_path / "temp"
     owned = temporary / "workflow-runs" / queued.run_id / "generation-1"
     owned.mkdir(parents=True)
-    unexpected = _UnexpectedBrowserDependency()
+    unexpected: Any = _UnexpectedBrowserDependency()
 
     def no_kernel_lookup():
         raise AssertionError("纯数据恢复不能要求安装浏览器内核")

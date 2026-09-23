@@ -465,6 +465,7 @@ class _WorkflowScheduler:
                 "success": reported_result.success,
                 "message": reported_result.message,
                 "error": reported_result.error,
+                "isTimeout": reported_result.is_timeout,
                 "data": reported_result.data,
                 "logLevel": reported_result.log_level,
                 "isUserLog": node.type in IMPORTANT_LOG_NODE_TYPES or not reported_result.success,

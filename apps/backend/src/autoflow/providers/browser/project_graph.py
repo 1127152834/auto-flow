@@ -14,9 +14,11 @@ from autoflow.application.workflows.executors.production import (
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ArtifactWriter, ExecutionContext
+from autoflow.domain.workflows.variables import CredentialReader
 
 from .workflow_executor import WorkflowExecutor
 from .workflow_session import CloakBrowserWorkflowSession
+from .workflow_worker import _CredentialDeadlineExceeded, _WorkerCredentialReader
 
 
 class _Cancellation:
@@ -46,11 +48,16 @@ class _TimedNode(ModuleExecutor):
     async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
         # Preserve the project's whole-node timeout, including fractional seconds.
         timeout = config.get('timeout', 0)
+        reader = context.credentials
+        deadline_token = reader.deadline.set(monotonic() + timeout if timeout else None) if isinstance(reader, _WorkerCredentialReader) else None
         try:
             async with asyncio.timeout(timeout or None):
                 return await self.executor.execute(config, context)
-        except TimeoutError:
+        except (TimeoutError, _CredentialDeadlineExceeded):
             return ModuleResult(False, error='WORKFLOW_NODE_TIMEOUT', is_timeout=True)
+        finally:
+            if isinstance(reader, _WorkerCredentialReader) and deadline_token is not None:
+                reader.deadline.reset(deadline_token)
 
 
 class _LegacyBrowserNode(ModuleExecutor):
@@ -100,10 +107,11 @@ class ProjectGraphExecutor:
         should_stop: Callable[[], bool],
         capture_failure: Callable[[Any, str, str], Awaitable[dict[str, object]]] | None = None,
         artifact_writer: Callable[[str, str], ArtifactWriter] | None = None,
+        *, credentials: CredentialReader | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self)
+        self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials)
         self.legacy = WorkflowExecutor(browser_context, variables, emit, should_stop)
         self.legacy.variables = self.context.variables
         self.emit = emit
@@ -157,7 +165,7 @@ class ProjectGraphExecutor:
                 await self.emit('output', node_id, visit, {'name': name, 'value': event['data']})
             await self.emit('log', node_id, visit, {'level': 'info', 'message': '节点执行完成'})
         else:
-            timeout = event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
+            timeout = event.get('isTimeout') is True or event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
             self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': '工作流节点执行超时' if timeout else '工作流节点执行失败'}
             payload['error'] = self.error
             await self.emit('log', node_id, visit, {'level': 'error', 'message': self.error['message']})

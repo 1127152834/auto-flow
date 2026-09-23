@@ -196,3 +196,13 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 [专项与正式UI证据](../studio-backend-migration/evidence/project-integration/model-defaults-2026-09-23/result.json)：开发`tBtjEa`与本次unsigned包`2pmiUF`实际创建14节点，继承/覆盖、保存、AXClose重开、运行、媒体产物、CloakBrowser视觉点击和小助手切换通过。同包`RjFuGN`回归五节点、Profile默认/覆盖、失败Debug、正常关窗取消/保存/停止及清理。真实外部模型另有[一次OpenRouter调用](../studio-backend-migration/evidence/project-integration/model-defaults-live-2026-09-23/real-model.json)，主模型库仅只读、凭据仅经系统存储及私有worker通道；受控HTTP模型UI测试不替代该证据。
 
 前端74项关联、后端分组52/45/33项（组间有重叠，不能累加）、Ruff/mypy/TypeScript/ESLint、OpenAPI/目录及构建/冻结/打包通过。macOS arm64实测，Intel/Windows未测。项目任务worker模型/凭据与助手会话后端项目归属仍未关闭，213节点及622/17槽位不变。
+
+## 项目任务凭据消费（2026-09-23 confirmed）
+
+项目worker现通过现有StudioCredentialService与系统秘密存储读取字段，复用普通Studio同步读取器及原版变量解析。请求仅走所属worker私有管道，绑定run/generation/request，不进入持久事件、HTTP/SSE或公共结果。stdin唯一线程直接唤醒同步等待，停止/EOF及时解除；父侧每个运行最多一个未返回的原生读取，清理/停止/归属变化后写锁内丢弃迟到值。无新增凭据管理体系或项目白名单。旧项目chain/v1行为保留。
+
+真实复核修复两项：空name/field仍保留原占位符，不变为协议失联；同步读取加入任务局部节点预算，超时不继续动作。共享节点完成消息透传安全的`isTimeout`布尔值，使凭据错误内容隐藏后仍能准确分类为WORKFLOW_NODE_TIMEOUT。不会为此公开凭据派生值。
+
+[证据](../studio-backend-migration/evidence/project-integration/credential-runtime-2026-09-23/result.json)：95项关联测试、Ruff/mypy/OpenAPI/目录、98项脚本通过；正式开发Cy7fmp和最终unsigned macOS arm64包vBd3bn通过实际凭据UI保存→项目文档五节点→原生关闭重开→绑定任务→CloakBrowser密码输入及页面校验→PNG/日志持久化→停止/失败/恢复→UI删除临时凭据。失败1iu9Wz保留，原因是测试点击中心被画布工具遮挡，改用实际可见内部点，未改产品或业务断言。
+
+最终冻结166秒；测试只使用临时工作区与本次临时系统凭据，结束清理，无用户数据库写入。此项替代“项目worker缺凭据端口”；模型端口、助手会话归属和其他项目节点族/业务数据桥仍保留。213节点622/17不变，Intel/Windows未测。

@@ -476,6 +476,7 @@ def configure_project_workflow_runtime(
     temp_dir: Path,
     gate: Any,
     environment_directory: Any | None = None,
+    resolve_credential: Any | None = None,
 ) -> Any:
     """Compose the PM4 durable runtime beside the current Studio runtime."""
     from contextlib import contextmanager
@@ -523,7 +524,7 @@ def configure_project_workflow_runtime(
         profiles, installed, resolve_proxy, read_license, usage_guard, guard,
         environment_directory=environment_directory,
     )
-    worker = ProjectWorkflowWorkerManager(temp_dir)
+    worker = ProjectWorkflowWorkerManager(temp_dir, resolve_credential=resolve_credential)
 
     async def recover(run: Any) -> None:
         if run.resource_request.get("browser") == "none":

@@ -349,7 +349,7 @@
         "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/model-defaults-2026-09-23/result.json",
         "liveModelEvidence": "docs/migration/studio-backend-migration/evidence/project-integration/model-defaults-live-2026-09-23/real-model.json",
         "remaining": [
-          "项目任务worker的模型和凭据端口",
+          "项目任务worker的模型端口",
           "小助手后端会话和命令的项目归属"
         ],
         "scopeNote": "不据此关闭共享能力全部剩余项或任何未测节点平台"
@@ -418,7 +418,13 @@
       "evidenceRefs": [
         "docs/migration/studio-backend-migration/evidence/shared-services/credential-runtime-2026-09-23/result.json"
       ],
-      "remaining": "第三方及平台节点真实环境仍按17槽位保留；用户已确认项目资源使用默认值且允许显式覆盖，不新增资源白名单。用户删除的14通知节点保持排除。"
+      "remaining": "第三方及平台节点真实环境仍按17槽位保留；用户已确认项目资源使用默认值且允许显式覆盖，不新增资源白名单。用户删除的14通知节点保持排除。",
+      "projectCredentialRuntime": {
+        "status": "已实现且已验收",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/credential-runtime-2026-09-23/result.json",
+        "behavior": "复用StudioCredentialService/系统存储及同步私有读取器；项目run/generation/request隔离，停止/超时/清理后不投递迟到值",
+        "remaining": "其他未实测外部集成与平台仍按节点台账保留"
+      }
     },
     {
       "id": "BE.SUPPORT.triggers-schedules",

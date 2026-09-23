@@ -1338,13 +1338,19 @@ class _WorkerDebugController:
             pause["release"].set()
 
 
+class _CredentialDeadlineExceeded(BaseException):
+    """Node timeout must not become an unmatched reference in the source parser."""
+
+
 class _WorkerCredentialReader:
     """Private sidecar replies wake the stdin thread, never wait on this event loop."""
 
-    def __init__(self, stopped: Event, stdout: TextIO, run_id: str) -> None:
+    def __init__(self, stopped: Event, stdout: TextIO, run_id: str, *, protocol_metadata: Mapping[str, Any] | None = None) -> None:
         self._stopped = stopped
         self._stdout = stdout
         self._run_id = run_id
+        self._protocol_metadata = dict(protocol_metadata or {})
+        self.deadline: ContextVar[float | None] = ContextVar("credential_node_deadline", default=None)
         self._lock = Lock()
         self._pending: dict[str, tuple[Event, dict[str, Any]]] = {}
         self._closed = False
@@ -1356,18 +1362,28 @@ class _WorkerCredentialReader:
         with self._lock:
             if self._closed or self._stopped.is_set():
                 raise asyncio.CancelledError
+            node_deadline = self.deadline.get()
+            if node_deadline is not None and monotonic() >= node_deadline:
+                raise _CredentialDeadlineExceeded
             self._pending[request_id] = (ready, result)
         try:
             _write(self._stdout, {
+                **self._protocol_metadata,
                 "type": "credential:read", "runId": self._run_id,
                 "requestId": request_id, "name": name, "field": field,
             })
             deadline = monotonic() + 5
-            while not ready.wait(0.05):
+            while True:
                 if self._stopped.is_set() or self._closed:
                     raise asyncio.CancelledError
+                node_deadline = self.deadline.get()
+                if node_deadline is not None and monotonic() >= node_deadline:
+                    raise _CredentialDeadlineExceeded
+                if ready.is_set():
+                    break
                 if monotonic() >= deadline:
                     raise TimeoutError("凭据读取超时")
+                ready.wait(min(.05, max(0, node_deadline - monotonic())) if node_deadline is not None else .05)
             if self._stopped.is_set() or self._closed:
                 raise asyncio.CancelledError
             value = result.get("value")
@@ -1377,6 +1393,11 @@ class _WorkerCredentialReader:
                 self._pending.pop(request_id, None)
 
     def receive(self, command: Mapping[str, Any]) -> None:
+        if self._protocol_metadata and (
+            command.get("runId") != self._run_id
+            or any(type(command.get(key)) is not type(value) or command.get(key) != value for key, value in self._protocol_metadata.items())
+        ):
+            return
         with self._lock:
             pending = self._pending.get(str(command.get("requestId") or ""))
             if pending is not None and not pending[0].is_set():

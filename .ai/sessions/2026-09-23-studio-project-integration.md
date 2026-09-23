@@ -210,3 +210,19 @@
 - 正式开发tBtjEa、最终unsigned包2pmiUF真实UI14节点、保存AXClose重开、受控模型11对话+2媒体、Cloak视觉点击与LangGraph助手默认/覆盖通过；同包RjFuGN完整五节点/Profile/失败Debug/正常关窗与清理回归通过。原RIMkoF、ZhvnYU、zAFzR4脚本定位/硬编码视口失败保留，修改后仍精确断言。
 - OpenRouter aion-labs/aion-2.0独立真实worker一次调用通过，8.38秒，原始响应/usage/清理证据单列；主模型DB URI ro+query_only，无主库写入，不混作UI证据。冻结175.6秒，前端构建33.5秒。
 - 证据project-integration/model-defaults-2026-09-23。下块项目worker仍缺models/credentials端口，助手会话/命令归属独立待做；17实际环境/平台槽位不变，不恢复14通知。
+
+## 助手项目归属剩余缺口（confirmed，只读追踪，未核销）
+
+- 来源：workflow_ai.py助手路由与workflow_assistant.py仓储、workflow_models.py会话行、api/config.ts和aiAssistantStore.ts。会话无project_id，前端ai-assistant路径不附projectId，Store单份会话历史缺scope隔离。模型选择隔离不等同会话隔离。
+- 命令：StudioEventCommandMux.command_run对助手返回None，claim/ack/query未接项目归属；SSE仅过滤runId事件，ai_assistant事件需按session所有者过滤为同序号cursor。
+- 产物：AssistantFileStore按全局内容hash读，现路由未验证session/project引用；必须覆盖附件、消息和pending action的实际引用后授权。已确认项目默认资源规则不取消这些数据归属要求。
+- 最小依赖：沿既有recording的nullable归属/guard_project/404模式，旧null会话不推断项目，保留standalone历史；共享迁移、服务协议由root统一实现。此项阻塞助手项目完整交付，不阻塞当前项目worker凭据链，按既有剩余清单排队。
+
+## 项目任务凭据消费 confirmed
+
+- ProjectGraphExecutor注入已有CredentialReader；普通worker读取器只加可选项目协议元数据和deadline，项目stdin单线程直接唤醒，事件ACK仍走原异步控制。bootstrap复用StudioCredentialService.resolve，无新秘密库/ACL。
+- 实际worker红测7失败→专项通过；复核空part触发协议失联，按普通coordinator保留原文并禁止空part读取。随后真实0.05秒预算/0.25秒原生读取误报成功，新增红测后通过reader任务局部deadline修复，BaseException仅跨过原版引用解析器回退，由provider节点边界转为既有超时失败。敏感结果redaction保留，内部isTimeout布尔分类避免错误文本脱敏后丢失超时类型。
+- 最终95关联回归、Ruff/mypy、OpenAPI/目录、98脚本通过。新增测试导入的旧fixture补正确类型注解，不删用例或放宽断言。review独立25关联及普通reader5项通过，与95有重叠不累加。
+- 开发Cy7fmp真实UI凭据+项目任务五节点成功，停止/失败/恢复、PNG、系统凭据UI删除与进程清理通过。1iu9Wz失败仅画布搜索栏遮挡节点中心，定位改实际未遮挡内部点；保留原断言与失败截图。
+- 最终166秒冻结及本地unsigned包vBd3bn覆盖全部同链，包含deadline修复。汇总project-integration/credential-runtime-2026-09-23。未修改用户数据，Intel/Windows未测；213及622/17不变。
+- 下一交付：项目任务模型端口，沿准备/派发/私有worker绑定接主应用ModelService；不能把秘密放入Batch/PreparedContent/CoreRun快照。依赖调查已确认纯数据resource_query/resources早退会丢模型规则，catalog当前只准入31已桥接节点；资源与执行上下文齐备后再放行相应AI族。助手会话项目隔离另有上节直接证据，未核销。

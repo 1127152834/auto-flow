@@ -1,11 +1,12 @@
 from copy import deepcopy
+from typing import Any
 
 WORKFLOW_ID = "d45f286f-129d-4e3b-a09b-995c3b491609"
 SOURCE_REVISION = "5ccb900e8dcf1530aae66f676d87593c416c7ebb"
 
 
 def workflow_payload(workflow_id: str = WORKFLOW_ID) -> dict:
-    nodes = [
+    nodes: list[dict[str, Any]] = [
         {
             "id": "open",
             "type": "open_page",
