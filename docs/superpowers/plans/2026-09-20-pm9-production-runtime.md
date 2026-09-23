@@ -1,10 +1,14 @@
 # PM9 生产运行时实施卡
 
+2026-09-24 DATA-CLAIM-14不限领取补证（confirmed本机源码子范围）：保存默认上限1、公开启动maxTasks=null，单一最终态A01由真实TCP HTTP/SQLite/worker/CloakBrowser连续成功5Task，第6Task人工等待时公开停止为cancelled；六次同RecordRef/内容版本1/状态版本2，完整原记录不变，每次只持有本Run一条lease，最终6条全部释放。原停止命令查询/重放一致，停止后三轮真实调度无新增Task，工作目录/容量清空。真实1 passed/28.11秒，相关50 passed/26.99秒，Ruff通过；保存策略null和时间格式比较的夹具错误保留，不称产品修复。CI两处选择已包含新用例，collect1/51不是执行；fresh CLI401，新三平台/打包UI说明与停止验收保留。生产仍a7059dc6，不重复无改动全量/构建。251仍209partial/42planned/0verified，249有断言/2未定位及241生产/19实现/8测试/24外部缺口不变；releaseAccepted=false。见unlimited-reclaim-follow-through.json。
+
 2026-09-24 DATA-E2E-01/CLAIM-12真实Excel链补证（confirmed本机源码子范围）：正式文件选择授权→TCP HTTP inspect/import将FX-01三表导入且初始状态null；显式初始化后，真实worker三Task依次处理W01/W02/W03、A01保持可用、只读查询D01并把组合值写入/读回网页；第二批按已完成筛选且不写状态，连续三Task重复W01/A01。每次只持有本Task两条lease，前Task已释放，D从无lease；每批6条最终释放，W状态版本2→3且内容/关联版本不变，A/D完整快照及原Excel hash不变。最终真实场景1 passed/51.11秒，相关67 passed/2依赖警告/72.23秒，Ruff通过；保留代理502和inspect预期状态码夹具修正。生产源码仍a7059dc6，复用其完整3505/86/2及ARM24图原范围，不重跑无改动全量/构建。仅E2E-01 planned→partial，CLAIM-12补实际映射；251合计209partial/42planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。新三平台及打包/原生导入界面验收仍待补，CLI401；releaseAccepted=false。见excel-multi-input-follow-through.json。
 
 2026-09-24 DATA-CLAIM-03启动失败修复（confirmed本机源码/新包回归子范围）：a7059dc6修正真实子进程finished/failed在ready前被误判interrupted；只接受启动前失败/取消，保留身份、清理、退出与所有权检查。真实2场景证明失败占名额、非空状态/值/版本不变、释放后同记录可再取及同键无重复；8项协议反向/终态检查通过，相关81 passed/3 skipped。最终完整后端3505 passed, 86 skipped, 2 warnings in 911.71s，Ruff/mypy408、4映射/251引用、后端构建与未签名ARM完整桌面passed/24截图；清理界面已目视复核。前端未变，保留7b896163的5475/409原范围。仅DATA-CLAIM-03 planned→partial，合计208partial/43planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。CLI401仍阻断当前新矩阵，打包启动失败UI与系统性资源故障受阻组合待补；releaseAccepted=false。见startup-failure-follow-through.json。
 
-下一可执行切片 DATA-CLAIM-14：仅A01必要输入，显式置完成状态后按最终态筛选，maxTasks=null且流程不再写状态；通过真实worker至少连续成功5Task，再公开停止批次。核对原停止命令恢复、停止后任务数稳定、原输入/状态不变和lease/进程回收；复用已批准输入/停止契约和本轮TCP/Excel夹具。DATA-E2E-01本机源码切片已执行，打包与跨平台证据继续保留缺口。
+已执行切片 DATA-CLAIM-14（本机源码通过，见顶部专项报告）：仅A01必要输入，显式置完成状态后按最终态筛选，maxTasks=null且流程不再写状态；通过真实worker至少连续成功5Task，再公开停止批次。核对原停止命令恢复、停止后任务数稳定、原输入/状态不变和lease/进程回收；复用已批准输入/停止契约、TCP HTTP和现有本地表服务夹具；Excel来源由独立前一切片验证。DATA-E2E-01本机源码切片已执行，打包与跨平台证据继续保留缺口。
+
+下一可执行切片 DATA-E2E-03：先核对已有人工反向冲突与部分失败断言，再用同一真实worker串联任务自身版本推进、人工新值冲突、后续节点失败后已成功修改仍保留；只补缺失联合条件，不批量升级状态。
 
 日期：2026-09-20；状态：in_progress；来源：用户明确确认 R1–R4 规格。规格：`../specs/2026-09-20-pm9-production-runtime-integration.md`。基点 `88d812a2`。
 

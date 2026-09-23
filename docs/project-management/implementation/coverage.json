@@ -4727,6 +4727,15 @@
           "limitations": "执行器为隔离 fake；真实生产执行核心、CloakBrowser、Studio、Windows、packaged 和用户手测未执行。部分适用规则还跨 PM5/PM6/PM7/PM8。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "real_source_http_worker_browser",
+          "report": "docs/project-management/implementation/pm9/unlimited-reclaim-follow-through.json",
+          "scope": "单必要最终态记录不限任务5成功、第6公开停止取消；同键恢复/不再创建/占用与目录回收",
+          "platform": "macOS arm64",
+          "limitations": "本机源码/本地表受控fixture；非打包UI、Windows/Intel及真实Google验收",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -4750,19 +4759,25 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_data_scheduler.py",
             "symbol": "test_reusable_rows_are_claimed_again_without_batch_dedup",
             "scope": "有限任务数精确，重复 typed ref 释放后可重取，不限批次继续",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_unlimited_real_cloakbrowser.py",
+            "symbol": "test_unlimited_final_record_reclaim_stops_after_five_successes",
+            "scope": "真实TCP HTTP/SQLite/worker/browser，单必要最终态记录不限批次5成功+第6取消，原值/版本不变、同键恢复、停止后不增Task及占用清理",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "替身 worker 计数不抵扣真实 worker 复用和用户停止链"
+            "detail": "本机源码真实不限5成功+公开停止已通过；打包UI不限说明/复用与未变化计数、停止交互及当前Windows/Intel原生链待验。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -17637,5 +17652,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-24 DATA-E2E-01/CLAIM-12真实Excel链补证（confirmed本机源码子范围）：正式文件选择授权→TCP HTTP inspect/import将FX-01三表导入且初始状态null；显式初始化后，真实worker三Task依次处理W01/W02/W03、A01保持可用、只读查询D01并把组合值写入/读回网页；第二批按已完成筛选且不写状态，连续三Task重复W01/A01。每次只持有本Task两条lease，前Task已释放，D从无lease；每批6条最终释放，W状态版本2→3且内容/关联版本不变，A/D完整快照及原Excel hash不变。最终真实场景1 passed/51.11秒，相关67 passed/2依赖警告/72.23秒，Ruff通过；保留代理502和inspect预期状态码夹具修正。生产源码仍a7059dc6，复用其完整3505/86/2及ARM24图原范围，不重跑无改动全量/构建。仅E2E-01 planned→partial，CLAIM-12补实际映射；251合计209partial/42planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。新三平台及打包/原生导入界面验收仍待补，CLI401；releaseAccepted=false。见excel-multi-input-follow-through.json。"
+  "pm9_note": "2026-09-24 DATA-CLAIM-14不限领取补证（confirmed本机源码子范围）：保存默认上限1、公开启动maxTasks=null，单一最终态A01由真实TCP HTTP/SQLite/worker/CloakBrowser连续成功5Task，第6Task人工等待时公开停止为cancelled；六次同RecordRef/内容版本1/状态版本2，完整原记录不变，每次只持有本Run一条lease，最终6条全部释放。原停止命令查询/重放一致，停止后三轮真实调度无新增Task，工作目录/容量清空。真实1 passed/28.11秒，相关50 passed/26.99秒，Ruff通过；保存策略null和时间格式比较的夹具错误保留，不称产品修复。CI两处选择已包含新用例，collect1/51不是执行；fresh CLI401，新三平台/打包UI说明与停止验收保留。生产仍a7059dc6，不重复无改动全量/构建。251仍209partial/42planned/0verified，249有断言/2未定位及241生产/19实现/8测试/24外部缺口不变；releaseAccepted=false。见unlimited-reclaim-follow-through.json。"
 }

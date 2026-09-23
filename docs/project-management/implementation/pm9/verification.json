@@ -7,7 +7,7 @@
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
     "Confirmed persistent identity defect from cb040daf ARM package remains: identity implementation unchanged in a7059dc6; fixed/input restore login but use edited Profile UA/locale/timezone/seed. I1-I3 await approval. Maintenance source-confirmed only; see persistent-identity-audit.json.",
-    "DATA-E2E-01/CLAIM-12: source TCP HTTP/Excel/real worker progression and same-batch reuse now passed; packaged/native picker/current three-platform evidence remain pending. DATA-CLAIM-14 unlimited5+user-stop remains separate.",
+    "DATA-E2E-01/CLAIM-12 source Excel progression/reuse and DATA-CLAIM-14 unlimited5success+public-stop now passed in local scope; packaged/native picker, unlimited warning/counts/stop UI and current three-platform evidence remain pending.",
     "DATA-CLAIM-03 local real child fail→same record recovery verified in scope; packaged startup-failure UI, Windows/Intel new candidate and systemic-resource blocked-vs-exhausted combination remain pending.",
     "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
     "Current a7059dc6 fixes confirmed pre-ready failure classification; full local backend and rebuilt ARM desktop pass. New all-platform validation requires CLI authentication/manual trigger (fresh401). Historical35902129697 covers51e8991e only; logs403/artifacts not re-inspected.",
@@ -44,7 +44,8 @@
     "previousLocal": "source-outage-follow-through.json",
     "currentNativeArmInstallScope": "Historical installer-specific evidence only; latest a7059dc6 package:dir smoke is not physical installer acceptance.",
     "startupFailure": "startup-failure-follow-through.json",
-    "excelMultiInput": "excel-multi-input-follow-through.json"
+    "excelMultiInput": "excel-multi-input-follow-through.json",
+    "unlimitedReclaim": "unlimited-reclaim-follow-through.json"
   },
   "platforms": {
     "win32-x64": {
@@ -714,6 +715,13 @@
   "excelMultiInputFollowThrough": {
     "status": "local_real_tcp_http_worker_passed_packaged_and_native_pending",
     "report": "excel-multi-input-follow-through.json",
+    "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+    "productionChanged": false,
+    "releaseAccepted": false
+  },
+  "unlimitedReclaimFollowThrough": {
+    "status": "local_source_real_chain_passed_packaged_native_pending",
+    "report": "unlimited-reclaim-follow-through.json",
     "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
     "productionChanged": false,
     "releaseAccepted": false
