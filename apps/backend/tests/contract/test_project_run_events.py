@@ -149,6 +149,36 @@ def test_repeated_cursor_is_empty_and_sse_last_event_id_replays_only_the_gap(tmp
     factory.dispose()
 
 
+def test_manual_checkpoint_replays_only_public_identity_and_revision(tmp_path):
+    client, _, factory, project, task = prepared(tmp_path)
+    manual_id = str(uuid4())
+    with factory.begin() as session:
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event({
+            "eventId": str(uuid4()), "runId": task.run_id,
+            "executionGeneration": 0, "kind": "checkpoint",
+            "nodeId": "manual", "nodeVisitId": "manual-visit", "attempt": 1,
+            "occurredAt": NOW.isoformat(), "payload": {
+                "version": 1, "manualItemId": manual_id, "checkpointRevision": 1,
+                "preparedContentId": "private-content", "continuation": "liveWorker",
+                "availableVariables": ["private-name"],
+                "inputSchema": [{"name": "private-input"}], "resumeTargets": [],
+            },
+        })
+    path = f"/api/v1/projects/{project.project_id}/tasks/{task.task_id}/events"
+    response = client.get(path, params={"afterSequence": 2})
+    assert response.status_code == 200, response.text
+    event = response.json()["items"][0]
+    assert event["sequence"] == 3 and event["kind"] == "checkpoint"
+    assert event["nodeVisitId"] == "manual-visit"
+    assert event["payload"] == {"manualItemId": manual_id, "checkpointRevision": 1}
+    stream = client.get(path + "/stream", headers={"Last-Event-ID": "2"})
+    assert stream.status_code == 200 and "event: checkpoint\n" in stream.text
+    replay = json.loads(stream.text.split("data: ", 1)[1])
+    assert datetime.fromisoformat(replay.pop("occurredAt")) == datetime.fromisoformat(event.pop("occurredAt"))
+    assert replay == event
+    factory.dispose()
+
+
 def test_gap_and_future_cursor_are_explicitly_rejected(tmp_path):
     _, service, factory, project, task = prepared(tmp_path)
     with factory.begin() as session:

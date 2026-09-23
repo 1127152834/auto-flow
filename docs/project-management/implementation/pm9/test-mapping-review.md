@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-23 XE-C07 最新补证（supersedes 此前 243/8 统计）：真实 TCP/worker 人工等待场景发现 checkpoint 未纳入公开事件投影，导致 JSON/SSE 补读 409；已补最小身份/版本契约及生成类型，内部续跑内容不公开。修复后真实断开/继续/缺口补读、8 次唯一节点访问、3 个输出、日志分页、失败截图摘要和资源回收通过；20 项后端契约/证据与25项相关前端通过，独立审查无 P1/P2。前端 EOF 去重是独立受控测试，尚非安装包 UI 断网联合证据。台账 244 有范围断言/7 未定位、202 partial/49 planned/0 verified；完整回归/新候选 CI 见 verification.json 与 event-reconnect-follow-through.json。releaseAccepted=false。
+
 2026-09-23 最新机器统计：251 条，243 有范围断言/8 未定位，202 partial/49 planned/0 verified。DATA-TABLE-08 已改为充分授权后的目标拒绝与真实绑定拒绝；DATA-WRITE-12 新增双任务反向单记录冲突，组原子性和 worker 重试仍待补。D1 专属真实 worker 已发现并修复输入校验遗漏，本机 4 个 Sheets worker 场景通过，Google/凭据受控且非打包；新三平台待验收。下文旧证据按日期保留，精确范围以 coverage.json 为准。
 
 日期：2026-09-21。状态：confirmed（映射审查），完整产品验收仍未完成。来源：原始设计各需求编号、现有测试函数断言及本轮运行记录。

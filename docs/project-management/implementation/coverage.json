@@ -14815,6 +14815,14 @@
           "scope": "PM3管理端已交付子范围；complete_acceptance指向后续里程碑的能力保持未验收。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/event-reconnect-follow-through.json",
+          "scope": "仅明确列出的本机源码真实 TCP/worker 与独立前端恢复断言；整项仍 partial。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-C",
@@ -14842,12 +14850,35 @@
         "PM7-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
-        "checks": [],
+        "reviewedAt": "2026-09-23",
+        "checks": [
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "仅 manual-evidence-reconnect：同一生产 app 经 TCP/SSE 观察真实 worker，人工等待时断开连接后继续；同一 Run/代次/输入快照补回连续事件，JSON 与 SSE 缺口一致（时间按语义比较）；8 次唯一节点访问、3 个唯一输出、分页日志、真实失败 PNG 摘要、重复读取和批次同键重放无重跑，资源回收。",
+            "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_run_events.py",
+            "symbol": "test_manual_checkpoint_replays_only_public_identity_and_revision",
+            "scope": "持久 checkpoint 在 JSON/SSE 公开身份与版本，保留序号/访问身份；内部变量、输入契约、目标、preparedContentId 不公开。",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/project-runs/events.test.ts",
+            "testName": "repairs a disconnected stream from its last seen sequence without appending duplicates",
+            "scope": "受控客户端收到重复 checkpoint 后连接 EOF，以最后已见序号补读并去重，持久终态停止观察；不是 renderer 与真实后端联合验收。",
+            "level": "automated_unit"
+          }
+        ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "本轮审查未定位完整场景的直接断言：断线后快照/序号/attempt/产物恢复无重跑无重复追加；不据邻近测试推定覆盖"
+            "kind": "production_evidence_missing",
+            "detail": "本机 macOS ARM 源码真实 TCP/worker 与前端受控 EOF 测试分别通过；尚非安装包 renderer 真实断网重连联合验收，跨平台新场景等待候选 CI。"
+          },
+          {
+            "kind": "external_acceptance_pending",
+            "detail": "三平台原生实机完整验收、签名/公证仍按 PM9 退出条件保留。"
           }
         ],
         "statusBeforeReview": "partially_verified"

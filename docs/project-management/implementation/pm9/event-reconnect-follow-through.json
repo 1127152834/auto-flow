@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-23",
+  "status": "targeted_passed_full_regression_in_progress",
+  "releaseAccepted": false,
+  "parentCommit": "27ddfaf271d27200b3f58adb7b9230b317acebf5",
+  "defect": "manual_runtime persisted checkpoint but ProjectRunEvents public projection and OpenAPI enum omitted it; real TCP SSE returned RUN_EVENT_HISTORY_UNAVAILABLE 409 at manual wait.",
+  "red": "Real worker failed with public-event 409; focused checkpoint contract failed before production change. Initial test setup also hit local proxy 502; loopback clients now disable environment proxy. JSON Z and SSE +00:00 timestamps compared semantically, no production change for equivalent encoding.",
+  "fix": "Reuse public event projection: expose checkpoint with only manualItemId and checkpointRevision, preserve durable sequence and identities; regenerate client types. No executor/resume behavior change.",
+  "checks": {
+    "realWorker": "1 passed / 33 deselected in 12.70s; macOS ARM, real TCP/SSE and existing live worker/browser, no synthetic Run facts",
+    "backendRelated": "20 passed / 2 warnings in 5.04s",
+    "frontendRelated": "25 passed / 3 files",
+    "ruff": "passed",
+    "mypy": "407 files passed",
+    "openapi": "generation and check passed",
+    "fullBackend": "in_progress",
+    "fullFrontend": "in_progress",
+    "nativeCI": "replacement candidate pending commit; c9 run does not contain this production fix"
+  },
+  "review": "Independent read-only review: no actionable P1/P2, high confidence; explicitly separates real backend TCP test and controlled frontend EOF test.",
+  "coverage": {
+    "requirements": 251,
+    "withAssertions": 244,
+    "withNoLocatedAssertion": 7,
+    "statuses": {
+      "partially_verified": 202,
+      "planned": 49
+    }
+  },
+  "remaining": [
+    "Packaged renderer + real backend disconnect/reconnect combined evidence is not provided by separate tests.",
+    "New scenario must run in three-platform candidate matrix; physical acceptance remains external.",
+    "Seven requirements still have no located direct assertion; other partial requirements retain their unmet conditions.",
+    "L1-L3 and M1-M3 unapproved; Windows existing-file operations remain refused."
+  ]
+}

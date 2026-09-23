@@ -1,13 +1,17 @@
 """Opt-in real HTTP/SQLite/CloakBrowser batch chain; no Studio or synthetic Run facts."""
 
 import asyncio
+import hashlib
+import json
 import shutil
+import socket
 import threading
 from datetime import datetime, timedelta
 from uuid import uuid4
 
 import httpx
 import pytest
+import uvicorn
 
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
@@ -131,7 +135,7 @@ async def test_optional_input_does_not_leak_between_real_tasks(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "parameter-single", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "parameter-single", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-old-candidate", "manual-resume", "manual-evidence-reconnect", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -152,6 +156,7 @@ async def test_real_project_batch_http(
         instance_token="isolated-test-token",
     )
     app = create_app(settings)
+    event_server = event_server_task = event_socket = None
     lost_command = None
     link_race_injected = False
     race_commands = []
@@ -439,6 +444,9 @@ async def test_real_project_batch_http(
                 document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
                 nodes.append({'id': 'after-manual', 'type': 'set_variable', 'position': {'x': 100, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'continued', 'variableValue': 'once'}})
                 document['content']['edges'].append({'id': 'continue-task', 'source': 'manual', 'target': 'after-manual'})
+                if scenario == 'manual-evidence-reconnect':
+                    nodes.append({'id': 'after-failure', 'type': nodes[2]['type'], 'position': {'x': 100, 'y': 1000}, 'data': {**nodes[2]['data'], 'selector': '#missing-after-resume', 'timeout': 1}})
+                    document['content']['edges'].append({'id': 'fail-after-resume', 'source': 'after-manual', 'target': 'after-failure'})
                 if scenario == 'manual-double':
                     nodes.append({'id': 'second-manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 1000}, 'data': {'moduleType': 'project_manual', 'reason': '第二次确认', 'timeoutSeconds': 30}})
                     document['content']['edges'].append({'id': 'second-checkpoint', 'source': 'after-manual', 'target': 'second-manual'})
@@ -482,7 +490,7 @@ async def test_real_project_batch_http(
                         "modelProviderId": None,
                     },
                     "runPolicy": {
-                        "maxTasks": 1 if scenario in {"parameter-single", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
+                        "maxTasks": 1 if scenario in {"parameter-single", "manual-evidence-reconnect", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                         "concurrency": 1,
                         "maxLiveInstances": 1,
                         "continueAfterFailure": False,
@@ -535,7 +543,7 @@ async def test_real_project_batch_http(
             payload = {
                 "expectedAutomationRevision": automation["managementRevision"],
                 "parameters": {parameter_id: parameter_value},
-                "maxTasks": 1 if scenario in {"parameter-single", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
+                "maxTasks": 1 if scenario in {"parameter-single", "manual-evidence-reconnect", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                 "concurrency": 1,
             }
             response = await client.post(
@@ -559,14 +567,14 @@ async def test_real_project_batch_http(
                     waiting = next((item for item in manual if item['status'] == 'waiting'), None)
                     if waiting:
                         late_resume = asyncio.create_task(client.post(prefix + f"/manual-items/{waiting['manualItemId']}/resume", headers={'Idempotency-Key': str(uuid4())}, json={'checkpointRevision': waiting['checkpointRevision'], 'expectedStatusRevision': waiting['statusRevision']}))
-                if scenario in {'manual-resume', 'manual-declared', 'manual-parallel', 'manual-parallel-finish', 'manual-finish', 'manual-double'}:
+                if scenario in {'manual-resume', 'manual-evidence-reconnect', 'manual-declared', 'manual-parallel', 'manual-parallel-finish', 'manual-finish', 'manual-double'}:
                     manual = await client.get(prefix + '/manual-items')
                     assert manual.status_code == 200, manual.text
                     for item in manual.json()['items']:
                         if item['status'] != 'waiting' or item['manualItemId'] in handled_manual:
                             continue
                         manual_id = item['manualItemId']
-                        if scenario in {'manual-resume', 'manual-declared', 'manual-parallel', 'manual-double'}:
+                        if scenario in {'manual-resume', 'manual-evidence-reconnect', 'manual-declared', 'manual-parallel', 'manual-double'}:
                             body = {'checkpointRevision': item['checkpointRevision'], 'expectedStatusRevision': item['statusRevision']}
                             action = 'resume'
                         else:
@@ -595,6 +603,31 @@ async def test_real_project_batch_http(
                             with app.state.session_factory() as session:
                                 events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(item['runId'], after_sequence=0, limit=300)
                             assert not any(e.kind == 'nodeAttempt' and e.node_id in {'after-manual', 'other-normal'} for e in events)
+                        if scenario == 'manual-evidence-reconnect':
+                            # Serve this same app/runtime over TCP; disconnect only the observer.
+                            event_socket = socket.socket()
+                            event_socket.bind(('127.0.0.1', 0))
+                            event_server = uvicorn.Server(uvicorn.Config(app, lifespan='off', access_log=False, log_level='warning'))
+                            event_server_task = asyncio.create_task(event_server.serve(sockets=[event_socket]))
+                            for _ in range(100):
+                                if event_server.started:
+                                    break
+                                await asyncio.sleep(.01)
+                            assert event_server.started
+                            event_url = f'http://127.0.0.1:{event_socket.getsockname()[1]}'
+                            event_task_path = prefix + f"/tasks/{item['taskId']}"
+                            checkpoint_snapshot = (await client.get(event_task_path)).json()
+                            prefix_events = []
+                            async with httpx.AsyncClient(base_url=event_url, trust_env=False, headers={'x-autoflow-token': settings.instance_token}, timeout=10) as observer, observer.stream('GET', event_task_path + '/events/stream') as stream:
+                                if stream.status_code != 200:
+                                    pytest.fail((await stream.aread()).decode())
+                                async for line in stream.aiter_lines():
+                                    if line.startswith('data: '):
+                                        prefix_events.append(json.loads(line[6:]))
+                                        if prefix_events[-1]['kind'] == 'output':
+                                            break
+                            seen_sequence = prefix_events[-1]['sequence']
+                            assert checkpoint_snapshot['run']['status'] == 'waiting_manual'
                         manual_key = str(uuid4())
                         if scenario == 'manual-double' and item['runId'] in manual_receipts:
                             previous_id, previous_key, previous_body, operation_id = manual_receipts[item['runId']]
@@ -654,7 +687,7 @@ async def test_real_project_batch_http(
             tasks = (
                 await client.get(prefix + "/tasks", params={"batchId": batch_id})
             ).json()["items"]
-            assert len(tasks) == (1 if scenario in {"parameter-single", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2)
+            assert len(tasks) == (1 if scenario in {"parameter-single", "manual-evidence-reconnect", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2)
             for task in tasks:
                 viewed = await client.get(prefix + f"/tasks/{task['taskId']}")
                 assert viewed.status_code == 200, viewed.text
@@ -735,6 +768,68 @@ async def test_real_project_batch_http(
                     assert not session.scalars(select(ProjectRecordLeaseRow)).all()
                 assert requests.count('/fixture') == 2
                 assert (await client.get(result_path + '/records', params={'datasetGeneration': result_table['datasetGeneration']})).json()['items'] == original_result_rows
+            elif scenario == 'manual-evidence-reconnect':
+                assert detail['statusCounts']['failed'] == len(handled_manual) == 1, detail
+                assert tasks[0]['taskId'] == checkpoint_snapshot['task']['taskId']
+                async with httpx.AsyncClient(base_url=event_url, trust_env=False, headers={'x-autoflow-token': settings.instance_token}, timeout=10) as observer:
+                    suffix_events = []
+                    cursor = seen_sequence
+                    while True:
+                        response = await observer.get(event_task_path + '/events', params={'afterSequence': cursor})
+                        assert response.status_code == 200, response.text
+                        page = response.json()
+                        suffix_events.extend(page['items'])
+                        cursor = page['afterSequence']
+                        if not page['hasMore']:
+                            break
+                    assert page['terminal'] and cursor == page['lastSequence']
+                    stream = await observer.get(event_task_path + '/events/stream', params={'afterSequence': 0}, headers={'Last-Event-ID': str(seen_sequence)})
+                    assert stream.status_code == 200, stream.text
+                    frames = [dict(line.split(': ', 1) for line in frame.splitlines()) for frame in stream.text.strip().split('\n\n')]
+                    replay_events = [json.loads(frame['data']) for frame in frames]
+                    for event in replay_events + suffix_events:
+                        event['occurredAt'] = datetime.fromisoformat(event['occurredAt'])
+                    assert replay_events == suffix_events
+                    assert all(frame['id'] == str(event['sequence']) and frame['event'] == event['kind'] for frame, event in zip(frames, suffix_events, strict=True))
+                    events = prefix_events + suffix_events
+                    assert [event['sequence'] for event in events] == list(range(1, cursor + 1))
+                    assert len({event['eventId'] for event in events}) == len(events)
+                    assert {event['runId'] for event in events} == {tasks[0]['runId']}
+                    assert {event['executionGeneration'] for event in events} == {checkpoint_snapshot['run']['executionGeneration']}
+                    snapshot = (await observer.get(event_task_path)).json()
+                    assert snapshot['run']['status'] == 'failed' and snapshot['run']['lastSequence'] == cursor
+                    assert snapshot['inputSnapshot'] == checkpoint_snapshot['inputSnapshot']
+                    attempts = (await observer.get(event_task_path + '/node-attempts')).json()['items']
+                    assert len(attempts) == len({(item['nodeVisitId'], item['attempt']) for item in attempts}) == 8
+                    assert {item['nodeId'] for item in attempts if item['status'] == 'failed'} == {'after-failure'}
+                    assert sum(item['status'] == 'succeeded' for item in attempts) == 7
+                    outputs = (await observer.get(event_task_path + '/outputs')).json()['items']
+                    assert len({item['outputId'] for item in outputs}) == 3
+                    assert [item['value'] for item in outputs] == ['yes', 'before-真实参数', 'once']
+                    assert [item['value'] for item in outputs] == [event['payload']['value'] for event in events if event['kind'] == 'output']
+                    logs, log_cursor = [], 0
+                    while True:
+                        log_page = (await observer.get(event_task_path + '/logs', params={'afterSequence': log_cursor, 'pageSize': 2})).json()
+                        logs.extend(log_page['items'])
+                        log_cursor = log_page['afterSequence']
+                        if not log_page['hasMore']:
+                            break
+                    assert [item['sequence'] for item in logs] == [event['sequence'] for event in events if event['kind'] == 'log']
+                    assert len({item['eventId'] for item in logs}) == len(logs) > 2
+                    artifacts = (await observer.get(event_task_path + '/artifacts')).json()['items']
+                    assert len(artifacts) == 1 and artifacts[0]['availability'] == 'available'
+                    artifact = artifacts[0]
+                    assert artifact['artifactId'] in [event['payload'].get('artifactId') for event in events if event['kind'] == 'artifact']
+                    screenshot = await observer.get(artifact['contentUrl'])
+                    assert screenshot.status_code == 200 and screenshot.headers['content-type'] == 'image/png'
+                    assert screenshot.content.startswith(b'\x89PNG\r\n\x1a\n')
+                    assert len(screenshot.content) == artifact['byteSize']
+                    assert hashlib.sha256(screenshot.content).hexdigest() == artifact['sha256']
+                    assert (await observer.get(event_task_path)).json() == snapshot
+                    assert (await observer.get(event_task_path + '/outputs')).json()['items'] == outputs
+                    assert (await observer.get(event_task_path + '/artifacts')).json()['items'] == artifacts
+                    assert (await observer.get(event_task_path + '/events', params={'afterSequence': cursor})).json()['items'] == []
+                assert requests.count('/fixture') == 1
             elif scenario.startswith('manual-'):
                 if scenario in {'manual-race', 'manual-race-intent'}:
                     assert detail['statusCounts']['succeeded'] == 2, detail
@@ -1030,4 +1125,11 @@ async def test_real_project_batch_http(
             assert (workspace / "tmp").is_dir()
             assert not list((workspace / "tmp").glob("**/generation-*"))
     finally:
-        await app.router.on_shutdown[-1]()
+        try:
+            if event_server is not None:
+                event_server.should_exit = True
+                await asyncio.wait_for(event_server_task, timeout=10)
+        finally:
+            if event_socket is not None:
+                event_socket.close()
+            await app.router.on_shutdown[-1]()

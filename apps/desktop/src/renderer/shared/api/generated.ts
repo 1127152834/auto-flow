@@ -7287,7 +7287,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "runStatus" | "nodeAttempt" | "log" | "output" | "artifact";
+            kind: "runStatus" | "nodeAttempt" | "log" | "output" | "artifact" | "checkpoint";
             /** Nodeid */
             nodeId?: string | null;
             /** Nodevisitid */

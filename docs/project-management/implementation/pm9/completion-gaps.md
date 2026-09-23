@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-23 XE-C07 最新补证（supersedes 此前 243/8 统计）：真实 TCP/worker 人工等待场景发现 checkpoint 未纳入公开事件投影，导致 JSON/SSE 补读 409；已补最小身份/版本契约及生成类型，内部续跑内容不公开。修复后真实断开/继续/缺口补读、8 次唯一节点访问、3 个输出、日志分页、失败截图摘要和资源回收通过；20 项后端契约/证据与25项相关前端通过，独立审查无 P1/P2。前端 EOF 去重是独立受控测试，尚非安装包 UI 断网联合证据。台账 244 有范围断言/7 未定位、202 partial/49 planned/0 verified；完整回归/新候选 CI 见 verification.json 与 event-reconnect-follow-through.json。releaseAccepted=false。
+
 最新状态（2026-09-23）：C1–C4、R1–R5、D1 已实现。D1 新真实 worker 场景发现并修复声明坏值仍领取的问题，准备与提交重验共享字段校验，未使用坏字段不阻断；本机专属场景和原共享交接共 4 项通过，新生产候选完整回归/三平台见 verification.json。DATA-TABLE-08 拒绝证据已强化，DATA-WRITE-12 已补直接单记录反向冲突；当前 243 条有范围断言、8 未定位、202 partial/49 planned/0 verified。S4 既有文件、未批准 M1–M3、其他未闭合子条件与外部验收仍保留。下文旧计数与“D1 worker 未命中”由本节 supersede；专属 worker 不再归入外部环境缺口。
 
 2026-09-21 共享数据续作：两份方案已获批准，按 C1–C4→R1→R2→R5→R3→R4 实施。C1–C3 已接通公共身份、全部占用入口、独立本地游标、生命周期和旧锁阻断；29 项真实 worker 与最新独立状态 3 项、前端 5460 项通过。C4 后端全量发现 4 个历史迁移 head 断言过期，修正验证及新三平台继续。当前 227 条有范围断言 / 24 未定位，192 partial / 59 planned / 0 verified。R1 表结构查询和 R2 本地字段删除已接通并通过本机实际 worker；R5→R3→R4 继续实施；Windows 既有文件安全操作和外部验收仍未闭合。详见 shared-data-follow-through.json。下文 f580 及更早现状保留为对应候选历史，不代表当前 C1–C3 实现仍缺失。

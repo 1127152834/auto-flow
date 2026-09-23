@@ -28,6 +28,32 @@ describe('persistent run event cursor', () => {
     expect(onError).toHaveBeenCalledWith('运行事件补读结果不连续')
     expect(client.stream).not.toHaveBeenCalled()
   })
+  it('repairs a disconnected stream from its last seen sequence without appending duplicates', async () => {
+    vi.useFakeTimers()
+    const controller = new AbortController()
+    try {
+      const checkpoint = { ...event(2), kind: 'checkpoint' as const, payload: { manualItemId: 'manual', checkpointRevision: 1 } }
+      const request = vi.fn()
+        .mockResolvedValueOnce({ items: [event(1)], afterSequence: 1, lastSequence: 1, hasMore: false, terminal: false })
+        .mockResolvedValueOnce({ items: [checkpoint, event(3, 'failed')], afterSequence: 3, lastSequence: 3, hasMore: false, terminal: true })
+      // EOF drops the connection after the server delivered the same frame twice.
+      const frame = `id: 2\nevent: checkpoint\ndata: ${JSON.stringify(checkpoint)}\n\n`
+      const stream = vi.fn().mockResolvedValue(new Response(frame + frame))
+      const onChange = vi.fn()
+      const watching = watchRunEvents({ request, stream } as unknown as StreamingApiClient, { projectId: 'project', taskId: 'task', runId: 'run', signal: controller.signal, onChange })
+      await vi.runAllTimersAsync()
+      await watching
+      expect(request.mock.calls.map(call => call[0])).toEqual([
+        '/api/v1/projects/project/tasks/task/events?afterSequence=0',
+        '/api/v1/projects/project/tasks/task/events?afterSequence=2',
+      ])
+      expect(stream).toHaveBeenCalledTimes(1)
+      expect(onChange).toHaveBeenCalledTimes(3)
+    } finally {
+      controller.abort()
+      vi.useRealTimers()
+    }
+  })
   it('uses the query cursor without adding a non-simple Last-Event-ID request header', async () => {
     const controller = new AbortController()
     const client = {

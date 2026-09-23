@@ -143,7 +143,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current declared-input production repair is validated separately by finalCICandidate, still in progress."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Production candidate c9e2da7867994447bd3fe4d45f2686476e7bd67c: L0 three-call lifecycle fence fix; 4 new counterexamples passed; related group 109 passed/1 outdated setup failure then the corrected precise case passed. Actions 35810132035 is the single replacement full matrix, including four later worker scenarios. Earlier c2 local full backend 3460/68 remains historical evidence, not a new full regression.",
+  "workingCandidate": "Current worktree adds XE-C07 checkpoint event projection fix and real TCP/worker reconnect evidence after c9e2da78. Targeted checks passed; full local regression running; replacement CI must include this source. Prior c9 matrix is not current-source evidence.",
   "finalCICandidate": {
     "codeCandidate": "c9e2da7867994447bd3fe4d45f2686476e7bd67c",
     "status": "in_progress",
@@ -274,5 +274,6 @@
     "scope": "No project tables/inputs; first typed and read through real browser, one Batch/Task/Run after idempotent command replay, no DataLease, resource cleanup",
     "limits": "macOS ARM source only; added after running native CI candidate"
   },
-  "lifecycleFenceFollowThrough": "lifecycle-fence-follow-through.json"
+  "lifecycleFenceFollowThrough": "lifecycle-fence-follow-through.json",
+  "eventReconnectFollowThrough": "docs/project-management/implementation/pm9/event-reconnect-follow-through.json"
 }

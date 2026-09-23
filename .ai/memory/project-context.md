@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-23 XE-C07 最新补证（confirmed，来源：event-reconnect-follow-through.json）（supersedes 此前 243/8 统计）：真实 TCP/worker 人工等待场景发现 checkpoint 未纳入公开事件投影，导致 JSON/SSE 补读 409；已补最小身份/版本契约及生成类型，内部续跑内容不公开。修复后真实断开/继续/缺口补读、8 次唯一节点访问、3 个输出、日志分页、失败截图摘要和资源回收通过；20 项后端契约/证据与25项相关前端通过，独立审查无 P1/P2。前端 EOF 去重是独立受控测试，尚非安装包 UI 断网联合证据。台账 244 有范围断言/7 未定位、202 partial/49 planned/0 verified；完整回归/新候选 CI 见 verification.json 与 event-reconnect-follow-through.json。releaseAccepted=false。
+
 2026-09-23 L0 最新补审（confirmed，优先于下文 c2 摘要）：旧未知值写可被改绑绕过已复现，三处共享发送围栏修复与4项反例通过，相关回归/新候选矩阵见 `pm9/lifecycle-fence-follow-through.json` 与 verification.json；原c2矩阵不覆盖新生产代码。台账243有断言/8未定位、202 partial/49 planned/0 verified。L1–L3连接恢复/保留身份/隔离新契约已写规格和计划，尚未批准；当前仅安全拒绝，不能声称永久失权处置完成。
 
 2026-09-23 最新 PM9 状态（confirmed；来源 `pm9/input-validation-follow-through.json`，较下文历史摘要优先）：实施仍在独立 pm9-runtime worktree/分支，草稿 PR #1。生产修复 c2d91c5d 补齐 D1 声明输入值的选择/提交校验；未使用坏字段不阻断。全后端 3460 passed/68 skipped，89 定向、4 Sheets 真实 worker、Ruff/mypy407/OpenAPI/101 脚本与后端构建通过；新矩阵 35806853292 仍进行中。后续独立本机 worker 补循环部分成功、参数变量隔离、同名结果不隐式写回、可选输入由有到无和无表参数单任务，当前 242 有范围断言/9 未定位、201 partial/50 planned/0 verified。一次 worker 退出超时尚未查明，不以重跑成功宣称根因修复。S4 既有文件、未批准 M1–M3、打包完整 Sheets/Google/OAuth、签名及实机专项继续保留；PM6 历史实网有效。releaseAccepted=false，不合并发布。最新 CI 状态以 verification.json 为准。
