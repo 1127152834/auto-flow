@@ -171,8 +171,13 @@ class MacAndroidRuntime:
         return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "profileId": config.get("profileId"), "profileName": config.get("profileName"), "instanceType": config.get("instanceType", "persistent"), "locale": config.get("locale", "zh-CN"), "timezone": config.get("timezone", "Asia/Shanghai"), "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
 
     async def capacity(self, device: dict[str, Any]) -> None:
-        from autoflow.providers.android.management import capacity
-        await capacity(device)
+        from autoflow.providers.android.management import capacity, verify
+        containers, _ = await verify(device, self.workspace_id)
+        memory = containers[0].get('HostConfig', {}).get('Memory') if containers else 0
+        if containers and (type(memory) is not int or memory <= 0):
+            raise AndroidError('ANDROID_CAPACITY_UNKNOWN', '实例实际内存限额尚未核实，不能启动', 409)
+        candidate = {**device, 'containerId': containers[0]['Id']} if containers else device
+        await capacity(candidate, self.root, minimum_memory=memory)
 
     async def manage(self, device: dict[str, Any], request: dict[str, Any], stage: Callable[[str], None], save: Callable[[], None]) -> None:
         from autoflow.providers.android.management import manage
@@ -292,7 +297,7 @@ class MacAndroidRuntime:
         if observed["dockerStatus"] == "missing":
             raise AndroidError("ANDROID_DATA_RETAINED", "请先从设备页恢复实例，再打开窗口或运行工作流")
         if observed["dockerStatus"] != "running":
-            await docker("start", device["containerId"])
+            raise AndroidError("ANDROID_NOT_READY", "请先从设备管理启动实例，再连接控制台", 409)
         deadline = time.monotonic() + 180
         while True:
             try:

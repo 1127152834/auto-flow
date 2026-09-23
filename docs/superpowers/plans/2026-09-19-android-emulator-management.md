@@ -37,7 +37,7 @@
 - 本轮基线为隔离分支 `codex/android-management-complete@3ee61947`；保留 worktree 中 3 个 Studio 文档的已有未提交改动，不纳入本轮提交。
 - Alembic 当前唯一 head 为 `am01_management_operations`；新核验/容量/诊断修复无数据库形状变化，无需新增迁移。
 - T15 发现并修复缺标记误判成功、回执落盘前清除证据、结果未知继续接受新写入及安装后观察失败误分类；完成标记绑定原请求并在持久终态后清除。
-- T13 修复 Docker 未限额内存记零、容器枚举失败和不完整 inspect 被准入；持久容量预留仍需实现与竞态证据。
+- T13 修复 Docker 未限额内存记零、容器枚举失败和不完整 inspect 被准入；该历史待办由9月23日持久预算增量覆盖，18项集成及真实双工作区证据见 `docs/qa/android-management/2026-09-23-capacity-verification.md`；整任务重审仍未完成。
 - T19 修复诊断设备归属使用路径而非 runtime hash，默认诊断字段改为白名单；高级日志采集仍未实现，不能以环境 blocked 代替。
 - 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
 
@@ -452,7 +452,7 @@ def test_tag_change_does_not_upgrade_existing_instance(scenario):
 
 **覆盖：** AM-R11/R12；AM-AC15/AC16。**依赖：** AM3授权、T12。
 
-**文件：** 新建 `B/application/android/bulk.py`、`B/domain/android/capacity_rules.py`、`BT/unit/test_android_bulk.py`、`BT/integration/test_android_capacity.py`、`F/components/BulkActions.tsx`、`BulkProgress.tsx`、`F/tests/BulkActions.test.tsx`；扩展provider capacity与管理HTTP。
+**文件：** 新建 `B/application/android/bulk.py`、`B/domain/android/capacity_rules.py`、`BT/unit/test_android_bulk.py`、`BT/integration/test_android_capacity_reservations.py`、`F/components/BulkActions.tsx`、`BulkProgress.tsx`、`F/tests/BulkActions.test.tsx`；扩展provider capacity与管理HTTP。
 
 **接口：** BulkService.submit/action返回BulkRead，含冻结请求与逐项operationId；`can_admit(total_memory,running_limits,reserved_memory,requested_memory)->bool`使用bytes，任何未知输入None返回False。
 
@@ -468,8 +468,8 @@ def test_reservations_count_towards_capacity():
     assert can_admit(4*1024**3, 2*1024**3, 1024**3, 1024**3) is False
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_bulk.py tests/integration/test_android_capacity.py -q)`。（状态：blocked）
-- [ ] 复用Operation执行器，初始生命周期并发仍1。按规格计入512MiB保留量和待启动预留；停止未经核实不能提前释放预算。CPU为配额，不声称独占核。（状态：blocked）
+- [ ] RED：`(cd apps/backend && uv run pytest tests/unit/test_android_bulk.py tests/integration/test_android_capacity_reservations.py -q)`。（状态：blocked）
+- [x] 复用Operation执行器，初始生命周期并发仍1。按规格计入512MiB保留量和待启动预留；停止未经核实不能提前释放预算。CPU为配额，不声称独占核。跨workspace/取消/进程重建、文件损坏、发布失败和真实限额漂移已验证；证据见9月23日容量记录。（状态：passed）
 - [ ] UI确认冻结目标、破坏范围及阻塞项，逐项显示成功/失败/未知；取消不撤销已执行项，未知项不得retryFailed。（状态：blocked）
 - [ ] GREEN后提交 `feat(android): add safe bulk operations and capacity admission`。（状态：blocked）
 

@@ -1,0 +1,27 @@
+{
+  "firstDeviceId": "a160ba69-547c-45f0-938d-57919f880466",
+  "firstWorkspace": "fac6c6cc52e9fe7d408906247e13634e04807b450bed5eca4acd530c1b85da07",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "injection": "discard real stop response after command completion",
+  "cleanup": [
+    {
+      "deviceId": "a160ba69-547c-45f0-938d-57919f880466",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    },
+    {
+      "deviceId": "ff322240-ee7f-4cdc-ab4d-d1cc62da2941",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    }
+  ],
+  "secondDeviceId": "ff322240-ee7f-4cdc-ab4d-d1cc62da2941",
+  "secondWorkspace": "66a7273ccbfa2d7c8dbc72d7d5ff68758615a538e7e11c59d4217e9b578a70dd",
+  "candidateMemoryMb": 6144,
+  "pendingMemoryBytes": 1610612736,
+  "beforeRecovery": "ANDROID_CAPACITY",
+  "afterRecovery": "admitted",
+  "status": "passed"
+}

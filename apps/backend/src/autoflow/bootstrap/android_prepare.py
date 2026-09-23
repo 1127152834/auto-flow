@@ -98,6 +98,7 @@ async def prepare(data_dir: Path, archive: Path | None, recover: bool) -> dict:
         container = await docker("create", "--name", name, "--privileged", "--cpus", "1", "--memory", "1536m", "--label", LABEL + "=" + runtime.workspace_id, "--label", "io.autoflow.android.device=" + device_id, "-v", volume + ":/data", "-p", "127.0.0.1::5555", image, "androidboot.redroid_gpu_mode=guest", "androidboot.redroid_width=720", "androidboot.redroid_height=1280", "androidboot.redroid_dpi=320")
         record["containerId"] = container.decode().strip()
         repo.save(record)
+        await runtime.manage(record, {"action": "start", "deleteData": False}, lambda _: None, lambda: repo.save(record))
         await runtime.connect(record, lambda: repo.save(record))
         await runtime.disconnect()
         record.update(control="idle", lastError=None)

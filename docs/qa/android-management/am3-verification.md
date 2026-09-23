@@ -4,7 +4,7 @@
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
-| T13 批次与容量 | `blocked` | bulk/capacity 规则 unit 与 BulkActions 局部测试通过；已有 `tests/unit/test_android_capacity.py`，尚缺计划指定的容量预留 integration；批量 UI 覆盖在 ManagementTools 等测试中；持久预留与 1/5/10 压力未闭环。 |
+| T13 批次与容量 | `not_run`（整任务重审） | 持久容量增量 passed：18项真实文件/SQLite/锁集成，双工作区真实stop丢响应后保留预算并核实释放；最新Android集合289 passed。批次/UI其余清单尚未完成整任务重新验收，规模指标归T16，不能用本增量关闭整阶段。 |
 | T14 观察与预览 | `blocked` | 活跃 3 秒、停止 15 秒、失败退避和陈旧状态 unit 通过；`DevicePreviewVisibility.test.tsx` 自动化已通过，但无聚合延迟、预览并发/隐藏页面/内存实测。 |
 | T15 应用管理 | `blocked` | requestId、包名、保护包、版本和真实 102 项 app_info 有证据；APK 字节上限、Manifest/split、安装后版本和丢响应已具备自动化；真实测试 APK 与 stop/uninstall/clearData 仍未验收，完成标记的新增回归见 9 月 23 日记录。 |
 | T16 隔离与性能 | `blocked` | 两个真实实例 ADB serial `127.0.0.1:58272`/`127.0.0.1:58287` 不同，分别完成 HOME/截图/app_info；`test_android_multi_device.py` integration 已存在并通过；专门前端多实例 flow 和 1/5/10 台实测指标未完成。 |
@@ -26,3 +26,5 @@ cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests
 T14/T15 的前端响应栅栏、核验失败解锁和预览取消已补齐自动化。Node 运行时偏差与重跑结果见 [前端增量记录](2026-09-23-frontend-validation.md)；阶段真实性能验收未完成。
 
 T15 命令完成语义与真实启动/停止、人工丢响应读回见 [命令验证](2026-09-23-command-verification.md)。保持启动超时 unknown；没有将这轮单实例 runtime 验证作为完整 HTTP/批量/破坏性应用验收。
+
+T13 最新：[持久容量预留与真实验证](2026-09-23-capacity-verification.md)。前述“尚缺容量integration/持久预留实现”已superseded；1/5/10性能仍未运行。
