@@ -8,3 +8,13 @@
 3. **AD3 真实包与证据**：扩充现有桌面smoke，真实worker人工继续后浏览器失败生成PNG，确认HTTP摘要与真实目录；UI接受删除后故障/恢复，验证只删目标并保持同一operation。运行相关后端/前端/脚本/静态检查；候选稳定后完整回归和一次三平台流水线。更新AU-08/相关执行门禁的具体断言，不能整体升verified。
 
 等待确认时：继续本轮已获授权的终态人工记录数据库清理、直接安全阻断、现有回归和PR记录；不先实现AD1的持久删除状态协议。
+
+## 文件落点与现有入口（已核对）
+
+| 切片 | 主要落点 | 可执行验证 |
+| --- | --- | --- |
+| AD1 | `apps/backend/src/autoflow/infrastructure/database/project_automations.py` 的delete/_facts；`application/project_automations/service.py`；`application/project_runs/coordinator.py`及运行提交仓库；既有ProjectOperation模型/DTO | `uv run pytest tests/contract/test_project_automation_deletion.py tests/integration/test_project_run_start.py`；明确删除接受与启动/修改两种竞争交错，不只测顺序调用 |
+| AD2 | `infrastructure/database/project_lifecycle.py` 的pending/advance；`application/projects/lifecycle.py` 的既有ProjectLifecycleCoordinator；`bootstrap/app.py`注入AppPaths.workspace/runs与wake；复用文件系统适配器边界 | `tests/integration/test_project_lifecycle.py`与删除契约增加进程重建、部分清理、原命令重放、目录重定向拒绝；Windows原生持锁/junction专项 |
+| AD3 | `apps/desktop/src/renderer/domains/project-automations/components/AutomationDeleteDialog.tsx`、`pages/AutomationDetailPage.tsx`（当前仅succeeded才导航，尚无接受后持续查询）；`scripts/smoke-project-management-desktop.mjs` | 扩充现有对话框/页面测试和生产桌面smoke；后端全量、npm typecheck/lint/test、Ruff/mypy及三平台CI |
+
+准备实现时先复核上述文件及所有写入调用方；验证当前ProjectOperation公开状态只允许accepted/running/reconciling/succeeded/failed。清理阻断采用reconciling，不能错误使用failed终态后又偷偷重开同命令。

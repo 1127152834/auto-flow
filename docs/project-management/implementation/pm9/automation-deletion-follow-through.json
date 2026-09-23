@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "manual_residue_fix_targeted_passed_artifact_cleanup_confirmed_missing",
+  "status": "manual_cleanup_local_full_and_packaged_passed_ci_pending_artifact_cleanup_missing",
   "releaseAccepted": false,
   "requirements": [
     "AU-08"
@@ -94,12 +94,46 @@
     "checks": {
       "backend": "38 related backend tests passed / 2 dependency warnings in7.63s; final deletion file rerun recorded separately",
       "static": "Ruff/mypy407 passed after import-format correction",
-      "fullBackend": "in progress",
-      "newPackagedDesktop": "in progress",
-      "threePlatformCI": "old5346 workflow35871462256 cancelled because confirmed new manual-item defect requires a new candidate; next full run after stabilization",
+      "fullBackend": "uv run pytest -q --maxfail=5: 3483 passed / 78 skipped / 2 dependency warnings, 792.43 seconds",
+      "newPackagedDesktop": {
+        "status": "passed",
+        "productionSourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+        "backendSha256": "cb6b8166723b1c4b103b69e100f1037af9e0b8dcaa48c9920a4e0c2c9f366908",
+        "report": "qa-runs/2026-09-23-automation-delete/manual-fixed/project-desktop.json",
+        "scope": "Full rebuilt ARM Electron/sidecar/actual worker: cancelled manual item absent after UI deletion, task/batch/snapshot removed, independent document preserved/relinked, original operation replay stable. Existing full business/log/volume/zoom/second-window/restart checks passed. Filesystem deletion deliberately not claimed; separate negative probe still fails that gate. Four deletion screenshots archived, busy dialog visually reviewed with both batch and manual blockers visible.",
+        "runtimeLogLoad": {
+          "logCount": 1004,
+          "logPages": 6,
+          "elapsedMs": 31665,
+          "logsPerMinute": 1902,
+          "scope": "real worker throughput and server pagination; no renderer memory claim"
+        },
+        "synthetic": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60019,
+          "maxBatchLagMs": 51
+        },
+        "recordSeedMs": 56381,
+        "concurrentWrites": {
+          "status": "passed",
+          "producers": 5,
+          "records": 10000,
+          "busyRetries": 0
+        }
+      },
+      "threePlatformCI": {
+        "runId": 35874897768,
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35874897768",
+        "sourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+        "status": "in_progress",
+        "supersededCancelledRun": 35871462256
+      },
       "frontend": "6 passed including MANUAL_PENDING visibility, 3.41s",
       "scripts": "101 passed / 0 failed / 0 skipped, 2219.39ms",
-      "finalBackend": "11 deletion contracts passed / 2 dependency warnings, 2.98s"
+      "finalBackend": "11 deletion contracts passed / 2 dependency warnings, 2.98s",
+      "frontendStatic": "npm run typecheck and npm run lint passed"
     },
     "artifactStatus": "implementation_missing; file cleanup and durable failure/restart semantics require proposed AD1-AD3, awaiting confirmation",
     "spec": "docs/superpowers/specs/2026-09-23-pm9-automation-delete-cleanup.md",
@@ -108,6 +142,8 @@
       "report": "qa-runs/2026-09-23-automation-delete/residue/artifact-after-manual-fix.json",
       "backendSha256": "cb6b8166723b1c4b103b69e100f1037af9e0b8dcaa48c9920a4e0c2c9f366908",
       "scope": "Rebuilt package, real manual resume then browser failure: manual list contains no removed-task item, but the exact generated PNG remains. Report status is correctly failed; this is not successful filesystem cleanup."
-    }
+    },
+    "productionSourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+    "reproduction": "Apply the matching patch to scripts/smoke-project-management-desktop.mjs at baseScriptCommit in an isolated checkout; run with the recorded base packaged executable and public browser. Both patches use relative imports and passed git apply --check, actual application and node --check."
   }
 }

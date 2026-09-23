@@ -1,6 +1,6 @@
 --- a/scripts/smoke-project-management-desktop.mjs
 +++ b/scripts/smoke-project-management-desktop.mjs
-@@ -2,15 +2,15 @@
+@@ -2,7 +2,7 @@
  import { randomUUID } from 'node:crypto'
  import { execFile } from 'node:child_process'
  import { promisify } from 'node:util'
@@ -8,21 +8,7 @@
 +import { mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises'
  import { tmpdir } from 'node:os'
  import { join, resolve } from 'node:path'
--import { connectCdp, launchElectron, waitFor, waitForProjectPage } from './electron-cdp.mjs'
--import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from './smoke-project-management.mjs'
--import { checkProjectRuntime } from './project-runtime-smoke.mjs'
--import { checkProjectVolume } from './project-volume-smoke.mjs'
--import { assertOutsideHistory, redactSidecarLog } from './project-smoke-output.mjs'
--import { stop } from './smoke-sidecar.mjs'
-+import { connectCdp, launchElectron, waitFor, waitForProjectPage } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/electron-cdp.mjs'
-+import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-management.mjs'
-+import { checkProjectRuntime } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/project-runtime-smoke.mjs'
-+import { checkProjectVolume } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/project-volume-smoke.mjs'
-+import { assertOutsideHistory, redactSidecarLog } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/project-smoke-output.mjs'
-+import { stop } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-sidecar.mjs'
- 
- const root = resolve(import.meta.dirname, '..')
- const options = projectSmokeOptions(process.argv.slice(2))
+ import { connectCdp, launchElectron, waitFor, waitForProjectPage } from './electron-cdp.mjs'
 @@ -129,6 +129,12 @@
      await api(prefix + `/batches/${batchId}`, undefined, 'GET', 404)
      await api(prefix + `/tasks/${manual.taskId}`, undefined, 'GET', 404)
