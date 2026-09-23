@@ -1,7 +1,7 @@
 import type { StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
 type Schema = components['schemas']; const encode = encodeURIComponent
-export type LogFilter = { level?: 'debug' | 'info' | 'warning' | 'error'; nodeId?: string; query?: string }
+export type LogFilter = { level?: 'debug' | 'info' | 'success' | 'warning' | 'error'; nodeId?: string; query?: string }
 export function createTaskEvidenceApi(client: StreamingApiClient, projectId: string, taskId: string) {
   const base = `/api/v1/projects/${encode(projectId)}/tasks/${encode(taskId)}`
   return {

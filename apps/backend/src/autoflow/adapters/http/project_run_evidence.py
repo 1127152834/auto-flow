@@ -42,7 +42,7 @@ def project_run_evidence_router(evidence: ProjectRunEvidence) -> APIRouter:
         projectId: UUID,
         taskId: UUID,
         after_sequence: Annotated[int, Query(alias="afterSequence", ge=0)] = 0,
-        level: Literal["debug", "info", "warning", "error"] | None = None,
+        level: Literal["debug", "info", "success", "warning", "error"] | None = None,
         node_id: Annotated[str | None, Query(alias="nodeId")] = None,
         query: Annotated[str | None, Query(max_length=200)] = None,
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),

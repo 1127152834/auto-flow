@@ -350,3 +350,9 @@
 - `list_export` 使用已迁入的冻结 WebRPA 执行器，项目目录 139→140。共享 `WorkflowArtifactStore` 在发布目标文件前执行可选 64 MiB 上限；项目 worker 以既有事件 ACK 登记覆盖、追加及空文件的不可变快照，下载类型收敛为安全附件 MIME。节点成功在产物事件确认之后提交。
 - 独立临时工作区的真实项目 worker 三次导出与可读取产物、共享文件边界、项目 ACK 等 76 项通过；Ruff、mypy、OpenAPI 和脚本语法检查通过。正式 Electron 开发入口与 macOS arm64 本地未签名包均通过真实 UI 编排、保存、正常关窗、项目任务、内容哈希和任务页下载入口验收。完整证据见 `docs/migration/studio-backend-migration/evidence/project-integration/list-export-2026-09-24/README.md`。
 - 二进制文件读写、`export_log` 的项目日志记录消费、网络大结果等仍按各自依赖处理；Intel/Windows 与用户数据库未实测。本族未改变 Studio 213 节点批准范围。
+
+## 项目任务日志节点族（2026-09-24，confirmed）
+
+- `print_log`、`export_log` 复用冻结源码执行器，项目目录 140→142；项目运行上下文记录节点日志，产物沿用已确认的安全文件写入与 ACK。用户主动打印错误级日志不把成功任务改判失败；日志证据增加 `isUserLog`，任务页按中文级别展示并保留用户原文。
+- 临时工作区真实 worker、项目日志筛选/事件补读、JSON 导出和不可变文件检查通过；正式 Electron 开发入口及 macOS arm64 本地未签名包均通过真实 UI 编排、保存、正常关窗、项目任务、级别筛选、TXT 产物内容与 SHA-256 核对。证据和包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/log-family-2026-09-24/README.md`。
+- 开发入口首次验收读取旧 renderer 构建而失败，重建后同一脚本通过，失败现场保留。Intel/Windows、用户数据库和项目目录余下 71 个批准节点未据此验收。

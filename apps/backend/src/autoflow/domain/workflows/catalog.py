@@ -16,6 +16,8 @@ _RUNNABLE_MODULES = (
     ("json_parse", "JSON解析"),
     ("random_number", "生成随机数"),
     ("get_time", "获取时间"),
+    ("print_log", "打印日志"),
+    ("export_log", "导出日志"),
     ("subflow", "子流程"),
     ("run_workflow_file", "运行工作流"),
     ("ai_chat", "AI对话"),

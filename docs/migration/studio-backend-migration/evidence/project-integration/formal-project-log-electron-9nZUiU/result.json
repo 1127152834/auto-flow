@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-log-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T16:45:28.797Z",
+  "gitHead": "566a00c3123b6281346c07ae19bd59b513c683fd",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "a346cfac-e07f-4cf5-abde-c285d64bb875",
+  "workflowId": "zAksK0ZqQF4trSyIryewM",
+  "batchId": "38393da8-5a69-4ef4-bfe7-ab940e5b61ad",
+  "taskId": "72d35f6a-2ec4-47ca-9dda-5a0ababaccad",
+  "sawCloakBrowser": false,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存打印日志与导出日志流程",
+    "项目任务日志按成功级别可检索，导出文件及哈希与节点输出对应",
+    "正式项目任务持久化用户日志和导出文件，任务页可筛选成功日志且未启动 CloakBrowser"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

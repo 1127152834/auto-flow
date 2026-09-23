@@ -9898,9 +9898,14 @@ export type components = {
              * Level
              * @enum {string}
              */
-            level: "debug" | "info" | "warning" | "error";
+            level: "debug" | "info" | "success" | "warning" | "error";
             /** Message */
             message: string;
+            /**
+             * Isuserlog
+             * @default false
+             */
+            isUserLog: boolean;
             /**
              * Occurredat
              * Format: date-time
@@ -18305,7 +18310,7 @@ export interface operations {
         parameters: {
             query?: {
                 afterSequence?: number;
-                level?: ("debug" | "info" | "warning" | "error") | null;
+                level?: ("debug" | "info" | "success" | "warning" | "error") | null;
                 nodeId?: string | null;
                 query?: string | null;
                 pageSize?: number;

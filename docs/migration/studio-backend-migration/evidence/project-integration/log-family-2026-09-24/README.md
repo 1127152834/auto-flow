@@ -1,0 +1,6 @@
+# 项目任务日志节点（2026-09-24）
+
+- `print_log`、`export_log` 进入项目任务可运行目录，142 个已接入节点。复用冻结 WebRPA 的日志消息、级别和 TXT/JSON/CSV 序列化；项目 worker 将节点完成记录写入同一运行上下文，导出文件走 AutoFlow 已有安全产物存储和提交确认。
+- [真实独立 worker 用例](../../../../../../apps/backend/tests/integration/test_project_data_worker.py)验证成功与错误级的用户日志、JSON 内容、输出变量和产物；任务成功不因用户打印错误级日志而改判失败。[项目证据接口](../../../../../../apps/backend/tests/contract/test_project_run_evidence.py)验证成功级筛选，[事件补读](../../../../../../apps/backend/tests/contract/test_project_run_events.py)保留用户日志标记且不公开私有字段。关联后端 58 项、前端 31 项通过；Ruff、mypy、TypeScript、ESLint、OpenAPI 与构建通过。
+- [正式 Electron 开发入口](../formal-project-log-electron-9nZUiU/result.json)：主窗口真实点击进入项目 Studio，配置日志与导出两节点、保存、正常关闭，在项目中创建自动化并启动任务。任务页可按成功级筛选中文日志；TXT 导出内容和 SHA-256 与正式产物接口一致，输出变量显示导出计数；没有启动 CloakBrowser。首次尝试使用了旧 renderer 构建，保留[失败现场](../formal-project-log-electron-vHOow9/blocked.json)，重建后重测通过。
+- [本地未签名 macOS arm64 包](../formal-project-log-electron-J8ZwQk/result.json)通过同一真实 UI 链路。包内 `app.asar` SHA-256：`14f031e677a83b8dc3041589fce3445fe0b9ba7f0d72919c537700eb512ccbbd`；冻结后端：`44d31ea18edb6176ebb6cb60552ab797f675d69c351afe37659312019552d7db`；Electron：`afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7`。macOS Intel、Windows 与用户数据库未实测。

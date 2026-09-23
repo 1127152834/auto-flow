@@ -281,7 +281,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     lambda node_id, visit, module_type: ProjectArtifactWriter(
                         _artifact_directory(command)[0].parents[2], run_id, generation,
                         node_id, visit,
-                        {"screenshot": "screenshot", "download_file": "file", "save_image": "image", "list_export": "file"}[module_type],
+                        {"screenshot": "screenshot", "download_file": "file", "save_image": "image", "list_export": "file", "export_log": "file"}[module_type],
                         emit,
                     ),
                     credentials=incoming.credentials if isinstance(incoming, _Input) else None,

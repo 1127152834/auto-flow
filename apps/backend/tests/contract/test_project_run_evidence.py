@@ -123,6 +123,23 @@ def test_reads_persisted_attempt_logs_and_value_outputs(tmp_path):
     factory.dispose()
 
 
+def test_success_log_level_is_queryable_without_changing_existing_events(tmp_path):
+    client, _, factory, project, task = prepared(tmp_path)
+    with factory.begin() as session:
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event({
+            "eventId": str(uuid4()), "runId": task.run_id,
+            "executionGeneration": 0, "kind": "log", "nodeId": "open",
+            "nodeVisitId": "visit-1", "attempt": 1,
+            "occurredAt": NOW.isoformat(),
+            "payload": {"level": "success", "message": "业务完成"},
+        })
+    path = f"/api/v1/projects/{project.project_id}/tasks/{task.task_id}/logs"
+    response = client.get(path, params={"level": "success"})
+    assert response.status_code == 200
+    assert [item["message"] for item in response.json()["items"]] == ["业务完成"]
+    factory.dispose()
+
+
 def test_log_cursor_does_not_skip_a_later_matching_event(tmp_path):
     client, _, factory, project, task = prepared(tmp_path)
     path = f"/api/v1/projects/{project.project_id}/tasks/{task.task_id}/logs"

@@ -235,7 +235,7 @@ class ProjectGraphExecutor:
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
             module_type = node_data.get("moduleType")
-            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export"}:
+            if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log"}:
                 current.artifacts = self.artifact_writer(node_id, visit, module_type)
             await emit('nodeAttempt', {'status': 'started'})
             self.cancellation.raise_if_cancelled()
@@ -246,6 +246,15 @@ class ProjectGraphExecutor:
             return
         duration = round((monotonic() - self.started.pop(visit)) * 1000)
         success = bool(event['success'])
+        level = event.get('logLevel') or ('info' if success else 'error')
+        if level not in {'debug', 'info', 'success', 'warning', 'error'}:
+            level = 'info' if success else 'error'
+        message = str(event.get('message') or event.get('error') or '')
+        current.log_records.append({
+            'timestamp': current.clock.now().isoformat(), 'level': level,
+            'message': message, 'duration': event.get('duration') or 0,
+            'nodeId': node_id,
+        })
         payload: dict[str, object] = {'status': 'succeeded' if success else 'failed', 'durationMs': duration}
         if success:
             data = node_data
@@ -269,7 +278,8 @@ class ProjectGraphExecutor:
                     data['moduleType'] == 'dict_get_path' and name in current.variables
                 ):
                     await emit('output', {'name': name, 'value': event['data']})
-            await emit('log', {'level': 'info', 'message': '节点执行完成'})
+            visible_message = message[:1000] + '…' if len(message.encode('utf-8')) > 4096 else message
+            await emit('log', {'level': level, 'message': visible_message if event.get('isUserLog') else '节点执行完成', 'isUserLog': event.get('isUserLog') is True})
         else:
             timeout = event.get('isTimeout') is True or event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
             self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': '工作流节点执行超时' if timeout else '工作流节点执行失败'}

@@ -110,7 +110,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -160,7 +160,12 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("append", "list_export", {"listVariable": "items", "outputPath": "exports/items.txt", "separator": "\\n", "appendMode": True}, None),
         ("empty", "list_export", {"listVariable": "empty_items", "outputPath": "exports/empty.txt"}, None),
     ]
-    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps}[family]
+    logging_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+        ("print", "print_log", {"logMessage": "业务完成", "logLevel": "success"}, None),
+        ("print-error", "print_log", {"logMessage": "需要人工复核", "logLevel": "error"}, None),
+        ("export", "export_log", {"logFormat": "json", "outputPath": "logs/run.json", "resultVariable": "log_file"}, None),
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert node_types <= set(build_production_executor_registry().get_all_types())
@@ -241,6 +246,23 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
             assert total == 3 and [item.kind for item in artifacts] == ["file"] * 3
             assert [evidence.artifact_content(project.project_id, task.task_id, item.artifact_id)[0].decode() for item in artifacts] == ["甲\n乙", "甲\n乙\n甲\n乙", ""]
             assert outputs == {}
+        elif family == "logging":
+            evidence = ProjectRunEvidence(factory, tmp_path / "workspace")
+            artifacts, total = evidence.artifacts(project.project_id, task.task_id)
+            assert total == 1 and artifacts[0].kind == "file"
+            content, _ = evidence.artifact_content(project.project_id, task.task_id, artifacts[0].artifact_id)
+            exported = json.loads(content)
+            assert exported[0]["message"] == "业务完成"
+            assert exported[0]["level"] == "success"
+            assert exported[1]["message"] == "需要人工复核"
+            assert exported[1]["level"] == "error"
+            assert outputs["export"]["log_count"] == 2
+            logs = evidence.logs(project.project_id, task.task_id, level="success")
+            assert [item["message"] for item in logs["items"]] == ["业务完成"]
+            assert logs["items"][0]["isUserLog"] is True
+            errors = evidence.logs(project.project_id, task.task_id, level="error")
+            assert [item["message"] for item in errors["items"]] == ["需要人工复核"]
+            assert errors["items"][0]["isUserLog"] is True
         else:
             assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
         assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)

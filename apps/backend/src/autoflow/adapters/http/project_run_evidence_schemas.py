@@ -35,8 +35,9 @@ class RunLogEntry(ApiModel):
     node_name: str | None = None
     node_visit_id: str | None = None
     attempt: int | None = None
-    level: Literal["debug", "info", "warning", "error"]
+    level: Literal["debug", "info", "success", "warning", "error"]
     message: str
+    is_user_log: bool = False
     occurred_at: datetime
     execution_context: dict[str, Any] | None = None
 

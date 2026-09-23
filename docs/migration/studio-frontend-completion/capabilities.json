@@ -44781,7 +44781,13 @@
       "evidenceConfidence": "高：原版字段行为、真实 worker、正式 UI、变量传递、日志和产物内容均有证据；未测平台按平台矩阵单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-log-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/log-family-2026-09-24/README.md",
+        "boundary": "复用冻结源码消息和级别规则；项目任务持久化用户日志并提供级别筛选。开发与本地未签名包 macOS arm64 通过；其他平台未验收。"
+      }
     }
   },
   {
@@ -45039,7 +45045,13 @@
       "evidenceConfidence": "高：原版字段行为、真实 worker、正式 UI、变量传递、日志和产物内容均有证据；未测平台按平台矩阵单列。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-log-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json",
+      "projectIntegration": {
+        "status": "顺序项目任务接入已验收",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/log-family-2026-09-24/README.md",
+        "boundary": "复用冻结源码 TXT/JSON/CSV 序列化并通过 AutoFlow 产物服务登记不可变文件；开发与本地未签名包 macOS arm64 通过；其他平台未验收。"
+      }
     }
   },
   {
