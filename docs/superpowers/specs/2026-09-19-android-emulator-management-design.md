@@ -304,6 +304,7 @@ AM1 新增独立操作表，保留 android_devices 和 android_resources 既有�
 | POST /sessions/{id}/apps/install | 保留/AM3 | multipart file + generation + requestId；既有路径，字节限额不变 |
 | GET/POST /management/backups | AM4 | 查询备份；创建用 requestId/deviceId/expectedRevision |
 | POST /management/backups/{id}/restore | AM4 | requestId/newName；新实例和恢复 Operation |
+| GET /management/cleanup/resources | AM4 | 当前工作区保留数据、备份与已识别临时产物；只读目录供用户选择 |
 | POST /management/cleanup/previews | AM4 | resourceIds/types；返回签名/摘要绑定的候选快照 |
 | POST /management/cleanup | AM4 | requestId/previewId/confirmationDigest；再次核实归属 |
 | POST /management/diagnostics | AM4 | requestId/deviceIds/includeAdvancedLogs=false；返回安全导出资源 ID |

@@ -101,7 +101,7 @@ it('requires a preview before cleanup execution', async () => {
   expect(screen.queryByRole('button', { name: /确认清理/ })).not.toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
   expect(await screen.findByRole('button', { name: '确认清理 1 项' })).toBeVisible()
-  expect(screen.getByLabelText('清理预览')).toHaveTextContent('对象：v1 · backup')
+  expect(screen.getByLabelText('清理预览')).toHaveTextContent('对象：v1 · 备份')
   expect(screen.getByLabelText('清理预览')).toHaveTextContent('引用：d1')
   expect(screen.getByLabelText('清理预览')).toHaveTextContent('不可逆')
   expect(screen.getByLabelText('清理预览')).toHaveTextContent('指纹：fingerprint')
@@ -196,4 +196,48 @@ it.each(['accepted', 'running', 'needs_verification'])('keeps a %s cleanup resul
   expect(verify).toHaveBeenCalledWith('cleanup-op', { requestId: cleanup.mock.calls[0][0].requestId })
   expect(await screen.findByText('清理已完成')).toBeVisible()
   expect(cleanup).toHaveBeenCalledTimes(1)
+})
+
+const temporary = { id: 'orphan:partial', kind: 'backup-orphan', purpose: 'unregistered-backup', revision: 1, references: [], workspaceId: 'workspace', ownership: {}, size: 12, irreversibleImpact: '永久删除', summary: {}, fingerprint: 'file-revision', reversible: false }
+
+it('discovers module temporary files and previews only explicitly selected objects', async () => {
+  const cleanupResources = vi.fn(async () => ({ items: [temporary, { ...temporary, id: 'keep' }] }))
+  const cleanupPreview = vi.fn(async () => ({ items: [temporary], confirmationDigest: 'digest' }))
+  render(<DataMaintenance api={{ cleanupResources, cleanupPreview, cleanup: vi.fn(), diagnostics: vi.fn() }} resourceIds={['keep']} />)
+  const choice = await screen.findByRole('checkbox', { name: /orphan:partial/ })
+  expect(choice).not.toBeChecked()
+  expect(screen.getByRole('button', { name: '预览清理' })).toBeDisabled()
+  await userEvent.click(choice)
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  expect(cleanupPreview).toHaveBeenCalledWith(['orphan:partial'])
+  expect(screen.getByLabelText('清理预览')).toHaveTextContent('未登记备份')
+})
+
+it('does not reuse selected objects or a preview after inventory refresh fails', async () => {
+  const cleanupResources = vi.fn().mockResolvedValueOnce({ items: [temporary] }).mockRejectedValueOnce(new Error('目录读取失败'))
+  const cleanupPreview = vi.fn(async () => ({ items: [temporary], confirmationDigest: 'digest' }))
+  render(<DataMaintenance api={{ cleanupResources, cleanupPreview, cleanup: vi.fn(), diagnostics: vi.fn() }} resourceIds={[]} />)
+  await userEvent.click(await screen.findByRole('checkbox', { name: /orphan:partial/ }))
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  await userEvent.click(screen.getByRole('button', { name: '刷新清理对象' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('目录读取失败')
+  expect(screen.queryByRole('button', { name: /确认清理/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '预览清理' })).toBeDisabled()
+})
+
+it('reports a malformed inventory without crashing the management page', async () => {
+  const cleanupResources = vi.fn().mockResolvedValue({})
+  render(<DataMaintenance api={{ cleanupResources, cleanupPreview: vi.fn(), cleanup: vi.fn(), diagnostics: vi.fn() }} resourceIds={[]} />)
+  expect(await screen.findByRole('alert')).toHaveTextContent('清理对象响应无效')
+  expect(screen.getByRole('button', { name: '预览清理' })).toBeDisabled()
+})
+
+it('shows readable source references and irreversible impact in the frozen preview', async () => {
+  const item = { ...temporary, references: [{ kind: 'device', id: 'source-id', name: '源实例' }] }
+  const cleanupPreview = vi.fn(async () => ({ items: [item], confirmationDigest: 'digest' }))
+  render(<DataMaintenance api={{ cleanupPreview, cleanup: vi.fn(), diagnostics: vi.fn() }} resourceIds={['orphan:partial']} />)
+  await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+  expect(await screen.findByLabelText('清理预览')).toHaveTextContent('源实例')
+  expect(screen.getByLabelText('清理预览')).toHaveTextContent('永久删除')
+  expect(screen.getByLabelText('清理预览')).not.toHaveTextContent('[object Object]')
 })

@@ -120,73 +120,74 @@ class AndroidBackupService:
                 raise AndroidError("ANDROID_BACKUP_REQUEST_REPLAYED", "备份请求已处理，请先核实操作结果", 409)
             operation = self.operations.transition(operation.operation_id, "queued", "running", {"stage_code": "checking"})
         try:
-            with self._runtime_lock(runtime):
-                if hasattr(runtime, "inspect"):
-                    observed = await runtime.inspect(device)
-                if (observed or {}).get("androidStatus") not in {"stopped", "retained"} or device.get("control") != "idle" or device.get("ownerRunId"):
-                    raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "备份前必须停止实例并释放控制会话", 409)
-                if not hasattr(runtime, "backup_volume"):
-                    raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷归档适配器", 503)
-                data = await runtime.backup_volume(device)
-                backup_id = str(uuid4())
-                staged = self.storage.stage(backup_id)
+            with self.storage.lock():
+                with self._runtime_lock(runtime):
+                    if hasattr(runtime, "inspect"):
+                        observed = await runtime.inspect(device)
+                    if (observed or {}).get("androidStatus") not in {"stopped", "retained"} or device.get("control") != "idle" or device.get("ownerRunId"):
+                        raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "备份前必须停止实例并释放控制会话", 409)
+                    if not hasattr(runtime, "backup_volume"):
+                        raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷归档适配器", 503)
+                    data = await runtime.backup_volume(device)
+                    backup_id = str(uuid4())
+                    staged = self.storage.stage(backup_id)
+                    try:
+                        self._validate_archive(data)
+                        data_path = staged / "data.tar"
+                        data_path.write_bytes(data)
+                        os.chmod(data_path, 0o600)
+                        manifest = {"formatVersion": 1, "deviceId": device["deviceId"], "imageId": device["imageId"], "config": device.get("creationConfig", {})}
+                        manifest_path = staged / "manifest.json"
+                        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
+                        os.chmod(manifest_path, 0o600)
+                        digest = hashlib.sha256()
+                        size = 0
+                        for path in sorted(staged.iterdir()):
+                            chunk = path.read_bytes()
+                            digest.update(chunk)
+                            size += len(chunk)
+                        published = self.storage.finalize(backup_id)
+                    except BaseException:
+                        self.storage.discard(backup_id)
+                        raise
+                record = {"id": backup_id, "deviceId": device["deviceId"], "imageId": device["imageId"], "workspaceId": str(self.root.parent.resolve()), "formatVersion": 1, "path": str(published), "sha256": digest.hexdigest(), "bytes": size, "createdAt": datetime.now(UTC).isoformat(), "state": "available", "config": device.get("creationConfig", {}), "requestId": request_id, "requestDigest": self._digest("backup", payload)}
                 try:
-                    self._validate_archive(data)
-                    data_path = staged / "data.tar"
-                    data_path.write_bytes(data)
-                    os.chmod(data_path, 0o600)
-                    manifest = {"formatVersion": 1, "deviceId": device["deviceId"], "imageId": device["imageId"], "config": device.get("creationConfig", {})}
-                    manifest_path = staged / "manifest.json"
-                    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
-                    os.chmod(manifest_path, 0o600)
-                    digest = hashlib.sha256()
-                    size = 0
-                    for path in sorted(staged.iterdir()):
-                        chunk = path.read_bytes()
-                        digest.update(chunk)
-                        size += len(chunk)
-                    published = self.storage.finalize(backup_id)
-                except BaseException:
-                    self.storage.discard(backup_id)
-                    raise
-            record = {"id": backup_id, "deviceId": device["deviceId"], "imageId": device["imageId"], "workspaceId": str(self.root.parent.resolve()), "formatVersion": 1, "path": str(published), "sha256": digest.hexdigest(), "bytes": size, "createdAt": datetime.now(UTC).isoformat(), "state": "available", "config": device.get("creationConfig", {}), "requestId": request_id, "requestDigest": self._digest("backup", payload)}
-            try:
-                if operation is None:
-                    self.resources.save("backup", record)
-                else:
-                    operation = self.operations.complete_backup(operation.operation_id, record)
-            except BaseException as error:
-                # A commit may have succeeded before its acknowledgement was
-                # lost. Never remove files backing a persisted catalogue entry.
-                try:
-                    if operation is not None:
-                        operation = self.operations.get(operation.operation_id)
-                    stored = next((item for item in self.resources.list("backup") if item.get("id") == backup_id), None)
-                    completed = operation is None or operation.state == "succeeded"
-                except Exception as verification_error:
-                    self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(verification_error))
-                    raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份提交结果无法核实，已保留归档", 503) from verification_error
-                if stored is not None:
-                    if stored == record and completed:
-                        if isinstance(error, asyncio.CancelledError):
-                            raise
-                        return record
-                    self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="备份记录与操作结果尚未一致")
-                    raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份提交结果无法核实，已保留归档", 503) from error
-                if operation is not None and completed:
-                    raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "操作已完成但备份记录缺失，已保留归档", 503) from error
-                try:
-                    self.storage.discard_final(backup_id)
-                except (OSError, ValueError) as cleanup_error:
-                    self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(cleanup_error))
-                    raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份结果未知，请先核实后重试", 503) from cleanup_error
-                if isinstance(error, asyncio.CancelledError):
-                    self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="备份提交已取消，未发布可用备份")
-                    raise
-                self._complete(operation, "failed", code="BACKUP_RECORD_FAILED", message=str(error))
-                raise AndroidError("ANDROID_BACKUP_RECORD_FAILED", "备份记录未保存，未发布可用备份", 503) from error
-            self._complete(operation, "succeeded", code="BACKUP_CREATED")
-            return record
+                    if operation is None:
+                        self.resources.save("backup", record)
+                    else:
+                        operation = self.operations.complete_backup(operation.operation_id, record)
+                except BaseException as error:
+                    # A commit may have succeeded before its acknowledgement was
+                    # lost. Never remove files backing a persisted catalogue entry.
+                    try:
+                        if operation is not None:
+                            operation = self.operations.get(operation.operation_id)
+                        stored = next((item for item in self.resources.list("backup") if item.get("id") == backup_id), None)
+                        completed = operation is None or operation.state == "succeeded"
+                    except Exception as verification_error:
+                        self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(verification_error))
+                        raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份提交结果无法核实，已保留归档", 503) from verification_error
+                    if stored is not None:
+                        if stored == record and completed:
+                            if isinstance(error, asyncio.CancelledError):
+                                raise
+                            return record
+                        self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="备份记录与操作结果尚未一致")
+                        raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份提交结果无法核实，已保留归档", 503) from error
+                    if operation is not None and completed:
+                        raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "操作已完成但备份记录缺失，已保留归档", 503) from error
+                    try:
+                        self.storage.discard_final(backup_id)
+                    except (OSError, ValueError) as cleanup_error:
+                        self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(cleanup_error))
+                        raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份结果未知，请先核实后重试", 503) from cleanup_error
+                    if isinstance(error, asyncio.CancelledError):
+                        self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="备份提交已取消，未发布可用备份")
+                        raise
+                    self._complete(operation, "failed", code="BACKUP_RECORD_FAILED", message=str(error))
+                    raise AndroidError("ANDROID_BACKUP_RECORD_FAILED", "备份记录未保存，未发布可用备份", 503) from error
+                self._complete(operation, "succeeded", code="BACKUP_CREATED")
+                return record
         except (TimeoutError, OSError) as error:
             self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(error))
             raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份结果未知，请先核实后重试", 503) from error
@@ -241,37 +242,38 @@ class AndroidBackupService:
             raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止目标实例", 409)
         if device.get("ownerRunId") or device.get("control") not in {None, "idle"}:
             raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止并释放目标实例控制会话", 409)
-        raw_backup_path = Path(backup.get("path", ""))
-        final_root = self.storage.final
-        if (
-            raw_backup_path.is_symlink()
-            or final_root.is_symlink()
-            or not final_root.is_dir()
-            or not hasattr(runtime, "restore_volume")
-        ):
-            raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷恢复适配器", 503)
-        backup_path = raw_backup_path.resolve()
-        if not backup_path.is_dir() or backup_path.parent != final_root.resolve():
-            raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "备份路径不在受控目录内", 503)
-        data_path = backup_path / "data.tar"
-        if data_path.is_symlink() or not data_path.is_file():
-            raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份缺少可恢复的数据卷归档", 409)
-        digest = hashlib.sha256()
-        size = 0
-        data = b""
-        for path in sorted(backup_path.iterdir()):
-            if path.is_symlink():
-                raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含链接条目", 409)
-            if not path.is_file():
-                raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含不支持的条目", 409)
-            chunk = path.read_bytes()
-            if path == data_path:
-                data = chunk
-            digest.update(chunk)
-            size += len(chunk)
-        if backup.get("sha256") != digest.hexdigest() or backup.get("bytes") != size:
-            raise AndroidError("ANDROID_BACKUP_CORRUPT", "备份摘要或字节数不匹配", 409)
-        self._validate_archive(data)
-        with self._runtime_lock(runtime):
-            await runtime.restore_volume(device, data)
-        return {"deviceId": device["deviceId"], "backupId": backup_id, "state": "restored"}
+        with self.storage.lock():
+            raw_backup_path = Path(backup.get("path", ""))
+            final_root = self.storage.final
+            if (
+                raw_backup_path.is_symlink()
+                or final_root.is_symlink()
+                or not final_root.is_dir()
+                or not hasattr(runtime, "restore_volume")
+            ):
+                raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷恢复适配器", 503)
+            backup_path = raw_backup_path.resolve()
+            if not backup_path.is_dir() or backup_path.parent != final_root.resolve():
+                raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "备份路径不在受控目录内", 503)
+            data_path = backup_path / "data.tar"
+            if data_path.is_symlink() or not data_path.is_file():
+                raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份缺少可恢复的数据卷归档", 409)
+            digest = hashlib.sha256()
+            size = 0
+            data = b""
+            for path in sorted(backup_path.iterdir()):
+                if path.is_symlink():
+                    raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含链接条目", 409)
+                if not path.is_file():
+                    raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含不支持的条目", 409)
+                chunk = path.read_bytes()
+                if path == data_path:
+                    data = chunk
+                digest.update(chunk)
+                size += len(chunk)
+            if backup.get("sha256") != digest.hexdigest() or backup.get("bytes") != size:
+                raise AndroidError("ANDROID_BACKUP_CORRUPT", "备份摘要或字节数不匹配", 409)
+            self._validate_archive(data)
+            with self._runtime_lock(runtime):
+                await runtime.restore_volume(device, data)
+            return {"deviceId": device["deviceId"], "backupId": backup_id, "state": "restored"}

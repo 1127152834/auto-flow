@@ -1,18 +1,35 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ApiClientError } from '../../../shared/api/client'
 import type { AndroidManagementApi } from '../management-api'
 
 type Preview = { items: Record<string, unknown>[]; previewId?: string; confirmationDigest: string }
 type SaveDiagnostic = (id: string) => Promise<{ ok: true; value: { saved: boolean; path?: string } } | { ok: false; error: { message: string } }>
 
-export function DataMaintenance({ api, saveDiagnostic, resourceIds, diagnosticDeviceIds = resourceIds }: { api: Pick<AndroidManagementApi, 'cleanupPreview' | 'cleanup' | 'diagnostics'> & Partial<Pick<AndroidManagementApi, 'operationByRequest' | 'verify'>>; saveDiagnostic?: SaveDiagnostic; resourceIds: string[]; diagnosticDeviceIds?: string[] }) {
+export function DataMaintenance({ api, saveDiagnostic, resourceIds, diagnosticDeviceIds = resourceIds }: { api: Pick<AndroidManagementApi, 'cleanupPreview' | 'cleanup' | 'diagnostics'> & Partial<Pick<AndroidManagementApi, 'operationByRequest' | 'verify' | 'cleanupResources'>>; saveDiagnostic?: SaveDiagnostic; resourceIds: string[]; diagnosticDeviceIds?: string[] }) {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [message, setMessage] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false)
   const [requestId, setRequestId] = useState<string | null>(null), [needsVerification, setNeedsVerification] = useState(false)
   const [diagnosticId, setDiagnosticId] = useState<string | null>(null)
+  const [inventory, setInventory] = useState<Record<string, unknown>[]>([])
+  const [selected, setSelected] = useState<string[]>([])
+  const [loadingInventory, setLoadingInventory] = useState(Boolean(api.cleanupResources))
+  const [inventoryRevision, setInventoryRevision] = useState(0)
+  const readInventory = api.cleanupResources
+  useEffect(() => {
+    if (!readInventory) return
+    let current = true
+    setLoadingInventory(true); setError(''); setPreview(null); setInventory([]); setSelected([])
+    void readInventory().then((page) => {
+      if (!Array.isArray(page.items)) throw new Error('清理对象响应无效，请刷新后重试')
+      if (current) setInventory(page.items)
+    }).catch((cause) => {
+      if (current) setError(cause instanceof Error ? cause.message : '无法读取清理对象')
+    }).finally(() => { if (current) setLoadingInventory(false) })
+    return () => { current = false }
+  }, [readInventory, inventoryRevision])
   const inspect = async () => {
     setBusy(true); setError(''); setMessage(''); setPreview(null); setRequestId(null); setNeedsVerification(false)
-    try { setPreview(await api.cleanupPreview(resourceIds)) } catch (cause) { setError(cause instanceof Error ? cause.message : '清理预览失败') } finally { setBusy(false) }
+    try { setPreview(await api.cleanupPreview(readInventory ? selected : resourceIds)) } catch (cause) { setError(cause instanceof Error ? cause.message : '清理预览失败') } finally { setBusy(false) }
   }
   const verify = async () => {
     if (!requestId) return
@@ -22,11 +39,11 @@ export function DataMaintenance({ api, saveDiagnostic, resourceIds, diagnosticDe
       const operation = await api.operationByRequest(requestId)
       if (operation.state === 'needs_verification' && api.verify) {
         const verified = await api.verify(operation.operationId, { requestId })
-        if (verified.state === 'succeeded') { setPreview(null); setNeedsVerification(false); setMessage('清理已完成') }
+        if (verified.state === 'succeeded') { setPreview(null); setNeedsVerification(false); setMessage('清理已完成'); setInventoryRevision((value) => value + 1) }
         else setMessage(`清理操作状态：${verified.stageLabel}`)
       } else {
         setMessage(`清理操作状态：${operation.stageLabel}`)
-        if (operation.state === 'succeeded') { setPreview(null); setNeedsVerification(false) }
+        if (operation.state === 'succeeded') { setPreview(null); setNeedsVerification(false); setInventoryRevision((value) => value + 1) }
       }
     } catch (cause) { setError(cause instanceof Error ? cause.message : '清理操作仍待核实') } finally { setBusy(false) }
   }
@@ -37,7 +54,7 @@ export function DataMaintenance({ api, saveDiagnostic, resourceIds, diagnosticDe
     const request = requestId ?? crypto.randomUUID(); setRequestId(request)
     try {
       const result = await api.cleanup({ requestId: request, previewId: preview.previewId ?? preview.confirmationDigest, confirmationDigest: preview.confirmationDigest })
-      if (result.state === 'succeeded') { setPreview(null); setNeedsVerification(false); setMessage('清理已完成') }
+      if (result.state === 'succeeded') { setPreview(null); setNeedsVerification(false); setMessage('清理已完成'); setInventoryRevision((value) => value + 1) }
       else { setNeedsVerification(true); setMessage(`清理请求已${result.state === 'running' ? '执行' : '接收'}，结果待核实`) }
     } catch (cause) {
       if (cause instanceof ApiClientError && cause.status === 409) { setPreview(null); setError('清理预览已变化，请重新预览后确认') }
@@ -58,6 +75,15 @@ export function DataMaintenance({ api, saveDiagnostic, resourceIds, diagnosticDe
       if (result.value.saved) setMessage('诊断已保存')
     } catch (cause) { setError(cause instanceof Error ? cause.message : '无法保存诊断') } finally { setBusy(false) }
   }
-  const display = (value: unknown) => Array.isArray(value) ? value.join('、') : value == null || value === '' ? '无' : String(value)
-  return <section aria-label="数据维护" aria-busy={busy} className="rounded-card border border-line bg-surface p-5"><h2 className="font-semibold">数据维护</h2><div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={busy} onClick={() => void inspect()}>预览清理</button><button type="button" disabled={busy} onClick={() => void diagnostic()}>生成脱敏诊断</button>{diagnosticId && saveDiagnostic && <button type="button" disabled={busy} onClick={() => void save()}>保存诊断</button>}{preview && <button type="button" disabled={busy} onClick={() => void execute()}>{needsVerification ? '核实原清理请求' : `确认清理 ${preview.items.length} 项`}</button>}</div>{preview && <div className="mt-4 grid gap-2" aria-label="清理预览">{preview.items.map((item, index) => <article key={String(item.id ?? index)} className="rounded-control border border-line bg-surface-subtle p-3 text-xs"><p><strong>对象：</strong>{display(item.id)} · {display(item.kind ?? 'cleanup')}</p><p className="mt-1"><strong>用途：</strong>{display(item.purpose)} · <strong>大小：</strong>{display(item.size)} bytes</p><p className="mt-1"><strong>引用：</strong>{display(item.references ?? item.reference ?? item.workspaceId)}</p><p className="mt-1"><strong>{item.reversible === false ? '不可逆' : '可恢复'}</strong> · <strong>指纹：</strong>{display(item.fingerprint)}</p></article>)}</div>}{error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}{message && <p role="status" className="mt-3 text-sm">{message}</p>}</section>
+  const kind = (value: unknown) => ({ device: '保留的数据', backup: '备份', 'backup-staging': '备份暂存文件', 'backup-orphan': '未登记备份' }[String(value)] ?? String(value ?? '清理对象'))
+  const display = (value: unknown): string => {
+    if (Array.isArray(value)) return value.map(display).join('、') || '无'
+    if (value && typeof value === 'object') {
+      const reference = value as Record<string, unknown>
+      return reference.name ? String(reference.name) : reference.kind && reference.id ? `${reference.kind}：${reference.id}` : JSON.stringify(value)
+    }
+    return value == null || value === '' ? '无' : String(value)
+  }
+  const purpose = (value: unknown) => ({ android: '安卓数据', 'backup-staging': '未完成发布的备份暂存文件', 'unregistered-backup': '尚未登记的备份文件', 'retained-data': '移除实例后保留的数据' }[String(value)] ?? display(value))
+  return <section aria-label="数据维护" aria-busy={busy} className="rounded-card border border-line bg-surface p-5"><h2 className="font-semibold">数据维护</h2><div className="mt-3 flex flex-wrap gap-2">{readInventory && <button type="button" disabled={busy || needsVerification || loadingInventory} onClick={() => setInventoryRevision((value) => value + 1)}>刷新清理对象</button>}<button type="button" disabled={busy || needsVerification || loadingInventory || Boolean(readInventory && selected.length === 0)} onClick={() => void inspect()}>预览清理</button><button type="button" disabled={busy} onClick={() => void diagnostic()}>生成脱敏诊断</button>{diagnosticId && saveDiagnostic && <button type="button" disabled={busy} onClick={() => void save()}>保存诊断</button>}{preview && <button type="button" disabled={busy} onClick={() => void execute()}>{needsVerification ? '核实原清理请求' : `确认清理 ${preview.items.length} 项`}</button>}</div>{readInventory && <fieldset className="mt-4 grid gap-2" disabled={busy || needsVerification || loadingInventory}><legend className="text-sm font-medium">选择清理对象</legend>{loadingInventory ? <p role="status">正在读取清理对象…</p> : inventory.length === 0 ? <p className="text-sm text-muted">暂无可清理对象</p> : inventory.map((item) => <label key={String(item.id)} className="flex items-start gap-2 break-all text-sm"><input type="checkbox" checked={selected.includes(String(item.id))} onChange={(event) => { const id = String(item.id); setPreview(null); setSelected((items) => event.target.checked ? [...items, id] : items.filter((value) => value !== id)) }} />{kind(item.kind)}：{String(item.id)} · {display(item.size)} bytes</label>)}</fieldset>}{preview && <div className="mt-4 grid gap-2" aria-label="清理预览">{preview.items.map((item, index) => <article key={String(item.id ?? index)} className="rounded-control border border-line bg-surface-subtle p-3 text-xs"><p><strong>对象：</strong>{display(item.id)} · {kind(item.kind)}</p><p className="mt-1"><strong>用途：</strong>{purpose(item.purpose)} · <strong>大小：</strong>{display(item.size)} bytes</p><p className="mt-1"><strong>归属：</strong>{display(item.ownership ?? item.workspaceId)}</p><p className="mt-1"><strong>引用：</strong>{display(item.references ?? item.reference ?? item.workspaceId)}</p><p className="mt-1"><strong>{item.reversible === false ? '不可逆' : '可恢复'}</strong> · {display(item.irreversibleImpact)} · <strong>指纹：</strong>{display(item.fingerprint)}</p></article>)}</div>}{error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}{message && <p role="status" className="mt-3 text-sm">{message}</p>}</section>
 }

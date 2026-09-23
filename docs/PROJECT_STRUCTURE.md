@@ -88,7 +88,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
 | `apps/backend/src/autoflow/infrastructure/process/` | 进程、超时、取消和资源回收。 |
-| `apps/backend/src/autoflow/providers/android/` | Mac/Lima/ReDroid适配、归属校验和受控命令；capacity_reservations.py在共享运行时根目录持久化跨工作区预算，工作区数据库继续保存设备与Operation。2026-09-23，confirmed，验证见docs/qa/android-management/2026-09-23-capacity-verification.md。 |
+| `apps/backend/src/autoflow/providers/android/` | Mac/Lima/ReDroid适配、归属校验和受控命令；capacity_reservations.py在共享运行时根目录持久化跨工作区预算，工作区数据库继续保存设备与Operation。backup_storage.py负责受控归档、工作区文件锁及清理文件指纹；目录查询沿现有application/android/cleanup.py与management HTTP契约进入DataMaintenance。2026-09-23，confirmed，验证见docs/qa/android-management/2026-09-23-capacity-verification.md和2026-09-23-cleanup-verification.md。 |
 | `apps/backend/src/autoflow/providers/browser/` | 浏览器控制实现。 |
 | `apps/backend/src/autoflow/providers/kernel/` | 内核来源、下载和安装实现。 |
 | `apps/backend/src/autoflow/providers/model/` | 外部模型供应商连接与能力实现。 |

@@ -8,6 +8,7 @@ import pytest
 
 from autoflow.application.android.cleanup import CleanupService
 from autoflow.domain.android.ports import AndroidError
+from autoflow.providers.android.backup_storage import BackupStorage
 
 
 def test_cleanup_requires_unchanged_preview_digest():
@@ -137,7 +138,7 @@ def test_cleanup_lists_owned_orphan_backup_staging_and_uses_controlled_discard(t
     staging.mkdir(parents=True)
     (staging / "partial.tar").write_bytes(b"partial")
     backups = _StagingBackups(tmp_path / "android-backups", "w")
-    service = CleanupService(_ResourceRepository(), backups=backups)
+    service = CleanupService(_CleanupStore(), backups=backups)
 
     preview = service.preview(["staging:stale-1"], "w")
 
@@ -273,7 +274,7 @@ class _Devices:
         self.calls = []
 
     def list(self):
-        return [{"deviceId": "d1", "workspaceId": "w", "dataRetained": True, "deleted": False}]
+        return [{"deviceId": "d1", "workspaceId": "w", "dataRetained": True, "androidStatus": "retained", "deleted": False}]
 
     def operate(self, device_id, request):
         self.calls.append((device_id, request))
@@ -287,13 +288,13 @@ class _HashedDevices(_Devices):
         self.management = type("Management", (), {"workspace_identity": "/workspace"})()
 
     def list(self):
-        return [{"deviceId": "d1", "workspaceId": "runtime-hash", "dataRetained": True, "deleted": False}]
+        return [{"deviceId": "d1", "workspaceId": "runtime-hash", "dataRetained": True, "androidStatus": "retained", "deleted": False}]
 
 
 class _StagingBackups:
     def __init__(self, root, workspace_identity):
         self.workspace_identity = workspace_identity
-        self.storage = type("Storage", (), {"root": root, "staging": root / "staging"})()
+        self.storage = BackupStorage(root)
         self.storage.discard = self.discard
         self.discarded = []
 
@@ -352,7 +353,7 @@ class _PendingCleanupDevices:
         self.calls = 0
 
     def list(self):
-        return [{"deviceId": "d1", "workspaceId": "workspace-a", "dataRetained": True, "deleted": False}]
+        return [{"deviceId": "d1", "workspaceId": "workspace-a", "dataRetained": True, "androidStatus": "retained", "deleted": False}]
 
     def operate(self, device_id, request):
         self.calls += 1
@@ -379,3 +380,11 @@ class _BlockingCleanupDevices(_PendingCleanupDevices):
         self.started.set()
         self.release.wait(timeout=2)
         return super().operate(device_id, request)
+
+
+@pytest.mark.parametrize("status", ["ready", "starting", "stopped", "unknown", None])
+def test_retained_cleanup_does_not_select_instances_with_existing_or_unknown_runtime(status):
+    devices = _Devices()
+    devices.list = lambda: [{"deviceId": "restored", "workspaceId": "w", "dataRetained": True, "androidStatus": status, "deleted": False}]
+    service = CleanupService([], devices=devices)
+    assert service.inventory("w") == []

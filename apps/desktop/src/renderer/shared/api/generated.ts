@@ -4256,6 +4256,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/management/cleanup/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cleanup Resources */
+        get: operations["cleanup_resources_api_v1_android_management_cleanup_resources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/management/cleanup/previews": {
         parameters: {
             query?: never;
@@ -6791,6 +6808,11 @@ export type components = {
             requestId?: string | null;
             /** Previewid */
             previewId?: string | null;
+        };
+        /** CleanupResourcePage */
+        CleanupResourcePage: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
         };
         /** CleanupSummaryView */
         CleanupSummaryView: {
@@ -27682,6 +27704,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cleanup_resources_api_v1_android_management_cleanup_resources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CleanupResourcePage"];
                 };
             };
         };

@@ -79,3 +79,13 @@ def test_cleanup_contract_exposes_frozen_summary_and_rejects_replay():
         )
         assert mismatch.status_code == 409
         assert mismatch.json()["error"]["code"] == "ANDROID_CLEANUP_CHANGED"
+
+
+def test_cleanup_inventory_is_read_only_and_scoped_to_the_current_workspace():
+    resources = [{"id": "staging:partial", "workspaceId": "owned", "kind": "backup-staging", "size": 12}, {"id": "foreign", "workspaceId": "other"}]
+    with _client(resources) as client:
+        response = client.get("/api/v1/android/management/cleanup/resources")
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()["items"]] == ["staging:partial"]
+        assert response.json()["items"][0]["fingerprint"]
+        assert len(resources) == 2

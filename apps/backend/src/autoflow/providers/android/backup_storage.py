@@ -1,11 +1,24 @@
+import hashlib
+import json
 import os
 import re
 import shutil
+import stat
 import tarfile
 from collections import deque
+from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 
+from autoflow.domain.android.ports import AndroidError
+from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
+
 _SAFE_ID = re.compile(r"^[A-Za-z0-9-]{1,80}$")
+
+
+def _identity(info: os.stat_result) -> tuple[int, ...]:
+    # Reading changes atime on some filesystems; it is not a content revision.
+    return (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
+            info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
 
 
 def validate_archive_path(path: PurePosixPath, entry_type: str = "file") -> None:
@@ -84,6 +97,78 @@ class BackupStorage:
         self.root = root.absolute()
         self.staging = self.root / "staging"
         self.final = self.root / "final"
+
+    @contextmanager
+    def lock(self):
+        lock = ExclusiveFileLock(self.root.parent / "android-backups.lock")
+        if not lock.acquire():
+            raise AndroidError("ANDROID_BACKUP_BUSY", "备份、恢复或数据清理正在使用文件，请稍后再试", 409)
+        try:
+            yield
+        finally:
+            lock.release()
+
+    def snapshot(self, directory: Path) -> dict[str, int | str]:
+        if (
+            self.root.is_symlink() or directory.parent not in {self.staging, self.final}
+            or directory.parent.is_symlink() or directory.is_symlink()
+            or not directory.is_dir() or not _SAFE_ID.fullmatch(directory.name)
+        ):
+            raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理路径已变化或不在受控目录内", 409)
+        before = directory.stat()
+        # ponytail: explicit cleanup scans hash file contents; cache by inode/ctime if large archives make previews slow.
+        digest, size = hashlib.sha256(), 0
+        for child in sorted(directory.iterdir()):
+            info = child.lstat()
+            if not stat.S_ISREG(info.st_mode):
+                raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理目录包含不支持的链接或特殊条目", 409)
+            descriptor = os.open(child, os.O_RDONLY | os.O_NOFOLLOW)
+            with os.fdopen(descriptor, "rb") as stream:
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(chunk)
+                if _identity(os.fstat(stream.fileno())) != _identity(info) or _identity(child.lstat()) != _identity(info):
+                    raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理文件正在变化，请重新预览", 409)
+            size += info.st_size
+            digest.update(json.dumps([child.name, *_identity(info)]).encode())
+        after = directory.stat()
+        if _identity(before) != _identity(after):
+            raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理目录正在变化，请重新预览", 409)
+        digest.update(json.dumps(_identity(before)).encode())
+        return {"size": size, "filesystemFingerprint": digest.hexdigest()}
+
+    def inventory(self, registered_ids: set[str]) -> list[dict]:
+        if self.root.is_symlink():
+            raise AndroidError("ANDROID_CLEANUP_CHANGED", "备份根目录不是受控目录", 409)
+        items = []
+        for parent, prefix in ((self.staging, "staging"), (self.final, "orphan")):
+            if parent.is_symlink():
+                raise AndroidError("ANDROID_CLEANUP_CHANGED", "备份目录不是受控目录", 409)
+            if not parent.is_dir():
+                continue
+            for candidate in sorted(parent.iterdir()):
+                if candidate.is_symlink() or not candidate.is_dir() or not _SAFE_ID.fullmatch(candidate.name):
+                    continue
+                if prefix == "orphan" and candidate.name in registered_ids:
+                    continue
+                snapshot = self.snapshot(candidate)
+                try:
+                    descriptor = os.open(candidate / "manifest.json", os.O_RDONLY | os.O_NOFOLLOW)
+                    with os.fdopen(descriptor, "rb") as stream:
+                        content = stream.read(65537)
+                    manifest = json.loads(content) if len(content) <= 65536 else {}
+                except (OSError, ValueError):
+                    manifest = {}
+                references = []
+                if isinstance(manifest, dict) and manifest.get("formatVersion") == 1:
+                    for field, kind in (("deviceId", "device"), ("imageId", "image")):
+                        value = manifest.get(field)
+                        if isinstance(value, str) and 0 < len(value) <= 256:
+                            references.append({"kind": kind, "id": value})
+                items.append({"id": prefix + ":" + candidate.name, "kind": "backup-" + prefix,
+                              "purpose": "backup-staging" if prefix == "staging" else "unregistered-backup",
+                              "references": references or [{"kind": "unknown", "id": "source", "name": "来源未核实"}],
+                              "path": str(candidate), **snapshot})
+        return items
 
     def _path(self, directory: Path, identifier: str) -> Path:
         if not _SAFE_ID.fullmatch(identifier):

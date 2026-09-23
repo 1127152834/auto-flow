@@ -1,6 +1,7 @@
 import hashlib
 import json
 import threading
+from contextlib import nullcontext
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -67,6 +68,7 @@ def preview_cleanup(resources: list[dict[str, Any]], workspace_identity: str) ->
             **projected,
             # Keep the complete path out of the response while still fencing it.
             "pathDigest": hashlib.sha256(str(item.get("path", "")).encode()).hexdigest(),
+            "filesystemFingerprint": item.get("filesystemFingerprint"),
         }
         projected["fingerprint"] = hashlib.sha256(
             json.dumps(fingerprint_input, sort_keys=True, separators=(",", ":")).encode()
@@ -131,31 +133,22 @@ class CleanupService:
                     workspace_id = str(Path(item["path"]).resolve().parent.parent)
                 items.append({**item, "kind": "backup", "workspaceId": workspace_id})
             storage = getattr(self.backups, "storage", None)
-            staging = getattr(storage, "staging", None)
-            staging_workspace = getattr(self.backups, "workspace_identity", None)
-            if isinstance(staging, Path) and staging_workspace and staging.exists() and staging.is_dir() and not staging.is_symlink():
-                for candidate in staging.iterdir():
-                    if candidate.is_symlink() or not candidate.is_dir() or candidate.parent.resolve() != staging.resolve():
-                        continue
-                    size = sum(
-                        child.stat().st_size
-                        for child in candidate.rglob("*")
-                        if child.is_file() and not child.is_symlink()
-                    )
-                    items.append({
-                        "id": f"staging:{candidate.name}",
-                        "kind": "backup-staging",
-                        "purpose": "backup-staging",
-                        "workspaceId": staging_workspace,
-                        "path": str(candidate),
-                        "size": size,
-                    })
+            owner = getattr(self.backups, "workspace_identity", None)
+            if storage is not None and owner and owner == workspace_identity:
+                registered = {item["id"] for item in items if item.get("kind") == "backup"}
+                for item in items:
+                    if item.get("kind") == "backup" and item.get("workspaceId") == owner:
+                        path = Path(item.get("path", ""))
+                        if path != storage.final / item["id"]:
+                            raise AndroidError("ANDROID_CLEANUP_CHANGED", "备份路径与目录记录不一致", 409)
+                        item.update(storage.snapshot(path))
+                items.extend({**item, "workspaceId": owner} for item in storage.inventory(registered))
         if self.devices is not None:
             repository = getattr(self.devices, "repository", self.devices)
             runtime_workspace = getattr(getattr(self.devices, "runtime", None), "workspace_id", None)
             management_workspace = getattr(getattr(self.devices, "management", None), "workspace_identity", None)
             for device in repository.list():
-                if device.get("dataRetained") and not device.get("deleted"):
+                if device.get("dataRetained") and device.get("androidStatus") == "retained" and not device.get("deleted"):
                     device_workspace = device.get("workspaceId")
                     if (
                         workspace_identity
@@ -166,8 +159,14 @@ class CleanupService:
                     items.append({**device, "id": device["deviceId"], "kind": "device", "purpose": "retained-data", "workspaceId": device_workspace})
         return items
 
+    def inventory(self, workspace_identity: str) -> list[dict[str, Any]]:
+        try:
+            return preview_cleanup(self._items(workspace_identity), workspace_identity)
+        except OSError as error:
+            raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理对象无法核实，请刷新后重新预览", 409) from error
+
     def preview(self, resource_ids: list[str], workspace_identity: str) -> list[dict[str, Any]]:
-        candidates = preview_cleanup([item for item in self._items(workspace_identity) if item.get("id") in resource_ids], workspace_identity)
+        candidates = [item for item in self.inventory(workspace_identity) if item["id"] in resource_ids]
         digest = hashlib.sha256(json.dumps(candidates, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         preview_id = str(uuid4())
         key = (workspace_identity, digest)
@@ -190,7 +189,8 @@ class CleanupService:
         return None
 
     def execute(self, workspace_identity: str, confirmation_digest: str, request_id: str | None = None, preview_id: str | None = None) -> list[dict[str, Any]]:
-        with self.request_lock:
+        storage = getattr(self.backups, "storage", None)
+        with self.request_lock, storage.lock() if storage is not None else nullcontext():
             return self._execute(workspace_identity, confirmation_digest, request_id, preview_id)
 
     def _execute(self, workspace_identity: str, confirmation_digest: str, request_id: str | None = None, preview_id: str | None = None) -> list[dict[str, Any]]:
@@ -226,7 +226,7 @@ class CleanupService:
                 parent_id = previous.get("operationId") or previous.get("id")
                 self.last_operation = {"operationId": parent_id, "requestId": request_id, "state": previous.get("state"), "previewId": preview_id}
                 return deepcopy(previous.get("candidates", candidates))
-        current = {item["id"]: item for item in preview_cleanup(self._items(workspace_identity), workspace_identity)}
+        current = {item["id"]: item for item in self.inventory(workspace_identity)}
         if any(current.get(item["id"]) != item for item in candidates):
             raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理预览已变化，请重新确认", 409)
         digest = confirmation_digest
@@ -276,6 +276,8 @@ class CleanupService:
                     if not callable(discard):
                         raise AndroidError("ANDROID_CLEANUP_UNAVAILABLE", "备份暂存区不支持受控清理", 503)
                     discard(str(item["id"])[len("staging:"):])
+                elif item.get("kind") == "backup-orphan":
+                    self.backups.storage.discard_final(str(item["id"])[len("orphan:"):])
                 elif isinstance(self.resources, list):
                     self.resources[:] = [stored for stored in self.resources if not (stored.get("id") == item["id"] and stored.get("workspaceId") == workspace_identity)]
                 else:

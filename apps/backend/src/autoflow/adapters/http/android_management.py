@@ -35,6 +35,7 @@ from .android_management_schemas import (
     CleanupPreviewCreate,
     CleanupPreviewRead,
     CleanupRead,
+    CleanupResourcePage,
     DiagnosticRead,
     DiagnosticsCreate,
     EnvironmentCheckCommand,
@@ -680,6 +681,12 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if body.action == "verify":
             return BulkRead.model_validate(await bulk.verify(identifier, workspace_identity()))
         return BulkRead.model_validate(bulk.action(identifier, body.action, body.request_id, workspace_identity()))
+
+    @router.get("/cleanup/resources", response_model=CleanupResourcePage)
+    async def cleanup_resources() -> CleanupResourcePage:
+        if cleanup is None:
+            raise AndroidError("ANDROID_CLEANUP_UNAVAILABLE", "数据清理服务尚未配置", 503)
+        return CleanupResourcePage(items=cleanup.inventory(workspace_identity()))
 
     @router.post("/cleanup/previews", response_model=CleanupPreviewRead)
     async def cleanup_preview(body: CleanupPreviewCreate) -> CleanupPreviewRead:

@@ -17,6 +17,7 @@ afterEach(cleanup)
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path.endsWith('/cleanup/resources')) return { items: [] }
     if (path === '/api/v1/android/management/devices?limit=50') return { items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['open', 'stop'], blockedReasons: {} }], total: 1, nextCursor: null }
     return path.endsWith('/environment') ? environment : path.endsWith('/devices') ? [devices[0]] : path.endsWith('/profiles') ? [profile] : path.endsWith('/management/images') ? { items: [], total: 0, nextCursor: null } : path.endsWith('/sessions') && init?.method === 'POST' ? fixtureSession(true) : path.endsWith('/sessions/fixture') ? fixtureSession(true) : path.endsWith('/heartbeat') ? fixtureSession(true) : path.endsWith('/apps') ? { packages: [], currentPackage: null, shellRoot: 'unknown', applicationRoot: 'unknown' } : path.endsWith('/actions') ? { ...fixtureSession(true), state: 'closed' } : []
   })
@@ -125,6 +126,7 @@ it('verifies a management operation with its original request id', async () => {
 it('cleanup preview includes registered backups while diagnostics remain device scoped', async () => {
   const backup = { id: 'backup-1', deviceId: devices[0].deviceId, bytes: 12, imageId: profile.imageId, sha256: 'digest', formatVersion: 1, state: 'ready', createdAt: '' }
   mocks.client.request.mockImplementation(async (path: string, init?: { method?: string; body?: { resourceIds?: string[]; deviceIds?: string[] } }) => {
+    if (path.endsWith('/cleanup/resources')) return { items: [{ id: devices[0].deviceId, kind: 'device', size: 1 }, { id: 'backup-1', kind: 'backup', size: 12 }] }
     if (path.endsWith('/backups') && !init?.method) return [backup]
     if (path.endsWith('/cleanup/previews')) {
       expect(init?.body?.resourceIds).toEqual(expect.arrayContaining([devices[0].deviceId, 'backup-1']))
@@ -142,6 +144,8 @@ it('cleanup preview includes registered backups while diagnostics remain device 
   })
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
   await screen.findByRole('heading', { name: '数据维护' })
+  await userEvent.click(await screen.findByRole('checkbox', { name: /保留的数据：/ }))
+  await userEvent.click(screen.getByRole('checkbox', { name: /备份：backup-1/ }))
   await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/cleanup/previews', expect.anything()))
   await userEvent.click(screen.getByRole('button', { name: '生成脱敏诊断' }))

@@ -41,6 +41,7 @@
 - T19 修复诊断设备归属使用路径而非 runtime hash，默认诊断字段改为白名单；高级日志采集仍未实现，不能以环境 blocked 代替。
 - T17/T18 归档安全增量以 `233c09dd` 为基线：内部安全链接、UID/GID/mode、摘要字节复用与源保护已完成；314项聚焦及真实新实例启动读回通过，xattrs/发布耐久性/中断仍待完成。证据见 `docs/qa/android-management/2026-09-23-archive-verification.md`。
 - T17 发布增量以 `715cdb16` 为基线：私有目录、staging 摘要、fsync/rename、备份目录记录与成功终态原子事务及回执未知保护已完成；328项聚焦与真实Mac新实例恢复通过，硬中断孤立文件核实/清理仍待完成。证据见 `docs/qa/android-management/2026-09-23-publication-verification.md`。
+- T19 清理增量以 `a47bbb9d` 为基线：新增目录契约/UI选择、备份暂存及未登记产物、内容指纹/文件锁和明确retained筛选；后端346、前端Android104项以及真实HTTP清理通过。APK遗留文件/恢复中断仍待完成，证据见 `docs/qa/android-management/2026-09-23-cleanup-verification.md`。
 - 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
 
 ## Global Constraints
@@ -606,7 +607,7 @@ def test_parent_traversal_is_rejected():
 
 **接口：** CleanupService.preview(resource_ids)->CleanupPreview；execute(preview_id,confirmation_digest,request_id)->OperationRead；CleanupPreview冻结资源/revision/引用/摘要；redact_diagnostics(payload)->dict；IPC只接受diagnosticId和单次用户保存确认。
 
-- [ ] 测试预览后引用变化、外部卷、标签不符、过期预览、重复请求；诊断白名单剔除私密字段。（状态：blocked）
+- [ ] 测试预览后引用变化、外部卷、标签不符、过期预览、重复请求；诊断白名单剔除私密字段。（状态：partial；已完成部分及未完成条件见2026-09-23-cleanup-verification.md，不作为环境阻塞）
 
 ```python
 from autoflow.application.android.diagnostics import redact_diagnostics
@@ -617,10 +618,10 @@ def test_private_payloads_are_not_exported():
     assert result == {'code': 'ANDROID_BUSY'}
 ```
 
-- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_cleanup.py tests/unit/test_android_diagnostic_redaction.py -q)`及DataMaintenance.test.tsx。（状态：blocked）
-- [ ] 冻结候选并执行时重检引用/归属；变更则409；禁止全局prune及外部路径递归删除。预检和执行不能绕过设备锁。（状态：blocked）
-- [ ] 诊断默认只输出白名单，额外日志单次同意并限时限量、脱敏；IPC拒绝过期/跨工作区导出ID，不自动发送任何文件。（状态：blocked）
-- [ ] GREEN后提交 `feat(android): add scoped cleanup and redacted diagnostics`。（状态：blocked）
+- [ ] RED：`(cd apps/backend && uv run pytest tests/contract/test_android_cleanup.py tests/unit/test_android_diagnostic_redaction.py -q)`及DataMaintenance.test.tsx。（状态：partial；已完成部分及未完成条件见2026-09-23-cleanup-verification.md，不作为环境阻塞）
+- [ ] 冻结候选并执行时重检引用/归属；变更则409；禁止全局prune及外部路径递归删除。预检和执行不能绕过设备锁。（状态：partial；已完成部分及未完成条件见2026-09-23-cleanup-verification.md，不作为环境阻塞）
+- [ ] 诊断默认只输出白名单，额外日志单次同意并限时限量、脱敏；IPC拒绝过期/跨工作区导出ID，不自动发送任何文件。（状态：partial；已完成部分及未完成条件见2026-09-23-cleanup-verification.md，不作为环境阻塞）
+- [ ] GREEN后提交 `feat(android): add scoped cleanup and redacted diagnostics`。（状态：partial；已完成部分及未完成条件见2026-09-23-cleanup-verification.md，不作为环境阻塞）
 
 ### T20：AM4恢复演练与最终交付
 

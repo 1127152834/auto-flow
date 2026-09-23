@@ -229,6 +229,10 @@ class CleanupPreviewItem(ApiModel):
     reversible: bool = False
 
 
+class CleanupResourcePage(ApiModel):
+    items: list[CleanupPreviewItem]
+
+
 class CleanupPreviewRead(ApiModel):
     items: list[CleanupPreviewItem]
     confirmation_digest: str

@@ -1,6 +1,6 @@
 # 安卓模拟器管理验收证据
 
-状态：`partial`，完整开发与验收目标仍 active。最新发布增量见[落盘与事务一致性](2026-09-23-publication-verification.md)：后端328 passed，真实新实例恢复启动通过；完整目标仍有待办。前一 AM4 增量见[归档安全与属性](2026-09-23-archive-verification.md)：后端314 passed，真实新实例恢复启动及 UID/GID/mode、安全链接通过；xattrs、硬中断恢复等仍待完成。最新容量增量见[持久预留与真实验证](2026-09-23-capacity-verification.md)：后端289 passed，跨工作区unknown预算与核实释放通过；仍不代表AM3整阶段完成。最新证据见 [后端增量](2026-09-23-validation.md)、[前端增量](2026-09-23-frontend-validation.md)及[应用命令语义/真实验证](2026-09-23-command-verification.md)。仍有可继续修复的软件缺口及全量门槛失败；只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
+状态：`partial`，完整开发与验收目标仍 active。最新[清理目录与文件保护](2026-09-23-cleanup-verification.md)：后端346 passed、前端Android104 passed，真实HTTP目录/409/选择删除/恢复互斥通过；APK遗留临时文件与恢复中断等仍待完成。最新发布增量见[落盘与事务一致性](2026-09-23-publication-verification.md)：后端328 passed，真实新实例恢复启动通过；完整目标仍有待办。前一 AM4 增量见[归档安全与属性](2026-09-23-archive-verification.md)：后端314 passed，真实新实例恢复启动及 UID/GID/mode、安全链接通过；xattrs、硬中断恢复等仍待完成。最新容量增量见[持久预留与真实验证](2026-09-23-capacity-verification.md)：后端289 passed，跨工作区unknown预算与核实释放通过；仍不代表AM3整阶段完成。最新证据见 [后端增量](2026-09-23-validation.md)、[前端增量](2026-09-23-frontend-validation.md)及[应用命令语义/真实验证](2026-09-23-command-verification.md)。仍有可继续修复的软件缺口及全量门槛失败；只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
 
 实施计划的旧 checkbox 状态未完成逐项重新审计，不能作为当前完成率；以最新验收记录中的实际命令、输出和剩余工作为准。
 

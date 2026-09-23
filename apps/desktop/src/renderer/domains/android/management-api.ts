@@ -37,6 +37,7 @@ export const androidManagementApi = (client: StreamingApiClient) => ({
   verifyImageDelete: (identifier: string, body: { requestId: string }) => client.request<Image>(`${base}/images/${encodeURIComponent(identifier)}/delete-verifications`, { method: 'POST', body, timeoutMs: 40000 }),
   bulk: (body: Record<string, unknown>) => client.request<Bulk>(`${base}/bulk-operations`, { method: 'POST', body }),
   bulkAction: (id: string, body: Record<string, unknown>) => client.request<Bulk>(`${base}/bulk-operations/${id}/actions`, { method: 'POST', body }),
+  cleanupResources: () => client.request<components['schemas']['CleanupResourcePage']>(`${base}/cleanup/resources`, { timeoutMs: 30000 }),
   cleanupPreview: (resourceIds: string[]) => client.request<{ items: Record<string, unknown>[]; previewId?: string; confirmationDigest: string }>(`${base}/cleanup/previews`, { method: 'POST', body: { resourceIds } }),
   cleanup: (body: { requestId: string; previewId?: string; confirmationDigest: string }) => client.request<{ items: Record<string, unknown>[]; state: string; operationId?: string; requestId?: string; previewId?: string }>(`${base}/cleanup`, { method: 'POST', body }),
   diagnostics: (body: { requestId: string; deviceIds: string[]; includeAdvancedLogs?: boolean }) => client.request<Diagnostic>(`${base}/diagnostics`, { method: 'POST', body }),
