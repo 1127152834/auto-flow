@@ -723,7 +723,7 @@ async def test_real_project_batch_http(
             )
             assert replay.status_code == 202 and replay.json()["operation"] == accepted
             if scenario in {"success", "parameter-single"}:
-                expected_outputs = ["yes", "first" if scenario == "parameter-single" else "before-真实参数"]
+                expected_outputs = ["yes", "first" if scenario == "parameter-single" else "-真实参数"]
                 assert detail["statusCounts"]["succeeded"] == len(tasks) and requests, {
                     "batch": detail,
                     "tasks": [(await client.get(prefix + f"/tasks/{task['taskId']}")).json() for task in tasks],
@@ -780,7 +780,7 @@ async def test_real_project_batch_http(
                 for task in tasks:
                     outputs = (await client.get(prefix + f"/tasks/{task['taskId']}/outputs")).json()['items']
                     # The existing set_variable executor defaults an unset name to 0.
-                    assert [output['value'] for output in outputs] == ['yes', 'before-真实参数', 0, 'must-not-leak']
+                    assert [output['value'] for output in outputs] == ['yes', '-真实参数', 0, 'must-not-leak']
                     attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
                     assert len(attempts) == 7 and all(attempt['status'] == 'succeeded' for attempt in attempts)
                 with app.state.session_factory() as session:
@@ -824,7 +824,7 @@ async def test_real_project_batch_http(
                     assert sum(item['status'] == 'succeeded' for item in attempts) == 7
                     outputs = (await observer.get(event_task_path + '/outputs')).json()['items']
                     assert len({item['outputId'] for item in outputs}) == 3
-                    assert [item['value'] for item in outputs] == ['yes', 'before-真实参数', 'once']
+                    assert [item['value'] for item in outputs] == ['yes', '-真实参数', 'once']
                     assert [item['value'] for item in outputs] == [event['payload']['value'] for event in events if event['kind'] == 'output']
                     logs, log_cursor = [], 0
                     while True:
@@ -945,13 +945,13 @@ async def test_real_project_batch_http(
                 assert cancelled_child_writes == ['CAPABILITY_SCOPE_DENIED']
                 assert detail['statusCounts']['cancelled'] == 1, detail
                 records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
-                assert [row['values'][0]['value'] for row in records] == ['before-真实参数-first']
+                assert [row['values'][0]['value'] for row in records] == ['-真实参数-first']
                 assert records[0]['currentEnvironmentId'] is None
             elif scenario == 'data-subflow':
                 assert subflow_source_edited
                 assert detail['statusCounts']['succeeded'] == 2, {'detail': detail, 'tasks': [(await client.get(prefix + f"/tasks/{t['taskId']}")).json() for t in tasks]}
                 records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
-                assert sorted(row['values'][0]['value'] for row in records) == ['before-真实参数-first'] * 2 + ['before-真实参数-second'] * 2
+                assert sorted(row['values'][0]['value'] for row in records) == ['-真实参数-first'] * 2 + ['-真实参数-second'] * 2
                 assert all(row['currentEnvironmentId'] for row in records)
                 for task in tasks:
                     with app.state.session_factory() as session:
@@ -984,7 +984,7 @@ async def test_real_project_batch_http(
                 assert len(end_attempts) == 1 and end_attempts[0]['status'] == 'failed'
                 assert end_attempts[0]['error']['code'] == 'CAPABILITY_SCOPE_DENIED'
                 rows = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
-                assert len(rows) == 2 and all(row['values'][0]['value'] == 'before-真实参数-001' for row in rows)
+                assert len(rows) == 2 and all(row['values'][0]['value'] == '-真实参数-001' for row in rows)
                 assert all(row['currentEnvironmentId'] is None and row['linkRevision'] == 1 for row in rows)
                 assert (await client.get(prefix + '/environments')).json()['total'] == 0
                 assert (await client.get(f'/api/v1/projects/{foreign_project_id}/environments')).json()['total'] == 0
@@ -1037,7 +1037,7 @@ async def test_real_project_batch_http(
                 assert values[source_field] == '001'
                 assert (removed_field not in values) == succeeded
                 written = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()['items']
-                assert [row['values'][0]['value'] for row in written] == ['before-真实参数-001']
+                assert [row['values'][0]['value'] for row in written] == ['-真实参数-001']
                 assert bool(written[0]['currentEnvironmentId']) == succeeded
                 evidence = (await client.get(prefix + f"/tasks/{tasks[0]['taskId']}")).json()
                 assert any(write['kind'] == 'fieldDeleted' for write in evidence['dataWrites']) == succeeded
@@ -1052,7 +1052,7 @@ async def test_real_project_batch_http(
                 rows = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()
                 assert rows['total'] == 1
                 assert rows['items'][0]['ref'] == original['result']['ref']
-                assert rows['items'][0]['values'][0]['value'] == 'before-真实参数-001'
+                assert rows['items'][0]['values'][0]['value'] == '-真实参数-001'
             elif scenario in {"data", "data-schema", "data-old-candidate"}:
                 assert detail['statusCounts']['succeeded'] == 2, {
                     'batch': detail,
@@ -1061,7 +1061,7 @@ async def test_real_project_batch_http(
                 }
                 records = (await client.get(table_path + '/records', params={'datasetGeneration': table['datasetGeneration']})).json()
                 assert records['total'] == 2
-                assert [row['values'][0]['value'] for row in records['items']] == ['before-真实参数-001'] * 2
+                assert [row['values'][0]['value'] for row in records['items']] == ['-真实参数-001'] * 2
                 assert all(row['currentEnvironmentId'] for row in records['items'])
                 restored_document = workflow_payload(str(uuid4()))
                 restored_document['content']['nodes'] = [

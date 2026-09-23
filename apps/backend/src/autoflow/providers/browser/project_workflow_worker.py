@@ -14,6 +14,7 @@ from typing import Any, TextIO
 from uuid import uuid4
 
 from autoflow.domain.project_runs.worker_commands import project_command_id
+from autoflow.domain.workflows.browser import BrowserPagePort
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
@@ -248,7 +249,7 @@ def _validate_start(command: dict[str, Any]) -> tuple[str, int]:
 
 
 async def _capture_failure_screenshot(
-    command: dict[str, Any], page: Any, _node_id: str, _visit: str
+    command: dict[str, Any], page: BrowserPagePort | None, _node_id: str, _visit: str
 ) -> dict[str, object]:
     artifact_id = str(uuid4())
     unavailable = {
@@ -264,10 +265,10 @@ async def _capture_failure_screenshot(
     }
     temporary: Path | None = None
     try:
-        if page is None or page.is_closed() or not hasattr(page, "screenshot"):
+        if page is None or page.closed:
             return {**unavailable, "unavailableReason": "SCREENSHOT_PAGE_UNAVAILABLE"}
         directory, relative_directory = _artifact_directory(command)
-        content = await page.screenshot(type="png")
+        content = await page.screenshot()
         if not isinstance(content, bytes) or not content or len(content) > MAX_SCREENSHOT_BYTES:
             raise ValueError
         directory.mkdir(parents=True, exist_ok=True)

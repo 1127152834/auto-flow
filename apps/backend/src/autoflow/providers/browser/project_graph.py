@@ -16,7 +16,6 @@ from autoflow.application.workflows.executors.registry import ExecutorRegistry
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ExecutionContext
 
-from .workflow_executor import WorkflowExecutor, _scalar_text
 from .workflow_session import CloakBrowserWorkflowSession
 from .workflow_worker import _WorkerCanvasSubflows
 
@@ -115,33 +114,10 @@ class _TimedNode(ModuleExecutor):
             return ModuleResult(False, error='WORKFLOW_NODE_TIMEOUT', is_timeout=True)
 
 
-class _LegacyBrowserNode(ModuleExecutor):
-    def __init__(self, kind: str, executor: WorkflowExecutor) -> None:
-        self.kind, self.executor = kind, executor
-
-    @property
-    def module_type(self) -> str:
-        return self.kind
-
-    async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
-        # Existing project documents use UUID substitutions and append semantics.
-        # Reuse their actions while the shared Runtime owns graph traversal.
-        try:
-            output = await self.executor._execute(self.kind, config, resolve_text=lambda value: _scalar_text(context.resolve_value(value, preserve_types=True)))
-        except Exception as error:  # noqa: BLE001 -- provider diagnostics become stable codes.
-            return ModuleResult(False, error=self.executor._safe_error(error)['code'])
-        if output is not None:
-            name, value = output
-            context.set_variable(name, value)
-            return ModuleResult(True, data=value)
-        return ModuleResult(True)
-
-
 class _ProjectRegistry(ExecutorRegistry):
-    def __init__(self, legacy: WorkflowExecutor, capability: Callable[..., Awaitable[Any]] | None) -> None:
+    def __init__(self, capability: Callable[..., Awaitable[Any]] | None) -> None:
         super().__init__()
         self.source = build_production_executor_registry()
-        self.legacy = legacy
         self.capability = capability
 
     def get_all_types(self) -> list[str]:
@@ -155,8 +131,6 @@ class _ProjectRegistry(ExecutorRegistry):
             executor = _ProjectEndNode(self.capability)
         elif module_type == 'project_data' and self.capability is not None:
             executor = _ProjectDataNode(self.capability)
-        elif module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
-            executor = _LegacyBrowserNode(module_type, self.legacy)
         else:
             executor = self.source.get(module_type)
         return _TimedNode(executor) if executor is not None else None
@@ -173,8 +147,6 @@ class ProjectGraphExecutor:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
         self.context = ExecutionContext(variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self)
-        self.legacy = WorkflowExecutor(browser_context, variables, emit, should_stop)
-        self.legacy.variables = self.context.variables
         self.emit = emit
         self.capture_failure = capture_failure
         self.capability = capability
@@ -194,7 +166,7 @@ class ProjectGraphExecutor:
                 'edges': [{'id': f'edge-{index}', 'source': source, 'target': target} for index, (source, target) in enumerate(pairwise(identities))],
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
-        registry = _ProjectRegistry(self.legacy, self.capability)
+        registry = _ProjectRegistry(self.capability)
         subflows = _WorkerCanvasSubflows(document, registry=registry, parent=self.context, sink=self)
         self.context.canvas_subflows = subflows
         result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
@@ -244,7 +216,7 @@ class ProjectGraphExecutor:
         await self.emit('nodeAttempt', node_id, visit, payload)
         if not success and self.capture_failure is not None:
             try:
-                page = self.legacy.page
+                page = self.browser.current_page() if self.browser is not None else None
             except Exception:  # noqa: BLE001 -- absence of a page is valid failure evidence.
                 page = None
             await self.emit('artifact', node_id, visit, await self.capture_failure(page, node_id, visit))

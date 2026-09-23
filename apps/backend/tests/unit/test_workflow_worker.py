@@ -10,14 +10,26 @@ from typing import Self
 
 import pytest
 
+from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 from autoflow.providers.browser.project_workflow_worker import _run, run_worker
-from autoflow.providers.browser.workflow_executor import WorkflowExecutor
 
 
 class Locator:
     def __init__(self, page: Page) -> None:
         self.page = page
         self.first = self
+
+    async def wait_for(self, **kwargs: object) -> None:
+        self.page.calls.append(("wait_for", kwargs))
+
+    async def count(self) -> int:
+        return 1
+
+    async def clear(self) -> None:
+        self.page.value = ""
+
+    async def get_attribute(self, name: str) -> str:
+        return "42"
 
     async def fill(self, value: str) -> None:
         self.page.value = value
@@ -37,7 +49,9 @@ class Locator:
     async def input_value(self) -> str:
         return self.page.value
 
-    async def evaluate(self, script: str, attribute: str) -> object:
+    async def evaluate(self, script: str, attribute: str | None = None) -> object:
+        if "tagName" in script: return "input"
+        if "isContentEditable" in script: return False
         self.page.calls.append(("evaluate", attribute))
         return {"text": "Hello world", "innerHTML": "<strong>Hello</strong> world", "attributes": {"data-kind": "fixture"}}.get(attribute, "42")
 
@@ -56,6 +70,9 @@ class Page:
     async def goto(self, url: str, **kwargs: object) -> None:
         await asyncio.sleep(self.goto_delay)
         self.calls.append(("goto", url, kwargs))
+
+    async def bring_to_front(self) -> None:
+        self.calls.append(("bring_to_front",))
 
     async def screenshot(self, **kwargs: object) -> bytes:
         self.calls.append(("screenshot", kwargs))
@@ -78,6 +95,13 @@ class Context:
         self.closed = False
         self.default_timeout: int | None = None
         self.navigation_timeout: int | None = None
+        self.listeners: dict[str, list[object]] = {}
+
+    def on(self, event: str, callback: object) -> None:
+        self.listeners.setdefault(event, []).append(callback)
+
+    def remove_listener(self, event: str, callback: object) -> None:
+        self.listeners[event].remove(callback)
 
     def set_default_timeout(self, timeout: int) -> None:
         self.default_timeout = timeout
@@ -103,35 +127,12 @@ def node(node_id: str, module_type: str, **data: object) -> dict[str, object]:
 
 
 @pytest.mark.asyncio
-async def test_four_nodes_current_page_append_variables_and_output() -> None:
-    context, events = Context(), []
-
-    async def emit(*event: object) -> None:
-        events.append(event)
-
-    execution = plan(
-        node("open", "open_page", url="https://example.test/{id}", openMode="current_tab", waitUntil="domcontentloaded"),
-        node("input", "input_text", selector="#field", text="-{suffix}", clearBefore=False),
-        node("click", "click_element", selector="#button", clickType="right", followNewTab=False),
-        node("read", "get_element_info", selector="#result", attribute="data-answer", variableName="answer"),
-    )
-    result = await WorkflowExecutor(context, {"id": 7, "suffix": True}, emit, lambda: False).run(execution)
-    assert result == {"status": "succeeded", "error": None}
-    assert len(context.pages) == 1
-    assert context.pages[0].value == "before-true"
-    assert context.pages[0].calls[:2] == [("goto", "https://example.test/7", {"wait_until": "domcontentloaded"}), ("locator", "#field")]
-    assert ("click", {"button": "right"}) in context.pages[0].calls
-    output = next(event for event in events if event[0] == "output")
-    assert output[3] == {"name": "answer", "value": "42"}
-
-
-@pytest.mark.asyncio
-async def test_timeout_zero_is_unlimited_and_replacement_is_not_recursive() -> None:
+async def test_timeout_zero_and_variable_resolution_follow_shared_runtime() -> None:
     context = Context()
-    executor = WorkflowExecutor(context, {"first": "{second}", "second": "wrong"}, lambda *_: asyncio.sleep(0), lambda: False)
+    executor = ProjectGraphExecutor(context, {"first": "{second}", "second": "wrong"}, lambda *_: asyncio.sleep(0), lambda: False)
     result = await executor.run(plan(node("open", "open_page", url="https://x/{first}")))
     assert result["status"] == "succeeded"
-    assert context.pages[0].calls[0][1] == "https://x/{second}"
+    assert context.pages[0].calls[0][1] == "https://x/wrong"
 
 
 @pytest.mark.asyncio
@@ -145,7 +146,7 @@ async def test_nonzero_timeout_is_measured_in_seconds() -> None:
         return page
 
     context.new_page = delayed_page  # type: ignore[method-assign]
-    executor = WorkflowExecutor(context, {}, lambda *_: asyncio.sleep(0), lambda: False)
+    executor = ProjectGraphExecutor(context, {}, lambda *_: asyncio.sleep(0), lambda: False)
     result = await executor.run(plan(node("open", "open_page", timeout=1, url="https://x")))
     assert result == {"status": "succeeded", "error": None}
 
@@ -161,7 +162,7 @@ async def test_fractional_second_timeout_is_not_truncated_to_zero() -> None:
         return page
 
     context.new_page = delayed_page  # type: ignore[method-assign]
-    executor = WorkflowExecutor(context, {}, lambda *_: asyncio.sleep(0), lambda: False)
+    executor = ProjectGraphExecutor(context, {}, lambda *_: asyncio.sleep(0), lambda: False)
     result = await executor.run(plan(node("open", "open_page", timeout=0.02, url="https://x")))
     assert result["status"] == "failed"
     assert result["error"]["code"] == "WORKFLOW_NODE_TIMEOUT"
@@ -206,10 +207,10 @@ async def test_stop_at_safe_point_does_not_start_next_node() -> None:
         if kind == "nodeAttempt" and node_id == "one" and payload["status"] == "succeeded":
             stopped = True
 
-    result = await WorkflowExecutor(context, {}, emit, lambda: stopped).run(plan(
-        node("one", "open_page", url="https://one"), node("two", "open_page", url="https://two")
-    ))
-    assert result["status"] == "cancelled"
+    with pytest.raises(asyncio.CancelledError):
+        await ProjectGraphExecutor(context, {}, emit, lambda: stopped).run(plan(
+            node("one", "open_page", url="https://one"), node("two", "open_page", url="https://two")
+        ))
     assert started == ["one"]
 
 
@@ -222,10 +223,10 @@ async def test_stop_while_start_log_waits_for_ack_then_skips_action() -> None:
         if kind == "log" and payload["message"] == "开始执行节点":
             stopped = True
 
-    result = await WorkflowExecutor(context, {}, emit, lambda: stopped).run(
-        plan(node("open", "open_page", url="https://must-not-open"))
-    )
-    assert result == {"status": "cancelled", "error": None}
+    with pytest.raises(asyncio.CancelledError):
+        await ProjectGraphExecutor(context, {}, emit, lambda: stopped).run(
+            plan(node("open", "open_page", url="https://must-not-open"))
+        )
     assert context.pages == []
 
 
@@ -238,10 +239,10 @@ async def test_stop_while_started_event_waits_for_ack_then_skips_action() -> Non
         if kind == "nodeAttempt" and payload["status"] == "started":
             stopped = True
 
-    result = await WorkflowExecutor(context, {}, emit, lambda: stopped).run(
-        plan(node("open", "open_page", url="https://must-not-open"))
-    )
-    assert result == {"status": "cancelled", "error": None}
+    with pytest.raises(asyncio.CancelledError):
+        await ProjectGraphExecutor(context, {}, emit, lambda: stopped).run(
+            plan(node("open", "open_page", url="https://must-not-open"))
+        )
     assert context.pages == []
 
 
@@ -333,27 +334,23 @@ async def test_invalid_ack_stops_before_web_action_and_cleans_up(
 
 
 @pytest.mark.asyncio
-async def test_node_failure_emits_failed_evidence_then_cleans_up() -> None:
+async def test_closed_current_page_emits_failed_attempt() -> None:
     context, events = Context(), []
 
-    async def closed_page() -> Page:
-        page = Page()
-        page.closed = True
-        context.pages.append(page)
-        return page
-
-    context.new_page = closed_page  # type: ignore[method-assign]
+    context.pages.append(Page())
+    context.pages[0].closed = True
 
     async def emit(*event: object) -> None:
         events.append(event)
 
-    result = await WorkflowExecutor(context, {}, emit, lambda: False).run(
+    result = await ProjectGraphExecutor(context, {}, emit, lambda: False).run(
         plan(node("read", "get_element_info", selector="#missing"))
     )
     assert result["status"] == "failed"
     assert events[-1][0] == "nodeAttempt"
     assert events[-1][3]["status"] == "failed"
-    assert events[-1][3]["error"]["code"] == "WORKFLOW_PAGE_CLOSED"
+    assert events[-1][3]["error"]["code"] == "WORKFLOW_NODE_FAILED"
+    assert len(context.pages) == 1
 
 
 @pytest.mark.asyncio
@@ -558,3 +555,32 @@ async def test_worker_opens_saved_environment_directory_as_persistent_context(
     assert await _run(payload, threading.Event(), Ack(), output) == 0
     assert seen and seen[0]["user_data_dir"] == str(work_directory)
     assert context.closed
+
+
+@pytest.mark.asyncio
+async def test_project_browser_nodes_share_studio_actions_and_current_page():
+    from autoflow.application.workflows.executors.production import (
+        build_production_executor_registry,
+    )
+    from autoflow.application.workflows.runtime import WorkflowRuntime
+    from autoflow.domain.workflows.execution import ExecutionContext
+    from autoflow.providers.browser.workflow_session import CloakBrowserWorkflowSession
+
+    document = {"nodes": [
+        {"id": "open", "data": {"moduleType": "open_page", "url": "https://example.test/{id}", "timeout": 0}},
+        {"id": "input", "data": {"moduleType": "input_text", "selector": "#field", "text": "-{suffix}", "clearBefore": False, "timeout": 0}},
+        {"id": "click", "data": {"moduleType": "click_element", "selector": "#button", "clickType": "right", "timeout": 0}},
+        {"id": "read", "data": {"moduleType": "get_element_info", "selector": "#result", "attribute": "data-answer", "variableName": "answer", "timeout": 0}},
+    ], "edges": [{"source": a, "target": b} for a, b in [("open", "input"), ("input", "click"), ("click", "read")]]}
+    studio_browser, project_browser, events = Context(), Context(), []
+    variables = {"id": 7, "suffix": True}
+    studio = ExecutionContext(variables=dict(variables), browser=CloakBrowserWorkflowSession(studio_browser))
+    assert (await WorkflowRuntime(build_production_executor_registry()).execute(document, studio)).success
+    async def emit(*event): events.append(event)
+    project = ProjectGraphExecutor(project_browser, variables, emit, lambda: False)
+    assert (await project.run({"document": document}))["status"] == "succeeded"
+    assert project.context.browser.current_page().id == project.browser.pages()[0].id
+    assert project_browser.pages[0].calls == studio_browser.pages[0].calls
+    assert project_browser.pages[0].value == studio_browser.pages[0].value
+    assert project.context.variables == studio.variables
+    assert next(event[3] for event in events if event[0] == "output") == {"name": "answer", "value": "42"}

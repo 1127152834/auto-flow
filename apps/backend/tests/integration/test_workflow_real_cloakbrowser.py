@@ -93,7 +93,7 @@ async def test_real_cloakbrowser_worker_lifecycle(tmp_path, valid_profile_values
         if scenario == 'success':
             assert outcome.status == 'succeeded'
             outputs = {event['payload']['name']: event['payload']['value'] for event in events if event['kind'] == 'output'}
-            assert outputs == {'input': 'before-追加', 'clicked': 'yes'}
+            assert outputs == {'input': '-追加', 'clicked': 'yes'}
             assert requests[0] == '/fixture'
         elif scenario == 'stop_before_navigation':
             assert outcome.status == 'cancelled'
@@ -172,7 +172,7 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         assert result.parameters == {'zero': 0, 'flag': False}
         with app.state.session_factory() as session:
             events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(run.run_id, after_sequence=0, limit=200)
-        assert [event.payload['value'] for event in events if event.kind == 'output'] == ['before测试用户']
+        assert [event.payload['value'] for event in events if event.kind == 'output'] == ['测试用户']
         assert [event.sequence for event in events] == list(range(1, len(events) + 1))
         assert events[-1].kind == 'status' and events[-1].payload['status'] == 'succeeded'
         assert app.state.project_workflow_dispatcher.blockers() == []

@@ -139,20 +139,15 @@ async def test_end_join_waits_for_entire_loop():
 
 
 @pytest.mark.asyncio
-async def test_browser_action_resolves_nested_reference_exactly_once():
-    from unittest.mock import AsyncMock, Mock
-    locator = Mock()
-    locator.first = locator
-    locator.fill = AsyncMock()
-    page = Mock()
-    page.is_closed.return_value = False
-    page.locator.return_value = locator
+async def test_browser_action_uses_shared_nested_variable_resolution():
+    from tests.unit.test_workflow_worker import Context
+    browser = Context()
+    page = await browser.new_page()
     async def emit(*_args): pass
-    executor = ProjectGraphExecutor(None, {'record': {'name': '001-{literal}'}}, emit, lambda: False)
-    executor.legacy.page = page
+    executor = ProjectGraphExecutor(browser, {'record': {'name': '001-{literal}'}, 'literal': 'resolved'}, emit, lambda: False)
     result = await executor.run({'document': {'nodes': [node('input', 'input_text', selector='#name', text="{record['name']}", clearBefore=True)], 'edges': []}})
     assert result['status'] == 'succeeded'
-    locator.fill.assert_awaited_once_with('001-{literal}')
+    assert [call for call in page.calls if call[0] == 'fill'] == [('fill', '001-resolved')]
 
 
 @pytest.mark.asyncio
