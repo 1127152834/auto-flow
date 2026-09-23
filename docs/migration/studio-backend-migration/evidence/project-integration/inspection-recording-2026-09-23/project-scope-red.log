@@ -1,0 +1,390 @@
+FF..FFFFF...                                                             [100%]
+=================================== FAILURES ===================================
+_________ test_same_profile_does_not_allow_cross_project_browser_reuse _________
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10be30710>, 'bd916cb3-2f64-4f2a-b352-d428e073803c', <au...ntrolledWorkers object at 0x10be86dd0>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10bf62950>)
+
+    @pytest.mark.asyncio
+    async def test_same_profile_does_not_allow_cross_project_browser_reuse(
+        scoped_inspection,
+    ):
+        ctx, other, inspection, _, workers, resources = scoped_inspection
+        own = ctx.project_id
+        opened = await inspection.open(profile_id="profile-1", project_id=own)
+        assert await inspection.open(profile_id="profile-1", project_id=own) == opened
+        assert workers.start_count == 1
+        for foreign in (other, None):
+            with pytest.raises(WorkflowRunError) as refused:
+                await inspection.open(profile_id="profile-1", project_id=foreign)
+            assert refused.value.status == 404
+            with pytest.raises(WorkflowRunError):
+                inspection.check_project_access(foreign)
+        assert inspection.project_blockers(other) == []
+        assert len(inspection.project_blockers(own)) == 1
+        assert resources.owner_id == opened["sessionId"]
+>       await inspection.close(opened["sessionId"])
+
+tests/integration/test_studio_project_inspection.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/inspection.py:163: in close
+    self.check_project_access(project_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.application.workflows.inspection.WorkflowInspectionService object at 0x10c112850>
+project_id = None, writable = False, browser = True
+
+    def check_project_access(self, project_id: str | None, *, writable: bool = False,
+                             browser: bool = True) -> None:
+        if project_id is not None:
+            self._require_recordings().check_project(project_id, writable=writable)
+        if browser and self._state is not None and self._state.project_id != project_id:
+>           raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
+E           autoflow.domain.workflows.runs.WorkflowRunError: 浏览器会话不属于当前项目
+
+src/autoflow/application/workflows/inspection.py:85: WorkflowRunError
+________ test_starting_claim_blocks_archive_before_worker_start_returns ________
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10bff2790>, 'e138f6f5-c92c-4c98-93c3-2772506c7fcd', <au...ntrolledWorkers object at 0x10c28ef10>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10be15510>)
+
+    @pytest.mark.asyncio
+    async def test_starting_claim_blocks_archive_before_worker_start_returns(
+        scoped_inspection,
+    ):
+        ctx, _, inspection, _, workers, _ = scoped_inspection
+        workers.allow_start.clear()
+        opening = asyncio.create_task(
+            inspection.open(profile_id="profile-1", project_id=ctx.project_id)
+        )
+        try:
+            await asyncio.wait_for(workers.start_entered.wait(), 2)
+            assert not opening.done()
+            impact = ctx.service.impact(ctx.project_id, "archive")
+            assert any(
+                row["code"] == "STUDIO_INSPECTION_ACTIVE" for row in impact["blockers"]
+            )
+            ctx.archive()
+            ctx.repository.advance(ctx.project_id)
+            assert ctx.state() == "closing"
+            workers.allow_start.set()
+            opened = await asyncio.wait_for(opening, 2)
+            ctx.repository.advance(ctx.project_id)
+            assert ctx.state() == "closing"
+>           await inspection.close(opened["sessionId"])
+
+tests/integration/test_studio_project_inspection.py:159: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/inspection.py:163: in close
+    self.check_project_access(project_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.application.workflows.inspection.WorkflowInspectionService object at 0x10c275610>
+project_id = None, writable = False, browser = True
+
+    def check_project_access(self, project_id: str | None, *, writable: bool = False,
+                             browser: bool = True) -> None:
+        if project_id is not None:
+            self._require_recordings().check_project(project_id, writable=writable)
+        if browser and self._state is not None and self._state.project_id != project_id:
+>           raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
+E           autoflow.domain.workflows.runs.WorkflowRunError: 浏览器会话不属于当前项目
+
+src/autoflow/application/workflows/inspection.py:85: WorkflowRunError
+___________ test_cleanup_failure_preserves_claim_until_retry[False] ____________
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10c227450>, 'fbdbbb22-b728-46a8-966a-6dff8b1fc39e', <au...ntrolledWorkers object at 0x10bf1d710>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10be9d750>)
+during_start = False
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("during_start", [False, True])
+    async def test_cleanup_failure_preserves_claim_until_retry(
+        scoped_inspection, during_start
+    ):
+        ctx, _, inspection, _, workers, resources = scoped_inspection
+        if during_start:
+            workers.fail_start = workers.fail_stop = True
+            with pytest.raises(RuntimeError, match="cleanup failure"):
+                await inspection.open(profile_id="profile-1", project_id=ctx.project_id)
+            opened = await inspection.status()
+        else:
+            opened = await inspection.open(
+                profile_id="profile-1", project_id=ctx.project_id
+            )
+            workers.fail_stop = True
+            with pytest.raises(RuntimeError, match="cleanup failure"):
+>               await inspection.close(opened["sessionId"])
+
+tests/integration/test_studio_project_inspection.py:203: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/inspection.py:163: in close
+    self.check_project_access(project_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.application.workflows.inspection.WorkflowInspectionService object at 0x10c4c0fd0>
+project_id = None, writable = False, browser = True
+
+    def check_project_access(self, project_id: str | None, *, writable: bool = False,
+                             browser: bool = True) -> None:
+        if project_id is not None:
+            self._require_recordings().check_project(project_id, writable=writable)
+        if browser and self._state is not None and self._state.project_id != project_id:
+>           raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
+E           autoflow.domain.workflows.runs.WorkflowRunError: 浏览器会话不属于当前项目
+
+src/autoflow/application/workflows/inspection.py:85: WorkflowRunError
+____________ test_cleanup_failure_preserves_claim_until_retry[True] ____________
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10c23a590>, 'a90e491f-4dd3-4b24-89d9-e85ae08d12e9', <au...ntrolledWorkers object at 0x10c254e10>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10c213f50>)
+during_start = True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("during_start", [False, True])
+    async def test_cleanup_failure_preserves_claim_until_retry(
+        scoped_inspection, during_start
+    ):
+        ctx, _, inspection, _, workers, resources = scoped_inspection
+        if during_start:
+            workers.fail_start = workers.fail_stop = True
+            with pytest.raises(RuntimeError, match="cleanup failure"):
+                await inspection.open(profile_id="profile-1", project_id=ctx.project_id)
+            opened = await inspection.status()
+        else:
+            opened = await inspection.open(
+                profile_id="profile-1", project_id=ctx.project_id
+            )
+            workers.fail_stop = True
+            with pytest.raises(RuntimeError, match="cleanup failure"):
+                await inspection.close(opened["sessionId"])
+        assert opened["isOpen"] and workers.busy()
+        assert resources.owner_id == opened["sessionId"]
+        assert inspection.project_blockers(ctx.project_id)
+        ctx.archive()
+        ctx.repository.advance(ctx.project_id)
+        assert ctx.state() == "closing"
+        workers.fail_stop = False
+>       await inspection.close(opened["sessionId"])
+
+tests/integration/test_studio_project_inspection.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/inspection.py:163: in close
+    self.check_project_access(project_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.application.workflows.inspection.WorkflowInspectionService object at 0x10c2b0490>
+project_id = None, writable = False, browser = True
+
+    def check_project_access(self, project_id: str | None, *, writable: bool = False,
+                             browser: bool = True) -> None:
+        if project_id is not None:
+            self._require_recordings().check_project(project_id, writable=writable)
+        if browser and self._state is not None and self._state.project_id != project_id:
+>           raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
+E           autoflow.domain.workflows.runs.WorkflowRunError: 浏览器会话不属于当前项目
+
+src/autoflow/application/workflows/inspection.py:85: WorkflowRunError
+_ test_closing_blocks_new_capture_but_allows_recording_tail_and_browser_cleanup _
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10c435510>, '58a12e8c-08bf-41b4-bbda-baa5d76a7b48', <au...ntrolledWorkers object at 0x10c1072d0>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10bf067d0>)
+
+    @pytest.mark.asyncio
+    async def test_closing_blocks_new_capture_but_allows_recording_tail_and_browser_cleanup(
+        scoped_inspection,
+    ):
+        ctx, _, inspection, recordings, workers, _ = scoped_inspection
+        own = ctx.project_id
+        opened = await inspection.open(profile_id="profile-1", project_id=own)
+        await inspection.recording_command(
+            "start",
+            action="start",
+            session_id="record",
+            project_id=own,
+            document_id="unsaved",
+        )
+        workers.recorded.append(
+            {"type": "input", "selector": "#field", "value": "归档前尾部"}
+        )
+        ctx.archive()
+        ctx.repository.advance(own)
+        assert ctx.state() == "closing"
+        before = list(workers.commands)
+        for action in ("start", "resume"):
+            with pytest.raises(ProjectError):
+                await inspection.recording_command(
+                    f"closing-{action}", action=action, session_id="record", project_id=own
+                )
+        assert workers.commands == before
+        stopped = await inspection.recording_command(
+            "stop", action="stop", session_id="record", project_id=own
+        )
+        assert stopped["data"]["events"][0]["value"] == "归档前尾部"
+        assert recordings.events("record", after_seq=0, project_id=own)["nextSeq"] == 1
+        ctx.repository.advance(own)
+        assert ctx.state() == "closing", (
+            "Stopping recording alone must retain the visible browser claim"
+        )
+>       await inspection.close(opened["sessionId"])
+
+tests/integration/test_studio_project_inspection.py:254: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/inspection.py:163: in close
+    self.check_project_access(project_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.application.workflows.inspection.WorkflowInspectionService object at 0x10bfd9dd0>
+project_id = None, writable = False, browser = True
+
+    def check_project_access(self, project_id: str | None, *, writable: bool = False,
+                             browser: bool = True) -> None:
+        if project_id is not None:
+            self._require_recordings().check_project(project_id, writable=writable)
+        if browser and self._state is not None and self._state.project_id != project_id:
+>           raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
+E           autoflow.domain.workflows.runs.WorkflowRunError: 浏览器会话不属于当前项目
+
+src/autoflow/application/workflows/inspection.py:85: WorkflowRunError
+_______ test_recording_session_receipts_and_events_are_owned_and_durable _______
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10bed01d0>, 'a4b58047-bb4a-47fc-bcbb-5f23a632cd9f', <au...ntrolledWorkers object at 0x10bff1f90>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10c36c110>)
+
+    @pytest.mark.asyncio
+    async def test_recording_session_receipts_and_events_are_owned_and_durable(
+        scoped_inspection,
+    ):
+        ctx, other, inspection, recordings, workers, _ = scoped_inspection
+        own = ctx.project_id
+        opened = await inspection.open(profile_id="profile-1", project_id=own)
+        kwargs = {
+            "action": "start",
+            "session_id": "record-a",
+            "project_id": own,
+            "document_id": "unsaved-a",
+        }
+        first = await inspection.recording_command("start-a", **kwargs)
+        assert await inspection.recording_command("start-a", **kwargs) == first
+        assert sum(row["command"] == "recorder_start" for row in workers.commands) == 1
+        workers.recorded.append({"type": "click", "selector": "#project-a"})
+        assert (await inspection.recording_events("record-a", after_seq=0, project_id=own))[
+            "data"
+        ][0]["selector"] == "#project-a"
+        for foreign in (other, None):
+            for read in (
+                lambda: recordings.status("record-a", project_id=foreign),
+                lambda: recordings.events("record-a", after_seq=0, project_id=foreign),
+                lambda: inspection.recording_command_status("start-a", project_id=foreign),
+            ):
+                with pytest.raises(WorkflowRunError) as refused:
+                    read()
+                assert refused.value.status == 404
+            with pytest.raises(WorkflowRunError):
+                await inspection.recording_command(
+                    "start-a", action="start", session_id="record-a", project_id=foreign
+                )
+            assert recordings.current(project_id=foreign) is None
+        await inspection.recording_command(
+            "stop-a", action="stop", session_id="record-a", project_id=own
+        )
+>       await inspection.close(opened["sessionId"])
+
+tests/integration/test_studio_project_inspection.py:300: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/inspection.py:163: in close
+    self.check_project_access(project_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.application.workflows.inspection.WorkflowInspectionService object at 0x10bf62d50>
+project_id = None, writable = False, browser = True
+
+    def check_project_access(self, project_id: str | None, *, writable: bool = False,
+                             browser: bool = True) -> None:
+        if project_id is not None:
+            self._require_recordings().check_project(project_id, writable=writable)
+        if browser and self._state is not None and self._state.project_id != project_id:
+>           raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
+E           autoflow.domain.workflows.runs.WorkflowRunError: 浏览器会话不属于当前项目
+
+src/autoflow/application/workflows/inspection.py:85: WorkflowRunError
+_________ test_repeated_start_cannot_rebind_active_recording_document __________
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10bf51490>, '0b17e6df-a187-49c2-baba-107fd76f8d80', <au...ntrolledWorkers object at 0x10c5ca790>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10c57b290>)
+
+    @pytest.mark.asyncio
+    async def test_repeated_start_cannot_rebind_active_recording_document(
+        scoped_inspection,
+    ):
+        ctx, _, inspection, _, workers, _ = scoped_inspection
+        opened = await inspection.open(profile_id="profile-1", project_id=ctx.project_id)
+        try:
+            await inspection.recording_command(
+                "start-document-a",
+                action="start",
+                session_id="same-session",
+                project_id=ctx.project_id,
+                document_id="draft-a",
+            )
+>           with pytest.raises(WorkflowRunError) as changed:
+E           Failed: DID NOT RAISE WorkflowRunError
+
+tests/integration/test_studio_project_inspection.py:327: Failed
+
+During handling of the above exception, another exception occurred:
+
+scoped_inspection = (<tests.integration.test_project_lifecycle.Context object at 0x10bf51490>, '0b17e6df-a187-49c2-baba-107fd76f8d80', <au...ntrolledWorkers object at 0x10c5ca790>, <tests.unit.workflows.test_inspection_service.Resources object at 0x10c57b290>)
+
+    @pytest.mark.asyncio
+    async def test_repeated_start_cannot_rebind_active_recording_document(
+        scoped_inspection,
+    ):
+        ctx, _, inspection, _, workers, _ = scoped_inspection
+        opened = await inspection.open(profile_id="profile-1", project_id=ctx.project_id)
+        try:
+            await inspection.recording_command(
+                "start-document-a",
+                action="start",
+                session_id="same-session",
+                project_id=ctx.project_id,
+                document_id="draft-a",
+            )
+            with pytest.raises(WorkflowRunError) as changed:
+                await inspection.recording_command(
+                    "start-document-b",
+                    action="start",
+                    session_id="same-session",
+                    project_id=ctx.project_id,
+                    document_id="draft-b",
+                )
+            assert changed.value.status == 409
+            assert (
+                sum(item["command"] == "recorder_start" for item in workers.commands) == 1
+            )
+        finally:
+            await inspection.stop_recording(
+                "same-session", after_seq=0, project_id=ctx.project_id
+            )
+>           await inspection.close(opened["sessionId"])
+
+tests/integration/test_studio_project_inspection.py:343: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/inspection.py:163: in close
+    self.check_project_access(project_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.application.workflows.inspection.WorkflowInspectionService object at 0x10c548c90>
+project_id = None, writable = False, browser = True
+
+    def check_project_access(self, project_id: str | None, *, writable: bool = False,
+                             browser: bool = True) -> None:
+        if project_id is not None:
+            self._require_recordings().check_project(project_id, writable=writable)
+        if browser and self._state is not None and self._state.project_id != project_id:
+>           raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
+E           autoflow.domain.workflows.runs.WorkflowRunError: 浏览器会话不属于当前项目
+
+src/autoflow/application/workflows/inspection.py:85: WorkflowRunError
+=========================== short test summary info ============================
+FAILED tests/integration/test_studio_project_inspection.py::test_same_profile_does_not_allow_cross_project_browser_reuse
+FAILED tests/integration/test_studio_project_inspection.py::test_starting_claim_blocks_archive_before_worker_start_returns
+FAILED tests/integration/test_studio_project_inspection.py::test_cleanup_failure_preserves_claim_until_retry[False]
+FAILED tests/integration/test_studio_project_inspection.py::test_cleanup_failure_preserves_claim_until_retry[True]
+FAILED tests/integration/test_studio_project_inspection.py::test_closing_blocks_new_capture_but_allows_recording_tail_and_browser_cleanup
+FAILED tests/integration/test_studio_project_inspection.py::test_recording_session_receipts_and_events_are_owned_and_durable
+FAILED tests/integration/test_studio_project_inspection.py::test_repeated_start_cannot_rebind_active_recording_document
+7 failed, 5 passed in 3.14s

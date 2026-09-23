@@ -10616,6 +10616,14 @@ export type components = {
         };
         /** StudioBrowserStatus */
         StudioBrowserStatus: {
+            /** Projectid */
+            projectId?: string | null;
+            /**
+             * Phase
+             * @default closed
+             * @enum {string}
+             */
+            phase: "starting" | "ready" | "closing" | "closed";
             /** Isopen */
             isOpen: boolean;
             /** Pickeractive */
@@ -11362,6 +11370,8 @@ export type components = {
         };
         /** StudioRecorderReadRequest */
         StudioRecorderReadRequest: {
+            /** Documentid */
+            documentId?: string | null;
             /** Sessionid */
             sessionId: string;
             /** Commandid */
@@ -11374,6 +11384,8 @@ export type components = {
         };
         /** StudioRecorderStartRequest */
         StudioRecorderStartRequest: {
+            /** Documentid */
+            documentId?: string | null;
             /** Sessionid */
             sessionId: string;
             /** Commandid */
@@ -23866,7 +23878,9 @@ export interface operations {
     };
     browser_status_api_browser_status_get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -23882,11 +23896,22 @@ export interface operations {
                     "application/json": components["schemas"]["StudioBrowserStatus"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     browser_open_api_browser_open_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -23919,7 +23944,9 @@ export interface operations {
     };
     browser_close_api_browser_close_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -23954,7 +23981,9 @@ export interface operations {
     };
     browser_navigate_api_browser_navigate_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -23989,7 +24018,9 @@ export interface operations {
     };
     browser_url_api_browser_url_get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24007,11 +24038,22 @@ export interface operations {
                     };
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     browser_pages_api_browser_pages_get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24027,11 +24069,22 @@ export interface operations {
                     "application/json": components["schemas"]["StudioBrowserPages"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     browser_page_api_browser_pages_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24064,7 +24117,9 @@ export interface operations {
     };
     picker_start_api_element_picker_start_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24097,7 +24152,9 @@ export interface operations {
     };
     picker_stop_api_element_picker_stop_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24132,6 +24189,7 @@ export interface operations {
         parameters: {
             query?: {
                 sessionId?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path?: never;
@@ -24163,6 +24221,7 @@ export interface operations {
         parameters: {
             query?: {
                 sessionId?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path?: never;
@@ -24196,6 +24255,7 @@ export interface operations {
         parameters: {
             query?: {
                 sessionId?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path?: never;
@@ -24229,6 +24289,7 @@ export interface operations {
         parameters: {
             query?: {
                 sessionId?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path?: never;
@@ -24260,7 +24321,9 @@ export interface operations {
     };
     test_selector_api_element_picker_test_selector_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24293,7 +24356,9 @@ export interface operations {
     };
     recorder_start_api_recorder_start_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24329,6 +24394,7 @@ export interface operations {
             query: {
                 sessionId: string;
                 afterSeq?: number;
+                projectId?: string | null;
             };
             header?: never;
             path?: never;
@@ -24358,7 +24424,9 @@ export interface operations {
     };
     recorder_stop_api_recorder_stop_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24391,7 +24459,9 @@ export interface operations {
     };
     recorder_pause_api_recorder_pause_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24424,7 +24494,9 @@ export interface operations {
     };
     recorder_resume_api_recorder_resume_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24457,7 +24529,9 @@ export interface operations {
     };
     recorder_command_api_recorder_commands__command_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 command_id: string;
@@ -24490,6 +24564,7 @@ export interface operations {
         parameters: {
             query?: {
                 sessionId?: string | null;
+                projectId?: string | null;
             };
             header?: never;
             path?: never;
@@ -24519,7 +24594,9 @@ export interface operations {
     };
     recording_review_api_recorder_reviews__document_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 document_id: string;
@@ -24550,7 +24627,9 @@ export interface operations {
     };
     save_recording_review_api_recorder_reviews__document_id__put: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 document_id: string;

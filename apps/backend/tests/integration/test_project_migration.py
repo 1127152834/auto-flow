@@ -15,7 +15,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
 
-    assert ScriptDirectory.from_config(config).get_heads() == ["0019_recording_commands"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
 
     preserved = {}
     if existing:
@@ -51,7 +51,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchall() == [("0019_recording_commands",)]
+        ).fetchall() == [("0020_recording_project_scope",)]
 
         assert connection.execute("SELECT * FROM projects").fetchall() == []
         assert connection.execute("SELECT * FROM project_operations").fetchall() == []

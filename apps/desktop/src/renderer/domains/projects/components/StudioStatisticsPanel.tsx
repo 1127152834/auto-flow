@@ -47,7 +47,7 @@ function Statistics(props: Props) {
       <label>开始日期<Input type="date" aria-label="Studio 统计开始日期" value={filter.from} onChange={event => change({ from: event.target.value })} /></label>
       <label>结束日期<Input type="date" aria-label="Studio 统计结束日期" value={filter.to} onChange={event => change({ to: event.target.value })} /></label>
       <Input aria-label="Studio 流程筛选" placeholder="流程 ID" value={filter.workflowId} onChange={event => change({ workflowId: event.target.value })} />
-      <Select aria-label="Studio 运行状态筛选" value={filter.status} clearable={false} options={[{ value: '', label: '全部状态' }, ...Object.entries(states).map(([value, label]) => ({ value, label }))]} onValueChange={status => change({ status })} />
+      <Select aria-label="Studio 运行状态筛选" value={filter.status} clearable={false} options={[{ value: '', label: '全部状态' }, ...Object.entries(states).map(([value, label]) => ({ value, label }))]} onValueChange={status => change({ status: status ?? '' })} />
       <Button disabled={disabled || !valid || stats.isFetching} onClick={() => void stats.refetch()}>刷新 Studio 统计</Button>
     </div>
     {!valid ? <p role="alert">请选择有效日期，结束日期不能早于开始日期。</p> : null}
@@ -57,7 +57,7 @@ function Statistics(props: Props) {
     {data ? <>
       <dl aria-label="Studio 统计指标" className="grid grid-cols-2 gap-3 lg:grid-cols-4">{metrics.map(([name, value]) => <div key={name} className="rounded-control border border-line p-3"><dt className="text-sm text-muted">{name}</dt><dd className="m-0 text-xl tabular-nums">{value}</dd></div>)}</dl>
       <div className="flex flex-wrap gap-3">{Object.entries(data.byStatus).map(([status, count]) => <Button key={status} disabled={disabled} onClick={() => change({ status })}>{states[status] ?? status} {number(count)}</Button>)}</div>
-      <p className="text-sm text-muted">录制次数：{data.recordingCount === null ? data.recordingUnavailableReason : number(data.recordingCount)}。最近活动：{data.latestActivityAt ?? '无记录'}。统计读取时间：{data.calculatedAt}</p>
+      <p className="text-sm text-muted">录制次数：{data.recordingCount === null ? data.recordingUnavailableReason : number(data.recordingCount)}（仅含已登记项目归属的录制，历史无归属记录未计入）。最近活动：{data.latestActivityAt ?? '无记录'}。统计读取时间：{data.calculatedAt}</p>
       <div className="grid gap-4 md:grid-cols-3"><div><h3>失败节点（前 10）</h3><ul>{data.failuresByNode.map(item => <li key={item.nodeId}>{item.nodeId} · {item.count} 次</li>)}</ul></div><div><h3>流程运行（前 10）</h3><ul>{data.runsByWorkflow.map(item => <li key={item.workflowId}><Button disabled={disabled} onClick={() => change({ workflowId: item.workflowId })}>{item.name} · {item.count} 次</Button></li>)}</ul></div><div><h3>启动来源</h3><ul>{Object.entries(data.byTrigger).map(([source, count]) => <li key={source}>{triggers[source] ?? source} · {count} 次</li>)}</ul></div></div>
       {!data.items.length ? <p>没有匹配的 Studio 运行</p> : <ul className="grid gap-2">{data.items.map(item => <li key={item.runId} className="flex flex-wrap justify-between gap-2 border-t border-line py-2"><span>{item.workflowName} · {states[item.status] ?? item.status} · {item.mode === 'debug' ? '调试' : item.mode === 'run' ? '运行' : '历史模式未记录'} · {item.startedAt}</span><Button aria-label={`查看运行 ${item.runId}`} disabled={disabled} onClick={() => { setSelected(item); setLogNode(''); setLogCursor(0); setAssets(false) }}>查看运行</Button></li>)}</ul>}
       <Pagination offset={filter.cursor} limit={50} total={data.totalRuns} count={data.items.length} disabled={disabled || stats.isFetching} onOffsetChange={cursor => change({ cursor })} />

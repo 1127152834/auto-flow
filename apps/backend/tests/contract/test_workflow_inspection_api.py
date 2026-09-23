@@ -7,10 +7,13 @@ from fastapi.testclient import TestClient
 
 
 class Inspection:
+    def check_project_access(self, project_id, *, writable=False, browser=True):
+        assert project_id is None
+
     async def status(self):
         return {"isOpen": True, "pickerActive": True, "sessionId": "browser-1", "profileId": "profile-1"}
 
-    async def open(self, *, profile_id, url=None):
+    async def open(self, *, profile_id, url=None, project_id=None):
         return {
             "isOpen": True,
             "pickerActive": False,
@@ -19,7 +22,7 @@ class Inspection:
             "url": url,
         }
 
-    async def close(self, session_id=None):
+    async def close(self, session_id=None, project_id=None):
         return {"success": True, "sessionId": session_id}
 
     async def navigate(self, url):
@@ -40,7 +43,7 @@ class Inspection:
         assert request["expectedRevision"] == 2
         return await self.pages()
 
-    async def start_picker(self, *, session_id, profile_id, url):
+    async def start_picker(self, *, session_id, profile_id, url, project_id=None):
         return {"success": True, "sessionId": session_id, "active": True, "selected": False}
 
     async def stop_picker(self, session_id):

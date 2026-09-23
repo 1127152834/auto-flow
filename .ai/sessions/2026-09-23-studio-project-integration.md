@@ -118,3 +118,12 @@
 - 发现并修复：混合时区 ISO 字符串排序导致最近活动和分页不正确；改为 SQLite julianday 与 aware datetime。首次正式 UI 又发现错误事件名造成节点计数0；原执行器实际写 execution:node_start，修正查询和样本并新增真实 worker 生产事件回归，不支持自造 alias、不改变预期5。
 - 26 项后端（含原11项任务统计、1000轮/2001事件、计划来源去重、旧文档归属、真实worker），20项前端通过；类型/lint/OpenAPI/构建通过。完整正式证据 `evidence/project-integration/formal-electron-oV2m53/result.json`：实际1次成功、5次节点执行、1个PNG，从统计真实点击到同运行日志和产物；同时通过此前正常关窗/Debug失败/停止/另一项目隔离。汇总及失败证据见 `statistics-2026-09-23/`。
 - 仍保留录制统计、项目资源/任务桥接及拾取录制生命周期；本块仅关闭已有持久运行事实的统计消费，未声明整个项目集成完成。下一步先补会话归属与准入原子边界，再补录制次数。
+
+
+## 拾取／录制项目归属、生命周期与录制统计
+
+- 已确认并修复启动前无项目占用、录制历史无归属的问题。沿既有 SQLite 生命周期事务发布 browser starting 占用；停止/取消/清理失败保持原 worker/resource 边界，归档收尾看见 starting/ready/closing。HTTP browser/picker/recorder 使用宿主 projectId；关闭和尾部读取在 closing 仍可完成，新采集和审查写入受项目停写保护。
+- 0020_recording_project_scope 只增量新增 nullable 归属及 documentId，不改历史迁移，不接触用户数据库。未知历史保留无归属，项目删除按现有 project_id 清理与事件级联。新录制按项目/文档/时间计数，重复命令、暂停/恢复和多个步骤不会重复计数；运行状态筛选下录制指标明确不适用。
+- 同session换document和SQLite naive时间两个真实缺陷已由红测发现并修复。stop-tail原测试将两个新commandId错误要求相同；现在明确验证两个指定ID、451步不变，以及原命令重复请求的精确200步回执，未删断言或改生产幂等行为。
+- 正式macOS arm64真实证据：project-integration/formal-recording-electron-eUd5nT/result.json；真实项目入口、录制/暂停/恢复、审查生成保存、原生AXCloseButton关闭重开、独立浏览器重放及项目统计1录制/1运行均通过。65项迁移、40项既有关联后端、177项前端通过，专项SQL/HTTP详见 inspection-recording-2026-09-23。类型/lint/OpenAPI/构建通过。
+- 上节“录制尚缺归属”被本批结果替代。项目资源权限、任务/业务数据桥接、正式包和未测平台仍未关闭，213节点槽位仍622/17，14项删除不恢复。

@@ -716,9 +716,9 @@ async function recorderRequest<T>(path:string,sessionId:string,options:RequestIn
   return result
 }
 
-async function issueRecorderCommand<T>(sessionId:string,action:'start'|'pause'|'resume'|'stop',afterSeq=0):Promise<ApiResponse<T>>{
+async function issueRecorderCommand<T>(sessionId:string,action:'start'|'pause'|'resume'|'stop',afterSeq=0,documentId?:string):Promise<ApiResponse<T>>{
   const revision=getStudioTransportRevision(),commandId=crypto.randomUUID()
-  const body=action==='start'?{sessionId,commandId}:{sessionId,commandId,afterSeq}
+  const body=action==='start'?{sessionId,commandId,...(documentId?{documentId}:{})}:{sessionId,commandId,afterSeq}
   const result=await recorderRequest<T>(`/recorder/${action}`,sessionId,{method:'POST',body:JSON.stringify(body)})
   if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success)||result.success)return result
   const lookup=await apiRequest<components['schemas']['StudioRecorderCommandState']>(`/recorder/commands/${encodeURIComponent(commandId)}`)
@@ -774,10 +774,10 @@ async function controlRecorder(sessionId:string,action:'pause'|'resume',afterSeq
 export const recorderApi = {
   readReview: (documentId:string) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`),
   saveReview: (documentId:string,body:components['schemas']['StudioRecordingReviewWrite']) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`,{method:'PUT',body:JSON.stringify(body)}),
-  start: async (sessionId: string):Promise<ApiResponse<components['schemas']['StudioRecorderStarted']>> => {
+  start: async (sessionId: string, documentId?: string):Promise<ApiResponse<components['schemas']['StudioRecorderStarted']>> => {
     if(!validRecorderRequest(sessionId))return invalidRecorderRequest()
     const revision=getStudioTransportRevision()
-    const result=await issueRecorderCommand<components['schemas']['StudioRecorderStarted']>(sessionId,'start')
+    const result=await issueRecorderCommand<components['schemas']['StudioRecorderStarted']>(sessionId,'start',0,documentId)
     if(revision!==getStudioTransportRevision())return result
     if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0)return result
     if(!result.httpStatus||result.httpStatus>=500){

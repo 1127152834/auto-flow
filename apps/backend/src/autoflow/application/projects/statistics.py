@@ -40,6 +40,7 @@ from autoflow.infrastructure.database.project_run_models import (
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects, guard_project
 from autoflow.infrastructure.database.workflow_models import (
     ScheduledTaskExecutionRow,
+    WorkflowRecordingSessionRow,
     WorkflowRunArtifactRow,
     WorkflowRunEventRow,
 )
@@ -119,6 +120,15 @@ class ProjectStatisticsService:
             query = query.where(run.workflow_id == workflow_id)
         if status is not None:
             query = query.where(run.payload["status"].as_string() == status)
+        recording = WorkflowRecordingSessionRow
+        recording_query = select(recording).where(
+            recording.project_id == project_id,
+            func.julianday(recording.created_at) >= func.julianday(lower.isoformat()),
+            func.julianday(recording.created_at) <= func.julianday(upper.isoformat()),
+        )
+        if workflow_id is not None:
+            recording_query = recording_query.where(recording.document_id == workflow_id)
+        recording_cohort = recording_query.subquery()
         cohort = query.subquery()
         ids = select(cohort.c.runId)
         events = select(event).where(event.run_id.in_(ids)).subquery()
@@ -148,6 +158,8 @@ class ProjectStatisticsService:
                 select(cohort.c.workflowId, func.max(cohort.c.workflowName), func.count()).group_by(cohort.c.workflowId).order_by(func.count().desc(), cohort.c.workflowId).limit(10)
             )]
             triggers = {trigger: count for trigger, count in session.execute(select(source, func.count()).select_from(cohort).group_by(source))}
+            recording_count = session.scalar(select(func.count()).select_from(recording_cohort)) or 0
+            latest_recording = session.scalar(select(recording_cohort.c.updated_at).order_by(func.julianday(recording_cohort.c.updated_at).desc()).limit(1)) if status is None else None
             debug = session.scalar(select(func.count()).select_from(cohort).where(cohort.c.mode == "debug")) or 0
             run_time = func.coalesce(cohort.c.finishedAt, cohort.c.startedAt)
             event_time = events.c.payload["occurredAt"].as_string()
@@ -162,9 +174,9 @@ class ProjectStatisticsService:
             "averageDurationMs": round(average) if average is not None else None,
             "nodeExecutionCount": node_count, "extractionExecutionCount": result_count,
             "artifactCount": files.get("result", 0), "diagnosticCount": files.get("diagnostic", 0),
-            "debugCount": debug, "recordingCount": None,
-            "recordingUnavailableReason": "历史录制尚未保存项目归属，不能据工作区总量推算项目次数",
-            "latestActivityAt": max(filter(None, (latest_run, latest_event)), key=lambda value: _aware(datetime.fromisoformat(value)), default=None),
+            "debugCount": debug, "recordingCount": recording_count if status is None else None,
+            "recordingUnavailableReason": "运行状态筛选不适用于录制次数" if status is not None else None,
+            "latestActivityAt": max(filter(None, (latest_run, latest_event, _as_utc(latest_recording).isoformat() if latest_recording else None)), key=lambda value: _aware(datetime.fromisoformat(value)), default=None),
             "failuresByNode": failures, "runsByWorkflow": workflows, "byTrigger": triggers,
             "items": items, "nextCursor": cursor + len(items) if cursor + len(items) < total else None,
         }

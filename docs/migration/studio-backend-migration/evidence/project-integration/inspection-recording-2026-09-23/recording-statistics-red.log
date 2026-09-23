@@ -1,0 +1,92 @@
+...........................F                                             [100%]
+=================================== FAILURES ===================================
+_ test_statistics_counts_owned_recording_sessions_not_commands_or_legacy_guesses _
+
+studio_stats = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...utoflush=True, expire_on_commit=False), 'dab303d6-fa2c-4df1-90a2-319e626d84c1', '20a78f3c-2b40-4c3e-ba33-3112b3c18023')
+
+    def test_statistics_counts_owned_recording_sessions_not_commands_or_legacy_guesses(
+        studio_stats,
+    ):
+        from autoflow.infrastructure.database.workflow_recordings import (
+            SqlAlchemyWorkflowRecordings,
+        )
+    
+        factory, own, other = studio_stats
+        repo = SqlAlchemyWorkflowRecordings(factory)
+        records = [
+            ("own-a", own, "draft-a", BASE + timedelta(minutes=10)),
+            ("own-b", own, "draft-b", BASE + timedelta(minutes=20)),
+            ("foreign-a", other, "draft-a", BASE + timedelta(minutes=30)),
+            ("legacy-unbound", None, "draft-a", BASE + timedelta(minutes=40)),
+            ("outside-before", own, "draft-a", BASE - timedelta(seconds=1)),
+            ("outside-after", own, "draft-a", BASE + timedelta(hours=2)),
+        ]
+        for session_id, project, document_id, started in records:
+            first = repo.start(
+                session_id, now=started, project_id=project, document_id=document_id
+            )
+            assert (
+                repo.start(
+                    session_id, now=started, project_id=project, document_id=document_id
+                )
+                == first
+            )
+            for action in ("start", "pause", "resume", "stop"):
+                kwargs = {
+                    "session_id": session_id,
+                    "action": action,
+                    "request_hash": action,
+                    "now": started,
+                    "project_id": project,
+                }
+                command_id = f"{session_id}-{action}"
+                assert repo.begin_command(command_id, **kwargs) is None
+                assert repo.begin_command(command_id, **kwargs)["status"] == "pending"
+                repo.finish_command(
+                    command_id,
+                    status="completed",
+                    payload={"success": True},
+                    http_status=200,
+                    now=started,
+                )
+            repo.append(
+                session_id,
+                [
+                    {"type": "click", "selector": "#a"},
+                    {"type": "input", "selector": "#b", "value": "两步不是两次录制"},
+                ],
+                now=started,
+            )
+            repo.stop(session_id, now=started + timedelta(seconds=7))
+        service = ProjectStatisticsService(factory)
+        window = {"from_": BASE, "to": BASE + timedelta(hours=1)}
+>       value = service.studio(own, **window)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_studio_project_statistics.py:796: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/projects/statistics.py:179: in studio
+    "latestActivityAt": max(filter(None, (latest_run, latest_event, latest_recording.isoformat() if latest_recording else None)), key=lambda value: _aware(datetime.fromisoformat(value)), default=None),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/projects/statistics.py:179: in <lambda>
+    "latestActivityAt": max(filter(None, (latest_run, latest_event, latest_recording.isoformat() if latest_recording else None)), key=lambda value: _aware(datetime.fromisoformat(value)), default=None),
+                                                                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = datetime.datetime(2026, 9, 20, 4, 20, 7)
+
+    def _aware(value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+>           raise ProjectError("STATISTICS_RANGE_INVALID", "时间范围必须包含时区", 422)
+E           autoflow.domain.projects.models.ProjectError: 时间范围必须包含时区
+
+src/autoflow/application/projects/statistics.py:305: ProjectError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_studio_project_statistics.py::test_statistics_counts_owned_recording_sessions_not_commands_or_legacy_guesses
+1 failed, 27 passed, 1 warning in 19.11s

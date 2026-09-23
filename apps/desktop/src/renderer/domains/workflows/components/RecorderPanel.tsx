@@ -193,7 +193,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
         return
       }
       activeSessionRef.current = sessionId
-      const res: any = await recorderApi.start(sessionId)
+      const res: any = await recorderApi.start(sessionId, owner.documentId)
       if(!mountedRef.current||owner.connection!==getStudioTransportRevision())return
       if (res?.error || res?.success === false || res?.data?.success === false) {
         if(res.outcomeUnknown){

@@ -495,6 +495,8 @@ class StudioBrowserPageCommand(ApiModel):
 class StudioBrowserStatus(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
 
+    project_id: str | None = None
+    phase: Literal["starting", "ready", "closing", "closed"] = "closed"
     is_open: bool
     picker_active: bool
     session_id: str | None = None
@@ -1013,6 +1015,7 @@ class StudioPathSelectionResult(ApiModel):
 
 class StudioRecorderStartRequest(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    document_id: str | None = Field(default=None, min_length=1, max_length=128)
     session_id: str = Field(min_length=1, pattern=r"\S")
     command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
 

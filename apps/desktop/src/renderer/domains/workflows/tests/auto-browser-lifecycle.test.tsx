@@ -28,7 +28,7 @@ it.each([true, false])('closes the browser only after active recording departure
 beforeEach(() => {
   log.mockClear()
   vi.spyOn(browserApi, 'pages').mockResolvedValue({success:true,data:{sessionId:'b',revision:0,targetPageId:'p',pages:[{pageId:'p',title:'页面',url:'about:blank'}]}})
-  vi.spyOn(browserApi, 'getStatus').mockResolvedValue({ success: true, data: { isOpen: true, pickerActive: true } })
+  vi.spyOn(browserApi, 'getStatus').mockResolvedValue({ success: true, data: { isOpen: true, phase: 'ready', pickerActive: true } })
   vi.spyOn(elementPickerApi, 'getSelected').mockResolvedValue({ success: true, data: { selected: false } })
   vi.spyOn(elementPickerApi, 'getSimilar').mockResolvedValue({ success: true, data: { selected: false } })
 })
@@ -98,7 +98,7 @@ it('does not resurrect the picker from a refresh response older than a confirmed
   fireEvent.click(screen.getByTitle('刷新状态'))
   fireEvent.click(screen.getByRole('button', { name: '停止选择' }))
   await screen.findByRole('button', { name: '启动选择器' })
-  await act(async () => release({ success: true, data: { isOpen: true, pickerActive: true } }))
+  await act(async () => release({ success: true, data: { isOpen: true, phase: 'ready', pickerActive: true } }))
   expect(screen.queryByRole('button', { name: '停止选择' })).toBeNull()
 })
 it('suppresses repeated polling errors without pretending the picker has stopped and recovers polling', async () => {
@@ -130,7 +130,7 @@ it('ignores a similar-element response after the panel closes', async () => {
   expect(log).not.toHaveBeenCalled()
 })
 it.each(['start','stop','navigate'] as const)('serializes %s with other browser commands and restores controls after rejection',async action=>{
- vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:true,pickerActive:action==='stop'}})
+ vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:true,phase:'ready',pickerActive:action==='stop'}})
  const method=action==='start'?'startPicker':action==='stop'?'stopPicker':'page'
  let release!:(value:{success:boolean;error?:string})=>void
  const command=vi.spyOn(browserApi,method).mockImplementation(()=>new Promise<{success:boolean;error?:string}>(resolve=>{release=resolve}))
@@ -152,7 +152,7 @@ it.each(['start','stop','navigate'] as const)('serializes %s with other browser 
 it('preserves an open browser after a malformed status response through the actual API',async()=>{
  vi.mocked(browserApi.getStatus).mockRestore()
  let malformed=false
- const restore=configureStudioConnection('http://browser-status.test',async()=>Response.json(malformed?{isOpen:'false',pickerActive:false}:{isOpen:true,pickerActive:false}))
+ const restore=configureStudioConnection('http://browser-status.test',async()=>Response.json(malformed?{isOpen:'false',pickerActive:false}:{isOpen:true,phase:'ready',pickerActive:false}))
  try{
   render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
   await screen.findByRole('button',{name:'关闭浏览器'})
@@ -179,7 +179,7 @@ it('does not copy a pending pick result once a stop command has begun',async()=>
 })
 
 it('passes the selected AutoFlow profile without mixing source launch settings',async()=>{
- vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:false,pickerActive:false}})
+ vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:false,phase:'closed',pickerActive:false}})
  vi.spyOn(browserApi,'profiles').mockResolvedValue({success:true,data:{items:[{id:'profile-1',name:'验收配置'}] as never,total:1}})
  const open=vi.spyOn(browserApi,'open').mockResolvedValue({success:true})
  render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)

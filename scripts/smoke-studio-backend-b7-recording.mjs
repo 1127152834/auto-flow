@@ -13,7 +13,9 @@ const root = resolve(import.meta.dirname, '..')
 const sourceKernel = process.env.AUTOFLOW_B1_KERNEL_DIR
   ?? '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2'
 const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
-const evidenceRoot = join(root, 'docs/migration/studio-backend-migration/evidence/b7')
+const projectMode = process.env.AUTOFLOW_B7_PROJECT === '1'
+let projectId = null
+const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectMode ? 'project-integration' : 'b7'}`)
 await mkdir(evidenceRoot, { recursive: true })
 const evidenceDir = await mkdtemp(join(evidenceRoot, 'formal-recording-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b7-recording-'))
@@ -70,6 +72,21 @@ try {
   })
   checkpoint('临时工作区创建主应用 CloakBrowser Profile')
 
+  if (projectMode) {
+    await click(main, '项目', 'a, button')
+    await click(main, '新建项目')
+    await setInput(main, '#project-name', 'Studio 录制项目验收')
+    await click(main, '创建项目')
+    await waitFor(main, "document.body?.innerText.includes('Studio 录制项目验收')", 'project created')
+    if (!await main.evaluate('Boolean(document.querySelector(\'[aria-label="项目功能"]\'))')) await click(main, 'Studio 录制项目验收', '[role="button"],button')
+    await waitFor(main, 'Boolean(document.querySelector(\'[aria-label="项目功能"]\'))', 'project page')
+    projectId = (await main.evaluate('location.hash')).match(/projects\/([^/]+)/)?.[1]
+    assert.ok(projectId)
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('还没有自动化')", 'project automation directory')
+    checkpoint('真实项目 UI 创建项目并进入该项目 Studio')
+  }
+
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1800, height: 1200, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库')", 'formal Studio', 30_000)
@@ -85,6 +102,14 @@ try {
   await waitForValue(async () => pageLoads > 0 ? true : null, 'recording fixture navigation', 15_000)
   await closeModernDialog(studio)
   checkpoint('通过正式浏览器面板打开可见 CloakBrowser 并导航到受控页面')
+  if (projectMode) {
+    const state = await api(runtime, '/browser/status')
+    assert.equal(state.projectId, projectId)
+    assert.equal(state.phase, 'ready')
+    const impact = await api(runtime, `/v1/projects/${projectId}/lifecycle-impact?action=archive`)
+    assert.ok(impact.blockers.some(item => item.code === 'STUDIO_INSPECTION_ACTIVE'))
+    checkpoint('真实浏览器会话归属项目，项目归档影响检查识别未清理占用')
+  }
 
   await click(studio, '录制生成节点', '[aria-label="录制生成节点"]')
   await click(studio, '网页智能录制', '[role="menuitem"]')
@@ -161,13 +186,30 @@ try {
   await waitForValue(async () => managedBrowserProcesses(userData).length === 0 ? true : null, 'replay browser cleanup', 10_000)
   checkpoint('独立 CloakBrowser 重放保存流程，输入和点击副作用与录制一致并完成清理')
 
+  if (projectMode) {
+    assert.equal(saved.projectId, projectId)
+    const stats = await api(runtime, `/v1/projects/${projectId}/statistics/studio`)
+    assert.equal(stats.recordingCount, 1)
+    assert.equal(stats.totalRuns, 1)
+    assert.equal(stats.byStatus.completed, 1)
+    const filtered = await api(runtime, `/v1/projects/${projectId}/statistics/studio?workflowId=${encodeURIComponent(saved.id)}`)
+    assert.equal(filtered.recordingCount, 1)
+    const impact = await api(runtime, `/v1/projects/${projectId}/lifecycle-impact?action=archive`)
+    assert.equal(impact.blockers.some(item => item.code === 'STUDIO_INSPECTION_ACTIVE'), false)
+    await click(main, '统计', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    await click(main, 'Studio 运行统计', 'summary')
+    await waitFor(main, "document.querySelector('[aria-label=\"Studio 运行统计\"]')?.innerText.includes('录制次数：1')", 'real recording statistics')
+    await capture(main, join(evidenceDir, 'recording-project-statistics.png'))
+    checkpoint('项目统计真实显示一次录制与一次成功重放，按文档筛选仍正确；关闭后归档占用消失')
+  }
+
   await capture(studio, join(evidenceDir, 'completed.png'))
   const report = {
     evidenceId: 'BE-B7-recording-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
     result: 'passed', platform: `${process.platform}-${process.arch}`, entry: 'development-build',
-    workflowId: saved.id, profileId: profile.id, runId: started.runId, generatedCount, clickCount, clickedBodies, checks,
-    boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'formal Studio UI through CDP plus macOS trusted keyboard events in CloakBrowser; no Store access', windowClose: 'BrowserWindow.close normal lifecycle; no destroy bypass' },
+    projectId, workflowId: saved.id, profileId: profile.id, runId: started.runId, generatedCount, clickCount, clickedBodies, checks,
+    boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'formal Studio UI through CDP plus macOS trusted keyboard events in CloakBrowser; no Store access', windowClose: 'macOS AXCloseButton; no BrowserWindow close/destroy bypass' },
   }
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
@@ -186,7 +228,9 @@ function checkpoint(message) { checks.push(message); console.log(message) }
 function managedBrowserProcesses(path) { return execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(path) && /Chromium|CloakBrowser/.test(line)) }
 
 async function api(runtime, path, options = {}) {
-  const response = await fetch(`${runtime.sidecar.baseUrl}/api${path}`, {
+  const target = new URL(`${runtime.sidecar.baseUrl}/api${path}`)
+  if (projectId && /^\/api\/(?:workflows|workflow-runs|browser|element-picker|recorder)(?:\/|$)/.test(target.pathname)) target.searchParams.set('projectId', projectId)
+  const response = await fetch(target, {
     method: options.method ?? 'GET',
     headers: { 'x-autoflow-token': runtime.sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': randomUUID() },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
@@ -269,7 +313,8 @@ async function focusStudio(nativeCdp) {
   await wait(250)
 }
 async function closeStudioNormally(nativeCdp) {
-  assert.equal(await nativeCdp.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>w.getTitle().includes('工作流工作台'));if(!w)return false;w.close();return true})()"), true)
+  await focusStudio(nativeCdp)
+  execFileSync('osascript', ['-e', 'tell application "System Events"', '-e', `tell (first application process whose unix id is ${desktop.child.pid})`, '-e', 'click (first button of (first window whose name contains "工作流工作台") whose subrole is "AXCloseButton")', '-e', 'end tell', '-e', 'end tell'])
 }
 
 async function waitForNoStudioWindow(nativeCdp) {
@@ -286,7 +331,7 @@ async function waitForValue(read, description, timeoutMs) {
   throw new Error(`timed out waiting for ${description}: ${JSON.stringify(last)}`)
 }
 async function point(cdp, selector, text = '') {
-  return waitFor(cdp, `(()=>{const rows=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>e.getClientRects().length),text=${JSON.stringify(text)};const e=!text?rows[0]:rows.find(e=>e.getAttribute('aria-label')===text)||rows.find(e=>e.textContent.trim()===text)||rows.find(e=>e.textContent.includes(text));if(!e||e.disabled)return null;e.scrollIntoView({block:'center',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `unobscured ${text || selector}`)
+  return waitFor(cdp, `(()=>{const rows=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>e.getClientRects().length),text=${JSON.stringify(text)};const e=!text?rows[0]:rows.find(e=>e.getAttribute('aria-label')===text)||rows.find(e=>e.textContent.trim()===text)||rows.find(e=>e.textContent.includes(text));if(!e||e.disabled)return null;e.scrollIntoView({block:'nearest',behavior:'instant'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `unobscured ${text || selector}`)
 }
 async function click(cdp, text, selector = 'button') {
   const p = await point(cdp, selector, text)

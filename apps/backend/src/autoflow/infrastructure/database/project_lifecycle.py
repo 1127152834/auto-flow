@@ -11,6 +11,7 @@ import hashlib
 import json
 import logging
 import shutil
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast, overload
@@ -89,7 +90,9 @@ class SqlAlchemyProjectLifecycle:
         *,
         environment_root: Path | None = None,
         workflow_artifact_root: Path | None = None,
+        inspection_blockers: Callable[[str], list[dict[str, Any]]] | None = None,
     ) -> None:
+        self._inspection_blockers = inspection_blockers or (lambda _project_id: [])
         self._factory = session_factory
         self._workflow_artifact_root = workflow_artifact_root.resolve() if workflow_artifact_root is not None else None
         self._environment_root = (
@@ -246,7 +249,7 @@ class SqlAlchemyProjectLifecycle:
         project: ProjectRow,
     ) -> dict[str, Any]:
         return {
-            "blockers": _blockers(session, project_id, project, action=action),
+            "blockers": _blockers(session, project_id, project, action=action) + self._inspection_blockers(project_id),
             "impacts": _impacts(session, project_id, action),
             "unsyncedCount": _unsynced_count(session, project_id),
         }
@@ -287,7 +290,7 @@ class SqlAlchemyProjectLifecycle:
             excluded = operation.id if operation is not None else None
             if _blockers(
                 session, project_id, project, exclude_operation_id=excluded, action="archiveProject"
-            ):
+            ) or self._inspection_blockers(project_id):
                 session.rollback()
                 return
             now = datetime.now(UTC)

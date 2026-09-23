@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { apiRequest, variableTrackingApi, workflowApi } from '../api'
+import { apiRequest, recorderApi, variableTrackingApi, workflowApi } from '../api'
 import { configureStudioConnection } from '../api/config'
 
 afterEach(() => vi.unstubAllGlobals())
@@ -60,5 +60,26 @@ it('keeps control, interaction queries and lost command replies on the host proj
     expect(urls).toHaveLength(11)
     expect(urls.filter(url => new URL(url).pathname === '/api/events/commands/command')).toHaveLength(3)
     for (const url of urls) expect(new URL(url).searchParams.get('projectId')).toBe('host-project')
+  } finally { restore() }
+})
+
+
+it('scopes browser, picker and recording history, and freezes the recording document', async () => {
+  vi.stubGlobal('location', { search: '?projectId=host-project' })
+  const urls: string[] = []
+  const bodies: unknown[] = []
+  const restore = configureStudioConnection('http://project-run.test', async (input, init) => {
+    urls.push(String(input))
+    if (init?.body) bodies.push(JSON.parse(String(init.body)))
+    return Response.json({ success: true, sessionId: 'recording', recording: true, nextSeq: 0 })
+  })
+  try {
+    for (const path of ['/browser/status', '/browser/pages', '/element-picker/result?sessionId=picker', '/recorder/status', '/recorder/commands/id', '/recorder/reviews/draft']) {
+      await apiRequest(`${path}${path.includes('?') ? '&' : '?'}projectId=other`)
+    }
+    await recorderApi.start('recording', 'unsaved-document')
+    expect(urls).toHaveLength(7)
+    for (const url of urls) expect(new URL(url).searchParams.get('projectId')).toBe('host-project')
+    expect(bodies).toEqual([{ sessionId: 'recording', commandId: expect.any(String), documentId: 'unsaved-document' }])
   } finally { restore() }
 })

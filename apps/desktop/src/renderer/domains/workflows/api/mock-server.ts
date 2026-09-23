@@ -88,6 +88,7 @@ let recording = false
 let recordingPaused = false
 let recorded: ObjectValue[] = []
 let recordingSessionId: string | null = null
+let recordingDocumentId: string | null = null
 const retiredRecordings = new Set<string>()
 const recordingCommands = new Map<string,{fingerprint:string;state:ObjectValue;result:ObjectValue}>()
 let picking = false
@@ -190,7 +191,7 @@ function recorderCommand(body:ObjectValue,action:string,result?:ObjectValue){
   const commandId=typeof body.commandId==='string'&&body.commandId.trim()?body.commandId:null
   const sessionId=typeof body.sessionId==='string'&&body.sessionId.trim()?body.sessionId:null
   if(!commandId||!sessionId)return {error:failure('录制命令标识无效',422)}
-  const fingerprint=JSON.stringify({action,sessionId,afterSeq:Number(body.afterSeq||0)})
+  const fingerprint=JSON.stringify({action,sessionId,afterSeq:Number(body.afterSeq||0),...(body.documentId?{documentId:body.documentId}:{})})
   const previous=recordingCommands.get(commandId)
   if(previous)return previous.fingerprint===fingerprint?{result:previous.result}:{error:failure('commandId 已用于不同录制命令',409)}
   if(!result)return {commandId,sessionId,fingerprint}
@@ -980,12 +981,14 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if(method!=='POST')return failure('启动录制仅支持 POST',405)
       const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim() ? body.sessionId : null
       const command=recorderCommand(body,'start');if(command.error)return command.error;if(command.result)return response(command.result)
-      if(!sessionId||Object.keys(body).some(key=>!['sessionId','commandId'].includes(key)))return failure('录制启动参数无效',422)
+      if(!sessionId||Object.keys(body).some(key=>!['sessionId','commandId','documentId'].includes(key)))return failure('录制启动参数无效',422)
+      if(body.documentId!==undefined&&(typeof body.documentId!=='string'||!body.documentId.trim()))return failure('录制文档标识无效',422)
+      if(sessionId===recordingSessionId&&(body.documentId??null)!==recordingDocumentId)return failure('录制会话已绑定其他文档',409)
       if (retiredRecordings.has(sessionId)) return failure('Recording session expired', 409)
       if (sessionId === recordingSessionId) return response(recorderCommand(body,'start',{ success: true, sessionId, recording, paused:recordingPaused, nextSeq: recorded.length }).result)
       if (!browser || run || picking || recording || mockScriptTestBusy()) return failure('请先打开空闲的 Mock 浏览器', 409)
       if (recordingSessionId) retiredRecordings.add(recordingSessionId)
-      recordingSessionId = sessionId; recording = true; recordingPaused = false; recorded = []
+      recordingSessionId = sessionId; recordingDocumentId = typeof body.documentId === 'string' ? body.documentId : null; recording = true; recordingPaused = false; recorded = []
       return response(recorderCommand(body,'start',{ success: true, sessionId, recording: true, paused:false, nextSeq: 0 }).result)
     }
     if (path === '/recorder/pause' || path === '/recorder/resume') {

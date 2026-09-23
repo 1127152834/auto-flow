@@ -111,3 +111,14 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 `GET /api/v1/projects/{projectId}/statistics/studio` 复用项目统计服务，按 from/to（运行启动时间）、workflowId、status、cursor/limit 在数据库过滤和聚合。成功为 completed、取消为 stopped；成功率分母只计 completed+failed，时长包含暂停/清理。节点执行按真实 execution:node_start 事件统计，结果次数不是业务记录数，文件与诊断独立计数。计划来源按已登记执行关联，缺证据返回 unknown。结果包含有界运行列表和下一游标；前端从统计读取原运行日志及原项目资产，无假任务ID。活跃状态刷新后可能变化，不冒充原任务冻结结果集。
 
 [统计及正式 UI 证据](../studio-backend-migration/evidence/project-integration/statistics-2026-09-23/result.json)。录制归属尚缺，因此 recordingCount=null，接口和页面给出真实原因；录制统计仍待后续归属接入，不将 null 算通过。正式包和其他平台未在此项核销。
+
+
+### 项目拾取／录制合同补齐（2026-09-23）
+
+上节录制归属缺口由此项替代。`/api/browser`、`/api/element-picker`、`/api/recorder` 请求统一携带宿主 `projectId`；外项目或省略项目不能读取/控制有归属的会话和录制资源。开始录制额外传当前（可未保存）`documentId`，同 sessionId 不可改绑定。审查、已确认步骤和幂等回执均独立验证持久归属。停止/关闭/读取在 closing 允许，新采集/恢复和审查修改禁止。
+
+`0020_recording_project_scope` 为新数据冻结项目/文档归属，历史无归属保持 null；不会猜测归属或批量改库。项目占用在浏览器异步启动前登记，与归档写事务互斥；清理失败保留占用和重试，启动中关闭可取消等待。永久删除沿用现有 project_id 清理和事件级联。
+
+统计 recordingCount 现在来自已登记项目归属的真实录制 session，按文档和创建时间筛选；运行 status 过滤不适用于录制时为 null+原因。历史无归属不计入且页面说明。最近活动包括录制更新时间。
+
+[专项及边界](../studio-backend-migration/evidence/project-integration/inspection-recording-2026-09-23/result.json) · [正式录制、重开、独立重放和项目统计](../studio-backend-migration/evidence/project-integration/formal-recording-electron-eUd5nT/result.json)。仅 macOS arm64 开发构建实测，未替代正式包、其他平台、项目资源权限或任务/业务表桥接验收。

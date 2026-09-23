@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
@@ -9,12 +10,17 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.workflows.runs import WorkflowRunError
+
+from .projects import guard_project
 from .workflow_models import (
+    WorkflowDocumentRow,
     WorkflowRecordingCommandRow,
     WorkflowRecordingEventRow,
     WorkflowRecordingReviewRow,
     WorkflowRecordingSessionRow,
 )
+from .workflow_project_scope import workflow_project_id
 
 MAX_RECORDING_EVENTS = 10_000
 MAX_RECORDING_BYTES = 64 * 1024 * 1024
@@ -39,11 +45,44 @@ class SqlAlchemyWorkflowRecordings:
     def __init__(self, session_factory: sessionmaker[Session]) -> None:
         self._session_factory = session_factory
 
-    def start(self, session_id: str, *, now: datetime) -> dict[str, Any]:
+    def check_project(self, project_id: str | None, *, writable: bool = False) -> None:
+        if project_id is not None:
+            with self._session_factory() as session:
+                guard_project(session, project_id, writable=writable)
+
+    def admit_browser(self, project_id: str | None, claim: Callable[[], None]) -> None:
+        # The lifecycle writer takes the same SQLite reservation. Publish the
+        # in-memory browser claim before releasing it, never across an await.
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            if project_id is not None:
+                guard_project(session, project_id)
+            claim()
+            session.rollback()
+
+    @staticmethod
+    def _owner(row: Any, project_id: str | None) -> None:
+        if row.project_id != project_id:
+            raise WorkflowRunError("RECORDING_NOT_FOUND", "录制资源不属于当前项目", 404)
+
+    @staticmethod
+    def _document(session: Session, document_id: str | None, project_id: str | None) -> None:
+        if (document_id is not None and session.get(WorkflowDocumentRow, document_id) is not None
+                and workflow_project_id(session, document_id) != project_id):
+            raise WorkflowRunError("RECORDING_DOCUMENT_SCOPE", "录制文档不属于当前项目", 404)
+
+    def start(self, session_id: str, *, now: datetime, project_id: str | None = None,
+              document_id: str | None = None) -> dict[str, Any]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            if project_id is not None:
+                guard_project(session, project_id)
+            self._document(session, document_id, project_id)
             row = session.get(WorkflowRecordingSessionRow, session_id)
             if row is not None:
+                self._owner(row, project_id)
+                if row.document_id != document_id:
+                    raise WorkflowRunError("RECORDING_CONFLICT", "录制会话已绑定其他文档", 409)
                 if row.status != "recording":
                     session.rollback()
                     raise ValueError("录制会话已结束")
@@ -52,6 +91,8 @@ class SqlAlchemyWorkflowRecordings:
                 return result
             row = WorkflowRecordingSessionRow(
                 id=session_id,
+                project_id=project_id,
+                document_id=document_id,
                 status="recording",
                 active_slot=1,
                 last_sequence=0,
@@ -75,17 +116,22 @@ class SqlAlchemyWorkflowRecordings:
         action: str,
         request_hash: str,
         now: datetime,
+        project_id: str | None = None,
     ) -> dict[str, Any] | None:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            if project_id is not None:
+                guard_project(session, project_id, writable=action in {"start", "resume"})
             row = session.get(WorkflowRecordingCommandRow, command_id)
             if row is not None:
+                self._owner(row, project_id)
                 result = _command(row)
                 session.rollback()
                 return result
             session.add(
                 WorkflowRecordingCommandRow(
                     id=command_id,
+                    project_id=project_id,
                     session_id=session_id,
                     action=action,
                     request_hash=request_hash,
@@ -121,9 +167,11 @@ class SqlAlchemyWorkflowRecordings:
             session.commit()
             return _command(row)
 
-    def command(self, command_id: str) -> dict[str, Any] | None:
+    def command(self, command_id: str, *, project_id: str | None = None) -> dict[str, Any] | None:
         with self._session_factory() as session:
             row = session.get(WorkflowRecordingCommandRow, command_id)
+            if row is not None:
+                self._owner(row, project_id)
             return _command(row) if row is not None else None
 
     def recover_active(self, *, now: datetime) -> int:
@@ -214,26 +262,28 @@ class SqlAlchemyWorkflowRecordings:
             session.commit()
             return _status(row)
 
-    def status(self, session_id: str) -> dict[str, Any]:
+    def status(self, session_id: str, *, project_id: str | None = None) -> dict[str, Any]:
         with self._session_factory() as session:
             row = session.get(WorkflowRecordingSessionRow, session_id)
             if row is None:
                 raise ValueError("录制会话不存在")
+            self._owner(row, project_id)
             return _status(row)
 
-    def current(self) -> dict[str, Any] | None:
+    def current(self, *, project_id: str | None = None) -> dict[str, Any] | None:
         with self._session_factory() as session:
             row = session.scalar(
                 select(WorkflowRecordingSessionRow)
+                .where(WorkflowRecordingSessionRow.project_id == project_id)
                 .order_by(WorkflowRecordingSessionRow.created_at.desc())
                 .limit(1)
             )
             return _status(row) if row is not None else None
 
     def events(
-        self, session_id: str, *, after_seq: int, limit: int = 200
+        self, session_id: str, *, after_seq: int, limit: int = 200, project_id: str | None = None
     ) -> dict[str, Any]:
-        status = self.status(session_id)
+        status = self.status(session_id, project_id=project_id)
         if after_seq > status["nextSeq"]:
             raise ValueError("录制确认游标超出已确认步骤")
         with self._session_factory() as session:
@@ -255,9 +305,12 @@ class SqlAlchemyWorkflowRecordings:
             "data": data,
         }
 
-    def read_review(self, document_id: str) -> dict[str, Any] | None:
+    def read_review(self, document_id: str, *, project_id: str | None = None) -> dict[str, Any] | None:
         with self._session_factory() as session:
             row = session.get(WorkflowRecordingReviewRow, document_id)
+            self._document(session, document_id, project_id)
+            if row is not None:
+                self._owner(row, project_id)
             return _review(row) if row is not None else None
 
     def save_review(
@@ -268,6 +321,7 @@ class SqlAlchemyWorkflowRecordings:
         auto_wait: bool,
         events: list[dict[str, Any]],
         now: datetime,
+        project_id: str | None = None,
     ) -> dict[str, Any]:
         if len(events) > MAX_RECORDING_EVENTS:
             raise ValueError("录制步骤已达到 10000 条上限")
@@ -275,7 +329,12 @@ class SqlAlchemyWorkflowRecordings:
             raise ValueError("录制原文已达到 64 MiB 上限")
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            if project_id is not None:
+                guard_project(session, project_id)
+            self._document(session, document_id, project_id)
             row = session.get(WorkflowRecordingReviewRow, document_id)
+            if row is not None:
+                self._owner(row, project_id)
             actual = row.revision if row is not None else 0
             if actual != expected_revision:
                 session.rollback()
@@ -283,6 +342,7 @@ class SqlAlchemyWorkflowRecordings:
             if row is None:
                 row = WorkflowRecordingReviewRow(
                     document_id=document_id,
+                    project_id=project_id,
                     revision=1,
                     auto_wait=auto_wait,
                     events=copy.deepcopy(events),

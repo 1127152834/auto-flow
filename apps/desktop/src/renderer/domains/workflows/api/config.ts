@@ -36,7 +36,7 @@ export function getStudioOpenContext(): StudioOpenContext {
 export function scopeStudioUrl(url: string, projectId = getStudioOpenContext().projectId): string {
   if (!projectId) return url
   const scoped = new URL(url)
-  if (/^\/api\/(?:workflows|workflow-runs|events)(?:\/|$)/.test(scoped.pathname)) {
+  if (/^\/api\/(?:workflows|workflow-runs|events|browser|element-picker|recorder)(?:\/|$)/.test(scoped.pathname)) {
     scoped.searchParams.set('projectId', projectId)
     return scoped.toString()
   }

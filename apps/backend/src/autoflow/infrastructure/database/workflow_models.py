@@ -203,8 +203,10 @@ class WorkflowMcpCommandRow(Base):
 
 class WorkflowRecordingSessionRow(Base):
     __tablename__ = "workflow_recording_sessions"
+    project_id: Mapped[str | None] = mapped_column(String(36), index=True)
 
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    document_id: Mapped[str | None] = mapped_column(String(128), index=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     active_slot: Mapped[int | None] = mapped_column(Integer, unique=True)
     last_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -228,6 +230,7 @@ class WorkflowRecordingEventRow(Base):
 
 class WorkflowRecordingReviewRow(Base):
     __tablename__ = "workflow_recording_reviews"
+    project_id: Mapped[str | None] = mapped_column(String(36), index=True)
 
     document_id: Mapped[str] = mapped_column(String(128), primary_key=True)
     revision: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -238,6 +241,7 @@ class WorkflowRecordingReviewRow(Base):
 
 class WorkflowRecordingCommandRow(Base):
     __tablename__ = "workflow_recording_commands"
+    project_id: Mapped[str | None] = mapped_column(String(36), index=True)
 
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     session_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
