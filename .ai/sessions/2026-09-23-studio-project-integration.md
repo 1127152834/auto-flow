@@ -197,3 +197,8 @@
 - 正式目录包正在验证最新构建；结果统一写入 `project-integration/profile-defaults-2026-09-23/result.json`。模型默认值、项目worker凭据/模型端口仍未完成；213节点及622/17不变。
 
 - 最终 unsigned macOS arm64 目录包 formal-electron-UxcAqm 已通过同一完整链和包内容边界；正式包前次 OZGyVg 的启动等待超时另存失败证据，总16次失败未删。开发/包均真CloakBrowser，Intel/Windows未测。
+
+## 资源变化后的运行重试 confirmed
+
+- 协调器在资源解析前复用原运行资源快照、保留原请求哈希校验；同ID不同草稿/布局/身份/调试参数仍409，不以ID相同绕过内容核验。成功/失败/停止记录重试不重放worker，不重读秘密。
+- 3红复现后，14专项及关联总51通过，Ruff/mypy通过。真实SQLite＋模拟worker边界，非真实模型证据；正式入口将在模型默认值闭环中回归。证据project-integration/resource-retry-2026-09-23。

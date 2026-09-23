@@ -182,3 +182,7 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 按用户确认，Studio读取项目 `defaultResources.profileId`，允许从全部主应用Profile显式覆盖；不增加资源白名单。覆盖按工作区/项目保存在编辑会话，同工作区重连保留，新窗口重新读取项目默认。项目没有默认时要求选择；失效默认不静默回退。已有计划任务明确保存的Profile继续优先；新建任务采用项目默认后允许覆盖。普通非项目窗口沿用现有全局选择与首项行为。
 
 工具栏、交互浏览器及拾取启动复用同一解析入口，实际请求仍发送明确profileId。类型沿现有项目/浏览器OpenAPI，无新传输框架或数据库迁移。60项关联测试与最终开发正式UI通过（含真实交互浏览器、五节点、PNG、正常关窗、停止/失败/恢复与跨项目隔离）。正式包最新结果与所有失败尝试见 [Profile默认验收汇总](../studio-backend-migration/evidence/project-integration/profile-defaults-2026-09-23/result.json)。该证据不核销模型默认、项目worker秘密/模型上下文及其他平台。
+
+### 运行重试的资源冻结（2026-09-23）
+
+同一runId按原始文档、布局、Profile ID及运行选项校验；已接受请求复用原资源/模块快照，Profile或模型随后修改/停用不会引发重启。不同请求仍409。51项真实SQLite及协议回归见 `../studio-backend-migration/evidence/project-integration/resource-retry-2026-09-23/result.json`；真实模型与正式入口组合验收另计。

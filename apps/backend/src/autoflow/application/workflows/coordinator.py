@@ -175,6 +175,14 @@ class WorkflowRunCoordinator:
         if not isinstance(headless, bool):
             raise WorkflowRunError("RUN_REQUEST_INVALID", "headless 必须是布尔值", 422)
 
+        run_options = {
+            "headless": headless,
+            "startNodeId": start_node_id,
+            "runToNodeId": run_to_node_id,
+            "mode": mode,
+            "stepMode": step_mode,
+            "breakpoints": breakpoints,
+        }
         async with self._command_lock:
             supplied_document = request.get("document")
             if supplied_document is None:
@@ -191,6 +199,27 @@ class WorkflowRunCoordinator:
                 raise WorkflowRunError(
                     "RUN_REQUEST_INVALID", "document 必须是工作流对象", 422
                 )
+            # Retries compare caller-owned inputs against the original resource
+            # snapshot before consulting resources that may since have changed.
+            previous = self._repository.get(run_id)
+            if previous is not None:
+                replay = WorkflowRunStart(
+                    run_id=run_id,
+                    workflow_id=workflow_id,
+                    document_id=document_id,
+                    workflow_name=draft.name,
+                    document_snapshot=copy.deepcopy(draft.document),
+                    layout_snapshot=copy.deepcopy(draft.layout),
+                    profile_id=profile_id,
+                    profile_snapshot={
+                        **previous.profile_snapshot,
+                        "runOptions": run_options,
+                    },
+                    mode=cast(Any, mode),
+                    custom_module_snapshots=previous.custom_module_snapshots,
+                    project_id=request.get("projectId"),
+                )
+                return _summary(self._runs.start(replay))
             document = draft.to_payload()
             document_node_ids = {
                 str(node["id"])
@@ -325,14 +354,7 @@ class WorkflowRunCoordinator:
                 profile_id=profile_id,
                 profile_snapshot={
                     **_profile_snapshot(profile),
-                    "runOptions": {
-                        "headless": headless,
-                        "startNodeId": start_node_id,
-                        "runToNodeId": run_to_node_id,
-                        "mode": mode,
-                        "stepMode": step_mode,
-                        "breakpoints": breakpoints,
-                    },
+                    "runOptions": run_options,
                 },
                 mode=cast(Any, mode),
                 custom_module_snapshots=copy.deepcopy(custom_module_dependencies),

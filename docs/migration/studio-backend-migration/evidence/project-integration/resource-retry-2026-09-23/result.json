@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "classification": "AutoFlow必要适配",
+  "checks": {
+    "relatedTests": 51,
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "behavior": "相同原始请求只读原资源快照并返回既有运行，不再读取当前Profile或模型秘密；改草稿、布局、ID或调试参数仍409",
+  "boundaries": {
+    "database": "real temporary SQLite",
+    "worker": "simulated process boundary",
+    "realModel": "not claimed",
+    "formalElectron": "pending combined model-default verification",
+    "productionDatabaseTouched": false
+  }
+}
