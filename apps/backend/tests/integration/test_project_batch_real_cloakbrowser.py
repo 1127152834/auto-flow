@@ -3,8 +3,10 @@
 import asyncio
 import hashlib
 import json
+import os
 import shutil
 import socket
+import sys
 import threading
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -135,7 +137,7 @@ async def test_optional_input_does_not_leak_between_real_tasks(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("scenario", ["success", "parameter-single", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-link-forged-end", "data-old-candidate", "manual-resume", "manual-evidence-reconnect", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-force-stop", "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
+@pytest.mark.parametrize("scenario", ["success", "parameter-single", "parameter-isolation", "stop", "budget", "failure", "data", "data-schema", "data-delete-field", "data-delete-field-conflict", "data-response-loss", "data-subflow", "data-subflow-cancel", "data-loop-partial", "data-parallel", "data-parallel-failure", "data-link-race", "data-link-forged-end", "data-old-candidate", "manual-resume", "manual-evidence-reconnect", "manual-declared", "manual-parallel", "manual-parallel-finish", "manual-parallel-stop", "manual-finish", "manual-expire", "manual-expire-race", "manual-stop", "manual-force-stop", pytest.param("manual-force-stop-unknown", marks=pytest.mark.skipif(sys.platform == "win32", reason="POSIX native process identity probe; Windows Job ownership remains separate")), "manual-restart", "manual-loss", "manual-double", "manual-race", "manual-race-intent"])
 async def test_real_project_batch_http(
     tmp_path, valid_profile_values, real_cloak_page, scenario, monkeypatch
 ):
@@ -167,7 +169,26 @@ async def test_real_project_batch_http(
     force_worker = None
     force_receipt = None
     dropped_stops = []
-    if scenario == 'manual-force-stop':
+    proof_unavailable = False
+    unknown_pids = []
+    quarantine_observed = False
+    if scenario == 'manual-force-stop-unknown':
+        from autoflow.infrastructure.process import project_browser_processes
+
+        native_birth = project_browser_processes.process_birth
+
+        def unavailable_owned_birth(pid):
+            if proof_unavailable and force_worker is not None:
+                try:
+                    if os.getpgid(pid) == force_worker.process.pid:
+                        unknown_pids.append(pid)
+                        return None
+                except ProcessLookupError:
+                    pass
+            return native_birth(pid)
+
+        monkeypatch.setattr(project_browser_processes, 'process_birth', unavailable_owned_birth)
+    if scenario.startswith('manual-force-stop'):
         manager = app.state.project_workflow_worker_manager
         original_send = manager._send
 
@@ -474,7 +495,7 @@ async def test_real_project_batch_http(
                 document['content']['edges'].extend([{'id': identity, 'source': 'fork', 'target': identity} for identity in ['left-loop', 'right-loop']] + [{'id': identity + '-body', 'source': identity, 'target': body, 'sourceHandle': 'loop'} for identity, body in [('left-loop', 'write'), ('right-loop', 'other-write')]] + [{'id': identity + '-done', 'source': identity, 'target': 'end', 'sourceHandle': 'done'} for identity in ['left-loop', 'right-loop']])
                 next(n for n in nodes if n['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{secondSaved['ref']}", 'expectedLinkRevision': "{secondSaved['linkRevision']}", 'replaceAllowed': False})
             if scenario.startswith('manual-'):
-                nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 3 if scenario == 'manual-expire-race' else 120 if scenario == 'manual-force-stop' else 30}})
+                nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 3 if scenario == 'manual-expire-race' else 120 if scenario.startswith('manual-force-stop') else 30}})
                 document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
                 nodes.append({'id': 'after-manual', 'type': 'set_variable', 'position': {'x': 100, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'continued', 'variableValue': 'once'}})
                 document['content']['edges'].append({'id': 'continue-task', 'source': 'manual', 'target': 'after-manual'})
@@ -524,7 +545,7 @@ async def test_real_project_batch_http(
                         "modelProviderId": None,
                     },
                     "runPolicy": {
-                        "maxTasks": 1 if scenario in {"parameter-single", "manual-evidence-reconnect", "manual-force-stop", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
+                        "maxTasks": 1 if scenario in {"parameter-single", "manual-evidence-reconnect", "manual-force-stop", "manual-force-stop-unknown", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                         "concurrency": 1,
                         "maxLiveInstances": 1,
                         "continueAfterFailure": False,
@@ -577,7 +598,7 @@ async def test_real_project_batch_http(
             payload = {
                 "expectedAutomationRevision": automation["managementRevision"],
                 "parameters": {parameter_id: parameter_value},
-                "maxTasks": 1 if scenario in {"parameter-single", "manual-evidence-reconnect", "manual-force-stop", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
+                "maxTasks": 1 if scenario in {"parameter-single", "manual-evidence-reconnect", "manual-force-stop", "manual-force-stop-unknown", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2,
                 "concurrency": 1,
             }
             response = await client.post(
@@ -595,7 +616,7 @@ async def test_real_project_batch_http(
             manual_receipts = {}
             replayed_manual = set()
             manual_interrupted = False
-            for _ in range(600 if scenario == "manual-force-stop" else 300):
+            for _ in range(600 if scenario.startswith("manual-force-stop") else 300):
                 if scenario == 'manual-expire-race' and late_resume is None:
                     manual = (await client.get(prefix + '/manual-items')).json()['items']
                     waiting = next((item for item in manual if item['status'] == 'waiting'), None)
@@ -674,7 +695,7 @@ async def test_real_project_batch_http(
                         handled_manual.add(manual_id)
                         manual_receipts[item['runId']] = (manual_id, manual_key, body, command.json()['operation']['operationId'])
 
-                if scenario in {'manual-stop', 'manual-force-stop', 'manual-parallel-stop', 'manual-restart', 'manual-loss'} and not manual_interrupted:
+                if scenario in {'manual-stop', 'manual-force-stop', 'manual-force-stop-unknown', 'manual-parallel-stop', 'manual-restart', 'manual-loss'} and not manual_interrupted:
                     items = (await client.get(prefix + '/manual-items')).json()['items']
                     waiting = next((item for item in items if item['status'] == 'waiting'), None)
                     if waiting:
@@ -694,7 +715,7 @@ async def test_real_project_batch_http(
                             current = (await client.get(prefix + f'/batches/{batch_id}')).json()
                             stopped = await client.post(prefix + f'/batches/{batch_id}/stop', headers={'Idempotency-Key': str(uuid4())}, json={'expectedStatusRevision': current['batch']['statusRevision'], 'reason': '人工等待时停止'})
                             assert stopped.status_code == 202, stopped.text
-                            if scenario == 'manual-force-stop':
+                            if scenario.startswith('manual-force-stop'):
                                 from autoflow.infrastructure.process.browser_processes import (
                                     process_birth,
                                 )
@@ -711,15 +732,40 @@ async def test_real_project_batch_http(
                                 assert denied.status_code == 409, denied.text
                                 assert denied.json()['error']['code'] == 'FORCE_STOP_GRACE_ACTIVE'
                                 assert force_worker.process.returncode is None
-                if scenario == 'manual-force-stop' and force_worker is not None and force_receipt is None:
+                if scenario.startswith('manual-force-stop') and force_worker is not None and force_receipt is None:
                     current = (await client.get(prefix + f'/batches/{batch_id}')).json()
                     if current['forceStopAllowed']:
                         assert dropped_stops and force_worker.process.returncode is None
                         force_key = str(uuid4())
                         force_body = {'expectedStatusRevision': current['batch']['statusRevision'], 'reason': '普通停止消息丢失后强停'}
+                        proof_unavailable = scenario == 'manual-force-stop-unknown'
                         forced = await client.post(prefix + f'/batches/{batch_id}/force-stop', headers={'Idempotency-Key': force_key}, json=force_body)
                         assert forced.status_code == 202, forced.text
                         force_receipt = forced.json()['operation']
+                if scenario == 'manual-force-stop-unknown' and proof_unavailable:
+                    current = (await client.get(prefix + f'/batches/{batch_id}')).json()
+                    if current['batch']['status'] == 'reconciling' and force_worker.cleanup is not None and force_worker.cleanup.done():
+                        assert force_worker.cleanup.exception() is not None
+                        assert force_worker.process.pid in unknown_pids
+                        assert force_worker.process.returncode is None
+                        assert native_birth(force_worker.process.pid) == force_worker.birth
+                        assert force_worker.directory.is_dir()
+                        assert app.state.project_workflow_worker_manager.busy()
+                        assert 'workflow_worker_busy' in app.state.project_workflow_dispatcher.blockers()
+                        assert 'project_batches_active' in app.state.project_run_scheduler.blockers()
+                        assert current['taskCount'] == 1 and current['statusCounts']['reconciling'] == 1
+                        pending_force = (await client.get(prefix + f'/operations/by-idempotency-key/{force_key}')).json()
+                        assert pending_force['operationId'] == force_receipt['operationId']
+                        assert pending_force['status'] == 'running' and pending_force['completedAt'] is None
+                        held_task = (await client.get(prefix + f"/tasks/{waiting['taskId']}")).json()
+                        assert held_task['run']['status'] == 'reconciling'
+                        assert held_task['run']['executionGeneration'] > force_worker.generation
+                        assert (await client.get(prefix + f'/batches/{batch_id}')).json()['batch']['status'] == 'reconciling'
+                        quarantine_observed = True
+                        proof_unavailable = False
+                        retry = await client.post(prefix + f'/batches/{batch_id}/force-stop', headers={'Idempotency-Key': force_key}, json=force_body)
+                        assert retry.status_code == 202, retry.text
+                        assert retry.json()['operation']['operationId'] == force_receipt['operationId']
                 response = await client.get(prefix + f"/batches/{batch_id}")
                 assert response.status_code == 200, response.text
                 detail = response.json()
@@ -747,7 +793,7 @@ async def test_real_project_batch_http(
             tasks = (
                 await client.get(prefix + "/tasks", params={"batchId": batch_id})
             ).json()["items"]
-            assert len(tasks) == (1 if scenario in {"parameter-single", "manual-evidence-reconnect", "manual-force-stop", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2)
+            assert len(tasks) == (1 if scenario in {"parameter-single", "manual-evidence-reconnect", "manual-force-stop", "manual-force-stop-unknown", "data-subflow-cancel", "data-delete-field", "data-delete-field-conflict"} else 2)
             for task in tasks:
                 viewed = await client.get(prefix + f"/tasks/{task['taskId']}")
                 assert viewed.status_code == 200, viewed.text
@@ -897,13 +943,15 @@ async def test_real_project_batch_http(
                     for task in tasks:
                         attempts = (await client.get(prefix + f"/tasks/{task['taskId']}/node-attempts")).json()['items']
                         assert sum(attempt['nodeId'] == 'after-manual' for attempt in attempts) == 1
-                elif scenario in {'manual-stop', 'manual-force-stop', 'manual-parallel-stop', 'manual-restart', 'manual-loss'}:
+                elif scenario in {'manual-stop', 'manual-force-stop', 'manual-force-stop-unknown', 'manual-parallel-stop', 'manual-restart', 'manual-loss'}:
                     assert manual_interrupted
-                    assert detail['statusCounts']['interrupted' if scenario in {'manual-force-stop', 'manual-restart', 'manual-loss'} else 'cancelled'] >= 1, detail
+                    assert detail['statusCounts']['interrupted' if scenario in {'manual-force-stop', 'manual-force-stop-unknown', 'manual-restart', 'manual-loss'} else 'cancelled'] >= 1, detail
                     manual_items = (await client.get(prefix + '/manual-items')).json()['items']
                     assert all(item['status'] == 'cancelled' for item in manual_items)
-                    if scenario == 'manual-force-stop':
+                    if scenario.startswith('manual-force-stop'):
                         assert force_receipt is not None and force_worker is not None
+                        if scenario == 'manual-force-stop-unknown':
+                            assert quarantine_observed and unknown_pids
                         assert detail['batch']['status'] == 'stopped'
                         assert detail['statusCounts']['interrupted'] == 1
                         current_task = (await client.get(prefix + f"/tasks/{tasks[0]['taskId']}")).json()
@@ -1255,6 +1303,7 @@ async def test_real_project_batch_http(
             assert (workspace / "tmp").is_dir()
             assert not list((workspace / "tmp").glob("**/generation-*"))
     finally:
+        proof_unavailable = False
         try:
             if event_server is not None:
                 event_server.should_exit = True

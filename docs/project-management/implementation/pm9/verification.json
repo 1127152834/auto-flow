@@ -1,11 +1,12 @@
 {
   "date": "2026-09-24",
-  "status": "source_outage_local_passed_current_three_platform_in_progress",
+  "status": "unknown_owner_targeted_passed_full_and_packaged_running",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "2026-09-24 XE-G02归属不明核验修复（confirmed定向子范围，完整回归进行中）：真实worker证明缺失时Task已reconciling而Batch错误stopping。参数/数据调度器现在优先投影核验事实，并从同项目同批次running停止操作保留停止意图，避免后续重新领取或状态版本抖动。四个反例先失败，相关50项通过；真实普通/已知/未知归属强停3项通过（92.10秒），Ruff与mypy408通过。POSIX受控探针失败期间保留真实进程、目录、容量和原命令，恢复证明后原命令结束清理。Windows Job与打包UI联合门禁仍缺；251条状态不升级，releaseAccepted=false。详见unknown-owner-follow-through.json。",
     "XE-G02 known-owner force-stop after controlled graceful IPC loss passed local real parameter HTTP/SQLite/browser/worker with actual30s grace, generation revocation and terminal original-command replay. Final2 passed/34deselected74.42s; unknown-owner reconciliation, packaged/native new case remain pending. No product change; see force-stop-follow-through.json.",
     "DATA-WRITE-12 finite-group atomic update is an implementation gap, not just missing tests. Current domain rejects RecordRef arrays and worker has no group operation; existing single-write conflict/replay2 tests passed. G1–G3 spec and plan await confirmation. See group-write-audit.json.",
     "DATA-CLAIM-09 public peer replacement/namespace/current-generation recovery passed actual HTTP/SQLite/browser/worker locally. Together with peer removal, closes the specifically named missing-test cases only; packaged live-Google/UI and new native evidence remain pending. Status remains partial; see peer-rebind-follow-through.json.",
@@ -159,7 +160,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Production1c676965: serial full backend3493 passed/80 skipped/2 warnings and rebuilt ARM desktop22screens passed; newest native matrix dispatch pending restored authentication. See currentCandidateValidation and partial-source-follow-through.json. No merge/release.",
+  "workingCandidate": "New scheduler fix on parent5b79028a: targeted50 and real-worker3 passed, Ruff/mypy408 passed. Full backend and rebuilt ARM validation running; native dispatch still authentication pending. Prior1c676965 checks are historical.",
   "finalCICandidate": {
     "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
@@ -196,7 +197,7 @@
     "physicalInstallation": "ARM isolated command-line install passed; Windows/Intel physical installation, Finder/Gatekeeper/native panels/signing/notarization pending"
   },
   "codeCandidateScope": "Empty Sheets input proof guard plus prior source-outage/runtime fixes; targeted, serial full backend3493 and rebuilt ARM desktop22screens passed. Existing matrices are earlier production snapshots; newest native dispatch pending authentication.",
-  "testCandidate": "Latest test-only peer removal/rebinding and parameter force-stop evidence sits after production1c676965. Force-stop plus normal-stop final2 passed/34deselected74.42s; CI selection35/46 collected includes newest case. Prior full3493/package22screens and35902129697 do not include these assertions; see peer-rebind-follow-through.json and force-stop-follow-through.json.",
+  "testCandidate": "Unknown-owner POSIX fault scenario added to existing real parameter harness; existing CI manual-force-stop selector includes it. Windows skipped explicitly; no native all-matrix evidence for new scheduler source.",
   "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -520,20 +521,13 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
-    "status": "local_full_and_packaged_passed_native_dispatch_authentication_required",
-    "source": "1c676965fb581ea3e33882b3ecb300b3abc99368",
-    "report": "partial-source-follow-through.json",
-    "scope": "Source identity gate now runs for empty input tables; existing matrices exclude this production fix.",
-    "backendFull": "3493 passed /80 skipped /2 warnings /778.49s",
-    "packagedDesktop": "Rebuilt unsigned ARM app full desktop passed;22 screenshots; no live Google outage UI.",
-    "nativeDispatch": {
-      "status": "not_dispatched_authentication_required",
-      "testAndHarnessCandidate": "b26e790874bbf1fd2f836db36c967990956b73db",
-      "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
-      "observedFailure": "gh workflow run ci.yml --ref codex/project-management-pm9-runtime -f pm9Platform=all returned HTTP401 Requires authentication; subsequent run listing contains no matching head.",
-      "fallback": "GitHub connector updated draft PR successfully; no Actions dispatch tool available. Ego browser space1 shows signed-out Actions page and has been handed off for user login/dispatch.",
-      "scope": "Existing35902129697@a317e1f8 excludes this fix;35895754111@25bb8ab2 completed success and is historical. Recheck runs before any dispatch after credentials are restored."
-    }
+    "status": "local_targeted_passed_full_and_packaged_running",
+    "parentCommit": "5b79028a549a930be1f73193f8bd253bb09c57a7",
+    "productionSourceSha256": "5d58d8ea484abd49074e121106a510a7a0ffae333b5aebc8595cdf30f5523a7b",
+    "report": "unknown-owner-follow-through.json",
+    "backendFull": "running",
+    "packagedDesktop": "rebuild in progress",
+    "nativeDispatch": "Authentication restoration/manual trigger pending; old35902129697 excludes current source."
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -593,5 +587,22 @@
   "peerOutageFollowThrough": "peer-outage-follow-through.json",
   "peerRebindFollowThrough": "peer-rebind-follow-through.json",
   "groupWriteAudit": "group-write-audit.json",
-  "forceStopFollowThrough": "force-stop-follow-through.json"
+  "forceStopFollowThrough": "force-stop-follow-through.json",
+  "unknownOwnerFollowThrough": "unknown-owner-follow-through.json",
+  "priorSourceCandidateValidation": {
+    "status": "local_full_and_packaged_passed_native_dispatch_authentication_required",
+    "source": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+    "report": "partial-source-follow-through.json",
+    "scope": "Source identity gate now runs for empty input tables; existing matrices exclude this production fix.",
+    "backendFull": "3493 passed /80 skipped /2 warnings /778.49s",
+    "packagedDesktop": "Rebuilt unsigned ARM app full desktop passed;22 screenshots; no live Google outage UI.",
+    "nativeDispatch": {
+      "status": "not_dispatched_authentication_required",
+      "testAndHarnessCandidate": "b26e790874bbf1fd2f836db36c967990956b73db",
+      "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+      "observedFailure": "gh workflow run ci.yml --ref codex/project-management-pm9-runtime -f pm9Platform=all returned HTTP401 Requires authentication; subsequent run listing contains no matching head.",
+      "fallback": "GitHub connector updated draft PR successfully; no Actions dispatch tool available. Ego browser space1 shows signed-out Actions page and has been handed off for user login/dispatch.",
+      "scope": "Existing35902129697@a317e1f8 excludes this fix;35895754111@25bb8ab2 completed success and is historical. Recheck runs before any dispatch after credentials are restored."
+    }
+  }
 }

@@ -198,17 +198,18 @@ class ProjectBatchScheduler:
             tasks = repository.list_tasks(project_id, batch_id)
             project = ProjectRunCoordinator._project(session, project_id)
             project_active = project.lifecycle_state == "active"
-            force_requested = (
-                session.scalar(
-                    select(ProjectOperationRow.id).where(
+            stop_kinds = set(
+                session.scalars(
+                    select(ProjectOperationRow.kind).where(
                         ProjectOperationRow.project_id == project_id,
-                        ProjectOperationRow.kind == "forceStopBatch",
+                        ProjectOperationRow.kind.in_(["stopBatch", "forceStopBatch"]),
                         ProjectOperationRow.status == "running",
                         ProjectOperationRow.resource["batchId"].as_string() == batch_id,
                     )
                 )
-                is not None
             )
+            stop_requested = bool(stop_kinds)
+            force_requested = "forceStopBatch" in stop_kinds
         if (
             batch.frozen_request.get("automation", {})
             .get("inputPlan", {})
@@ -220,6 +221,7 @@ class ProjectBatchScheduler:
                 batch,
                 tasks,
                 project_active=project_active,
+                stop_requested=stop_requested,
                 force_requested=force_requested,
             )
             return
@@ -231,10 +233,14 @@ class ProjectBatchScheduler:
         continue_after_failure = batch.frozen_request["automation"]["runPolicy"][
             "continueAfterFailure"
         ]
-        stopping = batch.status == "stopping" or not project_active
+        stopping = batch.status == "stopping" or stop_requested or not project_active
         if stopping or (failed and not continue_after_failure):
             self._set_status(
-                project_id, batch_id, "stopping" if stopping else "draining"
+                project_id,
+                batch_id,
+                "reconciling"
+                if any(task.status == "reconciling" for task in tasks)
+                else "stopping" if stopping else "draining",
             )
             for task in tasks:
                 current = self._core.query_run(task.run_id)
@@ -274,10 +280,10 @@ class ProjectBatchScheduler:
             self._release_terminal_leases(project_id, batch_id)
             self._set_status(project_id, batch_id, result)
             return
-        if stopping or (failed and not continue_after_failure):
-            return
         if any(task.status == "reconciling" for task in active):
             self._set_status(project_id, batch_id, "reconciling")
+            return
+        if stopping or (failed and not continue_after_failure):
             return
         if any(task.status != "queued" for task in active):
             return
@@ -309,6 +315,7 @@ class ProjectBatchScheduler:
         tasks: list[Any],
         *,
         project_active: bool,
+        stop_requested: bool,
         force_requested: bool,
     ) -> None:
         failed = any(
@@ -317,11 +324,15 @@ class ProjectBatchScheduler:
         continue_after_failure = bool(
             batch.frozen_request["automation"]["runPolicy"]["continueAfterFailure"]
         )
-        stopping = batch.status == "stopping" or not project_active
+        stopping = batch.status == "stopping" or stop_requested or not project_active
         if stopping or (failed and not continue_after_failure):
             self._close_claim_gate(project_id, batch_id)
             self._set_status(
-                project_id, batch_id, "stopping" if stopping else "draining"
+                project_id,
+                batch_id,
+                "reconciling"
+                if any(task.status == "reconciling" for task in tasks)
+                else "stopping" if stopping else "draining",
             )
             if stopping:
                 await self._stop_active_runs(
@@ -446,10 +457,10 @@ class ProjectBatchScheduler:
             self._release_terminal_leases(project_id, batch_id)
             self._set_status(project_id, batch_id, result)
             return
-        if stopping:
-            return
         if any(task.status == "reconciling" for task in active):
             self._set_status(project_id, batch_id, "reconciling")
+            return
+        if stopping:
             return
         queued = [task for task in active if task.status == "queued"]
         if not queued:

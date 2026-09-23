@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-24",
+  "status": "local_targeted_passed_full_and_packaged_running",
+  "releaseAccepted": false,
+  "requirement": "XE-G02",
+  "parentCommit": "5b79028a549a930be1f73193f8bd253bb09c57a7",
+  "change": "Both parameter and data schedulers prioritize active reconciling facts while preserving accepted stopBatch/forceStopBatch intent from scoped running operations. Stable pending reconciliation does not churn statusRevision; recovery completes original stop operation without new claims.",
+  "rootCause": "Stopping returned before active reconciling projection. Merely moving that projection would lose stop intent on the next tick because batch.status was the only ordinary-stop signal.",
+  "fixtureBoundary": "Real parameter HTTP/SQLite/browser/worker uses controlled parent-to-worker channel loss. POSIX process_birth returns None only for the owned process group during force cleanup; actual worker remains alive and the original native probe independently confirms birth. Restore the original probe and replay the original public force command. Windows Job ownership is explicitly skipped, not inferred.",
+  "assertions": [
+    "Actual 30-second grace and public force-stop admission remain unchanged.",
+    "While native proof is unavailable: Batch and Task reconciling, original force operation running with no completedAt, execution generation fenced, owned worker alive, directory retained and worker/core/scheduler capacity blocked.",
+    "After restoring proof: original force command replay, no additional Task/browser or after-manual node, interrupted unknown result, cancelled manual item, owned process and directory cleaned, original operation succeeded.",
+    "Deterministic ordinary/force stop x parameter/data tests hold three ticks with stable statusRevision, no new claim/dispatch and running original operation; confirmed recovery ends stopped with original operation succeeded."
+  ],
+  "checks": {
+    "redRealWorker": "1 failed /36 deselected /136.46s: task reconciling but batch stuck stopping",
+    "redScheduler": "4 failed /34 deselected /2.81s: all four variants masked reconciliation",
+    "scheduler": "50 passed /26.76s",
+    "realWorker": "3 passed /34 deselected /92.10s",
+    "ruff": "passed",
+    "mypy": "408 source files passed",
+    "fullBackend": "running",
+    "packagedDesktop": "pending rebuild/full acceptance"
+  },
+  "remaining": [
+    "Windows Job proof-unavailable public batch scenario and packaged UI reconciliation remain unproved.",
+    "New production candidate native CI dispatch requires restored authentication/manual all trigger; historical35902129697 excludes this change.",
+    "Live Sheets/OAuth/signing/physical platform acceptance and separately proposed architecture remain pending."
+  ],
+  "evidenceSha256": {
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/scheduler-red.log": "c81d6af4cd27186022ce615386f40e580442df3df99cf51f05236c6f2df0b554",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/scheduler-green.log": "b793cce6b5e553ab4804beefcbe1a38de570ef4c17192db437ae345e84484c65",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/ci-selection.log": "88ff9fa5e079f5698c4a8143bb7c32b85db9001817ff6b5bf6d56c6a3d757c33",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/real-worker-green.log": "476c0e1521365f9acf87bbd152be4b56aa451920a9c4e22f88906d17360bdceb",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/mypy.log": "144062ad850da376abb58cfac6c1a147a5b0cd760c85c8739f96db58cf8d92e9",
+    ".tmp-tests/pm9-unknown-owner-2026-09-24/initial.log": "fe9f4239d98d2285829a2900e6db1eeca67d1115a8866d05baf19d7178bf5e4e"
+  }
+}

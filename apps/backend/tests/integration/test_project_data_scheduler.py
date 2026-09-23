@@ -101,6 +101,68 @@ def start(services, max_tasks=1):
     )[0]
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("data_batch", [False, True])
+@pytest.mark.parametrize("force", [False, True])
+async def test_stop_preserves_reconciliation_and_stop_intent(
+    tmp_path, data_services, monkeypatch, data_batch, force
+):
+    from tests.integration.test_project_run_dispatch import services
+
+    if data_batch:
+        factory, project, _, coordinator, worker, core, scheduler = data_services
+        batch = start(data_services, max_tasks=3)
+        assert scheduler._claim_data_task(project, batch.batch_id) == "ready"
+    else:
+        parameter_path = tmp_path / "parameters"
+        parameter_path.mkdir()
+        factory, coordinator, project_view, batch, worker, core, scheduler, _ = services(
+            parameter_path
+        )
+        project = project_view.project_id
+    task = coordinator.list_tasks(project, batch.batch_id)[0]
+    core._transition_identity(task.run_id, "running", 1, 0)
+    core._transition_identity(task.run_id, "reconciling", 2, 1)
+    proof_available = False
+
+    async def cleanup(_run):
+        if not proof_available:
+            raise RuntimeError("native ownership unconfirmed")
+
+    monkeypatch.setattr(core, "_recover_orphan", cleanup)
+    await scheduler.tick()
+    current = coordinator.get_batch(project, batch.batch_id)
+    key = uid()
+    payload = {"expectedStatusRevision": current.status_revision, "reason": "核验停止"}
+    operation = await scheduler.stop(project, batch.batch_id, key, payload, force=force)
+    revision = None
+    for _ in range(3):
+        await scheduler.tick()
+        current = coordinator.get_batch(project, batch.batch_id)
+        assert current.status == "reconciling"
+        if revision is not None:
+            assert current.status_revision == revision
+        revision = current.status_revision
+        replay = await scheduler.stop(project, batch.batch_id, key, payload, force=force)
+        assert replay.operation_id == operation.operation_id
+        assert replay.status == "running" and replay.completed_at is None
+        assert len(coordinator.list_tasks(project, batch.batch_id)) == (1 if data_batch else 3)
+        assert worker.calls == []
+    proof_available = True
+    if not force:
+        await core.reconcile(task.run_id)
+    await scheduler.tick()
+    current = coordinator.get_batch(project, batch.batch_id)
+    assert current.status == "stopped"
+    assert current.counts.by_status["interrupted"] == 1
+    assert current.counts.active_task_count == 0
+    replay = await scheduler.stop(project, batch.batch_id, key, payload, force=force)
+    assert replay.operation_id == operation.operation_id and replay.status == "succeeded"
+    assert worker.calls == []
+    if not data_batch:
+        factory.dispose()
+
+
 def test_environment_reservation_failure_rolls_back_data_task_and_run(data_services):
     from autoflow.domain.environments.rules import environment_error
     from autoflow.domain.projects.models import ProjectError
