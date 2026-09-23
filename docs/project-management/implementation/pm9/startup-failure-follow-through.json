@@ -1,10 +1,10 @@
 {
   "date": "2026-09-24",
-  "status": "targeted_passed_full_candidate_validation_running",
+  "status": "local_full_backend_and_packaged_passed_native_pending",
   "releaseAccepted": false,
   "requirement": "DATA-CLAIM-03",
   "base": "9ed95a24e765af42618ac0ec20abff86e2e686c0",
-  "productionSource": "pending code commit",
+  "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
   "scope": "Production HTTP handlers through in-process ASGI, real SQLite, real worker subprocess with deliberately invalid browser executable on first Task, actual CloakBrowser on second Task. Not a packaged startup-failure UI or live Google check.",
   "rootCause": "Child emits finished/failed after browser launch failure before ready; parent rejected it as protocol-invalid, producing interrupted/unknown instead of failed.",
   "change": "Move ready admission into shared exchange; pre-ready only finished failed/cancelled proceeds to unchanged identity/cleanup/exit/ownership validation.",
@@ -22,12 +22,16 @@
   "checks": {
     "redReal": "2 failed,37 deselected,16.98s; interrupted != failed in both configurations",
     "redProtocol": "4 failed,2 passed,28 deselected,1.75s",
-    "targeted": "8 passed,65 deselected,20.54s",
+    "targeted": "8 passed,65 deselected,20.54s (2 real startup/reclaim configurations plus initial6 protocol cases); final expanded8-case protocol check separately passed",
     "related": "81 passed,3 skipped,35.88s",
-    "mypy": "408 source files; 2 existing annotation-unchecked notes",
+    "mypy": "Native default and --platform win32:408 source files each; two existing annotation-unchecked notes",
     "ruff": "passed after sorting new local imports",
-    "fullBackend": "running",
-    "packaged": "pending"
+    "fullBackend": "3505 passed, 86 skipped, 2 warnings in 911.71s",
+    "packaged": "Rebuilt backend and unsigned ARM app; initial complete desktop passed,then screenshot evidence regeneration also passed with24 intact PNGs. Generic regression,not packaged startup-failure UI.",
+    "finalProtocol": "8 passed,28 deselected,3.37s; includes pre-ready event/capability refusal",
+    "mapping": "4 tests passed;251 valid references, not complete coverage",
+    "nativeDispatch": "Fresh gh api user returns401; current matrix not dispatched; no substitution of old35902129697 evidence",
+    "frontend": "Unchanged from7b896163; prior5475 passed/409 files/525.26s retained in no-auto-save-follow-through.json, not rerun"
   },
   "fixtureFailures": [
     "Settings instance_id omitted",
@@ -37,35 +41,316 @@
     "Task query reverse order and dispatcher blockers API"
   ],
   "artifacts": {
-    "red": {
-      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/red.log",
-      "sha256": "6ce778ebb99f56a6ddbccb56a47af326b3648a1a675c7cb68a5cdeea14ae52fb"
+    "backend-build": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/backend-build.log",
+      "sha256": "db7f260049bf462a03d9e2e48c81bda9a3f9ce4fee741491003d6dc6f98c8387"
     },
-    "protocol-red": {
-      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/protocol-red.log",
-      "sha256": "e83a9dc0927b30137f5fad2ee4897c31a19425ecd189ff92559713b0cb278314"
+    "backend-full": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/backend-full.log",
+      "sha256": "94f57c3491afd97bfbd463174c8f99f0324bc756036f76667465fbb9db43a679"
+    },
+    "desktop": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop.log",
+      "sha256": "3c4c62d893aa8774f275d02f67c6f530aee8207c732b3ae8ae1eeb6bb07613a8"
+    },
+    "fixture-batch-dto": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/fixture-batch-dto.log",
+      "sha256": "5c3577625a5c60eaeaf8686f99fde9df4f7948f8427edaa93b408903af351c45"
+    },
+    "fixture-kernel-root": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/fixture-kernel-root.log",
+      "sha256": "137dd9226a982eb6849ed09d66741858b243d2bc909f976b1db778b9ec70361c"
+    },
+    "fixture-request-id": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/fixture-request-id.log",
+      "sha256": "10bbed89d4d0684b17be306b87f4663a8d84b72fc5156dd292b36183aa0f84a1"
+    },
+    "fixture-settings": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/fixture-settings.log",
+      "sha256": "5fb6a8c6c644059e688480ad1515d23cd2fc3bb6bd2070e940f6410e6d5e8f32"
+    },
+    "fixture-task-order": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/fixture-task-order.log",
+      "sha256": "c7c7cef63630447b404a4e6df4fa8947a410872cb4d469a14c0e1c21e5dae01e"
+    },
+    "fixture-workflow-dto": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/fixture-workflow-dto.log",
+      "sha256": "1aeaab22f046f53d98b7f693f3462b7553b76aef8e50ed89feead31524640e64"
+    },
+    "gh-auth": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/gh-auth.log",
+      "sha256": "3dcbb6c07e0b3a5972dae966e3c42397ac666122860132b69be6d44145771358"
     },
     "green": {
       "path": ".tmp-tests/pm9-startup-failure-2026-09-24/green.log",
       "sha256": "7754e418a107fe001a8a097c06552fddad7f1a2b4548870280f948ade1d3ee54"
     },
-    "related": {
-      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/related.log",
-      "sha256": "424601959a51e6e7727124426bebcdab7b3fbd656fb1367fe318bc0e7ae8d006"
+    "mapping-tests": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/mapping-tests.log",
+      "sha256": "6c8e2daacf8665afdd267253620c82342b0088ce30c32d89676b669120ee6621"
+    },
+    "mapping": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/mapping.log",
+      "sha256": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f"
+    },
+    "mypy-win32": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/mypy-win32.log",
+      "sha256": "144062ad850da376abb58cfac6c1a147a5b0cd760c85c8739f96db58cf8d92e9"
     },
     "mypy": {
       "path": ".tmp-tests/pm9-startup-failure-2026-09-24/mypy.log",
       "sha256": "144062ad850da376abb58cfac6c1a147a5b0cd760c85c8739f96db58cf8d92e9"
     },
+    "package": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/package.log",
+      "sha256": "e6e0b318eaa59d1245899b1c2c62de9a1cb48448d8d8093abd58d272b7ba1c44"
+    },
+    "protocol-final": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/protocol-final.log",
+      "sha256": "7bedd12823d5fd673f98138b20b2ff130a50409fc3912565a8be9fad9b11ce86"
+    },
+    "protocol-red": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/protocol-red.log",
+      "sha256": "e83a9dc0927b30137f5fad2ee4897c31a19425ecd189ff92559713b0cb278314"
+    },
+    "push-code": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/push-code.log",
+      "sha256": "3e5a02e184660a61e8b1a457fd3520ec6e6716df0b19484ea38aa6dcfab25503"
+    },
+    "red": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/red.log",
+      "sha256": "6ce778ebb99f56a6ddbccb56a47af326b3648a1a675c7cb68a5cdeea14ae52fb"
+    },
+    "related": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/related.log",
+      "sha256": "424601959a51e6e7727124426bebcdab7b3fbd656fb1367fe318bc0e7ae8d006"
+    },
     "ruff": {
       "path": ".tmp-tests/pm9-startup-failure-2026-09-24/ruff.log",
       "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "project-desktop": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop/project-desktop.json",
+      "sha256": "d1cf29ed3ade495aa86c42ed2e104f92c2a04105e7fcb98326529b9f80359575"
+    },
+    "mapping-final-tests": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/mapping-final-tests.log",
+      "sha256": "79b326102fa8fb471fcf6eb1627e55ab079a9ab4e61522803bd43da319ae96da"
+    },
+    "mapping-final": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/mapping-final.log",
+      "sha256": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f"
+    },
+    "desktop-final.log": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final.log",
+      "sha256": "afab44c8f80bd9a4f6ff1ce034f8632b82c0674c11bef67cfd181cda3c6344ce"
+    },
+    "desktop-final/project-desktop.json": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-desktop.json",
+      "sha256": "35ed55469c6ac6df93e726d397ce22233d2f66aad8ad382b7f97db4bc4ea7cbb"
+    },
+    "artifact-write-error.json": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/artifact-write-error.json",
+      "sha256": "93d1346969ea1a823e0c5ce3b0d1c2f90a0f1b88c265acb77ef0b9ba9d3baf55"
+    },
+    "ci-selection.log": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/ci-selection.log",
+      "sha256": "0e8ab9ff5d92d876ab7a10ee06471381b6966e54fc1bf6dd314a6f4a8d8bdbd7"
+    },
+    "desktop-final/project-studio-independent-run.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-independent-run.png",
+      "sha256": "4913e6f5f56c919bbaa194c0dbac53bedb0e0429863ec27404ed1a35aa1b8938"
+    },
+    "desktop-final/project-运行记录.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-运行记录.png",
+      "sha256": "3696233d44b204e9307dc05c952af42579bb3a5c1db25dfea50a6cf7ed228da8"
+    },
+    "desktop-final/project-volume.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-volume.png",
+      "sha256": "e5a660353723f2b30c06aaf02bcbd65569bd55315530825b2a4a0022fb115ad7"
+    },
+    "desktop-final/project-automation-unlinked.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-automation-unlinked.png",
+      "sha256": "1c5d4af2344cb1cbc8dfd3aed3fc2a06c67c860f6cb835006ba14fdb6c0672f3"
+    },
+    "desktop-final/project-统计.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-统计.png",
+      "sha256": "db2d253949043faf36f04571b18a47d18753ee0c8385818b6594d819363eec5d"
+    },
+    "desktop-final/project-automation-delete-stale.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-automation-delete-stale.png",
+      "sha256": "7de4d7cc8c82514069372c961054bd1f464022e57ede6c594ce22327f85d859c"
+    },
+    "desktop-final/project-studio-capability-refused.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-capability-refused.png",
+      "sha256": "edc056514ac3f1363ef5e8b67dbd382bb51c3603cd21d483dd475d42c97754fb"
+    },
+    "desktop-final/project-概览.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-概览.png",
+      "sha256": "a091a9b2304064942957cd30c1a2a4f9ee26a334698cc6a7a4b9b13c63ec8288"
+    },
+    "desktop-final/project-manual-declared-input.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-manual-declared-input.png",
+      "sha256": "b7d1cee2641c677e4374846e52a769c4fe2d285ccf561ce7faec0f0ac975d83c"
+    },
+    "desktop-final/project-session-not-saved.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-session-not-saved.png",
+      "sha256": "915505329cb1acef1157baf8380e7b831809997037c03b01b20e0a9fc125e00e"
+    },
+    "desktop-final/project-zoom-200.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-zoom-200.png",
+      "sha256": "2ab4925bb92b8142efddf4a1110c02cc971130d83830e92bd574c64bcb81f81c"
+    },
+    "desktop-final/project-project-delete-unlinked.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-project-delete-unlinked.png",
+      "sha256": "4ac775cd12ac59540e61b731adaf17242ca17421279b1e91a37ac95c376b2485"
+    },
+    "desktop-final/project-studio-project-document-saved.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-project-document-saved.png",
+      "sha256": "0160f7ee3444c8f33d08617570560d00e3898f3a8bf213dc9fef69e130d3fefa"
+    },
+    "desktop-final/project-自动化.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-自动化.png",
+      "sha256": "e262258b23007fa70a1af2c99f4a6399bc39ac0c021bddf8f2cbaddb2b5af78d"
+    },
+    "desktop-final/project-studio-reopened-compact.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-reopened-compact.png",
+      "sha256": "1fff94772e1b539bf0b7fab0549a7b537dd83cdd8a47c34007141f603784d064"
+    },
+    "desktop-final/project-automation-delete-ready.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-automation-delete-ready.png",
+      "sha256": "72352824e5169db32fce750a53b31216edbb4c254724e9f8c4deec3c8e180037"
+    },
+    "desktop-final/project-数据.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-数据.png",
+      "sha256": "844180b918ad6d3ca4ac3b73b4a451ea4ae18cd3ea27917b7d8e3f055c94e40f"
+    },
+    "desktop-final/project-automation-delete-busy.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-automation-delete-busy.png",
+      "sha256": "d4e752602abf7b7bfad0673389b4036ff9a4b3174b002ae63a45ded8c2b164bd"
+    },
+    "desktop-final/project-环境.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-环境.png",
+      "sha256": "8affab5374a003d3a62790435bb09cefb005ac1ae3d9359fd8641d77a626ffd6"
+    },
+    "desktop-final/project-studio-reopened-document.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-reopened-document.png",
+      "sha256": "e982daba3d4897f2db0d8bdebe433f5c54b19767f2866872dde535092a3b6d7e"
+    },
+    "desktop-final/project-studio-project-context.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-project-context.png",
+      "sha256": "3aa087ee2d6bbbb240da11cf8e0a7615baf5d343e4784ec50674f49729be3925"
+    },
+    "desktop-final/project-studio-required-url.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-required-url.png",
+      "sha256": "699256c0b12d3311eaebe5e7dd2e7bd3222a2c50325f58e58d2aee50db70bf68"
+    },
+    "desktop-final/project-studio-close-dirty.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-studio-close-dirty.png",
+      "sha256": "3456e651cc7b195e32311269e7f74c49d7b5cbc18a4a86ee33af29c35dd8f960"
+    },
+    "desktop-final/project-restarted.png": {
+      "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop-final/project-restarted.png",
+      "sha256": "0ab11a4b027ef5da1d2db75b1c80d0f606e24525e7df29ed03a1084075719a45"
     }
   },
   "remaining": [
-    "Current Windows/Intel/ARM CI including new scenarios; CLI authentication was unavailable on previous attempt",
+    "Current Windows/Intel/ARM CI including new scenarios; fresh CLI authentication401 prevents dispatch.",
     "Packaged UI showing browser-start failure and failure continuation",
     "Systemic startup resource outage visibly blocked rather than candidate exhaustion; not established by invalid per-Task executable test",
     "All other PM9 implementation/external gaps remain; no release acceptance"
-  ]
+  ],
+  "candidateFiles": {
+    "apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py": {
+      "sha256": "79bd54d5b78fb71f7b620a583cd5c1cab26ac2b38cdf7e5570662d56aa2e233d",
+      "bytes": 20093
+    },
+    "apps/backend/dist/autoflow-backend/autoflow-backend": {
+      "sha256": "06643a2946541fe27e0eb349219bbab8d4c04f24b38339cfcaaa3d44aaa707a3",
+      "bytes": 16035904
+    },
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow": {
+      "sha256": "afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7",
+      "bytes": 33968
+    },
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": {
+      "sha256": "403860fc2d772263d0aa4b24195a2012d11f97832f3496d24dbea99db29a3375",
+      "bytes": 355071978
+    },
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": {
+      "sha256": "06643a2946541fe27e0eb349219bbab8d4c04f24b38339cfcaaa3d44aaa707a3",
+      "bytes": 16035904
+    }
+  },
+  "observations": {
+    "workerLogLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 33088,
+      "logsPerMinute": 1821,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0,
+      "elapsedMs": 44195
+    },
+    "syntheticLogProducer": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60025,
+      "maxBatchLagMs": 59
+    },
+    "scope": "Final disposable local ARM run; no cross-platform worker throughput SLO or sustained-load claim."
+  },
+  "visualReview": "Initial current-package cleaned UI viewed; final regenerated screenshot also reviewed separately. Screens are actual application output,not synthetic.",
+  "artifactHandling": "First desktop run passed; local evidence finalization reused a report-path variable and overwrote one viewed/hashed screenshot with JSON. Original JSON data report and remaining23 images retained; overwritten JSON preserved as artifact-write-error.json. Corrected script and repeated desktop only: second full run passed,all24 retained PNG signatures/hash references checked. No production change or repeated backend suite.",
+  "warnings": [
+    "StarletteDeprecationWarning: httpx TestClient integration",
+    "DeprecationWarning: anyio.abc.BlockingPortal alias"
+  ],
+  "validationCommands": [
+    "AUTOFLOW_TEST_CLOAKBROWSER='<installed CloakBrowser executable>' uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_workflow_worker_process.py -k 'browser_startup_failure or pre_ready_terminal'",
+    "uv run --directory apps/backend pytest -q tests/integration/test_workflow_worker_process.py tests/integration/test_project_run_dispatch.py tests/integration/test_project_data_scheduler.py",
+    "uv run --directory apps/backend pytest -q",
+    "uv run --directory apps/backend mypy src",
+    "uv run --directory apps/backend mypy --platform win32 src",
+    "npm run backend:build",
+    "npm run package:dir",
+    "node scripts/smoke-project-management-desktop.mjs --executable 'apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow' --runtime-kernel '<installed CloakBrowser executable>' --output-dir '.tmp-tests/pm9-startup-failure-2026-09-24/desktop-final'",
+    "node --test scripts/verify-pm9-coverage.test.mjs",
+    "node scripts/verify-pm9-coverage.mjs"
+  ],
+  "firstDesktopObservation": {
+    "workerLogLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 32937,
+      "logsPerMinute": 1829,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0,
+      "elapsedMs": 50979
+    },
+    "syntheticLogProducer": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60020,
+      "maxBatchLagMs": 32
+    },
+    "scope": "One local ARM observation while backend regression also ran; no cross-platform worker throughput SLO or sustained-load claim."
+  },
+  "lostOriginalScreenshot": {
+    "path": ".tmp-tests/pm9-startup-failure-2026-09-24/desktop/project-session-not-saved.png",
+    "sha256": "6e63c01a050a11086a66e70a28bbea460286371f9c090546cefa6f29b3b4542b",
+    "status": "lost in local evidence finalization; original hash retained, regeneration pending"
+  }
 }

@@ -1,6 +1,6 @@
 # PM9 剩余工作复核
 
-2026-09-24 DATA-CLAIM-03启动失败根因修复（confirmed本机源码子范围）：真实子进程在浏览器启动失败时返回finished/failed，旧父进程仅接受ready并误报interrupted。共用协议入口现接受启动前failed/cancelled，仍核验消息身份、清理证明、退出码和进程所有权；启动前成功、事件与能力请求继续拒绝。真实生产路由/SQLite/子进程及恢复后的CloakBrowser联合验证：失败计入2个任务上限，业务值/非空状态及版本不变，原lease释放，允许继续时同一记录由第二Task成功执行，关闭继续时只有失败Task；同键重放无新增。专项8项通过，相关81 passed/3 skipped；新增两个早期非法消息反例及完整后端/新包验证继续中。该项仅planned→partial，251合计208partial/43planned/0verified；249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。新三平台、打包启动失败界面、系统性启动资源故障受阻组合仍保留，releaseAccepted=false。见startup-failure-follow-through.json。
+2026-09-24 DATA-CLAIM-03启动失败修复（confirmed本机源码/新包回归子范围）：a7059dc6修正真实子进程finished/failed在ready前被误判interrupted；只接受启动前失败/取消，保留身份、清理、退出与所有权检查。真实2场景证明失败占名额、非空状态/值/版本不变、释放后同记录可再取及同键无重复；8项协议反向/终态检查通过，相关81 passed/3 skipped。最终完整后端3505 passed, 86 skipped, 2 warnings in 911.71s，Ruff/mypy408、4映射/251引用、后端构建与未签名ARM完整桌面passed/24截图；清理界面已目视复核。前端未变，保留7b896163的5475/409原范围。仅DATA-CLAIM-03 planned→partial，合计208partial/43planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。CLI401仍阻断当前新矩阵，打包启动失败UI与系统性资源故障受阻组合待补；releaseAccepted=false。见startup-failure-follow-through.json。
 
 2026-09-24 XE-A09不自动保存与界面修复（confirmed本机新包子范围）：真实固定环境cookie1→工作副本9且End不保留→新Task恢复1；来源g1/元数据/环境总数1不变，两实例cleaned且实际目录不存在。旧包截图暴露cleaned仍提供保存表单，7b896163修复为已清理说明，保留仅修复关联并在完成后移除入口。组件RED→8项相关通过，最终前端5475/409、类型/lint/脚本102、构建和未签名ARM完整桌面24截图通过，新界面已目视检查；后端cb040daf及既有3497回归范围不变。XE-A09仅planned→partial；251合计207partial/44planned/0verified，缺口241生产/19实现/8测试/24外部不变。输入环境、身份漂移I1–I3、新三平台/外部验收保留；releaseAccepted=false。见no-auto-save-follow-through.json。
 
