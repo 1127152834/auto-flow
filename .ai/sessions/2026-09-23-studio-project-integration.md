@@ -250,3 +250,9 @@
 - 根因是项目准备层仍强制顺序链，虽然项目worker已复用正式WebRPA图执行器。现对v3图保留原拓扑并使用现有图验证；旧chain/v1路径不变。项目目录放行九个批准且真实注册的基础控制/变量类型，无新执行器或迁移。
 - 后端153项关联与54项冻结差分/运行时测试、Ruff/mypy/OpenAPI及PyInstaller通过。正式Electron开发 `formal-project-control-electron-IgPlCr` 和macOS arm64本地unsigned包 `formal-project-control-electron-uL7WoF` 真实UI完成三轮循环、条件真分支、假分支无副作用、输出及清理；包哈希和边界见 `project-integration/control-project-2026-09-23/result.json`。
 - 项目UI其余控制分支、子流程/模块依赖、业务数据桥和未测平台仍待核销；普通Studio既有B3源码差分不冒充项目端到端。213节点622/17槽位不变。
+
+## 项目任务控制流同族扩展（2026-09-23）
+
+- 沿用户已确认的项目默认值＋任务显式覆盖规则执行；本次为纯数据流程，不读取浏览器配置，也不新建资源白名单。
+- 同一正式Electron项目工作区以真实UI新增第二条流程：全局列表／字典初值，列表和字典各遍历两轮，无限循环中break、两轮次数循环中continue，最后写出visited=4。开发`formal-project-control-electron-fTx2GB`及同一冻结后端的macOS arm64本地unsigned包`formal-project-control-electron-dsxJew`均通过；每轮尝试、被跳过节点无尝试、输出和进程清理见既有`project-integration/control-project-2026-09-23/result.json`。
+- 首次新脚本只等可见成功日志而超时，改为核对项目作用域下持久文档；失败尝试`formal-project-control-electron-dlPeHa`保留。项目嵌套组合、子流程／模块依赖、业务数据桥和未测平台仍待核销，213节点622/17槽位不变。
