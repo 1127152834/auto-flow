@@ -255,4 +255,5 @@
 
 - 沿用户已确认的项目默认值＋任务显式覆盖规则执行；本次为纯数据流程，不读取浏览器配置，也不新建资源白名单。
 - 同一正式Electron项目工作区以真实UI新增第二条流程：全局列表／字典初值，列表和字典各遍历两轮，无限循环中break、两轮次数循环中continue，最后写出visited=4。开发`formal-project-control-electron-fTx2GB`及同一冻结后端的macOS arm64本地unsigned包`formal-project-control-electron-dsxJew`均通过；每轮尝试、被跳过节点无尝试、输出和进程清理见既有`project-integration/control-project-2026-09-23/result.json`。
-- 首次新脚本只等可见成功日志而超时，改为核对项目作用域下持久文档；失败尝试`formal-project-control-electron-dlPeHa`保留。项目嵌套组合、子流程／模块依赖、业务数据桥和未测平台仍待核销，213节点622/17槽位不变。
+- 首次新脚本只等可见成功日志而超时，改为核对项目作用域下持久文档；失败尝试`formal-project-control-electron-dlPeHa`保留。其他嵌套组合、子流程／模块依赖、业务数据桥和未测平台仍待核销，213节点622/17槽位不变。
+- 追加列表循环体内的条件分支，正式UI两轮分别命中真假路径各一次。开发`formal-project-control-electron-WNL3g2`与同一冻结包`formal-project-control-electron-iiRx21`通过；其他嵌套组合与模块依赖仍按未验收处理。

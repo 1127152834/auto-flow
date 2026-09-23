@@ -35,12 +35,14 @@
     "九个批准控制与变量节点在项目目录登记，并逐项确认已批准且有真实执行器",
     "真实项目worker执行三轮循环、条件真分支、变量更新和结束路径；假分支未执行，无浏览器依赖和残留进程",
     "正式Electron开发入口与本次unsigned包从项目页进入Studio，真实模块条编排、保存、关联自动化、启动批次并在任务页查看输出",
-    "第二条项目流程声明列表和字典初值，真实worker各遍历两轮；无限循环以break退出、次数循环两轮continue，跳过的节点没有尝试，最终输出为4",
+    "第二条项目流程声明列表和字典初值，真实worker各遍历两轮；列表体内的条件真假分支各执行一次；无限循环以break退出、次数循环两轮continue，跳过的节点没有尝试，最终输出为4",
     "全部使用临时SQLite和工作区，未修改用户数据库"
   ],
   "formalEvidence": {
-    "development": "formal-project-control-electron-fTx2GB/result.json",
-    "packaged": "formal-project-control-electron-dsxJew/result.json",
+    "development": "formal-project-control-electron-WNL3g2/result.json",
+    "packaged": "formal-project-control-electron-iiRx21/result.json",
+    "earlierFlatControlDevelopment": "formal-project-control-electron-fTx2GB/result.json",
+    "earlierFlatControlPackaged": "formal-project-control-electron-dsxJew/result.json",
     "earlierConditionCountLoopDevelopment": "formal-project-control-electron-IgPlCr/result.json",
     "earlierConditionCountLoopPackaged": "formal-project-control-electron-uL7WoF/result.json",
     "failedHarnessAttempt": "formal-project-control-electron-dlPeHa/blocked.json",
@@ -48,7 +50,7 @@
     "frozenBackendExecutableSha256": "bd839c1e8a5fb00e2cb9e57441b045ef18753a1b4a3712d6c4d1cab6f9ff03f1"
   },
   "notYetAccepted": [
-    "项目正式UI已实测条件、次数/列表/字典/无限循环、break/continue；嵌套组合及子流程、自定义模块依赖和业务数据写回仍属于后续项目集成块",
+    "项目正式UI已实测条件、次数/列表/字典/无限循环、break/continue及列表体内嵌条件；子流程、自定义模块依赖、其他嵌套组合和业务数据写回仍属于后续项目集成块",
     "macOS Intel与Windows未实机验收"
   ],
   "nodeExecutionLedger": "213 approved, 622 of 639 execution slots passed, 17 pending; project bridge does not relabel node slots"

@@ -1,0 +1,33 @@
+{
+  "evidenceId": "BE-project-control-flow-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T09:51:05.064Z",
+  "gitHead": "ad2e1a16f48d6abe3c9d46a891c02498b1fd7530",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "eb222f82-9b9a-413b-878a-508428d930c2",
+  "workflowIds": [
+    "UMxpmHgmngVuo6pOqLsLX",
+    "NfGkQRQayCHgQlKY-wD-g"
+  ],
+  "batchIds": [
+    "a30dc7e6-aeee-469e-ba64-ea9c1bdde999",
+    "55917bda-4aeb-44c3-ae33-ea4d7b2c69c6"
+  ],
+  "taskIds": [
+    "e5edc06b-aee8-44d7-b944-7211a3ae1121",
+    "9eb27543-c63e-4766-87a4-f52d62e9c09b"
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目批次真实worker执行三轮循环与条件真分支，假分支无副作用；输出、尝试记录和进程清理通过",
+    "正式项目批次真实worker执行列表内嵌条件的真假分支、字典遍历、无限循环退出与两轮跳过；被跳过节点无尝试，最终值为4"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}
