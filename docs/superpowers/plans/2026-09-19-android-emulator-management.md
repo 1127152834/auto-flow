@@ -494,6 +494,7 @@ def test_list_does_not_inspect_devices_synchronously(client, runtime):
 - [ ] 观察器纳入bootstrap关闭协调；替换而不是叠加旧轮询；失败保留最后状态并标陈旧，不隐式修复。单一探测调度避免同设备积压。（状态：blocked）
 - [ ] UI3秒读聚合、隐藏页面暂停展示轮询；心跳独立。可见ready卡片5秒最小预览间隔、最多2并发；取消或换工作区丢弃旧响应并释放ObjectURL。（状态：blocked）
 - [ ] GREEN后提交 `perf(android): aggregate observations and bound previews`。（状态：blocked）
+- [x] 2026-09-23 前端增量：首次可见性确认、最多2并发、排队/在途取消、共享消费者、后端切换迟到响应及 ObjectURL 释放已完成；Node22 Android 14文件/100项通过。真实规模指标仍未执行，T14/T16整体不据此关闭。证据：`docs/qa/android-management/2026-09-23-frontend-validation.md`。（状态：passed）
 
 ### T15：常用应用管理
 

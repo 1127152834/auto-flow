@@ -22,3 +22,5 @@ cd apps/desktop && npm exec vitest run src/renderer/domains/android/tests
 硬件不足、破坏性应用操作和批量性能未用 mock 结果替代。
 
 9 月 23 日增量与软件缺口：[最新记录](2026-09-23-validation.md)。本表的整任务 blocked 不表示缺失实现可由外部条件解释。
+
+T14/T15 的前端响应栅栏、核验失败解锁和预览取消已补齐自动化。Node 运行时偏差与重跑结果见 [前端增量记录](2026-09-23-frontend-validation.md)；阶段真实性能验收未完成。

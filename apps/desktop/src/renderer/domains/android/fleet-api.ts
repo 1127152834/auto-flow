@@ -1,4 +1,4 @@
-import type { StreamingApiClient } from '../../shared/api/client'
+import { ApiClientError, type StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
 export type Profile = components['schemas']['EnvironmentProfile']
 export type Batch = components['schemas']['BatchRead']
@@ -10,6 +10,14 @@ export type InputCommand = components['schemas']['ControlCommand']
 export type SessionAction = components['schemas']['SessionAction']['action']
 export type Apps = components['schemas']['AppInfo']
 export type DeviceRun = components['schemas']['DeviceRunRead']
+export function isCurrentConsoleResponse(current: ConsoleSession | null, issued: ConsoleSession, generation = issued.generation): boolean {
+  return current?.id === issued.id && current.deviceId === issued.deviceId && current.generation === generation &&
+    current.state === 'connected' && current.access === issued.access && current.endpoint === issued.endpoint
+}
+export function isVerifiedAppFailure(error: unknown): boolean {
+  return error instanceof ApiClientError && error.status === 422 &&
+    ['ANDROID_APP_OPERATION_FAILED', 'ANDROID_INSTALL_VERIFY_FAILED'].includes(error.code ?? '')
+}
 const base = '/api/v1/android'
 export const fleetApi = (client: StreamingApiClient) => ({
   profiles: () => client.request<Profile[]>(`${base}/profiles`, { timeoutMs: 25000 }),

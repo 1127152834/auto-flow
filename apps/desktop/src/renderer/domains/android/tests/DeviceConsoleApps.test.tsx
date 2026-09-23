@@ -1,0 +1,71 @@
+import '@testing-library/jest-dom/vitest'
+import { act, cleanup, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, expect, it, vi } from 'vitest'
+import { ApiClientError } from '../../../shared/api/client'
+import { DeviceConsole, type ConsoleProps } from '../components/DeviceConsole'
+import type { FleetApi } from '../fleet-api'
+import { devices, fixtureSession } from './prototype-fixtures'
+
+afterEach(cleanup)
+
+function props(api: Partial<FleetApi>): ConsoleProps {
+  return {
+    device: devices[0], session: fixtureSession(true), api: api as FleetApi, image: 'fixture.png',
+    onBack: vi.fn(), onSession: vi.fn(), onOpen: vi.fn(), onManage: vi.fn(), onAllocate: vi.fn(), onRefresh: vi.fn(),
+  }
+}
+
+it.each([
+  ['ANDROID_INSTALL_VERIFY_FAILED', 422, true],
+  ['ANDROID_OPERATION_UNKNOWN', 503, false],
+] as const)('unlocks APK installation only when verification conclusively failed: %s', async (code, status, unlocked) => {
+  const api = {
+    install: vi.fn().mockRejectedValue(new Error('response lost')),
+    verifyApp: vi.fn().mockRejectedValue(new ApiClientError('核验结果', status, code)),
+  }
+  const view = render(<DeviceConsole {...props(api)} />)
+  await userEvent.upload(view.container.querySelector<HTMLInputElement>('input[type=file]')!, new File(['APK'], 'test.apk'))
+  expect(screen.getByRole('button', { name: '上传 APK' })).toBeDisabled()
+  await userEvent.click(await screen.findByRole('button', { name: '按原请求核实' }))
+  await screen.findByText('核验结果')
+  expect(screen.getByRole('button', { name: '上传 APK' }).hasAttribute('disabled')).toBe(!unlocked)
+  expect(api.install).toHaveBeenCalledTimes(1)
+})
+
+it('verifies an uncertain install with its original generation after the session changes', async () => {
+  const api = { install: vi.fn().mockRejectedValue(new Error('response lost')), verifyApp: vi.fn().mockRejectedValue(new Error('still unknown')) }
+  const initial = props(api)
+  const view = render(<DeviceConsole {...initial} />)
+  await userEvent.upload(view.container.querySelector<HTMLInputElement>('input[type=file]')!, new File(['APK'], 'test.apk'))
+  await screen.findByRole('button', { name: '按原请求核实' })
+  view.rerender(<DeviceConsole {...initial} session={{ ...initial.session!, generation: initial.session!.generation + 1 }} />)
+  await userEvent.click(screen.getByRole('button', { name: '按原请求核实' }))
+  expect(api.verifyApp).toHaveBeenCalledWith(expect.anything(), expect.any(String), initial.session!.generation)
+})
+
+
+it.each(['generation', 'closed', 'unmount'])('ignores an install verification response after the control changes: %s', async (change) => {
+  let finish!: (session: ReturnType<typeof fixtureSession>) => void
+  const api = { install: vi.fn().mockRejectedValue(new Error('lost')),
+    verifyApp: vi.fn(() => new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finish = resolve })) }
+  const initial = props(api)
+  const view = render(<DeviceConsole {...initial} />)
+  await userEvent.upload(view.container.querySelector<HTMLInputElement>('input[type=file]')!, new File(['APK'], 'test.apk'))
+  await userEvent.click(await screen.findByRole('button', { name: '按原请求核实' }))
+  if (change === 'unmount') view.unmount()
+  else view.rerender(<DeviceConsole {...initial} session={change === 'closed' ? { ...initial.session!, state: 'closed' } : { ...initial.session!, generation: initial.session!.generation + 1 }} />)
+  await act(async () => { finish(initial.session!) })
+  expect(initial.onSession).not.toHaveBeenCalled()
+})
+
+it('ignores an APK installation response after the session closes', async () => {
+  let finish!: (session: ReturnType<typeof fixtureSession>) => void
+  const api = { install: vi.fn(() => new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finish = resolve })) }
+  const initial = props(api)
+  const view = render(<DeviceConsole {...initial} />)
+  await userEvent.upload(view.container.querySelector<HTMLInputElement>('input[type=file]')!, new File(['APK'], 'test.apk'))
+  view.rerender(<DeviceConsole {...initial} session={{ ...initial.session!, state: 'closed' }} />)
+  await act(async () => { finish(initial.session!) })
+  expect(initial.onSession).not.toHaveBeenCalled()
+})

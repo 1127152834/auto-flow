@@ -1,10 +1,10 @@
 # 安卓模拟器管理完善：阶段索引
 
-- 日期：2026-09-19
+- 日期：2026-09-23（校准；原计划 2026-09-19）
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
-- 代码基线：`codex/project-management-pm9@a92f0688f206d4339ff4468c1871f3ccdd6816dc`。
+- 当前实施基线：`codex/android-management-complete@1399f07b`；原起点 `a92f0688`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
-- 当前阶段：基线重新校准已完成；自动化聚焦后端 `159 passed, 1 warning`、前端 Android `13 files, 45 passed`；真实 macOS 基础管理链已复核，网络/GApps/人工窗口条件按证据记录为 blocked。
+- 当前阶段：完整目标 active/partial；后端 Android+迁移 head 最近验证 253 passed，前端核验/预览边界已修复，指定 Node22 的 Android 14文件/100项、类型/lint/OpenAPI/结构/build已通过；全量前端及脚本仍失败。逐项命令与剩余工作以最新 QA 记录为准，不用聚焦通过代表完整交付。
 
 正文保存在以下文件，不维护第二份规格：
 
@@ -17,13 +17,17 @@
 | --- | --- | --- | --- |
 | AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | T01–T03 自动化通过；T04 自动化与同事务投影验证通过；T05–T07 的人工窗口、完整 HTTP 重启和受控中断仍 blocked |
 | AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | T08–T10/T12 自动化（含模板生命周期集成）通过；网络拉取、候选镜像和 Google 组件网络/账号验收 blocked |
-| AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 自动化（含 13 files/45 passed 前端聚焦）和双实例基础证据存在；批量压力、破坏性应用动作与规模性能 blocked |
-| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 自动化与基础数据卷备份/恢复证据通过；真实多实例恢复、临时/全量引用维护、IPC 和人工清理确认 blocked |
+| AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 批量、观察、应用和双实例基础证据存在；预览取消及应用核验前端边界已补齐，指定 Node22 验证见 QA 记录。持久容量预留仍是软件待办；批量压力、真实应用动作与规模性能 not_run |
+| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 基础备份/恢复、默认诊断白名单及受限保存 IPC 已实现；安全链接/属性、临时文件、高级日志仍为软件待办，完整端到端未验收 |
 
 ## 当前校准
 
-当前唯一 Alembic head 为 `0019_recording_commands`；原计划中以 `pm07_environments` 为 AM1 父节点的表述已 superseded。主工作区的未提交 Studio 改动不进入本实施 worktree。原有安卓测试、真实 Mac 条件和网络账号条件分别验证，不能相互替代。
+当前唯一 Alembic head 为 `am01_management_operations`，父节点为 `0019_recording_commands`；旧 head 和 `pm07_environments` 父节点描述均已 superseded。隔离 worktree 中的 3 个既有 Studio 文档改动保留，不纳入 Android 提交。原有安卓测试、真实 Mac 条件和网络账号条件分别验证，不能相互替代。
 
 ## 验证说明
 
-先前完成的是文档检查，不是业务测试；本轮已补做代码、ADB、Lima、ReDroid 和真实数据卷证据。Google 登录、测试 APK、人工窗口和多实例资源不足项仍按 `blocked` 记录，不用 mock 结果替代。后续每批实际证据记录到实施计划指定的 docs/qa/android-management/ 文件，并更新本索引；当前状态仍为 partial，不自动接入工作流。
+先前完成的是文档检查，不是业务测试；本轮已补做代码、ADB、Lima、ReDroid 和真实数据卷证据。Google 登录等实际外部条件不足时记录 blocked；测试 APK、人工窗口和多实例指标尚未运行的部分记录 not_run，不能把软件缺口归为环境阻塞。后续每批实际证据记录到实施计划指定的 docs/qa/android-management/ 文件，并更新本索引；当前状态仍为 partial，不自动接入工作流。
+
+- 最新校准来源：[9 月 23 日验收](../../docs/qa/android-management/2026-09-23-validation.md)。旧 checkbox 分布尚未完成逐项重审，不作为完成率。
+
+- Node 校准：默认 shell 为26.7.0；规格要求22.x，最终前端门槛使用 npm exec 隔离的22.23.2，不把Node26结果作为指定运行时通过证据。

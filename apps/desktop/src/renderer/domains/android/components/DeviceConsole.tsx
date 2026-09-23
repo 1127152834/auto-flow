@@ -22,7 +22,7 @@ import {
   UploadSimple,
 } from '@phosphor-icons/react'
 import type { AndroidApi, AndroidDevice } from '../api'
-import type { Apps, ConsoleSession, DeviceRun, FleetApi, InputCommand, SessionAction } from '../fleet-api'
+import { isCurrentConsoleResponse, isVerifiedAppFailure, type Apps, type ConsoleSession, type DeviceRun, type FleetApi, type InputCommand, type SessionAction } from '../fleet-api'
 import { Action, Badge, Dot, Phone, Toggle } from './PrototypeControls'
 import { AndroidVideo } from './AndroidVideo'
 import { ApplicationsPanel } from './ApplicationsPanel'
@@ -58,7 +58,7 @@ export function DeviceConsole(p: ConsoleProps) {
     [packageName, setPackage] = useState(p.apps?.currentPackage ?? '')
   const [videoReady, setVideoReady] = useState(Boolean(p.image)),
     [volumeMenu, setVolumeMenu] = useState(false),
-    [unknownInstall, setUnknownInstall] = useState<string | null>(null)
+    [unknownInstall, setUnknownInstall] = useState<{ requestId: string; generation: number } | null>(null)
   const switching = useRef(false)
   const sequence = useRef(0),
     queue = useRef(Promise.resolve()),
@@ -67,6 +67,10 @@ export function DeviceConsole(p: ConsoleProps) {
     sessionRef = useRef(p.session),
     failed = useRef(false)
   sessionRef.current = p.session
+  useEffect(() => {
+    sessionRef.current = p.session
+    return () => { sessionRef.current = null }
+  }, [p.session])
   const readonly = !p.session || p.session.state !== 'connected' || p.session.access !== 'manual' || p.session.endpoint !== 'embedded',
     workflow = Boolean(p.run && !['succeeded', 'failed', 'stopped', 'interrupted'].includes(p.run.state)),
     temporary = p.device.instanceType === 'temporary'
@@ -154,25 +158,51 @@ export function DeviceConsole(p: ConsoleProps) {
     setBusy(true)
     const requestId = crypto.randomUUID()
     try {
-      p.onSession(await p.api.install(p.session, selected, requestId))
+      const next = await p.api.install(p.session, selected, requestId)
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
+      p.onSession(next)
       setUnknownInstall(null)
       p.onRefresh()
     } catch (e) {
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
       const code = typeof e === 'object' && e !== null && 'code' in e ? String((e as { code?: unknown }).code) : ''
-      if (!['ANDROID_APK_INVALID', 'ANDROID_APK_UNSUPPORTED', 'ANDROID_APK_TOO_LARGE', 'ANDROID_INSTALL_FAILED'].includes(code)) setUnknownInstall(requestId)
+      if (!['ANDROID_APK_INVALID', 'ANDROID_APK_UNSUPPORTED', 'ANDROID_APK_TOO_LARGE', 'ANDROID_INSTALL_FAILED'].includes(code)) setUnknownInstall({ requestId, generation: p.session.generation })
       setError(e instanceof Error ? e.message : '安装结果未知')
     } finally {
       setBusy(false)
       if (file.current) file.current.value = ''
     }
   }
+  const verifyInstall = async () => {
+    if (!unknownInstall || !p.api?.verifyApp || !p.session) return
+    const issued = p.session
+    const current = () => isCurrentConsoleResponse(sessionRef.current, issued, unknownInstall.generation)
+    try {
+      const next = await p.api.verifyApp(p.session, unknownInstall.requestId, unknownInstall.generation)
+      if (!current()) return
+      p.onSession(next)
+      setUnknownInstall(null)
+      setError('应用安装已按原请求核实')
+      p.onRefresh()
+    } catch (cause) {
+      if (!current()) return
+      if (isVerifiedAppFailure(cause)) {
+        setUnknownInstall(null)
+        p.onRefresh()
+      }
+      setError(cause instanceof Error ? cause.message : '安装仍未核实')
+    }
+  }
   const launch = async () => {
     if (!p.api || !p.session || !packageName) return
     setBusy(true)
     try {
-      p.onSession(await p.api.launch(p.session, packageName))
+      const next = await p.api.launch(p.session, packageName)
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
+      p.onSession(next)
       p.onRefresh()
     } catch (e) {
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
       setError(e instanceof Error ? e.message : '启动失败')
     } finally {
       setBusy(false)
@@ -343,7 +373,7 @@ export function DeviceConsole(p: ConsoleProps) {
         {error && (
           <p role="alert" className="ad-error">
             {error}
-            {unknownInstall && p.api?.verifyApp && p.session && <Action onClick={() => void p.api!.verifyApp(p.session!, unknownInstall).then((next) => { p.onSession(next); setUnknownInstall(null); setError('应用安装已按原请求核实'); p.onRefresh() }).catch((cause) => setError(cause instanceof Error ? cause.message : '安装仍未核实'))}>按原请求核实</Action>}
+            {unknownInstall && p.api?.verifyApp && p.session && <Action onClick={() => void verifyInstall()}>按原请求核实</Action>}
             <Action onClick={p.onRefresh}>核实状态</Action>
           </p>
         )}

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import type { Apps, ConsoleSession, FleetApi } from '../fleet-api'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { isCurrentConsoleResponse, isVerifiedAppFailure, type Apps, type ConsoleSession, type FleetApi } from '../fleet-api'
 import { Action } from './PrototypeControls'
 
 type DestructiveAction = 'uninstall' | 'clearData'
@@ -7,6 +7,12 @@ type RequestId = ReturnType<typeof crypto.randomUUID>
 type Props = { api?: Pick<FleetApi, 'launch' | 'appAction'> & Partial<Pick<FleetApi, 'verifyApp'>>; apps?: Apps; session: ConsoleSession | null; onSession(s: ConsoleSession): void; onRefresh(): void }
 
 export function ApplicationsPanel({ api, apps, session, onSession, onRefresh }: Props) {
+  const sessionRef = useRef(session)
+  sessionRef.current = session
+  useEffect(() => {
+    sessionRef.current = session
+    return () => { sessionRef.current = null }
+  }, [session])
   const [search, setSearch] = useState('')
   const [pending, setPending] = useState<{ action: DestructiveAction; packageName: string; requestId: RequestId } | null>(null)
   const [error, setError] = useState('')
@@ -21,8 +27,10 @@ export function ApplicationsPanel({ api, apps, session, onSession, onRefresh }: 
     setError('')
     try {
       const next = action === 'launch' ? await api.launch(session, packageName, requestId) : await api.appAction(session, action, packageName, requestId)
+      if (!isCurrentConsoleResponse(sessionRef.current, session)) return
       onSession(next); onRefresh(); setPending(null)
     } catch (cause) {
+      if (!isCurrentConsoleResponse(sessionRef.current, session)) return
       const code = typeof cause === 'object' && cause !== null && 'code' in cause ? String((cause as { code?: unknown }).code) : ''
       if (!['ANDROID_PROTECTED_APP', 'ANDROID_APP_INFO_UNKNOWN', 'ANDROID_SESSION_STALE', 'ANDROID_INPUT_FORBIDDEN'].includes(code)) setUnknownRequest({ requestId, generation: session.generation })
       setError(cause instanceof Error ? cause.message : '应用操作结果未知')
@@ -36,13 +44,24 @@ export function ApplicationsPanel({ api, apps, session, onSession, onRefresh }: 
   }
   const verifyUnknown = async () => {
     if (!session || !api?.verifyApp || !unknownRequest) return
+    const current = () => isCurrentConsoleResponse(sessionRef.current, session, unknownRequest.generation)
     try {
-      onSession(await api.verifyApp(session, unknownRequest.requestId, unknownRequest.generation))
+      const next = await api.verifyApp(session, unknownRequest.requestId, unknownRequest.generation)
+      if (!current()) return
+      onSession(next)
       setUnknownRequest(null)
       setPending(null)
       setError('应用操作已按原请求核实')
       onRefresh()
-    } catch (cause) { setError(cause instanceof Error ? cause.message : '应用操作仍未核实') }
+    } catch (cause) {
+      if (!current()) return
+      if (isVerifiedAppFailure(cause)) {
+        setUnknownRequest(null)
+        setPending(null)
+        onRefresh()
+      }
+      setError(cause instanceof Error ? cause.message : '应用操作仍未核实')
+    }
   }
   return <section aria-label="应用管理" className="rounded-card border border-line bg-surface p-5">
     <h2 className="font-semibold">应用管理</h2>

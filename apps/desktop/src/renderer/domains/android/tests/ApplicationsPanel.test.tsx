@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen, within, waitFor } from '@testing-library/react'
+import { act, cleanup, render, screen, within, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApplicationsPanel } from '../components/ApplicationsPanel'
@@ -109,4 +109,51 @@ it('reconciles an unknown app operation by request id without replaying it', asy
   await waitFor(() => expect(api.verifyApp).toHaveBeenCalledWith(expect.anything(), expect.any(String), expect.any(Number)))
   expect(api.appAction).toHaveBeenCalledTimes(1)
   expect(onSession).toHaveBeenCalled()
+})
+
+it.each([
+  ['ANDROID_APP_OPERATION_FAILED', 422, true],
+  ['ANDROID_OPERATION_UNKNOWN', 503, false],
+] as const)('releases the write lock only for a conclusive verification failure: %s', async (code, status, unlocked) => {
+  const { ApiClientError } = await import('../../../shared/api/client')
+  const api = {
+    appAction: vi.fn().mockRejectedValue(new Error('response lost')),
+    launch: vi.fn(),
+    verifyApp: vi.fn().mockRejectedValue(new ApiClientError('核验结果', status, code)),
+  }
+  render(<ApplicationsPanel apps={apps} api={api} session={fixtureSession(true)} onSession={vi.fn()} onRefresh={vi.fn()} />)
+  const article = screen.getByText('org.example.notes').closest('article')!
+  await userEvent.click(within(article).getByRole('button', { name: '停止' }))
+  await userEvent.click(await screen.findByRole('button', { name: '按原请求核实' }))
+  await screen.findByText('核验结果')
+  expect(within(article).getByRole('button', { name: '启动' }).hasAttribute('disabled')).toBe(!unlocked)
+  expect(api.appAction).toHaveBeenCalledTimes(1)
+})
+
+
+it.each(['generation', 'closed', 'unmount'])('ignores a verification response after the control changes: %s', async (change) => {
+  let finish!: (session: ReturnType<typeof fixtureSession>) => void
+  const api = { appAction: vi.fn().mockRejectedValue(new Error('lost')), launch: vi.fn(),
+    verifyApp: vi.fn(() => new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finish = resolve })) }
+  const onSession = vi.fn()
+  const session = fixtureSession(true)
+  const view = render(<ApplicationsPanel apps={apps} api={api} session={session} onSession={onSession} onRefresh={vi.fn()} />)
+  await userEvent.click(within(screen.getByText('org.example.notes').closest('article')!).getByRole('button', { name: '停止' }))
+  await userEvent.click(await screen.findByRole('button', { name: '按原请求核实' }))
+  if (change === 'unmount') view.unmount()
+  else view.rerender(<ApplicationsPanel apps={apps} api={api} session={change === 'closed' ? { ...session, state: 'closed' } : { ...session, generation: session.generation + 1 }} onSession={onSession} onRefresh={vi.fn()} />)
+  await act(async () => { finish(session) })
+  expect(onSession).not.toHaveBeenCalled()
+})
+
+it('ignores an application action response after the session closes', async () => {
+  let finish!: (session: ReturnType<typeof fixtureSession>) => void
+  const api = { appAction: vi.fn(() => new Promise<ReturnType<typeof fixtureSession>>((resolve) => { finish = resolve })), launch: vi.fn() }
+  const session = fixtureSession(true)
+  const onSession = vi.fn()
+  const view = render(<ApplicationsPanel apps={apps} api={api} session={session} onSession={onSession} onRefresh={vi.fn()} />)
+  await userEvent.click(within(screen.getByText('org.example.notes').closest('article')!).getByRole('button', { name: '停止' }))
+  view.rerender(<ApplicationsPanel apps={apps} api={api} session={{ ...session, state: 'closed' }} onSession={onSession} onRefresh={vi.fn()} />)
+  await act(async () => { finish(session) })
+  expect(onSession).not.toHaveBeenCalled()
 })
