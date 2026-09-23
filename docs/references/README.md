@@ -1,5 +1,9 @@
 # 外部源码与能力参考
 
+## Laya 决策实验
+
+- [来源、模型限制、部署和接口](./laya-lab.md)：2026-09-23 核查的 GitHub、PyPI、Hugging Face、Jev/NanoJev 案例与 AutoFlow 首版边界。
+
 ## WebRPA
 
 - 仓库：https://github.com/pmh1314520/WebRPA

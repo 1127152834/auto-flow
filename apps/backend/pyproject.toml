@@ -37,6 +37,7 @@ dependencies = [
   "pycaw>=20251023,<20270000; sys_platform == 'win32'",
   "mss>=10,<11",
   "mediapipe>=0.10.35,<0.11",
+  "laya==0.3.6",
 ]
 
 [build-system]

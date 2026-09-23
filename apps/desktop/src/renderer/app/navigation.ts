@@ -4,8 +4,8 @@ import type { ProjectRoute, ProjectTab } from '../domains/projects/types'
 import type { StatisticsResult } from '../domains/projects/statistics-api'
 import { decodeRecordKey, encodeRecordKey } from '../domains/project-data/record-route'
 
-export type AppRoute = 'dashboard' | 'projects' | 'profiles' | 'android' | 'proxies' | 'models' | 'settings'
-const globalRoutes: AppRoute[] = ['dashboard', 'projects', 'profiles', 'android', 'proxies', 'models', 'settings']
+export type AppRoute = 'dashboard' | 'projects' | 'profiles' | 'android' | 'proxies' | 'models' | 'lab' | 'settings'
+const globalRoutes: AppRoute[] = ['dashboard', 'projects', 'profiles', 'android', 'proxies', 'models', 'lab', 'settings']
 const projectTabs: ProjectTab[] = ['overview', 'automations', 'runs', 'statistics', 'data', 'environments']
 const projectIdPattern = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i
 const recordKeyTypes = ['text', 'integer', 'uuid'] as const

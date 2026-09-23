@@ -1,0 +1,16 @@
+import type { LayaRequest, LayaResult } from '../types'
+
+const percentage = (value: number) => `${(value * 100).toFixed(1)}%`
+
+export function ResultPanel({ result, request }: { result: LayaResult | null; request: LayaRequest | null }) {
+  if (!result) return <section className="rounded-card border border-dashed border-line bg-surface p-8 text-center"><h2 className="m-0 text-lg font-semibold">等待一次判断</h2><p className="mb-0 mt-2 text-sm text-muted">选择示例或编辑问题，然后运行 Laya。结果和路由信息会显示在这里。</p></section>
+  return <section className="grid gap-5" aria-labelledby="lab-result-heading">
+    <div><h2 id="lab-result-heading" className="m-0 text-lg font-semibold">推理结果</h2><p className="m-0 mt-1 text-sm text-muted">概率和置信度来自模型输出，不等于实际正确率。</p></div>
+    {Object.entries(result.answers).map(([id, answer]) => <article key={id} className="rounded-card border border-line bg-surface p-5">
+      <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="m-0 text-xs font-semibold uppercase tracking-wide text-clay">{answer.type} · {id}</p><h3 className="mb-0 mt-2 text-base font-semibold">{request?.questions[id]?.instructions ?? id}</h3></div><span className="rounded-full bg-clay-soft px-3 py-1 text-xs font-semibold text-clay">置信度 {percentage(answer.confidence)}</span></div>
+      <p className="mb-4 mt-3 text-sm font-medium">结果：{answer.type === 'choice' ? answer.choice : answer.type === 'score' ? `${answer.score.toFixed(2)} / ${Object.keys(answer.legend).length - 1}` : answer.noul >= 0.5 ? '是' : '否'}</p>
+      <div className="grid gap-2" aria-label={`${id} 的选项概率`}>{Object.entries(answer.probabilities).map(([key, probability]) => <div key={key} className="grid grid-cols-[minmax(0,1fr)_62px] items-center gap-3 text-xs"><div><div className="mb-1 flex justify-between gap-3"><span className="truncate">{answer.type === 'score' ? `${key} · ${answer.legend[key] ?? key}` : key}</span></div><div className="h-2 overflow-hidden rounded-full bg-surface-subtle"><div className="h-full rounded-full bg-clay" style={{ width: percentage(probability) }} /></div></div><span className="text-right tabular-nums text-muted">{percentage(probability)}</span></div>)}</div>
+    </article>)}
+    <div className="grid gap-3 rounded-card border border-line bg-surface-subtle p-4 text-sm sm:grid-cols-2"><div><span className="text-muted">模型路由</span><strong className="mt-1 block">{result.routing.requested} → {result.routing.selected}</strong><p className="mb-0 mt-1 text-xs text-muted">{result.routing.reason}</p></div><div className="grid grid-cols-2 gap-2"><div><span className="text-muted">设备</span><strong className="block">{result.runtime.device.toUpperCase()}</strong></div><div><span className="text-muted">输入 tokens</span><strong className="block">{result.usage.inputTokens}</strong></div><div><span className="text-muted">推理</span><strong className="block">{result.timing.inferenceMs.toFixed(1)} ms</strong></div><div><span className="text-muted">总耗时</span><strong className="block">{result.timing.totalMs.toFixed(1)} ms</strong></div></div><p className="col-span-full m-0 text-xs text-muted">权重修订 {result.runtime.revision.slice(0, 12)} · 加载/下载 {result.timing.loadMs.toFixed(1)} ms</p></div>
+  </section>
+}

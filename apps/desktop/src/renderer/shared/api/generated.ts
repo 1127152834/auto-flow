@@ -1004,6 +1004,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/lab/laya/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_v1_lab_laya_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lab/laya/predict": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Predict */
+        post: operations["predict_api_v1_lab_laya_predict_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflows": {
         parameters: {
             query?: never;
@@ -6096,6 +6130,36 @@ export type components = {
             /** Reason */
             reason?: string | null;
         };
+        /** ChoiceAnswer */
+        ChoiceAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "choice";
+            /** Choice */
+            choice: string;
+            /** Probabilities */
+            probabilities: {
+                [key: string]: number;
+            };
+            /** Confidence */
+            confidence: number;
+        };
+        /** ChoiceQuestion */
+        ChoiceQuestion: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "choice";
+            /** Instructions */
+            instructions: string;
+            /** Criteria */
+            criteria: {
+                [key: string]: string;
+            };
+        };
         /** CleanupSummaryView */
         CleanupSummaryView: {
             /**
@@ -8110,6 +8174,89 @@ export type components = {
             /** Installed */
             installed: boolean;
         };
+        /** LayaModelStatusRead */
+        LayaModelStatusRead: {
+            /** Key */
+            key: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "not_downloaded" | "cached" | "downloading" | "loading" | "ready" | "failed" | "available";
+            /** Device */
+            device?: string | null;
+        };
+        /** LayaPredictRead */
+        LayaPredictRead: {
+            /** Answers */
+            answers: {
+                [key: string]: components["schemas"]["ChoiceAnswer"] | components["schemas"]["ScoreAnswer"] | components["schemas"]["NoulAnswer"];
+            };
+            routing: components["schemas"]["LayaRoutingRead"];
+            usage: components["schemas"]["LayaUsageRead"];
+            timing: components["schemas"]["LayaTimingRead"];
+            runtime: components["schemas"]["LayaRuntimeRead"];
+        };
+        /** LayaPredictRequest */
+        LayaPredictRequest: {
+            /**
+             * Model
+             * @enum {string}
+             */
+            model: "auto" | "english" | "multilingual" | "typed-decisions";
+            /** State */
+            state: string | {
+                [key: string]: unknown;
+            } | unknown[];
+            /** Questions */
+            questions: {
+                [key: string]: components["schemas"]["ChoiceQuestion"] | components["schemas"]["ScoreQuestion"] | components["schemas"]["NoulQuestion"];
+            };
+        };
+        /** LayaRoutingRead */
+        LayaRoutingRead: {
+            /** Requested */
+            requested: string;
+            /** Selected */
+            selected: string;
+            /** Reason */
+            reason: string;
+            /** Repo */
+            repo: string;
+        };
+        /** LayaRuntimeRead */
+        LayaRuntimeRead: {
+            /** Checkpoint */
+            checkpoint: string;
+            /** Revision */
+            revision: string;
+            /**
+             * Device
+             * @enum {string}
+             */
+            device: "cpu" | "cuda" | "mps";
+        };
+        /** LayaStatusRead */
+        LayaStatusRead: {
+            /** Busy */
+            busy: boolean;
+            /** Models */
+            models: components["schemas"]["LayaModelStatusRead"][];
+        };
+        /** LayaTimingRead */
+        LayaTimingRead: {
+            /** Loadms */
+            loadMs: number;
+            /** Inferencems */
+            inferenceMs: number;
+            /** Totalms */
+            totalMs: number;
+        };
+        /** LayaUsageRead */
+        LayaUsageRead: {
+            /** Inputtokens */
+            inputTokens: number;
+        };
         /** LicenseRead */
         LicenseRead: {
             /** Configured */
@@ -8589,6 +8736,32 @@ export type components = {
             error: {
                 [key: string]: unknown;
             } | null;
+        };
+        /** NoulAnswer */
+        NoulAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "noul";
+            /** Noul */
+            noul: number;
+            /** Probabilities */
+            probabilities: {
+                [key: string]: number;
+            };
+            /** Confidence */
+            confidence: number;
+        };
+        /** NoulQuestion */
+        NoulQuestion: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "noul";
+            /** Instructions */
+            instructions: string;
         };
         /** OperationAccepted */
         OperationAccepted: {
@@ -9832,6 +10005,38 @@ export type components = {
             enabled: boolean;
         } & {
             [key: string]: unknown;
+        };
+        /** ScoreAnswer */
+        ScoreAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "score";
+            /** Score */
+            score: number;
+            /** Legend */
+            legend: {
+                [key: string]: string;
+            };
+            /** Probabilities */
+            probabilities: {
+                [key: string]: number;
+            };
+            /** Confidence */
+            confidence: number;
+        };
+        /** ScoreQuestion */
+        ScoreQuestion: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "score";
+            /** Instructions */
+            instructions: string;
+            /** Criteria */
+            criteria: string[];
         };
         /** SelfHealWrite */
         SelfHealWrite: {
@@ -16087,6 +16292,86 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    status_api_v1_lab_laya_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LayaStatusRead"];
+                };
+            };
+        };
+    };
+    predict_api_v1_lab_laya_predict_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LayaPredictRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LayaPredictRead"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gateway Timeout */
+            504: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
         };

@@ -112,7 +112,7 @@ async function smokeExecutable(executable) {
     stdio: ['ignore', 'pipe', 'inherit'],
   })
   try {
-    const ready = await waitForReady(child)
+    const ready = await waitForReady(child, 90_000)
     await checkHealth(`http://127.0.0.1:${ready.port}`, token, ready)
   } finally {
     await stop(child)
