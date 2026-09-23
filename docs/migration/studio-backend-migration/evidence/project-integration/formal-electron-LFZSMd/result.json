@@ -1,0 +1,56 @@
+{
+  "evidenceId": "BE-project-studio-task-bridge",
+  "scenarioBatches": [
+    {
+      "scenario": "stop",
+      "batchId": "35df2ce5-c188-452b-aec6-6ae7a38f1c05",
+      "taskId": "f52f8248-1108-45cb-97de-dcb01845b4c1",
+      "status": "cancelled"
+    },
+    {
+      "scenario": "failure",
+      "batchId": "014c3180-27c7-400a-9722-579fc29c62e6",
+      "taskId": "490f88e6-492f-4703-bd1a-95a6c1d39330",
+      "status": "failed"
+    },
+    {
+      "scenario": "recovered",
+      "batchId": "65c51595-e87c-4713-a25b-0a6287b21e03",
+      "taskId": "7b3bb862-0c28-4488-a65b-eaa82a6288e4",
+      "status": "succeeded"
+    }
+  ],
+  "checkedAt": "2026-09-23T05:00:09.694Z",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "packageBoundary": null,
+  "buildArtifacts": null,
+  "buildSha256": "24c58c20366da83779fe34e2ff28c02fc6a1351780c1ac331c16786651e4ab08",
+  "projectId": "62e281bf-3b65-4136-b045-36d70a24993a",
+  "workflowId": "okjp5IKqmO3e6fhMCnkl1",
+  "profileId": "92b38e03-f647-4c5b-86ac-41fd3a9e1a0a",
+  "batchId": "c062df70-7056-4d16-bf32-62ad281de0c8",
+  "taskId": "b34db66e-ce66-4918-8845-9e7f58914006",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "真实字段接口覆盖213：空URL/填写、等待三模式及邮件源规则经实际UI核验；未执行外部邮件",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "正式 Studio 原生关闭重开，恢复五节点后关闭窗口返回项目",
+    "项目自动化真实 UI 绑定 Studio 文档和主应用 Profile，批次五节点执行、输出和 PNG 展示通过，浏览器已清理",
+    "项目任务 stop 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 failure 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 recovered 真实 UI 验收完成，后续节点与进程清理符合预期"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "real UI mouse/keyboard; APIs only setup Profile and assert evidence"
+  }
+}
