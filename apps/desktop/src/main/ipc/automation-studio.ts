@@ -25,20 +25,32 @@ export class StudioWindowController {
   private everReady=false
   private pendingLeave: {id:string;promise:Promise<boolean>;resolve:(allowed:boolean)=>void}|undefined
   private closeResult: ((closed: boolean) => void) | undefined
+  private opening: { key: string; promise: Promise<void> } | undefined
 
   constructor(private readonly options: StudioWindowOptions) {}
 
   async open(event: DesktopIpcEvent, rawContext?: unknown): Promise<void> {
     if (!isWindowMainFrame(event, this.options.mainSenderId())) throw new Error('此窗口不能打开工作流工作台')
     const context = normalizeContext(rawContext)
+    const key = contextKey(context)
+    if (this.opening) {
+      if (this.opening.key !== key) throw new Error('工作流工作台正在切换，请稍后重试')
+      return this.opening.promise
+    }
+    const promise = this.openContext(context)
+    this.opening = { key, promise }
+    try { await promise } finally { this.opening = undefined }
+  }
+
+  private async openContext(context: StudioOpenContext): Promise<void> {
     if (this.window && !this.window.isDestroyed() && this.contextKey !== contextKey(context)) {
+      const source = this.window
       if (!await this.prepareLeave('workspace')) throw new Error('工作流工作台仍有未保存修改')
-      this.window.destroy()
+      if (!source.isDestroyed()) source.destroy()
     }
     return this.openWindow(context)
   }
 
-  private context: StudioOpenContext | undefined
   private contextKey = ''
 
   private async openWindow(context: StudioOpenContext = {}):Promise<void> {
@@ -47,7 +59,6 @@ export class StudioWindowController {
       this.window.show(); this.window.focus()
       return
     }
-    this.context = context
     this.contextKey = contextKey(context)
     const window = new BrowserWindow({
       title: '工作流工作台 · AutoFlow', width: 1440, height: 1024, minWidth: 800, minHeight: 600,
@@ -137,7 +148,7 @@ export class StudioWindowController {
 
   async finishWorkspaceTransition(changed:boolean):Promise<void> {
     if(!this.window||this.window.isDestroyed())return
-    if(changed){this.window.destroy();await this.openWindow(this.context)}
+    if(changed){this.window.destroy();await this.openWindow()}
     else this.window.webContents.send('autoflow:studio-transition-end')
   }
 
@@ -149,12 +160,15 @@ export class StudioWindowController {
 }
 
 function normalizeContext(value: unknown): StudioOpenContext {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  if (value === undefined) return {}
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('工作台上下文无效')
   const source = value as Record<string, unknown>
   const result: StudioOpenContext = {}
   for (const key of ['workspaceKey', 'instanceId', 'projectId', 'workflowId'] as const) {
     const entry = source[key]
-    if (typeof entry === 'string' && entry.length > 0 && entry.length <= 200) result[key] = entry
+    if (entry === undefined) continue
+    if (typeof entry !== 'string' || entry.trim().length === 0 || entry.length > 200) throw new Error('工作台上下文无效')
+    result[key] = entry
   }
   return result
 }

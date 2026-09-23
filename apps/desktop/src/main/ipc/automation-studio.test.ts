@@ -88,6 +88,45 @@ it('rejects other renderers and subframes without creating a window', async () =
   expect(FakeWindow.instances).toHaveLength(0)
 })
 
+it('rejects malformed project context instead of silently opening an unscoped window', async () => {
+  for (const context of [null, [], 'project', { projectId: 7 }, { projectId: '' }, { workflowId: ' '.repeat(3) }, { workspaceKey: 'x'.repeat(201) }]) {
+    await expect(studio.open(event(), context)).rejects.toThrow('工作台上下文无效')
+  }
+  expect(FakeWindow.instances).toHaveLength(0)
+})
+
+it('coalesces the same context switch and rejects competing destinations', async () => {
+  await studio.open(event(), { projectId: 'source' })
+  const source = FakeWindow.instances[0]!
+  const sender = { sender: source.webContents, senderFrame: source.webContents.mainFrame }
+  studio.registerLeaveReady(sender)
+  const first = studio.open(event(), { projectId: 'destination' })
+  const repeat = studio.open(event(), { projectId: 'destination' })
+  await expect(studio.open(event(), { projectId: 'other' })).rejects.toThrow('正在切换')
+  const request = source.webContents.send.mock.calls.find(call => call[0] === 'autoflow:studio-prepare-leave')![1]
+  studio.completeLeave(sender, { id: request.id, allowed: true })
+  await Promise.all([first, repeat])
+  expect(FakeWindow.instances).toHaveLength(2)
+  expect(FakeWindow.instances[1]!.isDestroyed()).toBe(false)
+  expect(FakeWindow.instances[1]!.loadURL).toHaveBeenCalledWith('http://localhost:5173/?view=automation-studio&projectId=destination')
+})
+
+it('retains the original project and document when switching is cancelled', async () => {
+  const context = { projectId: 'source', workflowId: 'draft' }
+  await studio.open(event(), context)
+  const source = FakeWindow.instances[0]!
+  const sender = { sender: source.webContents, senderFrame: source.webContents.mainFrame }
+  studio.registerLeaveReady(sender)
+  const switching = studio.open(event(), { projectId: 'destination' })
+  const rejected = expect(switching).rejects.toThrow('未保存修改')
+  const request = source.webContents.send.mock.calls.find(call => call[0] === 'autoflow:studio-prepare-leave')![1]
+  studio.completeLeave(sender, { id: request.id, allowed: false })
+  await rejected
+  await studio.open(event(), context)
+  expect(FakeWindow.instances).toHaveLength(1)
+  expect(source.isDestroyed()).toBe(false)
+})
+
 it('cleans up a failed load so a later click can retry', async () => {
   vi.doMock('electron', () => ({ BrowserWindow: class extends FakeWindow {
     constructor(options: Record<string, unknown>) {
@@ -184,11 +223,13 @@ it('does not treat a crashed renderer as approval to leave',async()=>{
 it('keeps the source window on workspace failure and opens an isolated partition only after success',async()=>{
  let partition='persist:workspace-a'
  const controller=new (await import('./automation-studio')).StudioWindowController({mainSenderId:()=>7,preferences:()=>({zoom:100,motion:'system'}),preloadPath:'/preload',rendererFile:'/studio.html',workspacePartition:()=>partition})
- await controller.open(event());const source=FakeWindow.instances[0]!
+ await controller.open(event(),{workspaceKey:'workspace-a',instanceId:'instance-a',projectId:'project-a',workflowId:'workflow-a'});const source=FakeWindow.instances[0]!
  await controller.finishWorkspaceTransition(false)
  expect(source.destroyed).toBe(false)
  expect(source.webContents.send).toHaveBeenCalledWith('autoflow:studio-transition-end')
+ expect(source.loadFile).toHaveBeenCalledWith('/studio.html',{query:{view:'automation-studio',workspaceKey:'workspace-a',instanceId:'instance-a',projectId:'project-a',workflowId:'workflow-a'}})
  partition='persist:workspace-b';await controller.finishWorkspaceTransition(true)
  expect(source.destroyed).toBe(true)
  expect(FakeWindow.instances[1]!.options.webPreferences).toMatchObject({partition:'persist:workspace-b'})
+ expect(FakeWindow.instances[1]!.loadFile).toHaveBeenCalledWith('/studio.html',{query:{view:'automation-studio'}})
 })

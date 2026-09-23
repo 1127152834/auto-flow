@@ -55,6 +55,32 @@ it('opens Studio with the saved workflow identity', async () => {
   expect(onOpenStudio).toHaveBeenCalledWith('wf')
 })
 
+it('opens the workflow selected in a new automation without requiring a prior save', async () => {
+  const onOpenStudio = vi.fn()
+  const request = vi.fn(async (path: string) => resources(path) ?? { items: [] }) as StreamingApiClient['request']
+  mount(request, { onOpenStudio })
+  const user = userEvent.setup()
+  expect(await screen.findByRole('button', { name: '打开 Studio' })).toBeDisabled()
+  await chooseOption(user, screen.getByRole('combobox', { name: '关联工作流' }), 'wf')
+  await user.click(screen.getByRole('button', { name: '打开 Studio' }))
+  expect(onOpenStudio).toHaveBeenCalledWith('wf')
+})
+
+it('does not reuse another project workflow catalog while its own request is pending', async () => {
+  const request = vi.fn(async (path: string) => {
+    if (path.includes('/workflows?projectId=other')) return new Promise(() => {})
+    return resources(path) ?? { items: [] }
+  }) as StreamingApiClient['request']
+  const view = mount(request)
+  const user = userEvent.setup()
+  await chooseOption(user, await screen.findByRole('combobox', { name: '关联工作流' }), 'wf')
+  view.update({ projectId: 'other' })
+  await user.click(screen.getByRole('combobox', { name: '关联工作流' }))
+  expect(screen.queryByRole('option', { name: '工作流' })).not.toBeInTheDocument()
+  expect(view.cache.getQueryData(['w', 'i', 'workflow-catalog', 'p'])).toBeDefined()
+  expect(view.cache.getQueryData(['w', 'i', 'workflow-catalog', 'other'])).toBeUndefined()
+})
+
 it('keeps the edit draft through background refresh and a 409 until latest data is explicitly accepted', async () => {
   let current = automation
   const request = vi.fn(async (path: string, init?: ApiRequestInit) => {
