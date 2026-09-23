@@ -67,6 +67,7 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
       headers: { 'Idempotency-Key': key },
       body,
     }),
+    taskEnd: (taskId: string, signal?: AbortSignal) => client.request<Schema['TaskEndResultView'] | null>(`${base}/tasks/${encode(taskId)}/end`, { signal }),
     openInstance: (instanceId: string, expectedUseGeneration: number, key: string) => client.request<EnvironmentOperation>(`${base}/environment-instances/${encode(instanceId)}/open`, {
       method: 'POST',
       headers: { 'Idempotency-Key': key },

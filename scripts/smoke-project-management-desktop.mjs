@@ -387,6 +387,21 @@ try {
       assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(element => element.innerText.trim() === '结束并保留'))"), false)
       await capture('session-not-saved')
       evidence.desktop = { workCopiesAbsent: true, saveSuccessAnnouncement: false }
+    }, repairEnd: async (projectId, taskId, original) => {
+      await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/tasks/' + taskId + '/io')}`)
+      await waitFor(cdp, "Boolean([...document.querySelectorAll('button')].find(button => button.innerText.trim() === '修复关联' && !button.disabled))", 'persisted worker End repair available on fresh task page')
+      assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(button => button.innerText.trim() === '结束并保留'))"), false)
+      await capture('end-saved-unlinked')
+      await click('允许本次修复替换所选记录的现有关联', 'label')
+      await click('修复关联')
+      await waitFor(cdp, "!Boolean([...document.querySelectorAll('button')].find(button => button.innerText.trim() === '修复关联'))", 'association repair completed without another save')
+      const current = await api(`/api/v1/projects/${projectId}/tasks/${taskId}/end`)
+      assert.equal(current.associationPhase, 'completed')
+      assert.equal(current.saveOperationId, original.saveOperationId)
+      await cdp.evaluate('location.reload()')
+      await waitFor(cdp, "document.body.innerText.includes('已修复记录关联，原任务的失败结果保持不变。') && !document.querySelector('main [role=progressbar]')", 'reloaded task retains completed association phase')
+      assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(button => ['修复关联', '结束并保留'].includes(button.innerText.trim())))"), false)
+      await capture('end-repair-reloaded')
     }, resumeManual: async (projectId, item) => {
       await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/manual/' + item.manualItemId)}`)
       await waitFor(cdp, "Boolean(document.querySelector('input[type=radio][value=continue]:not(:disabled)'))", 'live manual continuation ready')

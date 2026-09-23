@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "local_full_backend_and_packaged_passed_native_pending",
+  "status": "review_fixes_passed_full_regression_and_final_package_pending",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
@@ -11,9 +11,9 @@
     "DATA-E2E-03/WRITE-05/08/09 source real-worker version progress, manual field/status conflict and subsequent browser-failure retention passed in local scope; packaged UI/current three-platform and Sheets outbox combined acceptance remain pending.",
     "DATA-CLAIM-03 local real child fail→same record recovery verified in scope; packaged startup-failure UI, Windows/Intel new candidate and systemic-resource blocked-vs-exhausted combination remain pending.",
     "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
-    "Current a7059dc6 fixes confirmed pre-ready failure classification; full local backend and rebuilt ARM desktop pass. New all-platform validation requires CLI authentication/manual trigger (fresh401). Historical35902129697 covers51e8991e only; logs403/artifacts not re-inspected.",
+    "Current End recovery production fixes require final full local regression/post-review ARM package and new three-platform workflow; CLI Actions read access restored on2026-09-24. Historical35902129697 does not cover them.",
     "Implementation proposals awaiting approval: G1-G3 finite-group atomic writes; L1-L3 verified-principal reauthorization/sender isolation; M1-M3 remote Sheets rows/formulas; S4 Windows existing-file overwrite/append (still501); FR1-FR3 new-field result authorization; AD1-AD3 persistent Run file deletion; W1-W3 including W1c project Studio session/docking/binding destination; separate AU-08 project-owned workflow ownership; P1-P3 frozen proxy membership/endpoints. See implementationGaps and completion-gaps.md for contracts and evidence.",
-    "251 requirements remain210 partially_verified/41 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. By unique requirement, overlapping gaps remain241 production evidence/19 implementation/8 tests/24 external acceptance; scoped checks do not satisfy complete exit conditions.",
+    "251 requirements remain212 partially_verified/39 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. Overlapping unique gaps remain241 production/19 implementation/8 tests/24 external; scoped checks do not satisfy complete exit conditions.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
     "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
     "Current a7059dc6 ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel image verification remain scoped; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization/full native acceptance remain external.",
@@ -181,7 +181,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "7b896163 frontend5475/409, typecheck/lint/scripts102 and rebuilt ARM desktop24screens passed. Backend unchanged cb040daf prior3497/84skip/2warnings. See no-auto-save-follow-through.json.",
+  "workingCandidate": "Uncommitted End recovery slice from abd8afaf; final local full regression/post-review ARM package pending.",
   "finalCICandidate": {
     "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
@@ -217,8 +217,8 @@
     "nativeProbeJobs": "pm9-native-probe and pm9-worker-probe skipped; independent prior native probe evidence retained",
     "physicalInstallation": "ARM isolated command-line install passed; Windows/Intel physical installation, Finder/Gatekeeper/native panels/signing/notarization pending"
   },
-  "codeCandidateScope": "Cleaned Task UI no longer offers another save; known saved_unlinked repair retained, terminal phase follows repair result, instance refetched after commands. Includes prior cb040daf backend fixes; current ARM package/full frontend passed, new native matrix pending.",
-  "testCandidate": "7b896163 adds fixed-environment no-save cookie/generation/count/work-copy and actual UI checks to existing all-platform smoke scripts. No current matrix yet.",
+  "codeCandidateScope": "Existing End ledger read projection and Task UI recovery. No new executor, no cross-process task continuation, no persistent identity architecture change.",
+  "testCandidate": "End lookup/repair identities, cumulative group conflicts and current child-phase guard; existing real desktop script adds input login g1→g2→restore and UI repair/reload.",
   "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -553,15 +553,21 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
-    "status": "local_full_backend_and_packaged_passed_native_pending",
-    "source": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
-    "backendSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
-    "report": "startup-failure-follow-through.json",
-    "frontendFull": "Unchanged from7b896163; prior5475 passed/409 files/525.26s retained in no-auto-save-follow-through.json, not rerun",
-    "backendFull": "3505 passed, 86 skipped, 2 warnings in 911.71s",
-    "packagedDesktop": "Rebuilt backend and unsigned ARM app; complete production desktop smoke passed,24 screenshots. Generic regression, not packaged startup-failure UI.",
-    "nativeDispatch": "Fresh gh api user returns401; current matrix not dispatched; no substitution of old35902129697 evidence",
-    "additionalCounterexample": "Persistent identity remains unresolved; identity implementation unchanged from confirmed cb040daf counterexample. This protocol fix does not resolve I1-I3."
+    "status": "review_fixes_passed_full_regression_and_final_package_pending",
+    "testedBaseCommit": "abd8afafa568d1029b7ef0a9de37ec3fa8ba5a78",
+    "report": "end-link-repair-follow-through.json",
+    "productionChanged": true,
+    "scope": "Existing End ledger read projection and Task UI recovery. No new executor, no cross-process task continuation, no persistent identity architecture change.",
+    "checks": {
+      "backendContract": "25 passed, 2 warnings in 7.67s",
+      "frontendRelated": "14 passed in 2 files; review-fixes-final.log",
+      "typesLint": "passed; typecheck-final.log and lint-final.log",
+      "fullBackend": "running; backend-full-final.log",
+      "fullFrontend": "pending",
+      "review": "Independent read-only review found 2 P2; both reproduced RED and fixed. Focused re-review found no new P1/P2; separate page fixture was corrected for the new GET.",
+      "initialPackagedDesktop": "passed 26 screenshots, but precedes final two review fixes; final package rerun pending",
+      "nativeCI": "GitHub CLI Actions access restored; new candidate matrix not yet dispatched"
+    }
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -734,5 +740,17 @@
     "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
     "productionChanged": false,
     "releaseAccepted": false
-  }
+  },
+  "priorEndRecoveryCandidateValidation": {
+    "status": "local_full_backend_and_packaged_passed_native_pending",
+    "source": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+    "backendSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+    "report": "startup-failure-follow-through.json",
+    "frontendFull": "Unchanged from7b896163; prior5475 passed/409 files/525.26s retained in no-auto-save-follow-through.json, not rerun",
+    "backendFull": "3505 passed, 86 skipped, 2 warnings in 911.71s",
+    "packagedDesktop": "Rebuilt backend and unsigned ARM app; complete production desktop smoke passed,24 screenshots. Generic regression, not packaged startup-failure UI.",
+    "nativeDispatch": "Fresh gh api user returns401; current matrix not dispatched; no substitution of old35902129697 evidence",
+    "additionalCounterexample": "Persistent identity remains unresolved; identity implementation unchanged from confirmed cb040daf counterexample. This protocol fix does not resolve I1-I3."
+  },
+  "endLinkRepairFollowThrough": "end-link-repair-follow-through.json"
 }

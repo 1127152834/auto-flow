@@ -200,6 +200,20 @@ class EnvironmentService:
         self._project(project_id)
         return self.environments.get_instance(project_id, instance_id)
 
+    def query_task_end(self, project_id: str, task_id: str):
+        self._project(project_id)
+        operation_id = self.environments.latest_end_operation(project_id, task_id)
+        if operation_id is None:
+            return None
+        recorded = self.environments.end_by_operation(operation_id)
+        if recorded is None:
+            return None
+        operation = self.projects.operation(operation_id=operation_id, project_id=project_id)
+        save_id = recorded['saveOperationId']
+        save = self.environments.save_by_operation(save_id) if save_id else None
+        # A repair changes the association phase, never the original End verdict.
+        return operation, save_id, save['phase'] if save else None, recorded['targets']
+
     def resolve(self, project_id: str, policy: dict[str, Any], inputs: dict[str, dict[str, Any]] | None = None):
         project = self._project(project_id)
         defaults = project.default_resources or {}

@@ -919,6 +919,44 @@ def _end_body(instance, *, name="登录环境"):
     }
 
 
+def test_task_end_lookup_recovers_save_identity_and_repaired_phase(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    account = _account_record(service, project_id)
+    instance = _closed_instance(service, project_id, b'persisted-end')
+    path = f'/api/v1/projects/{project_id}/tasks/{instance.active_task_id}/end'
+    empty = client.get(path)
+    assert empty.status_code == 200 and empty.json() is None
+    body = _end_body(instance)
+    body['retainEnvironment']['recordTargets'] = [
+        {'recordRef': account['recordRef'], 'expectedLinkRevision': 2, 'replaceAllowed': False},
+    ]
+    ended = client.post(path, headers={'Idempotency-Key': str(uuid4())}, json=body)
+    assert ended.status_code == 202, ended.text
+    assert ended.json()['outcome']['phase'] == 'saved_unlinked'
+    result = client.get(path)
+    assert result.status_code == 200, result.text
+    result = result.json()
+    assert result['operation'] == ended.json()['operation']
+    assert result['saveOperationId'] != result['operation']['operationId']
+    assert result['outcome']['phase'] == 'saved_unlinked'
+    assert result['recordTargets'] == body['retainEnvironment']['recordTargets']
+    assert result['outcome']['conflicts'][0]['currentLinkRevision'] == 1
+    other = _project(projects, '另一项目')
+    assert client.get(f'/api/v1/projects/{other}/tasks/{instance.active_task_id}/end').json() is None
+    repair_body = {'recordTargets': [{'recordRef': account['recordRef'], 'expectedLinkRevision': 1, 'replaceAllowed': False}]}
+    assert client.post(f"/api/v1/projects/{project_id}/environment-operations/{result['operation']['operationId']}/repair", headers={'Idempotency-Key': str(uuid4())}, json=repair_body).status_code == 409
+    repaired = client.post(f"/api/v1/projects/{project_id}/environment-operations/{result['saveOperationId']}/repair", headers={'Idempotency-Key': str(uuid4())}, json=repair_body)
+    assert repaired.status_code == 202 and repaired.json()['outcome']['phase'] == 'completed'
+    recovered = client.get(path).json()
+    assert recovered['saveOperationId'] == result['saveOperationId']
+    assert recovered['operation'] == result['operation'], 'historical End failure is immutable'
+    assert recovered['associationPhase'] == 'completed'
+    assert recovered['outcome'] == result['outcome'], 'original result is distinct from current association phase'
+    assert recovered['outcome']['saved'] == result['outcome']['saved']
+    assert client.get(f'/api/v1/projects/{project_id}/environments').json()['total'] == 1
+
+
 def test_accepted_end_can_save_after_archive_closes_ingress_and_replay(tmp_path, monkeypatch):
     from autoflow.application.projects.lifecycle import (
         ProjectLifecycleCoordinator,

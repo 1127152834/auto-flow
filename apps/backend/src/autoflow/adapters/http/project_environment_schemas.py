@@ -273,3 +273,9 @@ class EnvironmentOperationSnapshot(ApiModel):
 class EnvironmentOperationView(ApiModel):
     operation: EnvironmentOperationSnapshot
     outcome: dict[str, Any] | None
+
+
+class TaskEndResultView(EnvironmentOperationView):
+    save_operation_id: str | None
+    association_phase: str | None
+    record_targets: list[RecordTargetWrite]

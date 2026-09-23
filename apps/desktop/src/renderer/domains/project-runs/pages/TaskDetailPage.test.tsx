@@ -16,6 +16,7 @@ const log = (sequence: number, message: string) => ({ runId: 'run-1', sequence, 
 function renderPage(request: StreamingApiClient['request'], overrides: Partial<React.ComponentProps<typeof TaskDetailPage>> = {}, stream = vi.fn()) {
   const wrapped: StreamingApiClient['request'] = async (path, init) => {
     if (String(path).includes('/environment-instances')) return { items: [], page: 1, pageSize: 5, total: 0, sort: '-updatedAt' } as never
+    if (String(path).endsWith('/tasks/task-1/end')) return null as never
     return request(path, init)
   }
   const client = { request: wrapped, stream } as unknown as StreamingApiClient

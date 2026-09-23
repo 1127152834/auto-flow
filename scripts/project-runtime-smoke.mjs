@@ -391,21 +391,56 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.notEqual(savedId, linkedSource.currentEnvironmentId)
     const beforeRepair = await api(`${prefix}/tasks/${unlinked.task.taskId}/node-attempts`)
     const environmentBeforeRepair = await api(`${prefix}/environments/${savedId}`)
-    const repaired = await api(`${prefix}/environment-operations/${save.operationId}/repair`, { recordTargets: [{ recordRef: linkedSource.ref, expectedLinkRevision: linkedSource.linkRevision, replaceAllowed: true }] })
-    assert.equal(repaired.outcome.phase, 'completed')
+    const recoveredEnd = await api(`${prefix}/tasks/${unlinked.task.taskId}/end`)
+    assert.equal(recoveredEnd.saveOperationId, save.operationId)
+    assert.notEqual(recoveredEnd.operation.operationId, save.operationId)
+    assert.equal(recoveredEnd.associationPhase, 'saved_unlinked')
+    const frozenBeforeRepair = (await api(`${prefix}/tasks/${unlinked.task.taskId}`)).inputSnapshot
+    if (hooks.repairEnd) await hooks.repairEnd(project.projectId, unlinked.task.taskId, recoveredEnd)
+    else await api(`${prefix}/environment-operations/${save.operationId}/repair`, { recordTargets: [{ recordRef: linkedSource.ref, expectedLinkRevision: linkedSource.linkRevision, replaceAllowed: true }] })
+    const repairedEnd = await api(`${prefix}/tasks/${unlinked.task.taskId}/end`)
+    assert.equal(repairedEnd.associationPhase, 'completed')
+    assert.deepEqual(repairedEnd.operation, recoveredEnd.operation, 'repair preserves the original failed End receipt')
+    assert.deepEqual((await api(`${prefix}/tasks/${unlinked.task.taskId}`)).inputSnapshot, frozenBeforeRepair)
     assert.equal((await sourceRecord()).currentEnvironmentId, savedId)
     assert.equal((await api(prefix + '/environments')).total, beforeEnvironments + 1)
     assert.deepEqual((await api(`${prefix}/environments/${savedId}`)).environment, environmentBeforeRepair.environment, 'repair must not publish another environment generation')
     assert.deepEqual(await api(`${prefix}/tasks/${unlinked.task.taskId}/node-attempts`), beforeRepair, 'repair must not execute nodes again')
     assert.equal((await api(`${prefix}/tasks/${unlinked.task.taskId}`)).run.status, 'failed', 'repair cannot rewrite the historical Run outcome')
 
-    const updateWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 旧候选发布保护', variables: [], nodes: [node('open', 'open_page', { url: site + '/account' }), node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'update', expectedContentGeneration: 1 } })], edges: [edge('open', 'end')] })
-    const fixed = { source: 'fixedEnvironment', environmentId: savedId, proxyOverride: { mode: 'none' }, modelProviderId: null }
-    const updated = await run(updateWorkflow.id, fixed)
+    const repairedRecord = await sourceRecord()
+    const updateWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 输入环境更新与旧候选保护', variables: [], nodes: [
+      readInputs(), node('open', 'open_page', { url: site + '/account' }),
+      node('login', 'get_element_info', { selector: '#auth', attribute: 'text', variableName: 'login' }),
+      node('before', 'get_element_info', { selector: '#session', attribute: 'text', variableName: 'before' }),
+      node('change', 'open_page', { url: site + '/unsaved-session' }), node('reload', 'open_page', { url: site + '/account' }),
+      node('after', 'get_element_info', { selector: '#session', attribute: 'text', variableName: 'after' }),
+      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'update', expectedContentGeneration: 1, recordTargets: [{ recordRef: "{frozen[0]['recordRef']}", expectedLinkRevision: "{frozen[0]['linkRevision']}", replaceAllowed: false }] } }),
+    ], edges: [edge('inputs', 'open'), edge('open', 'login'), edge('login', 'before'), edge('before', 'change'), edge('change', 'reload'), edge('reload', 'after'), edge('after', 'end')] })
+    const inputEnvironment = { source: 'inputEnvironment', inputId: inputPlan.inputs[0].inputId, proxyOverride: { mode: 'none' }, modelProviderId: null }
+    const updated = await run(updateWorkflow.id, inputEnvironment, [], {}, 'succeeded', inputPlan)
+    assert.equal(updated.outputs.find(output => output.name === 'login')?.value, 'signed-in')
+    assert.equal(updated.outputs.find(output => output.name === 'before')?.value, '1')
+    assert.equal(updated.outputs.find(output => output.name === 'after')?.value, '9')
+    assert.deepEqual(await sourceRecord(), repairedRecord, 'saving a new generation does not replace the stable record reference or revise business/link data')
     const published = await api(`${prefix}/environments/${savedId}`)
-    const staleSave = await run(updateWorkflow.id, fixed, [], {}, 'failed', { inputs: [] }, null, { automation: updated.automation })
+    assert.equal(published.environment.ref.contentGeneration, 2)
+    assert.equal(published.environment.ref.environmentId, savedId)
+    const updateInstance = (await api(`${prefix}/environment-instances?taskId=${updated.task.taskId}`)).items[0]
+    assert.equal(updateInstance.sourceContentGeneration, 1)
+    const thirdWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 记录关联读取新代次', variables: [], nodes: readLogin.nodes, edges: readLogin.edges })
+    const third = await run(thirdWorkflow.id, inputEnvironment, [], {}, 'succeeded', inputPlan)
+    assert.equal(third.outputs.find(output => output.name === 'login')?.value, 'signed-in')
+    assert.equal(third.outputs.find(output => output.name === 'session')?.value, '9', 'a new input-derived Task must restore the newly saved cookie')
+    const thirdInstance = (await api(`${prefix}/environment-instances?taskId=${third.task.taskId}`)).items[0]
+    assert.equal(thirdInstance.sourceContentGeneration, 2)
+    assert.deepEqual(await sourceRecord(), repairedRecord)
+    assert.equal((await api(prefix + '/environments')).total, beforeEnvironments + 1)
+    const staleSave = await run(updateWorkflow.id, inputEnvironment, [], {}, 'failed', inputPlan, null, { automation: updated.automation })
     assert.equal(staleSave.attempts.find(attempt => attempt.nodeId === 'end').error.code, 'SAVE_GENERATION_CONFLICT')
     assert.deepEqual((await api(`${prefix}/environments/${savedId}`)).environment, published.environment, 'a stale expected generation cannot overwrite newer content')
+    assert.deepEqual(await sourceRecord(), repairedRecord)
+    const endAssociation = { status: 'passed', failedTaskId: unlinked.task.taskId, endOperationId: recoveredEnd.operation.operationId, saveOperationId: save.operationId, savedEnvironmentId: savedId, originalEndStatus: repairedEnd.operation.status, associationPhase: repairedEnd.associationPhase, repairThroughDesktop: Boolean(hooks.repairEnd), updatedTaskId: updated.task.taskId, restoredTaskId: third.task.taskId, staleTaskId: staleSave.task.taskId, beforeGeneration: updateInstance.sourceContentGeneration, publishedGeneration: published.environment.ref.contentGeneration, restoredGeneration: thirdInstance.sourceContentGeneration, restoredLogin: 'signed-in', beforeSession: '1', restoredSession: '9', record: repairedRecord, scope: 'real End association failure, original save-only repair, record-derived login update and next-generation restore; Profile unchanged, no persistent identity acceptance claim' }
     const loadWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 日志负载', variables: [], nodes: [node('loop', 'loop', { count: 500 }), node('tick', 'set_variable', { variableName: 'tick', variableValue: 'bounded' }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('loop', 'tick', 'loop'), edge('loop', 'end', 'done')] })
     const startedAt = performance.now()
     const loaded = await run(loadWorkflow.id, { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null })
@@ -458,7 +493,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       await new Promise(resolve => setTimeout(resolve, 500))
     }
     assert.equal((await api(prefix)).lifecycleState, 'active')
-    return { projectId: project.projectId, environmentId, subflows, profileFreeze, parallel, noAutomaticSave, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
+    return { projectId: project.projectId, environmentId, subflows, profileFreeze, parallel, noAutomaticSave, endAssociation, logLoad: { logCount, logPages, elapsedMs: Math.round(elapsedMs), logsPerMinute: Math.round(logCount * 60_000 / elapsedMs), scope: 'real worker throughput and server pagination; no renderer memory claim' }, taskIds: [first.task.taskId, second.task.taskId, loaded.task.taskId], checks: ['Studio HTTP saved graph', 'real browser and UUID parameters', 'cross-table query/condition/create', 'manual checkpoint continues without replay', 'End closes, saves and links', 'second automation restores login', '1000 worker logs and paginated retrieval', 'real browser timeout and original-input follow-up succeeds', 'two inputs are frozen and reclaimed after release', 'task writes advance their own cursor', 'human newer content defeats stale worker write', 'later browser failure preserves committed content and status', 'End links initial and newly created records', 'unauthorized replacement preserves prior environment', 'saved_unlinked repair does not save or run again', 'stale save generation cannot replace published content', 'statistics drilldown reaches real task', 'archive and restore preserve executed project'] }
   } finally {
     await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
   }

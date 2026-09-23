@@ -1,0 +1,225 @@
+{
+  "date": "2026-09-24",
+  "status": "review_fixes_passed_full_regression_and_final_package_pending",
+  "releaseAccepted": false,
+  "testedBaseCommit": "abd8afafa568d1029b7ef0a9de37ec3fa8ba5a78",
+  "productionChanged": true,
+  "requirements": [
+    "DATA-E2E-02",
+    "XE-C10",
+    "XE-C18"
+  ],
+  "scope": "Existing End ledger read projection and Task UI recovery. No new executor, no cross-process task continuation, no persistent identity architecture change.",
+  "fixes": [
+    "GET task End recovers original receipt/outcome, distinct child save operation ID, original target set and current child association phase; project scoped.",
+    "Fresh/reloaded/live task view offers repair using child ID and original targets, including created records; replacement requires an explicit unchecked-by-default choice.",
+    "Conflict revisions accumulate by complete record identity across successive target conflicts. Backend CAS and target scope remain strict.",
+    "Child saved_unlinked/completed, including parent outcome still null, prevents a second save. Unknown/failed lookup cannot be treated as absent history.",
+    "Repair/refetch never changes the failed original Run or repeats browser nodes, save publication or environment generation."
+  ],
+  "checks": {
+    "backendContract": "25 passed, 2 warnings in 7.67s",
+    "frontendRelated": "14 passed in 2 files; review-fixes-final.log",
+    "typesLint": "passed; typecheck-final.log and lint-final.log",
+    "fullBackend": "running; backend-full-final.log",
+    "fullFrontend": "pending",
+    "review": "Independent read-only review found 2 P2; both reproduced RED and fixed. Focused re-review found no new P1/P2; separate page fixture was corrected for the new GET.",
+    "initialPackagedDesktop": "passed 26 screenshots, but precedes final two review fixes; final package rerun pending",
+    "nativeCI": "GitHub CLI Actions access restored; new candidate matrix not yet dispatched"
+  },
+  "preReviewPackagedObservations": {
+    "status": "passed",
+    "failedTaskId": "e77899ea-c350-46d2-9108-b1cffb8fe38f",
+    "endOperationId": "bf979010-5a5f-4512-83cd-63ac27a15d98",
+    "saveOperationId": "76ab066f-c74a-4e07-b28d-d9badcc7a4ff",
+    "savedEnvironmentId": "c3082699-9f29-5c1a-836f-95cf5e237624",
+    "originalEndStatus": "failed",
+    "associationPhase": "completed",
+    "repairThroughDesktop": true,
+    "updatedTaskId": "da5c2daa-13f1-41eb-8543-d55676926d7e",
+    "restoredTaskId": "12710d74-4406-419f-bd44-e66a222c7536",
+    "staleTaskId": "8b9390be-f0d4-4d6d-8e5e-1ca34560c07b",
+    "beforeGeneration": 1,
+    "publishedGeneration": 2,
+    "restoredGeneration": 2,
+    "restoredLogin": "signed-in",
+    "beforeSession": "1",
+    "restoredSession": "9",
+    "record": {
+      "ref": {
+        "projectId": "f2f2e12a-4a8f-46fc-93a9-d9b4b0d65e0c",
+        "tableId": "66dc4773-10ee-447d-b4e8-8d7d9f9931a8",
+        "datasetGeneration": "1efcd1cf-d6f2-4505-8794-471eecf370e8",
+        "recordKey": {
+          "type": "uuid",
+          "value": "085230ab-b83a-4c5e-96de-f4c0ca544e5c"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "5dd1a21e-d3aa-4752-b786-2219409f6e48",
+          "value": "task-second",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "validationIssues": [],
+      "recordSlots": [],
+      "statusId": "23139360-0df4-4a4b-b21d-5480884e8f1c",
+      "currentEnvironmentId": "c3082699-9f29-5c1a-836f-95cf5e237624",
+      "contentRevision": 9,
+      "statusRevision": 3,
+      "linkRevision": 3,
+      "deleted": false,
+      "createdAt": "2026-09-23T23:30:59.125823Z",
+      "updatedAt": "2026-09-23T23:32:54.308387Z"
+    },
+    "scope": "real End association failure, original save-only repair, record-derived login update and next-generation restore; Profile unchanged, no persistent identity acceptance claim"
+  },
+  "preReviewPackagedMetrics": {
+    "logLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 34602,
+      "logsPerMinute": 1741,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "volume": {
+      "synthetic": {
+        "samples": [
+          {
+            "received": 83,
+            "logReadMs": 7,
+            "pageMs": 218,
+            "heapBytes": 11451824
+          },
+          {
+            "received": 183,
+            "logReadMs": 7,
+            "pageMs": 221,
+            "heapBytes": 11484420
+          },
+          {
+            "received": 300,
+            "logReadMs": 7,
+            "pageMs": 217,
+            "heapBytes": 11522592
+          },
+          {
+            "received": 400,
+            "logReadMs": 7,
+            "pageMs": 217,
+            "heapBytes": 11568772
+          },
+          {
+            "received": 500,
+            "logReadMs": 6,
+            "pageMs": 218,
+            "heapBytes": 11593936
+          },
+          {
+            "received": 600,
+            "logReadMs": 7,
+            "pageMs": 216,
+            "heapBytes": 11630576
+          },
+          {
+            "received": 716,
+            "logReadMs": 7,
+            "pageMs": 215,
+            "heapBytes": 11683804
+          },
+          {
+            "received": 816,
+            "logReadMs": 7,
+            "pageMs": 217,
+            "heapBytes": 11718040
+          },
+          {
+            "received": 916,
+            "logReadMs": 7,
+            "pageMs": 216,
+            "heapBytes": 11754908
+          },
+          {
+            "received": 1000,
+            "logReadMs": 7,
+            "pageMs": 217,
+            "heapBytes": 11795944
+          }
+        ],
+        "received": 1000,
+        "scope": "60-second synthetic repository input; real HTTP pagination and renderer interaction during ingestion, not worker throughput or long-duration leak proof",
+        "producer": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60025,
+          "maxBatchLagMs": 47
+        }
+      },
+      "concurrentWrites": {
+        "status": "passed",
+        "producers": 5,
+        "records": 10000,
+        "busyRetries": 0
+      },
+      "records": 10000,
+      "seedMode": "five concurrent single-record HTTP writers",
+      "renderedRecordRows": 50,
+      "logRows": 1004,
+      "seedMs": 40671,
+      "logPageMs": [
+        249,
+        229,
+        210,
+        219,
+        209
+      ],
+      "recordPageMs": [
+        218,
+        215,
+        217,
+        218,
+        218,
+        217,
+        215,
+        217,
+        215,
+        218
+      ],
+      "twoFramesMs": 3,
+      "heapBytes": {
+        "before": 7287188,
+        "withLogs": 12565652,
+        "recordPageSamples": [
+          10448604,
+          11153636,
+          11422228
+        ],
+        "recordPageGrowth": 973624
+      },
+      "scope": "one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim"
+    }
+  },
+  "negativeEvidence": [
+    "backend-red.log: missing GET returned405; frontend-red.log: fresh worker End repair absent.",
+    "target-contract-red.log/target-authorization-red.log: missing original targets and unauthorized default replacement.",
+    "repair-revision-red.log/saved-before-cleanup-red.log: stale retry revision and repeated-save UI.",
+    "group-revision-red.log: multi-target revision loss; child-phase-red.log: both completed/saved_unlinked child with parent outcome null still offer save.",
+    "review-fixes-green.log:13 passed/1 failed; page fixture omitted new GET. Original assertion retained; corrected fixture in review-fixes-final.log.",
+    "backend-full.log was deliberately interrupted after discovering further same-chain defects; its interrupt/cleanup exception is not an acceptance result.",
+    "desktop/project-desktop.json failed with stale bundled frontend because package:dir does not compile it. Explicit build before packaging plus actual asar inspection fixed the build sequence; original evidence retained."
+  ],
+  "remaining": [
+    "Final full source regression, final post-review rebuilt ARM package and new three-platform workflow results pending.",
+    "End save-failure/unknown-response recovery and repair refresh between successive multi-target conflicts require separate production evidence; current group-version proof is component-level.",
+    "Current package uses local data with unchanged Profile. Persistent identity I1-I3 remains an implementation gap; no native signing/physical install or current live-Google acceptance claim.",
+    "All unrelated PM9 gaps remain; releaseAccepted=false."
+  ],
+  "artifacts": {
+    "root": ".tmp-tests/pm9-end-link-repair-2026-09-24",
+    "preReviewDesktop": "desktop-final/project-desktop.json",
+    "preReviewPackage": "package-final-inspection.json"
+  }
+}

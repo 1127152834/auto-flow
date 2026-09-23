@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-24 End结果恢复切片（本机子范围confirmed，最终回归进行中）：GET恢复原End/child保存身份、原目标及当前关联phase；界面明确替换授权并累计冲突版本，已保存或查询未知时禁止重复保存。25后端/14前端相关通过，两项P2已RED→GREEN并复审；初次新ARM完整桌面26图通过输入环境g1/session1→End更新g2/session9→第三Task恢复及仅修复不重跑。最终审查后包/全量及新三平台继续，GitHub认证已恢复；首次漏前端build和中断全量保留。仅E2E-02/XE-C10 planned→partial，XE-C18补映射；251为212partial/39planned/0verified，249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。持久身份及其他提案未改变，releaseAccepted=false。见end-link-repair-follow-through.json。
+
 2026-09-24 XE-A09不自动保存与界面修复（confirmed本机新包子范围）：真实固定环境cookie1→工作副本9且End不保留→新Task恢复1；来源g1/元数据/环境总数1不变，两实例cleaned且实际目录不存在。旧包截图暴露cleaned仍提供保存表单，7b896163修复为已清理说明，保留仅修复关联并在完成后移除入口。组件RED→8项相关通过，最终前端5475/409、类型/lint/脚本102、构建和未签名ARM完整桌面24截图通过，新界面已目视检查；后端cb040daf及既有3497回归范围不变。XE-A09仅planned→partial；251合计207partial/44planned/0verified，缺口241生产/19实现/8测试/24外部不变。输入环境、身份漂移I1–I3、新三平台/外部验收保留；releaseAccepted=false。见no-auto-save-follow-through.json。
 
 2026-09-24 AU-08已有绑定去向勘误（confirmed实现缺失，W1c proposed）：HTTP/真实SQLite诊断证明重复关联409且仅保留原自动化，但错误未给出原projectId/automationId，前端也无定位入口；不是只有缺测试。既有11项契约/仓库测试通过（2依赖警告/1.62秒）不证明该条件。新增可重复诊断、错误分类及W1c契约/界面/并发与失效目标验收切片，随现有W方案等待确认；未修改生产代码，不重跑全量/打包/流水线。251条状态、241生产/19实现/8测试/24外部计数不变，releaseAccepted=false。见binding-destination-audit.json。

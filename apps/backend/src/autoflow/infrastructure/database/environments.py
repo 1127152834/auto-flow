@@ -649,6 +649,15 @@ class SqlAlchemyEnvironments:
                 row.updated_at = now
             session.commit()
 
+    def latest_end_operation(self, project_id: str, task_id: str) -> str | None:
+        with self._session_factory() as session:
+            return session.scalar(
+                select(ProjectEndOperationRow.operation_id).where(
+                    ProjectEndOperationRow.project_id == project_id,
+                    ProjectEndOperationRow.task_id == task_id,
+                ).order_by(ProjectEndOperationRow.created_at.desc(), ProjectEndOperationRow.id.desc()).limit(1)
+            )
+
     def end_by_operation(self, operation_id: str) -> dict[str, Any] | None:
         with self._session_factory() as session:
             row = session.scalar(

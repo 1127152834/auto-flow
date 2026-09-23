@@ -2149,7 +2149,8 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get Task End */
+        get: operations["get_task_end_api_v1_projects__projectId__tasks__taskId__end_get"];
         put?: never;
         /** End Task */
         post: operations["end_task_api_v1_projects__projectId__tasks__taskId__end_post"];
@@ -8982,6 +8983,20 @@ export type components = {
             /** Datawrites */
             dataWrites?: components["schemas"]["TaskDataWriteView"][];
             cleanup: components["schemas"]["CleanupSummaryView"];
+        };
+        /** TaskEndResultView */
+        TaskEndResultView: {
+            operation: components["schemas"]["EnvironmentOperationSnapshot"];
+            /** Outcome */
+            outcome: {
+                [key: string]: unknown;
+            } | null;
+            /** Saveoperationid */
+            saveOperationId: string | null;
+            /** Associationphase */
+            associationPhase: string | null;
+            /** Recordtargets */
+            recordTargets: components["schemas"]["RecordTargetWrite"][];
         };
         /** TaskInputSnapshotView */
         TaskInputSnapshotView: {
@@ -19969,6 +19984,65 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_task_end_api_v1_projects__projectId__tasks__taskId__end_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskEndResultView"] | null;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

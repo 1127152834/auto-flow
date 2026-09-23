@@ -26,6 +26,7 @@ from .project_environment_schemas import (
     ManualItemPage,
     ManualItemView,
     ManualResumeRequest,
+    TaskEndResultView,
 )
 from .projects import _op
 
@@ -181,6 +182,18 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
             str(projectId), str(idempotency_key), body.payload()
         )
         return {"operation": _op(operation), "outcome": outcome}
+
+    @router.get(
+        "/tasks/{taskId}/end",
+        response_model=TaskEndResultView | None,
+        responses=browser_error_responses(401, 404, 422),
+    )
+    def get_task_end(projectId: UUID, taskId: UUID):
+        result = service.query_task_end(str(projectId), str(taskId))
+        if result is None:
+            return None
+        operation, save_id, phase, targets = result
+        return {"operation": _op(operation), "saveOperationId": save_id, "associationPhase": phase, "recordTargets": targets, "outcome": operation.result}
 
     @router.post(
         "/tasks/{taskId}/end",
