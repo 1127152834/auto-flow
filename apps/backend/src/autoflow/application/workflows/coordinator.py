@@ -122,6 +122,7 @@ class WorkflowRunCoordinator:
         self._debug_pauses: dict[str, dict[str, Any]] = {}
         self._active_runs_by_workflow: dict[str, set[str]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
+        self._event_command_runs: dict[str, str] = {}
         self._command_waiters: dict[str, asyncio.Future[str | None]] = {}
 
     async def start(
@@ -584,7 +585,7 @@ class WorkflowRunCoordinator:
             return copy.deepcopy(receipt), 200
 
     async def debug_breakpoints(
-        self, workflow_id: str, breakpoints: list[str]
+        self, workflow_id: str, breakpoints: list[str], *, project_id: str | None = None,
     ) -> Mapping[str, Any]:
         active = {
             run_id
@@ -597,6 +598,8 @@ class WorkflowRunCoordinator:
             )
         run_id = next(iter(active))
         run = self._runs.get(run_id)
+        if project_id is not None and run.project_id != project_id:
+            raise WorkflowRunError("RUN_NOT_FOUND", "运行记录不存在", 404)
         node_ids = {
             str(node["id"])
             for node in run.document_snapshot.get("nodes", [])
@@ -1185,6 +1188,11 @@ class WorkflowRunCoordinator:
                         "error": "commandId 已用于不同请求",
                     }, 409
                 return copy.deepcopy(receipt), status
+            request_id = data.get("requestId")
+            if isinstance(request_id, str):
+                owner = self.request_run(request_id)
+                if owner is not None:
+                    self._event_command_runs[command_id] = owner
             if event == "js_script_claim":
                 return self._claim_js_script(command_id, fingerprint, data)
             if event == "js_script_result":
@@ -1625,6 +1633,23 @@ class WorkflowRunCoordinator:
             separators=(",", ":"),
         ).encode()
         return hashlib.sha256(encoded).hexdigest()
+
+    def request_run(self, request_id: str) -> str | None:
+        for requests in (self._input_prompts, self._js_requests, self._speech_requests, self._desktop_action_requests):
+            state = requests.get(request_id)
+            if state is not None:
+                return state["runId"]
+        return None
+
+    def command_run(self, command_id: str) -> str | None:
+        owner = self._event_command_runs.get(command_id)
+        if owner is not None:
+            return owner
+        record = self._debug_command(command_id)
+        if record is not None:
+            run_id = record[1].get("runId")
+            return run_id if isinstance(run_id, str) else None
+        return None
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]:
         state = self._input_prompts.get(request_id)

@@ -10,7 +10,7 @@ import type {DebugControlRequest,DebugVariablesRequest} from './lib/debugControl
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { getStudioTransportRevision, studioFetch } from './api/transport'
-import { getBackendBaseUrl, getStudioOpenContext } from './api/config'
+import { getBackendBaseUrl, getStudioOpenContext, scopeStudioUrl } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
 // 获取后端 API 基础地址
@@ -18,15 +18,6 @@ function getApiBase(): string {
   return `${getBackendBaseUrl()}/api`
 }
 
-function projectRunUrl(url: string): string {
-  const projectId = getStudioOpenContext().projectId
-  if (!projectId) return url
-  const scoped = new URL(url)
-  if (scoped.pathname === '/api/workflow-runs' || scoped.pathname.startsWith('/api/workflow-runs/')) {
-    scoped.searchParams.set('projectId', projectId)
-  }
-  return scoped.toString()
-}
 
 
 // 兼容旧调用入口；地址现在在每次请求时读取，不缓存旧连接。
@@ -85,7 +76,7 @@ export async function apiRequest<T = any>(
 ): Promise<ApiResponse<T>> {
   try {
     // 连接在挂载 Studio 前已配置；同步选定地址并发起传输，避免切换连接后错发写请求。
-    const url = projectRunUrl(`${getApiBase()}${endpoint}`)
+    const url = scopeStudioUrl(`${getApiBase()}${endpoint}`)
     const isFormData = options.body instanceof FormData
     const response = await studioFetch(url, {
       ...options,
@@ -318,14 +309,14 @@ export const workflowApi = {
   },
   exportRunResults:async(runId:string,throughSequence:number)=>{
     try{
-      const result=await studioFetch(projectRunUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/results/export?throughSequence=${throughSequence}`))
+      const result=await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/results/export?throughSequence=${throughSequence}`))
       if(!result.ok)return {success:false,error:`结果导出失败：HTTP ${result.status}`} as ApiResponse<Blob>
       return {success:true,data:await result.blob()} as ApiResponse<Blob>
     }catch(error){return {success:false,error:String(error)} as ApiResponse<Blob>}
   },
   exportRunLogs: async (runId: string, query: Omit<ExecutionLogQuery, 'cursor' | 'limit'> = {}) => {
     try {
-      const response = await studioFetch(projectRunUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/logs/export${executionLogSearch(query)}`))
+      const response = await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/logs/export${executionLogSearch(query)}`))
       if (!response.ok) return { success: false, httpStatus: response.status, error: `HTTP ${response.status}: ${response.statusText}` } as ApiResponse<Blob>
       return { success: true, data: await response.blob() } as ApiResponse<Blob>
     } catch (error) {
@@ -1174,7 +1165,7 @@ export const variableTrackingApi = {
   },
   exportRun: async(runId:string,throughSequence:number,filters:RunTrackingQuery={},signal?:AbortSignal)=>{
     try{
-      const result=await studioFetch(projectRunUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/variable-tracking/export?${trackingQuery({...filters,throughSequence})}`),{signal})
+      const result=await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/variable-tracking/export?${trackingQuery({...filters,throughSequence})}`),{signal})
       if(!result.ok)return {success:false,error:'变量诊断导出失败'}
       return {success:true,data:await result.blob()}
     }catch(error){return {success:false,error:error instanceof Error?error.message:'变量诊断导出失败'}}

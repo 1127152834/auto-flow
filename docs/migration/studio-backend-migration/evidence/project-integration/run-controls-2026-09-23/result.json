@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "classification": "AutoFlow必要适配",
+  "date": "2026-09-23",
+  "capabilities": [
+    "project-scoped run control",
+    "project-scoped interaction commands and receipts",
+    "project-scoped legacy variable tracking"
+  ],
+  "checks": {
+    "backend": "52 passed: real worker project run/input/control + routing/repository + worker protocol",
+    "frontend": "52 passed: run context/debug recovery/variables/input/js/speech",
+    "eventsHttp": "4 passed: cursor replay and project-bound command/receipt",
+    "ruff": "passed on seven touched backend files",
+    "mypy": "four production files passed",
+    "typescript": "passed after final OpenAPI generation",
+    "eslint": "six touched frontend production/test files passed",
+    "build": "renderer/main/preload passed",
+    "openapi": "generated and consistency check passed"
+  },
+  "formalElectron": "../formal-electron-GS1ler/result.json",
+  "boundaries": {
+    "workspace": "independent temporary workspaces",
+    "userDatabaseTouched": false,
+    "platform": "macOS arm64 development build; packaged, Intel and Windows not claimed",
+    "notComplete": [
+      "project resource authorization",
+      "inspection/recording/AI project ownership",
+      "project data assets and statistics"
+    ]
+  }
+}

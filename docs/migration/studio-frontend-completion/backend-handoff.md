@@ -89,3 +89,10 @@
 - OpenAPI 生成文件无差异；错误和事件通过运行时 schema 校验。
 - 响应丢失、断流补读、重复命令、停止竞争、工作区切换和 sidecar 异常均有真实集成证据。
 - 正式 Electron 使用真实 CloakBrowser 完成运行、Debug、拾取、录制闭环，并确认无遗留进程和资源锁。
+
+
+### 项目范围的运行命令合同（2026-09-23）
+
+运行/Debug/输入、JS、语音及平台交互请求使用宿主 `projectId` 查询参数。服务在分发前验证对应 run/request 的持久归属；外项目返回 404，不执行命令、不改变在途状态。原 `commandId`/暂停修订/请求负载及响应丢失查询保持不变，查询回执也验证归属。旧流程级变量追踪先按项目选择运行，不能读或清空另一项目记录。
+
+证据：`../studio-backend-migration/evidence/project-integration/run-controls-2026-09-23/result.json` 及 `formal-electron-GS1ler/result.json`。这关闭当前运行控制消费边界，不等同于项目全部权限、资源授权、拾取/录制/助手接入完成。

@@ -1,6 +1,6 @@
 import { parseServerSentEvents } from '../../../shared/api/events'
 import { studioFetch } from './transport'
-import { getStudioOpenContext } from './config'
+import { getStudioOpenContext, scopeStudioUrl } from './config'
 import type { components } from '../../../shared/api/generated'
 
 type StudioCommandReceipt = components['schemas']['StudioCommandReceipt']
@@ -41,7 +41,7 @@ export class StudioEventClient {
     return this.sendCommand(commandId, event, data)
   }
   async queryCommand(commandId: string): Promise<StudioCommandLookup> {
-    const response = await studioFetch(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, { signal: this.controller.signal })
+    const response = await studioFetch(scopeStudioUrl(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, this.projectId), { signal: this.controller.signal })
     const result: unknown = await response.json()
     if (!response.ok || !isCommandReceipt(result, commandId)
       || typeof result.httpStatus !== 'number' || !Number.isInteger(result.httpStatus) || result.httpStatus < 200 || result.httpStatus > 599) {
@@ -52,7 +52,7 @@ export class StudioEventClient {
   private async sendCommand(commandId: string, event: string, data: unknown): Promise<StudioCommandReceipt> {
     const interrupted = { commandId, success: false, status: 'unconfirmed', error: '连接已中断，命令结果尚未确认' }
     try {
-      const response = await studioFetch(`${this.baseUrl}/api/events/commands`, {
+      const response = await studioFetch(scopeStudioUrl(`${this.baseUrl}/api/events/commands`, this.projectId), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ commandId, event, data }), signal: this.controller.signal,
       })

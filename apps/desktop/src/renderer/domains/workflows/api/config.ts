@@ -32,6 +32,17 @@ export function getStudioOpenContext(): StudioOpenContext {
   return context
 }
 
+/** Keep document, run, control and event requests on the registered window's project. */
+export function scopeStudioUrl(url: string, projectId = getStudioOpenContext().projectId): string {
+  if (!projectId) return url
+  const scoped = new URL(url)
+  if (/^\/api\/(?:workflows|workflow-runs|events)(?:\/|$)/.test(scoped.pathname)) {
+    scoped.searchParams.set('projectId', projectId)
+    return scoped.toString()
+  }
+  return url
+}
+
 /** Shared validation for connection composition and authenticated HTTP transport. */
 export function normalizeStudioOrigin(origin: string): string {
   const url = new URL(origin)

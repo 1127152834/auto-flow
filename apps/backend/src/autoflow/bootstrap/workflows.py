@@ -90,7 +90,7 @@ class PendingWorkflowRunCommands:
         )
 
     async def debug_breakpoints(
-        self, workflow_id: str, breakpoints: list[str]
+        self, workflow_id: str, breakpoints: list[str], *, project_id: str | None = None,
     ) -> Mapping[str, Any]:
         del workflow_id, breakpoints
         raise WorkflowRunError(
@@ -110,6 +110,12 @@ class PendingWorkflowRunCommands:
         raise WorkflowRunError(
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
+
+    def request_run(self, request_id: str) -> str | None:
+        return None
+
+    def command_run(self, command_id: str) -> str | None:
+        return None
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]:
         del request_id
@@ -166,6 +172,14 @@ class StudioEventCommandMux:
         if self._assistant.has_command(command_id):
             return self._assistant.event_command(command_id)
         return self._workflows.event_command(command_id)
+
+    def request_run(self, request_id: str) -> str | None:
+        return self._workflows.request_run(request_id)
+
+    def command_run(self, command_id: str) -> str | None:
+        if self._assistant.has_command(command_id):
+            return None
+        return self._workflows.command_run(command_id)
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]:
         return self._workflows.input_prompt_state(request_id)
@@ -406,7 +420,7 @@ def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     app.include_router(workflow_trigger_router(services.commands))
     if services.gestures is not None:
         app.include_router(workflow_gesture_router(services.gestures))
-    app.include_router(workflow_run_command_router(services.commands))
+    app.include_router(workflow_run_command_router(services.commands, services.runs))
     if services.inspection is not None:
         app.include_router(workflow_inspection_router(services.inspection))
     if services.assistant is not None:

@@ -1,6 +1,6 @@
 import type {ApiResponse} from '../api'
 import {parseApiWireError} from '../../../shared/api/client'
-import {getBackendBaseUrl} from './config'
+import {getBackendBaseUrl,scopeStudioUrl} from './config'
 import {getStudioTransportRevision,studioFetch} from './transport'
 import {isDebugControlReceipt,isDebugControlRequest,isDebugVariablesReceipt,isDebugVariablesRequest,type DebugControlRequest,type DebugControlReceipt,type DebugVariablesRequest,type DebugVariablesReceipt} from '../lib/debugControlContract'
 /** A lost reply is resolved by the original command ID, never by issuing another step. */
@@ -10,7 +10,7 @@ export async function sendDebugControl(workflowId:string,action:'resume'|'step',
   const current=()=>revision===getStudioTransportRevision()
   const unknown=()=>({success:false,error:'调试命令结果尚未确认，请等待状态同步或停止运行'})
   try {
-    const response=await studioFetch(`${origin}/api/workflows/${encodeURIComponent(workflowId)}/debug/${action}`,{
+    const response=await studioFetch(scopeStudioUrl(`${origin}/api/workflows/${encodeURIComponent(workflowId)}/debug/${action}`),{
       method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:AbortSignal.timeout(10000),
     })
     const result:unknown=await response.json()
@@ -30,7 +30,7 @@ export async function sendDebugControl(workflowId:string,action:'resume'|'step',
   } catch {
     if(!current())return unknown()
     try {
-      const response=await studioFetch(`${origin}/api/events/commands/${encodeURIComponent(request.commandId)}`,{signal:AbortSignal.timeout(10000)})
+      const response=await studioFetch(scopeStudioUrl(`${origin}/api/events/commands/${encodeURIComponent(request.commandId)}`),{signal:AbortSignal.timeout(10000)})
       const result:unknown=await response.json()
       if(!current() || !response.ok || !isDebugControlReceipt(result,workflowId,action,request))return unknown()
       const status=result.httpStatus
@@ -48,7 +48,7 @@ export async function sendDebugVariables(workflowId:string,request:DebugVariable
   const current=()=>revision===getStudioTransportRevision()
   const unknown=()=>({success:false,error:'变量修改结果尚未确认，请等待状态同步或停止运行'})
   try{
-    const response=await studioFetch(`${origin}/api/workflows/${encodeURIComponent(workflowId)}/debug/variables`,{
+    const response=await studioFetch(scopeStudioUrl(`${origin}/api/workflows/${encodeURIComponent(workflowId)}/debug/variables`),{
       method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:AbortSignal.timeout(10000),
     })
     const result:unknown=await response.json()
@@ -65,7 +65,7 @@ export async function sendDebugVariables(workflowId:string,request:DebugVariable
   }catch{
     if(!current())return unknown()
     try{
-      const response=await studioFetch(`${origin}/api/events/commands/${encodeURIComponent(request.commandId)}`,{signal:AbortSignal.timeout(10000)})
+      const response=await studioFetch(scopeStudioUrl(`${origin}/api/events/commands/${encodeURIComponent(request.commandId)}`),{signal:AbortSignal.timeout(10000)})
       const result:unknown=await response.json()
       if(!current() || !response.ok || !isDebugVariablesReceipt(result,workflowId,request))return unknown()
       const status=(result as Record<string,unknown>).httpStatus

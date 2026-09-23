@@ -8,7 +8,10 @@ from fastapi.testclient import TestClient
 
 from autoflow.adapters.events.workflows import StudioEvent, _frame, _scope_run_event
 from autoflow.adapters.http.errors import install_error_handlers
-from autoflow.adapters.http.workflow_runs import workflow_runs_router
+from autoflow.adapters.http.workflow_runs import (
+    workflow_runs_router,
+    workflow_variable_tracking_router,
+)
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.workflows.runs import WorkflowRunStart
@@ -40,6 +43,7 @@ def scoped_runs(tmp_path):
     app = FastAPI()
     install_error_handlers(app)
     app.include_router(workflow_runs_router(service, tmp_path))
+    app.include_router(workflow_variable_tracking_router(service, tmp_path))
     with TestClient(app) as client:
         yield client, factory, service
     factory.dispose()
@@ -126,3 +130,11 @@ def test_scoped_event_replay_preserves_sequence_without_foreign_payload(scoped_r
         session.get(ProjectRow, "a").lifecycle_state = "deleted"
         session.commit()
     assert _scope_run_event(events[0], "a", service) == StudioEvent(1, "studio:cursor", {})
+
+
+def test_legacy_workflow_diagnostics_filter_before_read_or_clear(scoped_runs):
+    client, _, service = scoped_runs
+    before = service.get("a-first").event_count
+    assert client.get("/api/workflows/a-first/variable-tracking?projectId=b").json() == {"tracking": [], "count": 0}
+    assert client.delete("/api/workflows/a-first/variable-tracking?projectId=b").status_code == 200
+    assert service.get("a-first").event_count == before

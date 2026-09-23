@@ -45,7 +45,7 @@ class WorkflowRunCommands(Protocol):
     ) -> tuple[dict[str, Any], int]: ...
 
     async def debug_breakpoints(
-        self, workflow_id: str, breakpoints: list[str]
+        self, workflow_id: str, breakpoints: list[str], *, project_id: str | None = None,
     ) -> Mapping[str, Any]: ...
 
     async def submit_event_command(
@@ -53,6 +53,10 @@ class WorkflowRunCommands(Protocol):
     ) -> tuple[dict[str, Any], int]: ...
 
     def event_command(self, command_id: str) -> tuple[dict[str, Any], int]: ...
+
+    def request_run(self, request_id: str) -> str | None: ...
+
+    def command_run(self, command_id: str) -> str | None: ...
 
     def input_prompt_state(self, request_id: str) -> dict[str, str]: ...
 
@@ -122,15 +126,38 @@ def run_detail(run: WorkflowRun) -> dict[str, Any]:
     }
 
 
-def workflow_run_command_router(commands: WorkflowRunCommands) -> APIRouter:
-    router = APIRouter(prefix="/api/workflows", tags=["studio-workflow-runs"])
+def workflow_run_command_router(commands: WorkflowRunCommands, runs: WorkflowRunService | None = None) -> APIRouter:
+    async def require_project_command(
+        request: Request,
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+    ) -> None:
+        if project_id is None:
+            return
+        try:
+            body = await request.json()
+        except ValueError:
+            return  # Preserve FastAPI's malformed JSON response.
+        if not isinstance(body, dict):
+            return  # The endpoint DTO reports malformed bodies.
+        if request.url.path.endswith("/execute"):
+            if body.get("projectId") not in (None, project_id):
+                raise WorkflowRunError("WORKFLOW_PROJECT_MISMATCH", "工作流不属于当前项目", 404)
+            return
+        if request.url.path.endswith("/debug/breakpoints"):
+            return  # The coordinator checks the resolved active run before applying.
+        run_id = body.get("runId")
+        if not isinstance(run_id, str) or runs is None or not runs.belongs_to_project(run_id, project_id):
+            raise WorkflowRunError("RUN_NOT_FOUND", "运行记录不存在", 404)
+
+    router = APIRouter(prefix="/api/workflows", tags=["studio-workflow-runs"], dependencies=[Depends(require_project_command)])
 
     @router.post("/{workflow_id}/execute", status_code=status.HTTP_202_ACCEPTED)
     async def execute_workflow(
-        workflow_id: str, request: WorkflowExecuteRequest
+        workflow_id: str, request: WorkflowExecuteRequest,
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
     ) -> Mapping[str, Any]:
         return await commands.start(
-            workflow_id, request.model_dump(by_alias=True, exclude_none=True)
+            workflow_id, {**request.model_dump(by_alias=True, exclude_none=True), **({"projectId": project_id} if project_id is not None else {})},
         )
 
     @router.post("/{workflow_id}/stop", status_code=status.HTTP_202_ACCEPTED)
@@ -179,8 +206,11 @@ def workflow_run_command_router(commands: WorkflowRunCommands) -> APIRouter:
 
     @router.post("/{workflow_id}/debug/breakpoints")
     async def update_debug_breakpoints(
-        workflow_id: str, request: WorkflowDebugBreakpointsRequest
+        workflow_id: str, request: WorkflowDebugBreakpointsRequest,
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
     ) -> Mapping[str, Any]:
+        if project_id is not None:
+            return await commands.debug_breakpoints(workflow_id, request.breakpoints, project_id=project_id)
         return await commands.debug_breakpoints(workflow_id, request.breakpoints)
 
     return router
@@ -228,16 +258,19 @@ def workflow_variable_tracking_router(
 ) -> APIRouter:
     router = APIRouter(prefix="/api/workflows", tags=["studio-workflow-runs"])
 
-    def latest_run_id(workflow_id: str) -> str | None:
-        runs, _, _ = service.list_runs(document_id=workflow_id, cursor=0, limit=1)
+    def latest_run_id(workflow_id: str, project_id: str | None) -> str | None:
+        runs, _, _ = service.list_runs(document_id=workflow_id, cursor=0, limit=1, project_id=project_id)
         return runs[0].run_id if runs else None
 
     @router.get(
         "/{workflow_id}/variable-tracking",
         response_model=StudioVariableTrackingResult,
     )
-    def get_workflow_variable_tracking(workflow_id: str) -> dict[str, Any]:
-        run_id = latest_run_id(workflow_id)
+    def get_workflow_variable_tracking(
+        workflow_id: str,
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+    ) -> dict[str, Any]:
+        run_id = latest_run_id(workflow_id, project_id)
         if run_id is None:
             return {"tracking": [], "count": 0}
         rows: list[dict[str, Any]] = []
@@ -276,8 +309,11 @@ def workflow_variable_tracking_router(
         "/{workflow_id}/variable-tracking",
         response_model=StudioVariableTrackingCleared,
     )
-    def clear_workflow_variable_tracking(workflow_id: str) -> dict[str, str]:
-        run_id = latest_run_id(workflow_id)
+    def clear_workflow_variable_tracking(
+        workflow_id: str,
+        project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+    ) -> dict[str, str]:
+        run_id = latest_run_id(workflow_id, project_id)
         if run_id is not None:
             service.clear_variable_tracking(run_id)
         return {"message": "变量追踪记录已清空"}

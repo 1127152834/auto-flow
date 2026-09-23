@@ -50,3 +50,22 @@ it('keeps scoped stream cursors contiguous across hidden foreign run events and 
     expect(requests.every(url => url.searchParams.get('projectId') === 'project-a')).toBe(true)
   } finally { client.disconnect(); restore(); vi.unstubAllGlobals(); await server.close() }
 })
+
+it('binds interaction submission and receipt recovery to the event client project', async () => {
+  vi.stubGlobal('location', { search: '?projectId=project-a' })
+  const requests: URL[] = []
+  const server = await startHttpStudioFixture(async input => {
+    const url = new URL(input instanceof Request ? input.url : String(input))
+    requests.push(url)
+    if (url.pathname.endsWith('/stream')) return new Response(': connected\n\n', { headers: { 'Content-Type': 'text/event-stream' } })
+    return Response.json({ commandId: 'command', success: true, httpStatus: 200 })
+  })
+  const restore = setStudioTransport(fetch)
+  const client = new StudioEventClient(server.origin)
+  try {
+    expect((await client.command('input_prompt_result', { requestId: 'request', value: '42' }, 'command')).success).toBe(true)
+    expect((await client.queryCommand('command')).success).toBe(true)
+    expect(requests.filter(url => url.pathname.includes('/commands'))).toHaveLength(2)
+    expect(requests.every(url => url.searchParams.get('projectId') === 'project-a')).toBe(true)
+  } finally { client.disconnect(); restore(); vi.unstubAllGlobals(); await server.close() }
+})

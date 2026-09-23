@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from autoflow.adapters.http.workflow_studio_schemas import (
@@ -106,6 +106,10 @@ class StudioEventCommands(Protocol):
 
     def event_command(self, command_id: str) -> tuple[dict[str, Any], int]: ...
 
+    def request_run(self, request_id: str) -> str | None: ...
+
+    def command_run(self, command_id: str) -> str | None: ...
+
     def input_prompt_state(self, request_id: str) -> dict[str, str]: ...
 
     def js_script_state(self, request_id: str) -> dict[str, str]: ...
@@ -147,40 +151,64 @@ def workflow_events_router(
         )
 
     if commands is not None:
+        def require_request_project(
+            request: Request,
+            project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+        ) -> None:
+            if project_id is not None:
+                owner = commands.request_run(request.path_params["request_id"])
+                if owner is None or runs is None or not runs.belongs_to_project(owner, project_id):
+                    raise WorkflowRunError("REQUEST_NOT_FOUND", "交互请求不存在", 404)
 
         @router.post("/commands", response_model=StudioCommandReceipt)
-        async def submit_command(request: StudioEventCommandRequest) -> JSONResponse:
+        async def submit_command(
+            request: StudioEventCommandRequest,
+            project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+        ) -> JSONResponse:
+            if project_id is not None and request.event in {
+                "input_prompt_result", "js_script_claim", "js_script_result", "tts_claim", "tts_result", "desktop_action_claim", "desktop_action_result",
+            }:
+                request_id = request.data.get("requestId")
+                owner = commands.request_run(request_id) if isinstance(request_id, str) else None
+                if owner is None or runs is None or not runs.belongs_to_project(owner, project_id):
+                    raise WorkflowRunError("REQUEST_NOT_FOUND", "交互请求不存在", 404)
             payload, http_status = await commands.submit_event_command(
                 request.command_id, request.event, request.data
             )
             return JSONResponse(payload, status_code=http_status)
 
         @router.get("/commands/{command_id}", response_model=StudioCommandLookup)
-        def get_command(command_id: str) -> JSONResponse:
+        def get_command(
+            command_id: str,
+            project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+        ) -> JSONResponse:
             payload, http_status = commands.event_command(command_id)
+            run_id = commands.command_run(command_id) if project_id is not None else None
+            if project_id is not None and isinstance(run_id, str) and (runs is None or not runs.belongs_to_project(run_id, project_id)):
+                raise WorkflowRunError("COMMAND_NOT_FOUND", "命令记录不存在", 404)
             return JSONResponse(payload, status_code=http_status)
 
         @router.get(
-            "/input-prompts/{request_id}", response_model=StudioInputPromptState
+            "/input-prompts/{request_id}", response_model=StudioInputPromptState, dependencies=[Depends(require_request_project)]
         )
         def get_input_prompt(request_id: str) -> dict[str, str]:
             return commands.input_prompt_state(request_id)
 
         @router.get(
-            "/js-requests/{request_id}", response_model=StudioJsScriptState
+            "/js-requests/{request_id}", response_model=StudioJsScriptState, dependencies=[Depends(require_request_project)]
         )
         def get_js_script(request_id: str) -> dict[str, str]:
             return commands.js_script_state(request_id)
 
         @router.get(
-            "/tts-requests/{request_id}", response_model=StudioSpeechState
+            "/tts-requests/{request_id}", response_model=StudioSpeechState, dependencies=[Depends(require_request_project)]
         )
         def get_tts_request(request_id: str) -> dict[str, str]:
             return commands.tts_request_state(request_id)
 
         @router.get(
             "/desktop-actions/{request_id}",
-            response_model=StudioDesktopActionState,
+            response_model=StudioDesktopActionState, dependencies=[Depends(require_request_project)],
         )
         def get_desktop_action(request_id: str) -> dict[str, str]:
             return commands.desktop_action_state(request_id)

@@ -23406,7 +23406,9 @@ export interface operations {
     };
     execute_workflow_api_workflows__workflow_id__execute_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -23443,7 +23445,9 @@ export interface operations {
     };
     stop_workflow_api_workflows__workflow_id__stop_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -23480,7 +23484,9 @@ export interface operations {
     };
     resume_workflow_api_workflows__workflow_id__debug_resume_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -23515,7 +23521,9 @@ export interface operations {
     };
     step_workflow_api_workflows__workflow_id__debug_step_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -23550,7 +23558,9 @@ export interface operations {
     };
     update_debug_variables_api_workflows__workflow_id__debug_variables_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -23585,7 +23595,9 @@ export interface operations {
     };
     update_debug_breakpoints_api_workflows__workflow_id__debug_breakpoints_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -25120,7 +25132,9 @@ export interface operations {
     };
     get_workflow_variable_tracking_api_workflows__workflow_id__variable_tracking_get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -25151,7 +25165,9 @@ export interface operations {
     };
     clear_workflow_variable_tracking_api_workflows__workflow_id__variable_tracking_delete: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 workflow_id: string;
@@ -25888,7 +25904,9 @@ export interface operations {
     };
     submit_command_api_events_commands_post: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -25921,7 +25939,9 @@ export interface operations {
     };
     get_command_api_events_commands__command_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 command_id: string;
@@ -25952,7 +25972,9 @@ export interface operations {
     };
     get_input_prompt_api_events_input_prompts__request_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 request_id: string;
@@ -25983,7 +26005,9 @@ export interface operations {
     };
     get_js_script_api_events_js_requests__request_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 request_id: string;
@@ -26014,7 +26038,9 @@ export interface operations {
     };
     get_tts_request_api_events_tts_requests__request_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 request_id: string;
@@ -26045,7 +26071,9 @@ export interface operations {
     };
     get_desktop_action_api_events_desktop_actions__request_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                projectId?: string | null;
+            };
             header?: never;
             path: {
                 request_id: string;
