@@ -166,7 +166,7 @@ async def test_runtime_backup_and_restore_hold_the_cleanup_lease(tmp_path, actio
     workspace = str(tmp_path.resolve())
     preview = cleanup.preview(["staging:held"], workspace)
     runtime.blocked = True
-    call = backups.create_with_runtime(source, None, runtime) if action == "backup" else backups.restore_data(record["id"], {"deviceId": "new", "imageId": "image"}, runtime)
+    call = backups.create_with_runtime(source, None, runtime) if action == "backup" else backups.restore_data(record["id"], {"deviceId": "new", "imageId": "image", "generation": 1, "restoreState": "pending", "restoreRequestId": "request", "restoreBackupId": record["id"], "creationConfig": {"restoreRequestId": "request", "restoreBackupId": record["id"], "start": False}}, runtime)
     task = asyncio.create_task(call)
     try:
         await asyncio.wait_for(entered.wait(), 2)

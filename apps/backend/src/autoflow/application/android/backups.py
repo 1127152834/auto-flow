@@ -230,7 +230,7 @@ class AndroidBackupService:
         return {"deviceId": new_device_id, "backupId": backup_id, "state": "queued"}
 
     async def restore_data(self, backup_id: str, device: dict[str, Any], runtime: Any) -> dict[str, Any]:
-        backup = next((item for item in self.resources.list("backup") if item["id"] == backup_id), None)
+        backup = next((item for item in self.resources.list("backup") if item["id"] == backup_id and item.get("workspaceId") == self.workspace_identity), None)
         if backup is None or backup.get("state") != "available":
             raise AndroidError("ANDROID_BACKUP_NOT_FOUND", "备份不存在或不可恢复", 404)
         if device.get("imageId") != backup.get("imageId"):
@@ -263,19 +263,51 @@ class AndroidBackupService:
             digest = hashlib.sha256()
             size = 0
             data = b""
+            manifest_data = b""
+            names: set[str] = set()
             for path in sorted(backup_path.iterdir()):
                 if path.is_symlink():
                     raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含链接条目", 409)
                 if not path.is_file():
                     raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含不支持的条目", 409)
                 chunk = path.read_bytes()
+                names.add(path.name)
+                if path.name == "manifest.json":
+                    manifest_data = chunk
                 if path == data_path:
                     data = chunk
                 digest.update(chunk)
                 size += len(chunk)
             if backup.get("sha256") != digest.hexdigest() or backup.get("bytes") != size:
                 raise AndroidError("ANDROID_BACKUP_CORRUPT", "备份摘要或字节数不匹配", 409)
+            try:
+                manifest = json.loads(manifest_data) if len(manifest_data) <= 1024 * 1024 else None
+            except (UnicodeDecodeError, ValueError):
+                manifest = None
+            expected = {"formatVersion": 1, "deviceId": backup.get("deviceId"), "imageId": backup.get("imageId"), "config": backup.get("config")}
+            if (
+                type(backup.get("formatVersion")) is not int
+                or not isinstance(manifest, dict)
+                or type(manifest.get("formatVersion")) is not int
+                or backup["formatVersion"] != 1
+                or names != {"manifest.json", "data.tar"}
+                or manifest != expected
+            ):
+                raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份清单与目录记录不一致或格式不受支持", 409)
             self._validate_archive(data)
+            config = device.get("creationConfig") or {}
+            if (
+                device.get("restoreState") != "pending"
+                or not device.get("restoreRequestId")
+                or device.get("restoreRequestId") != config.get("restoreRequestId")
+                or device.get("restoreBackupId") != backup_id
+                or config.get("restoreBackupId") != backup_id
+                or config.get("start") is not False
+                or type(device.get("generation")) is not int
+                or device["generation"] < 1
+                or (getattr(runtime, "workspace_id", None) is not None and device.get("workspaceId") != runtime.workspace_id)
+            ):
+                raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复只能写入本次请求新建且尚未发布的受控目标", 409)
             with self._runtime_lock(runtime):
                 await runtime.restore_volume(device, data)
             return {"deviceId": device["deviceId"], "backupId": backup_id, "state": "restored"}
