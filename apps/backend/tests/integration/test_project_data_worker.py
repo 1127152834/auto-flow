@@ -784,6 +784,7 @@ async def test_project_task_uses_studio_http_gateway_in_real_worker(tmp_path: Pa
             "requestUrl": f"http://127.0.0.1:{server.server_port}/project",
             "requestMethod": "POST",
             "requestBody": '{"value":"项目真实请求"}',
+            "resultVariable": "stale_default",
             "variableName": "api_result",
         },
     )
@@ -806,10 +807,104 @@ async def test_project_task_uses_studio_http_gateway_in_real_worker(tmp_path: Pa
         assert any(
             event.kind == "output"
             and event.payload.get("name") == "api_result"
-            and event.payload["value"]["response"] == {"accepted": "项目真实请求"}
+            and event.payload["value"] == {"accepted": "项目真实请求"}
             for event in events
         )
         assert not resources.requests and not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+@pytest.mark.asyncio
+async def test_project_task_runs_outbound_http_family_in_real_worker(tmp_path: Path) -> None:
+    requests: list[tuple[str, object]] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            requests.append((self.path, None))
+            status = "ready" if requests.count(("/poll", None)) > 1 else "pending"
+            self.reply({"data": {"status": status}})
+
+        def do_POST(self) -> None:
+            body = json.loads(self.rfile.read(int(self.headers["content-length"])))
+            requests.append((self.path, body))
+            self.reply({"accepted": body}, cookie=self.path == "/hook")
+
+        def reply(self, value: object, *, cookie: bool = False) -> None:
+            payload = json.dumps(value, ensure_ascii=False).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            if cookie:
+                self.send_header("Set-Cookie", "receipt=ok")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    origin = f"http://127.0.0.1:{server.server_port}"
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    steps = [
+        ("api_trigger", {"apiUrl": f"{origin}/poll", "conditionPath": "$.data.status", "conditionValue": "ready", "checkInterval": 0, "timeout": 3, "saveToVariable": "trigger_data"}),
+        ("api_request", {"requestUrl": f"{origin}/api", "requestMethod": "POST", "requestBody": '{"value":"甲"}', "variableName": "api_result"}),
+        ("webhook_request", {"url": f"{origin}/hook", "body": '{"source":"worker"}', "saveResponse": True, "responseVariable": "hook_response", "saveStatus": True, "statusVariable": "hook_status", "saveHeaders": True, "headersVariable": "hook_headers", "saveCookies": True, "cookiesVariable": "hook_cookies"}),
+        ("notify_webhook", {"webhookUrl": f"{origin}/notify", "message": '{"message":"完成"}'}),
+    ]
+    document = _studio_payload(automation.workflow_id)
+    document.update(
+        schemaVersion=3,
+        nodes=[{"id": f"http-{index}", "type": module_type, "position": {"x": index * 160, "y": 0}, "data": {"moduleType": module_type, "config": config}} for index, (module_type, config) in enumerate(steps)],
+        edges=[{"id": f"edge-{index}", "source": f"http-{index}", "target": f"http-{index + 1}"} for index in range(len(steps) - 1)],
+        variables=[],
+    )
+    WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+        automation.workflow_id, document, expected_revision=1, client_request_id=str(uuid4()),
+    )
+    runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+    coordinator._core = runtime
+    worker = ProjectWorkflowWorkerManager(tmp_path / "http-family-worker")
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        batch, _, _ = coordinator.start(
+            project.project_id, automation.automation_id, str(uuid4()), start_payload(automation),
+        )
+        task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert run is not None
+        await dispatcher.dispatch(
+            run.run_id, expected_status_revision=run.status_revision,
+            execution_generation=run.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=run.run_id)
+            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded", finished.error if finished else None
+        assert requests == [
+            ("/poll", None), ("/poll", None),
+            ("/api", {"value": "甲"}),
+            ("/hook", {"source": "worker"}),
+            ("/notify", {"message": "完成"}),
+        ]
+        outputs = {event.payload["name"]: event.payload["value"] for event in events if event.kind == "output"}
+        assert outputs["trigger_data"] == {"data": {"status": "ready"}}
+        assert outputs["api_result"] == {"accepted": {"value": "甲"}}
+        assert outputs["hook_response"] == {"accepted": {"source": "worker"}}
+        assert outputs["hook_status"] == 200
+        assert outputs["hook_headers"]["content-type"] == "application/json"
+        assert outputs["hook_cookies"]["receipt"] == "ok"
+        assert len([event for event in events if event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded"]) == 4
+        assert resources.requests == [] and not worker.busy()
     finally:
         await dispatcher.shutdown()
         factory.dispose()

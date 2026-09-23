@@ -267,14 +267,29 @@ class ProjectGraphExecutor:
                     output_name = config.get(key)
                     if isinstance(output_name, str) and output_name and output_name in current.variables and output_name not in current.sensitive_variables:
                         await emit('output', {'name': output_name, 'value': current.variables[output_name]})
+            if data['moduleType'] == 'webhook_request':
+                for enabled, key, default in (
+                    ('saveResponse', 'responseVariable', 'webhook_response'),
+                    ('saveStatus', 'statusVariable', 'webhook_status'),
+                    ('saveHeaders', 'headersVariable', 'webhook_headers'),
+                    ('saveCookies', 'cookiesVariable', 'webhook_cookies'),
+                ):
+                    if config.get(enabled):
+                        output_name = config.get(key) or default
+                        if isinstance(output_name, str) and output_name in current.variables and output_name not in current.sensitive_variables:
+                            await emit('output', {'name': output_name, 'value': current.variables[output_name]})
             name = (config.get('resultVariable') or config.get('variableName')
                     or config.get('saveResult') or config.get('saveMessage'))
-            if data['moduleType'] in {'json_parse', 'table_get_cell', 'table_export', 'extract_table_data'}:
+            if data['moduleType'] in {'json_parse', 'table_get_cell', 'table_export', 'extract_table_data', 'api_request'}:
                 name = config.get('variableName')
+            if data['moduleType'] == 'api_trigger':
+                name = config.get('saveToVariable', 'api_request')
+            if data['moduleType'] == 'webhook_request':
+                name = None
             if data['moduleType'] == 'page_load_complete':
                 name = config.get('saveToVariable', 'page_loaded')
             if isinstance(name, str) and name and name not in current.sensitive_variables:
-                if data['moduleType'] in {'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'table_export', 'extract_table_data'}:
+                if data['moduleType'] in {'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'table_export', 'extract_table_data', 'api_request', 'api_trigger'}:
                     if name in current.variables:
                         await emit('output', {'name': name, 'value': current.variables[name]})
                 elif event.get('data') is not None or (

@@ -362,3 +362,9 @@
 - `extract_table_data` 和七个数据表节点复用已迁入的冻结 WebRPA 执行器，项目目录 142→150；项目文件端口支持受限 XLSX 二进制读写并等待产物持久回执。项目输出边界对这些节点按执行器实际写入的 `variableName` 登记，避免旧默认 `resultVariable` 遮蔽用户值。
 - 冻结源码差分 79 项、项目与共享产物关联回归 120 项、真实 CloakBrowser 双任务提取、Ruff/mypy/OpenAPI/目录检查通过。正式 Electron 开发入口和 macOS arm64 未签名包真实 UI 完成十节点链，三份 XLSX/CSV 文件、SHA-256、任务下载入口及浏览器清理通过；详见 `docs/migration/studio-backend-migration/evidence/project-integration/table-family-2026-09-24/README.md`。
 - Studio 有效范围仍为 213，项目目录余下 63 个节点待接入。macOS Intel、Windows、用户数据库未实测；本轮只使用临时工作区。
+
+## 项目任务出站 HTTP 节点族（2026-09-24，confirmed）
+
+- 冻结源码 `external_http.py` 中依赖现有出站服务的 `api_trigger`、`api_request`、`webhook_request`、`notify_webhook` 进入项目目录 150→154。项目输出按执行器实际变量值登记，Webhook 多项响应变量逐项写入，避免节点结果包装对象或旧默认名称取代用户变量。
+- 独立临时工作区真实 worker、本地受控 HTTP 服务、取消和原版差分关联 66 项通过；Ruff/mypy/OpenAPI/目录检查通过。正式 Electron 开发入口和 macOS arm64 未签名包真实 UI 完成四节点顺序链；请求轨迹、输出、节点状态及无浏览器资源结果见 `docs/migration/studio-backend-migration/evidence/project-integration/http-family-2026-09-24/README.md`。
+- `webhook_trigger` 的被动触发依赖项目交互命令通道，未被出站服务证明；Studio 有效范围 213 不变，项目目录余下 59 个批准节点。Intel/Windows及用户数据库未实测。
